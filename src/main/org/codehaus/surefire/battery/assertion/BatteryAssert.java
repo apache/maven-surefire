@@ -2,7 +2,9 @@ package org.codehaus.surefire.battery.assertion;
 
 import org.codehaus.surefire.Surefire;
 
-public class BatteryAssert
+import junit.framework.TestCase;
+
+public class BatteryAssert extends TestCase
 {
     public static void verify( boolean condition )
     {
