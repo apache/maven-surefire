@@ -2,19 +2,15 @@ package org.codehaus.surefire;
 
 import org.codehaus.surefire.battery.Battery;
 import org.codehaus.surefire.battery.JUnitBattery;
-import org.codehaus.surefire.report.Reporter;
 import org.codehaus.surefire.report.ReportEntry;
+import org.codehaus.surefire.report.Reporter;
 import org.codehaus.surefire.report.ReporterManager;
-import org.codehaus.surefire.util.TeeStream;
 
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.io.PrintStream;
-import java.io.FileOutputStream;
-import java.io.FileNotFoundException;
 
 public class Surefire
 {
