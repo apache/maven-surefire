@@ -9,12 +9,12 @@
   </parent>
   <artifactId>surefire-booter</artifactId>
   <name>SureFire Booter</name>
-  <version>1.2-SNAPSHOT</version>
+  <version>1.2</version>
   <dependencies>
     <dependency>
       <groupId>surefire</groupId>
       <artifactId>surefire</artifactId>
-      <version>1.2-SNAPSHOT</version>
+      <version>1.2</version>
     </dependency>
   </dependencies>
   <scm>
