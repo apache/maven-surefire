@@ -9,7 +9,7 @@
   </parent>
   <artifactId>surefire</artifactId>
   <name>SureFire</name>
-  <version>1.2-SNAPSHOT</version>
+  <version>1.2</version>
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
