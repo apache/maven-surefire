@@ -31,6 +31,13 @@ public class TeeStream
         }
     }
 
+    public void close()
+    {
+        super.close();
+
+        out.close();
+    }
+
     public void flush()
     {
         super.flush();

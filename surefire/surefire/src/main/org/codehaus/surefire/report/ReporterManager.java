@@ -3,14 +3,12 @@ package org.codehaus.surefire.report;
 import org.codehaus.surefire.Surefire;
 import org.codehaus.surefire.util.TeeStream;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.PrintStream;
 import java.text.MessageFormat;
 import java.util.Iterator;
 import java.util.List;
-import java.io.File;
-import java.io.PrintStream;
-import java.io.FileOutputStream;
-import java.io.FileNotFoundException;
-import java.io.ByteArrayOutputStream;
 
 public class ReporterManager
 {
@@ -23,6 +21,14 @@ public class ReporterManager
     private List reports;
 
     private String reportsDirectory;
+
+    private PrintStream oldOut;
+
+    private PrintStream oldErr;
+
+    private PrintStream newErr;
+
+    private PrintStream newOut;
 
     public ReporterManager( List reports, String reportsDirectory )
     {
@@ -254,18 +260,20 @@ public class ReporterManager
     {
         stdOut = new ByteArrayOutputStream();
 
-        PrintStream out = new PrintStream( stdOut );
+        newOut = new PrintStream( stdOut );
 
-        PrintStream tee = new TeeStream( System.out, out );
+        oldOut = System.out;
 
+        TeeStream tee = new TeeStream( oldOut, newOut );
         System.setOut( tee );
 
         stdErr = new ByteArrayOutputStream();
 
-        PrintStream err = new PrintStream( stdErr );
+        newErr = new PrintStream( stdErr );
 
-        tee = new TeeStream( System.err, err );
+        oldErr = System.err;
 
+        tee = new TeeStream( oldErr, newErr );
         System.setErr( tee );
 
         for ( Iterator it = reports.iterator(); it.hasNext(); )
@@ -285,6 +293,8 @@ public class ReporterManager
 
     public void testSucceeded( ReportEntry report )
     {
+        resetStreams();
+
         for ( Iterator it = reports.iterator(); it.hasNext(); )
         {
             Reporter reporter = (Reporter) it.next();
@@ -316,6 +326,8 @@ public class ReporterManager
 
         String stdErrLog = stdErr.toString();
 
+        resetStreams();
+
         for ( Iterator it = reports.iterator(); it.hasNext(); )
         {
             Reporter reporter = (Reporter) it.next();
@@ -336,6 +348,15 @@ public class ReporterManager
                 handleReporterException( "testFailed", e );
             }
         }
+    }
+
+    private void resetStreams()
+    {
+        System.setOut( oldOut );
+        System.setErr( oldErr );
+
+        newOut.close();
+        newErr.close();
     }
 
     public void dispose()
@@ -387,33 +408,6 @@ public class ReporterManager
         System.err.println( stringToPrint );
 
         e.printStackTrace( System.err );
-    }
-
-    void poo()
-    {
-        try
-        {
-            // Tee standard output
-            PrintStream out = new PrintStream( new FileOutputStream( "out.log" ) );
-
-            PrintStream tee = new TeeStream( System.out, out );
-
-            System.setOut( tee );
-
-            // Tee standard error
-            PrintStream err = new PrintStream( new FileOutputStream( "err.log" ) );
-
-            tee = new TeeStream( System.err, err );
-
-            System.setErr( tee );
-        }
-        catch ( FileNotFoundException e )
-        {
-        }
-
-        // Write to standard output and error and the log files
-        System.out.println( "welcome" );
-        System.err.println( "error" );
     }
 
 }
