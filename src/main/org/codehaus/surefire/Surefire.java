@@ -76,9 +76,9 @@ public class Surefire
 
                     if ( battery.getTestCount() > 0 )
                     {
-                        nbTests += battery.getTestCount();
-
                         executeBattery( battery, reportManager );
+
+                        nbTests += battery.getTestCount();
                     }
 
                     List list = new ArrayList();
@@ -98,9 +98,9 @@ public class Surefire
     
                         if (b.getTestCount() > 0 )
                         {
-                            nbTests += battery.getTestCount();
-
                             executeBattery( b, reportManager );
+
+                            nbTests += b.getTestCount();
                         }
                     }
                 }
