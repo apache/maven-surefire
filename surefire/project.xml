@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<project>
+  <pomVersion>3</pomVersion>
+  <groupId>surefire</groupId>
+  <name>SureFire</name>
+  <currentVersion>1.0</currentVersion>
+
+  <organization>
+    <name>Codehaus</name>
+    <url>http://www.codehaus.org/</url>
+    <logo>${pom.organization.url}/codehaus-small.png</logo>
+  </organization>
+
+  <inceptionYear>2004</inceptionYear>
+  <package>org.codehaus.surefire</package>
+  <description>Surefire is a test framework project.</description>
+  <shortDescription>Surefire is a test framework project.</shortDescription>
+  <url>http://surefire.codehaus.org/</url>
+  <issueTrackingUrl>http://jira.codehaus.org/browse/SUREFIRE</issueTrackingUrl>
+  <siteAddress>surefire.codehaus.org</siteAddress>
+  <siteDirectory>/home/projects/surefire/public_html</siteDirectory>
+  <distributionDirectory>/dist/surefire</distributionDirectory>
+
+  <repository>
+    <connection>scm:cvs:pserver:anoncvs@cvs.surefire.codehaus.org:/scm/surefire:surefire</connection>
+    <developerConnection>scm:cvs:ext:${maven.username}@cvs.surefire.codehaus.org:/scm/surefire:surefire</developerConnection>
+    <url>http://cvs.surefire.codehaus.org/surefire/</url>
+  </repository>
+
+  <mailingLists>
+    <mailingList>
+      <name>Surefire User List</name>
+      <subscribe>user-subscribe@surefire.codehaus.org</subscribe>
+      <unsubscribe>user-unsubscribe@surefire.codehaus.org</unsubscribe>
+      <archive>http://archive.surefire.codehaus.org/user/</archive>
+    </mailingList>
+    <mailingList>
+      <name>Surefire Developer List</name>
+      <subscribe>dev-subscribe@surefire.codehaus.org</subscribe>
+      <unsubscribe>dev-unsubscribe@surefire.codehaus.org</unsubscribe>
+      <archive>http://archive.surefire.codehaus.org/dev/</archive>
+    </mailingList>
+  </mailingLists>
+
+  <developers>
+    <developer>
+      <name>Jason van Zyl</name>
+      <id>jvanzyl</id>
+      <email>jason@zenplex.com</email>
+      <organization>Zenplex</organization>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Emmanuel Venisse</name>
+      <id>evenisse</id>
+      <email>evenisse@codehaus.org</email>
+      <organization>Codehaus</organization>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+  </developers>
+
+  <build>
+    <nagEmailAddress>dev@surefire.codehaus.org</nagEmailAddress>
+    <sourceDirectory>src/main</sourceDirectory>
+    <unitTestSourceDirectory>src/test</unitTestSourceDirectory>
+    <unitTest>
+      <includes>
+        <include>**/*Test.java</include>
+      </includes>
+    </unitTest>
+    <resources>
+      <resource>
+        <directory>src/messages</directory>
+        <targetPath>org/codehaus/surefire</targetPath>
+        <includes>
+          <include>*.properties</include>
+        </includes>
+      </resource>
+    </resources>
+  </build>
+
+  <reports>
+    <report>maven-javadoc-plugin</report>
+    <report>maven-jxr-plugin</report>
+    <report>maven-tasklist-plugin</report>
+  </reports>
+
+</project>

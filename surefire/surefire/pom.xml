@@ -1,16 +1,22 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 
 <project>
-  <extend>../project.xml</extend>
-  <artifactId>surefire</artifactId>
-  <name>SureFire</name>
-  <currentVersion>1.2-SNAPSHOT</currentVersion>
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>surefire</groupId>
+    <artifactId>surefire-root</artifactId>
+    <version>1.0</version>
+  </parent>
 
-  <repository>
+  <artifactId>surefire</artifactId>
+  <version>1.2-SNAPSHOT</version>
+  <name>SureFire</name>
+
+  <scm>
     <connection>scm:cvs:pserver:anoncvs@cvs.surefire.codehaus.org:/scm/surefire:surefire/surefire</connection>
     <developerConnection>scm:cvs:ext:${maven.username}@cvs.surefire.codehaus.org:/scm/surefire:surefire/surefire</developerConnection>
     <url>http://cvs.surefire.codehaus.org/surefire/surefire/</url>
-  </repository>
+  </scm>
 
   <dependencies>
     <dependency>
