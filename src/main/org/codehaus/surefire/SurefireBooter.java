@@ -44,7 +44,7 @@ public class SurefireBooter
         }
     }
 
-    public void run()
+    public boolean run()
         throws Exception
     {
         IsolatedClassLoader surefireClassLoader = new IsolatedClassLoader();
@@ -66,9 +66,11 @@ public class SurefireBooter
 
         Thread.currentThread().setContextClassLoader( surefireClassLoader );
 
-        run.invoke( batteryExecutor, new Object[]{ reports, batteries, surefireClassLoader } );
+        Boolean result = (Boolean) run.invoke( batteryExecutor, new Object[]{ reports, batteries, surefireClassLoader } );
 
         Thread.currentThread().setContextClassLoader( oldContextClassLoader );
+
+        return result.booleanValue();
     }
 
     public void reset()
@@ -154,7 +156,7 @@ public class SurefireBooter
 
         surefireBooter.addClassPathUrl( new File( mavenRepoLocal, "junit/jars/junit-3.8.1.jar" ).getPath() );
 
-        surefireBooter.addClassPathUrl( new File( mavenRepoLocal, "surefire/jars/surefire-1.0.jar" ).getPath() );
+        surefireBooter.addClassPathUrl( new File( mavenRepoLocal, "surefire/jars/surefire-1.1-SNAPSHOT.jar" ).getPath() );
 
         surefireBooter.addClassPathUrl( new File( basedir, "target/classes/" ).getPath() );
 

@@ -7,7 +7,7 @@
   <groupId>surefire</groupId>
   <artifactId>surefire-booter</artifactId>
   <name>SureFire Booter</name>
-  <currentVersion>1.0</currentVersion>
+  <currentVersion>1.1-SNAPSHOT</currentVersion>
 
   <organization>
     <name>Codehaus</name>
