@@ -68,6 +68,15 @@ public class ReportManager
         }
     }
 
+    public void resume()
+    {
+        writeMessage( "" );
+        writeMessage( "Resume :" );
+        writeMessage( "[surefire] Tests run: " + completedCount +
+                      ", Failures: " + failures +
+                      ", Errors: " + errors );
+    }
+
     // ----------------------------------------------------------------------
     // Run
     // ----------------------------------------------------------------------
