@@ -1,27 +1,28 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 
 <project>
-  <extend>../project.xml</extend>
-  <artifactId>surefire-booter</artifactId>
-  <name>SureFire Booter</name>
-  <currentVersion>1.2-SNAPSHOT</currentVersion>
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>surefire</groupId>
+    <artifactId>surefire-root</artifactId>
+    <version>1.0</version>
+  </parent>
 
-  <repository>
+  <artifactId>surefire-booter</artifactId>
+  <version>1.2-SNAPSHOT</version>
+  <name>SureFire Booter</name>
+
+  <scm>
     <connection>scm:cvs:pserver:anoncvs@cvs.surefire.codehaus.org:/scm/surefire:surefire/surefire-booter</connection>
     <developerConnection>scm:cvs:ext:${maven.username}@cvs.surefire.codehaus.org:/scm/surefire:surefire/surefire-booter</developerConnection>
     <url>http://cvs.surefire.codehaus.org/surefire/surefire-booter/</url>
-  </repository>
+  </scm>
 
   <dependencies>
     <dependency>
       <groupId>surefire</groupId>
       <artifactId>surefire</artifactId>
       <version>1.2-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>3.8.1</version>
     </dependency>
   </dependencies>
 </project>
