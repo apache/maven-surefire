@@ -95,8 +95,8 @@ public class Surefire
                     for ( Iterator j = subBatteries.iterator(); j.hasNext(); )
                     {
                         Battery b = (Battery) j.next();
-    
-                        if (b.getTestCount() > 0 )
+
+                        if ( b.getTestCount() > 0 )
                         {
                             executeBattery( b, reportManager );
 
@@ -183,9 +183,13 @@ public class Surefire
         // cast t
         Class testCaseClass = null;
 
+        Class junitTestClass = null;
+
         try
         {
             testCaseClass = loader.loadClass( "junit.framework.TestCase" );
+
+            junitTestClass = loader.loadClass( "junit.framework.Test" );
         }
         catch ( ClassNotFoundException e )
         {
@@ -233,13 +237,38 @@ public class Surefire
                     battery = testClass.newInstance();
                 }
             }
-            else if ( testCaseClass != null && testCaseClass.isAssignableFrom( testClass ) )
+
+            /*
+
+            We will assume this is a JUnit test because you can have tests in JUnit
+            that look like the following:
+
+            public class ThrowingTest
+            {
+                public static Object suite() throws Exception
+                {
+                    TestSuite suite = new TestSuite();
+                    DistributedSystemTestInfo testInfo = getTestInfo();
+                    suite.addTest( new DistributedTestCase( new ScenarioInfo( "default", testInfo ) ) );
+                    return suite;
+                }
+            }
+
+            Which is really not identifiable as a JUnit class at all ... so that's
+            why I'm making the assumption because JUnit does.
+
+            else if ( junitTestClass != null && junitTestClass.isAssignableFrom( testClass ) )
             {
                 battery = new JUnitBattery( testClass, loader );
             }
             else
             {
-                throw new Exception( "Class " + testClass + " was neither a Suite nor a TestCase" );
+                throw new Exception( "Class " + testClass + " is not an implementation of junit.framework.Test" );
+            }
+            */
+            else
+            {
+                battery = new JUnitBattery( testClass, loader );
             }
 
             batteries.add( battery );
@@ -271,6 +300,7 @@ public class Surefire
 
         return reports;
     }
+
 }
 
 
