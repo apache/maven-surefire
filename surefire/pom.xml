@@ -7,17 +7,9 @@
     <artifactId>surefire-root</artifactId>
     <version>1.0</version>
   </parent>
-
   <artifactId>surefire</artifactId>
-  <version>1.2-SNAPSHOT</version>
   <name>SureFire</name>
-
-  <scm>
-    <connection>scm:cvs:pserver:anoncvs@cvs.surefire.codehaus.org:/scm/surefire:surefire/surefire</connection>
-    <developerConnection>scm:cvs:ext:${maven.username}@cvs.surefire.codehaus.org:/scm/surefire:surefire/surefire</developerConnection>
-    <url>http://cvs.surefire.codehaus.org/surefire/surefire/</url>
-  </scm>
-
+  <version>1.2-SNAPSHOT</version>
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
@@ -25,4 +17,9 @@
       <version>3.8.1</version>
     </dependency>
   </dependencies>
+  <scm>
+    <connection>scm:cvs:pserver:anoncvs@cvs.surefire.codehaus.org:/scm/surefire:surefire/surefire</connection>
+    <developerConnection>scm:cvs:ext:${maven.username}@cvs.surefire.codehaus.org:/scm/surefire:surefire/surefire</developerConnection>
+    <url>http://cvs.surefire.codehaus.org/surefire/surefire/</url>
+  </scm>
 </project>

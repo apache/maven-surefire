@@ -4,52 +4,26 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>surefire</groupId>
   <artifactId>surefire-root</artifactId>
-  <version>1.0</version>
+  <packaging>pom</packaging>
   <name>SureFire Parent</name>
-
-  <organization>
-    <name>Codehaus</name>
-    <url>http://www.codehaus.org/</url>
-    <logo>${pom.organization.url}/codehaus-small.png</logo>
-  </organization>
-
-  <inceptionYear>2004</inceptionYear>
-  <package>org.codehaus.surefire</package>
-  <!-- logo>/images/surefire-logo.gif</logo -->
+  <version>1.0</version>
   <description>Surefire is a test framework project.</description>
-  <shortDescription>Surefire is a test framework project.</shortDescription>
   <url>http://surefire.codehaus.org/</url>
-
-  <distributionManagement>
-    <repository>
-      <id>codehaus</id>
-      <name>Surefire Central Repository at Codehaus</name>
-      <url>scp://beaver.codehaus.org//dist</url>
-    </repository>
-    <site>
-      <id>surefire</id>
-      <name>Surefire Site at Codehaus</name>
-      <url>scp://beaver.codehaus.org//home/projects/surefire/public_html</url>
-    </site>
-  </distributionManagement>
-
-  <scm>
-    <connection>scm:cvs:pserver:anoncvs@cvs.surefire.codehaus.org:/scm/surefire:surefire</connection>
-    <developerConnection>scm:cvs:ext:${maven.username}@cvs.surefire.codehaus.org:/scm/surefire:surefire</developerConnection>
-    <url>http://cvs.surefire.codehaus.org/surefire/</url>
-  </scm>
-
   <issueManagement>
     <system>jira</system>
     <url>http://jira.codehaus.org/browse/SUREFIRE</url>
   </issueManagement>
-
   <ciManagement>
     <system>continuum</system>
     <url></url>
-    <nagEmailAddress>dev@surefire.codehaus.org</nagEmailAddress>
+    <notifiers>
+      <notifier>
+        <type>email</type>
+        <address>dev@surefire.codehaus.org</address>
+      </notifier>
+    </notifiers>
   </ciManagement>
-
+  <inceptionYear>2004</inceptionYear>
   <mailingLists>
     <mailingList>
       <name>Surefire User List</name>
@@ -64,11 +38,10 @@
       <archive>http://archive.surefire.codehaus.org/dev/</archive>
     </mailingList>
   </mailingLists>
-
   <developers>
     <developer>
-      <name>Jason van Zyl</name>
       <id>jvanzyl</id>
+      <name>Jason van Zyl</name>
       <email>jason@zenplex.com</email>
       <organization>Zenplex</organization>
       <roles>
@@ -76,8 +49,8 @@
       </roles>
     </developer>
     <developer>
-      <name>Emmanuel Venisse</name>
       <id>evenisse</id>
+      <name>Emmanuel Venisse</name>
       <email>evenisse@codehaus.org</email>
       <organization>Codehaus</organization>
       <roles>
@@ -85,22 +58,34 @@
       </roles>
     </developer>
   </developers>
-
+  <scm>
+    <connection>scm:cvs:pserver:anoncvs@cvs.surefire.codehaus.org:/scm/surefire:surefire</connection>
+    <developerConnection>scm:cvs:ext:${maven.username}@cvs.surefire.codehaus.org:/scm/surefire:surefire</developerConnection>
+    <url>http://cvs.surefire.codehaus.org/surefire/</url>
+  </scm>
+  <organization>
+    <name>Codehaus</name>
+    <url>http://www.codehaus.org/</url>
+  </organization>
+  <distributionManagement>
+    <repository>
+      <id>codehaus</id>
+      <name>Surefire Central Repository at Codehaus</name>
+      <url>scp://beaver.codehaus.org//dist</url>
+    </repository>
+    <site>
+      <id>surefire</id>
+      <name>Surefire Site at Codehaus</name>
+      <url>scp://beaver.codehaus.org//home/projects/surefire/public_html</url>
+    </site>
+  </distributionManagement>
   <build>
     <sourceDirectory>src/main</sourceDirectory>
-    <unitTestSourceDirectory>src/test</unitTestSourceDirectory>
-    <unitTest>
-      <includes>
-        <include>**/*Test.java</include>
-      </includes>
-    </unitTest>
+    <testSourceDirectory>src/test</testSourceDirectory>
     <resources>
       <resource>
         <directory>src/messages</directory>
-        <targetPath>org/codehaus/surefire</targetPath>
-        <includes>
-          <include>*.properties</include>
-        </includes>
+        <includes>*.properties</includes>
       </resource>
     </resources>
   </build>

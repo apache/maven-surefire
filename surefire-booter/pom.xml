@@ -7,17 +7,9 @@
     <artifactId>surefire-root</artifactId>
     <version>1.0</version>
   </parent>
-
   <artifactId>surefire-booter</artifactId>
-  <version>1.2-SNAPSHOT</version>
   <name>SureFire Booter</name>
-
-  <scm>
-    <connection>scm:cvs:pserver:anoncvs@cvs.surefire.codehaus.org:/scm/surefire:surefire/surefire-booter</connection>
-    <developerConnection>scm:cvs:ext:${maven.username}@cvs.surefire.codehaus.org:/scm/surefire:surefire/surefire-booter</developerConnection>
-    <url>http://cvs.surefire.codehaus.org/surefire/surefire-booter/</url>
-  </scm>
-
+  <version>1.2-SNAPSHOT</version>
   <dependencies>
     <dependency>
       <groupId>surefire</groupId>
@@ -25,4 +17,9 @@
       <version>1.2-SNAPSHOT</version>
     </dependency>
   </dependencies>
+  <scm>
+    <connection>scm:cvs:pserver:anoncvs@cvs.surefire.codehaus.org:/scm/surefire:surefire/surefire-booter</connection>
+    <developerConnection>scm:cvs:ext:${maven.username}@cvs.surefire.codehaus.org:/scm/surefire:surefire/surefire-booter</developerConnection>
+    <url>http://cvs.surefire.codehaus.org/surefire/surefire-booter/</url>
+  </scm>
 </project>
