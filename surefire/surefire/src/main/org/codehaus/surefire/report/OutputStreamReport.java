@@ -18,6 +18,8 @@ public class OutputStreamReport
 
     private int completedCount;
 
+    private int errors;
+
     private int failures;
 
     private long startTime;
@@ -49,16 +51,23 @@ public class OutputStreamReport
         writer = new PrintWriter( new BufferedOutputStream( new FileOutputStream( file ), BUFFER_SIZE ) );
     }
 
+    public void writeMessage( String message )
+    {
+        writer.println( message );
+        writer.println();
+        writer.flush();
+    }
+
     // ----------------------------------------------------------------------
     // Run
     // ----------------------------------------------------------------------
 
     public void runStarting( int testCount )
     {
-        writer.write( "\n" );
-        writer.write( "-------------------------------------------------------\n" );
-        writer.write( "T E S T S\n" );
-        writer.write( "-------------------------------------------------------\n" );
+        writer.println();
+        writer.println( "-------------------------------------------------------" );
+        writer.println( " T E S T S" );
+        writer.println( "-------------------------------------------------------" );
         writer.flush();
     }
 
@@ -90,10 +99,10 @@ public class OutputStreamReport
 
         writer.print( "[surefire] Tests run: " + completedCount +
                              ", Failures: " + failures +
-                             ", Errors: " + failures +
+                             ", Errors: " + errors +
                              ", Time elapsed: " + elapsedTimeAsString( runTime ) + " sec" );
 
-        if ( failures > 0 )
+        if ( failures > 0 || errors > 0 )
         {
             writer.print( " <<<<<<<< FAILURE !! " );
         }
@@ -103,6 +112,8 @@ public class OutputStreamReport
         writer.flush();
 
         completedCount = 0;
+
+        errors = 0;
 
         failures = 0;
     }
@@ -138,6 +149,22 @@ public class OutputStreamReport
         endTime = System.currentTimeMillis();
     }
 
+    public void testError( ReportEntry report )
+    {
+        if ( report == null )
+        {
+            throw new NullPointerException( "report is null" );
+        }
+
+        ++completedCount;
+
+        ++errors;
+
+        endTime = System.currentTimeMillis();
+
+        report.getThrowable().printStackTrace();
+    }
+
     public void testFailed( ReportEntry report )
     {
         if ( report == null )
@@ -157,5 +184,24 @@ public class OutputStreamReport
     public void dispose()
     {
         writer.close();
+    }
+
+    // ----------------------------------------------------------------------
+    // Counters
+    // ----------------------------------------------------------------------
+
+    public int getNbErrors()
+    {
+        return errors;
+    }
+
+    public int getNbFailures()
+    {
+        return failures;
+    }
+
+    public int getNbTests()
+    {
+        return completedCount;
     }
 }
