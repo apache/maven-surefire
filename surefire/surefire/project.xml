@@ -4,10 +4,10 @@
 
   <pomVersion>3</pomVersion>
   <groupId>surefire</groupId>
-  <id>surefire-battery</id>
-  <artifactId>surefire-battery</artifactId>
+  <id>surefire</id>
+  <artifactId>surefire</artifactId>
   <name>SureFire</name>
-  <currentVersion>0.5</currentVersion>
+  <currentVersion>1.0</currentVersion>
 
   <organization>
     <name>Codehaus</name>
@@ -45,8 +45,8 @@
     </dependency>
     <dependency>
       <groupId>surefire</groupId>
-      <artifactId>surefire</artifactId>
-      <version>0.5</version>
+      <artifactId>surefire-booter</artifactId>
+      <version>1.0</version>
     </dependency>
     <dependency>
       <groupId>plexus</groupId>
@@ -64,6 +64,15 @@
         <include>**/*Test.java</include>
       </includes>
     </unitTest>
+    <resources>
+      <resource>
+        <directory>src/messages</directory>
+        <targetPath>org/codehaus/surefire</targetPath>
+        <includes>
+          <include>*.properties</include>
+        </includes>
+      </resource>
+    </resources>
   </build>
 
   <reports>
