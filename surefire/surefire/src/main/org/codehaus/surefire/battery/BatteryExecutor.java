@@ -1,6 +1,6 @@
 package org.codehaus.surefire.battery;
 
-import org.codehaus.surefire.SureFire;
+import org.codehaus.surefire.Surefire;
 import org.codehaus.surefire.report.Report;
 import org.codehaus.surefire.report.ReportEntry;
 import org.codehaus.surefire.report.ReportManager;
@@ -89,7 +89,7 @@ public class BatteryExecutor
 
         catch ( Throwable ex )
         {
-            ReportEntry report = new ReportEntry( ex, "org.codehaus.surefire.Runner", SureFire.getResources().getString( "bigProblems" ), ex );
+            ReportEntry report = new ReportEntry( ex, "org.codehaus.surefire.Runner", Surefire.getResources().getString( "bigProblems" ), ex );
 
             reportManager.runAborted( report );
         }
@@ -100,7 +100,7 @@ public class BatteryExecutor
     {
         try
         {
-            String rawString = SureFire.getResources().getString( "suiteExecutionStarting" );
+            String rawString = Surefire.getResources().getString( "suiteExecutionStarting" );
 
             ReportEntry report = new ReportEntry( this, battery.getBatteryName(), rawString );
 
@@ -110,7 +110,7 @@ public class BatteryExecutor
             {
                 battery.execute( reportManager );
 
-                rawString = SureFire.getResources().getString( "suiteCompletedNormally" );
+                rawString = Surefire.getResources().getString( "suiteCompletedNormally" );
 
                 report = new ReportEntry( this, battery.getBatteryName(), rawString );
 
@@ -118,7 +118,7 @@ public class BatteryExecutor
             }
             catch ( RuntimeException e )
             {
-                rawString = SureFire.getResources().getString( "executeException" );
+                rawString = Surefire.getResources().getString( "executeException" );
 
                 report = new ReportEntry( this, battery.getBatteryName(), rawString, e );
 
@@ -130,7 +130,7 @@ public class BatteryExecutor
 
         catch ( Throwable ex )
         {
-            ReportEntry report = new ReportEntry( ex, "org.codehaus.surefire.Runner", SureFire.getResources().getString( "bigProblems" ), ex );
+            ReportEntry report = new ReportEntry( ex, "org.codehaus.surefire.Runner", Surefire.getResources().getString( "bigProblems" ), ex );
 
             reportManager.runAborted( report );
         }
