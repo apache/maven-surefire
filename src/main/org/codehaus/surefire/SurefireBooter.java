@@ -189,9 +189,7 @@ public class SurefireBooter
         for ( Iterator i = dependencies.iterator(); i.hasNext(); )
         {
             String dep = (String) i.next();
-
-            System.out.println( "dep = " + dep );
-
+         
             sureFire.addClassPathUrl( new File( dep ).getPath() );
         }
     }
