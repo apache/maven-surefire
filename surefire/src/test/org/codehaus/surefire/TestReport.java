@@ -13,6 +13,11 @@ import org.codehaus.surefire.report.ReportEntry;
 public class TestReport
     implements Report
 {
+    public void writeMessage( String message )
+    {
+        System.out.println( "TestReport::writeMessage -> " + message );
+    }
+
     public void runStarting( int testCount )
     {
         System.out.println( "TestReport::runStarting -> " + testCount );
@@ -26,6 +31,11 @@ public class TestReport
     public void testSucceeded( ReportEntry reportEntry )
     {
         System.out.println( "TestReport::testSucceeded -> " + reportEntry.getMessage() );
+    }
+
+    public void testError( ReportEntry reportEntry )
+    {
+        System.out.println( "TestReport::testError -> " + reportEntry.getMessage() );
     }
 
     public void testFailed( ReportEntry reportEntry )
@@ -71,5 +81,23 @@ public class TestReport
     public void dispose()
     {
         System.out.println( "TestReport::dispose" );
+    }
+
+    public int getNbErrors()
+    {
+        System.out.println( "TestReport::getNbErrors" );
+        return 0;
+    }
+
+    public int getNbFailures()
+    {
+        System.out.println( "TestReport::getNbFailures" );
+        return 0;
+    }
+
+    public int getNbTests()
+    {
+        System.out.println( "TestReport::getNbTests" );
+        return 0;
     }
 }

@@ -132,7 +132,7 @@ public class TestListenerInvocationHandler
     {
         ReportEntry report = new ReportEntry( args[0], args[0].toString(), args[1].toString(), (Throwable) args[1] );
 
-        reportManager.testFailed( report );
+        reportManager.testError( report );
 
         failedTestsSet.add( new FailedTest( args[0], Thread.currentThread() ) );
     }
