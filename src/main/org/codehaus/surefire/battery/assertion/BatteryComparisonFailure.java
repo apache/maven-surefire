@@ -37,7 +37,7 @@ public class BatteryComparisonFailure extends BatteryAssertionFailedError
     public String getMessage()
     {
         if ( fExpected == null || fActual == null )
-            return BatteryAssert.format( super.getMessage(), fExpected, fActual );
+            return BatteryAssert.formatMismatch( super.getMessage(), fExpected, fActual );
 
         int end = Math.min( fExpected.length(), fActual.length() );
 
@@ -77,6 +77,6 @@ public class BatteryComparisonFailure extends BatteryAssertionFailedError
             if ( k < fActual.length() - 1 )
                 actual = actual + "...";
         }
-        return BatteryAssert.format( super.getMessage(), expected, actual );
+        return BatteryAssert.formatMismatch( super.getMessage(), expected, actual );
     }
 }

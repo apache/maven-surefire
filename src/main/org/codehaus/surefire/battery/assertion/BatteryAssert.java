@@ -311,10 +311,10 @@ public class BatteryAssert extends TestCase
 
     static private void failNotEquals( String message, Object expected, Object actual )
     {
-        fail( format( message, expected, actual ) );
+        fail( formatMismatch( message, expected, actual ) );
     }
 
-    static String format( String message, Object expected, Object actual )
+    static String formatMismatch( String message, Object expected, Object actual )
     {
         String formatted = "";
 
