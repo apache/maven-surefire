@@ -1,7 +1,7 @@
 package org.codehaus.surefire.battery;
 
 import org.codehaus.surefire.report.ReportEntry;
-import org.codehaus.surefire.report.ReportManager;
+import org.codehaus.surefire.report.ReporterManager;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -18,7 +18,7 @@ public class TestListenerInvocationHandler
 
     private HashSet failedTestsSet = new HashSet();
 
-    private ReportManager reportManager;
+    private ReporterManager reportManager;
 
     private class FailedTest
     {
@@ -72,7 +72,7 @@ public class TestListenerInvocationHandler
         }
     }
 
-    public TestListenerInvocationHandler( ReportManager reportManager,
+    public TestListenerInvocationHandler( ReporterManager reportManager,
                                           Object instanceOfTestResult,
                                           ClassLoader loader )
     {

@@ -1,12 +1,12 @@
 package org.codehaus.surefire.battery;
 
-import org.codehaus.surefire.report.ReportManager;
+import org.codehaus.surefire.report.ReporterManager;
 
 import java.util.List;
 
 public interface Battery
 {
-    void execute( ReportManager reportManager )
+    void execute( ReporterManager reportManager )
         throws Exception;
 
     int getTestCount();

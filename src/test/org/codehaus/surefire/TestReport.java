@@ -1,6 +1,6 @@
 package org.codehaus.surefire;
 
-import org.codehaus.surefire.report.Report;
+import org.codehaus.surefire.report.AbstractReporter;
 import org.codehaus.surefire.report.ReportEntry;
 
 /**
@@ -11,7 +11,7 @@ import org.codehaus.surefire.report.ReportEntry;
  * @version $Id$
  */
 public class TestReport
-    implements Report
+    extends AbstractReporter
 {
     public void writeMessage( String message )
     {
