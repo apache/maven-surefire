@@ -90,7 +90,7 @@
       <resource>
         <directory>src/messages</directory>
         <includes>
-          <include>*.properties</include>
+          <include>**/*.properties</include>
         </includes>
       </resource>
     </resources>
