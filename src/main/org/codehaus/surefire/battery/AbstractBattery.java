@@ -1,9 +1,9 @@
 package org.codehaus.surefire.battery;
 
-import org.codehaus.surefire.SureFire;
 import org.codehaus.surefire.battery.assertion.BatteryAssert;
 import org.codehaus.surefire.report.ReportEntry;
 import org.codehaus.surefire.report.ReportManager;
+import org.codehaus.surefire.Surefire;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -82,7 +82,7 @@ public abstract class AbstractBattery
         catch ( Exception e )
         {
             // Treat any exception from setUpFixture as a failure of the test.
-            String rawString = SureFire.getResources().getString( "setupFixtureFailed" );
+            String rawString = Surefire.getResources().getString( "setupFixtureFailed" );
 
             MessageFormat msgFmt = new MessageFormat( rawString );
 
@@ -152,7 +152,7 @@ public abstract class AbstractBattery
         {
 
             // Treat any exception from tearDownFixture as a failure of the test.
-            String rawString = SureFire.getResources().getString( "cleanupFixtureFailed" );
+            String rawString = Surefire.getResources().getString( "cleanupFixtureFailed" );
 
             MessageFormat msgFmt = new MessageFormat( rawString );
 
