@@ -35,6 +35,11 @@ public class DirectoryBattery
     {
         String[] tests = collectTests( basedir, includes, excludes );
 
+        if ( tests == null )
+        {
+            return;
+        }
+        
         for ( int i = 0; i < tests.length; i++ )
         {
             String s = tests[i];
@@ -51,8 +56,15 @@ public class DirectoryBattery
         throws Exception
     {
         DirectoryScanner scanner = new DirectoryScanner();
-
-        scanner.setBasedir( new File( basedir, "target/test-classes" ) );
+        
+        File f = new File( basedir, "target/test-classes" ); 
+        
+        if ( ! f.exists() )
+        {
+            return null;
+        }
+        
+        scanner.setBasedir( f );
 
         if ( includes != null )
         {

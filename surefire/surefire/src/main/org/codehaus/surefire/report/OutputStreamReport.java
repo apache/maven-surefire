@@ -88,15 +88,17 @@ public class OutputStreamReport
     {
         long runTime = endTime - startTime;
 
-        writer.println( "[surefire] Tests run: " + completedCount +
+        writer.print( "[surefire] Tests run: " + completedCount +
                              ", Failures: " + failures +
                              ", Errors: " + failures +
                              ", Time elapsed: " + elapsedTimeAsString( runTime ) + " sec" );
 
         if ( failures > 0 )
         {
-            writer.println( " <<<<<<<< FAILURE !! " );
+            writer.print( " <<<<<<<< FAILURE !! " );
         }
+        
+        writer.println();
         
         writer.flush();
 
