@@ -43,16 +43,6 @@
       <artifactId>junit</artifactId>
       <version>3.8.1</version>
     </dependency>
-    <dependency>
-      <groupId>surefire</groupId>
-      <artifactId>surefire-booter</artifactId>
-      <version>1.0</version>
-    </dependency>
-    <dependency>
-      <groupId>plexus</groupId>
-      <artifactId>plexus</artifactId>
-      <version>0.14-SNAPSHOT</version>
-    </dependency>
   </dependencies>
 
   <build>
