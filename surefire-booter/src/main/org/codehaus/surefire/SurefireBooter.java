@@ -17,8 +17,15 @@ public class SurefireBooter
 
     private List classpathUrls = new ArrayList();
 
+    private String reportsDirectory;
+
     public SurefireBooter()
     {
+    }
+
+    public void setReportsDirectory( String reportsDirectory )
+    {
+        this.reportsDirectory = reportsDirectory;
     }
 
     public void addBattery( String battery, Object[] params )
@@ -60,13 +67,13 @@ public class SurefireBooter
 
         Object batteryExecutor = batteryExecutorClass.newInstance();
 
-        Method run = batteryExecutorClass.getMethod( "run", new Class[] { List.class, List.class, ClassLoader.class } );
+        Method run = batteryExecutorClass.getMethod( "run", new Class[] { List.class, List.class, ClassLoader.class, String.class } );
 
         ClassLoader oldContextClassLoader = Thread.currentThread().getContextClassLoader();
 
         Thread.currentThread().setContextClassLoader( surefireClassLoader );
 
-        Boolean result = (Boolean) run.invoke( batteryExecutor, new Object[]{ reports, batteries, surefireClassLoader } );
+        Boolean result = (Boolean) run.invoke( batteryExecutor, new Object[]{ reports, batteries, surefireClassLoader, reportsDirectory } );
 
         Thread.currentThread().setContextClassLoader( oldContextClassLoader );
 

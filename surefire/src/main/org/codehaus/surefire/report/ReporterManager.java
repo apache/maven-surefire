@@ -1,12 +1,18 @@
 package org.codehaus.surefire.report;
 
 import org.codehaus.surefire.Surefire;
+import org.codehaus.surefire.util.TeeStream;
 
 import java.text.MessageFormat;
 import java.util.Iterator;
 import java.util.List;
+import java.io.File;
+import java.io.PrintStream;
+import java.io.FileOutputStream;
+import java.io.FileNotFoundException;
+import java.io.ByteArrayOutputStream;
 
-public class ReportManager
+public class ReporterManager
 {
     private int completedCount;
 
@@ -16,19 +22,29 @@ public class ReportManager
 
     private List reports;
 
-    public ReportManager( List reports )
+    private String reportsDirectory;
+
+    public ReporterManager( List reports, String reportsDirectory )
     {
         if ( reports == null )
         {
             throw new NullPointerException();
         }
 
+        this.reportsDirectory = reportsDirectory;
+
+        File f = new File( reportsDirectory );
+
+        if ( !f.exists() )
+        {
+            f.mkdirs();
+        }
+
         this.reports = reports;
     }
 
-    public void addReporter( Report reporter )
+    public void addReporter( Reporter reporter )
     {
-
         if ( reporter == null )
         {
             throw new NullPointerException();
@@ -40,7 +56,7 @@ public class ReportManager
         }
     }
 
-    public void removeReport( Report report )
+    public void removeReport( Reporter report )
     {
         if ( report == null )
         {
@@ -62,7 +78,7 @@ public class ReportManager
     {
         for ( Iterator i = reports.iterator(); i.hasNext(); )
         {
-            Report report = (Report) i.next();
+            Reporter report = (Reporter) i.next();
 
             report.writeMessage( message );
         }
@@ -71,7 +87,7 @@ public class ReportManager
     public void resume()
     {
         writeMessage( "" );
-        writeMessage( "Resume :" );
+        writeMessage( "Results :" );
         writeMessage( "[surefire] Tests run: " + completedCount +
                       ", Failures: " + failures +
                       ", Errors: " + errors );
@@ -91,7 +107,7 @@ public class ReportManager
 
         for ( Iterator i = reports.iterator(); i.hasNext(); )
         {
-            Report report = (Report) i.next();
+            Reporter report = (Reporter) i.next();
 
             try
             {
@@ -104,11 +120,11 @@ public class ReportManager
         }
     }
 
-   public void runStopped()
+    public void runStopped()
     {
         for ( Iterator it = reports.iterator(); it.hasNext(); )
         {
-            Report reporter = (Report) it.next();
+            Reporter reporter = (Reporter) it.next();
 
             try
             {
@@ -130,7 +146,7 @@ public class ReportManager
 
         for ( Iterator it = reports.iterator(); it.hasNext(); )
         {
-            Report reporter = (Report) it.next();
+            Reporter reporter = (Reporter) it.next();
 
             try
             {
@@ -147,7 +163,7 @@ public class ReportManager
     {
         for ( Iterator it = reports.iterator(); it.hasNext(); )
         {
-            Report reporter = (Report) it.next();
+            Reporter reporter = (Reporter) it.next();
 
             try
             {
@@ -164,17 +180,15 @@ public class ReportManager
     // Battery
     // ----------------------------------------------------------------------
 
+    private ByteArrayOutputStream stdOut;
+
+    private ByteArrayOutputStream stdErr;
+
     public void batteryStarting( ReportEntry report )
     {
-
-        if ( report == null )
-        {
-            throw new NullPointerException();
-        }
-
         for ( Iterator it = reports.iterator(); it.hasNext(); )
         {
-            Report reporter = (Report) it.next();
+            Reporter reporter = (Reporter) it.next();
 
             try
             {
@@ -189,23 +203,20 @@ public class ReportManager
 
     public void batteryCompleted( ReportEntry report )
     {
-
-        if ( report == null )
-        {
-            throw new NullPointerException();
-        }
-
         if ( !reports.isEmpty() )
         {
-            Report reporter = (Report) reports.get( 0 );
+            Reporter reporter = (Reporter) reports.get( 0 );
+
             errors += reporter.getNbErrors();
+
             failures += reporter.getNbFailures();
+
             completedCount += reporter.getNbTests();
         }
 
         for ( Iterator it = reports.iterator(); it.hasNext(); )
         {
-            Report reporter = (Report) it.next();
+            Reporter reporter = (Reporter) it.next();
 
             try
             {
@@ -220,14 +231,9 @@ public class ReportManager
 
     public void batteryAborted( ReportEntry report )
     {
-        if ( report == null )
-        {
-            throw new NullPointerException();
-        }
-
         for ( Iterator it = reports.iterator(); it.hasNext(); )
         {
-            Report reporter = (Report) it.next();
+            Reporter reporter = (Reporter) it.next();
 
             try
             {
@@ -246,14 +252,25 @@ public class ReportManager
 
     public void testStarting( ReportEntry report )
     {
-        if ( report == null )
-        {
-            throw new NullPointerException();
-        }
+        stdOut = new ByteArrayOutputStream();
+
+        PrintStream out = new PrintStream( stdOut );
+
+        PrintStream tee = new TeeStream( System.out, out );
+
+        System.setOut( tee );
+
+        stdErr = new ByteArrayOutputStream();
+
+        PrintStream err = new PrintStream( stdErr );
+
+        tee = new TeeStream( System.err, err );
+
+        System.setErr( tee );
 
         for ( Iterator it = reports.iterator(); it.hasNext(); )
         {
-            Report reporter = (Report) it.next();
+            Reporter reporter = (Reporter) it.next();
 
             try
             {
@@ -268,15 +285,9 @@ public class ReportManager
 
     public void testSucceeded( ReportEntry report )
     {
-
-        if ( report == null )
-        {
-            throw new NullPointerException();
-        }
-
         for ( Iterator it = reports.iterator(); it.hasNext(); )
         {
-            Report reporter = (Report) it.next();
+            Reporter reporter = (Reporter) it.next();
 
             try
             {
@@ -293,32 +304,31 @@ public class ReportManager
     {
         testFailed( reportEntry, "error" );
     }
-    
+
     public void testFailed( ReportEntry reportEntry )
     {
         testFailed( reportEntry, "failure" );
     }
-    
+
     private void testFailed( ReportEntry reportEntry, String typeError )
     {
-        if ( reportEntry == null )
-        {
-            throw new NullPointerException();
-        }
+        String stdOutLog = stdOut.toString();
+
+        String stdErrLog = stdErr.toString();
 
         for ( Iterator it = reports.iterator(); it.hasNext(); )
         {
-            Report reporter = (Report) it.next();
+            Reporter reporter = (Reporter) it.next();
 
             try
             {
                 if ( "failure".equals( typeError ) )
                 {
-                    reporter.testFailed( reportEntry );
+                    reporter.testFailed( reportEntry, stdOutLog, stdErrLog );
                 }
                 else
                 {
-                    reporter.testError( reportEntry );
+                    reporter.testError( reportEntry, stdOutLog, stdErrLog );
                 }
             }
             catch ( Exception e )
@@ -332,11 +342,11 @@ public class ReportManager
     {
         for ( Iterator it = reports.iterator(); it.hasNext(); )
         {
-            Report reporter = (Report) it.next();
+            Reporter report = (Reporter) it.next();
 
             try
             {
-                reporter.dispose();
+                report.dispose();
             }
             catch ( Exception e )
             {
@@ -378,4 +388,32 @@ public class ReportManager
 
         e.printStackTrace( System.err );
     }
+
+    void poo()
+    {
+        try
+        {
+            // Tee standard output
+            PrintStream out = new PrintStream( new FileOutputStream( "out.log" ) );
+
+            PrintStream tee = new TeeStream( System.out, out );
+
+            System.setOut( tee );
+
+            // Tee standard error
+            PrintStream err = new PrintStream( new FileOutputStream( "err.log" ) );
+
+            tee = new TeeStream( System.err, err );
+
+            System.setErr( tee );
+        }
+        catch ( FileNotFoundException e )
+        {
+        }
+
+        // Write to standard output and error and the log files
+        System.out.println( "welcome" );
+        System.err.println( "error" );
+    }
+
 }

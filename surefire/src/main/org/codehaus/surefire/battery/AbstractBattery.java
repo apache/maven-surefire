@@ -2,7 +2,7 @@ package org.codehaus.surefire.battery;
 
 import org.codehaus.surefire.battery.assertion.BatteryAssert;
 import org.codehaus.surefire.report.ReportEntry;
-import org.codehaus.surefire.report.ReportManager;
+import org.codehaus.surefire.report.ReporterManager;
 import org.codehaus.surefire.Surefire;
 
 import java.lang.reflect.InvocationTargetException;
@@ -22,7 +22,7 @@ public abstract class AbstractBattery
 
     private List subBatteryClassNames;
 
-    public void execute( ReportManager reportManager )
+    public void execute( ReporterManager reportManager )
         throws Exception
     {
         if ( reportManager == null )
@@ -33,7 +33,7 @@ public abstract class AbstractBattery
         executeTestMethods( reportManager );
     }
 
-    protected void executeTestMethods( ReportManager reportManager )
+    protected void executeTestMethods( ReporterManager reportManager )
     {
         if ( reportManager == null )
         {
@@ -55,7 +55,7 @@ public abstract class AbstractBattery
         }
     }
 
-    protected boolean executeTestMethod( Method method, Object[] args, ReportManager reportManager )
+    protected boolean executeTestMethod( Method method, Object[] args, ReporterManager reportManager )
     {
         if ( method == null || args == null || reportManager == null )
         {
@@ -193,7 +193,6 @@ public abstract class AbstractBattery
 
     public String getTestName( String testMethodName )
     {
-
         if ( testMethodName == null )
         {
             throw new NullPointerException( "testMethodName is null" );
