@@ -113,6 +113,8 @@ public class Surefire
             reportManager.runAborted( report );
         }
 
+        reportManager.resume();
+
         if ( reportManager.getNbErrors() > 0 || reportManager.getNbFailures() > 0 )
         {
             return false;
