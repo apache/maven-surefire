@@ -54,7 +54,6 @@ public class OutputStreamReport
     public void writeMessage( String message )
     {
         writer.println( message );
-        writer.println();
         writer.flush();
     }
 

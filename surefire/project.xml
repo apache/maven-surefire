@@ -7,7 +7,7 @@
   <id>surefire</id>
   <artifactId>surefire</artifactId>
   <name>SureFire</name>
-  <currentVersion>1.1-SNAPSHOT</currentVersion>
+  <currentVersion>1.1</currentVersion>
 
   <organization>
     <name>Codehaus</name>
