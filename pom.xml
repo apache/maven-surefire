@@ -79,6 +79,10 @@
       <url>scp://beaver.codehaus.org//home/projects/surefire/public_html</url>
     </site>
   </distributionManagement>
+  <modules>
+    <module>surefire</module>
+    <module>surefire-booter</module>
+  </modules>
   <build>
     <sourceDirectory>src/main</sourceDirectory>
     <testSourceDirectory>src/test</testSourceDirectory>
