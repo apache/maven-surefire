@@ -9,7 +9,7 @@ import HTTPClient.ModuleException;
 import HTTPClient.NVPair;
 import HTTPClient.RoRequest;
 import HTTPClient.RoResponse;
-import org.codehaus.surefire.AbstractBattery;
+import org.codehaus.surefire.battery.AbstractBattery;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
