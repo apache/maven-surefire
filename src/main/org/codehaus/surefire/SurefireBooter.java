@@ -60,7 +60,14 @@ public class SurefireBooter
         {
             String url = (String) i.next();
 
-            surefireClassLoader.addURL( new File( url ).toURL() );
+            if ( url == null )
+            {
+                continue;
+            }
+
+            File f = new File( url );
+
+            surefireClassLoader.addURL( f.toURL() );
         }
 
         Class batteryExecutorClass = surefireClassLoader.loadClass( "org.codehaus.surefire.Surefire" );
@@ -182,6 +189,8 @@ public class SurefireBooter
         for ( Iterator i = dependencies.iterator(); i.hasNext(); )
         {
             String dep = (String) i.next();
+
+            System.out.println( "dep = " + dep );
 
             sureFire.addClassPathUrl( new File( dep ).getPath() );
         }
