@@ -1,11 +1,11 @@
 package org.codehaus.surefire.battery;
 
-import org.codehaus.plexus.util.DirectoryScanner;
-import org.codehaus.plexus.util.StringUtils;
+import org.codehaus.surefire.util.DirectoryScanner;
+import org.codehaus.surefire.util.StringUtils;
 
 import java.io.File;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 public class DirectoryBattery
     extends AbstractBattery

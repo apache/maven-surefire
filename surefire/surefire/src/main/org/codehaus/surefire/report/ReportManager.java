@@ -1,6 +1,6 @@
 package org.codehaus.surefire.report;
 
-import org.codehaus.surefire.SureFire;
+import org.codehaus.surefire.Surefire;
 
 import java.text.MessageFormat;
 import java.util.Iterator;
@@ -296,7 +296,7 @@ public class ReportManager
 
     private void handleReporterException( String reporterMethod, Exception e )
     {
-        String reporterThrewException = SureFire.getResources().getString( "reporterThrew" );
+        String reporterThrewException = Surefire.getResources().getString( "reporterThrew" );
 
         MessageFormat msgFmt = new MessageFormat( reporterThrewException );
 

@@ -1,12 +1,12 @@
 package org.codehaus.surefire.battery.assertion;
 
-import org.codehaus.surefire.SureFire;
+import org.codehaus.surefire.Surefire;
 
 public class BatteryAssert
 {
     public static void verify( boolean condition )
     {
-        String detailMsg = SureFire.getResources().getString( "conditionFalse" );
+        String detailMsg = Surefire.getResources().getString( "conditionFalse" );
 
         verify( condition, detailMsg );
     }
