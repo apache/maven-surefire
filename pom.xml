@@ -89,7 +89,9 @@
     <resources>
       <resource>
         <directory>src/messages</directory>
-        <includes>*.properties</includes>
+        <includes>
+          <include>*.properties</include>
+        </includes>
       </resource>
     </resources>
   </build>
