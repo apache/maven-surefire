@@ -4,8 +4,9 @@
 
   <pomVersion>3</pomVersion>
   <id>surefire-booter</id>
+  <groupId>surefire</groupId>
   <artifactId>surefire-booter</artifactId>
-  <name>SureFire</name>
+  <name>SureFire Booter</name>
   <currentVersion>1.0</currentVersion>
 
   <organization>

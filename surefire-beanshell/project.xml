@@ -3,9 +3,10 @@
 <project>
 
   <pomVersion>3</pomVersion>
-  <id>surefire</id>
-  <artifactId>surefire</artifactId>
-  <name>SureFire</name>
+  <id>surefire-beanshell</id>
+  <groupId>surefire</groupId>
+  <artifactId>surefire-beanshell</artifactId>
+  <name>SureFire BeanShell</name>
   <currentVersion>0.5</currentVersion>
 
   <organization>
@@ -37,6 +38,11 @@
   <developers/>
 
   <dependencies>
+    <dependency>
+      <groupId>surefire</groupId>
+      <artifactId>surefire</artifactId>
+      <version>1.0</version>
+    </dependency>
     <dependency>
       <groupId>httpunit</groupId>
       <artifactId>httpunit</artifactId>

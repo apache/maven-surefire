@@ -2,7 +2,7 @@ package org.codehaus.surefire.battery.web;
 
 import java.io.PrintStream;
 import net.sourceforge.jwebunit.*;
-import org.codehaus.surefire.AbstractBattery;
+import org.codehaus.surefire.battery.AbstractBattery;
 
 public class WebAcceptanceBattery
     extends AbstractBattery

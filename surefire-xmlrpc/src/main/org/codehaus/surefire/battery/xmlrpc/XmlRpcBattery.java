@@ -3,7 +3,7 @@ package org.codehaus.surefire.battery.xmlrpc;
 import java.util.Vector;
 
 import org.apache.xmlrpc.XmlRpcClient;
-import org.codehaus.surefire.AbstractBattery;
+import org.codehaus.surefire.battery.AbstractBattery;
 
 public class XmlRpcBattery
     extends AbstractBattery

@@ -3,7 +3,7 @@ package org.codehaus.surefire.battery.jython;
 import org.codehaus.plexus.util.DirectoryScanner;
 import org.codehaus.surefire.report.ReportEntry;
 import org.codehaus.surefire.report.ReportManager;
-import org.codehaus.surefire.AbstractBattery;
+import org.codehaus.surefire.battery.AbstractBattery;
 import org.python.core.PyList;
 import org.python.core.PyStringMap;
 import org.python.util.PythonInterpreter;
