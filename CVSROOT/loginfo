@@ -25,3 +25,7 @@
 #DEFAULT (echo ""; id; echo %s; date; cat) >> $CVSROOT/CVSROOT/commitlog
 # or
 #DEFAULT (echo ""; id; echo %{sVv}; date; cat) >> $CVSROOT/CVSROOT/commitlog
+
+CVSROOT /bin/true
+
+DEFAULT /usr/local/despots/cvs/log_accum.pl %s
