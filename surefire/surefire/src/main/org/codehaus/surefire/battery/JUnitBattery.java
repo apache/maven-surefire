@@ -31,7 +31,7 @@ public class JUnitBattery
 
     private static final String TEST_SUITE = "junit.framework.TestSuite";
 
-    private Object instanceOfJunitFrameworkTest;
+    private Object testObject;
 
     private Class[] interfacesImplementedByDynamicProxy;
 
@@ -80,14 +80,29 @@ public class JUnitBattery
 
         Class testInterface = loader.loadClass( TEST );
 
-        // Make sure passed instance is actually a TestCase
-        if ( !testCaseClass.isAssignableFrom( testClass ) )
-        {
-            throw new IllegalArgumentException( "testClass is not a " + TEST_CASE );
-        }
+        // ----------------------------------------------------------------------
+        // Apparently this is not necessarily required because a suite() method
+        // may simply return an Object.
+        // ----------------------------------------------------------------------
 
-        // If a TestCase defines a static suite() method, use that to get
-        // a instanceOfJunitFrameworkTest case.
+        /*
+        if ( !testInterface.isAssignableFrom( testClass ) )
+        {
+            throw new IllegalArgumentException( "testClass is not a " + TEST );
+        }
+        */
+
+        // ----------------------------------------------------------------------
+        // Strategy for executing JUnit tests
+        //
+        // o look for the suite method and if that is present execute that method
+        //   to get the test object.
+        //
+        // o look for test classes that are assignable from TestCase
+        //
+        // o look for test classes that only implement the Test interface
+        // ----------------------------------------------------------------------
+
         try
         {
             Class[] emptyArgs = new Class[0];
@@ -96,18 +111,18 @@ public class JUnitBattery
 
             if ( Modifier.isPublic( suiteMethod.getModifiers() )
                  &&
-                 Modifier.isStatic( suiteMethod.getModifiers() )
-                 &&
-                 suiteMethod.getReturnType() == testInterface )
+                 Modifier.isStatic( suiteMethod.getModifiers() ) )
+                 //&&
+                 //suiteMethod.getReturnType() == testInterface )
             {
-                instanceOfJunitFrameworkTest = suiteMethod.invoke( null, emptyArgs );
+                testObject = suiteMethod.invoke( null, emptyArgs );
             }
         }
         catch ( NoSuchMethodException e )
         {
         }
 
-        if ( instanceOfJunitFrameworkTest == null )
+        if ( testObject == null && testCaseClass.isAssignableFrom( testClass ) )
         {
             Class[] constructorParamTypes = {Class.class};
 
@@ -115,7 +130,21 @@ public class JUnitBattery
 
             Object[] constructorParams = {testClass};
 
-            instanceOfJunitFrameworkTest = constructor.newInstance( constructorParams );
+            testObject = constructor.newInstance( constructorParams );
+        }
+
+        if ( testObject == null )
+        {
+            Constructor testConstructor =  getTestConstructor( testClass );
+
+            if ( testConstructor.getParameterTypes().length == 0 )
+            {
+                testObject = testConstructor.newInstance( new Object[0] );
+            }
+            else
+            {
+                testObject = testConstructor.newInstance( new Object[]{ testClass.getName() } );
+            }
         }
 
         interfacesImplementedByDynamicProxy = new Class[1];
@@ -158,7 +187,7 @@ public class JUnitBattery
 
             Object[] runParams = {instanceOfTestResult};
 
-            runMethod.invoke( instanceOfJunitFrameworkTest, runParams );
+            runMethod.invoke( testObject, runParams );
         }
         catch ( IllegalArgumentException e )
         {
@@ -182,7 +211,7 @@ public class JUnitBattery
     {
         try
         {
-            Integer integer = (Integer) countTestCasesMethod.invoke( instanceOfJunitFrameworkTest, new Class[0] );
+            Integer integer = (Integer) countTestCasesMethod.invoke( testObject, new Class[0] );
 
             return integer.intValue();
         }
@@ -203,5 +232,20 @@ public class JUnitBattery
     public String getBatteryName()
     {
         return testClass.getName();
+    }
+
+    protected Constructor getTestConstructor( Class testClass )
+        throws NoSuchMethodException
+    {
+        Class[] params = { String.class };
+
+        try
+        {
+            return testClass.getConstructor( params );
+        }
+        catch ( NoSuchMethodException e )
+        {
+            return testClass.getConstructor( new Class[0] );
+        }
     }
 }
