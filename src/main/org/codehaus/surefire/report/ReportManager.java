@@ -8,6 +8,12 @@ import java.util.List;
 
 public class ReportManager
 {
+    private int completedCount;
+
+    private int errors;
+
+    private int failures;
+
     private List reports;
 
     public ReportManager( List reports )
@@ -50,6 +56,16 @@ public class ReportManager
     public List getReports()
     {
         return reports;
+    }
+
+    public void writeMessage( String message )
+    {
+        for ( Iterator i = reports.iterator(); i.hasNext(); )
+        {
+            Report report = (Report) i.next();
+
+            report.writeMessage( message );
+        }
     }
 
     // ----------------------------------------------------------------------
@@ -182,6 +198,14 @@ public class ReportManager
                 handleReporterException( "suiteCompleted", e );
             }
         }
+
+        if ( !reports.isEmpty() )
+        {
+            Report reporter = (Report) reports.get( 0 );
+            errors += reporter.getNbErrors();
+            failures += reporter.getNbFailures();
+            completedCount += reporter.getNbTests();
+        }
     }
 
     public void batteryAborted( ReportEntry report )
@@ -255,7 +279,17 @@ public class ReportManager
         }
     }
 
+    public void testError( ReportEntry reportEntry )
+    {
+        testFailed( reportEntry, "error" );
+    }
+    
     public void testFailed( ReportEntry reportEntry )
+    {
+        testFailed( reportEntry, "failure" );
+    }
+    
+    private void testFailed( ReportEntry reportEntry, String typeError )
     {
         if ( reportEntry == null )
         {
@@ -268,7 +302,14 @@ public class ReportManager
 
             try
             {
-                reporter.testFailed( reportEntry );
+                if ( "failure".equals( typeError ) )
+                {
+                    reporter.testFailed( reportEntry );
+                }
+                else
+                {
+                    reporter.testError( reportEntry );
+                }
             }
             catch ( Exception e )
             {
@@ -292,6 +333,25 @@ public class ReportManager
                 handleReporterException( "dispose", e );
             }
         }
+    }
+
+    // ----------------------------------------------------------------------
+    // Counters
+    // ----------------------------------------------------------------------
+
+    public int getNbErrors()
+    {
+        return errors;
+    }
+
+    public int getNbFailures()
+    {
+        return failures;
+    }
+
+    public int getNbTests()
+    {
+        return completedCount;
     }
 
     private void handleReporterException( String reporterMethod, Exception e )

@@ -33,7 +33,7 @@ public class Surefire
         return resources;
     }
 
-    public void run( List reports, List batteryHolders, ClassLoader classLoader )
+    public boolean run( List reports, List batteryHolders, ClassLoader classLoader )
         throws Exception
     {
         if ( reports == null || batteryHolders == null || classLoader == null )
@@ -52,10 +52,10 @@ public class Surefire
 
         this.classLoader = classLoader;
 
-        run();
+        return run();
     }
 
-    public void run()
+    public boolean run()
         throws Exception
     {
         List batts = instantiateBatteries( batteryHolders, classLoader );
@@ -66,42 +66,58 @@ public class Surefire
         {
             reportManager.runStarting( 100 );
 
-            for ( Iterator i = batts.iterator(); i.hasNext(); )
+            if ( batts.size() > 0 )
             {
-                Battery battery = (Battery) i.next();
-
-                executeBattery( battery, reportManager );
-
-                battery.execute( reportManager );
-
-                List list = new ArrayList();
-
-                for ( Iterator j = battery.getSubBatteryClassNames().iterator(); j.hasNext(); )
+                for ( Iterator i = batts.iterator(); i.hasNext(); )
                 {
-                    String s = (String) j.next();
+                    Battery battery = (Battery) i.next();
 
-                    list.add( new Object[]{s, null} );
+                    if (battery.getTestCount() > 0 )
+                    {
+                        executeBattery( battery, reportManager );
+                    }
+
+                    List list = new ArrayList();
+
+                    for ( Iterator j = battery.getSubBatteryClassNames().iterator(); j.hasNext(); )
+                    {
+                        String s = (String) j.next();
+
+                        list.add( new Object[]{s, null} );
+                    }
+
+                    List subBatteries = instantiateBatteries( list, classLoader );
+
+                    for ( Iterator j = subBatteries.iterator(); j.hasNext(); )
+                    {
+                        Battery b = (Battery) j.next();
+    
+                        if (b.getTestCount() > 0 )
+                        {
+                            executeBattery( b, reportManager );
+                        }
+                    }
                 }
-
-                List subBatteries = instantiateBatteries( list, classLoader );
-
-                for ( Iterator j = subBatteries.iterator(); j.hasNext(); )
-                {
-                    Battery b = (Battery) j.next();
-
-                    executeBattery( b, reportManager );
-                }
+            }
+            else
+            {
+                reportManager.writeMessage( "There are no tests to run." );
             }
 
             reportManager.runCompleted();
         }
-
         catch ( Throwable ex )
         {
             ReportEntry report = new ReportEntry( ex, "org.codehaus.surefire.Runner", Surefire.getResources().getString( "bigProblems" ), ex );
 
             reportManager.runAborted( report );
         }
+
+        if ( reportManager.getNbErrors() > 0 || reportManager.getNbFailures() > 0 )
+        {
+            return false;
+        }
+        return true;
     }
 
     public void executeBattery( Battery battery, ReportManager reportManager )
