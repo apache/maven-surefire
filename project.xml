@@ -6,7 +6,7 @@
   <id>surefire-booter</id>
   <artifactId>surefire-booter</artifactId>
   <name>SureFire</name>
-  <currentVersion>0.5</currentVersion>
+  <currentVersion>1.0</currentVersion>
 
   <organization>
     <name>Codehaus</name>
@@ -53,22 +53,6 @@
     <nagEmailAddress>dev@maven.apache.org</nagEmailAddress>
     <sourceDirectory>src/main</sourceDirectory>
     <unitTestSourceDirectory>src/test</unitTestSourceDirectory>
-    <!--
-    <unitTest>
-      <includes>
-        <include>**/SureFireSuiteTest.java</include>
-      </includes>
-    </unitTest>
-    -->
-    <resources>
-      <resource>
-        <directory>src/messages</directory>
-        <targetPath>org/codehaus/surefire</targetPath>
-        <includes>
-          <include>*.properties</include>
-        </includes>
-      </resource>
-    </resources>
   </build>
 
   <reports>
