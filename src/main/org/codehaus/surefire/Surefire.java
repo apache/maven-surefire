@@ -68,12 +68,16 @@ public class Surefire
 
             if ( batts.size() > 0 )
             {
+                int nbTests = 0;
+
                 for ( Iterator i = batts.iterator(); i.hasNext(); )
                 {
                     Battery battery = (Battery) i.next();
 
-                    if (battery.getTestCount() > 0 )
+                    if ( battery.getTestCount() > 0 )
                     {
+                        nbTests += battery.getTestCount();
+
                         executeBattery( battery, reportManager );
                     }
 
@@ -94,14 +98,21 @@ public class Surefire
     
                         if (b.getTestCount() > 0 )
                         {
+                            nbTests += battery.getTestCount();
+
                             executeBattery( b, reportManager );
                         }
                     }
                 }
+
+                if ( nbTests == 0 )
+                {
+                    reportManager.writeMessage( "There are no test to run." );
+                }
             }
             else
             {
-                reportManager.writeMessage( "There are no tests to run." );
+                reportManager.writeMessage( "There are no battery to run." );
             }
 
             reportManager.runCompleted();

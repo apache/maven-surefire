@@ -75,6 +75,7 @@ public class ReportManager
         writeMessage( "[surefire] Tests run: " + completedCount +
                       ", Failures: " + failures +
                       ", Errors: " + errors );
+        writeMessage( "" );
     }
 
     // ----------------------------------------------------------------------
@@ -194,6 +195,14 @@ public class ReportManager
             throw new NullPointerException();
         }
 
+        if ( !reports.isEmpty() )
+        {
+            Report reporter = (Report) reports.get( 0 );
+            errors += reporter.getNbErrors();
+            failures += reporter.getNbFailures();
+            completedCount += reporter.getNbTests();
+        }
+
         for ( Iterator it = reports.iterator(); it.hasNext(); )
         {
             Report reporter = (Report) it.next();
@@ -206,14 +215,6 @@ public class ReportManager
             {
                 handleReporterException( "suiteCompleted", e );
             }
-        }
-
-        if ( !reports.isEmpty() )
-        {
-            Report reporter = (Report) reports.get( 0 );
-            errors += reporter.getNbErrors();
-            failures += reporter.getNbFailures();
-            completedCount += reporter.getNbTests();
         }
     }
 
