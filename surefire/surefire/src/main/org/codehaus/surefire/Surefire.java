@@ -2,15 +2,19 @@ package org.codehaus.surefire;
 
 import org.codehaus.surefire.battery.Battery;
 import org.codehaus.surefire.battery.JUnitBattery;
-import org.codehaus.surefire.report.Report;
+import org.codehaus.surefire.report.Reporter;
 import org.codehaus.surefire.report.ReportEntry;
-import org.codehaus.surefire.report.ReportManager;
+import org.codehaus.surefire.report.ReporterManager;
+import org.codehaus.surefire.util.TeeStream;
 
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.io.PrintStream;
+import java.io.FileOutputStream;
+import java.io.FileNotFoundException;
 
 public class Surefire
 {
@@ -20,9 +24,11 @@ public class Surefire
 
     private List reports;
 
-    private ReportManager reportManager;
+    private ReporterManager reporterManager;
 
     private ClassLoader classLoader;
+
+    private String reportsDirectory;
 
     public Surefire()
     {
@@ -33,7 +39,7 @@ public class Surefire
         return resources;
     }
 
-    public boolean run( List reports, List batteryHolders, ClassLoader classLoader )
+    public boolean run( List reports, List batteryHolders, ClassLoader classLoader, String reportsDirectory )
         throws Exception
     {
         if ( reports == null || batteryHolders == null || classLoader == null )
@@ -52,6 +58,8 @@ public class Surefire
 
         this.classLoader = classLoader;
 
+        this.reportsDirectory = reportsDirectory;
+
         return run();
     }
 
@@ -60,11 +68,11 @@ public class Surefire
     {
         List batts = instantiateBatteries( batteryHolders, classLoader );
 
-        reportManager = new ReportManager( instantiateReports( reports, classLoader ) );
+        reporterManager = new ReporterManager( instantiateReports( reports, classLoader ), reportsDirectory );
 
         try
         {
-            reportManager.runStarting( 100 );
+            reporterManager.runStarting( 100 );
 
             if ( batts.size() > 0 )
             {
@@ -76,7 +84,7 @@ public class Surefire
 
                     if ( battery.getTestCount() > 0 )
                     {
-                        executeBattery( battery, reportManager );
+                        executeBattery( battery, reporterManager );
 
                         nbTests += battery.getTestCount();
                     }
@@ -98,7 +106,7 @@ public class Surefire
 
                         if ( b.getTestCount() > 0 )
                         {
-                            executeBattery( b, reportManager );
+                            executeBattery( b, reporterManager );
 
                             nbTests += b.getTestCount();
                         }
@@ -107,33 +115,35 @@ public class Surefire
 
                 if ( nbTests == 0 )
                 {
-                    reportManager.writeMessage( "There are no test to run." );
+                    reporterManager.writeMessage( "There are no test to run." );
                 }
             }
             else
             {
-                reportManager.writeMessage( "There are no battery to run." );
+                reporterManager.writeMessage( "There are no battery to run." );
             }
 
-            reportManager.runCompleted();
+            reporterManager.runCompleted();
         }
         catch ( Throwable ex )
         {
-            ReportEntry report = new ReportEntry( ex, "org.codehaus.surefire.Runner", Surefire.getResources().getString( "bigProblems" ), ex );
+            ReportEntry report = new ReportEntry( ex,
+                                                  "org.codehaus.surefire.Runner",
+                                                  Surefire.getResources().getString( "bigProblems" ), ex );
 
-            reportManager.runAborted( report );
+            reporterManager.runAborted( report );
         }
 
-        reportManager.resume();
+        reporterManager.resume();
 
-        if ( reportManager.getNbErrors() > 0 || reportManager.getNbFailures() > 0 )
+        if ( reporterManager.getNbErrors() > 0 || reporterManager.getNbFailures() > 0 )
         {
             return false;
         }
         return true;
     }
 
-    public void executeBattery( Battery battery, ReportManager reportManager )
+    public void executeBattery( Battery battery, ReporterManager reportManager )
         throws Exception
     {
         try
@@ -164,11 +174,15 @@ public class Surefire
             }
 
             reportManager.runCompleted();
+
+            reportManager.dispose();
         }
 
         catch ( Throwable ex )
         {
-            ReportEntry report = new ReportEntry( ex, "org.codehaus.surefire.Runner", Surefire.getResources().getString( "bigProblems" ), ex );
+            ReportEntry report = new ReportEntry( ex,
+                                                  "org.codehaus.surefire.Runner",
+                                                  Surefire.getResources().getString( "bigProblems" ), ex );
 
             reportManager.runAborted( report );
         }
@@ -178,23 +192,6 @@ public class Surefire
         throws Exception
     {
         List batteries = new ArrayList();
-
-        // Check to see if junit.jar is available. If not, then don't attempt to
-        // cast t
-        Class testCaseClass = null;
-
-        Class junitTestClass = null;
-
-        try
-        {
-            testCaseClass = loader.loadClass( "junit.framework.TestCase" );
-
-            junitTestClass = loader.loadClass( "junit.framework.Test" );
-        }
-        catch ( ClassNotFoundException e )
-        {
-            // testCaseClass remains as null;
-        }
 
         for ( int i = 0; i < batteryHolders.size(); i++ )
         {
@@ -208,8 +205,6 @@ public class Surefire
             }
             catch ( Exception e )
             {
-                e.printStackTrace();
-
                 continue;
             }
 
@@ -288,7 +283,9 @@ public class Surefire
 
             try
             {
-                Report report = (Report) classLoader.loadClass( reportClass ).newInstance();
+                Reporter report = (Reporter) classLoader.loadClass( reportClass ).newInstance();
+
+                report.setReportsDirectory( reportsDirectory );
 
                 reports.add( report );
             }

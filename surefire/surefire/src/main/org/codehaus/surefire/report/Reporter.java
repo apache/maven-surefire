@@ -1,6 +1,6 @@
 package org.codehaus.surefire.report;
 
-public interface Report
+public interface Reporter
 {
     void writeMessage( String message );
 
@@ -14,7 +14,8 @@ public interface Report
     void runAborted( ReportEntry report );
 
     // Battery
-    void batteryStarting( ReportEntry report );
+    void batteryStarting( ReportEntry report )
+        throws Exception;
 
     void batteryCompleted( ReportEntry report );
 
@@ -25,9 +26,9 @@ public interface Report
 
     void testSucceeded( ReportEntry report );
 
-    void testError( ReportEntry report );
+    void testError( ReportEntry report, String stdOut, String stdErr );
 
-    void testFailed( ReportEntry report );
+    void testFailed( ReportEntry report, String stdOut, String stdErr );
 
     void dispose();
 
@@ -37,4 +38,6 @@ public interface Report
     int getNbFailures();
 
     int getNbTests();
+
+    void setReportsDirectory( String reportsDirectory );
 }

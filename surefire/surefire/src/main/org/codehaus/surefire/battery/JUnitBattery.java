@@ -1,6 +1,6 @@
 package org.codehaus.surefire.battery;
 
-import org.codehaus.surefire.report.ReportManager;
+import org.codehaus.surefire.report.ReporterManager;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -169,7 +169,7 @@ public class JUnitBattery
         return testClass;
     }
 
-    public void execute( ReportManager reportManager )
+    public void execute( ReporterManager reportManager )
     {
         try
         {

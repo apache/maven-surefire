@@ -9,7 +9,7 @@ public class ReportEntry
     private String message;
 
     private Throwable throwable;
-
+        
     public ReportEntry( Object source, String name, String message )
     {
         if ( source == null )
