@@ -93,8 +93,11 @@ public class OutputStreamReport
                              ", Errors: " + failures +
                              ", Time elapsed: " + elapsedTimeAsString( runTime ) + " sec" );
 
-        writer.println();
-
+        if ( failures > 0 )
+        {
+            writer.println( " <<<<<<<< FAILURE !! " );
+        }
+        
         writer.flush();
 
         completedCount = 0;
