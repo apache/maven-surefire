@@ -1,0 +1,15 @@
+docs
+maven.log
+target
+velocity.log*
+work
+*~
+build.properties
+.classpath
+.project
+.nbattrs
+lib
+*.ipr
+*.iws
+*.iml
+bin
