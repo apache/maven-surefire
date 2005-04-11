@@ -39,13 +39,6 @@ public class ReporterManager
 
         this.reportsDirectory = reportsDirectory;
 
-        File f = new File( reportsDirectory );
-
-        if ( !f.exists() )
-        {
-            f.mkdirs();
-        }
-
         this.reports = reports;
     }
 
@@ -258,6 +251,13 @@ public class ReporterManager
 
     public void testStarting( ReportEntry report )
     {
+        File f = new File( reportsDirectory );
+
+        if ( !f.exists() )
+        {
+            f.mkdirs();
+        }
+
         stdOut = new ByteArrayOutputStream();
 
         newOut = new PrintStream( stdOut );
