@@ -123,6 +123,7 @@ public class Surefire
         }
         catch ( Throwable ex )
         {
+            ex.printStackTrace();
             ReportEntry report = new ReportEntry( ex,
                                                   "org.codehaus.surefire.Runner",
                                                   Surefire.getResources().getString( "bigProblems" ), ex );

@@ -18,6 +18,10 @@ public class FileReporter
     {
         File reportFile = new File( getReportsDirectory(), report.getName() + ".txt" );
 
+        File reportDir = reportFile.getParentFile();
+
+        reportDir.mkdirs();
+
         writer = new PrintWriter( new FileWriter( reportFile ) );
 
         writer.println( "-------------------------------------------------------------------------------" );
