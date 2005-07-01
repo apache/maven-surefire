@@ -6,7 +6,7 @@
   <artifactId>surefire-root</artifactId>
   <packaging>pom</packaging>
   <name>SureFire Parent</name>
-  <version>1.0</version>
+  <version>1.1-SNAPSHOT</version>
   <description>Surefire is a test framework project.</description>
   <url>http://surefire.codehaus.org/</url>
   <issueManagement>
@@ -86,19 +86,5 @@
   <build>
     <sourceDirectory>src/main</sourceDirectory>
     <testSourceDirectory>src/test</testSourceDirectory>
-    <resources>
-      <resource>
-        <directory>src/messages</directory>
-        <includes>
-          <include>**/*.properties</include>
-        </includes>
-      </resource>
-      <resource>
-        <directory>src/main/resources</directory>
-        <includes>
-          <include>**/*.*</include>
-        </includes>
-      </resource>
-    </resources>
   </build>
 </project>
