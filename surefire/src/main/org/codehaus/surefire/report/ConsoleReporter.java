@@ -40,6 +40,25 @@ public class ConsoleReporter
         writer.flush();
     }
 
+    public void runAborted( ReportEntry report )
+    {
+        writer.println( "ABORTED" );
+        writer.println( report.getSource().getClass().getName() );
+        writer.println( report.getName() );
+        writer.println( report.getMessage() );
+        writer.println( report.getThrowable().getMessage() );
+        writer.flush();
+    }
+    public void batteryAborted( ReportEntry report )
+    {
+        writer.println( "ABORTED" );
+        writer.println( report.getSource().getClass().getName() );
+        writer.println( report.getName() );
+        writer.println( report.getMessage() );
+        writer.println( report.getThrowable().getMessage() );
+        writer.flush();
+    }
+
     // ----------------------------------------------------------------------
     // Battery
     // ----------------------------------------------------------------------
