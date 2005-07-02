@@ -70,8 +70,8 @@
   <distributionManagement>
     <repository>
       <id>repo1</id>
-      <name>Maven Repository</name>
-      <url>scp://repo1.maven.org/home/projects/maven/repository/ibiblio-v2</url>
+      <name>Maven Central Repository</name>
+      <url>scp://repo1.maven.org/home/projects/maven/repository-staging/to-ibiblio/maven2</url>
     </repository>
     <site>
       <id>surefire</id>
