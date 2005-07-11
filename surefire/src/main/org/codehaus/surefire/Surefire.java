@@ -2,6 +2,7 @@ package org.codehaus.surefire;
 
 import org.codehaus.surefire.battery.Battery;
 import org.codehaus.surefire.battery.JUnitBattery;
+import org.codehaus.surefire.battery.assertion.BatteryTestFailedException;
 import org.codehaus.surefire.report.ReportEntry;
 import org.codehaus.surefire.report.Reporter;
 import org.codehaus.surefire.report.ReporterManager;
@@ -78,11 +79,26 @@ public class Surefire
                 {
                     Battery battery = (Battery) i.next();
 
-                    if ( battery.getTestCount() > 0 )
+                    int testCount = 0;
+                    try
+                    {
+                        testCount = battery.getTestCount();
+                    }
+                    catch ( BatteryTestFailedException e )
+                    {
+                        e.printStackTrace();
+                        ReportEntry report = new ReportEntry( e,
+                                                              "org.codehaus.surefire.Runner",
+                                                              Surefire.getResources().getString( "bigProblems" ), e );
+
+                        reporterManager.batteryAborted( report );
+                    }
+
+                    if ( testCount > 0 )
                     {
                         executeBattery( battery, reporterManager );
 
-                        nbTests += battery.getTestCount();
+                        nbTests += testCount;
                     }
 
                     List list = new ArrayList();
@@ -100,11 +116,26 @@ public class Surefire
                     {
                         Battery b = (Battery) j.next();
 
-                        if ( b.getTestCount() > 0 )
+                        testCount = 0;
+                        try
+                        {
+                            testCount = b.getTestCount();
+                        }
+                        catch ( BatteryTestFailedException e )
+                        {
+                            e.printStackTrace();
+                            ReportEntry report = new ReportEntry( e,
+                                                                  "org.codehaus.surefire.Runner",
+                                                                  Surefire.getResources().getString( "bigProblems" ), e );
+
+                            reporterManager.batteryAborted( report );
+                        }
+
+                        if ( testCount > 0 )
                         {
                             executeBattery( b, reporterManager );
 
-                            nbTests += b.getTestCount();
+                            nbTests += testCount;
                         }
                     }
                 }
@@ -163,6 +194,8 @@ public class Surefire
             }
             catch ( RuntimeException e )
             {
+                e.printStackTrace();
+
                 rawString = Surefire.getResources().getString( "executeException" );
 
                 report = new ReportEntry( this, battery.getBatteryName(), rawString, e );
