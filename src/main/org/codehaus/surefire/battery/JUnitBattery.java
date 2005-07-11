@@ -157,11 +157,33 @@ public class JUnitBattery
 
         addListenerMethod = testResultClass.getMethod( ADD_LISTENER_METHOD, addListenerParamTypes );
 
-        countTestCasesMethod = testInterface.getMethod( COUNT_TEST_CASES_METHOD, new Class[0] );
+        if ( testInterface.isAssignableFrom( testClass ) )//testObject.getClass() ) )
+        {
+            countTestCasesMethod = testInterface.getMethod( COUNT_TEST_CASES_METHOD, new Class[0] );
 
-        Class[] runParamTypes = {testResultClass};
+	        runMethod = testInterface.getMethod( RUN_METHOD, new Class[] { testResultClass } );
 
-        runMethod = testInterface.getMethod( RUN_METHOD, runParamTypes );
+        }
+        else
+        {
+            try
+            {
+                countTestCasesMethod = testClass.getMethod( COUNT_TEST_CASES_METHOD, new Class[0] );
+			}
+			catch (Exception e)
+			{
+				countTestCasesMethod = null; // for clarity
+			}
+
+			try
+			{
+				runMethod = testClass.getMethod( RUN_METHOD, new Class[] { testResultClass } );
+            }
+            catch (Exception e)
+            {
+				runMethod = null;	// for clarity
+            }
+        }
     }
 
     protected Class getTestClass()
@@ -169,7 +191,25 @@ public class JUnitBattery
         return testClass;
     }
 
-    public void execute( ReporterManager reportManager )
+	protected Object getTestClassInstance()
+	{
+		return testObject;
+	}
+
+	public void execute( ReporterManager reportManager )
+		throws Exception
+	{
+		if ( runMethod != null )
+		{
+			executeJUnit( reportManager );
+		}
+		else
+		{
+			super.execute( reportManager );
+		}
+	}
+
+    protected void executeJUnit( ReporterManager reportManager )
     {
         try
         {
@@ -191,19 +231,19 @@ public class JUnitBattery
         }
         catch ( IllegalArgumentException e )
         {
-            throw new org.codehaus.surefire.battery.assertion.BatteryTestFailedException( e );
+            throw new org.codehaus.surefire.battery.assertion.BatteryTestFailedException( testObject.getClass().getName(), e );
         }
         catch ( InstantiationException e )
         {
-            throw new org.codehaus.surefire.battery.assertion.BatteryTestFailedException( e );
+            throw new org.codehaus.surefire.battery.assertion.BatteryTestFailedException( testObject.getClass().getName(), e );
         }
         catch ( IllegalAccessException e )
         {
-            throw new org.codehaus.surefire.battery.assertion.BatteryTestFailedException( e );
+            throw new org.codehaus.surefire.battery.assertion.BatteryTestFailedException( testObject.getClass().getName(), e );
         }
         catch ( InvocationTargetException e )
         {
-            throw new org.codehaus.surefire.battery.assertion.BatteryTestFailedException( e );
+            throw new org.codehaus.surefire.battery.assertion.BatteryTestFailedException( testObject.getClass().getName(), e );
         }
     }
 
@@ -211,21 +251,28 @@ public class JUnitBattery
     {
         try
         {
-            Integer integer = (Integer) countTestCasesMethod.invoke( testObject, new Class[0] );
+            if ( countTestCasesMethod != null)
+            {
+                Integer integer = (Integer) countTestCasesMethod.invoke( testObject, new Class[0] );
 
-            return integer.intValue();
+                return integer.intValue();
+            }
+            else
+            {
+                return super.getTestCount();
+            }
         }
         catch ( IllegalAccessException e )
         {
-            throw new org.codehaus.surefire.battery.assertion.BatteryTestFailedException( e );
+            throw new org.codehaus.surefire.battery.assertion.BatteryTestFailedException( testObject.getClass().getName(), e );
         }
         catch ( IllegalArgumentException e )
         {
-            throw new org.codehaus.surefire.battery.assertion.BatteryTestFailedException( e );
+            throw new org.codehaus.surefire.battery.assertion.BatteryTestFailedException( testObject.getClass().getName(), e );
         }
         catch ( InvocationTargetException e )
         {
-            throw new org.codehaus.surefire.battery.assertion.BatteryTestFailedException( e );
+            throw new org.codehaus.surefire.battery.assertion.BatteryTestFailedException( testObject.getClass().getName(), e );
         }
     }
 

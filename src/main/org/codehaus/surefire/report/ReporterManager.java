@@ -223,7 +223,6 @@ public class ReporterManager
             }
             catch ( Exception e )
             {
-                handleReporterException( "suiteCompleted", e );
             }
         }
     }
@@ -243,6 +242,8 @@ public class ReporterManager
                 handleReporterException( "suiteAborted", e );
             }
         }
+
+        ++errors;
     }
 
     // ----------------------------------------------------------------------

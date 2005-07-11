@@ -42,7 +42,7 @@ public class ConsoleReporter
 
     public void runAborted( ReportEntry report )
     {
-        writer.println( "ABORTED" );
+        writer.println( "RUN ABORTED" );
         writer.println( report.getSource().getClass().getName() );
         writer.println( report.getName() );
         writer.println( report.getMessage() );
@@ -51,7 +51,7 @@ public class ConsoleReporter
     }
     public void batteryAborted( ReportEntry report )
     {
-        writer.println( "ABORTED" );
+        writer.println( "BATTERY ABORTED" );
         writer.println( report.getSource().getClass().getName() );
         writer.println( report.getName() );
         writer.println( report.getMessage() );
