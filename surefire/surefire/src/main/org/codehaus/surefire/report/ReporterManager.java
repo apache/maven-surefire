@@ -156,6 +156,8 @@ public class ReporterManager
                 handleReporterException( "runAborted", e );
             }
         }
+
+        ++errors;
     }
 
     public void runCompleted()
