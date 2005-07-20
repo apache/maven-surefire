@@ -12,13 +12,13 @@ public class DirectoryBattery
 {
     private static final String FS = System.getProperty( "file.separator" );
 
-    private String basedir;
+    private File basedir;
 
     private List includes;
 
     private List excludes ;
 
-    public DirectoryBattery( String basedir, ArrayList includes, ArrayList excludes )
+    public DirectoryBattery( File basedir, ArrayList includes, ArrayList excludes )
         throws Exception
     {
         this.basedir = basedir;
@@ -52,19 +52,12 @@ public class DirectoryBattery
         }
     }
 
-    public String[] collectTests( String basedir, List includes, List excludes )
+    public String[] collectTests( File basedir, List includes, List excludes )
         throws Exception
     {
         DirectoryScanner scanner = new DirectoryScanner();
         
-        File f = new File( basedir, "target/test-classes" ); 
-        
-        if ( ! f.exists() )
-        {
-            return null;
-        }
-        
-        scanner.setBasedir( f );
+        scanner.setBasedir( basedir );
 
         if ( includes != null )
         {
