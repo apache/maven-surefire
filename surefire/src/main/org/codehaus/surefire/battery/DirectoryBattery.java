@@ -55,6 +55,11 @@ public class DirectoryBattery
     public String[] collectTests( File basedir, List includes, List excludes )
         throws Exception
     {
+        if ( !basedir.exists() )
+        {
+            return null;
+        }
+
         DirectoryScanner scanner = new DirectoryScanner();
         
         scanner.setBasedir( basedir );
