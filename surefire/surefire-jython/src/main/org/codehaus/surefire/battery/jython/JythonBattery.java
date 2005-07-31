@@ -2,7 +2,7 @@ package org.codehaus.surefire.battery.jython;
 
 import org.codehaus.plexus.util.DirectoryScanner;
 import org.codehaus.surefire.report.ReportEntry;
-import org.codehaus.surefire.report.ReportManager;
+import org.codehaus.surefire.report.ReporterManager;
 import org.codehaus.surefire.battery.AbstractBattery;
 import org.python.core.PyList;
 import org.python.core.PyStringMap;
@@ -34,7 +34,7 @@ public class JythonBattery
         directory = new File( "py" );
     }
 
-    public void execute( ReportManager reportManager )
+    public void execute( ReporterManager reportManager )
     {
         scanner.setBasedir( directory );
 
@@ -52,7 +52,7 @@ public class JythonBattery
         }
     }
 
-    public void process( String pyScript, ReportManager reportManager )
+    public void process( String pyScript, ReporterManager reportManager )
     {
         interp.execfile( ( new File( directory, pyScript ) ).getPath() );
 
@@ -75,7 +75,7 @@ public class JythonBattery
         executeTestMethods( reportManager );
     }
 
-    protected void executeTestMethods( ReportManager ReportManager )
+    protected void executeTestMethods( ReporterManager ReportManager )
     {
         String testMethod;
 
@@ -89,7 +89,7 @@ public class JythonBattery
         testMethods.clear();
     }
 
-    protected void testMethod( ReportManager reportManager, String method )
+    protected void testMethod( ReporterManager reportManager, String method )
     {
         ReportEntry reportEntry = new ReportEntry( this, method, "starting" );
 
