@@ -86,8 +86,4 @@
     <module>surefire-web</module>
     <module>surefire-xmlrpc</module>    
   </modules>
-  <build>
-    <sourceDirectory>src/main</sourceDirectory>
-    <testSourceDirectory>src/test</testSourceDirectory>
-  </build>
 </project>
