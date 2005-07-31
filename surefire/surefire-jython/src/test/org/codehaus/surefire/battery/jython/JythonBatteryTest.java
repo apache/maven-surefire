@@ -1,6 +1,6 @@
-package org.codehaus.surefire;
+package org.codehaus.surefire.battery.jython;
 
-/*
+import junit.framework.TestCase;/*
  * Copyright 2001-2005 The Codehaus.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,27 +16,14 @@ package org.codehaus.surefire;
  * limitations under the License.
  */
 
-import junit.framework.TestSuite;
-import junit.framework.TestCase;
-import junit.framework.Test;
-
 /**
- *
- * 
  * @author <a href="mailto:jason@maven.org">Jason van Zyl</a>
- *
- * @version $Id$
+ * @version $Id:$
  */
-public class JUnitTestSuite
+public class JythonBatteryTest
     extends TestCase
 {
-    public static Test suite()
-        throws Exception
+    public void testJythonBattery()
     {
-        TestSuite testSuite = new TestSuite();
-
-        testSuite.addTest( DummySuite.suite() );
-
-        return testSuite;
     }
 }
