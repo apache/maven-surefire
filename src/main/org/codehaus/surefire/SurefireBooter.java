@@ -51,6 +51,11 @@ public class SurefireBooter
         }
     }
 
+    public void setClassPathUrls( List classpathUrls )
+    {
+        this.classpathUrls = classpathUrls;
+    }
+
     public boolean run()
         throws Exception
     {
@@ -103,9 +108,18 @@ public class SurefireBooter
     public static void main( String[] args )
         throws Exception
     {
+        // 0: basedir
         String basedir = args[0];
 
         System.setProperty( "basedir", basedir );
+
+        // 1; testClassesDirectory
+        String testClassesDirectory = args[1];
+
+        // 2; includes
+
+        // 3: excludes
+
 
         String mavenRepoLocal = args[1];
 
@@ -166,15 +180,15 @@ public class SurefireBooter
 
         SurefireBooter surefireBooter = new SurefireBooter();
 
-        surefireBooter.addBattery( "org.codehaus.surefire.battery.DirectoryBattery", new Object[]{ basedir, includes, excludes } );
+        surefireBooter.addBattery( "org.codehaus.surefire.battery.DirectoryBattery", new Object[]{ testClassesDirectory, includes, excludes } );
 
         surefireBooter.addClassPathUrl( new File( mavenRepoLocal, "junit/jars/junit-3.8.1.jar" ).getPath() );
 
         surefireBooter.addClassPathUrl( new File( mavenRepoLocal, "surefire/jars/surefire-1.3-SNAPSHOT.jar" ).getPath() );
 
-        surefireBooter.addClassPathUrl( new File( basedir, "target/classes/" ).getPath() );
+        surefireBooter.addClassPathUrl( new File( testClassesDirectory, "target/classes/" ).getPath() );
 
-        surefireBooter.addClassPathUrl( new File( basedir, "target/test-classes/" ).getPath() );
+        surefireBooter.addClassPathUrl( new File( testClassesDirectory, "target/test-classes/" ).getPath() );
 
         processDependencies( dependencies, surefireBooter );
 
