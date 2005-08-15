@@ -37,6 +37,12 @@
       <unsubscribe>dev-unsubscribe@surefire.codehaus.org</unsubscribe>
       <archive>http://archive.surefire.codehaus.org/dev/</archive>
     </mailingList>
+    <mailingList>
+      <name>Surefire Commits List</name>
+      <subscribe>scm-subscribe@surefire.codehaus.org</subscribe>
+      <unsubscribe>scm-unsubscribe@surefire.codehaus.org</unsubscribe>
+      <archive>http://archive.surefire.codehaus.org/scm/</archive>
+    </mailingList>
   </mailingLists>
   <developers>
     <developer>
@@ -59,9 +65,9 @@
     </developer>
   </developers>
   <scm>
-    <connection>scm:cvs:pserver:anoncvs@cvs.surefire.codehaus.org:/scm/surefire:surefire</connection>
-    <developerConnection>scm:cvs:ext:${maven.username}@cvs.surefire.codehaus.org:/scm/surefire:surefire</developerConnection>
-    <url>http://cvs.surefire.codehaus.org/surefire/</url>
+    <connection>scm:svn:https://svn.codehaus.org/surefire/trunk/</connection>
+    <developerConnection>scm:svn:svn+ssh://svn.codehaus.org/home/projects/surefire/scm/trunk/surefire</developerConnection>
+    <url>http://svn.codehaus.org/trunk/surefire/?root=surefire</url>
   </scm>
   <organization>
     <name>Codehaus</name>
