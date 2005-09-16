@@ -6,7 +6,7 @@
   <artifactId>surefire-root</artifactId>
   <packaging>pom</packaging>
   <name>SureFire Parent</name>
-  <version>1.1-SNAPSHOT</version>
+  <version>1.1</version>
   <description>Surefire is a test framework project.</description>
   <url>http://surefire.codehaus.org/</url>
   <issueManagement>
@@ -65,8 +65,8 @@
     </developer>
   </developers>
   <scm>
-    <connection>scm:svn:https://svn.codehaus.org/surefire/trunk/</connection>
-    <developerConnection>scm:svn:svn+ssh://svn.codehaus.org/home/projects/surefire/scm/trunk/surefire</developerConnection>
+    <connection>scm:svn:https://svn.codehaus.org/surefire/trunk/surefire/</connection>
+    <developerConnection>scm:svn:https://svn.codehaus.org/surefire/trunk/surefire/</developerConnection>
     <url>http://svn.codehaus.org/trunk/surefire/?root=surefire</url>
   </scm>
   <organization>
