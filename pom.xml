@@ -5,7 +5,7 @@
   <parent>
     <groupId>surefire</groupId>
     <artifactId>surefire-root</artifactId>
-    <version>1.1-SNAPSHOT</version>
+    <version>1.1</version>
   </parent>
   <artifactId>surefire</artifactId>
   <name>SureFire</name>
@@ -20,11 +20,6 @@
       <groupId>plexus</groupId>
       <artifactId>plexus-utils</artifactId>
       <version>1.0.3</version>
-</dependency>
+    </dependency>
   </dependencies>
-  <scm>
-    <connection>scm:cvs:pserver:anoncvs@cvs.surefire.codehaus.org:/scm/surefire:surefire/surefire</connection>
-    <developerConnection>scm:cvs:ext:${maven.username}@cvs.surefire.codehaus.org:/scm/surefire:surefire/surefire</developerConnection>
-    <url>http://cvs.surefire.codehaus.org/surefire/surefire/</url>
-  </scm>
 </project>
