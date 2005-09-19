@@ -17,6 +17,7 @@ package org.codehaus.surefire.report;
  */
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Enumeration;
@@ -59,7 +60,7 @@ public class XMLReporter
 
         reportDir.mkdirs();
         
-        writer = new PrintWriter( reportFile );
+        writer = new PrintWriter( new FileWriter( reportFile ) );
         
         writer.write("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n");
         
