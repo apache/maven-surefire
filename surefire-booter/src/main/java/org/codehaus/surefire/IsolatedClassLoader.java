@@ -16,12 +16,10 @@ package org.codehaus.surefire;
  * limitations under the License.
  */
 
-import java.net.URLClassLoader;
 import java.net.URL;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Set;
+import java.net.URLClassLoader;
 import java.util.HashSet;
+import java.util.Set;
 
 public class IsolatedClassLoader
     extends URLClassLoader
@@ -37,13 +35,13 @@ public class IsolatedClassLoader
 
     public void addURL( URL url )
     {
-        if ( !urls.contains( url ) )
+        if ( urls.contains( url ) )
         {
-            super.addURL( url );
+            urls.add( url );
         }
         else
         {
-            urls.add( url );
+            super.addURL( url );
         }
     }
 

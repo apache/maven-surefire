@@ -16,14 +16,11 @@ package org.codehaus.surefire;
  * limitations under the License.
  */
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.StringTokenizer;
 
 public class SurefireBooter
 {
@@ -34,6 +31,8 @@ public class SurefireBooter
     private List classpathUrls = new ArrayList();
 
     private String reportsDirectory;
+
+    private String forkMode;
 
     public SurefireBooter()
     {
@@ -72,8 +71,37 @@ public class SurefireBooter
         this.classpathUrls = classpathUrls;
     }
 
+    public void setForkMode(String forkMode)
+    {
+        this.forkMode = forkMode;
+    }
+
     public boolean run()
         throws Exception
+    {
+      boolean result = false;
+
+      if ("once".equals(forkMode))
+      {
+          result = runTestsForkOnce();
+      }
+      else if ("none".equals(forkMode))
+      {
+          result = runTestsInProcess();
+      }
+      else if ("per_test".equals(forkMode))
+      {
+          result = runTestsForkEach();
+      }
+      else
+      {
+        // throw
+      }
+
+      return result;
+    }
+
+    private boolean runTestsInProcess() throws Exception
     {
         IsolatedClassLoader surefireClassLoader = new IsolatedClassLoader();
 
@@ -108,6 +136,16 @@ public class SurefireBooter
         return result.booleanValue();
     }
 
+    private boolean runTestsForkOnce()
+    {
+        return true;
+    }
+
+    private boolean runTestsForkEach()
+    {
+        return true;
+    }
+
     public void reset()
     {
         batteries.clear();
@@ -115,112 +153,5 @@ public class SurefireBooter
         reports.clear();
 
         classpathUrls.clear();
-    }
-
-    // ----------------------------------------------------------------------
-    // Main
-    // ----------------------------------------------------------------------
-
-    public static void main( String[] args )
-        throws Exception
-    {
-        // 0: basedir
-        String basedir = args[0];
-
-        System.setProperty( "basedir", basedir );
-
-        // 1; testClassesDirectory
-        String testClassesDirectory = args[1];
-
-        // 2; includes
-
-        // 3: excludes
-
-
-        String mavenRepoLocal = args[1];
-
-        File dependenciesFile = new File( args[2] );
-
-        List dependencies = new ArrayList();
-
-        BufferedReader buf = new BufferedReader( new FileReader( dependenciesFile ) );
-
-        String line;
-
-        while ( ( line = buf.readLine() ) != null )
-        {
-            dependencies.add( line );
-        }
-
-        buf.close();
-
-        File includesFile = new File( args[3] );
-
-        List includes = new ArrayList();
-
-        buf = new BufferedReader( new FileReader( includesFile ) );
-
-        line = buf.readLine();
-
-        String includesStr = line.substring( line.indexOf( "@" ) + 1 );
-
-        StringTokenizer st = new StringTokenizer( includesStr, "," );
-
-        while ( st.hasMoreTokens() )
-        {
-            String inc = st.nextToken().trim();
-
-            includes.add( inc );
-        }
-
-        buf.close();
-
-        File excludesFile = new File( args[4] );
-
-        List excludes = new ArrayList();
-
-        buf = new BufferedReader( new FileReader( excludesFile ) );
-
-        line = buf.readLine();
-
-        String excludesStr = line.substring( line.indexOf( "@" ) + 1 );
-
-        st = new StringTokenizer( excludesStr, "," );
-
-        while ( st.hasMoreTokens() )
-        {
-            excludes.add( st.nextToken().trim() );
-        }
-
-        buf.close();
-
-        SurefireBooter surefireBooter = new SurefireBooter();
-
-        surefireBooter.addBattery( "org.codehaus.surefire.battery.DirectoryBattery", new Object[]{ testClassesDirectory, includes, excludes } );
-
-        surefireBooter.addClassPathUrl( new File( mavenRepoLocal, "junit/jars/junit-3.8.1.jar" ).getPath() );
-
-        surefireBooter.addClassPathUrl( new File( mavenRepoLocal, "surefire/jars/surefire-1.3-SNAPSHOT.jar" ).getPath() );
-
-        surefireBooter.addClassPathUrl( new File( testClassesDirectory, "target/classes/" ).getPath() );
-
-        surefireBooter.addClassPathUrl( new File( testClassesDirectory, "target/test-classes/" ).getPath() );
-
-        processDependencies( dependencies, surefireBooter );
-
-        surefireBooter.addReport( "org.codehaus.surefire.report.ConsoleReport" );
-
-        surefireBooter.run();
-    }
-
-    private static void processDependencies( List dependencies, SurefireBooter sureFire )
-        throws Exception
-    {
-        for ( Iterator i = dependencies.iterator(); i.hasNext(); )
-        {
-            String dep = (String) i.next();
-         
-            sureFire.addClassPathUrl( new File( dep ).getPath() );
-        }
     }
 }
