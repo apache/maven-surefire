@@ -18,20 +18,33 @@ package org.codehaus.surefire.report;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.io.StringWriter;
 
 public class FileReporter
     extends AbstractReporter
 {
     private PrintWriter writer;
-
+    
+    private StringBuffer reportContent;
+    
+    private long batteryStartTime;
+    
+    String newLine = System.getProperty("line.separator");
+    
     public void runStarting( int testCount )
     {
+        
     }
 
     public void batteryStarting( ReportEntry report )
         throws Exception
     {
+        batteryStartTime = System.currentTimeMillis();
+        
+        reportContent = new StringBuffer();
+        
         File reportFile = new File( getReportsDirectory(), report.getName() + ".txt" );
 
         File reportDir = reportFile.getParentFile();
@@ -39,7 +52,7 @@ public class FileReporter
         reportDir.mkdirs();
 
         writer = new PrintWriter( new FileWriter( reportFile ) );
-
+        
         writer.println( "-------------------------------------------------------------------------------" );
 
         writer.println( "Battery: " + report.getName() );
@@ -49,64 +62,122 @@ public class FileReporter
 
     public void batteryCompleted( ReportEntry report )
     {
+        long runTime = System.currentTimeMillis() - this.batteryStartTime;
+        
+        StringBuffer batterySummary = new StringBuffer();
+
+        batterySummary.append( "Tests run: " + String.valueOf( this.getNbTests() ) )
+                      .append( ", Failures: " + String.valueOf( this.getNbFailures() ) )
+                      .append( ", Errors: " + String.valueOf( this.getNbErrors() ))
+                      .append( ", Time elapsed: " + elapsedTimeAsString( runTime ))
+                      .append(" sec")
+                      .append(newLine)
+                      .append(newLine);
+                      
+        reportContent = batterySummary.append(reportContent);
+        
+        writer.println( reportContent.toString() );
+        
         writer.flush();
 
         writer.close();
     }
 
     public void testStarting( ReportEntry report )
-    {
-        writer.println( report.getName() );
+    { 
+        super.testStarting(report);
+        
+        reportContent.append(report.getName() );
     }
 
     public void testSucceeded( ReportEntry report )
     {
+        super.testSucceeded(report);
+
+        long runTime = this.endTime - this.startTime;
+        
+        writeTimeElapsed(runTime);
+        
+        reportContent.append(newLine);
     }
 
     public void testError( ReportEntry report, String stdOut, String stdErr )
     {
+        super.testError(report, stdOut, stdErr);
+
+        long runTime = this.endTime - this.startTime;
+        
+        writeTimeElapsed(runTime);
+        
+        reportContent.append("  <<< ERROR!" + newLine);
+        
         writeStdLogs( stdOut, stdErr );
 
-        report.getThrowable().printStackTrace( writer );
+        reportContent.append( getStackTrace( report ) + newLine );
     }
 
     public void testFailed( ReportEntry report, String stdOut, String stdErr )
     {
+        super.testFailed(report, stdOut, stdErr);
+        
+        long runTime = this.endTime - this.startTime;
+        
+        writeTimeElapsed(runTime);
+        
+        reportContent.append("  <<< FAILURE!" + newLine);
+        
         writeStdLogs( stdOut, stdErr );
 
-        report.getThrowable().printStackTrace( writer );
+        reportContent.append( getStackTrace( report ) + newLine );
     }
 
     public void dispose()
     {
+        errors = 0;
+        
+        failures = 0;
+        
+        completedCount = 0;       
     }
 
-    // ----------------------------------------------------------------------
-    //
-    // ----------------------------------------------------------------------
-
+    private void writeTimeElapsed(long sec)
+    {
+        reportContent.append( "  Time elapsed: " + elapsedTimeAsString( sec ) + " sec" );
+    }
+    
     private void writeStdLogs( String stdOut, String stdErr )
     {
-        writer.println();
+        reportContent.append(newLine);
 
-        writer.println( "[ stdout ] ---------------------------------------------------------------" );
+        reportContent.append( "[ stdout ] ---------------------------------------------------------------" );
 
-        writer.println();
+        reportContent.append(newLine);
 
-        writer.print( stdOut );
+        reportContent.append( stdOut + newLine);
 
-        writer.println();
+        reportContent.append(newLine);
 
-        writer.println( "[ stderr ] ---------------------------------------------------------------" );
+        reportContent.append( "[ stderr ] ---------------------------------------------------------------" );
 
-        writer.println();
+        reportContent.append(newLine);
 
-        writer.print( stdErr );
+        reportContent.append( stdErr + newLine);
 
-        writer.println();
+        reportContent.append(newLine);
 
-        writer.println( "[ stacktrace ] -----------------------------------------------------------" );
+        reportContent.append( "[ stacktrace ] -----------------------------------------------------------" );
 
-        writer.println();
+        reportContent.append(newLine);
+    }
+    
+    private String getStackTrace(ReportEntry report)
+    {   
+        StringWriter writer = new StringWriter();
+        
+        report.getThrowable().printStackTrace(new PrintWriter(writer));
+      
+        writer.flush();
+        
+        return writer.toString();
     }
 }
