@@ -30,8 +30,9 @@ import org.codehaus.surefire.util.StringUtils;
 
 
 /**
+ * XML format reporter.
  * @author <a href="mailto:jruiz@exist.com">Johnny R. Ruiz III</a>
- * @version $Id: XMLReporter.java 61 2005-07-31 04:07:33Z jruiz $
+ * @version $Id: XMLReporter.java 61 2005-10-07 04:07:33Z jruiz $
  */
 public class XMLReporter 
     extends AbstractReporter
@@ -46,7 +47,7 @@ public class XMLReporter
     
     public void runStarting( int testCount )
     {
-        Properties sysProps = System.getProperties();
+
     }
 
     public void batteryStarting( ReportEntry report )
@@ -184,7 +185,11 @@ public class XMLReporter
         
         return component;
     }
-    
+    /**
+     * Returns stacktrace as String.
+     * @param report ReportEntry object. 
+     * @return stacktrace as string. 
+     */
     private String getStackTrace(ReportEntry report)
     {   
         StringWriter writer = new StringWriter();
@@ -196,6 +201,10 @@ public class XMLReporter
         return writer.toString();
     }
     
+    /**
+     * Adds system properties to the XML report.
+     *
+     */
     private void showProperties()
     {
         Xpp3Dom properties = createElement(testSuite,"properties");
