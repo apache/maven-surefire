@@ -21,6 +21,11 @@ import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
+/**
+ * Brief format file reporter.
+ * @author <a href="mailto:jruiz@exist.com">Johnny R. Ruiz III</a>
+ * @version $Id: BriefeFileReporter.java 62 2005-10-07 04:07:33Z jruiz $
+ */
 public class BriefFileReporter
     extends AbstractReporter
 {
@@ -156,6 +161,11 @@ public class BriefFileReporter
         reportContent.append("\n");
     }
     
+    /**
+     * Returns stacktrace as String.
+     * @param report ReportEntry object. 
+     * @return stacktrace as string. 
+     */
     private String getStackTrace(ReportEntry report)
     {   
         StringWriter writer = new StringWriter();

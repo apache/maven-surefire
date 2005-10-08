@@ -17,10 +17,15 @@ package org.codehaus.surefire.report;
  */
 
 import java.io.BufferedOutputStream;
-import java.io.File;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+
+/**
+ *  Brief format console reporter.
+ *  @author <a href="mailto:jruiz@exist.com">Johnny R. Ruiz III</a>
+ *  @version $Id: BriefConsoleReporter.java 62 2005-10-07 06:50:37Z jruiz $
+ */
 
 public class BriefConsoleReporter
     extends AbstractReporter
@@ -137,7 +142,11 @@ public class BriefConsoleReporter
         reportContent.append( "  Time elapsed: " + elapsedTimeAsString( sec ) + " sec" );
     }
     
-   
+    /**
+     * Returns stacktrace as String.
+     * @param report ReportEntry object. 
+     * @return stacktrace as string. 
+     */
     private String getStackTrace(ReportEntry report)
     {   
         StringWriter writer = new StringWriter();
