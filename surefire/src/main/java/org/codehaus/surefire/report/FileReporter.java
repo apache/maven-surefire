@@ -18,10 +18,14 @@ package org.codehaus.surefire.report;
 
 import java.io.File;
 import java.io.FileWriter;
-import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
+/**
+ * Text file reporter.
+ * @author <a href="mailto:jruiz@exist.com">Johnny R. Ruiz III</a>
+ * @version $Id$
+ */
 public class FileReporter
     extends AbstractReporter
 {
@@ -170,6 +174,11 @@ public class FileReporter
         reportContent.append(newLine);
     }
     
+    /**
+     * 
+     * @param report ReportEntry Object.
+     * @return stacktrace as string.
+     */
     private String getStackTrace(ReportEntry report)
     {   
         StringWriter writer = new StringWriter();

@@ -20,6 +20,11 @@ import java.io.BufferedOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 
+/**
+ * Summary format console reporter.
+ * @author <a href="mailto:jruiz@exist.com">Johnny R. Ruiz III</a>
+ * @version $Id: SummaryConsoleReporter.java 61 2005-10-07 04:07:33Z jruiz $
+ */
 public class SummaryConsoleReporter
     extends AbstractReporter
 {
