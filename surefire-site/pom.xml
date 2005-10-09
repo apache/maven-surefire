@@ -5,11 +5,11 @@
   <parent>
     <groupId>surefire</groupId>
     <artifactId>surefire-root</artifactId>
-    <version>1.1-SNAPSHOT</version>
+    <version>1.1.1-SNAPSHOT</version>
   </parent>
   <groupId>surefire</groupId>
   <artifactId>surefire-site</artifactId>
-  <version>1.1-SNAPSHOT</version>
+  <version>1.1.1-SNAPSHOT</version>
   <name>Surefire</name>
   <distributionManagement>
     <site>

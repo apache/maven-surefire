@@ -6,18 +6,18 @@
   <parent>
     <groupId>surefire</groupId>
     <artifactId>surefire-root</artifactId>
-    <version>1.1-SNAPSHOT</version>
+    <version>1.1.1-SNAPSHOT</version>
   </parent>
 
   <groupId>surefire</groupId>
   <artifactId>surefire-jython</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.0.1-SNAPSHOT</version>
 
   <dependencies>
     <dependency>
       <groupId>surefire</groupId>
       <artifactId>surefire</artifactId>
-      <version>1.3-SNAPSHOT</version>
+      <version>1.4.1-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>jython</groupId>
@@ -27,7 +27,7 @@
     <dependency>
       <groupId>plexus</groupId>
       <artifactId>plexus-utils</artifactId>
-      <version>1.0.2-SNAPSHOT</version>
+      <version>1.0.3</version>
     </dependency>
   </dependencies>
 

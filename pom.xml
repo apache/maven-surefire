@@ -6,7 +6,7 @@
   <artifactId>surefire-root</artifactId>
   <packaging>pom</packaging>
   <name>SureFire Parent</name>
-  <version>1.1</version>
+  <version>1.1.1-SNAPSHOT</version>
   <description>Surefire is a test framework project.</description>
   <url>http://surefire.codehaus.org/</url>
   <issueManagement>
@@ -110,11 +110,13 @@
       </releases>
     </pluginRepository>
   </pluginRepositories>
+  <!--
   <modules>
     <module>surefire</module>
     <module>surefire-booter</module>
     <module>surefire-jython</module>
     <module>surefire-web</module>
-    <module>surefire-xmlrpc</module>    
+    <module>surefire-xmlrpc</module>
   </modules>
+  -->
 </project>

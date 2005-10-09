@@ -2,13 +2,13 @@
     <parent>
         <artifactId>surefire-root</artifactId>
         <groupId>surefire</groupId>
-        <version>1.1</version>
+        <version>1.1.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>surefire-booter</artifactId>
     <groupId>surefire</groupId>
     <name>SureFire Booter</name>
-    <version>1.4-SNAPSHOT</version>
+    <version>1.4.1-SNAPSHOT</version>
     <dependencies>
         <dependency>
             <groupId>org.apache.maven</groupId>
