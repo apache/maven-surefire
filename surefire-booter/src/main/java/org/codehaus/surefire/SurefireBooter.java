@@ -19,33 +19,32 @@ package org.codehaus.surefire;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.codehaus.plexus.util.cli.StreamConsumer;
-import org.codehaus.plexus.util.cli.WriterStreamConsumer;
 import org.codehaus.plexus.util.cli.CommandLineException;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
 import org.codehaus.plexus.util.cli.Commandline;
+import org.codehaus.plexus.util.cli.StreamConsumer;
+import org.codehaus.plexus.util.cli.WriterStreamConsumer;
 
+import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
-import java.io.Writer;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.OutputStream;
-import java.io.InputStream;
-import java.io.Reader;
-import java.io.InputStreamReader;
+import java.io.Writer;
 import java.lang.reflect.Method;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Arrays;
-import java.net.URL;
 
+/**
+ * @author <a href="mailto:jason@maven.org">Jason van Zyl</a>
+ * @author <a href="mail-to:emmanuel@venisse.net">Emmanuel Venisse</a>
+ * @author <a href="mailto:andyglick@acm.org">Andy Glick</a>
+ * @version $Id$
+ */
 public class SurefireBooter
 {
-    private static final Log log = LogFactory.getLog(SurefireBooter.class);
+    private static final Log log = LogFactory.getLog( SurefireBooter.class );
 
     private List batteries = new ArrayList();
 
@@ -68,14 +67,21 @@ public class SurefireBooter
         this.reportsDirectory = reportsDirectory;
     }
 
+    public String getReportsDirectory()
+    {
+        return this.reportsDirectory;
+    }
+
     public void addBattery( String battery, Object[] params )
     {
-        batteries.add( new Object[]{ battery, params } );
+        batteries.add( new Object[]{battery,
+            params} );
     }
 
     public void addBattery( String battery )
     {
-        batteries.add( new Object[]{ battery, null } );
+        batteries.add( new Object[]{battery,
+            null} );
     }
 
     public void addReport( String report )
@@ -85,7 +91,7 @@ public class SurefireBooter
 
     public void addClassPathUrl( String path )
     {
-        if ( !classpathUrls.contains( path ) )
+        if( !classpathUrls.contains( path ) )
         {
             classpathUrls.add( path );
         }
@@ -96,7 +102,7 @@ public class SurefireBooter
         this.classpathUrls = classpathUrls;
     }
 
-    public void setForkMode(String forkMode)
+    public void setForkMode( String forkMode )
     {
         this.forkMode = forkMode;
     }
@@ -104,240 +110,235 @@ public class SurefireBooter
     public boolean run()
         throws Exception
     {
-      boolean result = false;
+        boolean result = false;
 
-      if ("once".equals(forkMode))
-      {
-          result = runTestsForkOnce();
-      }
-      else if ("none".equals(forkMode))
-      {
-          result = runTestsInProcess();
-      }
-      else if ("per_test".equals(forkMode))
-      {
-          result = runTestsForkEach();
-      }
-      else
-      {
-        // throw
-      }
+        if( "once".equals( forkMode ) )
+        {
+            result = runTestsForkOnce();
+        }
+        else if( "none".equals( forkMode ) )
+        {
+            result = runTestsInProcess();
+        }
+        else if( "per_test".equals( forkMode ) )
+        {
+            result = runTestsForkEach();
+        }
+        else
+        {
+            // throw
+        }
 
-      return result;
+        return result;
     }
 
     private boolean runTestsInProcess() throws Exception
     {
-        log.info("entered runTestsInProcess");
+        log.debug( "entered runTestsInProcess" );
 
         IsolatedClassLoader surefireClassLoader = new IsolatedClassLoader();
 
-        for ( Iterator i = classpathUrls.iterator(); i.hasNext(); )
+        for( Iterator i = classpathUrls.iterator(); i.hasNext(); )
         {
-            String url = (String) i.next();
+            String url = ( String ) i.next();
 
-            if ( url == null )
+            if( url == null )
             {
                 continue;
             }
 
-            log.info("classpath filename is " + url);
+            log.debug( "classpath filename is " + url );
 
             File f = new File( url );
 
             surefireClassLoader.addURL( f.toURL() );
         }
 
-        Class batteryExecutorClass = surefireClassLoader.loadClass( "org.codehaus.surefire.Surefire" );
+        Class batteryExecutorClass = surefireClassLoader
+            .loadClass( "org.codehaus.surefire.Surefire" );
 
         Object batteryExecutor = batteryExecutorClass.newInstance();
 
-        Method run = batteryExecutorClass.getMethod( "run", new Class[] { List.class, List.class, ClassLoader.class, String.class } );
+        Method run = batteryExecutorClass.getMethod( "run",
+            new Class[]{List.class,
+                List.class,
+                ClassLoader.class,
+                String.class} );
 
-        ClassLoader oldContextClassLoader = Thread.currentThread().getContextClassLoader();
+        ClassLoader oldContextClassLoader = Thread.currentThread()
+            .getContextClassLoader();
 
         Thread.currentThread().setContextClassLoader( surefireClassLoader );
 
-        log.info("batteryExecutor is " + batteryExecutor);
-        log.info("reports are " + reports);
-        log.info("batteries/size() is " + batteries.size());
+        log.debug( "batteryExecutor is " + batteryExecutor );
+        log.debug( "reports are " + reports );
+        log.debug( "batteries/size() is " + batteries.size() );
 
-        if (batteries.size() > 0)
+        if( batteries.size() > 0 )
         {
-          for (int i = 0; i < batteries.size(); i++)
-          {
-            Object[] array = (Object[]) batteries.get(i);
-
-            log.info ("battery name is " + array[0]);
-
-            Object[] parmArray = (Object[]) array[1];
-
-            for (int j = 0; j < parmArray.length; j++)
+            for( int i = 0; i < batteries.size(); i++ )
             {
-              log.info("parmArray[" + j + "] value is " + parmArray[j]);
+                Object[] array = ( Object[] ) batteries.get( i );
+
+                log.debug( "battery name is " + array[0] );
+
+                Object[] parmArray = ( Object[] ) array[1];
+
+                for( int j = 0; j < parmArray.length; j++ )
+                {
+                    log.debug(
+                        "parmArray[" + j + "] value is " + parmArray[j] );
+                }
             }
-          }
         }
 
-        log.info("surefireClassLoader's class is " + surefireClassLoader.getClass().getName());
-        log.info("reportsDirectory is " + reportsDirectory);
+        log.debug( "surefireClassLoader's class is " + surefireClassLoader
+            .getClass().getName() );
+        log.debug( "reportsDirectory is " + reportsDirectory );
 
-        Boolean result = (Boolean) run.invoke( batteryExecutor, new Object[]{ reports, batteries, surefireClassLoader, reportsDirectory } );
+        Boolean result = ( Boolean ) run.invoke( batteryExecutor,
+            new Object[]{reports,
+                batteries,
+                surefireClassLoader,
+                reportsDirectory} );
 
         Thread.currentThread().setContextClassLoader( oldContextClassLoader );
 
         return result.booleanValue();
     }
 
-  protected static final String EOL = System.getProperty( "line.separator" );
-  protected static final String PS = System.getProperty( "path.separator" );
+    protected static final String EOL = System.getProperty( "line.separator" );
+    protected static final String PS = System.getProperty( "path.separator" );
 
-  private boolean runTestsForkOnce()
-      throws Exception
-  {
-      log.info( "entered runTestsForkOnce" );
+    private boolean runTestsForkOnce()
+        throws Exception
+    {
+        log.debug( "entered runTestsForkOnce" );
 
+        String executable = "java";
 
-      String executable = "java";
+        String pathSeparator = System.getProperty( "path.separator" );
 
-      String pathSeparator = System.getProperty("path.separator");
+        String classpathEntries = getListOfStringsAsString( classpathUrls,
+            pathSeparator );
 
-      String classpathEntries =  getListOfStringsAsString(classpathUrls, pathSeparator);
+        String quotedClasspath = Commandline.quoteArgument( classpathEntries );
 
-      // List argList = new ArrayList();
+        log.debug( "quotedClasspath = " + quotedClasspath );
 
-      // argList.add("-classpath");
+        log.debug( "executable is " + executable );
 
-      String quotedClasspath = Commandline.quoteArgument(classpathEntries);
+        File workingDirectory = new File( "." );
 
-      log.info("quotedClasspath = " + quotedClasspath);
+        Commandline cli = new Commandline();
 
-      // argList.add(quotedClasspath);
+        basedir = workingDirectory.getAbsolutePath();
 
-      // argList.add("org.codehaus.surefire.Surefire");
+        log.debug( "basedir = " + basedir );
 
-      log.info( "executable is " + executable );
+        cli.setWorkingDirectory( basedir );
 
-      // String[] args = new String[10];
+        cli.setExecutable( executable );
 
-      // File workingDirectory = new File("fileName");
-      File workingDirectory = new File( "." );
+        String[] args = getForkArgs();
 
-      Commandline cli = new Commandline();
+        cli.addArguments( args );
 
-      basedir = workingDirectory.getAbsolutePath();
+        String[] returnedArgs = cli.getShellCommandline();
 
-      log.info( "basedir = " + basedir );
+        if( log.isDebugEnabled() )
+        {
+            for( int i = 0; i < returnedArgs.length; i ++ )
+            {
+                log.debug( "returned arg is " + returnedArgs[i] );
+            }
+        }
 
-      cli.setWorkingDirectory( basedir );
+        Writer stringWriter = new StringWriter();
 
-      cli.setExecutable( executable );
+        StreamConsumer out = new WriterStreamConsumer( stringWriter );
 
-      String[] args = getForkArgs();
+        StreamConsumer err = new WriterStreamConsumer( stringWriter );
 
-      // log.info( "runTestsForkOnce there are " + argList.size() + " arguments");
+        int returnCode;
 
-      // String[] args = new String[argList.size()];
-
-      // Iterator argIterator = argList.iterator();
-
-      // for( int i = 0; i < args.length; i++ )
-      // {
-        // args[ i ] = (String) argIterator.next();
-        // log.info( "arg is " + args[ i ] );
-      // }
-
-      cli.addArguments( args );
-
-      String[] returnedArgs = cli.getShellCommandline();
-
-      for( int i = 0; i < returnedArgs.length; i ++ )
-      {
-        log.info("returned arg is " + returnedArgs[i]);
-      }
-
-      Writer stringWriter = new StringWriter();
-
-      StreamConsumer out = new WriterStreamConsumer( stringWriter );
-
-      StreamConsumer err = new WriterStreamConsumer( stringWriter );
-
-      int returnCode;
-
-      List messages = new ArrayList();
-
-      boolean hamburger = true;
-
-      if ( hamburger )
-      {
-
+        List messages = new ArrayList();
 
         try
         {
-            log.info("call CommandLineUtils.executeCommandLine");
+            log.debug( "call CommandLineUtils.executeCommandLine" );
 
             returnCode = CommandLineUtils.executeCommandLine( cli, out, err );
 
+
             // messages = parseModernStream( new BufferedReader( new StringReader( stringWriter.toString() ) ) );
         }
-        catch ( CommandLineException e )
+        catch( CommandLineException e )
         {
             // throw new SurefireException( "Error while executing forked tests.", e );
-          throw new Exception( "Error while executing forked tests.", e );
+            throw new Exception( "Error while executing forked tests.", e );
         }
 
-        catch ( Exception e )
+        catch( Exception e )
         {
-            throw new SurefireBooterForkException( "Error while executing forked tests.", e );
+            throw new org.codehaus.surefire.SurefireBooterForkException(
+                "Error while executing forked tests.", e );
         }
 
-        if ( returnCode != 0 && messages.isEmpty() )
+        if( returnCode != 0 && messages.isEmpty() )
         {
             // TODO: exception?
             // messages.add( new SurefireError( "Failure executing forked tests,  but could not parse the error:"
             //  +  EOL + stringWriter.toString(), true ) );
 
-          // messages.add( new Error( "Failure executing forked tests,  but could not parse the error:"
-          //  +  EOL + stringWriter.toString() ) );
+            // messages.add( new Error( "Failure executing forked tests,  but could not parse the error:"
+            //  +  EOL + stringWriter.toString() ) );
         }
 
 
         Iterator messageIterator = messages.iterator();
 
-        while ( messageIterator.hasNext() )
+        while( messageIterator.hasNext() )
         {
-          Error error = (Error) messageIterator.next();
+            Error error = ( Error ) messageIterator.next();
 
-          System.out.println("error message is " + error.getMessage() );
+            System.out.println( "error message is " + error.getMessage() );
 
         }
 
-
         String string = stringWriter.toString();
 
-        if ( string != null && string.length() > 0 )
+        if( string != null && string.length() > 0 )
         {
             StringReader sr = new StringReader( string );
 
             BufferedReader br = new BufferedReader( sr );
 
-            while ( (string = br.readLine()) != null )
+            while( ( string = br.readLine() ) != null )
             {
-                System.out.println(string);
+                System.out.println( string );
             }
         }
         else
         {
-            System.out.println("string from process is null or length = 0");
+            log.debug( "string from process is null or length = 0" );
         }
-    }
-    else
-    {
-      useRuntimeExec(workingDirectory, args);
-    }
 
-    return true;
-  }
+        if( log.isDebugEnabled() )
+        {
+            if ( returnCode == 0 )
+            {
+                log.debug( "tests executed successsfully" );
+            }
+            else
+            {
+                log.debug( "some tests failed - returnCode value = "
+                    + returnCode );
+            }
+        }
+
+        return true;
+    }
 
 
     private boolean runTestsForkEach()
@@ -347,52 +348,52 @@ public class SurefireBooter
 
     private String[] getForkArgs()
     {
-      // List reports
-      // List batteryHolders
-      // ClassLoader classLoader
-      // List classpathUrls
-      // String reportsDirectory
-      // String forkMode
+        // List reports
+        // List batteryHolders
+        // List classpathUrls
+        // String reportsDirectory
+        // String forkMode
 
-      String pathSeparator = System.getProperty("path.separator");
+        String pathSeparator = System.getProperty( "path.separator" );
 
-      String classpathEntries =  getListOfStringsAsString(classpathUrls, pathSeparator);
+        String classpathEntries = getListOfStringsAsString( classpathUrls,
+            pathSeparator );
 
-      String reportClassNames = getListOfStringsAsString(reports, ",");
+        String reportClassNames = getListOfStringsAsString( reports, "," );
 
-      String[] batteryConfig = getStringArrayFromBatteries();
+        String[] batteryConfig = getStringArrayFromBatteries();
+        // String[] batteryConfig = getArrayOfStringsFromBatteries();
 
-      String classLoaderName = "org.codehaus.surefire.IsolatedClassLoader";
+        String classLoaderName = "org.codehaus.surefire.IsolatedClassLoader";
 
-      log.info( "classpathEntries = " + classpathEntries );
-      log.info( "reportClassNames = " + reportClassNames );
-      log.info( "classLoaderName = " + classLoaderName );
-      log.info( "reportsDirectory = " + reportsDirectory );
-      log.info( "batteryExecutorName = " + "org.codehaus.surefire.Surefire" );
-      log.info( "forkMode = " + forkMode );
+        log.debug( "classpathEntries = " + classpathEntries );
+        log.debug( "reportClassNames = " + reportClassNames );
+        log.debug( "reportsDirectory = " + reportsDirectory );
+        log.debug( "batteryExecutorName = " + "org.codehaus.surefire.Surefire" );
+        log.debug( "forkMode = " + forkMode );
 
-      // a battery is defined as the name of the class - followed by directory
-      // and includes and excludes
+        // a battery is defined as the name of the class - followed by directory
+        // and includes and excludes
 
-      // battery = "<batteryClassName>|<directory name>|<includes>|<excludes>
-      for ( int i = 0; i < batteryConfig.length; i++ )
-      {
-          log.info( "batteryConfig = " + batteryConfig[i]);
-      }
+        // battery = "<batteryClassName>|<directory name>|<includes>|<excludes>
+        for( int i = 0; i < batteryConfig.length; i++ )
+        {
+            log.debug( "batteryConfig = " + batteryConfig[i] );
+        }
 
-      String[] argArray =
-      {
-          "-Djava.class.path=" + classpathEntries,
-         "org.codehaus.surefire.ForkedSurefireLoader",
-         "classpathEntries=" + classpathEntries,
-         "reportClassNames=" + reportClassNames,
-         "reportsDirectory=" + reportsDirectory,
-         "batteryExecutorName=" + "org.codehaus.surefire.Surefire",
-         "forkMode=" + forkMode,
-         "batteryConfig=" + batteryConfig[0]
-      };
+        String[] argArray =
+            {
+                "-Djava.class.path=" + classpathEntries,
+                "org.codehaus.surefire.ForkedSurefireLoader",
+                "classpathEntries=" + classpathEntries,
+                "reportClassNames=" + reportClassNames,
+                "reportsDirectory=" + reportsDirectory,
+                "batteryExecutorName=" + "org.codehaus.surefire.Surefire",
+                "forkMode=" + forkMode,
+                "batteryConfig=" + batteryConfig[0]
+            };
 
-      return argArray;
+        return argArray;
     }
 
     public void reset()
@@ -412,11 +413,11 @@ public class SurefireBooter
 
         String delimiter = "";
 
-        while ( classpathUrlIterator.hasNext() )
+        while( classpathUrlIterator.hasNext() )
         {
-            URL classpathURL = (URL) classpathUrlIterator.next();
+            URL classpathURL = ( URL ) classpathUrlIterator.next();
 
-            classpathBuffer.append(  delimiter );
+            classpathBuffer.append( delimiter );
             classpathBuffer.append( classpathURL.toString() );
             delimiter = ",";
         }
@@ -424,8 +425,8 @@ public class SurefireBooter
         return new String( classpathBuffer );
     }
 
-    private String getListOfStringsAsString(List listOfStrings,
-      String delimiterParm)
+    private String getListOfStringsAsString( List listOfStrings,
+        String delimiterParm )
     {
         StringBuffer stringBuffer = new StringBuffer();
 
@@ -433,109 +434,109 @@ public class SurefireBooter
 
         String delimiter = "";
 
-        while ( listOfStringsIterator.hasNext() )
+        while( listOfStringsIterator.hasNext() )
         {
-            String report = (String) listOfStringsIterator.next();
+            String string = ( String ) listOfStringsIterator.next();
 
             stringBuffer.append( delimiter );
-            stringBuffer.append( report );
+            stringBuffer.append( string );
 
             delimiter = delimiterParm;
         }
 
-        return new String ( stringBuffer );
+        return new String( stringBuffer );
     }
+
 
     private String[] getStringArrayFromBatteries()
     {
-      String[] batteryConfig = new String[batteries.size()];
+        String[] batteryConfig = new String[batteries.size()];
 
-      Iterator batteryIterator = batteries.iterator();
+        Iterator batteryIterator = batteries.iterator();
 
-      StringBuffer batteryBuffer = new StringBuffer();
+        StringBuffer batteryBuffer = new StringBuffer();
 
-      String delimiter = "";
+        String delimiter = "";
 
-      int batteryCounter = 0;
+        int batteryCounter = 0;
 
-      while ( batteryIterator.hasNext() )
-      {
-        Object[] batteryArray = (Object[]) batteryIterator.next();
-
-        batteryBuffer.append((String) batteryArray[0]);
-
-        if (batteryArray[1] != null)
+        while( batteryIterator.hasNext() )
         {
-          Object[] batteryParms = (Object[]) batteryArray[1];
-          for ( int i = 0; i < 3; i++ )
-          {
-              batteryBuffer.append( "|" );
-              batteryBuffer.append( batteryParms[i]);
-          }
-        }
-        batteryConfig[batteryCounter++] = new String( batteryBuffer );
-      }
+            Object[] batteryArray = ( Object[] ) batteryIterator.next();
 
-      return batteryConfig;
+            batteryBuffer.append( ( String ) batteryArray[0] );
+
+            if( batteryArray[1] != null )
+            {
+                Object[] batteryParms = ( Object[] ) batteryArray[1];
+                for( int i = 0; i < 3; i++ )
+                {
+                    batteryBuffer.append( "|" );
+                    batteryBuffer.append( batteryParms[i] );
+                }
+            }
+            batteryConfig[batteryCounter++] = new String( batteryBuffer );
+        }
+
+        return batteryConfig;
     }
 
-    private boolean useRuntimeExec(File workingDirectory, String[] args)
-      throws Exception
+    private String[] getArrayOfStringsFromBatteries()
     {
-      List argList = new ArrayList();
+        log.debug( "batteries.size() is " + batteries.size() );
 
-      argList.add("CMD.EXE");
-      argList.add("/X");
-      argList.add("/C");
-      argList.add("java");
+        String[] batteryConfig = new String[batteries.size()];
 
-      List anotherArgList = Arrays.asList( args );
+        Iterator batteryIterator = batteries.iterator();
 
-      argList.addAll( anotherArgList );
+        int batteryCounter = 0;
 
-      Runtime runtime = Runtime.getRuntime();
+        while( batteryIterator.hasNext() )
+        {
+            Object[] batteryArray = ( Object[] ) batteryIterator.next();
 
-      String[] longArgs = new String[argList.size()];
+            batteryConfig[batteryCounter++] = getStringFromBattery(
+                batteryArray );
+        }
 
-      argList.toArray(longArgs);
+        return batteryConfig;
+    }
 
-      Process p = runtime.exec(longArgs, null, workingDirectory);
+    private String getStringFromBattery( Object[] battery )
+    {
+        StringBuffer batteryBuffer = new StringBuffer();
+        batteryBuffer.append( ( String ) battery[0] );
 
-      InputStream is = p.getInputStream();
+        log.debug( "battery[0] should be a battery class " + battery[0] );
 
-      Reader reader = new InputStreamReader(is);
+        if( battery[1] != null )
+        {
+            Object[] batteryParms = ( Object[] ) battery[1];
 
-      BufferedReader br = new BufferedReader(reader);
+            batteryBuffer.append( "|" );
 
-      InputStream error = p.getErrorStream();
+            log.debug(
+                "batteryParms[0]'s class is " + batteryParms[0].getClass()
+                    .getName() );
 
-      Reader errorReader =  new InputStreamReader(error);
+            String directoryName = ( ( File ) batteryParms[0] ).getAbsolutePath();
 
-      BufferedReader er = new BufferedReader(errorReader);
+            if( directoryName == null )
+            {
+                directoryName = "";
+            }
 
+            batteryBuffer.append( directoryName );
 
-      p.waitFor();
-
-      int exitValue =  p.exitValue();
-
-      log.info( "process exit value is " + exitValue);
-
-      String line = null;
-
-      log.info("stdout");
-
-      while ((line = br.readLine()) != null )
-      {
-        log.info( line );
-      }
-
-      log.info("stderr");
-
-      while ((line = er.readLine()) != null )
-      {
-        log.info( line );
-      }
-
-      return exitValue == 0;
+            for( int i = 1; i < batteryParms.length; i++ )
+            {
+                batteryBuffer.append( "|" );
+                batteryBuffer
+                    .append( getListOfStringsAsString( ( List ) batteryParms[i],
+                        "," ) );
+            }
+        }
+        return new String( batteryBuffer );
     }
 }
+

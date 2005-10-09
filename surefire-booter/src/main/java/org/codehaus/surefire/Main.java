@@ -1,13 +1,5 @@
 package org.codehaus.surefire;
 
-import java.io.File;
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.StringTokenizer;
-import java.util.Iterator;
-
 /*
  * Copyright 2001-2005 The Codehaus.
  *
@@ -24,10 +16,24 @@ import java.util.Iterator;
  * limitations under the License.
  */
 
+import java.io.File;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.StringTokenizer;
+import java.util.Iterator;
+
 /**
+ * @author <a href="mailto:jason@maven.org">Jason van Zyl</a>
+ * @author <a href="mailto:andyglick@acm.org">Andy Glick</a>
+ * @version $Id$
  */
 public class Main
 {
+    /**
+     *
+     */
     private Main()
     {
 
@@ -37,6 +43,11 @@ public class Main
     // Main
     // ----------------------------------------------------------------------
 
+    /**
+     *
+     * @param args
+     * @throws Exception
+     */
     public static void main( String[] args )
         throws Exception
     {
@@ -142,6 +153,12 @@ public class Main
         surefireBooter.run();
     }
 
+    /**
+     *
+     * @param dependencies
+     * @param sureFire
+     * @throws Exception
+     */
     private static void processDependencies( List dependencies, SurefireBooter sureFire )
         throws Exception
     {

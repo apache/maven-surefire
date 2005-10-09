@@ -29,6 +29,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
 
+/**
+ *
+ */
 public class Surefire
 {
     private static ResourceBundle resources = ResourceBundle.getBundle( "org.codehaus.surefire.surefire" );
@@ -43,15 +46,32 @@ public class Surefire
 
     private String reportsDirectory;
 
+    /**
+     *
+     */
     public Surefire()
     {
+        super();
     }
 
+    /**
+     *
+     * @return the resources field will be returned
+     */
     public static ResourceBundle getResources()
     {
         return resources;
     }
 
+    /**
+     *
+     * @param reports
+     * @param batteryHolders
+     * @param classLoader
+     * @param reportsDirectory
+     * @return
+     * @throws Exception
+     */
     public boolean run( List reports, List batteryHolders, ClassLoader classLoader, String reportsDirectory )
         throws Exception
     {
@@ -76,6 +96,11 @@ public class Surefire
         return run();
     }
 
+    /**
+     *
+     * @return
+     * @throws Exception
+     */
     public boolean run()
         throws Exception
     {
@@ -105,10 +130,12 @@ public class Surefire
                         e.printStackTrace();
                         ReportEntry report = new ReportEntry( e,
                                                               "org.codehaus.surefire.Runner",
-                                                              Surefire.getResources().getString( "bigProblems" ), e );
+                                                              getResources().getString( "bigProblems" ), e );
 
                         reporterManager.batteryAborted( report );
                     }
+
+                    // System.out.println("after 1st battery.getTestCount() testCount = " + testCount);
 
                     if ( testCount > 0 )
                     {
@@ -128,6 +155,8 @@ public class Surefire
 
                     List subBatteries = instantiateBatteries( list, classLoader );
 
+                    // System.out.println("after 2nd instantiateBatteries size of batteries is " + subBatteries.size());
+
                     for ( Iterator j = subBatteries.iterator(); j.hasNext(); )
                     {
                         Battery b = (Battery) j.next();
@@ -142,7 +171,7 @@ public class Surefire
                             e.printStackTrace();
                             ReportEntry report = new ReportEntry( e,
                                                                   "org.codehaus.surefire.Runner",
-                                                                  Surefire.getResources().getString( "bigProblems" ), e );
+                                                                  getResources().getString( "bigProblems" ), e );
 
                             reporterManager.batteryAborted( report );
                         }
@@ -158,12 +187,12 @@ public class Surefire
 
                 if ( nbTests == 0 )
                 {
-                    reporterManager.writeMessage( "There are no test to run." );
+                    reporterManager.writeMessage( "There are no tests to run." );
                 }
             }
             else
             {
-                reporterManager.writeMessage( "There are no battery to run." );
+                reporterManager.writeMessage( "There are no batteries to run." );
             }
 
             reporterManager.runCompleted();
@@ -173,26 +202,29 @@ public class Surefire
             ex.printStackTrace();
             ReportEntry report = new ReportEntry( ex,
                                                   "org.codehaus.surefire.Runner",
-                                                  Surefire.getResources().getString( "bigProblems" ), ex );
+                                                  getResources().getString( "bigProblems" ), ex );
 
             reporterManager.runAborted( report );
         }
 
         reporterManager.resume();
 
-        if ( reporterManager.getNbErrors() > 0 || reporterManager.getNbFailures() > 0 )
-        {
-            return false;
-        }
-        return true;
+        return !( reporterManager.getNbErrors() > 0 || reporterManager
+            .getNbFailures() > 0 );
     }
 
+    /**
+     *
+     * @param battery
+     * @param reportManager
+     * @throws Exception
+     */
     public void executeBattery( Battery battery, ReporterManager reportManager )
         throws Exception
     {
         try
         {
-            String rawString = Surefire.getResources().getString( "suiteExecutionStarting" );
+            String rawString = getResources().getString( "suiteExecutionStarting" );
 
             ReportEntry report = new ReportEntry( this, battery.getBatteryName(), rawString );
 
@@ -202,7 +234,7 @@ public class Surefire
             {
                 battery.execute( reportManager );
 
-                rawString = Surefire.getResources().getString( "suiteCompletedNormally" );
+                rawString = getResources().getString( "suiteCompletedNormally" );
 
                 report = new ReportEntry( this, battery.getBatteryName(), rawString );
 
@@ -212,7 +244,7 @@ public class Surefire
             {
                 e.printStackTrace();
 
-                rawString = Surefire.getResources().getString( "executeException" );
+                rawString = getResources().getString( "executeException" );
 
                 report = new ReportEntry( this, battery.getBatteryName(), rawString, e );
 
@@ -228,12 +260,19 @@ public class Surefire
         {
             ReportEntry report = new ReportEntry( ex,
                                                   "org.codehaus.surefire.Runner",
-                                                  Surefire.getResources().getString( "bigProblems" ), ex );
+                                                  getResources().getString( "bigProblems" ), ex );
 
             reportManager.runAborted( report );
         }
     }
 
+    /**
+     *
+     * @param batteryHolders
+     * @param loader
+     * @return
+     * @throws Exception
+     */
     public static List instantiateBatteries( List batteryHolders, ClassLoader loader )
         throws Exception
     {
@@ -243,7 +282,7 @@ public class Surefire
         {
             Object[] holder = (Object[]) batteryHolders.get( i );
 
-            Class testClass = null;
+            Class testClass;
 
             try
             {
@@ -318,18 +357,33 @@ public class Surefire
         return batteries;
     }
 
+    /**
+     *
+     * @param reportClassNames
+     * @param classLoader
+     * @return
+     * @throws Exception
+     */
     protected List instantiateReports( List reportClassNames, ClassLoader classLoader )
         throws Exception
     {
         List reports = new ArrayList();
 
+        boolean fail = false;
+
+        ClassLoader reporterClassLoader = Reporter.class.getClassLoader();
+
         for ( Iterator i = reportClassNames.iterator(); i.hasNext(); )
         {
-            String reportClass = (String) i.next();
+            String reportClassName = (String) i.next();
 
             try
             {
-                Reporter report = (Reporter) classLoader.loadClass( reportClass ).newInstance();
+                Class reportClass = reporterClassLoader.loadClass( reportClassName );
+
+                assert Reporter.class.isAssignableFrom(reportClass);
+
+                Reporter report = (Reporter) reportClass.newInstance();
 
                 report.setReportsDirectory( reportsDirectory );
 
@@ -341,9 +395,13 @@ public class Surefire
             }
         }
 
+        if (fail)
+        {
+          throw new RuntimeException("couldn't assign reports as expected");
+        }
+
         return reports;
     }
-
 }
 
 
