@@ -26,6 +26,8 @@ public class ForkedSurefireLoader
     static int ILLEGAL_ARGUMENT_EXCEPTION = 100;
     static int OTHER_EXCEPTION = 200;
 
+    private static Class thisClass = ForkedSurefireLoader.class;
+
     private static final Log log = LogFactory.getLog(ForkedSurefireLoader.class);
 
     /**
@@ -98,9 +100,11 @@ public class ForkedSurefireLoader
 
         String classpathEntries = ( String ) argMap.get( "classpathEntries" );
 
-        URL[] urlArray = getURLs( classpathEntries );
+        // URL[] urlArray = getURLs( classpathEntries );
 
-        URLClassLoader surefireClassLoader = new URLClassLoader( urlArray );
+        // URLClassLoader surefireClassLoader = new URLClassLoader( urlArray );
+
+        ClassLoader surefireClassLoader = thisClass.getClassLoader();
 
         String batteryExecutorName = ( String ) argMap
             .get( "batteryExecutorName" );
@@ -110,7 +114,7 @@ public class ForkedSurefireLoader
 
         Object batteryExecutor = batteryExecutorClass.newInstance();
 
-        Thread.currentThread().setContextClassLoader( surefireClassLoader );
+        // Thread.currentThread().setContextClassLoader( surefireClassLoader );
 
         String reports = ( String ) argMap.get( "reportClassNames" );
 
@@ -207,12 +211,10 @@ public class ForkedSurefireLoader
         Method run = batteryExecutorClass.getMethod( "run",
             new Class[]{List.class,
                 List.class,
-                ClassLoader.class,
                 String.class} );
 
         Object[] parms = new Object[]{reportList,
             batteryHolders,
-            surefireClassLoader,
             reportsDirectory};
 
         log.debug( "size of batteryHolders is " + batteryHolders.size() );

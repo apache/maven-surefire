@@ -67,6 +67,22 @@ public class Surefire
      *
      * @param reports
      * @param batteryHolders
+     * @param reportsDirectory
+     * @return
+     * @throws Exception
+     */
+    public boolean run( List reports, List batteryHolders,
+        String reportsDirectory ) throws Exception
+    {
+        ClassLoader classLoader = this.getClass().getClassLoader();
+
+        return run(reports, batteryHolders, classLoader, reportsDirectory);
+    }
+
+    /**
+     *
+     * @param reports
+     * @param batteryHolders
      * @param classLoader
      * @param reportsDirectory
      * @return
