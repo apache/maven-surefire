@@ -43,9 +43,9 @@ public class BooterTestCase extends TestCase
 {
     private static final Log log = LogFactory.getLog( BooterTestCase.class );
 
-    private static String mavenRepoLocal = "F:\\m2-repository\\repository";
+    private static String mavenRepoLocal = System.getProperty( "localRepository" );
 
-    private static String repoLocal = mavenRepoLocal;
+    private static String fileSeparator = System.getProperty( "file.separator" );
 
     private String basedir = null;
 
@@ -55,6 +55,20 @@ public class BooterTestCase extends TestCase
     private static File testClassesDirectory = null;
 
     private static String reportsDirectory = null;
+
+    static
+    {
+        if( OS.toUpperCase( ).startsWith( "WINDOWS" ) )
+        {
+            if( mavenRepoLocal.indexOf(" ") != -1 )
+            {
+                fail( "\n\nin Windows environments, if your maven repository string"
+                    + " contains white space - \nyou must move your m2 "
+                    + "repository to a file system location without "
+                    + "embedded \nspaces" );
+            }
+        }
+    }
 
     /**
      * Default no arg constructor
@@ -144,7 +158,7 @@ public class BooterTestCase extends TestCase
         ArtifactRepositoryLayout repositoryLayout = new DefaultRepositoryLayout();
 
         ArtifactRepository localRepository = new DefaultArtifactRepository( "local",
-            "file://" + repoLocal, repositoryLayout );
+            "file://" + mavenRepoLocal, repositoryLayout );
 
         SurefireBooter sfb = new SurefireBooter();
 
@@ -258,7 +272,7 @@ public class BooterTestCase extends TestCase
 
             StringBuffer dependency = new StringBuffer();
 
-            dependency.append( repoLocal );
+            dependency.append( mavenRepoLocal );
             dependency.append( fileSeparator );
 
             dependency.append( dependencyElements[0].replace( '.', '\\' ) );
