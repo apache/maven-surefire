@@ -56,20 +56,6 @@ public class BooterTestCase extends TestCase
 
     private static String reportsDirectory = null;
 
-    static
-    {
-        if( OS.toUpperCase( ).startsWith( "WINDOWS" ) )
-        {
-            if( mavenRepoLocal.indexOf(" ") != -1 )
-            {
-                fail( "\n\nin Windows environments, if your maven repository string"
-                    + " contains white space - \nyou must move your m2 "
-                    + "repository to a file system location without "
-                    + "embedded \nspaces" );
-            }
-        }
-    }
-
     /**
      * Default no arg constructor
      */

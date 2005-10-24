@@ -58,32 +58,6 @@ public class ForkedSurefireLoader
         return argMap;
     }
 
-    private static URL[] getURLs(String classpathEntries) throws Exception
-    {
-        String[] classpathArray = classpathEntries
-            .split( System.getProperty( "path.separator" ) );
-
-        URL[] urlArray = new URL[classpathArray.length];
-
-        for( int i = 0; i < classpathArray.length; i++ )
-        {
-            String url = classpathArray[i];
-
-            if( url == null )
-            {
-                continue;
-            }
-
-            log.debug( "classpath filename is " + url );
-
-            File f = new File( url );
-
-            urlArray[i] = f.toURL();
-        }
-
-        return urlArray;
-    }
-
     /**
      * This method is invoked when Surefire is forked - this method parses and
      * organizes the arguments passed to it and then calls the Surefire class'
@@ -97,12 +71,6 @@ public class ForkedSurefireLoader
         Map argMap = getArgMap(args);
 
         log.debug( "argmap = " + argMap );
-
-        String classpathEntries = ( String ) argMap.get( "classpathEntries" );
-
-        // URL[] urlArray = getURLs( classpathEntries );
-
-        // URLClassLoader surefireClassLoader = new URLClassLoader( urlArray );
 
         ClassLoader surefireClassLoader = thisClass.getClassLoader();
 

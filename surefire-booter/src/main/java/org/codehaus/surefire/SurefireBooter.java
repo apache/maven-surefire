@@ -219,15 +219,6 @@ public class SurefireBooter
 
         String pathSeparator = System.getProperty( "path.separator" );
 
-        String classpathEntries = getListOfStringsAsString( classpathUrls,
-            pathSeparator );
-
-        String quotedClasspath = Commandline.quoteArgument( classpathEntries );
-
-        log.debug( "quotedClasspath = " + quotedClasspath );
-
-        log.debug( "executable is " + executable );
-
         File workingDirectory = new File( "." );
 
         Commandline cli = new Commandline();
@@ -270,7 +261,6 @@ public class SurefireBooter
 
             returnCode = CommandLineUtils.executeCommandLine( cli, out, err );
 
-
             // messages = parseModernStream( new BufferedReader( new StringReader( stringWriter.toString() ) ) );
         }
         catch( CommandLineException e )
@@ -278,7 +268,6 @@ public class SurefireBooter
             // throw new SurefireException( "Error while executing forked tests.", e );
             throw new Exception( "Error while executing forked tests.", e );
         }
-
         catch( Exception e )
         {
             throw new org.codehaus.surefire.SurefireBooterForkException(
@@ -346,7 +335,7 @@ public class SurefireBooter
         return true;
     }
 
-    private String[] getForkArgs()
+    private String[] getForkArgs() throws Exception
     {
         // List reports
         // List batteryHolders
@@ -364,13 +353,11 @@ public class SurefireBooter
         String[] batteryConfig = getStringArrayFromBatteries();
         // String[] batteryConfig = getArrayOfStringsFromBatteries();
 
-        String classLoaderName = "org.codehaus.surefire.IsolatedClassLoader";
-
-        log.debug( "classpathEntries = " + classpathEntries );
-        log.debug( "reportClassNames = " + reportClassNames );
-        log.debug( "reportsDirectory = " + reportsDirectory );
-        log.debug( "batteryExecutorName = " + "org.codehaus.surefire.Surefire" );
-        log.debug( "forkMode = " + forkMode );
+        log.info( "classpathEntries = " + classpathEntries );
+        log.info( "reportClassNames = " + reportClassNames );
+        log.info( "reportsDirectory = " + reportsDirectory );
+        log.info( "batteryExecutorName = " + "org.codehaus.surefire.Surefire" );
+        log.info( "forkMode = " + forkMode );
 
         // a battery is defined as the name of the class - followed by directory
         // and includes and excludes
@@ -378,14 +365,14 @@ public class SurefireBooter
         // battery = "<batteryClassName>|<directory name>|<includes>|<excludes>
         for( int i = 0; i < batteryConfig.length; i++ )
         {
-            log.debug( "batteryConfig = " + batteryConfig[i] );
+            log.info( "batteryConfig = " + batteryConfig[i] );
         }
 
         String[] argArray =
             {
-                "-Djava.class.path=" + classpathEntries,
+                "-classpath",
+                classpathEntries,
                 "org.codehaus.surefire.ForkedSurefireLoader",
-                "classpathEntries=" + classpathEntries,
                 "reportClassNames=" + reportClassNames,
                 "reportsDirectory=" + reportsDirectory,
                 "batteryExecutorName=" + "org.codehaus.surefire.Surefire",
