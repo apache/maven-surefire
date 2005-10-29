@@ -196,6 +196,12 @@ public class SurefireBooter
 
         SurefireBooter surefireBooter = new SurefireBooter();
 
+        System.out.println( "testClassesDirectory = " + testClassesDirectory );
+
+        System.out.println( "includes = " + includes );
+
+        System.out.println( "excludes = " + excludes );
+
         surefireBooter.addBattery( "org.codehaus.surefire.battery.DirectoryBattery", new Object[]{ testClassesDirectory, includes, excludes } );
 
         surefireBooter.addClassPathUrl( new File( mavenRepoLocal, "junit/jars/junit-3.8.1.jar" ).getPath() );
