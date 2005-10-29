@@ -7,7 +7,7 @@
   <modelVersion>4.0.0</modelVersion>
   <artifactId>surefire</artifactId>
   <name>SureFire</name>
-  <version>1.4</version>
+  <version>1.5-SNAPSHOT</version>
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
