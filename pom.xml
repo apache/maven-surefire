@@ -12,7 +12,7 @@
     <dependency>
       <groupId>surefire</groupId>
       <artifactId>surefire</artifactId>
-      <version>1.4-SNAPSHOT</version>
+      <version>1.4</version>
     </dependency>
   </dependencies>
 </project>
