@@ -24,6 +24,7 @@ import org.codehaus.surefire.report.Reporter;
 import org.codehaus.surefire.report.ReporterManager;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -250,6 +251,11 @@ public class Surefire
                 testClass = loader.loadClass( (String) holder[0] );
             }
             catch ( Exception e )
+            {
+                continue;
+            }
+
+            if (Modifier.isAbstract(testClass.getModifiers()))
             {
                 continue;
             }
