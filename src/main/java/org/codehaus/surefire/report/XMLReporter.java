@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.text.DecimalFormat;
 import java.util.Enumeration;
 import java.util.Properties;
 
@@ -153,6 +154,8 @@ public class XMLReporter
         
         message = StringUtils.replace(message,">", "&gt;");
         
+        message = StringUtils.replace( message, "\"", "&quot;" );
+
         failure.setAttribute("message", message);
        
         failure.setAttribute("type", stackTrace.substring(0, stackTrace.indexOf(":")));
@@ -229,5 +232,12 @@ public class XMLReporter
         
             }
         }
+    }
+    
+    protected String elapsedTimeAsString( long runTime )
+    {
+        DecimalFormat DECIMAL_FORMAT = new DecimalFormat( "##0.00" );
+       
+        return DECIMAL_FORMAT.format( (double) runTime / 1000 );
     }
 }
