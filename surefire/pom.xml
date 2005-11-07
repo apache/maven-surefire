@@ -8,7 +8,7 @@
   <name>SureFire Parent</name>
   <version>1.1</version>
   <description>Surefire is a test framework project.</description>
-  <url>http://surefire.codehaus.org/</url>
+  <url>http://maven.apache.org/surefire</url>
   <issueManagement>
     <system>jira</system>
     <url>http://jira.codehaus.org/browse/SUREFIRE</url>
