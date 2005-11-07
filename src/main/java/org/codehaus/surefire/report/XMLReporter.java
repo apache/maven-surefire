@@ -99,7 +99,16 @@ public class XMLReporter
     {
         super.testStarting(report);
         
-        String reportName = report.getName().substring(0, report.getName().indexOf("("));
+        String reportName;
+        
+        if ( report.getName().indexOf( "(" ) > 0 )
+        {
+            reportName = report.getName().substring( 0, report.getName().indexOf( "(" ) );
+        }
+        else
+        {
+            reportName = report.getName();
+        }
         
         testCase = createElement(testSuite, "testcase");
         
@@ -126,6 +135,8 @@ public class XMLReporter
         String message = StringUtils.replace(report.getThrowable().getMessage(),"<","&lt;");
         
         message = StringUtils.replace(message,">", "&gt;");
+        
+        message = StringUtils.replace( message, "\"", "&quot;" );
                 
         error.setAttribute("message", message);
 
