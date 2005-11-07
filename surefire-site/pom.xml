@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<project>
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>surefire</groupId>
+    <artifactId>surefire-root</artifactId>
+    <version>1.1</version>
+  </parent>
+  <groupId>surefire</groupId>
+  <artifactId>surefire-site</artifactId>
+  <version>1.1-SNAPSHOT</version>
+  <name>Surefire</name>
+  <distributionManagement>
+    <site>
+      <id>surefire.website</id>
+      <name>Surefire Website</name>
+      <url>scp://beaver.codehaus.org/home/projects/surefire/public_html</url>
+    </site>
+  </distributionManagement>
+  <reporting>
+    <!-- TODO: disable dependencies -->
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-project-info-reports-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </reporting>
+</project>

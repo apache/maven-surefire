@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<project>
+
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>surefire</groupId>
+    <artifactId>surefire-root</artifactId>
+    <version>1.1</version>
+  </parent>
+
+  <groupId>surefire</groupId>
+  <artifactId>surefire-web</artifactId>e
+  <version>1.0-SNAPSHOT</version>
+
+  <dependencies>
+    <dependency>
+      <groupId>surefire</groupId>
+      <artifactId>surefire</artifactId>
+      <version>1.4-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>httpunit</groupId>
+      <artifactId>httpunit</artifactId>
+      <version>1.5.1</version>
+    </dependency>
+    <dependency>
+      <groupId>jwebunit</groupId>
+      <artifactId>jwebunit</artifactId>
+      <version>1.1.1</version>
+    </dependency>
+    <dependency>
+      <groupId>jtidy</groupId>
+      <artifactId>jtidy</artifactId>
+      <version>4aug2000r7-dev</version>
+    </dependency>
+    <dependency>
+      <groupId>HTTPClient</groupId>
+      <artifactId>HTTPClient</artifactId>
+      <version>0.3-3</version>
+    </dependency>
+  </dependencies>
+</project>

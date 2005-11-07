@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<project>
+
+  <pomVersion>3</pomVersion>
+  <id>surefire-beanshell</id>
+  <groupId>surefire</groupId>
+  <artifactId>surefire-beanshell</artifactId>
+  <name>SureFire BeanShell</name>
+  <currentVersion>0.5</currentVersion>
+
+  <organization>
+    <name>Codehaus</name>
+    <url>http://jakarta.apache.org/</url>
+    <logo>/images/jakarta-logo-blue.gif</logo>
+  </organization>
+
+  <inceptionYear>2001</inceptionYear>
+  <package>org.apache.maven</package>
+  <logo>/images/maven.jpg</logo>
+  <description>Maven is a project management and project comprehension tool. Maven is based on the concept of a project object model: builds, documentation creation, site publication, and distribution publication are all controlled from the project object model. Maven also provides tools to create source metrics, change logs based directly on source repository, and source cross-references.</description>
+  <shortDescription>Java Project Management Tools</shortDescription>
+  <url>http://maven.apache.org/</url>
+  <issueTrackingUrl>http://jira.codehaus.org/BrowseProject.jspa?id=10030</issueTrackingUrl>
+  <siteAddress>maven.apache.org</siteAddress>
+  <siteDirectory>/www/maven.apache.org/</siteDirectory>
+  <distributionDirectory>/www/jakarta.apache.org/builds/jakarta-turbine-maven/</distributionDirectory>
+
+  <repository>
+    <connection>scm:cvs:pserver:anonymous@cvs.codehaus.org:/scm/cvs:surefire</connection>
+    <developerConnection>scm:cvs:ext:${maven.username}@cvs.codehaus.org:/cvs/scm:surefire</developerConnection>
+    <url>http://cvs.apache.org/viewcvs/maven/</url>
+  </repository>
+
+  <versions/>
+  <branches></branches>
+  <mailingLists/>
+  <developers/>
+
+  <dependencies>
+    <dependency>
+      <groupId>surefire</groupId>
+      <artifactId>surefire</artifactId>
+      <version>1.0</version>
+    </dependency>
+    <dependency>
+      <groupId>httpunit</groupId>
+      <artifactId>httpunit</artifactId>
+      <version>1.5.1</version>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>3.8.1</version>
+    </dependency>
+    <dependency>
+      <groupId>jwebunit</groupId>
+      <artifactId>jwebunit</artifactId>
+      <version>1.1.1</version>
+    </dependency>
+    <dependency>
+      <groupId>jython</groupId>
+      <artifactId>jython</artifactId>
+      <version>2.1</version>
+    </dependency>
+    <dependency>
+      <groupId>xmlrpc</groupId>
+      <artifactId>xmlrpc</artifactId>
+      <version>1.2-a2</version>
+    </dependency>
+    <dependency>
+      <groupId>jtidy</groupId>
+      <artifactId>jtidy</artifactId>
+      <version>4aug2000r7-dev</version>
+    </dependency>
+    <dependency>
+      <groupId>HTTPClient</groupId>
+      <artifactId>HTTPClient</artifactId>
+      <version>0.3-3</version>
+    </dependency>
+    <dependency>
+      <groupId>plexus</groupId>
+      <artifactId>plexus</artifactId>
+      <version>0.14-SNAPSHOT</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <nagEmailAddress>dev@maven.apache.org</nagEmailAddress>
+    <sourceDirectory>src/main</sourceDirectory>
+    <unitTestSourceDirectory>src/test</unitTestSourceDirectory>
+    <unitTest>
+      <includes>
+        <include>**/*Test.java</include>
+      </includes>
+    </unitTest>
+    <resources>
+      <resource>
+        <directory>src/messages</directory>
+        <targetPath>org/codehaus/surefire</targetPath>
+        <includes>
+          <include>*.properties</include>
+        </includes>
+      </resource>
+    </resources>
+  </build>
+
+  <reports>
+    <report>maven-jdepend-plugin</report>
+    <report>maven-checkstyle-plugin</report>
+    <report>maven-changes-plugin</report>
+    <report>maven-changelog-plugin</report>
+    <report>maven-file-activity-plugin</report>
+    <report>maven-developer-activity-plugin</report>
+    <report>maven-javadoc-plugin</report>
+    <report>maven-jxr-plugin</report>
+    <report>maven-junit-report-plugin</report>
+    <report>maven-tasklist-plugin</report>
+    <report>maven-jellydoc-plugin</report>
+  </reports>
+
+</project>
