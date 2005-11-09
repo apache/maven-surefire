@@ -138,9 +138,16 @@ public class XMLReporter
         
         message = StringUtils.replace( message, "\"", "&quot;" );
                 
-        error.setAttribute("message", message);
+		if( message != null && !message.equals( "" ) )
+		{
+			error.setAttribute("message", message);
 
-        error.setAttribute("type", stackTrace.substring(0, stackTrace.indexOf(":")));
+			error.setAttribute("type", stackTrace.substring(0, stackTrace.indexOf(":")));
+		}
+		else
+		{
+			error.setAttribute("type", stackTrace.substring(0, stackTrace.indexOf("Exception") + 9 ));
+		}
         
         error.setValue(stackTrace);
         
