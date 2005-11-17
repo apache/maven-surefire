@@ -26,6 +26,8 @@ public class ConsoleReporter
     private static final int BUFFER_SIZE = 4096;
 
     private PrintWriter writer;
+    
+    private long batteryStartTime;
 
     public ConsoleReporter()
     {
@@ -82,12 +84,14 @@ public class ConsoleReporter
     public void batteryStarting( ReportEntry report )
         throws Exception
     {
+        batteryStartTime = System.currentTimeMillis();
+        
         writer.println( "[surefire] Running " + report.getName() );
     }
 
     public void batteryCompleted( ReportEntry report )
     {
-        long runTime = endTime - startTime;
+        long runTime = System.currentTimeMillis() - batteryStartTime;
 
         writer.print( "[surefire] Tests run: " + completedCount +
                              ", Failures: " + failures +
