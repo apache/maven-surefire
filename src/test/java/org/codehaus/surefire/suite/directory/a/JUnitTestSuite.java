@@ -1,4 +1,4 @@
-package org.codehaus.surefire.battery.directory.a;
+package org.codehaus.surefire.suite.directory.a;
 
 /*
  * Copyright 2001-2005 The Codehaus.
