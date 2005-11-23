@@ -23,6 +23,7 @@ import java.io.StringWriter;
 import java.text.DecimalFormat;
 import java.util.Enumeration;
 import java.util.Properties;
+import java.util.StringTokenizer;
 
 import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
@@ -46,6 +47,16 @@ public class XMLReporter
     
     private long batteryStartTime;
     
+    public void setTestCase( Xpp3Dom testCase )
+    {
+        this.testCase = testCase;
+    }
+
+    public Xpp3Dom getTestCase()
+    {
+        return testCase;
+    }
+
     public void runStarting( int testCount )
     {
 
@@ -132,28 +143,39 @@ public class XMLReporter
         
         Xpp3Dom error = createElement (testCase, "error");
         
-        String message = StringUtils.replace(report.getThrowable().getMessage(),"<","&lt;");
-        
-        message = StringUtils.replace(message,">", "&gt;");
-        
-        message = StringUtils.replace( message, "\"", "&quot;" );
-                
-		if( message != null && !message.equals( "" ) )
-		{
-			error.setAttribute("message", message);
+        Throwable t = report.getThrowable();
 
-			error.setAttribute("type", stackTrace.substring(0, stackTrace.indexOf(":")));
-		}
-		else
-		{
-			error.setAttribute("type", stackTrace.substring(0, stackTrace.indexOf("Exception") + 9 ));
-		}
+        if ( t != null )
+        {
+
+            String message = t.getMessage();
+
+            if ( ( message != null ) && ( !message.equals( "" ) ) )
+            {
+
+                message = StringUtils.replace( report.getThrowable().getMessage(), "<", "&lt;" );
+
+                message = StringUtils.replace( message, ">", "&gt;" );
+
+                message = StringUtils.replace( message, "\"", "&quot;" );
+
+                error.setAttribute( "message", message );
+
+                error.setAttribute( "type", stackTrace.substring( 0, stackTrace.indexOf( ":" ) ) );
+            }
+            
+            else
+            {
+                error.setAttribute( "type", new StringTokenizer( stackTrace ).nextToken() );
+            }
+
+        }
+
+        error.setValue( stackTrace );
         
         error.setValue(stackTrace);
         
         createElement(testCase, "system-out").setValue(stdOut);
-        
-        createElement(testCase, "system-err").setValue(stdErr);
         
         long runTime = endTime - startTime;
         
@@ -168,16 +190,33 @@ public class XMLReporter
         
         Xpp3Dom failure = createElement (testCase, "failure");
         
-        String message = StringUtils.replace(report.getThrowable().getMessage(),"<","&lt;");
-        
-        message = StringUtils.replace(message,">", "&gt;");
-        
-        message = StringUtils.replace( message, "\"", "&quot;" );
+        Throwable t = report.getThrowable();
 
-        failure.setAttribute("message", message);
-       
-        failure.setAttribute("type", stackTrace.substring(0, stackTrace.indexOf(":")));
+        if ( t != null )
+        {
 
+            String message = t.getMessage();
+
+            if ( ( message != null ) && ( !message.equals( "" ) ) )
+            {
+
+                message = StringUtils.replace( report.getThrowable().getMessage(), "<", "&lt;" );
+
+                message = StringUtils.replace( message, ">", "&gt;" );
+
+                message = StringUtils.replace( message, "\"", "&quot;" );
+
+                failure.setAttribute( "message", message );
+
+                failure.setAttribute( "type", stackTrace.substring( 0, stackTrace.indexOf( ":" ) ) );
+            }
+
+            else
+            {
+                failure.setAttribute( "type", new StringTokenizer( stackTrace ).nextToken() );
+            }
+        }
+               
         failure.setValue(getStackTrace(report));
 
         createElement(testCase, "system-out").setValue(stdOut);
