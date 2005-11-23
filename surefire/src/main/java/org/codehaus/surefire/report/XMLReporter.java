@@ -39,6 +39,8 @@ import org.codehaus.surefire.util.StringUtils;
 public class XMLReporter 
     extends AbstractReporter
 {
+    private static final DecimalFormat TIME_FORMAT = new DecimalFormat( "##0.00" );
+
     private PrintWriter writer;
     
     private Xpp3Dom testSuite;
@@ -293,8 +295,6 @@ public class XMLReporter
     
     protected String elapsedTimeAsString( long runTime )
     {
-        DecimalFormat DECIMAL_FORMAT = new DecimalFormat( "##0.00" );
-       
-        return DECIMAL_FORMAT.format( (double) runTime / 1000 );
+        return TIME_FORMAT.format( (double) runTime / 1000 );
     }
 }

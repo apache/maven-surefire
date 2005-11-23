@@ -49,7 +49,7 @@ public class XMLReporterTest
     public void testTestError()
     {
         reporter.testError( reportEntry, "", "" );
-        assertResult(reporter, message);
+        assertResult( reporter, message );
     }
 
     /*
@@ -58,14 +58,21 @@ public class XMLReporterTest
     public void testTestFailed()
     {
         reporter.testError( reportEntry, "", "" );
-        assertResult(reporter, message);
+        assertResult( reporter, message );
     }
 
-    private void assertResult(XMLReporter reporter, String message)
+    private void assertResult( XMLReporter reporter, String message )
     {
         Xpp3Dom result = reporter.getTestCase();
         Xpp3Dom child = result.getChild( "error" );
         assertEquals( message, child.getAttribute( "type" ) );
+    }
+
+    public void testElapsedTimeAsString()
+    {
+        String timeAsString = reporter.elapsedTimeAsString( 1000 );
+        assertTrue( timeAsString.indexOf( "." ) >= 0 );
+        assertTrue( timeAsString.indexOf( "," ) < 0 );
     }
 
 }
