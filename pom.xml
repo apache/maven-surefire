@@ -125,8 +125,5 @@
   <modules>
     <module>surefire</module>
     <module>surefire-booter</module>
-    <module>surefire-jython</module>
-    <module>surefire-web</module>
-    <module>surefire-xmlrpc</module>    
   </modules>
 </project>
