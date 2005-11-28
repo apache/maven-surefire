@@ -152,7 +152,7 @@ public class XMLReporter
 
             String message = t.getMessage();
 
-            if ( ( message != null ) && ( !message.equals( "" ) ) )
+            if ( ( message != null ) && ( message.trim().length() > 0 ) )
             {
 
                 message = StringUtils.replace( report.getThrowable().getMessage(), "<", "&lt;" );
@@ -199,7 +199,7 @@ public class XMLReporter
 
             String message = t.getMessage();
 
-            if ( ( message != null ) && ( !message.equals( "" ) ) )
+            if ( ( message != null ) && ( message.trim().length() > 0 ) )
             {
 
                 message = StringUtils.replace( report.getThrowable().getMessage(), "<", "&lt;" );
@@ -212,7 +212,6 @@ public class XMLReporter
 
                 failure.setAttribute( "type", stackTrace.substring( 0, stackTrace.indexOf( ":" ) ) );
             }
-
             else
             {
                 failure.setAttribute( "type", new StringTokenizer( stackTrace ).nextToken() );
