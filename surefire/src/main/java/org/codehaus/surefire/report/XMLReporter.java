@@ -175,8 +175,6 @@ public class XMLReporter
 
         error.setValue( stackTrace );
         
-        error.setValue(stackTrace);
-        
         createElement(testCase, "system-out").setValue(stdOut);
         
         long runTime = endTime - startTime;
