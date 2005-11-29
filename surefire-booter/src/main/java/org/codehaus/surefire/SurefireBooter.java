@@ -75,7 +75,9 @@ public class SurefireBooter
     public boolean run()
         throws Exception
     {
-        IsolatedClassLoader surefireClassLoader = new IsolatedClassLoader();
+        ClassLoader systemLoader = ClassLoader.getSystemClassLoader();
+
+        IsolatedClassLoader surefireClassLoader = new IsolatedClassLoader( systemLoader );
 
         for ( Iterator i = classpathUrls.iterator(); i.hasNext(); )
         {
