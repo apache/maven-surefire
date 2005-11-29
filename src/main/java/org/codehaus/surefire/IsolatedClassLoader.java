@@ -16,12 +16,10 @@ package org.codehaus.surefire;
  * limitations under the License.
  */
 
-import java.net.URLClassLoader;
 import java.net.URL;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Set;
+import java.net.URLClassLoader;
 import java.util.HashSet;
+import java.util.Set;
 
 public class IsolatedClassLoader
     extends URLClassLoader
@@ -33,6 +31,11 @@ public class IsolatedClassLoader
     public IsolatedClassLoader()
     {
         super( new URL[0], null );
+    }
+
+    public IsolatedClassLoader( ClassLoader parent )
+    {
+        super( new URL[0], parent );
     }
 
     public void addURL( URL url )
@@ -47,35 +50,35 @@ public class IsolatedClassLoader
         }
     }
 
-    public synchronized Class loadClass( String className )
-        throws ClassNotFoundException
-    {
-        Class c = findLoadedClass( className );
-
-        ClassNotFoundException ex = null;
-
-        if ( c == null )
-        {
-            try
-            {
-                c = findClass( className );
-            }
-            catch ( ClassNotFoundException e )
-            {
-                ex = e;
-
-                if ( parent != null )
-                {
-                    c = parent.loadClass( className );
-                }
-            }
-        }
-
-        if ( c == null )
-        {
-            throw ex;
-        }
-
-        return c;
-    }
+//    public synchronized Class loadClass( String className )
+//        throws ClassNotFoundException
+//    {
+//        Class c = findLoadedClass( className );
+//
+//        ClassNotFoundException ex = null;
+//
+//        if ( c == null )
+//        {
+//            try
+//            {
+//                c = findClass( className );
+//            }
+//            catch ( ClassNotFoundException e )
+//            {
+//                ex = e;
+//
+//                if ( parent != null )
+//                {
+//                    c = parent.loadClass( className );
+//                }
+//            }
+//        }
+//
+//        if ( c == null )
+//        {
+//            throw ex;
+//        }
+//
+//        return c;
+//    }
 }
