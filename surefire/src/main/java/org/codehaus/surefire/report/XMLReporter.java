@@ -139,57 +139,27 @@ public class XMLReporter
 
     public void testError( ReportEntry report, String stdOut, String stdErr )
     {
-        super.testError(report, stdOut, stdErr);
+        super.testError( report, stdOut, stdErr );
+
+        Xpp3Dom element = createElement( testCase, "error" );
         
-        String stackTrace = getStackTrace(report);
-        
-        Xpp3Dom error = createElement (testCase, "error");
-        
-        Throwable t = report.getThrowable();
-
-        if ( t != null )
-        {
-
-            String message = t.getMessage();
-
-            if ( ( message != null ) && ( message.trim().length() > 0 ) )
-            {
-
-                message = StringUtils.replace( report.getThrowable().getMessage(), "<", "&lt;" );
-
-                message = StringUtils.replace( message, ">", "&gt;" );
-
-                message = StringUtils.replace( message, "\"", "&quot;" );
-
-                error.setAttribute( "message", message );
-
-                error.setAttribute( "type", stackTrace.substring( 0, stackTrace.indexOf( ":" ) ) );
-            }
-            
-            else
-            {
-                error.setAttribute( "type", new StringTokenizer( stackTrace ).nextToken() );
-            }
-
-        }
-
-        error.setValue( stackTrace );
-        
-        createElement(testCase, "system-out").setValue(stdOut);
-        
-        long runTime = endTime - startTime;
-        
-        testCase.setAttribute("time", elapsedTimeAsString( runTime ));
+        writeTestProblems( report, stdOut, stdErr, element );
     }
 
     public void testFailed( ReportEntry report, String stdOut, String stdErr )
     {
-        super.testFailed(report,stdOut,stdErr);
-        
-        String stackTrace = getStackTrace(report);
-        
-        Xpp3Dom failure = createElement (testCase, "failure");
-        
+        super.testFailed( report, stdOut, stdErr );
+
+        Xpp3Dom element = createElement( testCase, "failure" );
+
+        writeTestProblems( report, stdOut, stdErr, element );
+    }
+
+    private void writeTestProblems( ReportEntry report, String stdOut, String stdErr, Xpp3Dom element )
+    {
+
+        String stackTrace = getStackTrace( report );
+
         Throwable t = report.getThrowable();
 
         if ( t != null )
@@ -206,22 +176,28 @@ public class XMLReporter
 
                 message = StringUtils.replace( message, "\"", "&quot;" );
 
-                failure.setAttribute( "message", message );
+                element.setAttribute( "message", message );
 
-                failure.setAttribute( "type", stackTrace.substring( 0, stackTrace.indexOf( ":" ) ) );
+                element.setAttribute( "type", stackTrace.substring( 0, stackTrace.indexOf( ":" ) ) );
             }
             else
             {
-                failure.setAttribute( "type", new StringTokenizer( stackTrace ).nextToken() );
+                element.setAttribute( "type", new StringTokenizer( stackTrace ).nextToken() );
             }
         }
-               
-        failure.setValue(getStackTrace(report));
 
-        createElement(testCase, "system-out").setValue(stdOut);
-        
-        createElement(testCase, "system-err").setValue(stdErr);
-        
+        element.setValue( stackTrace );
+
+        if ( ( stdOut != null ) && ( stdOut.trim().length() > 0 ) )
+        {
+            createElement( testCase, "system-out" ).setValue( stdOut );
+        }
+
+        if ( ( stdErr != null ) && ( stdErr.trim().length() > 0 ) )
+        {
+            createElement( testCase, "system-err" ).setValue( stdErr );
+        }
+
         long runTime = endTime - startTime;
         
         testCase.setAttribute("time", elapsedTimeAsString( runTime ));
