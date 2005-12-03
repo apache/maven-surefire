@@ -30,7 +30,7 @@ public interface Battery
     String getBatteryName();
 
     void discoverBatteryClassNames()
-        throws Exception;
+        throws Exception;        
 
     List getSubBatteryClassNames();
 }

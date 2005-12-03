@@ -12,14 +12,12 @@ package org.codehaus.surefire.battery.assertion;/*
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
-
-/**
+ *//**
  * Exception that indicates a test failed.
  *
  * @author Bill Venners
  */
-public class BatteryTestFailedException extends RuntimeException
+   public class BatteryTestFailedException extends RuntimeException
 {
 
     private boolean causeInitialized;
