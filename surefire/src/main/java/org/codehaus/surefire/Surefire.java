@@ -24,7 +24,6 @@ import org.codehaus.surefire.report.Reporter;
 import org.codehaus.surefire.report.ReporterManager;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -46,11 +45,20 @@ public class Surefire
 
     public Surefire()
     {
+        super();
     }
 
     public static ResourceBundle getResources()
     {
         return resources;
+    }
+
+    public boolean run( List reports, List batteryHolders, String reportsDirectory ) 
+        throws Exception
+    {
+        ClassLoader classLoader = this.getClass().getClassLoader();
+
+        return run( reports, batteryHolders, classLoader, reportsDirectory );
     }
 
     public boolean run( List reports, List batteryHolders, ClassLoader classLoader, String reportsDirectory )
@@ -97,6 +105,7 @@ public class Surefire
                     Battery battery = (Battery) i.next();
 
                     int testCount = 0;
+
                     try
                     {
                         testCount = battery.getTestCount();
@@ -104,9 +113,8 @@ public class Surefire
                     catch ( BatteryTestFailedException e )
                     {
                         e.printStackTrace();
-                        ReportEntry report = new ReportEntry( e,
-                                                              "org.codehaus.surefire.Runner",
-                                                              Surefire.getResources().getString( "bigProblems" ), e );
+
+                        ReportEntry report = new ReportEntry( e, "org.codehaus.surefire.Runner", getResources().getString( "bigProblems" ), e );
 
                         reporterManager.batteryAborted( report );
                     }
@@ -134,6 +142,7 @@ public class Surefire
                         Battery b = (Battery) j.next();
 
                         testCount = 0;
+
                         try
                         {
                             testCount = b.getTestCount();
@@ -141,9 +150,8 @@ public class Surefire
                         catch ( BatteryTestFailedException e )
                         {
                             e.printStackTrace();
-                            ReportEntry report = new ReportEntry( e,
-                                                                  "org.codehaus.surefire.Runner",
-                                                                  Surefire.getResources().getString( "bigProblems" ), e );
+
+                            ReportEntry report = new ReportEntry( e, "org.codehaus.surefire.Runner", getResources().getString( "bigProblems" ), e );
 
                             reporterManager.batteryAborted( report );
                         }
@@ -159,12 +167,12 @@ public class Surefire
 
                 if ( nbTests == 0 )
                 {
-                    reporterManager.writeMessage( "There are no test to run." );
+                    reporterManager.writeMessage( "There are no tests to run." );
                 }
             }
             else
             {
-                reporterManager.writeMessage( "There are no battery to run." );
+                reporterManager.writeMessage( "There are no batteries to run." );
             }
 
             reporterManager.runCompleted();
@@ -172,28 +180,29 @@ public class Surefire
         catch ( Throwable ex )
         {
             ex.printStackTrace();
-            ReportEntry report = new ReportEntry( ex,
-                                                  "org.codehaus.surefire.Runner",
-                                                  Surefire.getResources().getString( "bigProblems" ), ex );
+
+            ReportEntry report = new ReportEntry( ex, "org.codehaus.surefire.Runner", getResources().getString( "bigProblems" ), ex );
 
             reporterManager.runAborted( report );
         }
 
         reporterManager.resume();
 
-        if ( reporterManager.getNbErrors() > 0 || reporterManager.getNbFailures() > 0 )
-        {
-            return false;
-        }
-        return true;
+        return !( reporterManager.getNbErrors() > 0 || reporterManager
+            .getNbFailures() > 0 );
     }
 
+    /**
+     * @param battery
+     * @param reportManager
+     * @throws Exception
+     */
     public void executeBattery( Battery battery, ReporterManager reportManager )
         throws Exception
     {
         try
         {
-            String rawString = Surefire.getResources().getString( "suiteExecutionStarting" );
+            String rawString = getResources().getString( "suiteExecutionStarting" );
 
             ReportEntry report = new ReportEntry( this, battery.getBatteryName(), rawString );
 
@@ -203,7 +212,7 @@ public class Surefire
             {
                 battery.execute( reportManager );
 
-                rawString = Surefire.getResources().getString( "suiteCompletedNormally" );
+                rawString = getResources().getString( "suiteCompletedNormally" );
 
                 report = new ReportEntry( this, battery.getBatteryName(), rawString );
 
@@ -213,7 +222,7 @@ public class Surefire
             {
                 e.printStackTrace();
 
-                rawString = Surefire.getResources().getString( "executeException" );
+                rawString = getResources().getString( "executeException" );
 
                 report = new ReportEntry( this, battery.getBatteryName(), rawString, e );
 
@@ -227,14 +236,18 @@ public class Surefire
 
         catch ( Throwable ex )
         {
-            ReportEntry report = new ReportEntry( ex,
-                                                  "org.codehaus.surefire.Runner",
-                                                  Surefire.getResources().getString( "bigProblems" ), ex );
+            ReportEntry report = new ReportEntry( ex, "org.codehaus.surefire.Runner", getResources().getString( "bigProblems" ), ex );
 
             reportManager.runAborted( report );
         }
     }
 
+    /**
+     * @param batteryHolders
+     * @param loader
+     * @return
+     * @throws Exception
+     */
     public static List instantiateBatteries( List batteryHolders, ClassLoader loader )
         throws Exception
     {
@@ -244,25 +257,24 @@ public class Surefire
         {
             Object[] holder = (Object[]) batteryHolders.get( i );
 
-            Class testClass = null;
+            Class testClass;
+
+            Class batteryClass;
 
             try
             {
                 testClass = loader.loadClass( (String) holder[0] );
+
+                batteryClass = loader.loadClass( "org.codehaus.surefire.battery.Battery" );
             }
             catch ( Exception e )
             {
                 continue;
             }
 
-            if (Modifier.isAbstract(testClass.getModifiers()))
-            {
-                continue;
-            }
-
             Object battery = null;
 
-            if ( Battery.class.isAssignableFrom( testClass ) )
+            if ( batteryClass.isAssignableFrom( testClass ) )
             {
                 if ( holder[1] != null )
                 {
@@ -284,35 +296,6 @@ public class Surefire
                     battery = testClass.newInstance();
                 }
             }
-
-            /*
-
-            We will assume this is a JUnit test because you can have tests in JUnit
-            that look like the following:
-
-            public class ThrowingTest
-            {
-                public static Object suite() throws Exception
-                {
-                    TestSuite suite = new TestSuite();
-                    DistributedSystemTestInfo testInfo = getTestInfo();
-                    suite.addTest( new DistributedTestCase( new ScenarioInfo( "default", testInfo ) ) );
-                    return suite;
-                }
-            }
-
-            Which is really not identifiable as a JUnit class at all ... so that's
-            why I'm making the assumption because JUnit does.
-
-            else if ( junitTestClass != null && junitTestClass.isAssignableFrom( testClass ) )
-            {
-                battery = new JUnitBattery( testClass, loader );
-            }
-            else
-            {
-                throw new Exception( "Class " + testClass + " is not an implementation of junit.framework.Test" );
-            }
-            */
             else
             {
                 battery = new JUnitBattery( testClass, loader );
@@ -329,13 +312,21 @@ public class Surefire
     {
         List reports = new ArrayList();
 
+        boolean fail = false;
+
+        ClassLoader reporterClassLoader = Reporter.class.getClassLoader();
+
         for ( Iterator i = reportClassNames.iterator(); i.hasNext(); )
         {
-            String reportClass = (String) i.next();
+            String reportClassName = (String) i.next();
 
             try
             {
-                Reporter report = (Reporter) classLoader.loadClass( reportClass ).newInstance();
+                Class reportClass = reporterClassLoader.loadClass( reportClassName );
+
+                //assert Reporter.class.isAssignableFrom(reportClass);
+
+                Reporter report = (Reporter) reportClass.newInstance();
 
                 report.setReportsDirectory( reportsDirectory );
 
@@ -347,9 +338,13 @@ public class Surefire
             }
         }
 
+        if ( fail )
+        {
+            throw new RuntimeException( "couldn't assign reports as expected" );
+        }
+
         return reports;
     }
-
 }
 
 

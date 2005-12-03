@@ -234,7 +234,6 @@ public abstract class AbstractBattery
     {
     }
 
-
     protected Class getTestClass()
     {
         return getClass();
@@ -268,13 +267,8 @@ public abstract class AbstractBattery
 
             boolean hasNoParams = paramTypes.length == 0;
 
-            if ( isInstanceMethod
-                 &&
-                 returnsVoid
-                 &&
-                 hasNoParams )
+            if ( isInstanceMethod && returnsVoid && hasNoParams )
             {
-
                 String simpleName = m.getName();
 
                 if ( simpleName.length() <= 4 )

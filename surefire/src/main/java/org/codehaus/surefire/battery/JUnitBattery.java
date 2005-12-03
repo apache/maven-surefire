@@ -97,18 +97,6 @@ public class JUnitBattery
         Class testInterface = loader.loadClass( TEST );
 
         // ----------------------------------------------------------------------
-        // Apparently this is not necessarily required because a suite() method
-        // may simply return an Object.
-        // ----------------------------------------------------------------------
-
-        /*
-        if ( !testInterface.isAssignableFrom( testClass ) )
-        {
-            throw new IllegalArgumentException( "testClass is not a " + TEST );
-        }
-        */
-
-        // ----------------------------------------------------------------------
         // Strategy for executing JUnit tests
         //
         // o look for the suite method and if that is present execute that method
@@ -125,11 +113,7 @@ public class JUnitBattery
 
             Method suiteMethod = testClass.getMethod( "suite", emptyArgs );
 
-            if ( Modifier.isPublic( suiteMethod.getModifiers() )
-                 &&
-                 Modifier.isStatic( suiteMethod.getModifiers() ) )
-                 //&&
-                 //suiteMethod.getReturnType() == testInterface )
+            if ( Modifier.isPublic( suiteMethod.getModifiers() ) && Modifier.isStatic( suiteMethod.getModifiers() ) )
             {
                 testObject = suiteMethod.invoke( null, emptyArgs );
             }
