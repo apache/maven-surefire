@@ -43,7 +43,7 @@ public class SurefireBooter
 
     private static String BATTERY_EXECUTOR = "org.apache.maven.surefire.Surefire";
 
-    private static String SINGLE_TEST_BATTERY = "org.codehaus.surefire.battery.SingleTestBattery";
+    private static String SINGLE_TEST_BATTERY = "org.apache.maven.surefire.battery.SingleTestBattery";
 
     private List batteries = new ArrayList();
 
