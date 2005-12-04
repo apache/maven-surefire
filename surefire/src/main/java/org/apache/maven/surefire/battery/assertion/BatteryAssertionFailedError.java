@@ -1,4 +1,6 @@
-package org.apache.maven.surefire.battery.assertion;/*
+package org.apache.maven.surefire.battery.assertion;
+
+/*
  * Copyright 2001-2005 The Codehaus.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +14,9 @@ package org.apache.maven.surefire.battery.assertion;/*
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */public class BatteryAssertionFailedError
+ */
+
+public class BatteryAssertionFailedError
     extends Error
 {
 
