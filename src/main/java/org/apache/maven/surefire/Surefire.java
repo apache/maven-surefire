@@ -31,7 +31,7 @@ import java.util.ResourceBundle;
 
 public class Surefire
 {
-    private static ResourceBundle resources = ResourceBundle.getBundle( "org.codehaus.surefire.surefire" );
+    private static ResourceBundle resources = ResourceBundle.getBundle( "org.apache.maven.surefire.surefire" );
 
     private List batteryHolders;
 
@@ -114,7 +114,7 @@ public class Surefire
                     {
                         e.printStackTrace();
 
-                        ReportEntry report = new ReportEntry( e, "org.codehaus.surefire.Runner", getResources().getString( "bigProblems" ), e );
+                        ReportEntry report = new ReportEntry( e, "org.apache.maven.surefire.Runner", getResources().getString( "bigProblems" ), e );
 
                         reporterManager.batteryAborted( report );
                     }
@@ -151,7 +151,7 @@ public class Surefire
                         {
                             e.printStackTrace();
 
-                            ReportEntry report = new ReportEntry( e, "org.codehaus.surefire.Runner", getResources().getString( "bigProblems" ), e );
+                            ReportEntry report = new ReportEntry( e, "org.apache.maven.surefire.Runner", getResources().getString( "bigProblems" ), e );
 
                             reporterManager.batteryAborted( report );
                         }
@@ -181,7 +181,7 @@ public class Surefire
         {
             ex.printStackTrace();
 
-            ReportEntry report = new ReportEntry( ex, "org.codehaus.surefire.Runner", getResources().getString( "bigProblems" ), ex );
+            ReportEntry report = new ReportEntry( ex, "org.apache.maven.surefire.Runner", getResources().getString( "bigProblems" ), ex );
 
             reporterManager.runAborted( report );
         }
@@ -236,7 +236,7 @@ public class Surefire
 
         catch ( Throwable ex )
         {
-            ReportEntry report = new ReportEntry( ex, "org.codehaus.surefire.Runner", getResources().getString( "bigProblems" ), ex );
+            ReportEntry report = new ReportEntry( ex, "org.apache.maven.surefire.Runner", getResources().getString( "bigProblems" ), ex );
 
             reportManager.runAborted( report );
         }
@@ -265,7 +265,7 @@ public class Surefire
             {
                 testClass = loader.loadClass( (String) holder[0] );
 
-                batteryClass = loader.loadClass( "org.codehaus.surefire.battery.Battery" );
+                batteryClass = loader.loadClass( "org.apache.maven.surefire.battery.Battery" );
             }
             catch ( Exception e )
             {
