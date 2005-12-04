@@ -43,6 +43,8 @@ public class SurefireBooter
 
     private static String BATTERY_EXECUTOR = "org.apache.maven.surefire.Surefire";
 
+    private static String SINGLE_TEST_BATTERY = "org.codehaus.surefire.battery.SingleTestBattery";
+
     private List batteries = new ArrayList();
 
     private List reports = new ArrayList();
@@ -107,15 +109,15 @@ public class SurefireBooter
     {
         boolean result = false;
 
-        if ( "once".equals( forkMode ) )
-        {
-            result = runTestsForkOnce();
-        }
-        else if ( "none".equals( forkMode ) )
+        if ( forkMode.equals( ForkedSurefireRunner.FORK_NONE ) )
         {
             result = runTestsInProcess();
         }
-        else if ( "pertest".equals( forkMode ) )
+        else if ( forkMode.equals( ForkedSurefireRunner.FORK_ONCE ) )
+        {
+            result = runTestsForkOnce();
+        }
+        else if ( forkMode.equals( ForkedSurefireRunner.FORK_PERTEST ) )
         {
             result = runTestsForkEach();
         }
@@ -150,7 +152,7 @@ public class SurefireBooter
     {
         IsolatedClassLoader surefireClassLoader = createClassLoader();
 
-        Class batteryExecutorClass = surefireClassLoader.loadClass( "org.codehaus.surefire.Surefire" );
+        Class batteryExecutorClass = surefireClassLoader.loadClass( BATTERY_EXECUTOR );
 
         Object batteryExecutor = batteryExecutorClass.newInstance();
 
@@ -333,7 +335,7 @@ public class SurefireBooter
 
         String reportClassNames = getListOfStringsAsString( reports, "," );
 
-        String batteryConfig = "org.codehaus.surefire.battery.SingleTestBattery|" + testClass;
+        String batteryConfig = SINGLE_TEST_BATTERY + "|" + testClass;
 
         String[] argArray =
             {
@@ -359,8 +361,7 @@ public class SurefireBooter
         classpathUrls.clear();
     }
 
-    private String getListOfStringsAsString( List listOfStrings,
-                                             String delimiterParm )
+    private String getListOfStringsAsString( List listOfStrings, String delimiterParm )
     {
         StringBuffer stringBuffer = new StringBuffer();
 

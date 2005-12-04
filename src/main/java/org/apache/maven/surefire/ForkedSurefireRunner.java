@@ -36,6 +36,8 @@ public class ForkedSurefireRunner
 
     public static String FORK_PERTEST = "pertest";
 
+    public static String FORK_NONE = "none";
+
     static int TESTS_SUCCEEDED = 0;
 
     static int TESTS_FAILED = 255;
