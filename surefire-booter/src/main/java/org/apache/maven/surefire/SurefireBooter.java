@@ -39,6 +39,10 @@ import java.util.List;
  */
 public class SurefireBooter
 {
+    protected static final String EOL = System.getProperty( "line.separator" );
+
+    protected static final String PS = System.getProperty( "path.separator" );
+
     private static String RUNNER = "org.apache.maven.surefire.ForkedSurefireRunner";
 
     private static String BATTERY_EXECUTOR = "org.apache.maven.surefire.Surefire";
@@ -57,9 +61,9 @@ public class SurefireBooter
 
     private String basedir;
 
-    public SurefireBooter()
-    {
-    }
+    // ----------------------------------------------------------------------
+    // Accessors
+    // ----------------------------------------------------------------------
 
     public void setReportsDirectory( String reportsDirectory )
     {
@@ -99,10 +103,18 @@ public class SurefireBooter
         this.classpathUrls = classpathUrls;
     }
 
+    // ----------------------------------------------------------------------
+    // Forking options
+    // ----------------------------------------------------------------------
+
     public void setForkMode( String forkMode )
     {
         this.forkMode = forkMode;
     }
+
+    // ----------------------------------------------------------------------
+    //
+    // ----------------------------------------------------------------------
 
     public boolean run()
         throws Exception
@@ -168,10 +180,6 @@ public class SurefireBooter
 
         return result.booleanValue();
     }
-
-    protected static final String EOL = System.getProperty( "line.separator" );
-
-    protected static final String PS = System.getProperty( "path.separator" );
 
     private boolean runTestsForkOnce()
         throws Exception
@@ -291,51 +299,23 @@ public class SurefireBooter
     private String[] getForkOnceArgs()
         throws Exception
     {
-        // List reports
-        // List batteryHolders
-        // List classpathUrls
-        // String reportsDirectory
-        // String forkMode
-
-        String pathSeparator = System.getProperty( "path.separator" );
-
-        String classpathEntries = getListOfStringsAsString( classpathUrls, pathSeparator );
-
-        String reportClassNames = getListOfStringsAsString( reports, "," );
-
-        String[] batteryConfig = getStringArrayFromBatteries();
-
-        String[] argArray =
-            {
-                "-classpath",
-                classpathEntries,
-                RUNNER,
-                "reportClassNames=" + reportClassNames,
-                "reportsDirectory=" + reportsDirectory,
-                "batteryExecutorName=" + BATTERY_EXECUTOR,
-                "forkMode=" + forkMode,
-                "batteryConfig=" + batteryConfig[0]
-            };
-
-        return argArray;
+        return getForkArgs( getStringArrayFromBatteries()[0] );
     }
 
     private String[] getForkPerTestArgs( String testClass )
         throws Exception
     {
-        // List reports
-        // List batteryHolders
-        // List classpathUrls
-        // String reportsDirectory
-        // String forkMode
+        return getForkArgs( SINGLE_TEST_BATTERY + "|" + testClass );
+    }
 
+    private String[] getForkArgs( String batteryConfig )
+        throws Exception
+    {
         String pathSeparator = System.getProperty( "path.separator" );
 
         String classpathEntries = getListOfStringsAsString( classpathUrls, pathSeparator );
 
         String reportClassNames = getListOfStringsAsString( reports, "," );
-
-        String batteryConfig = SINGLE_TEST_BATTERY + "|" + testClass;
 
         String[] argArray =
             {
