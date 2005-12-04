@@ -1,22 +1,24 @@
-<project name="Mojo">
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<project name="Doxia">
   <bannerLeft>
     <name>Surefire</name>
-    <!--
-    <src>http://modello.codehaus.org/images/mojo_logo.png</src>
-    -->
-    <href>http://surefire.codehaus.org</href>
+    <src>http://maven.apache.org/images/apache-maven-project-2.png</src>
+    <href>http://maven.apache.org/surefire/</href>
   </bannerLeft>
   <bannerRight>
-    <name>Codehaus</name>
-    <src>http://mojo.codehaus.org/images/codehaus-small.png</src>
-    <href>http://www.codehaus.org</href>
+    <src>http://maven.apache.org/images/maven-logo-2.gif</src>
   </bannerRight>
   <body>
-  <!--
-  <menu name="Surefire">
-    <item name="Front Page" href="index.html" />
-  </menu>
-  -->
-  ${reports}
+    <links>
+      <item name="Apache" href="http://www.apache.org/"/>
+      <item name="Maven 1.x" href="http://maven.apache.org/maven-1.x"/>
+      <item name="Maven 2.x" href="http://maven.apache.org/"/>
+      <item name="Continuum" href="http://maven.apache.org/continuum"/>
+      <item name="SCM" href="http://maven.apache.org/scm"/>
+      <item name="Wagon" href="http://maven.apache.org/wagon"/>
+      <item name="JXR" href="http://maven.apache.org/jxr"/>
+      <item name="Doxia" href="http://maven.apache.org/doxia"/>
+    </links>
+    ${reports}
   </body>
 </project>
