@@ -61,6 +61,8 @@ public class SurefireBooter
 
     private String basedir;
 
+    private String jvm;
+
     // ----------------------------------------------------------------------
     // Accessors
     // ----------------------------------------------------------------------
@@ -110,6 +112,11 @@ public class SurefireBooter
     public void setForkMode( String forkMode )
     {
         this.forkMode = forkMode;
+    }
+
+    public void setJvm( String jvm )
+    {
+        this.jvm = jvm;
     }
 
     // ----------------------------------------------------------------------
@@ -212,8 +219,6 @@ public class SurefireBooter
     private boolean fork( String[] args )
         throws Exception
     {
-        String executable = "java";
-
         File workingDirectory = new File( "." );
 
         Commandline cli = new Commandline();
@@ -222,7 +227,7 @@ public class SurefireBooter
 
         cli.setWorkingDirectory( basedir );
 
-        cli.setExecutable( executable );
+        cli.setExecutable( jvm );
 
         cli.addArguments( args );
 
