@@ -39,7 +39,9 @@ import java.util.List;
  */
 public class SurefireBooter
 {
-    private static String RUNNER = "org.codehaus.surefire.ForkedSurefireRunner";
+    private static String RUNNER = "org.apache.maven.surefire.ForkedSurefireRunner";
+
+    private static String BATTERY_EXECUTOR = "org.apache.maven.surefire.Surefire";
 
     private List batteries = new ArrayList();
 
@@ -308,7 +310,7 @@ public class SurefireBooter
                 RUNNER,
                 "reportClassNames=" + reportClassNames,
                 "reportsDirectory=" + reportsDirectory,
-                "batteryExecutorName=" + "org.codehaus.surefire.Surefire",
+                "batteryExecutorName=" + BATTERY_EXECUTOR,
                 "forkMode=" + forkMode,
                 "batteryConfig=" + batteryConfig[0]
             };
@@ -340,7 +342,7 @@ public class SurefireBooter
                 RUNNER,
                 "reportClassNames=" + reportClassNames,
                 "reportsDirectory=" + reportsDirectory,
-                "batteryExecutorName=" + "org.codehaus.surefire.Surefire",
+                "batteryExecutorName=" + BATTERY_EXECUTOR,
                 "forkMode=" + forkMode,
                 "batteryConfig=" + batteryConfig
             };
