@@ -13,9 +13,8 @@
   <name>Surefire</name>
   <distributionManagement>
     <site>
-      <id>surefire.website</id>
-      <name>Surefire Website</name>
-      <url>scp://beaver.codehaus.org/home/projects/surefire/public_html</url>
+      <id>website</id>
+      <url>scp://minotaur.apache.org/www/maven.apache.org/surefire/</url>
     </site>
   </distributionManagement>
   <reporting>
