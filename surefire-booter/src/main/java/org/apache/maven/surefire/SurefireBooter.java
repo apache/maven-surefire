@@ -317,7 +317,7 @@ public class SurefireBooter
 
         String reportClassNames = getListOfStringsAsString( reports, "," );
 
-        String[] argArray =
+        return new String[]
             {
                 "-classpath",
                 classpathEntries,
@@ -328,8 +328,6 @@ public class SurefireBooter
                 "forkMode=" + forkMode,
                 "batteryConfig=" + batteryConfig
             };
-
-        return argArray;
     }
 
     public void reset()
@@ -368,8 +366,6 @@ public class SurefireBooter
         String[] batteryConfig = new String[batteries.size()];
 
         StringBuffer batteryBuffer = new StringBuffer();
-
-        String delimiter = "";
 
         int batteryCounter = 0;
 
