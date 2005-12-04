@@ -2,7 +2,7 @@
 
 <project>
   <modelVersion>4.0.0</modelVersion>
-  <groupId>surefire</groupId>
+  <groupId>org.apache.maven.surefire</groupId>
   <artifactId>surefire-root</artifactId>
   <packaging>pom</packaging>
   <name>SureFire Parent</name>
