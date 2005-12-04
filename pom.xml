@@ -19,7 +19,7 @@
     <notifiers>
       <notifier>
         <type>email</type>
-        <address>dev@surefire.codehaus.org</address>
+        <address>surefire-dev@maven.apache.org</address>
       </notifier>
     </notifiers>
   </ciManagement>
@@ -27,29 +27,29 @@
   <mailingLists>
     <mailingList>
       <name>Surefire User List</name>
-      <subscribe>user-subscribe@surefire.codehaus.org</subscribe>
-      <unsubscribe>user-unsubscribe@surefire.codehaus.org</unsubscribe>
-      <archive>http://archive.surefire.codehaus.org/user/</archive>
+      <subscribe>surefire-users-subscribe@maven.apache.org</subscribe>
+      <unsubscribe>surefire-users-unsubscribe@maven.apache.org</unsubscribe>
+      <archive>http://archive.maven.apache.org/user/</archive>
     </mailingList>
     <mailingList>
       <name>Surefire Developer List</name>
-      <subscribe>dev-subscribe@surefire.codehaus.org</subscribe>
-      <unsubscribe>dev-unsubscribe@surefire.codehaus.org</unsubscribe>
-      <archive>http://archive.surefire.codehaus.org/dev/</archive>
+      <subscribe>surefire-dev-subscribe@maven.apache.org</subscribe>
+      <unsubscribe>surfire-dev-unsubscribe@maven.apache.org</unsubscribe>
+      <archive>http://archive.maven.apache.org/dev/</archive>
     </mailingList>
     <mailingList>
       <name>Surefire Commits List</name>
-      <subscribe>scm-subscribe@surefire.codehaus.org</subscribe>
-      <unsubscribe>scm-unsubscribe@surefire.codehaus.org</unsubscribe>
-      <archive>http://archive.surefire.codehaus.org/scm/</archive>
+      <subscribe>surefire-commits-subscribe@maven.apache.org</subscribe>
+      <unsubscribe>surefire-commits-unsubscribe@maven.apache.org</unsubscribe>
+      <archive>http://archive.maven.apache.org/scm/</archive>
     </mailingList>
   </mailingLists>
   <developers>
     <developer>
       <id>jvanzyl</id>
       <name>Jason van Zyl</name>
-      <email>jason@zenplex.com</email>
-      <organization>Zenplex</organization>
+      <email>jason@maven.org</email>
+      <organization>Mergere</organization>
       <roles>
         <role>Developer</role>
       </roles>
@@ -65,13 +65,13 @@
     </developer>
   </developers>
   <scm>
-    <connection>scm:svn:https://svn.codehaus.org/surefire/trunk/surefire/</connection>
-    <developerConnection>scm:svn:https://svn.codehaus.org/surefire/trunk/surefire/</developerConnection>
-    <url>http://svn.codehaus.org/trunk/surefire/?root=surefire</url>
+    <connection>scm:svn:https://svn.apache.org/repos/asf/surefire/trunk/</connection>
+    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/surefire/trunk/</developerConnection>
+    <url>http://svn.apache.org/viewcvs.cgi/maven/surefire/</url>
   </scm>
   <organization>
-    <name>Codehaus</name>
-    <url>http://www.codehaus.org/</url>
+    <name>Apache</name>
+    <url>http://www.apache.org/</url>
   </organization>
   <distributionManagement>
     <repository>
@@ -116,7 +116,7 @@
         <plugin>
           <artifactId>maven-release-plugin</artifactId>
           <configuration>
-            <tagBase>svn+ssh://svn.codehaus.org/home/projects/surefire/scm/tags</tagBase>
+            <tagBase>https://svn.apache.org/repos/asf/maven/surefire/tags</tagBase>
           </configuration>
         </plugin>
       </plugins>
