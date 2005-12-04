@@ -1,4 +1,4 @@
-package org.codehaus.surefire;
+package org.apache.maven.surefire;
 
 /*
  * Copyright 2001-2005 The Codehaus.

@@ -1,4 +1,4 @@
-package org.codehaus.surefire;
+package org.apache.maven.surefire;
 
 import java.io.File;
 import java.lang.reflect.Method;
