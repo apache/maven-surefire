@@ -29,19 +29,19 @@
       <name>Surefire User List</name>
       <subscribe>surefire-users-subscribe@maven.apache.org</subscribe>
       <unsubscribe>surefire-users-unsubscribe@maven.apache.org</unsubscribe>
-      <archive>http://archive.maven.apache.org/user/</archive>
+      <archive>http://mail-archives.apache.org/mod_mbox/maven-surefire-users/</archive>
     </mailingList>
     <mailingList>
       <name>Surefire Developer List</name>
       <subscribe>surefire-dev-subscribe@maven.apache.org</subscribe>
       <unsubscribe>surfire-dev-unsubscribe@maven.apache.org</unsubscribe>
-      <archive>http://archive.maven.apache.org/dev/</archive>
+      <archive>http://mail-archives.apache.org/mod_mbox/maven-surefire-dev/</archive>
     </mailingList>
     <mailingList>
       <name>Surefire Commits List</name>
       <subscribe>surefire-commits-subscribe@maven.apache.org</subscribe>
       <unsubscribe>surefire-commits-unsubscribe@maven.apache.org</unsubscribe>
-      <archive>http://archive.maven.apache.org/scm/</archive>
+      <archive>http://mail-archives.apache.org/mod_mbox/maven-surefire-commits/</archive>
     </mailingList>
   </mailingLists>
   <developers>
