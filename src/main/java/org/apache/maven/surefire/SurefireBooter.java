@@ -16,6 +16,7 @@ package org.apache.maven.surefire;
  * limitations under the License.
  */
 
+import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.cli.CommandLineException;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
 import org.codehaus.plexus.util.cli.Commandline;
@@ -62,6 +63,8 @@ public class SurefireBooter
     private String basedir;
 
     private String jvm;
+
+    private String argLine;
 
     // ----------------------------------------------------------------------
     // Accessors
@@ -117,6 +120,11 @@ public class SurefireBooter
     public void setJvm( String jvm )
     {
         this.jvm = jvm;
+    }
+
+    public void setArgLine( String argLine )
+    {
+        this.argLine = argLine;
     }
 
     // ----------------------------------------------------------------------
@@ -231,6 +239,15 @@ public class SurefireBooter
 
         cli.addArguments( args );
 
+        String[] s = cli.getShellCommandline();
+
+        for ( int i = 0; i < s.length; i++ )
+        {
+            System.out.println( s[i] + " " );
+        }
+
+        System.out.println();
+
         Writer stringWriter = new StringWriter();
 
         StreamConsumer out = new WriterStreamConsumer( stringWriter );
@@ -316,9 +333,9 @@ public class SurefireBooter
     private String[] getForkArgs( String batteryConfig )
         throws Exception
     {
-        String pathSeparator = System.getProperty( "path.separator" );
+        //String classpathEntries =  quotedPathArgument( makeClasspath( classpathUrls ) );
 
-        String classpathEntries = getListOfStringsAsString( classpathUrls, pathSeparator );
+        String classpathEntries =  makeClasspath( classpathUrls );
 
         String reportClassNames = getListOfStringsAsString( reports, "," );
 
@@ -342,6 +359,32 @@ public class SurefireBooter
         reports.clear();
 
         classpathUrls.clear();
+    }
+
+    private String makeClasspath( List list )
+    {
+        StringBuffer files = new StringBuffer();
+
+        for ( Iterator i = list.iterator(); i.hasNext(); )
+        {
+            String classpathElement = (String) i.next();
+
+            files.append( classpathElement );
+
+            files.append( PS );
+        }
+
+        return files.toString();
+    }
+
+    private String quotedPathArgument( String value )
+    {
+        if ( !StringUtils.isEmpty( value ) )
+        {
+            return "'" + value.replace( '\\', '/' ) + "'";
+        }
+
+        return value;
     }
 
     private String getListOfStringsAsString( List listOfStrings, String delimiterParm )
