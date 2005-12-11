@@ -10,7 +10,7 @@
   <version>1.5-SNAPSHOT</version>
   <dependencies>
     <dependency>
-      <groupId>surefire</groupId>
+      <groupId>org.apache.maven.surefire</groupId>
       <artifactId>surefire</artifactId>
       <version>1.5-SNAPSHOT</version>
     </dependency>
