@@ -147,6 +147,8 @@ public class SurefireBooter
     {
         boolean result = false;
 
+        System.out.println( ">>>>>>>>> forkMode = " + forkMode );
+
         if ( forkMode.equals( ForkedSurefireRunner.FORK_NONE ) )
         {
             result = runTestsInProcess();
