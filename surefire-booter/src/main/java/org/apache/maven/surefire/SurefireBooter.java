@@ -29,9 +29,13 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.lang.reflect.Method;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Properties;
+import java.util.Enumeration;
+import java.util.Arrays;
 
 /**
  * @author <a href="mailto:jason@maven.org">Jason van Zyl</a>
@@ -63,6 +67,8 @@ public class SurefireBooter
     private String basedir;
 
     private String jvm;
+
+    private Properties systemProperties;
 
     private String argLine;
 
@@ -120,6 +126,11 @@ public class SurefireBooter
     public void setJvm( String jvm )
     {
         this.jvm = jvm;
+    }
+
+    public void setSystemProperties( Properties systemProperties )
+    {
+        this.systemProperties = systemProperties;
     }
 
     public void setArgLine( String argLine )
@@ -239,14 +250,7 @@ public class SurefireBooter
 
         cli.addArguments( args );
 
-        String[] s = cli.getShellCommandline();
-
-        for ( int i = 0; i < s.length; i++ )
-        {
-            System.out.println( s[i] + " " );
-        }
-
-        System.out.println();
+        System.out.println( Commandline.toString( cli.getCommandline() ) );
 
         Writer stringWriter = new StringWriter();
 
@@ -262,10 +266,14 @@ public class SurefireBooter
         }
         catch ( CommandLineException e )
         {
+            e.printStackTrace();
+
             throw new Exception( "Error while executing forked tests.", e );
         }
         catch ( Exception e )
         {
+            e.printStackTrace();
+
             throw new SurefireBooterForkException( "Error while executing forked tests.", e );
         }
 
@@ -333,23 +341,52 @@ public class SurefireBooter
     private String[] getForkArgs( String batteryConfig )
         throws Exception
     {
-        //String classpathEntries =  quotedPathArgument( makeClasspath( classpathUrls ) );
-
-        String classpathEntries =  makeClasspath( classpathUrls );
-
         String reportClassNames = getListOfStringsAsString( reports, "," );
 
-        return new String[]
+        String classpathEntries = makeClasspath( classpathUrls );
+
+        List args = new ArrayList();
+
+        args.add( "-classpath" );
+
+        args.add( classpathEntries );
+
+        // ----------------------------------------------------------------------
+        // Add some system propeties
+        // ----------------------------------------------------------------------
+
+        if ( systemProperties != null )
+        {
+            Enumeration propertyKeys = systemProperties.propertyNames();
+
+            while ( propertyKeys.hasMoreElements() )
             {
-                "-classpath",
-                classpathEntries,
-                RUNNER,
-                "reportClassNames=" + reportClassNames,
-                "reportsDirectory=" + reportsDirectory,
-                "batteryExecutorName=" + BATTERY_EXECUTOR,
-                "forkMode=" + forkMode,
-                "batteryConfig=" + batteryConfig
-            };
+                String key = (String) propertyKeys.nextElement();
+
+                args.add( "-D" + key + "=" + systemProperties.getProperty( key ) );
+            }
+        }
+
+        args.add( RUNNER );
+
+        args.add( "reportClassNames=" + reportClassNames );
+
+        args.add( "reportsDirectory=" + reportsDirectory );
+
+        args.add( "batteryExecutorName=" + BATTERY_EXECUTOR );
+
+        args.add( "forkMode=" + forkMode );
+
+        args.add( "batteryConfig=" + batteryConfig );
+
+        String[] s = new String[args.size()];
+
+        for ( int i = 0; i < s.length; i++ )
+        {
+            s[i] = (String) args.get( i );
+        }
+
+        return s;
     }
 
     public void reset()
@@ -387,7 +424,7 @@ public class SurefireBooter
         return value;
     }
 
-    private String getListOfStringsAsString( List listOfStrings, String delimiterParm )
+    private String getListOfStringsAsString ( List listOfStrings, String delimiterParm )
     {
         StringBuffer stringBuffer = new StringBuffer();
 

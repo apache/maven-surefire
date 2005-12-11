@@ -68,6 +68,9 @@ public class ForkedSurefireRunner
             String[] mapArgs = args[i].split( "=" );
 
             argMap.put( mapArgs[0], mapArgs[1] );
+
+            System.out.println( "mapArgs[0] = " + mapArgs[0] );
+            System.out.println( "mapArgs[1] = " + mapArgs[1] );
         }
 
         return argMap;
