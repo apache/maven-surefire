@@ -17,26 +17,35 @@ package org.apache.maven.surefire;
  */
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
+import java.util.Properties;
 
 /**
  * This class is executed when SurefireBooter forks surefire JUnit processes
  *
- * @author <a href="mailto:andyglick@acm.org">Andy Glick</a>
+ * @author Jason van Zyl
  * @version $Id$
  */
 public class ForkedSurefireRunner
 {
-    public static String FORK_ONCE = "once";
+    public static final String FORK_ONCE = "once";
 
-    public static String FORK_PERTEST = "pertest";
+    public static final String FORK_PERTEST = "pertest";
 
-    public static String FORK_NONE = "none";
+    public static final String FORK_NONE = "none";
+
+    public static final String SUREFIRE_PROPERTIES = "surefire.properties";
+
+    public static final String SYSTEM_PROPERTIES = "surefire-system.properties";
+
+    public static final String CLASSLOADER_PROPERTIES = "surefire-classloader.properties";
+
+    static String basedir;
 
     static int TESTS_SUCCEEDED = 0;
 
@@ -46,34 +55,71 @@ public class ForkedSurefireRunner
 
     static int OTHER_EXCEPTION = 200;
 
-    private static Class thisClass = ForkedSurefireRunner.class;
-
     private ForkedSurefireRunner()
     {
         super();
     }
 
-    /**
-     * Constructs a Map from a set of strings of the form <key>=<value>
-     *
-     * @param args an array of strings composed of name/value pairs
-     * @return Map keyed by the names with the respective values
-     */
-    private static Map getArgMap( String[] args )
+    private static Properties getSurefireProperties()
+        throws Exception
     {
-        Map argMap = new LinkedHashMap();
+        File f = new File( basedir, SUREFIRE_PROPERTIES );
 
-        for ( int i = 0; i < args.length; i++ )
+        f.deleteOnExit();
+
+        Properties p = new Properties();
+
+        p.load( new FileInputStream( f ) );
+
+        return p;
+    }
+
+    private static void  setSystemProperties()
+        throws Exception
+    {
+        File f = new File( basedir, SYSTEM_PROPERTIES );
+
+        f.deleteOnExit();
+
+        if ( !f.exists() )
         {
-            String[] mapArgs = args[i].split( "=" );
-
-            argMap.put( mapArgs[0], mapArgs[1] );
-
-            System.out.println( "mapArgs[0] = " + mapArgs[0] );
-            System.out.println( "mapArgs[1] = " + mapArgs[1] );
+            return;
         }
 
-        return argMap;
+
+        Properties p = new Properties();
+
+        p.load( new FileInputStream( f ) );
+
+        for ( Iterator i = p.keySet().iterator(); i.hasNext(); )
+        {
+            String key = (String) i.next();
+
+            System.setProperty( key, p.getProperty( key ) );
+        }
+    }
+
+    private static ClassLoader createClassLoader()
+        throws Exception
+    {
+        File f = new File( basedir, CLASSLOADER_PROPERTIES );
+
+        f.deleteOnExit();
+
+        Properties p = new Properties();
+
+        p.load( new FileInputStream( f ) );
+
+        IsolatedClassLoader classLoader = new IsolatedClassLoader( ClassLoader.getSystemClassLoader() );
+
+        for ( Iterator i = p.values().iterator(); i.hasNext(); )
+        {
+            String entry = (String) i.next();
+
+            classLoader.addURL( new File( entry ).toURL() );
+        }
+
+        return classLoader;
     }
 
     /**
@@ -87,23 +133,25 @@ public class ForkedSurefireRunner
     public static void main( String[] args )
         throws Exception
     {
-        Map argMap = getArgMap( args );
+        ClassLoader classLoader = createClassLoader();
 
-        ClassLoader surefireClassLoader = thisClass.getClassLoader();
+        setSystemProperties();
 
-        String batteryExecutorName = (String) argMap.get( "batteryExecutorName" );
+        Properties p = getSurefireProperties();
 
-        Class batteryExecutorClass = surefireClassLoader.loadClass( batteryExecutorName );
+        String batteryExecutorName = p.getProperty( "batteryExecutorName" );
+
+        Class batteryExecutorClass = classLoader.loadClass( batteryExecutorName );
 
         Object batteryExecutor = batteryExecutorClass.newInstance();
 
-        String reports = (String) argMap.get( "reportClassNames" );
+        String reports = p.getProperty( "reportClassNames" );
 
         String[] reportClasses = reports.split( "," );
 
         List reportList = Arrays.asList( reportClasses );
 
-        String batteryConfig = (String) argMap.get( "batteryConfig" );
+        String batteryConfig = p.getProperty( "batteryConfig" );
 
         String[] batteryParts = batteryConfig.split( "\\|" );
 
@@ -111,7 +159,7 @@ public class ForkedSurefireRunner
 
         Object[] batteryParms;
 
-        String forkMode = (String) argMap.get( "forkMode" );
+        String forkMode = p.getProperty( "forkMode" );
 
         if ( forkMode.equals( FORK_ONCE ) )
         {
@@ -166,7 +214,7 @@ public class ForkedSurefireRunner
 
         batteryHolders.add( new Object[]{batteryClassName, batteryParms} );
 
-        String reportsDirectory = (String) argMap.get( "reportsDirectory" );
+        String reportsDirectory = p.getProperty( "reportsDirectory" );
 
         Method run = batteryExecutorClass.getMethod( "run", new Class[]{List.class, List.class, String.class} );
 
@@ -190,6 +238,8 @@ public class ForkedSurefireRunner
         }
         catch ( Exception e )
         {
+            e.printStackTrace();
+
             returnCode = OTHER_EXCEPTION;
         }
 
