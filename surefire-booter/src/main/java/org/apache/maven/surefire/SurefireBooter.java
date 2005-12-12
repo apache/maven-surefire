@@ -301,14 +301,10 @@ public class SurefireBooter
         }
         catch ( CommandLineException e )
         {
-            e.printStackTrace();
-
             throw new Exception( "Error while executing forked tests.", e );
         }
         catch ( Exception e )
         {
-            e.printStackTrace();
-
             throw new SurefireBooterForkException( "Error while executing forked tests.", e );
         }
 
@@ -530,7 +526,7 @@ public class SurefireBooter
             return p;
         }
 
-        f.deleteOnExit();
+        //f.deleteOnExit();
 
         p.load( new FileInputStream( f ) );
 
@@ -587,6 +583,8 @@ public class SurefireBooter
         String basedir = args[0];
 
         ClassLoader classLoader = createForkingClassLoader( basedir );
+
+        Thread.currentThread().setContextClassLoader( classLoader );
 
         setSystemProperties( basedir );
 
