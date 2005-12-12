@@ -25,17 +25,15 @@ import org.codehaus.plexus.util.cli.WriterStreamConsumer;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.lang.reflect.Method;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import java.util.Enumeration;
-import java.util.Arrays;
 
 /**
  * @author <a href="mailto:jason@maven.org">Jason van Zyl</a>
@@ -147,8 +145,6 @@ public class SurefireBooter
     {
         boolean result = false;
 
-        System.out.println( ">>>>>>>>> forkMode = " + forkMode );
-
         if ( forkMode.equals( ForkedSurefireRunner.FORK_NONE ) )
         {
             result = runTestsInProcess();
@@ -212,7 +208,9 @@ public class SurefireBooter
     private boolean runTestsForkOnce()
         throws Exception
     {
-        return fork( getForkOnceArgs() );
+        getForkOnceArgs();
+
+        return fork();
     }
 
     private boolean runTestsForkEach()
@@ -226,7 +224,9 @@ public class SurefireBooter
         {
             String testClass = (String) i.next();
 
-            boolean result = fork( getForkPerTestArgs( testClass ) );
+            getForkPerTestArgs( testClass );
+
+            boolean result = fork();
 
             if ( !result )
             {
@@ -237,7 +237,7 @@ public class SurefireBooter
         return noFailures;
     }
 
-    private boolean fork( String[] args )
+    private boolean fork()
         throws Exception
     {
         File workingDirectory = new File( "." );
@@ -250,7 +250,13 @@ public class SurefireBooter
 
         cli.setExecutable( jvm );
 
-        cli.addArguments( args );
+        cli.createArgument().setValue( "-classpath" );
+
+        cli.createArgument().setValue( surefireBooterJar );
+
+        cli.createArgument().setValue( RUNNER );
+
+        cli.createArgument().setValue( basedir );
 
         System.out.println( Commandline.toString( cli.getCommandline() ) );
 
@@ -328,67 +334,78 @@ public class SurefireBooter
         return testClasses;
     }
 
-    private String[] getForkOnceArgs()
+    private void getForkOnceArgs()
         throws Exception
     {
-        return getForkArgs( getStringArrayFromBatteries()[0] );
+        getForkArgs( getStringArrayFromBatteries()[0] );
     }
 
-    private String[] getForkPerTestArgs( String testClass )
+    private void getForkPerTestArgs( String testClass )
         throws Exception
     {
-        return getForkArgs( SINGLE_TEST_BATTERY + "|" + testClass );
+        getForkArgs( SINGLE_TEST_BATTERY + "|" + testClass );
     }
 
-    private String[] getForkArgs( String batteryConfig )
+    private String surefireBooterJar;
+
+    private void getForkArgs( String batteryConfig )
         throws Exception
     {
         String reportClassNames = getListOfStringsAsString( reports, "," );
 
-        String classpathEntries = makeClasspath( classpathUrls );
+        Properties p = new Properties();
 
-        List args = new ArrayList();
+        for ( int i = 0; i < classpathUrls.size(); i++ )
+        {
+            String entry = (String) classpathUrls.get( i );
 
-        args.add( "-classpath" );
+            // Exclude the surefire booter
+            if ( entry.indexOf( "surefire-booter" ) > 0 )
+            {
+                surefireBooterJar = entry;
+            }
+            else
+            {
+                p.setProperty( Integer.toString( i ), entry );
+            }
 
-        args.add( classpathEntries );
+        }
 
-        // ----------------------------------------------------------------------
-        // Add some system propeties
-        // ----------------------------------------------------------------------
+        FileOutputStream fos = new FileOutputStream( new File( basedir, ForkedSurefireRunner.CLASSLOADER_PROPERTIES ) );
+
+        p.store( fos, "classpath entries" );
+
+        fos.close();
 
         if ( systemProperties != null )
         {
-            Enumeration propertyKeys = systemProperties.propertyNames();
+            File f = new File( basedir, ForkedSurefireRunner.SYSTEM_PROPERTIES );
 
-            while ( propertyKeys.hasMoreElements() )
-            {
-                String key = (String) propertyKeys.nextElement();
+            fos = new FileOutputStream( f );
 
-                args.add( "-D" + key + "=" + systemProperties.getProperty( key ) );
-            }
+            systemProperties.store( fos, "system properties" );
+
+            fos.close();
         }
 
-        args.add( RUNNER );
+        p = new Properties();
 
-        args.add( "reportClassNames=" + reportClassNames );
+        p.setProperty( "reportClassNames",  reportClassNames );
 
-        args.add( "reportsDirectory=" + reportsDirectory );
+        p.setProperty( "reportsDirectory",  reportsDirectory );
 
-        args.add( "batteryExecutorName=" + BATTERY_EXECUTOR );
+        p.setProperty( "batteryExecutorName",  BATTERY_EXECUTOR );
 
-        args.add( "forkMode=" + forkMode );
+        p.setProperty( "forkMode",  forkMode );
 
-        args.add( "batteryConfig=" + batteryConfig );
+        p.setProperty( "batteryConfig", batteryConfig );
 
-        String[] s = new String[args.size()];
+        fos = new FileOutputStream( new File( basedir, ForkedSurefireRunner.SUREFIRE_PROPERTIES ) );
 
-        for ( int i = 0; i < s.length; i++ )
-        {
-            s[i] = (String) args.get( i );
-        }
+        p.store( fos, "surefire properties" );
 
-        return s;
+        fos.close();
+
     }
 
     public void reset()
@@ -398,22 +415,6 @@ public class SurefireBooter
         reports.clear();
 
         classpathUrls.clear();
-    }
-
-    private String makeClasspath( List list )
-    {
-        StringBuffer files = new StringBuffer();
-
-        for ( Iterator i = list.iterator(); i.hasNext(); )
-        {
-            String classpathElement = (String) i.next();
-
-            files.append( classpathElement );
-
-            files.append( PS );
-        }
-
-        return files.toString();
     }
 
     private String quotedPathArgument( String value )
