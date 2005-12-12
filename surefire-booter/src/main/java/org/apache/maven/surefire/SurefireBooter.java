@@ -64,7 +64,7 @@ public class SurefireBooter
 
     private String forkMode;
 
-    private static String basedir;
+    private String basedir;
 
     private String jvm;
 
@@ -160,6 +160,11 @@ public class SurefireBooter
     public void setArgLine( String argLine )
     {
         this.argLine = argLine;
+    }
+
+    public void setBasedir( String basedir )
+    {
+        this.basedir = basedir;
     }
 
     // ----------------------------------------------------------------------
@@ -266,11 +271,7 @@ public class SurefireBooter
     private boolean fork()
         throws Exception
     {
-        File workingDirectory = new File( "." );
-
         Commandline cli = new Commandline();
-
-        basedir = workingDirectory.getAbsolutePath();
 
         cli.setWorkingDirectory( basedir );
 
@@ -517,7 +518,7 @@ public class SurefireBooter
     //
     // ----------------------------------------------------------------------
 
-    private static Properties loadProperties( String file )
+    private static Properties loadProperties( String basedir, String file )
         throws Exception
     {
         File f = new File( basedir, file );
@@ -536,16 +537,16 @@ public class SurefireBooter
         return p;
     }
 
-    private static Properties getSurefireProperties()
+    private static Properties getSurefireProperties( String basedir )
         throws Exception
     {
-        return loadProperties( SUREFIRE_PROPERTIES );
+        return loadProperties( basedir, SUREFIRE_PROPERTIES );
     }
 
-    private static void  setSystemProperties()
+    private static void  setSystemProperties( String basedir )
         throws Exception
     {
-        Properties p = loadProperties( SYSTEM_PROPERTIES );
+        Properties p = loadProperties( basedir, SYSTEM_PROPERTIES );
 
         for ( Iterator i = p.keySet().iterator(); i.hasNext(); )
         {
@@ -555,10 +556,10 @@ public class SurefireBooter
         }
     }
 
-    private static ClassLoader createForkingClassLoader()
+    private static ClassLoader createForkingClassLoader( String basedir )
         throws Exception
     {
-        Properties p = loadProperties( CLASSLOADER_PROPERTIES );
+        Properties p = loadProperties( basedir, CLASSLOADER_PROPERTIES );
 
         IsolatedClassLoader classLoader = new IsolatedClassLoader( ClassLoader.getSystemClassLoader() );
 
@@ -583,11 +584,13 @@ public class SurefireBooter
     public static void main( String[] args )
         throws Exception
     {
-        ClassLoader classLoader = createForkingClassLoader();
+        String basedir = args[0];
 
-        setSystemProperties();
+        ClassLoader classLoader = createForkingClassLoader( basedir );
 
-        Properties p = getSurefireProperties();
+        setSystemProperties( basedir );
+
+        Properties p = getSurefireProperties( basedir );
 
         String batteryExecutorName = p.getProperty( "batteryExecutorName" );
 
