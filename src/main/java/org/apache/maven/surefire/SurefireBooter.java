@@ -39,7 +39,7 @@ import java.util.Arrays;
 
 /**
  * @author Jason van Zyl
- * @author <a href="mail-to:emmanuel@venisse.net">Emmanuel Venisse</a>
+ * @author Emmanuel Venisse
  * @version $Id$
  */
 public class SurefireBooter
@@ -277,6 +277,11 @@ public class SurefireBooter
 
         cli.setExecutable( jvm );
 
+        if ( argLine != null )
+        {
+            cli.addArguments( StringUtils.split( argLine, " " ) );
+        }
+
         cli.createArgument().setValue( "-classpath" );
 
         cli.createArgument().setValue( surefireBooterJar + PS + plexusUtilsJar );
@@ -285,7 +290,7 @@ public class SurefireBooter
 
         cli.createArgument().setValue( basedir );
 
-        //System.out.println( Commandline.toString( cli.getCommandline() ) );
+        System.out.println( Commandline.toString( cli.getCommandline() ) );
 
         Writer stringWriter = new StringWriter();
 
