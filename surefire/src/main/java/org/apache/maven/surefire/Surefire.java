@@ -29,6 +29,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
 
+/**
+ * @uathor Jason van Zyl
+ * @version $Id:$
+ */
 public class Surefire
 {
     private static ResourceBundle resources = ResourceBundle.getBundle( "org.apache.maven.surefire.surefire" );
