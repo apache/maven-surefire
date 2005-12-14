@@ -28,9 +28,18 @@ public class IsolatedClassLoader
 
     private Set urls = new HashSet();
 
+    private boolean childDelegation = true;
+
     public IsolatedClassLoader()
     {
         super( new URL[0], null );
+    }
+
+    public IsolatedClassLoader( ClassLoader parent, boolean childDelegation )
+    {
+        super( new URL[0], parent );
+
+        this.childDelegation = childDelegation;
     }
 
     public IsolatedClassLoader( ClassLoader parent )
@@ -53,30 +62,39 @@ public class IsolatedClassLoader
     public synchronized Class loadClass( String className )
         throws ClassNotFoundException
     {
-        Class c = findLoadedClass( className );
+        Class c;
 
-        ClassNotFoundException ex = null;
-
-        if ( c == null )
+        if( childDelegation )
         {
-            try
-            {
-                c = findClass( className );
-            }
-            catch ( ClassNotFoundException e )
-            {
-                ex = e;
+            c = findLoadedClass( className );
 
-                if ( parent != null )
+            ClassNotFoundException ex = null;
+
+            if ( c == null )
+            {
+                try
                 {
-                    c = parent.loadClass( className );
+                    c = findClass( className );
+                }
+                catch ( ClassNotFoundException e )
+                {
+                    ex = e;
+
+                    if ( parent != null )
+                    {
+                        c = parent.loadClass( className );
+                    }
                 }
             }
-        }
 
-        if ( c == null )
+            if ( c == null )
+            {
+                throw ex;
+            }
+        }
+        else
         {
-            throw ex;
+            c = super.loadClass( className );
         }
 
         return c;

@@ -25,21 +25,21 @@ import org.codehaus.plexus.util.cli.WriterStreamConsumer;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.io.FileInputStream;
 import java.lang.reflect.Method;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import java.util.Enumeration;
 import java.util.Arrays;
 
 /**
- * @author <a href="mailto:jason@maven.org">Jason van Zyl</a>
- * @author <a href="mail-to:emmanuel@venisse.net">Emmanuel Venisse</a>
+ * @author Jason van Zyl
+ * @author Emmanuel Venisse
  * @version $Id$
  */
 public class SurefireBooter
@@ -48,7 +48,7 @@ public class SurefireBooter
 
     protected static final String PS = System.getProperty( "path.separator" );
 
-    private static String RUNNER = "org.apache.maven.surefire.ForkedSurefireRunner";
+    private static String RUNNER = "org.apache.maven.surefire.SurefireBooter";
 
     private static String BATTERY_EXECUTOR = "org.apache.maven.surefire.Surefire";
 
@@ -71,6 +71,34 @@ public class SurefireBooter
     private Properties systemProperties;
 
     private String argLine;
+
+    private boolean childDelegation;
+
+    private boolean debug;
+
+    // ----------------------------------------------------------------------
+    //
+    // ----------------------------------------------------------------------
+
+    public static final String FORK_ONCE = "once";
+
+    public static final String FORK_PERTEST = "pertest";
+
+    public static final String FORK_NONE = "none";
+
+    public static final String SUREFIRE_PROPERTIES = "surefire.properties";
+
+    public static final String SYSTEM_PROPERTIES = "surefire-system.properties";
+
+    public static final String CLASSLOADER_PROPERTIES = "surefire-classloader.properties";
+
+    static int TESTS_SUCCEEDED = 0;
+
+    static int TESTS_FAILED = 255;
+
+    static int ILLEGAL_ARGUMENT_EXCEPTION = 100;
+
+    static int OTHER_EXCEPTION = 200;
 
     // ----------------------------------------------------------------------
     // Accessors
@@ -138,6 +166,21 @@ public class SurefireBooter
         this.argLine = argLine;
     }
 
+    public void setBasedir( String basedir )
+    {
+        this.basedir = basedir;
+    }
+
+    public void setChildDelegation( boolean childDelegation )
+    {
+        this.childDelegation = childDelegation;
+    }
+
+    public void setDebug( boolean debug )
+    {
+        this.debug = debug;
+    }
+
     // ----------------------------------------------------------------------
     //
     // ----------------------------------------------------------------------
@@ -147,17 +190,15 @@ public class SurefireBooter
     {
         boolean result = false;
 
-        System.out.println( ">>>>>>>>> forkMode = " + forkMode );
-
-        if ( forkMode.equals( ForkedSurefireRunner.FORK_NONE ) )
+        if ( forkMode.equals( FORK_NONE ) )
         {
             result = runTestsInProcess();
         }
-        else if ( forkMode.equals( ForkedSurefireRunner.FORK_ONCE ) )
+        else if ( forkMode.equals( FORK_ONCE ) )
         {
             result = runTestsForkOnce();
         }
-        else if ( forkMode.equals( ForkedSurefireRunner.FORK_PERTEST ) )
+        else if ( forkMode.equals( FORK_PERTEST ) )
         {
             result = runTestsForkEach();
         }
@@ -168,7 +209,7 @@ public class SurefireBooter
     private IsolatedClassLoader createClassLoader()
         throws Exception
     {
-        IsolatedClassLoader surefireClassLoader = new IsolatedClassLoader( ClassLoader.getSystemClassLoader() );
+        IsolatedClassLoader surefireClassLoader = new IsolatedClassLoader( ClassLoader.getSystemClassLoader(), childDelegation );
 
         for ( Iterator i = classpathUrls.iterator(); i.hasNext(); )
         {
@@ -212,7 +253,9 @@ public class SurefireBooter
     private boolean runTestsForkOnce()
         throws Exception
     {
-        return fork( getForkOnceArgs() );
+        getForkOnceArgs();
+
+        return fork();
     }
 
     private boolean runTestsForkEach()
@@ -226,7 +269,9 @@ public class SurefireBooter
         {
             String testClass = (String) i.next();
 
-            boolean result = fork( getForkPerTestArgs( testClass ) );
+            getForkPerTestArgs( testClass );
+
+            boolean result = fork();
 
             if ( !result )
             {
@@ -237,22 +282,32 @@ public class SurefireBooter
         return noFailures;
     }
 
-    private boolean fork( String[] args )
+    private boolean fork()
         throws Exception
     {
-        File workingDirectory = new File( "." );
-
         Commandline cli = new Commandline();
-
-        basedir = workingDirectory.getAbsolutePath();
 
         cli.setWorkingDirectory( basedir );
 
         cli.setExecutable( jvm );
 
-        cli.addArguments( args );
+        if ( argLine != null )
+        {
+            cli.addArguments( StringUtils.split( argLine, " " ) );
+        }
 
-        System.out.println( Commandline.toString( cli.getCommandline() ) );
+        cli.createArgument().setValue( "-classpath" );
+
+        cli.createArgument().setValue( surefireBooterJar + PS + plexusUtilsJar );
+
+        cli.createArgument().setValue( RUNNER );
+
+        cli.createArgument().setValue( basedir );
+
+        if ( debug )
+        {
+            System.out.println( Commandline.toString( cli.getCommandline() ) );
+        }
 
         Writer stringWriter = new StringWriter();
 
@@ -268,14 +323,10 @@ public class SurefireBooter
         }
         catch ( CommandLineException e )
         {
-            e.printStackTrace();
-
             throw new Exception( "Error while executing forked tests.", e );
         }
         catch ( Exception e )
         {
-            e.printStackTrace();
-
             throw new SurefireBooterForkException( "Error while executing forked tests.", e );
         }
 
@@ -328,67 +379,84 @@ public class SurefireBooter
         return testClasses;
     }
 
-    private String[] getForkOnceArgs()
+    private void getForkOnceArgs()
         throws Exception
     {
-        return getForkArgs( getStringArrayFromBatteries()[0] );
+        getForkArgs( getStringArrayFromBatteries()[0] );
     }
 
-    private String[] getForkPerTestArgs( String testClass )
+    private void getForkPerTestArgs( String testClass )
         throws Exception
     {
-        return getForkArgs( SINGLE_TEST_BATTERY + "|" + testClass );
+        getForkArgs( SINGLE_TEST_BATTERY + "|" + testClass );
     }
 
-    private String[] getForkArgs( String batteryConfig )
+    private String surefireBooterJar;
+
+    private String plexusUtilsJar;
+
+    private void getForkArgs( String batteryConfig )
         throws Exception
     {
         String reportClassNames = getListOfStringsAsString( reports, "," );
 
-        String classpathEntries = makeClasspath( classpathUrls );
+        Properties p = new Properties();
 
-        List args = new ArrayList();
+        for ( int i = 0; i < classpathUrls.size(); i++ )
+        {
+            String entry = (String) classpathUrls.get( i );
 
-        args.add( "-classpath" );
+            // Exclude the surefire booter
+            if ( entry.indexOf( "surefire-booter" ) > 0 )
+            {
+                surefireBooterJar = entry;
+            }
+            else if ( entry.indexOf( "plexus-utils" ) > 0 )
+            {
+                plexusUtilsJar = entry;
+            }
+            else
+            {
+                p.setProperty( Integer.toString( i ), entry );
+            }
 
-        args.add( classpathEntries );
+        }
 
-        // ----------------------------------------------------------------------
-        // Add some system propeties
-        // ----------------------------------------------------------------------
+        FileOutputStream fos = new FileOutputStream( new File( basedir, CLASSLOADER_PROPERTIES ) );
+
+        p.store( fos, "classpath entries" );
+
+        fos.close();
 
         if ( systemProperties != null )
         {
-            Enumeration propertyKeys = systemProperties.propertyNames();
+            File f = new File( basedir, SYSTEM_PROPERTIES );
 
-            while ( propertyKeys.hasMoreElements() )
-            {
-                String key = (String) propertyKeys.nextElement();
+            fos = new FileOutputStream( f );
 
-                args.add( "-D" + key + "=" + systemProperties.getProperty( key ) );
-            }
+            systemProperties.store( fos, "system properties" );
+
+            fos.close();
         }
 
-        args.add( RUNNER );
+        p = new Properties();
 
-        args.add( "reportClassNames=" + reportClassNames );
+        p.setProperty( "reportClassNames",  reportClassNames );
 
-        args.add( "reportsDirectory=" + reportsDirectory );
+        p.setProperty( "reportsDirectory",  reportsDirectory );
 
-        args.add( "batteryExecutorName=" + BATTERY_EXECUTOR );
+        p.setProperty( "batteryExecutorName",  BATTERY_EXECUTOR );
 
-        args.add( "forkMode=" + forkMode );
+        p.setProperty( "forkMode",  forkMode );
 
-        args.add( "batteryConfig=" + batteryConfig );
+        p.setProperty( "batteryConfig", batteryConfig );
 
-        String[] s = new String[args.size()];
+        fos = new FileOutputStream( new File( basedir, SUREFIRE_PROPERTIES ) );
 
-        for ( int i = 0; i < s.length; i++ )
-        {
-            s[i] = (String) args.get( i );
-        }
+        p.store( fos, "surefire properties" );
 
-        return s;
+        fos.close();
+
     }
 
     public void reset()
@@ -398,32 +466,6 @@ public class SurefireBooter
         reports.clear();
 
         classpathUrls.clear();
-    }
-
-    private String makeClasspath( List list )
-    {
-        StringBuffer files = new StringBuffer();
-
-        for ( Iterator i = list.iterator(); i.hasNext(); )
-        {
-            String classpathElement = (String) i.next();
-
-            files.append( classpathElement );
-
-            files.append( PS );
-        }
-
-        return files.toString();
-    }
-
-    private String quotedPathArgument( String value )
-    {
-        if ( !StringUtils.isEmpty( value ) )
-        {
-            return "'" + value.replace( '\\', '/' ) + "'";
-        }
-
-        return value;
     }
 
     private String getListOfStringsAsString ( List listOfStrings, String delimiterParm )
@@ -478,6 +520,193 @@ public class SurefireBooter
         }
 
         return batteryConfig;
+    }
+
+    // ----------------------------------------------------------------------
+    //
+    // ----------------------------------------------------------------------
+
+    private static Properties loadProperties( String basedir, String file )
+        throws Exception
+    {
+        File f = new File( basedir, file );
+
+        Properties p = new Properties();
+
+        if ( !f.exists() )
+        {
+            return p;
+        }
+
+        //f.deleteOnExit();
+
+        p.load( new FileInputStream( f ) );
+
+        return p;
+    }
+
+    private static Properties getSurefireProperties( String basedir )
+        throws Exception
+    {
+        return loadProperties( basedir, SUREFIRE_PROPERTIES );
+    }
+
+    private static void  setSystemProperties( String basedir )
+        throws Exception
+    {
+        Properties p = loadProperties( basedir, SYSTEM_PROPERTIES );
+
+        for ( Iterator i = p.keySet().iterator(); i.hasNext(); )
+        {
+            String key = (String) i.next();
+
+            System.setProperty( key, p.getProperty( key ) );
+        }
+    }
+
+    private static ClassLoader createForkingClassLoader( String basedir )
+        throws Exception
+    {
+        Properties p = loadProperties( basedir, CLASSLOADER_PROPERTIES );
+
+        IsolatedClassLoader classLoader = new IsolatedClassLoader( ClassLoader.getSystemClassLoader() );
+
+        for ( Iterator i = p.values().iterator(); i.hasNext(); )
+        {
+            String entry = (String) i.next();
+
+            classLoader.addURL( new File( entry ).toURL() );
+        }
+
+        return classLoader;
+    }
+
+    /**
+     * This method is invoked when Surefire is forked - this method parses and
+     * organizes the arguments passed to it and then calls the Surefire class'
+     * run method.
+     *
+     * @param args
+     * @throws Exception
+     */
+    public static void main( String[] args )
+        throws Exception
+    {
+        String basedir = args[0];
+
+        ClassLoader classLoader = createForkingClassLoader( basedir );
+
+        Thread.currentThread().setContextClassLoader( classLoader );
+
+        setSystemProperties( basedir );
+
+        Properties p = getSurefireProperties( basedir );
+
+        String batteryExecutorName = p.getProperty( "batteryExecutorName" );
+
+        Class batteryExecutorClass = classLoader.loadClass( batteryExecutorName );
+
+        Object batteryExecutor = batteryExecutorClass.newInstance();
+
+        String reports = p.getProperty( "reportClassNames" );
+
+        String[] reportClasses = reports.split( "," );
+
+        List reportList = Arrays.asList( reportClasses );
+
+        String batteryConfig = p.getProperty( "batteryConfig" );
+
+        String[] batteryParts = batteryConfig.split( "\\|" );
+
+        String batteryClassName = batteryParts[0];
+
+        Object[] batteryParms;
+
+        String forkMode = p.getProperty( "forkMode" );
+
+        if ( forkMode.equals( FORK_ONCE ) )
+        {
+            batteryParms = new Object[batteryParts.length - 1];
+
+            batteryParms[0] = new File( batteryParts[1] );
+
+            String stringList = batteryParts[2];
+
+            if ( stringList.startsWith( "[" ) && stringList.endsWith( "]" ) )
+            {
+                stringList = stringList.substring( 1, stringList.length() - 1 );
+            }
+
+            ArrayList includesList = new ArrayList();
+
+            String[] stringArray = stringList.split( "," );
+
+            for ( int i = 0; i < stringArray.length; i++ )
+            {
+                includesList.add( stringArray[i].trim() );
+            }
+
+            batteryParms[1] = includesList;
+
+            stringList = batteryParts[3];
+
+            ArrayList excludesList = new ArrayList();
+
+            if ( stringList.startsWith( "[" ) && stringList.endsWith( "]" ) )
+            {
+                stringList = stringList.substring( 1, stringList.length() - 1 );
+            }
+
+            stringArray = stringList.split( "," );
+
+            for ( int i = 0; i < stringArray.length; i++ )
+            {
+                excludesList.add( stringArray[i].trim() );
+            }
+
+            batteryParms[2] = excludesList;
+        }
+        else
+        {
+            batteryParms = new Object[1];
+
+            batteryParms[0] = batteryParts[1];
+        }
+
+        List batteryHolders = new ArrayList();
+
+        batteryHolders.add( new Object[]{batteryClassName, batteryParms} );
+
+        String reportsDirectory = p.getProperty( "reportsDirectory" );
+
+        Method run = batteryExecutorClass.getMethod( "run", new Class[]{List.class, List.class, String.class} );
+
+        Object[] parms = new Object[]{reportList, batteryHolders, reportsDirectory};
+
+        int returnCode = TESTS_FAILED;
+
+        try
+        {
+            boolean result = ( (Boolean) run.invoke( batteryExecutor, parms ) ).booleanValue();
+
+            if ( result )
+            {
+                returnCode = TESTS_SUCCEEDED;
+            }
+
+        }
+        catch ( IllegalArgumentException e )
+        {
+            returnCode = ILLEGAL_ARGUMENT_EXCEPTION;
+        }
+        catch ( Exception e )
+        {
+            e.printStackTrace();
+
+            returnCode = OTHER_EXCEPTION;
+        }
+
+        System.exit( returnCode );
     }
 }
 
