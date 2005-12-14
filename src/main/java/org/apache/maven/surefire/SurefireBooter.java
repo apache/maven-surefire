@@ -72,6 +72,10 @@ public class SurefireBooter
 
     private String argLine;
 
+    private boolean childDelegation;
+
+    private boolean debug;
+
     // ----------------------------------------------------------------------
     //
     // ----------------------------------------------------------------------
@@ -167,6 +171,16 @@ public class SurefireBooter
         this.basedir = basedir;
     }
 
+    public void setChildDelegation( boolean childDelegation )
+    {
+        this.childDelegation = childDelegation;
+    }
+
+    public void setDebug( boolean debug )
+    {
+        this.debug = debug;
+    }
+
     // ----------------------------------------------------------------------
     //
     // ----------------------------------------------------------------------
@@ -195,7 +209,7 @@ public class SurefireBooter
     private IsolatedClassLoader createClassLoader()
         throws Exception
     {
-        IsolatedClassLoader surefireClassLoader = new IsolatedClassLoader( ClassLoader.getSystemClassLoader() );
+        IsolatedClassLoader surefireClassLoader = new IsolatedClassLoader( ClassLoader.getSystemClassLoader(), childDelegation );
 
         for ( Iterator i = classpathUrls.iterator(); i.hasNext(); )
         {
@@ -290,7 +304,10 @@ public class SurefireBooter
 
         cli.createArgument().setValue( basedir );
 
-        System.out.println( Commandline.toString( cli.getCommandline() ) );
+        if ( debug )
+        {
+            System.out.println( Commandline.toString( cli.getCommandline() ) );
+        }
 
         Writer stringWriter = new StringWriter();
 
@@ -449,16 +466,6 @@ public class SurefireBooter
         reports.clear();
 
         classpathUrls.clear();
-    }
-
-    private String quotedPathArgument( String value )
-    {
-        if ( !StringUtils.isEmpty( value ) )
-        {
-            return "'" + value.replace( '\\', '/' ) + "'";
-        }
-
-        return value;
     }
 
     private String getListOfStringsAsString ( List listOfStrings, String delimiterParm )
