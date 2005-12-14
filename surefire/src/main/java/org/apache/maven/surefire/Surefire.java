@@ -24,14 +24,15 @@ import org.apache.maven.surefire.report.Reporter;
 import org.apache.maven.surefire.report.ReporterManager;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
 
 /**
+ * @version $Id$
  * @uathor Jason van Zyl
- * @version $Id:$
  */
 public class Surefire
 {
@@ -57,7 +58,7 @@ public class Surefire
         return resources;
     }
 
-    public boolean run( List reports, List batteryHolders, String reportsDirectory ) 
+    public boolean run( List reports, List batteryHolders, String reportsDirectory )
         throws Exception
     {
         ClassLoader classLoader = this.getClass().getClassLoader();
@@ -272,6 +273,11 @@ public class Surefire
                 batteryClass = loader.loadClass( "org.apache.maven.surefire.battery.Battery" );
             }
             catch ( Exception e )
+            {
+                continue;
+            }
+
+            if ( Modifier.isAbstract( testClass.getModifiers() ) )
             {
                 continue;
             }
