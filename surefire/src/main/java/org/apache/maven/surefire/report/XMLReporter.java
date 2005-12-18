@@ -28,7 +28,6 @@ import java.util.StringTokenizer;
 import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.codehaus.plexus.util.xml.Xpp3DomWriter;
-import org.apache.maven.surefire.util.StringUtils;
 
 
 /**
@@ -169,13 +168,6 @@ public class XMLReporter
 
             if ( ( message != null ) && ( message.trim().length() > 0 ) )
             {
-
-                message = StringUtils.replace( report.getThrowable().getMessage(), "<", "&lt;" );
-
-                message = StringUtils.replace( message, ">", "&gt;" );
-
-                message = StringUtils.replace( message, "\"", "&quot;" );
-
                 element.setAttribute( "message", message );
 
                 element.setAttribute( "type", stackTrace.substring( 0, stackTrace.indexOf( ":" ) ) );
