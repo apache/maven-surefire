@@ -52,7 +52,7 @@ public class SurefireBooter
 
     private static String BATTERY_EXECUTOR = "org.apache.maven.surefire.Surefire";
 
-    private static String SINGLE_TEST_BATTERY = "org.apache.maven.surefire.battery.SingleTestBattery";
+    private static String SINGLE_TEST_BATTERY = "org.apache.maven.surefire.battery.JUnitBattery";
 
     private List batteries = new ArrayList();
 
@@ -355,7 +355,6 @@ public class SurefireBooter
     private List getTestClasses()
         throws Exception
     {
-
         IsolatedClassLoader classLoader = createClassLoader();
 
         List instantiatedBatteries = Surefire.instantiateBatteries( batteries, classLoader );
@@ -388,6 +387,8 @@ public class SurefireBooter
     private void getForkPerTestArgs( String testClass )
         throws Exception
     {
+        //System.out.println( "SINGLE_TEST_BATTERY = " + SINGLE_TEST_BATTERY );
+
         getForkArgs( SINGLE_TEST_BATTERY + "|" + testClass );
     }
 
