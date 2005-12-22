@@ -17,14 +17,11 @@ package org.apache.maven.surefire;
  */
 
 import org.apache.maven.surefire.battery.Battery;
-import org.apache.maven.surefire.battery.JUnitBattery;
 import org.apache.maven.surefire.battery.assertion.BatteryTestFailedException;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.Reporter;
 import org.apache.maven.surefire.report.ReporterManager;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -262,56 +259,14 @@ public class Surefire
         {
             Object[] holder = (Object[]) batteryHolders.get( i );
 
-            Class testClass;
+            Object battery = SurefireUtils.instantiateBattery( holder, loader );
 
-            Class batteryClass;
+            System.out.println( "battery = " + battery );
 
-            try
+            if ( battery != null )
             {
-                testClass = loader.loadClass( (String) holder[0] );
-
-                batteryClass = loader.loadClass( "org.apache.maven.surefire.battery.Battery" );
+                batteries.add( battery );
             }
-            catch ( Exception e )
-            {
-                continue;
-            }
-
-            if ( Modifier.isAbstract( testClass.getModifiers() ) )
-            {
-                continue;
-            }
-
-            Object battery = null;
-
-            if ( batteryClass.isAssignableFrom( testClass ) )
-            {
-                if ( holder[1] != null )
-                {
-                    Object[] params = (Object[]) holder[1];
-
-                    Class[] paramTypes = new Class[params.length];
-
-                    for ( int j = 0; j < params.length; j++ )
-                    {
-                        paramTypes[j] = params[j].getClass();
-                    }
-
-                    Constructor constructor = testClass.getConstructor( paramTypes );
-
-                    battery = constructor.newInstance( params );
-                }
-                else
-                {
-                    battery = testClass.newInstance();
-                }
-            }
-            else
-            {
-                battery = new JUnitBattery( testClass, loader );
-            }
-
-            batteries.add( battery );
         }
 
         return batteries;

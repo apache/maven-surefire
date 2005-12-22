@@ -17,7 +17,7 @@ package org.apache.maven.surefire.battery;
  */
 
 /**
- * A battery which contains a single test class which is used primarily for running individual tests
+ * A battery which contains a single testObject class which is used primarily for running individual tests
  * inside a new JVM instance (fork mode).
  *
  * @author <a href="mailto:jason@maven.org">Jason van Zyl</a>
@@ -30,7 +30,7 @@ public class SingleTestBattery
 
     private Class testClass;
 
-    private Object test;
+    private Object testObject;
 
     public SingleTestBattery( String testClassName )
         throws Exception
@@ -39,7 +39,7 @@ public class SingleTestBattery
 
         this.testClass = getClass().getClassLoader().loadClass( testClassName );
 
-        this.test = testClass.newInstance();
+        this.testObject = testClass.newInstance();
     }
 
     protected Class getTestClass()
@@ -49,7 +49,7 @@ public class SingleTestBattery
 
     protected Object getTestClassInstance()
     {
-        return test;
+        return testObject;
     }
 
     public String getBatteryName()

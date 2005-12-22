@@ -63,13 +63,25 @@ public class JUnitBattery
 
     private Method runMethod;
 
+    public JUnitBattery( String testClassName )
+        throws Exception
+    {
+        processTestClass( getClass().getClassLoader().loadClass( testClassName ), getClass().getClassLoader() );
+    }
+
     public JUnitBattery( final String testClass, ClassLoader loader )
         throws Exception
     {
-        this( loader.loadClass( testClass ), loader );
+        processTestClass( loader.loadClass( testClass ), loader );
     }
 
     public JUnitBattery( final Class testClass, ClassLoader loader )
+        throws Exception
+    {
+        processTestClass( testClass, loader );
+    }
+
+    public void processTestClass( final Class testClass, ClassLoader loader )
         throws Exception
     {
         if ( testClass == null )
