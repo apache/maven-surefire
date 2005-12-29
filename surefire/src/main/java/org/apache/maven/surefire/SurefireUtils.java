@@ -7,7 +7,7 @@ import java.lang.reflect.Modifier;
 
 /**
  * @author Jason van  Zyl
- * @version $Id:$
+ * @version $Id$
  */
 public class SurefireUtils
 {
