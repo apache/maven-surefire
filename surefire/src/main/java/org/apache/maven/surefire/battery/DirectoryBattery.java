@@ -95,16 +95,12 @@ public class DirectoryBattery
 
         if ( excludes != null )
         {
-            String[] excls = new String[excludes.size() + 1];
+            String[] excls = new String[excludes.size()];
 
-            for ( int i = 0; i < excls.length - 1; i++ )
+            for ( int i = 0; i < excls.length; i++ )
             {
                 excls[i] = StringUtils.replace( (String) excludes.get( i ), "java", "class" );
             }
-
-            // Exclude inner classes
-
-            excls[excludes.size()] = "**/*$*";
 
             scanner.setExcludes( excls );
         }
