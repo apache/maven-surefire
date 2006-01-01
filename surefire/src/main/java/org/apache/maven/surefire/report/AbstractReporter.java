@@ -36,6 +36,8 @@ public abstract class AbstractReporter
     protected long startTime;
 
     protected long endTime;
+    
+    private NumberFormat numberFormat = NumberFormat.getInstance();
 
     public void setReportsDirectory( String reportsDirectory )
     {
@@ -151,6 +153,6 @@ public abstract class AbstractReporter
 
     protected String elapsedTimeAsString( long runTime )
     {
-        return NumberFormat.getInstance().format( (double) runTime / 1000 );
+        return numberFormat.format( (double) runTime / 1000 );
     }
 }
