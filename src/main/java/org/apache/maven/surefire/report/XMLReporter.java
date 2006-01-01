@@ -19,7 +19,6 @@ package org.apache.maven.surefire.report;
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.text.DecimalFormat;
 import java.util.Enumeration;
 import java.util.Properties;
 import java.util.StringTokenizer;
@@ -37,8 +36,6 @@ import org.codehaus.plexus.util.xml.Xpp3DomWriter;
 public class XMLReporter 
     extends AbstractReporter
 {
-    private static final DecimalFormat TIME_FORMAT = new DecimalFormat( "##0.00" );
-
     private PrintWriter writer;
     
     private Xpp3Dom testSuite;
@@ -257,8 +254,4 @@ public class XMLReporter
         }
     }
     
-    protected String elapsedTimeAsString( long runTime )
-    {
-        return TIME_FORMAT.format( (double) runTime / 1000 );
-    }
 }

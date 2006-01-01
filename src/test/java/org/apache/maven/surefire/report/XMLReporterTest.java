@@ -16,10 +16,10 @@ package org.apache.maven.surefire.report;
  * limitations under the License.
  */
 
-import org.codehaus.plexus.util.xml.Xpp3Dom;
-
 import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
+
+import org.codehaus.plexus.util.xml.Xpp3Dom;
 
 public class XMLReporterTest
     extends TestCase
@@ -28,8 +28,6 @@ public class XMLReporterTest
     private XMLReporter reporter;
 
     private ReportEntry reportEntry;
-
-    private Xpp3Dom testCase;
 
     private String message;
 
@@ -66,13 +64,6 @@ public class XMLReporterTest
         Xpp3Dom result = reporter.getTestCase();
         Xpp3Dom child = result.getChild( "error" );
         assertEquals( message, child.getAttribute( "type" ) );
-    }
-
-    public void testElapsedTimeAsString()
-    {
-        String timeAsString = reporter.elapsedTimeAsString( 1000 );
-        assertTrue( timeAsString.indexOf( "." ) >= 0 );
-        assertTrue( timeAsString.indexOf( "," ) < 0 );
     }
 
 }
