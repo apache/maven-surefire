@@ -24,7 +24,7 @@ import java.io.StringWriter;
 /**
  *  Brief format console reporter.
  *  @author <a href="mailto:jruiz@exist.com">Johnny R. Ruiz III</a>
- *  @version $Id: BriefConsoleReporter.java 62 2005-10-07 06:50:37Z jruiz $
+ *  @version $Id$
  */
 
 public class BriefConsoleReporter

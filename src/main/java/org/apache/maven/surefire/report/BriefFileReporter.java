@@ -24,7 +24,7 @@ import java.io.StringWriter;
 /**
  * Brief format file reporter.
  * @author <a href="mailto:jruiz@exist.com">Johnny R. Ruiz III</a>
- * @version $Id: BriefeFileReporter.java 62 2005-10-07 04:07:33Z jruiz $
+ * @version $Id$
  */
 public class BriefFileReporter
     extends AbstractReporter

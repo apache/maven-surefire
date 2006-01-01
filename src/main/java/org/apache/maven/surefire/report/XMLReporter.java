@@ -33,7 +33,7 @@ import org.codehaus.plexus.util.xml.Xpp3DomWriter;
 /**
  * XML format reporter.
  * @author <a href="mailto:jruiz@exist.com">Johnny R. Ruiz III</a>
- * @version $Id: XMLReporter.java 61 2005-10-07 04:07:33Z jruiz $
+ * @version $Id$
  */
 public class XMLReporter 
     extends AbstractReporter
@@ -74,7 +74,7 @@ public class XMLReporter
 
         reportDir.mkdirs();
         
-        writer = new PrintWriter( new FileWriter( reportFile ) );
+        writer = new PrintWriter( reportFile, "UTF-8" );
         
         writer.write("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n");
         
