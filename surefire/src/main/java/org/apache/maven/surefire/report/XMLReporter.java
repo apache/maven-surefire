@@ -17,6 +17,9 @@ package org.apache.maven.surefire.report;
  */
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.BufferedWriter;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Enumeration;
@@ -70,7 +73,7 @@ public class XMLReporter
 
         reportDir.mkdirs();
         
-        writer = new PrintWriter( reportFile, "UTF-8" );
+        writer = new PrintWriter( new BufferedWriter( new OutputStreamWriter( new FileOutputStream( reportFile ), "UTF-8" ) ) );
         
         writer.write("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n");
         
