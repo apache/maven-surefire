@@ -261,8 +261,6 @@ public class Surefire
 
             Object battery = SurefireUtils.instantiateBattery( holder, loader );
 
-            System.out.println( "battery = " + battery );
-
             if ( battery != null )
             {
                 batteries.add( battery );
