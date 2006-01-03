@@ -579,7 +579,7 @@ public class SurefireBooter
             return p;
         }
 
-        //f.deleteOnExit();
+        f.deleteOnExit();
 
         p.load( new FileInputStream( f ) );
 
