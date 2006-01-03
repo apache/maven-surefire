@@ -25,17 +25,19 @@ import org.codehaus.plexus.util.cli.WriterStreamConsumer;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.io.FileInputStream;
 import java.lang.reflect.Method;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import java.util.Arrays;
 
 /**
  * @author Jason van Zyl
@@ -75,6 +77,10 @@ public class SurefireBooter
     private boolean childDelegation;
 
     private boolean debug;
+
+    private String surefireBooterJar;
+
+    private String plexusUtilsJar;
 
     // ----------------------------------------------------------------------
     //
@@ -206,10 +212,14 @@ public class SurefireBooter
         return result;
     }
 
-    private IsolatedClassLoader createClassLoader()
-        throws Exception
+    private ClassLoader createClassLoader() throws Exception
     {
-        IsolatedClassLoader surefireClassLoader = new IsolatedClassLoader( ClassLoader.getSystemClassLoader(), childDelegation );
+        return createClassLoader( classpathUrls, childDelegation );
+    }
+
+    static private ClassLoader createClassLoader( List classpathUrls, boolean childDelegation ) throws Exception
+    {
+        ArrayList urls = new ArrayList();
 
         for ( Iterator i = classpathUrls.iterator(); i.hasNext(); )
         {
@@ -221,17 +231,46 @@ public class SurefireBooter
             }
 
             File f = new File( url );
-
-            surefireClassLoader.addURL( f.toURL() );
+            urls.add( f.toURL() );
         }
 
-        return surefireClassLoader;
+        if ( childDelegation )
+        {
+            IsolatedClassLoader surefireClassLoader = new IsolatedClassLoader( ClassLoader.getSystemClassLoader(), true );
+            for ( Iterator iter = urls.iterator(); iter.hasNext(); )
+            {
+                URL url = (URL) iter.next();
+                surefireClassLoader.addURL( url );
+            }
+            return surefireClassLoader;
+        }
+        else
+        {
+            URL u[] = new URL[urls.size()];
+            urls.toArray( u );
+            return new URLClassLoader( u, ClassLoader.getSystemClassLoader() );
+        }
     }
+
+    private static ClassLoader createForkingClassLoader( String basedir )
+        throws Exception
+    {
+        Properties p = loadProperties( basedir, CLASSLOADER_PROPERTIES );
+
+        String cp = p.getProperty( "classpath" );
+
+        boolean childDelegation = "true".equals( p.getProperty( "childDelegation", "false" ) );
+
+        List urls = Arrays.asList( cp.split( ":" ) );
+
+        return createClassLoader( urls, childDelegation );
+    }
+
 
     private boolean runTestsInProcess()
         throws Exception
     {
-        IsolatedClassLoader surefireClassLoader = createClassLoader();
+        ClassLoader surefireClassLoader = createClassLoader();
 
         Class batteryExecutorClass = surefireClassLoader.loadClass( BATTERY_EXECUTOR );
 
@@ -355,7 +394,7 @@ public class SurefireBooter
     private List getTestClasses()
         throws Exception
     {
-        IsolatedClassLoader classLoader = createClassLoader();
+        ClassLoader classLoader = createClassLoader();
 
         List instantiatedBatteries = Surefire.instantiateBatteries( batteries, classLoader );
 
@@ -387,14 +426,9 @@ public class SurefireBooter
     private void getForkPerTestArgs( String testClass )
         throws Exception
     {
-        //System.out.println( "SINGLE_TEST_BATTERY = " + SINGLE_TEST_BATTERY );
-
         getForkArgs( SINGLE_TEST_BATTERY + "|" + testClass );
     }
 
-    private String surefireBooterJar;
-
-    private String plexusUtilsJar;
 
     private void getForkArgs( String batteryConfig )
         throws Exception
@@ -403,25 +437,31 @@ public class SurefireBooter
 
         Properties p = new Properties();
 
+        String cp = "";
         for ( int i = 0; i < classpathUrls.size(); i++ )
         {
-            String entry = (String) classpathUrls.get( i );
+            String url = (String) classpathUrls.get( i );
 
             // Exclude the surefire booter
-            if ( entry.indexOf( "surefire-booter" ) > 0 )
+            // Exclude the surefire booter
+            if ( url.indexOf( "surefire-booter" ) > 0 )
             {
-                surefireBooterJar = entry;
+                surefireBooterJar = url;
             }
-            else if ( entry.indexOf( "plexus-utils" ) > 0 )
+            else if ( url.indexOf( "plexus-utils" ) > 0 )
             {
-                plexusUtilsJar = entry;
+                plexusUtilsJar = url;
             }
             else
             {
-                p.setProperty( Integer.toString( i ), entry );
+                if ( cp.length() == 0 )
+                    cp = url;
+                else
+                    cp += ":" + url;
             }
-
         }
+        p.setProperty( "classpath", cp );
+        p.setProperty( "childDelegation", "" + childDelegation );
 
         FileOutputStream fos = new FileOutputStream( new File( basedir, CLASSLOADER_PROPERTIES ) );
 
@@ -442,13 +482,13 @@ public class SurefireBooter
 
         p = new Properties();
 
-        p.setProperty( "reportClassNames",  reportClassNames );
+        p.setProperty( "reportClassNames", reportClassNames );
 
-        p.setProperty( "reportsDirectory",  reportsDirectory );
+        p.setProperty( "reportsDirectory", reportsDirectory );
 
-        p.setProperty( "batteryExecutorName",  BATTERY_EXECUTOR );
+        p.setProperty( "batteryExecutorName", BATTERY_EXECUTOR );
 
-        p.setProperty( "forkMode",  forkMode );
+        p.setProperty( "forkMode", forkMode );
 
         p.setProperty( "batteryConfig", batteryConfig );
 
@@ -469,7 +509,7 @@ public class SurefireBooter
         classpathUrls.clear();
     }
 
-    private String getListOfStringsAsString ( List listOfStrings, String delimiterParm )
+    private String getListOfStringsAsString( List listOfStrings, String delimiterParm )
     {
         StringBuffer stringBuffer = new StringBuffer();
 
@@ -552,7 +592,7 @@ public class SurefireBooter
         return loadProperties( basedir, SUREFIRE_PROPERTIES );
     }
 
-    private static void  setSystemProperties( String basedir )
+    private static void setSystemProperties( String basedir )
         throws Exception
     {
         Properties p = loadProperties( basedir, SYSTEM_PROPERTIES );
@@ -563,23 +603,6 @@ public class SurefireBooter
 
             System.setProperty( key, p.getProperty( key ) );
         }
-    }
-
-    private static ClassLoader createForkingClassLoader( String basedir )
-        throws Exception
-    {
-        Properties p = loadProperties( basedir, CLASSLOADER_PROPERTIES );
-
-        IsolatedClassLoader classLoader = new IsolatedClassLoader( ClassLoader.getSystemClassLoader() );
-
-        for ( Iterator i = p.values().iterator(); i.hasNext(); )
-        {
-            String entry = (String) i.next();
-
-            classLoader.addURL( new File( entry ).toURL() );
-        }
-
-        return classLoader;
     }
 
     /**
@@ -596,6 +619,9 @@ public class SurefireBooter
         String basedir = args[0];
 
         ClassLoader classLoader = createForkingClassLoader( basedir );
+
+        // Dumps the classloader stuff
+        //logClassLoader(classLoader);
 
         Thread.currentThread().setContextClassLoader( classLoader );
 
@@ -709,5 +735,27 @@ public class SurefireBooter
 
         System.exit( returnCode );
     }
+
+
+    private static void logClassLoader( ClassLoader classLoader )
+    {
+        if ( classLoader.getParent() != null )
+            logClassLoader( classLoader.getParent() );
+        if ( classLoader instanceof URLClassLoader )
+        {
+            System.out.println( "ClassLoader: type" + classLoader.getClass() + ", value=" + classLoader );
+            URLClassLoader ucl = (URLClassLoader) classLoader;
+            URL[] u = ucl.getURLs();
+            for ( int i = 0; i < u.length; i++ )
+            {
+                System.out.println( "           : " + u[i] );
+            }
+        }
+        else
+        {
+            System.out.println( "ClassLoader: type" + classLoader.getClass() + ", value=" + classLoader );
+        }
+    }
+
 }
 
