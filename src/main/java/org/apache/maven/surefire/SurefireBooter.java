@@ -369,6 +369,10 @@ public class SurefireBooter
             throw new SurefireBooterForkException( "Error while executing forked tests.", e );
         }
 
+        /*
+
+        The standard reporting modules should do this work ... jvz
+        
         String string = stringWriter.toString();
 
         if ( string != null && string.length() > 0 )
@@ -382,6 +386,7 @@ public class SurefireBooter
                 System.out.println( string );
             }
         }
+        */
 
         if ( returnCode != 0 )
         {
@@ -491,6 +496,8 @@ public class SurefireBooter
         p.setProperty( "forkMode", forkMode );
 
         p.setProperty( "batteryConfig", batteryConfig );
+
+        p.setProperty( "debug", "" + debug );
 
         fos = new FileOutputStream( new File( basedir, SUREFIRE_PROPERTIES ) );
 
@@ -620,14 +627,18 @@ public class SurefireBooter
 
         ClassLoader classLoader = createForkingClassLoader( basedir );
 
-        // Dumps the classloader stuff
-        //logClassLoader(classLoader);
 
         Thread.currentThread().setContextClassLoader( classLoader );
 
         setSystemProperties( basedir );
 
         Properties p = getSurefireProperties( basedir );
+
+        boolean debug = "true".equals( p.getProperty( "debug", "false" ) );
+        if ( debug )
+        {
+            logClassLoader( classLoader );
+        }
 
         String batteryExecutorName = p.getProperty( "batteryExecutorName" );
 
@@ -740,12 +751,18 @@ public class SurefireBooter
     private static void logClassLoader( ClassLoader classLoader )
     {
         if ( classLoader.getParent() != null )
+        {
             logClassLoader( classLoader.getParent() );
+        }
+
         if ( classLoader instanceof URLClassLoader )
         {
             System.out.println( "ClassLoader: type" + classLoader.getClass() + ", value=" + classLoader );
+
             URLClassLoader ucl = (URLClassLoader) classLoader;
+
             URL[] u = ucl.getURLs();
+
             for ( int i = 0; i < u.length; i++ )
             {
                 System.out.println( "           : " + u[i] );
@@ -756,6 +773,5 @@ public class SurefireBooter
             System.out.println( "ClassLoader: type" + classLoader.getClass() + ", value=" + classLoader );
         }
     }
-
 }
 
