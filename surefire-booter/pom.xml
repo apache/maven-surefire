@@ -7,7 +7,7 @@
   <modelVersion>4.0.0</modelVersion>
   <artifactId>surefire-booter</artifactId>
   <name>SureFire Booter</name>
-  <version>1.5.2</version>
+  <version>1.5.3-SNAPSHOT</version>
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
