@@ -7,7 +7,7 @@
   <modelVersion>4.0.0</modelVersion>
   <artifactId>surefire-booter</artifactId>
   <name>SureFire Booter</name>
-  <version>1.5.2-SNAPSHOT</version>
+  <version>1.5.2</version>
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
@@ -18,7 +18,7 @@
     <dependency>
       <groupId>org.apache.maven.surefire</groupId>
       <artifactId>surefire</artifactId>
-      <version>1.5.2-SNAPSHOT</version>
+      <version>1.5.2</version>
     </dependency>
   </dependencies>
 </project>
