@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -73,6 +74,10 @@ public class SurefireBooter
     private Properties systemProperties;
 
     private String argLine;
+    
+    private Map environmentVariables;
+    
+    private File workingDirectory;
 
     private boolean childDelegation;
 
@@ -172,10 +177,20 @@ public class SurefireBooter
         this.argLine = argLine;
     }
 
+    public void setEnvironmentVariables( Map environmentVariables )
+    {
+        this.environmentVariables = environmentVariables;
+    }
+    
     public void setBasedir( String basedir )
     {
         this.basedir = basedir;
     }
+
+    public void setWorkingDirectory( File dir )
+    {
+        this.workingDirectory = dir;
+    }    
 
     public void setChildDelegation( boolean childDelegation )
     {
@@ -333,6 +348,32 @@ public class SurefireBooter
         if ( argLine != null )
         {
             cli.addArguments( StringUtils.split( argLine, " " ) );
+        }
+        
+        if ( environmentVariables != null)
+        {
+            Iterator iter = environmentVariables.keySet().iterator();
+            
+            while ( iter.hasNext() )
+            {
+                String key = (String) iter.next();
+                
+                String value = (String) environmentVariables.get( key );
+                
+                cli.addEnvironment( key, value );
+                
+                if ( debug )
+                {
+                    System.out.println( "Environment: " + key + "="  + value + " added." );
+                }
+                
+            }
+            
+        }
+        
+        if ( workingDirectory != null )
+        {
+            cli.setWorkingDirectory( workingDirectory.getAbsolutePath() );
         }
 
         cli.createArgument().setValue( "-classpath" );
