@@ -74,9 +74,9 @@ public class SurefireBooter
     private Properties systemProperties;
 
     private String argLine;
-    
+
     private Map environmentVariables;
-    
+
     private File workingDirectory;
 
     private boolean childDelegation;
@@ -181,7 +181,7 @@ public class SurefireBooter
     {
         this.environmentVariables = environmentVariables;
     }
-    
+
     public void setBasedir( String basedir )
     {
         this.basedir = basedir;
@@ -190,7 +190,7 @@ public class SurefireBooter
     public void setWorkingDirectory( File dir )
     {
         this.workingDirectory = dir;
-    }    
+    }
 
     public void setChildDelegation( boolean childDelegation )
     {
@@ -349,28 +349,28 @@ public class SurefireBooter
         {
             cli.addArguments( StringUtils.split( argLine, " " ) );
         }
-        
+
         if ( environmentVariables != null)
         {
             Iterator iter = environmentVariables.keySet().iterator();
-            
+
             while ( iter.hasNext() )
             {
                 String key = (String) iter.next();
-                
+
                 String value = (String) environmentVariables.get( key );
-                
+
                 cli.addEnvironment( key, value );
-                
+
                 if ( debug )
                 {
                     System.out.println( "Environment: " + key + "="  + value + " added." );
                 }
-                
+
             }
-            
+
         }
-        
+
         if ( workingDirectory != null )
         {
             cli.setWorkingDirectory( workingDirectory.getAbsolutePath() );
@@ -501,12 +501,18 @@ public class SurefireBooter
             else
             {
                 if ( cp.length() == 0 )
+                {
                     cp = url;
+                }
                 else
+                {
                     cp += ":" + url;
+                }
             }
         }
+
         p.setProperty( "classpath", cp );
+
         p.setProperty( "childDelegation", "" + childDelegation );
 
         FileOutputStream fos = new FileOutputStream( new File( basedir, CLASSLOADER_PROPERTIES ) );
