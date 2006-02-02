@@ -16,18 +16,9 @@ package org.apache.maven.surefire;
  * limitations under the License.
  */
 
-import org.codehaus.plexus.util.StringUtils;
-import org.codehaus.plexus.util.cli.CommandLineException;
-import org.codehaus.plexus.util.cli.CommandLineUtils;
-import org.codehaus.plexus.util.cli.Commandline;
-import org.codehaus.plexus.util.cli.StreamConsumer;
-import org.codehaus.plexus.util.cli.WriterStreamConsumer;
-
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.lang.reflect.Method;
@@ -39,6 +30,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+
+import org.codehaus.plexus.util.StringUtils;
+import org.codehaus.plexus.util.cli.CommandLineException;
+import org.codehaus.plexus.util.cli.CommandLineUtils;
+import org.codehaus.plexus.util.cli.Commandline;
+import org.codehaus.plexus.util.cli.StreamConsumer;
+import org.codehaus.plexus.util.cli.WriterStreamConsumer;
 
 /**
  * @author Jason van Zyl
@@ -159,7 +157,14 @@ public class SurefireBooter
 
     public void setForkMode( String forkMode )
     {
-        this.forkMode = forkMode;
+        if ( forkMode.equals( FORK_NONE ) || forkMode.equals( FORK_ONCE ) || forkMode.equals( FORK_PERTEST ) )
+        {
+            this.forkMode = forkMode;
+        }
+        else
+        {
+            throw new IllegalArgumentException( "Fork mode " + forkMode + " is not a legal value" );
+        }
     }
 
     public void setJvm( String jvm )
