@@ -246,13 +246,20 @@ public class XMLReporter
             while ( propertyKeys.hasMoreElements() )
             {
                 String key = (String) propertyKeys.nextElement();
+
+                String value = systemProperties.getProperty( key );
                 
+                if ( value == null )
+                {
+                    value = "null";
+                }
+
                 property = createElement(properties,"property");
-                
+
                 property.setAttribute("name", key);
-        
-                property.setAttribute("value", systemProperties.getProperty( key ));
-        
+
+                property.setAttribute("value", value);
+
             }
         }
     }
