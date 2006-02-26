@@ -22,11 +22,18 @@ public class ReportEntry
 
     private String name;
 
+    private String group;
+    
     private String message;
 
     private Throwable throwable;
 
     public ReportEntry( Object source, String name, String message )
+    {
+       this(source, name, null, message);
+    }
+
+    public ReportEntry( Object source, String name, String group, String message )
     {
         if ( source == null )
         {
@@ -40,15 +47,22 @@ public class ReportEntry
         {
             throw new NullPointerException( "message is null" );
         }
-
+        
         this.source = source;
-
+        
         this.name = name;
-
+        
+        this.group = group;
+        
         this.message = message;
     }
-
+    
     public ReportEntry( Object source, String name, String message, Throwable throwable )
+    {
+        this(source, name, null, message, throwable);
+    }
+
+    public ReportEntry( Object source, String name, String group, String message, Throwable throwable )
     {
         if ( source == null )
         {
@@ -71,11 +85,13 @@ public class ReportEntry
 
         this.name = name;
 
+        this.group = group;
+        
         this.message = message;
 
         this.throwable = throwable;
     }
-
+    
     public Object getSource()
     {
         return source;
@@ -86,6 +102,11 @@ public class ReportEntry
         return name;
     }
 
+    public String getGroup()
+    {
+        return group;
+    }
+    
     public String getMessage()
     {
         return message;

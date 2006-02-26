@@ -198,7 +198,7 @@ public class JUnitBattery
         }
     }
 
-    protected Class getTestClass()
+    public Class getTestClass()
     {
         return testClass;
     }
@@ -291,8 +291,9 @@ public class JUnitBattery
     public String getBatteryName()
     {
         return testClass.getName();
+        //return testClass.getPackage().getName();
     }
-
+    
     protected Constructor getTestConstructor( Class testClass )
         throws NoSuchMethodException
     {

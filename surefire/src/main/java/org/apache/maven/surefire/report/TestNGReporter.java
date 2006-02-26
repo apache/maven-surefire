@@ -1,0 +1,197 @@
+/**
+ * 
+ */
+package org.apache.maven.surefire.report;
+
+import org.apache.maven.surefire.Surefire;
+import org.testng.ISuite;
+import org.testng.ISuiteListener;
+import org.testng.ITestContext;
+import org.testng.ITestListener;
+import org.testng.ITestResult;
+import org.testng.TestNG;
+
+/**
+ * Listens for and provides and adaptor layer so that
+ * TestNG tests can report their status to the current
+ * {@link ReporterManager}.
+ * 
+ * @author jkuhnert
+ */
+public class TestNGReporter implements ITestListener, ISuiteListener {
+    
+    /** core Surefire reporting */
+    protected ReporterManager reportManager;
+    /** core Surefire instance */
+    protected Surefire surefire;
+    
+    /**
+     * Constructs a new instance that will listen to
+     * test updates from a {@link TestNG} class instance. 
+     * 
+     * <p/>It is assumed that the requisite {@link TestNG#addListener(ITestListener)} 
+     * method call has already associated with this instance <i>before</i> the test 
+     * suite is run.
+     * 
+     * @param reportManager Instance to report suite status to
+     * @param surefire Main instance that provides resources messages,etc.
+     */
+    public TestNGReporter(ReporterManager reportManager, Surefire surefire)
+    {
+        this.reportManager = reportManager;
+        this.surefire = surefire;
+        
+        if (reportManager == null)
+            throw new IllegalArgumentException("ReportManager passed in was null.");
+        if (surefire == null)
+            throw new IllegalArgumentException("Surefire passed in was null.");
+    }
+    
+    /* (non-Javadoc)
+     * @see org.testng.ITestListener#onTestStart(org.testng.ITestResult)
+     */
+    public void onTestStart(ITestResult result)
+    {
+        String rawString = Surefire.getResources().getString("testStarting");
+        ReportEntry report = new ReportEntry(surefire,
+                result.getTestClass().getName() + "#" + result.getMethod().getMethodName(),
+                resultGroup(result),
+                rawString);
+        
+        reportManager.testStarting(report);
+        
+        
+    }
+
+    /* (non-Javadoc)
+     * @see org.testng.ITestListener#onTestSuccess(org.testng.ITestResult)
+     */
+    public void onTestSuccess(ITestResult result)
+    {
+        String rawString = Surefire.getResources().getString("testSuccessful");
+        
+        ReportEntry report = new ReportEntry(surefire, result.getName(),
+                rawString);
+        
+        reportManager.testSucceeded(report);
+    }
+
+    /* (non-Javadoc)
+     * @see org.testng.ITestListener#onTestFailure(org.testng.ITestResult)
+     */
+    public void onTestFailure(ITestResult result)
+    {
+        String rawString = Surefire.getResources().getString("executeException");
+
+        // TODO: almost certainly not correct: result.getMethod().getExtraOutput().getParameterOutput()
+        ReportEntry report = new ReportEntry(surefire, result.getName(),
+                rawString + result.getMethod().getExtraOutput().getParameterOutput(), result.getThrowable());
+        
+        reportManager.testFailed(report);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.testng.ITestListener#onTestSkipped(org.testng.ITestResult)
+     */
+    public void onTestSkipped(ITestResult result)
+    {
+        String rawString = Surefire.getResources().getString("testSkipped");
+        
+        ReportEntry report = new ReportEntry(surefire, result.getName(),
+                rawString);
+        
+        reportManager.testSucceeded(report);
+    }
+
+    /* (non-Javadoc)
+     * @see org.testng.ITestListener#onTestFailedButWithinSuccessPercentage(org.testng.ITestResult)
+     */
+    public void onTestFailedButWithinSuccessPercentage(ITestResult result)
+    {
+        String rawString = Surefire.getResources().getString("executeException");
+        
+        // TODO: almost certainly not correct: result.getMethod().getExtraOutput().getParameterOutput()
+        ReportEntry report = new ReportEntry(surefire, result.getName(),
+                rawString + result.getMethod().getExtraOutput(), result.getThrowable());
+        
+        reportManager.testError(report);
+    }
+
+    /* (non-Javadoc)
+     * @see org.testng.ITestListener#onStart(org.testng.ITestContext)
+     */
+    public void onStart(ITestContext context)
+    {
+        String rawString = Surefire.getResources().getString(
+        "suiteExecutionStarting");
+        
+        String group = groupString(context.getIncludedGroups());
+        if (group == null) group = context.getName();
+        
+        ReportEntry report = new ReportEntry(surefire,
+                context.getName(), group, rawString);
+        
+        reportManager.batteryStarting(report);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.testng.ITestListener#onFinish(org.testng.ITestContext)
+     */
+    public void onFinish(ITestContext context)
+    {
+       String rawString = Surefire.getResources().getString("suiteCompletedNormally");
+        
+        ReportEntry report = new ReportEntry(surefire, 
+                context.getName(),
+                groupString(context.getIncludedGroups()),
+                rawString);
+        
+        reportManager.batteryCompleted(report);
+        
+        reportManager.runCompleted();
+        
+        reportManager.dispose();
+    }
+    
+    public void onFinish(ISuite suite)
+    {
+    }
+    
+    public void onStart(ISuite suite)
+    {
+    }
+    
+    /**
+     * Creates a string out of the list of testng groups in the 
+     * form of <pre>"group1,group2,group3"</pre>. 
+     * @param groups
+     */
+    public static String groupString(String[] groups)
+    {
+        if (groups != null && groups.length > 0) {
+            StringBuffer str = new StringBuffer();
+            for (int i = 0; i < groups.length; i++) {
+                str.append(groups[i]);
+                if ((i + 1) < groups.length)
+                    str.append(",");
+            }
+            return str.toString();
+        } else
+            return null;
+    }
+    
+    /**
+     * Utility to report back with either the test class name
+     * run, or the group(s) method belongs to.
+     * @param result 
+     * @return Valid string
+     */
+    public static String resultGroup(ITestResult result)
+    {
+        String groupStr = groupString(result.getMethod().getGroups());
+        if (groupStr != null)
+            return groupStr;
+        else
+            return result.getTestClass().getName();
+    }
+}

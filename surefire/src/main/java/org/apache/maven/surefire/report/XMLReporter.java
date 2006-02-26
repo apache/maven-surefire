@@ -80,7 +80,8 @@ public class XMLReporter
         testSuite = new Xpp3Dom("testsuite");
          
         testSuite.setAttribute("name",  report.getName());
-        
+        if (report.getGroup() != null)
+            testSuite.setAttribute("group", report.getGroup());
         showProperties();
     }
 
@@ -124,6 +125,8 @@ public class XMLReporter
         testCase = createElement(testSuite, "testcase");
         
         testCase.setAttribute("name", reportName);
+        if (report.getGroup() != null)
+            testCase.setAttribute("group", report.getGroup());
     }
 
     public void testSucceeded( ReportEntry report )

@@ -1,6 +1,9 @@
 package org.apache.maven.surefire;
 
 import org.apache.maven.surefire.battery.JUnitBattery;
+import org.apache.maven.surefire.battery.TestNGBattery;
+import org.testng.internal.annotations.IAnnotationFinder;
+import org.testng.internal.TestNGClassFinder;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
@@ -11,6 +14,31 @@ import java.lang.reflect.Modifier;
  */
 public class SurefireUtils
 {
+  private static final IAnnotationFinder annotationFinder;
+
+    static
+    {
+        if ( System.getProperty( "java.version" ).indexOf( "1.5" ) > -1 )
+        {
+            annotationFinder = new org.testng.internal.annotations.JDK15AnnotationFinder();
+        }
+        else
+        {
+            System.out.println( "Using JDK14AnnotationFinder" );
+            annotationFinder = new org.testng.internal.annotations.JDK14AnnotationFinder();
+        }
+    }
+
+    /**
+     * For testng javadoc annotations, sets the test source directory source.
+     *
+     * @param testSourceDirectory
+     */
+    public static void setTestSourceDirectory( String testSourceDirectory )
+    {
+        annotationFinder.addSourceDirs( new String[]{testSourceDirectory} );
+}
+
     public static Object instantiateBattery( Object[] holder, ClassLoader loader )
         throws Exception
     {
@@ -33,9 +61,9 @@ public class SurefireUtils
         {
             return null;
         }
-
+        
         Object battery = null;
-
+        
         if ( batteryClass.isAssignableFrom( testClass ) )
         {
             if ( holder[1] != null )
@@ -57,6 +85,10 @@ public class SurefireUtils
             {
                 battery = testClass.newInstance();
             }
+        }
+        else if ( TestNGClassFinder.isTestNGClass( testClass, annotationFinder ) )
+        {
+            battery = new TestNGBattery( testClass, loader );
         }
         else
         {

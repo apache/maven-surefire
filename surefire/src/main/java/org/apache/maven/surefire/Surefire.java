@@ -17,10 +17,19 @@ package org.apache.maven.surefire;
  */
 
 import org.apache.maven.surefire.battery.Battery;
+import org.apache.maven.surefire.battery.JUnitBattery;
+import org.apache.maven.surefire.battery.TestNGBattery;
+import org.apache.maven.surefire.battery.TestNGXMLBattery;
 import org.apache.maven.surefire.battery.assertion.BatteryTestFailedException;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.Reporter;
 import org.apache.maven.surefire.report.ReporterManager;
+import org.apache.maven.surefire.report.TestNGReporter;
+import org.testng.ISuiteListener;
+import org.testng.ITestListener;
+import org.testng.TestNG;
+import org.testng.internal.Utils;
+import org.testng.xml.ClassSuite;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -29,7 +38,7 @@ import java.util.ResourceBundle;
 
 /**
  * @version $Id$
- * @uathor Jason van Zyl
+ * @author Jason van Zyl
  */
 public class Surefire
 {
@@ -45,6 +54,18 @@ public class Surefire
 
     private String reportsDirectory;
 
+    private String testSourceDirectory;
+
+    private boolean forceTestNG;
+
+    private String groups;
+
+    private String excludedGroups;
+
+    private int threadCount;
+
+    private boolean parallel;
+
     public Surefire()
     {
         super();
@@ -55,26 +76,32 @@ public class Surefire
         return resources;
     }
 
-    public boolean run( List reports, List batteryHolders, String reportsDirectory )
+    public boolean run(List reports, List batteryHolders,
+            String reportsDirectory)
         throws Exception
     {
         ClassLoader classLoader = this.getClass().getClassLoader();
 
-        return run( reports, batteryHolders, classLoader, reportsDirectory );
+        return run(reports, batteryHolders, classLoader, reportsDirectory);
     }
 
-    public boolean run( List reports, List batteryHolders, ClassLoader classLoader, String reportsDirectory )
+    public boolean run(List reports, List batteryHolders,
+            ClassLoader classLoader, String reportsDirectory)
         throws Exception
     {
-        if ( reports == null || batteryHolders == null || classLoader == null )
-        {
-            throw new NullPointerException();
-        }
+        return run(reports, batteryHolders, classLoader, reportsDirectory,
+                Boolean.FALSE, null, null, new Integer(0), Boolean.FALSE, null);
+    }
 
-        if ( batteryHolders.size() == 0 )
-        {
-            throw new IllegalArgumentException();
-        }
+    public boolean run(List reports, List batteryHolders,
+            ClassLoader classLoader, String reportsDirectory,
+            Boolean forceTestNG, String groups, String excludedGroups,
+            Integer threadCount, Boolean parallel, String testSourceDirectory)
+        throws Exception
+    {
+        if (reports == null || batteryHolders == null || classLoader == null) { throw new NullPointerException(); }
+
+        if (batteryHolders.size() == 0) { throw new IllegalArgumentException(); }
 
         this.batteryHolders = batteryHolders;
 
@@ -84,114 +111,202 @@ public class Surefire
 
         this.reportsDirectory = reportsDirectory;
 
+        this.forceTestNG = forceTestNG.booleanValue();
+
+        this.groups = groups;
+
+        this.excludedGroups = excludedGroups;
+
+        this.threadCount = threadCount.intValue();
+
+        this.parallel = parallel.booleanValue();
+
+        this.testSourceDirectory = testSourceDirectory;
+
         return run();
     }
 
     public boolean run()
         throws Exception
     {
-        List batts = instantiateBatteries( batteryHolders, classLoader );
+        //required for jdk14 javadoc annotations
+        if (testSourceDirectory != null) {
+            SurefireUtils.setTestSourceDirectory(testSourceDirectory);
+        }
 
-        reporterManager = new ReporterManager( instantiateReports( reports, classLoader ), reportsDirectory );
+        List batts = instantiateBatteries(batteryHolders, classLoader);
 
-        try
-        {
-            reporterManager.runStarting( 100 );
+        reporterManager = new ReporterManager(instantiateReports(reports,
+                classLoader), reportsDirectory);
 
-            if ( batts.size() > 0 )
-            {
+        boolean jvm15 = false;
+        if (System.getProperty("java.version").indexOf("1.5") > -1) jvm15 = true;
+
+        try {
+            reporterManager.runStarting(100);
+
+            if (batts.size() > 0) {
                 int nbTests = 0;
 
-                for ( Iterator i = batts.iterator(); i.hasNext(); )
-                {
-                    Battery battery = (Battery) i.next();
+                for(Iterator i = batts.iterator(); i.hasNext();) {
+                    Battery battery = (Battery)i.next();
 
                     int testCount = 0;
 
-                    try
-                    {
+                    try {
                         testCount = battery.getTestCount();
-                    }
-                    catch ( BatteryTestFailedException e )
-                    {
+                    } catch (BatteryTestFailedException e) {
                         e.printStackTrace();
 
-                        ReportEntry report = new ReportEntry( e, "org.apache.maven.surefire.Runner", getResources().getString( "bigProblems" ), e );
+                        ReportEntry report = new ReportEntry(e,
+                                "org.apache.maven.surefire.Runner",
+                                getResources().getString("bigProblems"), e);
 
-                        reporterManager.batteryAborted( report );
+                        reporterManager.batteryAborted(report);
                     }
 
-                    if ( testCount > 0 )
-                    {
-                        executeBattery( battery, reporterManager );
+                    //TestNG needs a little config love
+                    if (battery instanceof TestNGXMLBattery) {
+                        TestNGXMLBattery xbat = (TestNGXMLBattery)battery;
+                        xbat.setOutputDirectory(reportsDirectory);
+                        xbat.setReporter(new TestNGReporter(reporterManager, this));
+                        xbat.execute(reporterManager);
+                        nbTests += xbat.getTestCount();
+                    } else if (testCount > 0) {
+                        executeBattery(battery, reporterManager);
 
                         nbTests += testCount;
                     }
 
                     List list = new ArrayList();
 
-                    for ( Iterator j = battery.getSubBatteryClassNames().iterator(); j.hasNext(); )
-                    {
-                        String s = (String) j.next();
+                    for(Iterator j = battery.getSubBatteryClassNames()
+                            .iterator(); j.hasNext();) {
+                        String s = (String)j.next();
 
-                        list.add( new Object[]{s, null} );
+                        list.add(new Object[] { s, null });
                     }
 
-                    List subBatteries = instantiateBatteries( list, classLoader );
+                    List subBatteries = instantiateBatteries(list, classLoader);
 
-                    for ( Iterator j = subBatteries.iterator(); j.hasNext(); )
-                    {
-                        Battery b = (Battery) j.next();
+                    //Handle testng tests
+                    if (forceTestNG || isTestNG(subBatteries)) {
+                        TestNG testNG = new TestNG();
+                        List classes = new ArrayList();
+                        for (Iterator j = subBatteries.iterator(); j.hasNext();) {
+                            Battery b = (Battery)j.next();
+                            if (b instanceof TestNGBattery) {
+                                TestNGBattery tb = (TestNGBattery)b;
+                                classes.add(tb.getTestClass());
+                                j.remove();
+                            } else if (forceTestNG && b instanceof JUnitBattery) {
+                                JUnitBattery jb = (JUnitBattery)b;
+                                classes.add(jb.getTestClass());
+                                j.remove();
+                            }
+                        }
+
+                        //configure testng parameters
+                        ClassSuite classSuite =
+                            new ClassSuite(groups != null ? groups : "TestNG Suite",
+                                    Utils.classesToXmlClasses(
+                                            (Class[])classes.toArray(new Class[classes.size()])));
+                        testNG.setCommandLineSuite(classSuite);
+                        testNG.setOutputDirectory(reportsDirectory);
+                        TestNGReporter testngReporter = new TestNGReporter(reporterManager, this);
+                        testNG.addListener((ITestListener)testngReporter);
+                        testNG.addListener((ISuiteListener)testngReporter);
+                        // TODO: bring back when TestNG returns the method
+//                        testNG.setReportResults(false);
+                        testNG.setThreadCount(threadCount);
+                        testNG.setParallel(parallel);
+
+                        if (groups != null)
+                            testNG.setGroups(groups);
+                        if (excludedGroups != null)
+                            testNG.setExcludedGroups(excludedGroups);
+
+                        //set source path so testng can find javadoc
+                        //annotations if not in 1.5 jvm
+                        if (!jvm15 && testSourceDirectory != null)
+                            testNG.setSourcePath(testSourceDirectory);
+
+                        //actually runs all the tests
+                        List result = testNG.runSuitesLocally();
+                        nbTests += result.size();
+                    }
+
+                    //continue normal mode
+                    for(Iterator j = subBatteries.iterator(); j.hasNext();) {
+                        Battery b = (Battery)j.next();
 
                         testCount = 0;
 
-                        try
-                        {
+                        try {
                             testCount = b.getTestCount();
-                        }
-                        catch ( BatteryTestFailedException e )
-                        {
+                        } catch (BatteryTestFailedException e) {
                             e.printStackTrace();
 
-                            ReportEntry report = new ReportEntry( e, "org.apache.maven.surefire.Runner", getResources().getString( "bigProblems" ), e );
+                            ReportEntry report = new ReportEntry(
+                                    e,
+                                    "org.apache.maven.surefire.SurefireRunner",
+                                    getResources().getString("bigProblems"),
+                                    e);
 
-                            reporterManager.batteryAborted( report );
+                            reporterManager.batteryAborted(report);
                         }
 
-                        if ( testCount > 0 )
-                        {
-                            executeBattery( b, reporterManager );
+                        if (testCount > 0) {
+
+                            executeBattery(b, reporterManager);
 
                             nbTests += testCount;
                         }
                     }
+
                 }
 
-                if ( nbTests == 0 )
-                {
-                    reporterManager.writeMessage( "There are no tests to run." );
+                if (nbTests == 0) {
+                    reporterManager.writeMessage("There are no tests to run.");
                 }
-            }
-            else
-            {
-                reporterManager.writeMessage( "There are no batteries to run." );
+            } else {
+                reporterManager.writeMessage("There are no batteries to run.");
             }
 
             reporterManager.runCompleted();
-        }
-        catch ( Throwable ex )
-        {
+        } catch (Throwable ex) {
             ex.printStackTrace();
 
-            ReportEntry report = new ReportEntry( ex, "org.apache.maven.surefire.Runner", getResources().getString( "bigProblems" ), ex );
+            ReportEntry report = new ReportEntry(ex,
+                    "org.apache.maven.surefire.Runner", getResources()
+                            .getString("bigProblems"), ex);
 
-            reporterManager.runAborted( report );
+            reporterManager.runAborted(report);
         }
 
         reporterManager.resume();
 
-        return !( reporterManager.getNbErrors() > 0 || reporterManager
-            .getNbFailures() > 0 );
+        return !(reporterManager.getNbErrors() > 0 || reporterManager
+                .getNbFailures() > 0);
+    }
+
+    /**
+     * Determines if <i>any</i> of the batteries specified
+     * is an instance of {@link TestNGBattery}.
+     * @param batteries The batteries to check
+     * @return True, if any of the objects are an instanceof {@link TestNGBattery}
+     */
+    public boolean isTestNG(List batteries)
+    {
+        if (batteries.size() > 0) {
+            for (int i = 0; i < batteries.size(); i++) {
+                Object obj = batteries.get(i);
+                if (obj instanceof TestNGBattery)
+                    return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -199,36 +314,38 @@ public class Surefire
      * @param reportManager
      * @throws Exception
      */
-    public void executeBattery( Battery battery, ReporterManager reportManager )
+    public void executeBattery(Battery battery, ReporterManager reportManager)
         throws Exception
     {
-        try
-        {
-            String rawString = getResources().getString( "suiteExecutionStarting" );
+        try {
+            String rawString = getResources().getString(
+                    "suiteExecutionStarting");
 
-            ReportEntry report = new ReportEntry( this, battery.getBatteryName(), rawString );
+            ReportEntry report = new ReportEntry(this,
+                    battery.getBatteryName(), battery.getBatteryName(), rawString);
 
-            reportManager.batteryStarting( report );
+            reportManager.batteryStarting(report);
 
-            try
-            {
-                battery.execute( reportManager );
+            try {
+                battery.execute(reportManager);
 
-                rawString = getResources().getString( "suiteCompletedNormally" );
+                rawString = getResources().getString("suiteCompletedNormally");
 
-                report = new ReportEntry( this, battery.getBatteryName(), rawString );
+                report = new ReportEntry(this, battery.getBatteryName(),
+                        battery.getBatteryName(),
+                        rawString);
 
-                reportManager.batteryCompleted( report );
-            }
-            catch ( RuntimeException e )
-            {
+                reportManager.batteryCompleted(report);
+            } catch (RuntimeException e) {
                 e.printStackTrace();
 
-                rawString = getResources().getString( "executeException" );
+                rawString = getResources().getString("executeException");
 
-                report = new ReportEntry( this, battery.getBatteryName(), rawString, e );
+                report = new ReportEntry(this, battery.getBatteryName(),
+                        battery.getBatteryName(),
+                        rawString, e);
 
-                reportManager.batteryAborted( report );
+                reportManager.batteryAborted(report);
             }
 
             reportManager.runCompleted();
@@ -236,11 +353,12 @@ public class Surefire
             reportManager.dispose();
         }
 
-        catch ( Throwable ex )
-        {
-            ReportEntry report = new ReportEntry( ex, "org.apache.maven.surefire.Runner", getResources().getString( "bigProblems" ), ex );
+        catch (Throwable ex) {
+            ReportEntry report = new ReportEntry(ex,
+                    "org.apache.maven.surefire.Runner", getResources()
+                            .getString("bigProblems"), ex);
 
-            reportManager.runAborted( report );
+            reportManager.runAborted(report);
         }
     }
 
@@ -250,27 +368,27 @@ public class Surefire
      * @return
      * @throws Exception
      */
-    public static List instantiateBatteries( List batteryHolders, ClassLoader loader )
+    public static List instantiateBatteries(List batteryHolders,
+            ClassLoader loader)
         throws Exception
     {
         List batteries = new ArrayList();
 
-        for ( int i = 0; i < batteryHolders.size(); i++ )
-        {
-            Object[] holder = (Object[]) batteryHolders.get( i );
+        for(int i = 0; i < batteryHolders.size(); i++) {
+            Object[] holder = (Object[])batteryHolders.get(i);
 
-            Object battery = SurefireUtils.instantiateBattery( holder, loader );
+            Object battery = SurefireUtils.instantiateBattery(holder, loader);
 
-            if ( battery != null )
-            {
-                batteries.add( battery );
+            if (battery != null) {
+                batteries.add(battery);
             }
         }
 
         return batteries;
     }
 
-    protected List instantiateReports( List reportClassNames, ClassLoader classLoader )
+    protected List instantiateReports(List reportClassNames,
+            ClassLoader classLoader)
         throws Exception
     {
         List reports = new ArrayList();
@@ -279,35 +397,28 @@ public class Surefire
 
         ClassLoader reporterClassLoader = Reporter.class.getClassLoader();
 
-        for ( Iterator i = reportClassNames.iterator(); i.hasNext(); )
-        {
-            String reportClassName = (String) i.next();
+        for(Iterator i = reportClassNames.iterator(); i.hasNext();) {
+            String reportClassName = (String)i.next();
 
-            try
-            {
-                Class reportClass = reporterClassLoader.loadClass( reportClassName );
+            try {
+                Class reportClass = reporterClassLoader
+                        .loadClass(reportClassName);
 
-                //assert Reporter.class.isAssignableFrom(reportClass);
+                // assert Reporter.class.isAssignableFrom(reportClass);
 
-                Reporter report = (Reporter) reportClass.newInstance();
+                Reporter report = (Reporter)reportClass.newInstance();
 
-                report.setReportsDirectory( reportsDirectory );
+                report.setReportsDirectory(reportsDirectory);
 
-                reports.add( report );
-            }
-            catch ( Exception e )
-            {
+                reports.add(report);
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
 
-        if ( fail )
-        {
-            throw new RuntimeException( "couldn't assign reports as expected" );
-        }
+        if (fail) { throw new RuntimeException(
+                "couldn't assign reports as expected"); }
 
         return reports;
     }
 }
-
-
