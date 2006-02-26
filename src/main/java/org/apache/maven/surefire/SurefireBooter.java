@@ -376,11 +376,6 @@ public class SurefireBooter
 
         }
 
-        if ( workingDirectory != null )
-        {
-            cli.setWorkingDirectory( workingDirectory.getAbsolutePath() );
-        }
-
         cli.createArgument().setValue( "-classpath" );
 
         cli.createArgument().setValue( surefireBooterJar + PS + plexusUtilsJar );
@@ -389,6 +384,13 @@ public class SurefireBooter
 
         cli.createArgument().setValue( basedir );
 
+        if ( workingDirectory != null )
+        {
+            //both cli's working directory and  system property "user.dir" must have the same value
+            cli.setWorkingDirectory( workingDirectory.getAbsolutePath() );
+            cli.createArgument().setValue( workingDirectory.getAbsolutePath() );
+        }
+        
         if ( debug )
         {
             System.out.println( Commandline.toString( cli.getCommandline() ) );
@@ -676,6 +678,13 @@ public class SurefireBooter
         throws Exception
     {
         String basedir = args[0];
+        
+        String workingDirectory = null;
+        
+        if ( args.length == 2 )
+        {
+            workingDirectory = args[1];
+        }
 
         ClassLoader classLoader = createForkingClassLoader( basedir );
 
@@ -683,6 +692,11 @@ public class SurefireBooter
         Thread.currentThread().setContextClassLoader( classLoader );
 
         setSystemProperties( basedir );
+        
+        if ( workingDirectory != null )
+        {
+            System.setProperty( "user.dir", workingDirectory );
+        }
 
         Properties p = getSurefireProperties( basedir );
 
