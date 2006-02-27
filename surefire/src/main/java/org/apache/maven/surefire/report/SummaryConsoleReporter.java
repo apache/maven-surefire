@@ -26,60 +26,19 @@ import java.io.PrintWriter;
  * @version $Id$
  */
 public class SummaryConsoleReporter
-    extends AbstractReporter
+    extends ConsoleReporter
 {
-    private static final int BUFFER_SIZE = 4096;
-
-    private PrintWriter writer;
-    
-    public SummaryConsoleReporter()
+    public void batteryStarting( ReportEntry report )
+        throws Exception
     {
-        writer = new PrintWriter( new OutputStreamWriter( new BufferedOutputStream( System.out, BUFFER_SIZE ) ) );
-    }
-
-    public void writeMessage( String message )
-    {
-        writer.println( message );
-        writer.flush();
-    }
-    
-    public void runStarting( int testCount )
-    {
-        writer.println();
-        writer.println( "-------------------------------------------------------" );
-        writer.println( " T E S T S" );
-        writer.println( "-------------------------------------------------------" );
-        writer.flush();
-    }
-
-    public void runAborted( ReportEntry report )
-    {
-        writer.println( "RUN ABORTED" );
-        writer.println( report.getSource().getClass().getName() );
-        writer.println( report.getName() );
-        writer.println( report.getMessage() );
-        writer.println( report.getThrowable().getMessage() );
-        writer.flush();
-    }
-    
-    public void batteryAborted( ReportEntry report )
-    {
-        writer.println( "BATTERY ABORTED" );
-        writer.println( report.getSource().getClass().getName() );
-        writer.println( report.getName() );
-        writer.println( report.getMessage() );
-        writer.println( report.getThrowable().getMessage() );
-        writer.flush();
     }
 
     public void batteryCompleted( ReportEntry report )
     {
         if ( failures > 0 || errors > 0 )
         {
-            writer.println( "[surefire] " + report.getName() + " <<<<<<<< FAILURE !! " );
+            println( "[surefire] " + report.getName() + " <<<<<<<< FAILURE !! " );
         }
-        
-        writer.flush();
 
         completedCount = 0;
 
