@@ -1,14 +1,14 @@
 package org.apache.maven.surefire;
 
-import org.codehaus.plexus.util.cli.StreamConsumer;
 import org.apache.maven.surefire.report.ForkingReport;
+import org.codehaus.plexus.util.cli.StreamConsumer;
 
 import java.io.PrintWriter;
 import java.io.Writer;
 
 /**
  * @author Jason van Zyl
- * @version $Revision:$
+ * @version $Revision$
  */
 public class ForkingWriterStreamConsumer
     implements StreamConsumer
