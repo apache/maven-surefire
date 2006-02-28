@@ -21,8 +21,8 @@ import org.apache.maven.surefire.report.ReporterManager;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Proxy;
 
 public class JUnitBattery
     extends AbstractBattery

@@ -16,8 +16,8 @@ package org.apache.maven.surefire.battery;
  * limitations under the License.
  */
 
-import org.apache.maven.surefire.util.DirectoryScanner;
-import org.apache.maven.surefire.util.StringUtils;
+import org.codehaus.plexus.util.DirectoryScanner;
+import org.codehaus.plexus.util.StringUtils;
 
 import java.io.File;
 import java.util.ArrayList;

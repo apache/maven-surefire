@@ -16,10 +16,10 @@ package org.apache.maven.surefire.battery;
  * limitations under the License.
  */
 
+import org.apache.maven.surefire.Surefire;
 import org.apache.maven.surefire.battery.assertion.BatteryAssert;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterManager;
-import org.apache.maven.surefire.Surefire;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
