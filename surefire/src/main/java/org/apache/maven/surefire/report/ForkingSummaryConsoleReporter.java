@@ -1,8 +1,5 @@
 package org.apache.maven.surefire.report;
 
-import org.apache.maven.surefire.report.SummaryConsoleReporter;
-import org.apache.maven.surefire.report.ForkingReport;
-
 /**
  * Summary format console reporter.
  *

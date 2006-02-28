@@ -20,10 +20,6 @@ import java.io.BufferedOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 
-// 1. only output the report
-// 2. prevent the header from coming out everytime
-// 3. have a summary at the end of the forked run
-
 public class ConsoleReporter
     extends AbstractReporter
 {
@@ -112,6 +108,8 @@ public class ConsoleReporter
         }
         
         writer.println( "" );
+
+        writer.flush();
 
         completedCount = 0;
 

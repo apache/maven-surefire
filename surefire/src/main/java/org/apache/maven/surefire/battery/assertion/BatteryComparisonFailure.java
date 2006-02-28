@@ -16,9 +16,6 @@ package org.apache.maven.surefire.battery.assertion;
  * limitations under the License.
  */
 
-import org.apache.maven.surefire.battery.assertion.BatteryAssert;
-import org.apache.maven.surefire.battery.assertion.BatteryAssertionFailedError;
-
 /**
  * Thrown when an assertion equals for Strings failed.
  *

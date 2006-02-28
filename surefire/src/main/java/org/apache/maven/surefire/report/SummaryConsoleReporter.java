@@ -16,10 +16,6 @@ package org.apache.maven.surefire.report;
  * limitations under the License.
  */
 
-import java.io.BufferedOutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-
 /**
  * Summary format console reporter.
  * @author <a href="mailto:jruiz@exist.com">Johnny R. Ruiz III</a>
