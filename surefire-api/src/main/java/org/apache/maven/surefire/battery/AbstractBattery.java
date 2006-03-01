@@ -17,25 +17,24 @@ package org.apache.maven.surefire.battery;
  */
 
 import org.apache.maven.surefire.Surefire;
-import org.apache.maven.surefire.battery.assertion.BatteryAssert;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterManager;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 public abstract class AbstractBattery
-    extends BatteryAssert
     implements Battery
 {
     private static final String TEST_METHOD_PREFIX = "test";
 
-    private List testMethods;
+    protected List testMethods;
 
-    private List subBatteryClassNames;
+    protected List subBatteryClassNames;
 
     private static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
 
@@ -291,5 +290,16 @@ public abstract class AbstractBattery
         }
 
         return subBatteryClassNames;
+    }
+
+    public static boolean isValidMethod( Method m )
+    {
+        boolean isInstanceMethod = !Modifier.isStatic( m.getModifiers() );
+
+        boolean returnsVoid = m.getReturnType().equals( void.class );
+
+        boolean hasNoParams = m.getParameterTypes().length == 0;
+
+        return isInstanceMethod && returnsVoid && hasNoParams;
     }
 }

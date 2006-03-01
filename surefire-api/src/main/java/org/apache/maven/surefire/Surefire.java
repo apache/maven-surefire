@@ -17,7 +17,6 @@ package org.apache.maven.surefire;
  */
 
 import org.apache.maven.surefire.battery.Battery;
-import org.apache.maven.surefire.battery.TestNGBattery;
 import org.apache.maven.surefire.battery.assertion.BatteryTestFailedException;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.Reporter;
@@ -313,29 +312,29 @@ public class Surefire
      * Determines if <i>any</i> of the batteries specified
      * is an instance of {@link TestNGBattery}.
      *
-     * @param batteries The batteries to check
-     * @return True, if any of the objects are an instanceof {@link TestNGBattery}
-     */
-    public boolean isTestNG( List batteries )
-    {
-        if ( batteries.size() > 0 )
-        {
-            for ( int i = 0; i < batteries.size(); i++ )
-            {
-                Object obj = batteries.get( i );
-                if ( obj instanceof TestNGBattery )
-                {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    /**
+     * @param batteries     The batteries to check
      * @param battery
      * @param reportManager
+     * @return True, if any of the objects are an instanceof {@link TestNGBattery}
+     *         TODO
+     *         public boolean isTestNG( List batteries )
+     *         {
+     *         if ( batteries.size() > 0 )
+     *         {
+     *         for ( int i = 0; i < batteries.size(); i++ )
+     *         {
+     *         Object obj = batteries.get( i );
+     *         if ( obj instanceof TestNGBattery )
+     *         {
+     *         return true;
+     *         }
+     *         }
+     *         }
+     *         <p/>
+     *         return false;
+     *         }
+     *         <p/>
+     *         /**
      * @throws Exception
      */
     public void executeBattery( Battery battery, ReporterManager reportManager )

@@ -227,6 +227,7 @@ public final class JUnitBattery
     }
 
     private void executeJUnit( ReporterManager reportManager )
+        throws BatteryTestFailedException
     {
         try
         {

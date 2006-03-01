@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.battery;
+package org.apache.maven.surefire.testng;
 
 /*
  * Copyright 2001-2006 The Apache Software Foundation.
@@ -16,12 +16,11 @@ package org.apache.maven.surefire.battery;
  * limitations under the License.
  */
 
-import org.apache.maven.surefire.battery.assertion.BatteryAssert;
+import org.apache.maven.surefire.battery.AbstractBattery;
 import org.apache.maven.surefire.report.ReporterManager;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Main plugin point for running testng tests within the Surefire runtime
@@ -30,12 +29,8 @@ import java.util.List;
  * @author jkuhnert
  */
 public class TestNGBattery
-    implements Battery
+    extends AbstractBattery
 {
-    protected List testMethods;
-
-    protected List subBatteryClassNames;
-
     private Class testClass;
 
     /**
@@ -89,8 +84,7 @@ public class TestNGBattery
             {
                 Method m = methods[i];
 
-                // TODO: better location
-                if ( BatteryAssert.isValidMethod( m ) )
+                if ( isValidMethod( m ) )
                 {
                     String simpleName = m.getName();
 
@@ -105,10 +99,6 @@ public class TestNGBattery
         }
     }
 
-    public void discoverBatteryClassNames()
-    {
-    }
-
     public void execute( ReporterManager reportManager )
     {
     }
@@ -118,25 +108,4 @@ public class TestNGBattery
         return testClass.getName();
     }
 
-    public void addSubBatteryClassName( String batteryClassName )
-    {
-        getSubBatteryClassNames().add( batteryClassName );
-    }
-
-    public List getSubBatteryClassNames()
-    {
-        if ( subBatteryClassNames == null )
-        {
-            subBatteryClassNames = new ArrayList();
-        }
-
-        return subBatteryClassNames;
-    }
-
-    public int getTestCount()
-    {
-        discoverTestMethods();
-
-        return testMethods.size();
-    }
 }
