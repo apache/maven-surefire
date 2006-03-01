@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.battery;
+package org.apache.maven.surefire.testng;
 
 /*
  * Copyright 2001-2006 The Apache Software Foundation.
@@ -16,8 +16,8 @@ package org.apache.maven.surefire.battery;
  * limitations under the License.
  */
 
+import org.apache.maven.surefire.battery.Battery;
 import org.apache.maven.surefire.report.ReporterManager;
-import org.apache.maven.surefire.report.TestNGReporter;
 import org.testng.ISuiteListener;
 import org.testng.ITestListener;
 import org.testng.TestNG;

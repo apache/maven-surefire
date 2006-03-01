@@ -1,5 +1,10 @@
 package org.apache.maven.surefire;
 
+import org.apache.maven.surefire.battery.JUnitBattery;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
+
 /*
  * Copyright 2001-2006 The Apache Software Foundation.
  *
@@ -16,20 +21,13 @@ package org.apache.maven.surefire;
  * limitations under the License.
  */
 
-import org.apache.maven.surefire.battery.JUnitBattery;
-import org.apache.maven.surefire.battery.TestNGBattery;
-import org.testng.internal.TestNGClassFinder;
-import org.testng.internal.annotations.IAnnotationFinder;
-
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Modifier;
-
 /**
  * @author Jason van  Zyl
  * @version $Id$
  */
 public class SurefireUtils
 {
+/* TODO
     private static final IAnnotationFinder annotationFinder;
 
     static
@@ -44,17 +42,16 @@ public class SurefireUtils
             annotationFinder = new org.testng.internal.annotations.JDK14AnnotationFinder();
         }
     }
+*/
 
     /**
      * For testng javadoc annotations, sets the test source directory source.
      *
-     * @param testSourceDirectory
+     * @param testSourceDirectory public static void setTestSourceDirectory( String testSourceDirectory )
+     *                            {
+     *                            annotationFinder.addSourceDirs( new String[]{testSourceDirectory} );
+     *                            }
      */
-    public static void setTestSourceDirectory( String testSourceDirectory )
-    {
-        annotationFinder.addSourceDirs( new String[]{testSourceDirectory} );
-    }
-
     public static Object instantiateBattery( Object[] holder, ClassLoader loader )
         throws Exception
     {
@@ -102,10 +99,12 @@ public class SurefireUtils
                 battery = testClass.newInstance();
             }
         }
-        else if ( TestNGClassFinder.isTestNGClass( testClass, annotationFinder ) )
-        {
-            battery = new TestNGBattery( testClass, loader );
-        }
+        /*    TODO
+              else if ( TestNGClassFinder.isTestNGClass( testClass, annotationFinder ) )
+              {
+                  battery = new TestNGBattery( testClass, loader );
+              }
+        */
         else
         {
             battery = new JUnitBattery( testClass, loader );

@@ -17,19 +17,11 @@ package org.apache.maven.surefire;
  */
 
 import org.apache.maven.surefire.battery.Battery;
-import org.apache.maven.surefire.battery.JUnitBattery;
 import org.apache.maven.surefire.battery.TestNGBattery;
-import org.apache.maven.surefire.battery.TestNGXMLBattery;
 import org.apache.maven.surefire.battery.assertion.BatteryTestFailedException;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.Reporter;
 import org.apache.maven.surefire.report.ReporterManager;
-import org.apache.maven.surefire.report.TestNGReporter;
-import org.testng.ISuiteListener;
-import org.testng.ITestListener;
-import org.testng.TestNG;
-import org.testng.internal.Utils;
-import org.testng.xml.ClassSuite;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -122,21 +114,25 @@ public class Surefire
     public boolean run()
         throws Exception
     {
+/* TODO
         //required for jdk14 javadoc annotations
         if ( testSourceDirectory != null )
         {
             SurefireUtils.setTestSourceDirectory( testSourceDirectory );
         }
+*/
 
         List batts = instantiateBatteries( batteryHolders, classLoader );
 
         reporterManager = new ReporterManager( instantiateReports( reports, classLoader ), reportsDirectory );
 
+/* TODO: new, remove
         boolean jvm15 = false;
         if ( System.getProperty( "java.version" ).indexOf( "1.5" ) > -1 )
         {
             jvm15 = true;
         }
+*/
 
         try
         {
@@ -166,8 +162,8 @@ public class Surefire
                         reporterManager.batteryAborted( report );
                     }
 
-                    //TestNG needs a little config love
-                    if ( battery instanceof TestNGXMLBattery )
+                    //TestNG needs a little config love -- TODO
+/*                    if ( battery instanceof TestNGXMLBattery )
                     {
                         TestNGXMLBattery xbat = (TestNGXMLBattery) battery;
                         xbat.setOutputDirectory( reportsDirectory );
@@ -175,12 +171,12 @@ public class Surefire
                         xbat.execute( reporterManager );
                         nbTests += xbat.getTestCount();
                     }
-                    else if ( testCount > 0 )
-                    {
-                        executeBattery( battery, reporterManager );
+                    else */if ( testCount > 0 )
+                {
+                    executeBattery( battery, reporterManager );
 
-                        nbTests += testCount;
-                    }
+                    nbTests += testCount;
+                }
 
                     List list = new ArrayList();
 
@@ -194,6 +190,7 @@ public class Surefire
 
                     List subBatteries = instantiateBatteries( list, classLoader );
 
+/* TODO
                     //Handle testng tests
                     if ( forceTestNG || isTestNG( subBatteries ) )
                     {
@@ -250,6 +247,7 @@ public class Surefire
                         List result = testNG.runSuitesLocally();
                         nbTests += result.size();
                     }
+*/
 
                     //continue normal mode
                     for ( Iterator j = subBatteries.iterator(); j.hasNext(); )

@@ -1,7 +1,4 @@
-/**
- * 
- */
-package org.apache.maven.surefire.report;
+package org.apache.maven.surefire.testng;
 
 /*
  * Copyright 2001-2006 The Apache Software Foundation.
@@ -20,6 +17,8 @@ package org.apache.maven.surefire.report;
  */
 
 import org.apache.maven.surefire.Surefire;
+import org.apache.maven.surefire.report.ReportEntry;
+import org.apache.maven.surefire.report.ReporterManager;
 import org.testng.ISuite;
 import org.testng.ISuiteListener;
 import org.testng.ITestContext;
@@ -30,7 +29,7 @@ import org.testng.TestNG;
 /**
  * Listens for and provides and adaptor layer so that
  * TestNG tests can report their status to the current
- * {@link ReporterManager}.
+ * {@link org.apache.maven.surefire.report.ReporterManager}.
  *
  * @author jkuhnert
  */
