@@ -21,7 +21,7 @@ public class ForkingConsoleReporter
 {
     public void println( String message )
     {
-        writer.write( ForkingReport.FORKING_PREFIX_STANDARD );
+        writer.print( ForkingReport.FORKING_PREFIX_STANDARD );
 
         writer.println( message );
 

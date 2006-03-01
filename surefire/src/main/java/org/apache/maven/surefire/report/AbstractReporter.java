@@ -40,6 +40,8 @@ public abstract class AbstractReporter
 
     private NumberFormat numberFormat = NumberFormat.getInstance();
 
+    protected static final String NL = System.getProperty( "line.separator" );
+
     private static final int MS_PER_SEC = 1000;
 
     public void setReportsDirectory( String reportsDirectory )

@@ -33,7 +33,7 @@ public class SummaryConsoleReporter
     {
         if ( failures > 0 || errors > 0 )
         {
-            println( "[surefire] " + report.getName() + " <<<<<<<< FAILURE !! " );
+            writeMessage( "[surefire] " + report.getName() + " <<<<<<<< FAILURE !! " );
         }
 
         completedCount = 0;

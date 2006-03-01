@@ -40,8 +40,6 @@ public class DetailedConsoleReporter
 
     private long batteryStartTime;
 
-    private static final String NL = System.getProperty( "line.separator" );
-
     public DetailedConsoleReporter()
     {
         writer = new PrintWriter( new OutputStreamWriter( new BufferedOutputStream( System.out, BUFFER_SIZE ) ) );
@@ -60,7 +58,6 @@ public class DetailedConsoleReporter
         writer.println( " T E S T S" );
         writer.println( "-------------------------------------------------------" );
         writer.flush();
-
     }
 
     public void batteryStarting( ReportEntry report )
@@ -70,25 +67,30 @@ public class DetailedConsoleReporter
         reportContent = new StringBuffer();
 
         writer.println( "[surefire] Running " + report.getName() );
+        writer.flush();
     }
 
     public void batteryCompleted( ReportEntry report )
     {
-        long runTime = System.currentTimeMillis() - this.batteryStartTime;
+        long runTime = System.currentTimeMillis() - batteryStartTime;
 
         StringBuffer batterySummary = new StringBuffer();
 
-        batterySummary.append( "[surefire] Tests run: " ).append( String.valueOf( this.getNbTests() ) );
-        batterySummary.append( ", Failures: " ).append( String.valueOf( this.getNbFailures() ) );
-        batterySummary.append( ", Errors: " ).append( String.valueOf( this.getNbErrors() ) );
-        batterySummary.append( ", Time elapsed: " ).append( elapsedTimeAsString( runTime ) );
+        batterySummary.append( "[surefire] Tests run: " );
+        batterySummary.append( completedCount );
+        batterySummary.append( ", Failures: " );
+        batterySummary.append( failures );
+        batterySummary.append( ", Errors: " );
+        batterySummary.append( errors );
+        batterySummary.append( ", Time elapsed: " );
+        batterySummary.append( elapsedTimeAsString( runTime ) );
         batterySummary.append( " sec" );
         batterySummary.append( NL );
         batterySummary.append( "[surefire] " ).append( NL );
 
         reportContent = batterySummary.append( reportContent );
 
-        writer.println( reportContent.toString() );
+        writer.println( batterySummary );
 
         writer.flush();
     }
@@ -152,7 +154,7 @@ public class DetailedConsoleReporter
     }
 
     /**
-     * Returns stacktrace as string.
+     * Returns stacktrace as String.
      *
      * @param report ReportEntry object.
      * @return stacktrace as string.

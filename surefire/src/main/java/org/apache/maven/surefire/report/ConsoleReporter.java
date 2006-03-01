@@ -16,96 +16,25 @@ package org.apache.maven.surefire.report;
  * limitations under the License.
  */
 
-import java.io.BufferedOutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-
+/**
+ * Console reporter.
+ *
+ * @author <a href="mailto:jruiz@exist.com">Johnny R. Ruiz III</a>
+ * @version $Id$
+ */
 public class ConsoleReporter
-    extends AbstractReporter
+    extends AbstractConsoleReporter
 {
-    protected static final int BUFFER_SIZE = 4096;
-
-    protected PrintWriter writer;
-
-    protected long batteryStartTime;
-
-    public ConsoleReporter()
-    {
-        writer = new PrintWriter( new OutputStreamWriter( new BufferedOutputStream( System.out, BUFFER_SIZE ) ) );
-    }
-
-    // ----------------------------------------------------------------------
-    //
-    // ----------------------------------------------------------------------
-
-    public void println( String message )
-    {
-        writer.println( message );
-
-        writer.flush();
-    }
-
-    public void print( String message )
-    {
-        writer.print( message );
-
-        writer.flush();
-    }
-
-    // ----------------------------------------------------------------------
-    // Run
-    // ----------------------------------------------------------------------
-
-    public void runStarting( int testCount )
-    {
-        println( "" );
-        println( "-------------------------------------------------------" );
-        println( " T E S T S" );
-        println( "-------------------------------------------------------" );
-    }
-
-    public void runAborted( ReportEntry report )
-    {
-        println( "RUN ABORTED" );
-        println( report.getSource().getClass().getName() );
-        println( report.getName() );
-        println( report.getMessage() );
-        println( report.getThrowable().getMessage() );
-    }
-
-    public void batteryAborted( ReportEntry report )
-    {
-        println( "BATTERY ABORTED" );
-        println( report.getSource().getClass().getName() );
-        println( report.getName() );
-        println( report.getMessage() );
-        println( report.getThrowable().getMessage() );
-    }
-
-    // ----------------------------------------------------------------------
-    // Battery
-    // ----------------------------------------------------------------------
-
-    public void batteryStarting( ReportEntry report )
-    {
-        batteryStartTime = System.currentTimeMillis();
-
-        println( "[surefire] Running " + report.getName() );
-    }
-
     public void batteryCompleted( ReportEntry report )
     {
-        long runTime = System.currentTimeMillis() - batteryStartTime;
-
-        print( "[surefire] Tests run: " + completedCount + ", Failures: " + failures + ", Errors: " + errors +
-            ", Time elapsed: " + elapsedTimeAsString( runTime ) + " sec" );
+        StringBuffer batterySummary = getBatterySummary();
 
         if ( failures > 0 || errors > 0 )
         {
-            writer.print( " <<<<<<<< FAILURE !! " );
+            batterySummary.append( " <<<<<<<< FAILURE !! " );
         }
 
-        writer.println( "" );
+        writer.println( batterySummary );
 
         writer.flush();
 
@@ -114,5 +43,25 @@ public class ConsoleReporter
         errors = 0;
 
         failures = 0;
+    }
+
+    public void runAborted( ReportEntry report )
+    {
+        writer.println( "RUN ABORTED" );
+        writer.println( report.getSource().getClass().getName() );
+        writer.println( report.getName() );
+        writer.println( report.getMessage() );
+        writer.println( report.getThrowable().getMessage() );
+        writer.flush();
+    }
+
+    public void batteryAborted( ReportEntry report )
+    {
+        writer.println( "BATTERY ABORTED" );
+        writer.println( report.getSource().getClass().getName() );
+        writer.println( report.getName() );
+        writer.println( report.getMessage() );
+        writer.println( report.getThrowable().getMessage() );
+        writer.flush();
     }
 }

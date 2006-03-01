@@ -33,11 +33,9 @@ public class BriefFileReporter
 {
     private PrintWriter writer;
 
-    private StringBuffer reportContent;
+    protected StringBuffer reportContent;
 
     private long batteryStartTime;
-
-    private static final String NL = "\n";
 
     public void batteryStarting( ReportEntry report )
         throws IOException
@@ -71,7 +69,9 @@ public class BriefFileReporter
         batterySummary.append( ", Failures: " ).append( String.valueOf( this.getNbFailures() ) );
         batterySummary.append( ", Errors: " ).append( String.valueOf( this.getNbErrors() ) );
         batterySummary.append( ", Time elapsed: " ).append( elapsedTimeAsString( runTime ) );
-        batterySummary.append( " sec \n\n" );
+        batterySummary.append( " sec" );
+        batterySummary.append( NL );
+        batterySummary.append( NL );
 
         reportContent = batterySummary.append( reportContent );
 
@@ -80,11 +80,6 @@ public class BriefFileReporter
         writer.flush();
 
         writer.close();
-    }
-
-    public void testStarting( ReportEntry report )
-    {
-        super.testStarting( report );
     }
 
     public void testError( ReportEntry report, String stdOut, String stdErr )
@@ -97,7 +92,7 @@ public class BriefFileReporter
 
         writeTimeElapsed( runTime );
 
-        reportContent.append( "  <<< ERROR!\n" );
+        reportContent.append( "  <<< ERROR!" ).append( NL );
 
         writeStdLogs( stdOut, stdErr );
 
@@ -114,7 +109,7 @@ public class BriefFileReporter
 
         writeTimeElapsed( runTime );
 
-        reportContent.append( "  <<< FAILURE!\n" );
+        reportContent.append( "  <<< FAILURE!" ).append( NL );
 
         writeStdLogs( stdOut, stdErr );
 
@@ -130,16 +125,16 @@ public class BriefFileReporter
         completedCount = 0;
     }
 
-    private void writeTimeElapsed( long sec )
+    protected void writeTimeElapsed( long sec )
     {
         reportContent.append( "  Time elapsed: " ).append( elapsedTimeAsString( sec ) ).append( " sec" );
     }
 
-    private void writeStdLogs( String stdOut, String stdErr )
+    protected void writeStdLogs( String stdOut, String stdErr )
     {
         reportContent.append( NL );
 
-        reportContent.append( "[ stdout ] ---------------------------------------------------------------" + NL );
+        reportContent.append( "[ stdout ] ---------------------------------------------------------------" );
 
         reportContent.append( NL );
 
@@ -147,7 +142,7 @@ public class BriefFileReporter
 
         reportContent.append( NL );
 
-        reportContent.append( "[ stderr ] ---------------------------------------------------------------" + NL );
+        reportContent.append( "[ stderr ] ---------------------------------------------------------------" );
 
         reportContent.append( NL );
 
@@ -155,7 +150,7 @@ public class BriefFileReporter
 
         reportContent.append( NL );
 
-        reportContent.append( "[ stacktrace ] -----------------------------------------------------------" + NL );
+        reportContent.append( "[ stacktrace ] -----------------------------------------------------------" );
 
         reportContent.append( NL );
     }
@@ -166,7 +161,7 @@ public class BriefFileReporter
      * @param report ReportEntry object.
      * @return stacktrace as string.
      */
-    private String getStackTrace( ReportEntry report )
+    protected String getStackTrace( ReportEntry report )
     {
         StringWriter writer = new StringWriter();
 

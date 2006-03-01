@@ -16,8 +16,6 @@ package org.apache.maven.surefire.report;
  * limitations under the License.
  */
 
-import java.io.BufferedOutputStream;
-import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
@@ -29,102 +27,54 @@ import java.io.StringWriter;
  */
 
 public class BriefConsoleReporter
-    extends AbstractReporter
+    extends AbstractConsoleReporter
 {
-    private static final int BUFFER_SIZE = 4096;
-
-    private PrintWriter writer;
-
     private StringBuffer reportContent;
-
-    private long batteryStartTime;
-
-    private static final String NL = System.getProperty( "line.separator" );
-
-    public BriefConsoleReporter()
-    {
-        writer = new PrintWriter( new OutputStreamWriter( new BufferedOutputStream( System.out, BUFFER_SIZE ) ) );
-    }
-
-    public void writeMessage( String message )
-    {
-        writer.println( message );
-        writer.flush();
-    }
-
-    public void runStarting( int testCount )
-    {
-        writer.println();
-        writer.println( "-------------------------------------------------------" );
-        writer.println( " T E S T S" );
-        writer.println( "-------------------------------------------------------" );
-        writer.flush();
-
-    }
 
     public void batteryStarting( ReportEntry report )
     {
-        batteryStartTime = System.currentTimeMillis();
+        super.batteryStarting( report );
 
         reportContent = new StringBuffer();
-
-        writer.println( "[surefire] Running " + report.getName() );
     }
 
     public void batteryCompleted( ReportEntry report )
     {
-        long runTime = System.currentTimeMillis() - this.batteryStartTime;
+        StringBuffer batterySummary = getBatterySummary();
 
-        StringBuffer batterySummary = new StringBuffer();
-
-        batterySummary.append( "[surefire] Tests run: " );
-        batterySummary.append( String.valueOf( this.getNbTests() ) );
-        batterySummary.append( ", Failures: " ).append( String.valueOf( this.getNbFailures() ) );
-        batterySummary.append( ", Errors: " ).append( String.valueOf( this.getNbErrors() ) );
-        batterySummary.append( ", Time elapsed: " ).append( elapsedTimeAsString( runTime ) );
-        batterySummary.append( " sec" );
         batterySummary.append( NL );
         batterySummary.append( "[surefire] " ).append( NL );
 
         reportContent = batterySummary.append( reportContent );
 
-        writer.println( reportContent.toString() );
+        writer.println( batterySummary );
 
         writer.flush();
     }
-
-    public void testStarting( ReportEntry report )
-    {
-        super.testStarting( report );
-    }
-
 
     public void testError( ReportEntry report, String stdOut, String stdErr )
     {
         super.testError( report, stdOut, stdErr );
 
-        reportContent.append( "[surefire] " ).append( report.getName() );
-
-        long runTime = this.endTime - this.startTime;
-
-        writeTimeElapsed( runTime );
-
-        reportContent.append( "  <<< ERROR!" ).append( NL );
-
-        reportContent.append( getStackTrace( report ) ).append( NL );
+        appendOutput( report, "ERROR" );
     }
 
     public void testFailed( ReportEntry report, String stdOut, String stdErr )
     {
         super.testFailed( report, stdOut, stdErr );
 
+        appendOutput( report, "FAILURE" );
+    }
+
+    private void appendOutput( ReportEntry report, String msg )
+    {
         reportContent.append( "[surefire] " ).append( report.getName() );
 
         long runTime = this.endTime - this.startTime;
 
-        writeTimeElapsed( runTime );
+        reportContent.append( "  Time elapsed: " ).append( elapsedTimeAsString( runTime ) ).append( " sec" );
 
-        reportContent.append( "  <<< FAILURE!" ).append( NL );
+        reportContent.append( "  <<< " ).append( msg ).append( "!" ).append( NL );
 
         reportContent.append( getStackTrace( report ) ).append( NL );
     }
