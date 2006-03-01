@@ -23,20 +23,10 @@ package org.apache.maven.surefire.report;
  * @version $Id$
  */
 public class FileReporter
-    extends BriefFileReporter
+    extends AbstractFileReporter
 {
-    public void testStarting( ReportEntry report )
+    public FileReporter()
     {
-        super.testStarting( report );
-
-        reportContent.append( report.getName() );
-    }
-
-    public void testSucceeded( ReportEntry report )
-    {
-        super.testSucceeded( report );
-
-        reportContent.append( getElapsedTimeSummary() );
-        reportContent.append( NL );
+        super( PLAIN );
     }
 }

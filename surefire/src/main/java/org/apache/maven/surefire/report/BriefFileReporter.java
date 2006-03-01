@@ -25,33 +25,8 @@ package org.apache.maven.surefire.report;
 public class BriefFileReporter
     extends AbstractFileReporter
 {
-    public void batteryCompleted( ReportEntry report )
+    public BriefFileReporter()
     {
-        StringBuffer batterySummary = getBatterySummary();
-
-        batterySummary.append( NL );
-        batterySummary.append( NL );
-
-        reportContent = batterySummary.append( reportContent );
-
-        writer.println( batterySummary );
-
-        writer.flush();
-
-        writer.close();
-    }
-
-    public void testError( ReportEntry report, String stdOut, String stdErr )
-    {
-        super.testError( report, stdOut, stdErr );
-
-        reportContent.append( getOutput( report, "ERROR" ) );
-    }
-
-    public void testFailed( ReportEntry report, String stdOut, String stdErr )
-    {
-        super.testFailed( report, stdOut, stdErr );
-
-        reportContent.append( getOutput( report, "FAILURE" ) );
+        super( BRIEF );
     }
 }

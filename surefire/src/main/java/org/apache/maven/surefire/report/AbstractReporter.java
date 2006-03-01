@@ -46,7 +46,7 @@ public abstract class AbstractReporter
 
     private static final int MS_PER_SEC = 1000;
 
-    private long batteryStartTime;
+    protected long batteryStartTime;
 
     public void setReportsDirectory( String reportsDirectory )
     {
@@ -61,10 +61,6 @@ public abstract class AbstractReporter
     // ----------------------------------------------------------------------
     // Report interface
     // ----------------------------------------------------------------------
-
-    public void writeMessage( String message )
-    {
-    }
 
     public void runStarting( int testCount )
     {
@@ -187,46 +183,5 @@ public abstract class AbstractReporter
         writer.flush();
 
         return writer.toString();
-    }
-
-    protected StringBuffer getBatterySummary()
-    {
-        StringBuffer batterySummary = new StringBuffer();
-
-        batterySummary.append( "Tests run: " );
-        batterySummary.append( completedCount );
-        batterySummary.append( ", Failures: " );
-        batterySummary.append( failures );
-        batterySummary.append( ", Errors: " );
-        batterySummary.append( errors );
-        batterySummary.append( ", Time elapsed: " );
-        batterySummary.append( elapsedTimeAsString( System.currentTimeMillis() - batteryStartTime ) );
-        batterySummary.append( " sec" );
-        return batterySummary;
-    }
-
-    protected String getElapsedTimeSummary()
-    {
-        StringBuffer reportContent = new StringBuffer();
-        long runTime = this.endTime - this.startTime;
-
-        reportContent.append( "  Time elapsed: " ).append( elapsedTimeAsString( runTime ) ).append( " sec" );
-
-        return reportContent.toString();
-    }
-
-    protected String getOutput( ReportEntry report, String msg )
-    {
-        StringBuffer buf = new StringBuffer();
-
-        buf.append( report.getName() );
-
-        buf.append( getElapsedTimeSummary() );
-
-        buf.append( "  <<< " ).append( msg ).append( "!" ).append( NL );
-
-        buf.append( getStackTrace( report ) ).append( NL );
-
-        return buf.toString();
     }
 }

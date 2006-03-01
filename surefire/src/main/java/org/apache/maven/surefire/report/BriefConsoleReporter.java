@@ -16,8 +16,6 @@ package org.apache.maven.surefire.report;
  * limitations under the License.
  */
 
-import java.io.IOException;
-
 /**
  * Brief format console reporter.
  *
@@ -28,45 +26,8 @@ import java.io.IOException;
 public class BriefConsoleReporter
     extends AbstractConsoleReporter
 {
-    protected StringBuffer reportContent;
-
-    public void batteryStarting( ReportEntry report )
-        throws IOException
+    public BriefConsoleReporter()
     {
-        super.batteryStarting( report );
-
-        reportContent = new StringBuffer();
-    }
-
-    public void batteryCompleted( ReportEntry report )
-    {
-        StringBuffer batterySummary = getBatterySummary();
-
-        batterySummary.append( NL );
-        batterySummary.append( NL );
-
-        batterySummary.append( reportContent );
-
-        writeMessage( batterySummary.toString() );
-    }
-
-    public void testError( ReportEntry report, String stdOut, String stdErr )
-    {
-        super.testError( report, stdOut, stdErr );
-
-        appendOutput( report, "ERROR" );
-    }
-
-    private void appendOutput( ReportEntry report, String msg )
-    {
-        reportContent.append( "[surefire] " );
-        reportContent.append( getOutput( report, msg ) );
-    }
-
-    public void testFailed( ReportEntry report, String stdOut, String stdErr )
-    {
-        super.testFailed( report, stdOut, stdErr );
-
-        appendOutput( report, "FAILURE" );
+        super( BRIEF );
     }
 }

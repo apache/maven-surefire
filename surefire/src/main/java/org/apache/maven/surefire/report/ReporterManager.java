@@ -412,6 +412,9 @@ public class ReporterManager
         return completedCount;
     }
 
+    /**
+     * @todo is this here for throwables? most of these don't throw any checked exceptions
+     */
     private void handleReporterException( String reporterMethod, Exception e )
     {
         String reporterThrewException = Surefire.getResourceString( "reporterThrew" );

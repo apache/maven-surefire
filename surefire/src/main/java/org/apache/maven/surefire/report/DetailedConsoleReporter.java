@@ -23,20 +23,10 @@ package org.apache.maven.surefire.report;
  * @version $Id$
  */
 public class DetailedConsoleReporter
-    extends BriefConsoleReporter
+    extends AbstractConsoleReporter
 {
-    public void testStarting( ReportEntry report )
+    public DetailedConsoleReporter()
     {
-        super.testStarting( report );
-
-        reportContent.append( "[surefire] " ).append( report.getName() );
-    }
-
-    public void testSucceeded( ReportEntry report )
-    {
-        super.testSucceeded( report );
-
-        reportContent.append( getElapsedTimeSummary() );
-        reportContent.append( NL );
+        super( PLAIN );
     }
 }

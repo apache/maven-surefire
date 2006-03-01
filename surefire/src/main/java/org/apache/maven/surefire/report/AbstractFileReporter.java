@@ -27,18 +27,17 @@ import java.io.PrintWriter;
  * @author <a href="mailto:brett@apache.org">Brett Porter</a>
  */
 public abstract class AbstractFileReporter
-    extends AbstractReporter
+    extends AbstractTextReporter
 {
-    protected StringBuffer reportContent;
-
-    protected PrintWriter writer;
+    protected AbstractFileReporter( String format )
+    {
+        super( format );
+    }
 
     public void batteryStarting( ReportEntry report )
         throws IOException
     {
         super.batteryStarting( report );
-
-        reportContent = new StringBuffer();
 
         File reportFile = new File( getReportsDirectory(), report.getName() + ".txt" );
 
@@ -46,13 +45,23 @@ public abstract class AbstractFileReporter
 
         reportDir.mkdirs();
 
-        writer = new PrintWriter( new FileWriter( reportFile ) );
+        PrintWriter writer = new PrintWriter( new FileWriter( reportFile ) );
 
         writer.println( "-------------------------------------------------------------------------------" );
 
         writer.println( "Battery: " + report.getName() );
 
         writer.println( "-------------------------------------------------------------------------------" );
+
+        setWriter( writer );
     }
 
+    public void batteryCompleted( ReportEntry report )
+    {
+        super.batteryCompleted( report );
+
+        writer.flush();
+
+        writer.close();
+    }
 }

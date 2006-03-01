@@ -22,8 +22,8 @@ import org.codehaus.plexus.util.xml.Xpp3DomWriter;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
@@ -47,8 +47,6 @@ public class XMLReporter
 
     private Xpp3Dom testCase;
 
-    private long batteryStartTime;
-
     public void setTestCase( Xpp3Dom testCase )
     {
         this.testCase = testCase;
@@ -59,10 +57,14 @@ public class XMLReporter
         return testCase;
     }
 
-    public void batteryStarting( ReportEntry report )
-        throws FileNotFoundException, UnsupportedEncodingException
+    public void writeMessage( String message )
     {
-        batteryStartTime = System.currentTimeMillis();
+    }
+
+    public void batteryStarting( ReportEntry report )
+        throws IOException, UnsupportedEncodingException
+    {
+        super.batteryStarting( report );
 
         File reportFile = new File( getReportsDirectory(), "TEST-" + report.getName() + ".xml" );
 
@@ -81,13 +83,15 @@ public class XMLReporter
 
     public void batteryCompleted( ReportEntry report )
     {
+        super.batteryCompleted( report );
+
         testSuite.setAttribute( "tests", String.valueOf( this.getNbTests() ) );
 
         testSuite.setAttribute( "errors", String.valueOf( this.getNbErrors() ) );
 
         testSuite.setAttribute( "failures", String.valueOf( this.getNbFailures() ) );
 
-        long runTime = System.currentTimeMillis() - this.batteryStartTime;
+        long runTime = System.currentTimeMillis() - batteryStartTime;
 
         testSuite.setAttribute( "time", elapsedTimeAsString( runTime ) );
 

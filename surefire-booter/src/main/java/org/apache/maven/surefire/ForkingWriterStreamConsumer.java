@@ -16,7 +16,7 @@ package org.apache.maven.surefire;
  * limitations under the License.
  */
 
-import org.apache.maven.surefire.report.ForkingReport;
+import org.apache.maven.surefire.report.ForkingConsoleReporter;
 import org.codehaus.plexus.util.cli.StreamConsumer;
 
 import java.io.PrintWriter;
@@ -43,21 +43,21 @@ public class ForkingWriterStreamConsumer
 
         printWriter = new PrintWriter( writer );
 
-        standardPrefixLength = ForkingReport.FORKING_PREFIX_STANDARD.length();
+        standardPrefixLength = ForkingConsoleReporter.FORKING_PREFIX_STANDARD.length();
 
-        headingPrefixLength = ForkingReport.FORKING_PREFIX_HEADING.length();
+        headingPrefixLength = ForkingConsoleReporter.FORKING_PREFIX_HEADING.length();
     }
 
     public void consumeLine( String line )
     {
-        if ( line.startsWith( ForkingReport.FORKING_PREFIX_HEADING ) )
+        if ( line.startsWith( ForkingConsoleReporter.FORKING_PREFIX_HEADING ) )
         {
             if ( showHeading )
             {
                 printWriter.println( line.substring( headingPrefixLength ) );
             }
         }
-        else if ( line.startsWith( ForkingReport.FORKING_PREFIX_STANDARD ) )
+        else if ( line.startsWith( ForkingConsoleReporter.FORKING_PREFIX_STANDARD ) )
         {
             printWriter.println( line.substring( standardPrefixLength ) );
         }

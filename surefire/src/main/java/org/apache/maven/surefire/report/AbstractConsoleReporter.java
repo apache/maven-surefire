@@ -23,21 +23,18 @@ import java.io.PrintWriter;
 
 /**
  * Base class for console reporters.
- * <p/>
- * // TODO: what about stream closing?
  *
  * @author <a href="mailto:brett@apache.org">Brett Porter</a>
  */
 public abstract class AbstractConsoleReporter
-    extends AbstractReporter
+    extends AbstractTextReporter
 {
     protected static final int BUFFER_SIZE = 4096;
 
-    protected PrintWriter writer;
-
-    protected AbstractConsoleReporter()
+    protected AbstractConsoleReporter( String format )
     {
-        writer = new PrintWriter( new OutputStreamWriter( new BufferedOutputStream( System.out, BUFFER_SIZE ) ) );
+        super( new PrintWriter( new OutputStreamWriter( new BufferedOutputStream( System.out, BUFFER_SIZE ) ) ),
+               format );
     }
 
     public void batteryStarting( ReportEntry report )
@@ -48,18 +45,37 @@ public abstract class AbstractConsoleReporter
         writeMessage( "Running " + report.getName() );
     }
 
-    public void writeMessage( String message )
+    public void runStarting( int testCount )
     {
-        writer.println( "[surefire] " + message );
+        writeHeading( "" );
+        writeHeading( "-------------------------------------------------------" );
+        writeHeading( " T E S T S" );
+        writeHeading( "-------------------------------------------------------" );
+    }
+
+    public void writeHeading( String message )
+    {
+        writer.println( message );
         writer.flush();
     }
 
-    public void runStarting( int testCount )
+    public void runAborted( ReportEntry report )
     {
-        writer.println();
-        writer.println( "-------------------------------------------------------" );
-        writer.println( " T E S T S" );
-        writer.println( "-------------------------------------------------------" );
+        printAbortionError( "RUN ABORTED", report );
+    }
+
+    public void batteryAborted( ReportEntry report )
+    {
+        printAbortionError( "BATTERY ABORTED", report );
+    }
+
+    private void printAbortionError( String msg, ReportEntry report )
+    {
+        writer.println( msg );
+        writer.println( report.getSource().getClass().getName() );
+        writer.println( report.getName() );
+        writer.println( report.getMessage() );
+        writer.println( report.getThrowable().getMessage() );
         writer.flush();
     }
 }

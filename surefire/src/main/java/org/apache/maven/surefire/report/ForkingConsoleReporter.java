@@ -19,20 +19,21 @@ package org.apache.maven.surefire.report;
 public class ForkingConsoleReporter
     extends ConsoleReporter
 {
-    public void runStarting( int testCount )
-    {
-        heading( "" );
-        heading( "-------------------------------------------------------" );
-        heading( " T E S T S" );
-        heading( "-------------------------------------------------------" );
+    public static final String FORKING_PREFIX_STANDARD = "@SL";
 
-        writer.flush();
+    public static final String FORKING_PREFIX_HEADING = "@HL";
+
+    public void writeHeading( String message )
+    {
+        writer.print( FORKING_PREFIX_HEADING );
+
+        super.writeHeading( message );
     }
 
-    private void heading( String line )
+    public void writeMessage( String message )
     {
-        writer.print( ForkingReport.FORKING_PREFIX_HEADING );
+        writer.print( FORKING_PREFIX_STANDARD );
 
-        writer.println( line );
+        super.writeMessage( message );
     }
 }

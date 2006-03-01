@@ -25,35 +25,8 @@ package org.apache.maven.surefire.report;
 public class ConsoleReporter
     extends AbstractConsoleReporter
 {
-    public void batteryCompleted( ReportEntry report )
+    public ConsoleReporter()
     {
-        StringBuffer batterySummary = getBatterySummary();
-
-        if ( failures > 0 || errors > 0 )
-        {
-            batterySummary.append( " <<< FAILURE! " );
-        }
-
-        writeMessage( batterySummary.toString() );
-    }
-
-    public void runAborted( ReportEntry report )
-    {
-        printAbortionError( "RUN ABORTED", report );
-    }
-
-    public void batteryAborted( ReportEntry report )
-    {
-        printAbortionError( "BATTERY ABORTED", report );
-    }
-
-    private void printAbortionError( String msg, ReportEntry report )
-    {
-        writer.println( msg );
-        writer.println( report.getSource().getClass().getName() );
-        writer.println( report.getName() );
-        writer.println( report.getMessage() );
-        writer.println( report.getThrowable().getMessage() );
-        writer.flush();
+        super( SUMMARY );
     }
 }
