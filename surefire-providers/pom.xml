@@ -29,5 +29,12 @@
     <module>surefire-junit</module>
     <module>surefire-testng</module>
   </modules>
+  <dependencies>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>surefire-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+  </dependencies>
 </project>
 
