@@ -22,7 +22,7 @@ package org.apache.maven.surefire.report;
  */
 public interface ForkingReport
 {
-    static final String FORKING_PREFIX_STANDARD = "@SL";
+    String FORKING_PREFIX_STANDARD = "@SL";
 
-    static final String FORKING_PREFIX_HEADING = "@HL";
+    String FORKING_PREFIX_HEADING = "@HL";
 }

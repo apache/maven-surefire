@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.apache.maven.surefire.battery;
 
 /*
@@ -36,7 +33,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-
 /**
  * Handles suite xml file definitions for TestNG.
  *
@@ -45,12 +41,11 @@ import java.util.List;
 public class TestNGXMLBattery
     implements Battery
 {
-
     protected File suiteFile;
 
     protected TestNG testRunner;
 
-    protected int m_testCount = 0;
+    protected int m_testCount;
 
     protected String m_suiteName = "TestNG XML Suite";
 
@@ -65,12 +60,10 @@ public class TestNGXMLBattery
     }
 
     public void discoverBatteryClassNames()
-        throws Exception
     {
     }
 
     public void execute( ReporterManager reportManager )
-        throws Exception
     {
         testRunner.runSuitesLocally();
     }
@@ -104,7 +97,7 @@ public class TestNGXMLBattery
     /**
      * Instantiates and partially configures testng suite
      */
-    protected void parseSuite()
+    private void parseSuite()
     {
         testRunner = new TestNG();
         List suites = new ArrayList();

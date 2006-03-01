@@ -16,6 +16,7 @@ package org.apache.maven.surefire.battery;
  * limitations under the License.
  */
 
+import org.apache.maven.surefire.battery.assertion.BatteryTestFailedException;
 import org.apache.maven.surefire.report.ReporterManager;
 
 import java.lang.reflect.Constructor;
@@ -24,7 +25,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Proxy;
 
-public class JUnitBattery
+public final class JUnitBattery
     extends AbstractBattery
 {
     public static final String TEST_CASE = "junit.framework.TestCase";
@@ -63,25 +64,29 @@ public class JUnitBattery
 
     private Method runMethod;
 
+    private static final Class[] EMPTY_CLASS_ARRAY = new Class[0];
+
+    private static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
+
     public JUnitBattery( String testClassName )
         throws Exception
     {
         processTestClass( getClass().getClassLoader().loadClass( testClassName ), getClass().getClassLoader() );
     }
 
-    public JUnitBattery( final String testClass, ClassLoader loader )
+    public JUnitBattery( String testClass, ClassLoader loader )
         throws Exception
     {
         processTestClass( loader.loadClass( testClass ), loader );
     }
 
-    public JUnitBattery( final Class testClass, ClassLoader loader )
+    public JUnitBattery( Class testClass, ClassLoader loader )
         throws Exception
     {
         processTestClass( testClass, loader );
     }
 
-    public void processTestClass( final Class testClass, ClassLoader loader )
+    private void processTestClass( Class testClass, ClassLoader loader )
         throws Exception
     {
         if ( testClass == null )
@@ -119,15 +124,14 @@ public class JUnitBattery
         // o look for test classes that only implement the Test interface
         // ----------------------------------------------------------------------
 
+        Object testObject = null;
         try
         {
-            Class[] emptyArgs = new Class[0];
-
-            Method suiteMethod = testClass.getMethod( "suite", emptyArgs );
+            Method suiteMethod = testClass.getMethod( "suite", EMPTY_CLASS_ARRAY );
 
             if ( Modifier.isPublic( suiteMethod.getModifiers() ) && Modifier.isStatic( suiteMethod.getModifiers() ) )
             {
-                testObject = suiteMethod.invoke( null, emptyArgs );
+                testObject = suiteMethod.invoke( null, EMPTY_CLASS_ARRAY );
             }
         }
         catch ( NoSuchMethodException e )
@@ -151,13 +155,14 @@ public class JUnitBattery
 
             if ( testConstructor.getParameterTypes().length == 0 )
             {
-                testObject = testConstructor.newInstance( new Object[0] );
+                testObject = testConstructor.newInstance( EMPTY_OBJECT_ARRAY );
             }
             else
             {
                 testObject = testConstructor.newInstance( new Object[]{testClass.getName()} );
             }
         }
+        this.testObject = testObject;
 
         interfacesImplementedByDynamicProxy = new Class[1];
 
@@ -171,7 +176,7 @@ public class JUnitBattery
 
         if ( testInterface.isAssignableFrom( testClass ) )//testObject.getClass() ) )
         {
-            countTestCasesMethod = testInterface.getMethod( COUNT_TEST_CASES_METHOD, new Class[0] );
+            countTestCasesMethod = testInterface.getMethod( COUNT_TEST_CASES_METHOD, EMPTY_CLASS_ARRAY );
 
             runMethod = testInterface.getMethod( RUN_METHOD, new Class[]{testResultClass} );
 
@@ -180,7 +185,7 @@ public class JUnitBattery
         {
             try
             {
-                countTestCasesMethod = testClass.getMethod( COUNT_TEST_CASES_METHOD, new Class[0] );
+                countTestCasesMethod = testClass.getMethod( COUNT_TEST_CASES_METHOD, EMPTY_CLASS_ARRAY );
             }
             catch ( Exception e )
             {
@@ -221,7 +226,7 @@ public class JUnitBattery
         }
     }
 
-    protected void executeJUnit( ReporterManager reportManager )
+    private void executeJUnit( ReporterManager reportManager )
     {
         try
         {
@@ -243,23 +248,19 @@ public class JUnitBattery
         }
         catch ( IllegalArgumentException e )
         {
-            throw new org.apache.maven.surefire.battery.assertion.BatteryTestFailedException(
-                testObject.getClass().getName(), e );
+            throw new BatteryTestFailedException( testObject.getClass().getName(), e );
         }
         catch ( InstantiationException e )
         {
-            throw new org.apache.maven.surefire.battery.assertion.BatteryTestFailedException(
-                testObject.getClass().getName(), e );
+            throw new BatteryTestFailedException( testObject.getClass().getName(), e );
         }
         catch ( IllegalAccessException e )
         {
-            throw new org.apache.maven.surefire.battery.assertion.BatteryTestFailedException(
-                testObject.getClass().getName(), e );
+            throw new BatteryTestFailedException( testObject.getClass().getName(), e );
         }
         catch ( InvocationTargetException e )
         {
-            throw new org.apache.maven.surefire.battery.assertion.BatteryTestFailedException(
-                testObject.getClass().getName(), e );
+            throw new BatteryTestFailedException( testObject.getClass().getName(), e );
         }
     }
 
@@ -267,52 +268,50 @@ public class JUnitBattery
     {
         try
         {
+            int testCount;
             if ( countTestCasesMethod != null )
             {
-                Integer integer = (Integer) countTestCasesMethod.invoke( testObject, new Class[0] );
+                Integer integer = (Integer) countTestCasesMethod.invoke( testObject, EMPTY_CLASS_ARRAY );
 
-                return integer.intValue();
+                testCount = integer.intValue();
             }
             else
             {
-                return super.getTestCount();
+                testCount = super.getTestCount();
             }
+            return testCount;
         }
         catch ( IllegalAccessException e )
         {
-            throw new org.apache.maven.surefire.battery.assertion.BatteryTestFailedException(
-                testObject.getClass().getName(), e );
+            throw new BatteryTestFailedException( testObject.getClass().getName(), e );
         }
         catch ( IllegalArgumentException e )
         {
-            throw new org.apache.maven.surefire.battery.assertion.BatteryTestFailedException(
-                testObject.getClass().getName(), e );
+            throw new BatteryTestFailedException( testObject.getClass().getName(), e );
         }
         catch ( InvocationTargetException e )
         {
-            throw new org.apache.maven.surefire.battery.assertion.BatteryTestFailedException(
-                testObject.getClass().getName(), e );
+            throw new BatteryTestFailedException( testObject.getClass().getName(), e );
         }
     }
 
     public String getBatteryName()
     {
         return testClass.getName();
-        //return testClass.getPackage().getName();
     }
 
-    protected Constructor getTestConstructor( Class testClass )
+    private Constructor getTestConstructor( Class testClass )
         throws NoSuchMethodException
     {
-        Class[] params = {String.class};
-
+        Constructor constructor;
         try
         {
-            return testClass.getConstructor( params );
+            constructor = testClass.getConstructor( new Class[]{String.class} );
         }
         catch ( NoSuchMethodException e )
         {
-            return testClass.getConstructor( new Class[0] );
+            constructor = testClass.getConstructor( EMPTY_CLASS_ARRAY );
         }
+        return constructor;
     }
 }

@@ -25,22 +25,22 @@ import java.io.PrintStream;
 public class TeeStream
     extends PrintStream
 {
-    PrintStream out;
+    private PrintStream tee;
 
     public TeeStream( PrintStream out1, PrintStream out2 )
     {
         super( out1 );
 
-        this.out = out2;
+        this.tee = out2;
     }
 
-    public void write( byte buf[], int off, int len )
+    public void write( byte[] buf, int off, int len )
     {
         try
         {
             super.write( buf, off, len );
 
-            out.write( buf, off, len );
+            tee.write( buf, off, len );
         }
         catch ( Exception e )
         {
@@ -51,14 +51,14 @@ public class TeeStream
     {
         super.close();
 
-        out.close();
+        tee.close();
     }
 
     public void flush()
     {
         super.flush();
 
-        out.flush();
+        tee.flush();
     }
 }
 

@@ -45,10 +45,8 @@ public class TestNGBattery
      *
      * @param testClass
      * @param loader
-     * @throws Exception
      */
-    public TestNGBattery( final Class testClass, ClassLoader loader )
-        throws Exception
+    public TestNGBattery( Class testClass, ClassLoader loader )
     {
         processTestClass( testClass, loader );
     }
@@ -59,10 +57,8 @@ public class TestNGBattery
      *
      * @param testClass
      * @param loader
-     * @throws Exception
      */
-    public void processTestClass( final Class testClass, ClassLoader loader )
-        throws Exception
+    private void processTestClass( Class testClass, ClassLoader loader )
     {
         if ( testClass == null )
         {
@@ -84,51 +80,45 @@ public class TestNGBattery
 
     protected void discoverTestMethods()
     {
-        if ( testMethods != null )
+        if ( testMethods == null )
         {
-            return;
-        }
+            testMethods = new ArrayList();
 
-        testMethods = new ArrayList();
+            Method[] methods = testClass.getMethods();
 
-        Method[] methods = testClass.getMethods();
-
-        for ( int i = 0; i < methods.length; ++i )
-        {
-            Method m = methods[i];
-
-            Class[] paramTypes = m.getParameterTypes();
-
-            boolean isInstanceMethod = !Modifier.isStatic( m.getModifiers() );
-
-            boolean returnsVoid = m.getReturnType() == void.class;
-
-            boolean hasNoParams = paramTypes.length == 0;
-
-            if ( isInstanceMethod && returnsVoid && hasNoParams )
+            for ( int i = 0; i < methods.length; ++i )
             {
-                String simpleName = m.getName();
+                Method m = methods[i];
 
-                if ( simpleName.length() <= 4 )
+                Class[] paramTypes = m.getParameterTypes();
+
+                boolean isInstanceMethod = !Modifier.isStatic( m.getModifiers() );
+
+                boolean returnsVoid = m.getReturnType().equals( void.class );
+
+                boolean hasNoParams = paramTypes.length == 0;
+
+                if ( isInstanceMethod && returnsVoid && hasNoParams )
                 {
-                    // name must have 5 or more chars
-                    continue;
-                }
+                    String simpleName = m.getName();
 
-                testMethods.add( m );
+                    // TODO: WHY?
+                    // name must have 5 or more chars
+                    if ( simpleName.length() > 4 )
+                    {
+                        testMethods.add( m );
+                    }
+                }
             }
         }
     }
 
     public void discoverBatteryClassNames()
-        throws Exception
     {
     }
 
     public void execute( ReporterManager reportManager )
-        throws Exception
     {
-        // TODO Auto-generated method stub
     }
 
     public String getBatteryName()

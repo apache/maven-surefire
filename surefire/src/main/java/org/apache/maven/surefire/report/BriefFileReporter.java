@@ -18,6 +18,7 @@ package org.apache.maven.surefire.report;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
@@ -36,13 +37,10 @@ public class BriefFileReporter
 
     private long batteryStartTime;
 
-    public void runStarting( int testCount )
-    {
-
-    }
+    private static final String NL = "\n";
 
     public void batteryStarting( ReportEntry report )
-        throws Exception
+        throws IOException
     {
         batteryStartTime = System.currentTimeMillis();
 
@@ -69,11 +67,11 @@ public class BriefFileReporter
 
         StringBuffer batterySummary = new StringBuffer();
 
-        batterySummary.append( "Tests run: " + String.valueOf( this.getNbTests() ) )
-            .append( ", Failures: " + String.valueOf( this.getNbFailures() ) )
-            .append( ", Errors: " + String.valueOf( this.getNbErrors() ) )
-            .append( ", Time elapsed: " + elapsedTimeAsString( runTime ) )
-            .append( " sec \n\n" );
+        batterySummary.append( "Tests run: " ).append( String.valueOf( this.getNbTests() ) );
+        batterySummary.append( ", Failures: " ).append( String.valueOf( this.getNbFailures() ) );
+        batterySummary.append( ", Errors: " ).append( String.valueOf( this.getNbErrors() ) );
+        batterySummary.append( ", Time elapsed: " ).append( elapsedTimeAsString( runTime ) );
+        batterySummary.append( " sec \n\n" );
 
         reportContent = batterySummary.append( reportContent );
 
@@ -103,7 +101,7 @@ public class BriefFileReporter
 
         writeStdLogs( stdOut, stdErr );
 
-        reportContent.append( getStackTrace( report ) + "\n" );
+        reportContent.append( getStackTrace( report ) ).append( NL );
     }
 
     public void testFailed( ReportEntry report, String stdOut, String stdErr )
@@ -120,7 +118,7 @@ public class BriefFileReporter
 
         writeStdLogs( stdOut, stdErr );
 
-        reportContent.append( getStackTrace( report ) + "\n" );
+        reportContent.append( getStackTrace( report ) ).append( NL );
     }
 
     public void dispose()
@@ -134,32 +132,32 @@ public class BriefFileReporter
 
     private void writeTimeElapsed( long sec )
     {
-        reportContent.append( "  Time elapsed: " + elapsedTimeAsString( sec ) + " sec" );
+        reportContent.append( "  Time elapsed: " ).append( elapsedTimeAsString( sec ) ).append( " sec" );
     }
 
     private void writeStdLogs( String stdOut, String stdErr )
     {
-        reportContent.append( "\n" );
+        reportContent.append( NL );
 
-        reportContent.append( "[ stdout ] ---------------------------------------------------------------\n" );
+        reportContent.append( "[ stdout ] ---------------------------------------------------------------" + NL );
 
-        reportContent.append( "\n" );
+        reportContent.append( NL );
 
-        reportContent.append( stdOut + "\n" );
+        reportContent.append( stdOut ).append( NL );
 
-        reportContent.append( "\n" );
+        reportContent.append( NL );
 
-        reportContent.append( "[ stderr ] ---------------------------------------------------------------\n" );
+        reportContent.append( "[ stderr ] ---------------------------------------------------------------" + NL );
 
-        reportContent.append( "\n" );
+        reportContent.append( NL );
 
-        reportContent.append( stdErr + "\n" );
+        reportContent.append( stdErr ).append( NL );
 
-        reportContent.append( "\n" );
+        reportContent.append( NL );
 
-        reportContent.append( "[ stacktrace ] -----------------------------------------------------------\n" );
+        reportContent.append( "[ stacktrace ] -----------------------------------------------------------" + NL );
 
-        reportContent.append( "\n" );
+        reportContent.append( NL );
     }
 
     /**

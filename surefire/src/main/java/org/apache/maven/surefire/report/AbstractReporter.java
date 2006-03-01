@@ -16,6 +16,7 @@ package org.apache.maven.surefire.report;
  * limitations under the License.
  */
 
+import java.io.IOException;
 import java.text.NumberFormat;
 
 /**
@@ -38,6 +39,8 @@ public abstract class AbstractReporter
     protected long endTime;
 
     private NumberFormat numberFormat = NumberFormat.getInstance();
+
+    private static final int MS_PER_SEC = 1000;
 
     public void setReportsDirectory( String reportsDirectory )
     {
@@ -74,7 +77,7 @@ public abstract class AbstractReporter
     }
 
     public void batteryStarting( ReportEntry report )
-        throws Exception
+        throws IOException
     {
     }
 
@@ -153,6 +156,6 @@ public abstract class AbstractReporter
 
     protected String elapsedTimeAsString( long runTime )
     {
-        return numberFormat.format( (double) runTime / 1000 );
+        return numberFormat.format( (double) runTime / MS_PER_SEC );
     }
 }

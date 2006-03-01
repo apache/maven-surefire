@@ -38,6 +38,8 @@ public abstract class AbstractBattery
 
     private List subBatteryClassNames;
 
+    private static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
+
     public void execute( ReporterManager reportManager )
         throws Exception
     {
@@ -61,13 +63,11 @@ public abstract class AbstractBattery
             discoverTestMethods();
         }
 
-        Object[] args = new Object[0];
-
         boolean abort = false;
 
-        for ( int i = 0; ( i < testMethods.size() ) && !abort; ++i )
+        for ( int i = 0; i < testMethods.size() && !abort; ++i )
         {
-            abort = executeTestMethod( (Method) testMethods.get( i ), args, reportManager );
+            abort = executeTestMethod( (Method) testMethods.get( i ), EMPTY_OBJECT_ARRAY, reportManager );
         }
     }
 
@@ -176,12 +176,6 @@ public abstract class AbstractBattery
 
             String stringToPrint = msgFmt.format( stringArgs );
 
-            String msg = e.getMessage();
-            if ( msg == null )
-            {
-                msg = e.toString();
-            }
-
             report = new ReportEntry( this, getTestName( userFriendlyMethodName ), stringToPrint, e );
 
             reportManager.testFailed( report );
@@ -246,46 +240,40 @@ public abstract class AbstractBattery
 
     protected void discoverTestMethods()
     {
-        if ( testMethods != null )
+        if ( testMethods == null )
         {
-            return;
-        }
+            testMethods = new ArrayList();
 
-        testMethods = new ArrayList();
+            Method[] methods = getTestClass().getMethods();
 
-        Method[] methods = getTestClass().getMethods();
-
-        for ( int i = 0; i < methods.length; ++i )
-        {
-            Method m = methods[i];
-
-            Class[] paramTypes = m.getParameterTypes();
-
-            boolean isInstanceMethod = !Modifier.isStatic( m.getModifiers() );
-
-            boolean returnsVoid = m.getReturnType() == void.class;
-
-            boolean hasNoParams = paramTypes.length == 0;
-
-            if ( isInstanceMethod && returnsVoid && hasNoParams )
+            for ( int i = 0; i < methods.length; ++i )
             {
-                String simpleName = m.getName();
+                Method m = methods[i];
 
-                if ( simpleName.length() <= 4 )
+                Class[] paramTypes = m.getParameterTypes();
+
+                boolean isInstanceMethod = !Modifier.isStatic( m.getModifiers() );
+
+                boolean returnsVoid = m.getReturnType().equals( void.class );
+
+                boolean hasNoParams = paramTypes.length == 0;
+
+                if ( isInstanceMethod && returnsVoid && hasNoParams )
                 {
+                    String simpleName = m.getName();
+
                     // name must have 5 or more chars
-                    continue;
+                    if ( simpleName.length() > 4 )
+                    {
+                        String firstFour = simpleName.substring( 0, 4 );
+
+                        // name must start with "test"
+                        if ( firstFour.equals( TEST_METHOD_PREFIX ) )
+                        {
+                            testMethods.add( m );
+                        }
+                    }
                 }
-
-                String firstFour = simpleName.substring( 0, 4 );
-
-                if ( !firstFour.equals( TEST_METHOD_PREFIX ) )
-                {
-                    // name must start with "test"
-                    continue;
-                }
-
-                testMethods.add( m );
             }
         }
     }

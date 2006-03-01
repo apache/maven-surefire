@@ -23,6 +23,8 @@ import java.io.StringWriter;
 
 /**
  * Detailed console reporter.
+ * <p/>
+ * TODO: this seems to have a lot in common with other console reporters. Check CPD.
  *
  * @author <a href="mailto:jruiz@exist.com">Johnny R. Ruiz III</a>
  * @version $Id$
@@ -38,7 +40,7 @@ public class DetailedConsoleReporter
 
     private long batteryStartTime;
 
-    String newLine = System.getProperty( "line.separator" );
+    private static final String NL = System.getProperty( "line.separator" );
 
     public DetailedConsoleReporter()
     {
@@ -62,7 +64,6 @@ public class DetailedConsoleReporter
     }
 
     public void batteryStarting( ReportEntry report )
-        throws Exception
     {
         batteryStartTime = System.currentTimeMillis();
 
@@ -77,13 +78,13 @@ public class DetailedConsoleReporter
 
         StringBuffer batterySummary = new StringBuffer();
 
-        batterySummary.append( "[surefire] Tests run: " + String.valueOf( this.getNbTests() ) )
-            .append( ", Failures: " + String.valueOf( this.getNbFailures() ) )
-            .append( ", Errors: " + String.valueOf( this.getNbErrors() ) )
-            .append( ", Time elapsed: " + elapsedTimeAsString( runTime ) )
-            .append( " sec" )
-            .append( newLine )
-            .append( "[surefire] " + newLine );
+        batterySummary.append( "[surefire] Tests run: " ).append( String.valueOf( this.getNbTests() ) );
+        batterySummary.append( ", Failures: " ).append( String.valueOf( this.getNbFailures() ) );
+        batterySummary.append( ", Errors: " ).append( String.valueOf( this.getNbErrors() ) );
+        batterySummary.append( ", Time elapsed: " ).append( elapsedTimeAsString( runTime ) );
+        batterySummary.append( " sec" );
+        batterySummary.append( NL );
+        batterySummary.append( "[surefire] " ).append( NL );
 
         reportContent = batterySummary.append( reportContent );
 
@@ -96,7 +97,7 @@ public class DetailedConsoleReporter
     {
         super.testStarting( report );
 
-        reportContent.append( "[surefire] " + report.getName() );
+        reportContent.append( "[surefire] " ).append( report.getName() );
     }
 
     public void testSucceeded( ReportEntry report )
@@ -107,7 +108,7 @@ public class DetailedConsoleReporter
 
         writeTimeElapsed( runTime );
 
-        reportContent.append( newLine );
+        reportContent.append( NL );
     }
 
     public void testError( ReportEntry report, String stdOut, String stdErr )
@@ -118,9 +119,9 @@ public class DetailedConsoleReporter
 
         writeTimeElapsed( runTime );
 
-        reportContent.append( "  <<< ERROR!" + newLine );
+        reportContent.append( "  <<< ERROR!" ).append( NL );
 
-        reportContent.append( getStackTrace( report ) + newLine );
+        reportContent.append( getStackTrace( report ) ).append( NL );
     }
 
     public void testFailed( ReportEntry report, String stdOut, String stdErr )
@@ -131,9 +132,9 @@ public class DetailedConsoleReporter
 
         writeTimeElapsed( runTime );
 
-        reportContent.append( "  <<< FAILURE!" + newLine );
+        reportContent.append( "  <<< FAILURE!" ).append( NL );
 
-        reportContent.append( getStackTrace( report ) + newLine );
+        reportContent.append( getStackTrace( report ) ).append( NL );
     }
 
     public void dispose()
@@ -147,7 +148,7 @@ public class DetailedConsoleReporter
 
     private void writeTimeElapsed( long sec )
     {
-        reportContent.append( "  Time elapsed: " + elapsedTimeAsString( sec ) + " sec" );
+        reportContent.append( "  Time elapsed: " ).append( elapsedTimeAsString( sec ) ).append( " sec" );
     }
 
     /**

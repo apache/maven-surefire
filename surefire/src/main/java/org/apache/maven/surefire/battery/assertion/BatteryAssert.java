@@ -112,16 +112,13 @@ public class BatteryAssert
 
     public static void assertEquals( String message, Object expected, Object actual )
     {
-        if ( expected == null && actual == null )
+        if ( expected != null || actual != null )
         {
-            return;
+            if ( expected == null || !expected.equals( actual ) )
+            {
+                failNotEquals( message, expected, actual );
+            }
         }
-        if ( expected != null && expected.equals( actual ) )
-        {
-            return;
-        }
-
-        failNotEquals( message, expected, actual );
     }
 
     public static void assertEquals( Object expected, Object actual )
@@ -131,17 +128,13 @@ public class BatteryAssert
 
     public static void assertEquals( String message, String expected, String actual )
     {
-        if ( expected == null && actual == null )
+        if ( expected != null || actual != null )
         {
-            return;
+            if ( expected == null || !expected.equals( actual ) )
+            {
+                throw new BatteryComparisonFailure( message, expected, actual );
+            }
         }
-
-        if ( expected != null && expected.equals( actual ) )
-        {
-            return;
-        }
-
-        throw new BatteryComparisonFailure( message, expected, actual );
     }
 
     public static void assertEquals( String expected, String actual )
@@ -155,7 +148,7 @@ public class BatteryAssert
         // the following test fails
         if ( Double.isInfinite( expected ) )
         {
-            if ( !( expected == actual ) )
+            if ( !Double.isInfinite( actual ) )
             {
                 failNotEquals( message, new Double( expected ), new Double( actual ) );
             }
@@ -177,7 +170,7 @@ public class BatteryAssert
         // the following test fails
         if ( Float.isInfinite( expected ) )
         {
-            if ( !( expected == actual ) )
+            if ( !Float.isInfinite( actual ) )
             {
                 failNotEquals( message, new Float( expected ), new Float( actual ) );
             }
@@ -206,7 +199,7 @@ public class BatteryAssert
 
     public static void assertEquals( String message, boolean expected, boolean actual )
     {
-        assertEquals( message, new Boolean( expected ), new Boolean( actual ) );
+        assertEquals( message, Boolean.valueOf( expected ), Boolean.valueOf( actual ) );
     }
 
     public static void assertEquals( boolean expected, boolean actual )
@@ -276,12 +269,11 @@ public class BatteryAssert
 
     public static void assertSame( String message, Object expected, Object actual )
     {
-        if ( expected == actual )
+        //noinspection ObjectEquality
+        if ( expected != actual )
         {
-            return;
+            failNotSame( message, expected, actual );
         }
-
-        failNotSame( message, expected, actual );
     }
 
     public static void assertSame( Object expected, Object actual )
@@ -291,6 +283,7 @@ public class BatteryAssert
 
     public static void assertNotSame( String message, Object expected, Object actual )
     {
+        //noinspection ObjectEquality
         if ( expected == actual )
         {
             failSame( message );
@@ -302,7 +295,7 @@ public class BatteryAssert
         assertNotSame( null, expected, actual );
     }
 
-    static private void failSame( String message )
+    private static void failSame( String message )
     {
         String formatted = "";
 
@@ -314,7 +307,7 @@ public class BatteryAssert
         fail( formatted + "expected not same" );
     }
 
-    static private void failNotSame( String message, Object expected, Object actual )
+    private static void failNotSame( String message, Object expected, Object actual )
     {
         String formatted = "";
 
@@ -326,7 +319,7 @@ public class BatteryAssert
         fail( formatted + "expected same:<" + expected + "> was not:<" + actual + ">" );
     }
 
-    static private void failNotEquals( String message, Object expected, Object actual )
+    private static void failNotEquals( String message, Object expected, Object actual )
     {
         fail( formatMismatch( message, expected, actual ) );
     }

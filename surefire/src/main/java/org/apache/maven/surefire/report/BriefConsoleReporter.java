@@ -39,7 +39,7 @@ public class BriefConsoleReporter
 
     private long batteryStartTime;
 
-    String newLine = System.getProperty( "line.separator" );
+    private static final String NL = System.getProperty( "line.separator" );
 
     public BriefConsoleReporter()
     {
@@ -63,7 +63,6 @@ public class BriefConsoleReporter
     }
 
     public void batteryStarting( ReportEntry report )
-        throws Exception
     {
         batteryStartTime = System.currentTimeMillis();
 
@@ -78,13 +77,14 @@ public class BriefConsoleReporter
 
         StringBuffer batterySummary = new StringBuffer();
 
-        batterySummary.append( "[surefire] Tests run: " + String.valueOf( this.getNbTests() ) )
-            .append( ", Failures: " + String.valueOf( this.getNbFailures() ) )
-            .append( ", Errors: " + String.valueOf( this.getNbErrors() ) )
-            .append( ", Time elapsed: " + elapsedTimeAsString( runTime ) )
-            .append( " sec" )
-            .append( newLine )
-            .append( "[surefire] " + newLine );
+        batterySummary.append( "[surefire] Tests run: " );
+        batterySummary.append( String.valueOf( this.getNbTests() ) );
+        batterySummary.append( ", Failures: " ).append( String.valueOf( this.getNbFailures() ) );
+        batterySummary.append( ", Errors: " ).append( String.valueOf( this.getNbErrors() ) );
+        batterySummary.append( ", Time elapsed: " ).append( elapsedTimeAsString( runTime ) );
+        batterySummary.append( " sec" );
+        batterySummary.append( NL );
+        batterySummary.append( "[surefire] " ).append( NL );
 
         reportContent = batterySummary.append( reportContent );
 
@@ -103,30 +103,30 @@ public class BriefConsoleReporter
     {
         super.testError( report, stdOut, stdErr );
 
-        reportContent.append( "[surefire] " + report.getName() );
+        reportContent.append( "[surefire] " ).append( report.getName() );
 
         long runTime = this.endTime - this.startTime;
 
         writeTimeElapsed( runTime );
 
-        reportContent.append( "  <<< ERROR!" + newLine );
+        reportContent.append( "  <<< ERROR!" ).append( NL );
 
-        reportContent.append( getStackTrace( report ) + newLine );
+        reportContent.append( getStackTrace( report ) ).append( NL );
     }
 
     public void testFailed( ReportEntry report, String stdOut, String stdErr )
     {
         super.testFailed( report, stdOut, stdErr );
 
-        reportContent.append( "[surefire] " + report.getName() );
+        reportContent.append( "[surefire] " ).append( report.getName() );
 
         long runTime = this.endTime - this.startTime;
 
         writeTimeElapsed( runTime );
 
-        reportContent.append( "  <<< FAILURE!" + newLine );
+        reportContent.append( "  <<< FAILURE!" ).append( NL );
 
-        reportContent.append( getStackTrace( report ) + newLine );
+        reportContent.append( getStackTrace( report ) ).append( NL );
     }
 
     public void dispose()
@@ -140,7 +140,7 @@ public class BriefConsoleReporter
 
     private void writeTimeElapsed( long sec )
     {
-        reportContent.append( "  Time elapsed: " + elapsedTimeAsString( sec ) + " sec" );
+        reportContent.append( "  Time elapsed: " ).append( elapsedTimeAsString( sec ) ).append( " sec" );
     }
 
     /**

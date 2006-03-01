@@ -87,7 +87,6 @@ public class ConsoleReporter
     // ----------------------------------------------------------------------
 
     public void batteryStarting( ReportEntry report )
-        throws Exception
     {
         batteryStartTime = System.currentTimeMillis();
 

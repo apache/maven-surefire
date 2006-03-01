@@ -22,6 +22,7 @@ import org.apache.maven.surefire.report.ReporterManager;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.HashSet;
+import java.util.Set;
 
 public class TestListenerInvocationHandler
     implements InvocationHandler
@@ -35,17 +36,17 @@ public class TestListenerInvocationHandler
 
     private static final String END_TEST = "endTest";
 
-    private HashSet failedTestsSet = new HashSet();
+    private Set failedTestsSet = new HashSet();
 
     private ReporterManager reportManager;
 
-    private class FailedTest
+    private static class FailedTest
     {
         private Object testThatFailed;
 
         private Thread threadOnWhichTestFailed;
 
-        public FailedTest( Object testThatFailed, Thread threadOnWhichTestFailed )
+        FailedTest( Object testThatFailed, Thread threadOnWhichTestFailed )
         {
             if ( testThatFailed == null )
             {
@@ -62,27 +63,29 @@ public class TestListenerInvocationHandler
             this.threadOnWhichTestFailed = threadOnWhichTestFailed;
         }
 
-        public boolean equals( Object o )
+        public boolean equals( Object obj )
         {
+            boolean retVal = true;
 
-            if ( ( o == null ) || ( getClass() != o.getClass() ) )
+            if ( obj == null || getClass() != obj.getClass() )
             {
-                return false;
+                retVal = false;
+            }
+            else
+            {
+                FailedTest ft = (FailedTest) obj;
+
+                if ( ft.testThatFailed != testThatFailed )
+                {
+                    retVal = false;
+                }
+                else if ( !ft.threadOnWhichTestFailed.equals( threadOnWhichTestFailed ) )
+                {
+                    retVal = false;
+                }
             }
 
-            FailedTest ft = (FailedTest) o;
-
-            if ( ft.testThatFailed != testThatFailed )
-            {
-                return false;
-            }
-
-            if ( !ft.threadOnWhichTestFailed.equals( threadOnWhichTestFailed ) )
-            {
-                return false;
-            }
-
-            return true;
+            return retVal;
         }
 
         public int hashCode()

@@ -26,8 +26,6 @@ package org.apache.maven.surefire.battery;
 public class SingleTestBattery
     extends AbstractBattery
 {
-    private String testClassName;
-
     private Class testClass;
 
     private Object testObject;
@@ -35,8 +33,6 @@ public class SingleTestBattery
     public SingleTestBattery( String testClassName )
         throws Exception
     {
-        this.testClassName = testClassName;
-
         this.testClass = getClass().getClassLoader().loadClass( testClassName );
 
         this.testObject = testClass.newInstance();

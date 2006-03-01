@@ -26,7 +26,6 @@ public class ForkingSummaryConsoleReporter
     extends ForkingConsoleReporter
 {
     public void batteryStarting( ReportEntry report )
-        throws Exception
     {
     }
 

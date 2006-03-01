@@ -50,55 +50,59 @@ public class BatteryComparisonFailure
      */
     public String getMessage()
     {
+        String actual;
+        String expected;
         if ( fExpected == null || fActual == null )
-        {
-            return BatteryAssert.formatMismatch( super.getMessage(), fExpected, fActual );
-        }
-
-        int end = Math.min( fExpected.length(), fActual.length() );
-
-        int i = 0;
-        for ( ; i < end; i++ )
-        {
-            if ( fExpected.charAt( i ) != fActual.charAt( i ) )
-            {
-                break;
-            }
-        }
-        int j = fExpected.length() - 1;
-        int k = fActual.length() - 1;
-        for ( ; k >= i && j >= i; k--, j-- )
-        {
-            if ( fExpected.charAt( j ) != fActual.charAt( k ) )
-            {
-                break;
-            }
-        }
-        String actual, expected;
-
-        // equal strings
-        if ( j < i && k < i )
         {
             expected = fExpected;
             actual = fActual;
         }
         else
         {
-            expected = fExpected.substring( i, j + 1 );
-            actual = fActual.substring( i, k + 1 );
-            if ( i <= end && i > 0 )
+            int end = Math.min( fExpected.length(), fActual.length() );
+
+            int i = 0;
+            for ( ; i < end; i++ )
             {
-                expected = "..." + expected;
-                actual = "..." + actual;
+                if ( fExpected.charAt( i ) != fActual.charAt( i ) )
+                {
+                    break;
+                }
+            }
+            int j = fExpected.length() - 1;
+            int k = fActual.length() - 1;
+            for ( ; k >= i && j >= i; k--, j-- )
+            {
+                if ( fExpected.charAt( j ) != fActual.charAt( k ) )
+                {
+                    break;
+                }
             }
 
-            if ( j < fExpected.length() - 1 )
+            // equal strings
+            if ( j < i && k < i )
             {
-                expected = expected + "...";
+                expected = fExpected;
+                actual = fActual;
             }
-            if ( k < fActual.length() - 1 )
+            else
             {
-                actual = actual + "...";
+                expected = fExpected.substring( i, j + 1 );
+                actual = fActual.substring( i, k + 1 );
+                if ( i <= end && i > 0 )
+                {
+                    expected = "..." + expected;
+                    actual = "..." + actual;
+                }
+
+                if ( j < fExpected.length() - 1 )
+                {
+                    expected = expected + "...";
+                }
+                if ( k < fActual.length() - 1 )
+                {
+                    actual = actual + "...";
+                }
             }
         }
         return BatteryAssert.formatMismatch( super.getMessage(), expected, actual );

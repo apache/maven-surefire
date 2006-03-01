@@ -23,10 +23,9 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DirectoryBattery
+public final class DirectoryBattery
     extends AbstractBattery
 {
-
     private static final String FS = System.getProperty( "file.separator" );
 
     private File basedir;
@@ -52,20 +51,18 @@ public class DirectoryBattery
     {
         String[] tests = collectTests( basedir, includes, excludes );
 
-        if ( tests == null )
+        if ( tests != null )
         {
-            return;
-        }
+            for ( int i = 0; i < tests.length; i++ )
+            {
+                String s = tests[i];
 
-        for ( int i = 0; i < tests.length; i++ )
-        {
-            String s = tests[i];
+                s = s.substring( 0, s.indexOf( "." ) );
 
-            s = s.substring( 0, s.indexOf( "." ) );
+                s = s.replace( FS.charAt( 0 ), ".".charAt( 0 ) );
 
-            s = s.replace( FS.charAt( 0 ), ".".charAt( 0 ) );
-
-            addSubBatteryClassName( s );
+                addSubBatteryClassName( s );
+            }
         }
     }
 

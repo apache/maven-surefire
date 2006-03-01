@@ -26,7 +26,6 @@ public class SummaryConsoleReporter
     extends ConsoleReporter
 {
     public void batteryStarting( ReportEntry report )
-        throws Exception
     {
     }
 

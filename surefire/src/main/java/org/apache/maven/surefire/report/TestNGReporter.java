@@ -80,8 +80,9 @@ public class TestNGReporter
     public void onTestStart( ITestResult result )
     {
         String rawString = Surefire.getResources().getString( "testStarting" );
+        String group = groupString( result.getMethod().getGroups(), result.getTestClass().getName() );
         ReportEntry report = new ReportEntry( surefire, result.getTestClass().getName() + "#" +
-            result.getMethod().getMethodName(), resultGroup( result ), rawString );
+            result.getMethod().getMethodName(), group, rawString );
 
         reportManager.testStarting( report );
 
@@ -148,11 +149,7 @@ public class TestNGReporter
     {
         String rawString = Surefire.getResources().getString( "suiteExecutionStarting" );
 
-        String group = groupString( context.getIncludedGroups() );
-        if ( group == null )
-        {
-            group = context.getName();
-        }
+        String group = groupString( context.getIncludedGroups(), context.getName() );
 
         ReportEntry report = new ReportEntry( surefire, context.getName(), group, rawString );
 
@@ -167,7 +164,7 @@ public class TestNGReporter
         String rawString = Surefire.getResources().getString( "suiteCompletedNormally" );
 
         ReportEntry report =
-            new ReportEntry( surefire, context.getName(), groupString( context.getIncludedGroups() ), rawString );
+            new ReportEntry( surefire, context.getName(), groupString( context.getIncludedGroups(), null ), rawString );
 
         reportManager.batteryCompleted( report );
 
@@ -189,45 +186,29 @@ public class TestNGReporter
      * form of <pre>"group1,group2,group3"</pre>.
      *
      * @param groups
+     * @param defaultValue
      */
-    public static String groupString( String[] groups )
+    private static String groupString( String[] groups, String defaultValue )
     {
+        String retVal;
         if ( groups != null && groups.length > 0 )
         {
             StringBuffer str = new StringBuffer();
             for ( int i = 0; i < groups.length; i++ )
             {
                 str.append( groups[i] );
-                if ( ( i + 1 ) < groups.length )
+                if ( i + 1 < groups.length )
                 {
                     str.append( "," );
                 }
             }
-            return str.toString();
+            retVal = str.toString();
         }
         else
         {
-            return null;
+            retVal = defaultValue;
         }
+        return retVal;
     }
 
-    /**
-     * Utility to report back with either the test class name
-     * run, or the group(s) method belongs to.
-     *
-     * @param result
-     * @return Valid string
-     */
-    public static String resultGroup( ITestResult result )
-    {
-        String groupStr = groupString( result.getMethod().getGroups() );
-        if ( groupStr != null )
-        {
-            return groupStr;
-        }
-        else
-        {
-            return result.getTestClass().getName();
-        }
-    }
 }

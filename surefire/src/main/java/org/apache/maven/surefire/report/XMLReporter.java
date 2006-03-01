@@ -22,10 +22,12 @@ import org.codehaus.plexus.util.xml.Xpp3DomWriter;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.Enumeration;
 import java.util.Properties;
 import java.util.StringTokenizer;
@@ -58,13 +60,8 @@ public class XMLReporter
         return testCase;
     }
 
-    public void runStarting( int testCount )
-    {
-
-    }
-
     public void batteryStarting( ReportEntry report )
-        throws Exception
+        throws FileNotFoundException, UnsupportedEncodingException
     {
         batteryStartTime = System.currentTimeMillis();
 
@@ -174,7 +171,7 @@ public class XMLReporter
 
             String message = t.getMessage();
 
-            if ( ( message != null ) && ( message.trim().length() > 0 ) )
+            if ( message != null && message.trim().length() > 0 )
             {
                 element.setAttribute( "message", message );
 
@@ -188,12 +185,12 @@ public class XMLReporter
 
         element.setValue( stackTrace );
 
-        if ( ( stdOut != null ) && ( stdOut.trim().length() > 0 ) )
+        if ( stdOut != null && stdOut.trim().length() > 0 )
         {
             createElement( testCase, "system-out" ).setValue( stdOut );
         }
 
-        if ( ( stdErr != null ) && ( stdErr.trim().length() > 0 ) )
+        if ( stdErr != null && stdErr.trim().length() > 0 )
         {
             createElement( testCase, "system-err" ).setValue( stdErr );
         }
@@ -245,8 +242,6 @@ public class XMLReporter
     {
         Xpp3Dom properties = createElement( testSuite, "properties" );
 
-        Xpp3Dom property;
-
         Properties systemProperties = System.getProperties();
 
         if ( systemProperties != null )
@@ -264,7 +259,7 @@ public class XMLReporter
                     value = "null";
                 }
 
-                property = createElement( properties, "property" );
+                Xpp3Dom property = createElement( properties, "property" );
 
                 property.setAttribute( "name", key );
 
