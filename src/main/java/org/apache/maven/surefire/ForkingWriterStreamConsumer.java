@@ -34,15 +34,24 @@ public class ForkingWriterStreamConsumer
 
     public void consumeLine( String line )
     {
-        if ( line.startsWith( ForkingReport.FORKING_PREFIX_HEADING ) && showHeading )
+        if ( line.startsWith( ForkingReport.FORKING_PREFIX_HEADING ) )
         {
-            printWriter.println( line.substring( headingPrefixLength ) );
+            if ( showHeading )
+            {
+                printWriter.println( line.substring( headingPrefixLength ) );
 
-            printWriter.flush();
+                printWriter.flush();
+            }
         }
         else if ( line.startsWith( ForkingReport.FORKING_PREFIX_STANDARD ) )
         {
             printWriter.println( line.substring( standardPrefixLength ) );
+
+            printWriter.flush();
+        }
+        else
+        {
+            printWriter.println( line );
 
             printWriter.flush();
         }
