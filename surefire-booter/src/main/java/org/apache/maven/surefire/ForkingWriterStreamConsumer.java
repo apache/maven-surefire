@@ -50,17 +50,22 @@ public class ForkingWriterStreamConsumer
 
     public void consumeLine( String line )
     {
-        if ( line.startsWith( ForkingReport.FORKING_PREFIX_HEADING ) && showHeading )
+        if ( line.startsWith( ForkingReport.FORKING_PREFIX_HEADING ) )
         {
-            printWriter.println( line.substring( headingPrefixLength ) );
-
-            printWriter.flush();
+            if ( showHeading )
+            {
+                printWriter.println( line.substring( headingPrefixLength ) );
+            }
         }
         else if ( line.startsWith( ForkingReport.FORKING_PREFIX_STANDARD ) )
         {
             printWriter.println( line.substring( standardPrefixLength ) );
-
-            printWriter.flush();
         }
+        else
+        {
+            // stdout
+            printWriter.println( line );
+        }
+        printWriter.flush();
     }
 }
