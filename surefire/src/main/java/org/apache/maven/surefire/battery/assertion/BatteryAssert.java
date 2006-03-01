@@ -1,7 +1,7 @@
 package org.apache.maven.surefire.battery.assertion;
 
 /*
- * Copyright 2001-2005 The Codehaus.
+ * Copyright 2001-2006 The Apache Software Foundation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,8 @@ package org.apache.maven.surefire.battery.assertion;
 import junit.framework.TestCase;
 import org.apache.maven.surefire.Surefire;
 
-public class BatteryAssert extends TestCase
+public class BatteryAssert
+    extends TestCase
 {
     public static void verify( boolean condition )
     {
@@ -178,7 +179,8 @@ public class BatteryAssert extends TestCase
         {
             if ( !( expected == actual ) )
             {
-                failNotEquals( message, new Float( expected ), new Float( actual ) );}
+                failNotEquals( message, new Float( expected ), new Float( actual ) );
+            }
 
         }
         else if ( !( Math.abs( expected - actual ) <= delta ) )

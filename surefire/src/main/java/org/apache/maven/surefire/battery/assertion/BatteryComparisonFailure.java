@@ -1,7 +1,7 @@
 package org.apache.maven.surefire.battery.assertion;
 
 /*
- * Copyright 2001-2005 The Codehaus.
+ * Copyright 2001-2006 The Apache Software Foundation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,19 +18,22 @@ package org.apache.maven.surefire.battery.assertion;
 
 /**
  * Thrown when an assertion equals for Strings failed.
- *
+ * <p/>
  * Inspired by a patch from Alex Chaffee mailto:alex@purpletech.com
  */
-public class BatteryComparisonFailure extends BatteryAssertionFailedError
+public class BatteryComparisonFailure
+    extends BatteryAssertionFailedError
 {
     private String fExpected;
+
     private String fActual;
 
     /**
      * Constructs a comparison failure.
-     * @param message the identifying message or null
+     *
+     * @param message  the identifying message or null
      * @param expected the expected string value
-     * @param actual the actual string value
+     * @param actual   the actual string value
      */
     public BatteryComparisonFailure( String message, String expected, String actual )
     {
@@ -48,7 +51,9 @@ public class BatteryComparisonFailure extends BatteryAssertionFailedError
     public String getMessage()
     {
         if ( fExpected == null || fActual == null )
+        {
             return BatteryAssert.formatMismatch( super.getMessage(), fExpected, fActual );
+        }
 
         int end = Math.min( fExpected.length(), fActual.length() );
 
@@ -56,14 +61,18 @@ public class BatteryComparisonFailure extends BatteryAssertionFailedError
         for ( ; i < end; i++ )
         {
             if ( fExpected.charAt( i ) != fActual.charAt( i ) )
+            {
                 break;
+            }
         }
         int j = fExpected.length() - 1;
         int k = fActual.length() - 1;
         for ( ; k >= i && j >= i; k--, j-- )
         {
             if ( fExpected.charAt( j ) != fActual.charAt( k ) )
+            {
                 break;
+            }
         }
         String actual, expected;
 
@@ -84,9 +93,13 @@ public class BatteryComparisonFailure extends BatteryAssertionFailedError
             }
 
             if ( j < fExpected.length() - 1 )
+            {
                 expected = expected + "...";
+            }
             if ( k < fActual.length() - 1 )
+            {
                 actual = actual + "...";
+            }
         }
         return BatteryAssert.formatMismatch( super.getMessage(), expected, actual );
     }

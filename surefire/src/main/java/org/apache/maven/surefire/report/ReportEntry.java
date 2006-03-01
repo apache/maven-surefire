@@ -1,7 +1,7 @@
 package org.apache.maven.surefire.report;
 
 /*
- * Copyright 2001-2005 The Codehaus.
+ * Copyright 2001-2006 The Apache Software Foundation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,14 +23,14 @@ public class ReportEntry
     private String name;
 
     private String group;
-    
+
     private String message;
 
     private Throwable throwable;
 
     public ReportEntry( Object source, String name, String message )
     {
-       this(source, name, null, message);
+        this( source, name, null, message );
     }
 
     public ReportEntry( Object source, String name, String group, String message )
@@ -47,19 +47,19 @@ public class ReportEntry
         {
             throw new NullPointerException( "message is null" );
         }
-        
+
         this.source = source;
-        
+
         this.name = name;
-        
+
         this.group = group;
-        
+
         this.message = message;
     }
-    
+
     public ReportEntry( Object source, String name, String message, Throwable throwable )
     {
-        this(source, name, null, message, throwable);
+        this( source, name, null, message, throwable );
     }
 
     public ReportEntry( Object source, String name, String group, String message, Throwable throwable )
@@ -86,12 +86,12 @@ public class ReportEntry
         this.name = name;
 
         this.group = group;
-        
+
         this.message = message;
 
         this.throwable = throwable;
     }
-    
+
     public Object getSource()
     {
         return source;
@@ -106,7 +106,7 @@ public class ReportEntry
     {
         return group;
     }
-    
+
     public String getMessage()
     {
         return message;

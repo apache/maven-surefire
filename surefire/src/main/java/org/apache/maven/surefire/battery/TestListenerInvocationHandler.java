@@ -1,7 +1,7 @@
 package org.apache.maven.surefire.battery;
 
 /*
- * Copyright 2001-2005 The Codehaus.
+ * Copyright 2001-2006 The Apache Software Foundation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,8 +28,11 @@ public class TestListenerInvocationHandler
 {
     // The String names of the four methods in interface junit.framework.TestListener
     private static final String START_TEST = "startTest";
+
     private static final String ADD_FAILURE = "addFailure";
+
     private static final String ADD_ERROR = "addError";
+
     private static final String END_TEST = "endTest";
 
     private HashSet failedTestsSet = new HashSet();
@@ -88,8 +91,7 @@ public class TestListenerInvocationHandler
         }
     }
 
-    public TestListenerInvocationHandler( ReporterManager reportManager,
-                                          Object instanceOfTestResult,
+    public TestListenerInvocationHandler( ReporterManager reportManager, Object instanceOfTestResult,
                                           ClassLoader loader )
     {
         if ( reportManager == null )

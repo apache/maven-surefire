@@ -1,7 +1,7 @@
 package org.apache.maven.surefire.report;
 
 /*
- * Copyright 2001-2005 The Codehaus.
+ * Copyright 2001-2006 The Apache Software Foundation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ public class ConsoleReporter
     protected static final int BUFFER_SIZE = 4096;
 
     protected PrintWriter writer;
-    
+
     protected long batteryStartTime;
 
     public ConsoleReporter()
@@ -72,6 +72,7 @@ public class ConsoleReporter
         println( report.getMessage() );
         println( report.getThrowable().getMessage() );
     }
+
     public void batteryAborted( ReportEntry report )
     {
         println( "BATTERY ABORTED" );
@@ -89,7 +90,7 @@ public class ConsoleReporter
         throws Exception
     {
         batteryStartTime = System.currentTimeMillis();
-        
+
         println( "[surefire] Running " + report.getName() );
     }
 
@@ -97,16 +98,14 @@ public class ConsoleReporter
     {
         long runTime = System.currentTimeMillis() - batteryStartTime;
 
-        print( "[surefire] Tests run: " + completedCount +
-                             ", Failures: " + failures +
-                             ", Errors: " + errors +
-                             ", Time elapsed: " + elapsedTimeAsString( runTime ) + " sec" );
+        print( "[surefire] Tests run: " + completedCount + ", Failures: " + failures + ", Errors: " + errors +
+            ", Time elapsed: " + elapsedTimeAsString( runTime ) + " sec" );
 
         if ( failures > 0 || errors > 0 )
         {
             writer.print( " <<<<<<<< FAILURE !! " );
         }
-        
+
         writer.println( "" );
 
         writer.flush();

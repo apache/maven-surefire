@@ -1,9 +1,25 @@
 package org.apache.maven.surefire;
 
+/*
+ * Copyright 2001-2006 The Apache Software Foundation.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 import org.apache.maven.surefire.battery.JUnitBattery;
 import org.apache.maven.surefire.battery.TestNGBattery;
-import org.testng.internal.annotations.IAnnotationFinder;
 import org.testng.internal.TestNGClassFinder;
+import org.testng.internal.annotations.IAnnotationFinder;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
@@ -14,7 +30,7 @@ import java.lang.reflect.Modifier;
  */
 public class SurefireUtils
 {
-  private static final IAnnotationFinder annotationFinder;
+    private static final IAnnotationFinder annotationFinder;
 
     static
     {
@@ -37,7 +53,7 @@ public class SurefireUtils
     public static void setTestSourceDirectory( String testSourceDirectory )
     {
         annotationFinder.addSourceDirs( new String[]{testSourceDirectory} );
-}
+    }
 
     public static Object instantiateBattery( Object[] holder, ClassLoader loader )
         throws Exception
@@ -61,9 +77,9 @@ public class SurefireUtils
         {
             return null;
         }
-        
+
         Object battery = null;
-        
+
         if ( batteryClass.isAssignableFrom( testClass ) )
         {
             if ( holder[1] != null )

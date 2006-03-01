@@ -1,7 +1,7 @@
 package org.apache.maven.surefire.battery;
 
 /*
- * Copyright 2001-2005 The Codehaus.
+ * Copyright 2001-2006 The Apache Software Foundation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -147,7 +147,7 @@ public class JUnitBattery
 
         if ( testObject == null )
         {
-            Constructor testConstructor =  getTestConstructor( testClass );
+            Constructor testConstructor = getTestConstructor( testClass );
 
             if ( testConstructor.getParameterTypes().length == 0 )
             {
@@ -155,7 +155,7 @@ public class JUnitBattery
             }
             else
             {
-                testObject = testConstructor.newInstance( new Object[]{ testClass.getName() } );
+                testObject = testConstructor.newInstance( new Object[]{testClass.getName()} );
             }
         }
 
@@ -173,7 +173,7 @@ public class JUnitBattery
         {
             countTestCasesMethod = testInterface.getMethod( COUNT_TEST_CASES_METHOD, new Class[0] );
 
-	        runMethod = testInterface.getMethod( RUN_METHOD, new Class[] { testResultClass } );
+            runMethod = testInterface.getMethod( RUN_METHOD, new Class[]{testResultClass} );
 
         }
         else
@@ -181,19 +181,19 @@ public class JUnitBattery
             try
             {
                 countTestCasesMethod = testClass.getMethod( COUNT_TEST_CASES_METHOD, new Class[0] );
-			}
-			catch (Exception e)
-			{
-				countTestCasesMethod = null; // for clarity
-			}
-
-			try
-			{
-				runMethod = testClass.getMethod( RUN_METHOD, new Class[] { testResultClass } );
             }
-            catch (Exception e)
+            catch ( Exception e )
             {
-				runMethod = null;	// for clarity
+                countTestCasesMethod = null; // for clarity
+            }
+
+            try
+            {
+                runMethod = testClass.getMethod( RUN_METHOD, new Class[]{testResultClass} );
+            }
+            catch ( Exception e )
+            {
+                runMethod = null;    // for clarity
             }
         }
     }
@@ -203,23 +203,23 @@ public class JUnitBattery
         return testClass;
     }
 
-	protected Object getTestClassInstance()
-	{
-		return testObject;
-	}
+    protected Object getTestClassInstance()
+    {
+        return testObject;
+    }
 
-	public void execute( ReporterManager reportManager )
-		throws Exception
-	{
-		if ( runMethod != null )
-		{
-			executeJUnit( reportManager );
-		}
-		else
-		{
-			super.execute( reportManager );
-		}
-	}
+    public void execute( ReporterManager reportManager )
+        throws Exception
+    {
+        if ( runMethod != null )
+        {
+            executeJUnit( reportManager );
+        }
+        else
+        {
+            super.execute( reportManager );
+        }
+    }
 
     protected void executeJUnit( ReporterManager reportManager )
     {
@@ -243,19 +243,23 @@ public class JUnitBattery
         }
         catch ( IllegalArgumentException e )
         {
-            throw new org.apache.maven.surefire.battery.assertion.BatteryTestFailedException( testObject.getClass().getName(), e );
+            throw new org.apache.maven.surefire.battery.assertion.BatteryTestFailedException(
+                testObject.getClass().getName(), e );
         }
         catch ( InstantiationException e )
         {
-            throw new org.apache.maven.surefire.battery.assertion.BatteryTestFailedException( testObject.getClass().getName(), e );
+            throw new org.apache.maven.surefire.battery.assertion.BatteryTestFailedException(
+                testObject.getClass().getName(), e );
         }
         catch ( IllegalAccessException e )
         {
-            throw new org.apache.maven.surefire.battery.assertion.BatteryTestFailedException( testObject.getClass().getName(), e );
+            throw new org.apache.maven.surefire.battery.assertion.BatteryTestFailedException(
+                testObject.getClass().getName(), e );
         }
         catch ( InvocationTargetException e )
         {
-            throw new org.apache.maven.surefire.battery.assertion.BatteryTestFailedException( testObject.getClass().getName(), e );
+            throw new org.apache.maven.surefire.battery.assertion.BatteryTestFailedException(
+                testObject.getClass().getName(), e );
         }
     }
 
@@ -263,7 +267,7 @@ public class JUnitBattery
     {
         try
         {
-            if ( countTestCasesMethod != null)
+            if ( countTestCasesMethod != null )
             {
                 Integer integer = (Integer) countTestCasesMethod.invoke( testObject, new Class[0] );
 
@@ -276,15 +280,18 @@ public class JUnitBattery
         }
         catch ( IllegalAccessException e )
         {
-            throw new org.apache.maven.surefire.battery.assertion.BatteryTestFailedException( testObject.getClass().getName(), e );
+            throw new org.apache.maven.surefire.battery.assertion.BatteryTestFailedException(
+                testObject.getClass().getName(), e );
         }
         catch ( IllegalArgumentException e )
         {
-            throw new org.apache.maven.surefire.battery.assertion.BatteryTestFailedException( testObject.getClass().getName(), e );
+            throw new org.apache.maven.surefire.battery.assertion.BatteryTestFailedException(
+                testObject.getClass().getName(), e );
         }
         catch ( InvocationTargetException e )
         {
-            throw new org.apache.maven.surefire.battery.assertion.BatteryTestFailedException( testObject.getClass().getName(), e );
+            throw new org.apache.maven.surefire.battery.assertion.BatteryTestFailedException(
+                testObject.getClass().getName(), e );
         }
     }
 
@@ -293,11 +300,11 @@ public class JUnitBattery
         return testClass.getName();
         //return testClass.getPackage().getName();
     }
-    
+
     protected Constructor getTestConstructor( Class testClass )
         throws NoSuchMethodException
     {
-        Class[] params = { String.class };
+        Class[] params = {String.class};
 
         try
         {

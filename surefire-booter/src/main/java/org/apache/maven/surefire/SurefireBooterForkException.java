@@ -1,7 +1,7 @@
 package org.apache.maven.surefire;
 
 /*
- * Copyright 2001-2005 The Codehaus.
+ * Copyright 2001-2006 The Apache Software Foundation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,20 +16,21 @@ package org.apache.maven.surefire;
  * limitations under the License.
  */
 
-public class SurefireBooterForkException extends Exception
+public class SurefireBooterForkException
+    extends Exception
 {
-  public SurefireBooterForkException(String message)
-  {
-    super(message);
-  }
+    public SurefireBooterForkException( String message )
+    {
+        super( message );
+    }
 
-  public SurefireBooterForkException(Throwable cause)
-  {
-    super(cause);
-  }
+    public SurefireBooterForkException( Throwable cause )
+    {
+        super( cause );
+    }
 
-  public SurefireBooterForkException(String message, Throwable cause)
-  {
-    super(message, cause);
-  }
+    public SurefireBooterForkException( String message, Throwable cause )
+    {
+        super( message, cause );
+    }
 }

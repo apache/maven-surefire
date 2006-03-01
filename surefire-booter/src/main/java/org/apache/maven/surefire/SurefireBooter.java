@@ -1,7 +1,7 @@
 package org.apache.maven.surefire;
 
 /*
- * Copyright 2001-2005 The Codehaus.
+ * Copyright 2001-2006 The Apache Software Foundation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,7 +61,7 @@ public class SurefireBooter
     private List classpathUrls = new ArrayList();
 
     private String testSourceDirectory;
-    
+
     private String reportsDirectory;
 
     private String forkMode;
@@ -83,15 +83,15 @@ public class SurefireBooter
     private boolean debug;
 
     private boolean forceTestNG;
-    
+
     private String groups;
-    
+
     private String excludedGroups;
-    
+
     private int threadCount;
-    
+
     private boolean parallel;
-    
+
     private String surefireBooterJar;
 
     private String plexusUtilsJar;
@@ -156,17 +156,17 @@ public class SurefireBooter
             classpathUrls.add( path );
         }
     }
-    
+
     public void setClassPathUrls( List classpathUrls )
     {
         this.classpathUrls = classpathUrls;
     }
 
-    public void setTestSourceDirectory(String dirPath)
+    public void setTestSourceDirectory( String dirPath )
     {
         this.testSourceDirectory = dirPath;
     }
-    
+
     // ----------------------------------------------------------------------
     // Forking options
     // ----------------------------------------------------------------------
@@ -192,27 +192,27 @@ public class SurefireBooter
     {
         this.forceTestNG = forceTestNG;
     }
-    
-    public void setGroups(String groups)
+
+    public void setGroups( String groups )
     {
         this.groups = groups;
     }
-    
-    public void setExcludedGroups(String excludedGroups)
+
+    public void setExcludedGroups( String excludedGroups )
     {
         this.excludedGroups = excludedGroups;
     }
-    
-    public void setThreadCount(int threadCount)
+
+    public void setThreadCount( int threadCount )
     {
         this.threadCount = threadCount;
     }
-    
-    public void setParallel(boolean parallel)
+
+    public void setParallel( boolean parallel )
     {
         this.parallel = parallel;
     }
-    
+
     public void setSystemProperties( Properties systemProperties )
     {
         this.systemProperties = systemProperties;
@@ -273,12 +273,14 @@ public class SurefireBooter
         return result;
     }
 
-    private ClassLoader createClassLoader() throws Exception
+    private ClassLoader createClassLoader()
+        throws Exception
     {
         return createClassLoader( classpathUrls, childDelegation );
     }
 
-    static private ClassLoader createClassLoader( List classpathUrls, boolean childDelegation ) throws Exception
+    static private ClassLoader createClassLoader( List classpathUrls, boolean childDelegation )
+        throws Exception
     {
         ArrayList urls = new ArrayList();
 
@@ -297,7 +299,8 @@ public class SurefireBooter
 
         if ( childDelegation )
         {
-            IsolatedClassLoader surefireClassLoader = new IsolatedClassLoader( ClassLoader.getSystemClassLoader(), true );
+            IsolatedClassLoader surefireClassLoader =
+                new IsolatedClassLoader( ClassLoader.getSystemClassLoader(), true );
             for ( Iterator iter = urls.iterator(); iter.hasNext(); )
             {
                 URL url = (URL) iter.next();
@@ -336,23 +339,20 @@ public class SurefireBooter
         Class batteryExecutorClass = surefireClassLoader.loadClass( BATTERY_EXECUTOR );
 
         Object batteryExecutor = batteryExecutorClass.newInstance();
-        
-        Method run = batteryExecutorClass.getMethod( "run", new Class[]{List.class, 
-                List.class, ClassLoader.class, String.class, 
-                Boolean.class, String.class, String.class,
-                Integer.class, Boolean.class, String.class} );
-        
+
+        Method run = batteryExecutorClass.getMethod( "run", new Class[]{List.class, List.class, ClassLoader.class,
+            String.class, Boolean.class, String.class, String.class, Integer.class, Boolean.class, String.class} );
+
         ClassLoader oldContextClassLoader = Thread.currentThread() .getContextClassLoader();
-        
+
         Thread.currentThread().setContextClassLoader( surefireClassLoader );
-        
-        Boolean result = (Boolean) run.invoke( batteryExecutor, 
-                new Object[]{reports, batteries, surefireClassLoader, 
-                reportsDirectory, new Boolean(forceTestNG), groups, excludedGroups,
-                new Integer(threadCount), new Boolean(parallel), testSourceDirectory} );
-        
+
+        Boolean result = (Boolean) run.invoke( batteryExecutor, new Object[]{reports, batteries, surefireClassLoader,
+            reportsDirectory, new Boolean( forceTestNG ), groups, excludedGroups, new Integer( threadCount ),
+            new Boolean( parallel ), testSourceDirectory} );
+
         Thread.currentThread().setContextClassLoader( oldContextClassLoader );
-        
+
         return result.booleanValue();
     }
 
@@ -717,7 +717,6 @@ public class SurefireBooter
         }
 
         ClassLoader classLoader = createForkingClassLoader( basedir );
-
 
         Thread.currentThread().setContextClassLoader( classLoader );
 

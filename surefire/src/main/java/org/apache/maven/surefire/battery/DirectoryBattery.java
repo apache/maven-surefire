@@ -1,7 +1,7 @@
 package org.apache.maven.surefire.battery;
 
 /*
- * Copyright 2001-2005 The Codehaus.
+ * Copyright 2001-2006 The Apache Software Foundation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,9 +23,11 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DirectoryBattery extends AbstractBattery {
+public class DirectoryBattery
+    extends AbstractBattery
+{
 
-    private static final String FS = System.getProperty("file.separator");
+    private static final String FS = System.getProperty( "file.separator" );
 
     private File basedir;
 
@@ -33,7 +35,7 @@ public class DirectoryBattery extends AbstractBattery {
 
     private List excludes;
 
-    public DirectoryBattery(File basedir, ArrayList includes, ArrayList excludes)
+    public DirectoryBattery( File basedir, ArrayList includes, ArrayList excludes )
         throws Exception
     {
         this.basedir = basedir;
@@ -44,55 +46,64 @@ public class DirectoryBattery extends AbstractBattery {
 
         discoverBatteryClassNames();
     }
-    
+
     public void discoverBatteryClassNames()
         throws Exception
     {
-        String[] tests = collectTests(basedir, includes, excludes);
+        String[] tests = collectTests( basedir, includes, excludes );
 
-        if (tests == null) { return; }
+        if ( tests == null )
+        {
+            return;
+        }
 
-        for(int i = 0; i < tests.length; i++) {
+        for ( int i = 0; i < tests.length; i++ )
+        {
             String s = tests[i];
 
-            s = s.substring(0, s.indexOf("."));
+            s = s.substring( 0, s.indexOf( "." ) );
 
-            s = s.replace(FS.charAt(0), ".".charAt(0));
+            s = s.replace( FS.charAt( 0 ), ".".charAt( 0 ) );
 
-            addSubBatteryClassName(s);
+            addSubBatteryClassName( s );
         }
     }
 
-    public String[] collectTests(File basedir, List includes, List excludes)
+    public String[] collectTests( File basedir, List includes, List excludes )
         throws Exception
     {
-        if (!basedir.exists()) { return null; }
+        if ( !basedir.exists() )
+        {
+            return null;
+        }
 
         DirectoryScanner scanner = new DirectoryScanner();
 
-        scanner.setBasedir(basedir);
+        scanner.setBasedir( basedir );
 
-        if (includes != null) {
+        if ( includes != null )
+        {
             String[] incs = new String[includes.size()];
 
-            for(int i = 0; i < incs.length; i++) {
-                incs[i] = StringUtils.replace((String)includes.get(i), "java",
-                        "class");
+            for ( int i = 0; i < incs.length; i++ )
+            {
+                incs[i] = StringUtils.replace( (String) includes.get( i ), "java", "class" );
 
             }
 
-            scanner.setIncludes(incs);
+            scanner.setIncludes( incs );
         }
 
-        if (excludes != null) {
+        if ( excludes != null )
+        {
             String[] excls = new String[excludes.size()];
 
-            for(int i = 0; i < excls.length; i++) {
-                excls[i] = StringUtils.replace((String)excludes.get(i), "java",
-                        "class");
+            for ( int i = 0; i < excls.length; i++ )
+            {
+                excls[i] = StringUtils.replace( (String) excludes.get( i ), "java", "class" );
             }
 
-            scanner.setExcludes(excls);
+            scanner.setExcludes( excls );
         }
 
         scanner.scan();

@@ -1,5 +1,5 @@
 package org.apache.maven.surefire;/*
- * Copyright 2001-2005 The Codehaus.
+ * Copyright 2001-2006 The Apache Software Foundation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,15 +15,13 @@ package org.apache.maven.surefire;/*
  */
 
 /**
- *
- * 
  * @author <a href="mailto:jason@maven.org">Jason van Zyl</a>
- *
  * @version $Id$
  */
 public class User
 {
     private String firstName;
+
     private String lastName;
 
     public String getFirstName()
