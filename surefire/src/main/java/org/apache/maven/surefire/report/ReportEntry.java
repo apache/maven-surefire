@@ -35,26 +35,7 @@ public class ReportEntry
 
     public ReportEntry( Object source, String name, String group, String message )
     {
-        if ( source == null )
-        {
-            throw new NullPointerException( "source is null" );
-        }
-        if ( name == null )
-        {
-            throw new NullPointerException( "name is null" );
-        }
-        if ( message == null )
-        {
-            throw new NullPointerException( "message is null" );
-        }
-
-        this.source = source;
-
-        this.name = name;
-
-        this.group = group;
-
-        this.message = message;
+        this( source, name, group, message, null );
     }
 
     public ReportEntry( Object source, String name, String message, Throwable throwable )
@@ -75,10 +56,6 @@ public class ReportEntry
         if ( message == null )
         {
             throw new NullPointerException( "message is null" );
-        }
-        if ( throwable == null )
-        {
-            throw new NullPointerException( "throwable is null" );
         }
 
         this.source = source;

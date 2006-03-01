@@ -94,11 +94,7 @@ public class TestNGReporter
      */
     public void onTestSuccess( ITestResult result )
     {
-        String rawString = Surefire.getResources().getString( "testSuccessful" );
-
-        ReportEntry report = new ReportEntry( surefire, result.getName(), rawString );
-
-        reportManager.testSucceeded( report );
+        reportManager.testSucceeded( createReport( result, "testSuccessful" ) );
     }
 
     /* (non-Javadoc)
@@ -121,11 +117,13 @@ public class TestNGReporter
     */
     public void onTestSkipped( ITestResult result )
     {
-        String rawString = Surefire.getResources().getString( "testSkipped" );
+        // TODO: is this correct?
+        reportManager.testSucceeded( createReport( result, "testSkipped" ) );
+    }
 
-        ReportEntry report = new ReportEntry( surefire, result.getName(), rawString );
-
-        reportManager.testSucceeded( report );
+    private ReportEntry createReport( ITestResult result, String key )
+    {
+        return new ReportEntry( surefire, result.getName(), Surefire.getResources().getString( key ) );
     }
 
     /* (non-Javadoc)

@@ -56,6 +56,7 @@ public class BriefConsoleReporter
     {
         super.testError( report, stdOut, stdErr );
 
+        reportContent.append( "[surefire] " );
         appendOutput( report, "ERROR" );
     }
 
@@ -63,12 +64,13 @@ public class BriefConsoleReporter
     {
         super.testFailed( report, stdOut, stdErr );
 
+        reportContent.append( "[surefire] " );
         appendOutput( report, "FAILURE" );
     }
 
     private void appendOutput( ReportEntry report, String msg )
     {
-        reportContent.append( "[surefire] " ).append( report.getName() );
+        reportContent.append( report.getName() );
 
         long runTime = this.endTime - this.startTime;
 
@@ -86,11 +88,6 @@ public class BriefConsoleReporter
         failures = 0;
 
         completedCount = 0;
-    }
-
-    private void writeTimeElapsed( long sec )
-    {
-        reportContent.append( "  Time elapsed: " ).append( elapsedTimeAsString( sec ) ).append( " sec" );
     }
 
     /**

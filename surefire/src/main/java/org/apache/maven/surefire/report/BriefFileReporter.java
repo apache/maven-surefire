@@ -86,32 +86,25 @@ public class BriefFileReporter
     {
         super.testError( report, stdOut, stdErr );
 
-        reportContent.append( report.getName() );
-
-        long runTime = this.endTime - this.startTime;
-
-        writeTimeElapsed( runTime );
-
-        reportContent.append( "  <<< ERROR!" ).append( NL );
-
-        writeStdLogs( stdOut, stdErr );
-
-        reportContent.append( getStackTrace( report ) ).append( NL );
+        appendOutput( report, "ERROR" );
     }
 
     public void testFailed( ReportEntry report, String stdOut, String stdErr )
     {
         super.testFailed( report, stdOut, stdErr );
 
+        appendOutput( report, "FAILURE" );
+    }
+
+    private void appendOutput( ReportEntry report, String msg )
+    {
         reportContent.append( report.getName() );
 
         long runTime = this.endTime - this.startTime;
 
-        writeTimeElapsed( runTime );
+        reportContent.append( "  Time elapsed: " ).append( elapsedTimeAsString( runTime ) ).append( " sec" );
 
-        reportContent.append( "  <<< FAILURE!" ).append( NL );
-
-        writeStdLogs( stdOut, stdErr );
+        reportContent.append( "  <<< " ).append( msg ).append( "!" ).append( NL );
 
         reportContent.append( getStackTrace( report ) ).append( NL );
     }

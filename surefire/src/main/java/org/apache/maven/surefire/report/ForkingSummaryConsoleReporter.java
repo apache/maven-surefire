@@ -33,7 +33,7 @@ public class ForkingSummaryConsoleReporter
     {
         if ( failures > 0 || errors > 0 )
         {
-            println( "[surefire] " + report.getName() + " <<<<<<<< FAILURE !! " );
+            println( "[surefire] " + report.getName() + " <<< FAILURE! " );
         }
 
         completedCount = 0;

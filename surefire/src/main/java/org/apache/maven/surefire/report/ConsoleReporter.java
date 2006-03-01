@@ -31,7 +31,7 @@ public class ConsoleReporter
 
         if ( failures > 0 || errors > 0 )
         {
-            batterySummary.append( " <<<<<<<< FAILURE !! " );
+            batterySummary.append( " <<< FAILURE! " );
         }
 
         writer.println( batterySummary );
@@ -47,17 +47,17 @@ public class ConsoleReporter
 
     public void runAborted( ReportEntry report )
     {
-        writer.println( "RUN ABORTED" );
-        writer.println( report.getSource().getClass().getName() );
-        writer.println( report.getName() );
-        writer.println( report.getMessage() );
-        writer.println( report.getThrowable().getMessage() );
-        writer.flush();
+        printAbortionError( "RUN ABORTED", report );
     }
 
     public void batteryAborted( ReportEntry report )
     {
-        writer.println( "BATTERY ABORTED" );
+        printAbortionError( "BATTERY ABORTED", report );
+    }
+
+    private void printAbortionError( String msg, ReportEntry report )
+    {
+        writer.println( msg );
         writer.println( report.getSource().getClass().getName() );
         writer.println( report.getName() );
         writer.println( report.getMessage() );

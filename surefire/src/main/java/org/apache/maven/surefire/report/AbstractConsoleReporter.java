@@ -39,14 +39,6 @@ public abstract class AbstractConsoleReporter
         writer = new PrintWriter( new OutputStreamWriter( new BufferedOutputStream( System.out, BUFFER_SIZE ) ) );
     }
 
-    public void batteryStarting( ReportEntry report )
-    {
-        batteryStartTime = System.currentTimeMillis();
-
-        writer.println( "[surefire] Running " + report.getName() );
-        writer.flush();
-    }
-
     public void writeMessage( String message )
     {
         writer.println( message );
@@ -59,6 +51,14 @@ public abstract class AbstractConsoleReporter
         writer.println( "-------------------------------------------------------" );
         writer.println( " T E S T S" );
         writer.println( "-------------------------------------------------------" );
+        writer.flush();
+    }
+
+    public void batteryStarting( ReportEntry report )
+    {
+        batteryStartTime = System.currentTimeMillis();
+
+        writer.println( "[surefire] Running " + report.getName() );
         writer.flush();
     }
 

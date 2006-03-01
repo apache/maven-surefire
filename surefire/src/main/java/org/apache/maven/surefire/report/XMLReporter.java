@@ -185,19 +185,21 @@ public class XMLReporter
 
         element.setValue( stackTrace );
 
-        if ( stdOut != null && stdOut.trim().length() > 0 )
-        {
-            createElement( testCase, "system-out" ).setValue( stdOut );
-        }
+        addOutputStreamElement( stdOut, "system-out" );
 
-        if ( stdErr != null && stdErr.trim().length() > 0 )
-        {
-            createElement( testCase, "system-err" ).setValue( stdErr );
-        }
+        addOutputStreamElement( stdErr, "system-err" );
 
         long runTime = endTime - startTime;
 
         testCase.setAttribute( "time", elapsedTimeAsString( runTime ) );
+    }
+
+    private void addOutputStreamElement( String stdOut, String name )
+    {
+        if ( stdOut != null && stdOut.trim().length() > 0 )
+        {
+            createElement( testCase, name ).setValue( stdOut );
+        }
     }
 
     public void dispose()
