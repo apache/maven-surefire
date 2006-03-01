@@ -26,7 +26,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.Enumeration;
 import java.util.Properties;
@@ -76,13 +75,7 @@ public class XMLReporter
 
         writer.write( "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n" );
 
-        testSuite = new Xpp3Dom( "testsuite" );
-
-        testSuite.setAttribute( "name", report.getName() );
-        if ( report.getGroup() != null )
-        {
-            testSuite.setAttribute( "group", report.getGroup() );
-        }
+        testSuite = createTestElement( new Xpp3Dom( "testsuite" ), report.getName(), report );
         showProperties();
     }
 
@@ -123,13 +116,17 @@ public class XMLReporter
             reportName = report.getName();
         }
 
-        testCase = createElement( testSuite, "testcase" );
+        this.testCase = createTestElement( createElement( testSuite, "testcase" ), reportName, report );
+    }
 
-        testCase.setAttribute( "name", reportName );
+    private Xpp3Dom createTestElement( Xpp3Dom element, String reportName, ReportEntry report )
+    {
+        element.setAttribute( "name", reportName );
         if ( report.getGroup() != null )
         {
-            testCase.setAttribute( "group", report.getGroup() );
+            element.setAttribute( "group", report.getGroup() );
         }
+        return element;
     }
 
     public void testSucceeded( ReportEntry report )
@@ -145,22 +142,19 @@ public class XMLReporter
     {
         super.testError( report, stdOut, stdErr );
 
-        Xpp3Dom element = createElement( testCase, "error" );
-
-        writeTestProblems( report, stdOut, stdErr, element );
+        writeTestProblems( report, stdOut, stdErr, "error" );
     }
 
     public void testFailed( ReportEntry report, String stdOut, String stdErr )
     {
         super.testFailed( report, stdOut, stdErr );
 
-        Xpp3Dom element = createElement( testCase, "failure" );
-
-        writeTestProblems( report, stdOut, stdErr, element );
+        writeTestProblems( report, stdOut, stdErr, "failure" );
     }
 
-    private void writeTestProblems( ReportEntry report, String stdOut, String stdErr, Xpp3Dom element )
+    private void writeTestProblems( ReportEntry report, String stdOut, String stdErr, String name )
     {
+        Xpp3Dom element = createElement( testCase, name );
 
         String stackTrace = getStackTrace( report );
 
@@ -202,15 +196,6 @@ public class XMLReporter
         }
     }
 
-    public void dispose()
-    {
-        errors = 0;
-
-        failures = 0;
-
-        completedCount = 0;
-    }
-
     private Xpp3Dom createElement( Xpp3Dom element, String name )
     {
         Xpp3Dom component = new Xpp3Dom( name );
@@ -218,23 +203,6 @@ public class XMLReporter
         element.addChild( component );
 
         return component;
-    }
-
-    /**
-     * Returns stacktrace as String.
-     *
-     * @param report ReportEntry object.
-     * @return stacktrace as string.
-     */
-    private String getStackTrace( ReportEntry report )
-    {
-        StringWriter writer = new StringWriter();
-
-        report.getThrowable().printStackTrace( new PrintWriter( writer ) );
-
-        writer.flush();
-
-        return writer.toString();
     }
 
     /**

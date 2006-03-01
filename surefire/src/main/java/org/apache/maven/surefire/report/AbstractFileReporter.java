@@ -16,50 +16,43 @@ package org.apache.maven.surefire.report;
  * limitations under the License.
  */
 
-import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 
 /**
- * Base class for console reporters.
- * <p/>
- * // TODO: what about stream closing?
+ * Base class for file reporters.
  *
  * @author <a href="mailto:brett@apache.org">Brett Porter</a>
  */
-public abstract class AbstractConsoleReporter
+public abstract class AbstractFileReporter
     extends AbstractReporter
 {
-    protected static final int BUFFER_SIZE = 4096;
+    protected StringBuffer reportContent;
 
     protected PrintWriter writer;
-
-    protected AbstractConsoleReporter()
-    {
-        writer = new PrintWriter( new OutputStreamWriter( new BufferedOutputStream( System.out, BUFFER_SIZE ) ) );
-    }
 
     public void batteryStarting( ReportEntry report )
         throws IOException
     {
         super.batteryStarting( report );
 
-        writeMessage( "Running " + report.getName() );
+        reportContent = new StringBuffer();
+
+        File reportFile = new File( getReportsDirectory(), report.getName() + ".txt" );
+
+        File reportDir = reportFile.getParentFile();
+
+        reportDir.mkdirs();
+
+        writer = new PrintWriter( new FileWriter( reportFile ) );
+
+        writer.println( "-------------------------------------------------------------------------------" );
+
+        writer.println( "Battery: " + report.getName() );
+
+        writer.println( "-------------------------------------------------------------------------------" );
     }
 
-    public void writeMessage( String message )
-    {
-        writer.println( "[surefire] " + message );
-        writer.flush();
-    }
-
-    public void runStarting( int testCount )
-    {
-        writer.println();
-        writer.println( "-------------------------------------------------------" );
-        writer.println( " T E S T S" );
-        writer.println( "-------------------------------------------------------" );
-        writer.flush();
-    }
 }

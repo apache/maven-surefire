@@ -763,41 +763,9 @@ public class SurefireBooter
 
             batteryParms[0] = new File( batteryParts[1] );
 
-            String stringList = batteryParts[2];
+            batteryParms[1] = processStringList( batteryParts[2] );
 
-            if ( stringList.startsWith( "[" ) && stringList.endsWith( "]" ) )
-            {
-                stringList = stringList.substring( 1, stringList.length() - 1 );
-            }
-
-            ArrayList includesList = new ArrayList();
-
-            String[] stringArray = stringList.split( "," );
-
-            for ( int i = 0; i < stringArray.length; i++ )
-            {
-                includesList.add( stringArray[i].trim() );
-            }
-
-            batteryParms[1] = includesList;
-
-            stringList = batteryParts[3];
-
-            ArrayList excludesList = new ArrayList();
-
-            if ( stringList.startsWith( "[" ) && stringList.endsWith( "]" ) )
-            {
-                stringList = stringList.substring( 1, stringList.length() - 1 );
-            }
-
-            stringArray = stringList.split( "," );
-
-            for ( int i = 0; i < stringArray.length; i++ )
-            {
-                excludesList.add( stringArray[i].trim() );
-            }
-
-            batteryParms[2] = excludesList;
+            batteryParms[2] = processStringList( batteryParts[3] );
         }
         else
         {
@@ -842,6 +810,25 @@ public class SurefireBooter
         System.exit( returnCode );
     }
 
+    private static List processStringList( String stringList )
+    {
+        String sl = stringList;
+
+        if ( sl.startsWith( "[" ) && sl.endsWith( "]" ) )
+        {
+            sl = sl.substring( 1, sl.length() - 1 );
+        }
+
+        List list = new ArrayList();
+
+        String[] stringArray = sl.split( "," );
+
+        for ( int i = 0; i < stringArray.length; i++ )
+        {
+            list.add( stringArray[i].trim() );
+        }
+        return list;
+    }
 
     private static void logClassLoader( ClassLoader classLoader )
     {

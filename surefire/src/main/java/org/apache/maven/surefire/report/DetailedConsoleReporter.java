@@ -16,9 +16,6 @@ package org.apache.maven.surefire.report;
  * limitations under the License.
  */
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-
 /**
  * Detailed console reporter.
  *
@@ -26,30 +23,8 @@ import java.io.StringWriter;
  * @version $Id$
  */
 public class DetailedConsoleReporter
-    extends AbstractConsoleReporter
+    extends BriefConsoleReporter
 {
-    private StringBuffer reportContent;
-
-    public void batteryStarting( ReportEntry report )
-    {
-        super.batteryStarting( report );
-
-        reportContent = new StringBuffer();
-    }
-
-    public void batteryCompleted( ReportEntry report )
-    {
-        StringBuffer batterySummary = getBatterySummary();
-        batterySummary.append( NL );
-        batterySummary.append( "[surefire] " ).append( NL );
-
-        reportContent = batterySummary.append( reportContent );
-
-        writer.println( batterySummary );
-
-        writer.flush();
-    }
-
     public void testStarting( ReportEntry report )
     {
         super.testStarting( report );
@@ -61,63 +36,7 @@ public class DetailedConsoleReporter
     {
         super.testSucceeded( report );
 
-        long runTime = this.endTime - this.startTime;
-
-        reportContent.append( "  Time elapsed: " ).append( elapsedTimeAsString( runTime ) ).append( " sec" );
-
+        reportContent.append( getElapsedTimeSummary() );
         reportContent.append( NL );
-    }
-
-    public void testError( ReportEntry report, String stdOut, String stdErr )
-    {
-        super.testError( report, stdOut, stdErr );
-
-        appendOutput( report, "ERROR" );
-    }
-
-    public void testFailed( ReportEntry report, String stdOut, String stdErr )
-    {
-        super.testFailed( report, stdOut, stdErr );
-
-        appendOutput( report, "FAILURE" );
-    }
-
-    private void appendOutput( ReportEntry report, String msg )
-    {
-        reportContent.append( report.getName() );
-
-        long runTime = this.endTime - this.startTime;
-
-        reportContent.append( "  Time elapsed: " ).append( elapsedTimeAsString( runTime ) ).append( " sec" );
-
-        reportContent.append( "  <<< " ).append( msg ).append( "!" ).append( NL );
-
-        reportContent.append( getStackTrace( report ) ).append( NL );
-    }
-
-    public void dispose()
-    {
-        errors = 0;
-
-        failures = 0;
-
-        completedCount = 0;
-    }
-
-    /**
-     * Returns stacktrace as String.
-     *
-     * @param report ReportEntry object.
-     * @return stacktrace as string.
-     */
-    private String getStackTrace( ReportEntry report )
-    {
-        StringWriter writer = new StringWriter();
-
-        report.getThrowable().printStackTrace( new PrintWriter( writer ) );
-
-        writer.flush();
-
-        return writer.toString();
     }
 }

@@ -66,16 +66,6 @@ public class Surefire
 
     private boolean parallel;
 
-    public Surefire()
-    {
-        super();
-    }
-
-    public static ResourceBundle getResources()
-    {
-        return resources;
-    }
-
     public boolean run( List reports, List batteryHolders, String reportsDirectory )
         throws Exception
     {
@@ -171,7 +161,7 @@ public class Surefire
                         e.printStackTrace();
 
                         ReportEntry report = new ReportEntry( e, "org.apache.maven.surefire.Runner",
-                                                              getResources().getString( "bigProblems" ), e );
+                                                              getResourceString( "bigProblems" ), e );
 
                         reporterManager.batteryAborted( report );
                     }
@@ -277,7 +267,7 @@ public class Surefire
                             e.printStackTrace();
 
                             ReportEntry report = new ReportEntry( e, "org.apache.maven.surefire.SurefireRunner",
-                                                                  getResources().getString( "bigProblems" ), e );
+                                                                  getResourceString( "bigProblems" ), e );
 
                             reporterManager.batteryAborted( report );
                         }
@@ -309,8 +299,8 @@ public class Surefire
         {
             ex.printStackTrace();
 
-            ReportEntry report = new ReportEntry( ex, "org.apache.maven.surefire.Runner", getResources()
-                .getString( "bigProblems" ), ex );
+            ReportEntry report =
+                new ReportEntry( ex, "org.apache.maven.surefire.Runner", getResourceString( "bigProblems" ), ex );
 
             reporterManager.runAborted( report );
         }
@@ -355,7 +345,7 @@ public class Surefire
     {
         try
         {
-            String rawString = getResources().getString( "suiteExecutionStarting" );
+            String rawString = getResourceString( "suiteExecutionStarting" );
 
             ReportEntry report = new ReportEntry( this, battery.getBatteryName(), battery.getBatteryName(), rawString );
 
@@ -365,7 +355,7 @@ public class Surefire
             {
                 battery.execute( reportManager );
 
-                rawString = getResources().getString( "suiteCompletedNormally" );
+                rawString = getResourceString( "suiteCompletedNormally" );
 
                 report = new ReportEntry( this, battery.getBatteryName(), battery.getBatteryName(), rawString );
 
@@ -375,7 +365,7 @@ public class Surefire
             {
                 e.printStackTrace();
 
-                rawString = getResources().getString( "executeException" );
+                rawString = getResourceString( "executeException" );
 
                 report = new ReportEntry( this, battery.getBatteryName(), battery.getBatteryName(), rawString, e );
 
@@ -386,11 +376,10 @@ public class Surefire
 
             reportManager.dispose();
         }
-
         catch ( Throwable ex )
         {
-            ReportEntry report = new ReportEntry( ex, "org.apache.maven.surefire.Runner", getResources()
-                .getString( "bigProblems" ), ex );
+            ReportEntry report =
+                new ReportEntry( ex, "org.apache.maven.surefire.Runner", getResourceString( "bigProblems" ), ex );
 
             reportManager.runAborted( report );
         }
@@ -460,5 +449,10 @@ public class Surefire
         }
 
         return reports;
+    }
+
+    public static String getResourceString( String key )
+    {
+        return resources.getString( key );
     }
 }

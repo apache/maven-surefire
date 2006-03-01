@@ -34,15 +34,7 @@ public class ConsoleReporter
             batterySummary.append( " <<< FAILURE! " );
         }
 
-        writer.println( batterySummary );
-
-        writer.flush();
-
-        completedCount = 0;
-
-        errors = 0;
-
-        failures = 0;
+        writeMessage( batterySummary.toString() );
     }
 
     public void runAborted( ReportEntry report )

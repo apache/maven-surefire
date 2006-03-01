@@ -16,8 +16,7 @@ package org.apache.maven.surefire.report;
  * limitations under the License.
  */
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import java.io.IOException;
 
 /**
  * Brief format console reporter.
@@ -29,9 +28,10 @@ import java.io.StringWriter;
 public class BriefConsoleReporter
     extends AbstractConsoleReporter
 {
-    private StringBuffer reportContent;
+    protected StringBuffer reportContent;
 
     public void batteryStarting( ReportEntry report )
+        throws IOException
     {
         super.batteryStarting( report );
 
@@ -43,67 +43,30 @@ public class BriefConsoleReporter
         StringBuffer batterySummary = getBatterySummary();
 
         batterySummary.append( NL );
-        batterySummary.append( "[surefire] " ).append( NL );
+        batterySummary.append( NL );
 
-        reportContent = batterySummary.append( reportContent );
+        batterySummary.append( reportContent );
 
-        writer.println( batterySummary );
-
-        writer.flush();
+        writeMessage( batterySummary.toString() );
     }
 
     public void testError( ReportEntry report, String stdOut, String stdErr )
     {
         super.testError( report, stdOut, stdErr );
 
-        reportContent.append( "[surefire] " );
         appendOutput( report, "ERROR" );
+    }
+
+    private void appendOutput( ReportEntry report, String msg )
+    {
+        reportContent.append( "[surefire] " );
+        reportContent.append( getOutput( report, msg ) );
     }
 
     public void testFailed( ReportEntry report, String stdOut, String stdErr )
     {
         super.testFailed( report, stdOut, stdErr );
 
-        reportContent.append( "[surefire] " );
         appendOutput( report, "FAILURE" );
-    }
-
-    private void appendOutput( ReportEntry report, String msg )
-    {
-        reportContent.append( report.getName() );
-
-        long runTime = this.endTime - this.startTime;
-
-        reportContent.append( "  Time elapsed: " ).append( elapsedTimeAsString( runTime ) ).append( " sec" );
-
-        reportContent.append( "  <<< " ).append( msg ).append( "!" ).append( NL );
-
-        reportContent.append( getStackTrace( report ) ).append( NL );
-    }
-
-    public void dispose()
-    {
-        errors = 0;
-
-        failures = 0;
-
-        completedCount = 0;
-    }
-
-    /**
-     * Returns stacktrace as String.
-     *
-     * @param report ReportEntry object.
-     * @return stacktrace as string.
-     */
-    private String getStackTrace( ReportEntry report )
-    {
-        StringWriter writer = new StringWriter();
-
-        report.getThrowable().printStackTrace( new PrintWriter( writer ) );
-
-        writer.flush();
-
-        return writer.toString();
     }
 }

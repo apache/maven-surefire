@@ -17,6 +17,8 @@ package org.apache.maven.surefire.report;
  */
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.text.NumberFormat;
 
 /**
@@ -43,6 +45,8 @@ public abstract class AbstractReporter
     protected static final String NL = System.getProperty( "line.separator" );
 
     private static final int MS_PER_SEC = 1000;
+
+    private long batteryStartTime;
 
     public void setReportsDirectory( String reportsDirectory )
     {
@@ -81,6 +85,7 @@ public abstract class AbstractReporter
     public void batteryStarting( ReportEntry report )
         throws IOException
     {
+        batteryStartTime = System.currentTimeMillis();
     }
 
     public void batteryCompleted( ReportEntry report )
@@ -102,25 +107,26 @@ public abstract class AbstractReporter
 
     public void testSucceeded( ReportEntry report )
     {
-        ++completedCount;
-
-        endTime = System.currentTimeMillis();
+        endTest();
     }
 
     public void testError( ReportEntry report, String stdOut, String stdErr )
     {
-        ++completedCount;
-
         ++errors;
 
-        endTime = System.currentTimeMillis();
+        endTest();
     }
 
     public void testFailed( ReportEntry report, String stdOut, String stdErr )
     {
-        ++completedCount;
-
         ++failures;
+
+        endTest();
+    }
+
+    private void endTest()
+    {
+        ++completedCount;
 
         endTime = System.currentTimeMillis();
     }
@@ -150,6 +156,11 @@ public abstract class AbstractReporter
 
     public void dispose()
     {
+        errors = 0;
+
+        failures = 0;
+
+        completedCount = 0;
     }
 
     // ----------------------------------------------------------------------
@@ -159,5 +170,63 @@ public abstract class AbstractReporter
     protected String elapsedTimeAsString( long runTime )
     {
         return numberFormat.format( (double) runTime / MS_PER_SEC );
+    }
+
+    /**
+     * Returns stacktrace as String.
+     *
+     * @param report ReportEntry object.
+     * @return stacktrace as string.
+     */
+    protected static String getStackTrace( ReportEntry report )
+    {
+        StringWriter writer = new StringWriter();
+
+        report.getThrowable().printStackTrace( new PrintWriter( writer ) );
+
+        writer.flush();
+
+        return writer.toString();
+    }
+
+    protected StringBuffer getBatterySummary()
+    {
+        StringBuffer batterySummary = new StringBuffer();
+
+        batterySummary.append( "Tests run: " );
+        batterySummary.append( completedCount );
+        batterySummary.append( ", Failures: " );
+        batterySummary.append( failures );
+        batterySummary.append( ", Errors: " );
+        batterySummary.append( errors );
+        batterySummary.append( ", Time elapsed: " );
+        batterySummary.append( elapsedTimeAsString( System.currentTimeMillis() - batteryStartTime ) );
+        batterySummary.append( " sec" );
+        return batterySummary;
+    }
+
+    protected String getElapsedTimeSummary()
+    {
+        StringBuffer reportContent = new StringBuffer();
+        long runTime = this.endTime - this.startTime;
+
+        reportContent.append( "  Time elapsed: " ).append( elapsedTimeAsString( runTime ) ).append( " sec" );
+
+        return reportContent.toString();
+    }
+
+    protected String getOutput( ReportEntry report, String msg )
+    {
+        StringBuffer buf = new StringBuffer();
+
+        buf.append( report.getName() );
+
+        buf.append( getElapsedTimeSummary() );
+
+        buf.append( "  <<< " ).append( msg ).append( "!" ).append( NL );
+
+        buf.append( getStackTrace( report ) ).append( NL );
+
+        return buf.toString();
     }
 }

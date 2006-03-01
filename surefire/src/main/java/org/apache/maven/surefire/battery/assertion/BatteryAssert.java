@@ -19,12 +19,17 @@ package org.apache.maven.surefire.battery.assertion;
 import junit.framework.TestCase;
 import org.apache.maven.surefire.Surefire;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+
+// TODO: get rid of TestCase?
+
 public class BatteryAssert
     extends TestCase
 {
     public static void verify( boolean condition )
     {
-        String detailMsg = Surefire.getResources().getString( "conditionFalse" );
+        String detailMsg = Surefire.getResourceString( "conditionFalse" );
 
         verify( condition, detailMsg );
     }
@@ -334,5 +339,16 @@ public class BatteryAssert
         }
 
         return formatted + "expected:<" + expected + "> but was:<" + actual + ">";
+    }
+
+    public static boolean isValidMethod( Method m )
+    {
+        boolean isInstanceMethod = !Modifier.isStatic( m.getModifiers() );
+
+        boolean returnsVoid = m.getReturnType().equals( void.class );
+
+        boolean hasNoParams = m.getParameterTypes().length == 0;
+
+        return isInstanceMethod && returnsVoid && hasNoParams;
     }
 }

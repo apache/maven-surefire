@@ -23,7 +23,6 @@ import org.apache.maven.surefire.report.ReporterManager;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -98,7 +97,7 @@ public abstract class AbstractBattery
         catch ( Exception e )
         {
             // Treat any exception from setUpFixture as a failure of the test.
-            String rawString = Surefire.getResources().getString( "setupFixtureFailed" );
+            String rawString = Surefire.getResourceString( "setupFixtureFailed" );
 
             MessageFormat msgFmt = new MessageFormat( rawString );
 
@@ -168,7 +167,7 @@ public abstract class AbstractBattery
         {
 
             // Treat any exception from tearDownFixture as a failure of the test.
-            String rawString = Surefire.getResources().getString( "cleanupFixtureFailed" );
+            String rawString = Surefire.getResourceString( "cleanupFixtureFailed" );
 
             MessageFormat msgFmt = new MessageFormat( rawString );
 
@@ -250,15 +249,7 @@ public abstract class AbstractBattery
             {
                 Method m = methods[i];
 
-                Class[] paramTypes = m.getParameterTypes();
-
-                boolean isInstanceMethod = !Modifier.isStatic( m.getModifiers() );
-
-                boolean returnsVoid = m.getReturnType().equals( void.class );
-
-                boolean hasNoParams = paramTypes.length == 0;
-
-                if ( isInstanceMethod && returnsVoid && hasNoParams )
+                if ( isValidMethod( m ) )
                 {
                     String simpleName = m.getName();
 

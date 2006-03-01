@@ -27,19 +27,14 @@ public class SummaryConsoleReporter
 {
     public void batteryStarting( ReportEntry report )
     {
+        // TODO: why empty? Summary?
     }
 
     public void batteryCompleted( ReportEntry report )
     {
         if ( failures > 0 || errors > 0 )
         {
-            writeMessage( "[surefire] " + report.getName() + " <<< FAILURE! " );
+            writeMessage( report.getName() + " <<< FAILURE! " );
         }
-
-        completedCount = 0;
-
-        errors = 0;
-
-        failures = 0;
     }
 }

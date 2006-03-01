@@ -16,12 +16,6 @@ package org.apache.maven.surefire.report;
  * limitations under the License.
  */
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-
 /**
  * Brief format file reporter.
  *
@@ -29,53 +23,18 @@ import java.io.StringWriter;
  * @version $Id$
  */
 public class BriefFileReporter
-    extends AbstractReporter
+    extends AbstractFileReporter
 {
-    private PrintWriter writer;
-
-    protected StringBuffer reportContent;
-
-    private long batteryStartTime;
-
-    public void batteryStarting( ReportEntry report )
-        throws IOException
-    {
-        batteryStartTime = System.currentTimeMillis();
-
-        reportContent = new StringBuffer();
-
-        File reportFile = new File( getReportsDirectory(), report.getName() + ".txt" );
-
-        File reportDir = reportFile.getParentFile();
-
-        reportDir.mkdirs();
-
-        writer = new PrintWriter( new FileWriter( reportFile ) );
-
-        writer.println( "-------------------------------------------------------------------------------" );
-
-        writer.println( "Battery: " + report.getName() );
-
-        writer.println( "-------------------------------------------------------------------------------" );
-    }
-
     public void batteryCompleted( ReportEntry report )
     {
-        long runTime = System.currentTimeMillis() - this.batteryStartTime;
+        StringBuffer batterySummary = getBatterySummary();
 
-        StringBuffer batterySummary = new StringBuffer();
-
-        batterySummary.append( "Tests run: " ).append( String.valueOf( this.getNbTests() ) );
-        batterySummary.append( ", Failures: " ).append( String.valueOf( this.getNbFailures() ) );
-        batterySummary.append( ", Errors: " ).append( String.valueOf( this.getNbErrors() ) );
-        batterySummary.append( ", Time elapsed: " ).append( elapsedTimeAsString( runTime ) );
-        batterySummary.append( " sec" );
         batterySummary.append( NL );
         batterySummary.append( NL );
 
         reportContent = batterySummary.append( reportContent );
 
-        writer.println( reportContent.toString() );
+        writer.println( batterySummary );
 
         writer.flush();
 
@@ -86,82 +45,13 @@ public class BriefFileReporter
     {
         super.testError( report, stdOut, stdErr );
 
-        appendOutput( report, "ERROR" );
+        reportContent.append( getOutput( report, "ERROR" ) );
     }
 
     public void testFailed( ReportEntry report, String stdOut, String stdErr )
     {
         super.testFailed( report, stdOut, stdErr );
 
-        appendOutput( report, "FAILURE" );
-    }
-
-    private void appendOutput( ReportEntry report, String msg )
-    {
-        reportContent.append( report.getName() );
-
-        long runTime = this.endTime - this.startTime;
-
-        reportContent.append( "  Time elapsed: " ).append( elapsedTimeAsString( runTime ) ).append( " sec" );
-
-        reportContent.append( "  <<< " ).append( msg ).append( "!" ).append( NL );
-
-        reportContent.append( getStackTrace( report ) ).append( NL );
-    }
-
-    public void dispose()
-    {
-        errors = 0;
-
-        failures = 0;
-
-        completedCount = 0;
-    }
-
-    protected void writeTimeElapsed( long sec )
-    {
-        reportContent.append( "  Time elapsed: " ).append( elapsedTimeAsString( sec ) ).append( " sec" );
-    }
-
-    protected void writeStdLogs( String stdOut, String stdErr )
-    {
-        reportContent.append( NL );
-
-        reportContent.append( "[ stdout ] ---------------------------------------------------------------" );
-
-        reportContent.append( NL );
-
-        reportContent.append( stdOut ).append( NL );
-
-        reportContent.append( NL );
-
-        reportContent.append( "[ stderr ] ---------------------------------------------------------------" );
-
-        reportContent.append( NL );
-
-        reportContent.append( stdErr ).append( NL );
-
-        reportContent.append( NL );
-
-        reportContent.append( "[ stacktrace ] -----------------------------------------------------------" );
-
-        reportContent.append( NL );
-    }
-
-    /**
-     * Returns stacktrace as String.
-     *
-     * @param report ReportEntry object.
-     * @return stacktrace as string.
-     */
-    protected String getStackTrace( ReportEntry report )
-    {
-        StringWriter writer = new StringWriter();
-
-        report.getThrowable().printStackTrace( new PrintWriter( writer ) );
-
-        writer.flush();
-
-        return writer.toString();
+        reportContent.append( getOutput( report, "FAILURE" ) );
     }
 }

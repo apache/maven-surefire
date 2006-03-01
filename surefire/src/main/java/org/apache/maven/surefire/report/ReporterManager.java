@@ -103,7 +103,7 @@ public class ReporterManager
     {
         writeMessage( "" );
         writeMessage( "Results :" );
-        writeMessage( "[surefire] Tests run: " + completedCount + ", Failures: " + failures + ", Errors: " + errors );
+        writeMessage( "Tests run: " + completedCount + ", Failures: " + failures + ", Errors: " + errors );
         writeMessage( "" );
     }
 
@@ -414,7 +414,7 @@ public class ReporterManager
 
     private void handleReporterException( String reporterMethod, Exception e )
     {
-        String reporterThrewException = Surefire.getResources().getString( "reporterThrew" );
+        String reporterThrewException = Surefire.getResourceString( "reporterThrew" );
 
         MessageFormat msgFmt = new MessageFormat( reporterThrewException );
 
@@ -426,5 +426,4 @@ public class ReporterManager
 
         e.printStackTrace( System.err );
     }
-
 }

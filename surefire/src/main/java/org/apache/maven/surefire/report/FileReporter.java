@@ -36,10 +36,7 @@ public class FileReporter
     {
         super.testSucceeded( report );
 
-        long runTime = this.endTime - this.startTime;
-
-        writeTimeElapsed( runTime );
-
+        reportContent.append( getElapsedTimeSummary() );
         reportContent.append( NL );
     }
 }

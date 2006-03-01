@@ -79,7 +79,7 @@ public class TestNGReporter
     */
     public void onTestStart( ITestResult result )
     {
-        String rawString = Surefire.getResources().getString( "testStarting" );
+        String rawString = Surefire.getResourceString( "testStarting" );
         String group = groupString( result.getMethod().getGroups(), result.getTestClass().getName() );
         ReportEntry report = new ReportEntry( surefire, result.getTestClass().getName() + "#" +
             result.getMethod().getMethodName(), group, rawString );
@@ -102,7 +102,7 @@ public class TestNGReporter
      */
     public void onTestFailure( ITestResult result )
     {
-        String rawString = Surefire.getResources().getString( "executeException" );
+        String rawString = Surefire.getResourceString( "executeException" );
 
         // TODO: almost certainly not correct: result.getMethod().getExtraOutput().getParameterOutput()
         ReportEntry report = new ReportEntry( surefire, result.getName(),
@@ -123,7 +123,7 @@ public class TestNGReporter
 
     private ReportEntry createReport( ITestResult result, String key )
     {
-        return new ReportEntry( surefire, result.getName(), Surefire.getResources().getString( key ) );
+        return new ReportEntry( surefire, result.getName(), Surefire.getResourceString( key ) );
     }
 
     /* (non-Javadoc)
@@ -131,7 +131,7 @@ public class TestNGReporter
      */
     public void onTestFailedButWithinSuccessPercentage( ITestResult result )
     {
-        String rawString = Surefire.getResources().getString( "executeException" );
+        String rawString = Surefire.getResourceString( "executeException" );
 
         // TODO: almost certainly not correct: result.getMethod().getExtraOutput().getParameterOutput()
         ReportEntry report = new ReportEntry( surefire, result.getName(),
@@ -145,7 +145,7 @@ public class TestNGReporter
      */
     public void onStart( ITestContext context )
     {
-        String rawString = Surefire.getResources().getString( "suiteExecutionStarting" );
+        String rawString = Surefire.getResourceString( "suiteExecutionStarting" );
 
         String group = groupString( context.getIncludedGroups(), context.getName() );
 
@@ -159,7 +159,7 @@ public class TestNGReporter
     */
     public void onFinish( ITestContext context )
     {
-        String rawString = Surefire.getResources().getString( "suiteCompletedNormally" );
+        String rawString = Surefire.getResourceString( "suiteCompletedNormally" );
 
         ReportEntry report =
             new ReportEntry( surefire, context.getName(), groupString( context.getIncludedGroups(), null ), rawString );

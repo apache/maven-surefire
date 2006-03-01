@@ -27,19 +27,15 @@ public class ForkingSummaryConsoleReporter
 {
     public void batteryStarting( ReportEntry report )
     {
+        // TODO: why empty? Summary?
     }
 
     public void batteryCompleted( ReportEntry report )
     {
         if ( failures > 0 || errors > 0 )
         {
-            println( "[surefire] " + report.getName() + " <<< FAILURE! " );
+            // TODO: fix this use of writeMessage, it won't prefix
+            writeMessage( ForkingReport.FORKING_PREFIX_STANDARD + report.getName() + " <<< FAILURE! " );
         }
-
-        completedCount = 0;
-
-        errors = 0;
-
-        failures = 0;
     }
 }

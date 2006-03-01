@@ -16,10 +16,10 @@ package org.apache.maven.surefire.battery;
  * limitations under the License.
  */
 
+import org.apache.maven.surefire.battery.assertion.BatteryAssert;
 import org.apache.maven.surefire.report.ReporterManager;
 
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,7 +32,6 @@ import java.util.List;
 public class TestNGBattery
     implements Battery
 {
-
     protected List testMethods;
 
     protected List subBatteryClassNames;
@@ -90,15 +89,8 @@ public class TestNGBattery
             {
                 Method m = methods[i];
 
-                Class[] paramTypes = m.getParameterTypes();
-
-                boolean isInstanceMethod = !Modifier.isStatic( m.getModifiers() );
-
-                boolean returnsVoid = m.getReturnType().equals( void.class );
-
-                boolean hasNoParams = paramTypes.length == 0;
-
-                if ( isInstanceMethod && returnsVoid && hasNoParams )
+                // TODO: better location
+                if ( BatteryAssert.isValidMethod( m ) )
                 {
                     String simpleName = m.getName();
 

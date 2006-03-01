@@ -80,31 +80,28 @@ public final class DirectoryBattery
 
         if ( includes != null )
         {
-            String[] incs = new String[includes.size()];
-
-            for ( int i = 0; i < incs.length; i++ )
-            {
-                incs[i] = StringUtils.replace( (String) includes.get( i ), "java", "class" );
-
-            }
-
-            scanner.setIncludes( incs );
+            scanner.setIncludes( processIncludesExcludes( includes ) );
         }
 
         if ( excludes != null )
         {
-            String[] excls = new String[excludes.size()];
-
-            for ( int i = 0; i < excls.length; i++ )
-            {
-                excls[i] = StringUtils.replace( (String) excludes.get( i ), "java", "class" );
-            }
-
-            scanner.setExcludes( excls );
+            scanner.setExcludes( processIncludesExcludes( excludes ) );
         }
 
         scanner.scan();
 
         return scanner.getIncludedFiles();
+    }
+
+    private static String[] processIncludesExcludes( List list )
+    {
+        String[] incs = new String[list.size()];
+
+        for ( int i = 0; i < incs.length; i++ )
+        {
+            incs[i] = StringUtils.replace( (String) list.get( i ), "java", "class" );
+
+        }
+        return incs;
     }
 }
