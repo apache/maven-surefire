@@ -16,11 +16,22 @@ package org.apache.maven.surefire.testng;
  * limitations under the License.
  */
 
+import org.apache.maven.surefire.Surefire;
 import org.apache.maven.surefire.battery.AbstractBattery;
 import org.apache.maven.surefire.report.ReporterManager;
+import org.testng.ISuiteListener;
+import org.testng.ITestListener;
+import org.testng.TestNG;
+import org.testng.internal.TestNGClassFinder;
+import org.testng.internal.Utils;
+import org.testng.internal.annotations.IAnnotationFinder;
+import org.testng.internal.annotations.JDK14AnnotationFinder;
+import org.testng.internal.annotations.JDK15AnnotationFinder;
+import org.testng.xml.ClassSuite;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Main plugin point for running testng tests within the Surefire runtime
@@ -31,7 +42,10 @@ import java.util.ArrayList;
 public class TestNGBattery
     extends AbstractBattery
 {
+    // TODO: is this needed?
     private Class testClass;
+
+    private static IAnnotationFinder annotationFinder;
 
     /**
      * Creates a new test battery that will process the class being
@@ -101,6 +115,50 @@ public class TestNGBattery
 
     public void execute( ReporterManager reportManager )
     {
+        // TODO: maybe don't execute this for every battery
+
+        TestNG testNG = new TestNG();
+        List classes = new ArrayList();
+
+        String groups = null; // TODO :remove
+
+        //configure testng parameters
+        ClassSuite classSuite = new ClassSuite( groups != null ? groups : "TestNG Suite", Utils.classesToXmlClasses(
+            (Class[]) classes.toArray( new Class[classes.size()] ) ) );
+        testNG.setCommandLineSuite( classSuite );
+        testNG.setOutputDirectory( reportManager.getReportsDirectory() );
+        Surefire surefire = new Surefire(); // TODO: blatently wrong
+        TestNGReporter testngReporter = new TestNGReporter( reportManager, surefire );
+        testNG.addListener( (ITestListener) testngReporter );
+        testNG.addListener( (ISuiteListener) testngReporter );
+        // TODO: bring back when TestNG returns the method
+//                        testNG.setReportResults(false);
+
+        // TODO: maybe this was running junit tests for us so that parallel would work
+//        testNG.setThreadCount( threadCount );
+//        testNG.setParallel( parallel );
+//
+//        if ( groups != null )
+//        {
+//            testNG.setGroups( groups );
+//        }
+//        if ( excludedGroups != null )
+//        {
+//            testNG.setExcludedGroups( excludedGroups );
+//        }
+
+        //set source path so testng can find javadoc
+        //annotations if not in 1.5 jvm
+/* TODO
+        if ( !jvm15 && testSourceDirectory != null )
+        {
+            testNG.setSourcePath( testSourceDirectory );
+        }
+*/
+
+        //actually runs all the tests
+        List result = testNG.runSuitesLocally();
+//        nbTests += result.size(); TODO
     }
 
     public String getBatteryName()
@@ -108,4 +166,34 @@ public class TestNGBattery
         return testClass.getName();
     }
 
+    /**
+     * @todo belongs in a factory. This is reflected only.
+     */
+    public static Boolean canInstantiate( Class testClass )
+    {
+        if ( TestNGClassFinder.isTestNGClass( testClass, getAnnotationFinder() ) )
+        {
+            return Boolean.TRUE;
+        }
+        else
+        {
+            return Boolean.FALSE;
+        }
+    }
+
+    public static IAnnotationFinder getAnnotationFinder()
+    {
+        if ( annotationFinder == null )
+        {
+            if ( System.getProperty( "java.version" ).indexOf( "1.5" ) > -1 )
+            {
+                annotationFinder = new JDK15AnnotationFinder();
+            }
+            else
+            {
+                annotationFinder = new JDK14AnnotationFinder();
+            }
+        }
+        return annotationFinder;
+    }
 }

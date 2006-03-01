@@ -42,7 +42,12 @@ public abstract class AbstractConsoleReporter
     {
         super.batteryStarting( report );
 
-        writeMessage( "Running " + report.getName() );
+        String message = "Running " + report.getName();
+        if ( !report.getGroup().equals( report.getName() ) )
+        {
+            message = message + " (of " + report.getGroup() + ")";
+        }
+        writeMessage( message );
     }
 
     public void runStarting( int testCount )

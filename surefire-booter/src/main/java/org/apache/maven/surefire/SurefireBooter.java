@@ -82,8 +82,6 @@ public class SurefireBooter
 
     private boolean debug;
 
-    private boolean forceTestNG;
-
     private String groups;
 
     private String excludedGroups;
@@ -186,11 +184,6 @@ public class SurefireBooter
     public void setJvm( String jvm )
     {
         this.jvm = jvm;
-    }
-
-    public void setForceTestNG( boolean forceTestNG )
-    {
-        this.forceTestNG = forceTestNG;
     }
 
     public void setGroups( String groups )
@@ -341,15 +334,15 @@ public class SurefireBooter
         Object batteryExecutor = batteryExecutorClass.newInstance();
 
         Method run = batteryExecutorClass.getMethod( "run", new Class[]{List.class, List.class, ClassLoader.class,
-            String.class, Boolean.class, String.class, String.class, Integer.class, Boolean.class, String.class} );
+            String.class, String.class, String.class, Integer.class, Boolean.class, String.class} );
 
         ClassLoader oldContextClassLoader = Thread.currentThread() .getContextClassLoader();
 
         Thread.currentThread().setContextClassLoader( surefireClassLoader );
 
         Boolean result = (Boolean) run.invoke( batteryExecutor, new Object[]{reports, batteries, surefireClassLoader,
-            reportsDirectory, new Boolean( forceTestNG ), groups, excludedGroups, new Integer( threadCount ),
-            new Boolean( parallel ), testSourceDirectory} );
+            reportsDirectory, groups, excludedGroups, new Integer( threadCount ),
+            parallel ? Boolean.TRUE : Boolean.FALSE, testSourceDirectory} );
 
         Thread.currentThread().setContextClassLoader( oldContextClassLoader );
 
@@ -526,7 +519,6 @@ public class SurefireBooter
             String url = (String) classpathUrls.get( i );
 
             // Exclude the surefire booter
-            // Exclude the surefire booter
             if ( url.indexOf( "surefire-booter" ) > 0 )
             {
                 surefireBooterJar = url;
@@ -550,7 +542,7 @@ public class SurefireBooter
 
         p.setProperty( "classpath", cp );
 
-        p.setProperty( "childDelegation", "" + childDelegation );
+        p.setProperty( "childDelegation", String.valueOf( childDelegation ) );
 
         FileOutputStream fos = new FileOutputStream( new File( basedir, CLASSLOADER_PROPERTIES ) );
 
@@ -581,7 +573,7 @@ public class SurefireBooter
 
         p.setProperty( "batteryConfig", batteryConfig );
 
-        p.setProperty( "debug", "" + debug );
+        p.setProperty( "debug", String.valueOf( debug ) );
 
         fos = new FileOutputStream( new File( basedir, SUREFIRE_PROPERTIES ) );
 

@@ -61,9 +61,12 @@ public abstract class AbstractTextReporter
 
     public void writeMessage( String message )
     {
-        writer.println( message );
+        if ( writer != null )
+        {
+            writer.println( message );
 
-        writer.flush();
+            writer.flush();
+        }
     }
 
     public void testSucceeded( ReportEntry report )

@@ -429,4 +429,9 @@ public class ReporterManager
 
         e.printStackTrace( System.err );
     }
+
+    public String getReportsDirectory()
+    {
+        return reportsDirectory;
+    }
 }

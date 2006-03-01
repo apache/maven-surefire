@@ -17,11 +17,15 @@ package org.apache.maven.surefire;
  */
 
 import org.apache.maven.surefire.battery.Battery;
+import org.apache.maven.surefire.battery.JUnitBattery;
 import org.apache.maven.surefire.battery.assertion.BatteryTestFailedException;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.Reporter;
 import org.apache.maven.surefire.report.ReporterManager;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -47,8 +51,6 @@ public class Surefire
 
     private String testSourceDirectory;
 
-    private boolean forceTestNG;
-
     private String groups;
 
     private String excludedGroups;
@@ -68,13 +70,13 @@ public class Surefire
     public boolean run( List reports, List batteryHolders, ClassLoader classLoader, String reportsDirectory )
         throws Exception
     {
-        return run( reports, batteryHolders, classLoader, reportsDirectory, Boolean.FALSE, null, null, new Integer( 0 ),
-                    Boolean.FALSE, null );
+        return run( reports, batteryHolders, classLoader, reportsDirectory, null, null, new Integer( 0 ), Boolean.FALSE,
+                    null );
     }
 
     public boolean run( List reports, List batteryHolders, ClassLoader classLoader, String reportsDirectory,
-                        Boolean forceTestNG, String groups, String excludedGroups, Integer threadCount,
-                        Boolean parallel, String testSourceDirectory )
+                        String groups, String excludedGroups, Integer threadCount, Boolean parallel,
+                        String testSourceDirectory )
         throws Exception
     {
         if ( reports == null || batteryHolders == null || classLoader == null )
@@ -94,8 +96,6 @@ public class Surefire
         this.classLoader = classLoader;
 
         this.reportsDirectory = reportsDirectory;
-
-        this.forceTestNG = forceTestNG.booleanValue();
 
         this.groups = groups;
 
@@ -124,14 +124,6 @@ public class Surefire
         List batts = instantiateBatteries( batteryHolders, classLoader );
 
         reporterManager = new ReporterManager( instantiateReports( reports, classLoader ), reportsDirectory );
-
-/* TODO: new, remove
-        boolean jvm15 = false;
-        if ( System.getProperty( "java.version" ).indexOf( "1.5" ) > -1 )
-        {
-            jvm15 = true;
-        }
-*/
 
         try
         {
@@ -170,12 +162,13 @@ public class Surefire
                         xbat.execute( reporterManager );
                         nbTests += xbat.getTestCount();
                     }
-                    else */if ( testCount > 0 )
-                {
-                    executeBattery( battery, reporterManager );
+                    else */
+                    if ( testCount > 0 )
+                    {
+                        executeBattery( battery, reporterManager );
 
-                    nbTests += testCount;
-                }
+                        nbTests += testCount;
+                    }
 
                     List list = new ArrayList();
 
@@ -188,65 +181,6 @@ public class Surefire
                     }
 
                     List subBatteries = instantiateBatteries( list, classLoader );
-
-/* TODO
-                    //Handle testng tests
-                    if ( forceTestNG || isTestNG( subBatteries ) )
-                    {
-                        TestNG testNG = new TestNG();
-                        List classes = new ArrayList();
-                        for ( Iterator j = subBatteries.iterator(); j.hasNext(); )
-                        {
-                            Battery b = (Battery) j.next();
-                            if ( b instanceof TestNGBattery )
-                            {
-                                TestNGBattery tb = (TestNGBattery) b;
-                                classes.add( tb.getTestClass() );
-                                j.remove();
-                            }
-                            else if ( forceTestNG && b instanceof JUnitBattery )
-                            {
-                                JUnitBattery jb = (JUnitBattery) b;
-                                classes.add( jb.getTestClass() );
-                                j.remove();
-                            }
-                        }
-
-                        //configure testng parameters
-                        ClassSuite classSuite = new ClassSuite( groups != null ? groups : "TestNG Suite",
-                                                                Utils.classesToXmlClasses( (Class[]) classes.toArray(
-                                                                    new Class[classes.size()] ) ) );
-                        testNG.setCommandLineSuite( classSuite );
-                        testNG.setOutputDirectory( reportsDirectory );
-                        TestNGReporter testngReporter = new TestNGReporter( reporterManager, this );
-                        testNG.addListener( (ITestListener) testngReporter );
-                        testNG.addListener( (ISuiteListener) testngReporter );
-                        // TODO: bring back when TestNG returns the method
-//                        testNG.setReportResults(false);
-                        testNG.setThreadCount( threadCount );
-                        testNG.setParallel( parallel );
-
-                        if ( groups != null )
-                        {
-                            testNG.setGroups( groups );
-                        }
-                        if ( excludedGroups != null )
-                        {
-                            testNG.setExcludedGroups( excludedGroups );
-                        }
-
-                        //set source path so testng can find javadoc
-                        //annotations if not in 1.5 jvm
-                        if ( !jvm15 && testSourceDirectory != null )
-                        {
-                            testNG.setSourcePath( testSourceDirectory );
-                        }
-
-                        //actually runs all the tests
-                        List result = testNG.runSuitesLocally();
-                        nbTests += result.size();
-                    }
-*/
 
                     //continue normal mode
                     for ( Iterator j = subBatteries.iterator(); j.hasNext(); )
@@ -271,7 +205,6 @@ public class Surefire
 
                         if ( testCount > 0 )
                         {
-
                             executeBattery( b, reporterManager );
 
                             nbTests += testCount;
@@ -309,32 +242,6 @@ public class Surefire
     }
 
     /**
-     * Determines if <i>any</i> of the batteries specified
-     * is an instance of {@link TestNGBattery}.
-     *
-     * @param batteries     The batteries to check
-     * @param battery
-     * @param reportManager
-     * @return True, if any of the objects are an instanceof {@link TestNGBattery}
-     *         TODO
-     *         public boolean isTestNG( List batteries )
-     *         {
-     *         if ( batteries.size() > 0 )
-     *         {
-     *         for ( int i = 0; i < batteries.size(); i++ )
-     *         {
-     *         Object obj = batteries.get( i );
-     *         if ( obj instanceof TestNGBattery )
-     *         {
-     *         return true;
-     *         }
-     *         }
-     *         }
-     *         <p/>
-     *         return false;
-     *         }
-     *         <p/>
-     *         /**
      * @throws Exception
      */
     public void executeBattery( Battery battery, ReporterManager reportManager )
@@ -397,7 +304,7 @@ public class Surefire
         {
             Object[] holder = (Object[]) batteryHolders.get( i );
 
-            Object battery = SurefireUtils.instantiateBattery( holder, loader );
+            Object battery = instantiateBattery( holder, loader );
 
             if ( battery != null )
             {
@@ -451,5 +358,85 @@ public class Surefire
     public static String getResourceString( String key )
     {
         return resources.getString( key );
+    }
+
+    private static Object instantiateBattery( Object[] holder, ClassLoader loader )
+        throws Exception
+    {
+        Class testClass;
+
+        Class batteryClass;
+
+        try
+        {
+            testClass = loader.loadClass( (String) holder[0] );
+
+            batteryClass = loader.loadClass( "org.apache.maven.surefire.battery.Battery" );
+        }
+        catch ( Exception e )
+        {
+            return null;
+        }
+
+        if ( Modifier.isAbstract( testClass.getModifiers() ) )
+        {
+            return null;
+        }
+
+        Object battery = null;
+
+        if ( batteryClass.isAssignableFrom( testClass ) )
+        {
+            if ( holder[1] != null )
+            {
+                Object[] params = (Object[]) holder[1];
+
+                Class[] paramTypes = new Class[params.length];
+
+                for ( int j = 0; j < params.length; j++ )
+                {
+                    paramTypes[j] = params[j].getClass();
+                }
+
+                Constructor constructor = testClass.getConstructor( paramTypes );
+
+                battery = constructor.newInstance( params );
+            }
+            else
+            {
+                battery = testClass.newInstance();
+            }
+        }
+
+        if ( battery == null )
+        {
+            // TODO: this hard coding should be removed. Would be real nice to just use Plexus :)
+            //   We could probably have BatteryFactory instances in each provider that say canInstantiate(), and instantiate()
+
+            try
+            {
+                batteryClass = loader.loadClass( "org.apache.maven.surefire.testng.TestNGBattery" );
+
+                Method m = batteryClass.getMethod( "canInstantiate", new Class[]{Class.class} );
+                Boolean b = (Boolean) m.invoke( null, new Object[]{testClass} );
+                if ( b.booleanValue() )
+                {
+                    Constructor constructor =
+                        batteryClass.getConstructor( new Class[]{Class.class, ClassLoader.class} );
+                    battery = constructor.newInstance( new Object[]{testClass, loader} );
+                }
+            }
+            catch ( ClassNotFoundException e )
+            {
+                // ignore
+            }
+        }
+
+        if ( battery == null )
+        {
+            battery = new JUnitBattery( testClass, loader );
+        }
+
+        return battery;
     }
 }

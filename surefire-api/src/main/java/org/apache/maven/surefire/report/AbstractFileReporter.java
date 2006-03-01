@@ -63,5 +63,7 @@ public abstract class AbstractFileReporter
         writer.flush();
 
         writer.close();
+
+        writer = null;
     }
 }
