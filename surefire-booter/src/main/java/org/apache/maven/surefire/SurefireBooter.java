@@ -16,10 +16,16 @@ package org.apache.maven.surefire;
  * limitations under the License.
  */
 
+import org.codehaus.plexus.util.StringUtils;
+import org.codehaus.plexus.util.cli.CommandLineException;
+import org.codehaus.plexus.util.cli.CommandLineUtils;
+import org.codehaus.plexus.util.cli.Commandline;
+import org.codehaus.plexus.util.cli.StreamConsumer;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.StringWriter;
+import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.lang.reflect.Method;
 import java.net.URL;
@@ -30,13 +36,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-
-import org.codehaus.plexus.util.StringUtils;
-import org.codehaus.plexus.util.cli.CommandLineException;
-import org.codehaus.plexus.util.cli.CommandLineUtils;
-import org.codehaus.plexus.util.cli.Commandline;
-import org.codehaus.plexus.util.cli.StreamConsumer;
-import org.codehaus.plexus.util.cli.WriterStreamConsumer;
 
 /**
  * @author Jason van Zyl
@@ -362,7 +361,7 @@ public class SurefireBooter
     {
         getForkOnceArgs();
 
-        return fork();
+        return fork( true );
     }
 
     private boolean runTestsForkEach()
@@ -372,13 +371,14 @@ public class SurefireBooter
 
         List testClasses = getTestClasses();
 
-        for ( Iterator i = testClasses.iterator(); i.hasNext(); )
+        for ( int i = 0; i < testClasses.size(); i++ )
         {
-            String testClass = (String) i.next();
+            String testClass = (String) testClasses.get( i );
 
             getForkPerTestArgs( testClass );
 
-            boolean result = fork();
+            // Only show the heading for the first run
+            boolean result = fork( i == 0 );
 
             if ( !result )
             {
@@ -389,7 +389,7 @@ public class SurefireBooter
         return noFailures;
     }
 
-    private boolean fork()
+    private boolean fork( boolean showHeading )
         throws Exception
     {
         Commandline cli = new Commandline();
@@ -403,7 +403,7 @@ public class SurefireBooter
             cli.addArguments( StringUtils.split( argLine, " " ) );
         }
 
-        if ( environmentVariables != null)
+        if ( environmentVariables != null )
         {
             Iterator iter = environmentVariables.keySet().iterator();
 
@@ -417,16 +417,11 @@ public class SurefireBooter
 
                 if ( debug )
                 {
-                    System.out.println( "Environment: " + key + "="  + value + " added." );
+                    System.out.println( "Environment: " + key + "=" + value + " added." );
                 }
 
             }
 
-        }
-
-        if ( workingDirectory != null )
-        {
-            cli.setWorkingDirectory( workingDirectory.getAbsolutePath() );
         }
 
         cli.createArgument().setValue( "-classpath" );
@@ -437,16 +432,24 @@ public class SurefireBooter
 
         cli.createArgument().setValue( basedir );
 
+        if ( workingDirectory != null )
+        {
+            //both cli's working directory and  system property "user.dir" must have the same value
+            cli.setWorkingDirectory( workingDirectory.getAbsolutePath() );
+
+            cli.createArgument().setValue( workingDirectory.getAbsolutePath() );
+        }
+
         if ( debug )
         {
             System.out.println( Commandline.toString( cli.getCommandline() ) );
         }
 
-        Writer stringWriter = new StringWriter();
+        Writer consoleWriter = new OutputStreamWriter( System.out );
 
-        StreamConsumer out = new WriterStreamConsumer( stringWriter );
+        StreamConsumer out = new ForkingWriterStreamConsumer( consoleWriter, showHeading );
 
-        StreamConsumer err = new WriterStreamConsumer( stringWriter );
+        StreamConsumer err = new ForkingWriterStreamConsumer( consoleWriter, showHeading );
 
         int returnCode;
 
@@ -462,25 +465,6 @@ public class SurefireBooter
         {
             throw new SurefireBooterForkException( "Error while executing forked tests.", e );
         }
-
-        /*
-
-        The standard reporting modules should do this work ... jvz
-        
-        String string = stringWriter.toString();
-
-        if ( string != null && string.length() > 0 )
-        {
-            StringReader sr = new StringReader( string );
-
-            BufferedReader br = new BufferedReader( sr );
-
-            while ( ( string = br.readLine() ) != null )
-            {
-                System.out.println( string );
-            }
-        }
-        */
 
         if ( returnCode != 0 )
         {
@@ -725,12 +709,24 @@ public class SurefireBooter
     {
         String basedir = args[0];
 
+        String workingDirectory = null;
+
+        if ( args.length == 2 )
+        {
+            workingDirectory = args[1];
+        }
+
         ClassLoader classLoader = createForkingClassLoader( basedir );
 
 
         Thread.currentThread().setContextClassLoader( classLoader );
 
         setSystemProperties( basedir );
+
+        if ( workingDirectory != null )
+        {
+            System.setProperty( "user.dir", workingDirectory );
+        }
 
         Properties p = getSurefireProperties( basedir );
 

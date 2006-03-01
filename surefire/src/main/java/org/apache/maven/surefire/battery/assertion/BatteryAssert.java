@@ -16,9 +16,8 @@ package org.apache.maven.surefire.battery.assertion;
  * limitations under the License.
  */
 
-import org.apache.maven.surefire.Surefire;
-
 import junit.framework.TestCase;
+import org.apache.maven.surefire.Surefire;
 
 public class BatteryAssert extends TestCase
 {

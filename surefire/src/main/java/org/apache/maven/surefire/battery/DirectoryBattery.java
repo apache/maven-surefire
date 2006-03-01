@@ -16,12 +16,12 @@ package org.apache.maven.surefire.battery;
  * limitations under the License.
  */
 
+import org.codehaus.plexus.util.DirectoryScanner;
+import org.codehaus.plexus.util.StringUtils;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.apache.maven.surefire.util.DirectoryScanner;
-import org.apache.maven.surefire.util.StringUtils;
 
 public class DirectoryBattery extends AbstractBattery {
 

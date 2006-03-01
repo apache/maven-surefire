@@ -23,11 +23,11 @@ import java.io.PrintWriter;
 public class ConsoleReporter
     extends AbstractReporter
 {
-    private static final int BUFFER_SIZE = 4096;
+    protected static final int BUFFER_SIZE = 4096;
 
-    private PrintWriter writer;
+    protected PrintWriter writer;
     
-    private long batteryStartTime;
+    protected long batteryStartTime;
 
     public ConsoleReporter()
     {
@@ -38,9 +38,16 @@ public class ConsoleReporter
     //
     // ----------------------------------------------------------------------
 
-    public void writeMessage( String message )
+    public void println( String message )
     {
         writer.println( message );
+
+        writer.flush();
+    }
+
+    public void print( String message )
+    {
+        writer.print( message );
 
         writer.flush();
     }
@@ -51,30 +58,27 @@ public class ConsoleReporter
 
     public void runStarting( int testCount )
     {
-        writer.println();
-        writer.println( "-------------------------------------------------------" );
-        writer.println( " T E S T S" );
-        writer.println( "-------------------------------------------------------" );
-        writer.flush();
+        println( "" );
+        println( "-------------------------------------------------------" );
+        println( " T E S T S" );
+        println( "-------------------------------------------------------" );
     }
 
     public void runAborted( ReportEntry report )
     {
-        writer.println( "RUN ABORTED" );
-        writer.println( report.getSource().getClass().getName() );
-        writer.println( report.getName() );
-        writer.println( report.getMessage() );
-        writer.println( report.getThrowable().getMessage() );
-        writer.flush();
+        println( "RUN ABORTED" );
+        println( report.getSource().getClass().getName() );
+        println( report.getName() );
+        println( report.getMessage() );
+        println( report.getThrowable().getMessage() );
     }
     public void batteryAborted( ReportEntry report )
     {
-        writer.println( "BATTERY ABORTED" );
-        writer.println( report.getSource().getClass().getName() );
-        writer.println( report.getName() );
-        writer.println( report.getMessage() );
-        writer.println( report.getThrowable().getMessage() );
-        writer.flush();
+        println( "BATTERY ABORTED" );
+        println( report.getSource().getClass().getName() );
+        println( report.getName() );
+        println( report.getMessage() );
+        println( report.getThrowable().getMessage() );
     }
 
     // ----------------------------------------------------------------------
@@ -86,14 +90,14 @@ public class ConsoleReporter
     {
         batteryStartTime = System.currentTimeMillis();
         
-        writer.println( "[surefire] Running " + report.getName() );
+        println( "[surefire] Running " + report.getName() );
     }
 
     public void batteryCompleted( ReportEntry report )
     {
         long runTime = System.currentTimeMillis() - batteryStartTime;
 
-        writer.print( "[surefire] Tests run: " + completedCount +
+        print( "[surefire] Tests run: " + completedCount +
                              ", Failures: " + failures +
                              ", Errors: " + errors +
                              ", Time elapsed: " + elapsedTimeAsString( runTime ) + " sec" );
@@ -103,8 +107,8 @@ public class ConsoleReporter
             writer.print( " <<<<<<<< FAILURE !! " );
         }
         
-        writer.println();
-        
+        writer.println( "" );
+
         writer.flush();
 
         completedCount = 0;

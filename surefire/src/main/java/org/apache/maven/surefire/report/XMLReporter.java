@@ -16,19 +16,19 @@ package org.apache.maven.surefire.report;
  * limitations under the License.
  */
 
+import org.codehaus.plexus.util.IOUtil;
+import org.codehaus.plexus.util.xml.Xpp3Dom;
+import org.codehaus.plexus.util.xml.Xpp3DomWriter;
+
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.BufferedWriter;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Enumeration;
 import java.util.Properties;
 import java.util.StringTokenizer;
-
-import org.codehaus.plexus.util.IOUtil;
-import org.codehaus.plexus.util.xml.Xpp3Dom;
-import org.codehaus.plexus.util.xml.Xpp3DomWriter;
 
 
 /**
