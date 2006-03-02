@@ -42,8 +42,11 @@ import java.util.List;
 public class TestNGBattery
     extends AbstractBattery
 {
-    // TODO: is this needed?
+    private String testSourceDirectory;
+
     private Class testClass;
+
+    private String groups;
 
     private static IAnnotationFinder annotationFinder;
 
@@ -54,19 +57,7 @@ public class TestNGBattery
      * @param testClass
      * @param loader
      */
-    public TestNGBattery( Class testClass, ClassLoader loader )
-    {
-        processTestClass( testClass, loader );
-    }
-
-    /**
-     * Parses and configures this battery based on the test class
-     * being passed in.
-     *
-     * @param testClass
-     * @param loader
-     */
-    private void processTestClass( Class testClass, ClassLoader loader )
+    public TestNGBattery( Class testClass, ClassLoader loader, String testSourceDirectory, String groups )
     {
         if ( testClass == null )
         {
@@ -79,6 +70,10 @@ public class TestNGBattery
         }
 
         this.testClass = testClass;
+
+        this.testSourceDirectory = testSourceDirectory;
+
+        this.groups = groups;
     }
 
     public Class getTestClass()
@@ -119,8 +114,7 @@ public class TestNGBattery
 
         TestNG testNG = new TestNG();
         List classes = new ArrayList();
-
-        String groups = null; // TODO :remove
+        classes.add( testClass );
 
         //configure testng parameters
         ClassSuite classSuite = new ClassSuite( groups != null ? groups : "TestNG Suite", Utils.classesToXmlClasses(
@@ -131,8 +125,7 @@ public class TestNGBattery
         TestNGReporter testngReporter = new TestNGReporter( reportManager, surefire );
         testNG.addListener( (ITestListener) testngReporter );
         testNG.addListener( (ISuiteListener) testngReporter );
-        // TODO: bring back when TestNG returns the method
-//                        testNG.setReportResults(false);
+        testNG.setUseDefaultListeners( false );
 
         // TODO: maybe this was running junit tests for us so that parallel would work
 //        testNG.setThreadCount( threadCount );
@@ -149,12 +142,10 @@ public class TestNGBattery
 
         //set source path so testng can find javadoc
         //annotations if not in 1.5 jvm
-/* TODO
-        if ( !jvm15 && testSourceDirectory != null )
+        if ( /* TODO - necessary? !jvm15  && */ testSourceDirectory != null )
         {
             testNG.setSourcePath( testSourceDirectory );
         }
-*/
 
         //actually runs all the tests
         List result = testNG.runSuitesLocally();

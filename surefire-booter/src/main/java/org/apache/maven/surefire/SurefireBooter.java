@@ -472,7 +472,8 @@ public class SurefireBooter
     {
         ClassLoader classLoader = createClassLoader();
 
-        List instantiatedBatteries = Surefire.instantiateBatteries( batteries, classLoader );
+        List instantiatedBatteries =
+            Surefire.instantiateBatteries( batteries, classLoader, testSourceDirectory, groups );
 
         List testClasses = new ArrayList();
 

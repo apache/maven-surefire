@@ -113,15 +113,7 @@ public class Surefire
     public boolean run()
         throws Exception
     {
-/* TODO
-        //required for jdk14 javadoc annotations
-        if ( testSourceDirectory != null )
-        {
-            SurefireUtils.setTestSourceDirectory( testSourceDirectory );
-        }
-*/
-
-        List batts = instantiateBatteries( batteryHolders, classLoader );
+        List batts = instantiateBatteries( batteryHolders, classLoader, testSourceDirectory, groups );
 
         reporterManager = new ReporterManager( instantiateReports( reports, classLoader ), reportsDirectory );
 
@@ -172,15 +164,14 @@ public class Surefire
 
                     List list = new ArrayList();
 
-                    for ( Iterator j = battery.getSubBatteryClassNames()
-                        .iterator(); j.hasNext(); )
+                    for ( Iterator j = battery.getSubBatteryClassNames().iterator(); j.hasNext(); )
                     {
                         String s = (String) j.next();
 
                         list.add( new Object[]{s, null} );
                     }
 
-                    List subBatteries = instantiateBatteries( list, classLoader );
+                    List subBatteries = instantiateBatteries( list, classLoader, testSourceDirectory, groups );
 
                     //continue normal mode
                     for ( Iterator j = subBatteries.iterator(); j.hasNext(); )
@@ -237,8 +228,7 @@ public class Surefire
 
         reporterManager.resume();
 
-        return !( reporterManager.getNbErrors() > 0 || reporterManager
-            .getNbFailures() > 0 );
+        return !( reporterManager.getNbErrors() > 0 || reporterManager.getNbFailures() > 0 );
     }
 
     /**
@@ -295,7 +285,8 @@ public class Surefire
      * @return
      * @throws Exception
      */
-    public static List instantiateBatteries( List batteryHolders, ClassLoader loader )
+    public static List instantiateBatteries( List batteryHolders, ClassLoader loader, String testSourceDirectory,
+                                             String groups )
         throws Exception
     {
         List batteries = new ArrayList();
@@ -304,7 +295,7 @@ public class Surefire
         {
             Object[] holder = (Object[]) batteryHolders.get( i );
 
-            Object battery = instantiateBattery( holder, loader );
+            Object battery = instantiateBattery( holder, loader, testSourceDirectory, groups );
 
             if ( battery != null )
             {
@@ -330,8 +321,7 @@ public class Surefire
 
             try
             {
-                Class reportClass = reporterClassLoader
-                    .loadClass( reportClassName );
+                Class reportClass = reporterClassLoader.loadClass( reportClassName );
 
                 // assert Reporter.class.isAssignableFrom(reportClass);
 
@@ -360,7 +350,8 @@ public class Surefire
         return resources.getString( key );
     }
 
-    private static Object instantiateBattery( Object[] holder, ClassLoader loader )
+    private static Object instantiateBattery( Object[] holder, ClassLoader loader, String testSourceDirectory,
+                                              String groups )
         throws Exception
     {
         Class testClass;
@@ -421,9 +412,9 @@ public class Surefire
                 Boolean b = (Boolean) m.invoke( null, new Object[]{testClass} );
                 if ( b.booleanValue() )
                 {
-                    Constructor constructor =
-                        batteryClass.getConstructor( new Class[]{Class.class, ClassLoader.class} );
-                    battery = constructor.newInstance( new Object[]{testClass, loader} );
+                    Constructor constructor = batteryClass.getConstructor(
+                        new Class[]{Class.class, ClassLoader.class, String.class, String.class} );
+                    battery = constructor.newInstance( new Object[]{testClass, loader, testSourceDirectory, groups} );
                 }
             }
             catch ( ClassNotFoundException e )
