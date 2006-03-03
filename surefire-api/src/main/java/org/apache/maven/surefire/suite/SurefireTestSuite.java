@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.battery;
+package org.apache.maven.surefire.suite;
 
 /*
  * Copyright 2001-2006 The Apache Software Foundation.
@@ -17,20 +17,25 @@ package org.apache.maven.surefire.battery;
  */
 
 import org.apache.maven.surefire.report.ReporterManager;
+import org.apache.maven.surefire.testset.TestSetFailedException;
 
-import java.util.List;
+import java.util.Map;
 
-public interface Battery
+/**
+ * A complete test suite that contains one or more test sets.
+ *
+ * @author <a href="mailto:brett@apache.org">Brett Porter</a>
+ */
+public interface SurefireTestSuite
 {
-    void execute( ReporterManager reportManager )
-        throws Exception;
+    void execute( ReporterManager reporterManager, ClassLoader classLoader );
 
-    int getTestCount();
+    void execute( String testSetName, ReporterManager reporterManager, ClassLoader classLoader );
 
-    String getBatteryName();
+    int getNumTests();
 
-    void discoverBatteryClassNames()
-        throws Exception;
+    int getNumTestSets();
 
-    List getSubBatteryClassNames();
+    Map locateTestSets( ClassLoader classLoader )
+        throws ClassNotFoundException, TestSetFailedException;
 }

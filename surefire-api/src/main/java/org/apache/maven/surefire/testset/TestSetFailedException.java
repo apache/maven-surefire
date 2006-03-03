@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.battery.assertion;
+package org.apache.maven.surefire.testset;
 
 /*
  * Copyright 2001-2006 The Apache Software Foundation.
@@ -21,13 +21,13 @@ package org.apache.maven.surefire.battery.assertion;
  *
  * @author Bill Venners
  */
-public class BatteryTestFailedException
-    extends RuntimeException
+public class TestSetFailedException
+    extends Exception
 {
     /**
      * Create a <code>TestFailedException</code> with no detail message.
      */
-    public BatteryTestFailedException()
+    public TestSetFailedException()
     {
     }
 
@@ -38,7 +38,7 @@ public class BatteryTestFailedException
      *                <code>null</code>. If <code>null</code> is passed, the <code>getMessage</code>
      *                method will return an empty <code>String</code>.
      */
-    public BatteryTestFailedException( String message )
+    public TestSetFailedException( String message )
     {
         super( message );
     }
@@ -55,7 +55,7 @@ public class BatteryTestFailedException
      * @param cause   the cause, which is saved for later retrieval by the <code>getCause</code> method.
      *                (A null value is permitted, and indicates that the cause is nonexistent or unknown.)
      */
-    public BatteryTestFailedException( String message, Throwable cause )
+    public TestSetFailedException( String message, Throwable cause )
     {
         super( message, cause );
     }
@@ -65,7 +65,7 @@ public class BatteryTestFailedException
      * <code>getMessage</code> method of this exception object will return
      * <code>(cause == null ? "" : cause.toString())</code>.
      */
-    public BatteryTestFailedException( Throwable cause )
+    public TestSetFailedException( Throwable cause )
     {
         super( cause == null ? "" : cause.toString(), cause );
     }

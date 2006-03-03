@@ -29,13 +29,13 @@ public interface Reporter
 
     void runAborted( ReportEntry report );
 
-    // Battery
-    void batteryStarting( ReportEntry report )
+    // Test Sets
+    void testSetStarting( ReportEntry report )
         throws Exception;
 
-    void batteryCompleted( ReportEntry report );
+    void testSetCompleted( ReportEntry report );
 
-    void batteryAborted( ReportEntry report );
+    void testSetAborted( ReportEntry report );
 
     // Tests
     void testStarting( ReportEntry report );
@@ -46,14 +46,12 @@ public interface Reporter
 
     void testFailed( ReportEntry report, String stdOut, String stdErr );
 
-    void dispose();
+    void reset();
 
-    // Counters
-    int getNbErrors();
+    // Counters... TODO (remove?)
+    int getNumErrors();
 
-    int getNbFailures();
+    int getNumFailures();
 
     int getNbTests();
-
-    void setReportsDirectory( String reportsDirectory );
 }

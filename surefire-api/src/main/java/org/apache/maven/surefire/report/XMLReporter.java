@@ -47,6 +47,13 @@ public class XMLReporter
 
     private Xpp3Dom testCase;
 
+    private File reportsDirectory;
+
+    public XMLReporter( File reportsDirectory )
+    {
+        this.reportsDirectory = reportsDirectory;
+    }
+
     public void setTestCase( Xpp3Dom testCase )
     {
         this.testCase = testCase;
@@ -61,12 +68,12 @@ public class XMLReporter
     {
     }
 
-    public void batteryStarting( ReportEntry report )
+    public void testSetStarting( ReportEntry report )
         throws IOException, UnsupportedEncodingException
     {
-        super.batteryStarting( report );
+        super.testSetStarting( report );
 
-        File reportFile = new File( getReportsDirectory(), "TEST-" + report.getName() + ".xml" );
+        File reportFile = new File( reportsDirectory, "TEST-" + report.getName() + ".xml" );
 
         File reportDir = reportFile.getParentFile();
 
@@ -81,17 +88,17 @@ public class XMLReporter
         showProperties();
     }
 
-    public void batteryCompleted( ReportEntry report )
+    public void testSetCompleted( ReportEntry report )
     {
-        super.batteryCompleted( report );
+        super.testSetCompleted( report );
 
         testSuite.setAttribute( "tests", String.valueOf( this.getNbTests() ) );
 
-        testSuite.setAttribute( "errors", String.valueOf( this.getNbErrors() ) );
+        testSuite.setAttribute( "errors", String.valueOf( this.getNumErrors() ) );
 
-        testSuite.setAttribute( "failures", String.valueOf( this.getNbFailures() ) );
+        testSuite.setAttribute( "failures", String.valueOf( this.getNumFailures() ) );
 
-        long runTime = System.currentTimeMillis() - batteryStartTime;
+        long runTime = System.currentTimeMillis() - testSetStartTime;
 
         testSuite.setAttribute( "time", elapsedTimeAsString( runTime ) );
 

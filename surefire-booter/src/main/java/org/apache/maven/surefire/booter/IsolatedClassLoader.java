@@ -1,4 +1,4 @@
-package org.apache.maven.surefire;
+package org.apache.maven.surefire.booter;
 
 /*
  * Copyright 2001-2006 The Apache Software Foundation.
@@ -21,6 +21,9 @@ import java.net.URLClassLoader;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * @noinspection CustomClassloader
+ */
 public class IsolatedClassLoader
     extends URLClassLoader
 {
@@ -30,21 +33,23 @@ public class IsolatedClassLoader
 
     private boolean childDelegation = true;
 
+    private static final URL[] EMPTY_URL_ARRAY = new URL[0];
+
     public IsolatedClassLoader()
     {
-        super( new URL[0], null );
+        super( EMPTY_URL_ARRAY, null );
     }
 
     public IsolatedClassLoader( ClassLoader parent, boolean childDelegation )
     {
-        super( new URL[0], parent );
+        super( EMPTY_URL_ARRAY, parent );
 
         this.childDelegation = childDelegation;
     }
 
     public IsolatedClassLoader( ClassLoader parent )
     {
-        super( new URL[0], parent );
+        super( EMPTY_URL_ARRAY, parent );
     }
 
     public void addURL( URL url )
@@ -59,14 +64,14 @@ public class IsolatedClassLoader
         }
     }
 
-    public synchronized Class loadClass( String className )
+    public synchronized Class loadClass( String name )
         throws ClassNotFoundException
     {
         Class c;
 
         if ( childDelegation )
         {
-            c = findLoadedClass( className );
+            c = findLoadedClass( name );
 
             ClassNotFoundException ex = null;
 
@@ -74,7 +79,7 @@ public class IsolatedClassLoader
             {
                 try
                 {
-                    c = findClass( className );
+                    c = findClass( name );
                 }
                 catch ( ClassNotFoundException e )
                 {
@@ -82,7 +87,7 @@ public class IsolatedClassLoader
 
                     if ( parent != null )
                     {
-                        c = parent.loadClass( className );
+                        c = parent.loadClass( name );
                     }
                 }
             }
@@ -94,7 +99,7 @@ public class IsolatedClassLoader
         }
         else
         {
-            c = super.loadClass( className );
+            c = super.loadClass( name );
         }
 
         return c;

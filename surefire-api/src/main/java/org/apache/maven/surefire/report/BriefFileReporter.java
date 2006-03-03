@@ -1,5 +1,7 @@
 package org.apache.maven.surefire.report;
 
+import java.io.File;
+
 /*
  * Copyright 2001-2006 The Apache Software Foundation.
  *
@@ -25,8 +27,8 @@ package org.apache.maven.surefire.report;
 public class BriefFileReporter
     extends AbstractFileReporter
 {
-    public BriefFileReporter()
+    public BriefFileReporter( File reportsDirectory )
     {
-        super( BRIEF );
+        super( reportsDirectory, BRIEF );
     }
 }

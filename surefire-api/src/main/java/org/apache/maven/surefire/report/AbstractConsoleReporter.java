@@ -33,14 +33,15 @@ public abstract class AbstractConsoleReporter
 
     protected AbstractConsoleReporter( String format )
     {
+        // TODO: use logger
         super( new PrintWriter( new OutputStreamWriter( new BufferedOutputStream( System.out, BUFFER_SIZE ) ) ),
                format );
     }
 
-    public void batteryStarting( ReportEntry report )
+    public void testSetStarting( ReportEntry report )
         throws IOException
     {
-        super.batteryStarting( report );
+        super.testSetStarting( report );
 
         String message = "Running " + report.getName();
         if ( !report.getGroup().equals( report.getName() ) )
@@ -69,9 +70,9 @@ public abstract class AbstractConsoleReporter
         printAbortionError( "RUN ABORTED", report );
     }
 
-    public void batteryAborted( ReportEntry report )
+    public void testSetAborted( ReportEntry report )
     {
-        printAbortionError( "BATTERY ABORTED", report );
+        printAbortionError( "TEST SET ABORTED", report );
     }
 
     private void printAbortionError( String msg, ReportEntry report )

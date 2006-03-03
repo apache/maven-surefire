@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.battery;
+package org.apache.maven.surefire.testset;
 
 /*
  * Copyright 2001-2006 The Apache Software Foundation.
@@ -16,30 +16,30 @@ package org.apache.maven.surefire.battery;
  * limitations under the License.
  */
 
-import org.apache.maven.surefire.Surefire;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterManager;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class AbstractBattery
-    implements Battery
+/**
+ * @todo trim it up. Those implementing don't need any of this except for discoverTestMethods, getName and isValidMethod
+ * @todo bring back other helpers and put in a separate package
+ */
+public abstract class AbstractTestSet
+    implements SurefireTestSet
 {
     private static final String TEST_METHOD_PREFIX = "test";
 
     protected List testMethods;
 
-    protected List subBatteryClassNames;
-
     private static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
 
-    public void execute( ReporterManager reportManager )
-        throws Exception
+    public void execute( ReporterManager reportManager, ClassLoader loader )
+        throws TestSetFailedException
     {
         if ( reportManager == null )
         {
@@ -95,6 +95,7 @@ public abstract class AbstractBattery
         }
         catch ( Exception e )
         {
+/* TODO
             // Treat any exception from setUpFixture as a failure of the test.
             String rawString = Surefire.getResourceString( "setupFixtureFailed" );
 
@@ -107,6 +108,7 @@ public abstract class AbstractBattery
             report = new ReportEntry( this, getTestName( userFriendlyMethodName ), stringToPrint, e );
 
             reportManager.testFailed( report );
+*/
 
             // A return value of true indicates to this class's executeTestMethods
             // method that it should abort and not attempt to execute
@@ -165,6 +167,7 @@ public abstract class AbstractBattery
         catch ( Exception e )
         {
 
+/* TODO
             // Treat any exception from tearDownFixture as a failure of the test.
             String rawString = Surefire.getResourceString( "cleanupFixtureFailed" );
 
@@ -177,6 +180,7 @@ public abstract class AbstractBattery
             report = new ReportEntry( this, getTestName( userFriendlyMethodName ), stringToPrint, e );
 
             reportManager.testFailed( report );
+*/
 
             // A return value of true indicates to this class's executeTestMethods
             // method that it should abort and not attempt to execute
@@ -194,7 +198,7 @@ public abstract class AbstractBattery
         return false;
     }
 
-    public String getBatteryName()
+    public String getName()
     {
         return getClass().getName();
     }
@@ -210,6 +214,7 @@ public abstract class AbstractBattery
     }
 
     public int getTestCount()
+        throws TestSetFailedException
     {
         discoverTestMethods();
 
@@ -232,6 +237,7 @@ public abstract class AbstractBattery
     }
 
     protected Object getTestClassInstance()
+        throws IllegalAccessException, InstantiationException
     {
         return this;
     }
@@ -271,26 +277,6 @@ public abstract class AbstractBattery
     // ----------------------------------------------------------------------
     // Batteries
     // ----------------------------------------------------------------------
-
-    public void discoverBatteryClassNames()
-        throws Exception
-    {
-    }
-
-    public void addSubBatteryClassName( String batteryClassName )
-    {
-        getSubBatteryClassNames().add( batteryClassName );
-    }
-
-    public List getSubBatteryClassNames()
-    {
-        if ( subBatteryClassNames == null )
-        {
-            subBatteryClassNames = new ArrayList();
-        }
-
-        return subBatteryClassNames;
-    }
 
     public static boolean isValidMethod( Method m )
     {

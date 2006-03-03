@@ -16,13 +16,10 @@ package org.apache.maven.surefire.report;
  * limitations under the License.
  */
 
-import org.apache.maven.surefire.Surefire;
 import org.apache.maven.surefire.util.TeeStream;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.PrintStream;
-import java.text.MessageFormat;
 import java.util.Iterator;
 import java.util.List;
 
@@ -36,8 +33,6 @@ public class ReporterManager
 
     private List reports;
 
-    private String reportsDirectory;
-
     private PrintStream oldOut;
 
     private PrintStream oldErr;
@@ -46,15 +41,8 @@ public class ReporterManager
 
     private PrintStream newOut;
 
-    public ReporterManager( List reports, String reportsDirectory )
+    public ReporterManager( List reports )
     {
-        if ( reports == null )
-        {
-            throw new NullPointerException();
-        }
-
-        this.reportsDirectory = reportsDirectory;
-
         this.reports = reports;
     }
 
@@ -97,14 +85,6 @@ public class ReporterManager
 
             report.writeMessage( message );
         }
-    }
-
-    public void resume()
-    {
-        writeMessage( "" );
-        writeMessage( "Results :" );
-        writeMessage( "Tests run: " + completedCount + ", Failures: " + failures + ", Errors: " + errors );
-        writeMessage( "" );
     }
 
     // ----------------------------------------------------------------------
@@ -189,17 +169,18 @@ public class ReporterManager
                 handleReporterException( "runCompleted", e );
             }
         }
-    }
 
-    // ----------------------------------------------------------------------
-    // Battery
-    // ----------------------------------------------------------------------
+        writeMessage( "" );
+        writeMessage( "Results :" );
+        writeMessage( "Tests run: " + completedCount + ", Failures: " + failures + ", Errors: " + errors );
+        writeMessage( "" );
+    }
 
     private ByteArrayOutputStream stdOut;
 
     private ByteArrayOutputStream stdErr;
 
-    public void batteryStarting( ReportEntry report )
+    public void testSetStarting( ReportEntry report )
     {
         for ( Iterator it = reports.iterator(); it.hasNext(); )
         {
@@ -207,7 +188,7 @@ public class ReporterManager
 
             try
             {
-                reporter.batteryStarting( report );
+                reporter.testSetStarting( report );
             }
             catch ( Exception e )
             {
@@ -216,15 +197,15 @@ public class ReporterManager
         }
     }
 
-    public void batteryCompleted( ReportEntry report )
+    public void testSetCompleted( ReportEntry report )
     {
         if ( !reports.isEmpty() )
         {
             Reporter reporter = (Reporter) reports.get( 0 );
 
-            errors += reporter.getNbErrors();
+            errors += reporter.getNumErrors();
 
-            failures += reporter.getNbFailures();
+            failures += reporter.getNumFailures();
 
             completedCount += reporter.getNbTests();
         }
@@ -235,7 +216,7 @@ public class ReporterManager
 
             try
             {
-                reporter.batteryCompleted( report );
+                reporter.testSetCompleted( report );
             }
             catch ( Exception e )
             {
@@ -243,7 +224,7 @@ public class ReporterManager
         }
     }
 
-    public void batteryAborted( ReportEntry report )
+    public void testSetAborted( ReportEntry report )
     {
         for ( Iterator it = reports.iterator(); it.hasNext(); )
         {
@@ -251,7 +232,7 @@ public class ReporterManager
 
             try
             {
-                reporter.batteryAborted( report );
+                reporter.testSetAborted( report );
             }
             catch ( Exception e )
             {
@@ -268,13 +249,6 @@ public class ReporterManager
 
     public void testStarting( ReportEntry report )
     {
-        File f = new File( reportsDirectory );
-
-        if ( !f.exists() )
-        {
-            f.mkdirs();
-        }
-
         stdOut = new ByteArrayOutputStream();
 
         newOut = new PrintStream( stdOut );
@@ -376,7 +350,7 @@ public class ReporterManager
         newErr.close();
     }
 
-    public void dispose()
+    public void reset()
     {
         for ( Iterator it = reports.iterator(); it.hasNext(); )
         {
@@ -384,11 +358,11 @@ public class ReporterManager
 
             try
             {
-                report.dispose();
+                report.reset();
             }
             catch ( Exception e )
             {
-                handleReporterException( "dispose", e );
+                handleReporterException( "reset", e );
             }
         }
     }
@@ -397,12 +371,12 @@ public class ReporterManager
     // Counters
     // ----------------------------------------------------------------------
 
-    public int getNbErrors()
+    public int getNumErrors()
     {
         return errors;
     }
 
-    public int getNbFailures()
+    public int getNumFailures()
     {
         return failures;
     }
@@ -417,6 +391,7 @@ public class ReporterManager
      */
     private void handleReporterException( String reporterMethod, Exception e )
     {
+/*
         String reporterThrewException = Surefire.getResourceString( "reporterThrew" );
 
         MessageFormat msgFmt = new MessageFormat( reporterThrewException );
@@ -428,10 +403,7 @@ public class ReporterManager
         System.err.println( stringToPrint );
 
         e.printStackTrace( System.err );
+*/
     }
 
-    public String getReportsDirectory()
-    {
-        return reportsDirectory;
-    }
 }

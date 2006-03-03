@@ -28,8 +28,6 @@ import java.text.NumberFormat;
 public abstract class AbstractReporter
     implements Reporter
 {
-    private String reportsDirectory;
-
     protected int completedCount;
 
     protected int errors;
@@ -46,17 +44,7 @@ public abstract class AbstractReporter
 
     private static final int MS_PER_SEC = 1000;
 
-    protected long batteryStartTime;
-
-    public void setReportsDirectory( String reportsDirectory )
-    {
-        this.reportsDirectory = reportsDirectory;
-    }
-
-    public String getReportsDirectory()
-    {
-        return reportsDirectory;
-    }
+    protected long testSetStartTime;
 
     // ----------------------------------------------------------------------
     // Report interface
@@ -78,17 +66,17 @@ public abstract class AbstractReporter
     {
     }
 
-    public void batteryStarting( ReportEntry report )
+    public void testSetStarting( ReportEntry report )
         throws IOException
     {
-        batteryStartTime = System.currentTimeMillis();
+        testSetStartTime = System.currentTimeMillis();
     }
 
-    public void batteryCompleted( ReportEntry report )
+    public void testSetCompleted( ReportEntry report )
     {
     }
 
-    public void batteryAborted( ReportEntry report )
+    public void testSetAborted( ReportEntry report )
     {
     }
 
@@ -131,12 +119,12 @@ public abstract class AbstractReporter
     // Counters
     // ----------------------------------------------------------------------
 
-    public int getNbErrors()
+    public int getNumErrors()
     {
         return errors;
     }
 
-    public int getNbFailures()
+    public int getNumFailures()
     {
         return failures;
     }
@@ -150,7 +138,7 @@ public abstract class AbstractReporter
     //
     // ----------------------------------------------------------------------
 
-    public void dispose()
+    public void reset()
     {
         errors = 0;
 

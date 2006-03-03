@@ -34,7 +34,7 @@ public class XMLReporterTest
         throws Exception
     {
         super.setUp();
-        reporter = new XMLReporter();
+        reporter = new XMLReporter( null );
         message = "junit.framework.AssertionFailedError";
         reportEntry = new ReportEntry( this, "XMLReporterTest", message, new AssertionFailedError() );
         reporter.setTestCase( new Xpp3Dom( "" ) );

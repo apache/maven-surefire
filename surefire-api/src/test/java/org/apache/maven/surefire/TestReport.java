@@ -56,17 +56,17 @@ public class TestReport
         System.out.println( "TestReport::testFailed -> " + reportEntry.getMessage() );
     }
 
-    public void batteryStarting( ReportEntry reportEntry )
+    public void testSetStarting( ReportEntry reportEntry )
     {
         System.out.println( "TestReport::suiteStarting -> " + reportEntry.getMessage() );
     }
 
-    public void batteryCompleted( ReportEntry reportEntry )
+    public void testSetCompleted( ReportEntry reportEntry )
     {
         System.out.println( "TestReport::suiteCompleted -> " + reportEntry.getMessage() );
     }
 
-    public void batteryAborted( ReportEntry reportEntry )
+    public void testSetAborted( ReportEntry reportEntry )
     {
         System.out.println( "TestReport::suiteAborted -> " + reportEntry.getMessage() );
     }
@@ -91,20 +91,20 @@ public class TestReport
         System.out.println( "TestReport::runCompleted" );
     }
 
-    public void dispose()
+    public void reset()
     {
         System.out.println( "TestReport::dispose" );
     }
 
-    public int getNbErrors()
+    public int getNumErrors()
     {
-        System.out.println( "TestReport::getNbErrors" );
+        System.out.println( "TestReport::getNumErrors" );
         return 0;
     }
 
-    public int getNbFailures()
+    public int getNumFailures()
     {
-        System.out.println( "TestReport::getNbFailures" );
+        System.out.println( "TestReport::getNumFailures" );
         return 0;
     }
 

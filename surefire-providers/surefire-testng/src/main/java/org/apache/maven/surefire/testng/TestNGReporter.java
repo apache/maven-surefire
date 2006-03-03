@@ -17,13 +17,8 @@ package org.apache.maven.surefire.testng;
  */
 
 import org.apache.maven.surefire.Surefire;
-import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterManager;
-import org.testng.ISuite;
-import org.testng.ISuiteListener;
-import org.testng.ITestContext;
 import org.testng.ITestListener;
-import org.testng.ITestResult;
 import org.testng.TestNG;
 
 /**
@@ -34,7 +29,7 @@ import org.testng.TestNG;
  * @author jkuhnert
  */
 public class TestNGReporter
-    implements ITestListener, ISuiteListener
+//    implements ITestListener, ISuiteListener (TODO)
 {
 
     /**
@@ -73,9 +68,7 @@ public class TestNGReporter
         }
     }
 
-    /* (non-Javadoc)
-    * @see org.testng.ITestListener#onTestStart(org.testng.ITestResult)
-    */
+/* TODO
     public void onTestStart( ITestResult result )
     {
         String rawString = Surefire.getResourceString( "testStarting" );
@@ -88,17 +81,11 @@ public class TestNGReporter
 
     }
 
-    /* (non-Javadoc)
-     * @see org.testng.ITestListener#onTestSuccess(org.testng.ITestResult)
-     */
     public void onTestSuccess( ITestResult result )
     {
         reportManager.testSucceeded( createReport( result, "testSuccessful" ) );
     }
 
-    /* (non-Javadoc)
-     * @see org.testng.ITestListener#onTestFailure(org.testng.ITestResult)
-     */
     public void onTestFailure( ITestResult result )
     {
         String rawString = Surefire.getResourceString( "executeException" );
@@ -111,9 +98,6 @@ public class TestNGReporter
         reportManager.testFailed( report );
     }
 
-    /* (non-Javadoc)
-    * @see org.testng.ITestListener#onTestSkipped(org.testng.ITestResult)
-    */
     public void onTestSkipped( ITestResult result )
     {
         // TODO: is this correct?
@@ -125,9 +109,6 @@ public class TestNGReporter
         return new ReportEntry( surefire, result.getName(), Surefire.getResourceString( key ) );
     }
 
-    /* (non-Javadoc)
-     * @see org.testng.ITestListener#onTestFailedButWithinSuccessPercentage(org.testng.ITestResult)
-     */
     public void onTestFailedButWithinSuccessPercentage( ITestResult result )
     {
         String rawString = Surefire.getResourceString( "executeException" );
@@ -139,9 +120,6 @@ public class TestNGReporter
         reportManager.testError( report );
     }
 
-    /* (non-Javadoc)
-     * @see org.testng.ITestListener#onStart(org.testng.ITestContext)
-     */
     public void onStart( ITestContext context )
     {
         String rawString = Surefire.getResourceString( "suiteExecutionStarting" );
@@ -150,12 +128,9 @@ public class TestNGReporter
 
         ReportEntry report = new ReportEntry( surefire, context.getName(), group, rawString );
 
-        reportManager.batteryStarting( report );
+        reportManager.testSetStarting( report );
     }
 
-    /* (non-Javadoc)
-    * @see org.testng.ITestListener#onFinish(org.testng.ITestContext)
-    */
     public void onFinish( ITestContext context )
     {
         String rawString = Surefire.getResourceString( "suiteCompletedNormally" );
@@ -163,11 +138,11 @@ public class TestNGReporter
         ReportEntry report =
             new ReportEntry( surefire, context.getName(), groupString( context.getIncludedGroups(), null ), rawString );
 
-        reportManager.batteryCompleted( report );
+        reportManager.testSetCompleted( report );
 
         reportManager.runCompleted();
 
-        reportManager.dispose();
+        reportManager.reset();
     }
 
     public void onFinish( ISuite suite )
@@ -177,6 +152,7 @@ public class TestNGReporter
     public void onStart( ISuite suite )
     {
     }
+*/
 
     /**
      * Creates a string out of the list of testng groups in the

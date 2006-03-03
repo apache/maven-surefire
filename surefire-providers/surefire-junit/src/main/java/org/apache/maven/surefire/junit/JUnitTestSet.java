@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.battery;
+package org.apache.maven.surefire.junit;
 
 /*
  * Copyright 2001-2006 The Apache Software Foundation.
@@ -16,8 +16,10 @@ package org.apache.maven.surefire.battery;
  * limitations under the License.
  */
 
-import org.apache.maven.surefire.battery.assertion.BatteryTestFailedException;
 import org.apache.maven.surefire.report.ReporterManager;
+import org.apache.maven.surefire.testset.AbstractTestSet;
+import org.apache.maven.surefire.testset.TestListenerInvocationHandler;
+import org.apache.maven.surefire.testset.TestSetFailedException;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -25,8 +27,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Proxy;
 
-public final class JUnitBattery
-    extends AbstractBattery
+public final class JUnitTestSet
+    extends AbstractTestSet
 {
     public static final String TEST_CASE = "junit.framework.TestCase";
 
@@ -54,8 +56,6 @@ public final class JUnitBattery
 
     private Class testResultClass;
 
-    private ClassLoader classLoader;
-
     private Class testClass;
 
     private Method addListenerMethod;
@@ -68,41 +68,26 @@ public final class JUnitBattery
 
     private static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
 
-    public JUnitBattery( String testClassName )
-        throws Exception
+    public JUnitTestSet( String testClassName, ClassLoader classLoader )
+        throws ClassNotFoundException
     {
-        processTestClass( getClass().getClassLoader().loadClass( testClassName ), getClass().getClassLoader() );
+        testClass = classLoader.loadClass( testClassName );
     }
 
-    public JUnitBattery( String testClass, ClassLoader loader )
-        throws Exception
-    {
-        processTestClass( loader.loadClass( testClass ), loader );
-    }
-
-    public JUnitBattery( Class testClass, ClassLoader loader )
-        throws Exception
-    {
-        processTestClass( testClass, loader );
-    }
-
-    private void processTestClass( Class testClass, ClassLoader loader )
-        throws Exception
+    public JUnitTestSet( Class testClass )
     {
         if ( testClass == null )
         {
             throw new NullPointerException( "testClass is null" );
         }
 
-        if ( loader == null )
-        {
-            throw new NullPointerException( "classLoader is null" );
-        }
-
-        this.classLoader = loader;
-
         this.testClass = testClass;
+    }
 
+    private void processTestClass( ClassLoader loader )
+        throws ClassNotFoundException, IllegalAccessException, InvocationTargetException, InstantiationException,
+        NoSuchMethodException
+    {
         testResultClass = loader.loadClass( TEST_RESULT );
 
         Class testCaseClass = loader.loadClass( TEST_CASE );
@@ -136,6 +121,7 @@ public final class JUnitBattery
         }
         catch ( NoSuchMethodException e )
         {
+            // No suite method
         }
 
         if ( testObject == null && testCaseClass.isAssignableFrom( testClass ) )
@@ -187,7 +173,7 @@ public final class JUnitBattery
             {
                 countTestCasesMethod = testClass.getMethod( COUNT_TEST_CASES_METHOD, EMPTY_CLASS_ARRAY );
             }
-            catch ( Exception e )
+            catch ( NoSuchMethodException e )
             {
                 countTestCasesMethod = null; // for clarity
             }
@@ -196,7 +182,7 @@ public final class JUnitBattery
             {
                 runMethod = testClass.getMethod( RUN_METHOD, new Class[]{testResultClass} );
             }
-            catch ( Exception e )
+            catch ( NoSuchMethodException e )
             {
                 runMethod = null;    // for clarity
             }
@@ -213,21 +199,47 @@ public final class JUnitBattery
         return testObject;
     }
 
-    public void execute( ReporterManager reportManager )
-        throws Exception
+    public void execute( ReporterManager reportManager, ClassLoader loader )
+        throws TestSetFailedException
     {
+        try
+        {
+            processTestClass( loader );
+        }
+        catch ( ClassNotFoundException e )
+        {
+            throw new TestSetFailedException( "JUnit classes not available", e );
+        }
+        catch ( IllegalAccessException e )
+        {
+            throw new TestSetFailedException( "Unknown access exception creating JUnit classes", e );
+        }
+        catch ( InvocationTargetException e )
+        {
+            throw new TestSetFailedException( "Unknown invocation exception creating JUnit classes", e );
+        }
+        catch ( InstantiationException e )
+        {
+            throw new TestSetFailedException( "Unknown instantiation exception creating JUnit classes", e );
+        }
+        catch ( NoSuchMethodException e )
+        {
+            throw new TestSetFailedException( "Class is not a JUnit TestCase", e );
+        }
+
+        // TODO: why do we accept runMethod == null? That means it doesn't extend TestCase
         if ( runMethod != null )
         {
-            executeJUnit( reportManager );
+            executeJUnit( reportManager, loader );
         }
         else
         {
-            super.execute( reportManager );
+            super.execute( reportManager, loader );
         }
     }
 
-    private void executeJUnit( ReporterManager reportManager )
-        throws BatteryTestFailedException
+    private void executeJUnit( ReporterManager reportManager, ClassLoader classLoader )
+        throws TestSetFailedException
     {
         try
         {
@@ -249,23 +261,24 @@ public final class JUnitBattery
         }
         catch ( IllegalArgumentException e )
         {
-            throw new BatteryTestFailedException( testObject.getClass().getName(), e );
+            throw new TestSetFailedException( testObject.getClass().getName(), e );
         }
         catch ( InstantiationException e )
         {
-            throw new BatteryTestFailedException( testObject.getClass().getName(), e );
+            throw new TestSetFailedException( testObject.getClass().getName(), e );
         }
         catch ( IllegalAccessException e )
         {
-            throw new BatteryTestFailedException( testObject.getClass().getName(), e );
+            throw new TestSetFailedException( testObject.getClass().getName(), e );
         }
         catch ( InvocationTargetException e )
         {
-            throw new BatteryTestFailedException( testObject.getClass().getName(), e );
+            throw new TestSetFailedException( testObject.getClass().getName(), e );
         }
     }
 
     public int getTestCount()
+        throws TestSetFailedException
     {
         try
         {
@@ -284,19 +297,19 @@ public final class JUnitBattery
         }
         catch ( IllegalAccessException e )
         {
-            throw new BatteryTestFailedException( testObject.getClass().getName(), e );
+            throw new TestSetFailedException( testObject.getClass().getName(), e );
         }
         catch ( IllegalArgumentException e )
         {
-            throw new BatteryTestFailedException( testObject.getClass().getName(), e );
+            throw new TestSetFailedException( testObject.getClass().getName(), e );
         }
         catch ( InvocationTargetException e )
         {
-            throw new BatteryTestFailedException( testObject.getClass().getName(), e );
+            throw new TestSetFailedException( testObject.getClass().getName(), e );
         }
     }
 
-    public String getBatteryName()
+    public String getName()
     {
         return testClass.getName();
     }

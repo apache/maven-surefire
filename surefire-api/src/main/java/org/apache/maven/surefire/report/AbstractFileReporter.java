@@ -29,17 +29,21 @@ import java.io.PrintWriter;
 public abstract class AbstractFileReporter
     extends AbstractTextReporter
 {
-    protected AbstractFileReporter( String format )
+    private File reportsDirectory;
+
+    protected AbstractFileReporter( File reportsDirectory, String format )
     {
         super( format );
+
+        this.reportsDirectory = reportsDirectory;
     }
 
-    public void batteryStarting( ReportEntry report )
+    public void testSetStarting( ReportEntry report )
         throws IOException
     {
-        super.batteryStarting( report );
+        super.testSetStarting( report );
 
-        File reportFile = new File( getReportsDirectory(), report.getName() + ".txt" );
+        File reportFile = new File( reportsDirectory, report.getName() + ".txt" );
 
         File reportDir = reportFile.getParentFile();
 
@@ -49,16 +53,16 @@ public abstract class AbstractFileReporter
 
         writer.println( "-------------------------------------------------------------------------------" );
 
-        writer.println( "Battery: " + report.getName() );
+        writer.println( "Test set: " + report.getName() );
 
         writer.println( "-------------------------------------------------------------------------------" );
 
         setWriter( writer );
     }
 
-    public void batteryCompleted( ReportEntry report )
+    public void testSetCompleted( ReportEntry report )
     {
-        super.batteryCompleted( report );
+        super.testSetCompleted( report );
 
         writer.flush();
 

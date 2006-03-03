@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.battery;
+package org.apache.maven.surefire.testset;
 
 /*
  * Copyright 2001-2006 The Apache Software Foundation.

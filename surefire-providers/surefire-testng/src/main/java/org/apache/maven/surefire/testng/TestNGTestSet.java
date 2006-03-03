@@ -17,10 +17,8 @@ package org.apache.maven.surefire.testng;
  */
 
 import org.apache.maven.surefire.Surefire;
-import org.apache.maven.surefire.battery.AbstractBattery;
 import org.apache.maven.surefire.report.ReporterManager;
-import org.testng.ISuiteListener;
-import org.testng.ITestListener;
+import org.apache.maven.surefire.testset.AbstractTestSet;
 import org.testng.TestNG;
 import org.testng.internal.TestNGClassFinder;
 import org.testng.internal.Utils;
@@ -39,41 +37,33 @@ import java.util.List;
  *
  * @author jkuhnert
  */
-public class TestNGBattery
-    extends AbstractBattery
+public class TestNGTestSet
+    extends AbstractTestSet
 {
     private String testSourceDirectory;
 
     private Class testClass;
 
-    private String groups;
-
     private static IAnnotationFinder annotationFinder;
 
     /**
-     * Creates a new test battery that will process the class being
+     * Creates a new test testset that will process the class being
      * passed in to determine the testing configuration.
-     *
-     * @param testClass
-     * @param loader
      */
-    public TestNGBattery( Class testClass, ClassLoader loader, String testSourceDirectory, String groups )
+    public TestNGTestSet( String testClass )
+        throws ClassNotFoundException
     {
         if ( testClass == null )
         {
             throw new NullPointerException( "testClass is null" );
         }
 
-        if ( loader == null )
-        {
-            throw new NullPointerException( "classLoader is null" );
-        }
+        // TODO: broken. the test class uses testng from the project tree, but we use the other one. Annotations aren't found.
+        this.testClass = getClass().getClassLoader().loadClass( testClass );
 
-        this.testClass = testClass;
-
+/*
         this.testSourceDirectory = testSourceDirectory;
-
-        this.groups = groups;
+*/
     }
 
     public Class getTestClass()
@@ -108,24 +98,33 @@ public class TestNGBattery
         }
     }
 
-    public void execute( ReporterManager reportManager )
+    public void execute( ReporterManager reportManager, ClassLoader loader )
     {
-        // TODO: maybe don't execute this for every battery
+        // TODO: maybe don't execute this for every testset
 
         TestNG testNG = new TestNG();
         List classes = new ArrayList();
         classes.add( testClass );
 
+        String groups = null;
+
+        if ( !TestNGClassFinder.isTestNGClass( testClass, getAnnotationFinder() ) )
+        {
+//            testNG.setJUnit( Boolean.TRUE );
+        }
+
         //configure testng parameters
         ClassSuite classSuite = new ClassSuite( groups != null ? groups : "TestNG Suite", Utils.classesToXmlClasses(
             (Class[]) classes.toArray( new Class[classes.size()] ) ) );
         testNG.setCommandLineSuite( classSuite );
-        testNG.setOutputDirectory( reportManager.getReportsDirectory() );
+        // TODO
+//        testNG.setOutputDirectory( reportManager.getReportsDirectory() );
         Surefire surefire = new Surefire(); // TODO: blatently wrong
         TestNGReporter testngReporter = new TestNGReporter( reportManager, surefire );
+/* TODO
         testNG.addListener( (ITestListener) testngReporter );
         testNG.addListener( (ISuiteListener) testngReporter );
-        testNG.setUseDefaultListeners( false );
+*/
 
         // TODO: maybe this was running junit tests for us so that parallel would work
 //        testNG.setThreadCount( threadCount );
@@ -152,27 +151,12 @@ public class TestNGBattery
 //        nbTests += result.size(); TODO
     }
 
-    public String getBatteryName()
+    public String getName()
     {
         return testClass.getName();
     }
 
-    /**
-     * @todo belongs in a factory. This is reflected only.
-     */
-    public static Boolean canInstantiate( Class testClass )
-    {
-        if ( TestNGClassFinder.isTestNGClass( testClass, getAnnotationFinder() ) )
-        {
-            return Boolean.TRUE;
-        }
-        else
-        {
-            return Boolean.FALSE;
-        }
-    }
-
-    public static IAnnotationFinder getAnnotationFinder()
+    private static IAnnotationFinder getAnnotationFinder()
     {
         if ( annotationFinder == null )
         {

@@ -1,4 +1,4 @@
-package org.apache.maven.surefire;
+package org.apache.maven.surefire.testset;
 
 /*
  * Copyright 2001-2006 The Apache Software Foundation.
@@ -16,21 +16,17 @@ package org.apache.maven.surefire;
  * limitations under the License.
  */
 
-public class SurefireBooterForkException
-    extends Exception
+import org.apache.maven.surefire.report.ReporterManager;
+
+public interface SurefireTestSet
 {
-    public SurefireBooterForkException( String message )
-    {
-        super( message );
-    }
+    void execute( ReporterManager reportManager, ClassLoader loader )
+        throws Exception;
 
-    public SurefireBooterForkException( Throwable cause )
-    {
-        super( cause );
-    }
+    // TODO: fix exception and its propogation
+    int getTestCount()
+        throws TestSetFailedException;
 
-    public SurefireBooterForkException( String message, Throwable cause )
-    {
-        super( message, cause );
-    }
+    String getName();
+
 }

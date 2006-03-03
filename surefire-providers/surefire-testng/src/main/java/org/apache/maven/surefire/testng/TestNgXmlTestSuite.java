@@ -16,8 +16,8 @@ package org.apache.maven.surefire.testng;
  * limitations under the License.
  */
 
-import org.apache.maven.surefire.battery.Battery;
 import org.apache.maven.surefire.report.ReporterManager;
+import org.apache.maven.surefire.suite.SurefireTestSuite;
 import org.testng.ISuiteListener;
 import org.testng.ITestListener;
 import org.testng.TestNG;
@@ -32,14 +32,15 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Handles suite xml file definitions for TestNG.
  *
  * @author jkuhnert
  */
-public class TestNGXMLBattery
-    implements Battery
+public class TestNgXmlTestSuite
+    implements SurefireTestSuite
 {
     protected File suiteFile;
 
@@ -50,30 +51,38 @@ public class TestNGXMLBattery
     protected String m_suiteName = "TestNG XML Suite";
 
     /**
-     * Creates a testng battery to be configured by the specified
+     * Creates a testng testset to be configured by the specified
      * xml file.
      */
-    public TestNGXMLBattery( File suiteFile )
+    public TestNgXmlTestSuite( File suiteFile )
     {
         this.suiteFile = suiteFile;
         parseSuite();
     }
 
-    public void discoverBatteryClassNames()
-    {
-    }
-
-    public void execute( ReporterManager reportManager )
+    public void execute( ReporterManager reportManager, ClassLoader loader )
     {
         testRunner.runSuitesLocally();
     }
 
-    public String getBatteryName()
+    public void execute( String testSetName, ReporterManager reporterManager, ClassLoader testsClassLoader )
+    {
+        // TODO: if this can't be implemented here, I should have the booter recognise that and prevent it from getting
+        // the pertest treatment
+    }
+
+    public int getNumTests()
+    {
+        // TODO
+        return 0;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    public String getName()
     {
         return m_suiteName;
     }
 
-    public List getSubBatteryClassNames()
+    public List getSubBatteries()
     {
         return Collections.EMPTY_LIST;
     }
@@ -130,4 +139,11 @@ public class TestNGXMLBattery
         // TODO: return when TestNG brings it back
 //        testRunner.setReportResults(false);
     }
+
+    public Map locateTestSets( ClassLoader classLoader )
+    {
+        // TODO
+        return Collections.EMPTY_MAP;
+    }
+
 }

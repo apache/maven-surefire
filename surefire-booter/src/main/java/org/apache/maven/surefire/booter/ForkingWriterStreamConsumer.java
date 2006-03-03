@@ -1,4 +1,4 @@
-package org.apache.maven.surefire;
+package org.apache.maven.surefire.booter;
 
 /*
  * Copyright 2001-2006 The Apache Software Foundation.
@@ -35,7 +35,7 @@ public class ForkingWriterStreamConsumer
 
     private int headingPrefixLength;
 
-    boolean showHeading;
+    private boolean showHeading;
 
     public ForkingWriterStreamConsumer( Writer writer, boolean showHeading )
     {

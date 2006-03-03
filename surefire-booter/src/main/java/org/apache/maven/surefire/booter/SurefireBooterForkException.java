@@ -1,6 +1,4 @@
-package org.apache.maven.surefire.report;
-
-import java.io.File;
+package org.apache.maven.surefire.booter;
 
 /*
  * Copyright 2001-2006 The Apache Software Foundation.
@@ -18,17 +16,21 @@ import java.io.File;
  * limitations under the License.
  */
 
-/**
- * Text file reporter.
- *
- * @author <a href="mailto:jruiz@exist.com">Johnny R. Ruiz III</a>
- * @version $Id$
- */
-public class FileReporter
-    extends AbstractFileReporter
+public class SurefireBooterForkException
+    extends Exception
 {
-    public FileReporter( File reportsDirectory )
+    public SurefireBooterForkException( String message )
     {
-        super( reportsDirectory, PLAIN );
+        super( message );
+    }
+
+    public SurefireBooterForkException( Throwable cause )
+    {
+        super( cause );
+    }
+
+    public SurefireBooterForkException( String message, Throwable cause )
+    {
+        super( message, cause );
     }
 }

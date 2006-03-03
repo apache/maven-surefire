@@ -93,19 +93,19 @@ public abstract class AbstractTextReporter
         testResults.add( getOutput( report, "FAILURE" ) );
     }
 
-    public void batteryStarting( ReportEntry report )
+    public void testSetStarting( ReportEntry report )
         throws IOException
     {
-        super.batteryStarting( report );
+        super.testSetStarting( report );
 
         testResults = new ArrayList();
     }
 
-    public void batteryCompleted( ReportEntry report )
+    public void testSetCompleted( ReportEntry report )
     {
-        super.batteryCompleted( report );
+        super.testSetCompleted( report );
 
-        writeMessage( getBatterySummary() );
+        writeMessage( getTestSetSummary() );
 
         if ( format.equals( BRIEF ) || format.equals( PLAIN ) )
         {
@@ -116,26 +116,26 @@ public abstract class AbstractTextReporter
         }
     }
 
-    protected String getBatterySummary()
+    protected String getTestSetSummary()
     {
-        StringBuffer batterySummary = new StringBuffer();
+        StringBuffer buf = new StringBuffer();
 
-        batterySummary.append( "Tests run: " );
-        batterySummary.append( completedCount );
-        batterySummary.append( ", Failures: " );
-        batterySummary.append( failures );
-        batterySummary.append( ", Errors: " );
-        batterySummary.append( errors );
-        batterySummary.append( ", Time elapsed: " );
-        batterySummary.append( elapsedTimeAsString( System.currentTimeMillis() - batteryStartTime ) );
-        batterySummary.append( " sec" );
+        buf.append( "Tests run: " );
+        buf.append( completedCount );
+        buf.append( ", Failures: " );
+        buf.append( failures );
+        buf.append( ", Errors: " );
+        buf.append( errors );
+        buf.append( ", Time elapsed: " );
+        buf.append( elapsedTimeAsString( System.currentTimeMillis() - testSetStartTime ) );
+        buf.append( " sec" );
 
         if ( failures > 0 || errors > 0 )
         {
-            batterySummary.append( " <<< FAILURE!" );
+            buf.append( " <<< FAILURE!" );
         }
 
-        return batterySummary.toString();
+        return buf.toString();
     }
 
     protected String getElapsedTimeSummary( ReportEntry report )
