@@ -126,7 +126,6 @@ public abstract class AbstractDirectoryTestSuite
     private void executeTestSet( SurefireTestSet testSet, ReporterManager reporterManager, ClassLoader classLoader )
         throws ReporterException, TestSetFailedException
     {
-        // TODO: fix all these messages, and improve bundle resolution
         String rawString = bundle.getString( "testSetStarting" );
 
         ReportEntry report = new ReportEntry( this, testSet.getName(), rawString );
