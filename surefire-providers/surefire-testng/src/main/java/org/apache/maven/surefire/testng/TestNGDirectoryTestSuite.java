@@ -23,7 +23,7 @@ import java.io.File;
 import java.util.ArrayList;
 
 /**
- * Test suite for TestNG based on a directory of Java test classes.
+ * Test suite for TestNG based on a directory of Java test classes. Can also execute JUnit tests.
  *
  * @author <a href="mailto:brett@apache.org">Brett Porter</a>
  */

@@ -17,6 +17,7 @@ package org.apache.maven.surefire.booter;
  */
 
 import org.apache.maven.surefire.Surefire;
+import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.cli.CommandLineException;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
@@ -107,10 +108,8 @@ public class SurefireBooter
         this.forkConfiguration = forkConfiguration;
     }
 
-    // TODO: fix error handling
     public boolean run()
-        throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InstantiationException,
-        InvocationTargetException, MalformedURLException, SurefireBooterForkException
+        throws SurefireBooterForkException, SurefireExecutionException
     {
         boolean result = false;
 
@@ -130,8 +129,7 @@ public class SurefireBooter
     }
 
     private boolean runSuitesInProcess( String testSet, boolean childDelegation )
-        throws MalformedURLException, ClassNotFoundException, IllegalAccessException, InstantiationException,
-        NoSuchMethodException, InvocationTargetException
+        throws SurefireExecutionException
     {
         if ( testSuites.size() != 1 )
         {
@@ -140,56 +138,79 @@ public class SurefireBooter
 
         // TODO: replace with plexus
 
-        ClassLoader surefireClassLoader = createClassLoader( surefireClassPathUrls, getClass().getClassLoader() );
+        //noinspection CatchGenericClass,OverlyBroadCatchBlock
+        try
+        {
+            ClassLoader surefireClassLoader = createClassLoader( surefireClassPathUrls, getClass().getClassLoader() );
 
-        ClassLoader testsClassLoader = createClassLoader( classPathUrls, childDelegation );
+            ClassLoader testsClassLoader = createClassLoader( classPathUrls, childDelegation );
 
-        Class surefireClass = surefireClassLoader.loadClass( Surefire.class.getName() );
+            Class surefireClass = surefireClassLoader.loadClass( Surefire.class.getName() );
 
-        Object surefire = surefireClass.newInstance();
+            Object surefire = surefireClass.newInstance();
 
-        Method run = surefireClass.getMethod( "run", new Class[]{List.class, Object[].class, String.class,
-            ClassLoader.class, ClassLoader.class} );
+            Method run = surefireClass.getMethod( "run", new Class[]{List.class, Object[].class, String.class,
+                ClassLoader.class, ClassLoader.class} );
 
-        ClassLoader oldContextClassLoader = Thread.currentThread() .getContextClassLoader();
+            ClassLoader oldContextClassLoader = Thread.currentThread() .getContextClassLoader();
 
-        Thread.currentThread().setContextClassLoader( testsClassLoader );
+            Thread.currentThread().setContextClassLoader( testsClassLoader );
 
-        Boolean result = (Boolean) run.invoke( surefire, new Object[]{reports, testSuites.get( 0 ), testSet,
-            surefireClassLoader, testsClassLoader} );
+            Boolean result = (Boolean) run.invoke( surefire, new Object[]{reports, testSuites.get( 0 ), testSet,
+                surefireClassLoader, testsClassLoader} );
 
-        Thread.currentThread().setContextClassLoader( oldContextClassLoader );
+            Thread.currentThread().setContextClassLoader( oldContextClassLoader );
 
-        return result.booleanValue();
+            return result.booleanValue();
+        }
+        catch ( InvocationTargetException e )
+        {
+            throw new SurefireExecutionException( e.getTargetException().getMessage(), e.getTargetException() );
+        }
+        catch ( Exception e )
+        {
+            throw new SurefireExecutionException( "Unable to instantiate and execute Surefire", e );
+        }
     }
 
     private boolean runSuitesInProcess( boolean childDelegation )
-        throws ClassNotFoundException, IllegalAccessException, InstantiationException, NoSuchMethodException,
-        InvocationTargetException, MalformedURLException
+        throws SurefireExecutionException
     {
         // TODO: replace with plexus
 
-        ClassLoader surefireClassLoader = createClassLoader( surefireClassPathUrls, getClass().getClassLoader() );
+        //noinspection CatchGenericClass,OverlyBroadCatchBlock
+        try
+        {
+            ClassLoader surefireClassLoader = createClassLoader( surefireClassPathUrls, getClass().getClassLoader() );
 
-        ClassLoader testsClassLoader = createClassLoader( classPathUrls, childDelegation );
+            ClassLoader testsClassLoader = createClassLoader( classPathUrls, childDelegation );
 
-        Class surefireClass = surefireClassLoader.loadClass( Surefire.class.getName() );
+            Class surefireClass = surefireClassLoader.loadClass( Surefire.class.getName() );
 
-        Object surefire = surefireClass.newInstance();
+            Object surefire = surefireClass.newInstance();
 
-        Method run =
-            surefireClass.getMethod( "run", new Class[]{List.class, List.class, ClassLoader.class, ClassLoader.class} );
+            Method run = surefireClass.getMethod( "run", new Class[]{List.class, List.class, ClassLoader.class,
+                ClassLoader.class} );
 
-        ClassLoader oldContextClassLoader = Thread.currentThread() .getContextClassLoader();
+            ClassLoader oldContextClassLoader = Thread.currentThread() .getContextClassLoader();
 
-        Thread.currentThread().setContextClassLoader( testsClassLoader );
+            Thread.currentThread().setContextClassLoader( testsClassLoader );
 
-        Boolean result =
-            (Boolean) run.invoke( surefire, new Object[]{reports, testSuites, surefireClassLoader, testsClassLoader} );
+            Boolean result = (Boolean) run.invoke( surefire, new Object[]{reports, testSuites, surefireClassLoader,
+                testsClassLoader} );
 
-        Thread.currentThread().setContextClassLoader( oldContextClassLoader );
+            Thread.currentThread().setContextClassLoader( oldContextClassLoader );
 
-        return result.booleanValue();
+            return result.booleanValue();
+        }
+        catch ( InvocationTargetException e )
+        {
+            throw new SurefireExecutionException( e.getTargetException().getMessage(), e.getTargetException() );
+        }
+        catch ( Exception e )
+        {
+            throw new SurefireExecutionException( "Unable to instantiate and execute Surefire", e );
+        }
     }
 
     private boolean runSuitesForkOnce()
@@ -244,7 +265,24 @@ public class SurefireBooter
 
         Object[] params = (Object[]) testSuite[1];
 
-        Object suite = Surefire.instantiateObject( className, params, surefireClassLoader );
+        Object suite;
+        try
+        {
+            suite = Surefire.instantiateObject( className, params, surefireClassLoader );
+        }
+        catch ( TestSetFailedException e )
+        {
+            throw new SurefireBooterForkException( e.getMessage(), e.getCause() );
+        }
+        catch ( ClassNotFoundException e )
+        {
+            throw new SurefireBooterForkException( "Unable to find class for test suite '" + className + "'", e );
+        }
+        catch ( NoSuchMethodException e )
+        {
+            throw new SurefireBooterForkException(
+                "Unable to find appropriate constructor for test suite '" + className + "': " + e.getMessage(), e );
+        }
 
         Map testSets;
         try
@@ -263,7 +301,7 @@ public class SurefireBooter
         }
         catch ( InvocationTargetException e )
         {
-            throw new SurefireBooterForkException( "Error obtaining test sets", e );
+            throw new SurefireBooterForkException( e.getTargetException().getMessage(), e.getTargetException() );
         }
         return testSets;
     }
@@ -553,8 +591,7 @@ public class SurefireBooter
      * @param args
      */
     public static void main( String[] args )
-        throws ClassNotFoundException, IllegalAccessException, InstantiationException, InvocationTargetException,
-        NoSuchMethodException, IOException
+        throws SurefireExecutionException, IOException
     {
         if ( args.length > 1 )
         {

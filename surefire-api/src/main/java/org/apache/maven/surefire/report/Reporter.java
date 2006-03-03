@@ -31,7 +31,7 @@ public interface Reporter
 
     // Test Sets
     void testSetStarting( ReportEntry report )
-        throws Exception;
+        throws ReporterException;
 
     void testSetCompleted( ReportEntry report );
 
@@ -46,12 +46,12 @@ public interface Reporter
 
     void testFailed( ReportEntry report, String stdOut, String stdErr );
 
+    // Counters
     void reset();
 
-    // Counters... TODO (remove?)
     int getNumErrors();
 
     int getNumFailures();
 
-    int getNbTests();
+    int getNumTests();
 }

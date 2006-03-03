@@ -22,8 +22,8 @@ import org.codehaus.plexus.util.xml.Xpp3DomWriter;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
@@ -69,7 +69,7 @@ public class XMLReporter
     }
 
     public void testSetStarting( ReportEntry report )
-        throws IOException, UnsupportedEncodingException
+        throws ReporterException
     {
         super.testSetStarting( report );
 
@@ -79,8 +79,19 @@ public class XMLReporter
 
         reportDir.mkdirs();
 
-        writer = new PrintWriter(
-            new BufferedWriter( new OutputStreamWriter( new FileOutputStream( reportFile ), "UTF-8" ) ) );
+        try
+        {
+            writer = new PrintWriter(
+                new BufferedWriter( new OutputStreamWriter( new FileOutputStream( reportFile ), "UTF-8" ) ) );
+        }
+        catch ( UnsupportedEncodingException e )
+        {
+            throw new ReporterException( "Unable to use UTF-8 encoding", e );
+        }
+        catch ( FileNotFoundException e )
+        {
+            throw new ReporterException( "Unable to create file: " + e.getMessage(), e );
+        }
 
         writer.write( "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n" );
 
@@ -92,7 +103,7 @@ public class XMLReporter
     {
         super.testSetCompleted( report );
 
-        testSuite.setAttribute( "tests", String.valueOf( this.getNbTests() ) );
+        testSuite.setAttribute( "tests", String.valueOf( this.getNumTests() ) );
 
         testSuite.setAttribute( "errors", String.valueOf( this.getNumErrors() ) );
 

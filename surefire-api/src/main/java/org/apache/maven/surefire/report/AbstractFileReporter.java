@@ -39,7 +39,7 @@ public abstract class AbstractFileReporter
     }
 
     public void testSetStarting( ReportEntry report )
-        throws IOException
+        throws ReporterException
     {
         super.testSetStarting( report );
 
@@ -49,15 +49,22 @@ public abstract class AbstractFileReporter
 
         reportDir.mkdirs();
 
-        PrintWriter writer = new PrintWriter( new FileWriter( reportFile ) );
+        try
+        {
+            PrintWriter writer = new PrintWriter( new FileWriter( reportFile ) );
 
-        writer.println( "-------------------------------------------------------------------------------" );
+            writer.println( "-------------------------------------------------------------------------------" );
 
-        writer.println( "Test set: " + report.getName() );
+            writer.println( "Test set: " + report.getName() );
 
-        writer.println( "-------------------------------------------------------------------------------" );
+            writer.println( "-------------------------------------------------------------------------------" );
 
-        setWriter( writer );
+            setWriter( writer );
+        }
+        catch ( IOException e )
+        {
+            throw new ReporterException( "Unable to create file for report: " + e.getMessage(), e );
+        }
     }
 
     public void testSetCompleted( ReportEntry report )

@@ -102,14 +102,7 @@ public class ReporterManager
         {
             Reporter report = (Reporter) i.next();
 
-            try
-            {
-                report.runStarting( testCount );
-            }
-            catch ( Exception e )
-            {
-                handleReporterException( "runStarting", e );
-            }
+            report.runStarting( testCount );
         }
     }
 
@@ -119,14 +112,7 @@ public class ReporterManager
         {
             Reporter reporter = (Reporter) it.next();
 
-            try
-            {
-                reporter.runStopped();
-            }
-            catch ( Exception e )
-            {
-                handleReporterException( "runStopped", e );
-            }
+            reporter.runStopped();
         }
     }
 
@@ -141,14 +127,7 @@ public class ReporterManager
         {
             Reporter reporter = (Reporter) it.next();
 
-            try
-            {
-                reporter.runAborted( report );
-            }
-            catch ( Exception e )
-            {
-                handleReporterException( "runAborted", e );
-            }
+            reporter.runAborted( report );
         }
 
         ++errors;
@@ -160,14 +139,7 @@ public class ReporterManager
         {
             Reporter reporter = (Reporter) it.next();
 
-            try
-            {
-                reporter.runCompleted();
-            }
-            catch ( Exception e )
-            {
-                handleReporterException( "runCompleted", e );
-            }
+            reporter.runCompleted();
         }
 
         writeMessage( "" );
@@ -181,19 +153,13 @@ public class ReporterManager
     private ByteArrayOutputStream stdErr;
 
     public void testSetStarting( ReportEntry report )
+        throws ReporterException
     {
         for ( Iterator it = reports.iterator(); it.hasNext(); )
         {
             Reporter reporter = (Reporter) it.next();
 
-            try
-            {
-                reporter.testSetStarting( report );
-            }
-            catch ( Exception e )
-            {
-                handleReporterException( "suiteStarting", e );
-            }
+            reporter.testSetStarting( report );
         }
     }
 
@@ -207,7 +173,7 @@ public class ReporterManager
 
             failures += reporter.getNumFailures();
 
-            completedCount += reporter.getNbTests();
+            completedCount += reporter.getNumTests();
         }
 
         for ( Iterator it = reports.iterator(); it.hasNext(); )
@@ -230,14 +196,7 @@ public class ReporterManager
         {
             Reporter reporter = (Reporter) it.next();
 
-            try
-            {
-                reporter.testSetAborted( report );
-            }
-            catch ( Exception e )
-            {
-                handleReporterException( "suiteAborted", e );
-            }
+            reporter.testSetAborted( report );
         }
 
         ++errors;
@@ -271,14 +230,7 @@ public class ReporterManager
         {
             Reporter reporter = (Reporter) it.next();
 
-            try
-            {
-                reporter.testStarting( report );
-            }
-            catch ( Exception e )
-            {
-                handleReporterException( "testStarting", e );
-            }
+            reporter.testStarting( report );
         }
     }
 
@@ -290,14 +242,7 @@ public class ReporterManager
         {
             Reporter reporter = (Reporter) it.next();
 
-            try
-            {
-                reporter.testSucceeded( report );
-            }
-            catch ( Exception e )
-            {
-                handleReporterException( "testSucceeded", e );
-            }
+            reporter.testSucceeded( report );
         }
     }
 
@@ -323,20 +268,13 @@ public class ReporterManager
         {
             Reporter reporter = (Reporter) it.next();
 
-            try
+            if ( "failure".equals( typeError ) )
             {
-                if ( "failure".equals( typeError ) )
-                {
-                    reporter.testFailed( reportEntry, stdOutLog, stdErrLog );
-                }
-                else
-                {
-                    reporter.testError( reportEntry, stdOutLog, stdErrLog );
-                }
+                reporter.testFailed( reportEntry, stdOutLog, stdErrLog );
             }
-            catch ( Exception e )
+            else
             {
-                handleReporterException( "testFailed", e );
+                reporter.testError( reportEntry, stdOutLog, stdErrLog );
             }
         }
     }
@@ -356,14 +294,7 @@ public class ReporterManager
         {
             Reporter report = (Reporter) it.next();
 
-            try
-            {
-                report.reset();
-            }
-            catch ( Exception e )
-            {
-                handleReporterException( "reset", e );
-            }
+            report.reset();
         }
     }
 
@@ -384,26 +315,6 @@ public class ReporterManager
     public int getNbTests()
     {
         return completedCount;
-    }
-
-    /**
-     * @todo is this here for throwables? most of these don't throw any checked exceptions
-     */
-    private void handleReporterException( String reporterMethod, Exception e )
-    {
-/*
-        String reporterThrewException = Surefire.getResourceString( "reporterThrew" );
-
-        MessageFormat msgFmt = new MessageFormat( reporterThrewException );
-
-        Object[] args = {reporterMethod};
-
-        String stringToPrint = msgFmt.format( args );
-
-        System.err.println( stringToPrint );
-
-        e.printStackTrace( System.err );
-*/
     }
 
 }

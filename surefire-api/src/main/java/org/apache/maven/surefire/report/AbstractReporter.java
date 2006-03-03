@@ -16,7 +16,6 @@ package org.apache.maven.surefire.report;
  * limitations under the License.
  */
 
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.NumberFormat;
@@ -67,7 +66,7 @@ public abstract class AbstractReporter
     }
 
     public void testSetStarting( ReportEntry report )
-        throws IOException
+        throws ReporterException
     {
         testSetStartTime = System.currentTimeMillis();
     }
@@ -129,7 +128,7 @@ public abstract class AbstractReporter
         return failures;
     }
 
-    public int getNbTests()
+    public int getNumTests()
     {
         return completedCount;
     }

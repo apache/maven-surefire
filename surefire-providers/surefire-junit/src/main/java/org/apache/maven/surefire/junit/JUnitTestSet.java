@@ -273,7 +273,7 @@ public final class JUnitTestSet
         }
         catch ( InvocationTargetException e )
         {
-            throw new TestSetFailedException( testObject.getClass().getName(), e );
+            throw new TestSetFailedException( testObject.getClass().getName(), e.getTargetException() );
         }
     }
 
@@ -305,7 +305,7 @@ public final class JUnitTestSet
         }
         catch ( InvocationTargetException e )
         {
-            throw new TestSetFailedException( testObject.getClass().getName(), e );
+            throw new TestSetFailedException( testObject.getClass().getName(), e.getTargetException() );
         }
     }
 

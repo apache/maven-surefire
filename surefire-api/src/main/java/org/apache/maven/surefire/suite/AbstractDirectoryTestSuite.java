@@ -17,6 +17,7 @@ package org.apache.maven.surefire.suite;
  */
 
 import org.apache.maven.surefire.report.ReportEntry;
+import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterManager;
 import org.apache.maven.surefire.testset.SurefireTestSet;
 import org.apache.maven.surefire.testset.TestSetFailedException;
@@ -61,7 +62,7 @@ public abstract class AbstractDirectoryTestSuite
     }
 
     public Map locateTestSets( ClassLoader classLoader )
-        throws ClassNotFoundException, TestSetFailedException
+        throws TestSetFailedException
     {
         if ( testSets != null )
         {
@@ -75,11 +76,18 @@ public abstract class AbstractDirectoryTestSuite
         {
             String className = tests[i];
 
-            SurefireTestSet testSet = createTestSet( className, classLoader );
+            SurefireTestSet testSet;
+            try
+            {
+                testSet = createTestSet( className, classLoader );
+            }
+            catch ( ClassNotFoundException e )
+            {
+                throw new TestSetFailedException( "Unable to create test class '" + className + "'", e );
+            }
 
             if ( testSets.containsKey( testSet.getName() ) )
             {
-                // TODO: better error
                 throw new TestSetFailedException( "Duplicate test set '" + testSet.getName() + "'" );
             }
 
@@ -97,6 +105,7 @@ public abstract class AbstractDirectoryTestSuite
         throws ClassNotFoundException;
 
     public void execute( ReporterManager reporterManager, ClassLoader classLoader )
+        throws ReporterException, TestSetFailedException
     {
         if ( testSets == null )
         {
@@ -111,34 +120,28 @@ public abstract class AbstractDirectoryTestSuite
     }
 
     private void executeTestSet( SurefireTestSet testSet, ReporterManager reporterManager, ClassLoader classLoader )
+        throws ReporterException, TestSetFailedException
     {
-        try
-        {
-            // TODO: fix all these messages, and improve bundle resolution
-            String rawString = bundle.getString( "testSetStarting" );
+        // TODO: fix all these messages, and improve bundle resolution
+        String rawString = bundle.getString( "testSetStarting" );
 
-            ReportEntry report = new ReportEntry( this, testSet.getName(), rawString );
+        ReportEntry report = new ReportEntry( this, testSet.getName(), rawString );
 
-            reporterManager.testSetStarting( report );
+        reporterManager.testSetStarting( report );
 
-            testSet.execute( reporterManager, classLoader );
+        testSet.execute( reporterManager, classLoader );
 
-            rawString = bundle.getString( "testSetCompletedNormally" );
+        rawString = bundle.getString( "testSetCompletedNormally" );
 
-            report = new ReportEntry( this, testSet.getName(), rawString );
+        report = new ReportEntry( this, testSet.getName(), rawString );
 
-            reporterManager.testSetCompleted( report );
+        reporterManager.testSetCompleted( report );
 
-            reporterManager.reset();
-        }
-        catch ( Exception e )
-        {
-            // TODO
-            e.printStackTrace();
-        }
+        reporterManager.reset();
     }
 
     public void execute( String testSetName, ReporterManager reporterManager, ClassLoader classLoader )
+        throws ReporterException, TestSetFailedException
     {
         if ( testSets == null )
         {
@@ -148,7 +151,7 @@ public abstract class AbstractDirectoryTestSuite
 
         if ( testSet == null )
         {
-            // TODO: throw exception
+            throw new TestSetFailedException( "Unable to find test set '" + testSetName + "' in suite" );
         }
 
         executeTestSet( testSet, reporterManager, classLoader );

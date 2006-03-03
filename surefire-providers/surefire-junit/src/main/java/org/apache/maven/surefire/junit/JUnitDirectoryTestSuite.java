@@ -23,7 +23,7 @@ import java.io.File;
 import java.util.ArrayList;
 
 /**
- * TODO: Description.
+ * Test suite for JUnit tests based on a directory of Java test classes.
  *
  * @author <a href="mailto:brett@apache.org">Brett Porter</a>
  */

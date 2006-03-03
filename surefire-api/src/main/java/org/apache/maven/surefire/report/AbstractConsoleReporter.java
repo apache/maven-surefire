@@ -17,7 +17,6 @@ package org.apache.maven.surefire.report;
  */
 
 import java.io.BufferedOutputStream;
-import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 
@@ -39,7 +38,7 @@ public abstract class AbstractConsoleReporter
     }
 
     public void testSetStarting( ReportEntry report )
-        throws IOException
+        throws ReporterException
     {
         super.testSetStarting( report );
 

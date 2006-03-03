@@ -17,6 +17,7 @@ package org.apache.maven.surefire;
  */
 
 import org.apache.maven.surefire.report.Reporter;
+import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterManager;
 import org.apache.maven.surefire.suite.SurefireTestSuite;
 import org.apache.maven.surefire.testset.TestSetFailedException;
@@ -38,6 +39,7 @@ public class Surefire
 
     public boolean run( List reportDefinitions, Object[] testSuiteDefinition, String testSetName,
                         ClassLoader surefireClassLoader, ClassLoader testsClassLoader )
+        throws ReporterException, TestSetFailedException
     {
         ReporterManager reporterManager =
             new ReporterManager( instantiateReports( reportDefinitions, surefireClassLoader ) );
@@ -71,6 +73,7 @@ public class Surefire
 
     public boolean run( List reportDefinitions, List testSuiteDefinitions, ClassLoader surefireClassLoader,
                         ClassLoader testsClassLoader )
+        throws ReporterException, TestSetFailedException
     {
         ReporterManager reporterManager =
             new ReporterManager( instantiateReports( reportDefinitions, surefireClassLoader ) );
@@ -114,26 +117,15 @@ public class Surefire
 
     private SurefireTestSuite createSuiteFromDefinition( Object[] definition, ClassLoader surefireClassLoader,
                                                          ClassLoader testsClassLoader )
+        throws TestSetFailedException
     {
         String suiteClass = (String) definition[0];
         Object[] params = (Object[]) definition[1];
 
         SurefireTestSuite suite = instantiateSuite( suiteClass, params, surefireClassLoader );
 
-        try
-        {
-            suite.locateTestSets( testsClassLoader );
-        }
-        catch ( ClassNotFoundException e )
-        {
-            // TODO
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        }
-        catch ( TestSetFailedException e )
-        {
-            // TODO
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        }
+        suite.locateTestSets( testsClassLoader );
+
         return suite;
     }
 
@@ -150,6 +142,7 @@ public class Surefire
     }
 */
     private List instantiateReports( List reportDefinitions, ClassLoader classLoader )
+        throws TestSetFailedException
     {
         List reports = new ArrayList();
 
@@ -169,17 +162,31 @@ public class Surefire
     }
 
     private static Reporter instantiateReport( String className, Object[] params, ClassLoader classLoader )
+        throws TestSetFailedException
     {
-        return (Reporter) instantiateObject( className, params, classLoader );
+        try
+        {
+            return (Reporter) instantiateObject( className, params, classLoader );
+        }
+        catch ( ClassNotFoundException e )
+        {
+            throw new TestSetFailedException( "Unable to find class to create report '" + className + "'", e );
+        }
+        catch ( NoSuchMethodException e )
+        {
+            throw new TestSetFailedException(
+                "Unable to find appropriate constructor to create report: " + e.getMessage(), e );
+        }
     }
 
     public static Object instantiateObject( String className, Object[] params, ClassLoader classLoader )
+        throws TestSetFailedException, ClassNotFoundException, NoSuchMethodException
     {
-        Object object = null;
+        Class clazz = classLoader.loadClass( className );
+
+        Object object;
         try
         {
-            Class clazz = classLoader.loadClass( className );
-
             if ( params != null )
             {
                 Class[] paramTypes = new Class[params.length];
@@ -205,37 +212,37 @@ public class Surefire
                 object = clazz.newInstance();
             }
         }
-        catch ( ClassNotFoundException e )
-        {
-            // TODO
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        }
-        catch ( NoSuchMethodException e )
-        {
-            // TODO
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        }
-        catch ( InstantiationException e )
-        {
-            // TODO
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        }
         catch ( IllegalAccessException e )
         {
-            // TODO
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            throw new TestSetFailedException( "Unable to instantiate object: " + e.getMessage(), e );
         }
         catch ( InvocationTargetException e )
         {
-            // TODO
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            throw new TestSetFailedException( e.getTargetException().getMessage(), e.getTargetException() );
+        }
+        catch ( InstantiationException e )
+        {
+            throw new TestSetFailedException( "Unable to instantiate object: " + e.getMessage(), e );
         }
         return object;
     }
 
     private static SurefireTestSuite instantiateSuite( String suiteClass, Object[] params, ClassLoader classLoader )
+        throws TestSetFailedException
     {
-        return (SurefireTestSuite) instantiateObject( suiteClass, params, classLoader );
+        try
+        {
+            return (SurefireTestSuite) instantiateObject( suiteClass, params, classLoader );
+        }
+        catch ( ClassNotFoundException e )
+        {
+            throw new TestSetFailedException( "Unable to find class to create suite '" + suiteClass + "'", e );
+        }
+        catch ( NoSuchMethodException e )
+        {
+            throw new TestSetFailedException(
+                "Unable to find appropriate constructor to create suite: " + e.getMessage(), e );
+        }
     }
 
     public String getResourceString( String key )

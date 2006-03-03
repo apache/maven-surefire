@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.testset;
+package org.apache.maven.surefire.report;
 
 /*
  * Copyright 2001-2006 The Apache Software Foundation.
@@ -16,16 +16,16 @@ package org.apache.maven.surefire.testset;
  * limitations under the License.
  */
 
-import org.apache.maven.surefire.report.ReporterManager;
-
-public interface SurefireTestSet
+/**
+ * Exception occurring during report generation.
+ *
+ * @author <a href="mailto:brett@apache.org">Brett Porter</a>
+ */
+public class ReporterException
+    extends Exception
 {
-    void execute( ReporterManager reportManager, ClassLoader loader )
-        throws TestSetFailedException;
-
-    int getTestCount()
-        throws TestSetFailedException;
-
-    String getName();
-
+    public ReporterException( String message, Exception nested )
+    {
+        super( message, nested );
+    }
 }

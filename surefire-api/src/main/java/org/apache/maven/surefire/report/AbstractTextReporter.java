@@ -16,7 +16,6 @@ package org.apache.maven.surefire.report;
  * limitations under the License.
  */
 
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -94,7 +93,7 @@ public abstract class AbstractTextReporter
     }
 
     public void testSetStarting( ReportEntry report )
-        throws IOException
+        throws ReporterException
     {
         super.testSetStarting( report );
 

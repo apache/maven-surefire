@@ -16,6 +16,7 @@ package org.apache.maven.surefire.suite;
  * limitations under the License.
  */
 
+import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterManager;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
@@ -28,14 +29,16 @@ import java.util.Map;
  */
 public interface SurefireTestSuite
 {
-    void execute( ReporterManager reporterManager, ClassLoader classLoader );
+    void execute( ReporterManager reporterManager, ClassLoader classLoader )
+        throws ReporterException, TestSetFailedException;
 
-    void execute( String testSetName, ReporterManager reporterManager, ClassLoader classLoader );
+    void execute( String testSetName, ReporterManager reporterManager, ClassLoader classLoader )
+        throws ReporterException, TestSetFailedException;
 
     int getNumTests();
 
     int getNumTestSets();
 
     Map locateTestSets( ClassLoader classLoader )
-        throws ClassNotFoundException, TestSetFailedException;
+        throws TestSetFailedException;
 }

@@ -108,9 +108,9 @@ public class TestReport
         return 0;
     }
 
-    public int getNbTests()
+    public int getNumTests()
     {
-        System.out.println( "TestReport::getNbTests" );
+        System.out.println( "TestReport::getNumTests" );
         return 0;
     }
 }

@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.testset;
+package org.apache.maven.surefire.booter;
 
 /*
  * Copyright 2001-2006 The Apache Software Foundation.
@@ -16,16 +16,16 @@ package org.apache.maven.surefire.testset;
  * limitations under the License.
  */
 
-import org.apache.maven.surefire.report.ReporterManager;
-
-public interface SurefireTestSet
+/**
+ * An error occurring during the invocation of Surefire via an alternate class loader.
+ *
+ * @author <a href="mailto:brett@apache.org">Brett Porter</a>
+ */
+public class SurefireExecutionException
+    extends Exception
 {
-    void execute( ReporterManager reportManager, ClassLoader loader )
-        throws TestSetFailedException;
-
-    int getTestCount()
-        throws TestSetFailedException;
-
-    String getName();
-
+    public SurefireExecutionException( String message, Throwable nested )
+    {
+        super( message, nested );
+    }
 }
