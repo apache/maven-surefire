@@ -158,6 +158,7 @@ public class TestNGTestSet
 
     private static IAnnotationFinder getAnnotationFinder()
     {
+        // TODO: is this right? isn't it dependant on the version of the TestNG JAR being used?
         if ( annotationFinder == null )
         {
             if ( System.getProperty( "java.version" ).indexOf( "1.5" ) > -1 )

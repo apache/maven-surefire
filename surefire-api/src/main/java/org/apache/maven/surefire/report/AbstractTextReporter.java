@@ -1,11 +1,5 @@
 package org.apache.maven.surefire.report;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
 /*
  * Copyright 2001-2006 The Apache Software Foundation.
  *
@@ -21,6 +15,12 @@ import java.util.List;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Text based reporter.

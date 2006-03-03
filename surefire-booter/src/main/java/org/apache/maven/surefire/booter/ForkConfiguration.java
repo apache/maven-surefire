@@ -1,15 +1,5 @@
 package org.apache.maven.surefire.booter;
 
-import org.codehaus.plexus.util.StringUtils;
-import org.codehaus.plexus.util.cli.Commandline;
-
-import java.io.File;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
 /*
  * Copyright 2001-2006 The Apache Software Foundation.
  *
@@ -26,8 +16,18 @@ import java.util.Properties;
  * limitations under the License.
  */
 
+import org.codehaus.plexus.util.StringUtils;
+import org.codehaus.plexus.util.cli.Commandline;
+
+import java.io.File;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
 /**
- * TODO: Description.
+ * Configuration for forking tests.
  *
  * @author <a href="mailto:brett@apache.org">Brett Porter</a>
  */
@@ -85,13 +85,6 @@ public class ForkConfiguration
     public void setSystemProperties( Properties systemProperties )
     {
         this.systemProperties = new Properties( systemProperties );
-    }
-
-    // TODO: remove once mojo is back to Properties
-    public void setSystemProperties( Map systemProperties )
-    {
-        this.systemProperties = new Properties();
-        systemProperties.putAll( systemProperties );
     }
 
     public void setJvmExecutable( String jvmExecutable )
