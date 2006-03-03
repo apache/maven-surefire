@@ -77,6 +77,12 @@ public class TestNgXmlTestSuite
         return 0;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
+    public int getNumTestSets()
+    {
+        // TODO
+        return 0;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
     public String getName()
     {
         return m_suiteName;
