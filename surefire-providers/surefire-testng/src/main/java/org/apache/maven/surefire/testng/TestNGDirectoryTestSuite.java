@@ -38,7 +38,7 @@ public class TestNGDirectoryTestSuite
         // TODO
     }
 
-    protected SurefireTestSet createTestSet( Class testClass )
+    protected SurefireTestSet createTestSet( Class testClass, ClassLoader classLoader )
     {
         return new TestNGTestSet( testClass );
     }

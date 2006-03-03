@@ -42,8 +42,6 @@ public class TestNGTestSet
 {
     private String testSourceDirectory;
 
-    private Class testClass;
-
     private static IAnnotationFinder annotationFinder;
 
     /**
@@ -52,16 +50,11 @@ public class TestNGTestSet
      */
     public TestNGTestSet( Class testClass )
     {
-        this.testClass = testClass;
+        super( testClass );
 
 /*
         this.testSourceDirectory = testSourceDirectory;
 */
-    }
-
-    public Class getTestClass()
-    {
-        return testClass;
     }
 
     protected void discoverTestMethods()
@@ -70,6 +63,7 @@ public class TestNGTestSet
         {
             testMethods = new ArrayList();
 
+            Class testClass = getTestClass();
             Method[] methods = testClass.getMethods();
 
             for ( int i = 0; i < methods.length; ++i )
@@ -97,11 +91,11 @@ public class TestNGTestSet
 
         TestNG testNG = new TestNG();
         List classes = new ArrayList();
-        classes.add( testClass );
+        classes.add( getTestClass() );
 
         String groups = null;
 
-        if ( !TestNGClassFinder.isTestNGClass( testClass, getAnnotationFinder() ) )
+        if ( !TestNGClassFinder.isTestNGClass( getTestClass(), getAnnotationFinder() ) )
         {
 //            testNG.setJUnit( Boolean.TRUE );
         }

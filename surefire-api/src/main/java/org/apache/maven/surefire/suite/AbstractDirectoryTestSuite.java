@@ -16,6 +16,7 @@ package org.apache.maven.surefire.suite;
  * limitations under the License.
  */
 
+import org.apache.maven.surefire.Surefire;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterManager;
@@ -37,8 +38,7 @@ import java.util.ResourceBundle;
 public abstract class AbstractDirectoryTestSuite
     implements SurefireTestSuite
 {
-    // TODO: fix this
-    private ResourceBundle bundle = ResourceBundle.getBundle( "org.apache.maven.surefire.surefire" );
+    private ResourceBundle bundle = ResourceBundle.getBundle( Surefire.SUREFIRE_BUNDLE_NAME );
 
     private static final String FS = System.getProperty( "file.separator" );
 
@@ -90,7 +90,7 @@ public abstract class AbstractDirectoryTestSuite
 
             if ( !Modifier.isAbstract( testClass.getModifiers() ) )
             {
-                SurefireTestSet testSet = createTestSet( testClass );
+                SurefireTestSet testSet = createTestSet( testClass, classLoader );
 
                 if ( testSets.containsKey( testSet.getName() ) )
                 {
@@ -105,7 +105,7 @@ public abstract class AbstractDirectoryTestSuite
         return Collections.unmodifiableMap( testSets );
     }
 
-    protected abstract SurefireTestSet createTestSet( Class testClass )
+    protected abstract SurefireTestSet createTestSet( Class testClass, ClassLoader classLoader )
         throws TestSetFailedException;
 
     public void execute( ReporterManager reporterManager, ClassLoader classLoader )

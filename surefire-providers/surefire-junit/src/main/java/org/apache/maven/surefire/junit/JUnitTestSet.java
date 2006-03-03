@@ -56,8 +56,6 @@ public final class JUnitTestSet
 
     private Class testResultClass;
 
-    private Class testClass;
-
     private Method addListenerMethod;
 
     private Method countTestCasesMethod;
@@ -71,19 +69,9 @@ public final class JUnitTestSet
     public JUnitTestSet( Class testClass )
         throws TestSetFailedException
     {
-        if ( testClass == null )
-        {
-            throw new NullPointerException( "testClass is null" );
-        }
-
-        this.testClass = testClass;
+        super( testClass );
 
         processTestClass( testClass.getClassLoader() );
-    }
-
-    public Class getTestClass()
-    {
-        return testClass;
     }
 
     private void processTestClass( ClassLoader loader )
@@ -114,6 +102,7 @@ public final class JUnitTestSet
 
             Object testObject = createInstanceFromSuiteMethod();
 
+            Class testClass = getTestClass();
             if ( testObject == null && testCaseClass.isAssignableFrom( testClass ) )
             {
                 Class[] constructorParamTypes = {Class.class};
@@ -192,7 +181,7 @@ public final class JUnitTestSet
         Object testObject = null;
         try
         {
-            Method suiteMethod = testClass.getMethod( "suite", EMPTY_CLASS_ARRAY );
+            Method suiteMethod = getTestClass().getMethod( "suite", EMPTY_CLASS_ARRAY );
 
             if ( Modifier.isPublic( suiteMethod.getModifiers() ) && Modifier.isStatic( suiteMethod.getModifiers() ) )
             {

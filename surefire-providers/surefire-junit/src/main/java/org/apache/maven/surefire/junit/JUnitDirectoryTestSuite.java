@@ -16,7 +16,9 @@ package org.apache.maven.surefire.junit;
  * limitations under the License.
  */
 
+import junit.framework.TestCase;
 import org.apache.maven.surefire.suite.AbstractDirectoryTestSuite;
+import org.apache.maven.surefire.testset.PojoTestSet;
 import org.apache.maven.surefire.testset.SurefireTestSet;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
@@ -36,9 +38,28 @@ public class JUnitDirectoryTestSuite
         super( basedir, includes, excludes );
     }
 
-    protected SurefireTestSet createTestSet( Class testClass )
+    protected SurefireTestSet createTestSet( Class testClass, ClassLoader classLoader )
         throws TestSetFailedException
     {
-        return new JUnitTestSet( testClass );
+        Class junitClass = null;
+        try
+        {
+            junitClass = classLoader.loadClass( TestCase.class.getName() );
+        }
+        catch ( ClassNotFoundException e )
+        {
+            // ignore this
+        }
+
+        SurefireTestSet testSet;
+        if ( junitClass != null && junitClass.isAssignableFrom( testClass ) )
+        {
+            testSet = new JUnitTestSet( testClass );
+        }
+        else
+        {
+            testSet = new PojoTestSet( testClass );
+        }
+        return testSet;
     }
 }

@@ -35,7 +35,9 @@ import java.util.ResourceBundle;
  */
 public class Surefire
 {
-    private ResourceBundle bundle = ResourceBundle.getBundle( "org.apache.maven.surefire.surefire" );
+    private ResourceBundle bundle = ResourceBundle.getBundle( SUREFIRE_BUNDLE_NAME );
+
+    public static final String SUREFIRE_BUNDLE_NAME = "org.apache.maven.surefire.surefire";
 
     public boolean run( List reportDefinitions, Object[] testSuiteDefinition, String testSetName,
                         ClassLoader surefireClassLoader, ClassLoader testsClassLoader )

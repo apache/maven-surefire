@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @todo bring back other helpers and put in a separate package
+ * Base test class.
  */
 public abstract class AbstractTestSet
     implements SurefireTestSet
@@ -31,9 +31,21 @@ public abstract class AbstractTestSet
 
     protected List testMethods;
 
+    private Class testClass;
+
+    protected AbstractTestSet( Class testClass )
+    {
+        if ( testClass == null )
+        {
+            throw new NullPointerException( "testClass is null" );
+        }
+
+        this.testClass = testClass;
+    }
+
     public String getName()
     {
-        return getTestClass().getName();
+        return testClass.getName();
     }
 
     public int getTestCount()
@@ -46,7 +58,7 @@ public abstract class AbstractTestSet
 
     protected Class getTestClass()
     {
-        return getClass();
+        return testClass;
     }
 
     protected void discoverTestMethods()
@@ -55,7 +67,7 @@ public abstract class AbstractTestSet
         {
             testMethods = new ArrayList();
 
-            Method[] methods = getTestClass().getMethods();
+            Method[] methods = testClass.getMethods();
 
             for ( int i = 0; i < methods.length; ++i )
             {
