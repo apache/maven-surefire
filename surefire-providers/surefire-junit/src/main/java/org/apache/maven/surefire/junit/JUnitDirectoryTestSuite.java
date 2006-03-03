@@ -18,6 +18,7 @@ package org.apache.maven.surefire.junit;
 
 import org.apache.maven.surefire.suite.AbstractDirectoryTestSuite;
 import org.apache.maven.surefire.testset.SurefireTestSet;
+import org.apache.maven.surefire.testset.TestSetFailedException;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -36,6 +37,7 @@ public class JUnitDirectoryTestSuite
     }
 
     protected SurefireTestSet createTestSet( Class testClass )
+        throws TestSetFailedException
     {
         return new JUnitTestSet( testClass );
     }

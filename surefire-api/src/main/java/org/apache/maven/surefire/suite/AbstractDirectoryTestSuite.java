@@ -37,6 +37,7 @@ import java.util.ResourceBundle;
 public abstract class AbstractDirectoryTestSuite
     implements SurefireTestSuite
 {
+    // TODO: fix this
     private ResourceBundle bundle = ResourceBundle.getBundle( "org.apache.maven.surefire.surefire" );
 
     private static final String FS = System.getProperty( "file.separator" );
@@ -104,7 +105,8 @@ public abstract class AbstractDirectoryTestSuite
         return Collections.unmodifiableMap( testSets );
     }
 
-    protected abstract SurefireTestSet createTestSet( Class testClass );
+    protected abstract SurefireTestSet createTestSet( Class testClass )
+        throws TestSetFailedException;
 
     public void execute( ReporterManager reporterManager, ClassLoader classLoader )
         throws ReporterException, TestSetFailedException
