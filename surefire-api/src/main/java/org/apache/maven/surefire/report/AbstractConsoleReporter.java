@@ -43,7 +43,7 @@ public abstract class AbstractConsoleReporter
         super.testSetStarting( report );
 
         String message = "Running " + report.getName();
-        if ( !report.getGroup().equals( report.getName() ) )
+        if ( report.getGroup() != null && !report.getName().equals( report.getGroup() ) )
         {
             message = message + " (of " + report.getGroup() + ")";
         }

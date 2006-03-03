@@ -50,16 +50,9 @@ public class TestNGTestSet
      * Creates a new test testset that will process the class being
      * passed in to determine the testing configuration.
      */
-    public TestNGTestSet( String testClass )
-        throws ClassNotFoundException
+    public TestNGTestSet( Class testClass )
     {
-        if ( testClass == null )
-        {
-            throw new NullPointerException( "testClass is null" );
-        }
-
-        // TODO: broken. the test class uses testng from the project tree, but we use the other one. Annotations aren't found.
-        this.testClass = getClass().getClassLoader().loadClass( testClass );
+        this.testClass = testClass;
 
 /*
         this.testSourceDirectory = testSourceDirectory;
@@ -83,7 +76,7 @@ public class TestNGTestSet
             {
                 Method m = methods[i];
 
-                if ( isValidMethod( m ) )
+                if ( isValidTestMethod( m ) )
                 {
                     String simpleName = m.getName();
 
@@ -149,11 +142,6 @@ public class TestNGTestSet
         //actually runs all the tests
         List result = testNG.runSuitesLocally();
 //        nbTests += result.size(); TODO
-    }
-
-    public String getName()
-    {
-        return testClass.getName();
     }
 
     private static IAnnotationFinder getAnnotationFinder()

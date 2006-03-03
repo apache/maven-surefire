@@ -68,12 +68,6 @@ public final class JUnitTestSet
 
     private static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
 
-    public JUnitTestSet( String testClassName, ClassLoader classLoader )
-        throws ClassNotFoundException
-    {
-        testClass = classLoader.loadClass( testClassName );
-    }
-
     public JUnitTestSet( Class testClass )
     {
         if ( testClass == null )
@@ -169,23 +163,9 @@ public final class JUnitTestSet
         }
         else
         {
-            try
-            {
-                countTestCasesMethod = testClass.getMethod( COUNT_TEST_CASES_METHOD, EMPTY_CLASS_ARRAY );
-            }
-            catch ( NoSuchMethodException e )
-            {
-                countTestCasesMethod = null; // for clarity
-            }
+            countTestCasesMethod = testClass.getMethod( COUNT_TEST_CASES_METHOD, EMPTY_CLASS_ARRAY );
 
-            try
-            {
-                runMethod = testClass.getMethod( RUN_METHOD, new Class[]{testResultClass} );
-            }
-            catch ( NoSuchMethodException e )
-            {
-                runMethod = null;    // for clarity
-            }
+            runMethod = testClass.getMethod( RUN_METHOD, new Class[]{testResultClass} );
         }
     }
 
@@ -227,15 +207,7 @@ public final class JUnitTestSet
             throw new TestSetFailedException( "Class is not a JUnit TestCase", e );
         }
 
-        // TODO: why do we accept runMethod == null? That means it doesn't extend TestCase
-        if ( runMethod != null )
-        {
-            executeJUnit( reportManager, loader );
-        }
-        else
-        {
-            super.execute( reportManager, loader );
-        }
+        executeJUnit( reportManager, loader );
     }
 
     private void executeJUnit( ReporterManager reportManager, ClassLoader classLoader )
@@ -282,18 +254,9 @@ public final class JUnitTestSet
     {
         try
         {
-            int testCount;
-            if ( countTestCasesMethod != null )
-            {
-                Integer integer = (Integer) countTestCasesMethod.invoke( testObject, EMPTY_CLASS_ARRAY );
+            Integer integer = (Integer) countTestCasesMethod.invoke( testObject, EMPTY_CLASS_ARRAY );
 
-                testCount = integer.intValue();
-            }
-            else
-            {
-                testCount = super.getTestCount();
-            }
-            return testCount;
+            return integer.intValue();
         }
         catch ( IllegalAccessException e )
         {
@@ -307,11 +270,6 @@ public final class JUnitTestSet
         {
             throw new TestSetFailedException( testObject.getClass().getName(), e.getTargetException() );
         }
-    }
-
-    public String getName()
-    {
-        return testClass.getName();
     }
 
     private Constructor getTestConstructor( Class testClass )

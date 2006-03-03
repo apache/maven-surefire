@@ -25,6 +25,7 @@ import org.codehaus.plexus.util.DirectoryScanner;
 import org.codehaus.plexus.util.StringUtils;
 
 import java.io.File;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -76,33 +77,34 @@ public abstract class AbstractDirectoryTestSuite
         {
             String className = tests[i];
 
-            SurefireTestSet testSet;
+            Class testClass;
             try
             {
-                testSet = createTestSet( className, classLoader );
+                testClass = classLoader.loadClass( className );
             }
             catch ( ClassNotFoundException e )
             {
                 throw new TestSetFailedException( "Unable to create test class '" + className + "'", e );
             }
 
-            if ( testSets.containsKey( testSet.getName() ) )
+            if ( !Modifier.isAbstract( testClass.getModifiers() ) )
             {
-                throw new TestSetFailedException( "Duplicate test set '" + testSet.getName() + "'" );
+                SurefireTestSet testSet = createTestSet( testClass );
+
+                if ( testSets.containsKey( testSet.getName() ) )
+                {
+                    throw new TestSetFailedException( "Duplicate test set '" + testSet.getName() + "'" );
+                }
+                testSets.put( testSet.getName(), testSet );
+
+                totalTests += testSet.getTestCount();
             }
-
-            testSets.put( testSet.getName(), testSet );
-
-            totalTests += testSet.getTestCount();
         }
 
         return Collections.unmodifiableMap( testSets );
     }
 
-    protected abstract Object[] createConstructorArguments( String className );
-
-    protected abstract SurefireTestSet createTestSet( String className, ClassLoader classLoader )
-        throws ClassNotFoundException;
+    protected abstract SurefireTestSet createTestSet( Class testClass );
 
     public void execute( ReporterManager reporterManager, ClassLoader classLoader )
         throws ReporterException, TestSetFailedException

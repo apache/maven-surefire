@@ -38,14 +38,8 @@ public class TestNGDirectoryTestSuite
         // TODO
     }
 
-    protected Object[] createConstructorArguments( String className )
+    protected SurefireTestSet createTestSet( Class testClass )
     {
-        return new Object[]{TestNGTestSet.class.getName(), new Object[]{className}};
-    }
-
-    protected SurefireTestSet createTestSet( String className, ClassLoader classLoader )
-        throws ClassNotFoundException
-    {
-        return new TestNGTestSet( className );
+        return new TestNGTestSet( testClass );
     }
 }

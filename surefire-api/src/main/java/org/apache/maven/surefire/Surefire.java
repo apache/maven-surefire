@@ -249,11 +249,4 @@ public class Surefire
     {
         return bundle.getString( key );
     }
-
-/* TODO: should catch this elsewhere
-    if ( Modifier.isAbstract( testClass.getModifiers() ) )
-    {
-        return null;
-    }
-*/
 }
