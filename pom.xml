@@ -55,6 +55,15 @@
       </roles>
     </developer>
     <developer>
+      <id>brett</id>
+      <name>Brett Porter</name>
+      <email>brett@maven.org</email>
+      <organization>Mergere</organization>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
       <id>evenisse</id>
       <name>Emmanuel Venisse</name>
       <email>evenisse@codehaus.org</email>
@@ -64,6 +73,11 @@
       </roles>
     </developer>
   </developers>
+  <contributors>
+    <contributor>
+      <name>Jesse Kuhnert</name>
+    </contributor>
+  </contributors>
   <scm>
     <connection>scm:svn:https://svn.apache.org/repos/asf/surefire/trunk/</connection>
     <developerConnection>scm:svn:https://svn.apache.org/repos/asf/surefire/trunk/</developerConnection>
@@ -80,9 +94,9 @@
       <url>scp://repo1.maven.org/home/projects/maven/repository-staging/to-ibiblio/maven2</url>
     </repository>
     <snapshotRepository>
-      <id>snapshots</id>
-      <name>Maven Central Development Repository</name>
-      <url>scp://repo1.maven.org/home/projects/maven/repository-staging/snapshots/maven2</url>
+      <id>apache.snapshots</id>
+      <name>Apache Development Repository</name>
+      <url>scp://minotaur.apache.org/www/cvs.apache.org/maven-snapshot-repository</url>
     </snapshotRepository>
     <site>
       <id>surefire</id>
@@ -90,26 +104,6 @@
       <url>scp://beaver.codehaus.org//home/projects/surefire/public_html</url>
     </site>
   </distributionManagement>
-  <repositories>
-    <repository>
-      <id>snapshots</id>
-      <name>Maven Snapshot Development Repository</name>
-      <url>http://snapshots.maven.codehaus.org/maven2</url>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-    </repository>
-  </repositories>
-  <pluginRepositories>
-    <pluginRepository>
-      <id>snapshots-plugins</id>
-      <name>Maven Snapshot Plugins Development Repository</name>
-      <url>http://snapshots.maven.codehaus.org/maven2/plugins</url>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-    </pluginRepository>
-  </pluginRepositories>
   <build>
     <pluginManagement>
       <plugins>
