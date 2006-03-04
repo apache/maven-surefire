@@ -34,7 +34,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -141,9 +140,11 @@ public class SurefireBooter
         //noinspection CatchGenericClass,OverlyBroadCatchBlock
         try
         {
-            ClassLoader surefireClassLoader = createClassLoader( surefireClassPathUrls, getClass().getClassLoader() );
+            // TODO: assertions = true shouldn't be required if we had proper separation (see TestNG)
+            ClassLoader surefireClassLoader =
+                createClassLoader( surefireClassPathUrls, getClass().getClassLoader(), true );
 
-            ClassLoader testsClassLoader = createClassLoader( classPathUrls, childDelegation );
+            ClassLoader testsClassLoader = createClassLoader( classPathUrls, childDelegation, true );
 
             Class surefireClass = surefireClassLoader.loadClass( Surefire.class.getName() );
 
@@ -181,9 +182,10 @@ public class SurefireBooter
         //noinspection CatchGenericClass,OverlyBroadCatchBlock
         try
         {
-            ClassLoader surefireClassLoader = createClassLoader( surefireClassPathUrls, getClass().getClassLoader() );
+            ClassLoader surefireClassLoader =
+                createClassLoader( surefireClassPathUrls, getClass().getClassLoader(), true );
 
-            ClassLoader testsClassLoader = createClassLoader( classPathUrls, childDelegation );
+            ClassLoader testsClassLoader = createClassLoader( classPathUrls, childDelegation, true );
 
             Class surefireClass = surefireClassLoader.loadClass( Surefire.class.getName() );
 
@@ -226,8 +228,9 @@ public class SurefireBooter
         ClassLoader surefireClassLoader;
         try
         {
-            testsClassLoader = createClassLoader( classPathUrls, false );
-            surefireClassLoader = createClassLoader( surefireClassPathUrls, false );
+            testsClassLoader = createClassLoader( classPathUrls, false, true );
+            // TODO: assertions = true shouldn't be required if we had proper separation (see TestNG)
+            surefireClassLoader = createClassLoader( surefireClassPathUrls, false, true );
         }
         catch ( MalformedURLException e )
         {
@@ -450,19 +453,22 @@ public class SurefireBooter
         return returnCode == 0;
     }
 
-    private static ClassLoader createClassLoader( List classPathUrls, ClassLoader parent )
+    private static ClassLoader createClassLoader( List classPathUrls, ClassLoader parent, boolean assertionsEnabled )
         throws MalformedURLException
     {
-        return createClassLoader( classPathUrls, parent, false );
+        return createClassLoader( classPathUrls, parent, false, assertionsEnabled );
     }
 
-    private static ClassLoader createClassLoader( List classPathUrls, boolean childDelegation )
+    private static ClassLoader createClassLoader( List classPathUrls, boolean childDelegation,
+                                                  boolean assertionsEnabled )
         throws MalformedURLException
     {
-        return createClassLoader( classPathUrls, ClassLoader.getSystemClassLoader(), childDelegation );
+        return createClassLoader( classPathUrls, ClassLoader.getSystemClassLoader(), childDelegation,
+                                  assertionsEnabled );
     }
 
-    private static ClassLoader createClassLoader( List classPathUrls, ClassLoader parent, boolean childDelegation )
+    private static ClassLoader createClassLoader( List classPathUrls, ClassLoader parent, boolean childDelegation,
+                                                  boolean assertionsEnabled )
         throws MalformedURLException
     {
         List urls = new ArrayList();
@@ -478,25 +484,18 @@ public class SurefireBooter
             }
         }
 
-        ClassLoader classLoader;
-        if ( childDelegation )
+        IsolatedClassLoader classLoader = new IsolatedClassLoader( parent, childDelegation );
+        // TODO: for some reason, this doesn't work when forked. -ea is added to the command line as a workaround
+        // in forkConfiguration
+        classLoader.setDefaultAssertionStatus( assertionsEnabled );
+        for ( Iterator iter = urls.iterator(); iter.hasNext(); )
         {
-            IsolatedClassLoader isolatedClassLoader = new IsolatedClassLoader( parent, true );
-            for ( Iterator iter = urls.iterator(); iter.hasNext(); )
-            {
-                URL url = (URL) iter.next();
-                isolatedClassLoader.addURL( url );
-            }
-            classLoader = isolatedClassLoader;
-        }
-        else
-        {
-            URL[] u = new URL[urls.size()];
-            urls.toArray( u );
-            classLoader = new URLClassLoader( u, parent );
+            URL url = (URL) iter.next();
+            classLoader.addURL( url );
         }
         return classLoader;
     }
+
 
     private static List processStringList( String stringList )
     {
