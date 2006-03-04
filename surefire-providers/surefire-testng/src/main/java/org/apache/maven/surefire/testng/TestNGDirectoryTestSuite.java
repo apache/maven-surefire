@@ -101,6 +101,29 @@ public class TestNGDirectoryTestSuite
         return new TestNGTestSet( testClass );
     }
 
+    public void execute( String testSetName, ReporterManager reporterManager, ClassLoader classLoader )
+        throws ReporterException, TestSetFailedException
+    {
+        if ( testSets == null )
+        {
+            throw new IllegalStateException( "You must call locateTestSets before calling execute" );
+        }
+        SurefireTestSet testSet = (SurefireTestSet) testSets.get( testSetName );
+
+        if ( testSet == null )
+        {
+            throw new TestSetFailedException( "Unable to find test set '" + testSetName + "' in suite" );
+        }
+
+        XmlSuite suite = new XmlSuite();
+        suite.setParallel( parallel );
+        suite.setThreadCount( threadCount );
+
+        createXmlTest( suite, testSet );
+
+        executeTestNG( suite, reporterManager );
+    }
+
     public void execute( ReporterManager reporterManager, ClassLoader classLoader )
         throws ReporterException, TestSetFailedException
     {
@@ -117,24 +140,34 @@ public class TestNGDirectoryTestSuite
         {
             SurefireTestSet testSet = (SurefireTestSet) i.next();
 
-            XmlTest xmlTest = new XmlTest( suite );
-            xmlTest.setName( testSet.getName() );
-            xmlTest.setXmlClasses( Collections.singletonList( new XmlClass( testSet.getTestClass() ) ) );
-            if ( groups != null )
-            {
-                xmlTest.setIncludedGroups( Arrays.asList( groups.split( "," ) ) );
-            }
-            if ( excludedGroups != null )
-            {
-                xmlTest.setExcludedGroups( Arrays.asList( excludedGroups.split( "," ) ) );
-            }
-
-            if ( !TestNGClassFinder.isTestNGClass( testSet.getTestClass(), annotationFinder ) )
-            {
-                xmlTest.setJUnit( true );
-            }
+            createXmlTest( suite, testSet );
         }
 
+        executeTestNG( suite, reporterManager );
+    }
+
+    private void createXmlTest( XmlSuite suite, SurefireTestSet testSet )
+    {
+        XmlTest xmlTest = new XmlTest( suite );
+        xmlTest.setName( testSet.getName() );
+        xmlTest.setXmlClasses( Collections.singletonList( new XmlClass( testSet.getTestClass() ) ) );
+        if ( groups != null )
+        {
+            xmlTest.setIncludedGroups( Arrays.asList( groups.split( "," ) ) );
+        }
+        if ( excludedGroups != null )
+        {
+            xmlTest.setExcludedGroups( Arrays.asList( excludedGroups.split( "," ) ) );
+        }
+
+        if ( !TestNGClassFinder.isTestNGClass( testSet.getTestClass(), annotationFinder ) )
+        {
+            xmlTest.setJUnit( true );
+        }
+    }
+
+    private void executeTestNG( XmlSuite suite, ReporterManager reporterManager )
+    {
         TestNG testNG = new TestNG();
         // turn off all TestNG output
         testNG.setVerbose( 0 );
