@@ -83,7 +83,10 @@ public class Surefire
 
         reporterManager.runCompleted();
 
-        reporterManager.updateResultsProperties( results );
+        if ( results != null )
+        {
+            reporterManager.updateResultsProperties( results );
+        }
 
         return reporterManager.getNumErrors() == 0 && reporterManager.getNumFailures() == 0;
     }
