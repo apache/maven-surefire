@@ -16,21 +16,12 @@ package org.apache.maven.surefire.testset;
  * limitations under the License.
  */
 
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Base test class.
  */
 public abstract class AbstractTestSet
     implements SurefireTestSet
 {
-    private static final String TEST_METHOD_PREFIX = "test";
-
-    protected List testMethods;
-
     private Class testClass;
 
     protected AbstractTestSet( Class testClass )
@@ -48,59 +39,8 @@ public abstract class AbstractTestSet
         return testClass.getName();
     }
 
-    public int getTestCount()
-        throws TestSetFailedException
-    {
-        discoverTestMethods();
-
-        return testMethods.size();
-    }
-
     public Class getTestClass()
     {
         return testClass;
-    }
-
-    protected void discoverTestMethods()
-    {
-        if ( testMethods == null )
-        {
-            testMethods = new ArrayList();
-
-            Method[] methods = testClass.getMethods();
-
-            for ( int i = 0; i < methods.length; ++i )
-            {
-                Method m = methods[i];
-
-                if ( isValidTestMethod( m ) )
-                {
-                    String simpleName = m.getName();
-
-                    // name must have 5 or more chars
-                    if ( simpleName.length() > 4 )
-                    {
-                        String firstFour = simpleName.substring( 0, 4 );
-
-                        // name must start with "test"
-                        if ( firstFour.equals( TEST_METHOD_PREFIX ) )
-                        {
-                            testMethods.add( m );
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    public static boolean isValidTestMethod( Method m )
-    {
-        boolean isInstanceMethod = !Modifier.isStatic( m.getModifiers() );
-
-        boolean returnsVoid = m.getReturnType().equals( void.class );
-
-        boolean hasNoParams = m.getParameterTypes().length == 0;
-
-        return isInstanceMethod && returnsVoid && hasNoParams;
     }
 }

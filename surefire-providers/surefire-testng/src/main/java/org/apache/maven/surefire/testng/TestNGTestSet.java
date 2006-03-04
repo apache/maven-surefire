@@ -18,9 +18,7 @@ package org.apache.maven.surefire.testng;
 
 import org.apache.maven.surefire.report.ReporterManager;
 import org.apache.maven.surefire.testset.AbstractTestSet;
-
-import java.lang.reflect.Method;
-import java.util.ArrayList;
+import org.apache.maven.surefire.testset.TestSetFailedException;
 
 /**
  * Main plugin point for running testng tests within the Surefire runtime
@@ -40,33 +38,11 @@ public class TestNGTestSet
         super( testClass );
     }
 
-    protected void discoverTestMethods()
+    public int getTestCount()
+        throws TestSetFailedException
     {
-        // TODO: This isn't correct. We really need to have TestNG do the counting for us.
-        if ( testMethods == null )
-        {
-            testMethods = new ArrayList();
-
-            Class testClass = getTestClass();
-            Method[] methods = testClass.getMethods();
-
-            for ( int i = 0; i < methods.length; ++i )
-            {
-                Method m = methods[i];
-
-                if ( isValidTestMethod( m ) )
-                {
-                    String simpleName = m.getName();
-
-                    // TODO: WHY?
-                    // name must have 5 or more chars
-                    if ( simpleName.length() > 4 )
-                    {
-                        testMethods.add( m );
-                    }
-                }
-            }
-        }
+        // TODO: need to get this from TestNG somehow
+        return 1;
     }
 
     public void execute( ReporterManager reportManager, ClassLoader loader )

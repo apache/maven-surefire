@@ -140,7 +140,7 @@ public class SurefireBooter
         //noinspection CatchGenericClass,OverlyBroadCatchBlock
         try
         {
-            // TODO: assertions = true shouldn't be required if we had proper separation (see TestNG)
+            // TODO: assertions = true shouldn't be required for this CL if we had proper separation (see TestNG)
             ClassLoader surefireClassLoader =
                 createClassLoader( surefireClassPathUrls, getClass().getClassLoader(), true );
 
@@ -153,7 +153,7 @@ public class SurefireBooter
             Method run = surefireClass.getMethod( "run", new Class[]{List.class, Object[].class, String.class,
                 ClassLoader.class, ClassLoader.class} );
 
-            ClassLoader oldContextClassLoader = Thread.currentThread() .getContextClassLoader();
+            ClassLoader oldContextClassLoader = Thread.currentThread().getContextClassLoader();
 
             Thread.currentThread().setContextClassLoader( testsClassLoader );
 

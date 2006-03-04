@@ -172,7 +172,6 @@ public class TestNGDirectoryTestSuite
         // turn off all TestNG output
         testNG.setVerbose( 0 );
 
-        // TODO: check these work, otherwise put them in the xmlTest instances
         testNG.setXmlSuites( Collections.singletonList( suite ) );
 
         testNG.setListenerClasses( new ArrayList() );

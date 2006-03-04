@@ -22,7 +22,10 @@ import org.apache.maven.surefire.report.ReporterManager;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 
 public class PojoTestSet
@@ -30,9 +33,13 @@ public class PojoTestSet
 {
     private ResourceBundle bundle = ResourceBundle.getBundle( Surefire.SUREFIRE_BUNDLE_NAME );
 
+    private static final String TEST_METHOD_PREFIX = "test";
+
     private static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
 
     private Object testObject;
+
+    protected List testMethods;
 
     public PojoTestSet( Class testClass )
         throws TestSetFailedException
@@ -227,5 +234,56 @@ public class PojoTestSet
 
     public void tearDownFixture()
     {
+    }
+
+    public int getTestCount()
+        throws TestSetFailedException
+    {
+        discoverTestMethods();
+
+        return testMethods.size();
+    }
+
+    private void discoverTestMethods()
+    {
+        if ( testMethods == null )
+        {
+            testMethods = new ArrayList();
+
+            Method[] methods = getTestClass().getMethods();
+
+            for ( int i = 0; i < methods.length; ++i )
+            {
+                Method m = methods[i];
+
+                if ( isValidTestMethod( m ) )
+                {
+                    String simpleName = m.getName();
+
+                    // name must have 5 or more chars
+                    if ( simpleName.length() > 4 )
+                    {
+                        String firstFour = simpleName.substring( 0, 4 );
+
+                        // name must start with "test"
+                        if ( firstFour.equals( TEST_METHOD_PREFIX ) )
+                        {
+                            testMethods.add( m );
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private static boolean isValidTestMethod( Method m )
+    {
+        boolean isInstanceMethod = !Modifier.isStatic( m.getModifiers() );
+
+        boolean returnsVoid = m.getReturnType().equals( void.class );
+
+        boolean hasNoParams = m.getParameterTypes().length == 0;
+
+        return isInstanceMethod && returnsVoid && hasNoParams;
     }
 }

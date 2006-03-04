@@ -18,19 +18,18 @@ package org.apache.maven.surefire.testng;
 
 import org.apache.maven.surefire.report.ReporterManager;
 import org.apache.maven.surefire.suite.SurefireTestSuite;
-import org.testng.ISuiteListener;
-import org.testng.ITestListener;
-import org.testng.TestNG;
+import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.testng.xml.Parser;
 import org.testng.xml.XmlSuite;
+import org.testng.xml.XmlTest;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -42,114 +41,118 @@ import java.util.Map;
 public class TestNGXmlTestSuite
     implements SurefireTestSuite
 {
-    protected File suiteFile;
+    private File suiteFile;
 
-    protected TestNG testRunner;
+    private String testSourceDirectory;
 
-    protected int m_testCount;
+    private XmlSuite suite;
 
-    protected String m_suiteName = "TestNG XML Suite";
+    private Map testSets;
 
     /**
      * Creates a testng testset to be configured by the specified
      * xml file.
      */
-    public TestNGXmlTestSuite( File suiteFile )
+    public TestNGXmlTestSuite( File suiteFile, String testSourceDirectory )
     {
         this.suiteFile = suiteFile;
-        parseSuite();
+
+        this.testSourceDirectory = testSourceDirectory;
     }
 
-    public void execute( ReporterManager reportManager, ClassLoader loader )
+    public TestNGXmlTestSuite( File suiteFile )
     {
-        testRunner.runSuitesLocally();
+        this( suiteFile, null );
     }
 
-    public void execute( String testSetName, ReporterManager reporterManager, ClassLoader testsClassLoader )
+    public void execute( ReporterManager reporterManager, ClassLoader classLoader )
     {
-        // TODO: if this can't be implemented here, I should have the booter recognise that and prevent it from getting
-        // the pertest treatment
+        if ( testSets == null )
+        {
+            throw new IllegalStateException( "You must call locateTestSets before calling execute" );
+        }
+
+        TestNGExecutor.executeTestNG( this, testSourceDirectory, suite, reporterManager );
+    }
+
+    public void execute( String testSetName, ReporterManager reporterManager, ClassLoader classLoader )
+        throws TestSetFailedException
+    {
+        if ( testSets == null )
+        {
+            throw new IllegalStateException( "You must call locateTestSets before calling execute" );
+        }
+        XmlTest testSet = (XmlTest) testSets.get( testSetName );
+
+        if ( testSet == null )
+        {
+            throw new TestSetFailedException( "Unable to find test set '" + testSetName + "' in suite" );
+        }
+
+        List originalTests = new ArrayList( suite.getTests() );
+        for ( Iterator i = suite.getTests().iterator(); i.hasNext(); )
+        {
+            XmlTest test = (XmlTest) i.next();
+            if ( !test.getName().equals( testSetName ) )
+            {
+                i.remove();
+            }
+        }
+        TestNGExecutor.executeTestNG( this, testSourceDirectory, suite, reporterManager );
+
+        suite.getTests().clear();
+        suite.getTests().addAll( originalTests );
     }
 
     public int getNumTests()
     {
-        // TODO
-        return 0;  //To change body of implemented methods use File | Settings | File Templates.
+        // TODO: need to get this from TestNG somehow
+        return 1;
     }
 
     public int getNumTestSets()
     {
-        // TODO
-        return 0;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    public String getName()
-    {
-        return m_suiteName;
-    }
-
-    public List getSubBatteries()
-    {
-        return Collections.EMPTY_LIST;
-    }
-
-    public int getTestCount()
-    {
-        return m_testCount;
-    }
-
-    public void setOutputDirectory( String reportsDirectory )
-    {
-        testRunner.setOutputDirectory( reportsDirectory );
-    }
-
-    public void setReporter( TestNGReporter reporter )
-    {
-        testRunner.addListener( (ITestListener) reporter );
-        testRunner.addListener( (ISuiteListener) reporter );
-    }
-
-    /**
-     * Instantiates and partially configures testng suite
-     */
-    private void parseSuite()
-    {
-        testRunner = new TestNG();
-        List suites = new ArrayList();
-
-        try
-        {
-            XmlSuite s = new Parser( suiteFile.getAbsolutePath() ).parse();
-            m_suiteName = s.getName();
-            m_testCount += s.getTests().size();
-            suites.add( s );
-        }
-        catch ( FileNotFoundException fne )
-        {
-            System.err.println( "File not found: " + suiteFile.getAbsolutePath() + " Ignoring." );
-        }
-        catch ( IOException e )
-        {
-            e.printStackTrace();
-        }
-        catch ( ParserConfigurationException e )
-        {
-            e.printStackTrace();
-        }
-        catch ( SAXException e )
-        {
-            e.printStackTrace();
-        }
-
-        testRunner.setXmlSuites( suites );
-        // TODO: return when TestNG brings it back
-//        testRunner.setReportResults(false);
+        return suite.getTests().size();
     }
 
     public Map locateTestSets( ClassLoader classLoader )
+        throws TestSetFailedException
     {
-        // TODO
-        return Collections.EMPTY_MAP;
-    }
+        if ( testSets != null )
+        {
+            throw new IllegalStateException( "You can't call locateTestSets twice" );
+        }
+        testSets = new LinkedHashMap();
 
+        try
+        {
+            suite = new Parser( suiteFile.getAbsolutePath() ).parse();
+        }
+        catch ( IOException e )
+        {
+            throw new TestSetFailedException( "Error reading test suite", e );
+        }
+        catch ( ParserConfigurationException e )
+        {
+            throw new TestSetFailedException( "Error reading test suite", e );
+        }
+        catch ( SAXException e )
+        {
+            throw new TestSetFailedException( "Error reading test suite", e );
+        }
+
+        for ( Iterator i = suite.getTests().iterator(); i.hasNext(); )
+        {
+            XmlTest xmlTest = (XmlTest) i.next();
+
+            if ( testSets.containsKey( xmlTest.getName() ) )
+            {
+                throw new TestSetFailedException( "Duplicate test set '" + xmlTest.getName() + "'" );
+            }
+
+            // We don't need to put real test sets in here, the key is the important part
+            testSets.put( xmlTest.getName(), xmlTest );
+        }
+        return testSets;
+    }
 }
