@@ -22,6 +22,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Properties;
 
 public class ReporterManager
 {
@@ -42,6 +43,14 @@ public class ReporterManager
     private PrintStream newOut;
 
     private int skipped;
+
+    private static final String RESULTS_ERRORS = "errors";
+
+    private static final String RESULTS_COMPLETED_COUNT = "completedCount";
+
+    private static final String RESULTS_FAILURES = "failures";
+
+    private static final String RESULTS_SKIPPED = "skipped";
 
     public ReporterManager( List reports )
     {
@@ -144,11 +153,21 @@ public class ReporterManager
             reporter.runCompleted();
         }
 
-        writeMessage( "" );
-        writeMessage( "Results :" );
-        writeMessage( "Tests run: " + completedCount + ", Failures: " + failures + ", Errors: " + errors +
+        writeFooter( "" );
+        writeFooter( "Results :" );
+        writeFooter( "Tests run: " + completedCount + ", Failures: " + failures + ", Errors: " + errors +
             ", Skipped: " + skipped );
-        writeMessage( "" );
+        writeFooter( "" );
+    }
+
+    private void writeFooter( String footer )
+    {
+        for ( Iterator i = reports.iterator(); i.hasNext(); )
+        {
+            Reporter report = (Reporter) i.next();
+
+            report.writeFooter( footer );
+        }
     }
 
     private ByteArrayOutputStream stdOut;
@@ -332,5 +351,21 @@ public class ReporterManager
 
             reporter.testSkipped( report );
         }
+    }
+
+    public void initResultsFromProperties( Properties results )
+    {
+        errors = Integer.valueOf( results.getProperty( RESULTS_ERRORS, "0" ) ).intValue();
+        skipped = Integer.valueOf( results.getProperty( RESULTS_SKIPPED, "0" ) ).intValue();
+        failures = Integer.valueOf( results.getProperty( RESULTS_FAILURES, "0" ) ).intValue();
+        completedCount = Integer.valueOf( results.getProperty( RESULTS_COMPLETED_COUNT, "0" ) ).intValue();
+    }
+
+    public void updateResultsProperties( Properties results )
+    {
+        results.setProperty( RESULTS_ERRORS, String.valueOf( errors ) );
+        results.setProperty( RESULTS_COMPLETED_COUNT, String.valueOf( completedCount ) );
+        results.setProperty( RESULTS_FAILURES, String.valueOf( failures ) );
+        results.setProperty( RESULTS_SKIPPED, String.valueOf( skipped ) );
     }
 }

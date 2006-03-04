@@ -37,15 +37,23 @@ public class ForkingWriterStreamConsumer
 
     private boolean showHeading;
 
-    public ForkingWriterStreamConsumer( Writer writer, boolean showHeading )
+    private int footerPrefixLength;
+
+    private boolean showFooter;
+
+    public ForkingWriterStreamConsumer( Writer writer, boolean showHeading, boolean showFooter )
     {
         this.showHeading = showHeading;
+
+        this.showFooter = showFooter;
 
         printWriter = new PrintWriter( writer );
 
         standardPrefixLength = ForkingConsoleReporter.FORKING_PREFIX_STANDARD.length();
 
         headingPrefixLength = ForkingConsoleReporter.FORKING_PREFIX_HEADING.length();
+
+        footerPrefixLength = ForkingConsoleReporter.FORKING_PREFIX_FOOTER.length();
     }
 
     public void consumeLine( String line )
@@ -60,6 +68,13 @@ public class ForkingWriterStreamConsumer
         else if ( line.startsWith( ForkingConsoleReporter.FORKING_PREFIX_STANDARD ) )
         {
             printWriter.println( line.substring( standardPrefixLength ) );
+        }
+        else if ( line.startsWith( ForkingConsoleReporter.FORKING_PREFIX_FOOTER ) )
+        {
+            if ( showFooter )
+            {
+                printWriter.println( line.substring( footerPrefixLength ) );
+            }
         }
         else
         {

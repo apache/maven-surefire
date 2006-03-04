@@ -26,6 +26,7 @@ import org.codehaus.plexus.util.cli.StreamConsumer;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -127,7 +128,7 @@ public class SurefireBooter
         return result;
     }
 
-    private boolean runSuitesInProcess( String testSet, boolean childDelegation )
+    private boolean runSuitesInProcess( String testSet, boolean childDelegation, Properties results )
         throws SurefireExecutionException
     {
         if ( testSuites.size() != 1 )
@@ -151,14 +152,14 @@ public class SurefireBooter
             Object surefire = surefireClass.newInstance();
 
             Method run = surefireClass.getMethod( "run", new Class[]{List.class, Object[].class, String.class,
-                ClassLoader.class, ClassLoader.class} );
+                ClassLoader.class, ClassLoader.class, Properties.class} );
 
             ClassLoader oldContextClassLoader = Thread.currentThread().getContextClassLoader();
 
             Thread.currentThread().setContextClassLoader( testsClassLoader );
 
             Boolean result = (Boolean) run.invoke( surefire, new Object[]{reports, testSuites.get( 0 ), testSet,
-                surefireClassLoader, testsClassLoader} );
+                surefireClassLoader, testsClassLoader, results} );
 
             Thread.currentThread().setContextClassLoader( oldContextClassLoader );
 
@@ -218,7 +219,7 @@ public class SurefireBooter
     private boolean runSuitesForkOnce()
         throws SurefireBooterForkException
     {
-        return forkSuites( testSuites, true );
+        return forkSuites( testSuites, true, true );
     }
 
     private boolean runSuitesForkPerTestSet()
@@ -240,6 +241,7 @@ public class SurefireBooter
         boolean failed = false;
 
         boolean showHeading = true;
+        Properties properties = new Properties();
         for ( Iterator i = testSuites.iterator(); i.hasNext(); )
         {
             Object[] testSuite = (Object[]) i.next();
@@ -249,7 +251,8 @@ public class SurefireBooter
             for ( Iterator j = testSets.keySet().iterator(); j.hasNext(); )
             {
                 String testSet = (String) j.next();
-                boolean result = forkSuite( testSuite, testSet, showHeading );
+                boolean showFooter = !j.hasNext() && !i.hasNext();
+                boolean result = forkSuite( testSuite, testSet, showHeading, showFooter, properties );
                 if ( !result )
                 {
                     failed = true;
@@ -309,28 +312,29 @@ public class SurefireBooter
         return testSets;
     }
 
-    private boolean forkSuites( List testSuites, boolean showHeading )
+    private boolean forkSuites( List testSuites, boolean showHeading, boolean showFooter )
         throws SurefireBooterForkException
-    {
-        Properties properties = createForkProperties( testSuites );
-
-        return fork( properties, showHeading );
-    }
-
-    private boolean forkSuite( Object[] testSuite, String testSet, boolean showHeading )
-        throws SurefireBooterForkException
-    {
-        Properties properties = createForkProperties( Collections.singletonList( testSuite ) );
-
-        properties.setProperty( "testSet", testSet );
-
-        return fork( properties, showHeading );
-    }
-
-    private Properties createForkProperties( List testSuites )
     {
         Properties properties = new Properties();
 
+        setForkProperties( testSuites, properties );
+
+        return fork( properties, showHeading, showFooter );
+    }
+
+    private boolean forkSuite( Object[] testSuite, String testSet, boolean showHeading, boolean showFooter,
+                               Properties properties )
+        throws SurefireBooterForkException
+    {
+        setForkProperties( Collections.singletonList( testSuite ), properties );
+
+        properties.setProperty( "testSet", testSet );
+
+        return fork( properties, showHeading, showFooter );
+    }
+
+    private void setForkProperties( List testSuites, Properties properties )
+    {
         addPropertiesForTypeHolder( reports, properties, "report." );
         addPropertiesForTypeHolder( testSuites, properties, "testSuite." );
 
@@ -347,7 +351,6 @@ public class SurefireBooter
         }
 
         properties.setProperty( "childDelegation", String.valueOf( forkConfiguration.isChildDelegation() ) );
-        return properties;
     }
 
     private File writePropertiesFile( String name, Properties properties )
@@ -356,6 +359,14 @@ public class SurefireBooter
         File file = File.createTempFile( name, "tmp" );
         file.deleteOnExit();
 
+        writePropertiesFile( file, name, properties );
+
+        return file;
+    }
+
+    private void writePropertiesFile( File file, String name, Properties properties )
+        throws IOException
+    {
         FileOutputStream out = new FileOutputStream( file );
 
         try
@@ -366,8 +377,6 @@ public class SurefireBooter
         {
             IOUtil.close( out );
         }
-
-        return file;
     }
 
     private void addPropertiesForTypeHolder( List typeHolderList, Properties properties, String propertyPrefix )
@@ -401,7 +410,7 @@ public class SurefireBooter
         }
     }
 
-    private boolean fork( Properties properties, boolean showHeading )
+    private boolean fork( Properties properties, boolean showHeading, boolean showFooter )
         throws SurefireBooterForkException
     {
         File surefireProperties;
@@ -430,9 +439,9 @@ public class SurefireBooter
 
         Writer consoleWriter = new OutputStreamWriter( System.out );
 
-        StreamConsumer out = new ForkingWriterStreamConsumer( consoleWriter, showHeading );
+        StreamConsumer out = new ForkingWriterStreamConsumer( consoleWriter, showHeading, showFooter );
 
-        StreamConsumer err = new ForkingWriterStreamConsumer( consoleWriter, showHeading );
+        StreamConsumer err = new ForkingWriterStreamConsumer( consoleWriter, showHeading, showFooter );
 
         if ( forkConfiguration.isDebug() )
         {
@@ -448,6 +457,29 @@ public class SurefireBooter
         catch ( CommandLineException e )
         {
             throw new SurefireBooterForkException( "Error while executing forked tests.", e );
+        }
+
+        if ( surefireProperties != null && surefireProperties.exists() )
+        {
+            FileInputStream inStream = null;
+            try
+            {
+                inStream = new FileInputStream( surefireProperties );
+
+                properties.load( inStream );
+            }
+            catch ( FileNotFoundException e )
+            {
+                throw new SurefireBooterForkException( "Unable to reload properties file from forked process", e );
+            }
+            catch ( IOException e )
+            {
+                throw new SurefireBooterForkException( "Unable to reload properties file from forked process", e );
+            }
+            finally
+            {
+                IOUtil.close( inStream );
+            }
         }
 
         return returnCode == 0;
@@ -614,7 +646,8 @@ public class SurefireBooter
             setSystemProperties( new File( args[1] ) );
         }
 
-        Properties p = loadProperties( new File( args[0] ) );
+        File surefirePropertiesFile = new File( args[0] );
+        Properties p = loadProperties( surefirePropertiesFile );
 
         SurefireBooter surefireBooter = new SurefireBooter();
 
@@ -653,12 +686,14 @@ public class SurefireBooter
         boolean result;
         if ( testSet != null )
         {
-            result = surefireBooter.runSuitesInProcess( testSet, childDelegation );
+            result = surefireBooter.runSuitesInProcess( testSet, childDelegation, p );
         }
         else
         {
             result = surefireBooter.runSuitesInProcess( childDelegation );
         }
+
+        surefireBooter.writePropertiesFile( surefirePropertiesFile, "surefire", p );
 
         //noinspection CallToSystemExit
         System.exit( result ? TESTS_SUCCEEDED_EXIT_CODE : TESTS_FAILED_EXIT_CODE );

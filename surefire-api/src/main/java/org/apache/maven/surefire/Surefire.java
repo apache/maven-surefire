@@ -27,6 +27,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Properties;
 import java.util.ResourceBundle;
 
 /**
@@ -43,8 +44,20 @@ public class Surefire
                         ClassLoader surefireClassLoader, ClassLoader testsClassLoader )
         throws ReporterException, TestSetFailedException
     {
+        return run( reportDefinitions, testSuiteDefinition, testSetName, surefireClassLoader, testsClassLoader, null );
+    }
+
+    public boolean run( List reportDefinitions, Object[] testSuiteDefinition, String testSetName,
+                        ClassLoader surefireClassLoader, ClassLoader testsClassLoader, Properties results )
+        throws ReporterException, TestSetFailedException
+    {
         ReporterManager reporterManager =
             new ReporterManager( instantiateReports( reportDefinitions, surefireClassLoader ) );
+
+        if ( results != null )
+        {
+            reporterManager.initResultsFromProperties( results );
+        }
 
         int totalTests = 0;
 
@@ -69,6 +82,8 @@ public class Surefire
         }
 
         reporterManager.runCompleted();
+
+        reporterManager.updateResultsProperties( results );
 
         return reporterManager.getNumErrors() == 0 && reporterManager.getNumFailures() == 0;
     }

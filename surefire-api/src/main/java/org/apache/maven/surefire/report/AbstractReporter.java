@@ -51,6 +51,11 @@ public abstract class AbstractReporter
     // Report interface
     // ----------------------------------------------------------------------
 
+    public void writeFooter( String footer )
+    {
+        writeMessage( footer );
+    }
+
     public void runStarting( int testCount )
     {
     }

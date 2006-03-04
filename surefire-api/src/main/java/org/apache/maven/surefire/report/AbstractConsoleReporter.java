@@ -58,6 +58,11 @@ public abstract class AbstractConsoleReporter
         writeHeading( "-------------------------------------------------------" );
     }
 
+    public void runCompleted()
+    {
+        super.runCompleted();    //To change body of overridden methods use File | Settings | File Templates.
+    }
+
     public void writeHeading( String message )
     {
         writer.println( message );

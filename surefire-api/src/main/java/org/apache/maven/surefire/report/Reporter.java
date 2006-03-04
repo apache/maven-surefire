@@ -20,6 +20,8 @@ public interface Reporter
 {
     void writeMessage( String message );
 
+    void writeFooter( String footer );
+
     // The entire run
     void runStarting( int testCount );
 
