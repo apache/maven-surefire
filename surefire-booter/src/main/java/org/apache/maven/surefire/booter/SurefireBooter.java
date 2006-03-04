@@ -384,8 +384,13 @@ public class SurefireBooter
                 String typeProperty = params[0].getClass().getName();
                 for ( int j = 1; j < params.length; j++ )
                 {
-                    paramProperty += "|" + params[j].toString();
-                    typeProperty += "|" + params[j].getClass().getName();
+                    paramProperty += "|";
+                    typeProperty += "|";
+                    if ( params[j] != null )
+                    {
+                        paramProperty += params[j].toString();
+                        typeProperty += params[j].getClass().getName();
+                    }
                 }
                 properties.setProperty( propertyPrefix + i + ".params", paramProperty );
                 properties.setProperty( propertyPrefix + i + ".types", typeProperty );
@@ -559,7 +564,11 @@ public class SurefireBooter
 
             for ( int i = 0; i < types.length; i++ )
             {
-                if ( types[i].equals( String.class.getName() ) )
+                if ( types[i].length() == 0 )
+                {
+                    params[i] = null;
+                }
+                else if ( types[i].equals( String.class.getName() ) )
                 {
                     paramObjects[i] = params[i];
                 }
@@ -570,6 +579,14 @@ public class SurefireBooter
                 else if ( types[i].equals( ArrayList.class.getName() ) )
                 {
                     paramObjects[i] = processStringList( params[i] );
+                }
+                else if ( types[i].equals( Boolean.class.getName() ) )
+                {
+                    paramObjects[i] = Boolean.valueOf( params[i] );
+                }
+                else if ( types[i].equals( Integer.class.getName() ) )
+                {
+                    paramObjects[i] = Integer.valueOf( params[i] );
                 }
                 else
                 {

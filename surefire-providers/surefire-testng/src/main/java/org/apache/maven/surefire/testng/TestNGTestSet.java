@@ -42,6 +42,7 @@ public class TestNGTestSet
 
     protected void discoverTestMethods()
     {
+        // TODO: This isn't correct. We really need to have TestNG do the counting for us.
         if ( testMethods == null )
         {
             testMethods = new ArrayList();

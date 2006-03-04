@@ -24,6 +24,7 @@ import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.testng.ISuiteListener;
 import org.testng.ITestListener;
 import org.testng.TestNG;
+import org.testng.internal.TestNGClassFinder;
 import org.testng.internal.annotations.IAnnotationFinder;
 import org.testng.xml.XmlClass;
 import org.testng.xml.XmlSuite;
@@ -33,6 +34,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Map;
 
 /**
  * Test suite for TestNG based on a directory of Java test classes. Can also execute JUnit tests.
@@ -84,6 +86,15 @@ public class TestNGDirectoryTestSuite
         annotationFinder = (IAnnotationFinder) annotationClass.newInstance();
     }
 
+    public Map locateTestSets( ClassLoader classLoader )
+        throws TestSetFailedException
+    {
+        // TODO: fix
+        // override classloader. That keeps us all together for now, which makes it work, but could pose problems of
+        // classloader separation if the tests use plexus-utils.
+        return super.locateTestSets( getClass().getClassLoader() );
+    }
+
     protected SurefireTestSet createTestSet( Class testClass, ClassLoader classLoader )
     {
         return new TestNGTestSet( testClass );
@@ -98,7 +109,6 @@ public class TestNGDirectoryTestSuite
         }
 
         XmlSuite suite = new XmlSuite();
-        // TODO: set name
         suite.setParallel( parallel );
         suite.setThreadCount( threadCount );
 
@@ -108,23 +118,18 @@ public class TestNGDirectoryTestSuite
 
             XmlTest xmlTest = new XmlTest( suite );
             xmlTest.setName( testSet.getName() );
-            // TODO: should these be grouped into a single XmlTest?
             xmlTest.setXmlClasses( Collections.singletonList( new XmlClass( testSet.getTestClass() ) ) );
 
-/*
-            // TODO: not working, due to annotations being in a different classloader.
-            //   We could just check if it extends TestCase, but that would rule out non-TestNG pojo handling
             if ( !TestNGClassFinder.isTestNGClass( testSet.getTestClass(), annotationFinder ) )
             {
-                // TODO: is this correct, or should it be a JUnitBattery?
                 xmlTest.setJUnit( true );
             }
-*/
         }
 
         TestNG testNG = new TestNG();
         // turn off all TestNG output
         testNG.setVerbose( 0 );
+
         // TODO: check these work, otherwise put them in the xmlTest instances
         if ( groups != null )
         {
@@ -135,6 +140,8 @@ public class TestNGDirectoryTestSuite
             testNG.setExcludedGroups( excludedGroups );
         }
         testNG.setXmlSuites( Collections.singletonList( suite ) );
+
+        testNG.setListenerClasses( new ArrayList() );
 
         TestNGReporter reporter = new TestNGReporter( reporterManager, this );
         testNG.addListener( (ITestListener) reporter );
