@@ -142,6 +142,8 @@ public class ForkConfiguration
             }
         }
 
+        cli.createArgument().setValue( "-ea" );
+
         cli.createArgument().setValue( "-classpath" );
 
         cli.createArgument().setValue( StringUtils.join( classPath.iterator(), File.pathSeparator ) );
