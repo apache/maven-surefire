@@ -32,6 +32,7 @@ import org.testng.xml.XmlTest;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
@@ -119,6 +120,14 @@ public class TestNGDirectoryTestSuite
             XmlTest xmlTest = new XmlTest( suite );
             xmlTest.setName( testSet.getName() );
             xmlTest.setXmlClasses( Collections.singletonList( new XmlClass( testSet.getTestClass() ) ) );
+            if ( groups != null )
+            {
+                xmlTest.setIncludedGroups( Arrays.asList( groups.split( "," ) ) );
+            }
+            if ( excludedGroups != null )
+            {
+                xmlTest.setExcludedGroups( Arrays.asList( excludedGroups.split( "," ) ) );
+            }
 
             if ( !TestNGClassFinder.isTestNGClass( testSet.getTestClass(), annotationFinder ) )
             {
@@ -131,14 +140,6 @@ public class TestNGDirectoryTestSuite
         testNG.setVerbose( 0 );
 
         // TODO: check these work, otherwise put them in the xmlTest instances
-        if ( groups != null )
-        {
-            testNG.setGroups( groups );
-        }
-        if ( excludedGroups != null )
-        {
-            testNG.setExcludedGroups( excludedGroups );
-        }
         testNG.setXmlSuites( Collections.singletonList( suite ) );
 
         testNG.setListenerClasses( new ArrayList() );
