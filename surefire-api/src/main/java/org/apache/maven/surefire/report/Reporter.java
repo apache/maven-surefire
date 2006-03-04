@@ -46,6 +46,8 @@ public interface Reporter
 
     void testFailed( ReportEntry report, String stdOut, String stdErr );
 
+    void testSkipped( ReportEntry report );
+
     // Counters
     void reset();
 
@@ -54,4 +56,6 @@ public interface Reporter
     int getNumFailures();
 
     int getNumTests();
+
+    int getNumSkipped();
 }

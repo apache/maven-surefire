@@ -45,6 +45,8 @@ public abstract class AbstractReporter
 
     protected long testSetStartTime;
 
+    protected int skipped;
+
     // ----------------------------------------------------------------------
     // Report interface
     // ----------------------------------------------------------------------
@@ -93,6 +95,13 @@ public abstract class AbstractReporter
         endTest();
     }
 
+    public void testSkipped( ReportEntry report )
+    {
+        ++skipped;
+
+        endTest();
+    }
+
     public void testError( ReportEntry report, String stdOut, String stdErr )
     {
         ++errors;
@@ -123,6 +132,11 @@ public abstract class AbstractReporter
         return errors;
     }
 
+    public int getNumSkipped()
+    {
+        return skipped;
+    }
+
     public int getNumFailures()
     {
         return failures;
@@ -140,6 +154,8 @@ public abstract class AbstractReporter
     public void reset()
     {
         errors = 0;
+
+        skipped = 0;
 
         failures = 0;
 

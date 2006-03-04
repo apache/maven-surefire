@@ -41,6 +41,8 @@ public class ReporterManager
 
     private PrintStream newOut;
 
+    private int skipped;
+
     public ReporterManager( List reports )
     {
         this.reports = reports;
@@ -144,7 +146,8 @@ public class ReporterManager
 
         writeMessage( "" );
         writeMessage( "Results :" );
-        writeMessage( "Tests run: " + completedCount + ", Failures: " + failures + ", Errors: " + errors );
+        writeMessage( "Tests run: " + completedCount + ", Failures: " + failures + ", Errors: " + errors +
+            ", Skipped: " + skipped );
         writeMessage( "" );
     }
 
@@ -168,6 +171,8 @@ public class ReporterManager
         if ( !reports.isEmpty() )
         {
             Reporter reporter = (Reporter) reports.get( 0 );
+
+            skipped += reporter.getNumSkipped();
 
             errors += reporter.getNumErrors();
 
@@ -317,4 +322,15 @@ public class ReporterManager
         return completedCount;
     }
 
+    public void testSkipped( ReportEntry report )
+    {
+        resetStreams();
+
+        for ( Iterator it = reports.iterator(); it.hasNext(); )
+        {
+            Reporter reporter = (Reporter) it.next();
+
+            reporter.testSkipped( report );
+        }
+    }
 }

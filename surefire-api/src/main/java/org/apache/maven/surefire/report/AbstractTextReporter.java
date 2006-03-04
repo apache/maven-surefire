@@ -78,6 +78,16 @@ public abstract class AbstractTextReporter
         }
     }
 
+    public void testSkipped( ReportEntry report )
+    {
+        super.testSkipped( report );
+
+        if ( PLAIN.equals( format ) )
+        {
+            testResults.add( report.getName() + " skipped" );
+        }
+    }
+
     public void testError( ReportEntry report, String stdOut, String stdErr )
     {
         super.testError( report, stdOut, stdErr );
@@ -125,6 +135,8 @@ public abstract class AbstractTextReporter
         buf.append( failures );
         buf.append( ", Errors: " );
         buf.append( errors );
+        buf.append( ", Skipped: " );
+        buf.append( skipped );
         buf.append( ", Time elapsed: " );
         buf.append( elapsedTimeAsString( System.currentTimeMillis() - testSetStartTime ) );
         buf.append( " sec" );

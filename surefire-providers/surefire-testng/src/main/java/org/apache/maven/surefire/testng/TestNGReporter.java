@@ -40,7 +40,6 @@ import java.util.ResourceBundle;
 public class TestNGReporter
     implements ITestListener, ISuiteListener
 {
-    // TODO: check the bundles
     private ResourceBundle bundle = ResourceBundle.getBundle( Surefire.SUREFIRE_BUNDLE_NAME );
 
     /**
@@ -104,8 +103,7 @@ public class TestNGReporter
     {
         ReportEntry report = new ReportEntry( source, result.getName(), bundle.getString( "testSkipped" ) );
 
-        // TODO: is this correct?
-        reportManager.testSucceeded( report );
+        reportManager.testSkipped( report );
     }
 
     public void onTestFailedButWithinSuccessPercentage( ITestResult result )

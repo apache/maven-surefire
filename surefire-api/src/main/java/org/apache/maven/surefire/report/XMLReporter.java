@@ -107,6 +107,8 @@ public class XMLReporter
 
         testSuite.setAttribute( "errors", String.valueOf( this.getNumErrors() ) );
 
+        testSuite.setAttribute( "skipped", String.valueOf( this.getNumSkipped() ) );
+
         testSuite.setAttribute( "failures", String.valueOf( this.getNumFailures() ) );
 
         long runTime = System.currentTimeMillis() - testSetStartTime;
