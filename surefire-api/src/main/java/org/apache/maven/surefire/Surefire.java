@@ -131,18 +131,6 @@ public class Surefire
         return suite;
     }
 
-    /*
-                    //TestNG needs a little config love -- TODO
-//                    if ( testset instanceof TestNGXMLBattery )
-//                    {
-//                        TestNGXMLBattery xbat = (TestNGXMLBattery) testset;
-//                        xbat.setOutputDirectory( reportsDirectory );
-//                        xbat.setReporter( new TestNGReporter( reporterManager, this ) );
-//                        xbat.execute( reporterManager );
-//                        nbTests += xbat.getTestCount();
-//                    }
-    }
-*/
     private List instantiateReports( List reportDefinitions, ClassLoader classLoader )
         throws TestSetFailedException
     {
