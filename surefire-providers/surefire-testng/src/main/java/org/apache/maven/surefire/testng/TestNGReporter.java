@@ -17,9 +17,18 @@ package org.apache.maven.surefire.testng;
  */
 
 import org.apache.maven.surefire.Surefire;
+import org.apache.maven.surefire.report.ReportEntry;
+import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterManager;
+import org.apache.maven.surefire.suite.SurefireTestSuite;
+import org.testng.ISuite;
+import org.testng.ISuiteListener;
+import org.testng.ITestContext;
 import org.testng.ITestListener;
+import org.testng.ITestResult;
 import org.testng.TestNG;
+
+import java.util.ResourceBundle;
 
 /**
  * Listens for and provides and adaptor layer so that
@@ -29,18 +38,17 @@ import org.testng.TestNG;
  * @author jkuhnert
  */
 public class TestNGReporter
-//    implements ITestListener, ISuiteListener (TODO)
+    implements ITestListener, ISuiteListener
 {
+    // TODO: check the bundles
+    private ResourceBundle bundle = ResourceBundle.getBundle( Surefire.SUREFIRE_BUNDLE_NAME );
 
     /**
      * core Surefire reporting
      */
     protected ReporterManager reportManager;
 
-    /**
-     * core Surefire instance
-     */
-    protected Surefire surefire;
+    private Object source;
 
     /**
      * Constructs a new instance that will listen to
@@ -51,47 +59,41 @@ public class TestNGReporter
      * suite is run.
      *
      * @param reportManager Instance to report suite status to
-     * @param surefire      Main instance that provides resources messages,etc.
      */
-    public TestNGReporter( ReporterManager reportManager, Surefire surefire )
+    public TestNGReporter( ReporterManager reportManager, SurefireTestSuite source )
     {
         this.reportManager = reportManager;
-        this.surefire = surefire;
 
         if ( reportManager == null )
         {
             throw new IllegalArgumentException( "ReportManager passed in was null." );
         }
-        if ( surefire == null )
-        {
-            throw new IllegalArgumentException( "Surefire passed in was null." );
-        }
+
+        this.source = source;
     }
 
-/* TODO
     public void onTestStart( ITestResult result )
     {
-        String rawString = Surefire.getResourceString( "testStarting" );
+        String rawString = bundle.getString( "testStarting" );
         String group = groupString( result.getMethod().getGroups(), result.getTestClass().getName() );
-        ReportEntry report = new ReportEntry( surefire, result.getTestClass().getName() + "#" +
+        ReportEntry report = new ReportEntry( source, result.getTestClass().getName() + "#" +
             result.getMethod().getMethodName(), group, rawString );
 
         reportManager.testStarting( report );
-
-
     }
 
     public void onTestSuccess( ITestResult result )
     {
-        reportManager.testSucceeded( createReport( result, "testSuccessful" ) );
+        ReportEntry report = new ReportEntry( source, result.getName(), bundle.getString( "testSuccessful" ) );
+        reportManager.testSucceeded( report );
     }
 
     public void onTestFailure( ITestResult result )
     {
-        String rawString = Surefire.getResourceString( "executeException" );
+        String rawString = bundle.getString( "executeException" );
 
         // TODO: almost certainly not correct: result.getMethod().getExtraOutput().getParameterOutput()
-        ReportEntry report = new ReportEntry( surefire, result.getName(),
+        ReportEntry report = new ReportEntry( source, result.getName(),
                                               rawString + result.getMethod().getExtraOutput().getParameterOutput(),
                                               result.getThrowable() );
 
@@ -100,47 +102,49 @@ public class TestNGReporter
 
     public void onTestSkipped( ITestResult result )
     {
-        // TODO: is this correct?
-        reportManager.testSucceeded( createReport( result, "testSkipped" ) );
-    }
+        ReportEntry report = new ReportEntry( source, result.getName(), bundle.getString( "testSkipped" ) );
 
-    private ReportEntry createReport( ITestResult result, String key )
-    {
-        return new ReportEntry( surefire, result.getName(), Surefire.getResourceString( key ) );
+        // TODO: is this correct?
+        reportManager.testSucceeded( report );
     }
 
     public void onTestFailedButWithinSuccessPercentage( ITestResult result )
     {
-        String rawString = Surefire.getResourceString( "executeException" );
+        String rawString = bundle.getString( "executeException" );
 
         // TODO: almost certainly not correct: result.getMethod().getExtraOutput().getParameterOutput()
-        ReportEntry report = new ReportEntry( surefire, result.getName(),
-                                              rawString + result.getMethod().getExtraOutput(), result.getThrowable() );
+        ReportEntry report = new ReportEntry( source, result.getName(), rawString + result.getMethod().getExtraOutput(),
+                                              result.getThrowable() );
 
         reportManager.testError( report );
     }
 
     public void onStart( ITestContext context )
     {
-        String rawString = Surefire.getResourceString( "suiteExecutionStarting" );
+        String rawString = bundle.getString( "testSetStarting" );
 
         String group = groupString( context.getIncludedGroups(), context.getName() );
 
-        ReportEntry report = new ReportEntry( surefire, context.getName(), group, rawString );
+        ReportEntry report = new ReportEntry( source, context.getName(), group, rawString );
 
-        reportManager.testSetStarting( report );
+        try
+        {
+            reportManager.testSetStarting( report );
+        }
+        catch ( ReporterException e )
+        {
+            // TODO: remove this exception from the report manager
+        }
     }
 
     public void onFinish( ITestContext context )
     {
-        String rawString = Surefire.getResourceString( "suiteCompletedNormally" );
+        String rawString = bundle.getString( "testSetCompletedNormally" );
 
         ReportEntry report =
-            new ReportEntry( surefire, context.getName(), groupString( context.getIncludedGroups(), null ), rawString );
+            new ReportEntry( source, context.getName(), groupString( context.getIncludedGroups(), null ), rawString );
 
         reportManager.testSetCompleted( report );
-
-        reportManager.runCompleted();
 
         reportManager.reset();
     }
@@ -152,7 +156,6 @@ public class TestNGReporter
     public void onStart( ISuite suite )
     {
     }
-*/
 
     /**
      * Creates a string out of the list of testng groups in the

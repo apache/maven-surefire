@@ -16,20 +16,11 @@ package org.apache.maven.surefire.testng;
  * limitations under the License.
  */
 
-import org.apache.maven.surefire.Surefire;
 import org.apache.maven.surefire.report.ReporterManager;
 import org.apache.maven.surefire.testset.AbstractTestSet;
-import org.testng.TestNG;
-import org.testng.internal.TestNGClassFinder;
-import org.testng.internal.Utils;
-import org.testng.internal.annotations.IAnnotationFinder;
-import org.testng.internal.annotations.JDK14AnnotationFinder;
-import org.testng.internal.annotations.JDK15AnnotationFinder;
-import org.testng.xml.ClassSuite;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Main plugin point for running testng tests within the Surefire runtime
@@ -40,10 +31,6 @@ import java.util.List;
 public class TestNGTestSet
     extends AbstractTestSet
 {
-    private String testSourceDirectory;
-
-    private static IAnnotationFinder annotationFinder;
-
     /**
      * Creates a new test testset that will process the class being
      * passed in to determine the testing configuration.
@@ -51,10 +38,6 @@ public class TestNGTestSet
     public TestNGTestSet( Class testClass )
     {
         super( testClass );
-
-/*
-        this.testSourceDirectory = testSourceDirectory;
-*/
     }
 
     protected void discoverTestMethods()
@@ -87,71 +70,7 @@ public class TestNGTestSet
 
     public void execute( ReporterManager reportManager, ClassLoader loader )
     {
-        // TODO: maybe don't execute this for every testset
-
-        TestNG testNG = new TestNG();
-        List classes = new ArrayList();
-        classes.add( getTestClass() );
-
-        String groups = null;
-
-        if ( !TestNGClassFinder.isTestNGClass( getTestClass(), getAnnotationFinder() ) )
-        {
-//            testNG.setJUnit( Boolean.TRUE );
-        }
-
-        //configure testng parameters
-        ClassSuite classSuite = new ClassSuite( groups != null ? groups : "TestNG Suite", Utils.classesToXmlClasses(
-            (Class[]) classes.toArray( new Class[classes.size()] ) ) );
-        testNG.setCommandLineSuite( classSuite );
-        // TODO
-//        testNG.setOutputDirectory( reportManager.getReportsDirectory() );
-        Surefire surefire = new Surefire(); // TODO: blatently wrong
-        TestNGReporter testngReporter = new TestNGReporter( reportManager, surefire );
-/* TODO
-        testNG.addListener( (ITestListener) testngReporter );
-        testNG.addListener( (ISuiteListener) testngReporter );
-*/
-
-        // TODO: maybe this was running junit tests for us so that parallel would work
-//        testNG.setThreadCount( threadCount );
-//        testNG.setParallel( parallel );
-//
-//        if ( groups != null )
-//        {
-//            testNG.setGroups( groups );
-//        }
-//        if ( excludedGroups != null )
-//        {
-//            testNG.setExcludedGroups( excludedGroups );
-//        }
-
-        //set source path so testng can find javadoc
-        //annotations if not in 1.5 jvm
-        if ( /* TODO - necessary? !jvm15  && */ testSourceDirectory != null )
-        {
-            testNG.setSourcePath( testSourceDirectory );
-        }
-
-        //actually runs all the tests
-        List result = testNG.runSuitesLocally();
-//        nbTests += result.size(); TODO
-    }
-
-    private static IAnnotationFinder getAnnotationFinder()
-    {
-        // TODO: is this right? isn't it dependant on the version of the TestNG JAR being used?
-        if ( annotationFinder == null )
-        {
-            if ( System.getProperty( "java.version" ).indexOf( "1.5" ) > -1 )
-            {
-                annotationFinder = new JDK15AnnotationFinder();
-            }
-            else
-            {
-                annotationFinder = new JDK14AnnotationFinder();
-            }
-        }
-        return annotationFinder;
+        throw new UnsupportedOperationException(
+            "This should have been called directly from TestNGDirectoryTestSuite" );
     }
 }

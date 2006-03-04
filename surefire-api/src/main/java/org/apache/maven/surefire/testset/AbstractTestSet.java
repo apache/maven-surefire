@@ -56,7 +56,7 @@ public abstract class AbstractTestSet
         return testMethods.size();
     }
 
-    protected Class getTestClass()
+    public Class getTestClass()
     {
         return testClass;
     }

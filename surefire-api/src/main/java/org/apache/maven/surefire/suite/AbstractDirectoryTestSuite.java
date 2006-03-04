@@ -38,7 +38,7 @@ import java.util.ResourceBundle;
 public abstract class AbstractDirectoryTestSuite
     implements SurefireTestSuite
 {
-    private ResourceBundle bundle = ResourceBundle.getBundle( Surefire.SUREFIRE_BUNDLE_NAME );
+    protected ResourceBundle bundle = ResourceBundle.getBundle( Surefire.SUREFIRE_BUNDLE_NAME );
 
     private static final String FS = System.getProperty( "file.separator" );
 
@@ -48,7 +48,7 @@ public abstract class AbstractDirectoryTestSuite
 
     private List excludes;
 
-    private Map testSets;
+    protected Map testSets;
 
     private int totalTests;
 

@@ -28,4 +28,5 @@ public interface SurefireTestSet
 
     String getName();
 
+    Class getTestClass();
 }
