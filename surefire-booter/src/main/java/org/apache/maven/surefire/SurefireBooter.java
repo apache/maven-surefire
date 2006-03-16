@@ -48,11 +48,11 @@ public class SurefireBooter
 
     protected static final String PS = System.getProperty( "path.separator" );
 
-    private static String RUNNER = "org.apache.maven.surefire.SurefireBooter";
+    private static final String RUNNER = "org.apache.maven.surefire.SurefireBooter";
 
-    private static String BATTERY_EXECUTOR = "org.apache.maven.surefire.Surefire";
+    private static final String BATTERY_EXECUTOR = "org.apache.maven.surefire.Surefire";
 
-    private static String SINGLE_TEST_BATTERY = "org.apache.maven.surefire.battery.JUnitBattery";
+    private static final String SINGLE_TEST_BATTERY = "org.apache.maven.surefire.battery.JUnitBattery";
 
     private List batteries = new ArrayList();
 
@@ -280,7 +280,7 @@ public class SurefireBooter
 
         boolean childDelegation = "true".equals( p.getProperty( "childDelegation", "false" ) );
 
-        List urls = Arrays.asList( cp.split( ":" ) );
+        List urls = Arrays.asList( cp.split( PS ) );
 
         return createClassLoader( urls, childDelegation );
     }
@@ -495,7 +495,7 @@ public class SurefireBooter
                 }
                 else
                 {
-                    cp += ":" + url;
+                    cp += PS + url;
                 }
             }
         }
