@@ -2,6 +2,12 @@
 
 <project>
   <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <artifactId>maven-parent</artifactId>
+    <groupId>org.apache.maven</groupId>
+    <version>1</version>
+    <relativePath>../pom/maven/pom.xml</relativePath>
+  </parent>
   <groupId>org.apache.maven.surefire</groupId>
   <artifactId>surefire</artifactId>
   <packaging>pom</packaging>
@@ -13,16 +19,6 @@
     <system>jira</system>
     <url>http://jira.codehaus.org/browse/SUREFIRE</url>
   </issueManagement>
-  <ciManagement>
-    <system>continuum</system>
-    <url></url>
-    <notifiers>
-      <notifier>
-        <type>email</type>
-        <address>surefire-dev@maven.apache.org</address>
-      </notifier>
-    </notifiers>
-  </ciManagement>
   <inceptionYear>2004</inceptionYear>
   <mailingLists>
     <mailingList>
@@ -44,35 +40,6 @@
       <archive>http://mail-archives.apache.org/mod_mbox/maven-surefire-commits/</archive>
     </mailingList>
   </mailingLists>
-  <developers>
-    <developer>
-      <id>jvanzyl</id>
-      <name>Jason van Zyl</name>
-      <email>jason@maven.org</email>
-      <organization>Mergere</organization>
-      <roles>
-        <role>Developer</role>
-      </roles>
-    </developer>
-    <developer>
-      <id>brett</id>
-      <name>Brett Porter</name>
-      <email>brett@maven.org</email>
-      <organization>Mergere</organization>
-      <roles>
-        <role>Developer</role>
-      </roles>
-    </developer>
-    <developer>
-      <id>evenisse</id>
-      <name>Emmanuel Venisse</name>
-      <email>evenisse@codehaus.org</email>
-      <organization>Codehaus</organization>
-      <roles>
-        <role>Developer</role>
-      </roles>
-    </developer>
-  </developers>
   <contributors>
     <contributor>
       <name>Jesse Kuhnert</name>
@@ -83,27 +50,6 @@
     <developerConnection>scm:svn:https://svn.apache.org/repos/asf/surefire/trunk/</developerConnection>
     <url>http://svn.apache.org/viewcvs.cgi/maven/surefire/</url>
   </scm>
-  <organization>
-    <name>Apache</name>
-    <url>http://www.apache.org/</url>
-  </organization>
-  <distributionManagement>
-    <repository>
-      <id>repo1</id>
-      <name>Maven Central Repository</name>
-      <url>scp://repo1.maven.org/home/projects/maven/repository-staging/to-ibiblio/maven2</url>
-    </repository>
-    <snapshotRepository>
-      <id>apache.snapshots</id>
-      <name>Apache Development Repository</name>
-      <url>scp://minotaur.apache.org/www/cvs.apache.org/maven-snapshot-repository</url>
-    </snapshotRepository>
-    <site>
-      <id>surefire</id>
-      <name>Surefire Site at Codehaus</name>
-      <url>scp://beaver.codehaus.org//home/projects/surefire/public_html</url>
-    </site>
-  </distributionManagement>
   <build>
     <pluginManagement>
       <plugins>
