@@ -24,6 +24,7 @@ import org.codehaus.plexus.util.cli.StreamConsumer;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
@@ -280,7 +281,15 @@ public class SurefireBooter
 
         boolean childDelegation = "true".equals( p.getProperty( "childDelegation", "false" ) );
 
-        List urls = Arrays.asList( cp.split( PS ) );
+        List urls;
+        if ( cp == null )
+        {
+            urls = new ArrayList(0);
+        }
+        else
+        {
+            urls = Arrays.asList( cp.split( PS ) );
+        }
 
         return createClassLoader( urls, childDelegation );
     }
@@ -619,7 +628,7 @@ public class SurefireBooter
 
         if ( !f.exists() )
         {
-            return p;
+            throw new FileNotFoundException( f.getAbsolutePath() );
         }
 
         f.deleteOnExit();
