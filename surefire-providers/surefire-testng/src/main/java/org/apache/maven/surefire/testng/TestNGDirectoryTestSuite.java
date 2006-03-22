@@ -83,7 +83,7 @@ public class TestNGDirectoryTestSuite
         {
             annotationClass = Class.forName( "org.testng.internal.annotations.JDK14AnnotationFinder" );
         }
-
+        
         annotationFinder = (IAnnotationFinder) annotationClass.newInstance();
     }
 
@@ -168,7 +168,8 @@ public class TestNGDirectoryTestSuite
 
     private void executeTestNG( XmlSuite suite, ReporterManager reporterManager )
     {
-        TestNG testNG = new TestNG();
+        TestNG testNG = new TestNG( false );
+        
         // turn off all TestNG output
         testNG.setVerbose( 0 );
 

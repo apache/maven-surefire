@@ -36,28 +36,29 @@ public class TestNGExecutor
     private TestNGExecutor()
     {
     }
-
+    
     static void executeTestNG( SurefireTestSuite surefireSuite, String testSourceDirectory, XmlSuite suite,
                                ReporterManager reporterManager )
     {
-        TestNG testNG = new TestNG();
+        TestNG testNG = new TestNG( false );
+        
         // turn off all TestNG output
         testNG.setVerbose( 0 );
-
+        
         testNG.setXmlSuites( Collections.singletonList( suite ) );
-
+        
         testNG.setListenerClasses( new ArrayList() );
-
+        
         TestNGReporter reporter = new TestNGReporter( reporterManager, surefireSuite );
         testNG.addListener( (ITestListener) reporter );
         testNG.addListener( (ISuiteListener) reporter );
-
+        
         // Set source path so testng can find javadoc annotations if not in 1.5 jvm
         if ( testSourceDirectory != null )
         {
             testNG.setSourcePath( testSourceDirectory );
         }
-
+        
         ClassLoader oldClassLoader = Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader( suite.getClass().getClassLoader() );
         testNG.runSuitesLocally();
