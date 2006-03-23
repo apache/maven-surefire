@@ -91,10 +91,7 @@ public class TestNGReporter
     {
         String rawString = bundle.getString( "executeException" );
 
-        // TODO: almost certainly not correct: result.getMethod().getExtraOutput().getParameterOutput()
-        ReportEntry report = new ReportEntry( source, result.getName(),
-                                              rawString + result.getMethod().getExtraOutput().getParameterOutput(),
-                                              result.getThrowable() );
+        ReportEntry report = new ReportEntry( source, result.getName(), rawString, result.getThrowable() );
 
         reportManager.testFailed( report );
     }
@@ -110,9 +107,7 @@ public class TestNGReporter
     {
         String rawString = bundle.getString( "executeException" );
 
-        // TODO: almost certainly not correct: result.getMethod().getExtraOutput().getParameterOutput()
-        ReportEntry report = new ReportEntry( source, result.getName(), rawString + result.getMethod().getExtraOutput(),
-                                              result.getThrowable() );
+        ReportEntry report = new ReportEntry( source, result.getName(), rawString, result.getThrowable() );
 
         reportManager.testError( report );
     }
