@@ -65,7 +65,7 @@
     </developer>
   </developers>
   <scm>
-    <connection>scm:svn:https://svn.apache.org/repos/asf/surefire/trunk/</connection>
+    <connection>scm:svn:http://svn.apache.org/repos/asf/surefire/trunk/</connection>
     <developerConnection>scm:svn:https://svn.apache.org/repos/asf/surefire/trunk/</developerConnection>
     <url>http://svn.apache.org/viewcvs.cgi/maven/surefire/</url>
   </scm>
