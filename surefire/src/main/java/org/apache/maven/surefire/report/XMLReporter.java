@@ -167,7 +167,7 @@ public class XMLReporter
 
             if ( ( message != null ) && ( message.trim().length() > 0 ) )
             {
-                element.setAttribute( "message", message );
+                element.setAttribute( "message", escapeAttribute( message ));
 
                 element.setAttribute( "type", stackTrace.substring( 0, stackTrace.indexOf( ":" ) ) );
             }
@@ -258,10 +258,15 @@ public class XMLReporter
 
                 property.setAttribute("name", key);
 
-                property.setAttribute("value", value);
+                property.setAttribute("value", escapeAttribute(value));
 
             }
         }
     }
     
+    private static String escapeAttribute( String attribute )
+    {
+        // Shouldn't Xpp3Dom do this itself?
+        return attribute.replaceAll( "<", "&lt;" ).replaceAll( ">", "&gt;" );
+    }
 }
