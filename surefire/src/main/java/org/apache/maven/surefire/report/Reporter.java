@@ -16,6 +16,10 @@ package org.apache.maven.surefire.report;
  * limitations under the License.
  */
 
+/**
+ *
+ * @version $Id$
+ */
 public interface Reporter
 {
     void writeMessage( String message );

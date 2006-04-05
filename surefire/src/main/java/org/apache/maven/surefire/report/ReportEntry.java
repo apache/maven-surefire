@@ -1,7 +1,7 @@
 package org.apache.maven.surefire.report;
 
 /*
- * Copyright 2001-2005 The Codehaus.
+ * Copyright 2001-2006 The Apache Software Foundation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,10 @@ package org.apache.maven.surefire.report;
  * limitations under the License.
  */
 
+/**
+ *
+ * @version $Id$
+ */
 public class ReportEntry
 {
     private Object source;
