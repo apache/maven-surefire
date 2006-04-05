@@ -1,28 +1,24 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 
 <project>
+  <parent>
+    <artifactId>maven-parent</artifactId>
+    <groupId>org.apache.maven</groupId>
+    <version>2-SNAPSHOT</version>
+    <relativePath>../pom/maven/pom.xml</relativePath>
+  </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.apache.maven.surefire</groupId>
   <artifactId>surefire-root</artifactId>
   <packaging>pom</packaging>
   <name>SureFire Parent</name>
-  <version>1.1</version>
+  <version>1.2-SNAPSHOT</version>
   <description>Surefire is a test framework project.</description>
   <url>http://maven.apache.org/surefire</url>
   <issueManagement>
     <system>jira</system>
     <url>http://jira.codehaus.org/browse/SUREFIRE</url>
   </issueManagement>
-  <ciManagement>
-    <system>continuum</system>
-    <url></url>
-    <notifiers>
-      <notifier>
-        <type>email</type>
-        <address>surefire-dev@maven.apache.org</address>
-      </notifier>
-    </notifiers>
-  </ciManagement>
   <inceptionYear>2004</inceptionYear>
   <mailingLists>
     <mailingList>
@@ -69,47 +65,6 @@
     <developerConnection>scm:svn:https://svn.apache.org/repos/asf/maven/surefire/trunk/</developerConnection>
     <url>http://svn.apache.org/viewcvs.cgi/maven/surefire/trunk/</url>
   </scm>
-  <organization>
-    <name>Apache</name>
-    <url>http://www.apache.org/</url>
-  </organization>
-  <distributionManagement>
-    <repository>
-      <id>repo1</id>
-      <name>Maven Central Repository</name>
-      <url>scp://repo1.maven.org/home/projects/maven/repository-staging/to-ibiblio/maven2</url>
-    </repository>
-    <snapshotRepository>
-      <id>snapshots</id>
-      <name>Maven Central Development Repository</name>
-      <url>scp://repo1.maven.org/home/projects/maven/repository-staging/snapshots/maven2</url>
-    </snapshotRepository>
-    <site>
-      <id>surefire</id>
-      <name>Surefire Site at Codehaus</name>
-      <url>scp://beaver.codehaus.org//home/projects/surefire/public_html</url>
-    </site>
-  </distributionManagement>
-  <repositories>
-    <repository>
-      <id>snapshots</id>
-      <name>Maven Snapshot Development Repository</name>
-      <url>http://snapshots.maven.codehaus.org/maven2</url>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-    </repository>
-  </repositories>
-  <pluginRepositories>
-    <pluginRepository>
-      <id>snapshots-plugins</id>
-      <name>Maven Snapshot Plugins Development Repository</name>
-      <url>http://snapshots.maven.codehaus.org/maven2/plugins</url>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-    </pluginRepository>
-  </pluginRepositories>
   <build>
     <pluginManagement>
       <plugins>
@@ -126,4 +81,10 @@
     <module>surefire</module>
     <module>surefire-booter</module>
   </modules>
+  <distributionManagement>
+    <site>
+      <id>apache.website</id>
+      <url>scp://minotaur.apache.org/www/maven.apache.org/surefire</url>
+    </site>
+  </distributionManagement>
 </project>

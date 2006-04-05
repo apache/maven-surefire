@@ -2,11 +2,12 @@
   <parent>
     <artifactId>surefire-root</artifactId>
     <groupId>org.apache.maven.surefire</groupId>
-    <version>1.1</version>
+    <version>1.2-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>surefire</artifactId>
   <name>SureFire</name>
+  <description>Surefire is a test framework project. This is the core library that support JUnit tests.</description>
   <version>1.5.4-SNAPSHOT</version>
   <dependencies>
     <dependency>

@@ -3,9 +3,9 @@
 <project>
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>surefire</groupId>
+    <groupId>org.apache.maven.surefire</groupId>
     <artifactId>surefire-root</artifactId>
-    <version>1.1</version>
+    <version>1.2-SNAPSHOT</version>
   </parent>
   <groupId>surefire</groupId>
   <artifactId>surefire-site</artifactId>
@@ -13,19 +13,10 @@
   <name>Surefire</name>
   <distributionManagement>
     <site>
-      <id>website</id>
-      <url>scpexe://minotaur.apache.org/www/maven.apache.org/surefire/</url>
+      <id>apache.website</id>
+      <url>scp://minotaur.apache.org/www/maven.apache.org/surefire</url>
     </site>
   </distributionManagement>
-   <build>
-    <extensions>
-      <extension>
-        <groupId>org.apache.maven.wagon</groupId>
-         <artifactId>wagon-ssh-external</artifactId>
-         <version>1.0-alpha-5</version>
-      </extension>
-    </extensions>
-  </build>
   <reporting>
     <!-- TODO: disable dependencies -->
     <plugins>
