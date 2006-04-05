@@ -267,6 +267,42 @@ public class XMLReporter
     private static String escapeAttribute( String attribute )
     {
         // Shouldn't Xpp3Dom do this itself?
-        return attribute.replaceAll( "<", "&lt;" ).replaceAll( ">", "&gt;" );
+        String s = replaceAll( attribute, "<", "&lt;" );
+        s = replaceAll( s, ">", "&gt;" );
+        return s;
+        
     }
+
+    /**
+     * Replace all ocurrences of a value in a string. Same as Java 1.4 String.replaceAll( String, String )
+     * 
+     * @param s the string to search into
+     * @param from original String to look for
+     * @param to String to change for
+     * @return the modified String
+     */
+    public static String replaceAll( String source, String pattern, String replace )
+    {
+        if ( ( source != null ) && ( pattern.length() > 0 ) )
+        {
+            final int len = pattern.length();
+            StringBuffer sb = new StringBuffer();
+            int found = -1;
+            int start = 0;
+
+            while ( ( found = source.indexOf( pattern, start ) ) != -1 )
+            {
+                sb.append( source.substring( start, found ) );
+                sb.append( replace );
+                start = found + len;
+            }
+
+            sb.append( source.substring( start ) );
+
+            return sb.toString();
+        }
+        else
+            return "";
+    }
+
 }

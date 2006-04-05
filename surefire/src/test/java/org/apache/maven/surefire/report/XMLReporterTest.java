@@ -58,6 +58,22 @@ public class XMLReporterTest
         reporter.testError( reportEntry, "", "" );
         assertResult( reporter, message );
     }
+    
+    public void testReplaceAll()
+    {
+        String s, from, to;
+        s = "";
+        from = "";
+        to = "";
+        String result = XMLReporter.replaceAll( s, from, to );
+        assertEquals( s.replaceAll( from, to ), result );
+
+        s = "xxfromyytozz";
+        from = "from";
+        to = "to";
+        result = XMLReporter.replaceAll( s, from, to );
+        assertEquals( s.replaceAll( from, to ), result );
+    }
 
     private void assertResult( XMLReporter reporter, String message )
     {
