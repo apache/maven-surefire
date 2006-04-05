@@ -1,11 +1,5 @@
 package org.apache.maven.surefire;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
-import junit.framework.TestCase;
-
 /*
  * Copyright 2001-2006 The Apache Software Foundation.
  *
@@ -21,6 +15,12 @@ import junit.framework.TestCase;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import junit.framework.TestCase;
 
 /**
  * @author <a href="mailto:carlos@apache.org">Carlos Sanchez</a>
