@@ -32,6 +32,7 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -835,12 +836,17 @@ public class SurefireBooter
     /**
      * Split a string in a List of Strings using a delimiter. Same as Java 1.4 String.split( String )
      * 
+     * @since 1.5.4
      * @param s the string to be splitted
      * @param delim the delimiter to be used
      * @return a List with the Strings between the delimiters
      */
-    static List split( String s, String delim )
+    public static List split( String s, String delim )
     {
+        if ( s.equals(delim) )
+        {
+            return Collections.EMPTY_LIST;
+        }
         List tokens = new ArrayList();
         int i = 0;
         int j = s.indexOf( delim, i );
@@ -850,7 +856,7 @@ public class SurefireBooter
             i = j + delim.length();
             j = s.indexOf( delim, i );
         }
-        if ( i < s.length() )
+        if ( i < s.length() || ( i == 0 ) )
         {
             tokens.add( s.substring( i ) );
         }
