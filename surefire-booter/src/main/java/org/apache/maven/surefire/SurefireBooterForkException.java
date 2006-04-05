@@ -16,7 +16,12 @@ package org.apache.maven.surefire;
  * limitations under the License.
  */
 
-public class SurefireBooterForkException extends Exception
+/**
+ * Encapsulates exceptions thrown during Surefire forking.
+ * 
+ * @version $Id$ 
+ */
+public class SurefireBooterForkException extends NestedCheckedException
 {
   public SurefireBooterForkException(String message)
   {

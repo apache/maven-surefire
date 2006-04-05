@@ -32,7 +32,6 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -288,7 +287,7 @@ public class SurefireBooter
         }
         else
         {
-            urls = Arrays.asList( cp.split( PS ) );
+            urls = split( cp, PS );
         }
 
         return createClassLoader( urls, childDelegation );
@@ -420,7 +419,7 @@ public class SurefireBooter
         }
         catch ( CommandLineException e )
         {
-            throw new Exception( "Error while executing forked tests.", e );
+            throw new NestedCheckedException( "Error while executing forked tests.", e );
         }
         catch ( Exception e )
         {
@@ -705,15 +704,13 @@ public class SurefireBooter
 
         String reports = p.getProperty( "reportClassNames" );
 
-        String[] reportClasses = reports.split( "," );
-
-        List reportList = Arrays.asList( reportClasses );
+        List reportList = split( reports, "," );
 
         String batteryConfig = p.getProperty( "batteryConfig" );
 
-        String[] batteryParts = batteryConfig.split( "\\|" );
+        List batteryParts = split( batteryConfig, "\\|" );
 
-        String batteryClassName = batteryParts[0];
+        String batteryClassName = (String) batteryParts.get( 0 );
 
         Object[] batteryParms;
 
@@ -721,11 +718,11 @@ public class SurefireBooter
 
         if ( forkMode.equals( FORK_ONCE ) )
         {
-            batteryParms = new Object[batteryParts.length - 1];
+            batteryParms = new Object[batteryParts.size() - 1];
 
-            batteryParms[0] = new File( batteryParts[1] );
+            batteryParms[0] = new File( (String) batteryParts.get( 1 ) );
 
-            String stringList = batteryParts[2];
+            String stringList = (String) batteryParts.get( 2 );
 
             if ( stringList.startsWith( "[" ) && stringList.endsWith( "]" ) )
             {
@@ -734,16 +731,18 @@ public class SurefireBooter
 
             ArrayList includesList = new ArrayList();
 
-            String[] stringArray = stringList.split( "," );
+            List stringArray = split( stringList, "," );
 
-            for ( int i = 0; i < stringArray.length; i++ )
+            Iterator it = stringArray.iterator();
+            while ( it.hasNext() )
             {
-                includesList.add( stringArray[i].trim() );
+                String s = (String) it.next();
+                includesList.add( s.trim() );
             }
 
             batteryParms[1] = includesList;
 
-            stringList = batteryParts[3];
+            stringList = (String) batteryParts.get( 3 );
 
             ArrayList excludesList = new ArrayList();
 
@@ -752,11 +751,13 @@ public class SurefireBooter
                 stringList = stringList.substring( 1, stringList.length() - 1 );
             }
 
-            stringArray = stringList.split( "," );
+            stringArray = split( stringList, "," );
 
-            for ( int i = 0; i < stringArray.length; i++ )
+            it = stringArray.iterator();
+            while ( it.hasNext() )
             {
-                excludesList.add( stringArray[i].trim() );
+                String s = (String) it.next();
+                excludesList.add( s.trim() );
             }
 
             batteryParms[2] = excludesList;
@@ -765,7 +766,7 @@ public class SurefireBooter
         {
             batteryParms = new Object[1];
 
-            batteryParms[0] = batteryParts[1];
+            batteryParms[0] = batteryParts.get( 1 );
         }
 
         List batteryHolders = new ArrayList();
@@ -829,6 +830,31 @@ public class SurefireBooter
         {
             System.out.println( "ClassLoader: type" + classLoader.getClass() + ", value=" + classLoader );
         }
+    }
+    
+    /**
+     * Split a string in a List of Strings using a delimiter. Same as Java 1.4 String.split( String )
+     * 
+     * @param s the string to be splitted
+     * @param delim the delimiter to be used
+     * @return a List with the Strings between the delimiters
+     */
+    static List split( String s, String delim )
+    {
+        List tokens = new ArrayList();
+        int i = 0;
+        int j = s.indexOf( delim, i );
+        while ( j > -1 )
+        {
+            tokens.add( s.substring( i, j ) );
+            i = j + delim.length();
+            j = s.indexOf( delim, i );
+        }
+        if ( i < s.length() )
+        {
+            tokens.add( s.substring( i ) );
+        }
+        return tokens;
     }
 }
 
