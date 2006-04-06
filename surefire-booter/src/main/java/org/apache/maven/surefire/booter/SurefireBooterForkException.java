@@ -1,5 +1,7 @@
 package org.apache.maven.surefire.booter;
 
+import org.apache.maven.surefire.testset.NestedCheckedException;
+
 /*
  * Copyright 2001-2006 The Apache Software Foundation.
  *
@@ -16,8 +18,13 @@ package org.apache.maven.surefire.booter;
  * limitations under the License.
  */
 
+/**
+ * Encapsulates exceptions thrown during Surefire forking.
+ * 
+ * @version $Id$ 
+ */
 public class SurefireBooterForkException
-    extends Exception
+    extends NestedCheckedException
 {
     public SurefireBooterForkException( String message )
     {

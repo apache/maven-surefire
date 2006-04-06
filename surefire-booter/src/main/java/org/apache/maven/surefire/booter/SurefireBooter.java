@@ -519,7 +519,8 @@ public class SurefireBooter
         IsolatedClassLoader classLoader = new IsolatedClassLoader( parent, childDelegation );
         // TODO: for some reason, this doesn't work when forked. -ea is added to the command line as a workaround
         // in forkConfiguration
-        classLoader.setDefaultAssertionStatus( assertionsEnabled );
+        // TODO: not available under JDK 1.3
+        //classLoader.setDefaultAssertionStatus( assertionsEnabled );
         for ( Iterator iter = urls.iterator(); iter.hasNext(); )
         {
             URL url = (URL) iter.next();
@@ -540,7 +541,7 @@ public class SurefireBooter
 
         List list = new ArrayList();
 
-        String[] stringArray = sl.split( "," );
+        String[] stringArray = split( sl, "," );
 
         for ( int i = 0; i < stringArray.length; i++ )
         {
@@ -588,8 +589,8 @@ public class SurefireBooter
         Object[] paramObjects = null;
         if ( paramProperty != null )
         {
-            String[] params = paramProperty.split( "\\|" );
-            String[] types = typeProperty.split( "\\|" );
+            String[] params = split( paramProperty, "\\|" );
+            String[] types = split( typeProperty, "\\|" );
 
             paramObjects = new Object[params.length];
 
@@ -697,6 +698,36 @@ public class SurefireBooter
 
         //noinspection CallToSystemExit
         System.exit( result ? TESTS_SUCCEEDED_EXIT_CODE : TESTS_FAILED_EXIT_CODE );
+    }
+
+    /**
+     * Split a string in a List of Strings using a delimiter. Same as Java 1.4 String.split( String )
+     * 
+     * @since 1.5.4
+     * @param s the string to be splitted
+     * @param delim the delimiter to be used
+     * @return an array with the Strings between the delimiters
+     */
+    public static String[] split( String s, String delim )
+    {
+        if ( s.equals(delim) )
+        {
+            return new String[0];
+        }
+        List tokens = new ArrayList();
+        int i = 0;
+        int j = s.indexOf( delim, i );
+        while ( j > -1 )
+        {
+            tokens.add( s.substring( i, j ) );
+            i = j + delim.length();
+            j = s.indexOf( delim, i );
+        }
+        if ( i < s.length() || ( i == 0 ) )
+        {
+            tokens.add( s.substring( i ) );
+        }
+        return (String[]) tokens.toArray( new String[0] );
     }
 }
 

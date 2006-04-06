@@ -1,5 +1,7 @@
 package org.apache.maven.surefire.booter;
 
+import org.apache.maven.surefire.testset.NestedCheckedException;
+
 /*
  * Copyright 2001-2006 The Apache Software Foundation.
  *
@@ -22,7 +24,7 @@ package org.apache.maven.surefire.booter;
  * @author <a href="mailto:brett@apache.org">Brett Porter</a>
  */
 public class SurefireExecutionException
-    extends Exception
+    extends NestedCheckedException
 {
     public SurefireExecutionException( String message, Throwable nested )
     {
