@@ -17,7 +17,6 @@ package org.apache.maven.surefire.booter;
  */
 
 import org.codehaus.plexus.util.StringUtils;
-import org.codehaus.plexus.util.cli.Commandline;
 
 import java.io.File;
 import java.util.HashMap;
@@ -143,6 +142,7 @@ public class ForkConfiguration
         }
 
         // TODO: This shouldn't be required. See SurefireBooter, createClassLoader where assertion status should be set
+        // probably required in JDK 1.3
         cli.createArgument().setValue( "-ea" );
 
         cli.createArgument().setValue( "-classpath" );
