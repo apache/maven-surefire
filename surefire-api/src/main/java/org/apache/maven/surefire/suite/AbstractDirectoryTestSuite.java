@@ -29,8 +29,8 @@ import java.io.File;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -70,7 +70,7 @@ public abstract class AbstractDirectoryTestSuite
         {
             throw new IllegalStateException( "You can't call locateTestSets twice" );
         }
-        testSets = new LinkedHashMap();
+        testSets = new HashMap();
 
         String[] tests = collectTests( basedir, includes, excludes );
 

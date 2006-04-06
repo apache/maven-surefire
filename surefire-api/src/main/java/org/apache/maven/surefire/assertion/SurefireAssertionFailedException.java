@@ -1,5 +1,7 @@
 package org.apache.maven.surefire.assertion;
 
+import org.apache.maven.surefire.testset.NestedRuntimeException;
+
 /*
  * Copyright 2001-2006 The Apache Software Foundation.
  *
@@ -20,7 +22,7 @@ package org.apache.maven.surefire.assertion;
  * @noinspection UncheckedExceptionClass
  */
 public class SurefireAssertionFailedException
-    extends RuntimeException
+    extends NestedRuntimeException
 {
     public SurefireAssertionFailedException()
     {

@@ -1,5 +1,7 @@
 package org.apache.maven.surefire.report;
 
+import org.apache.maven.surefire.testset.NestedCheckedException;
+
 /*
  * Copyright 2001-2006 The Apache Software Foundation.
  *
@@ -22,7 +24,7 @@ package org.apache.maven.surefire.report;
  * @author <a href="mailto:brett@apache.org">Brett Porter</a>
  */
 public class ReporterException
-    extends Exception
+    extends NestedCheckedException
 {
     public ReporterException( String message, Exception nested )
     {

@@ -22,7 +22,7 @@ package org.apache.maven.surefire.testset;
  * @author Bill Venners
  */
 public class TestSetFailedException
-    extends Exception
+    extends NestedCheckedException
 {
     /**
      * Create a <code>TestFailedException</code> with no detail message.
