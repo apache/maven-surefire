@@ -30,66 +30,63 @@ public class SurefireBooterTest
     extends TestCase
 {
 
-    /*
-     * Test method for 'org.apache.maven.surefire.SurefireBooter.split(String, String)'
-     */
     public void testSplit()
     {
         String s, d;
         d = ":";
         s = "x1:y2:z;j:f";
-        List list = SurefireBooter.split( s, d );
+        List list = Arrays.asList( SurefireBooter.split( s, d ) );
         assertEquals( Arrays.asList( new String[] { "x1", "y2", "z;j", "f" } ), list );
         assertEquals( Arrays.asList( s.split( d ) ), list );
 
         s = "x1";
-        list = SurefireBooter.split( s, d );
+        list = Arrays.asList( SurefireBooter.split( s, d ) );
         assertEquals( Arrays.asList( new String[] { "x1" } ), list );
         assertEquals( Arrays.asList( s.split( d ) ), list );
 
         s = "x1:";
-        list = SurefireBooter.split( s, d );
+        list = Arrays.asList( SurefireBooter.split( s, d ) );
         assertEquals( Arrays.asList( new String[] { "x1" } ), list );
         assertEquals( Arrays.asList( s.split( d ) ), list );
 
         s = "";
-        list = SurefireBooter.split( s, d );
+        list = Arrays.asList( SurefireBooter.split( s, d ) );
         assertEquals( Arrays.asList( new String[] { "" } ), list );
         assertEquals( Arrays.asList( s.split( d ) ), list );
 
         s = ":";
-        list = SurefireBooter.split( s, d );
+        list = Arrays.asList( SurefireBooter.split( s, d ) );
         assertEquals( Collections.EMPTY_LIST, list );
         assertEquals( Arrays.asList( s.split( d ) ), list );
 
         d = "::";
         s = "x1::y2::z;j::f";
-        list = SurefireBooter.split( s, d );
+        list = Arrays.asList( SurefireBooter.split( s, d ) );
         assertEquals( Arrays.asList( new String[] { "x1", "y2", "z;j", "f" } ), list );
         assertEquals( Arrays.asList( s.split( d ) ), list );
 
         s = "x1";
-        list = SurefireBooter.split( s, d );
+        list = Arrays.asList( SurefireBooter.split( s, d ) );
         assertEquals( Arrays.asList( new String[] { "x1" } ), list );
         assertEquals( Arrays.asList( s.split( d ) ), list );
 
         s = "x1::";
-        list = SurefireBooter.split( s, d );
+        list = Arrays.asList( SurefireBooter.split( s, d ) );
         assertEquals( Arrays.asList( new String[] { "x1" } ), list );
         assertEquals( Arrays.asList( s.split( d ) ), list );
 
         s = "";
-        list = SurefireBooter.split( s, d );
+        list = Arrays.asList( SurefireBooter.split( s, d ) );
         assertEquals( Arrays.asList( new String[] { "" } ), list );
         assertEquals( Arrays.asList( s.split( d ) ), list );
 
         s = ":";
-        list = SurefireBooter.split( s, d );
+        list = Arrays.asList( SurefireBooter.split( s, d ) );
         assertEquals( Arrays.asList( new String[] { ":" } ), list );
         assertEquals( Arrays.asList( s.split( d ) ), list );
 
         s = "::";
-        list = SurefireBooter.split( s, d );
+        list = Arrays.asList( SurefireBooter.split( s, d ) );
         assertEquals( Collections.EMPTY_LIST, list );
         assertEquals( Arrays.asList( s.split( d ) ), list );
     }

@@ -31,6 +31,7 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -287,7 +288,7 @@ public class SurefireBooter
         }
         else
         {
-            urls = split( cp, PS );
+            urls = Arrays.asList( split( cp, PS ) );
         }
 
         return createClassLoader( urls, childDelegation );
@@ -704,13 +705,15 @@ public class SurefireBooter
 
         String reports = p.getProperty( "reportClassNames" );
 
-        List reportList = split( reports, "," );
+        String[] reportClasses = reports.split( "," );
+
+        List reportList = Arrays.asList( reportClasses );
 
         String batteryConfig = p.getProperty( "batteryConfig" );
 
-        List batteryParts = split( batteryConfig, "\\|" );
+        String[] batteryParts = batteryConfig.split( "\\|" );
 
-        String batteryClassName = (String) batteryParts.get( 0 );
+        String batteryClassName = batteryParts[0];
 
         Object[] batteryParms;
 
@@ -718,11 +721,11 @@ public class SurefireBooter
 
         if ( forkMode.equals( FORK_ONCE ) )
         {
-            batteryParms = new Object[batteryParts.size() - 1];
+            batteryParms = new Object[batteryParts.length - 1];
 
-            batteryParms[0] = new File( (String) batteryParts.get( 1 ) );
+            batteryParms[0] = new File( batteryParts[1] );
 
-            String stringList = (String) batteryParts.get( 2 );
+            String stringList = batteryParts[2];
 
             if ( stringList.startsWith( "[" ) && stringList.endsWith( "]" ) )
             {
@@ -731,18 +734,16 @@ public class SurefireBooter
 
             ArrayList includesList = new ArrayList();
 
-            List stringArray = split( stringList, "," );
+            String[] stringArray = stringList.split( "," );
 
-            Iterator it = stringArray.iterator();
-            while ( it.hasNext() )
+            for ( int i = 0; i < stringArray.length; i++ )
             {
-                String s = (String) it.next();
-                includesList.add( s.trim() );
+                includesList.add( stringArray[i].trim() );
             }
 
             batteryParms[1] = includesList;
 
-            stringList = (String) batteryParts.get( 3 );
+            stringList = batteryParts[3];
 
             ArrayList excludesList = new ArrayList();
 
@@ -751,13 +752,11 @@ public class SurefireBooter
                 stringList = stringList.substring( 1, stringList.length() - 1 );
             }
 
-            stringArray = split( stringList, "," );
+            stringArray = stringList.split( "," );
 
-            it = stringArray.iterator();
-            while ( it.hasNext() )
+            for ( int i = 0; i < stringArray.length; i++ )
             {
-                String s = (String) it.next();
-                excludesList.add( s.trim() );
+                excludesList.add( stringArray[i].trim() );
             }
 
             batteryParms[2] = excludesList;
@@ -766,7 +765,7 @@ public class SurefireBooter
         {
             batteryParms = new Object[1];
 
-            batteryParms[0] = batteryParts.get( 1 );
+            batteryParms[0] = batteryParts[1];
         }
 
         List batteryHolders = new ArrayList();
@@ -838,13 +837,13 @@ public class SurefireBooter
      * @since 1.5.4
      * @param s the string to be splitted
      * @param delim the delimiter to be used
-     * @return a List with the Strings between the delimiters
+     * @return an array with the Strings between the delimiters
      */
-    public static List split( String s, String delim )
+    public static String[] split( String s, String delim )
     {
         if ( s.equals(delim) )
         {
-            return Collections.EMPTY_LIST;
+            return new String[0];
         }
         List tokens = new ArrayList();
         int i = 0;
@@ -859,7 +858,7 @@ public class SurefireBooter
         {
             tokens.add( s.substring( i ) );
         }
-        return tokens;
+        return (String[]) tokens.toArray( new String[0] );
     }
 }
 
