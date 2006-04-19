@@ -1,6 +1,6 @@
 package org.apache.maven.surefire.assertion;
 
-import org.apache.maven.surefire.testset.NestedRuntimeException;
+import org.apache.maven.surefire.util.NestedRuntimeException;
 
 /*
  * Copyright 2001-2006 The Apache Software Foundation.

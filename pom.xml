@@ -1,6 +1,7 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
-
-<project>
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <artifactId>maven-parent</artifactId>
@@ -54,13 +55,6 @@
     <pluginManagement>
       <plugins>
         <plugin>
-          <artifactId>maven-compiler-plugin</artifactId>
-          <configuration>
-            <source>1.4</source>
-            <target>1.4</target>
-          </configuration>
-        </plugin>
-        <plugin>
           <artifactId>maven-release-plugin</artifactId>
           <configuration>
             <tagBase>https://svn.apache.org/repos/asf/maven/surefire/tags</tagBase>
@@ -74,4 +68,93 @@
     <module>surefire-booter</module>
     <module>surefire-providers</module>
   </modules>
+
+  <profiles>
+    <!-- use preinstalled JDK 1.3 to build and test -->
+    <profile>
+      <id>jdk1.3</id>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <configuration>
+              <fork>true</fork>
+              <compilerVersion>1.3</compilerVersion>
+              <executable>${JAVA_1_3_HOME}/bin/javac</executable>
+            </configuration>
+          </plugin>
+          <plugin>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <forkMode>once</forkMode>
+              <jvm>${JAVA_1_3_HOME}/bin/java</jvm>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <!-- ignore JDK 1.3 requirement for handy testing -->
+    <profile>
+      <id>ignoreJdk</id>
+    </profile>
+
+    <!-- print a warning when not using the JDK 1.3 profile, and prevent deployment
+         NOTE prevent deployment actually don't work as the deploy plugin is called
+         before the antrun in the deploy phase.
+         In multimodule the first module will be deployed and build will fail after
+    -->
+    <profile>
+      <id>nojdk1.3</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>java1.3-validate</id>
+                <phase>validate</phase>
+                <configuration>
+                  <tasks>
+                    <echo/>
+                    <echo>=== WARNING: You are not building with Java 1.3 as required ===</echo>
+                    <echo>Set JAVA_1_3_HOME pointing to the JDK 1.3 installation folder</echo>
+                    <echo>and run Maven with -Pjdk1.3 to activate the Java 1.3 profile</echo>
+                    <echo>Building anyway.</echo>
+                    <echo/>
+                  </tasks>
+                </configuration>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+              </execution>
+              <execution>
+                <id>java1.3-deploy</id>
+                <phase>deploy</phase>
+                <configuration>
+                  <tasks>
+                    <echo/>
+                    <echo>=== ERROR: You are not building with Java 1.3 as required ===</echo>
+                    <echo>Set JAVA_1_3_HOME pointing to the JDK 1.3 installation folder</echo>
+                    <echo>and run Maven with -Pjdk1.3 to activate the Java 1.3 profile</echo>
+                    <echo/>
+                    <echo>You could also run Maven with -PignoreJdk to use any JDK version (be aware of the implications)</echo>
+                    <echo/>
+                    <fail>ERROR: You can not deploy without using Java  1.3.</fail>
+                  </tasks>
+                </configuration>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+
 </project>

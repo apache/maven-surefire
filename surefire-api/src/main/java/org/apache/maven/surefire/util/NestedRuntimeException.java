@@ -1,7 +1,7 @@
-package org.apache.maven.surefire.testset;
+package org.apache.maven.surefire.util;
 
 /*
- * Copyright 2002-2005 the original author or authors.
+ * Copyright 2002-2006 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package org.apache.maven.surefire.testset;
  */
 
 /*
- * Some parts are
+ * Some portions are
  * 
  * Copyright 2001-2006 The Apache Software Foundation.
  *
@@ -67,7 +67,7 @@ import java.io.PrintWriter;
  * @see #printStackTrace
  * @see NestedCheckedException
  */
-public abstract class NestedRuntimeException extends RuntimeException {
+public class NestedRuntimeException extends RuntimeException {
 
     /** Root cause of this nested exception */
     private Throwable cause;
@@ -88,27 +88,30 @@ public abstract class NestedRuntimeException extends RuntimeException {
     }
 
     /**
-     * Construct a <code>NestedRuntimeException</code> with the specified nested exception and no message.
-     * @param ex the nested exception
-     */
-    public NestedRuntimeException(Throwable ex) {
-        this();
-        this.cause = ex;
-    }
-
-    /**
      * Construct a <code>NestedRuntimeException</code> with the specified detail message
      * and nested exception.
      * @param msg the detail message
      * @param ex the nested exception
      */
     public NestedRuntimeException(String msg, Throwable ex) {
-        this(msg);
+        super(msg);
+        this.cause = ex;
+    }
+
+    /**
+     * Construct a <code>NestedRuntimeException</code> with the specified nested exception.
+     * @param ex the nested exception
+     */
+    public NestedRuntimeException(Throwable ex) {
+        super();
         this.cause = ex;
     }
 
     /**
      * Return the nested cause, or <code>null</code> if none.
+     * <p>Note that this will only check one level of nesting.
+     * Use <code>getRootCause()</code> to retrieve the innermost cause.
+     * @see #getRootCause()
      */
     public Throwable getCause() {
         // Even if you cannot set the cause of this exception other than through
@@ -161,6 +164,22 @@ public abstract class NestedRuntimeException extends RuntimeException {
     }
 
     /**
+     * Retrieve the innermost cause of this exception, if any.
+     * <p>Currently just traverses NestedRuntimeException causes. Will use
+     * the JDK 1.4 exception cause mechanism once Spring requires JDK 1.4.
+     * @return the innermost exception, or <code>null</code> if none
+     */
+    public Throwable getRootCause() {
+        Throwable cause = getCause();
+        if (cause instanceof NestedRuntimeException) {
+            return ((NestedRuntimeException) cause).getRootCause();
+        }
+        else {
+            return cause;
+        }
+    }
+
+    /**
      * Check whether this exception contains an exception of the given class:
      * either it is of the given class itself or it contains a nested cause
      * of the given class.
@@ -172,21 +191,16 @@ public abstract class NestedRuntimeException extends RuntimeException {
         if (exClass == null) {
             return false;
         }
-        Throwable ex = this;
-        while (ex != null) {
-            if (exClass.isInstance(ex)) {
-                return true;
-            }
-            if (ex instanceof NestedRuntimeException) {
-                // Cast is necessary on JDK 1.3, where Throwable does not
-                // provide a "getCause" method itself.
-                ex = ((NestedRuntimeException) ex).getCause();
-            }
-            else {
-                ex = null;
-            }
+        if (exClass.isInstance(this)) {
+            return true;
         }
-        return false;
+        Throwable cause = getCause();
+        if (cause instanceof NestedRuntimeException) {
+            return ((NestedRuntimeException) cause).contains(exClass);
+        }
+        else {
+            return (cause != null && exClass.isInstance(cause));
+        }
     }
 
 }

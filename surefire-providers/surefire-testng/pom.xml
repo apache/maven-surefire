@@ -53,5 +53,9 @@
         </dependency>
       </dependencies>
     </profile>
+    <!-- ignore the jdk 1.3 requirement -->
+    <profile>
+      <id>nojdk1.3</id>
+    </profile>
   </profiles>
 </project>

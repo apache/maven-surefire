@@ -16,6 +16,8 @@ package org.apache.maven.surefire.testset;
  * limitations under the License.
  */
 
+import org.apache.maven.surefire.util.NestedCheckedException;
+
 /**
  * Exception that indicates a test failed.
  *

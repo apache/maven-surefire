@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.testset;
+package org.apache.maven.surefire.util;
 
 /*
  * Copyright 2002-2005 the original author or authors.
@@ -71,7 +71,6 @@ public class NestedCheckedException extends Exception {
 
     /** Root cause of this nested exception */
     private Throwable cause;
-
 
     /**
      * Construct a <code>NestedCheckedException</code> with no message or exception

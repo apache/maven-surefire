@@ -1,6 +1,6 @@
 package org.apache.maven.surefire.report;
 
-import org.apache.maven.surefire.testset.NestedCheckedException;
+import org.apache.maven.surefire.util.NestedCheckedException;
 
 /*
  * Copyright 2001-2006 The Apache Software Foundation.

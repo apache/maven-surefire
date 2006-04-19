@@ -58,6 +58,22 @@ public class XMLReporterTest
         assertResult( reporter, message );
     }
 
+    public void testReplaceAll()
+    {
+        String s, from, to;
+        s = "";
+        from = "";
+        to = "";
+        String result = XMLReporter.replaceAll( s, from, to );
+        assertEquals( "", result );
+
+        s = "xxfromyytozz";
+        from = "from";
+        to = "to";
+        result = XMLReporter.replaceAll( s, from, to );
+        assertEquals( "xxtoyytozz", result );
+    }
+
     private void assertResult( XMLReporter reporter, String message )
     {
         Xpp3Dom result = reporter.getTestCase();
