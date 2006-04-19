@@ -32,7 +32,6 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -705,13 +704,13 @@ public class SurefireBooter
 
         String reports = p.getProperty( "reportClassNames" );
 
-        String[] reportClasses = reports.split( "," );
+        String[] reportClasses = split( reports, "," );
 
         List reportList = Arrays.asList( reportClasses );
 
         String batteryConfig = p.getProperty( "batteryConfig" );
 
-        String[] batteryParts = batteryConfig.split( "\\|" );
+        String[] batteryParts = split( batteryConfig, "\\|" );
 
         String batteryClassName = batteryParts[0];
 
@@ -734,7 +733,7 @@ public class SurefireBooter
 
             ArrayList includesList = new ArrayList();
 
-            String[] stringArray = stringList.split( "," );
+            String[] stringArray = split( stringList, "," );
 
             for ( int i = 0; i < stringArray.length; i++ )
             {
@@ -752,7 +751,7 @@ public class SurefireBooter
                 stringList = stringList.substring( 1, stringList.length() - 1 );
             }
 
-            stringArray = stringList.split( "," );
+            stringArray = split( stringList, "," );
 
             for ( int i = 0; i < stringArray.length; i++ )
             {
