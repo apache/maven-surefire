@@ -16,6 +16,7 @@ package org.apache.maven.surefire;
  * limitations under the License.
  */
 
+import org.apache.maven.surefire.util.NestedCheckedException;
 import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.cli.CommandLineException;
 import org.codehaus.plexus.util.cli.CommandLineUtils;

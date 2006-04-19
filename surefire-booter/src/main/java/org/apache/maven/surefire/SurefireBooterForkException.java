@@ -16,6 +16,8 @@ package org.apache.maven.surefire;
  * limitations under the License.
  */
 
+import org.apache.maven.surefire.util.NestedCheckedException;
+
 /**
  * Encapsulates exceptions thrown during Surefire forking.
  * 
