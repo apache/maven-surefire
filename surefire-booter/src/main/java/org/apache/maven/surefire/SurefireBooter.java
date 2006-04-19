@@ -835,11 +835,16 @@ public class SurefireBooter
      * 
      * @since 1.5.4
      * @param s the string to be splitted
-     * @param delim the delimiter to be used
+     * @param delimiter the delimiter to be used
      * @return an array with the Strings between the delimiters
      */
-    public static String[] split( String s, String delim )
+    public static String[] split( String s, String delimiter )
     {
+        String delim = delimiter;
+        if ( "\\|".equals( delimiter ) )
+        {
+            delim = "|";
+        }
         if ( s.equals(delim) )
         {
             return new String[0];
