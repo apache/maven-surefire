@@ -72,6 +72,12 @@ public class NestedCheckedException extends Exception {
     /** Root cause of this nested exception */
     private Throwable cause;
 
+    /**
+     * Construct a <code>NestedCheckedException</code> with no message or exception
+     */
+    public NestedCheckedException() {
+        super();
+    }
 
     /**
      * Construct a <code>NestedCheckedException</code> with the specified detail message.

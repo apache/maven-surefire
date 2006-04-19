@@ -72,6 +72,12 @@ public class NestedRuntimeException extends RuntimeException {
     /** Root cause of this nested exception */
     private Throwable cause;
 
+    /**
+     * Construct a <code>NestedRuntimeException</code> with no message or exception
+     */
+    public NestedRuntimeException() {
+        super();
+    }
 
     /**
      * Construct a <code>NestedRuntimeException</code> with the specified detail message.
