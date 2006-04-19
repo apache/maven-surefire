@@ -66,13 +66,13 @@ public class XMLReporterTest
         from = "";
         to = "";
         String result = XMLReporter.replaceAll( s, from, to );
-        assertEquals( s.replaceAll( from, to ), result );
+        assertEquals( "", result );
 
         s = "xxfromyytozz";
         from = "from";
         to = "to";
         result = XMLReporter.replaceAll( s, from, to );
-        assertEquals( s.replaceAll( from, to ), result );
+        assertEquals( "xxtoyytozz", result );
     }
 
     private void assertResult( XMLReporter reporter, String message )
