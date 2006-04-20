@@ -20,6 +20,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.maven.surefire.booter.shell.CmdShell;
+import org.apache.maven.surefire.booter.shell.CommandShell;
+import org.apache.maven.surefire.booter.shell.Shell;
+
 /**
  * Commandline class copied from plexus-utils with fix for PLX-161, as we can not upgrade plexus-utils until it's upgraded in core Maven
  * 
@@ -31,9 +35,7 @@ public class Commandline
     extends org.codehaus.plexus.util.cli.Commandline
 {
 
-    private String shell = null;
-
-    private String[] shellArgs = null;
+    private Shell shell;
 
     public Commandline()
     {
@@ -54,13 +56,11 @@ public class Commandline
         {
             if ( os.indexOf( "95" ) != -1 || os.indexOf( "98" ) != -1 || os.indexOf( "Me" ) != -1 )
             {
-                setShell( "COMMAND.COM" );
-                setShellArgs( new String[] { "/C" } );
+                setShell( new CommandShell() );
             }
             else
             {
-                setShell( "CMD.EXE" );
-                setShellArgs( new String[] { "/X", "/C" } );
+                setShell( new CmdShell() );
             }
         }
     }
@@ -70,99 +70,47 @@ public class Commandline
      */
     public String[] getShellCommandline()
     {
-        List commandLine = new ArrayList();
-
-        if ( shell != null )
-        {
-            commandLine.add( getShell() );
-        }
-
-        if ( getShellArgs() != null )
-        {
-            commandLine.addAll( Arrays.asList( getShellArgs() ) );
-        }
 
         if ( getShell() == null )
         {
             if ( executable != null )
             {
+                List commandLine = new ArrayList();
                 commandLine.add( executable );
+                commandLine.addAll( Arrays.asList( getArguments() ) );
+                return (String[]) commandLine.toArray( new String[0] );
             }
-            commandLine.addAll( Arrays.asList( getArguments() ) );
+            else
+            {
+                return getArguments();
+            }
+
         }
         else
         {
-            /* When using a shell we need to quote the full command */
-            StringBuffer sb = new StringBuffer();
-            sb.append( "\"" );
-            if ( executable != null )
-            {
-                sb.append( "\"" );
-                sb.append( executable );
-                sb.append( "\"" );
-            }
-            for ( int i = 0; i < getArguments().length; i++ )
-            {
-                sb.append( " \"" );
-                sb.append( getArguments()[i] );
-                sb.append( "\"" );
-            }
-            sb.append( "\"" );
-            commandLine.add( sb.toString() );
+            return (String[]) getShell().getShellCommandLine( executable, getArguments() ).toArray( new String[0] );
         }
-
-        return (String[]) commandLine.toArray( new String[0] );
     }
 
     /**
-     * <p>
-     * Set the shell command to use. If not set explicitly the class will autodetect it from the operating system name
-     * </p>
-     * <p>
-     * eg. <code>COMMAND.COM</code> in Win9x and WinMe or <code>CMD.EXE</code> in WinNT, Win2000 or WinXP
-     * </p>
+     * Allows to set the shell to be used in this command line.
+     *
+     * @param shell
      * @since 1.2
-     * @param shell shell command
      */
-    public void setShell( String shell )
+    public void setShell( Shell shell )
     {
         this.shell = shell;
     }
 
     /**
-     * Get the shell command to use
+     * Get the shell to be used in this command line.
+     *
      * @since 1.2
-     * @return
      */
-    public String getShell()
+    public Shell getShell()
     {
         return shell;
-    }
-
-    /**
-     * <p>
-     * Shell arguments to use when using a shell command. If not set explicitly the class will autodetect it from the operating system name
-     * </p>
-     * <p>
-     * eg. <code>/C</code> for <code>COMMAND.COM</code> and <code>/X /C</code> for <code>CMD.EXE</code>
-     * </p>
-     * @see setShell
-     * @since 1.2
-     * @param shellArgs
-     */
-    public void setShellArgs( String[] shellArgs )
-    {
-        this.shellArgs = shellArgs;
-    }
-
-    /**
-     * Get the shell arguments to use with the shell command
-     * @since 1.2
-     * @return the arguments
-     */
-    public String[] getShellArgs()
-    {
-        return shellArgs;
     }
 
 }
