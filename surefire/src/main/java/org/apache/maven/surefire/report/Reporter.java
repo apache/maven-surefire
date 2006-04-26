@@ -1,7 +1,7 @@
 package org.apache.maven.surefire.report;
 
 /*
- * Copyright 2001-2005 The Codehaus.
+ * Copyright 2001-2006 The Apache Software Foundation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,8 @@ package org.apache.maven.surefire.report;
  */
 
 /**
- *
+ * Contract between the different implementations of the Surefire reporters
+ *  
  * @version $Id$
  */
 public interface Reporter
@@ -42,22 +43,68 @@ public interface Reporter
     void batteryAborted( ReportEntry report );
 
     // Tests
+
+    /**
+     * Event fired when a test is about to start 
+     * 
+     * @param report
+     */
     void testStarting( ReportEntry report );
 
+    /**
+     * Event fired when a test ended successfully
+     * 
+     * @param report
+     */
     void testSucceeded( ReportEntry report );
 
+    /**
+     * Event fired when a test ended with an error (non anticipated problem)
+     * 
+     * @param report
+     * @param stdOut standard output from the test case 
+     * @param stdErr error output from the test case
+     */
     void testError( ReportEntry report, String stdOut, String stdErr );
 
+    /**
+     * Event fired when a test ended with a failure (anticipated problem)
+     * 
+     * @param report
+     * @param stdOut standard output from the test case 
+     * @param stdErr error output from the test case
+     */
     void testFailed( ReportEntry report, String stdOut, String stdErr );
 
     void dispose();
 
     // Counters
+
+    /**
+     * Get the number of errors
+     * 
+     * @return
+     */
     int getNbErrors();
 
+    /**
+     * Get the number of failures
+     * 
+     * @return
+     */
     int getNbFailures();
 
+    /**
+     * Get the number of tests
+     * 
+     * @return
+     */
     int getNbTests();
 
+    /**
+     * Directory where reports should be written to
+     * 
+     * @param reportsDirectory
+     */
     void setReportsDirectory( String reportsDirectory );
 }
