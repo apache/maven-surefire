@@ -41,6 +41,9 @@ import java.util.StringTokenizer;
 public class XMLReporter
     extends AbstractReporter
 {
+
+    private static final String LS = System.getProperty("line.separator");
+
     private PrintWriter writer;
 
     private Xpp3Dom testSuite;
@@ -93,7 +96,7 @@ public class XMLReporter
             throw new ReporterException( "Unable to create file: " + e.getMessage(), e );
         }
 
-        writer.write( "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n" );
+        writer.write( "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>" + LS );
 
         testSuite = createTestElement( new Xpp3Dom( "testsuite" ), report.getName(), report );
         showProperties();
