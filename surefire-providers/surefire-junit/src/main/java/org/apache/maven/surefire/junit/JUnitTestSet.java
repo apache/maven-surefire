@@ -50,8 +50,6 @@ public final class JUnitTestSet
 
     private static final String TEST_SUITE = "junit.framework.TestSuite";
 
-    private Object testObject;
-
     private Class[] interfacesImplementedByDynamicProxy;
 
     private Class testResultClass;
@@ -71,19 +69,18 @@ public final class JUnitTestSet
     {
         super( testClass );
 
-        processTestClass( testClass.getClassLoader() );
+        processTestClass();
     }
 
-    private void processTestClass( ClassLoader loader )
+    private void processTestClass()
         throws TestSetFailedException
     {
         try
         {
+            Class testClass = getTestClass();
+            ClassLoader loader = testClass.getClassLoader();
+
             testResultClass = loader.loadClass( TEST_RESULT );
-
-            Class testCaseClass = loader.loadClass( TEST_CASE );
-
-            Class testSuiteClass = loader.loadClass( TEST_SUITE );
 
             Class testListenerInterface = loader.loadClass( TEST_LISTENER );
 
@@ -99,35 +96,6 @@ public final class JUnitTestSet
             //
             // o look for test classes that only implement the Test interface
             // ----------------------------------------------------------------------
-
-            Object testObject = createInstanceFromSuiteMethod();
-
-            Class testClass = getTestClass();
-            if ( testObject == null && testCaseClass.isAssignableFrom( testClass ) )
-            {
-                Class[] constructorParamTypes = {Class.class};
-
-                Constructor constructor = testSuiteClass.getConstructor( constructorParamTypes );
-
-                Object[] constructorParams = {testClass};
-
-                testObject = constructor.newInstance( constructorParams );
-            }
-
-            if ( testObject == null )
-            {
-                Constructor testConstructor = getTestConstructor( testClass );
-
-                if ( testConstructor.getParameterTypes().length == 0 )
-                {
-                    testObject = testConstructor.newInstance( EMPTY_OBJECT_ARRAY );
-                }
-                else
-                {
-                    testObject = testConstructor.newInstance( new Object[]{testClass.getName()} );
-                }
-            }
-            this.testObject = testObject;
 
             interfacesImplementedByDynamicProxy = new Class[1];
 
@@ -157,31 +125,53 @@ public final class JUnitTestSet
         {
             throw new TestSetFailedException( "JUnit classes not available", e );
         }
-        catch ( IllegalAccessException e )
-        {
-            throw new TestSetFailedException( "Unknown access exception creating JUnit classes", e );
-        }
-        catch ( InvocationTargetException e )
-        {
-            throw new TestSetFailedException( "Unknown invocation exception creating JUnit classes", e );
-        }
-        catch ( InstantiationException e )
-        {
-            throw new TestSetFailedException( "Unknown instantiation exception creating JUnit classes", e );
-        }
         catch ( NoSuchMethodException e )
         {
             throw new TestSetFailedException( "Class is not a JUnit TestCase", e );
         }
     }
 
-    private Object createInstanceFromSuiteMethod()
+    private static Object constructTestObject( Class testClass )
+        throws IllegalAccessException, InvocationTargetException, NoSuchMethodException, InstantiationException,
+        ClassNotFoundException
+    {
+        Object testObject = createInstanceFromSuiteMethod( testClass );
+
+        if ( testObject == null && testClass.getClassLoader().loadClass( TEST_CASE ).isAssignableFrom( testClass ) )
+        {
+            Class[] constructorParamTypes = {Class.class};
+
+            Constructor constructor =
+                testClass.getClassLoader().loadClass( TEST_SUITE ).getConstructor( constructorParamTypes );
+
+            Object[] constructorParams = {testClass};
+
+            testObject = constructor.newInstance( constructorParams );
+        }
+
+        if ( testObject == null )
+        {
+            Constructor testConstructor = getTestConstructor( testClass );
+
+            if ( testConstructor.getParameterTypes().length == 0 )
+            {
+                testObject = testConstructor.newInstance( EMPTY_OBJECT_ARRAY );
+            }
+            else
+            {
+                testObject = testConstructor.newInstance( new Object[]{testClass.getName()} );
+            }
+        }
+        return testObject;
+    }
+
+    private static Object createInstanceFromSuiteMethod( Class testClass )
         throws IllegalAccessException, InvocationTargetException
     {
         Object testObject = null;
         try
         {
-            Method suiteMethod = getTestClass().getMethod( "suite", EMPTY_CLASS_ARRAY );
+            Method suiteMethod = testClass.getMethod( "suite", EMPTY_CLASS_ARRAY );
 
             if ( Modifier.isPublic( suiteMethod.getModifiers() ) && Modifier.isStatic( suiteMethod.getModifiers() ) )
             {
@@ -198,8 +188,12 @@ public final class JUnitTestSet
     public void execute( ReporterManager reportManager, ClassLoader loader )
         throws TestSetFailedException
     {
+        Class testClass = getTestClass();
+
         try
         {
+            Object testObject = constructTestObject( testClass );
+
             Object instanceOfTestResult = testResultClass.newInstance();
 
             TestListenerInvocationHandler invocationHandler =
@@ -218,46 +212,69 @@ public final class JUnitTestSet
         }
         catch ( IllegalArgumentException e )
         {
-            throw new TestSetFailedException( testObject.getClass().getName(), e );
+            throw new TestSetFailedException( testClass.getName(), e );
         }
         catch ( InstantiationException e )
         {
-            throw new TestSetFailedException( testObject.getClass().getName(), e );
+            throw new TestSetFailedException( testClass.getName(), e );
         }
         catch ( IllegalAccessException e )
         {
-            throw new TestSetFailedException( testObject.getClass().getName(), e );
+            throw new TestSetFailedException( testClass.getName(), e );
         }
         catch ( InvocationTargetException e )
         {
-            throw new TestSetFailedException( testObject.getClass().getName(), e.getTargetException() );
+            throw new TestSetFailedException( testClass.getName(), e.getTargetException() );
+        }
+        catch ( ClassNotFoundException e )
+        {
+            throw new TestSetFailedException( "JUnit classes not available", e );
+        }
+        catch ( NoSuchMethodException e )
+        {
+            throw new TestSetFailedException( "Class is not a JUnit TestCase", e );
         }
     }
 
     public int getTestCount()
         throws TestSetFailedException
     {
+        Class testClass = getTestClass();
         try
         {
+            Object testObject = constructTestObject( testClass );
+
             Integer integer = (Integer) countTestCasesMethod.invoke( testObject, EMPTY_CLASS_ARRAY );
 
             return integer.intValue();
         }
         catch ( IllegalAccessException e )
         {
-            throw new TestSetFailedException( testObject.getClass().getName(), e );
+            throw new TestSetFailedException( testClass.getName(), e );
         }
         catch ( IllegalArgumentException e )
         {
-            throw new TestSetFailedException( testObject.getClass().getName(), e );
+            throw new TestSetFailedException( testClass.getName(), e );
         }
         catch ( InvocationTargetException e )
         {
-            throw new TestSetFailedException( testObject.getClass().getName(), e.getTargetException() );
+            throw new TestSetFailedException( testClass.getName(), e.getTargetException() );
+        }
+        catch ( InstantiationException e )
+        {
+            throw new TestSetFailedException( testClass.getName(), e );
+        }
+        catch ( ClassNotFoundException e )
+        {
+            throw new TestSetFailedException( "JUnit classes not available", e );
+        }
+        catch ( NoSuchMethodException e )
+        {
+            throw new TestSetFailedException( "Class is not a JUnit TestCase", e );
         }
     }
 
-    private Constructor getTestConstructor( Class testClass )
+    private static Constructor getTestConstructor( Class testClass )
         throws NoSuchMethodException
     {
         Constructor constructor;
