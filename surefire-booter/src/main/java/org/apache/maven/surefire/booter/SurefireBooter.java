@@ -194,7 +194,7 @@ public class SurefireBooter
             Method run = surefireClass.getMethod( "run", new Class[]{List.class, List.class, ClassLoader.class,
                 ClassLoader.class} );
 
-            ClassLoader oldContextClassLoader = Thread.currentThread() .getContextClassLoader();
+            ClassLoader oldContextClassLoader = Thread.currentThread().getContextClassLoader();
 
             Thread.currentThread().setContextClassLoader( testsClassLoader );
 
@@ -701,11 +701,11 @@ public class SurefireBooter
 
     /**
      * Split a string in a List of Strings using a delimiter. Same as Java 1.4 String.split( String )
-     * 
-     * @since 1.5.4
-     * @param s the string to be splitted
+     *
+     * @param s         the string to be splitted
      * @param delimiter the delimiter to be used
      * @return an array with the Strings between the delimiters
+     * @since 1.5.4
      */
     public static String[] split( String s, String delimiter )
     {
@@ -714,7 +714,7 @@ public class SurefireBooter
         {
             delim = "|";
         }
-        if ( s.equals(delim) )
+        if ( s.equals( delim ) )
         {
             return new String[0];
         }
