@@ -83,7 +83,7 @@ public class ForkConfiguration
 
     public void setSystemProperties( Properties systemProperties )
     {
-        this.systemProperties = new Properties( systemProperties );
+        this.systemProperties = (Properties) systemProperties.clone();
     }
 
     public void setJvmExecutable( String jvmExecutable )
