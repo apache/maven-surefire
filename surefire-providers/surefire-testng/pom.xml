@@ -53,6 +53,9 @@
         </dependency>
       </dependencies>
     </profile>
+    <profile>
+      <id>nojdk1.3</id>
+    </profile>
   </profiles>
   <build>
     <plugins>
