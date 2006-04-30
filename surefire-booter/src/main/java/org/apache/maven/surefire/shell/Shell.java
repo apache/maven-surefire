@@ -16,13 +16,13 @@ package org.apache.maven.surefire.shell;
  * limitations under the License.
  */
 
-import org.apache.maven.surefire.util.NestedRuntimeException;
-import org.codehaus.plexus.util.cli.CommandLineException;
-import org.codehaus.plexus.util.cli.Commandline;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import org.apache.maven.util.jdk13.NestedRuntimeException;
+import org.codehaus.plexus.util.cli.CommandLineException;
+import org.codehaus.plexus.util.cli.Commandline;
 
 /**
  * <p>
