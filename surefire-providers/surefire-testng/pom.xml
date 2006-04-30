@@ -53,9 +53,6 @@
         </dependency>
       </dependencies>
     </profile>
-    <profile>
-      <id>nojdk1.3</id>
-    </profile>
   </profiles>
   <build>
     <plugins>
@@ -64,6 +61,13 @@
         <configuration>
           <source>1.4</source>
           <target>1.4</target>
+          <fork>false</fork>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <fork>false</fork>
         </configuration>
       </plugin>
     </plugins>
