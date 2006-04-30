@@ -1,7 +1,5 @@
 package org.apache.maven.surefire.booter;
 
-import org.apache.maven.surefire.util.NestedCheckedException;
-
 /*
  * Copyright 2001-2006 The Apache Software Foundation.
  *
@@ -17,6 +15,8 @@ import org.apache.maven.surefire.util.NestedCheckedException;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+import org.apache.maven.util.jdk13.NestedCheckedException;
 
 /**
  * Encapsulates exceptions thrown during Surefire forking.

@@ -1,7 +1,5 @@
 package org.apache.maven.surefire.assertion;
 
-import org.apache.maven.surefire.util.NestedRuntimeException;
-
 /*
  * Copyright 2001-2006 The Apache Software Foundation.
  *
@@ -17,6 +15,8 @@ import org.apache.maven.surefire.util.NestedRuntimeException;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+import org.apache.maven.util.jdk13.NestedRuntimeException;
 
 /**
  * @noinspection UncheckedExceptionClass
