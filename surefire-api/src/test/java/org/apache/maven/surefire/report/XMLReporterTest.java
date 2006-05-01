@@ -37,7 +37,6 @@ public class XMLReporterTest
         reporter = new XMLReporter( null );
         message = "junit.framework.AssertionFailedError";
         reportEntry = new ReportEntry( this, "XMLReporterTest", message, new AssertionFailedError() );
-        reporter.setTestCase( new Xpp3Dom( "" ) );
     }
 
     /*
@@ -60,7 +59,7 @@ public class XMLReporterTest
 
     private void assertResult( XMLReporter reporter, String message )
     {
-        Xpp3Dom result = reporter.getTestCase();
+        Xpp3Dom result = (Xpp3Dom) reporter.getResults().next();
         Xpp3Dom child = result.getChild( "error" );
         assertEquals( message, child.getAttribute( "type" ) );
     }

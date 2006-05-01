@@ -80,6 +80,7 @@ public abstract class AbstractReporter
     }
 
     public void testSetCompleted( ReportEntry report )
+        throws ReporterException
     {
     }
 

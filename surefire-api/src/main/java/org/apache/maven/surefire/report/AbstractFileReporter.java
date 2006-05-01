@@ -68,6 +68,7 @@ public abstract class AbstractFileReporter
     }
 
     public void testSetCompleted( ReportEntry report )
+        throws ReporterException
     {
         super.testSetCompleted( report );
 

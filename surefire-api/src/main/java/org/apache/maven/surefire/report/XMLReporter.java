@@ -29,7 +29,11 @@ import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
@@ -43,40 +47,45 @@ import java.util.StringTokenizer;
 public class XMLReporter
     extends AbstractReporter
 {
-
     private static final String LS = System.getProperty( "line.separator" );
 
-    private PrintWriter writer;
-
-    private Xpp3Dom testSuite;
-
-    private Xpp3Dom testCase;
-
     private File reportsDirectory;
+
+    private List results = Collections.synchronizedList( new ArrayList() );
 
     public XMLReporter( File reportsDirectory )
     {
         this.reportsDirectory = reportsDirectory;
     }
 
-    public void setTestCase( Xpp3Dom testCase )
-    {
-        this.testCase = testCase;
-    }
-
-    public Xpp3Dom getTestCase()
-    {
-        return testCase;
-    }
-
     public void writeMessage( String message )
     {
     }
 
-    public void testSetStarting( ReportEntry report )
+    public void testSetCompleted( ReportEntry report )
         throws ReporterException
     {
-        super.testSetStarting( report );
+        super.testSetCompleted( report );
+
+        long runTime = System.currentTimeMillis() - testSetStartTime;
+
+        Xpp3Dom testSuite = createTestElement( "testsuite", report, runTime );
+
+        showProperties( testSuite );
+
+        testSuite.setAttribute( "tests", String.valueOf( this.getNumTests() ) );
+
+        testSuite.setAttribute( "errors", String.valueOf( this.getNumErrors() ) );
+
+        testSuite.setAttribute( "skipped", String.valueOf( this.getNumSkipped() ) );
+
+        testSuite.setAttribute( "failures", String.valueOf( this.getNumFailures() ) );
+
+        for ( Iterator i = results.iterator(); i.hasNext(); )
+        {
+            Xpp3Dom testcase = (Xpp3Dom) i.next();
+            testSuite.addChild( testcase );
+        }
 
         File reportFile = new File( reportsDirectory, "TEST-" + report.getName() + ".xml" );
 
@@ -84,10 +93,16 @@ public class XMLReporter
 
         reportDir.mkdirs();
 
+        PrintWriter writer = null;
+
         try
         {
             writer = new PrintWriter(
                 new BufferedWriter( new OutputStreamWriter( new FileOutputStream( reportFile ), "UTF-8" ) ) );
+
+            writer.write( "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>" + LS );
+
+            Xpp3DomWriter.write( new PrettyPrintXMLWriter( writer ), testSuite );
         }
         catch ( UnsupportedEncodingException e )
         {
@@ -98,42 +113,14 @@ public class XMLReporter
             throw new ReporterException( "Unable to create file: " + e.getMessage(), e );
         }
 
-        writer.write( "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>" + LS );
-
-        testSuite = createTestElement( new Xpp3Dom( "testsuite" ), report.getName(), report );
-        showProperties();
-    }
-
-    public void testSetCompleted( ReportEntry report )
-    {
-        super.testSetCompleted( report );
-
-        testSuite.setAttribute( "tests", String.valueOf( this.getNumTests() ) );
-
-        testSuite.setAttribute( "errors", String.valueOf( this.getNumErrors() ) );
-
-        testSuite.setAttribute( "skipped", String.valueOf( this.getNumSkipped() ) );
-
-        testSuite.setAttribute( "failures", String.valueOf( this.getNumFailures() ) );
-
-        long runTime = System.currentTimeMillis() - testSetStartTime;
-
-        testSuite.setAttribute( "time", elapsedTimeAsString( runTime ) );
-
-        try
-        {
-            Xpp3DomWriter.write( new PrettyPrintXMLWriter( writer ), testSuite );
-        }
         finally
         {
             IOUtil.close( writer );
         }
     }
 
-    public void testStarting( ReportEntry report )
+    private String getReportName( ReportEntry report )
     {
-        super.testStarting( report );
-
         String reportName;
 
         if ( report.getName().indexOf( "(" ) > 0 )
@@ -144,18 +131,7 @@ public class XMLReporter
         {
             reportName = report.getName();
         }
-
-        this.testCase = createTestElement( createElement( testSuite, "testcase" ), reportName, report );
-    }
-
-    private Xpp3Dom createTestElement( Xpp3Dom element, String reportName, ReportEntry report )
-    {
-        element.setAttribute( "name", reportName );
-        if ( report.getGroup() != null )
-        {
-            element.setAttribute( "group", report.getGroup() );
-        }
-        return element;
+        return reportName;
     }
 
     public void testSucceeded( ReportEntry report )
@@ -164,7 +140,21 @@ public class XMLReporter
 
         long runTime = this.endTime - this.startTime;
 
+        Xpp3Dom testCase = createTestElement( "testcase", report, runTime );
+
+        results.add( testCase );
+    }
+
+    private Xpp3Dom createTestElement( String name, ReportEntry report, long runTime )
+    {
+        Xpp3Dom testCase = new Xpp3Dom( name );
+        testCase.setAttribute( "name", getReportName( report ) );
+        if ( report.getGroup() != null )
+        {
+            testCase.setAttribute( "group", report.getGroup() );
+        }
         testCase.setAttribute( "time", elapsedTimeAsString( runTime ) );
+        return testCase;
     }
 
     public void testError( ReportEntry report, String stdOut, String stdErr )
@@ -183,11 +173,9 @@ public class XMLReporter
 
     private void writeTestProblems( ReportEntry report, String stdOut, String stdErr, String name )
     {
-        if ( testCase == null )
-        {
-            // This can occur if the error happens before the test starts
-            testStarting( report );
-        }
+        long runTime = endTime - startTime;
+
+        Xpp3Dom testCase = createTestElement( "testcase", report, runTime );
 
         Xpp3Dom element = createElement( testCase, name );
 
@@ -214,16 +202,14 @@ public class XMLReporter
 
         element.setValue( stackTrace );
 
-        addOutputStreamElement( stdOut, "system-out" );
+        addOutputStreamElement( stdOut, "system-out", testCase );
 
-        addOutputStreamElement( stdErr, "system-err" );
+        addOutputStreamElement( stdErr, "system-err", testCase );
 
-        long runTime = endTime - startTime;
-
-        testCase.setAttribute( "time", elapsedTimeAsString( runTime ) );
+        results.add( testCase );
     }
 
-    private void addOutputStreamElement( String stdOut, String name )
+    private void addOutputStreamElement( String stdOut, String name, Xpp3Dom testCase )
     {
         if ( stdOut != null && stdOut.trim().length() > 0 )
         {
@@ -242,8 +228,10 @@ public class XMLReporter
 
     /**
      * Adds system properties to the XML report.
+     *
+     * @param testSuite
      */
-    private void showProperties()
+    private void showProperties( Xpp3Dom testSuite )
     {
         Xpp3Dom properties = createElement( testSuite, "properties" );
 
@@ -281,5 +269,10 @@ public class XMLReporter
         s = StringUtils.replace( s, ">", "&gt;" );
         return s;
 
+    }
+
+    public Iterator getResults()
+    {
+        return results.iterator();
     }
 }

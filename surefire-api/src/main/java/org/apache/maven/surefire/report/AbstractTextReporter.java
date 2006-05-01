@@ -111,6 +111,7 @@ public abstract class AbstractTextReporter
     }
 
     public void testSetCompleted( ReportEntry report )
+        throws ReporterException
     {
         super.testSetCompleted( report );
 

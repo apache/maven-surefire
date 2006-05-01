@@ -18,7 +18,7 @@ package org.apache.maven.surefire.report;
 
 /**
  * Contract between the different implementations of the Surefire reporters
- *  
+ *
  * @version $Id$
  */
 public interface Reporter
@@ -40,40 +40,41 @@ public interface Reporter
     void testSetStarting( ReportEntry report )
         throws ReporterException;
 
-    void testSetCompleted( ReportEntry report );
+    void testSetCompleted( ReportEntry report )
+        throws ReporterException;
 
     void testSetAborted( ReportEntry report );
 
     // Tests
 
     /**
-     * Event fired when a test is about to start 
-     * 
+     * Event fired when a test is about to start
+     *
      * @param report
      */
     void testStarting( ReportEntry report );
 
     /**
      * Event fired when a test ended successfully
-     * 
+     *
      * @param report
      */
     void testSucceeded( ReportEntry report );
 
     /**
      * Event fired when a test ended with an error (non anticipated problem)
-     * 
+     *
      * @param report
-     * @param stdOut standard output from the test case 
+     * @param stdOut standard output from the test case
      * @param stdErr error output from the test case
      */
     void testError( ReportEntry report, String stdOut, String stdErr );
 
     /**
      * Event fired when a test ended with a failure (anticipated problem)
-     * 
+     *
      * @param report
-     * @param stdOut standard output from the test case 
+     * @param stdOut standard output from the test case
      * @param stdErr error output from the test case
      */
     void testFailed( ReportEntry report, String stdOut, String stdErr );
@@ -85,28 +86,28 @@ public interface Reporter
 
     /**
      * Get the number of errors
-     * 
+     *
      * @return
      */
     int getNumErrors();
 
     /**
      * Get the number of failures
-     * 
+     *
      * @return
      */
     int getNumFailures();
 
     /**
      * Get the number of tests
-     * 
+     *
      * @return
      */
     int getNumTests();
 
     /**
      * Get the number of tests skipped
-     * 
+     *
      * @return
      */
     int getNumSkipped();
