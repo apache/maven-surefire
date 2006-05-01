@@ -18,6 +18,7 @@ package org.apache.maven.surefire.booter;
 
 import org.apache.maven.surefire.Surefire;
 import org.apache.maven.surefire.testset.TestSetFailedException;
+import org.apache.maven.surefire.util.NestedRuntimeException;
 import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.cli.CommandLineException;
@@ -68,18 +69,18 @@ public class SurefireBooter
 
     private static final int TESTS_FAILED_EXIT_CODE = 255;
 
-    private static boolean assertionsAvailable;
+    private static Method assertionStatusMethod;
 
     static
     {
         try
         {
-            ClassLoader.class.getMethod( "setDefaultAssertionStatus", new Class[]{boolean.class} );
-            assertionsAvailable = true;
+            assertionStatusMethod =
+                ClassLoader.class.getMethod( "setDefaultAssertionStatus", new Class[]{boolean.class} );
         }
         catch ( NoSuchMethodException e )
         {
-            assertionsAvailable = false;
+            assertionStatusMethod = null;
         }
     }
 
@@ -532,10 +533,22 @@ public class SurefireBooter
         }
 
         IsolatedClassLoader classLoader = new IsolatedClassLoader( parent, childDelegation );
-        if ( assertionsAvailable )
+        if ( assertionStatusMethod != null )
         {
-            parent.setDefaultAssertionStatus( assertionsEnabled );
-            classLoader.setDefaultAssertionStatus( assertionsEnabled );
+            try
+            {
+                Object[] args = new Object[]{assertionsEnabled ? Boolean.TRUE : Boolean.FALSE};
+                assertionStatusMethod.invoke( parent, args );
+                assertionStatusMethod.invoke( classLoader, args );
+            }
+            catch ( IllegalAccessException e )
+            {
+                throw new NestedRuntimeException( "Unable to access the assertion enablement method", e );
+            }
+            catch ( InvocationTargetException e )
+            {
+                throw new NestedRuntimeException( "Unable to invoke the assertion enablement method", e );
+            }
         }
         for ( Iterator iter = urls.iterator(); iter.hasNext(); )
         {

@@ -53,6 +53,27 @@
         </dependency>
       </dependencies>
     </profile>
+    <profile>
+      <id>jdk1.3</id>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <configuration>
+              <fork>false</fork>
+              <compilerVersion>1.4</compilerVersion>
+            </configuration>
+          </plugin>
+          <plugin>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <forkMode>once</forkMode>
+              <jvm>${JAVA_1_3_HOME}/bin/java</jvm>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
   </profiles>
   <build>
     <plugins>
@@ -61,7 +82,6 @@
         <configuration>
           <source>1.4</source>
           <target>1.4</target>
-          <fork>false</fork>
         </configuration>
       </plugin>
       <plugin>

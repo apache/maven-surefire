@@ -16,6 +16,7 @@ package org.apache.maven.surefire.report;
  * limitations under the License.
  */
 
+import org.apache.maven.surefire.util.PrettyPrintXMLWriter;
 import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
@@ -121,7 +122,7 @@ public class XMLReporter
 
         try
         {
-            Xpp3DomWriter.write( writer, testSuite );
+            Xpp3DomWriter.write( new PrettyPrintXMLWriter( writer ), testSuite );
         }
         finally
         {
