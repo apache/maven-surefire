@@ -25,6 +25,11 @@ public class ForkingConsoleReporter
 
     public static final String FORKING_PREFIX_FOOTER = "@FL";
 
+    public ForkingConsoleReporter( Boolean trimStackTrace )
+    {
+        super( trimStackTrace );
+    }
+
     public void writeHeading( String message )
     {
         writer.print( FORKING_PREFIX_HEADING );

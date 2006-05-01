@@ -26,7 +26,7 @@ public class ReportEntry
 
     private String message;
 
-    private Throwable throwable;
+    private StackTraceWriter stackTraceWriter;
 
     public ReportEntry( Object source, String name, String message )
     {
@@ -38,12 +38,12 @@ public class ReportEntry
         this( source, name, group, message, null );
     }
 
-    public ReportEntry( Object source, String name, String message, Throwable throwable )
+    public ReportEntry( Object source, String name, String message, StackTraceWriter stackTraceWriter )
     {
-        this( source, name, null, message, throwable );
+        this( source, name, null, message, stackTraceWriter );
     }
 
-    public ReportEntry( Object source, String name, String group, String message, Throwable throwable )
+    public ReportEntry( Object source, String name, String group, String message, StackTraceWriter stackTraceWriter )
     {
         if ( source == null )
         {
@@ -66,7 +66,7 @@ public class ReportEntry
 
         this.message = message;
 
-        this.throwable = throwable;
+        this.stackTraceWriter = stackTraceWriter;
     }
 
     public Object getSource()
@@ -89,9 +89,9 @@ public class ReportEntry
         return message;
     }
 
-    public Throwable getThrowable()
+    public StackTraceWriter getStackTraceWriter()
     {
-        return throwable;
+        return stackTraceWriter;
     }
 }
 

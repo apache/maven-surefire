@@ -77,7 +77,7 @@ public class TestNGReporter
         String group = groupString( result.getMethod().getGroups(), result.getTestClass().getName() );
         ReportEntry report = new ReportEntry( source, result.getTestClass().getName() + "#" +
             result.getMethod().getMethodName(), group, rawString );
-        
+
         reportManager.testStarting( report );
     }
 
@@ -91,7 +91,8 @@ public class TestNGReporter
     {
         String rawString = bundle.getString( "executeException" );
 
-        ReportEntry report = new ReportEntry( source, result.getName(), rawString, result.getThrowable() );
+        ReportEntry report =
+            new ReportEntry( source, result.getName(), rawString, new TestNGStackTraceWriter( result ) );
 
         reportManager.testFailed( report );
     }
@@ -107,7 +108,8 @@ public class TestNGReporter
     {
         String rawString = bundle.getString( "executeException" );
 
-        ReportEntry report = new ReportEntry( source, result.getName(), rawString, result.getThrowable() );
+        ReportEntry report =
+            new ReportEntry( source, result.getName(), rawString, new TestNGStackTraceWriter( result ) );
 
         reportManager.testError( report );
     }

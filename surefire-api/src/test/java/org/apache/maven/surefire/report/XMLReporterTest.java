@@ -34,9 +34,10 @@ public class XMLReporterTest
         throws Exception
     {
         super.setUp();
-        reporter = new XMLReporter( null );
+        reporter = new XMLReporter( null, Boolean.TRUE );
         message = "junit.framework.AssertionFailedError";
-        reportEntry = new ReportEntry( this, "XMLReporterTest", message, new AssertionFailedError() );
+        reportEntry = new ReportEntry( this, "XMLReporterTest", message,
+                                       new PojoStackTraceWriter( "", "", new AssertionFailedError() ) );
     }
 
     /*

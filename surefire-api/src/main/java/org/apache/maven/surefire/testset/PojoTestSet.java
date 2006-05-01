@@ -17,6 +17,7 @@ package org.apache.maven.surefire.testset;
  */
 
 import org.apache.maven.surefire.Surefire;
+import org.apache.maven.surefire.report.PojoStackTraceWriter;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterManager;
 
@@ -129,7 +130,9 @@ public class PojoTestSet
 
             String stringToPrint = msgFmt.format( stringArgs );
 
-            report = new ReportEntry( testObject, getTestName( userFriendlyMethodName ), stringToPrint, e );
+            report = new ReportEntry( testObject, getTestName( userFriendlyMethodName ), stringToPrint,
+                                      new PojoStackTraceWriter( testObject.getClass().getName(), method.getName(),
+                                                                e ) );
 
             reportManager.testFailed( report );
 
@@ -161,7 +164,8 @@ public class PojoTestSet
                 msg = t.toString();
             }
 
-            report = new ReportEntry( testObject, getTestName( userFriendlyMethodName ), msg, t );
+            report = new ReportEntry( testObject, getTestName( userFriendlyMethodName ), msg, new PojoStackTraceWriter(
+                testObject.getClass().getName(), method.getName(), t ) );
 
             reportManager.testFailed( report );
             // Don't return  here, because tearDownFixture should be called even
@@ -176,7 +180,8 @@ public class PojoTestSet
                 msg = t.toString();
             }
 
-            report = new ReportEntry( testObject, getTestName( userFriendlyMethodName ), msg, t );
+            report = new ReportEntry( testObject, getTestName( userFriendlyMethodName ), msg, new PojoStackTraceWriter(
+                testObject.getClass().getName(), method.getName(), t ) );
 
             reportManager.testFailed( report );
             // Don't return  here, because tearDownFixture should be called even
@@ -198,7 +203,9 @@ public class PojoTestSet
 
             String stringToPrint = msgFmt.format( stringArgs );
 
-            report = new ReportEntry( testObject, getTestName( userFriendlyMethodName ), stringToPrint, t );
+            report = new ReportEntry( testObject, getTestName( userFriendlyMethodName ), stringToPrint,
+                                      new PojoStackTraceWriter( testObject.getClass().getName(), method.getName(),
+                                                                t ) );
 
             reportManager.testFailed( report );
 
@@ -225,7 +232,7 @@ public class PojoTestSet
             throw new NullPointerException( "testMethodName is null" );
         }
 
-        return getTestClass() + "." + testMethodName;
+        return getTestClass().getName() + "." + testMethodName;
     }
 
     public void setUpFixture()

@@ -25,8 +25,8 @@ package org.apache.maven.surefire.report;
 public class ConsoleReporter
     extends AbstractConsoleReporter
 {
-    public ConsoleReporter()
+    public ConsoleReporter( Boolean trimStackTrace )
     {
-        super( SUMMARY );
+        super( SUMMARY, trimStackTrace );
     }
 }

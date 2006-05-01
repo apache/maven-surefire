@@ -16,8 +16,6 @@ package org.apache.maven.surefire.report;
  * limitations under the License.
  */
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.text.NumberFormat;
 import java.util.Locale;
 
@@ -48,9 +46,17 @@ public abstract class AbstractReporter
 
     protected int skipped;
 
+    private boolean trimStackTrace;
+
     // ----------------------------------------------------------------------
     // Report interface
     // ----------------------------------------------------------------------
+
+
+    protected AbstractReporter( Boolean trimStackTrace )
+    {
+        this.trimStackTrace = trimStackTrace.booleanValue();
+    }
 
     public void writeFooter( String footer )
     {
@@ -184,14 +190,9 @@ public abstract class AbstractReporter
      * @param report ReportEntry object.
      * @return stacktrace as string.
      */
-    protected static String getStackTrace( ReportEntry report )
+    protected String getStackTrace( ReportEntry report )
     {
-        StringWriter writer = new StringWriter();
-
-        report.getThrowable().printStackTrace( new PrintWriter( writer ) );
-
-        writer.flush();
-
-        return writer.toString();
+        return trimStackTrace ? report.getStackTraceWriter().writeTrimmedTraceToString()
+            : report.getStackTraceWriter().writeTraceToString();
     }
 }

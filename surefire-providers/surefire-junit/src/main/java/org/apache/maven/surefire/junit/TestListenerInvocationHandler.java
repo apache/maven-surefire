@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.testset;
+package org.apache.maven.surefire.junit;
 
 /*
  * Copyright 2001-2006 The Apache Software Foundation.
@@ -20,6 +20,7 @@ import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterManager;
 
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
@@ -39,6 +40,10 @@ public class TestListenerInvocationHandler
     private Set failedTestsSet = new HashSet();
 
     private ReporterManager reportManager;
+
+    private static final Class[] EMPTY_CLASS_ARRAY = new Class[]{};
+
+    private static final String[] EMPTY_STRING_ARRAY = new String[]{};
 
     private static class FailedTest
     {
@@ -150,17 +155,29 @@ public class TestListenerInvocationHandler
 
     // Handler for TestListener.addFailure(Test, Throwable)
     private void handleAddError( Object[] args )
+        throws IllegalAccessException, NoSuchMethodException, InvocationTargetException
     {
-        ReportEntry report = new ReportEntry( args[0], args[0].toString(), args[1].toString(), (Throwable) args[1] );
+        ReportEntry report =
+            new ReportEntry( args[0], args[0].toString(), args[1].toString(), getStackTraceWriter( args ) );
 
         reportManager.testError( report );
 
         failedTestsSet.add( new FailedTest( args[0], Thread.currentThread() ) );
     }
 
-    private void handleAddFailure( Object[] args )
+    private JUnitStackTraceWriter getStackTraceWriter( Object[] args )
+        throws NoSuchMethodException, IllegalAccessException, InvocationTargetException
     {
-        ReportEntry report = new ReportEntry( args[0], args[0].toString(), args[1].toString(), (Throwable) args[1] );
+        Method m = args[0].getClass().getMethod( "getName", EMPTY_CLASS_ARRAY );
+        String testName = (String) m.invoke( args[0], EMPTY_STRING_ARRAY );
+        return new JUnitStackTraceWriter( args[0].getClass().getName(), testName, (Throwable) args[1] );
+    }
+
+    private void handleAddFailure( Object[] args )
+        throws IllegalAccessException, NoSuchMethodException, InvocationTargetException
+    {
+        ReportEntry report =
+            new ReportEntry( args[0], args[0].toString(), args[1].toString(), getStackTraceWriter( args ) );
 
         reportManager.testFailed( report );
 

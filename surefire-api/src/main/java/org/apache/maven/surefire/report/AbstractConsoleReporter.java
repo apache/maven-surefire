@@ -30,11 +30,11 @@ public abstract class AbstractConsoleReporter
 {
     protected static final int BUFFER_SIZE = 4096;
 
-    protected AbstractConsoleReporter( String format )
+    protected AbstractConsoleReporter( String format, Boolean trimStackTrace )
     {
         // TODO: use logger
-        super( new PrintWriter( new OutputStreamWriter( new BufferedOutputStream( System.out, BUFFER_SIZE ) ) ),
-               format );
+        super( new PrintWriter( new OutputStreamWriter( new BufferedOutputStream( System.out, BUFFER_SIZE ) ) ), format,
+               trimStackTrace );
     }
 
     public void testSetStarting( ReportEntry report )
@@ -80,7 +80,7 @@ public abstract class AbstractConsoleReporter
         writer.println( report.getSource().getClass().getName() );
         writer.println( report.getName() );
         writer.println( report.getMessage() );
-        writer.println( report.getThrowable().getMessage() );
+        writer.println( getStackTrace( report ) );
         writer.flush();
     }
 }

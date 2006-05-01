@@ -27,8 +27,8 @@ import java.io.File;
 public class BriefFileReporter
     extends AbstractFileReporter
 {
-    public BriefFileReporter( File reportsDirectory )
+    public BriefFileReporter( File reportsDirectory, Boolean trimStackTrace )
     {
-        super( reportsDirectory, BRIEF );
+        super( reportsDirectory, BRIEF, trimStackTrace );
     }
 }

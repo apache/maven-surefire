@@ -53,8 +53,10 @@ public class XMLReporter
 
     private List results = Collections.synchronizedList( new ArrayList() );
 
-    public XMLReporter( File reportsDirectory )
+    public XMLReporter( File reportsDirectory, Boolean trimStackTrace )
     {
+        super( trimStackTrace );
+
         this.reportsDirectory = reportsDirectory;
     }
 
@@ -181,7 +183,7 @@ public class XMLReporter
 
         String stackTrace = getStackTrace( report );
 
-        Throwable t = report.getThrowable();
+        Throwable t = report.getStackTraceWriter().getThrowable();
 
         if ( t != null )
         {

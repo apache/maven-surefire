@@ -31,9 +31,9 @@ public abstract class AbstractFileReporter
 {
     private File reportsDirectory;
 
-    protected AbstractFileReporter( File reportsDirectory, String format )
+    protected AbstractFileReporter( File reportsDirectory, String format, Boolean trimStackTrace )
     {
-        super( format );
+        super( format, trimStackTrace );
 
         this.reportsDirectory = reportsDirectory;
     }

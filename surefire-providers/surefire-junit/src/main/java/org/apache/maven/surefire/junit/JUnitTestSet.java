@@ -18,7 +18,6 @@ package org.apache.maven.surefire.junit;
 
 import org.apache.maven.surefire.report.ReporterManager;
 import org.apache.maven.surefire.testset.AbstractTestSet;
-import org.apache.maven.surefire.testset.TestListenerInvocationHandler;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
 import java.lang.reflect.Constructor;

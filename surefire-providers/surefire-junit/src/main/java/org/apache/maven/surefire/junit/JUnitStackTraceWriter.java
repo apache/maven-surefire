@@ -1,7 +1,5 @@
-package org.apache.maven.surefire.report;
-
 /*
- * Copyright 2001-2006 The Apache Software Foundation.
+ * Copyright 2005-2006 The Apache Software Foundation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,19 +14,20 @@ package org.apache.maven.surefire.report;
  * limitations under the License.
  */
 
-import java.io.File;
+package org.apache.maven.surefire.junit;
+
+import org.apache.maven.surefire.report.PojoStackTraceWriter;
 
 /**
- * Text file reporter.
+ * Stack trace writer for JUnit tests.
  *
- * @author <a href="mailto:jruiz@exist.com">Johnny R. Ruiz III</a>
- * @version $Id$
+ * @author <a href="mailto:brett@apache.org">Brett Porter</a>
  */
-public class FileReporter
-    extends AbstractFileReporter
+public class JUnitStackTraceWriter
+    extends PojoStackTraceWriter
 {
-    public FileReporter( File reportsDirectory, Boolean trimStackTrace )
+    public JUnitStackTraceWriter( String testClass, String testName, Throwable throwable )
     {
-        super( reportsDirectory, PLAIN, trimStackTrace );
+        super( testClass, testName, throwable );
     }
 }

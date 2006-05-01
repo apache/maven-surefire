@@ -26,6 +26,11 @@ import org.apache.maven.surefire.report.ReportEntry;
 public class TestReport
     extends AbstractReporter
 {
+    public TestReport()
+    {
+        super( Boolean.TRUE );
+    }
+
     public void writeMessage( String message )
     {
         System.out.println( "TestReport::writeMessage -> " + message );

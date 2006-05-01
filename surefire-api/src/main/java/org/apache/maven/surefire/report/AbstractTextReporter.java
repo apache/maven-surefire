@@ -41,13 +41,17 @@ public abstract class AbstractTextReporter
 
     private List testResults;
 
-    protected AbstractTextReporter( String format )
+    protected AbstractTextReporter( String format, Boolean trimStackTrace )
     {
+        super( trimStackTrace );
+
         this.format = format;
     }
 
-    protected AbstractTextReporter( PrintWriter writer, String format )
+    protected AbstractTextReporter( PrintWriter writer, String format, Boolean trimStackTrace )
     {
+        super( trimStackTrace );
+
         this.writer = writer;
 
         this.format = format;
