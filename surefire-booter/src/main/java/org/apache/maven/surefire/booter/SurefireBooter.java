@@ -713,6 +713,12 @@ public class SurefireBooter
                 }
             }
 
+            // TODO: fix. See also, surefire plugin. Currently, testng is putting all of the test classes into the surefire
+            // classpath as the classloaders are not separataed. Here, we need to remove them again to avoid duplication
+            List urls = new ArrayList( surefireBooter.classPathUrls );
+            urls.removeAll( surefireBooter.surefireClassPathUrls );
+            surefireBooter.classPathUrls = urls;
+
             boolean childDelegation = Boolean.valueOf( p.getProperty( "childDelegation" ) ).booleanValue();
             String testSet = p.getProperty( "testSet" );
             boolean result;
