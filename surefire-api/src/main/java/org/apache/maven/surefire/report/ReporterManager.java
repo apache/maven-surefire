@@ -17,6 +17,7 @@ package org.apache.maven.surefire.report;
  */
 
 import org.apache.maven.surefire.util.TeeStream;
+import org.codehaus.plexus.util.IOUtil;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -282,9 +283,10 @@ public class ReporterManager
 
     private void testFailed( ReportEntry reportEntry, String typeError )
     {
-        String stdOutLog = stdOut.toString();
+        // Note that the fields can be null if the test hasn't even started yet (an early error)
+        String stdOutLog = stdOut != null ? stdOut.toString() : "";
 
-        String stdErrLog = stdErr.toString();
+        String stdErrLog = stdErr != null ? stdErr.toString() : "";
 
         resetStreams();
 
@@ -305,11 +307,18 @@ public class ReporterManager
 
     private void resetStreams()
     {
-        System.setOut( oldOut );
-        System.setErr( oldErr );
+        // Note that the fields can be null if the test hasn't even started yet (an early error)
+        if ( oldOut != null )
+        {
+            System.setOut( oldOut );
+        }
+        if ( oldErr != null )
+        {
+            System.setErr( oldErr );
+        }
 
-        newOut.close();
-        newErr.close();
+        IOUtil.close( newOut );
+        IOUtil.close( newErr );
     }
 
     public void reset()

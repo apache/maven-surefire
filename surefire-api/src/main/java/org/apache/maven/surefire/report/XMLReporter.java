@@ -183,6 +183,12 @@ public class XMLReporter
 
     private void writeTestProblems( ReportEntry report, String stdOut, String stdErr, String name )
     {
+        if ( testCase == null )
+        {
+            // This can occur if the error happens before the test starts
+            testStarting( report );
+        }
+
         Xpp3Dom element = createElement( testCase, name );
 
         String stackTrace = getStackTrace( report );
