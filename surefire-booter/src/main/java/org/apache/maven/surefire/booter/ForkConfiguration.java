@@ -34,7 +34,7 @@ public class ForkConfiguration
 {
     public static final String FORK_ONCE = "once";
 
-    public static final String FORK_PERTEST = "pertest";
+    public static final String FORK_ALWAYS = "always";
 
     public static final String FORK_NONE = "none";
 
@@ -56,7 +56,11 @@ public class ForkConfiguration
 
     public void setForkMode( String forkMode )
     {
-        if ( forkMode.equals( FORK_NONE ) || forkMode.equals( FORK_ONCE ) || forkMode.equals( FORK_PERTEST ) )
+        if ( "pertest".equalsIgnoreCase( forkMode ) )
+        {
+            this.forkMode = FORK_ALWAYS;
+        }
+        else if ( forkMode.equals( FORK_NONE ) || forkMode.equals( FORK_ONCE ) || forkMode.equals( FORK_ALWAYS ) )
         {
             this.forkMode = forkMode;
         }
