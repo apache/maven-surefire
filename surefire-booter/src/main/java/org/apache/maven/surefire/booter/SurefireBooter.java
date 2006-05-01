@@ -68,6 +68,21 @@ public class SurefireBooter
 
     private static final int TESTS_FAILED_EXIT_CODE = 255;
 
+    private static boolean assertionsAvailable;
+
+    static
+    {
+        try
+        {
+            ClassLoader.class.getMethod( "setDefaultAssertionStatus", new Class[]{boolean.class} );
+            assertionsAvailable = true;
+        }
+        catch ( NoSuchMethodException e )
+        {
+            assertionsAvailable = false;
+        }
+    }
+
     // ----------------------------------------------------------------------
     // Accessors
     // ----------------------------------------------------------------------
@@ -517,10 +532,11 @@ public class SurefireBooter
         }
 
         IsolatedClassLoader classLoader = new IsolatedClassLoader( parent, childDelegation );
-        // TODO: for some reason, this doesn't work when forked. -ea is added to the command line as a workaround
-        // in forkConfiguration
-        // TODO: not available under JDK 1.3
-        //classLoader.setDefaultAssertionStatus( assertionsEnabled );
+        if ( assertionsAvailable )
+        {
+            parent.setDefaultAssertionStatus( assertionsEnabled );
+            classLoader.setDefaultAssertionStatus( assertionsEnabled );
+        }
         for ( Iterator iter = urls.iterator(); iter.hasNext(); )
         {
             URL url = (URL) iter.next();
@@ -528,7 +544,6 @@ public class SurefireBooter
         }
         return classLoader;
     }
-
 
     private static List processStringList( String stringList )
     {
