@@ -19,6 +19,7 @@ package org.apache.maven.surefire.report;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.NumberFormat;
+import java.util.Locale;
 
 /**
  * @author <a href="mailto:jason@maven.org">Jason van Zyl</a>
@@ -37,7 +38,7 @@ public abstract class AbstractReporter
 
     protected long endTime;
 
-    private NumberFormat numberFormat = NumberFormat.getInstance();
+    private NumberFormat numberFormat = NumberFormat.getInstance( Locale.ENGLISH );
 
     protected static final String NL = System.getProperty( "line.separator" );
 

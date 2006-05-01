@@ -45,6 +45,14 @@
     <contributor>
       <name>Jesse Kuhnert</name>
     </contributor>
+    <contributor>
+      <name>Vincent Siveton</name>
+      <email>vincent.siveton@gmail.com</email>
+      <organization>ASF</organization>
+      <roles>
+        <role>Java Developer</role>
+      </roles>
+    </contributor>
   </contributors>
   <scm>
     <connection>scm:svn:https://svn.apache.org/repos/asf/maven/surefire/trunk/</connection>
