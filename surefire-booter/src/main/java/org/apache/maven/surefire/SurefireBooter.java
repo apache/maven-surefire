@@ -85,6 +85,8 @@ public class SurefireBooter
 
     private String plexusUtilsJar;
 
+    private String jdk13UtilsJar;
+
     // ----------------------------------------------------------------------
     //
     // ----------------------------------------------------------------------
@@ -387,7 +389,7 @@ public class SurefireBooter
 
         cli.createArgument().setValue( "-classpath" );
 
-        cli.createArgument().setValue( surefireBooterJar + PS + plexusUtilsJar );
+        cli.createArgument().setValue( surefireBooterJar + PS + plexusUtilsJar + PS + jdk13UtilsJar );
 
         cli.createArgument().setValue( RUNNER );
 
@@ -495,6 +497,10 @@ public class SurefireBooter
             else if ( url.indexOf( "plexus-utils" ) > 0 )
             {
                 plexusUtilsJar = url;
+            }
+            else if ( url.indexOf( "jdk13-util" ) > 0 )
+            {
+                jdk13UtilsJar = url;
             }
             else
             {
