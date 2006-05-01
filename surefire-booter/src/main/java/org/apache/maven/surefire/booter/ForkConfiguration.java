@@ -143,7 +143,9 @@ public class ForkConfiguration
 
         // TODO: This shouldn't be required. See SurefireBooter, createClassLoader where assertion status should be set
         // probably required in JDK 1.3
+/*
         cli.createArgument().setValue( "-ea" );
+*/
 
         cli.createArgument().setValue( "-classpath" );
 
