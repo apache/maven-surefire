@@ -17,6 +17,7 @@ package org.apache.maven.surefire.report;
  */
 
 import org.codehaus.plexus.util.IOUtil;
+import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.codehaus.plexus.util.xml.Xpp3DomWriter;
 
@@ -42,7 +43,7 @@ public class XMLReporter
     extends AbstractReporter
 {
 
-    private static final String LS = System.getProperty("line.separator");
+    private static final String LS = System.getProperty( "line.separator" );
 
     private PrintWriter writer;
 
@@ -194,7 +195,7 @@ public class XMLReporter
 
             if ( message != null && message.trim().length() > 0 )
             {
-                element.setAttribute( "message", escapeAttribute( message ));
+                element.setAttribute( "message", escapeAttribute( message ) );
 
                 element.setAttribute( "type", stackTrace.substring( 0, stackTrace.indexOf( ":" ) ) );
             }
@@ -269,42 +270,9 @@ public class XMLReporter
     private static String escapeAttribute( String attribute )
     {
         // Shouldn't Xpp3Dom do this itself?
-        String s = replaceAll( attribute, "<", "&lt;" );
-        s = replaceAll( s, ">", "&gt;" );
+        String s = StringUtils.replace( attribute, "<", "&lt;" );
+        s = StringUtils.replace( s, ">", "&gt;" );
         return s;
 
     }
-
-    /**
-     * Replace all ocurrences of a value in a string. Same as Java 1.4 String.replaceAll( String, String )
-     * 
-     * @param s the string to search into
-     * @param from original String to look for
-     * @param to String to change for
-     * @return the modified String
-     */
-    public static String replaceAll( String source, String pattern, String replace )
-    {
-        if ( ( source != null ) && ( pattern.length() > 0 ) )
-        {
-            final int len = pattern.length();
-            StringBuffer sb = new StringBuffer();
-            int found = -1;
-            int start = 0;
-
-            while ( ( found = source.indexOf( pattern, start ) ) != -1 )
-            {
-                sb.append( source.substring( start, found ) );
-                sb.append( replace );
-                start = found + len;
-            }
-
-            sb.append( source.substring( start ) );
-
-            return sb.toString();
-        }
-        else
-            return "";
-    }
-
 }

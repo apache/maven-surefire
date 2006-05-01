@@ -16,7 +16,7 @@ package org.apache.maven.surefire.booter;
  * limitations under the License.
  */
 
-import org.apache.maven.util.jdk13.NestedCheckedException;
+import org.apache.maven.surefire.util.NestedCheckedException;
 
 /**
  * An error occurring during the invocation of Surefire via an alternate class loader.

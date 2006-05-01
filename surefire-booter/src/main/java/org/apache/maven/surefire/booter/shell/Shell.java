@@ -16,20 +16,20 @@ package org.apache.maven.surefire.booter.shell;
  * limitations under the License.
  */
 
+import org.apache.maven.surefire.util.NestedRuntimeException;
+import org.codehaus.plexus.util.cli.CommandLineException;
+import org.codehaus.plexus.util.cli.Commandline;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.maven.util.jdk13.NestedRuntimeException;
-import org.codehaus.plexus.util.cli.CommandLineException;
-import org.codehaus.plexus.util.cli.Commandline;
-
 /**
- * <p>
+ * <p/>
  * Class with patches copied from plexus-utils with fix for PLX-161,
  * as we can not upgrade plexus-utils until it's upgraded in core Maven
  * </p>
- * 
+ * <p/>
  * TODO deprecate when plexus-utils 1.2 can be used
  *
  * @author <a href="mailto:carlos@apache.org">Carlos Sanchez</a>

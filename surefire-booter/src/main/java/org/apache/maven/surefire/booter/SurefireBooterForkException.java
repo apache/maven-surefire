@@ -16,12 +16,12 @@ package org.apache.maven.surefire.booter;
  * limitations under the License.
  */
 
-import org.apache.maven.util.jdk13.NestedCheckedException;
+import org.apache.maven.surefire.util.NestedCheckedException;
 
 /**
  * Encapsulates exceptions thrown during Surefire forking.
- * 
- * @version $Id$ 
+ *
+ * @version $Id$
  */
 public class SurefireBooterForkException
     extends NestedCheckedException

@@ -541,7 +541,7 @@ public class SurefireBooter
 
         List list = new ArrayList();
 
-        String[] stringArray = split( sl, "," );
+        String[] stringArray = StringUtils.split( sl, "," );
 
         for ( int i = 0; i < stringArray.length; i++ )
         {
@@ -589,8 +589,8 @@ public class SurefireBooter
         Object[] paramObjects = null;
         if ( paramProperty != null )
         {
-            String[] params = split( paramProperty, "\\|" );
-            String[] types = split( typeProperty, "\\|" );
+            String[] params = StringUtils.split( paramProperty, "|" );
+            String[] types = StringUtils.split( typeProperty, "|" );
 
             paramObjects = new Object[params.length];
 
@@ -700,17 +700,5 @@ public class SurefireBooter
         System.exit( result ? TESTS_SUCCEEDED_EXIT_CODE : TESTS_FAILED_EXIT_CODE );
     }
 
-    /**
-     * Split a string in a List of Strings using a delimiter. Same as Java 1.4 String.split( String )
-     *
-     * @param s         the string to be splitted
-     * @param delimiter the delimiter to be used
-     * @return an array with the Strings between the delimiters
-     * @since 1.5.4
-     */
-    public static String[] split( String s, String delimiter )
-    {
-        return StringUtils.split( s, delimiter );
-    }
 }
 

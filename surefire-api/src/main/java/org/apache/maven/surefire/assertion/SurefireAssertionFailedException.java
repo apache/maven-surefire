@@ -16,7 +16,7 @@ package org.apache.maven.surefire.assertion;
  * limitations under the License.
  */
 
-import org.apache.maven.util.jdk13.NestedRuntimeException;
+import org.apache.maven.surefire.util.NestedRuntimeException;
 
 /**
  * @noinspection UncheckedExceptionClass
