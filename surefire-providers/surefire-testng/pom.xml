@@ -34,7 +34,7 @@
         <dependency>
           <groupId>org.testng</groupId>
           <artifactId>testng</artifactId>
-          <version>4.7-SNAPSHOT</version>
+          <version>4.7</version>
           <classifier>jdk14</classifier>
         </dependency>
       </dependencies>
@@ -48,7 +48,7 @@
         <dependency>
           <groupId>org.testng</groupId>
           <artifactId>testng</artifactId>
-          <version>4.7-SNAPSHOT</version>
+          <version>4.7</version>
           <classifier>jdk15</classifier>
         </dependency>
       </dependencies>
@@ -92,10 +92,4 @@
       </plugin>
     </plugins>
   </build>
-  <repositories>
-    <repository>
-      <id>snapshots</id>
-      <url>http://snapshots.maven.codehaus.org/maven2</url>
-    </repository>
-  </repositories>
 </project>
