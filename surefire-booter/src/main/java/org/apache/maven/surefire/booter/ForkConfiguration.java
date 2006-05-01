@@ -40,8 +40,6 @@ public class ForkConfiguration
 
     private String forkMode;
 
-    private boolean childDelegation;
-
     private Properties systemProperties;
 
     private String jvmExecutable;
@@ -72,16 +70,6 @@ public class ForkConfiguration
         {
             throw new IllegalArgumentException( "Fork mode " + forkMode + " is not a legal value" );
         }
-    }
-
-    public void setChildDelegation( boolean childDelegation )
-    {
-        this.childDelegation = childDelegation;
-    }
-
-    public boolean isChildDelegation()
-    {
-        return childDelegation;
     }
 
     public boolean isForking()

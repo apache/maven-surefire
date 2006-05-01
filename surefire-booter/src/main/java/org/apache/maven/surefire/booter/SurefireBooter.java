@@ -71,6 +71,8 @@ public class SurefireBooter
 
     private static Method assertionStatusMethod;
 
+    private boolean childDelegation = true;
+
     static
     {
         try
@@ -131,7 +133,7 @@ public class SurefireBooter
 
         if ( ForkConfiguration.FORK_NEVER.equals( forkConfiguration.getForkMode() ) )
         {
-            result = runSuitesInProcess( false );
+            result = runSuitesInProcess();
         }
         else if ( ForkConfiguration.FORK_ONCE.equals( forkConfiguration.getForkMode() ) )
         {
@@ -144,7 +146,7 @@ public class SurefireBooter
         return result;
     }
 
-    private boolean runSuitesInProcess( String testSet, boolean childDelegation, Properties results )
+    private boolean runSuitesInProcess( String testSet, Properties results )
         throws SurefireExecutionException
     {
         if ( testSuites.size() != 1 )
@@ -191,7 +193,7 @@ public class SurefireBooter
         }
     }
 
-    private boolean runSuitesInProcess( boolean childDelegation )
+    private boolean runSuitesInProcess()
         throws SurefireExecutionException
     {
         // TODO: replace with plexus
@@ -366,7 +368,7 @@ public class SurefireBooter
             properties.setProperty( "surefireClassPathUrl." + i, url );
         }
 
-        properties.setProperty( "childDelegation", String.valueOf( forkConfiguration.isChildDelegation() ) );
+        properties.setProperty( "childDelegation", String.valueOf( childDelegation ) );
     }
 
     private File writePropertiesFile( String name, Properties properties )
@@ -724,11 +726,11 @@ public class SurefireBooter
             boolean result;
             if ( testSet != null )
             {
-                result = surefireBooter.runSuitesInProcess( testSet, childDelegation, p );
+                result = surefireBooter.runSuitesInProcess( testSet, p );
             }
             else
             {
-                result = surefireBooter.runSuitesInProcess( childDelegation );
+                result = surefireBooter.runSuitesInProcess();
             }
 
             surefireBooter.writePropertiesFile( surefirePropertiesFile, "surefire", p );
@@ -746,5 +748,9 @@ public class SurefireBooter
         }
     }
 
+    public void setChildDelegation( boolean childDelegation )
+    {
+        this.childDelegation = childDelegation;
+    }
 }
 
