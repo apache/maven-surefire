@@ -129,7 +129,7 @@ public class SurefireBooter
     {
         boolean result = false;
 
-        if ( ForkConfiguration.FORK_NONE.equals( forkConfiguration.getForkMode() ) )
+        if ( ForkConfiguration.FORK_NEVER.equals( forkConfiguration.getForkMode() ) )
         {
             result = runSuitesInProcess( false );
         }

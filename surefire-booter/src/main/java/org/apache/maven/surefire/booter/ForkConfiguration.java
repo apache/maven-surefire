@@ -36,7 +36,7 @@ public class ForkConfiguration
 
     public static final String FORK_ALWAYS = "always";
 
-    public static final String FORK_NONE = "none";
+    public static final String FORK_NEVER = "never";
 
     private String forkMode;
 
@@ -60,7 +60,11 @@ public class ForkConfiguration
         {
             this.forkMode = FORK_ALWAYS;
         }
-        else if ( forkMode.equals( FORK_NONE ) || forkMode.equals( FORK_ONCE ) || forkMode.equals( FORK_ALWAYS ) )
+        else if ( "none".equalsIgnoreCase( forkMode ) )
+        {
+            this.forkMode = FORK_NEVER;
+        }
+        else if ( forkMode.equals( FORK_NEVER ) || forkMode.equals( FORK_ONCE ) || forkMode.equals( FORK_ALWAYS ) )
         {
             this.forkMode = forkMode;
         }
@@ -82,7 +86,7 @@ public class ForkConfiguration
 
     public boolean isForking()
     {
-        return !FORK_NONE.equals( forkMode );
+        return !FORK_NEVER.equals( forkMode );
     }
 
     public void setSystemProperties( Properties systemProperties )
