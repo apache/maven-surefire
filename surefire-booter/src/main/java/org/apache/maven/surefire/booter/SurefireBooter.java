@@ -617,14 +617,14 @@ public class SurefireBooter
         Object[] paramObjects = null;
         if ( paramProperty != null )
         {
-            String[] params = StringUtils.split( paramProperty, "|" );
-            String[] types = StringUtils.split( typeProperty, "|" );
+            String[] params = StringUtils.split( StringUtils.replace( paramProperty, "||", "| |" ), "|" );
+            String[] types = StringUtils.split( StringUtils.replace( typeProperty, "||", "| |" ), "|" );
 
             paramObjects = new Object[params.length];
 
             for ( int i = 0; i < types.length; i++ )
             {
-                if ( types[i].length() == 0 )
+                if ( types[i].trim().length() == 0 )
                 {
                     params[i] = null;
                 }
