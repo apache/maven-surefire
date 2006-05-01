@@ -19,6 +19,7 @@ package org.apache.maven.surefire.booter;
 import org.apache.maven.surefire.Surefire;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.codehaus.plexus.util.IOUtil;
+import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.cli.CommandLineException;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
 import org.codehaus.plexus.util.cli.StreamConsumer;
@@ -709,29 +710,7 @@ public class SurefireBooter
      */
     public static String[] split( String s, String delimiter )
     {
-        String delim = delimiter;
-        if ( "\\|".equals( delimiter ) )
-        {
-            delim = "|";
-        }
-        if ( s.equals( delim ) )
-        {
-            return new String[0];
-        }
-        List tokens = new ArrayList();
-        int i = 0;
-        int j = s.indexOf( delim, i );
-        while ( j > -1 )
-        {
-            tokens.add( s.substring( i, j ) );
-            i = j + delim.length();
-            j = s.indexOf( delim, i );
-        }
-        if ( i < s.length() || ( i == 0 ) )
-        {
-            tokens.add( s.substring( i ) );
-        }
-        return (String[]) tokens.toArray( new String[0] );
+        return StringUtils.split( s, delimiter );
     }
 }
 
