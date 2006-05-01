@@ -4,26 +4,15 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.apache.maven.surefire</groupId>
-    <artifactId>surefire-root</artifactId>
-    <version>1.2-SNAPSHOT</version>
+    <artifactId>surefire</artifactId>
+    <version>2.0-SNAPSHOT</version>
   </parent>
-  <groupId>surefire</groupId>
   <artifactId>surefire-site</artifactId>
-  <version>1.1-SNAPSHOT</version>
   <name>Surefire</name>
   <distributionManagement>
     <site>
-      <id>apache.website</id>
-      <url>scp://minotaur.apache.org/www/maven.apache.org/surefire</url>
+      <id>website</id>
+      <url>scpexe://minotaur.apache.org/www/maven.apache.org/surefire/</url>
     </site>
   </distributionManagement>
-  <reporting>
-    <!-- TODO: disable dependencies -->
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-project-info-reports-plugin</artifactId>
-      </plugin>
-    </plugins>
-  </reporting>
 </project>

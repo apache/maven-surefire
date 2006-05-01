@@ -19,10 +19,6 @@
       <item name="JXR" href="http://maven.apache.org/jxr"/>
       <item name="Doxia" href="http://maven.apache.org/doxia"/>
     </links>
-    <menu name="Modules">
-      <item name="Surefire" href="surefire/"/>
-      <item name="Surefire Booter" href="surefire-booter/"/>
-    </menu>
     ${reports}
   </body>
 </project>
