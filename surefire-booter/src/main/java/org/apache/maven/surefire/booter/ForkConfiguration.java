@@ -141,6 +141,12 @@ public class ForkConfiguration
             }
         }
 
+        if ( System.getProperty( "maven.surefire.debug" ) != null )
+        {
+            cli.createArgument().setLine(
+                "-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005" );
+        }
+
         cli.createArgument().setValue( "-classpath" );
 
         cli.createArgument().setValue( StringUtils.join( classPath.iterator(), File.pathSeparator ) );

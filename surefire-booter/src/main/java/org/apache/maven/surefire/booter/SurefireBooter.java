@@ -655,64 +655,76 @@ public class SurefireBooter
      * @param args
      */
     public static void main( String[] args )
-        throws SurefireExecutionException, IOException
+        throws Throwable
     {
-        if ( args.length > 1 )
+        //noinspection CatchGenericClass,OverlyBroadCatchBlock
+        try
         {
-            setSystemProperties( new File( args[1] ) );
+            if ( args.length > 1 )
+            {
+                setSystemProperties( new File( args[1] ) );
+            }
+
+            File surefirePropertiesFile = new File( args[0] );
+            Properties p = loadProperties( surefirePropertiesFile );
+
+            SurefireBooter surefireBooter = new SurefireBooter();
+
+            for ( Enumeration e = p.propertyNames(); e.hasMoreElements(); )
+            {
+                String name = (String) e.nextElement();
+
+                if ( name.startsWith( "report." ) && !name.endsWith( ".params" ) && !name.endsWith( ".types" ) )
+                {
+                    String className = p.getProperty( name );
+
+                    String params = p.getProperty( name + ".params" );
+                    String types = p.getProperty( name + ".types" );
+                    surefireBooter.addReport( className, constructParamObjects( params, types ) );
+                }
+                else if ( name.startsWith( "testSuite." ) && !name.endsWith( ".params" ) && !name.endsWith( ".types" ) )
+                {
+                    String className = p.getProperty( name );
+
+                    String params = p.getProperty( name + ".params" );
+                    String types = p.getProperty( name + ".types" );
+                    surefireBooter.addTestSuite( className, constructParamObjects( params, types ) );
+                }
+                else if ( name.startsWith( "classPathUrl." ) )
+                {
+                    surefireBooter.addClassPathUrl( p.getProperty( name ) );
+                }
+                else if ( name.startsWith( "surefireClassPathUrl." ) )
+                {
+                    surefireBooter.addSurefireClassPathUrl( p.getProperty( name ) );
+                }
+            }
+
+            boolean childDelegation = Boolean.valueOf( p.getProperty( "childDelegation" ) ).booleanValue();
+            String testSet = p.getProperty( "testSet" );
+            boolean result;
+            if ( testSet != null )
+            {
+                result = surefireBooter.runSuitesInProcess( testSet, childDelegation, p );
+            }
+            else
+            {
+                result = surefireBooter.runSuitesInProcess( childDelegation );
+            }
+
+            surefireBooter.writePropertiesFile( surefirePropertiesFile, "surefire", p );
+
+            //noinspection CallToSystemExit
+            System.exit( result ? TESTS_SUCCEEDED_EXIT_CODE : TESTS_FAILED_EXIT_CODE );
         }
-
-        File surefirePropertiesFile = new File( args[0] );
-        Properties p = loadProperties( surefirePropertiesFile );
-
-        SurefireBooter surefireBooter = new SurefireBooter();
-
-        for ( Enumeration e = p.propertyNames(); e.hasMoreElements(); )
+        catch ( Throwable t )
         {
-            String name = (String) e.nextElement();
-
-            if ( name.startsWith( "report." ) && !name.endsWith( ".params" ) && !name.endsWith( ".types" ) )
-            {
-                String className = p.getProperty( name );
-
-                String params = p.getProperty( name + ".params" );
-                String types = p.getProperty( name + ".types" );
-                surefireBooter.addReport( className, constructParamObjects( params, types ) );
-            }
-            else if ( name.startsWith( "testSuite." ) && !name.endsWith( ".params" ) && !name.endsWith( ".types" ) )
-            {
-                String className = p.getProperty( name );
-
-                String params = p.getProperty( name + ".params" );
-                String types = p.getProperty( name + ".types" );
-                surefireBooter.addTestSuite( className, constructParamObjects( params, types ) );
-            }
-            else if ( name.startsWith( "classPathUrl." ) )
-            {
-                surefireBooter.addClassPathUrl( p.getProperty( name ) );
-            }
-            else if ( name.startsWith( "surefireClassPathUrl." ) )
-            {
-                surefireBooter.addSurefireClassPathUrl( p.getProperty( name ) );
-            }
+            // Just throwing does getMessage() and a local trace - we want to call printStackTrace for a full trace
+            //noinspection UseOfSystemOutOrSystemErr
+            t.printStackTrace( System.err );
+            //noinspection ProhibitedExceptionThrown,CallToSystemExit
+            System.exit( 1 );
         }
-
-        boolean childDelegation = Boolean.valueOf( p.getProperty( "childDelegation" ) ).booleanValue();
-        String testSet = p.getProperty( "testSet" );
-        boolean result;
-        if ( testSet != null )
-        {
-            result = surefireBooter.runSuitesInProcess( testSet, childDelegation, p );
-        }
-        else
-        {
-            result = surefireBooter.runSuitesInProcess( childDelegation );
-        }
-
-        surefireBooter.writePropertiesFile( surefirePropertiesFile, "surefire", p );
-
-        //noinspection CallToSystemExit
-        System.exit( result ? TESTS_SUCCEEDED_EXIT_CODE : TESTS_FAILED_EXIT_CODE );
     }
 
 }
