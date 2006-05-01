@@ -54,12 +54,10 @@ public class IsolatedClassLoader
 
     public void addURL( URL url )
     {
+        // avoid duplicates
         if ( !urls.contains( url ) )
         {
             super.addURL( url );
-        }
-        else
-        {
             urls.add( url );
         }
     }
