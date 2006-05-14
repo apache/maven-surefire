@@ -24,7 +24,6 @@ import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.testng.ISuiteListener;
 import org.testng.ITestListener;
 import org.testng.TestNG;
-import org.testng.internal.TestNGClassFinder;
 import org.testng.internal.annotations.IAnnotationFinder;
 import org.testng.xml.XmlClass;
 import org.testng.xml.XmlSuite;
@@ -83,7 +82,7 @@ public class TestNGDirectoryTestSuite
         {
             annotationClass = Class.forName( "org.testng.internal.annotations.JDK14AnnotationFinder" );
         }
-        
+
         annotationFinder = (IAnnotationFinder) annotationClass.newInstance();
     }
 
@@ -93,7 +92,7 @@ public class TestNGDirectoryTestSuite
         // TODO: fix
         // override classloader. That keeps us all together for now, which makes it work, but could pose problems of
         // classloader separation if the tests use plexus-utils.
-        return super.locateTestSets( getClass().getClassLoader() );
+        return super.locateTestSets( classLoader );
     }
 
     protected SurefireTestSet createTestSet( Class testClass, ClassLoader classLoader )
@@ -121,7 +120,7 @@ public class TestNGDirectoryTestSuite
 
         createXmlTest( suite, testSet );
 
-        executeTestNG( suite, reporterManager );
+        executeTestNG( suite, reporterManager, classLoader );
     }
 
     public void execute( ReporterManager reporterManager, ClassLoader classLoader )
@@ -143,7 +142,7 @@ public class TestNGDirectoryTestSuite
             createXmlTest( suite, testSet );
         }
 
-        executeTestNG( suite, reporterManager );
+        executeTestNG( suite, reporterManager, classLoader );
     }
 
     private void createXmlTest( XmlSuite suite, SurefireTestSet testSet )
@@ -160,16 +159,18 @@ public class TestNGDirectoryTestSuite
             xmlTest.setExcludedGroups( Arrays.asList( excludedGroups.split( "," ) ) );
         }
 
-        if ( !TestNGClassFinder.isTestNGClass( testSet.getTestClass(), annotationFinder ) )
+//        if ( !TestNGClassFinder.isTestNGClass( testSet.getTestClass(), annotationFinder ) )
+        // TODO: this is a bit dodgy, but isTestNGClass wasn't working
+        if ( "junit.framework.TestCase".equals( testSet.getTestClass().getSuperclass().getName() ) )
         {
             xmlTest.setJUnit( true );
         }
     }
 
-    private void executeTestNG( XmlSuite suite, ReporterManager reporterManager )
+    private void executeTestNG( XmlSuite suite, ReporterManager reporterManager, ClassLoader classLoader )
     {
         TestNG testNG = new TestNG( false );
-        
+
         // turn off all TestNG output
         testNG.setVerbose( 0 );
 
