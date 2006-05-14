@@ -204,10 +204,12 @@ public class SurefireBooter
         //noinspection CatchGenericClass,OverlyBroadCatchBlock
         try
         {
+            // The test classloader must be constructed first to avoid issues with commons-logging until we properly
+            // separate the TestNG classloader
+            ClassLoader testsClassLoader = createClassLoader( classPathUrls, childDelegation, true );
+
             ClassLoader surefireClassLoader =
                 createClassLoader( surefireClassPathUrls, getClass().getClassLoader(), true );
-
-            ClassLoader testsClassLoader = createClassLoader( classPathUrls, childDelegation, true );
 
             Class surefireClass = surefireClassLoader.loadClass( Surefire.class.getName() );
 
@@ -628,8 +630,9 @@ public class SurefireBooter
         Object[] paramObjects = null;
         if ( paramProperty != null )
         {
-            String[] params = StringUtils.split( StringUtils.replace( paramProperty, "||", "| |" ), "|" );
-            String[] types = StringUtils.split( StringUtils.replace( typeProperty, "||", "| |" ), "|" );
+            // bit of a glitch that it need sto be done twice to do an odd number of vertical bars (eg |||, |||||).
+            String[] params = StringUtils.split( StringUtils.replace( StringUtils.replace( paramProperty, "||", "| |" ), "||", "| |" ), "|" );
+            String[] types = StringUtils.split( StringUtils.replace( StringUtils.replace( typeProperty, "||", "| |" ), "||", "| |" ), "|" );
 
             paramObjects = new Object[params.length];
 
