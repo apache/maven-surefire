@@ -43,6 +43,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Arrays;
 
 /**
  * @author Jason van Zyl
@@ -56,6 +57,8 @@ public class SurefireBooter
     private List classPathUrls = new ArrayList();
 
     private List surefireClassPathUrls = new ArrayList();
+
+    private List surefireBootClassPathUrls = new ArrayList();
 
     private List testSuites = new ArrayList();
 
@@ -368,6 +371,12 @@ public class SurefireBooter
             properties.setProperty( "surefireClassPathUrl." + i, url );
         }
 
+        for ( int i = 0; i < surefireBootClassPathUrls.size(); i++ )
+        {
+            String url = (String) surefireBootClassPathUrls.get( i );
+            properties.setProperty( "surefireBootClassPathUrl." + i, url );
+        }
+
         properties.setProperty( "childDelegation", String.valueOf( childDelegation ) );
     }
 
@@ -446,7 +455,7 @@ public class SurefireBooter
             throw new SurefireBooterForkException( "Error creating properties files for forking", e );
         }
 
-        Commandline cli = forkConfiguration.createCommandLine( surefireClassPathUrls );
+        Commandline cli = forkConfiguration.createCommandLine( surefireBootClassPathUrls );
 
         cli.createArgument().setFile( surefireProperties );
 
@@ -713,15 +722,17 @@ public class SurefireBooter
                 {
                     surefireBooter.addSurefireClassPathUrl( p.getProperty( name ) );
                 }
+                else if ( name.startsWith( "surefireBootClassPathUrl." ) )
+                {
+                    surefireBooter.addSurefireBootClassPathUrl( p.getProperty( name ) );
+                }
+                else if ( "childDelegation".equals( name ) )
+                {
+                    surefireBooter.childDelegation =
+                        Boolean.valueOf( p.getProperty( "childDelegation" ) ).booleanValue();
+                }
             }
 
-            // TODO: fix. See also, surefire plugin. Currently, testng is putting all of the test classes into the surefire
-            // classpath as the classloaders are not separataed. Here, we need to remove them again to avoid duplication
-            List urls = new ArrayList( surefireBooter.classPathUrls );
-            urls.removeAll( surefireBooter.surefireClassPathUrls );
-            surefireBooter.classPathUrls = urls;
-
-            boolean childDelegation = Boolean.valueOf( p.getProperty( "childDelegation" ) ).booleanValue();
             String testSet = p.getProperty( "testSet" );
             boolean result;
             if ( testSet != null )
@@ -751,6 +762,15 @@ public class SurefireBooter
     public void setChildDelegation( boolean childDelegation )
     {
         this.childDelegation = childDelegation;
+    }
+
+    public void addSurefireBootClassPathUrl( String path )
+    {
+        if ( !surefireBootClassPathUrls.contains( path ) )
+        {
+            surefireBootClassPathUrls.add( path );
+        }
+        addSurefireClassPathUrl( path );
     }
 }
 
