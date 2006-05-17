@@ -29,7 +29,7 @@ import java.lang.reflect.Proxy;
 public final class JUnitTestSet
     extends AbstractTestSet
 {
-    public static final String TEST_CASE = "junit.framework.TestCase";
+    public static final String TEST_CASE = "junit.framework.Test";
 
     public static final String TEST_RESULT = "junit.framework.TestResult";
 

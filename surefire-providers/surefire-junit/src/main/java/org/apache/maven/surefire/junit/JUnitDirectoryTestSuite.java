@@ -16,7 +16,7 @@ package org.apache.maven.surefire.junit;
  * limitations under the License.
  */
 
-import junit.framework.TestCase;
+import junit.framework.Test;
 import org.apache.maven.surefire.suite.AbstractDirectoryTestSuite;
 import org.apache.maven.surefire.testset.PojoTestSet;
 import org.apache.maven.surefire.testset.SurefireTestSet;
@@ -44,7 +44,7 @@ public class JUnitDirectoryTestSuite
         Class junitClass = null;
         try
         {
-            junitClass = classLoader.loadClass( TestCase.class.getName() );
+            junitClass = classLoader.loadClass( Test.class.getName() );
         }
         catch ( ClassNotFoundException e )
         {

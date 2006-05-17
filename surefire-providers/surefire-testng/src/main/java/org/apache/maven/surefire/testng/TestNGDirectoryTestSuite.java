@@ -161,9 +161,13 @@ public class TestNGDirectoryTestSuite
 
 //        if ( !TestNGClassFinder.isTestNGClass( testSet.getTestClass(), annotationFinder ) )
         // TODO: this is a bit dodgy, but isTestNGClass wasn't working
-        if ( "junit.framework.TestCase".equals( testSet.getTestClass().getSuperclass().getName() ) )
+        try
         {
-            xmlTest.setJUnit( true );
+            Class junitClass = Class.forName( "junit.framework.Test" );
+            xmlTest.setJUnit( testSet.getTestClass().isAssignableFrom( junitClass ) );
+        }
+        catch ( ClassNotFoundException e )
+        {
         }
     }
 
