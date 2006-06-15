@@ -28,6 +28,12 @@ import java.io.PrintWriter;
 public abstract class AbstractConsoleReporter
     extends AbstractTextReporter
 {
+    private static final String TEST_SET_STARTING_PREFIX = "Running ";
+
+    private static final String TEST_SET_STARTING_GROUP_PREFIX = " (of ";
+
+    private static final String TEST_SET_STARTING_GROUP_SUFIX = ")";
+
     protected static final int BUFFER_SIZE = 4096;
 
     protected AbstractConsoleReporter( String format, Boolean trimStackTrace )
@@ -42,12 +48,7 @@ public abstract class AbstractConsoleReporter
     {
         super.testSetStarting( report );
 
-        String message = "Running " + report.getName();
-        if ( report.getGroup() != null && !report.getName().equals( report.getGroup() ) )
-        {
-            message = message + " (of " + report.getGroup() + ")";
-        }
-        writeMessage( message );
+        writeMessage( getTestSetStartingMessage( report ) );
     }
 
     public void runStarting( int testCount )
@@ -82,5 +83,61 @@ public abstract class AbstractConsoleReporter
         writer.println( report.getMessage() );
         writer.println( getStackTrace( report ) );
         writer.flush();
+    }
+
+    /**
+     * Get the test set starting message for a report.
+     * eg. "Running org.foo.BarTest ( of group )"
+     * 
+     * @todo internationalize
+     * @param report report whose test set is starting
+     * @return the message
+     */
+    public String getTestSetStartingMessage( ReportEntry report )
+    {
+        StringBuffer message = new StringBuffer();
+        message.append( TEST_SET_STARTING_PREFIX );
+        message.append( report.getName() );
+
+        if ( report.getGroup() != null && !report.getName().equals( report.getGroup() ) )
+        {
+            message.append( TEST_SET_STARTING_GROUP_PREFIX );
+            message.append( report.getGroup() );
+            message.append( TEST_SET_STARTING_GROUP_SUFIX );
+        }
+        return message.toString();
+    }
+
+    /**
+     * Parses a Surefire test set starting message into a {@link ReportEntry} object.
+     * Only name and group will be set if applicable.
+     * 
+     * @param message
+     * @return the parsed {@link ReportEntry}
+     */
+    public ReportEntry parseTestSetStartingMessage( String message )
+    {
+        ReportEntry reportEntry = new ReportEntry();
+        int i = message.indexOf( TEST_SET_STARTING_GROUP_PREFIX );
+        int j;
+        if ( i >= 0 )
+        {
+            j = message.indexOf( TEST_SET_STARTING_GROUP_SUFIX );
+            if ( j <= 0 )
+            {
+                throw new RuntimeException( "Message provided can not be parsed" );
+            }
+            reportEntry.setGroup( message.substring( i + TEST_SET_STARTING_GROUP_PREFIX.length(), j ) );
+        }
+        else
+        {
+            i = message.length();
+            if ( i <= 0 )
+            {
+                throw new RuntimeException( "Message provided can not be parsed" );
+            }
+        }
+        reportEntry.setName( message.substring( TEST_SET_STARTING_PREFIX.length(), i ) );
+        return reportEntry;
     }
 }
