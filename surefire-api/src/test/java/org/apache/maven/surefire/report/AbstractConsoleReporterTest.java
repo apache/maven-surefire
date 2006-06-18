@@ -60,11 +60,11 @@ public class AbstractConsoleReporterTest
     public void testGetTestSetStartingMessage()
         throws Exception
     {
-        String message = consoleReporter.getTestSetStartingMessage( report );
+        String message = AbstractConsoleReporter.getTestSetStartingMessage( report );
         assertEquals( "Running name (of group)", message );
 
         report.setGroup( null );
-        message = consoleReporter.getTestSetStartingMessage( report );
+        message = AbstractConsoleReporter.getTestSetStartingMessage( report );
         assertEquals( "Running name", message );
     }
 
@@ -72,13 +72,26 @@ public class AbstractConsoleReporterTest
         throws Exception
     {
         String message = "Running name (of group)";
-        ReportEntry actualReport = consoleReporter.parseTestSetStartingMessage( message );
+        ReportEntry actualReport = AbstractConsoleReporter.parseTestSetStartingMessage( message );
         assertEquals( report, actualReport );
 
         report.setGroup( null );
         message = "Running name";
-        actualReport = consoleReporter.parseTestSetStartingMessage( message );
+        actualReport = AbstractConsoleReporter.parseTestSetStartingMessage( message );
         assertEquals( report, actualReport );
+    }
+
+    public void testIsTestSetStartingMessage()
+        throws Exception
+    {
+        String message = "Running name (of group)";
+        assertTrue( AbstractConsoleReporter.isTestSetStartingMessage( message ) );
+
+        message = "Running name";
+        assertTrue( AbstractConsoleReporter.isTestSetStartingMessage( message ) );
+
+        message = "Xxxx";
+        assertFalse( AbstractConsoleReporter.isTestSetStartingMessage( message ) );
     }
 
 }

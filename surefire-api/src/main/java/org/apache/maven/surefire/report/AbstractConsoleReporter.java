@@ -93,7 +93,7 @@ public abstract class AbstractConsoleReporter
      * @param report report whose test set is starting
      * @return the message
      */
-    public String getTestSetStartingMessage( ReportEntry report )
+    public static String getTestSetStartingMessage( ReportEntry report )
     {
         StringBuffer message = new StringBuffer();
         message.append( TEST_SET_STARTING_PREFIX );
@@ -115,7 +115,7 @@ public abstract class AbstractConsoleReporter
      * @param message
      * @return the parsed {@link ReportEntry}
      */
-    public ReportEntry parseTestSetStartingMessage( String message )
+    public static ReportEntry parseTestSetStartingMessage( String message )
     {
         ReportEntry reportEntry = new ReportEntry();
         int i = message.indexOf( TEST_SET_STARTING_GROUP_PREFIX );
@@ -140,4 +140,17 @@ public abstract class AbstractConsoleReporter
         reportEntry.setName( message.substring( TEST_SET_STARTING_PREFIX.length(), i ) );
         return reportEntry;
     }
+
+    /**
+     * Check if the String passed as argument is a "test starting" message.
+     * If so it can be passed to {@link #parseTestSetStartingMessage(String)}
+     * 
+     * @param message the message to check
+     * @return true if it is a "test starting" message
+     */
+    public static boolean isTestSetStartingMessage( String message )
+    {
+        return message.startsWith( TEST_SET_STARTING_PREFIX );
+    }
+
 }

@@ -37,6 +37,8 @@ public abstract class AbstractTextReporter
 
     protected PrintWriter writer;
 
+    private static final String TEST_SET_COMPLETED_PREFIX = "Tests run: ";
+
     private final String format;
 
     private List testResults;
@@ -134,7 +136,7 @@ public abstract class AbstractTextReporter
     {
         StringBuffer buf = new StringBuffer();
 
-        buf.append( "Tests run: " );
+        buf.append( TEST_SET_COMPLETED_PREFIX );
         buf.append( completedCount );
         buf.append( ", Failures: " );
         buf.append( failures );
@@ -179,4 +181,16 @@ public abstract class AbstractTextReporter
 
         return buf.toString();
     }
+
+    /**
+     * Check if the String passed as argument is a "test set completed" message.
+     * 
+     * @param message the message to check
+     * @return true if it is a "test set completed" message
+     */
+    public static boolean isTestSetCompletedMessage( String message )
+    {
+        return message.startsWith( TEST_SET_COMPLETED_PREFIX );
+    }
+
 }
