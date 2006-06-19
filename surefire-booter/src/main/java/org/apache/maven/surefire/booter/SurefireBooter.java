@@ -16,22 +16,11 @@ package org.apache.maven.surefire.booter;
  * limitations under the License.
  */
 
-import org.apache.maven.surefire.Surefire;
-import org.apache.maven.surefire.testset.TestSetFailedException;
-import org.apache.maven.surefire.util.NestedRuntimeException;
-import org.codehaus.plexus.util.IOUtil;
-import org.codehaus.plexus.util.StringUtils;
-import org.codehaus.plexus.util.cli.CommandLineException;
-import org.codehaus.plexus.util.cli.CommandLineUtils;
-import org.codehaus.plexus.util.cli.StreamConsumer;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
@@ -43,7 +32,21 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Arrays;
+
+import org.apache.maven.surefire.Surefire;
+import org.apache.maven.surefire.booter.output.FileOutputConsumerProxy;
+import org.apache.maven.surefire.booter.output.ForkingStreamConsumer;
+import org.apache.maven.surefire.booter.output.OutputConsumer;
+import org.apache.maven.surefire.booter.output.StandardOutputConsumer;
+import org.apache.maven.surefire.booter.output.SupressFooterOutputConsumerProxy;
+import org.apache.maven.surefire.booter.output.SupressHeaderOutputConsumerProxy;
+import org.apache.maven.surefire.testset.TestSetFailedException;
+import org.apache.maven.surefire.util.NestedRuntimeException;
+import org.codehaus.plexus.util.IOUtil;
+import org.codehaus.plexus.util.StringUtils;
+import org.codehaus.plexus.util.cli.CommandLineException;
+import org.codehaus.plexus.util.cli.CommandLineUtils;
+import org.codehaus.plexus.util.cli.StreamConsumer;
 
 /**
  * @author Jason van Zyl
@@ -61,6 +64,8 @@ public class SurefireBooter
     private List surefireBootClassPathUrls = new ArrayList();
 
     private List testSuites = new ArrayList();
+    
+    private boolean redirectTestOutputToFile = false;
 
     // ----------------------------------------------------------------------
     //
@@ -75,6 +80,8 @@ public class SurefireBooter
     private static Method assertionStatusMethod;
 
     private boolean childDelegation = true;
+
+    private File reportsDirectory;
 
     static
     {
@@ -122,6 +129,35 @@ public class SurefireBooter
         {
             surefireClassPathUrls.add( path );
         }
+    }
+    
+    /**
+     * When forking, setting this to true will make the test output to be saved in a file
+     * instead of showing it on the standard output 
+     *  
+     * @param redirectTestOutputToFile
+     */
+    public void setRedirectTestOutputToFile( boolean redirectTestOutputToFile )
+    {
+        this.redirectTestOutputToFile = redirectTestOutputToFile;
+    }
+
+    /**
+     * Set the directory where reports will be saved
+     * 
+     * @param reportsDirectory the directory
+     */
+    public void setReportsDirectory( File reportsDirectory )
+    {
+        this.reportsDirectory = reportsDirectory;
+    }
+
+    /**
+     * Get the directory where reports will be saved
+     */
+    public File getReportsDirectory()
+    {
+        return reportsDirectory;
     }
 
     public void setForkConfiguration( ForkConfiguration forkConfiguration )
@@ -466,11 +502,9 @@ public class SurefireBooter
             cli.createArgument().setFile( systemProperties );
         }
 
-        Writer consoleWriter = new OutputStreamWriter( System.out );
+        StreamConsumer out = getForkingStreamConsumer( showHeading, showFooter, redirectTestOutputToFile );
 
-        StreamConsumer out = new ForkingWriterStreamConsumer( consoleWriter, showHeading, showFooter );
-
-        StreamConsumer err = new ForkingWriterStreamConsumer( consoleWriter, showHeading, showFooter );
+        StreamConsumer err = getForkingStreamConsumer( showHeading, showFooter, redirectTestOutputToFile );
 
         if ( forkConfiguration.isDebug() )
         {
@@ -775,5 +809,27 @@ public class SurefireBooter
         }
         addSurefireClassPathUrl( path );
     }
+
+    private StreamConsumer getForkingStreamConsumer( boolean showHeading, boolean showFooter, boolean showTestOutput )
+    {
+        OutputConsumer outputConsumer = new StandardOutputConsumer();
+
+        if ( !showTestOutput )
+        {
+            outputConsumer = new FileOutputConsumerProxy( outputConsumer, getReportsDirectory() );
+        }
+
+        if ( !showHeading )
+        {
+            outputConsumer = new SupressHeaderOutputConsumerProxy( outputConsumer );
+        }
+        if ( !showFooter )
+        {
+            outputConsumer = new SupressFooterOutputConsumerProxy( outputConsumer );
+        }
+
+        return new ForkingStreamConsumer( outputConsumer );
+    }
 }
+
 
