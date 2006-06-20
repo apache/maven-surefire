@@ -810,11 +810,11 @@ public class SurefireBooter
         addSurefireClassPathUrl( path );
     }
 
-    private StreamConsumer getForkingStreamConsumer( boolean showHeading, boolean showFooter, boolean showTestOutput )
+    private StreamConsumer getForkingStreamConsumer( boolean showHeading, boolean showFooter, boolean redirectTestOutputToFile )
     {
         OutputConsumer outputConsumer = new StandardOutputConsumer();
 
-        if ( !showTestOutput )
+        if ( redirectTestOutputToFile )
         {
             outputConsumer = new FileOutputConsumerProxy( outputConsumer, getReportsDirectory() );
         }

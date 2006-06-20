@@ -37,6 +37,8 @@ public class FileOutputConsumerProxy
 
     private static final String USER_DIR = System.getProperty( "user.dir" );
 
+    private static final String LINE_SEPARATOR = System.getProperty( "line.separator" );
+
     private File reportsDirectory;
 
     private PrintWriter printWriter;
@@ -136,6 +138,7 @@ public class FileOutputConsumerProxy
             throw new IllegalStateException( "consumeOutputLine called before testSetStarting" );
         }
         getPrintWriter().write( line );
+        getPrintWriter().write( LINE_SEPARATOR );
     }
 
 }
