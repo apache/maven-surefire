@@ -107,6 +107,7 @@
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
               <forkMode>once</forkMode>
+              <childDelegation>true</childDelegation>
               <jvm>${JAVA_1_3_HOME}/bin/java</jvm>
             </configuration>
           </plugin>
