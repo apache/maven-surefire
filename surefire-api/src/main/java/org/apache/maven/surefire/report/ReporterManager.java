@@ -21,6 +21,8 @@ import org.codehaus.plexus.util.IOUtil;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -31,7 +33,17 @@ public class ReporterManager
 
     private int errors;
 
+    /**
+     * Holds the sources of the error.
+     */
+    private Collection errorSources = new ArrayList();
+
     private int failures;
+
+    /**
+     * Holds the sources of the failures.
+     */
+    private Collection failureSources = new ArrayList();
 
     private List reports;
 
@@ -156,6 +168,25 @@ public class ReporterManager
 
         writeFooter( "" );
         writeFooter( "Results :" );
+        writeFooter( "" );
+        if ( failures > 0 )
+        {
+            writeFooter( "Failed tests: " );
+            for ( Iterator iterator = this.failureSources.iterator(); iterator.hasNext(); )
+            {
+                writeFooter( "  " + iterator.next() );
+            }
+            writeFooter( "" );
+        }
+        if ( errors > 0 )
+        {
+            writeFooter( "Tests in error: " );
+            for ( Iterator iterator = this.errorSources.iterator(); iterator.hasNext(); )
+            {
+                writeFooter( "  " + iterator.next() );
+            }
+            writeFooter( "" );
+        }
         writeFooter( "Tests run: " + completedCount + ", Failures: " + failures + ", Errors: " + errors +
             ", Skipped: " + skipped );
         writeFooter( "" );
@@ -195,8 +226,10 @@ public class ReporterManager
             skipped += reporter.getNumSkipped();
 
             errors += reporter.getNumErrors();
+            errorSources.addAll( reporter.getErrorSources() );
 
             failures += reporter.getNumFailures();
+            failureSources.addAll( reporter.getFailureSources() );
 
             completedCount += reporter.getNumTests();
         }

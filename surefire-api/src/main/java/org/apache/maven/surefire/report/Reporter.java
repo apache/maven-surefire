@@ -1,5 +1,7 @@
 package org.apache.maven.surefire.report;
 
+import java.util.Collection;
+
 /*
  * Copyright 2001-2006 The Apache Software Foundation.
  *
@@ -111,4 +113,18 @@ public interface Reporter
      * @return
      */
     int getNumSkipped();
+
+    /**
+     * Gives the source(s) that causes the error(s).
+     *
+     * @return The source(s).
+     */
+    Collection getErrorSources();
+
+    /**
+     * Gives the source(s) that causes the failures(s).
+     *
+     * @return The source(s).
+     */
+    Collection getFailureSources();
 }

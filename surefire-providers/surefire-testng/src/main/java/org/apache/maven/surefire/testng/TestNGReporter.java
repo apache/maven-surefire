@@ -75,15 +75,15 @@ public class TestNGReporter
     {
         String rawString = bundle.getString( "testStarting" );
         String group = groupString( result.getMethod().getGroups(), result.getTestClass().getName() );
-        ReportEntry report = new ReportEntry( source, result.getTestClass().getName() + "#" +
-            result.getMethod().getMethodName(), group, rawString );
+        ReportEntry report = new ReportEntry( source, getUserFriendlyTestName( result ), group, rawString );
 
         reportManager.testStarting( report );
     }
 
     public void onTestSuccess( ITestResult result )
     {
-        ReportEntry report = new ReportEntry( source, result.getName(), bundle.getString( "testSuccessful" ) );
+        ReportEntry report =
+            new ReportEntry( source, getUserFriendlyTestName( result ), bundle.getString( "testSuccessful" ) );
         reportManager.testSucceeded( report );
     }
 
@@ -91,15 +91,22 @@ public class TestNGReporter
     {
         String rawString = bundle.getString( "executeException" );
 
-        ReportEntry report =
-            new ReportEntry( source, result.getName(), rawString, new TestNGStackTraceWriter( result ) );
+        ReportEntry report = new ReportEntry( source, getUserFriendlyTestName( result ), rawString,
+                                              new TestNGStackTraceWriter( result ) );
 
         reportManager.testFailed( report );
     }
 
+    private static String getUserFriendlyTestName( ITestResult result )
+    {
+        // This is consistent with the JUnit output
+        return result.getName() + "(" + result.getTestClass().getName() + ")";
+    }
+
     public void onTestSkipped( ITestResult result )
     {
-        ReportEntry report = new ReportEntry( source, result.getName(), bundle.getString( "testSkipped" ) );
+        ReportEntry report =
+            new ReportEntry( source, getUserFriendlyTestName( result ), bundle.getString( "testSkipped" ) );
 
         reportManager.testSkipped( report );
     }
@@ -108,8 +115,8 @@ public class TestNGReporter
     {
         String rawString = bundle.getString( "executeException" );
 
-        ReportEntry report =
-            new ReportEntry( source, result.getName(), rawString, new TestNGStackTraceWriter( result ) );
+        ReportEntry report = new ReportEntry( source, getUserFriendlyTestName( result ), rawString,
+                                              new TestNGStackTraceWriter( result ) );
 
         reportManager.testError( report );
     }
