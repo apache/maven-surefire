@@ -28,28 +28,39 @@ import java.net.URL;
 public class UrlUtilsTest
     extends TestCase
 {
-    private String homeDir = System.getProperty( "user.dir" );
+    private String homeDir;
+
+    public void setUp()
+        throws Exception
+    {
+        super.setUp();
+        homeDir = System.getProperty( "user.dir" );
+        if ( !homeDir.startsWith( "/" ) )
+        {
+            homeDir = "/" + homeDir;
+        }
+    }
 
     public void testTestNoSpecialCharacters()
         throws IOException
     {
         File f = new File( homeDir, "foo.txt" );
-        assertEquals( new URL( "file:/" + homeDir + "/foo.txt" ), UrlUtils.getURL( f ) );
+        assertEquals( new URL( "file:" + homeDir + "/foo.txt" ), UrlUtils.getURL( f ) );
         f = new File( homeDir, "qwertyuiopasdfghjklzxcvbnm.txt" );
-        assertEquals( new URL( "file:/" + homeDir + "/qwertyuiopasdfghjklzxcvbnm.txt" ), UrlUtils.getURL( f ) );
+        assertEquals( new URL( "file:" + homeDir + "/qwertyuiopasdfghjklzxcvbnm.txt" ), UrlUtils.getURL( f ) );
         f = new File( homeDir, "QWERTYUIOPASDFGHJKLZXCVBNM.txt" );
-        assertEquals( new URL( "file:/" + homeDir + "/QWERTYUIOPASDFGHJKLZXCVBNM.txt" ), UrlUtils.getURL( f ) );
+        assertEquals( new URL( "file:" + homeDir + "/QWERTYUIOPASDFGHJKLZXCVBNM.txt" ), UrlUtils.getURL( f ) );
         f = new File( homeDir, "1234567890.txt" );
-        assertEquals( new URL( "file:/" + homeDir + "/1234567890.txt" ), UrlUtils.getURL( f ) );
+        assertEquals( new URL( "file:" + homeDir + "/1234567890.txt" ), UrlUtils.getURL( f ) );
         f = new File( homeDir, ")('*~!._-.txt" );
-        assertEquals( new URL( "file:/" + homeDir + "/)('*~!._-.txt" ), UrlUtils.getURL( f ) );
+        assertEquals( new URL( "file:" + homeDir + "/)('*~!._-.txt" ), UrlUtils.getURL( f ) );
     }
 
     public void testTestWithSpaces()
         throws IOException
     {
         File f = new File( homeDir, "foo bar.txt" );
-        assertEquals( new URL( "file:/" + homeDir + "/foo%20bar.txt" ), UrlUtils.getURL( f ) );
+        assertEquals( new URL( "file:" + homeDir + "/foo%20bar.txt" ), UrlUtils.getURL( f ) );
     }
 
 }
