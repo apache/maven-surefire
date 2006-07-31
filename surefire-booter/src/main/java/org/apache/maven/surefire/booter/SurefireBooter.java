@@ -16,6 +16,22 @@ package org.apache.maven.surefire.booter;
  * limitations under the License.
  */
 
+import org.apache.maven.surefire.Surefire;
+import org.apache.maven.surefire.booter.output.FileOutputConsumerProxy;
+import org.apache.maven.surefire.booter.output.ForkingStreamConsumer;
+import org.apache.maven.surefire.booter.output.OutputConsumer;
+import org.apache.maven.surefire.booter.output.StandardOutputConsumer;
+import org.apache.maven.surefire.booter.output.SupressFooterOutputConsumerProxy;
+import org.apache.maven.surefire.booter.output.SupressHeaderOutputConsumerProxy;
+import org.apache.maven.surefire.testset.TestSetFailedException;
+import org.apache.maven.surefire.util.NestedRuntimeException;
+import org.apache.maven.surefire.util.UrlUtils;
+import org.codehaus.plexus.util.IOUtil;
+import org.codehaus.plexus.util.StringUtils;
+import org.codehaus.plexus.util.cli.CommandLineException;
+import org.codehaus.plexus.util.cli.CommandLineUtils;
+import org.codehaus.plexus.util.cli.StreamConsumer;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -33,21 +49,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.maven.surefire.Surefire;
-import org.apache.maven.surefire.booter.output.FileOutputConsumerProxy;
-import org.apache.maven.surefire.booter.output.ForkingStreamConsumer;
-import org.apache.maven.surefire.booter.output.OutputConsumer;
-import org.apache.maven.surefire.booter.output.StandardOutputConsumer;
-import org.apache.maven.surefire.booter.output.SupressFooterOutputConsumerProxy;
-import org.apache.maven.surefire.booter.output.SupressHeaderOutputConsumerProxy;
-import org.apache.maven.surefire.testset.TestSetFailedException;
-import org.apache.maven.surefire.util.NestedRuntimeException;
-import org.codehaus.plexus.util.IOUtil;
-import org.codehaus.plexus.util.StringUtils;
-import org.codehaus.plexus.util.cli.CommandLineException;
-import org.codehaus.plexus.util.cli.CommandLineUtils;
-import org.codehaus.plexus.util.cli.StreamConsumer;
-
 /**
  * @author Jason van Zyl
  * @author Emmanuel Venisse
@@ -64,7 +65,7 @@ public class SurefireBooter
     private List surefireBootClassPathUrls = new ArrayList();
 
     private List testSuites = new ArrayList();
-    
+
     private boolean redirectTestOutputToFile = false;
 
     // ----------------------------------------------------------------------
@@ -130,11 +131,11 @@ public class SurefireBooter
             surefireClassPathUrls.add( path );
         }
     }
-    
+
     /**
      * When forking, setting this to true will make the test output to be saved in a file
-     * instead of showing it on the standard output 
-     *  
+     * instead of showing it on the standard output
+     *
      * @param redirectTestOutputToFile
      */
     public void setRedirectTestOutputToFile( boolean redirectTestOutputToFile )
@@ -144,7 +145,7 @@ public class SurefireBooter
 
     /**
      * Set the directory where reports will be saved
-     * 
+     *
      * @param reportsDirectory the directory
      */
     public void setReportsDirectory( File reportsDirectory )
@@ -575,7 +576,7 @@ public class SurefireBooter
             if ( url != null )
             {
                 File f = new File( url );
-                urls.add( f.toURL() );
+                urls.add( UrlUtils.getURL( f ) );
             }
         }
 
@@ -665,8 +666,10 @@ public class SurefireBooter
         if ( paramProperty != null )
         {
             // bit of a glitch that it need sto be done twice to do an odd number of vertical bars (eg |||, |||||).
-            String[] params = StringUtils.split( StringUtils.replace( StringUtils.replace( paramProperty, "||", "| |" ), "||", "| |" ), "|" );
-            String[] types = StringUtils.split( StringUtils.replace( StringUtils.replace( typeProperty, "||", "| |" ), "||", "| |" ), "|" );
+            String[] params = StringUtils.split(
+                StringUtils.replace( StringUtils.replace( paramProperty, "||", "| |" ), "||", "| |" ), "|" );
+            String[] types = StringUtils.split(
+                StringUtils.replace( StringUtils.replace( typeProperty, "||", "| |" ), "||", "| |" ), "|" );
 
             paramObjects = new Object[params.length];
 
@@ -810,7 +813,8 @@ public class SurefireBooter
         addSurefireClassPathUrl( path );
     }
 
-    private StreamConsumer getForkingStreamConsumer( boolean showHeading, boolean showFooter, boolean redirectTestOutputToFile )
+    private StreamConsumer getForkingStreamConsumer( boolean showHeading, boolean showFooter,
+                                                     boolean redirectTestOutputToFile )
     {
         OutputConsumer outputConsumer = new StandardOutputConsumer();
 
