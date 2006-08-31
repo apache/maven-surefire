@@ -134,7 +134,7 @@ public class TestNGDirectoryTestSuite
         XmlSuite suite = new XmlSuite();
         suite.setParallel( parallel );
         suite.setThreadCount( threadCount );
-
+        
         for ( Iterator i = testSets.values().iterator(); i.hasNext(); )
         {
             SurefireTestSet testSet = (SurefireTestSet) i.next();
@@ -150,6 +150,7 @@ public class TestNGDirectoryTestSuite
         XmlTest xmlTest = new XmlTest( suite );
         xmlTest.setName( testSet.getName() );
         xmlTest.setXmlClasses( Collections.singletonList( new XmlClass( testSet.getTestClass() ) ) );
+        
         if ( groups != null )
         {
             xmlTest.setIncludedGroups( Arrays.asList( groups.split( "," ) ) );
@@ -158,13 +159,20 @@ public class TestNGDirectoryTestSuite
         {
             xmlTest.setExcludedGroups( Arrays.asList( excludedGroups.split( "," ) ) );
         }
-
-//        if ( !TestNGClassFinder.isTestNGClass( testSet.getTestClass(), annotationFinder ) )
+        
+        // if ( !TestNGClassFinder.isTestNGClass( testSet.getTestClass(), annotationFinder ) )
         // TODO: this is a bit dodgy, but isTestNGClass wasn't working
         try
         {
-            Class junitClass = Class.forName( "junit.framework.Test" );
-            xmlTest.setJUnit( testSet.getTestClass().isAssignableFrom( junitClass ) );
+        	Class junitClass = Class.forName( "junit.framework.Test" );
+        	Class junitBase = Class.forName( "junit.framework.TestCase" );
+        	
+        	if ( junitClass.isAssignableFrom( testSet.getTestClass() )
+                || junitBase.isAssignableFrom( testSet.getTestClass() ) )
+            {
+                xmlTest.setJUnit( true );
+            }
+
         }
         catch ( ClassNotFoundException e )
         {

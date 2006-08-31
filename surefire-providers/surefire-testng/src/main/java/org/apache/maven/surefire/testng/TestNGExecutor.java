@@ -59,9 +59,11 @@ public class TestNGExecutor
             testNG.setSourcePath( testSourceDirectory );
         }
         
-        ClassLoader oldClassLoader = Thread.currentThread().getContextClassLoader();
-        Thread.currentThread().setContextClassLoader( suite.getClass().getClassLoader() );
+        // TODO: Doesn't find testng.xml based suites when these are un-commented
+        // TestNG ~also~ looks for the currentThread context classloader
+        // ClassLoader oldClassLoader = Thread.currentThread().getContextClassLoader();
+        // Thread.currentThread().setContextClassLoader( suite.getClass().getClassLoader() );
         testNG.runSuitesLocally();
-        Thread.currentThread().setContextClassLoader( oldClassLoader );
+        //Thread.currentThread().setContextClassLoader( oldClassLoader );
     }
 }
