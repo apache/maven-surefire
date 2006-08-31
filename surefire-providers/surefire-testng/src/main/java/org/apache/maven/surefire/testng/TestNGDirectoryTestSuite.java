@@ -200,6 +200,11 @@ public class TestNGDirectoryTestSuite
             testNG.setSourcePath( testSourceDirectory );
         }
 
+        // workaround for SUREFIRE-49
+        // TestNG always creates an output directory, and if not set the name for the directory is "null"
+        testNG.setOutputDirectory( System.getProperty( "java.io.tmpdir" ) );
+      
+
         testNG.runSuitesLocally();
     }
 }
