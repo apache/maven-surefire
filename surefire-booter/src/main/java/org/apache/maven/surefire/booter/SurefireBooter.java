@@ -203,7 +203,7 @@ public class SurefireBooter
             ClassLoader surefireClassLoader =
                 createClassLoader( surefireClassPathUrls, getClass().getClassLoader(), true );
 
-            ClassLoader testsClassLoader = createClassLoader( classPathUrls, childDelegation, true );
+            ClassLoader testsClassLoader = createClassLoader( classPathUrls, null, childDelegation, true );
 
             Class surefireClass = surefireClassLoader.loadClass( Surefire.class.getName() );
 
@@ -243,7 +243,7 @@ public class SurefireBooter
         {
             // The test classloader must be constructed first to avoid issues with commons-logging until we properly
             // separate the TestNG classloader
-            ClassLoader testsClassLoader = createClassLoader( classPathUrls, childDelegation, true );
+            ClassLoader testsClassLoader = createClassLoader( classPathUrls, null, childDelegation, true );
 
             ClassLoader surefireClassLoader =
                 createClassLoader( surefireClassPathUrls, getClass().getClassLoader(), true );
@@ -289,7 +289,7 @@ public class SurefireBooter
         ClassLoader surefireClassLoader;
         try
         {
-            testsClassLoader = createClassLoader( classPathUrls, false, true );
+            testsClassLoader = createClassLoader( classPathUrls, null, false, true );
             // TODO: assertions = true shouldn't be required if we had proper separation (see TestNG)
             surefireClassLoader = createClassLoader( surefireClassPathUrls, false, true );
         }
@@ -586,7 +586,10 @@ public class SurefireBooter
             try
             {
                 Object[] args = new Object[]{assertionsEnabled ? Boolean.TRUE : Boolean.FALSE};
-                assertionStatusMethod.invoke( parent, args );
+                if ( parent != null )
+                {
+                    assertionStatusMethod.invoke( parent, args );
+                }
                 assertionStatusMethod.invoke( classLoader, args );
             }
             catch ( IllegalAccessException e )
