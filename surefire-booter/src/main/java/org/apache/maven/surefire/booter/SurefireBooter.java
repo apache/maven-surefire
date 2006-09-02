@@ -197,6 +197,7 @@ public class SurefireBooter
         // TODO: replace with plexus
 
         //noinspection CatchGenericClass,OverlyBroadCatchBlock
+        ClassLoader oldContextClassLoader = Thread.currentThread().getContextClassLoader();
         try
         {
             // TODO: assertions = true shouldn't be required for this CL if we had proper separation (see TestNG)
@@ -212,14 +213,11 @@ public class SurefireBooter
             Method run = surefireClass.getMethod( "run", new Class[]{List.class, Object[].class, String.class,
                 ClassLoader.class, ClassLoader.class, Properties.class} );
 
-            ClassLoader oldContextClassLoader = Thread.currentThread().getContextClassLoader();
 
             Thread.currentThread().setContextClassLoader( testsClassLoader );
 
             Boolean result = (Boolean) run.invoke( surefire, new Object[]{reports, testSuites.get( 0 ), testSet,
                 surefireClassLoader, testsClassLoader, results} );
-
-            Thread.currentThread().setContextClassLoader( oldContextClassLoader );
 
             return result.booleanValue();
         }
@@ -231,6 +229,10 @@ public class SurefireBooter
         {
             throw new SurefireExecutionException( "Unable to instantiate and execute Surefire", e );
         }
+        finally 
+        {
+            Thread.currentThread().setContextClassLoader( oldContextClassLoader );
+        }
     }
 
     private boolean runSuitesInProcess()
@@ -239,6 +241,8 @@ public class SurefireBooter
         // TODO: replace with plexus
 
         //noinspection CatchGenericClass,OverlyBroadCatchBlock
+        ClassLoader oldContextClassLoader = Thread.currentThread().getContextClassLoader();
+        
         try
         {
             // The test classloader must be constructed first to avoid issues with commons-logging until we properly
@@ -255,14 +259,11 @@ public class SurefireBooter
             Method run = surefireClass.getMethod( "run", new Class[]{List.class, List.class, ClassLoader.class,
                 ClassLoader.class} );
 
-            ClassLoader oldContextClassLoader = Thread.currentThread().getContextClassLoader();
 
             Thread.currentThread().setContextClassLoader( testsClassLoader );
 
             Boolean result = (Boolean) run.invoke( surefire, new Object[]{reports, testSuites, surefireClassLoader,
                 testsClassLoader} );
-
-            Thread.currentThread().setContextClassLoader( oldContextClassLoader );
 
             return result.booleanValue();
         }
@@ -273,6 +274,10 @@ public class SurefireBooter
         catch ( Exception e )
         {
             throw new SurefireExecutionException( "Unable to instantiate and execute Surefire", e );
+        }
+        finally 
+        {
+            Thread.currentThread().setContextClassLoader( oldContextClassLoader );
         }
     }
 
