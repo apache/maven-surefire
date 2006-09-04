@@ -54,12 +54,9 @@ public class TestNGDirectoryTestSuite
 
     private String testSourceDirectory;
 
-    private IAnnotationFinder annotationFinder;
-
     public TestNGDirectoryTestSuite( File basedir, ArrayList includes, ArrayList excludes, String groups,
                                      String excludedGroups, Boolean parallel, Integer threadCount,
                                      String testSourceDirectory )
-        throws IllegalAccessException, InstantiationException, ClassNotFoundException
     {
         super( basedir, includes, excludes );
 
@@ -73,17 +70,6 @@ public class TestNGDirectoryTestSuite
 
         this.testSourceDirectory = testSourceDirectory;
 
-        Class annotationClass;
-        try
-        {
-            annotationClass = Class.forName( "org.testng.internal.annotations.JDK15AnnotationFinder" );
-        }
-        catch ( ClassNotFoundException e )
-        {
-            annotationClass = Class.forName( "org.testng.internal.annotations.JDK14AnnotationFinder" );
-        }
-
-        annotationFinder = (IAnnotationFinder) annotationClass.newInstance();
     }
 
     public Map locateTestSets( ClassLoader classLoader )
