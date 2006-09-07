@@ -80,6 +80,7 @@ public class SurefireBooter
 
     private static Method assertionStatusMethod;
 
+    /** @deprecated because the IsolatedClassLoader is really isolated - no parent. */
     private boolean childDelegation = true;
 
     private File reportsDirectory;
@@ -183,6 +184,10 @@ public class SurefireBooter
         {
             result = runSuitesForkPerTestSet();
         }
+        else
+        {
+            throw new SurefireExecutionException( "Unknown forkmode: " + forkConfiguration.getForkMode(), null );
+        }
         return result;
     }
 
@@ -200,11 +205,11 @@ public class SurefireBooter
         ClassLoader oldContextClassLoader = Thread.currentThread().getContextClassLoader();
         try
         {
+            ClassLoader testsClassLoader = createClassLoader( classPathUrls, null, childDelegation, true );
+
             // TODO: assertions = true shouldn't be required for this CL if we had proper separation (see TestNG)
             ClassLoader surefireClassLoader =
-                createClassLoader( surefireClassPathUrls, getClass().getClassLoader(), true );
-
-            ClassLoader testsClassLoader = getTestClassLoader( childDelegation );
+                createClassLoader( surefireClassPathUrls, testsClassLoader, true );
 
             Class surefireClass = surefireClassLoader.loadClass( Surefire.class.getName() );
 
@@ -212,7 +217,6 @@ public class SurefireBooter
 
             Method run = surefireClass.getMethod( "run", new Class[]{List.class, Object[].class, String.class,
                 ClassLoader.class, ClassLoader.class, Properties.class} );
-
 
             Thread.currentThread().setContextClassLoader( testsClassLoader );
 
@@ -247,10 +251,10 @@ public class SurefireBooter
         {
             // The test classloader must be constructed first to avoid issues with commons-logging until we properly
             // separate the TestNG classloader
-            ClassLoader testsClassLoader = getTestClassLoader( childDelegation );
+            ClassLoader testsClassLoader = createClassLoader( classPathUrls, null, childDelegation, true );
 
             ClassLoader surefireClassLoader =
-                createClassLoader( surefireClassPathUrls, getClass().getClassLoader(), true );
+                createClassLoader( surefireClassPathUrls, testsClassLoader, true );
 
             Class surefireClass = surefireClassLoader.loadClass( Surefire.class.getName() );
 
@@ -294,9 +298,9 @@ public class SurefireBooter
         ClassLoader surefireClassLoader;
         try
         {
-            testsClassLoader = getTestClassLoader( false );
+            testsClassLoader = createClassLoader( classPathUrls, null, false, true );
             // TODO: assertions = true shouldn't be required if we had proper separation (see TestNG)
-            surefireClassLoader = createClassLoader( surefireClassPathUrls, false, true );
+            surefireClassLoader = createClassLoader( surefireClassPathUrls, testsClassLoader, false, true );
         }
         catch ( MalformedURLException e )
         {
@@ -554,33 +558,10 @@ public class SurefireBooter
         return returnCode == 0;
     }
 
-    /**
-     * This method actually calls <code>createClassLoader( classPathUrls, ClassLoader.getSystemClassLoader(), 
-     * childDelegation, true );</code> and it's here to handle the use of a parent classloader consistently.
-     */
-    private ClassLoader getTestClassLoader( boolean childDelegation )
-        throws MalformedURLException
-    {
-        // warning, parent should probably be set to null, but at this moment this totally breaks TestNG
-        // Comment from Kenney:
-        // If this is not done, the System classloader is added, in this case an AppClassloader containing everything in
-        // the root classpath. For instance, in maven, everything in core/ is available.This can cause clashes with the
-        // plexus-utils used in maven itself.
-        return createClassLoader( classPathUrls, ClassLoader.getSystemClassLoader(), childDelegation, true );
-    }
-
     private static ClassLoader createClassLoader( List classPathUrls, ClassLoader parent, boolean assertionsEnabled )
         throws MalformedURLException
     {
         return createClassLoader( classPathUrls, parent, false, assertionsEnabled );
-    }
-
-    private static ClassLoader createClassLoader( List classPathUrls, boolean childDelegation,
-                                                  boolean assertionsEnabled )
-        throws MalformedURLException
-    {
-        return createClassLoader( classPathUrls, ClassLoader.getSystemClassLoader(), childDelegation,
-                                  assertionsEnabled );
     }
 
     private static ClassLoader createClassLoader( List classPathUrls, ClassLoader parent, boolean childDelegation,
