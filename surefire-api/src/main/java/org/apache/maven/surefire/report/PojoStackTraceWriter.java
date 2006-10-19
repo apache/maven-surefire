@@ -73,6 +73,22 @@ public class PojoStackTraceWriter
             trace.append( lines[i] );
             trace.append( "\n" );
         }
+
+        for ( int i = lastLine; i < lines.length; i++ )
+        {
+            if ( lines[i].trim().startsWith( "Caused by" ) )
+            {
+                lastLine = i;
+                break;
+            }
+        }
+
+        for ( int i = lastLine; i < lines.length; i++ )
+        {
+            trace.append( lines[i] );
+            trace.append( "\n" );
+        }
+
         return trace.toString();
     }
 
