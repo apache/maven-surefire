@@ -277,4 +277,10 @@ public class XMLReporter
     {
         return results.iterator();
     }
+
+    public void reset() 
+    {
+        results.clear();
+        super.reset();
+    }
 }
