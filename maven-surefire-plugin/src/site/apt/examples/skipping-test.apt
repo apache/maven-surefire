@@ -1,0 +1,39 @@
+  ------
+  Skipping Test
+  ------
+  Johnny Ruiz
+  Brett Porter
+  Allan Ramirez
+  ------
+  July 2006
+  ------
+
+Skipping Tests
+
+ To skip running the tests for a particular project, set the <<skip>>
+ property to <<true>>.
+
++---+
+<project>
+  [...]
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+  [...]
+</project>
++---+
+
+ You can also skip the tests via command line by executing the following command:
+
++---+
+mvn install -Dmaven.test.skip=true
++---+
+

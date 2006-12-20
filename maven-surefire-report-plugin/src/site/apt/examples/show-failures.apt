@@ -1,0 +1,56 @@
+  ------
+  Showing Failure Tests
+  ------
+  Allan Ramirez
+  ------
+  July 2006
+  ------
+
+~~ Copyright 2006 The Apache Software Foundation.
+~~
+~~ Licensed under the Apache License, Version 2.0 (the "License");
+~~ you may not use this file except in compliance with the License.
+~~ You may obtain a copy of the License at
+~~
+~~      http://www.apache.org/licenses/LICENSE-2.0
+~~
+~~ Unless required by applicable law or agreed to in writing, software
+~~ distributed under the License is distributed on an "AS IS" BASIS,
+~~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+~~ See the License for the specific language governing permissions and
+~~ limitations under the License.
+
+~~ NOTE: For help with the syntax of this file, see:
+~~ http://maven.apache.org/guides/mini/guide-apt-format.html
+
+Showing Failure Tests
+
+  By default, the surefire-report plugin shows all test result status(success
+  and failures) in the generated html. To be able to show the failures only, the
+  property <<showSuccess>> should be set to <<false>>.
+
++----+
+<project>
+  [...]
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-report-plugin</artifactId>
+        <configuration>
+           <showSuccess>false</showSuccess>
+        </configuration>
+      </plugin>
+    </plugins>
+  </reporting>
+  [...]
+</project>
++----+
+
+  Then execute <<<mvn site>>> for the report generation.
+
+  It can also be set via commandline with the standalone goal.
+
++----+
+  mvn surefire-report:report -DshowSuccess=false
++----+

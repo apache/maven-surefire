@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="0" tests="8" time="0.563" failures="0" name="NoTimeTestCaseTest">
+  <properties>
+    <property value="Java(TM) 2 Runtime Environment, Standard Edition" name="java.runtime.name"/>
+    <property value="c:\Program Files\Java\jdk1.5.0_06\jre\bin" name="sun.boot.library.path"/>
+    <property value="1.5.0_06-b05" name="java.vm.version"/>
+    <property value="Sun Microsystems Inc." name="java.vm.vendor"/>
+    <property value="http://java.sun.com/" name="java.vendor.url"/>
+    <property value=";" name="path.separator"/>
+    <property value="Java HotSpot(TM) Client VM" name="java.vm.name"/>
+    <property value="sun.io" name="file.encoding.pkg"/>
+    <property value="US" name="user.country"/>
+    <property value="Service Pack 2" name="sun.os.patch.level"/>
+    <property value="Java Virtual Machine Specification" name="java.vm.specification.name"/>
+    <property value="c:\dev\test" name="user.dir"/>
+    <property value="1.5.0_06-b05" name="java.runtime.version"/>
+    <property value="sun.awt.Win32GraphicsEnvironment" name="java.awt.graphicsenv"/>
+    <property value="c:\dev\test" name="basedir"/>
+    <property value="c:\Program Files\Java\jdk1.5.0_06\jre\lib\endorsed" name="java.endorsed.dirs"/>
+    <property value="x86" name="os.arch"/>
+    <property value="c:\DOCUME~1\csanchez\LOCALS~1\Temp\" name="java.io.tmpdir"/>
+    <property value="
+" name="line.separator"/>
+    <property value="Sun Microsystems Inc." name="java.vm.specification.vendor"/>
+    <property value="" name="user.variant"/>
+    <property value="Windows XP" name="os.name"/>
+    <property value="c:\apps\maven-2.0.5-SNAPSHOT/bin/m2.conf" name="classworlds.conf"/>
+    <property value="Cp1252" name="sun.jnu.encoding"/>
+    <property value="c:\Program Files\Java\jdk1.5.0_06\bin;.;C:\WINDOWS\system32;C:\WINDOWS;C:\apps\cygwin\usr\local\bin;C:\apps\cygwin\bin;C:\apps\cygwin\bin;C:\apps\cygwin\usr\X11R6\bin;c:\Program Files\ThinkPad\Utilities;c:\WINDOWS\system32;c:\WINDOWS;c:\WINDOWS\System32\Wbem;c:\Program Files\Intel\Wireless\Bin\;c:\Program Files\ATI Technologies\ATI Control Panel;c:\WINDOWS\Downloaded Program Files;c:\Program Files\PC-Doctor for Windows\services;c:\Program Files\Subversion\bin;c:\Program Files\Intel\Wireless\Bin\;c:\Program Files\Intel\Wireless\Bin\;c:\Program Files\IBM ThinkVantage\Client Security Solution;c:\Program Files\ThinkPad\ConnectUtilities;c:\Program Files\Intel\Wireless\Bin\;c:\Program Files\TortoiseCVS;c:\apps\graphviz-2.8\bin;c:\apps\jwsdp-1.6\jwsdp-shared\bin;c:\apps\apache-ant-1.6.5\bin;c:\apps\maven-1.1-beta-2\bin;c:\apps\maven-2.0.5-SNAPSHOT\bin;c:\Program Files\Java\jdk1.5.0_06\bin;c:\Program Files\putty;c:\Program Files\ThinkPad\Utilities;c:\WINDOWS\system32;c:\WINDOWS;c:\WINDOWS\System32\Wbem;c:\Program Files\Intel\Wireless\Bin\;c:\Program Files\ATI Technologies\ATI Control Panel;c:\WINDOWS\Downloaded Program Files;c:\Program Files\PC-Doctor for Windows\services;c:\Program Files\Subversion\bin;c:\Program Files\Intel\Wireless\Bin\;c:\Program Files\Intel\Wireless\Bin\;c:\Program Files\IBM ThinkVantage\Client Security Solution;c:\Program Files\ThinkPad\ConnectUtilities;c:\Program Files\Intel\Wireless\Bin\" name="java.library.path"/>
+    <property value="Java Platform API Specification" name="java.specification.name"/>
+    <property value="49.0" name="java.class.version"/>
+    <property value="HotSpot Client Compiler" name="sun.management.compiler"/>
+    <property value="5.1" name="os.version"/>
+    <property value="C:\Documents and Settings\csanchez" name="user.home"/>
+    <property value="America/Los_Angeles" name="user.timezone"/>
+    <property value="sun.awt.windows.WPrinterJob" name="java.awt.printerjob"/>
+    <property value="Cp1252" name="file.encoding"/>
+    <property value="1.5" name="java.specification.version"/>
+    <property value="csanchez" name="user.name"/>
+    <property value="c:\apps\maven-2.0.5-SNAPSHOT/core/boot/classworlds-1.1.jar" name="java.class.path"/>
+    <property value="1.0" name="java.vm.specification.version"/>
+    <property value="32" name="sun.arch.data.model"/>
+    <property value="c:\Program Files\Java\jdk1.5.0_06\jre" name="java.home"/>
+    <property value="Sun Microsystems Inc." name="java.specification.vendor"/>
+    <property value="en" name="user.language"/>
+    <property value="sun.awt.windows.WToolkit" name="awt.toolkit"/>
+    <property value="mixed mode" name="java.vm.info"/>
+    <property value="1.5.0_06" name="java.version"/>
+    <property value="c:\Program Files\Java\jdk1.5.0_06\jre\lib\ext" name="java.ext.dirs"/>
+    <property value="c:\Program Files\Java\jdk1.5.0_06\jre\lib\rt.jar;c:\Program Files\Java\jdk1.5.0_06\jre\lib\i18n.jar;c:\Program Files\Java\jdk1.5.0_06\jre\lib\sunrsasign.jar;c:\Program Files\Java\jdk1.5.0_06\jre\lib\jsse.jar;c:\Program Files\Java\jdk1.5.0_06\jre\lib\jce.jar;c:\Program Files\Java\jdk1.5.0_06\jre\lib\charsets.jar;c:\Program Files\Java\jdk1.5.0_06\jre\classes" name="sun.boot.class.path"/>
+    <property value="Sun Microsystems Inc." name="java.vendor"/>
+    <property value="c:\apps\maven-2.0.5-SNAPSHOT" name="maven.home"/>
+    <property value="C:\Documents and Settings\csanchez\.m2\repository" name="localRepository"/>
+    <property value="\" name="file.separator"/>
+    <property value="http://java.sun.com/cgi-bin/bugreport.cgi" name="java.vendor.url.bug"/>
+    <property value="little" name="sun.cpu.endian"/>
+    <property value="UnicodeLittle" name="sun.io.unicode.encoding"/>
+    <property value="windows" name="sun.desktop"/>
+    <property value="pentium_pro+mmx pentium_pro pentium+mmx pentium i486 i386 i86" name="sun.cpu.isalist"/>
+  </properties>
+  <testcase time="0" name="test1"/>
+  <testcase time="0" name="test2"/>
+  <testcase time="0" name="test3"/>
+  <testcase time="0" name="test4"/>
+  <testcase time="0" name="test5"/>
+  <testcase name="test7"/>
+  <testcase name="testResults"/>
+  <testcase time="0.5" name="test6"/>
+</testsuite>

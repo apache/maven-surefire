@@ -1,0 +1,18 @@
+<project>
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-surefire-report-plugin</artifactId>
+		    <configuration>
+		      <outputDirectory>${basedir}/target/site/unit/basic-surefire-report-linkxref-false</outputDirectory>
+          <project implementation="org.apache.maven.plugins.surefire.report.stubs.SurefireRepMavenProjectStub" />
+          <showSuccess>true</showSuccess>
+          <reportsDirectory>${basedir}/src/test/resources/unit/basic-surefire-report-linkxref-false/surefire-reports</reportsDirectory>
+          <outputName>surefire-report</outputName>
+          <xrefLocation>${basedir}/target/site/unit/basic-surefire-report-linkxref-false/xref-test</xrefLocation>
+          <linkXRef>false</linkXRef>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>

@@ -88,6 +88,8 @@
     <module>surefire-api</module>
     <module>surefire-booter</module>
     <module>surefire-providers</module>
+    <module>maven-surefire-plugin</module>
+    <module>maven-surefire-report-plugin</module>
   </modules>
 
   <profiles>

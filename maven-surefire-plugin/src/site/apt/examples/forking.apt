@@ -1,0 +1,38 @@
+  ------
+  Forking
+  ------
+  Brett Porter
+  ------
+  July 2006
+  ------
+
+Forking
+
+ If you need to run your tests in a new JVM process you can use the <<<forkMode>>> option to start a new
+ JVM process once for all your tests, or start a new JVM process for each of your tests. You can also set
+ any arbitrary options like <<<-enableassertions>>> or any other JVM options. Here's an example of what
+ this might look like:
+
++---+
+<project>
+  [...]
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <forkMode>pertest</forkMode>
+          <argLine>-enableassertions</argLine>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+  [...]
+</project>
++---+
+
+ <<Note:>> You do not need to manually enable assertions if you are using them in your unit tests - Surefire enables
+ them on your test classes automatically under JDK 1.4+.
+
+ The default setting is <<<once>>>. It can also be set to <<<never>>> to run in process for a small performance improvement.

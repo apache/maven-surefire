@@ -1,0 +1,40 @@
+  ------
+  Class Loading Issues
+  ------
+  Brett Porter
+  ------
+  July 2006
+  ------
+
+Class Loading Issues
+
+ By default, Surefire loads classes using the default Java mechanism. However,
+ it can be set to use "child first" classloading, like a web application -
+ meaning your dependencies take precedence over those in the JDK. Classes in
+ the java.* and javax.* packages can never be overridden. The only use for
+ this is so that code in the test classpath can override stuff present in the
+ JDK or its "standard extensions" directory which is not in these restricted
+ packages. This means effectively implementations of the various "service provider"
+ interfaces in java such as the xml parser implementation used by jaxp,
+ the cryptography providers, the socket implementation class.
+
+ If you find this is necessary, you can do so by setting the <<<childDelegation>>>
+ property to <<true>>:
+
++---+
+<project>
+  [...]
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <childDelegation>true</childDelegation>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+  [...]
+</project>
++---+

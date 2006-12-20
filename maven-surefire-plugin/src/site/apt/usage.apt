@@ -1,0 +1,51 @@
+  ------
+  Usage
+  ------
+  Brett Porter
+  Allan Ramirez
+  ------
+  July 2006
+  ------
+
+Usage
+
+  The surefire plugin can be invoked by calling the <<<test>>> phase of the
+  build lifecycle.
+
++---+
+mvn test
++---+
+
+* Using different testing providers
+
+  Tests in your test source directory can be any combination of the following:
+
+   * TestNG
+
+   * JUnit
+
+   * POJO
+
+  Which providers are available is controlled simply by the inclusion of the
+  appropriate dependencies (ie, junit:junit for JUnit, org.testng:testng 4.7+
+  for TestNG). Since this is required to compile the test classes anyway, no
+  additional configuration is required.
+
+  Note that any normal Surefire integration works identically no matter which
+  providers are in use - so you can still produce a Cobertura report and a
+  Surefire results report on your project web site for your TestNG tests,
+  for example.
+
+  The POJO provider above allows you to write tests that do not depend on
+  JUnit. They behave in the same way, running all <<<test*>>> methods that are
+  public in the class, but the API dependency is not required. To perform
+  assertions, the JDK 1.4 <<<assert>>> keyword can be used, or you can use
+  <<<org.apache.maven.surefire.assertion.Assert>>>.
+
+  All of the providers support the surefire plugin parameter configurations.
+  However, there are additional options available if you are running TestNG
+  tests (including if you are using TestNG to execute your JUnit tests, which
+  occurs by default if both are present in Surefire).
+
+  See {{{examples/testng.html} Using TestNG}} for more information.
+

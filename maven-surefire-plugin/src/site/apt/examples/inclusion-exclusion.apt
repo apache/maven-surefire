@@ -1,0 +1,76 @@
+  ------
+  Inclusions and Exclusions of Tests
+  ------
+  Allan Ramirez
+  ------
+  July 2006
+  ------
+
+Inclusions and Exclusions of Tests
+
+* Inclusions
+
+  By default, the surefire plugin will automatically include all test classes
+  with the following wildcard patterns:
+
+   * <"**/Test*.java"> - includes all of its subdirectory and all java
+   filenames that start with "Test".
+
+   * <"**/*Test.java"> - includes all of its subdirectory and all java
+   filenames that end with "Test".
+
+   * <"**/*TestCase.java"> - includes all of its subdirectory and all java
+   filenames that end with "TestCase".
+
+   []
+
+  If the test classes does not go with the naming convention, then configure
+  surefire plugin and specify the tests you want to include.
+
++---+
+<project>
+  [...]
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <includes>
+            <include>Sample.java</include>
+          </includes>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+  [...]
+</project>
++---+
+
+* Exclusions
+
+  There are certain times when some tests are causing the build to fail.
+  Excluding them is one of the best workarounds to continue the build.
+  Exclusions can be done by configuring the <<excludes>> property of the
+  plugin.
+
++---+
+<project>
+  [...]
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <excludes>
+            <exclude>**/TestCircle.java</exclude>
+            <exclude>**/TestSquare.java</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+  [...]
+</project>
++---+

@@ -1,0 +1,65 @@
+  ------
+  Using System Properties
+  ------
+  Allan Ramirez
+  ------
+  July 2006
+  ------
+
+Using System Properties
+
+  To add a System property, use the following configuration:
+
++---+
+<project>
+  [...]
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <systemProperties>
+            <property>
+              <name>propertyName</name>
+              <value>propertyValue</value>
+            </property>
+          </systemProperties>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+  [...]
+</project>
++---+
+
+  Take note that <<String valued>> properties can only be passed as system
+  properties. Any attempt to pass any other maven variable type (i.e. List
+  or a URL variable) will cause the variable expression to be passed
+  literally (unevaluated). So having an example below:
+
++---+
+<project>
+  [...]
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <systemProperties>
+            <property>
+              <name>buildDir</name>
+              <value>${project.build.outputDirectory}</value>
+            </property>
+          </systemProperties>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+  [...]
+</project>
++---+
+
+  will literally pass <<${project.build.outputDirectory}>> because the value
+  of that expression is a File, not a String.

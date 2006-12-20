@@ -1,0 +1,100 @@
+ ------
+ Using TestNG
+ ------
+ Brett Porter <brett@apache.org>
+ ------
+ 2 May 2006
+ ------
+
+Using TestNG
+
+* Configuring TestNG
+
+  To get started with TestNG, include the following dependency in your project:
+
+-----
+...
+  <dependency>
+    <groupId>org.testng</groupId>
+    <artifactId>testng</artifactId>
+    <version>4.7</version>
+    <scope>test</scope>
+    <classifier>jdk15</classifier>
+  </dependency>
+...
+-----
+
+  <<Note:>> if you are using JDK 1.4 Javadoc annotations for your TestNG tests, replace jdk15 with jdk14 above.
+
+  This is the only step that is required to get started - you can now create tests in your test source directory
+  (eg, <<<src/test/java>>>, and as long as they are named using the defaults such as *Test.java they will be run
+  by Surefire as TestNG tests.
+
+  If you'd like to use a different naming scheme, you can change the <<<includes>>> parameter, as discussed in the
+  {{{howto.html} How to Use}} page.
+
+* Using Suite XML Files
+
+  Another alternative is to use test NG suite XML files. This allows flexbile configuration of the tests to be run.
+  These files are created as normal, and then added to the Surefire plugin configuration:
+
+-----
+...
+  <plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-surefire-plugin</artifactId>
+    <configuration>
+      <suiteXmlFiles>
+        <suiteXmlFile>testng.xml</suiteXmlFile>
+      </suiteXmlFiles>
+    </configuration>
+  </plugin>
+...
+-----
+
+  This configuration will override the includes and excludes patterns and run all tests in the suite files.
+
+* Using Groups
+
+  TestNG allows you to group your tests. You can then execute a specific group or groups. To do this with Surefire,
+  use the <<<groups>>> parameter, for example:
+
+-----
+...
+  <plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-surefire-plugin</artifactId>
+    <configuration>
+      <groups>functest,perftest</groups>
+    </configuration>
+  </plugin>
+...
+-----
+
+  Likewise, the <<<excludedGroups>>> parameter can be used to run all but a certain set of groups.
+
+* Running tests in parallel
+
+  TestNG allows you to run your tests in parallel, including JUnit tests. To do this, you must enable the
+  <<<parallel>>> parameter, and may change the <<<threadCount>>> parameter if the default of 5 is not sufficient.
+  For example:
+
+-----
+...
+  <plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-surefire-plugin</artifactId>
+    <configuration>
+      <parallel>true</parallel>
+      <threadCount>10</threadCount>
+    </configuration>
+  </plugin>
+...
+-----
+
+  This is particularly useful for slow tests that can have high concurrency, or to quickly and roughly assess the independance
+  and thread safety of your tests and code.
+
+  For more information on TestNG, see the project {{{http://www.testng.org} web site}}.
+
+

@@ -1,0 +1,19 @@
+  ------
+  Running a Single Test
+  ------
+  Allan Ramirez
+  ------
+  July 2006
+  ------
+
+Running a Single Test
+
+  During development, you may run a single test class repeatedly. To run this
+  through Maven, set the <<<test>>> property to a specific test case.
+
++---+
+mvn -Dtest=TestCircle test
++---+
+
+  The value for the <<<test>>> parameter is the name of the test class(without
+  the extension).
