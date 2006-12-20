@@ -68,6 +68,8 @@ public class SurefireBooter
 
     private boolean redirectTestOutputToFile = false;
 
+    private boolean useSystemClassLoader = false;
+
     // ----------------------------------------------------------------------
     //
     // ----------------------------------------------------------------------
@@ -109,7 +111,12 @@ public class SurefireBooter
 
     public void addReport( String report, Object[] constructorParams )
     {
-        reports.add( new Object[]{report, constructorParams} );
+        reports.add( new Object[]{ report, constructorParams } );
+    }
+
+    public void addTestSuite( String suiteClassName, Object[] constructorParams )
+    {
+        testSuites.add( new Object[]{ suiteClassName, constructorParams } );
     }
 
     public void addClassPathUrl( String path )
@@ -120,11 +127,6 @@ public class SurefireBooter
         }
     }
 
-    public void addTestSuite( String suiteClassName, Object[] constructorParams )
-    {
-        testSuites.add( new Object[]{suiteClassName, constructorParams} );
-    }
-
     public void addSurefireClassPathUrl( String path )
     {
         if ( !surefireClassPathUrls.contains( path ) )
@@ -132,6 +134,15 @@ public class SurefireBooter
             surefireClassPathUrls.add( path );
         }
     }
+
+    public void addSurefireBootClassPathUrl( String path )
+    {
+        if ( !surefireBootClassPathUrls.contains( path ) )
+        {
+            surefireBootClassPathUrls.add( path );
+        }
+    }
+
 
     /**
      * When forking, setting this to true will make the test output to be saved in a file
@@ -165,6 +176,11 @@ public class SurefireBooter
     public void setForkConfiguration( ForkConfiguration forkConfiguration )
     {
         this.forkConfiguration = forkConfiguration;
+    }
+
+    public void setUseSystemClassLoader( boolean useSystemClassLoader )
+    {
+        this.useSystemClassLoader = useSystemClassLoader;
     }
 
     public boolean run()
@@ -205,7 +221,9 @@ public class SurefireBooter
         ClassLoader oldContextClassLoader = Thread.currentThread().getContextClassLoader();
         try
         {
-            ClassLoader testsClassLoader = createClassLoader( classPathUrls, null, childDelegation, true );
+            ClassLoader testsClassLoader = useSystemClassLoader
+                ? ClassLoader.getSystemClassLoader()
+                : createClassLoader( classPathUrls, null, childDelegation, true );
 
             // TODO: assertions = true shouldn't be required for this CL if we had proper separation (see TestNG)
             ClassLoader surefireClassLoader =
@@ -233,7 +251,7 @@ public class SurefireBooter
         {
             throw new SurefireExecutionException( "Unable to instantiate and execute Surefire", e );
         }
-        finally 
+        finally
         {
             Thread.currentThread().setContextClassLoader( oldContextClassLoader );
         }
@@ -246,12 +264,14 @@ public class SurefireBooter
 
         //noinspection CatchGenericClass,OverlyBroadCatchBlock
         ClassLoader oldContextClassLoader = Thread.currentThread().getContextClassLoader();
-        
+
         try
         {
             // The test classloader must be constructed first to avoid issues with commons-logging until we properly
             // separate the TestNG classloader
-            ClassLoader testsClassLoader = createClassLoader( classPathUrls, null, childDelegation, true );
+            ClassLoader testsClassLoader = useSystemClassLoader
+                ? getClass().getClassLoader()//ClassLoader.getSystemClassLoader()
+                : createClassLoader( classPathUrls, null, childDelegation, true );
 
             ClassLoader surefireClassLoader =
                 createClassLoader( surefireClassPathUrls, testsClassLoader, true );
@@ -262,7 +282,6 @@ public class SurefireBooter
 
             Method run = surefireClass.getMethod( "run", new Class[]{List.class, List.class, ClassLoader.class,
                 ClassLoader.class} );
-
 
             Thread.currentThread().setContextClassLoader( testsClassLoader );
 
@@ -279,7 +298,7 @@ public class SurefireBooter
         {
             throw new SurefireExecutionException( "Unable to instantiate and execute Surefire", e );
         }
-        finally 
+        finally
         {
             Thread.currentThread().setContextClassLoader( oldContextClassLoader );
         }
@@ -407,7 +426,7 @@ public class SurefireBooter
         addPropertiesForTypeHolder( reports, properties, "report." );
         addPropertiesForTypeHolder( testSuites, properties, "testSuite." );
 
-        for ( int i = 0; i < classPathUrls.size(); i++ )
+        for ( int i = 0; i < classPathUrls.size() && !useSystemClassLoader; i++ )
         {
             String url = (String) classPathUrls.get( i );
             properties.setProperty( "classPathUrl." + i, url );
@@ -419,13 +438,8 @@ public class SurefireBooter
             properties.setProperty( "surefireClassPathUrl." + i, url );
         }
 
-        for ( int i = 0; i < surefireBootClassPathUrls.size(); i++ )
-        {
-            String url = (String) surefireBootClassPathUrls.get( i );
-            properties.setProperty( "surefireBootClassPathUrl." + i, url );
-        }
-
         properties.setProperty( "childDelegation", String.valueOf( childDelegation ) );
+        properties.setProperty( "useSystemClassLoader", String.valueOf( useSystemClassLoader ) );
     }
 
     private File writePropertiesFile( String name, Properties properties )
@@ -503,7 +517,16 @@ public class SurefireBooter
             throw new SurefireBooterForkException( "Error creating properties files for forking", e );
         }
 
-        Commandline cli = forkConfiguration.createCommandLine( surefireBootClassPathUrls );
+        List bootClasspath = new ArrayList( surefireBootClassPathUrls.size() + classPathUrls.size() );
+
+        bootClasspath.addAll( surefireBootClassPathUrls );
+
+        if ( useSystemClassLoader )
+        {
+            bootClasspath.addAll( classPathUrls );
+        }
+
+        Commandline cli = forkConfiguration.createCommandLine( bootClasspath, useSystemClassLoader  );
 
         cli.createArgument().setFile( surefireProperties );
 
@@ -775,6 +798,11 @@ public class SurefireBooter
                     surefireBooter.childDelegation =
                         Boolean.valueOf( p.getProperty( "childDelegation" ) ).booleanValue();
                 }
+                else if ( "useSystemClassLoader".equals( name ) )
+                {
+                    surefireBooter.useSystemClassLoader =
+                        Boolean.valueOf( p.getProperty( "useSystemClassLoader" ) ).booleanValue();
+                }
             }
 
             String testSet = p.getProperty( "testSet" );
@@ -806,15 +834,6 @@ public class SurefireBooter
     public void setChildDelegation( boolean childDelegation )
     {
         this.childDelegation = childDelegation;
-    }
-
-    public void addSurefireBootClassPathUrl( String path )
-    {
-        if ( !surefireBootClassPathUrls.contains( path ) )
-        {
-            surefireBootClassPathUrls.add( path );
-        }
-        addSurefireClassPathUrl( path );
     }
 
     private StreamConsumer getForkingStreamConsumer( boolean showHeading, boolean showFooter,

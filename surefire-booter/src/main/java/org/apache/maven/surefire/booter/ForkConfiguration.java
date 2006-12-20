@@ -16,9 +16,14 @@ package org.apache.maven.surefire.booter;
  * limitations under the License.
  */
 
+import org.codehaus.plexus.archiver.ArchiverException;
+import org.codehaus.plexus.archiver.jar.JarArchiver;
+import org.codehaus.plexus.archiver.jar.Manifest;
+import org.codehaus.plexus.archiver.jar.ManifestException;
 import org.codehaus.plexus.util.StringUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -29,6 +34,7 @@ import java.util.Properties;
  * Configuration for forking tests.
  *
  * @author <a href="mailto:brett@apache.org">Brett Porter</a>
+ * @author <a href="mailto:kenney@apache.org">Kenney Westerhof</a>
  */
 public class ForkConfiguration
 {
@@ -112,7 +118,18 @@ public class ForkConfiguration
         return systemProperties;
     }
 
+    /**
+     * @throws SurefireBooterForkException
+     * @deprecated use the 2-arg alternative.
+     */
     public Commandline createCommandLine( List classPath )
+        throws SurefireBooterForkException
+    {
+        return createCommandLine( classPath, false );
+    }
+
+    public Commandline createCommandLine( List classPath, boolean useJar )
+        throws SurefireBooterForkException
     {
         Commandline cli = new Commandline();
 
@@ -143,15 +160,84 @@ public class ForkConfiguration
                 "-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005" );
         }
 
-        cli.createArgument().setValue( "-classpath" );
+        if ( useJar )
+        {
+            File jarFile;
+            try
+            {
+                jarFile = createJar( classPath );
+            }
+            catch ( IOException e )
+            {
+                throw new SurefireBooterForkException( "Error creating archive file", e );
+            }
+            catch ( ManifestException e )
+            {
+                throw new SurefireBooterForkException( "Error creating manifest", e );
+            }
+            catch ( ArchiverException e )
+            {
+                throw new SurefireBooterForkException( "Error creating archive", e );
+            }
 
-        cli.createArgument().setValue( StringUtils.join( classPath.iterator(), File.pathSeparator ) );
+            cli.createArgument().setValue( "-jar" );
 
-        cli.createArgument().setValue( SurefireBooter.class.getName() );
+            cli.createArgument().setValue( jarFile.getAbsolutePath() );
+        }
+        else
+        {
+            cli.createArgument().setValue( "-classpath" );
+
+            cli.createArgument().setValue( StringUtils.join( classPath.iterator(), File.pathSeparator ) );
+
+            cli.createArgument().setValue( SurefireBooter.class.getName() );
+        }
 
         cli.setWorkingDirectory( workingDirectory.getAbsolutePath() );
 
         return cli;
+    }
+
+    /**
+     * Create a jar with just a manifest containing a Main-Class entry for SurefireBooter and a Class-Path entry
+     * for all classpath elements.
+     * @param classPath List&lt;String> of all classpath elements.
+     * @return
+     * @throws IOException
+     * @throws ManifestException
+     * @throws ArchiverException
+     */
+    private static File createJar( List classPath )
+        throws IOException, ManifestException, ArchiverException
+    {
+        JarArchiver jar = new JarArchiver();
+        jar.setCompress( false ); // for speed
+        File file = File.createTempFile( "surefirebooter", ".jar" );
+        file.deleteOnExit();
+        jar.setDestFile( file );
+
+        Manifest manifest = new Manifest();
+
+        // we can't use StringUtils.join here since we need to add a '/' to
+        // the end of directory entries - otherwise the jvm will ignore them.
+        String cp = "";
+        for ( Iterator it = classPath.iterator(); it.hasNext(); )
+        {
+            String el = (String) it.next();
+            cp += " " + el + ( new File( el ).isDirectory() ? "/" : "" );
+        }
+
+        Manifest.Attribute attr = new Manifest.Attribute( "Class-Path", cp.trim() );
+        manifest.addConfiguredAttribute( attr );
+
+        attr =new Manifest.Attribute("Main-Class", SurefireBooter.class.getName() );
+        manifest.addConfiguredAttribute( attr );
+
+        jar.addConfiguredManifest( manifest );
+
+        jar.createArchive();
+
+        return file;
     }
 
     public void setDebug( boolean debug )

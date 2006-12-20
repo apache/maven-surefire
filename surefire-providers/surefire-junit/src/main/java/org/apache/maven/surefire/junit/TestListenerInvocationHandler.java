@@ -155,7 +155,7 @@ public class TestListenerInvocationHandler
 
     // Handler for TestListener.addFailure(Test, Throwable)
     private void handleAddError( Object[] args )
-        throws IllegalAccessException, NoSuchMethodException, InvocationTargetException
+        throws IllegalAccessException, InvocationTargetException
     {
         ReportEntry report =
             new ReportEntry( args[0], args[0].toString(), args[1].toString(), getStackTraceWriter( args ) );
@@ -166,15 +166,25 @@ public class TestListenerInvocationHandler
     }
 
     private JUnitStackTraceWriter getStackTraceWriter( Object[] args )
-        throws NoSuchMethodException, IllegalAccessException, InvocationTargetException
+        throws IllegalAccessException, InvocationTargetException
     {
-        Method m = args[0].getClass().getMethod( "getName", EMPTY_CLASS_ARRAY );
-        String testName = (String) m.invoke( args[0], EMPTY_STRING_ARRAY );
+        String testName;
+
+        try
+        {
+            Method m = args[0].getClass().getMethod( "getName", EMPTY_CLASS_ARRAY );
+            testName = (String) m.invoke( args[0], EMPTY_STRING_ARRAY );
+        }
+        catch ( NoSuchMethodException e )
+        {
+            testName = "UNKNOWN";
+        }
+
         return new JUnitStackTraceWriter( args[0].getClass().getName(), testName, (Throwable) args[1] );
     }
 
     private void handleAddFailure( Object[] args )
-        throws IllegalAccessException, NoSuchMethodException, InvocationTargetException
+        throws IllegalAccessException, InvocationTargetException
     {
         ReportEntry report =
             new ReportEntry( args[0], args[0].toString(), args[1].toString(), getStackTraceWriter( args ) );

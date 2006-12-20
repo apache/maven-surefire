@@ -98,6 +98,7 @@ public class SurefirePlugin
      */
     private File basedir;
 
+    // FIXME this field is not used
     /**
      * The directory containing generated classes of the project being tested.
      *
@@ -373,27 +374,20 @@ public class SurefirePlugin
      */
     private boolean disableXmlReport;
 
+    /**
+     * Option to pass dependencies to the system's classloader instead of using an isolated class loader when
+     * forking. Prevents problems with JDKs which implement the service provider lookup mechanism by using
+     * the system's classloader.
+     *
+     * @parameter expression="${surefire.useSystemClassLoader}" default-value="false"
+     */
+    private boolean useSystemClassLoader;
+
     public void execute()
         throws MojoExecutionException, MojoFailureException
     {
-        if ( skip || skipExec )
+        if ( verifyParameters() )
         {
-            getLog().info( "Tests are skipped." );
-        }
-        else if ( !testClassesDirectory.exists() )
-        {
-            getLog().info( "No tests to run." );
-        }
-        else
-        {
-            if ( parallel )
-            {
-                if ( threadCount < 1 )
-                {
-                    throw new MojoFailureException( "Must have at least one thread in parallel mode" );
-                }
-            }
-
             SurefireBooter surefireBooter = constructSurefireBooter();
 
             getLog().info( "Surefire report directory: " + reportsDirectory );
@@ -432,6 +426,36 @@ public class SurefirePlugin
                 }
             }
         }
+    }
+
+    private boolean verifyParameters()
+        throws MojoFailureException
+    {
+        if ( skip || skipExec )
+        {
+            getLog().info( "Tests are skipped." );
+            return false;
+        }
+        else if ( !testClassesDirectory.exists() )
+        {
+            getLog().info( "No tests to run." );
+            return false;
+        }
+
+        if ( parallel )
+        {
+            if ( threadCount < 1 )
+            {
+                throw new MojoFailureException( "Must have at least one thread in parallel mode" );
+            }
+        }
+
+        if ( useSystemClassLoader && ForkConfiguration.FORK_NEVER.equals( forkMode ) )
+        {
+            getLog().warn( "useSystemClassloader=true setting has no effect when not forking" );
+        }
+
+        return true;
     }
 
     private SurefireBooter constructSurefireBooter()
@@ -476,11 +500,9 @@ public class SurefirePlugin
             }
             else
             {
-                // only need to discover JUnit if there is no TestNG, it runs the tests for you.
-                if ( junitArtifact != null )
-                {
-                    addProvider( surefireBooter, "surefire-junit", surefireArtifact.getBaseVersion(), null );
-                }
+                // add the JUnit provider as default - it doesn't require JUnit to be present,
+                // since it supports POJO tests.
+                addProvider( surefireBooter, "surefire-junit", surefireArtifact.getBaseVersion(), null );
             }
         }
         catch ( ArtifactNotFoundException e )
@@ -562,14 +584,12 @@ public class SurefirePlugin
                     testClassesDirectory, includes, excludes, groups, excludedGroups, Boolean.valueOf( parallel ),
                     new Integer( threadCount ), testSourceDirectory.getAbsolutePath()} );
             }
-            else if ( junitArtifact != null )
-            {
-                surefireBooter.addTestSuite( "org.apache.maven.surefire.junit.JUnitDirectoryTestSuite",
-                                             new Object[]{testClassesDirectory, includes, excludes} );
-            }
             else
             {
-                throw new MojoExecutionException( "No Java test frameworks found" );
+                // fall back to JUnit, which also contains POJO support. Also it can run
+                // classes compiled against JUnit since it has a dependency on JUnit itself.
+                surefireBooter.addTestSuite( "org.apache.maven.surefire.junit.JUnitDirectoryTestSuite",
+                                             new Object[]{testClassesDirectory, includes, excludes} );
             }
         }
 
@@ -646,6 +666,8 @@ public class SurefirePlugin
         surefireBooter.setChildDelegation( childDelegation );
 
         surefireBooter.setReportsDirectory( reportsDirectory );
+
+        surefireBooter.setUseSystemClassLoader( useSystemClassLoader );
 
         addReporters( surefireBooter, fork.isForking() );
 
