@@ -94,24 +94,26 @@
     <profile>
       <id>jdk1.3</id>
       <build>
-        <plugins>
-          <plugin>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <configuration>
-              <fork>true</fork>
-              <compilerVersion>1.3</compilerVersion>
-              <executable>${JAVA_1_3_HOME}/bin/javac</executable>
-            </configuration>
-          </plugin>
-          <plugin>
-            <artifactId>maven-surefire-plugin</artifactId>
-            <configuration>
-              <forkMode>once</forkMode>
-              <childDelegation>true</childDelegation>
-              <jvm>${JAVA_1_3_HOME}/bin/java</jvm>
-            </configuration>
-          </plugin>
-        </plugins>
+        <pluginManagement>
+          <plugins>
+            <plugin>
+              <artifactId>maven-compiler-plugin</artifactId>
+              <configuration>
+                <fork>true</fork>
+                <compilerVersion>1.3</compilerVersion>
+                <executable>${JAVA_1_3_HOME}/bin/javac</executable>
+              </configuration>
+            </plugin>
+            <plugin>
+              <artifactId>maven-surefire-plugin</artifactId>
+              <configuration>
+                <forkMode>once</forkMode>
+                <childDelegation>true</childDelegation>
+                <jvm>${JAVA_1_3_HOME}/bin/java</jvm>
+              </configuration>
+            </plugin>
+          </plugins>
+        </pluginManagement>
       </build>
     </profile>
   </profiles>
