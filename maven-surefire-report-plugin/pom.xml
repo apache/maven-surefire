@@ -59,6 +59,14 @@
                 <compilerVersion>1.4</compilerVersion>
               </configuration>
             </plugin>
+            <plugin>
+              <artifactId>maven-surefire-plugin</artifactId>
+              <configuration>
+                <forkMode>once</forkMode>
+                <childDelegation>true</childDelegation>
+                <jvm>${java.home}/bin/java</jvm>
+              </configuration>
+            </plugin>
           </plugins>
         </pluginManagement>
       </build>
