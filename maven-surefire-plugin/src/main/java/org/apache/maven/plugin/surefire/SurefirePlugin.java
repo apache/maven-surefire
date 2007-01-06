@@ -498,6 +498,10 @@ public class SurefirePlugin
                 // different one since its based on the source level, not the JVM. Prune using the filter.
                 addProvider( surefireBooter, "surefire-testng", surefireArtifact.getBaseVersion(), testNgArtifact );
             }
+            else if (junitArtifact != null && junitArtifact.getBaseVersion().startsWith("4"))
+            {
+                addProvider( surefireBooter, "surefire-junit4", surefireArtifact.getBaseVersion(), null );
+            }
             else
             {
                 // add the JUnit provider as default - it doesn't require JUnit to be present,
@@ -586,9 +590,19 @@ public class SurefirePlugin
             }
             else
             {
+            	String junitDirectoryTestSuite;
+            	if (junitArtifact.getBaseVersion().startsWith("4")) 
+            	{
+            		junitDirectoryTestSuite = "org.apache.maven.surefire.junit4.JUnit4DirectoryTestSuite";
+            	} 
+            	else
+            	{
+            		junitDirectoryTestSuite = "org.apache.maven.surefire.junit.JUnitDirectoryTestSuite";
+            	}
+            		
                 // fall back to JUnit, which also contains POJO support. Also it can run
                 // classes compiled against JUnit since it has a dependency on JUnit itself.
-                surefireBooter.addTestSuite( "org.apache.maven.surefire.junit.JUnitDirectoryTestSuite",
+                surefireBooter.addTestSuite( junitDirectoryTestSuite,
                                              new Object[]{testClassesDirectory, includes, excludes} );
             }
         }
