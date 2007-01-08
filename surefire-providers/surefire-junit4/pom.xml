@@ -30,4 +30,21 @@
       <version>4.0</version>
     </dependency>
   </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>1.4</source>
+          <target>1.4</target>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <jvm>${java.home}/bin/java</jvm>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 </project>
