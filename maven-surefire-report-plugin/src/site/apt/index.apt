@@ -31,10 +31,14 @@ Maven Surefire-Report Plugin
 
 * Goals Overview
 
-  Surefire-report plugin only has one goal:
+  Surefire-report plugin only has one goal (the other is a workaround):
 
   * {{{report-mojo.html}surefire-report:report}} Generates the test
   results report into html format.
+
+  * {{{report-only-mojo.html}surefire-report:report-only}} This goal does 
+  not run the tests, it only builds the reports. It is provided as a work 
+  around for {{http://jira.codehaus.org/browse/MSUREFIREREP-6}}
 
   []
 
