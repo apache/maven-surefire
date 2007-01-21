@@ -14,10 +14,6 @@
   <prerequisites>
     <maven>2.0.3</maven>
   </prerequisites>
-  <issueManagement>
-    <system>JIRA</system>
-    <url>http://jira.codehaus.org/browse/MSUREFIREREP</url>
-  </issueManagement>
   <developers>
     <developer>
       <id>jruiz</id>

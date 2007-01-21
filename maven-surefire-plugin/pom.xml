@@ -33,10 +33,6 @@ under the License.
   <prerequisites>
     <maven>2.0</maven>
   </prerequisites>
-  <issueManagement>
-    <system>JIRA</system>
-    <url>http://jira.codehaus.org/browse/MSUREFIRE</url>
-  </issueManagement>
   <mailingLists>
     <!-- duplication from maven-plugins pom - temporary until they inherit properly -->
     <mailingList>
