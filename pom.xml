@@ -95,9 +95,6 @@
     <pluginRepository>
       <id>apache.snapshots</id>
       <url>http://people.apache.org/repo/m2-snapshot-repository</url>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
     </pluginRepository>
   </pluginRepositories>
   <!-- Until parent 5-SNAPSHOT is released -->
