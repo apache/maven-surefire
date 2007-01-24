@@ -130,5 +130,35 @@ under the License.
         </pluginManagement>
       </build>
     </profile>
+    <profile>
+      <id>ci</id>
+      <activation>
+        <property>
+          <name>enableCiProfile</name>
+          <value>true</value>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-docck-plugin</artifactId>
+            <version>1.0-beta-1</version>
+            <executions>
+              <execution> 
+                <goals>
+                  <goal>check</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>  
+    </profile>  
   </profiles>
+  <distributionManagement>
+    <site>
+      <id>apache.website</id>
+      <url>scp://people.apache.org/www/maven.apache.org/plugins/maven-surefire-plugin</url>
+    </site>
+  </distributionManagement>
 </project>
