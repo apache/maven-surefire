@@ -97,4 +97,12 @@
       <url>scp://people.apache.org/www/maven.apache.org/plugins/maven-surefire-report-plugin</url>
     </site>
   </distributionManagement>
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-plugin-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </reporting>
 </project>
