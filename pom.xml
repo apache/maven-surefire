@@ -10,7 +10,7 @@
   <artifactId>surefire</artifactId>
   <packaging>pom</packaging>
   <name>SureFire</name>
-  <version>2.3-SNAPSHOT</version>
+  <version>2.3</version>
   <description>Surefire is a test framework project.</description>
   <url>http://maven.apache.org/surefire</url>
   <issueManagement>
@@ -52,9 +52,9 @@
     </contributor>
   </contributors>
   <scm>
-    <connection>scm:svn:https://svn.apache.org/repos/asf/maven/surefire/trunk/</connection>
-    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/maven/surefire/trunk/</developerConnection>
-    <url>http://svn.apache.org/viewcvs.cgi/maven/surefire/trunk</url>
+    <connection>scm:svn:https://svn.apache.org/repos/asf/maven/surefire/tags/surefire-2.3</connection>
+    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/maven/surefire/tags/surefire-2.3</developerConnection>
+    <url>https://svn.apache.org/repos/asf/maven/surefire/tags/surefire-2.3</url>
   </scm>
   <build>
     <plugins>
