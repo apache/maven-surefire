@@ -9,7 +9,7 @@ package org.apache.maven.test;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *  http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -22,10 +22,10 @@ package org.apache.maven.test;
 /**
  * Run tests using Surefire
  *
- * @see org.apache.maven.plugin.surefire.SurefirePlugin
- * @deprecated use org.apache.maven.plugins.surefire.SurefirePlugin instead
  * @author Jason van Zyl
  * @version $Id$
+ * @see org.apache.maven.plugin.surefire.SurefirePlugin
+ * @deprecated use org.apache.maven.plugins.surefire.SurefirePlugin instead
  */
 public class SurefirePlugin
     extends org.apache.maven.plugin.surefire.SurefirePlugin

@@ -9,7 +9,7 @@ package org.apache.maven.plugin.surefire;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *  http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -484,7 +484,7 @@ public class SurefirePlugin
 
             if ( testNgArtifact != null )
             {
-                addArtifact(surefireBooter, testNgArtifact);
+                addArtifact( surefireBooter, testNgArtifact );
 
                 VersionRange range = VersionRange.createFromVersionSpec( "[4.7,)" );
                 if ( !range.containsVersion( testNgArtifact.getSelectedVersion() ) )
@@ -498,7 +498,7 @@ public class SurefirePlugin
                 // different one since its based on the source level, not the JVM. Prune using the filter.
                 addProvider( surefireBooter, "surefire-testng", surefireArtifact.getBaseVersion(), testNgArtifact );
             }
-            else if (junitArtifact != null && junitArtifact.getBaseVersion().startsWith("4"))
+            else if ( junitArtifact != null && junitArtifact.getBaseVersion().startsWith( "4" ) )
             {
                 addProvider( surefireBooter, "surefire-junit4", surefireArtifact.getBaseVersion(), null );
             }
@@ -590,16 +590,16 @@ public class SurefirePlugin
             }
             else
             {
-            	String junitDirectoryTestSuite;
-            	if (junitArtifact.getBaseVersion().startsWith("4")) 
-            	{
-            		junitDirectoryTestSuite = "org.apache.maven.surefire.junit4.JUnit4DirectoryTestSuite";
-            	} 
-            	else
-            	{
-            		junitDirectoryTestSuite = "org.apache.maven.surefire.junit.JUnitDirectoryTestSuite";
-            	}
-            		
+                String junitDirectoryTestSuite;
+                if ( junitArtifact.getBaseVersion().startsWith( "4" ) )
+                {
+                    junitDirectoryTestSuite = "org.apache.maven.surefire.junit4.JUnit4DirectoryTestSuite";
+                }
+                else
+                {
+                    junitDirectoryTestSuite = "org.apache.maven.surefire.junit.JUnitDirectoryTestSuite";
+                }
+
                 // fall back to JUnit, which also contains POJO support. Also it can run
                 // classes compiled against JUnit since it has a dependency on JUnit itself.
                 surefireBooter.addTestSuite( junitDirectoryTestSuite,

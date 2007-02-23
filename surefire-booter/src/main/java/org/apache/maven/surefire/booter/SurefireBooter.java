@@ -1,19 +1,22 @@
 package org.apache.maven.surefire.booter;
 
 /*
- * Copyright 2001-2006 The Apache Software Foundation.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 import org.apache.maven.surefire.Surefire;
@@ -82,7 +85,9 @@ public class SurefireBooter
 
     private static Method assertionStatusMethod;
 
-    /** @deprecated because the IsolatedClassLoader is really isolated - no parent. */
+    /**
+     * @deprecated because the IsolatedClassLoader is really isolated - no parent.
+     */
     private boolean childDelegation = true;
 
     private File reportsDirectory;
@@ -111,12 +116,12 @@ public class SurefireBooter
 
     public void addReport( String report, Object[] constructorParams )
     {
-        reports.add( new Object[]{ report, constructorParams } );
+        reports.add( new Object[]{report, constructorParams} );
     }
 
     public void addTestSuite( String suiteClassName, Object[] constructorParams )
     {
-        testSuites.add( new Object[]{ suiteClassName, constructorParams } );
+        testSuites.add( new Object[]{suiteClassName, constructorParams} );
     }
 
     public void addClassPathUrl( String path )
@@ -221,13 +226,11 @@ public class SurefireBooter
         ClassLoader oldContextClassLoader = Thread.currentThread().getContextClassLoader();
         try
         {
-            ClassLoader testsClassLoader = useSystemClassLoader
-                ? ClassLoader.getSystemClassLoader()
+            ClassLoader testsClassLoader = useSystemClassLoader ? ClassLoader.getSystemClassLoader()
                 : createClassLoader( classPathUrls, null, childDelegation, true );
 
             // TODO: assertions = true shouldn't be required for this CL if we had proper separation (see TestNG)
-            ClassLoader surefireClassLoader =
-                createClassLoader( surefireClassPathUrls, testsClassLoader, true );
+            ClassLoader surefireClassLoader = createClassLoader( surefireClassPathUrls, testsClassLoader, true );
 
             Class surefireClass = surefireClassLoader.loadClass( Surefire.class.getName() );
 
@@ -269,12 +272,11 @@ public class SurefireBooter
         {
             // The test classloader must be constructed first to avoid issues with commons-logging until we properly
             // separate the TestNG classloader
-            ClassLoader testsClassLoader = useSystemClassLoader
-                ? getClass().getClassLoader()//ClassLoader.getSystemClassLoader()
-                : createClassLoader( classPathUrls, null, childDelegation, true );
+            ClassLoader testsClassLoader =
+                useSystemClassLoader ? getClass().getClassLoader()//ClassLoader.getSystemClassLoader()
+                    : createClassLoader( classPathUrls, null, childDelegation, true );
 
-            ClassLoader surefireClassLoader =
-                createClassLoader( surefireClassPathUrls, testsClassLoader, true );
+            ClassLoader surefireClassLoader = createClassLoader( surefireClassPathUrls, testsClassLoader, true );
 
             Class surefireClass = surefireClassLoader.loadClass( Surefire.class.getName() );
 
@@ -526,7 +528,7 @@ public class SurefireBooter
             bootClasspath.addAll( classPathUrls );
         }
 
-        Commandline cli = forkConfiguration.createCommandLine( bootClasspath, useSystemClassLoader  );
+        Commandline cli = forkConfiguration.createCommandLine( bootClasspath, useSystemClassLoader );
 
         cli.createArgument().setFile( surefireProperties );
 
