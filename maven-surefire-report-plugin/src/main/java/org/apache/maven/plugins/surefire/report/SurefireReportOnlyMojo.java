@@ -9,7 +9,7 @@ package org.apache.maven.plugins.surefire.report;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -22,16 +22,16 @@ package org.apache.maven.plugins.surefire.report;
 /**
  * Creates a nicely formatted Surefire Test Report in html format.
  * This goal does not run the tests, it only builds the reports.
- * This is a workaround for 
+ * This is a workaround for
  * <a href="http://jira.codehaus.org/browse/MSUREFIREREP-6">http://jira.codehaus.org/browse/MSUREFIREREP-6</a>
  *
- * @since 2.3
  * @author <a href="mailto:baerrach@gmail.com">Barrie Treloar</a>
  * @goal report-only
- * @execute phase="validate" lifecycle="surefire" 
+ * @execute phase="validate" lifecycle="surefire"
+ * @since 2.3
  */
 public class SurefireReportOnlyMojo
     extends SurefireReportMojo
 {
-   
+
 }

@@ -1,20 +1,26 @@
 package org.apache.maven.surefire.booter.output;
 
 /*
- * Copyright 2006 The Apache Software Foundation.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
+
+import org.apache.maven.surefire.report.ReportEntry;
+import org.apache.maven.surefire.util.NestedRuntimeException;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -22,15 +28,12 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.util.NestedRuntimeException;
-
 /**
  * Surefire output consumer proxy that writes test output to a {@link File} for each test suite.
- * 
- * @since 2.1
+ *
  * @author <a href="mailto:carlos@apache.org">Carlos Sanchez</a>
  * @version $Id$
+ * @since 2.1
  */
 public class FileOutputConsumerProxy
     extends OutputConsumerProxy
@@ -55,8 +58,8 @@ public class FileOutputConsumerProxy
 
     /**
      * Create a consumer that will write to a {@link File} for each test
-     * 
-     * @param reportsDirectory directory where files will be saved 
+     *
+     * @param reportsDirectory directory where files will be saved
      */
     public FileOutputConsumerProxy( OutputConsumer outputConsumer, File reportsDirectory )
     {
@@ -66,7 +69,7 @@ public class FileOutputConsumerProxy
 
     /**
      * Set the directory where reports will be saved
-     * 
+     *
      * @param reportsDirectory the directory
      */
     public void setReportsDirectory( File reportsDirectory )
@@ -84,7 +87,7 @@ public class FileOutputConsumerProxy
 
     /**
      * Set the {@link PrintWriter} used for the current test suite
-     * 
+     *
      * @param writer
      */
     public void setPrintWriter( PrintWriter writer )
@@ -130,7 +133,7 @@ public class FileOutputConsumerProxy
     }
 
     /**
-     * Write the output to the current test file 
+     * Write the output to the current test file
      */
     public void consumeOutputLine( String line )
     {
