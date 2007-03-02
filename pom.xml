@@ -75,6 +75,15 @@
     <developerConnection>scm:svn:https://svn.apache.org/repos/asf/maven/surefire/trunk/</developerConnection>
     <url>http://svn.apache.org/viewcvs.cgi/maven/surefire/trunk</url>
   </scm>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.apache.maven.surefire</groupId>
+        <artifactId>surefire-api</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
   <build>
     <plugins>
       <plugin>
