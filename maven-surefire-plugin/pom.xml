@@ -29,7 +29,6 @@
   <groupId>org.apache.maven.plugins</groupId>
   <packaging>maven-plugin</packaging>
   <name>Maven Surefire Plugin</name>
-  <version>2.4-SNAPSHOT</version>
   <prerequisites>
     <maven>2.0</maven>
   </prerequisites>
