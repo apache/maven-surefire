@@ -591,7 +591,7 @@ public class SurefirePlugin
             else
             {
                 String junitDirectoryTestSuite;
-                if ( junitArtifact.getBaseVersion().startsWith( "4" ) )
+                if ( junitArtifact != null && junitArtifact.getBaseVersion().startsWith( "4" ) )
                 {
                     junitDirectoryTestSuite = "org.apache.maven.surefire.junit4.JUnit4DirectoryTestSuite";
                 }
