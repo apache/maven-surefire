@@ -30,7 +30,7 @@ import org.jmock.core.matcher.InvokeOnceMatcher;
  * @version $Id$
  */
 public class OutputConsumerProxyTest
-    extends AbstractOutputConsumerTest
+    extends AbstractOutputConsumerTestCase
 {
     private Mock outputConsumerMock;
 

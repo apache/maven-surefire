@@ -27,7 +27,7 @@ import junit.framework.TestCase;
  * @author <a href="mailto:carlos@apache.org">Carlos Sanchez</a>
  * @version $Id$
  */
-public class AbstractConsoleReporterTest
+public abstract class AbstractConsoleReporterTestCase
     extends TestCase
 {
 

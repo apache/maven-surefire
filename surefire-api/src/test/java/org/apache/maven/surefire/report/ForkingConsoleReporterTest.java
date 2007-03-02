@@ -26,7 +26,7 @@ package org.apache.maven.surefire.report;
  * @version $Id$
  */
 public class ForkingConsoleReporterTest
-    extends AbstractConsoleReporterTest
+    extends AbstractConsoleReporterTestCase
 {
 
     protected void setUp()

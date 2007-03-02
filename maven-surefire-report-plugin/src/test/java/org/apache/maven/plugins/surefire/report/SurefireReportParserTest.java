@@ -23,6 +23,7 @@ import junit.framework.TestCase;
 import org.apache.maven.reporting.MavenReportException;
 
 import java.io.File;
+import java.net.URL;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -48,7 +49,7 @@ public class SurefireReportParserTest
     public void testParseXMLReportFiles()
         throws MavenReportException
     {
-        report.setReportsDirectory( new File( System.getProperty( "basedir" ), "target/test-classes/test-reports" ) );
+        report.setReportsDirectory( getTestDir( "/test-reports" ) );
 
         List suites = report.parseXMLReportFiles();
 
@@ -62,6 +63,12 @@ public class SurefireReportParserTest
             assertNotNull( suite.getName() );
             assertNotNull( suite.getPackageName() );
         }
+    }
+
+    private File getTestDir( String path )
+    {
+        URL resource = getClass().getResource( path );
+        return new File( resource.getPath() );
     }
 
     public void testParseTestSuiteName()

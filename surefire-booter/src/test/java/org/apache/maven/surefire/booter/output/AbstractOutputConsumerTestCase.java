@@ -28,10 +28,9 @@ import org.apache.maven.surefire.report.ReportEntry;
  * @author <a href="mailto:carlos@apache.org">Carlos Sanchez</a>
  * @version $Id$
  */
-public class AbstractOutputConsumerTest
+public abstract class AbstractOutputConsumerTestCase
     extends TestCase
 {
-
     private OutputConsumer outputConsumer;
 
     private String line;

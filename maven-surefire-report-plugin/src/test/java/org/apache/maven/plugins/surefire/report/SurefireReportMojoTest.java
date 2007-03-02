@@ -23,6 +23,7 @@ import org.apache.maven.plugin.testing.AbstractMojoTestCase;
 import org.codehaus.plexus.util.FileUtils;
 
 import java.io.File;
+import java.net.URL;
 
 /**
  * @author <a href="mailto:aramirez@apache.org">Allan Ramirez</a>
@@ -30,17 +31,10 @@ import java.io.File;
 public class SurefireReportMojoTest
     extends AbstractMojoTestCase
 {
-    public void setUp()
-        throws Exception
-    {
-        super.setUp();
-    }
-
     public void testBasicSurefireReport()
         throws Exception
     {
-        File testPom =
-            new File( getBasedir(), "target/test-classes/unit/basic-surefire-report-test/plugin-config.xml" );
+        File testPom = new File( getUnitBaseDir(), "basic-surefire-report-test/plugin-config.xml" );
 
         SurefireReportMojo mojo = (SurefireReportMojo) lookupMojo( "report", testPom );
 
@@ -87,11 +81,16 @@ public class SurefireReportMojoTest
         assertTrue( idx >= 0 );
     }
 
+    private File getUnitBaseDir()
+    {
+        URL resource = getClass().getResource( "/unit" );
+        return new File( resource.getPath() ).getAbsoluteFile();
+    }
+
     public void testBasicSurefireReportIfShowSuccessIsFalse()
         throws Exception
     {
-        File testPom =
-            new File( getBasedir(), "target/test-classes/unit/basic-surefire-report-success-false/plugin-config.xml" );
+        File testPom = new File( getUnitBaseDir(), "basic-surefire-report-success-false/plugin-config.xml" );
 
         SurefireReportMojo mojo = (SurefireReportMojo) lookupMojo( "report", testPom );
 
@@ -118,8 +117,7 @@ public class SurefireReportMojoTest
     public void testBasicSurefireReportIfLinkXrefIsFalse()
         throws Exception
     {
-        File testPom =
-            new File( getBasedir(), "target/test-classes/unit/basic-surefire-report-linkxref-false/plugin-config.xml" );
+        File testPom = new File( getUnitBaseDir(), "basic-surefire-report-linkxref-false/plugin-config.xml" );
 
         SurefireReportMojo mojo = (SurefireReportMojo) lookupMojo( "report", testPom );
 
@@ -146,8 +144,7 @@ public class SurefireReportMojoTest
     public void testBasicSurefireReportIfReportingIsNull()
         throws Exception
     {
-        File testPom =
-            new File( getBasedir(), "target/test-classes/unit/basic-surefire-report-reporting-null/plugin-config.xml" );
+        File testPom = new File( getUnitBaseDir(), "basic-surefire-report-reporting-null/plugin-config.xml" );
 
         SurefireReportMojo mojo = (SurefireReportMojo) lookupMojo( "report", testPom );
 

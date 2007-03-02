@@ -28,7 +28,7 @@ import java.io.StringWriter;
  * @version $Id$
  */
 public class PrintWriterOutputConsumerTest
-    extends AbstractOutputConsumerTest
+    extends AbstractOutputConsumerTestCase
 {
     private StringWriter writer;
 

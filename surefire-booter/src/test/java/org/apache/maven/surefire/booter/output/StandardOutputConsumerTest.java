@@ -26,7 +26,7 @@ package org.apache.maven.surefire.booter.output;
  * @version $Id$
  */
 public class StandardOutputConsumerTest
-    extends AbstractOutputConsumerTest
+    extends AbstractOutputConsumerTestCase
 {
 
     protected void setUp()
