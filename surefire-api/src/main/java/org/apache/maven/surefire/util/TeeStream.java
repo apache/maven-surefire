@@ -39,15 +39,9 @@ public class TeeStream
 
     public void write( byte[] buf, int off, int len )
     {
-        try
-        {
-            super.write( buf, off, len );
+        super.write( buf, off, len );
 
-            tee.write( buf, off, len );
-        }
-        catch ( Exception e )
-        {
-        }
+        tee.write( buf, off, len );
     }
 
     public void close()
