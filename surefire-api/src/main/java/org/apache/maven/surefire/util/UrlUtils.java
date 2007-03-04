@@ -30,19 +30,28 @@ import java.util.BitSet;
  */
 public class UrlUtils
 {
-    private static final BitSet UNRESERVED = new BitSet( 256 );
+    private static final BitSet UNRESERVED = new BitSet( Byte.MAX_VALUE - Byte.MIN_VALUE + 1 );
+
+    private static final int RADIX = 16;
+
+    private static final int MASK = 0xf;
+
+    private UrlUtils()
+    {
+    }
+
+    private static final String ENCODING = "US-ASCII";
 
     static
     {
         try
         {
             byte[] bytes =
-                "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.!~*'():/".getBytes( "US-ASCII" );
+                "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.!~*'():/".getBytes( ENCODING );
             for ( int i = 0; i < bytes.length; i++ )
             {
                 UNRESERVED.set( bytes[i] );
             }
-
         }
         catch ( UnsupportedEncodingException e )
         {
@@ -58,7 +67,7 @@ public class UrlUtils
         // this is primarily to handle Windows where the user's home directory contains spaces
         try
         {
-            byte[] bytes = url.toString().getBytes( "US-ASCII" );
+            byte[] bytes = url.toString().getBytes( ENCODING );
             StringBuffer buf = new StringBuffer( bytes.length );
             for ( int i = 0; i < bytes.length; i++ )
             {
@@ -70,8 +79,8 @@ public class UrlUtils
                 else
                 {
                     buf.append( '%' );
-                    buf.append( Character.forDigit( b >>> 4 & 0xf, 16 ) );
-                    buf.append( Character.forDigit( b & 0xf, 16 ) );
+                    buf.append( Character.forDigit( b >>> 4 & MASK, RADIX ) );
+                    buf.append( Character.forDigit( b & MASK, RADIX ) );
                 }
             }
             return new URL( buf.toString() );
