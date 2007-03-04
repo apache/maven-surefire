@@ -21,18 +21,12 @@ package org.apache.maven.surefire.assertion;
 
 /**
  * Thrown when an assertion equals for Strings failed.
- * <p/>
- * Inspired by a patch from Alex Chaffee mailto:alex@purpletech.com
  *
  * @noinspection UncheckedExceptionClass
  */
 public class SurefireComparisonFailureException
     extends SurefireAssertionFailedException
 {
-    private final String expected;
-
-    private final String actual;
-
     /**
      * Constructs a comparison failure.
      *
@@ -42,76 +36,6 @@ public class SurefireComparisonFailureException
      */
     public SurefireComparisonFailureException( String message, String expected, String actual )
     {
-        super( message );
-        this.expected = expected;
-        this.actual = actual;
-    }
-
-    /**
-     * Returns "..." in place of common prefix and "..." in
-     * place of common suffix between expected and actual.
-     *
-     * @see java.lang.Throwable#getMessage()
-     */
-    public String getMessage()
-    {
-        String path;
-        if ( expected == null || actual == null )
-        {
-            path = SurefireAssert.formatMismatch( super.getMessage(), expected, actual );
-        }
-        else
-        {
-            int end = Math.min( expected.length(), actual.length() );
-
-            int i = 0;
-            for ( ; i < end; i++ )
-            {
-                if ( expected.charAt( i ) != actual.charAt( i ) )
-                {
-                    break;
-                }
-            }
-            int j = expected.length() - 1;
-            int k = actual.length() - 1;
-            for ( ; k >= i && j >= i; k--, j-- )
-            {
-                if ( expected.charAt( j ) != actual.charAt( k ) )
-                {
-                    break;
-                }
-            }
-
-            String actual;
-            String expected;
-
-            // equal strings
-            if ( j < i && k < i )
-            {
-                expected = this.expected;
-                actual = this.actual;
-            }
-            else
-            {
-                expected = this.expected.substring( i, j + 1 );
-                actual = this.actual.substring( i, k + 1 );
-                if ( i <= end && i > 0 )
-                {
-                    expected = "..." + expected;
-                    actual = "..." + actual;
-                }
-
-                if ( j < this.expected.length() - 1 )
-                {
-                    expected = expected + "...";
-                }
-                if ( k < this.actual.length() - 1 )
-                {
-                    actual = actual + "...";
-                }
-            }
-            path = SurefireAssert.formatMismatch( super.getMessage(), expected, actual );
-        }
-        return path;
+        super( ComparisonTool.trimComparison( message, expected, actual ) );
     }
 }

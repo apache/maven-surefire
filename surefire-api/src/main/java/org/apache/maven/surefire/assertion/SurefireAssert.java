@@ -42,7 +42,6 @@ public class SurefireAssert
 
     public static void fail( String message, Throwable cause )
     {
-
         if ( message == null )
         {
             throw new NullPointerException( "message is null" );
@@ -74,7 +73,14 @@ public class SurefireAssert
     {
         if ( !condition )
         {
-            fail( message );
+            if ( message != null )
+            {
+                fail( message );
+            }
+            else
+            {
+                fail();
+            }
         }
     }
 
@@ -287,6 +293,7 @@ public class SurefireAssert
             formatted = message + " ";
         }
 
+        // TODO! i18n
         fail( formatted + "expected not same" );
     }
 
@@ -299,23 +306,12 @@ public class SurefireAssert
             formatted = message + " ";
         }
 
+        // TODO! i18n
         fail( formatted + "expected same:<" + expected + "> was not:<" + actual + ">" );
     }
 
     private static void failNotEquals( String message, Object expected, Object actual )
     {
-        fail( formatMismatch( message, expected, actual ) );
-    }
-
-    static String formatMismatch( String message, Object expected, Object actual )
-    {
-        String formatted = "";
-
-        if ( message != null )
-        {
-            formatted = message + " ";
-        }
-
-        return formatted + "expected:<" + expected + "> but was:<" + actual + ">";
+        fail( ComparisonTool.formatMismatch( message, expected, actual ) );
     }
 }
