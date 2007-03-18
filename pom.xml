@@ -30,7 +30,7 @@
   <artifactId>surefire</artifactId>
   <packaging>pom</packaging>
   <name>SureFire</name>
-  <version>2.3.1-SNAPSHOT</version>
+  <version>2.4-SNAPSHOT</version>
   <description>Surefire is a test framework project.</description>
   <url>http://maven.apache.org/surefire</url>
   <issueManagement>
