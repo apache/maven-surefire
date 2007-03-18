@@ -20,16 +20,6 @@
 
 <faqs id="FAQ" title="Frequently Asked Questions">
   <part id="General">
-    <faq id="junit4-support">
-      <question>Does surefire plugin support JUnit 4.0?</question>
-      <answer>
-        <p>
-          No. But an issue is already filed. Please see
-          <a href="http://jira.codehaus.org/browse/SUREFIRE-31">SUREFIRE-31</a>
-          for more references.
-        </p>
-      </answer>
-    </faq>
     <faq id="reuse-test-code">
       <question>How can I reuse my test code in other modules?</question>
       <answer>
