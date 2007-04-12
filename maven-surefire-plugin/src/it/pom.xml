@@ -38,6 +38,7 @@
     <module>test6</module>
     <module>test7</module>
     <module>test8</module>
+    <module>testArgLine</module>
   </modules>
 
 </project>
