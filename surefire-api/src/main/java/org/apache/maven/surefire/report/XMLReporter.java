@@ -197,7 +197,10 @@ public class XMLReporter
             {
                 element.setAttribute( "message", escapeAttribute( message ) );
 
-                element.setAttribute( "type", stackTrace.substring( 0, stackTrace.indexOf( ":" ) ) );
+                element.setAttribute( "type", ( stackTrace.indexOf( ":" ) > -1 ? stackTrace.substring( 0,
+                                                                                                       stackTrace.indexOf(
+                                                                                                           ":" ) )
+                    : stackTrace ) );
             }
             else
             {
