@@ -192,7 +192,7 @@ public class SurefireBooter
     public boolean run()
         throws SurefireBooterForkException, SurefireExecutionException
     {
-        boolean result = false;
+        boolean result;
 
         if ( ForkConfiguration.FORK_NEVER.equals( forkConfiguration.getForkMode() ) )
         {
@@ -484,7 +484,7 @@ public class SurefireBooter
 
             if ( params != null )
             {
-                String paramProperty = params[0].toString();
+                String paramProperty = convert( params[0] );
                 String typeProperty = params[0].getClass().getName();
                 for ( int j = 1; j < params.length; j++ )
                 {
@@ -492,13 +492,35 @@ public class SurefireBooter
                     typeProperty += "|";
                     if ( params[j] != null )
                     {
-                        paramProperty += params[j].toString();
+                        paramProperty += convert( params[j] );
                         typeProperty += params[j].getClass().getName();
                     }
                 }
                 properties.setProperty( propertyPrefix + i + ".params", paramProperty );
                 properties.setProperty( propertyPrefix + i + ".types", typeProperty );
             }
+        }
+    }
+
+    private String convert( Object param )
+    {
+        if ( param instanceof File[] )
+        {
+            String s = "[";
+            File[] f = (File[]) param;
+            for ( int i = 0; i < f.length; i++ )
+            {
+                s += f[i];
+                if ( i > 0 )
+                {
+                    s += ",";
+                }
+            }
+            return s + "]";
+        }
+        else
+        {
+            return param.toString();
         }
     }
 
@@ -716,6 +738,16 @@ public class SurefireBooter
                 else if ( types[i].equals( File.class.getName() ) )
                 {
                     paramObjects[i] = new File( params[i] );
+                }
+                else if ( types[i].equals( File[].class.getName() ) )
+                {
+                    List stringList = processStringList( params[i] );
+                    File[] fileList = new File[stringList.size()];
+                    for ( int j = 0; j < stringList.size(); j++ )
+                    {
+                        fileList[j] = new File( (String) stringList.get( j ) );
+                    }
+                    paramObjects[i] = fileList;
                 }
                 else if ( types[i].equals( ArrayList.class.getName() ) )
                 {

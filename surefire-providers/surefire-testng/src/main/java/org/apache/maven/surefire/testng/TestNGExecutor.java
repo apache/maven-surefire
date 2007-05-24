@@ -19,20 +19,26 @@ package org.apache.maven.surefire.testng;
  * under the License.
  */
 
+import org.apache.maven.artifact.versioning.ArtifactVersion;
+import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
+import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.surefire.report.ReporterManager;
 import org.apache.maven.surefire.suite.SurefireTestSuite;
-import org.testng.ISuiteListener;
-import org.testng.ITestListener;
+import org.apache.maven.surefire.testng.conf.Configurator;
+import org.apache.maven.surefire.testng.conf.TestNG4751Configurator;
+import org.apache.maven.surefire.testng.conf.TestNG52Configurator;
+import org.apache.maven.surefire.testng.conf.TestNGMapConfigurator;
+import org.apache.maven.surefire.util.NestedRuntimeException;
 import org.testng.TestNG;
-import org.testng.xml.XmlSuite;
 
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Contains utility methods for executing TestNG.
  *
  * @author <a href="mailto:brett@apache.org">Brett Porter</a>
+ * @author <a href='mailto:the[dot]mindstorm[at]gmail[dot]com'>Alex Popescu</a>
  */
 public class TestNGExecutor
 {
@@ -40,33 +46,74 @@ public class TestNGExecutor
     {
     }
 
-    static void executeTestNG( SurefireTestSuite surefireSuite, String testSourceDirectory, XmlSuite suite,
-                               ReporterManager reporterManager )
+    public static void run( Class[] testClasses, String testSourceDirectory, Map options, ArtifactVersion version,
+                            ReporterManager reportManager, SurefireTestSuite suite )
     {
-        TestNG testNG = new TestNG( false );
+        TestNG testng = new TestNG( false );
+        Configurator configurator = getConfigurator( version );
+        configurator.configure( testng, options );
+        postConfigure( testng, testSourceDirectory, reportManager, suite );
 
+        testng.setTestClasses( testClasses );
+        testng.run();
+    }
+
+    public static void run( List suiteFiles, String testSourceDirectory, Map options, ArtifactVersion version,
+                            ReporterManager reportManager, SurefireTestSuite suite )
+    {
+        TestNG testng = new TestNG( false );
+        Configurator configurator = getConfigurator( version );
+        configurator.configure( testng, options );
+        postConfigure( testng, testSourceDirectory, reportManager, suite );
+
+        testng.setTestSuites( suiteFiles );
+        testng.run();
+    }
+
+    private static Configurator getConfigurator( ArtifactVersion version )
+    {
+        try
+        {
+            VersionRange range = VersionRange.createFromVersionSpec( "[4.7,5.1]" );
+            if ( range.containsVersion( version ) )
+            {
+                return new TestNG4751Configurator();
+            }
+            range = VersionRange.createFromVersion( "5.2" );
+            if ( range.containsVersion( version ) )
+            {
+                return new TestNG52Configurator();
+            }
+            range = VersionRange.createFromVersionSpec( "[5.3,)" );
+            if ( range.containsVersion( version ) )
+            {
+                return new TestNGMapConfigurator();
+            }
+
+            throw new NestedRuntimeException( "Unknown TestNG version " + version );
+        }
+        catch ( InvalidVersionSpecificationException invsex )
+        {
+            throw new NestedRuntimeException( "Bug in plugin. Please report it with the attached stacktrace", invsex );
+        }
+    }
+
+
+    private static void postConfigure( TestNG testNG, String sourcePath, ReporterManager reportManager,
+                                       SurefireTestSuite suite )
+    {
         // turn off all TestNG output
         testNG.setVerbose( 0 );
 
-        testNG.setXmlSuites( Collections.singletonList( suite ) );
-
-        testNG.setListenerClasses( new ArrayList() );
-
-        TestNGReporter reporter = new TestNGReporter( reporterManager, surefireSuite );
-        testNG.addListener( (ITestListener) reporter );
-        testNG.addListener( (ISuiteListener) reporter );
-
-        // Set source path so testng can find javadoc annotations if not in 1.5 jvm
-        if ( testSourceDirectory != null )
+        TestNGReporter reporter = new TestNGReporter( reportManager, suite );
+        testNG.addListener( (Object) reporter );
+        // TODO: we should have the Profile so that we can decide if this is needed or not
+        if ( sourcePath != null )
         {
-            testNG.setSourcePath( testSourceDirectory );
+            testNG.setSourcePath( sourcePath );
         }
-
-        // TODO: Doesn't find testng.xml based suites when these are un-commented
-        // TestNG ~also~ looks for the currentThread context classloader
-        // ClassLoader oldClassLoader = Thread.currentThread().getContextClassLoader();
-        // Thread.currentThread().setContextClassLoader( suite.getClass().getClassLoader() );
-        testNG.runSuitesLocally();
-        //Thread.currentThread().setContextClassLoader( oldClassLoader );
+        // workaround for SUREFIRE-49
+        // TestNG always creates an output directory, and if not set the name for the directory is "null"
+        testNG.setOutputDirectory( System.getProperty( "java.io.tmpdir" ) );
     }
 }

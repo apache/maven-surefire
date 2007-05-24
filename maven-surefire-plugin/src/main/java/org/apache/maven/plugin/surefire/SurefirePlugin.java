@@ -98,15 +98,6 @@ public class SurefirePlugin
      */
     private File basedir;
 
-    // FIXME this field is not used
-    /**
-     * The directory containing generated classes of the project being tested.
-     *
-     * @parameter expression="${project.build.outputDirectory}"
-     * @required
-     */
-    private File classesDirectory;
-
     /**
      * The directory containing generated test classes of the project being tested.
      *
@@ -181,6 +172,14 @@ public class SurefirePlugin
      * @parameter
      */
     private Properties systemProperties;
+
+    /**
+     * List of properties for configuring all TestNG related configurations. This is the new
+     * preferred method of configuring TestNG.
+     *
+     * @parameter
+     */
+    private Properties properties;
 
     /**
      * Map of of plugin artifacts.
@@ -324,7 +323,7 @@ public class SurefirePlugin
      * default-value="false"
      * @todo test how this works with forking, and console/file output parallelism
      */
-    private boolean parallel;
+    private String parallel;
 
     /**
      * Whether to trim the stack trace in the reports to just the lines within the test, or show the full trace.
@@ -436,18 +435,11 @@ public class SurefirePlugin
             getLog().info( "Tests are skipped." );
             return false;
         }
-        else if ( !testClassesDirectory.exists() )
+
+        if ( !testClassesDirectory.exists() )
         {
             getLog().info( "No tests to run." );
             return false;
-        }
-
-        if ( parallel )
-        {
-            if ( threadCount < 1 )
-            {
-                throw new MojoFailureException( "Must have at least one thread in parallel mode" );
-            }
         }
 
         if ( useSystemClassLoader && ForkConfiguration.FORK_NEVER.equals( forkMode ) )
@@ -456,6 +448,36 @@ public class SurefirePlugin
         }
 
         return true;
+    }
+
+    /**
+     * Converts old TestNG configuration parameters over to new properties based configuration
+     * method. (if any are defined the old way)
+     */
+    private void convertTestNGParameters()
+    {
+        if ( properties == null )
+        {
+            properties = new Properties();
+        }
+
+        if ( this.parallel != null )
+        {
+            properties.put( "parallel", this.parallel );
+        }
+        if ( this.excludedGroups != null )
+        {
+            properties.put( "excludegroups", this.excludedGroups );
+        }
+        if ( this.groups != null )
+        {
+            properties.put( "groups", this.groups );
+        }
+
+        if ( this.threadCount > 0 )
+        {
+            properties.put( "threadcount", new Integer( this.threadCount ) );
+        }
     }
 
     private SurefireBooter constructSurefireBooter()
@@ -484,8 +506,6 @@ public class SurefirePlugin
 
             if ( testNgArtifact != null )
             {
-                addArtifact( surefireBooter, testNgArtifact );
-
                 VersionRange range = VersionRange.createFromVersionSpec( "[4.7,)" );
                 if ( !range.containsVersion( testNgArtifact.getSelectedVersion() ) )
                 {
@@ -493,6 +513,15 @@ public class SurefirePlugin
                         "TestNG support requires version 4.7 or above. You have declared version " +
                             testNgArtifact.getVersion() );
                 }
+
+                convertTestNGParameters();
+
+                if ( this.testClassesDirectory != null )
+                {
+                    properties.put( "testng.test.classpath", testClassesDirectory.getAbsolutePath() );
+                }
+
+                addArtifact( surefireBooter, testNgArtifact );
 
                 // The plugin uses a JDK based profile to select the right testng. We might be explicity using a
                 // different one since its based on the source level, not the JVM. Prune using the filter.
@@ -529,15 +558,10 @@ public class SurefirePlugin
             {
                 throw new MojoExecutionException( "suiteXmlFiles is configured, but there is no TestNG dependency" );
             }
-            for ( int i = 0; i < suiteXmlFiles.length; i++ )
-            {
-                File file = suiteXmlFiles[i];
-                if ( file.exists() )
-                {
-                    surefireBooter.addTestSuite( "org.apache.maven.surefire.testng.TestNGXmlTestSuite",
-                                                 new Object[]{file, testSourceDirectory.getAbsolutePath()} );
-                }
-            }
+
+            // TODO: properties should be passed in here too
+            surefireBooter.addTestSuite( "org.apache.maven.surefire.testng.TestNGXmlTestSuite", new Object[]{
+                suiteXmlFiles, testSourceDirectory.getAbsolutePath(), testNgArtifact.getVersion()} );
         }
         else
         {
@@ -585,13 +609,14 @@ public class SurefirePlugin
             if ( testNgArtifact != null )
             {
                 surefireBooter.addTestSuite( "org.apache.maven.surefire.testng.TestNGDirectoryTestSuite", new Object[]{
-                    testClassesDirectory, includes, excludes, groups, excludedGroups, Boolean.valueOf( parallel ),
-                    new Integer( threadCount ), testSourceDirectory.getAbsolutePath()} );
+                    testClassesDirectory, includes, excludes, testSourceDirectory.getAbsolutePath(),
+                    testNgArtifact.getVersion(), properties} );
             }
             else
             {
                 String junitDirectoryTestSuite;
-                if ( junitArtifact != null && junitArtifact.getBaseVersion() != null && junitArtifact.getBaseVersion().startsWith( "4" ) )
+                if ( junitArtifact != null && junitArtifact.getBaseVersion() != null &&
+                    junitArtifact.getBaseVersion().startsWith( "4" ) )
                 {
                     junitDirectoryTestSuite = "org.apache.maven.surefire.junit4.JUnit4DirectoryTestSuite";
                 }

@@ -167,18 +167,9 @@ public abstract class AbstractDirectoryTestSuite
     {
         if ( testSets == null )
         {
-            throw new IllegalStateException( "You must call locateTestSets before calling getNumTestSets" );
+            throw new IllegalStateException( "You must call locateTestSets before calling getNumTests" );
         }
         return totalTests;
-    }
-
-    public int getNumTestSets()
-    {
-        if ( testSets == null )
-        {
-            throw new IllegalStateException( "You must call locateTestSets before calling getNumTestSets" );
-        }
-        return testSets.size();
     }
 
     private String[] collectTests( File basedir, List includes, List excludes )

@@ -19,20 +19,17 @@ package org.apache.maven.surefire.testng;
  * under the License.
  */
 
+import org.apache.maven.artifact.versioning.ArtifactVersion;
+import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.surefire.report.ReporterManager;
 import org.apache.maven.surefire.suite.SurefireTestSuite;
 import org.apache.maven.surefire.testset.TestSetFailedException;
-import org.testng.xml.Parser;
-import org.testng.xml.XmlSuite;
-import org.testng.xml.XmlTest;
-import org.xml.sax.SAXException;
 
-import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -40,32 +37,35 @@ import java.util.Map;
  * Handles suite xml file definitions for TestNG.
  *
  * @author jkuhnert
+ * @author <a href='mailto:the[dot]mindstorm[at]gmail[dot]com'>Alex Popescu</a>
  */
 public class TestNGXmlTestSuite
     implements SurefireTestSuite
 {
-    private File suiteFile;
+    private File[] suiteFiles;
+
+    private List suiteFilePaths;
 
     private String testSourceDirectory;
 
-    private XmlSuite suite;
+    private ArtifactVersion version;
 
+    private Map options = new HashMap();
+
+    // Not really used
     private Map testSets;
 
     /**
      * Creates a testng testset to be configured by the specified
      * xml file.
      */
-    public TestNGXmlTestSuite( File suiteFile, String testSourceDirectory )
+    public TestNGXmlTestSuite( File[] suiteFiles, String testSourceDirectory, String artifactVersion )
     {
-        this.suiteFile = suiteFile;
+        this.suiteFiles = suiteFiles;
+
+        this.version = new DefaultArtifactVersion( artifactVersion );
 
         this.testSourceDirectory = testSourceDirectory;
-    }
-
-    public TestNGXmlTestSuite( File suiteFile )
-    {
-        this( suiteFile, null );
     }
 
     public void execute( ReporterManager reporterManager, ClassLoader classLoader )
@@ -75,47 +75,20 @@ public class TestNGXmlTestSuite
             throw new IllegalStateException( "You must call locateTestSets before calling execute" );
         }
 
-        TestNGExecutor.executeTestNG( this, testSourceDirectory, suite, reporterManager );
+        TestNGExecutor.run( this.suiteFilePaths, this.testSourceDirectory, this.options, this.version, reporterManager,
+                            this );
     }
 
     public void execute( String testSetName, ReporterManager reporterManager, ClassLoader classLoader )
         throws TestSetFailedException
     {
-        if ( testSets == null )
-        {
-            throw new IllegalStateException( "You must call locateTestSets before calling execute" );
-        }
-        XmlTest testSet = (XmlTest) testSets.get( testSetName );
-
-        if ( testSet == null )
-        {
-            throw new TestSetFailedException( "Unable to find test set '" + testSetName + "' in suite" );
-        }
-
-        List originalTests = new ArrayList( suite.getTests() );
-        for ( Iterator i = suite.getTests().iterator(); i.hasNext(); )
-        {
-            XmlTest test = (XmlTest) i.next();
-            if ( !test.getName().equals( testSetName ) )
-            {
-                i.remove();
-            }
-        }
-        TestNGExecutor.executeTestNG( this, testSourceDirectory, suite, reporterManager );
-
-        suite.getTests().clear();
-        suite.getTests().addAll( originalTests );
+        throw new TestSetFailedException( "Cannot run individual test when suite files are specified" );
     }
 
     public int getNumTests()
     {
-        // TODO: need to get this from TestNG somehow
-        return 1;
-    }
-
-    public int getNumTestSets()
-    {
-        return suite.getTests().size();
+        // TODO: this is not correct
+        return suiteFiles.length;
     }
 
     public Map locateTestSets( ClassLoader classLoader )
@@ -125,37 +98,26 @@ public class TestNGXmlTestSuite
         {
             throw new IllegalStateException( "You can't call locateTestSets twice" );
         }
-        testSets = new LinkedHashMap();
 
-        try
+        if ( this.suiteFiles == null )
         {
-            suite = new Parser( suiteFile.getAbsolutePath() ).parse();
-        }
-        catch ( IOException e )
-        {
-            throw new TestSetFailedException( "Error reading test suite", e );
-        }
-        catch ( ParserConfigurationException e )
-        {
-            throw new TestSetFailedException( "Error reading test suite", e );
-        }
-        catch ( SAXException e )
-        {
-            throw new TestSetFailedException( "Error reading test suite", e );
+            throw new IllegalStateException( "No suite files were specified" );
         }
 
-        for ( Iterator i = suite.getTests().iterator(); i.hasNext(); )
-        {
-            XmlTest xmlTest = (XmlTest) i.next();
+        this.testSets = new HashMap();
+        this.suiteFilePaths = new ArrayList();
 
-            if ( testSets.containsKey( xmlTest.getName() ) )
+        for ( Iterator i = Arrays.asList( suiteFiles ).iterator(); i.hasNext(); )
+        {
+            File file = (File) i.next();
+            if ( !file.exists() || !file.isFile() )
             {
-                throw new TestSetFailedException( "Duplicate test set '" + xmlTest.getName() + "'" );
+                throw new TestSetFailedException( "Suite file " + file + " is not a valid file" );
             }
-
-            // We don't need to put real test sets in here, the key is the important part
-            testSets.put( xmlTest.getName(), xmlTest );
+            this.testSets.put( file, file.getAbsolutePath() );
+            this.suiteFilePaths.add( file.getAbsolutePath() );
         }
-        return testSets;
+
+        return this.testSets;
     }
 }

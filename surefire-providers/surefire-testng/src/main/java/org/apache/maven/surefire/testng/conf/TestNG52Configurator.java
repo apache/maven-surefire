@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.suite;
+package org.apache.maven.surefire.testng.conf;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,27 +19,24 @@ package org.apache.maven.surefire.suite;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.ReporterException;
-import org.apache.maven.surefire.report.ReporterManager;
-import org.apache.maven.surefire.testset.TestSetFailedException;
-
-import java.util.Map;
-
 /**
- * A complete test suite that contains one or more test sets.
- *
- * @author <a href="mailto:brett@apache.org">Brett Porter</a>
+ * TestNG 5.2 configurator.
+ * <p/>
+ * Allowed options:
+ * -groups
+ * -excludedgroups
+ * -junit (boolean)
+ * -threadcount (int)
+ * -parallel (String)
+ * <p/>
+ * Not supported yet:
+ * -setListenerClasses(List<Class>) or setListeners(List<Object>)
  */
-public interface SurefireTestSuite
+public class TestNG52Configurator
+    extends AbstractDirectConfigurator
 {
-    void execute( ReporterManager reporterManager, ClassLoader classLoader )
-        throws ReporterException, TestSetFailedException;
-
-    void execute( String testSetName, ReporterManager reporterManager, ClassLoader classLoader )
-        throws ReporterException, TestSetFailedException;
-
-    int getNumTests();
-
-    Map locateTestSets( ClassLoader classLoader )
-        throws TestSetFailedException;
+    public TestNG52Configurator()
+    {
+        setters.put( "parallel", new Setter( "setParallel", String.class ) );
+    }
 }

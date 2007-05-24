@@ -19,68 +19,41 @@ package org.apache.maven.surefire.testng;
  * under the License.
  */
 
+import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterManager;
 import org.apache.maven.surefire.suite.AbstractDirectoryTestSuite;
 import org.apache.maven.surefire.testset.SurefireTestSet;
 import org.apache.maven.surefire.testset.TestSetFailedException;
-import org.testng.ISuiteListener;
-import org.testng.ITestListener;
-import org.testng.TestNG;
-import org.testng.xml.XmlClass;
-import org.testng.xml.XmlSuite;
-import org.testng.xml.XmlTest;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 /**
  * Test suite for TestNG based on a directory of Java test classes. Can also execute JUnit tests.
  *
  * @author <a href="mailto:brett@apache.org">Brett Porter</a>
+ * @author <a href='mailto:the[dot]mindstorm[at]gmail[dot]com'>Alex Popescu</a>
  */
 public class TestNGDirectoryTestSuite
     extends AbstractDirectoryTestSuite
 {
-    private String groups;
+    private ArtifactVersion version;
 
-    private String excludedGroups;
-
-    private boolean parallel;
-
-    private int threadCount;
+    private Map options;
 
     private String testSourceDirectory;
 
-    public TestNGDirectoryTestSuite( File basedir, ArrayList includes, ArrayList excludes, String groups,
-                                     String excludedGroups, Boolean parallel, Integer threadCount,
-                                     String testSourceDirectory )
+    public TestNGDirectoryTestSuite( File basedir, List includes, List excludes, String testSourceDirectory,
+                                     ArtifactVersion artifactVersion, Map confOptions )
     {
         super( basedir, includes, excludes );
 
-        this.groups = groups;
-
-        this.excludedGroups = excludedGroups;
-
-        this.parallel = parallel.booleanValue();
-
-        this.threadCount = threadCount.intValue();
-
+        this.options = confOptions;
         this.testSourceDirectory = testSourceDirectory;
-
-    }
-
-    public Map locateTestSets( ClassLoader classLoader )
-        throws TestSetFailedException
-    {
-        // TODO: fix
-        // override classloader. That keeps us all together for now, which makes it work, but could pose problems of
-        // classloader separation if the tests use plexus-utils.
-        return super.locateTestSets( classLoader );
+        this.version = artifactVersion;
     }
 
     protected SurefireTestSet createTestSet( Class testClass, ClassLoader classLoader )
@@ -88,6 +61,7 @@ public class TestNGDirectoryTestSuite
         return new TestNGTestSet( testClass );
     }
 
+    // single class test
     public void execute( String testSetName, ReporterManager reporterManager, ClassLoader classLoader )
         throws ReporterException, TestSetFailedException
     {
@@ -102,13 +76,8 @@ public class TestNGDirectoryTestSuite
             throw new TestSetFailedException( "Unable to find test set '" + testSetName + "' in suite" );
         }
 
-        XmlSuite suite = new XmlSuite();
-        suite.setParallel( parallel );
-        suite.setThreadCount( threadCount );
-
-        createXmlTest( suite, testSet );
-
-        executeTestNG( suite, reporterManager, classLoader );
+        TestNGExecutor.run( new Class[]{testSet.getTestClass()}, this.testSourceDirectory, this.options, this.version,
+                            reporterManager, this );
     }
 
     public void execute( ReporterManager reporterManager, ClassLoader classLoader )
@@ -119,79 +88,14 @@ public class TestNGDirectoryTestSuite
             throw new IllegalStateException( "You must call locateTestSets before calling execute" );
         }
 
-        XmlSuite suite = new XmlSuite();
-        suite.setParallel( parallel );
-        suite.setThreadCount( threadCount );
-
-        for ( Iterator i = testSets.values().iterator(); i.hasNext(); )
+        Class[] testClasses = new Class[testSets.size()];
+        int i = 0;
+        for ( Iterator it = testSets.values().iterator(); it.hasNext(); )
         {
-            SurefireTestSet testSet = (SurefireTestSet) i.next();
-
-            createXmlTest( suite, testSet );
+            SurefireTestSet testSet = (SurefireTestSet) it.next();
+            testClasses[i++] = testSet.getTestClass();
         }
 
-        executeTestNG( suite, reporterManager, classLoader );
-    }
-
-    private void createXmlTest( XmlSuite suite, SurefireTestSet testSet )
-    {
-        XmlTest xmlTest = new XmlTest( suite );
-        xmlTest.setName( testSet.getName() );
-        xmlTest.setXmlClasses( Collections.singletonList( new XmlClass( testSet.getTestClass() ) ) );
-
-        if ( groups != null )
-        {
-            xmlTest.setIncludedGroups( Arrays.asList( groups.split( "," ) ) );
-        }
-        if ( excludedGroups != null )
-        {
-            xmlTest.setExcludedGroups( Arrays.asList( excludedGroups.split( "," ) ) );
-        }
-
-        // if ( !TestNGClassFinder.isTestNGClass( testSet.getTestClass(), annotationFinder ) )
-        // TODO: this is a bit dodgy, but isTestNGClass wasn't working
-        try
-        {
-            Class junitClass = Class.forName( "junit.framework.Test" );
-            Class junitBase = Class.forName( "junit.framework.TestCase" );
-
-            if ( junitClass.isAssignableFrom( testSet.getTestClass() ) ||
-                junitBase.isAssignableFrom( testSet.getTestClass() ) )
-            {
-                xmlTest.setJUnit( true );
-            }
-
-        }
-        catch ( ClassNotFoundException e )
-        {
-        }
-    }
-
-    private void executeTestNG( XmlSuite suite, ReporterManager reporterManager, ClassLoader classLoader )
-    {
-        TestNG testNG = new TestNG( false );
-
-        // turn off all TestNG output
-        testNG.setVerbose( 0 );
-
-        testNG.setXmlSuites( Collections.singletonList( suite ) );
-
-        testNG.setListenerClasses( new ArrayList() );
-
-        TestNGReporter reporter = new TestNGReporter( reporterManager, this );
-        testNG.addListener( (ITestListener) reporter );
-        testNG.addListener( (ISuiteListener) reporter );
-
-        // Set source path so testng can find javadoc annotations if not in 1.5 jvm
-        if ( testSourceDirectory != null )
-        {
-            testNG.setSourcePath( testSourceDirectory );
-        }
-
-        // workaround for SUREFIRE-49
-        // TestNG always creates an output directory, and if not set the name for the directory is "null"
-        testNG.setOutputDirectory( System.getProperty( "java.io.tmpdir" ) );
-
-        testNG.runSuitesLocally();
+        TestNGExecutor.run( testClasses, this.testSourceDirectory, this.options, this.version, reporterManager, this );
     }
 }
