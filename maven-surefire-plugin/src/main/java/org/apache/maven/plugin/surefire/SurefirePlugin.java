@@ -378,7 +378,7 @@ public class SurefirePlugin
      * forking. Prevents problems with JDKs which implement the service provider lookup mechanism by using
      * the system's classloader.
      *
-     * @parameter expression="${surefire.useSystemClassLoader}" default-value="false"
+     * @parameter expression="${surefire.useSystemClassLoader}" default-value="true"
      */
     private boolean useSystemClassLoader;
 
