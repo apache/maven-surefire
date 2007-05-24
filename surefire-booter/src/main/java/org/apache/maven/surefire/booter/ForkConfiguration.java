@@ -229,6 +229,7 @@ public class ForkConfiguration
         for ( Iterator it = classPath.iterator(); it.hasNext(); )
         {
             String el = (String) it.next();
+            el = "file://localhost/" + el;
             cp += " " + el + ( new File( el ).isDirectory() ? "/" : "" );
         }
 
