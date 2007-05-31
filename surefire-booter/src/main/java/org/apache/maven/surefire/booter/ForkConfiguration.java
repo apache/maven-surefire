@@ -229,8 +229,7 @@ public class ForkConfiguration
         for ( Iterator it = classPath.iterator(); it.hasNext(); )
         {
             String el = (String) it.next();
-            el = "file://localhost/" + el;
-            cp += " " + el + ( new File( el ).isDirectory() ? "/" : "" );
+            cp += " file://localhost/" + el + ( new File( el ).isDirectory() ? "/" : "" );
         }
 
         Manifest.Attribute attr = new Manifest.Attribute( "Class-Path", cp.trim() );
