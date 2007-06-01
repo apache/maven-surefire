@@ -19,6 +19,7 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
+import org.apache.maven.surefire.util.UrlUtils;
 import org.codehaus.plexus.archiver.ArchiverException;
 import org.codehaus.plexus.archiver.jar.JarArchiver;
 import org.codehaus.plexus.archiver.jar.Manifest;
@@ -229,7 +230,7 @@ public class ForkConfiguration
         for ( Iterator it = classPath.iterator(); it.hasNext(); )
         {
             String el = (String) it.next();
-            cp += " file://localhost/" + el + ( new File( el ).isDirectory() ? "/" : "" );
+            cp += UrlUtils.getURL( new File( el ) ).toExternalForm() + " ";
         }
 
         Manifest.Attribute attr = new Manifest.Attribute( "Class-Path", cp.trim() );
