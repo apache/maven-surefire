@@ -230,6 +230,7 @@ public class ForkConfiguration
         for ( Iterator it = classPath.iterator(); it.hasNext(); )
         {
             String el = (String) it.next();
+            // NOTE: if File points to a directory, this entry MUST end in '/'.
             cp += UrlUtils.getURL( new File( el ) ).toExternalForm() + " ";
         }
 
