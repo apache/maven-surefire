@@ -50,6 +50,8 @@ public class ForkConfiguration
 
     private String forkMode;
 
+    private boolean useSystemClassLoader;
+
     private Properties systemProperties;
 
     private String jvmExecutable;
@@ -85,6 +87,16 @@ public class ForkConfiguration
     public boolean isForking()
     {
         return !FORK_NEVER.equals( forkMode );
+    }
+
+    public void setUseSystemClassLoader( boolean useSystemClassLoader )
+    {
+        useSystemClassLoader= useSystemClassLoader;
+    }
+
+    public boolean isUseSystemClassLoader()
+    {
+        return useSystemClassLoader && isForking();
     }
 
     public void setSystemProperties( Properties systemProperties )
@@ -229,6 +241,7 @@ public class ForkConfiguration
         for ( Iterator it = classPath.iterator(); it.hasNext(); )
         {
             String el = (String) it.next();
+            // NOTE: if File points to a directory, this entry MUST end in '/'.
             cp += UrlUtils.getURL( new File( el ) ).toExternalForm() + " ";
         }
 

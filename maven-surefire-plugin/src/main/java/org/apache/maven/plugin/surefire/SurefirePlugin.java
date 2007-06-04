@@ -379,7 +379,7 @@ public class SurefirePlugin
      * forking. Prevents problems with JDKs which implement the service provider lookup mechanism by using
      * the system's classloader.
      *
-     * @parameter expression="${surefire.useSystemClassLoader}" default-value="true"
+     * @parameter expression="${surefire.useSystemClassLoader}" default-value="false"
      */
     private boolean useSystemClassLoader;
 
@@ -641,6 +641,8 @@ public class SurefirePlugin
 
         if ( fork.isForking() )
         {
+            fork.setUseSystemClassLoader( useSystemClassLoader );
+
             fork.setSystemProperties( systemProperties );
 
             if ( jvm == null || "".equals( jvm ) )
@@ -680,8 +682,6 @@ public class SurefirePlugin
         surefireBooter.setChildDelegation( childDelegation );
 
         surefireBooter.setReportsDirectory( reportsDirectory );
-
-        surefireBooter.setUseSystemClassLoader( useSystemClassLoader );
 
         addReporters( surefireBooter, fork.isForking() );
 
