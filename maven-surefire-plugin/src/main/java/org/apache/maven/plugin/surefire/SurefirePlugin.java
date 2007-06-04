@@ -378,7 +378,7 @@ public class SurefirePlugin
      * forking. Prevents problems with JDKs which implement the service provider lookup mechanism by using
      * the system's classloader.
      *
-     * @parameter expression="${surefire.useSystemClassLoader}" default-value="true"
+     * @parameter expression="${surefire.useSystemClassLoader}" default-value="false"
      */
     private boolean useSystemClassLoader;
 
@@ -491,7 +491,7 @@ public class SurefirePlugin
             throw new MojoExecutionException( "Unable to locate surefire-booter in the list of plugin artifacts" );
         }
 
-        surefireArtifact.isSnapshot(); // TODO: this is ridiculous, but it fixes getBaseVersion to be -SNAPSHOT if needed
+        //surefireArtifact.isSnapshot(); // TODO: this is ridiculous, but it fixes getBaseVersion to be -SNAPSHOT if needed
 
         Artifact junitArtifact;
         Artifact testNgArtifact;
@@ -666,6 +666,8 @@ public class SurefirePlugin
 
         if ( fork.isForking() )
         {
+            fork.setUseSystemClassLoader( useSystemClassLoader );
+
             fork.setSystemProperties( systemProperties );
 
             if ( jvm == null || "".equals( jvm ) )
@@ -705,8 +707,6 @@ public class SurefirePlugin
         surefireBooter.setChildDelegation( childDelegation );
 
         surefireBooter.setReportsDirectory( reportsDirectory );
-
-        surefireBooter.setUseSystemClassLoader( useSystemClassLoader );
 
         addReporters( surefireBooter, fork.isForking() );
 

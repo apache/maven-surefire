@@ -72,8 +72,6 @@ public class SurefireBooter
 
     private boolean redirectTestOutputToFile = false;
 
-    private boolean useSystemClassLoader = false;
-
     // ----------------------------------------------------------------------
     //
     // ----------------------------------------------------------------------
@@ -184,11 +182,6 @@ public class SurefireBooter
         this.forkConfiguration = forkConfiguration;
     }
 
-    public void setUseSystemClassLoader( boolean useSystemClassLoader )
-    {
-        this.useSystemClassLoader = useSystemClassLoader;
-    }
-
     public boolean run()
         throws SurefireBooterForkException, SurefireExecutionException
     {
@@ -227,7 +220,7 @@ public class SurefireBooter
         ClassLoader oldContextClassLoader = Thread.currentThread().getContextClassLoader();
         try
         {
-            ClassLoader testsClassLoader = useSystemClassLoader ? ClassLoader.getSystemClassLoader()
+            ClassLoader testsClassLoader = forkConfiguration.isUseSystemClassLoader() ? ClassLoader.getSystemClassLoader()
                 : createClassLoader( classPathUrls, null, childDelegation, true );
 
             // TODO: assertions = true shouldn't be required for this CL if we had proper separation (see TestNG)
@@ -274,7 +267,7 @@ public class SurefireBooter
             // The test classloader must be constructed first to avoid issues with commons-logging until we properly
             // separate the TestNG classloader
             ClassLoader testsClassLoader =
-                useSystemClassLoader ? getClass().getClassLoader()//ClassLoader.getSystemClassLoader()
+                forkConfiguration.isUseSystemClassLoader() ? getClass().getClassLoader()//ClassLoader.getSystemClassLoader()
                     : createClassLoader( classPathUrls, null, childDelegation, true );
 
             ClassLoader surefireClassLoader = createClassLoader( surefireClassPathUrls, testsClassLoader, true );
@@ -429,7 +422,7 @@ public class SurefireBooter
         addPropertiesForTypeHolder( reports, properties, "report." );
         addPropertiesForTypeHolder( testSuites, properties, "testSuite." );
 
-        for ( int i = 0; i < classPathUrls.size() && !useSystemClassLoader; i++ )
+        for ( int i = 0; i < classPathUrls.size() && !forkConfiguration.isUseSystemClassLoader(); i++ )
         {
             String url = (String) classPathUrls.get( i );
             properties.setProperty( "classPathUrl." + i, url );
@@ -442,7 +435,7 @@ public class SurefireBooter
         }
 
         properties.setProperty( "childDelegation", String.valueOf( childDelegation ) );
-        properties.setProperty( "useSystemClassLoader", String.valueOf( useSystemClassLoader ) );
+        properties.setProperty( "useSystemClassLoader", String.valueOf( forkConfiguration.isUseSystemClassLoader() ) );
     }
 
     private File writePropertiesFile( String name, Properties properties )
@@ -546,12 +539,12 @@ public class SurefireBooter
 
         bootClasspath.addAll( surefireBootClassPathUrls );
 
-        if ( useSystemClassLoader )
+        if ( forkConfiguration.isUseSystemClassLoader() )
         {
             bootClasspath.addAll( classPathUrls );
         }
 
-        Commandline cli = forkConfiguration.createCommandLine( bootClasspath, useSystemClassLoader );
+        Commandline cli = forkConfiguration.createCommandLine( bootClasspath, forkConfiguration.isUseSystemClassLoader() );
 
         cli.createArgument().setFile( surefireProperties );
 
@@ -796,6 +789,10 @@ public class SurefireBooter
 
             SurefireBooter surefireBooter = new SurefireBooter();
 
+            ForkConfiguration forkConfiguration = new ForkConfiguration();
+            forkConfiguration.setForkMode( "never" );
+            surefireBooter.setForkConfiguration( forkConfiguration );
+
             for ( Enumeration e = p.propertyNames(); e.hasMoreElements(); )
             {
                 String name = (String) e.nextElement();
@@ -835,8 +832,8 @@ public class SurefireBooter
                 }
                 else if ( "useSystemClassLoader".equals( name ) )
                 {
-                    surefireBooter.useSystemClassLoader =
-                        Boolean.valueOf( p.getProperty( "useSystemClassLoader" ) ).booleanValue();
+                    surefireBooter.forkConfiguration.setUseSystemClassLoader(
+                        Boolean.valueOf( p.getProperty( "useSystemClassLoader" ) ).booleanValue() );
                 }
             }
 

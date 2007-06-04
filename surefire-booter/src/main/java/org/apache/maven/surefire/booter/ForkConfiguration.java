@@ -51,6 +51,8 @@ public class ForkConfiguration
 
     private String forkMode;
 
+    private boolean useSystemClassLoader;
+
     private Properties systemProperties;
 
     private String jvmExecutable;
@@ -86,6 +88,16 @@ public class ForkConfiguration
     public boolean isForking()
     {
         return !FORK_NEVER.equals( forkMode );
+    }
+
+    public void setUseSystemClassLoader( boolean useSystemClassLoader )
+    {
+        useSystemClassLoader= useSystemClassLoader;
+    }
+
+    public boolean isUseSystemClassLoader()
+    {
+        return useSystemClassLoader && isForking();
     }
 
     public void setSystemProperties( Properties systemProperties )
