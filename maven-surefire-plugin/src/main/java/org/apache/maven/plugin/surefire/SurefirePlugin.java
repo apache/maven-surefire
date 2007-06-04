@@ -491,7 +491,7 @@ public class SurefirePlugin
             throw new MojoExecutionException( "Unable to locate surefire-booter in the list of plugin artifacts" );
         }
 
-        //surefireArtifact.isSnapshot(); // TODO: this is ridiculous, but it fixes getBaseVersion to be -SNAPSHOT if needed
+        surefireArtifact.isSnapshot(); // TODO: this is ridiculous, but it fixes getBaseVersion to be -SNAPSHOT if needed
 
         Artifact junitArtifact;
         Artifact testNgArtifact;
