@@ -91,6 +91,12 @@ public class SurefireBooter
 
     private File reportsDirectory;
 
+    /**
+     * This field is set to true if it's running from main.
+     * It's used to help decide what classloader to use.
+     */
+    private final boolean isForked;
+
     static
     {
         try
@@ -102,6 +108,16 @@ public class SurefireBooter
         {
             assertionStatusMethod = null;
         }
+    }
+
+    public SurefireBooter()
+    {
+        isForked = false;
+    }
+
+    private SurefireBooter( boolean isForked )
+    {
+        this.isForked = isForked;
     }
 
     // ----------------------------------------------------------------------
@@ -220,7 +236,7 @@ public class SurefireBooter
         ClassLoader oldContextClassLoader = Thread.currentThread().getContextClassLoader();
         try
         {
-            ClassLoader testsClassLoader = forkConfiguration.isUseSystemClassLoader() ? ClassLoader.getSystemClassLoader()
+            ClassLoader testsClassLoader = useSystemClassLoader() ? ClassLoader.getSystemClassLoader()
                 : createClassLoader( classPathUrls, null, childDelegation, true );
 
             // TODO: assertions = true shouldn't be required for this CL if we had proper separation (see TestNG)
@@ -267,7 +283,7 @@ public class SurefireBooter
             // The test classloader must be constructed first to avoid issues with commons-logging until we properly
             // separate the TestNG classloader
             ClassLoader testsClassLoader =
-                forkConfiguration.isUseSystemClassLoader() ? getClass().getClassLoader()//ClassLoader.getSystemClassLoader()
+                useSystemClassLoader() ? getClass().getClassLoader() // ClassLoader.getSystemClassLoader()
                     : createClassLoader( classPathUrls, null, childDelegation, true );
 
             ClassLoader surefireClassLoader = createClassLoader( surefireClassPathUrls, testsClassLoader, true );
@@ -422,7 +438,7 @@ public class SurefireBooter
         addPropertiesForTypeHolder( reports, properties, "report." );
         addPropertiesForTypeHolder( testSuites, properties, "testSuite." );
 
-        for ( int i = 0; i < classPathUrls.size() && !forkConfiguration.isUseSystemClassLoader(); i++ )
+        for ( int i = 0; i < classPathUrls.size() && useSystemClassLoader(); i++ )
         {
             String url = (String) classPathUrls.get( i );
             properties.setProperty( "classPathUrl." + i, url );
@@ -435,7 +451,7 @@ public class SurefireBooter
         }
 
         properties.setProperty( "childDelegation", String.valueOf( childDelegation ) );
-        properties.setProperty( "useSystemClassLoader", String.valueOf( forkConfiguration.isUseSystemClassLoader() ) );
+        properties.setProperty( "useSystemClassLoader", String.valueOf( useSystemClassLoader() ) );
     }
 
     private File writePropertiesFile( String name, Properties properties )
@@ -517,6 +533,12 @@ public class SurefireBooter
         }
     }
 
+    private final boolean useSystemClassLoader()
+    {
+        return forkConfiguration.isUseSystemClassLoader() &&
+            ( isForked || forkConfiguration.isForking() );
+    }
+
     private boolean fork( Properties properties, boolean showHeading, boolean showFooter )
         throws SurefireBooterForkException
     {
@@ -539,12 +561,12 @@ public class SurefireBooter
 
         bootClasspath.addAll( surefireBootClassPathUrls );
 
-        if ( forkConfiguration.isUseSystemClassLoader() )
+        if ( useSystemClassLoader() )
         {
             bootClasspath.addAll( classPathUrls );
         }
 
-        Commandline cli = forkConfiguration.createCommandLine( bootClasspath, forkConfiguration.isUseSystemClassLoader() );
+        Commandline cli = forkConfiguration.createCommandLine( bootClasspath, useSystemClassLoader() );
 
         cli.createArgument().setFile( surefireProperties );
 
@@ -787,7 +809,7 @@ public class SurefireBooter
             File surefirePropertiesFile = new File( args[0] );
             Properties p = loadProperties( surefirePropertiesFile );
 
-            SurefireBooter surefireBooter = new SurefireBooter();
+            SurefireBooter surefireBooter = new SurefireBooter( true );
 
             ForkConfiguration forkConfiguration = new ForkConfiguration();
             forkConfiguration.setForkMode( "never" );
@@ -890,5 +912,4 @@ public class SurefireBooter
         return new ForkingStreamConsumer( outputConsumer );
     }
 }
-
 

@@ -92,12 +92,12 @@ public class ForkConfiguration
 
     public void setUseSystemClassLoader( boolean useSystemClassLoader )
     {
-        useSystemClassLoader= useSystemClassLoader;
+        this.useSystemClassLoader = useSystemClassLoader;
     }
 
     public boolean isUseSystemClassLoader()
     {
-        return useSystemClassLoader && isForking();
+        return useSystemClassLoader;
     }
 
     public void setSystemProperties( Properties systemProperties )
