@@ -437,7 +437,7 @@ public class SurefireBooter
         addPropertiesForTypeHolder( reports, properties, "report." );
         addPropertiesForTypeHolder( testSuites, properties, "testSuite." );
 
-        for ( int i = 0; i < classPathUrls.size() && useSystemClassLoader(); i++ )
+        for ( int i = 0; i < classPathUrls.size() && !useSystemClassLoader(); i++ )
         {
             String url = (String) classPathUrls.get( i );
             properties.setProperty( "classPathUrl." + i, url );
