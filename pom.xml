@@ -168,7 +168,6 @@
             </plugin>
             <plugin>
               <artifactId>maven-surefire-plugin</artifactId>
-              <version>2.3</version>
               <configuration>
                 <forkMode>once</forkMode>
                 <childDelegation>true</childDelegation>
