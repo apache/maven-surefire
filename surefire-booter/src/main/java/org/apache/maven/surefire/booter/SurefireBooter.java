@@ -91,17 +91,22 @@ public class SurefireBooter
     private File reportsDirectory;
 
     /**
-     * This field is set to true if it's running from main.
-     * It's used to help decide what classloader to use.
+     * This field is set to true if it's running from main. It's used to help decide what classloader to use.
      */
     private final boolean isForked;
+
+    /**
+     * Whether to enable assertions or not (can be affected by the fork arguments, and the ability to do so based on the
+     * JVM).
+     */
+    private boolean enableAssertions;
 
     static
     {
         try
         {
             assertionStatusMethod =
-                ClassLoader.class.getMethod( "setDefaultAssertionStatus", new Class[]{boolean.class} );
+                ClassLoader.class.getMethod( "setDefaultAssertionStatus", new Class[] { boolean.class } );
         }
         catch ( NoSuchMethodException e )
         {
@@ -130,12 +135,12 @@ public class SurefireBooter
 
     public void addReport( String report, Object[] constructorParams )
     {
-        reports.add( new Object[]{report, constructorParams} );
+        reports.add( new Object[] { report, constructorParams } );
     }
 
     public void addTestSuite( String suiteClassName, Object[] constructorParams )
     {
-        testSuites.add( new Object[]{suiteClassName, constructorParams} );
+        testSuites.add( new Object[] { suiteClassName, constructorParams } );
     }
 
     public void addClassPathUrl( String path )
@@ -162,11 +167,10 @@ public class SurefireBooter
         }
     }
 
-
     /**
-     * When forking, setting this to true will make the test output to be saved in a file
-     * instead of showing it on the standard output
-     *
+     * When forking, setting this to true will make the test output to be saved in a file instead of showing it on the
+     * standard output
+     * 
      * @param redirectTestOutputToFile
      */
     public void setRedirectTestOutputToFile( boolean redirectTestOutputToFile )
@@ -176,7 +180,7 @@ public class SurefireBooter
 
     /**
      * Set the directory where reports will be saved
-     *
+     * 
      * @param reportsDirectory the directory
      */
     public void setReportsDirectory( File reportsDirectory )
@@ -231,27 +235,30 @@ public class SurefireBooter
 
         // TODO: replace with plexus
 
-        //noinspection CatchGenericClass,OverlyBroadCatchBlock
+        // noinspection CatchGenericClass,OverlyBroadCatchBlock
         ClassLoader oldContextClassLoader = Thread.currentThread().getContextClassLoader();
         try
         {
-            ClassLoader testsClassLoader = useSystemClassLoader() ? ClassLoader.getSystemClassLoader()
-                : createClassLoader( classPathUrls, null, childDelegation, true );
+            ClassLoader testsClassLoader =
+                useSystemClassLoader() ? ClassLoader.getSystemClassLoader() : createClassLoader( classPathUrls, null,
+                                                                                                 childDelegation );
 
             // TODO: assertions = true shouldn't be required for this CL if we had proper separation (see TestNG)
-            ClassLoader surefireClassLoader = createClassLoader( surefireClassPathUrls, testsClassLoader, true );
+            ClassLoader surefireClassLoader = createClassLoader( surefireClassPathUrls, testsClassLoader );
 
             Class surefireClass = surefireClassLoader.loadClass( Surefire.class.getName() );
 
             Object surefire = surefireClass.newInstance();
 
-            Method run = surefireClass.getMethod( "run", new Class[]{List.class, Object[].class, String.class,
-                ClassLoader.class, ClassLoader.class, Properties.class} );
+            Method run =
+                surefireClass.getMethod( "run", new Class[] { List.class, Object[].class, String.class,
+                    ClassLoader.class, ClassLoader.class, Properties.class } );
 
             Thread.currentThread().setContextClassLoader( testsClassLoader );
 
-            Boolean result = (Boolean) run.invoke( surefire, new Object[]{reports, testSuites.get( 0 ), testSet,
-                surefireClassLoader, testsClassLoader, results} );
+            Boolean result =
+                (Boolean) run.invoke( surefire, new Object[] { reports, testSuites.get( 0 ), testSet,
+                    surefireClassLoader, testsClassLoader, results } );
 
             return result.booleanValue();
         }
@@ -274,30 +281,31 @@ public class SurefireBooter
     {
         // TODO: replace with plexus
 
-        //noinspection CatchGenericClass,OverlyBroadCatchBlock
+        // noinspection CatchGenericClass,OverlyBroadCatchBlock
         ClassLoader oldContextClassLoader = Thread.currentThread().getContextClassLoader();
 
         try
         {
             // The test classloader must be constructed first to avoid issues with commons-logging until we properly
             // separate the TestNG classloader
-            ClassLoader testsClassLoader =
-                useSystemClassLoader() ? getClass().getClassLoader() // ClassLoader.getSystemClassLoader()
-                    : createClassLoader( classPathUrls, null, childDelegation, true );
+            ClassLoader testsClassLoader = useSystemClassLoader() ? getClass().getClassLoader() // ClassLoader.getSystemClassLoader()
+                            : createClassLoader( classPathUrls, null, childDelegation );
 
-            ClassLoader surefireClassLoader = createClassLoader( surefireClassPathUrls, testsClassLoader, true );
+            ClassLoader surefireClassLoader = createClassLoader( surefireClassPathUrls, testsClassLoader );
 
             Class surefireClass = surefireClassLoader.loadClass( Surefire.class.getName() );
 
             Object surefire = surefireClass.newInstance();
 
-            Method run = surefireClass.getMethod( "run", new Class[]{List.class, List.class, ClassLoader.class,
-                ClassLoader.class} );
+            Method run =
+                surefireClass.getMethod( "run", new Class[] { List.class, List.class, ClassLoader.class,
+                    ClassLoader.class } );
 
             Thread.currentThread().setContextClassLoader( testsClassLoader );
 
-            Boolean result = (Boolean) run.invoke( surefire, new Object[]{reports, testSuites, surefireClassLoader,
-                testsClassLoader} );
+            Boolean result =
+                (Boolean) run.invoke( surefire, new Object[] { reports, testSuites, surefireClassLoader,
+                    testsClassLoader } );
 
             return result.booleanValue();
         }
@@ -328,9 +336,9 @@ public class SurefireBooter
         ClassLoader surefireClassLoader;
         try
         {
-            testsClassLoader = createClassLoader( classPathUrls, null, false, true );
+            testsClassLoader = createClassLoader( classPathUrls, null, false );
             // TODO: assertions = true shouldn't be required if we had proper separation (see TestNG)
-            surefireClassLoader = createClassLoader( surefireClassPathUrls, testsClassLoader, false, true );
+            surefireClassLoader = createClassLoader( surefireClassPathUrls, testsClassLoader, false );
         }
         catch ( MalformedURLException e )
         {
@@ -385,16 +393,16 @@ public class SurefireBooter
         }
         catch ( NoSuchMethodException e )
         {
-            throw new SurefireBooterForkException(
-                "Unable to find appropriate constructor for test suite '" + className + "': " + e.getMessage(), e );
+            throw new SurefireBooterForkException( "Unable to find appropriate constructor for test suite '" +
+                className + "': " + e.getMessage(), e );
         }
 
         Map testSets;
         try
         {
-            Method m = suite.getClass().getMethod( "locateTestSets", new Class[]{ClassLoader.class} );
+            Method m = suite.getClass().getMethod( "locateTestSets", new Class[] { ClassLoader.class } );
 
-            testSets = (Map) m.invoke( suite, new Object[]{testsClassLoader} );
+            testSets = (Map) m.invoke( suite, new Object[] { testsClassLoader } );
         }
         catch ( IllegalAccessException e )
         {
@@ -450,6 +458,7 @@ public class SurefireBooter
         }
 
         properties.setProperty( "childDelegation", String.valueOf( childDelegation ) );
+        properties.setProperty( "enableAssertions", String.valueOf( enableAssertions ) );
         properties.setProperty( "useSystemClassLoader", String.valueOf( useSystemClassLoader() ) );
     }
 
@@ -512,8 +521,7 @@ public class SurefireBooter
 
     private final boolean useSystemClassLoader()
     {
-        return forkConfiguration.isUseSystemClassLoader() &&
-            ( isForked || forkConfiguration.isForking() );
+        return forkConfiguration.isUseSystemClassLoader() && ( isForked || forkConfiguration.isForking() );
     }
 
     private boolean fork( Properties properties, boolean showHeading, boolean showFooter )
@@ -598,14 +606,13 @@ public class SurefireBooter
         return returnCode == 0;
     }
 
-    private static ClassLoader createClassLoader( List classPathUrls, ClassLoader parent, boolean assertionsEnabled )
+    private ClassLoader createClassLoader( List classPathUrls, ClassLoader parent )
         throws MalformedURLException
     {
-        return createClassLoader( classPathUrls, parent, false, assertionsEnabled );
+        return createClassLoader( classPathUrls, parent, false );
     }
 
-    private static ClassLoader createClassLoader( List classPathUrls, ClassLoader parent, boolean childDelegation,
-                                                  boolean assertionsEnabled )
+    private ClassLoader createClassLoader( List classPathUrls, ClassLoader parent, boolean childDelegation )
         throws MalformedURLException
     {
         List urls = new ArrayList();
@@ -626,7 +633,7 @@ public class SurefireBooter
         {
             try
             {
-                Object[] args = new Object[]{assertionsEnabled ? Boolean.TRUE : Boolean.FALSE};
+                Object[] args = new Object[] { enableAssertions ? Boolean.TRUE : Boolean.FALSE };
                 if ( parent != null )
                 {
                     assertionStatusMethod.invoke( parent, args );
@@ -710,10 +717,14 @@ public class SurefireBooter
         if ( paramProperty != null )
         {
             // bit of a glitch that it need sto be done twice to do an odd number of vertical bars (eg |||, |||||).
-            String[] params = StringUtils.split(
-                StringUtils.replace( StringUtils.replace( paramProperty, "||", "| |" ), "||", "| |" ), "|" );
-            String[] types = StringUtils.split(
-                StringUtils.replace( StringUtils.replace( typeProperty, "||", "| |" ), "||", "| |" ), "|" );
+            String[] params =
+                StringUtils.split(
+                                   StringUtils.replace( StringUtils.replace( paramProperty, "||", "| |" ), "||", "| |" ),
+                                   "|" );
+            String[] types =
+                StringUtils.split(
+                                   StringUtils.replace( StringUtils.replace( typeProperty, "||", "| |" ), "||", "| |" ),
+                                   "|" );
 
             paramObjects = new Object[params.length];
 
@@ -754,18 +765,15 @@ public class SurefireBooter
     }
 
     /**
-     * This method is invoked when Surefire is forked - this method parses and
-     * organizes the arguments passed to it and then calls the Surefire class'
-     * run method.
-     * <p/>
-     * The system exit code will be 1 if an exception is thrown.
-     *
+     * This method is invoked when Surefire is forked - this method parses and organizes the arguments passed to it and
+     * then calls the Surefire class' run method. <p/> The system exit code will be 1 if an exception is thrown.
+     * 
      * @param args
      */
     public static void main( String[] args )
         throws Throwable
     {
-        //noinspection CatchGenericClass,OverlyBroadCatchBlock
+        // noinspection CatchGenericClass,OverlyBroadCatchBlock
         try
         {
             if ( args.length > 1 )
@@ -819,10 +827,15 @@ public class SurefireBooter
                     surefireBooter.childDelegation =
                         Boolean.valueOf( p.getProperty( "childDelegation" ) ).booleanValue();
                 }
+                else if ( "enableAssertions".equals( name ) )
+                {
+                    surefireBooter.enableAssertions =
+                        Boolean.valueOf( p.getProperty( "enableAssertions" ) ).booleanValue();
+                }
                 else if ( "useSystemClassLoader".equals( name ) )
                 {
-                    surefireBooter.forkConfiguration.setUseSystemClassLoader(
-                        Boolean.valueOf( p.getProperty( "useSystemClassLoader" ) ).booleanValue() );
+                    surefireBooter.forkConfiguration.setUseSystemClassLoader( Boolean.valueOf(
+                                                                                               p.getProperty( "useSystemClassLoader" ) ).booleanValue() );
                 }
             }
 
@@ -839,15 +852,15 @@ public class SurefireBooter
 
             surefireBooter.writePropertiesFile( surefirePropertiesFile, "surefire", p );
 
-            //noinspection CallToSystemExit
+            // noinspection CallToSystemExit
             System.exit( result ? TESTS_SUCCEEDED_EXIT_CODE : TESTS_FAILED_EXIT_CODE );
         }
         catch ( Throwable t )
         {
             // Just throwing does getMessage() and a local trace - we want to call printStackTrace for a full trace
-            //noinspection UseOfSystemOutOrSystemErr
+            // noinspection UseOfSystemOutOrSystemErr
             t.printStackTrace( System.err );
-            //noinspection ProhibitedExceptionThrown,CallToSystemExit
+            // noinspection ProhibitedExceptionThrown,CallToSystemExit
             System.exit( 1 );
         }
     }
@@ -878,5 +891,9 @@ public class SurefireBooter
 
         return new ForkingStreamConsumer( outputConsumer );
     }
-}
 
+    public void setEnableAssertions( boolean enableAssertions )
+    {
+        this.enableAssertions = enableAssertions;
+    }
+}

@@ -59,7 +59,7 @@ import java.util.Properties;
 
 /**
  * Run tests using Surefire.
- *
+ * 
  * @author Jason van Zyl
  * @version $Id$
  * @requiresDependencyResolution test
@@ -71,28 +71,31 @@ public class SurefirePlugin
 {
     /**
      * Set this to 'true' to bypass unit tests entirely. Its use is NOT RECOMMENDED, but quite convenient on occasion.
-     *
+     * 
      * @parameter expression="${maven.test.skip}"
      */
     private boolean skip;
 
     /**
-     * Set this to 'true' to bypass unit tests execution, but still compile them. Its use is NOT RECOMMENDED, but quite convenient on occasion.
-     *
+     * Set this to 'true' to bypass unit tests execution, but still compile them. Its use is NOT RECOMMENDED, but quite
+     * convenient on occasion.
+     * 
      * @parameter expression="${maven.test.skip.exec}"
      */
     private boolean skipExec;
 
     /**
-     * Set this to true to ignore a failure during testing. Its use is NOT RECOMMENDED, but quite convenient on occasion.
-     *
+     * Set this to true to ignore a failure during testing. Its use is NOT RECOMMENDED, but quite convenient on
+     * occasion.
+     * 
      * @parameter expression="${maven.test.failure.ignore}"
      */
     private boolean testFailureIgnore;
 
     /**
-     * The base directory of the project being tested. This can be obtained in your unit test by System.getProperty("basedir").
-     *
+     * The base directory of the project being tested. This can be obtained in your unit test by
+     * System.getProperty("basedir").
+     * 
      * @parameter expression="${basedir}"
      * @required
      */
@@ -101,7 +104,7 @@ public class SurefirePlugin
     // FIXME this field is not used - remove it
     /**
      * The directory containing generated classes of the project being tested.
-     *
+     * 
      * @parameter expression="${project.build.outputDirectory}"
      * @required
      * @deprecated
@@ -110,7 +113,7 @@ public class SurefirePlugin
 
     /**
      * The directory containing generated test classes of the project being tested.
-     *
+     * 
      * @parameter expression="${project.build.testOutputDirectory}"
      * @required
      */
@@ -118,7 +121,7 @@ public class SurefirePlugin
 
     /**
      * The classpath elements of the project being tested.
-     *
+     * 
      * @parameter expression="${project.testClasspathElements}"
      * @required
      * @readonly
@@ -127,49 +130,51 @@ public class SurefirePlugin
 
     /**
      * Base directory where all reports are written to.
-     *
+     * 
      * @parameter expression="${project.build.directory}/surefire-reports"
      */
     private File reportsDirectory;
 
     /**
      * The test source directory containing test class sources.
-     *
+     * 
      * @parameter expression="${project.build.testSourceDirectory}"
      * @required
      */
     private File testSourceDirectory;
 
     /**
-     * Specify this parameter(can be a comma separated list) if you want to use the test pattern matching notation, Ant pattern matching, to select tests to run.
-     * The Ant pattern will be used to create an include pattern formatted like <code>**&#47;${test}.java</code>
-     * When used, the <code>includes</code> and <code>excludes</code> patterns parameters are ignored.
-     *
+     * Specify this parameter(can be a comma separated list) if you want to use the test pattern matching notation, Ant
+     * pattern matching, to select tests to run. The Ant pattern will be used to create an include pattern formatted
+     * like <code>**&#47;${test}.java</code> When used, the <code>includes</code> and <code>excludes</code>
+     * patterns parameters are ignored.
+     * 
      * @parameter expression="${test}"
      */
     private String test;
 
     /**
-     * List of patterns (separated by commas) used to specify the tests that should be included in testing.
-     * When not specified and when the <code>test</code> parameter is not specified, the default includes will be
+     * List of patterns (separated by commas) used to specify the tests that should be included in testing. When not
+     * specified and when the <code>test</code> parameter is not specified, the default includes will be
      * <code>**&#47;Test*.java   **&#47;*Test.java   **&#47;*TestCase.java</code>
-     *
+     * 
      * @parameter
      */
     private List includes;
 
     /**
-     * List of patterns (separated by commas) used to specify the tests that should be excluded in testing.
-     * When not specified and when the <code>test</code> parameter is not specified, the default excludes will be
+     * List of patterns (separated by commas) used to specify the tests that should be excluded in testing. When not
+     * specified and when the <code>test</code> parameter is not specified, the default excludes will be
      * <code>**&#47;Abstract*Test.java  **&#47;Abstract*TestCase.java **&#47;*$*</code>
-     *
+     * 
      * @parameter
      */
     private List excludes;
 
     /**
-     * ArtifactRepository of the localRepository. To obtain the directory of localRepository in unit tests use System.setProperty( "localRepository").
-     *
+     * ArtifactRepository of the localRepository. To obtain the directory of localRepository in unit tests use
+     * System.setProperty( "localRepository").
+     * 
      * @parameter expression="${localRepository}"
      * @required
      * @readonly
@@ -178,14 +183,14 @@ public class SurefirePlugin
 
     /**
      * List of System properties to pass to the JUnit tests.
-     *
+     * 
      * @parameter
      */
     private Properties systemProperties;
 
     /**
      * Map of of plugin artifacts.
-     *
+     * 
      * @parameter expression="${plugin.artifactMap}"
      * @required
      * @readonly
@@ -194,7 +199,7 @@ public class SurefirePlugin
 
     /**
      * Map of of project artifacts.
-     *
+     * 
      * @parameter expression="${project.artifactMap}"
      * @required
      * @readonly
@@ -203,161 +208,152 @@ public class SurefirePlugin
 
     /**
      * Option to print summary of test suites or just print the test cases that has errors.
-     *
-     * @parameter expression="${surefire.printSummary}"
-     * default-value="true"
+     * 
+     * @parameter expression="${surefire.printSummary}" default-value="true"
      */
     private boolean printSummary;
 
     /**
-     * Selects the formatting for the test report to be generated.  Can be set as brief or plain.
-     *
-     * @parameter expression="${surefire.reportFormat}"
-     * default-value="brief"
+     * Selects the formatting for the test report to be generated. Can be set as brief or plain.
+     * 
+     * @parameter expression="${surefire.reportFormat}" default-value="brief"
      */
     private String reportFormat;
 
     /**
      * Option to generate a file test report or just output the test report to the console.
-     *
-     * @parameter expression="${surefire.useFile}"
-     * default-value="true"
+     * 
+     * @parameter expression="${surefire.useFile}" default-value="true"
      */
     private boolean useFile;
 
     /**
-     * When forking, set this to true to redirect the unit test standard output to a file
-     * (found in reportsDirectory/testName-output.txt).
-     *
+     * When forking, set this to true to redirect the unit test standard output to a file (found in
+     * reportsDirectory/testName-output.txt).
+     * 
      * @parameter expression="${maven.test.redirectTestOutputToFile}" default-value="false"
      */
     private boolean redirectTestOutputToFile;
 
     /**
-     * Option to specify the forking mode. Can be "never", "once" or "always".
-     * "none" and "pertest" are also accepted for backwards compatibility.
-     *
+     * Option to specify the forking mode. Can be "never", "once" or "always". "none" and "pertest" are also accepted
+     * for backwards compatibility.
+     * 
      * @parameter expression="${forkMode}" default-value="once"
      */
     private String forkMode;
 
     /**
-     * Option to specify the jvm (or path to the java executable) to use with
-     * the forking options. For the default, the jvm will be the same as the one
-     * used to run Maven.
-     *
+     * Option to specify the jvm (or path to the java executable) to use with the forking options. For the default, the
+     * jvm will be the same as the one used to run Maven.
+     * 
      * @parameter expression="${jvm}"
      */
     private String jvm;
 
     /**
      * Arbitrary options to set on the command line.
-     *
+     * 
      * @parameter expression="${argLine}"
      */
     private String argLine;
 
     /**
      * Additional environments to set on the command line.
-     *
+     * 
      * @parameter
      */
     private Map environmentVariables = new HashMap();
 
     /**
      * Command line working directory.
-     *
+     * 
      * @parameter
      */
     private File workingDirectory;
 
     /**
-     * When false it makes tests run using the standard classloader delegation instead of the default
-     * Maven isolated classloader. Only used when forking (forkMode is not "none").<br/>
-     * Setting it to false helps with some problems caused by conflicts between
-     * xml parsers in the classpath and the Java 5 provider parser.
-     *
-     * @parameter expression="${childDelegation}"
-     * default-value="false"
+     * When false it makes tests run using the standard classloader delegation instead of the default Maven isolated
+     * classloader. Only used when forking (forkMode is not "none").<br/> Setting it to false helps with some problems
+     * caused by conflicts between xml parsers in the classpath and the Java 5 provider parser.
+     * 
+     * @parameter expression="${childDelegation}" default-value="false"
      */
     private boolean childDelegation;
 
     /**
-     * Groups for this test. Only classes/methods/etc decorated with one of the
-     * groups specified here will be included in test run, if specified.
-     *
+     * Groups for this test. Only classes/methods/etc decorated with one of the groups specified here will be included
+     * in test run, if specified.
+     * 
      * @parameter expression="${groups}"
      */
     private String groups;
 
     /**
-     * Excluded groups. Any methods/classes/etc with one of the groups specified in this
-     * list will specifically not be run.
-     *
+     * Excluded groups. Any methods/classes/etc with one of the groups specified in this list will specifically not be
+     * run.
+     * 
      * @parameter expression="${excludedGroups}"
      */
     private String excludedGroups;
 
     /**
-     * List of TestNG suite xml file locations, seperated by commas. It should be noted that
-     * if suiteXmlFiles is specified, <b>no</b> other tests will be run, ignoring other parameters,
-     * like includes and excludes.
-     *
+     * List of TestNG suite xml file locations, seperated by commas. It should be noted that if suiteXmlFiles is
+     * specified, <b>no</b> other tests will be run, ignoring other parameters, like includes and excludes.
+     * 
      * @parameter
      */
     private File[] suiteXmlFiles;
 
     /**
-     * The attribute thread-count allows you to specify how many threads should be allocated
-     * for this execution. Only makes sense to use in conjunction with parallel.
-     *
-     * @parameter expression="${threadCount}"
-     * default-value="5"
+     * The attribute thread-count allows you to specify how many threads should be allocated for this execution. Only
+     * makes sense to use in conjunction with parallel.
+     * 
+     * @parameter expression="${threadCount}" default-value="5"
      */
     private int threadCount;
 
     /**
-     * When you use the parallel attribute, TestNG will try to run all your test methods in
-     * separate threads, except for methods that depend on each other, which will be run in
-     * the same thread in order to respect their order of execution.
-     *
-     * @parameter expression="${parallel}"
-     * default-value="false"
+     * When you use the parallel attribute, TestNG will try to run all your test methods in separate threads, except for
+     * methods that depend on each other, which will be run in the same thread in order to respect their order of
+     * execution.
+     * 
+     * @parameter expression="${parallel}" default-value="false"
      * @todo test how this works with forking, and console/file output parallelism
      */
     private boolean parallel;
 
     /**
      * Whether to trim the stack trace in the reports to just the lines within the test, or show the full trace.
-     *
+     * 
      * @parameter expression="${trimStackTrace}" default-value="true"
      */
     private boolean trimStackTrace;
 
     /**
      * Resolves the artifacts needed.
-     *
+     * 
      * @component
      */
     private ArtifactResolver artifactResolver;
 
     /**
      * Creates the artifact
-     *
+     * 
      * @component
      */
     private ArtifactFactory artifactFactory;
 
     /**
      * The plugin remote repositories declared in the pom.
-     *
+     * 
      * @parameter expression="${project.pluginArtifactRepositories}"
      */
     private List remoteRepositories;
 
     /**
      * For retrieval of artifact's metadata.
-     *
+     * 
      * @component
      */
     private ArtifactMetadataSource metadataSource;
@@ -370,19 +366,27 @@ public class SurefirePlugin
 
     /**
      * Flag to disable the generation of report files in xml format.
-     *
+     * 
      * @parameter expression="${disableXmlReport}" default-value="false"
      */
     private boolean disableXmlReport;
 
     /**
-     * Option to pass dependencies to the system's classloader instead of using an isolated class loader when
-     * forking. Prevents problems with JDKs which implement the service provider lookup mechanism by using
-     * the system's classloader.
-     *
+     * Option to pass dependencies to the system's classloader instead of using an isolated class loader when forking.
+     * Prevents problems with JDKs which implement the service provider lookup mechanism by using the system's
+     * classloader.
+     * 
      * @parameter expression="${surefire.useSystemClassLoader}" default-value="false"
      */
     private boolean useSystemClassLoader;
+
+    /**
+     * By default, Surefire enables JVM assertions for the execution of your test cases. To disable the assertions, set
+     * this flag to <code>false</code>.
+     * 
+     * @parameter expression="${enableAssertions}" default-value="true"
+     */
+    private boolean enableAssertions;
 
     public void execute()
         throws MojoExecutionException, MojoFailureException
@@ -470,7 +474,8 @@ public class SurefirePlugin
             throw new MojoExecutionException( "Unable to locate surefire-booter in the list of plugin artifacts" );
         }
 
-        surefireArtifact.isSnapshot(); // TODO: this is ridiculous, but it fixes getBaseVersion to be -SNAPSHOT if needed
+        surefireArtifact.isSnapshot(); // TODO: this is ridiculous, but it fixes getBaseVersion to be -SNAPSHOT if
+        // needed
 
         Artifact junitArtifact;
         Artifact testNgArtifact;
@@ -491,8 +496,8 @@ public class SurefirePlugin
                 if ( !range.containsVersion( testNgArtifact.getSelectedVersion() ) )
                 {
                     throw new MojoFailureException(
-                        "TestNG support requires version 4.7 or above. You have declared version " +
-                            testNgArtifact.getVersion() );
+                                                    "TestNG support requires version 4.7 or above. You have declared version " +
+                                                        testNgArtifact.getVersion() );
                 }
 
                 // The plugin uses a JDK based profile to select the right testng. We might be explicity using a
@@ -512,8 +517,8 @@ public class SurefirePlugin
         }
         catch ( ArtifactNotFoundException e )
         {
-            throw new MojoExecutionException(
-                "Unable to locate required surefire provider dependency: " + e.getMessage(), e );
+            throw new MojoExecutionException( "Unable to locate required surefire provider dependency: " +
+                e.getMessage(), e );
         }
         catch ( InvalidVersionSpecificationException e )
         {
@@ -535,8 +540,8 @@ public class SurefirePlugin
                 File file = suiteXmlFiles[i];
                 if ( file.exists() )
                 {
-                    surefireBooter.addTestSuite( "org.apache.maven.surefire.testng.TestNGXmlTestSuite",
-                                                 new Object[]{file, testSourceDirectory.getAbsolutePath()} );
+                    surefireBooter.addTestSuite( "org.apache.maven.surefire.testng.TestNGXmlTestSuite", new Object[] {
+                        file, testSourceDirectory.getAbsolutePath() } );
                 }
             }
         }
@@ -573,26 +578,29 @@ public class SurefirePlugin
                 // Have to wrap in an ArrayList as surefire expects an ArrayList instead of a List for some reason
                 if ( includes == null || includes.size() == 0 )
                 {
-                    includes = new ArrayList(
-                        Arrays.asList( new String[]{"**/Test*.java", "**/*Test.java", "**/*TestCase.java"} ) );
+                    includes =
+                        new ArrayList( Arrays.asList( new String[] { "**/Test*.java", "**/*Test.java",
+                            "**/*TestCase.java" } ) );
                 }
                 if ( excludes == null || excludes.size() == 0 )
                 {
-                    excludes = new ArrayList(
-                        Arrays.asList( new String[]{"**/Abstract*Test.java", "**/Abstract*TestCase.java", "**/*$*"} ) );
+                    excludes =
+                        new ArrayList( Arrays.asList( new String[] { "**/Abstract*Test.java",
+                            "**/Abstract*TestCase.java", "**/*$*" } ) );
                 }
             }
 
             if ( testNgArtifact != null )
             {
-                surefireBooter.addTestSuite( "org.apache.maven.surefire.testng.TestNGDirectoryTestSuite", new Object[]{
+                surefireBooter.addTestSuite( "org.apache.maven.surefire.testng.TestNGDirectoryTestSuite", new Object[] {
                     testClassesDirectory, includes, excludes, groups, excludedGroups, Boolean.valueOf( parallel ),
-                    new Integer( threadCount ), testSourceDirectory.getAbsolutePath()} );
+                    new Integer( threadCount ), testSourceDirectory.getAbsolutePath() } );
             }
             else
             {
                 String junitDirectoryTestSuite;
-                if ( junitArtifact != null && junitArtifact.getBaseVersion() != null && junitArtifact.getBaseVersion().startsWith( "4" ) )
+                if ( junitArtifact != null && junitArtifact.getBaseVersion() != null &&
+                    junitArtifact.getBaseVersion().startsWith( "4" ) )
                 {
                     junitDirectoryTestSuite = "org.apache.maven.surefire.junit4.JUnit4DirectoryTestSuite";
                 }
@@ -603,8 +611,8 @@ public class SurefirePlugin
 
                 // fall back to JUnit, which also contains POJO support. Also it can run
                 // classes compiled against JUnit since it has a dependency on JUnit itself.
-                surefireBooter.addTestSuite( junitDirectoryTestSuite,
-                                             new Object[]{testClassesDirectory, includes, excludes} );
+                surefireBooter.addTestSuite( junitDirectoryTestSuite, new Object[] { testClassesDirectory, includes,
+                    excludes } );
             }
         }
 
@@ -674,6 +682,15 @@ public class SurefirePlugin
 
                 fork.setDebug( true );
             }
+
+            if ( argLine != null )
+            {
+                List args = Arrays.asList( argLine.split( " " ) );
+                if ( args.contains( "-da" ) || args.contains( "-disableassertions" ) )
+                {
+                    enableAssertions = false;
+                }
+            }
         }
 
         surefireBooter.setRedirectTestOutputToFile( redirectTestOutputToFile );
@@ -681,6 +698,9 @@ public class SurefirePlugin
         surefireBooter.setForkConfiguration( fork );
 
         surefireBooter.setChildDelegation( childDelegation );
+
+        // FIXME: test with forking
+        surefireBooter.setEnableAssertions( enableAssertions );
 
         surefireBooter.setReportsDirectory( reportsDirectory );
 
@@ -699,13 +719,13 @@ public class SurefirePlugin
         }
     }
 
-    private void addProvider( SurefireBooter surefireBooter, String provider, String version,
-                              Artifact filteredArtifact )
+    private void addProvider( SurefireBooter surefireBooter, String provider, String version, Artifact filteredArtifact )
         throws ArtifactNotFoundException, ArtifactResolutionException
     {
-        Artifact providerArtifact = artifactFactory.createDependencyArtifact( "org.apache.maven.surefire", provider,
-                                                                              VersionRange.createFromVersion( version ),
-                                                                              "jar", null, Artifact.SCOPE_TEST );
+        Artifact providerArtifact =
+            artifactFactory.createDependencyArtifact( "org.apache.maven.surefire", provider,
+                                                      VersionRange.createFromVersion( version ), "jar", null,
+                                                      Artifact.SCOPE_TEST );
         ArtifactResolutionResult result = resolveArtifact( filteredArtifact, providerArtifact );
 
         for ( Iterator i = result.getArtifacts().iterator(); i.hasNext(); )
@@ -724,8 +744,9 @@ public class SurefirePlugin
         ArtifactFilter filter = null;
         if ( filteredArtifact != null )
         {
-            filter = new ExcludesArtifactFilter(
-                Collections.singletonList( filteredArtifact.getGroupId() + ":" + filteredArtifact.getArtifactId() ) );
+            filter =
+                new ExcludesArtifactFilter( Collections.singletonList( filteredArtifact.getGroupId() + ":" +
+                    filteredArtifact.getArtifactId() ) );
         }
 
         Artifact originatingArtifact = artifactFactory.createBuildArtifact( "dummy", "dummy", "1.0", "jar" );
@@ -779,10 +800,12 @@ public class SurefirePlugin
     }
 
     /**
-     * <p> Adds Reporters that will generate reports with different formatting.
-     * <p> The Reporter that will be added will be based on the value of the parameter
-     * useFile, reportFormat, and printSummary.
-     *
+     * <p>
+     * Adds Reporters that will generate reports with different formatting.
+     * <p>
+     * The Reporter that will be added will be based on the value of the parameter useFile, reportFormat, and
+     * printSummary.
+     * 
      * @param surefireBooter The surefire booter that will run tests.
      * @param forking
      */
@@ -795,40 +818,40 @@ public class SurefirePlugin
             {
                 if ( forking )
                 {
-                    surefireBooter.addReport( ForkingConsoleReporter.class.getName(), new Object[]{trimStackTrace} );
+                    surefireBooter.addReport( ForkingConsoleReporter.class.getName(), new Object[] { trimStackTrace } );
                 }
                 else
                 {
-                    surefireBooter.addReport( ConsoleReporter.class.getName(), new Object[]{trimStackTrace} );
+                    surefireBooter.addReport( ConsoleReporter.class.getName(), new Object[] { trimStackTrace } );
                 }
             }
 
             if ( BRIEF_REPORT_FORMAT.equals( reportFormat ) )
             {
-                surefireBooter.addReport( BriefFileReporter.class.getName(),
-                                          new Object[]{reportsDirectory, trimStackTrace} );
+                surefireBooter.addReport( BriefFileReporter.class.getName(), new Object[] { reportsDirectory,
+                    trimStackTrace } );
             }
             else if ( PLAIN_REPORT_FORMAT.equals( reportFormat ) )
             {
                 surefireBooter.addReport( FileReporter.class.getName(),
-                                          new Object[]{reportsDirectory, trimStackTrace} );
+                                          new Object[] { reportsDirectory, trimStackTrace } );
             }
         }
         else
         {
             if ( BRIEF_REPORT_FORMAT.equals( reportFormat ) )
             {
-                surefireBooter.addReport( BriefConsoleReporter.class.getName(), new Object[]{trimStackTrace} );
+                surefireBooter.addReport( BriefConsoleReporter.class.getName(), new Object[] { trimStackTrace } );
             }
             else if ( PLAIN_REPORT_FORMAT.equals( reportFormat ) )
             {
-                surefireBooter.addReport( DetailedConsoleReporter.class.getName(), new Object[]{trimStackTrace} );
+                surefireBooter.addReport( DetailedConsoleReporter.class.getName(), new Object[] { trimStackTrace } );
             }
         }
 
         if ( !disableXmlReport )
         {
-            surefireBooter.addReport( XMLReporter.class.getName(), new Object[]{reportsDirectory, trimStackTrace} );
+            surefireBooter.addReport( XMLReporter.class.getName(), new Object[] { reportsDirectory, trimStackTrace } );
         }
     }
 
