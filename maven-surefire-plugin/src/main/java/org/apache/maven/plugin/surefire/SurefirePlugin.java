@@ -98,12 +98,13 @@ public class SurefirePlugin
      */
     private File basedir;
 
-    // FIXME this field is not used
+    // FIXME this field is not used - remove it
     /**
      * The directory containing generated classes of the project being tested.
      *
      * @parameter expression="${project.build.outputDirectory}"
      * @required
+     * @deprecated
      */
     private File classesDirectory;
 
@@ -845,5 +846,10 @@ public class SurefirePlugin
     public void setSkipExec( boolean skipExec )
     {
         this.skipExec = skipExec;
+    }
+
+    public File getClassesDirectory()
+    {
+        return classesDirectory;
     }
 }

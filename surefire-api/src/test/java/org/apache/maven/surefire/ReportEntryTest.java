@@ -36,6 +36,7 @@ public class ReportEntryTest
 
     public void testFoo()
     {
-        ReportEntry e = new ReportEntry( "one", "two", "three" );
+        // TODO: useless test... complete it
+        new ReportEntry( "one", "two", "three" );
     }
 }
