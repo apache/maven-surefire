@@ -419,7 +419,8 @@ public class SurefirePlugin
 
             if ( !success )
             {
-                String msg = "There are test failures.";
+                // TODO: i18n
+                String msg = "There are test failures.\n\nPlease refer to " + reportsDirectory + " for the individual test results.";
 
                 if ( testFailureIgnore )
                 {
