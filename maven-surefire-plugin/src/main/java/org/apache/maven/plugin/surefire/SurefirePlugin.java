@@ -699,7 +699,6 @@ public class SurefirePlugin
 
         surefireBooter.setChildDelegation( childDelegation );
 
-        // FIXME: test with forking
         surefireBooter.setEnableAssertions( enableAssertions );
 
         surefireBooter.setReportsDirectory( reportsDirectory );
