@@ -51,6 +51,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 /**
  * @author Jason van Zyl
@@ -783,6 +785,10 @@ public class SurefireBooter
 
             File surefirePropertiesFile = new File( args[0] );
             Properties p = loadProperties( surefirePropertiesFile );
+            
+            SortedMap classPathUrls = new TreeMap();
+            
+            SortedMap surefireClassPathUrls = new TreeMap();
 
             SurefireBooter surefireBooter = new SurefireBooter( true );
 
@@ -812,11 +818,11 @@ public class SurefireBooter
                 }
                 else if ( name.startsWith( "classPathUrl." ) )
                 {
-                    surefireBooter.addClassPathUrl( p.getProperty( name ) );
+                    classPathUrls.put(Integer.valueOf(name.split("\\.")[1]), p.getProperty( name ));
                 }
                 else if ( name.startsWith( "surefireClassPathUrl." ) )
                 {
-                    surefireBooter.addSurefireClassPathUrl( p.getProperty( name ) );
+                    surefireClassPathUrls.put(Integer.valueOf(name.split("\\.")[1]), p.getProperty( name ));
                 }
                 else if ( name.startsWith( "surefireBootClassPathUrl." ) )
                 {
@@ -838,6 +844,19 @@ public class SurefireBooter
                                                                                                p.getProperty( "useSystemClassLoader" ) ).booleanValue() );
                 }
             }
+            
+            for (Iterator cpi = classPathUrls.keySet().iterator(); cpi.hasNext();) 
+            {
+                String url = (String) classPathUrls.get(cpi.next());
+                surefireBooter.addClassPathUrl(url);
+            }
+
+            for (Iterator scpi = surefireClassPathUrls.keySet().iterator(); scpi.hasNext();) 
+            {
+                String url = (String) surefireClassPathUrls.get(scpi.next());
+                surefireBooter.addSurefireClassPathUrl(url);
+            }
+            
 
             String testSet = p.getProperty( "testSet" );
             boolean result;
