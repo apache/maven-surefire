@@ -562,6 +562,9 @@ public class SurefirePlugin
 
                 excludes = new ArrayList();
 
+                // Allow paths delimited by '.' or '/'
+                test = test.replace('.', '/');
+                
                 String[] testRegexes = StringUtils.split( test, "," );
 
                 for ( int i = 0; i < testRegexes.length; i++ )
