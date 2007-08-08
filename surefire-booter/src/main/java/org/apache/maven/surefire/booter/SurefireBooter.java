@@ -818,11 +818,11 @@ public class SurefireBooter
                 }
                 else if ( name.startsWith( "classPathUrl." ) )
                 {
-                    classPathUrls.put(Integer.valueOf(name.split("\\.")[1]), p.getProperty( name ));
+                    classPathUrls.put(Integer.valueOf(name.substring(name.indexOf('.') + 1)), p.getProperty( name ));
                 }
                 else if ( name.startsWith( "surefireClassPathUrl." ) )
                 {
-                    surefireClassPathUrls.put(Integer.valueOf(name.split("\\.")[1]), p.getProperty( name ));
+                    surefireClassPathUrls.put(Integer.valueOf(name.substring(name.indexOf('.') + 1)), p.getProperty( name ));
                 }
                 else if ( name.startsWith( "surefireBootClassPathUrl." ) )
                 {
