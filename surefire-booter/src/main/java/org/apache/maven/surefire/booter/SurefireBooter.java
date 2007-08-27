@@ -62,6 +62,11 @@ import java.util.TreeMap;
  */
 public class SurefireBooter
 {
+    private static final String TEST_SUITE_PROPERTY_PREFIX = "testSuite.";
+    private static final String REPORT_PROPERTY_PREFIX = "report.";
+    private static final String PARAMS_SUFIX = ".params";
+    private static final String TYPES_SUFIX = ".types";
+
     private List reports = new ArrayList();
 
     private List classPathUrls = new ArrayList();
@@ -445,8 +450,8 @@ public class SurefireBooter
 
     private void setForkProperties( List testSuites, Properties properties )
     {
-        addPropertiesForTypeHolder( reports, properties, "report." );
-        addPropertiesForTypeHolder( testSuites, properties, "testSuite." );
+        addPropertiesForTypeHolder( reports, properties, REPORT_PROPERTY_PREFIX );
+        addPropertiesForTypeHolder( testSuites, properties, TEST_SUITE_PROPERTY_PREFIX );
 
         for ( int i = 0; i < classPathUrls.size() && !useSystemClassLoader(); i++ )
         {
@@ -516,8 +521,8 @@ public class SurefireBooter
                         typeProperty += params[j].getClass().getName();
                     }
                 }
-                properties.setProperty( propertyPrefix + i + ".params", paramProperty );
-                properties.setProperty( propertyPrefix + i + ".types", typeProperty );
+                properties.setProperty( propertyPrefix + i + PARAMS_SUFIX, paramProperty );
+                properties.setProperty( propertyPrefix + i + TYPES_SUFIX, typeProperty );
             }
         }
     }
@@ -833,20 +838,20 @@ public class SurefireBooter
             {
                 String name = (String) e.nextElement();
 
-                if ( name.startsWith( "report." ) && !name.endsWith( ".params" ) && !name.endsWith( ".types" ) )
+                if ( name.startsWith( REPORT_PROPERTY_PREFIX ) && !name.endsWith( PARAMS_SUFIX ) && !name.endsWith( TYPES_SUFIX ) )
                 {
                     String className = p.getProperty( name );
 
-                    String params = p.getProperty( name + ".params" );
-                    String types = p.getProperty( name + ".types" );
+                    String params = p.getProperty( name + PARAMS_SUFIX );
+                    String types = p.getProperty( name + TYPES_SUFIX );
                     surefireBooter.addReport( className, constructParamObjects( params, types ) );
                 }
-                else if ( name.startsWith( "testSuite." ) && !name.endsWith( ".params" ) && !name.endsWith( ".types" ) )
+                else if ( name.startsWith( TEST_SUITE_PROPERTY_PREFIX ) && !name.endsWith( PARAMS_SUFIX ) && !name.endsWith( TYPES_SUFIX ) )
                 {
                     String className = p.getProperty( name );
 
-                    String params = p.getProperty( name + ".params" );
-                    String types = p.getProperty( name + ".types" );
+                    String params = p.getProperty( name + PARAMS_SUFIX );
+                    String types = p.getProperty( name + TYPES_SUFIX );
                     surefireBooter.addTestSuite( className, constructParamObjects( params, types ) );
                 }
                 else if ( name.startsWith( "classPathUrl." ) )
