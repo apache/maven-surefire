@@ -96,7 +96,7 @@
       <dependency>
         <groupId>org.codehaus.plexus</groupId>
         <artifactId>plexus-archiver</artifactId>
-        <version>1.0-alpha-7</version>
+        <version>1.0-alpha-10-SNAPSHOT</version>
       </dependency>      
     </dependencies>
   </dependencyManagement>
