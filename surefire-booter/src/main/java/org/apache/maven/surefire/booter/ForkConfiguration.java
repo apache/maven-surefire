@@ -229,6 +229,7 @@ public class ForkConfiguration
         throws IOException, ManifestException, ArchiverException
     {
         JarArchiver jar = new JarArchiver();
+
         jar.setCompress( false ); // for speed
         File file = File.createTempFile( "surefirebooter", ".jar" );
         file.deleteOnExit();
