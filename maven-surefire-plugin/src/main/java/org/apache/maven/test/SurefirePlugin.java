@@ -25,7 +25,7 @@ package org.apache.maven.test;
  * @author Jason van Zyl
  * @version $Id$
  * @see org.apache.maven.plugin.surefire.SurefirePlugin
- * @deprecated use org.apache.maven.plugins.surefire.SurefirePlugin instead
+ * @deprecated use {@link org.apache.maven.plugin.surefire.SurefirePlugin} instead
  */
 public class SurefirePlugin
     extends org.apache.maven.plugin.surefire.SurefirePlugin
