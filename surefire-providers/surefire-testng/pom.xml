@@ -34,6 +34,7 @@
       <version>2.0</version>
     </dependency>
   </dependencies>
+  <!-- TODO: do we include both? Or just 1.5? No need for profile -->
   <profiles>
     <profile>
       <id>jdk14</id>
