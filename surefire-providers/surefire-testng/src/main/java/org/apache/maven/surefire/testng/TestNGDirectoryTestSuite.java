@@ -20,6 +20,7 @@ package org.apache.maven.surefire.testng;
  */
 
 import org.apache.maven.artifact.versioning.ArtifactVersion;
+import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterManager;
 import org.apache.maven.surefire.suite.AbstractDirectoryTestSuite;
@@ -27,9 +28,11 @@ import org.apache.maven.surefire.testset.SurefireTestSet;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 /**
  * Test suite for TestNG based on a directory of Java test classes. Can also execute JUnit tests.
@@ -45,6 +48,13 @@ public class TestNGDirectoryTestSuite
     private Map options;
 
     private String testSourceDirectory;
+
+    public TestNGDirectoryTestSuite( File basedir, ArrayList includes, ArrayList excludes, String testSourceDirectory,
+                                     String artifactVersion, Properties confOptions )
+    {
+        this( basedir, includes, excludes, testSourceDirectory, new DefaultArtifactVersion( artifactVersion ),
+              confOptions );
+    }
 
     public TestNGDirectoryTestSuite( File basedir, List includes, List excludes, String testSourceDirectory,
                                      ArtifactVersion artifactVersion, Map confOptions )

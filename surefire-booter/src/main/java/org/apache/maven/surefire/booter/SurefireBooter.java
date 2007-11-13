@@ -178,7 +178,7 @@ public class SurefireBooter
     /**
      * When forking, setting this to true will make the test output to be saved in a file instead of showing it on the
      * standard output
-     * 
+     *
      * @param redirectTestOutputToFile
      */
     public void setRedirectTestOutputToFile( boolean redirectTestOutputToFile )
@@ -188,7 +188,7 @@ public class SurefireBooter
 
     /**
      * Set the directory where reports will be saved
-     * 
+     *
      * @param reportsDirectory the directory
      */
     public void setReportsDirectory( File reportsDirectory )
@@ -804,6 +804,19 @@ public class SurefireBooter
                 {
                     paramObjects[i] = Integer.valueOf( params[i] );
                 }
+                else if (types[i].equals(Properties.class.getName())) {
+                  final Properties result = new Properties();
+                  final String value = params[i];
+                  if (!value.startsWith("{") || !value.endsWith("}")) {
+                    throw new IllegalArgumentException("Invalid input " + value);
+                  }
+                  final String[] pairs = value.substring(1, value.length() - 1).split(", ");
+                  for (int j = 0; j < pairs.length; j++) {
+                    final String[] pair = pairs[j].split("=");
+                    result.put(pair[0], pair[1]);
+                  }
+                  paramObjects[i] = result;
+                }
                 else
                 {
                     // TODO: could attempt to construct with a String constructor if needed
@@ -817,7 +830,7 @@ public class SurefireBooter
     /**
      * This method is invoked when Surefire is forked - this method parses and organizes the arguments passed to it and
      * then calls the Surefire class' run method. <p/> The system exit code will be 1 if an exception is thrown.
-     * 
+     *
      * @param args
      */
     public static void main( String[] args )
@@ -833,9 +846,9 @@ public class SurefireBooter
 
             File surefirePropertiesFile = new File( args[0] );
             Properties p = loadProperties( surefirePropertiesFile );
-            
+
             SortedMap classPathUrls = new TreeMap();
-            
+
             SortedMap surefireClassPathUrls = new TreeMap();
 
             SurefireBooter surefireBooter = new SurefireBooter( true );
@@ -892,19 +905,18 @@ public class SurefireBooter
                                                                                                p.getProperty( "useSystemClassLoader" ) ).booleanValue() );
                 }
             }
-            
-            for (Iterator cpi = classPathUrls.keySet().iterator(); cpi.hasNext();) 
+
+            for (Iterator cpi = classPathUrls.keySet().iterator(); cpi.hasNext();)
             {
                 String url = (String) classPathUrls.get(cpi.next());
                 surefireBooter.addClassPathUrl(url);
             }
 
-            for (Iterator scpi = surefireClassPathUrls.keySet().iterator(); scpi.hasNext();) 
+            for (Iterator scpi = surefireClassPathUrls.keySet().iterator(); scpi.hasNext();)
             {
                 String url = (String) surefireClassPathUrls.get(scpi.next());
                 surefireBooter.addSurefireClassPathUrl(url);
             }
-            
 
             String testSet = p.getProperty( "testSet" );
             boolean result;
