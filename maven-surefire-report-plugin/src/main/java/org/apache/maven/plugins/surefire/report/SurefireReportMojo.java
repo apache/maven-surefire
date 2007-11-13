@@ -19,17 +19,19 @@ package org.apache.maven.plugins.surefire.report;
  * under the License.
  */
 
-import org.apache.maven.artifact.handler.ArtifactHandler;
 import org.apache.maven.model.ReportPlugin;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.reporting.AbstractMavenReport;
 import org.apache.maven.reporting.MavenReportException;
 import org.codehaus.doxia.site.renderer.SiteRenderer;
+import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.PathTool;
 import org.codehaus.plexus.util.StringUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
@@ -195,8 +197,19 @@ public class SurefireReportMojo
      */
     public boolean canGenerateReport()
     {
-        // Only execute reports for java projects
-        ArtifactHandler artifactHandler = this.project.getArtifact().getArtifactHandler();
-        return "java".equals( artifactHandler.getLanguage() );
+        try
+        {
+            if ( reportsDirectory.exists() && reportsDirectory.isDirectory() )
+            {
+                List fileList = FileUtils.getFileNames( reportsDirectory, "**/TEST-*.xml", "", true );
+                return !fileList.isEmpty();
+            }
+        }
+        catch ( IOException e )
+        {
+            getLog().error( "Error accessing reports directory!" );
+        }
+        
+        return false;
     }
 }
