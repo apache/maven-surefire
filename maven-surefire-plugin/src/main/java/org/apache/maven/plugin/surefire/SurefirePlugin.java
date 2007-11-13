@@ -34,6 +34,7 @@ import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.project.MavenProject;
 import org.apache.maven.surefire.booter.ForkConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooter;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
@@ -101,16 +102,6 @@ public class SurefirePlugin
      */
     private File basedir;
 
-    // FIXME this field is not used - remove it
-    /**
-     * The directory containing generated classes of the project being tested.
-     * 
-     * @parameter expression="${project.build.outputDirectory}"
-     * @required
-     * @deprecated
-     */
-    private File classesDirectory;
-
     /**
      * The directory containing generated test classes of the project being tested.
      * 
@@ -118,6 +109,23 @@ public class SurefirePlugin
      * @required
      */
     private File testClassesDirectory;
+
+    /**
+     * The directory containing generated classes of the project being tested.
+     *
+     * @parameter expression="${project.build.outputDirectory}"
+     * @required
+     */
+    private File classesDirectory;
+
+    /**
+     * The Maven Project Object
+     *
+     * @parameter expression="${project}"
+     * @required
+     * @readonly
+     */
+    protected MavenProject project;
 
     /**
      * The classpath elements of the project being tested.
@@ -626,7 +634,18 @@ public class SurefirePlugin
 
         getLog().debug( "Test Classpath :" );
 
-        // no need to add classes/test classes directory here - they are in the classpath elements already
+        // Check if we need to add configured classes/test classes directories here.
+        // If they are configured, we should remove the default to avoid conflicts.
+        if ( !project.getBuild().getOutputDirectory().equals( classesDirectory.getAbsolutePath() ) )
+        {
+            classpathElements.remove( project.getBuild().getOutputDirectory() );
+            classpathElements.add( classesDirectory.getAbsolutePath() );
+        }
+        if ( !project.getBuild().getTestOutputDirectory().equals( testClassesDirectory.getAbsolutePath() ) )
+        {
+            classpathElements.remove( project.getBuild().getTestOutputDirectory() );
+            classpathElements.add( testClassesDirectory.getAbsolutePath() );
+        }
 
         for ( Iterator i = classpathElements.iterator(); i.hasNext(); )
         {
