@@ -29,6 +29,7 @@ import org.apache.maven.artifact.resolver.ArtifactResolutionResult;
 import org.apache.maven.artifact.resolver.ArtifactResolver;
 import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
 import org.apache.maven.artifact.resolver.filter.ExcludesArtifactFilter;
+import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.plugin.AbstractMojo;
@@ -531,7 +532,7 @@ public class SurefirePlugin
             if ( testNgArtifact != null )
             {
                 VersionRange range = VersionRange.createFromVersionSpec( "[4.7,)" );
-                if ( !range.containsVersion( testNgArtifact.getSelectedVersion() ) )
+                if ( !range.containsVersion( new DefaultArtifactVersion(testNgArtifact.getVersion()) ) )
                 {
                     throw new MojoFailureException(
                                                     "TestNG support requires version 4.7 or above. You have declared version " +
