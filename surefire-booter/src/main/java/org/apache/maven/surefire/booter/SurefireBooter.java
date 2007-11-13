@@ -590,9 +590,19 @@ public class SurefireBooter
             cli.createArgument().setFile( systemProperties );
         }
 
+        
         StreamConsumer out = getForkingStreamConsumer( showHeading, showFooter, redirectTestOutputToFile );
 
-        StreamConsumer err = getForkingStreamConsumer( showHeading, showFooter, redirectTestOutputToFile );
+        StreamConsumer err;
+        
+        if ( redirectTestOutputToFile )
+        {
+            err = out;
+        }
+        else
+        { 
+            err = getForkingStreamConsumer( showHeading, showFooter, redirectTestOutputToFile );
+        }
 
         if ( forkConfiguration.isDebug() )
         {
