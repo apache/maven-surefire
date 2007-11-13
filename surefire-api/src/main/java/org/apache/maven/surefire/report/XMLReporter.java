@@ -208,7 +208,7 @@ public class XMLReporter
             }
         }
 
-        element.setValue( stackTrace );
+        element.setValue( escapeAttribute(stackTrace) );
 
         addOutputStreamElement( stdOut, "system-out", testCase );
 
