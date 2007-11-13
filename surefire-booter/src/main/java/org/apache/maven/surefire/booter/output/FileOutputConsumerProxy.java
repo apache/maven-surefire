@@ -46,7 +46,9 @@ public class FileOutputConsumerProxy
     private File reportsDirectory;
 
     private PrintWriter printWriter;
-
+    
+    private StringBuffer outputBuffer = new StringBuffer();
+    
     /**
      * Create a consumer that will write to a {@link File} for each test.
      * Files will be saved in working directory.
@@ -127,6 +129,12 @@ public class FileOutputConsumerProxy
         {
             throw new IllegalStateException( "testSetCompleted called before testSetStarting" );
         }
+        if ( outputBuffer.length() > 0 )
+        {
+            getPrintWriter().write( outputBuffer.toString() );
+            getPrintWriter().write( LINE_SEPARATOR );
+            outputBuffer.setLength( 0 );
+        }
         getPrintWriter().close();
         setPrintWriter( null );
         super.testSetCompleted();
@@ -139,7 +147,16 @@ public class FileOutputConsumerProxy
     {
         if ( getPrintWriter() == null )
         {
-            throw new IllegalStateException( "consumeOutputLine called before testSetStarting" );
+            outputBuffer.append( line );
+            outputBuffer.append( LINE_SEPARATOR );
+            return;
+        }
+        
+        if ( outputBuffer.length() > 0 )
+        {
+            getPrintWriter().write( outputBuffer.toString() );
+            getPrintWriter().write( LINE_SEPARATOR );
+            outputBuffer.setLength( 0 );
         }
         getPrintWriter().write( line );
         getPrintWriter().write( LINE_SEPARATOR );
