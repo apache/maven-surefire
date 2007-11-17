@@ -3,7 +3,7 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-public class SurefireTest1
+public class TestSurefire1
     extends TestCase
 {
 
@@ -11,7 +11,7 @@ public class SurefireTest1
 
     private static boolean tearDownCalled = false;
 
-    public SurefireTest1( String name, String extraName )
+    public TestSurefire1( String name, String extraName )
     {
         super( name );
     }
@@ -19,7 +19,7 @@ public class SurefireTest1
     public static Test suite()
     {
         TestSuite suite = new TestSuite();
-        Test test = new SurefireTest1( "testSetUp", "dummy" );
+        Test test = new TestSurefire1( "testSetUp", "dummy" );
         suite.addTest( test );
         TestSetup setup = new TestSetup( suite )
         {
