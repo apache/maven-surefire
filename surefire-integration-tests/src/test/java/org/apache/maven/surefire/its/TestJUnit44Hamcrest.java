@@ -12,13 +12,13 @@ import org.apache.maven.it.util.ResourceExtractor;
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  * 
  */
-public class TestJUnit44
+public class TestJUnit44Hamcrest
     extends AbstractMavenIntegrationTestCase
 {
-    public void testJUnit44 ()
+    public void testJUnit44Hamcrest ()
         throws Exception
     {
-        File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/default-junit44" );
+        File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/junit44-hamcrest" );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
         verifier.executeGoal( "test" );
