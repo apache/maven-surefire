@@ -165,7 +165,8 @@ public class SurefirePlugin
     /**
      * List of patterns (separated by commas) used to specify the tests that should be included in testing. When not
      * specified and when the <code>test</code> parameter is not specified, the default includes will be
-     * <code>**&#47;Test*.java   **&#47;*Test.java   **&#47;*TestCase.java</code>
+     * <code>**&#47;Test*.java   **&#47;*Test.java   **&#47;*TestCase.java</code>.  This parameter is ignored if
+     * TestNG suiteXmlFiles are specified.
      * 
      * @parameter
      */
@@ -174,7 +175,8 @@ public class SurefirePlugin
     /**
      * List of patterns (separated by commas) used to specify the tests that should be excluded in testing. When not
      * specified and when the <code>test</code> parameter is not specified, the default excludes will be
-     * <code>**&#47;Abstract*Test.java  **&#47;Abstract*TestCase.java **&#47;*$*</code>
+     * <code>**&#47;Abstract*Test.java  **&#47;Abstract*TestCase.java **&#47;*$*</code>.  This parameter is ignored if
+     * TestNG suiteXmlFiles are specified.
      * 
      * @parameter
      */
@@ -299,23 +301,23 @@ public class SurefirePlugin
     private boolean childDelegation;
 
     /**
-     * Groups for this test. Only classes/methods/etc decorated with one of the groups specified here will be included
-     * in test run, if specified.
+     * (TestNG only) Groups for this test. Only classes/methods/etc decorated with one of the groups specified here will be included
+     * in test run, if specified.  This parameter is overridden if suiteXmlFiles are specified.
      * 
      * @parameter expression="${groups}"
      */
     private String groups;
 
     /**
-     * Excluded groups. Any methods/classes/etc with one of the groups specified in this list will specifically not be
-     * run.
+     * (TestNG only) Excluded groups. Any methods/classes/etc with one of the groups specified in this list will specifically not be
+     * run.  This parameter is overridden if suiteXmlFiles are specified.
      * 
      * @parameter expression="${excludedGroups}"
      */
     private String excludedGroups;
 
     /**
-     * List of TestNG suite xml file locations, seperated by commas. It should be noted that if suiteXmlFiles is
+     * (TestNG only) List of TestNG suite xml file locations, seperated by commas. It should be noted that if suiteXmlFiles is
      * specified, <b>no</b> other tests will be run, ignoring other parameters, like includes and excludes.
      * 
      * @parameter
@@ -323,7 +325,7 @@ public class SurefirePlugin
     private File[] suiteXmlFiles;
 
     /**
-     * The attribute thread-count allows you to specify how many threads should be allocated for this execution. Only
+     * (TestNG only) The attribute thread-count allows you to specify how many threads should be allocated for this execution. Only
      * makes sense to use in conjunction with parallel.
      * 
      * @parameter expression="${threadCount}" default-value="5"
@@ -331,7 +333,7 @@ public class SurefirePlugin
     private int threadCount;
 
     /**
-     * When you use the parallel attribute, TestNG will try to run all your test methods in separate threads, except for
+     * (TestNG only) When you use the parallel attribute, TestNG will try to run all your test methods in separate threads, except for
      * methods that depend on each other, which will be run in the same thread in order to respect their order of
      * execution.
      * 
