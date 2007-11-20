@@ -7,18 +7,18 @@ import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
 
 /**
- * Test basic default configuration, runs the JUnit 3 test in the src/test directory.
+ * Test passing an argLine parameter
  * 
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  * 
  */
-public class DefaultConfigurationTest
+public class ArgLineTest
     extends AbstractMavenIntegrationTestCase
 {
     public void testDefaultConfiguration ()
         throws Exception
     {
-        File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/default-configuration" );
+        File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/argLine-parameter" );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
         verifier.executeGoal( "test" );

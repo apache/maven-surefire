@@ -7,24 +7,26 @@ import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
 
 /**
- * Test basic default configuration, runs the JUnit 3 test in the src/test directory.
+ * Test Surefire-376 (TestNG @AfterSuite failures are ignored)
  * 
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  * 
  */
-public class DefaultConfigurationTest
+public class Surefire376TestNgAfterSuiteFailure
     extends AbstractMavenIntegrationTestCase
 {
-    public void testDefaultConfiguration ()
+    public void testAfterSuiteFailure ()
         throws Exception
     {
-        File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/default-configuration" );
+        File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/testng-afterSuiteFailure" );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
         verifier.executeGoal( "test" );
-        verifier.verifyErrorFreeLog();
+        // DGF Don't verify error free log; we expect failures
+        // verifier.verifyErrorFreeLog();
         verifier.resetStreams();
         
-        HelperAssertions.assertTestSuiteResults( 1, 0, 0, 0, testDir );        
+        HelperAssertions.assertTestSuiteResults( 1, 0, 1, 0, testDir );
+        
     }
 }

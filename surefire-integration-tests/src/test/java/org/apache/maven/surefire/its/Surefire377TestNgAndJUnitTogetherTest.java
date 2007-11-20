@@ -7,24 +7,24 @@ import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
 
 /**
- * Test basic default configuration, runs the JUnit 3 test in the src/test directory.
+ * SUREFIRE-377 (When JUnit and TestNG tests are in same project, only one set gets run).
  * 
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  * 
  */
-public class DefaultConfigurationTest
+public class Surefire377TestNgAndJUnitTogetherTest
     extends AbstractMavenIntegrationTestCase
 {
-    public void testDefaultConfiguration ()
+    public void testTestNgAndJUnitTogether ()
         throws Exception
     {
-        File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/default-configuration" );
+        File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/testng-junit-together" );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
         verifier.executeGoal( "test" );
         verifier.verifyErrorFreeLog();
         verifier.resetStreams();
         
-        HelperAssertions.assertTestSuiteResults( 1, 0, 0, 0, testDir );        
+        HelperAssertions.assertTestSuiteResults( 2, 0, 0, 0, testDir );
     }
 }

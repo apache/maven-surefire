@@ -7,24 +7,26 @@ import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
 
 /**
- * Test basic default configuration, runs the JUnit 3 test in the src/test directory.
+ * Test Surefire-224 (XML test reports are not well-formed when failure message contains quotes)
  * 
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  * 
  */
-public class DefaultConfigurationTest
+public class Surefire224WellFormedXmlFailuresTest
     extends AbstractMavenIntegrationTestCase
 {
-    public void testDefaultConfiguration ()
+    public void testWellFormedXmlFailures ()
         throws Exception
     {
-        File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/default-configuration" );
+        File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/surefire-224-wellFormedXmlFailures" );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
         verifier.executeGoal( "test" );
-        verifier.verifyErrorFreeLog();
+        // DGF Don't verify error free log; we expect failures
+        // verifier.verifyErrorFreeLog();
         verifier.resetStreams();
         
-        HelperAssertions.assertTestSuiteResults( 1, 0, 0, 0, testDir );        
+        HelperAssertions.assertTestSuiteResults( 3, 0, 3, 0, testDir );
+        
     }
 }

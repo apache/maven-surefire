@@ -7,24 +7,25 @@ import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
 
 /**
- * Test basic default configuration, runs the JUnit 3 test in the src/test directory.
+ * Test Surefire-146 (forkMode=pertest fails to call setUp)
  * 
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  * 
  */
-public class DefaultConfigurationTest
+public class Surefire146ForkPerTestNoSetupTest
     extends AbstractMavenIntegrationTestCase
 {
-    public void testDefaultConfiguration ()
+    public void testForkPerTestNoSetup ()
         throws Exception
     {
-        File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/default-configuration" );
+        File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/surefire-146-forkPerTestNoSetup" );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
         verifier.executeGoal( "test" );
         verifier.verifyErrorFreeLog();
         verifier.resetStreams();
         
-        HelperAssertions.assertTestSuiteResults( 1, 0, 0, 0, testDir );        
+        HelperAssertions.assertTestSuiteResults( 1, 0, 0, 0, testDir );
+        
     }
 }
