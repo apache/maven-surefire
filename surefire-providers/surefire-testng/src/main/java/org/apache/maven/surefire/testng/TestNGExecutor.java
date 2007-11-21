@@ -79,7 +79,7 @@ public class TestNGExecutor
             {
                 return new TestNG4751Configurator();
             }
-            range = VersionRange.createFromVersion( "5.2" );
+            range = VersionRange.createFromVersionSpec( "5.2" );
             if ( range.containsVersion( version ) )
             {
                 return new TestNG52Configurator();
