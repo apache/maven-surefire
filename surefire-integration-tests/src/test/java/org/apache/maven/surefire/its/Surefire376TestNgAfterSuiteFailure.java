@@ -26,7 +26,7 @@ public class Surefire376TestNgAfterSuiteFailure
         // verifier.verifyErrorFreeLog();
         verifier.resetStreams();
         
-        HelperAssertions.assertTestSuiteResults( 1, 0, 1, 0, testDir );
+        HelperAssertions.assertTestSuiteResults( 2, 0, 1, 0, testDir );
         
     }
 }

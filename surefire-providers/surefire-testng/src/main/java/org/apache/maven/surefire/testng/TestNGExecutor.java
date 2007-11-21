@@ -20,6 +20,7 @@ package org.apache.maven.surefire.testng;
  */
 
 import java.io.File;
+import java.lang.reflect.Constructor;
 import java.util.List;
 import java.util.Map;
 
@@ -107,7 +108,7 @@ public class TestNGExecutor
         // turn off all TestNG output
         testNG.setVerbose( 0 );
 
-        TestNGReporter reporter = new TestNGReporter( reportManager, suite );
+        TestNGReporter reporter = createTestNGReporter( reportManager, suite );
         testNG.addListener( (Object) reporter );
         attachNonStandardReporter( testNG, "org.testng.reporters.XMLReporter" );
         attachNonStandardReporter( testNG, "org.testng.reporters.FailedReporter" );
@@ -119,6 +120,26 @@ public class TestNGExecutor
         testNG.setOutputDirectory( reportsDirectory.getAbsolutePath() );
     }
 
+    // If we have access to IResultListener, return a ConfigurationAwareTestNGReporter
+    // But don't cause NoClassDefFoundErrors if it isn't available; just return a regular TestNGReporter instead
+    private static TestNGReporter createTestNGReporter( ReporterManager reportManager, SurefireTestSuite suite ) {
+        try {
+            Class.forName( "org.testng.internal.IResultListener" );
+            Class c = Class.forName( "org.apache.maven.surefire.testng.ConfigurationAwareTestNGReporter" );
+            try
+            {
+                Constructor ctor = c.getConstructor( new Class[] { ReporterManager.class, SurefireTestSuite.class } );
+                return (TestNGReporter) ctor.newInstance( new Object[] { reportManager, suite } );
+            }
+            catch ( Exception e )
+            {
+                throw new RuntimeException("Bug in ConfigurationAwareTestNGReporter", e);
+            }
+        } catch (ClassNotFoundException e) {
+            return new TestNGReporter( reportManager, suite );
+        }
+    }
+    
     private static void attachNonStandardReporter( TestNG testNG, String className )
     {
         try

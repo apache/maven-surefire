@@ -19,6 +19,8 @@ package org.apache.maven.surefire.testng;
  * under the License.
  */
 
+import java.util.ResourceBundle;
+
 import org.apache.maven.surefire.Surefire;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterException;
@@ -30,8 +32,6 @@ import org.testng.ITestContext;
 import org.testng.ITestListener;
 import org.testng.ITestResult;
 import org.testng.TestNG;
-
-import java.util.ResourceBundle;
 
 /**
  * Listens for and provides and adaptor layer so that
@@ -126,11 +126,24 @@ public class TestNGReporter
 
     public void onStart( ITestContext context )
     {
+        
+    }
+
+    public void onFinish( ITestContext context )
+    {
+        
+    }
+
+
+    public void onStart( ISuite suite )
+    {
         String rawString = bundle.getString( "testSetStarting" );
+        
+        String[] includedGroups = (String[]) suite.getMethodsByGroups().keySet().toArray( new String[0] );
 
-        String group = groupString( context.getIncludedGroups(), context.getName() );
+        String group = groupString( includedGroups, suite.getName() );
 
-        ReportEntry report = new ReportEntry( source, context.getName(), group, rawString );
+        ReportEntry report = new ReportEntry( source, suite.getName(), group, rawString );
 
         try
         {
@@ -141,25 +154,19 @@ public class TestNGReporter
             // TODO: remove this exception from the report manager
         }
     }
-
-    public void onFinish( ITestContext context )
+    
+    public void onFinish( ISuite suite )
     {
         String rawString = bundle.getString( "testSetCompletedNormally" );
 
+        String[] includedGroups = (String[]) suite.getMethodsByGroups().keySet().toArray( new String[0] );
+        
         ReportEntry report =
-            new ReportEntry( source, context.getName(), groupString( context.getIncludedGroups(), null ), rawString );
+            new ReportEntry( source, suite.getName(), groupString( includedGroups, null ), rawString );
 
         reportManager.testSetCompleted( report );
 
         reportManager.reset();
-    }
-
-    public void onFinish( ISuite suite )
-    {
-    }
-
-    public void onStart( ISuite suite )
-    {
     }
 
     /**
@@ -190,6 +197,22 @@ public class TestNGReporter
             retVal = defaultValue;
         }
         return retVal;
+    }
+
+    public void onConfigurationFailure( ITestResult result )
+    {
+        onTestFailure( result );
+    }
+
+    public void onConfigurationSkip( ITestResult result )
+    {
+        onTestSkipped( result );
+    }
+
+    public void onConfigurationSuccess( ITestResult result )
+    {
+        // DGF Don't record configuration successes as separate tests
+        //onTestSuccess( result );
     }
 
 }

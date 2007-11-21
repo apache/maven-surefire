@@ -22,7 +22,8 @@ public class TestNgBeforeMethodFailure
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
         verifier.executeGoal( "test" );
-        verifier.verifyErrorFreeLog();
+        //errors are expected
+        //verifier.verifyErrorFreeLog();
         verifier.resetStreams();
         
         HelperAssertions.assertTestSuiteResults( 1, 0, 0, 1, testDir );
