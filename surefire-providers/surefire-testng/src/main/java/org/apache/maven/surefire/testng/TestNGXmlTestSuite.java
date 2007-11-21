@@ -51,6 +51,8 @@ public class TestNGXmlTestSuite
     private ArtifactVersion version;
 
     private Map options = new HashMap();
+    
+    private File reportsDirectory;
 
     // Not really used
     private Map testSets;
@@ -59,13 +61,15 @@ public class TestNGXmlTestSuite
      * Creates a testng testset to be configured by the specified
      * xml file.
      */
-    public TestNGXmlTestSuite( File[] suiteFiles, String testSourceDirectory, String artifactVersion )
+    public TestNGXmlTestSuite( File[] suiteFiles, String testSourceDirectory, String artifactVersion, File reportsDirectory )
     {
         this.suiteFiles = suiteFiles;
 
         this.version = new DefaultArtifactVersion( artifactVersion );
 
         this.testSourceDirectory = testSourceDirectory;
+        
+        this.reportsDirectory = reportsDirectory;
     }
 
     public void execute( ReporterManager reporterManager, ClassLoader classLoader )
@@ -76,7 +80,7 @@ public class TestNGXmlTestSuite
         }
 
         TestNGExecutor.run( this.suiteFilePaths, this.testSourceDirectory, this.options, this.version, reporterManager,
-                            this );
+                            this, reportsDirectory );
     }
 
     public void execute( String testSetName, ReporterManager reporterManager, ClassLoader classLoader )

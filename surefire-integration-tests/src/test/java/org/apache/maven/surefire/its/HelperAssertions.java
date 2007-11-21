@@ -33,7 +33,12 @@ public class HelperAssertions
         File reportsDir = new File( testDir, "target/surefire-reports" );
         Assert.assertTrue( "Reports directory is missing: " + reportsDir.getAbsolutePath(), reportsDir.exists() );
         parser.setReportsDirectory( reportsDir );
-        List reports = parser.parseXMLReportFiles();
+        List reports;
+        try {
+            reports = parser.parseXMLReportFiles();
+        } catch (Exception e) {
+            throw new RuntimeException("Couldn't parse XML reports: " + reportsDir.getAbsolutePath(), e);
+        }
         Assert.assertTrue( "No reports!", reports.size() > 0 );
         ReportTestSuite suite = (ReportTestSuite) reports.get( 0 );
         return suite;

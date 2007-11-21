@@ -19,6 +19,10 @@ package org.apache.maven.surefire.testng;
  * under the License.
  */
 
+import java.io.File;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
 import org.apache.maven.artifact.versioning.VersionRange;
@@ -29,10 +33,8 @@ import org.apache.maven.surefire.testng.conf.TestNG4751Configurator;
 import org.apache.maven.surefire.testng.conf.TestNG52Configurator;
 import org.apache.maven.surefire.testng.conf.TestNGMapConfigurator;
 import org.apache.maven.surefire.util.NestedRuntimeException;
+import org.testng.IReporter;
 import org.testng.TestNG;
-
-import java.util.List;
-import java.util.Map;
 
 /**
  * Contains utility methods for executing TestNG.
@@ -47,24 +49,24 @@ public class TestNGExecutor
     }
 
     public static void run( Class[] testClasses, String testSourceDirectory, Map options, ArtifactVersion version,
-                            ReporterManager reportManager, SurefireTestSuite suite )
+                            ReporterManager reportManager, SurefireTestSuite suite, File reportsDirectory )
     {
         TestNG testng = new TestNG( false );
         Configurator configurator = getConfigurator( version );
         configurator.configure( testng, options );
-        postConfigure( testng, testSourceDirectory, reportManager, suite );
+        postConfigure( testng, testSourceDirectory, reportManager, suite, reportsDirectory );
 
         testng.setTestClasses( testClasses );
         testng.run();
     }
 
     public static void run( List suiteFiles, String testSourceDirectory, Map options, ArtifactVersion version,
-                            ReporterManager reportManager, SurefireTestSuite suite )
+                            ReporterManager reportManager, SurefireTestSuite suite, File reportsDirectory )
     {
         TestNG testng = new TestNG( false );
         Configurator configurator = getConfigurator( version );
         configurator.configure( testng, options );
-        postConfigure( testng, testSourceDirectory, reportManager, suite );
+        postConfigure( testng, testSourceDirectory, reportManager, suite, reportsDirectory );
 
         testng.setTestSuites( suiteFiles );
         testng.run();
@@ -100,20 +102,33 @@ public class TestNGExecutor
 
 
     private static void postConfigure( TestNG testNG, String sourcePath, ReporterManager reportManager,
-                                       SurefireTestSuite suite )
+                                       SurefireTestSuite suite, File reportsDirectory )
     {
         // turn off all TestNG output
         testNG.setVerbose( 0 );
 
         TestNGReporter reporter = new TestNGReporter( reportManager, suite );
         testNG.addListener( (Object) reporter );
+        attachNonStandardReporter( testNG, "org.testng.reporters.XMLReporter" );
+        attachNonStandardReporter( testNG, "org.testng.reporters.FailedReporter" );
         // TODO: we should have the Profile so that we can decide if this is needed or not
         if ( sourcePath != null )
         {
             testNG.setSourcePath( sourcePath );
         }
-        // workaround for SUREFIRE-49
-        // TestNG always creates an output directory, and if not set the name for the directory is "null"
-        testNG.setOutputDirectory( System.getProperty( "java.io.tmpdir" ) );
+        testNG.setOutputDirectory( reportsDirectory.getAbsolutePath() );
     }
+
+    private static void attachNonStandardReporter( TestNG testNG, String className )
+    {
+        try
+        {
+            Class c = Class.forName( className );
+            if (IReporter.class.isAssignableFrom( c )) {
+                testNG.addListener( c.newInstance() );
+            }
+        }
+        catch ( Exception e ) {} // ignore
+    }
+
 }
