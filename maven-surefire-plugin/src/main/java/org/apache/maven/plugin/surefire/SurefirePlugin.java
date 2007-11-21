@@ -328,7 +328,7 @@ public class SurefirePlugin
      * (TestNG only) The attribute thread-count allows you to specify how many threads should be allocated for this execution. Only
      * makes sense to use in conjunction with parallel.
      * 
-     * @parameter expression="${threadCount}" default-value="5"
+     * @parameter expression="${threadCount}"
      */
     private int threadCount;
 
@@ -337,7 +337,7 @@ public class SurefirePlugin
      * methods that depend on each other, which will be run in the same thread in order to respect their order of
      * execution.
      * 
-     * @parameter expression="${parallel}" default-value="false"
+     * @parameter expression="${parallel}"
      * @todo test how this works with forking, and console/file output parallelism
      */
     private String parallel;
