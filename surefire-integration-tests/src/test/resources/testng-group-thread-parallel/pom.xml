@@ -45,7 +45,7 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
-          <groups>functional</groups>
+          <groups>nonexistent, functional</groups>
           <threadCount>3</threadCount>
           <parallel>methods</parallel>
         </configuration>

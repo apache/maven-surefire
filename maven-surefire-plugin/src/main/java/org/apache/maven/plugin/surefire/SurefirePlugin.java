@@ -489,20 +489,20 @@ public class SurefirePlugin
 
         if ( this.parallel != null )
         {
-            properties.put( "parallel", this.parallel );
+            properties.setProperty( "parallel", this.parallel );
         }
         if ( this.excludedGroups != null )
         {
-            properties.put( "excludegroups", this.excludedGroups );
+            properties.setProperty( "excludegroups", this.excludedGroups );
         }
         if ( this.groups != null )
         {
-            properties.put( "groups", this.groups );
+            properties.setProperty( "groups", this.groups );
         }
 
         if ( this.threadCount > 0 )
         {
-            properties.put( "threadcount", new Integer( this.threadCount ) );
+            properties.setProperty( "threadcount", new Integer( this.threadCount ).toString() );
         }
     }
 
@@ -545,7 +545,7 @@ public class SurefirePlugin
 
                 if ( this.testClassesDirectory != null )
                 {
-                    properties.put( "testng.test.classpath", testClassesDirectory.getAbsolutePath() );
+                    properties.setProperty( "testng.test.classpath", testClassesDirectory.getAbsolutePath() );
                 }
 
                 addArtifact( surefireBooter, testNgArtifact );

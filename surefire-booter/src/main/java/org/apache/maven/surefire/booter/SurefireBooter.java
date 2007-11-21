@@ -19,23 +19,8 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import org.apache.maven.surefire.Surefire;
-import org.apache.maven.surefire.booter.output.FileOutputConsumerProxy;
-import org.apache.maven.surefire.booter.output.ForkingStreamConsumer;
-import org.apache.maven.surefire.booter.output.OutputConsumer;
-import org.apache.maven.surefire.booter.output.StandardOutputConsumer;
-import org.apache.maven.surefire.booter.output.SupressFooterOutputConsumerProxy;
-import org.apache.maven.surefire.booter.output.SupressHeaderOutputConsumerProxy;
-import org.apache.maven.surefire.testset.TestSetFailedException;
-import org.apache.maven.surefire.util.NestedRuntimeException;
-import org.apache.maven.surefire.util.UrlUtils;
-import org.codehaus.plexus.util.IOUtil;
-import org.codehaus.plexus.util.StringUtils;
-import org.codehaus.plexus.util.cli.CommandLineException;
-import org.codehaus.plexus.util.cli.CommandLineUtils;
-import org.codehaus.plexus.util.cli.Commandline;
-import org.codehaus.plexus.util.cli.StreamConsumer;
-
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -54,6 +39,23 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.SortedMap;
 import java.util.TreeMap;
+
+import org.apache.maven.surefire.Surefire;
+import org.apache.maven.surefire.booter.output.FileOutputConsumerProxy;
+import org.apache.maven.surefire.booter.output.ForkingStreamConsumer;
+import org.apache.maven.surefire.booter.output.OutputConsumer;
+import org.apache.maven.surefire.booter.output.StandardOutputConsumer;
+import org.apache.maven.surefire.booter.output.SupressFooterOutputConsumerProxy;
+import org.apache.maven.surefire.booter.output.SupressHeaderOutputConsumerProxy;
+import org.apache.maven.surefire.testset.TestSetFailedException;
+import org.apache.maven.surefire.util.NestedRuntimeException;
+import org.apache.maven.surefire.util.UrlUtils;
+import org.codehaus.plexus.util.IOUtil;
+import org.codehaus.plexus.util.StringUtils;
+import org.codehaus.plexus.util.cli.CommandLineException;
+import org.codehaus.plexus.util.cli.CommandLineUtils;
+import org.codehaus.plexus.util.cli.Commandline;
+import org.codehaus.plexus.util.cli.StreamConsumer;
 
 /**
  * @author Jason van Zyl
@@ -527,7 +529,7 @@ public class SurefireBooter
         }
     }
 
-    private String convert( Object param )
+    private static String convert( Object param )
     {
         if ( param instanceof File[] )
         {
@@ -542,6 +544,17 @@ public class SurefireBooter
                 }
             }
             return s + "]";
+        } else if ( param instanceof Properties ) {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            try
+            {
+                ( (Properties) param ).store( baos, "" );
+                return new String( baos.toByteArray(), "8859_1" );
+            }
+            catch ( Exception e )
+            {
+                throw new RuntimeException ( "bug in property conversion", e );
+            }
         }
         else
         {
@@ -805,17 +818,18 @@ public class SurefireBooter
                     paramObjects[i] = Integer.valueOf( params[i] );
                 }
                 else if (types[i].equals(Properties.class.getName())) {
-                  final Properties result = new Properties();
-                  final String value = params[i];
-                  if (!value.startsWith("{") || !value.endsWith("}")) {
-                    throw new IllegalArgumentException("Invalid input " + value);
-                  }
-                  final String[] pairs = value.substring(1, value.length() - 1).split(", ");
-                  for (int j = 0; j < pairs.length; j++) {
-                    final String[] pair = pairs[j].split("=");
-                    result.put(pair[0], pair[1]);
-                  }
-                  paramObjects[i] = result;
+                    final Properties result = new Properties();
+                    final String value = params[i];
+                    try
+                    {
+                        ByteArrayInputStream bais = new ByteArrayInputStream( value.getBytes( "8859_1" ) );
+                        result.load( bais );
+                    }
+                    catch ( Exception e )
+                    {
+                        throw new RuntimeException( "bug in property conversion", e );
+                    }
+                    paramObjects[i] = result;
                 }
                 else
                 {
