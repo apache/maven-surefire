@@ -30,7 +30,7 @@
   <description>Uses suite xml file definitions to invoke testng tests</description>
 
   <properties>
-     <testNgVersion>5.5</testNgVersion>
+     <testNgVersion>5.7</testNgVersion>
   </properties>
 
   <dependencies>
