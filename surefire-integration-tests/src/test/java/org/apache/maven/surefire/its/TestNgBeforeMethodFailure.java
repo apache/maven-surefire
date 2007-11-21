@@ -26,6 +26,6 @@ public class TestNgBeforeMethodFailure
         //verifier.verifyErrorFreeLog();
         verifier.resetStreams();
         
-        HelperAssertions.assertTestSuiteResults( 1, 0, 0, 1, testDir );
+        HelperAssertions.assertTestSuiteResults( 2, 0, 1, 1, testDir );
     }
 }
