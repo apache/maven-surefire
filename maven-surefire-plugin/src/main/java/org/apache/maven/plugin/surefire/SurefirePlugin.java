@@ -541,6 +541,11 @@ public class SurefirePlugin
             addArtifact( surefireBooter, surefireArtifact );
 
             junitArtifact = (Artifact) projectArtifactMap.get( junitArtifactName );
+            // SUREFIRE-378, junit can have an alternate artifact name
+            if ( junitArtifact == null && "junit:junit".equals( junitArtifactName ) )
+            {
+                junitArtifact = (Artifact) projectArtifactMap.get( "junit:junit-dep" );
+            }
 
             // TODO: this is pretty manual, but I'd rather not require the plugin > dependencies section right now
             testNgArtifact = (Artifact) projectArtifactMap.get( testNGArtifactName );
