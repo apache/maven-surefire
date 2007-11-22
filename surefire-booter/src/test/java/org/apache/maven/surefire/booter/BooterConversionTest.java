@@ -66,14 +66,14 @@ public class BooterConversionTest
     public void doTest(Object o) throws Exception {
         String serialized = serialize( o );
         Object[] output = deserialize( serialized, o.getClass().getName() );
-        assertEquals ( "Wrong number of output elements: " + Arrays.toString( output ), 1, output.length);
+        assertEquals ( "Wrong number of output elements: " + Arrays.asList( output ), 1, output.length);
         assertEquals ( o, output[0] );
     }
     
     public void doTestArray(Object[] o) throws Exception {
         String serialized = serialize( o );
         Object[] output = deserialize( serialized, o.getClass().getName() );
-        assertEquals ( "Wrong number of output elements: " + Arrays.toString( output ), 1, output.length);
+        assertEquals ( "Wrong number of output elements: " + Arrays.asList( output ), 1, output.length);
         assertArrayEquals ( "Deserialized array didn't match", o, (Object[])output[0] );
     }
     
