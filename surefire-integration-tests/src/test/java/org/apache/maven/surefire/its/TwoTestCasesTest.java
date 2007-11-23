@@ -7,7 +7,7 @@ import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
 
 /**
- * Test basic default configuration, runs the JUnit 3 test in the src/test directory.
+ * Test running two test cases; confirms reporting works correctly
  * 
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  * 
@@ -15,7 +15,7 @@ import org.apache.maven.it.util.ResourceExtractor;
 public class TwoTestCasesTest
     extends AbstractMavenIntegrationTestCase
 {
-    public void testDefaultConfiguration ()
+    public void testTwoTestCases ()
         throws Exception
     {
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/junit-twoTestCases" );

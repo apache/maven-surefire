@@ -12,21 +12,21 @@ import org.apache.maven.reporting.MavenReportException;
 public class HelperAssertions
 {
     public static void assertTestSuiteResults( int total, int errors, int failures, int skipped,
-                                               ReportTestSuite actualSuite )
+                                               ITSuiteResults actualSuite )
     {
-        Assert.assertEquals( "wrong number of tests", total, actualSuite.getNumberOfTests() );
-        Assert.assertEquals( "wrong number of errors", errors, actualSuite.getNumberOfErrors() );
-        Assert.assertEquals( "wrong number of failures", failures, actualSuite.getNumberOfFailures() );
-        Assert.assertEquals( "wrong number of skipped", skipped, actualSuite.getNumberOfSkipped() );
+        Assert.assertEquals( "wrong number of tests", total, actualSuite.getTotal() );
+        Assert.assertEquals( "wrong number of errors", errors, actualSuite.getErrors() );
+        Assert.assertEquals( "wrong number of failures", failures, actualSuite.getFailures() );
+        Assert.assertEquals( "wrong number of skipped", skipped, actualSuite.getSkipped() );
     }
     
     public static void assertTestSuiteResults( int total, int errors, int failures, int skipped,
                                                File testDir ) throws MavenReportException {
-        ReportTestSuite suite = parseTestResults( testDir );
+        ITSuiteResults suite = parseTestResults( testDir );
         assertTestSuiteResults( total, errors, failures, skipped, suite );
     }
 
-    public static ReportTestSuite parseTestResults( File testDir )
+    public static ITSuiteResults parseTestResults( File testDir )
         throws MavenReportException
     {
         SurefireReportParser parser = new SurefireReportParser();
@@ -40,7 +40,15 @@ public class HelperAssertions
             throw new RuntimeException("Couldn't parse XML reports: " + reportsDir.getAbsolutePath(), e);
         }
         Assert.assertTrue( "No reports!", reports.size() > 0 );
-        ReportTestSuite suite = (ReportTestSuite) reports.get( 0 );
-        return suite;
+        int total = 0, errors = 0, failures = 0, skipped = 0;
+        for (int i = 0; i < reports.size(); i++) {
+            ReportTestSuite suite = (ReportTestSuite) reports.get( 0 );
+            total += suite.getNumberOfTests();
+            errors += suite.getNumberOfErrors();
+            failures += suite.getNumberOfFailures();
+            skipped += suite.getNumberOfSkipped();
+        }
+        ITSuiteResults results = new ITSuiteResults(total, errors, failures, skipped);
+        return results;
     }
 }

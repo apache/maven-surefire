@@ -74,7 +74,7 @@ public class TestNgVersionsTest
         verifier.verifyErrorFreeLog();
         verifier.resetStreams();
         
-        ReportTestSuite suite = HelperAssertions.parseTestResults( testDir );
+        ITSuiteResults suite = HelperAssertions.parseTestResults( testDir );
         HelperAssertions.assertTestSuiteResults( 1, 0, 0, 0, suite );
     }
 }
