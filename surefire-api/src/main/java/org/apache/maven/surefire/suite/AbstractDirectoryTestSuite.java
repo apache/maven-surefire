@@ -94,6 +94,8 @@ public abstract class AbstractDirectoryTestSuite
             if ( !Modifier.isAbstract( testClass.getModifiers() ) )
             {
                 SurefireTestSet testSet = createTestSet( testClass, classLoader );
+                
+                if ( testSet == null ) continue;
 
                 if ( testSets.containsKey( testSet.getName() ) )
                 {

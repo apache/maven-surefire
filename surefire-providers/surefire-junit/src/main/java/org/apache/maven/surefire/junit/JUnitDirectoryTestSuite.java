@@ -59,10 +59,27 @@ public class JUnitDirectoryTestSuite
         {
             testSet = new JUnitTestSet( testClass );
         }
-        else
+        else if (classHasPublicNoArgConstructor( testClass ))
         {
             testSet = new PojoTestSet( testClass );
         }
+        else
+        {
+            testSet = null;
+        }
         return testSet;
+    }
+    
+    private boolean classHasPublicNoArgConstructor( Class testClass )
+    {
+        try
+        {
+            testClass.getConstructor( new Class[0] );
+            return true;
+        }
+        catch ( Exception e )
+        {
+            return false;
+        }
     }
 }
