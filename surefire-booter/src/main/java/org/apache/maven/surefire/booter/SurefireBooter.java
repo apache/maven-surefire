@@ -596,11 +596,11 @@ public class SurefireBooter
 
         Commandline cli = forkConfiguration.createCommandLine( bootClasspath, useSystemClassLoader() );
 
-        cli.createArgument().setFile( surefireProperties );
+        cli.createArg().setFile( surefireProperties );
 
         if ( systemProperties != null )
         {
-            cli.createArgument().setFile( systemProperties );
+            cli.createArg().setFile( systemProperties );
         }
 
         

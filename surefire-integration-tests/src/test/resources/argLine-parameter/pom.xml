@@ -44,7 +44,7 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
-          <argLine>"-Djava.library.path=foo foo/foo/bar/1.0"</argLine>
+          <argLine>-Dfoo.property="foo foo/foo/bar/1.0" -Dbar.property="bar bar/foo/bar/2.0"</argLine>
         </configuration>
       </plugin>
     </plugins>

@@ -154,7 +154,7 @@ public class ForkConfiguration
 
         if ( argLine != null )
         {
-            cli.addArguments( StringUtils.split( argLine, " " ) );
+            cli.createArg().setLine( argLine );
         }
 
         if ( environmentVariables != null )
@@ -173,7 +173,7 @@ public class ForkConfiguration
 
         if ( System.getProperty( "maven.surefire.debug" ) != null )
         {
-            cli.createArgument().setLine(
+            cli.createArg().setLine(
                 "-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005" );
         }
 
@@ -197,17 +197,17 @@ public class ForkConfiguration
                 throw new SurefireBooterForkException( "Error creating archive", e );
             }
 
-            cli.createArgument().setValue( "-jar" );
+            cli.createArg().setValue( "-jar" );
 
-            cli.createArgument().setValue( jarFile.getAbsolutePath() );
+            cli.createArg().setValue( jarFile.getAbsolutePath() );
         }
         else
         {
-            cli.createArgument().setValue( "-classpath" );
+            cli.createArg().setValue( "-classpath" );
 
-            cli.createArgument().setValue( StringUtils.join( classPath.iterator(), File.pathSeparator ) );
+            cli.createArg().setValue( StringUtils.join( classPath.iterator(), File.pathSeparator ) );
 
-            cli.createArgument().setValue( SurefireBooter.class.getName() );
+            cli.createArg().setValue( SurefireBooter.class.getName() );
         }
 
         cli.setWorkingDirectory( workingDirectory.getAbsolutePath() );
