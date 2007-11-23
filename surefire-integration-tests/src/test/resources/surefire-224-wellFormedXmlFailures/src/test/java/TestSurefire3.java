@@ -33,4 +33,9 @@ public class TestSurefire3
         fail( ">" );
     }
 
+    public void testU0000()
+    {
+        fail( "\u0000" );
+    }
+
 }

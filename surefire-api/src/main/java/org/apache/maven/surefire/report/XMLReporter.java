@@ -19,12 +19,6 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
-import org.apache.maven.surefire.util.PrettyPrintXMLWriter;
-import org.codehaus.plexus.util.IOUtil;
-import org.codehaus.plexus.util.StringUtils;
-import org.codehaus.plexus.util.xml.Xpp3Dom;
-import org.codehaus.plexus.util.xml.Xpp3DomWriter;
-
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -39,6 +33,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
+
+import org.apache.maven.surefire.util.PrettyPrintXMLWriter;
+import org.codehaus.plexus.util.IOUtil;
+import org.codehaus.plexus.util.xml.Xpp3Dom;
+import org.codehaus.plexus.util.xml.Xpp3DomWriter;
 
 
 /**
@@ -273,9 +272,25 @@ public class XMLReporter
     private static String escapeAttribute( String attribute )
     {
         // Shouldn't Xpp3Dom do this itself?
-        String s = StringUtils.replace( attribute, "<", "&lt;" );
-        s = StringUtils.replace( s, ">", "&gt;" );
-        return s;
+        StringBuffer sb = new StringBuffer ( attribute.length() * 2 );
+        for (int i = 0; i < attribute.length(); i++ ) {
+            char c = attribute.charAt( i );
+            if ( c < 32 ) {
+                if ( c == '\n' || c == '\r' || c == '\t') {
+                    sb.append( c );
+                } else {
+                    sb.append( "&#" ).append( (int) c).append( ';' );
+                }
+            } else if ( c == '<') {
+                sb.append( "&lt;" );
+            } else if ( c == '>') {
+                sb.append( "&gt;" );
+            }
+            else {
+                sb.append( c );
+            }
+        }
+        return sb.toString();
 
     }
 

@@ -26,7 +26,7 @@ public class Surefire224WellFormedXmlFailuresTest
         // verifier.verifyErrorFreeLog();
         verifier.resetStreams();
         
-        HelperAssertions.assertTestSuiteResults( 3, 0, 3, 0, testDir );
+        HelperAssertions.assertTestSuiteResults( 4, 0, 4, 0, testDir );
         
     }
 }
