@@ -301,6 +301,8 @@ public class SurefireBooter
             ClassLoader testsClassLoader = useSystemClassLoader() ? getClass().getClassLoader() // ClassLoader.getSystemClassLoader()
                             : createClassLoader( classPathUrls, null, childDelegation );
 
+            recordTestClassPath();
+            
             ClassLoader surefireClassLoader = createClassLoader( surefireClassPathUrls, testsClassLoader );
 
             Class surefireClass = surefireClassLoader.loadClass( Surefire.class.getName() );
@@ -333,6 +335,17 @@ public class SurefireBooter
         }
     }
 
+    
+    
+    private void recordTestClassPath()
+    {
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < classPathUrls.size(); i++) {
+            sb.append( classPathUrls.get( i ) ).append( File.pathSeparatorChar );
+        }
+        System.setProperty( "surefire.test.class.path", sb.toString() );
+    }
+    
     private boolean runSuitesForkOnce()
         throws SurefireBooterForkException
     {
@@ -455,7 +468,7 @@ public class SurefireBooter
         addPropertiesForTypeHolder( reports, properties, REPORT_PROPERTY_PREFIX );
         addPropertiesForTypeHolder( testSuites, properties, TEST_SUITE_PROPERTY_PREFIX );
 
-        for ( int i = 0; i < classPathUrls.size() && !useSystemClassLoader(); i++ )
+        for ( int i = 0; i < classPathUrls.size(); i++ )
         {
             String url = (String) classPathUrls.get( i );
             properties.setProperty( "classPathUrl." + i, url );
