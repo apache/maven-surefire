@@ -138,6 +138,13 @@ public class SurefirePlugin
     private List classpathElements;
 
     /**
+     * Additional elements to be appended to the classpath.
+     * 
+     * @parameter
+     */
+    private List additionalClasspathElements;
+    
+    /**
      * Base directory where all reports are written to.
      * 
      * @parameter expression="${project.build.directory}/surefire-reports"
@@ -711,6 +718,18 @@ public class SurefirePlugin
             surefireBooter.addClassPathUrl( classpathElement );
         }
 
+        if ( additionalClasspathElements != null )
+        {
+            for ( Iterator i = additionalClasspathElements.iterator(); i.hasNext(); )
+            {
+                String classpathElement = (String) i.next();
+    
+                getLog().debug( "  " + classpathElement );
+    
+                surefireBooter.addClassPathUrl( classpathElement );
+            }
+        }
+        
         // ----------------------------------------------------------------------
         // Forking
         // ----------------------------------------------------------------------
