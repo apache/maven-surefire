@@ -6,6 +6,7 @@ import java.io.File;
 
 import org.apache.maven.integrationtests.AbstractMavenIntegrationTestCase;
 import org.apache.maven.it.Verifier;
+import org.apache.maven.it.util.FileUtils;
 import org.apache.maven.it.util.ResourceExtractor;
 
 /**
@@ -20,7 +21,15 @@ public class UmlautDirTest
     public void testUmlaut ()
         throws Exception
     {
-        File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/junit-pathWith‹mlaut" );
+        String tempDirPath = System.getProperty( "maven.test.tmpdir", System.getProperty( "java.io.tmpdir" ) );
+        File tempDir = new File(tempDirPath);
+        File targetDir = new File("target");
+        if (targetDir.exists() && targetDir.isDirectory()) {
+            tempDir = targetDir;
+        }
+        File testDir = new File( tempDir, "/junit-pathWith‹mlaut" );
+        FileUtils.deleteDirectory( testDir );
+        testDir = ResourceExtractor.extractResourcePath(getClass(), "/junit-pathWithUmlaut", testDir, true);
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
         verifier.executeGoal( "test" );
