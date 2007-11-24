@@ -61,12 +61,18 @@ public class PojoStackTraceWriter
 
         String[] lines = StringUtils.split( text, "\n" );
         int lastLine = lines.length - 1;
+        int causedByLine = -1;
         // skip first
         for ( int i = 1; i < lines.length; i++ )
         {
-            if ( lines[i].trim().startsWith( marker ) )
+            String line = lines[i].trim();
+            if ( line.startsWith( marker ) )
             {
                 lastLine = i;
+            } else if ( line.startsWith( "Caused by" ) ) 
+            {
+                causedByLine = i;
+                break;
             }
         }
 
@@ -77,21 +83,14 @@ public class PojoStackTraceWriter
             trace.append( "\n" );
         }
 
-        for ( int i = lastLine; i < lines.length; i++ )
+        if ( causedByLine != -1 )
         {
-            if ( lines[i].trim().startsWith( "Caused by" ) )
+            for ( int i = causedByLine; i < lines.length; i++ )
             {
-                lastLine = i;
-                break;
+                trace.append( lines[i] );
+                trace.append( "\n" );
             }
         }
-
-        for ( int i = lastLine; i < lines.length; i++ )
-        {
-            trace.append( lines[i] );
-            trace.append( "\n" );
-        }
-
         return trace.toString();
     }
 

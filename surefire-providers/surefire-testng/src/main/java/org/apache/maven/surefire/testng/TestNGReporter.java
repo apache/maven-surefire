@@ -22,6 +22,7 @@ package org.apache.maven.surefire.testng;
 import java.util.ResourceBundle;
 
 import org.apache.maven.surefire.Surefire;
+import org.apache.maven.surefire.report.PojoStackTraceWriter;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterManager;
@@ -95,7 +96,8 @@ public class TestNGReporter
         String rawString = bundle.getString( "executeException" );
 
         ReportEntry report = new ReportEntry( source, getUserFriendlyTestName( result ), rawString,
-                                              new TestNGStackTraceWriter( result ) );
+            new PojoStackTraceWriter( result.getTestClass().getRealClass().getName(),
+            result.getMethod().getMethodName(), result.getThrowable() ) );
 
         reportManager.testFailed( report );
     }
@@ -118,8 +120,10 @@ public class TestNGReporter
     {
         String rawString = bundle.getString( "executeException" );
 
-        ReportEntry report = new ReportEntry( source, getUserFriendlyTestName( result ), rawString,
-                                              new TestNGStackTraceWriter( result ) );
+        ReportEntry report =
+            new ReportEntry( source, getUserFriendlyTestName( result ), rawString,
+                new PojoStackTraceWriter( result.getTestClass().getRealClass().getName(),
+                result.getMethod().getMethodName(), result.getThrowable() ) );
 
         reportManager.testError( report );
     }
