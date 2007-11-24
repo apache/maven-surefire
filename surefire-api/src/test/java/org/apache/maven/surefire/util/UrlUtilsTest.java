@@ -65,5 +65,12 @@ public class UrlUtilsTest
         File f = new File( homeDir, "foo bar.txt" );
         assertEquals( new URL( "file:" + homeDir + "/foo%20bar.txt" ), UrlUtils.getURL( f ) );
     }
+    
+    public void testTestWithUmlaut()
+        throws IOException
+    {
+        File f = new File( homeDir, "fo‹.txt" );
+        assertEquals( new URL( "file:" + homeDir + "/fo‹.txt" ), UrlUtils.getURL( f ) );
+    }
 
 }
