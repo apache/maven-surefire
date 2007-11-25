@@ -27,7 +27,6 @@
   <artifactId>testng-group-thread-parallel</artifactId>
   <version>1.0-SNAPSHOT</version>
   <name>TestNG group/parallel thread tests</name>
-  <description>Tests group/thread/parallel functionality of TestNG</description>
 
   <dependencies>
     <dependency>

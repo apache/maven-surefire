@@ -26,8 +26,7 @@
   <groupId>org.apache.maven.plugins.surefire</groupId>
   <artifactId>testng-path-with-spaces</artifactId>
   <version>1.0-SNAPSHOT</version>
-  <name>TestNG Suites</name>
-  <description>Runs testng tests in a path with spaces</description>
+  <name>TestNG test in a path with spaces</name>
 
   <properties>
      <testNgVersion>5.7</testNgVersion>

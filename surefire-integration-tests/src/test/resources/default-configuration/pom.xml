@@ -27,7 +27,6 @@
   <artifactId>default-configuration</artifactId>
   <version>1.0-SNAPSHOT</version>
   <name>Test for default configuration</name>
-  <description>Test for default surefire configuration</description>
 
   <dependencies>
     <dependency>

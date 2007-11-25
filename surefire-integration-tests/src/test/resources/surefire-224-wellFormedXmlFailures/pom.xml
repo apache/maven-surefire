@@ -26,8 +26,7 @@
   <groupId>org.apache.maven.plugins.surefire</groupId>
   <artifactId>wellFormedXmlFailures</artifactId>
   <version>1.0-SNAPSHOT</version>
-  <name>Test for MSUREFIRE-54</name>
-  <description>XML test reports are not well-formed when failure message contains quotes.</description>
+  <name>Test for MSUREFIRE-54 (well-formed XML failures)</name>
 
   <dependencies>
     <dependency>

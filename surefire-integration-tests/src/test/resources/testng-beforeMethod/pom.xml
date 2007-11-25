@@ -26,8 +26,7 @@
   <groupId>org.apache.maven.plugins.surefire</groupId>
   <artifactId>testng-beforeMethod</artifactId>
   <version>1.0-SNAPSHOT</version>
-  <name>TestNG Suites</name>
-  <description>Uses @BeforeMethod annotation</description>
+  <name>TestNG @BeforeMethod annotation</name>
 
   <properties>
      <testNgVersion>5.7</testNgVersion>

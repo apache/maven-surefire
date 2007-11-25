@@ -26,8 +26,7 @@
   <groupId>org.apache.maven.plugins.surefire</groupId>
   <artifactId>junit44-dep</artifactId>
   <version>1.0-SNAPSHOT</version>
-  <name>Test for default configuration</name>
-  <description>Test for junit-dep; the -dep jar includes only junit.* classes, and depends explicitly on hamcrest-core</description>
+  <name>Test for junit-dep</name>
 
   <dependencies>
     <dependency>

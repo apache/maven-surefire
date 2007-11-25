@@ -27,7 +27,6 @@
   <artifactId>testng-jdk14</artifactId>
   <version>1.0-SNAPSHOT</version>
   <name>Test for testng jdk14 integration</name>
-  <description>calls testng jdk14 javadoc based tests</description>
 
   <dependencies>
     <dependency>

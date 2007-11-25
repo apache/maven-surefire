@@ -26,8 +26,7 @@
   <groupId>org.apache.maven.plugins.surefire</groupId>
   <artifactId>testng-simple</artifactId>
   <version>1.0-SNAPSHOT</version>
-  <name>TestNG Suites</name>
-  <description>Uses suite xml file definitions to invoke testng tests</description>
+  <name>TestNG simple test</name>
 
   <properties>
      <testNgVersion>5.7</testNgVersion>

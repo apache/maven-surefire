@@ -26,8 +26,7 @@
   <groupId>org.apache.maven.plugins.surefire</groupId>
   <artifactId>testng-junit-together</artifactId>
   <version>1.0-SNAPSHOT</version>
-  <name>TestNG Junit Compatible</name>
-  <description>Tests that junit tests can be executed alongside TestNG tests</description>
+  <name>TestNG and Junit Together</name>
 
   <dependencies>
     <dependency>

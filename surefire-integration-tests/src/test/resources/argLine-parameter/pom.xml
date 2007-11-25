@@ -27,7 +27,6 @@
   <artifactId>testArgLine</artifactId>
   <version>1.0-SNAPSHOT</version>
   <name>Test for argLine configuration</name>
-  <description>Test for argLine configuration parameter</description>
 
   <dependencies>
     <dependency>

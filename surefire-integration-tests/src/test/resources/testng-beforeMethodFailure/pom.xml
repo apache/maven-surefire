@@ -26,8 +26,7 @@
   <groupId>org.apache.maven.plugins.surefire</groupId>
   <artifactId>testng-beforeMethodFailure</artifactId>
   <version>1.0-SNAPSHOT</version>
-  <name>TestNG Suites</name>
-  <description>Throws failure in @BeforeMethod annotation</description>
+  <name>TestNG failure in @BeforeMethod annotation</name>
 
   <properties>
      <testNgVersion>5.7</testNgVersion>

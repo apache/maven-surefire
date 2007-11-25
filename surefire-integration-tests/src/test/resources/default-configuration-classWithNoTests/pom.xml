@@ -24,10 +24,9 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.apache.maven.plugins.surefire</groupId>
-  <artifactId>default-configuration</artifactId>
+  <artifactId>default-configuration-classWithNoTests</artifactId>
   <version>1.0-SNAPSHOT</version>
-  <name>Test for default configuration</name>
-  <description>Test for default surefire configuration</description>
+  <name>Test for class with no tests</name>
 
   <dependencies>
     <dependency>

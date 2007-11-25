@@ -1,3 +1,5 @@
+package argLine;
+
 import junit.framework.TestCase;
 
 public class TestSurefireArgLine
