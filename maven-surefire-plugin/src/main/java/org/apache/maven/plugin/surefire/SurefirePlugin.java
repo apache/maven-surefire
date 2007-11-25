@@ -183,7 +183,7 @@ public class SurefirePlugin
     /**
      * List of patterns (separated by commas) used to specify the tests that should be excluded in testing. When not
      * specified and when the <code>test</code> parameter is not specified, the default excludes will be
-     * <code>**&#47;Abstract*Test.java  **&#47;Abstract*TestCase.java **&#47;*$*</code>.  This parameter is ignored if
+     * <code>**&#47;*$*</code> (which excludes all inner classes).  This parameter is ignored if
      * TestNG suiteXmlFiles are specified.
      * 
      * @parameter
@@ -696,8 +696,7 @@ public class SurefirePlugin
                 if ( excludes == null || excludes.size() == 0 )
                 {
                     excludes =
-                        new ArrayList( Arrays.asList( new String[] { "**/Abstract*Test.java",
-                            "**/Abstract*TestCase.java", "**/*$*" } ) );
+                        new ArrayList( Arrays.asList( new String[] { "**/*$*" } ) );
                 }
             }
 
