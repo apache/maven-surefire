@@ -64,6 +64,8 @@ public class ForkConfiguration
     private File workingDirectory;
 
     private boolean debug;
+    
+    private String debugLine;
 
     public void setForkMode( String forkMode )
     {
@@ -113,6 +115,11 @@ public class ForkConfiguration
     public void setArgLine( String argLine )
     {
         this.argLine = argLine;
+    }
+    
+    public void setDebugLine( String debugLine )
+    {
+        this.debugLine = debugLine;
     }
 
     public void setEnvironmentVariables( Map environmentVariables )
@@ -171,10 +178,9 @@ public class ForkConfiguration
             }
         }
 
-        if ( System.getProperty( "maven.surefire.debug" ) != null )
+        if ( debugLine != null && !"".equals( debugLine ) )
         {
-            cli.createArg().setLine(
-                "-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005" );
+            cli.createArg().setLine( debugLine );
         }
 
         if ( useJar )

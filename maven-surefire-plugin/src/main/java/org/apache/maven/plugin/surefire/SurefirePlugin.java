@@ -286,12 +286,22 @@ public class SurefirePlugin
     private String jvm;
 
     /**
-     * Arbitrary options to set on the command line.
+     * Arbitrary JVM options to set on the command line.
      * 
      * @parameter expression="${argLine}"
      */
     private String argLine;
 
+    /**
+     * Attach a debugger to the forked JVM.  If set to "true", the process will suspend and 
+     * wait for a debugger to attach on port 5005.  If set to some other string, that
+     * string will be appended to the argLine, allowing you to configure arbitrary
+     * debuggability options (without overwriting the other options specified in the argLine).
+     * 
+     * @parameter expression="${maven.surefire.debug}"
+     */
+    private String debugForkedProcess;
+    
     /**
      * Additional environments to set on the command line.
      * 
@@ -777,6 +787,13 @@ public class SurefirePlugin
             fork.setUseSystemClassLoader( useSystemClassLoader );
 
             fork.setSystemProperties( systemProperties );
+            
+            if ( "true".equals( debugForkedProcess ) )
+            {
+                debugForkedProcess = "-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005";
+            }
+            
+            fork.setDebugLine( debugForkedProcess );
 
             if ( jvm == null || "".equals( jvm ) )
             {
