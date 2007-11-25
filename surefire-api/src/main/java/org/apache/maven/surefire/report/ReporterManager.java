@@ -104,7 +104,7 @@ public class ReporterManager
         return reports;
     }
 
-    public void writeMessage( String message )
+    public synchronized void writeMessage( String message )
     {
         for ( Iterator i = reports.iterator(); i.hasNext(); )
         {
@@ -118,7 +118,7 @@ public class ReporterManager
     // Run
     // ----------------------------------------------------------------------
 
-    public void runStarting( int testCount )
+    public synchronized void runStarting( int testCount )
     {
         if ( testCount < 0 )
         {
@@ -133,7 +133,7 @@ public class ReporterManager
         }
     }
 
-    public void runStopped()
+    public synchronized void runStopped()
     {
         for ( Iterator it = reports.iterator(); it.hasNext(); )
         {
@@ -143,7 +143,7 @@ public class ReporterManager
         }
     }
 
-    public void runAborted( ReportEntry report )
+    public synchronized void runAborted( ReportEntry report )
     {
         if ( report == null )
         {
@@ -160,7 +160,7 @@ public class ReporterManager
         ++errors;
     }
 
-    public void runCompleted()
+    public synchronized void runCompleted()
     {
         for ( Iterator it = reports.iterator(); it.hasNext(); )
         {
@@ -195,7 +195,7 @@ public class ReporterManager
         writeFooter( "" );
     }
 
-    private void writeFooter( String footer )
+    private synchronized void writeFooter( String footer )
     {
         for ( Iterator i = reports.iterator(); i.hasNext(); )
         {
@@ -209,7 +209,7 @@ public class ReporterManager
 
     private ByteArrayOutputStream stdErr;
 
-    public void testSetStarting( ReportEntry report )
+    public synchronized void testSetStarting( ReportEntry report )
         throws ReporterException
     {
         for ( Iterator it = reports.iterator(); it.hasNext(); )
@@ -220,7 +220,7 @@ public class ReporterManager
         }
     }
 
-    public void testSetCompleted( ReportEntry report )
+    public synchronized void testSetCompleted( ReportEntry report )
     {
         if ( !reports.isEmpty() )
         {
@@ -251,7 +251,7 @@ public class ReporterManager
         }
     }
 
-    public void testSetAborted( ReportEntry report )
+    public synchronized void testSetAborted( ReportEntry report )
     {
         for ( Iterator it = reports.iterator(); it.hasNext(); )
         {
@@ -267,7 +267,7 @@ public class ReporterManager
     // Test
     // ----------------------------------------------------------------------
 
-    public void testStarting( ReportEntry report )
+    public synchronized void testStarting( ReportEntry report )
     {
         stdOut = new ByteArrayOutputStream();
 
@@ -295,7 +295,7 @@ public class ReporterManager
         }
     }
 
-    public void testSucceeded( ReportEntry report )
+    public synchronized void testSucceeded( ReportEntry report )
     {
         resetStreams();
 
@@ -307,17 +307,17 @@ public class ReporterManager
         }
     }
 
-    public void testError( ReportEntry reportEntry )
+    public synchronized void testError( ReportEntry reportEntry )
     {
         testFailed( reportEntry, "error" );
     }
 
-    public void testFailed( ReportEntry reportEntry )
+    public synchronized void testFailed( ReportEntry reportEntry )
     {
         testFailed( reportEntry, "failure" );
     }
 
-    private void testFailed( ReportEntry reportEntry, String typeError )
+    private synchronized void testFailed( ReportEntry reportEntry, String typeError )
     {
         // Note that the fields can be null if the test hasn't even started yet (an early error)
         String stdOutLog = stdOut != null ? stdOut.toString() : "";
@@ -357,7 +357,7 @@ public class ReporterManager
         IOUtil.close( newErr );
     }
 
-    public void reset()
+    public synchronized void reset()
     {
         for ( Iterator it = reports.iterator(); it.hasNext(); )
         {
@@ -386,7 +386,7 @@ public class ReporterManager
         return completedCount;
     }
 
-    public void testSkipped( ReportEntry report )
+    public synchronized void testSkipped( ReportEntry report )
     {
         resetStreams();
 

@@ -34,10 +34,14 @@ public class TestNGTest {
 	@Test(groups = {"functional", "notincluded"})
 	public void test1() throws InterruptedException
 	{
-		m_testCount++;
+		incrementTestCount();
 		System.out.println("running test");
 		Assert.assertTrue( testObject != null , "testObject is null" );
 		waitForTestCountToBeThree();
+	}
+	
+	private synchronized void incrementTestCount() {
+	    m_testCount++;
 	}
 	
 	@Test(groups = {"functional", "notincluded"})
@@ -55,7 +59,7 @@ public class TestNGTest {
     {
         if ( m_testCount == 3 ) return;
         long now = System.currentTimeMillis();
-        long timeout = 1 * 1000;
+        long timeout = 5 * 1000;
         long finish = now + timeout;
         while ( m_testCount < 3 && System.currentTimeMillis() < finish )
         {
