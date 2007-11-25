@@ -7,7 +7,6 @@ import java.util.List;
 import org.apache.maven.integrationtests.AbstractMavenIntegrationTestCase;
 import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
-import org.apache.maven.plugins.surefire.report.ReportTestSuite;
 
 /**
  * Basic suite test using all known versions of TestNG
@@ -24,12 +23,14 @@ public class TestNgVersionsTest
         runTestNgTest( "4.7" );
     }
     
-    public void test50 () throws Exception
+    // DGF SUREFIRE-375 + MAVENUPLOAD-1024
+    // The 5.0 and 5.0.1 jars on central are malformed
+    public void XXXtest50 () throws Exception
     {
         runTestNgTest( "5.0" );
     }
     
-    public void test501 () throws Exception
+    public void XXXtest501 () throws Exception
     {
         runTestNgTest( "5.0.1" );
     }
