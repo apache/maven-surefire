@@ -238,44 +238,6 @@ public final class JUnitTestSet
         }
     }
 
-    public int getTestCount()
-        throws TestSetFailedException
-    {
-        Class testClass = getTestClass();
-        try
-        {
-            Object testObject = constructTestObject( testClass );
-
-            Integer integer = (Integer) countTestCasesMethod.invoke( testObject, EMPTY_CLASS_ARRAY );
-
-            return integer.intValue();
-        }
-        catch ( IllegalAccessException e )
-        {
-            throw new TestSetFailedException( testClass.getName(), e );
-        }
-        catch ( IllegalArgumentException e )
-        {
-            throw new TestSetFailedException( testClass.getName(), e );
-        }
-        catch ( InvocationTargetException e )
-        {
-            throw new TestSetFailedException( testClass.getName(), e.getTargetException() );
-        }
-        catch ( InstantiationException e )
-        {
-            throw new TestSetFailedException( testClass.getName(), e );
-        }
-        catch ( ClassNotFoundException e )
-        {
-            throw new TestSetFailedException( "JUnit classes not available", e );
-        }
-        catch ( NoSuchMethodException e )
-        {
-            throw new TestSetFailedException( "Class is not a JUnit TestCase", e );
-        }
-    }
-
     private static Constructor getTestConstructor( Class testClass )
         throws NoSuchMethodException
     {

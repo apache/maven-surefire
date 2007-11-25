@@ -41,13 +41,6 @@ public class TestNGTestSet
         super( testClass );
     }
 
-    public int getTestCount()
-        throws TestSetFailedException
-    {
-        // TODO: need to get this from TestNG somehow
-        return 1;
-    }
-
     public void execute( ReporterManager reportManager, ClassLoader loader )
     {
         throw new UnsupportedOperationException(

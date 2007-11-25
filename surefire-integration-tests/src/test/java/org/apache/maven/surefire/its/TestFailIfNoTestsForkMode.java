@@ -76,8 +76,7 @@ public class TestFailIfNoTestsForkMode
         else
         {
             verifier.verifyErrorFreeLog();
-            File reportsDir = new File( testDir, "target/surefire-reports" );
-            assertFalse ( "Unexpected reports directory", reportsDir.exists() );
+            HelperAssertions.assertTestSuiteResults( 0, 0, 0, 0, testDir );
         }
     }
 }

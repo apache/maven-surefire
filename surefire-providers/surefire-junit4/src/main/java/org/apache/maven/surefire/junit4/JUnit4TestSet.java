@@ -67,14 +67,4 @@ public class JUnit4TestSet
         }
     }
 
-    /**
-     * Returns the number of tests to be run in this class.
-     *
-     * @see org.apache.maven.surefire.testset.SurefireTestSet#getTestCount()
-     */
-    public int getTestCount()
-        throws TestSetFailedException
-    {
-        return junitTestRunner.testCount();
-    }
 }

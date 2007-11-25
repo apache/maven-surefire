@@ -26,9 +26,6 @@ public interface SurefireTestSet
     void execute( ReporterManager reportManager, ClassLoader loader )
         throws TestSetFailedException;
 
-    int getTestCount()
-        throws TestSetFailedException;
-
     String getName();
 
     Class getTestClass();

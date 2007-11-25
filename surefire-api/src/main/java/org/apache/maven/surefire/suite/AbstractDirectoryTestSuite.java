@@ -103,7 +103,7 @@ public abstract class AbstractDirectoryTestSuite
                 }
                 testSets.put( testSet.getName(), testSet );
 
-                totalTests += testSet.getTestCount();
+                totalTests++;
             }
         }
 

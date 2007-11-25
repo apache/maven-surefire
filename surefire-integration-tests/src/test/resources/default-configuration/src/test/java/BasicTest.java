@@ -18,6 +18,7 @@ public class BasicTest
 
     public static Test suite()
     {
+        System.out.println("suite");
         TestSuite suite = new TestSuite();
         Test test = new BasicTest( "testSetUp", "dummy" );
         suite.addTest( test );

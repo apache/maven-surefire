@@ -246,14 +246,6 @@ public class PojoTestSet
     {
     }
 
-    public int getTestCount()
-        throws TestSetFailedException
-    {
-        discoverTestMethods();
-
-        return testMethods.size();
-    }
-
     private void discoverTestMethods()
     {
         if ( testMethods == null )
