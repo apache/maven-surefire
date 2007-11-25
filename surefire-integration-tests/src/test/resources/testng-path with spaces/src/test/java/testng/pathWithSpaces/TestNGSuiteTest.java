@@ -11,6 +11,6 @@ public class TestNGSuiteTest {
 	@Test
 	public void loadTestResourceWithSpaces() throws URISyntaxException
 	{
-		new File( getClass().getResource( "test.txt" ).toURI() );
+		new File( getClass().getResource( "/test.txt" ).toURI() );
 	}
 }

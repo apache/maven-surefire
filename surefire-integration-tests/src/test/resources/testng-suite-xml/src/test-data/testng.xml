@@ -23,7 +23,7 @@
 
   <test name="Sample Test">
     <classes>
-      <class name="TestNGSuiteTest"/>
+      <class name="testng.suiteXml.TestNGSuiteTest"/>
     </classes>
   </test>
 

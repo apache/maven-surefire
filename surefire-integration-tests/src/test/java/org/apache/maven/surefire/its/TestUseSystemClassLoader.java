@@ -15,7 +15,7 @@ import org.apache.maven.it.util.ResourceExtractor;
 public class TestUseSystemClassLoader
     extends AbstractMavenIntegrationTestCase
 {
-    public void testDefaultConfiguration ()
+    public void testUseSystemClassLoader ()
         throws Exception
     {
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/system-classloader" );

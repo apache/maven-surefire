@@ -17,7 +17,7 @@ import org.apache.maven.it.util.ResourceExtractor;
 public class TestNgReportTest
     extends AbstractMavenIntegrationTestCase
 {
-    public void testDefaultConfiguration ()
+    public void testTestNgReport ()
         throws Exception
     {
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/testng-simple" );

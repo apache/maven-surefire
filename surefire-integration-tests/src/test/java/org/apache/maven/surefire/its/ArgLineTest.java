@@ -15,7 +15,7 @@ import org.apache.maven.it.util.ResourceExtractor;
 public class ArgLineTest
     extends AbstractMavenIntegrationTestCase
 {
-    public void testDefaultConfiguration ()
+    public void testArgLine ()
         throws Exception
     {
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/argLine-parameter" );

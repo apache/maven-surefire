@@ -15,7 +15,7 @@ import org.apache.maven.it.util.ResourceExtractor;
 public class TestJunit4Ignore
     extends AbstractMavenIntegrationTestCase
 {
-    public void testDefaultConfiguration ()
+    public void testJunit4Ignore ()
         throws Exception
     {
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/junit44-ignore" );
