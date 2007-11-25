@@ -48,6 +48,15 @@ public class Surefire
 
     public static final String SUREFIRE_BUNDLE_NAME = "org.apache.maven.surefire.surefire";
 
+    // DGF backwards compatibility
+    public boolean run( List reportDefinitions, Object[] testSuiteDefinition, String testSetName,
+                    ClassLoader surefireClassLoader, ClassLoader testsClassLoader)
+        throws ReporterException, TestSetFailedException
+    {
+        return run( reportDefinitions, testSuiteDefinition, testSetName, surefireClassLoader, testsClassLoader, null,
+                    Boolean.FALSE ) == 0;
+    }
+    
     public int run( List reportDefinitions, Object[] testSuiteDefinition, String testSetName,
                         ClassLoader surefireClassLoader, ClassLoader testsClassLoader, Boolean failIfNoTests )
         throws ReporterException, TestSetFailedException
@@ -55,6 +64,15 @@ public class Surefire
         return run( reportDefinitions, testSuiteDefinition, testSetName, surefireClassLoader, testsClassLoader, null, failIfNoTests );
     }
 
+    // DGF backwards compatibility
+    public boolean run( List reportDefinitions, Object[] testSuiteDefinition, String testSetName,
+                    ClassLoader surefireClassLoader, ClassLoader testsClassLoader, Properties results )
+        throws ReporterException, TestSetFailedException
+    {
+        return run( reportDefinitions, testSuiteDefinition, testSetName, surefireClassLoader, testsClassLoader,
+                    results, Boolean.FALSE ) == 0;
+    }
+    
     public int run( List reportDefinitions, Object[] testSuiteDefinition, String testSetName,
                         ClassLoader surefireClassLoader, ClassLoader testsClassLoader, Properties results, Boolean failIfNoTests )
         throws ReporterException, TestSetFailedException
@@ -115,6 +133,12 @@ public class Surefire
 
     }
 
+    public boolean run( List reportDefinitions, List testSuiteDefinitions, ClassLoader surefireClassLoader,
+                        ClassLoader testsClassLoader )
+        throws ReporterException, TestSetFailedException
+    {
+        return run ( reportDefinitions, testSuiteDefinitions, surefireClassLoader, testsClassLoader, Boolean.FALSE ) == 0;
+    }
     public int run( List reportDefinitions, List testSuiteDefinitions, ClassLoader surefireClassLoader,
                         ClassLoader testsClassLoader, Boolean failIfNoTests )
         throws ReporterException, TestSetFailedException
