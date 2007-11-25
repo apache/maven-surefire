@@ -24,15 +24,20 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.apache.maven.plugins.surefire</groupId>
-  <artifactId>junit44-hamcrest</artifactId>
+  <artifactId>junit4</artifactId>
   <version>1.0-SNAPSHOT</version>
-  <name>Test for JUnit44 with Hamcrest extensions</name>
+  <name>Test for JUnit 4</name>
+
+
+  <properties>
+    <junitVersion>4.4</junitVersion>
+  </properties>
 
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.4</version>
+      <version>${junitVersion}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

@@ -1,4 +1,4 @@
-package uk.co.henriettasms;
+package charsetProvider;
 import java.io.UnsupportedEncodingException;
 
 import junit.framework.TestCase;

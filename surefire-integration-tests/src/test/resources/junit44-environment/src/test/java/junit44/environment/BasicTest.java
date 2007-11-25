@@ -1,3 +1,4 @@
+package junit44.environment;
 import static org.hamcrest.core.Is.*;
 import static org.hamcrest.core.IsNull.*;
 import org.junit.Assert;

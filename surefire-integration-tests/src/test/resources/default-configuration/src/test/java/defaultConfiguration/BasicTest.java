@@ -1,3 +1,5 @@
+package defaultConfiguration;
+
 import junit.extensions.TestSetup;
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -18,6 +20,7 @@ public class BasicTest
 
     public static Test suite()
     {
+        System.out.println("suite");
         TestSuite suite = new TestSuite();
         Test test = new BasicTest( "testSetUp", "dummy" );
         suite.addTest( test );

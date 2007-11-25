@@ -1,3 +1,4 @@
+package junit.twoTestCases;
 import junit.framework.TestCase;
 
 

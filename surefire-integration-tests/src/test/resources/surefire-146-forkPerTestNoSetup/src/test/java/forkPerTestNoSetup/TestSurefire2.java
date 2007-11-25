@@ -1,9 +1,11 @@
+package forkPerTestNoSetup;
+
 import junit.extensions.TestSetup;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-public class BasicTest
+public class TestSurefire2
     extends TestCase
 {
 
@@ -11,16 +13,15 @@ public class BasicTest
 
     private static boolean tearDownCalled = false;
 
-    public BasicTest( String name, String extraName )
+    public TestSurefire2( String name, String extraName )
     {
         super( name );
     }
 
     public static Test suite()
     {
-        System.out.println("suite");
         TestSuite suite = new TestSuite();
-        Test test = new BasicTest( "testSetUp", "dummy" );
+        Test test = new TestSurefire2( "testSetUp", "dummy" );
         suite.addTest( test );
         TestSetup setup = new TestSetup( suite )
         {

@@ -1,3 +1,4 @@
+package testng.suiteXml;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 

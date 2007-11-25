@@ -1,3 +1,4 @@
+package junit44Dep;
 import org.hamcrest.core.Is;
 import org.junit.After;
 import org.junit.AfterClass;

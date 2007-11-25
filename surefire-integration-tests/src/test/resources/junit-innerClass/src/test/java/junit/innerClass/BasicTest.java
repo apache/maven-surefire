@@ -1,3 +1,4 @@
+package junit.innerClass;
 import junit.framework.TestCase;
 
 public class BasicTest
