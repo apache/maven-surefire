@@ -34,7 +34,7 @@ public class TestSingleTest
         HelperAssertions.assertTestSuiteResults( 1, 0, 0, 0, testDir );        
     }
     
-    public void XXXtestSingleTestDotJava()
+    public void testSingleTestDotJava()
         throws Exception
     {
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/default-configuration" );

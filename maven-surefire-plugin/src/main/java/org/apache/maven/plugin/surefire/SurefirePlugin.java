@@ -660,6 +660,10 @@ public class SurefirePlugin
                 for ( int i = 0; i < testRegexes.length; i++ )
                 {
                     String testRegex = testRegexes[i];
+                    if (testRegex.endsWith( ".java" ))
+                    {
+                        testRegex = testRegex.substring( 0, testRegex.length() - 5 );
+                    }
                     // Allow paths delimited by '.' or '/'
                     testRegex = testRegex.replace('.', '/');
                     includes.add( "**/" + testRegex + ".java" );
