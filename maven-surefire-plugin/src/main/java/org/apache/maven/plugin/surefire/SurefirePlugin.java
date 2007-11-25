@@ -642,10 +642,10 @@ public class SurefirePlugin
             {
                 throw new MojoExecutionException( "suiteXmlFiles is configured, but there is no TestNG dependency" );
             }
-
+ 
             // TODO: properties should be passed in here too
             surefireBooter.addTestSuite( "org.apache.maven.surefire.testng.TestNGXmlTestSuite", new Object[]{
-                suiteXmlFiles, testSourceDirectory.getAbsolutePath(), testNgArtifact.getVersion(), reportsDirectory} );
+                suiteXmlFiles, testSourceDirectory.getAbsolutePath(), testNgArtifact.getVersion(), testNgArtifact.getClassifier(), properties, reportsDirectory} );
         }
         else
         {
@@ -705,7 +705,7 @@ public class SurefirePlugin
             {
                 surefireBooter.addTestSuite( "org.apache.maven.surefire.testng.TestNGDirectoryTestSuite", new Object[] {
                     testClassesDirectory, includes, excludes, testSourceDirectory.getAbsolutePath(),
-                    testNgArtifact.getVersion(), properties, reportsDirectory} );
+                    testNgArtifact.getVersion(), testNgArtifact.getClassifier(), properties, reportsDirectory} );
             }
             else
             {

@@ -21,6 +21,8 @@ package org.apache.maven.surefire.testng;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -33,7 +35,7 @@ import org.apache.maven.surefire.testng.conf.Configurator;
 import org.apache.maven.surefire.testng.conf.TestNG4751Configurator;
 import org.apache.maven.surefire.testng.conf.TestNG52Configurator;
 import org.apache.maven.surefire.testng.conf.TestNGMapConfigurator;
-import org.apache.maven.surefire.util.NestedRuntimeException;
+import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.testng.IReporter;
 import org.testng.TestNG;
 
@@ -50,30 +52,33 @@ public class TestNGExecutor
     }
 
     public static void run( Class[] testClasses, String testSourceDirectory, Map options, ArtifactVersion version,
-                            ReporterManager reportManager, SurefireTestSuite suite, File reportsDirectory )
+                            String classifier, ReporterManager reportManager, SurefireTestSuite suite, File reportsDirectory )
+        throws TestSetFailedException
     {
+        // kind of ugly, but listeners are configured differently
+        final String listeners = (String) options.remove("listener");
         TestNG testng = new TestNG( false );
         Configurator configurator = getConfigurator( version );
         configurator.configure( testng, options );
-        postConfigure( testng, testSourceDirectory, reportManager, suite, reportsDirectory );
-
+        postConfigure( testng, testSourceDirectory, listeners, classifier, reportManager, suite, reportsDirectory );
         testng.setTestClasses( testClasses );
         testng.run();
     }
 
     public static void run( List suiteFiles, String testSourceDirectory, Map options, ArtifactVersion version,
-                            ReporterManager reportManager, SurefireTestSuite suite, File reportsDirectory )
+                            String classifier, ReporterManager reportManager, SurefireTestSuite suite, File reportsDirectory )
+        throws TestSetFailedException
     {
         TestNG testng = new TestNG( false );
         Configurator configurator = getConfigurator( version );
         configurator.configure( testng, options );
-        postConfigure( testng, testSourceDirectory, reportManager, suite, reportsDirectory );
+        postConfigure( testng, testSourceDirectory, (String) options.get("listener"), classifier, reportManager, suite, reportsDirectory );
 
         testng.setTestSuites( suiteFiles );
         testng.run();
     }
 
-    private static Configurator getConfigurator( ArtifactVersion version )
+    private static Configurator getConfigurator( ArtifactVersion version ) throws TestSetFailedException
     {
         try
         {
@@ -93,17 +98,18 @@ public class TestNGExecutor
                 return new TestNGMapConfigurator();
             }
 
-            throw new NestedRuntimeException( "Unknown TestNG version " + version );
+            throw new TestSetFailedException( "Unknown TestNG version " + version );
         }
         catch ( InvalidVersionSpecificationException invsex )
         {
-            throw new NestedRuntimeException( "Bug in plugin. Please report it with the attached stacktrace", invsex );
+            throw new TestSetFailedException( "Bug in plugin. Please report it with the attached stacktrace", invsex );
         }
     }
 
 
-    private static void postConfigure( TestNG testNG, String sourcePath, ReporterManager reportManager,
-                                       SurefireTestSuite suite, File reportsDirectory )
+    private static void postConfigure( TestNG testNG, String sourcePath, String listenerClasses, 
+                                       String classifier, ReporterManager reportManager, SurefireTestSuite suite, File reportsDirectory )
+        throws TestSetFailedException
     {
         // turn off all TestNG output
         testNG.setVerbose( 0 );
@@ -113,10 +119,14 @@ public class TestNGExecutor
         attachNonStandardReporter( testNG, "org.testng.reporters.XMLReporter" );
         attachNonStandardReporter( testNG, "org.testng.reporters.FailedReporter" );
         // TODO: we should have the Profile so that we can decide if this is needed or not
+        testNG.setListenerClasses(loadListenerClasses(listenerClasses));
+        
+        // FIXME: use classifier to decide if we need to pass along the source dir (onyl for JDK14)
         if ( sourcePath != null )
         {
             testNG.setSourcePath( sourcePath );
         }
+
         testNG.setOutputDirectory( reportsDirectory.getAbsolutePath() );
     }
 
@@ -140,6 +150,29 @@ public class TestNGExecutor
         }
     }
     
+    private static List loadListenerClasses(String listenerClasses) throws TestSetFailedException
+    {
+        if (listenerClasses == null || "".equals(listenerClasses.trim())) {
+            return Collections.emptyList();
+        }
+        
+        List classes = new ArrayList();
+        String[] classNames = listenerClasses.split(" *, *");
+        for(int i = 0; i < classNames.length; i++) 
+        {
+            try 
+            {
+                classes.add(Class.forName(classNames[i]));
+            }
+            catch(Exception ex) 
+            {
+                throw new TestSetFailedException("Cannot find listener class " + classNames[i], ex);
+            }              
+        }
+        
+        return classes;
+    }
+
     private static void attachNonStandardReporter( TestNG testNG, String className )
     {
         try

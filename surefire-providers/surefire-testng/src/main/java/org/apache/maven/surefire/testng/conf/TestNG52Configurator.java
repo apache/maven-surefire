@@ -29,8 +29,8 @@ package org.apache.maven.surefire.testng.conf;
  * -threadcount (int)
  * -parallel (String)
  * <p/>
- * Not supported yet:
- * -setListenerClasses(List<Class>) or setListeners(List<Object>)
+ * 
+ * @author <a href='mailto:the[dot]mindstorm[at]gmail[dot]com'>Alex Popescu</a>
  */
 public class TestNG52Configurator
     extends AbstractDirectConfigurator

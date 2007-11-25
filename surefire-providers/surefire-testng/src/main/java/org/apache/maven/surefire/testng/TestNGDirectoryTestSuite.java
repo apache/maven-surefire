@@ -45,6 +45,8 @@ public class TestNGDirectoryTestSuite
 {
     private ArtifactVersion version;
 
+    private String classifier;
+    
     private Map options;
 
     private String testSourceDirectory;
@@ -52,21 +54,24 @@ public class TestNGDirectoryTestSuite
     private File reportsDirectory;
 
     public TestNGDirectoryTestSuite( File basedir, ArrayList includes, ArrayList excludes, String testSourceDirectory,
-                                     String artifactVersion, Properties confOptions, File reportsDirectory )
+                                     String artifactVersion, String artifactClassifier, Properties confOptions, File reportsDirectory )
     {
         this( basedir, includes, excludes, testSourceDirectory, new DefaultArtifactVersion( artifactVersion ),
-              confOptions, reportsDirectory );
+              artifactClassifier, confOptions, reportsDirectory );
     }
 
     public TestNGDirectoryTestSuite( File basedir, List includes, List excludes, String testSourceDirectory,
-                                     ArtifactVersion artifactVersion, Map confOptions, File reportsDirectory )
+                                     ArtifactVersion artifactVersion, String artifactClassifier, Map confOptions, File reportsDirectory )
     {
         super( basedir, includes, excludes );
 
         this.options = confOptions;
+        
         this.testSourceDirectory = testSourceDirectory;
-        this.version = artifactVersion;
         this.reportsDirectory = reportsDirectory;
+        this.version = artifactVersion;
+        
+        this.classifier = artifactClassifier;
     }
 
     protected SurefireTestSet createTestSet( Class testClass, ClassLoader classLoader )
@@ -90,7 +95,7 @@ public class TestNGDirectoryTestSuite
         }
 
         TestNGExecutor.run( new Class[]{testSet.getTestClass()}, this.testSourceDirectory, this.options, this.version,
-                            reporterManager, this, reportsDirectory );
+                            this.classifier, reporterManager, this, reportsDirectory );
     }
 
     public void execute( ReporterManager reporterManager, ClassLoader classLoader )
@@ -109,6 +114,7 @@ public class TestNGDirectoryTestSuite
             testClasses[i++] = testSet.getTestClass();
         }
 
-        TestNGExecutor.run( testClasses, this.testSourceDirectory, this.options, this.version, reporterManager, this, reportsDirectory );
+        TestNGExecutor.run( testClasses, this.testSourceDirectory, this.options, this.version, 
+                            this.classifier, reporterManager, this, reportsDirectory );
     }
 }

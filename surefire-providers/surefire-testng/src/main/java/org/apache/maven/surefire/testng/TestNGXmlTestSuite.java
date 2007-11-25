@@ -19,12 +19,6 @@ package org.apache.maven.surefire.testng;
  * under the License.
  */
 
-import org.apache.maven.artifact.versioning.ArtifactVersion;
-import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
-import org.apache.maven.surefire.report.ReporterManager;
-import org.apache.maven.surefire.suite.SurefireTestSuite;
-import org.apache.maven.surefire.testset.TestSetFailedException;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,6 +26,14 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
+
+import org.apache.maven.artifact.versioning.ArtifactVersion;
+import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
+import org.apache.maven.surefire.report.ReporterException;
+import org.apache.maven.surefire.report.ReporterManager;
+import org.apache.maven.surefire.suite.SurefireTestSuite;
+import org.apache.maven.surefire.testset.TestSetFailedException;
 
 /**
  * Handles suite xml file definitions for TestNG.
@@ -50,8 +52,10 @@ public class TestNGXmlTestSuite
 
     private ArtifactVersion version;
 
-    private Map options = new HashMap();
-    
+    private String classifier;
+
+    private Map options;
+
     private File reportsDirectory;
 
     // Not really used
@@ -59,13 +63,18 @@ public class TestNGXmlTestSuite
 
     /**
      * Creates a testng testset to be configured by the specified
-     * xml file.
+     * xml file(s). The XML files are suite definitions files according to TestNG DTD.
      */
-    public TestNGXmlTestSuite( File[] suiteFiles, String testSourceDirectory, String artifactVersion, File reportsDirectory )
+    public TestNGXmlTestSuite( File[] suiteFiles, String testSourceDirectory, String artifactVersion,
+                               String artifactClassifier, Properties confOptions, File reportsDirectory )
     {
         this.suiteFiles = suiteFiles;
 
+        this.options = confOptions;
+        
         this.version = new DefaultArtifactVersion( artifactVersion );
+
+        this.classifier = artifactClassifier;
 
         this.testSourceDirectory = testSourceDirectory;
         
@@ -73,14 +82,15 @@ public class TestNGXmlTestSuite
     }
 
     public void execute( ReporterManager reporterManager, ClassLoader classLoader )
+        throws ReporterException, TestSetFailedException
     {
         if ( testSets == null )
         {
             throw new IllegalStateException( "You must call locateTestSets before calling execute" );
         }
 
-        TestNGExecutor.run( this.suiteFilePaths, this.testSourceDirectory, this.options, this.version, reporterManager,
-                            this, reportsDirectory );
+        TestNGExecutor.run( this.suiteFilePaths, this.testSourceDirectory, this.options, this.version, 
+                            this.classifier, reporterManager, this, reportsDirectory );
     }
 
     public void execute( String testSetName, ReporterManager reporterManager, ClassLoader classLoader )
@@ -91,7 +101,6 @@ public class TestNGXmlTestSuite
 
     public int getNumTests()
     {
-        // TODO: this is not correct
         return suiteFiles.length;
     }
 

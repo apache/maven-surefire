@@ -34,6 +34,8 @@ import java.util.Map;
  * <p/>
  * Test classes and/or suite files are not passed along as options parameters, but
  * configured separately.
+ * 
+ * @author <a href='mailto:the[dot]mindstorm[at]gmail[dot]com'>Alex Popescu</a>
  */
 public class TestNGMapConfigurator
     implements Configurator
@@ -54,7 +56,14 @@ public class TestNGMapConfigurator
             {
                 val = convert( val, String.class );
             }
-            convertedOptions.put( "-" + key, val );
+            if ( key.startsWith("-") ) 
+            {
+              convertedOptions.put( key, val );
+            }
+            else 
+            {
+              convertedOptions.put( "-" + key, val );
+            }
         }
 
         testng.configure( convertedOptions );
