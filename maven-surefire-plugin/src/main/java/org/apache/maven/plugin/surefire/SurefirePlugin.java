@@ -163,7 +163,8 @@ public class SurefirePlugin
      * Specify this parameter(can be a comma separated list) if you want to use the test pattern matching notation, Ant
      * pattern matching, to select tests to run. The Ant pattern will be used to create an include pattern formatted
      * like <code>**&#47;${test}.java</code> When used, the <code>includes</code> and <code>excludes</code>
-     * patterns parameters are ignored.
+     * patterns parameters are ignored.  This parameter is ignored if
+     * TestNG suiteXmlFiles are specified.
      * 
      * @parameter expression="${test}"
      */
@@ -261,6 +262,13 @@ public class SurefirePlugin
      */
     private boolean redirectTestOutputToFile;
 
+    /**
+     * Set this to "true" to cause a failure if there are no tests to run.
+     * 
+     * @parameter expression="${failIfNoTests}" default-value="false"
+     */
+    private boolean failIfNoTests;
+    
     /**
      * Option to specify the forking mode. Can be "never", "once" or "always". "none" and "pertest" are also accepted
      * for backwards compatibility.
@@ -437,10 +445,10 @@ public class SurefirePlugin
 
             getLog().info( "Surefire report directory: " + reportsDirectory );
 
-            boolean success;
+            int result;
             try
             {
-                success = surefireBooter.run();
+                result = surefireBooter.run();
             }
             catch ( SurefireBooterForkException e )
             {
@@ -457,19 +465,28 @@ public class SurefirePlugin
                 System.setProperties( originalSystemProperties );
             }
 
-            if ( !success )
+            if ( result == 0 ) return;
+            
+            String msg;
+            
+            if ( result == SurefireBooter.NO_TESTS_EXIT_CODE )
             {
+                if ( !failIfNoTests ) return;
                 // TODO: i18n
-                String msg = "There are test failures.\n\nPlease refer to " + reportsDirectory + " for the individual test results.";
+                throw new MojoFailureException( "No tests were executed!" );
+            } else {
+                // TODO: i18n
+                msg = "There are test failures.\n\nPlease refer to " + reportsDirectory + " for the individual test results.";
 
-                if ( testFailureIgnore )
-                {
-                    getLog().error( msg );
-                }
-                else
-                {
-                    throw new MojoFailureException( msg );
-                }
+            }
+            
+            if ( testFailureIgnore )
+            {
+                getLog().error( msg );
+            }
+            else
+            {
+                throw new MojoFailureException( msg );
             }
         }
     }
@@ -485,6 +502,10 @@ public class SurefirePlugin
 
         if ( !testClassesDirectory.exists() )
         {
+            if ( failIfNoTests )
+            {
+                throw new MojoFailureException( "No tests to run!" );
+            }
             getLog().info( "No tests to run." );
             return false;
         }
@@ -631,15 +652,17 @@ public class SurefirePlugin
                 includes = new ArrayList();
 
                 excludes = new ArrayList();
-
-                // Allow paths delimited by '.' or '/'
-                test = test.replace('.', '/');
                 
+                failIfNoTests = true;
+
                 String[] testRegexes = StringUtils.split( test, "," );
 
                 for ( int i = 0; i < testRegexes.length; i++ )
                 {
-                    includes.add( "**/" + testRegexes[i] + ".java" );
+                    String testRegex = testRegexes[i];
+                    // Allow paths delimited by '.' or '/'
+                    testRegex = testRegex.replace('.', '/');
+                    includes.add( "**/" + testRegex + ".java" );
                 }
             }
             else
@@ -789,6 +812,8 @@ public class SurefirePlugin
                 }
             }
         }
+        
+        surefireBooter.setFailIfNoTests( failIfNoTests );
 
         surefireBooter.setRedirectTestOutputToFile( redirectTestOutputToFile );
 

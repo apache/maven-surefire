@@ -39,19 +39,24 @@ import java.util.ResourceBundle;
  */
 public class Surefire
 {
+    
+    private static final int SUCCESS = 0;
+    private static final int NO_TESTS = 254;
+    private static final int FAILURE = 255;
+    
     private ResourceBundle bundle = ResourceBundle.getBundle( SUREFIRE_BUNDLE_NAME );
 
     public static final String SUREFIRE_BUNDLE_NAME = "org.apache.maven.surefire.surefire";
 
-    public boolean run( List reportDefinitions, Object[] testSuiteDefinition, String testSetName,
-                        ClassLoader surefireClassLoader, ClassLoader testsClassLoader )
+    public int run( List reportDefinitions, Object[] testSuiteDefinition, String testSetName,
+                        ClassLoader surefireClassLoader, ClassLoader testsClassLoader, Boolean failIfNoTests )
         throws ReporterException, TestSetFailedException
     {
-        return run( reportDefinitions, testSuiteDefinition, testSetName, surefireClassLoader, testsClassLoader, null );
+        return run( reportDefinitions, testSuiteDefinition, testSetName, surefireClassLoader, testsClassLoader, null, failIfNoTests );
     }
 
-    public boolean run( List reportDefinitions, Object[] testSuiteDefinition, String testSetName,
-                        ClassLoader surefireClassLoader, ClassLoader testsClassLoader, Properties results )
+    public int run( List reportDefinitions, Object[] testSuiteDefinition, String testSetName,
+                        ClassLoader surefireClassLoader, ClassLoader testsClassLoader, Properties results, Boolean failIfNoTests )
         throws ReporterException, TestSetFailedException
     {
         ReporterManager reporterManager =
@@ -90,12 +95,28 @@ public class Surefire
         {
             reporterManager.updateResultsProperties( results );
         }
+        
+        if ( failIfNoTests.booleanValue() )
+        {
+            if ( reporterManager.getNbTests() == 0 )
+            {
+                return NO_TESTS;
+            }
+        }
+        
+        if ( reporterManager.getNumErrors() == 0 && reporterManager.getNumFailures() == 0 )
+        {
+            return SUCCESS;
+        }
+        else
+        {
+            return FAILURE;
+        }
 
-        return reporterManager.getNumErrors() == 0 && reporterManager.getNumFailures() == 0;
     }
 
-    public boolean run( List reportDefinitions, List testSuiteDefinitions, ClassLoader surefireClassLoader,
-                        ClassLoader testsClassLoader )
+    public int run( List reportDefinitions, List testSuiteDefinitions, ClassLoader surefireClassLoader,
+                        ClassLoader testsClassLoader, Boolean failIfNoTests )
         throws ReporterException, TestSetFailedException
     {
         ReporterManager reporterManager =
@@ -134,8 +155,22 @@ public class Surefire
         }
 
         reporterManager.runCompleted();
+        if ( failIfNoTests.booleanValue() )
+        {
+            if ( reporterManager.getNbTests() == 0 )
+            {
+                return NO_TESTS;
+            }
+        }
 
-        return reporterManager.getNumErrors() == 0 && reporterManager.getNumFailures() == 0;
+        if ( reporterManager.getNumErrors() == 0 && reporterManager.getNumFailures() == 0 )
+        {
+            return SUCCESS;
+        }
+        else
+        {
+            return FAILURE;
+        }
     }
 
     private SurefireTestSuite createSuiteFromDefinition( Object[] definition, ClassLoader surefireClassLoader,

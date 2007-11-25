@@ -78,6 +78,8 @@ public class SurefireBooter
     private List surefireBootClassPathUrls = new ArrayList();
 
     private List testSuites = new ArrayList();
+    
+    private boolean failIfNoTests = false;
 
     private boolean redirectTestOutputToFile = false;
 
@@ -87,9 +89,11 @@ public class SurefireBooter
 
     private ForkConfiguration forkConfiguration;
 
-    private static final int TESTS_SUCCEEDED_EXIT_CODE = 0;
+    public static final int TESTS_SUCCEEDED_EXIT_CODE = 0;
 
-    private static final int TESTS_FAILED_EXIT_CODE = 255;
+    public static final int TESTS_FAILED_EXIT_CODE = 255;
+    
+    public static final int NO_TESTS_EXIT_CODE = 254;
 
     private static Method assertionStatusMethod;
 
@@ -178,6 +182,16 @@ public class SurefireBooter
     }
 
     /**
+     * Setting this to true will cause a failure if there are no tests to run
+     *
+     * @param redirectTestOutputToFile
+     */
+    public void setFailIfNoTests( boolean failIfNoTests )
+    {
+        this.failIfNoTests = failIfNoTests;
+    }
+    
+    /**
      * When forking, setting this to true will make the test output to be saved in a file instead of showing it on the
      * standard output
      *
@@ -211,10 +225,10 @@ public class SurefireBooter
         this.forkConfiguration = forkConfiguration;
     }
 
-    public boolean run()
+    public int run()
         throws SurefireBooterForkException, SurefireExecutionException
     {
-        boolean result;
+        int result;
 
         if ( ForkConfiguration.FORK_NEVER.equals( forkConfiguration.getForkMode() ) )
         {
@@ -235,7 +249,7 @@ public class SurefireBooter
         return result;
     }
 
-    private boolean runSuitesInProcess( String testSet, Properties results )
+    private int runSuitesInProcess( String testSet, Properties results )
         throws SurefireExecutionException
     {
         if ( testSuites.size() != 1 )
@@ -262,15 +276,15 @@ public class SurefireBooter
 
             Method run =
                 surefireClass.getMethod( "run", new Class[] { List.class, Object[].class, String.class,
-                    ClassLoader.class, ClassLoader.class, Properties.class } );
+                    ClassLoader.class, ClassLoader.class, Properties.class, Boolean.class } );
 
             Thread.currentThread().setContextClassLoader( testsClassLoader );
 
-            Boolean result =
-                (Boolean) run.invoke( surefire, new Object[] { reports, testSuites.get( 0 ), testSet,
-                    surefireClassLoader, testsClassLoader, results } );
+            Integer result =
+                (Integer) run.invoke( surefire, new Object[] { reports, testSuites.get( 0 ), testSet,
+                    surefireClassLoader, testsClassLoader, results, new Boolean( failIfNoTests ) } );
 
-            return result.booleanValue();
+            return result.intValue();
         }
         catch ( InvocationTargetException e )
         {
@@ -286,7 +300,7 @@ public class SurefireBooter
         }
     }
 
-    private boolean runSuitesInProcess()
+    private int runSuitesInProcess()
         throws SurefireExecutionException
     {
         // TODO: replace with plexus
@@ -311,15 +325,15 @@ public class SurefireBooter
 
             Method run =
                 surefireClass.getMethod( "run", new Class[] { List.class, List.class, ClassLoader.class,
-                    ClassLoader.class } );
+                    ClassLoader.class, Boolean.class } );
 
             Thread.currentThread().setContextClassLoader( testsClassLoader );
 
-            Boolean result =
-                (Boolean) run.invoke( surefire, new Object[] { reports, testSuites, surefireClassLoader,
-                    testsClassLoader } );
+            Integer result =
+                (Integer) run.invoke( surefire, new Object[] { reports, testSuites, surefireClassLoader,
+                    testsClassLoader, new Boolean( failIfNoTests ) } );
 
-            return result.booleanValue();
+            return result.intValue();
         }
         catch ( InvocationTargetException e )
         {
@@ -346,13 +360,13 @@ public class SurefireBooter
         System.setProperty( "surefire.test.class.path", sb.toString() );
     }
     
-    private boolean runSuitesForkOnce()
+    private int runSuitesForkOnce()
         throws SurefireBooterForkException
     {
         return forkSuites( testSuites, true, true );
     }
 
-    private boolean runSuitesForkPerTestSet()
+    private int runSuitesForkPerTestSet()
         throws SurefireBooterForkException
     {
         ClassLoader testsClassLoader;
@@ -368,7 +382,7 @@ public class SurefireBooter
             throw new SurefireBooterForkException( "Unable to create classloader to find test suites", e );
         }
 
-        boolean failed = false;
+        int globalResult = 0;
 
         boolean showHeading = true;
         Properties properties = new Properties();
@@ -382,16 +396,16 @@ public class SurefireBooter
             {
                 String testSet = (String) j.next();
                 boolean showFooter = !j.hasNext() && !i.hasNext();
-                boolean result = forkSuite( testSuite, testSet, showHeading, showFooter, properties );
-                if ( !result )
+                int result = forkSuite( testSuite, testSet, showHeading, showFooter, properties );
+                if ( result > globalResult )
                 {
-                    failed = true;
+                    globalResult = result;
                 }
                 showHeading = false;
             }
         }
 
-        return !failed;
+        return globalResult;
     }
 
     private Map getTestSets( Object[] testSuite, ClassLoader testsClassLoader, ClassLoader surefireClassLoader )
@@ -442,7 +456,7 @@ public class SurefireBooter
         return testSets;
     }
 
-    private boolean forkSuites( List testSuites, boolean showHeading, boolean showFooter )
+    private int forkSuites( List testSuites, boolean showHeading, boolean showFooter )
         throws SurefireBooterForkException
     {
         Properties properties = new Properties();
@@ -452,7 +466,7 @@ public class SurefireBooter
         return fork( properties, showHeading, showFooter );
     }
 
-    private boolean forkSuite( Object[] testSuite, String testSet, boolean showHeading, boolean showFooter,
+    private int forkSuite( Object[] testSuite, String testSet, boolean showHeading, boolean showFooter,
                                Properties properties )
         throws SurefireBooterForkException
     {
@@ -483,6 +497,7 @@ public class SurefireBooter
         properties.setProperty( "childDelegation", String.valueOf( childDelegation ) );
         properties.setProperty( "enableAssertions", String.valueOf( enableAssertions ) );
         properties.setProperty( "useSystemClassLoader", String.valueOf( useSystemClassLoader() ) );
+        properties.setProperty( "failIfNoTests", String.valueOf( failIfNoTests ) );
     }
 
     private File writePropertiesFile( String name, Properties properties )
@@ -580,7 +595,7 @@ public class SurefireBooter
         return forkConfiguration.isUseSystemClassLoader() && ( isForked || forkConfiguration.isForking() );
     }
 
-    private boolean fork( Properties properties, boolean showHeading, boolean showFooter )
+    private int fork( Properties properties, boolean showHeading, boolean showFooter )
         throws SurefireBooterForkException
     {
         File surefireProperties;
@@ -669,7 +684,7 @@ public class SurefireBooter
             }
         }
 
-        return returnCode == 0;
+        return returnCode;
     }
 
     private ClassLoader createClassLoader( List classPathUrls, ClassLoader parent )
@@ -931,6 +946,10 @@ public class SurefireBooter
                     surefireBooter.forkConfiguration.setUseSystemClassLoader( Boolean.valueOf(
                                                                                                p.getProperty( "useSystemClassLoader" ) ).booleanValue() );
                 }
+                else if ( "failIfNoTests".equals( name ) )
+                {
+                    surefireBooter.setFailIfNoTests( Boolean.valueOf( p.getProperty( "failIfNoTests" ) ).booleanValue() );
+                }
             }
 
             for (Iterator cpi = classPathUrls.keySet().iterator(); cpi.hasNext();)
@@ -946,7 +965,7 @@ public class SurefireBooter
             }
 
             String testSet = p.getProperty( "testSet" );
-            boolean result;
+            int result;
             if ( testSet != null )
             {
                 result = surefireBooter.runSuitesInProcess( testSet, p );
@@ -959,7 +978,7 @@ public class SurefireBooter
             surefireBooter.writePropertiesFile( surefirePropertiesFile, "surefire", p );
 
             // noinspection CallToSystemExit
-            System.exit( result ? TESTS_SUCCEEDED_EXIT_CODE : TESTS_FAILED_EXIT_CODE );
+            System.exit( result );
         }
         catch ( Throwable t )
         {
