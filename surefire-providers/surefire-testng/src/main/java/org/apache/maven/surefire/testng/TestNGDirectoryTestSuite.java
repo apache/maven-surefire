@@ -19,20 +19,22 @@ package org.apache.maven.surefire.testng;
  * under the License.
  */
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
+import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterManager;
 import org.apache.maven.surefire.suite.AbstractDirectoryTestSuite;
 import org.apache.maven.surefire.testset.SurefireTestSet;
 import org.apache.maven.surefire.testset.TestSetFailedException;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
 
 /**
  * Test suite for TestNG based on a directory of Java test classes. Can also execute JUnit tests.
@@ -106,15 +108,77 @@ public class TestNGDirectoryTestSuite
             throw new IllegalStateException( "You must call locateTestSets before calling execute" );
         }
 
-        Class[] testClasses = new Class[testSets.size()];
-        int i = 0;
+        List testNgTestClasses = new ArrayList();
+        List junitTestClasses = new ArrayList();
         for ( Iterator it = testSets.values().iterator(); it.hasNext(); )
         {
             SurefireTestSet testSet = (SurefireTestSet) it.next();
-            testClasses[i++] = testSet.getTestClass();
+            Class c = testSet.getTestClass();
+            if (junit.framework.Test.class.isAssignableFrom( c )) {
+                junitTestClasses.add( c );
+            } else {
+                testNgTestClasses.add( c );
+            }
         }
+     
+        File testNgReportsDirectory = reportsDirectory, junitReportsDirectory = reportsDirectory;
+        
+        if ( junitTestClasses.size() > 0 && testNgTestClasses.size() > 0 )
+        {
+            testNgReportsDirectory = new File( reportsDirectory, "testng-native-results");
+            junitReportsDirectory = new File( reportsDirectory, "testng-junit-results");
+        }
+        
+        startTestSuite( reporterManager, this );
+        
+        Class[] testClasses = (Class[]) testNgTestClasses.toArray( new Class[0] );
 
         TestNGExecutor.run( testClasses, this.testSourceDirectory, this.options, this.version, 
-                            this.classifier, reporterManager, this, reportsDirectory );
+                            this.classifier, reporterManager, this, testNgReportsDirectory );
+        
+        if (junitTestClasses.size() > 0) {
+            testClasses = (Class[]) junitTestClasses.toArray( new Class[0] );
+            
+            Map junitOptions = new HashMap();
+            for (Iterator it = this.options.keySet().iterator(); it.hasNext();) {
+                Object key = it.next();
+                junitOptions.put( key, options.get( key ) );
+            }
+            
+            junitOptions.put( "junit", Boolean.TRUE );
+            
+            TestNGExecutor.run( testClasses, this.testSourceDirectory, junitOptions, this.version, this.classifier,
+                                reporterManager, this, junitReportsDirectory );
+        }
+        
+        finishTestSuite( reporterManager, this );
+    }
+
+    public static void startTestSuite( ReporterManager reporterManager, Object suite )
+    {
+        String rawString = bundle.getString( "testSetStarting" );
+
+        ReportEntry report = new ReportEntry( suite, "TestSuite", rawString );
+
+        try
+        {
+            reporterManager.testSetStarting( report );
+        }
+        catch ( ReporterException e )
+        {
+            // TODO: remove this exception from the report manager
+        }
+    }
+    
+    public static void finishTestSuite( ReporterManager reporterManager, Object suite )
+    {
+        String rawString = bundle.getString( "testSetCompletedNormally" );
+
+        ReportEntry report =
+            new ReportEntry( suite, "TestSuite", rawString );
+
+        reporterManager.testSetCompleted( report );
+
+        reporterManager.reset();
     }
 }

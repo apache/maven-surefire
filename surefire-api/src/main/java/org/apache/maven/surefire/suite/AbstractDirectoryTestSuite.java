@@ -41,7 +41,7 @@ import java.util.ResourceBundle;
 public abstract class AbstractDirectoryTestSuite
     implements SurefireTestSuite
 {
-    protected ResourceBundle bundle = ResourceBundle.getBundle( Surefire.SUREFIRE_BUNDLE_NAME );
+    protected static ResourceBundle bundle = ResourceBundle.getBundle( Surefire.SUREFIRE_BUNDLE_NAME );
 
     private static final String FS = System.getProperty( "file.separator" );
 

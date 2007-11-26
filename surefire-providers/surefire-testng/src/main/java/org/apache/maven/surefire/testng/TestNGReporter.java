@@ -141,36 +141,12 @@ public class TestNGReporter
 
     public void onStart( ISuite suite )
     {
-        String rawString = bundle.getString( "testSetStarting" );
         
-        String[] includedGroups = (String[]) suite.getMethodsByGroups().keySet().toArray( new String[0] );
-
-        String group = groupString( includedGroups, suite.getName() );
-
-        ReportEntry report = new ReportEntry( source, suite.getName(), group, rawString );
-
-        try
-        {
-            reportManager.testSetStarting( report );
-        }
-        catch ( ReporterException e )
-        {
-            // TODO: remove this exception from the report manager
-        }
     }
     
     public void onFinish( ISuite suite )
     {
-        String rawString = bundle.getString( "testSetCompletedNormally" );
 
-        String[] includedGroups = (String[]) suite.getMethodsByGroups().keySet().toArray( new String[0] );
-        
-        ReportEntry report =
-            new ReportEntry( source, suite.getName(), groupString( includedGroups, null ), rawString );
-
-        reportManager.testSetCompleted( report );
-
-        reportManager.reset();
     }
 
     /**

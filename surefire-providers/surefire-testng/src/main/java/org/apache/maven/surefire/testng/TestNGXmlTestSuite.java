@@ -88,9 +88,10 @@ public class TestNGXmlTestSuite
         {
             throw new IllegalStateException( "You must call locateTestSets before calling execute" );
         }
-
+        TestNGDirectoryTestSuite.startTestSuite( reporterManager, this );
         TestNGExecutor.run( this.suiteFilePaths, this.testSourceDirectory, this.options, this.version, 
                             this.classifier, reporterManager, this, reportsDirectory );
+        TestNGDirectoryTestSuite.finishTestSuite( reporterManager, this );
     }
 
     public void execute( String testSetName, ReporterManager reporterManager, ClassLoader classLoader )
