@@ -138,13 +138,6 @@ public class SurefireReportParserTest
             .floatValue(), 0 );
     }
 
-    public void testSetReportsDirectory()
-    {
-        report.setReportsDirectory( new File( "Reports_Directory" ) );
-
-        assertEquals( new File( "Reports_Directory" ), report.getReportsDirectory() );
-    }
-
     public void testGetSuitesGroupByPackage()
     {
         ReportTestSuite tSuite1 = new ReportTestSuite();

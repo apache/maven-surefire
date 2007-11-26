@@ -19,12 +19,6 @@ package org.apache.maven.plugins.surefire.report;
  * under the License.
  */
 
-import org.apache.maven.reporting.MavenReportException;
-import org.codehaus.plexus.util.DirectoryScanner;
-import org.codehaus.plexus.util.StringUtils;
-import org.xml.sax.SAXException;
-
-import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
 import java.text.NumberFormat;
@@ -35,11 +29,18 @@ import java.util.ListIterator;
 import java.util.Locale;
 import java.util.Map;
 
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.apache.maven.reporting.MavenReportException;
+import org.codehaus.plexus.util.DirectoryScanner;
+import org.codehaus.plexus.util.StringUtils;
+import org.xml.sax.SAXException;
+
 public class SurefireReportParser
 {
     private NumberFormat numberFormat = NumberFormat.getInstance();
 
-    private File reportsDirectory;
+    private File[] reportsDirectories;
 
     private List testSuites = new ArrayList();
 
@@ -51,9 +52,9 @@ public class SurefireReportParser
     {
     }
 
-    public SurefireReportParser( File reportsDirectory, Locale locale )
+    public SurefireReportParser( File[] reportsDirectories, Locale locale )
     {
-        this.reportsDirectory = reportsDirectory;
+        this.reportsDirectories = reportsDirectories;
 
         setLocale( locale );
     }
@@ -61,35 +62,42 @@ public class SurefireReportParser
     public List parseXMLReportFiles()
         throws MavenReportException
     {
-        if ( reportsDirectory.exists() )
+        List xmlReportFileList = new ArrayList();
+        for ( int i = 0; i < reportsDirectories.length; i++ )
         {
+            File reportsDirectory = reportsDirectories[i];
+            if ( !reportsDirectory.exists() ) continue;
             String[] xmlReportFiles = getIncludedFiles( reportsDirectory, "*.xml", "*.txt, testng-failed.xml, testng-results.xml" );
-
-            for ( int index = 0; index < xmlReportFiles.length; index++ )
+            for ( int j = 0; j < xmlReportFiles.length; j++ )
             {
-                ReportTestSuite testSuite = new ReportTestSuite();
-
-                String currentReport = xmlReportFiles[index];
-
-                try
-                {
-                    testSuite.parse( reportsDirectory + "/" + currentReport );
-                }
-                catch ( ParserConfigurationException e )
-                {
-                    throw new MavenReportException( "Error setting up parser for JUnit XML report", e );
-                }
-                catch ( SAXException e )
-                {
-                    throw new MavenReportException( "Error parsing JUnit XML report " + currentReport, e );
-                }
-                catch ( IOException e )
-                {
-                    throw new MavenReportException( "Error reading JUnit XML report " + currentReport, e );
-                }
-
-                testSuites.add( testSuite );
+                File xmlReport = new File( reportsDirectory, xmlReportFiles[j] );
+                xmlReportFileList.add( xmlReport );
             }
+        }
+        for ( int index = 0; index < xmlReportFileList.size(); index++ )
+        {
+            ReportTestSuite testSuite = new ReportTestSuite();
+
+            File currentReport = (File) xmlReportFileList.get( index );
+
+            try
+            {
+                testSuite.parse( currentReport.getAbsolutePath() );
+            }
+            catch ( ParserConfigurationException e )
+            {
+                throw new MavenReportException( "Error setting up parser for JUnit XML report", e );
+            }
+            catch ( SAXException e )
+            {
+                throw new MavenReportException( "Error parsing JUnit XML report " + currentReport, e );
+            }
+            catch ( IOException e )
+            {
+                throw new MavenReportException( "Error reading JUnit XML report " + currentReport, e );
+            }
+
+            testSuites.add( testSuite );
         }
 
         return testSuites;
@@ -161,12 +169,17 @@ public class SurefireReportParser
 
     public void setReportsDirectory( File reportsDirectory )
     {
-        this.reportsDirectory = reportsDirectory;
+        this.reportsDirectories = new File[] { reportsDirectory };
+    }
+    
+    public void setReportsDirectories( File[] reportsDirectories )
+    {
+        this.reportsDirectories = reportsDirectories;
     }
 
-    public File getReportsDirectory()
+    public File[] getReportsDirectories()
     {
-        return this.reportsDirectory;
+        return this.reportsDirectories;
     }
 
     public final void setLocale( Locale locale )

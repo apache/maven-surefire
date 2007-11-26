@@ -19,21 +19,20 @@ package org.apache.maven.plugins.surefire.report;
  * under the License.
  */
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.ResourceBundle;
+
 import org.apache.maven.model.ReportPlugin;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.reporting.AbstractMavenReport;
 import org.apache.maven.reporting.MavenReportException;
 import org.codehaus.doxia.site.renderer.SiteRenderer;
-import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.PathTool;
 import org.codehaus.plexus.util.StringUtils;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-import java.util.ResourceBundle;
 
 
 /**
@@ -43,6 +42,7 @@ import java.util.ResourceBundle;
  * @version $Id$
  * @goal report
  * @execute phase="test" lifecycle="surefire"
+ * @aggregator
  */
 public class SurefireReportMojo
     extends AbstractMavenReport
@@ -79,13 +79,29 @@ public class SurefireReportMojo
     private boolean showSuccess;
 
     /**
-     * This directory contains the XML Report files that will be parsed and rendered to HTML format.
+     * Directories containing the XML Report files that will be parsed and rendered to HTML format.
      *
+     * @parameter
+     */
+    private File[] reportsDirectories;
+
+    /**
+     * (Deprecated, use reportsDirectories) This directory contains the XML Report files that will be parsed and rendered to HTML format.
+     *
+     * @deprecated
      * @parameter expression="${project.build.directory}/surefire-reports"
-     * @required
      */
     private File reportsDirectory;
 
+    
+    /**
+     * The projects in the reactor for aggregation report.
+     *
+     * @parameter expression="${reactorProjects}"
+     * @readonly
+     */
+    private List reactorProjects;
+    
     /**
      * The filename to use for the report.
      *
@@ -107,12 +123,60 @@ public class SurefireReportMojo
      * @parameter expression="${linkXRef}" default-value="true"
      */
     private boolean linkXRef;
+    
+    /**
+     * Whether to build an aggregated report at the root, or build individual reports.
+     *
+     * @parameter expression="${aggregate}" default-value="false"
+     */
+    private boolean aggregate;
 
     public void executeReport( Locale locale )
         throws MavenReportException
     {
+        if ( reportsDirectory != null )
+        {
+            if ( reportsDirectories == null )
+            {
+                reportsDirectories = new File[] { reportsDirectory };
+            }
+            else
+            {
+                File[] oldReports = reportsDirectories;
+                reportsDirectories = new File[oldReports.length+1];
+                System.arraycopy( oldReports, 0, reportsDirectories, 0, oldReports.length );
+                reportsDirectories[oldReports.length] = reportsDirectory;
+            }
+        }
+        if ( aggregate )
+        {
+            if ( !project.isExecutionRoot() ) return;
+            if ( reportsDirectories == null )
+            {
+                ArrayList reportsDirectoryList = new ArrayList(); 
+                // TODO guess the real location
+                for (Iterator i = reactorProjects.iterator(); i.hasNext();)
+                {
+                    MavenProject subProject = (MavenProject) i.next();
+                    if ( project.equals( subProject ) ) continue;
+                    String buildDir = subProject.getBuild().getDirectory();
+                    File reportsDirectory = new File( buildDir + "/surefire-reports" );
+                    reportsDirectoryList.add( reportsDirectory );
+                }
+                reportsDirectories = (File[]) reportsDirectoryList.toArray( new File[0] );
+            }
+        }
+        else
+        {
+            if ( reportsDirectories == null )
+            {
+                reportsDirectories = new File[] { new File( project.getBuild().getDirectory() + "/surefire-reports" ) };
+            }
+        }
+        
+        
         SurefireReportGenerator report =
-            new SurefireReportGenerator( reportsDirectory, locale, showSuccess, determineXrefLocation() );
+            new SurefireReportGenerator( reportsDirectories, locale, showSuccess, determineXrefLocation() );
 
         report.doGenerateReport( getBundle( locale ), getSink() );
     }
@@ -192,24 +256,4 @@ public class SurefireReportMojo
         return ResourceBundle.getBundle( "surefire-report", locale, this.getClass().getClassLoader() );
     }
 
-    /**
-     * @see org.apache.maven.reporting.AbstractMavenReport#canGenerateReport()
-     */
-    public boolean canGenerateReport()
-    {
-        try
-        {
-            if ( reportsDirectory.exists() && reportsDirectory.isDirectory() )
-            {
-                List fileList = FileUtils.getFileNames( reportsDirectory, "**/TEST-*.xml", "", true );
-                return !fileList.isEmpty();
-            }
-        }
-        catch ( IOException e )
-        {
-            getLog().error( "Error accessing reports directory!" );
-        }
-        
-        return false;
-    }
 }

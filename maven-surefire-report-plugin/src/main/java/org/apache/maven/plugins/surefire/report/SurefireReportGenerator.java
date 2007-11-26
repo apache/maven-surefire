@@ -42,9 +42,9 @@ public class SurefireReportGenerator
 
     private String xrefLocation;
 
-    public SurefireReportGenerator( File reportsDirectory, Locale locale, boolean showSuccess, String xrefLocation )
+    public SurefireReportGenerator( File[] reportsDirectories, Locale locale, boolean showSuccess, String xrefLocation )
     {
-        report = new SurefireReportParser( reportsDirectory, locale );
+        report = new SurefireReportParser( reportsDirectories, locale );
 
         this.xrefLocation = xrefLocation;
 
