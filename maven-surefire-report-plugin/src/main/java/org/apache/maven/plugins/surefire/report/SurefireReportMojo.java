@@ -89,7 +89,7 @@ public class SurefireReportMojo
      * (Deprecated, use reportsDirectories) This directory contains the XML Report files that will be parsed and rendered to HTML format.
      *
      * @deprecated
-     * @parameter expression="${project.build.directory}/surefire-reports"
+     * @parameter
      */
     private File reportsDirectory;
 

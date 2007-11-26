@@ -28,6 +28,7 @@ package org.apache.maven.plugins.surefire.report;
  * @author <a href="mailto:baerrach@gmail.com">Barrie Treloar</a>
  * @goal report-only
  * @execute phase="validate" lifecycle="surefire"
+ * @aggregator
  * @since 2.3
  */
 public class SurefireReportOnlyMojo
