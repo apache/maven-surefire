@@ -929,6 +929,12 @@ public class SurefirePlugin
         }
 
         originalSystemProperties = (Properties) System.getProperties().clone();
+        
+        // SUREFIRE-121 overlay our system properties with user specified properties
+        // Is this wise?
+        Properties userSpecifiedProperties = (Properties) System.getProperties().clone();
+        userSpecifiedProperties.putAll( systemProperties );
+        systemProperties = userSpecifiedProperties;
 
         systemProperties.setProperty( "basedir", basedir.getAbsolutePath() );
 
