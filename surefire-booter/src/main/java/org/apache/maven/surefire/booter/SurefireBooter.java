@@ -80,6 +80,8 @@ public class SurefireBooter
     private List testSuites = new ArrayList();
     
     private boolean failIfNoTests = false;
+    
+    private int forkedProcessTimeoutInSeconds = 0;
 
     private boolean redirectTestOutputToFile = false;
 
@@ -654,7 +656,7 @@ public class SurefireBooter
 
         try
         {
-            returnCode = CommandLineUtils.executeCommandLine( cli, out, err );
+            returnCode = CommandLineUtils.executeCommandLine( cli, out, err, forkedProcessTimeoutInSeconds );
         }
         catch ( CommandLineException e )
         {
@@ -1020,5 +1022,10 @@ public class SurefireBooter
     public void setEnableAssertions( boolean enableAssertions )
     {
         this.enableAssertions = enableAssertions;
+    }
+    
+    public void setForkedProcessTimeoutInSeconds( int forkedProcessTimeoutInSeconds )
+    {
+        this.forkedProcessTimeoutInSeconds = forkedProcessTimeoutInSeconds;
     }
 }

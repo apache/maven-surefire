@@ -303,6 +303,14 @@ public class SurefirePlugin
     private String debugForkedProcess;
     
     /**
+     * Kill the forked test process after a certain number of seconds.  If set to 0,
+     * wait forever for the process, never timing out.
+     * 
+     * @parameter expression="${surefire.timeout}"
+     */
+    private int forkedProcessTimeoutInSeconds;
+    
+    /**
      * Additional environments to set on the command line.
      * 
      * @parameter
@@ -834,6 +842,8 @@ public class SurefirePlugin
         }
         
         surefireBooter.setFailIfNoTests( failIfNoTests );
+        
+        surefireBooter.setForkedProcessTimeoutInSeconds( forkedProcessTimeoutInSeconds );
 
         surefireBooter.setRedirectTestOutputToFile( redirectTestOutputToFile );
 
