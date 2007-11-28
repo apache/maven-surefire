@@ -96,7 +96,7 @@
       <dependency>
         <groupId>org.codehaus.plexus</groupId>
         <artifactId>plexus-utils</artifactId>
-        <version>1.4.8-SNAPSHOT</version>
+        <version>1.4.8</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
