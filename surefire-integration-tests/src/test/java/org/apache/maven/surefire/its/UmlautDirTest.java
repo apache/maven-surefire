@@ -23,7 +23,7 @@ public class UmlautDirTest
     {
         String tempDirPath = System.getProperty( "maven.test.tmpdir", System.getProperty( "java.io.tmpdir" ) );
         File tempDir = new File(tempDirPath);
-        File targetDir = new File("target");
+        File targetDir = new File("target").getAbsoluteFile();
         if (targetDir.exists() && targetDir.isDirectory()) {
             tempDir = targetDir;
         }
