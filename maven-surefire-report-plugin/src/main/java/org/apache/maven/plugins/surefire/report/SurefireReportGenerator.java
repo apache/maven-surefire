@@ -303,6 +303,10 @@ public class SurefireReportGenerator
                     {
                         sinkIcon( "junit.framework", sink );
                     }
+                    else if ( suite.getNumberOfSkipped() > 0 )
+                    {
+                        sinkIcon( "skipped", sink );
+                    }
                     else
                     {
                         sinkIcon( "success", sink );
@@ -647,7 +651,7 @@ public class SurefireReportGenerator
     {
         sink.figure();
 
-        if ( type.startsWith( "junit.framework" ) )
+        if ( type.startsWith( "junit.framework" ) || "skipped".equals( type ) )
         {
             sink.figureGraphics( "images/icon_warning_sml.gif" );
         }

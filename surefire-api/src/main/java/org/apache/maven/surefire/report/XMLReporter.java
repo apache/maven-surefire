@@ -174,6 +174,12 @@ public class XMLReporter
 
         writeTestProblems( report, stdOut, stdErr, "failure" );
     }
+    
+    public void testSkipped( ReportEntry report )
+    {
+        super.testSkipped( report );
+        writeTestProblems( report, null, null, "skipped" );
+    }
 
     private void writeTestProblems( ReportEntry report, String stdOut, String stdErr, String name )
     {
@@ -185,7 +191,11 @@ public class XMLReporter
 
         String stackTrace = getStackTrace( report );
 
-        Throwable t = report.getStackTraceWriter().getThrowable();
+        Throwable t = null;
+        if (report.getStackTraceWriter() != null)
+        {
+            t = report.getStackTraceWriter().getThrowable();
+        }
 
         if ( t != null )
         {
@@ -207,7 +217,10 @@ public class XMLReporter
             }
         }
 
-        element.setValue( escapeAttribute(stackTrace) );
+        if (stackTrace != null)
+        {
+            element.setValue( escapeAttribute(stackTrace) );
+        }
 
         addOutputStreamElement( stdOut, "system-out", testCase );
 

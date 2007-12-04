@@ -228,7 +228,9 @@ public abstract class AbstractReporter
      */
     protected String getStackTrace( ReportEntry report )
     {
-        return trimStackTrace ? report.getStackTraceWriter().writeTrimmedTraceToString()
-            : report.getStackTraceWriter().writeTraceToString();
+        StackTraceWriter writer = report.getStackTraceWriter();
+        if (writer == null) return null;
+        return trimStackTrace ? writer.writeTrimmedTraceToString()
+            : writer.writeTraceToString();
     }
 }

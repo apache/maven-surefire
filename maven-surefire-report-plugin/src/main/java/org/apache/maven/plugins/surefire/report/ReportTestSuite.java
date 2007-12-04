@@ -166,6 +166,10 @@ public class ReportTestSuite
             {
                 testCase.addFailure( attributes.getValue( "message" ), attributes.getValue( "type" ) );
             }
+            else if ( "skipped".equals( qName ) )
+            {
+                testCase.addFailure( "skipped", "skipped" ); // TODO extract real reasons
+            }
         }
         catch ( ParseException e )
         {
