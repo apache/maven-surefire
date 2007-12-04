@@ -314,7 +314,21 @@ public class SurefirePlugin
      * @parameter
      */
     private File[] suiteXmlFiles;
-
+    
+    /**
+     * Allows you to specify the name of the JUnit artifact. If not set, <code>junit:junit</code> will be used.
+     * 
+     * @parameter expression="${junitArtifactName}" default-value="junit:junit"
+     */
+    private String junitArtifactName;
+    
+    /**
+     * Allows you to specify the name of the TestNG artifact. If not set, <code>org.testng:testng</code> will be used.
+     * 
+     * @parameter expression="${testNGArtifactName}" default-value="org.testng:testng"
+     */
+    private String testNGArtifactName;
+    
     /**
      * The attribute thread-count allows you to specify how many threads should be allocated for this execution. Only
      * makes sense to use in conjunction with parallel.
@@ -494,10 +508,10 @@ public class SurefirePlugin
         {
             addArtifact( surefireBooter, surefireArtifact );
 
-            junitArtifact = (Artifact) projectArtifactMap.get( "junit:junit" );
+            junitArtifact = (Artifact) projectArtifactMap.get( junitArtifactName );
 
             // TODO: this is pretty manual, but I'd rather not require the plugin > dependencies section right now
-            testNgArtifact = (Artifact) projectArtifactMap.get( "org.testng:testng" );
+            testNgArtifact = (Artifact) projectArtifactMap.get( testNGArtifactName );
 
             if ( testNgArtifact != null )
             {
