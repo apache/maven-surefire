@@ -9,10 +9,6 @@
   <name>SureFire Booter</name>
   <dependencies>
     <dependency>
-      <groupId>org.codehaus.plexus</groupId>
-      <artifactId>plexus-archiver</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.apache.maven.surefire</groupId>
       <artifactId>surefire-api</artifactId>
     </dependency>

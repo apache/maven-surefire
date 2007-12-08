@@ -20,10 +20,6 @@ package org.apache.maven.surefire.booter;
  */
 
 import org.apache.maven.surefire.util.UrlUtils;
-import org.codehaus.plexus.archiver.ArchiverException;
-import org.codehaus.plexus.archiver.jar.JarArchiver;
-import org.codehaus.plexus.archiver.jar.Manifest;
-import org.codehaus.plexus.archiver.jar.ManifestException;
 import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.cli.Commandline;
 
@@ -194,14 +190,6 @@ public class ForkConfiguration
             {
                 throw new SurefireBooterForkException( "Error creating archive file", e );
             }
-            catch ( ManifestException e )
-            {
-                throw new SurefireBooterForkException( "Error creating manifest", e );
-            }
-            catch ( ArchiverException e )
-            {
-                throw new SurefireBooterForkException( "Error creating archive", e );
-            }
 
             cli.createArg().setValue( "-jar" );
 
@@ -228,20 +216,13 @@ public class ForkConfiguration
      * @param classPath List&lt;String> of all classpath elements.
      * @return
      * @throws IOException
-     * @throws ManifestException
-     * @throws ArchiverException
      */
     private static File createJar( List classPath )
-        throws IOException, ManifestException, ArchiverException
+        throws IOException
     {
-        JarArchiver jar = new JarArchiver();
-
-        jar.setCompress( false ); // for speed
         File file = File.createTempFile( "surefirebooter", ".jar" );
         file.deleteOnExit();
-        jar.setDestFile( file );
-
-        Manifest manifest = new Manifest();
+        ManifestJarWriter writer = new ManifestJarWriter(file);
 
         // we can't use StringUtils.join here since we need to add a '/' to
         // the end of directory entries - otherwise the jvm will ignore them.
@@ -253,15 +234,10 @@ public class ForkConfiguration
             cp += UrlUtils.getURL( new File( el ) ).toExternalForm() + " ";
         }
 
-        Manifest.Attribute attr = new Manifest.Attribute( "Class-Path", cp.trim() );
-        manifest.addConfiguredAttribute( attr );
+        writer.writeValue("Class-Path", cp.trim());
+        writer.writeValue("Main-Class", SurefireBooter.class.getName());
 
-        attr = new Manifest.Attribute( "Main-Class", SurefireBooter.class.getName() );
-        manifest.addConfiguredAttribute( attr );
-
-        jar.addConfiguredManifest( manifest );
-
-        jar.createArchive();
+        writer.close();
 
         return file;
     }
