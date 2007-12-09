@@ -165,6 +165,12 @@ public abstract class AbstractReporter
         ++completedCount;
 
         endTime = System.currentTimeMillis();
+        // SUREFIRE-398 skipped tests call endTest without calling testStarting
+        // if startTime = 0, set it to endTime, so the diff will be 0
+        if ( startTime == 0 )
+        {
+            startTime = endTime;
+        }
     }
 
     // ----------------------------------------------------------------------
