@@ -22,7 +22,7 @@ mvn test
 
    * TestNG
 
-   * JUnit
+   * JUnit (3.8 or 4.x)
 
    * POJO
 
