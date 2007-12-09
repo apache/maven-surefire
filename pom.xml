@@ -175,14 +175,13 @@
       </build>
     </profile>
   </profiles>
-  <repositories>
-    <repository>
+  <pluginRepositories>
+    <pluginRepository>
       <releases>
         <enabled>false</enabled>
       </releases>
-      <id>codehaus.snapshots</id>
-      <name>Codehaus Snapshot Development Repository</name>
-      <url>http://snapshots.repository.codehaus.org</url>
-    </repository>
-  </repositories>
+      <id>apache.snapshots</id>
+      <url>http://people.apache.org/repo/m2-snapshot-repository/</url>
+    </pluginRepository>
+  </pluginRepositories>
 </project>
