@@ -59,13 +59,20 @@ public class TestSingleTest
         List goals = new ArrayList();
         goals.add( "test" );
         goals.add( "-Dtest=DoesNotExist" );
-        verifier.executeGoals( goals );
-        verifier.resetStreams();
-        try {
+
+        try
+        {
+            verifier.executeGoals( goals );
             verifier.verifyErrorFreeLog();
             fail( "Build should have failed" );
-        } catch (VerificationException e) {
+        }
+        catch ( VerificationException e )
+        {
             // as expected
+        }
+        finally
+        {
+            verifier.resetStreams();
         }
         
         File reportsDir = new File( testDir, "target/surefire-reports" );

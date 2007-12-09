@@ -22,14 +22,18 @@ public class TimeoutForkedTest
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/timeout-forked" );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        verifier.executeGoal( "test" );
-        verifier.resetStreams();
+
         try {
+            verifier.executeGoal( "test" );
             verifier.verifyErrorFreeLog();
             fail( "Build didn't fail, but it should have" );
         } catch (VerificationException e) 
         {
             // as expected
+        }
+        finally
+        {
+            verifier.resetStreams();
         }
         
     }

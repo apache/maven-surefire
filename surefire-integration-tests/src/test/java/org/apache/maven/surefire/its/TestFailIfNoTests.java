@@ -27,14 +27,21 @@ public class TestFailIfNoTests
         List goals = new ArrayList();
         goals.add( "test" );
         goals.add( "-DfailIfNoTests" );
-        verifier.executeGoals( goals );
-        verifier.resetStreams();
-        
-        try {
+
+        try
+        {
+            verifier.executeGoals( goals );
+            verifier.resetStreams();
             verifier.verifyErrorFreeLog();
-            fail ( "Build didn't fail, but it should" );
-        } catch ( VerificationException e ) {
+            fail( "Build didn't fail, but it should" );
+        }
+        catch ( VerificationException e )
+        {
             // as expected
+        }
+        finally
+        {
+            verifier.resetStreams();
         }
                 
     }

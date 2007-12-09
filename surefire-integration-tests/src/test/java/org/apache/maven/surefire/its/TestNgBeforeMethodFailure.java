@@ -4,6 +4,7 @@ import java.io.File;
 
 import org.apache.maven.integrationtests.AbstractMavenIntegrationTestCase;
 import org.apache.maven.it.Verifier;
+import org.apache.maven.it.VerificationException;
 import org.apache.maven.it.util.ResourceExtractor;
 
 /**
@@ -21,10 +22,21 @@ public class TestNgBeforeMethodFailure
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/testng-beforeMethodFailure" );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        verifier.executeGoal( "test" );
-        //errors are expected
-        //verifier.verifyErrorFreeLog();
-        verifier.resetStreams();
+        try
+        {
+            verifier.executeGoal( "test" );
+            verifier.resetStreams();
+            verifier.verifyErrorFreeLog();
+            fail( "Build didn't fail, but it should" );
+        }
+        catch ( VerificationException e )
+        {
+            // as expected
+        }
+        finally
+        {
+            verifier.resetStreams();
+        }
         
         HelperAssertions.assertTestSuiteResults( 2, 0, 1, 1, testDir );
     }

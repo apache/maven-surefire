@@ -60,12 +60,12 @@ public class TestFailIfNoTestsForkMode
         goals.add( "test" );
         goals.add( "-DforkMode=" + forkMode );
         goals.add( "-DfailIfNoTests=" + failIfNoTests );
-        verifier.executeGoals( goals );
-        verifier.resetStreams();
         if (failIfNoTests)
         {
             try 
             {
+                verifier.executeGoals( goals );
+                verifier.resetStreams();
                 verifier.verifyErrorFreeLog();
                 fail( "Build did not fail, but it should have" );
             } catch (VerificationException e )
@@ -75,6 +75,8 @@ public class TestFailIfNoTestsForkMode
         }
         else
         {
+            verifier.executeGoals( goals );
+            verifier.resetStreams();
             verifier.verifyErrorFreeLog();
             HelperAssertions.assertTestSuiteResults( 0, 0, 0, 0, testDir );
         }
