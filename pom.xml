@@ -91,7 +91,7 @@
       <dependency>
         <groupId>org.codehaus.plexus</groupId>
         <artifactId>plexus-utils</artifactId>
-        <version>1.4.8</version>
+        <version>1.4.9-SNAPSHOT</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -184,4 +184,11 @@
       <url>http://people.apache.org/repo/m2-snapshot-repository/</url>
     </pluginRepository>
   </pluginRepositories>
+  <repositories>
+    <!-- TODO remove when p-u is released -->
+    <repository>
+      <id>codehaus.snapshots</id>
+      <url>http://snapshots.repository.codehaus.org</url>
+    </repository>
+  </repositories>
 </project>
