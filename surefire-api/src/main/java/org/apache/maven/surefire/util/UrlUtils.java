@@ -36,6 +36,6 @@ public class UrlUtils
         // encode any characters that do not comply with RFC 2396
         // this is primarily to handle Windows where the user's home directory contains spaces
         
-        return file.toURI().toURL();
+        return new URL( file.toURI().toASCIIString() );
     }
 }

@@ -12,13 +12,13 @@ import org.apache.maven.it.util.ResourceExtractor;
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  * 
  */
-public class TestUseSystemClassLoader
+public class TestUseIsolatedClassLoader
     extends AbstractMavenIntegrationTestCase
 {
     public void testUseSystemClassLoader ()
         throws Exception
     {
-        File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/system-classloader" );
+        File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/isolated-classloader" );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
         verifier.executeGoal( "test" );

@@ -29,7 +29,7 @@ public class PlexusConflictTest
         HelperAssertions.assertTestSuiteResults( 1, 0, 0, 0, testDir );
     }
 
-    public void testPlexusConflictSystemClassLoader ()
+    public void testPlexusConflictIsolatedClassLoader ()
         throws Exception
     {
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/plexus-conflict" );
@@ -37,7 +37,7 @@ public class PlexusConflictTest
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
         ArrayList goals = new ArrayList();
         goals.add( "test" );
-        goals.add( "-Dsurefire.useSystemClassLoader=true" );
+        goals.add( "-Dsurefire.useSystemClassLoader=false" );
         verifier.executeGoals( goals );
         verifier.verifyErrorFreeLog();
         verifier.resetStreams();

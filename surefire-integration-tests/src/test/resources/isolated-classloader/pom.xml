@@ -24,9 +24,9 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.apache.maven.plugins.surefire</groupId>
-  <artifactId>system-classloader</artifactId>
+  <artifactId>isolated-classloader</artifactId>
   <version>1.0-SNAPSHOT</version>
-  <name>Test for useSystemClassLoader</name>
+  <name>Test for useSystemClassLoader=false</name>
 
 
   <build>
@@ -34,7 +34,7 @@
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
-          <useSystemClassLoader>true</useSystemClassLoader>
+          <useSystemClassLoader>false</useSystemClassLoader>
         </configuration>
       </plugin>
     </plugins>

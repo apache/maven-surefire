@@ -1,4 +1,4 @@
-package systemClassloader;
+package isolatedClassloader;
 
 import junit.extensions.TestSetup;
 import junit.framework.Test;
