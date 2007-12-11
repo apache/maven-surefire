@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 /**
- * Test a directory with an umlaut ‹
+ * Test a directory with an umlaut
  * 
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  * 
@@ -55,7 +55,7 @@ public class UmlautDirTest
         if (targetDir.exists() && targetDir.isDirectory()) {
             tempDir = targetDir;
         }
-        testDir = new File( tempDir, "/junit-pathWith‹mlaut" );
+        testDir = new File( tempDir, "/junit-pathWith\u00DCmlaut" );
         FileUtils.deleteDirectory( testDir );
         testDir = ResourceExtractor.extractResourcePath(getClass(), "/junit-pathWithUmlaut", testDir, true);
     }

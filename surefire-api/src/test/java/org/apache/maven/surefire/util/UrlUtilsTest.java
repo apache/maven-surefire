@@ -69,7 +69,7 @@ public class UrlUtilsTest
     public void testTestWithUmlaut()
         throws IOException
     {
-        File f = new File( homeDir, "fo‹.txt" );
+        File f = new File( homeDir, "fo\u00DC.txt" );
         assertEquals( new URL( "file:" + homeDir + "/fo%C3%9C.txt" ), UrlUtils.getURL( f ) );
     }
 
