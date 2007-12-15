@@ -78,7 +78,7 @@ public class FileOutputConsumerProxyTest
             }
         }
 
-        reportFile.delete();
+        reportFile.deleteOnExit();
     }
 
 }
