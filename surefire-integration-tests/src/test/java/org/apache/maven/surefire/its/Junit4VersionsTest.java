@@ -1,12 +1,13 @@
 package org.apache.maven.surefire.its;
 
+
+import junit.framework.TestCase;
+import org.apache.maven.it.Verifier;
+import org.apache.maven.it.util.ResourceExtractor;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.apache.maven.integrationtests.AbstractMavenIntegrationTestCase;
-import org.apache.maven.it.Verifier;
-import org.apache.maven.it.util.ResourceExtractor;
 
 /**
  * Basic suite test using all known versions of JUnit 4.x
@@ -15,7 +16,7 @@ import org.apache.maven.it.util.ResourceExtractor;
  * 
  */
 public class Junit4VersionsTest
-    extends AbstractMavenIntegrationTestCase
+    extends TestCase
 {
     
     public void test40 () throws Exception

@@ -1,15 +1,16 @@
 package org.apache.maven.surefire.its;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
-import org.apache.maven.integrationtests.AbstractMavenIntegrationTestCase;
+import junit.framework.TestCase;
 import org.apache.maven.it.VerificationException;
 import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
 import org.apache.maven.reporting.MavenReportException;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Test failIfNoTests with various forkModes.
@@ -18,7 +19,7 @@ import org.apache.maven.reporting.MavenReportException;
  * 
  */
 public class TestFailIfNoTestsForkMode
-    extends AbstractMavenIntegrationTestCase
+    extends TestCase
 {
     public void testFailIfNoTestsForkModeAlways () throws Exception
     {

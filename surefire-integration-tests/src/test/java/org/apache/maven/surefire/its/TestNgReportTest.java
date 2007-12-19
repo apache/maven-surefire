@@ -1,12 +1,11 @@
 package org.apache.maven.surefire.its;
 
-import java.io.File;
-
 import junit.framework.Assert;
-
-import org.apache.maven.integrationtests.AbstractMavenIntegrationTestCase;
+import junit.framework.TestCase;
 import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
+
+import java.io.File;
 
 /**
  * Test surefire-report on TestNG test
@@ -15,7 +14,7 @@ import org.apache.maven.it.util.ResourceExtractor;
  * 
  */
 public class TestNgReportTest
-    extends AbstractMavenIntegrationTestCase
+    extends TestCase
 {
     public void testTestNgReport ()
         throws Exception

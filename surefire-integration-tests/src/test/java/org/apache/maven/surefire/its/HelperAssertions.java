@@ -1,13 +1,12 @@
 package org.apache.maven.surefire.its;
 
-import java.io.File;
-import java.util.List;
-
 import junit.framework.Assert;
-
 import org.apache.maven.plugins.surefire.report.ReportTestSuite;
 import org.apache.maven.plugins.surefire.report.SurefireReportParser;
 import org.apache.maven.reporting.MavenReportException;
+
+import java.io.File;
+import java.util.List;
 
 public class HelperAssertions
 {

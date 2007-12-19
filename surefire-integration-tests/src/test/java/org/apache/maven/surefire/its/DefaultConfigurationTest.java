@@ -1,10 +1,11 @@
 package org.apache.maven.surefire.its;
 
-import java.io.File;
 
-import org.apache.maven.integrationtests.AbstractMavenIntegrationTestCase;
+import junit.framework.TestCase;
 import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
+
+import java.io.File;
 
 /**
  * Test basic default configuration, runs the JUnit 3 test in the src/test directory.
@@ -13,7 +14,7 @@ import org.apache.maven.it.util.ResourceExtractor;
  * 
  */
 public class DefaultConfigurationTest
-    extends AbstractMavenIntegrationTestCase
+    extends TestCase
 {
     public void testDefaultConfiguration ()
         throws Exception

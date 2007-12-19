@@ -1,10 +1,11 @@
 package org.apache.maven.surefire.its;
 
-import java.io.File;
 
-import org.apache.maven.integrationtests.AbstractMavenIntegrationTestCase;
+import junit.framework.TestCase;
 import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
+
+import java.io.File;
 
 /**
  * Test TestNG running in the JDK 1.4 JavaDoc style
@@ -13,7 +14,7 @@ import org.apache.maven.it.util.ResourceExtractor;
  * 
  */
 public class TestNgJdk14Test
-    extends AbstractMavenIntegrationTestCase
+    extends TestCase
 {
     public void testTestNgJdk14 ()
         throws Exception

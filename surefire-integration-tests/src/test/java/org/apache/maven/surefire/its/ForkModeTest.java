@@ -1,17 +1,18 @@
 package org.apache.maven.surefire.its;
 
+
+import junit.framework.TestCase;
+import org.apache.maven.it.VerificationException;
+import org.apache.maven.it.Verifier;
+import org.apache.maven.it.util.ResourceExtractor;
+import org.apache.maven.reporting.MavenReportException;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.apache.maven.integrationtests.AbstractMavenIntegrationTestCase;
-import org.apache.maven.it.VerificationException;
-import org.apache.maven.it.Verifier;
-import org.apache.maven.it.util.ResourceExtractor;
-import org.apache.maven.reporting.MavenReportException;
 
 /**
  * Test forkMode
@@ -20,7 +21,7 @@ import org.apache.maven.reporting.MavenReportException;
  * 
  */
 public class ForkModeTest
-    extends AbstractMavenIntegrationTestCase
+    extends TestCase
 {
     public void testForkModeAlways () throws Exception
     {

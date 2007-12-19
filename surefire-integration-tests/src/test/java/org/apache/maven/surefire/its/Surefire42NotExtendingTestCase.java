@@ -1,10 +1,11 @@
 package org.apache.maven.surefire.its;
 
-import java.io.File;
 
-import org.apache.maven.integrationtests.AbstractMavenIntegrationTestCase;
+import junit.framework.TestCase;
 import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
+
+import java.io.File;
 
 /**
  * Test JUnit test that contains inner classes
@@ -13,7 +14,7 @@ import org.apache.maven.it.util.ResourceExtractor;
  * 
  */
 public class Surefire42NotExtendingTestCase
-    extends AbstractMavenIntegrationTestCase
+    extends TestCase
 {
     public void testInnerClass ()
         throws Exception

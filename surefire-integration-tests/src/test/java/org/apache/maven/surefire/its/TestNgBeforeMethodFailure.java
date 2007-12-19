@@ -1,11 +1,12 @@
 package org.apache.maven.surefire.its;
 
-import java.io.File;
 
-import org.apache.maven.integrationtests.AbstractMavenIntegrationTestCase;
-import org.apache.maven.it.Verifier;
+import junit.framework.TestCase;
 import org.apache.maven.it.VerificationException;
+import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
+
+import java.io.File;
 
 /**
  * Test failures in @BeforeMethod annotation on TestNg suite
@@ -14,7 +15,7 @@ import org.apache.maven.it.util.ResourceExtractor;
  * 
  */
 public class TestNgBeforeMethodFailure
-    extends AbstractMavenIntegrationTestCase
+    extends TestCase
 {
     public void testTestNgBeforeMethodFailure ()
         throws Exception

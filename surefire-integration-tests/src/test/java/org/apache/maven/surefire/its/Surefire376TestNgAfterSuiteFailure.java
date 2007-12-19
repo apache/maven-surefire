@@ -1,10 +1,11 @@
 package org.apache.maven.surefire.its;
 
-import java.io.File;
 
-import org.apache.maven.integrationtests.AbstractMavenIntegrationTestCase;
+import junit.framework.TestCase;
 import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
+
+import java.io.File;
 
 /**
  * Test Surefire-376 (TestNG @AfterSuite failures are ignored)
@@ -13,7 +14,7 @@ import org.apache.maven.it.util.ResourceExtractor;
  * 
  */
 public class Surefire376TestNgAfterSuiteFailure
-    extends AbstractMavenIntegrationTestCase
+    extends TestCase
 {
     public void testAfterSuiteFailure ()
         throws Exception

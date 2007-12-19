@@ -1,10 +1,10 @@
 package org.apache.maven.surefire.its;
 
-import java.io.File;
-
-import org.apache.maven.integrationtests.AbstractMavenIntegrationTestCase;
+import junit.framework.TestCase;
 import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
+
+import java.io.File;
 
 /**
  * Test files with "Abstract" in their name that aren't really abstract,
@@ -14,7 +14,7 @@ import org.apache.maven.it.util.ResourceExtractor;
  * 
  */
 public class AbstractTestCaseTest
-    extends AbstractMavenIntegrationTestCase
+    extends TestCase
 {
     public void testAbstractTestCase ()
         throws Exception

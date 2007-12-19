@@ -1,10 +1,11 @@
 package org.apache.maven.surefire.its;
 
-import java.io.File;
 
-import org.apache.maven.integrationtests.AbstractMavenIntegrationTestCase;
+import junit.framework.TestCase;
 import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
+
+import java.io.File;
 
 /**
  * SUREFIRE-377 (When JUnit and TestNG tests are in same project, only one set gets run).
@@ -13,7 +14,7 @@ import org.apache.maven.it.util.ResourceExtractor;
  * 
  */
 public class Surefire377TestNgAndJUnitTogetherTest
-    extends AbstractMavenIntegrationTestCase
+    extends TestCase
 {
     public void testTestNgAndJUnitTogether ()
         throws Exception

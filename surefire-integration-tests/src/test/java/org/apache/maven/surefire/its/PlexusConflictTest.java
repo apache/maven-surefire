@@ -1,6 +1,7 @@
 package org.apache.maven.surefire.its;
 
-import org.apache.maven.integrationtests.AbstractMavenIntegrationTestCase;
+
+import junit.framework.TestCase;
 import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
 
@@ -14,7 +15,7 @@ import java.util.ArrayList;
  *
  */
 public class PlexusConflictTest
-    extends AbstractMavenIntegrationTestCase
+    extends TestCase
 {
     public void testPlexusConflict ()
         throws Exception

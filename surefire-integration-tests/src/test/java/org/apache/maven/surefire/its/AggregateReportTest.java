@@ -1,12 +1,13 @@
 package org.apache.maven.surefire.its;
 
+
+import junit.framework.TestCase;
+import org.apache.maven.it.Verifier;
+import org.apache.maven.it.util.ResourceExtractor;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.apache.maven.integrationtests.AbstractMavenIntegrationTestCase;
-import org.apache.maven.it.Verifier;
-import org.apache.maven.it.util.ResourceExtractor;
 
 /**
  * Test report aggregation
@@ -15,7 +16,7 @@ import org.apache.maven.it.util.ResourceExtractor;
  * 
  */
 public class AggregateReportTest
-    extends AbstractMavenIntegrationTestCase
+    extends TestCase
 {
     public void testAggregateReport ()
         throws Exception
