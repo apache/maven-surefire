@@ -440,11 +440,11 @@ public class SurefirePlugin
     /**
      * Option to pass dependencies to the system's classloader instead of using an isolated class loader when forking.
      * Prevents problems with JDKs which implement the service provider lookup mechanism by using the system's
-     * classloader.
+     * classloader.  Default value is "true".
      * 
-     * @parameter expression="${surefire.useSystemClassLoader}" default-value="true"
+     * @parameter expression="${surefire.useSystemClassLoader}"
      */
-    private boolean useSystemClassLoader;
+    private Boolean useSystemClassLoader;
 
     /**
      * By default, Surefire enables JVM assertions for the execution of your test cases. To disable the assertions, set
@@ -528,9 +528,9 @@ public class SurefirePlugin
             return false;
         }
 
-        if ( useSystemClassLoader && ForkConfiguration.FORK_NEVER.equals( forkMode ) )
+        if ( useSystemClassLoader != null && ForkConfiguration.FORK_NEVER.equals( forkMode ) )
         {
-            getLog().warn( "useSystemClassloader=true setting has no effect when not forking" );
+            getLog().warn( "useSystemClassloader setting has no effect when not forking" );
         }
 
         return true;
@@ -794,7 +794,8 @@ public class SurefirePlugin
 
         if ( fork.isForking() )
         {
-            fork.setUseSystemClassLoader( useSystemClassLoader );
+            useSystemClassLoader = useSystemClassLoader == null ? Boolean.TRUE : useSystemClassLoader;
+            fork.setUseSystemClassLoader( useSystemClassLoader.booleanValue() );
 
             fork.setSystemProperties( systemProperties );
             
