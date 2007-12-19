@@ -29,9 +29,6 @@
   <groupId>org.apache.maven.plugins</groupId>
   <packaging>maven-plugin</packaging>
   <name>Maven Surefire Plugin</name>
-  <prerequisites>
-    <maven>2.0.6</maven>
-  </prerequisites>
   <mailingLists>
     <!-- duplication from maven-plugins pom - temporary until they inherit properly -->
     <mailingList>
