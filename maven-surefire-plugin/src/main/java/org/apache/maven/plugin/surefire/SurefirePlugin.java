@@ -263,11 +263,11 @@ public class SurefirePlugin
     private boolean redirectTestOutputToFile;
 
     /**
-     * Set this to "true" to cause a failure if there are no tests to run.
+     * Set this to "true" to cause a failure if there are no tests to run. Defaults to false.
      * 
-     * @parameter expression="${failIfNoTests}" default-value="false"
+     * @parameter expression="${failIfNoTests}"
      */
-    private boolean failIfNoTests;
+    private Boolean failIfNoTests;
     
     /**
      * Option to specify the forking mode. Can be "never", "once" or "always". "none" and "pertest" are also accepted
@@ -489,9 +489,9 @@ public class SurefirePlugin
             
             if ( result == SurefireBooter.NO_TESTS_EXIT_CODE )
             {
-                if ( !failIfNoTests ) return;
+                if ( ( failIfNoTests == null ) || !failIfNoTests.booleanValue() ) return;
                 // TODO: i18n
-                throw new MojoFailureException( "No tests were executed!" );
+                throw new MojoFailureException( "No tests were executed!  (Set -DfailIfNoTests=false to ignore this error.)" );
             } else {
                 // TODO: i18n
                 msg = "There are test failures.\n\nPlease refer to " + reportsDirectory + " for the individual test results.";
@@ -520,7 +520,7 @@ public class SurefirePlugin
 
         if ( !testClassesDirectory.exists() )
         {
-            if ( failIfNoTests )
+            if ( failIfNoTests != null && failIfNoTests.booleanValue() )
             {
                 throw new MojoFailureException( "No tests to run!" );
             }
@@ -670,8 +670,11 @@ public class SurefirePlugin
                 includes = new ArrayList();
 
                 excludes = new ArrayList();
-                
-                failIfNoTests = true;
+
+                if ( failIfNoTests == null )
+                {
+                    failIfNoTests = Boolean.TRUE;
+                }
 
                 String[] testRegexes = StringUtils.split( test, "," );
 
@@ -840,8 +843,8 @@ public class SurefirePlugin
                 }
             }
         }
-        
-        surefireBooter.setFailIfNoTests( failIfNoTests );
+
+        surefireBooter.setFailIfNoTests( failIfNoTests == null ? false : failIfNoTests.booleanValue() );
         
         surefireBooter.setForkedProcessTimeoutInSeconds( forkedProcessTimeoutInSeconds );
 

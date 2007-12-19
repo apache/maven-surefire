@@ -78,5 +78,23 @@ public class TestSingleTest
         File reportsDir = new File( testDir, "target/surefire-reports" );
         assertFalse ( "Unexpected reports directory", reportsDir.exists() );
     }
-    
+
+    public void testSingleTestNonExistentOverride()
+        throws Exception
+    {
+        File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/default-configuration" );
+
+        Verifier verifier = new Verifier( testDir.getAbsolutePath() );
+        List goals = new ArrayList();
+        goals.add( "test" );
+        goals.add( "-Dtest=DoesNotExist" );
+        goals.add( "-DfailIfNoTests=false" );
+        verifier.executeGoals( goals );
+
+        verifier.verifyErrorFreeLog();
+        verifier.resetStreams();
+
+        File reportsDir = new File( testDir, "target/surefire-reports" );
+        assertFalse ( "Unexpected reports directory", reportsDir.exists() );
+    }
 }
