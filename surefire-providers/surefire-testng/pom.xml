@@ -81,7 +81,9 @@
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
-          <jvm>${java.home}/bin/java</jvm>
+          <!-- DGF There are no tests in this project currently, and this
+            resolves SUREFIRE-414 -->
+          <skipExec>true</skipExec>
         </configuration>
       </plugin>
     </plugins>
