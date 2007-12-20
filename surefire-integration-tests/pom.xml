@@ -32,7 +32,6 @@
     <plugins>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>${project.version}</version>
         <configuration>
           <!-- DGF only include the "org" package; don't try to run the 
             tests of the projects under test directly -->
