@@ -9,19 +9,19 @@ public class BasicTest
 {
 
 
-    public void testFoo()
+    public void testSetInPom()
     {
-        assertEquals("foo property not set", "foo", System.getProperty("foo"));
+        assertEquals("property setInPom not set", "foo", System.getProperty("setInPom"));
     }
     
-    public void testBar()
+    public void testSetOnArgLine()
     {
-        assertEquals("bar property not set", "bar", System.getProperty("bar"));
+        assertEquals("setOnArgLine property not set", "bar", System.getProperty("setOnArgLine"));
     }
     
-    public void testBaz()
+    public void testSetOnMavenCommandLine()
     {
-        assertEquals("baz property not set", "baz", System.getProperty("baz"));
+        assertEquals("property setOnMavenCommandLine not set", "baz", System.getProperty("setOnMavenCommandLine"));
     }
     
 }
