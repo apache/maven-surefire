@@ -320,7 +320,7 @@ public class SurefirePlugin
     /**
      * Command line working directory.
      * 
-     * @parameter
+     * @parameter expression="${basedir}"
      */
     private File workingDirectory;
 
@@ -941,6 +941,7 @@ public class SurefirePlugin
         systemProperties = userSpecifiedProperties;
 
         systemProperties.setProperty( "basedir", basedir.getAbsolutePath() );
+        systemProperties.setProperty( "user.dir", workingDirectory.getAbsolutePath() );
 
         systemProperties.setProperty( "localRepository", localRepository.getBasedir() );
 
