@@ -54,6 +54,7 @@ public class WorkingDirectoryTest
         Properties p = new Properties();
         FileInputStream is = new FileInputStream( outFile );
         p.load( is );
+        is.close();
         String userDirPath = p.getProperty( "user.dir" );
         assertNotNull( "user.dir was null in property file", userDirPath );
         File userDir = new File( userDirPath );
