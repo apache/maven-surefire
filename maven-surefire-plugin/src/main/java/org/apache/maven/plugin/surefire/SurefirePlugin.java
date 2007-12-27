@@ -71,20 +71,32 @@ import java.util.Properties;
 public class SurefirePlugin
     extends AbstractMojo
 {
+
     /**
-     * Set this to 'true' to bypass unit tests entirely. Its use is NOT RECOMMENDED, but quite convenient on occasion.
+     * Set this to 'true' to skip running tests, but still compile them. Its use is NOT RECOMMENDED, but quite
+     * convenient on occasion.
+     * 
+     * @parameter expression="${skipTests}"
+     */
+    private boolean skipTests;
+    
+    /**
+     * DEPRECATED This old parameter is just like skipTests, but bound to the old property maven.test.skip.exec.
+     * Use -DskipTests instead; it's shorter.
+     * 
+     * @deprecated
+     * @parameter expression="${maven.test.skip.exec}"
+     */
+    private boolean skipExec;
+    
+    /**
+     * Set this to 'true' to bypass unit tests entirely. Its use is NOT RECOMMENDED, especially if you
+     * enable it using the "maven.test.skip" property, because maven.test.skip disables both running the
+     * tests and compiling the tests.  Consider using the skipTests parameter instead.
      * 
      * @parameter expression="${maven.test.skip}"
      */
     private boolean skip;
-
-    /**
-     * Set this to 'true' to bypass unit tests execution, but still compile them. Its use is NOT RECOMMENDED, but quite
-     * convenient on occasion.
-     * 
-     * @parameter expression="${maven.test.skip.exec}"
-     */
-    private boolean skipExec;
 
     /**
      * Set this to true to ignore a failure during testing. Its use is NOT RECOMMENDED, but quite convenient on
@@ -320,7 +332,7 @@ public class SurefirePlugin
     /**
      * Command line working directory.
      * 
-     * @parameter
+     * @parameter expression="${basedir}"
      */
     private File workingDirectory;
 
@@ -512,7 +524,7 @@ public class SurefirePlugin
     private boolean verifyParameters()
         throws MojoFailureException
     {
-        if ( skip || skipExec )
+        if ( skip || skipTests || skipExec )
         {
             getLog().info( "Tests are skipped." );
             return false;
@@ -941,6 +953,7 @@ public class SurefirePlugin
         systemProperties = userSpecifiedProperties;
 
         systemProperties.setProperty( "basedir", basedir.getAbsolutePath() );
+        systemProperties.setProperty( "user.dir", workingDirectory.getAbsolutePath() );
 
         systemProperties.setProperty( "localRepository", localRepository.getBasedir() );
 
@@ -1021,7 +1034,7 @@ public class SurefirePlugin
      */
     public boolean isSkipExec()
     {
-        return this.skipExec;
+        return this.skipTests;
     }
 
     /**
@@ -1029,6 +1042,6 @@ public class SurefirePlugin
      */
     public void setSkipExec( boolean skipExec )
     {
-        this.skipExec = skipExec;
+        this.skipTests = skipExec;
     }
 }

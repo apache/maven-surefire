@@ -24,37 +24,11 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.apache.maven.plugins.surefire</groupId>
-  <artifactId>testng-junit-together</artifactId>
+  <artifactId>working-directory</artifactId>
   <version>1.0-SNAPSHOT</version>
-  <name>TestNG and Junit Together</name>
-
-  <dependencies>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>3.8.1</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.testng</groupId>
-      <artifactId>testng</artifactId>
-      <version>5.7</version>
-      <classifier>jdk15</classifier>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
-
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <configuration>
-          <source>1.5</source>
-          <target>1.5</target>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
-
+  <name>Test for working directory configuration (parent)</name>
+  <packaging>pom</packaging>
+  <modules>
+    <module>child</module>
+  </modules>
 </project>

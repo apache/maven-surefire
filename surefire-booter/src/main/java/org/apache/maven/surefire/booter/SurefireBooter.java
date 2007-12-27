@@ -506,7 +506,10 @@ public class SurefireBooter
         throws IOException
     {
         File file = File.createTempFile( name, "tmp" );
-        file.deleteOnExit();
+        if ( !forkConfiguration.isDebug() )
+        {
+            file.deleteOnExit();
+        }
 
         writePropertiesFile( file, name, properties );
 

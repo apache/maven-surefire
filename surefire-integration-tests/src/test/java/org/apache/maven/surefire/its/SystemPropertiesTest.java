@@ -25,11 +25,30 @@ public class SystemPropertiesTest
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
         ArrayList goals = new ArrayList();
         goals.add( "test" );
-        goals.add( "-Dbaz=baz" );
+        goals.add( "-DsetOnMavenCommandLine=baz" );
         verifier.executeGoals( goals );
         verifier.verifyErrorFreeLog();
         verifier.resetStreams();
         
         HelperAssertions.assertTestSuiteResults( 3, 0, 0, 0, testDir );        
+    }
+    
+    public void testSystemPropertiesNoFork()
+        throws Exception
+    {
+        File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/system-properties" );
+
+        Verifier verifier = new Verifier( testDir.getAbsolutePath() );
+        ArrayList goals = new ArrayList();
+        goals.add( "test" );
+        goals.add( "-DforkMode=never" );
+        goals.add( "-DsetOnMavenCommandLine=baz" );
+        // DGF fake the argLine, since we're not forking
+        goals.add( "-DsetOnArgLine=bar" );
+        verifier.executeGoals( goals );
+        verifier.verifyErrorFreeLog();
+        verifier.resetStreams();
+
+        HelperAssertions.assertTestSuiteResults( 3, 0, 0, 0, testDir );
     }
 }

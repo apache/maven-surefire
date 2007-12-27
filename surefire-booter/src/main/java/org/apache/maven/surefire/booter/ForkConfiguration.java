@@ -217,11 +217,13 @@ public class ForkConfiguration
      * @return
      * @throws IOException
      */
-    private static File createJar( List classPath )
+    private File createJar( List classPath )
         throws IOException
     {
         File file = File.createTempFile( "surefirebooter", ".jar" );
-        file.deleteOnExit();
+        if ( !debug ) {
+            file.deleteOnExit();
+        }
         ManifestJarWriter writer = new ManifestJarWriter(file);
 
         // we can't use StringUtils.join here since we need to add a '/' to

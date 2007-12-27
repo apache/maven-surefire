@@ -32,18 +32,26 @@
     <plugins>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
+        <version>2.4</version>
         <configuration>
           <systemProperties>
             <property>
-              <name>foo</name>
+              <name>setInPom</name>
               <value>foo</value>
             </property>
           </systemProperties>
-          <argLine>-Dbar=bar</argLine>
+          <argLine>-DsetOnArgLine=bar</argLine>
         </configuration>
       </plugin>
     </plugins>
+    
   </build>
+  <pluginRepositories>
+        <pluginRepository>
+          <id>dfabulich</id>
+          <url>http://people.apache.org/~dfabulich/staging-repo/</url>
+        </pluginRepository>
+    </pluginRepositories>
 
   <dependencies>
     <dependency>
