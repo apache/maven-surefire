@@ -22,7 +22,6 @@ package org.apache.maven.surefire.testng;
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -153,7 +152,7 @@ public class TestNGExecutor
     private static List loadListenerClasses(String listenerClasses) throws TestSetFailedException
     {
         if (listenerClasses == null || "".equals(listenerClasses.trim())) {
-            return Collections.emptyList();
+            return new ArrayList();
         }
         
         List classes = new ArrayList();
