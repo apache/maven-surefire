@@ -58,6 +58,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import org.apache.maven.execution.MavenSession;
 
 /**
  * Run tests using Surefire.
@@ -465,6 +466,16 @@ public class SurefirePlugin
      * @parameter expression="${enableAssertions}" default-value="true"
      */
     private boolean enableAssertions;
+    
+    /**
+     * The current build session instance. 
+     *
+     * @parameter expression="${session}"
+     * @required
+     * @readonly
+     */
+    private MavenSession session;
+    
 
     public void execute()
         throws MojoExecutionException, MojoFailureException
@@ -489,9 +500,9 @@ public class SurefirePlugin
                 throw new MojoExecutionException( e.getMessage(), e );
             }
 
-            if ( originalSystemProperties != null )
+            if ( originalSystemProperties != null  && !surefireBooter.isForking() )
             {
-                // restore system properties
+                // restore system properties, only makes sense when not forking..
                 System.setProperties( originalSystemProperties );
             }
 
@@ -947,8 +958,9 @@ public class SurefirePlugin
         originalSystemProperties = (Properties) System.getProperties().clone();
         
         // SUREFIRE-121 overlay our system properties with user specified properties
-        // Is this wise?
-        Properties userSpecifiedProperties = (Properties) System.getProperties().clone();
+        // Is this wise? 
+        // Get the properties from the MavenSession instance to make embedded use work correctly
+        Properties userSpecifiedProperties = (Properties) session.getExecutionProperties().clone();
         userSpecifiedProperties.putAll( systemProperties );
         systemProperties = userSpecifiedProperties;
 

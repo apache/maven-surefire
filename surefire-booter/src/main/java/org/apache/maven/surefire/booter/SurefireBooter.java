@@ -226,6 +226,10 @@ public class SurefireBooter
     {
         this.forkConfiguration = forkConfiguration;
     }
+    
+    public boolean isForking() {
+        return forkConfiguration.isForking();
+    }
 
     public int run()
         throws SurefireBooterForkException, SurefireExecutionException
