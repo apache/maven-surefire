@@ -73,7 +73,7 @@ public class XMLReporter
 
         long runTime = System.currentTimeMillis() - testSetStartTime;
 
-        Xpp3Dom testSuite = createTestElement( "testsuite", report, runTime );
+        Xpp3Dom testSuite = createTestSuiteElement( report, runTime );
 
         showProperties( testSuite );
 
@@ -144,14 +144,30 @@ public class XMLReporter
 
         long runTime = this.endTime - this.startTime;
 
-        Xpp3Dom testCase = createTestElement( "testcase", report, runTime );
+        Xpp3Dom testCase = createTestElement( report, runTime );
 
         results.add( testCase );
     }
 
-    private Xpp3Dom createTestElement( String name, ReportEntry report, long runTime )
+    private Xpp3Dom createTestElement( ReportEntry report, long runTime )
     {
-        Xpp3Dom testCase = new Xpp3Dom( name );
+        Xpp3Dom testCase = new Xpp3Dom( "testcase" );
+        testCase.setAttribute( "name", getReportName( report ) );
+        if ( report.getGroup() != null )
+        {
+            testCase.setAttribute( "group", report.getGroup() );
+        }
+        if ( report.getSource() != null )
+        {
+            testCase.setAttribute( "classname", report.getSource().getClass().getName() );
+        }
+        testCase.setAttribute( "time", elapsedTimeAsString( runTime ) );
+        return testCase;
+    }
+    
+    private Xpp3Dom createTestSuiteElement( ReportEntry report, long runTime )
+    {
+        Xpp3Dom testCase = new Xpp3Dom( "testsuite" );
         testCase.setAttribute( "name", getReportName( report ) );
         if ( report.getGroup() != null )
         {
@@ -185,7 +201,7 @@ public class XMLReporter
     {
         long runTime = endTime - startTime;
 
-        Xpp3Dom testCase = createTestElement( "testcase", report, runTime );
+        Xpp3Dom testCase = createTestElement( report, runTime );
 
         Xpp3Dom element = createElement( testCase, name );
 
