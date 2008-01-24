@@ -74,15 +74,16 @@ public class SurefireReportParser
                 xmlReportFileList.add( xmlReport );
             }
         }
+        TestSuiteXmlParser parser = new TestSuiteXmlParser();
         for ( int index = 0; index < xmlReportFileList.size(); index++ )
         {
-            ReportTestSuite testSuite = new ReportTestSuite();
+            ReportTestSuite testSuite;
 
             File currentReport = (File) xmlReportFileList.get( index );
 
             try
             {
-                testSuite.parse( currentReport.getAbsolutePath() );
+                testSuite = parser.parse( currentReport.getAbsolutePath() );
             }
             catch ( ParserConfigurationException e )
             {
