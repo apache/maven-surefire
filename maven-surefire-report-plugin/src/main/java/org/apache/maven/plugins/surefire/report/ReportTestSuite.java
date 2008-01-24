@@ -19,11 +19,12 @@ package org.apache.maven.plugins.surefire.report;
  * under the License.
  */
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ReportTestSuite
 {
-    private List testCases;
+    private List testCases = new ArrayList();
 
     private int numberOfErrors;
 
@@ -31,7 +32,7 @@ public class ReportTestSuite
 
     private int numberOfSkipped;
 
-    private int numberOfTests;
+    private Integer numberOfTests;
 
     private String name;
 
@@ -78,12 +79,14 @@ public class ReportTestSuite
 
     public int getNumberOfTests()
     {
-        return numberOfTests;
+        if ( numberOfTests != null ) return numberOfTests.intValue();
+        if ( testCases != null ) return testCases.size();
+        return 0;
     }
 
     public void setNumberOfTests( int numberOfTests )
     {
-        this.numberOfTests = numberOfTests;
+        this.numberOfTests = new Integer( numberOfTests );
     }
 
     public String getName()
@@ -104,6 +107,19 @@ public class ReportTestSuite
     public void setFullClassName( String fullClassName )
     {
         this.fullClassName = fullClassName;
+        int lastDotPosition = fullClassName.lastIndexOf( "." );
+        
+        name = fullClassName.substring( lastDotPosition + 1, fullClassName.length() );
+        
+        if ( lastDotPosition < 0 )
+        {
+            /* no package name */
+            packageName = "";
+        }
+        else
+        {
+            packageName = fullClassName.substring( 0, lastDotPosition );
+        }
     }
 
     public String getPackageName()
@@ -129,5 +145,10 @@ public class ReportTestSuite
     public void setTestCases( List testCases )
     {
         this.testCases = testCases;
+    }
+    
+    public String toString()
+    {
+        return fullClassName + " ["+getNumberOfTests()+"/"+getNumberOfFailures()+"/"+getNumberOfErrors()+"/"+getNumberOfSkipped()+"]";
     }
 }

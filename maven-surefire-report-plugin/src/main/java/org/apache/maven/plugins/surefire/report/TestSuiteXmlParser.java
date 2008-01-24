@@ -24,6 +24,8 @@ import java.io.IOException;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -39,7 +41,9 @@ import org.xml.sax.helpers.DefaultHandler;
 public class TestSuiteXmlParser
     extends DefaultHandler
 {
-    private ReportTestSuite suite;
+    private ReportTestSuite defaultSuite;
+    private ReportTestSuite currentSuite;
+    private Map classesToSuites;
     private NumberFormat numberFormat = NumberFormat.getInstance();
 
     /**
@@ -49,28 +53,23 @@ public class TestSuiteXmlParser
 
     private ReportTestCase testCase;
 
-    public ReportTestSuite parse( String xmlPath )
+    public Collection parse( String xmlPath )
         throws ParserConfigurationException, SAXException, IOException
     {
         SAXParserFactory factory = SAXParserFactory.newInstance();
 
         SAXParser saxParser = factory.newSAXParser();
+        
+        classesToSuites = new HashMap();
 
         saxParser.parse( new File( xmlPath ), this );
         
-        return suite;
-    }
-
-
-    private int getAttributeAsInt( Attributes attributes, String name )
-    {
-        // may or may not exist
-        String valueAsString = attributes.getValue( name );
-        if ( valueAsString != null )
+        if ( defaultSuite.getNumberOfTests() == 0 )
         {
-            return Integer.parseInt( valueAsString );
+            classesToSuites.remove( defaultSuite.getFullClassName() );
         }
-        return 0;
+        
+        return classesToSuites.values();
     }
 
     public void startElement( String uri, String localName, String qName, Attributes attributes )
@@ -80,60 +79,52 @@ public class TestSuiteXmlParser
         {
             if ( "testsuite".equals( qName ) )
             {
-                suite = new ReportTestSuite();
-                suite.setNumberOfErrors( getAttributeAsInt( attributes, "errors" ) );
-                suite.setNumberOfFailures( getAttributeAsInt( attributes, "failures" ) );
-                suite.setNumberOfSkipped( getAttributeAsInt( attributes, "skipped" ) );
-                suite.setNumberOfTests( getAttributeAsInt( attributes, "tests" ) );
+                currentSuite = defaultSuite = new ReportTestSuite();
 
                 Number time = numberFormat.parse( attributes.getValue( "time" ) );
 
-                suite.setTimeElapsed( time.floatValue() );
+                defaultSuite.setTimeElapsed( time.floatValue() );
 
                 //check if group attribute is existing
                 if ( attributes.getValue( "group" ) != null && !"".equals( attributes.getValue( "group" ) ) )
                 {
                     String packageName = attributes.getValue( "group" );
-                    suite.setPackageName( packageName );
-
                     String name = attributes.getValue( "name" );
-                    suite.setName( name );
 
-                    suite.setFullClassName( packageName + "." + name );
+                    defaultSuite.setFullClassName( packageName + "." + name );
                 }
                 else
                 {
                     String fullClassName = attributes.getValue( "name" );
-                    suite.setFullClassName( fullClassName );
-
-                    int lastDotPosition = fullClassName.lastIndexOf( "." );
-                    
-                    suite.setName( fullClassName.substring( lastDotPosition + 1, fullClassName.length() ) );
-                    
-                    if ( lastDotPosition < 0 )
-                    {
-                        /* no package name */
-                        suite.setPackageName( "" );
-                    }
-                    else
-                    {
-                        suite.setPackageName( fullClassName.substring( 0, lastDotPosition ) );
-                    }
+                    defaultSuite.setFullClassName( fullClassName );
                 }
 
-                suite.setTestCases( new ArrayList() );
+                classesToSuites.put( defaultSuite.getFullClassName(), defaultSuite );
             }
             else if ( "testcase".equals( qName ) )
             {
                 currentElement = new StringBuffer();
 
                 testCase = new ReportTestCase();
-
-                testCase.setFullClassName( suite.getFullClassName() );
-
+                
                 testCase.setName( attributes.getValue( "name" ) );
-
-                testCase.setClassName( suite.getName() );
+                
+                String fullClassName = attributes.getValue( "classname" );
+                
+                if ( fullClassName != null )
+                {
+                    currentSuite = (ReportTestSuite) classesToSuites.get( fullClassName );
+                    if ( currentSuite == null )
+                    {
+                        currentSuite = new ReportTestSuite();
+                        currentSuite.setFullClassName( fullClassName );
+                        classesToSuites.put( fullClassName, currentSuite );
+                    }
+                }
+                
+                testCase.setFullClassName( currentSuite.getFullClassName() );
+                testCase.setClassName( currentSuite.getName() );
+                testCase.setFullName( currentSuite.getFullClassName() + "." + testCase.getName() );
 
                 String timeAsString = attributes.getValue( "time" );
 
@@ -146,19 +137,24 @@ public class TestSuiteXmlParser
 
                 testCase.setTime( time.floatValue() );
 
-                testCase.setFullName( suite.getFullClassName() + "." + testCase.getName() );
+                if ( currentSuite != defaultSuite ) {
+                    currentSuite.setTimeElapsed( time.floatValue() + currentSuite.getTimeElapsed() );
+                }
             }
             else if ( "failure".equals( qName ) )
             {
                 testCase.addFailure( attributes.getValue( "message" ), attributes.getValue( "type" ) );
+                currentSuite.setNumberOfFailures( 1 + currentSuite.getNumberOfFailures() );
             }
             else if ( "error".equals( qName ) )
             {
                 testCase.addFailure( attributes.getValue( "message" ), attributes.getValue( "type" ) );
+                currentSuite.setNumberOfErrors( 1 + currentSuite.getNumberOfErrors() );
             }
             else if ( "skipped".equals( qName ) )
             {
                 testCase.addFailure( "skipped", "skipped" ); // TODO extract real reasons
+                currentSuite.setNumberOfSkipped( 1 + currentSuite.getNumberOfSkipped() );
             }
         }
         catch ( ParseException e )
@@ -167,12 +163,13 @@ public class TestSuiteXmlParser
         }
     }
 
+
     public void endElement( String uri, String localName, String qName )
         throws SAXException
     {
         if ( "testcase".equals( qName ) )
         {
-            suite.getTestCases().add( testCase );
+            currentSuite.getTestCases().add( testCase );
         }
         else if ( "failure".equals( qName ) )
         {
@@ -186,6 +183,7 @@ public class TestSuiteXmlParser
 
             error.put( "detail", parseCause( currentElement.toString() ) );
         }
+        // TODO extract real skipped reasons
     }
 
     public void characters( char[] ch, int start, int length )

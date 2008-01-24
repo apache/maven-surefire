@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
@@ -77,13 +78,13 @@ public class SurefireReportParser
         TestSuiteXmlParser parser = new TestSuiteXmlParser();
         for ( int index = 0; index < xmlReportFileList.size(); index++ )
         {
-            ReportTestSuite testSuite;
+            Collection suites;
 
             File currentReport = (File) xmlReportFileList.get( index );
 
             try
             {
-                testSuite = parser.parse( currentReport.getAbsolutePath() );
+                suites = parser.parse( currentReport.getAbsolutePath() );
             }
             catch ( ParserConfigurationException e )
             {
@@ -98,7 +99,7 @@ public class SurefireReportParser
                 throw new MavenReportException( "Error reading JUnit XML report " + currentReport, e );
             }
 
-            testSuites.add( testSuite );
+            testSuites.addAll( suites );
         }
 
         return testSuites;

@@ -97,4 +97,9 @@ public class ReportTestCase
         failure.put( "message", message );
         failure.put( "type", type );
     }
+    
+    public String toString()
+    {
+        return fullName;
+    }
 }
