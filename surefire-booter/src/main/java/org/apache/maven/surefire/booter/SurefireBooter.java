@@ -641,7 +641,7 @@ public class SurefireBooter
         }
 
         
-        StreamConsumer out = getForkingStreamConsumer( showHeading, showFooter, redirectTestOutputToFile );
+        ForkingStreamConsumer out = getForkingStreamConsumer( showHeading, showFooter, redirectTestOutputToFile );
 
         StreamConsumer err;
         
@@ -668,6 +668,19 @@ public class SurefireBooter
         catch ( CommandLineException e )
         {
             throw new SurefireBooterForkException( "Error while executing forked tests.", e );
+        }
+
+        if ( redirectTestOutputToFile )
+        {
+            // ensure the FileOutputConsumerProxy flushes/closes the output file
+            try
+            {
+                out.getOutputConsumer().testSetCompleted();
+            }
+            catch ( Exception e )
+            {
+                // the FileOutputConsumerProxy might throw an IllegalStateException but that's not of interest now
+            }
         }
 
         if ( surefireProperties != null && surefireProperties.exists() )
@@ -1004,7 +1017,7 @@ public class SurefireBooter
         this.childDelegation = childDelegation;
     }
 
-    private StreamConsumer getForkingStreamConsumer( boolean showHeading, boolean showFooter,
+    private ForkingStreamConsumer getForkingStreamConsumer( boolean showHeading, boolean showFooter,
                                                      boolean redirectTestOutputToFile )
     {
         OutputConsumer outputConsumer = new StandardOutputConsumer();

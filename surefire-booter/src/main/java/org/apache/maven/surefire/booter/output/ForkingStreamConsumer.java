@@ -74,4 +74,13 @@ public class ForkingStreamConsumer
             outputConsumer.consumeOutputLine( line );
         }
     }
+
+    /**
+     * Get the underlying output consumer.
+     */
+    public OutputConsumer getOutputConsumer()
+    {
+        return this.outputConsumer;
+    }
+
 }
