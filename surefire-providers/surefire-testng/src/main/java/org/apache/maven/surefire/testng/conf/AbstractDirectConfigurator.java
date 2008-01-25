@@ -19,12 +19,15 @@ package org.apache.maven.surefire.testng.conf;
  * under the License.
  */
 
+import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.NestedRuntimeException;
 import org.testng.TestNG;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 public abstract class AbstractDirectConfigurator
@@ -42,8 +45,10 @@ public abstract class AbstractDirectConfigurator
         this.setters = options;
     }
 
-    public void configure( TestNG testng, Map options )
+    public void configure( TestNG testng, Map options ) throws TestSetFailedException
     {
+        // kind of ugly, but listeners are configured differently
+        final String listeners = (String) options.remove("listener");
         for ( Iterator it = options.entrySet().iterator(); it.hasNext(); )
         {
             Map.Entry entry = (Map.Entry) it.next();
@@ -64,8 +69,33 @@ public abstract class AbstractDirectConfigurator
 
             }
         }
+        // TODO: we should have the Profile so that we can decide if this is needed or not
+        testng.setListenerClasses(loadListenerClasses(listeners));
     }
 
+    public static List loadListenerClasses(String listenerClasses) throws TestSetFailedException
+    {
+        if (listenerClasses == null || "".equals(listenerClasses.trim())) {
+            return new ArrayList();
+        }
+        
+        List classes = new ArrayList();
+        String[] classNames = listenerClasses.split(" *, *");
+        for(int i = 0; i < classNames.length; i++) 
+        {
+            try 
+            {
+                classes.add(Class.forName(classNames[i]));
+            }
+            catch(Exception ex) 
+            {
+                throw new TestSetFailedException("Cannot find listener class " + classNames[i], ex);
+            }              
+        }
+        
+        return classes;
+    }
+    
     public static final class Setter
     {
         private final String setterName;

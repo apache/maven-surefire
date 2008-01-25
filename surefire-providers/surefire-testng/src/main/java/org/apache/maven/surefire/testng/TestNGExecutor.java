@@ -54,12 +54,10 @@ public class TestNGExecutor
                             String classifier, ReporterManager reportManager, SurefireTestSuite suite, File reportsDirectory )
         throws TestSetFailedException
     {
-        // kind of ugly, but listeners are configured differently
-        final String listeners = (String) options.remove("listener");
         TestNG testng = new TestNG( false );
         Configurator configurator = getConfigurator( version );
         configurator.configure( testng, options );
-        postConfigure( testng, testSourceDirectory, listeners, classifier, reportManager, suite, reportsDirectory );
+        postConfigure( testng, testSourceDirectory, classifier, reportManager, suite, reportsDirectory );
         testng.setTestClasses( testClasses );
         testng.run();
     }
@@ -71,8 +69,7 @@ public class TestNGExecutor
         TestNG testng = new TestNG( false );
         Configurator configurator = getConfigurator( version );
         configurator.configure( testng, options );
-        postConfigure( testng, testSourceDirectory, (String) options.get("listener"), classifier, reportManager, suite, reportsDirectory );
-
+        postConfigure( testng, testSourceDirectory, classifier, reportManager, suite, reportsDirectory );
         testng.setTestSuites( suiteFiles );
         testng.run();
     }
@@ -106,8 +103,8 @@ public class TestNGExecutor
     }
 
 
-    private static void postConfigure( TestNG testNG, String sourcePath, String listenerClasses, 
-                                       String classifier, ReporterManager reportManager, SurefireTestSuite suite, File reportsDirectory )
+    private static void postConfigure( TestNG testNG, String sourcePath, String classifier, 
+                                       ReporterManager reportManager, SurefireTestSuite suite, File reportsDirectory )
         throws TestSetFailedException
     {
         // turn off all TestNG output
@@ -117,8 +114,6 @@ public class TestNGExecutor
         testNG.addListener( (Object) reporter );
         attachNonStandardReporter( testNG, "org.testng.reporters.XMLReporter" );
         attachNonStandardReporter( testNG, "org.testng.reporters.FailedReporter" );
-        // TODO: we should have the Profile so that we can decide if this is needed or not
-        testNG.setListenerClasses(loadListenerClasses(listenerClasses));
         
         // FIXME: use classifier to decide if we need to pass along the source dir (onyl for JDK14)
         if ( sourcePath != null )
@@ -147,29 +142,6 @@ public class TestNGExecutor
         } catch (ClassNotFoundException e) {
             return new TestNGReporter( reportManager );
         }
-    }
-    
-    private static List loadListenerClasses(String listenerClasses) throws TestSetFailedException
-    {
-        if (listenerClasses == null || "".equals(listenerClasses.trim())) {
-            return new ArrayList();
-        }
-        
-        List classes = new ArrayList();
-        String[] classNames = listenerClasses.split(" *, *");
-        for(int i = 0; i < classNames.length; i++) 
-        {
-            try 
-            {
-                classes.add(Class.forName(classNames[i]));
-            }
-            catch(Exception ex) 
-            {
-                throw new TestSetFailedException("Cannot find listener class " + classNames[i], ex);
-            }              
-        }
-        
-        return classes;
     }
 
     private static void attachNonStandardReporter( TestNG testNG, String className )
