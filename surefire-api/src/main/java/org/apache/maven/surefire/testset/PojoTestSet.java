@@ -114,7 +114,7 @@ public class PojoTestSet
 
         userFriendlyMethodName += ')';
 
-        ReportEntry report = new ReportEntry( testObject, getTestName( userFriendlyMethodName ), getName() );
+        ReportEntry report = new ReportEntry( testObject.getClass().getName(), getTestName( userFriendlyMethodName ), getName() );
 
         reportManager.testStarting( report );
 
@@ -133,7 +133,7 @@ public class PojoTestSet
 
             String stringToPrint = msgFmt.format( stringArgs );
 
-            report = new ReportEntry( testObject, getTestName( userFriendlyMethodName ), stringToPrint,
+            report = new ReportEntry( testObject.getClass().getName(), getTestName( userFriendlyMethodName ), stringToPrint,
                                       new PojoStackTraceWriter( testObject.getClass().getName(), method.getName(),
                                                                 e ) );
 
@@ -152,7 +152,7 @@ public class PojoTestSet
         {
             method.invoke( testObject, args );
 
-            report = new ReportEntry( testObject, getTestName( userFriendlyMethodName ), getName() );
+            report = new ReportEntry( testObject.getClass().getName(), getTestName( userFriendlyMethodName ), getName() );
 
             reportManager.testSucceeded( report );
         }
@@ -167,7 +167,7 @@ public class PojoTestSet
                 msg = t.toString();
             }
 
-            report = new ReportEntry( testObject, getTestName( userFriendlyMethodName ), msg, new PojoStackTraceWriter(
+            report = new ReportEntry( testObject.getClass().getName(), getTestName( userFriendlyMethodName ), msg, new PojoStackTraceWriter(
                 testObject.getClass().getName(), method.getName(), t ) );
 
             reportManager.testFailed( report );
@@ -183,7 +183,7 @@ public class PojoTestSet
                 msg = t.toString();
             }
 
-            report = new ReportEntry( testObject, getTestName( userFriendlyMethodName ), msg, new PojoStackTraceWriter(
+            report = new ReportEntry( testObject.getClass().getName(), getTestName( userFriendlyMethodName ), msg, new PojoStackTraceWriter(
                 testObject.getClass().getName(), method.getName(), t ) );
 
             reportManager.testFailed( report );
@@ -206,7 +206,7 @@ public class PojoTestSet
 
             String stringToPrint = msgFmt.format( stringArgs );
 
-            report = new ReportEntry( testObject, getTestName( userFriendlyMethodName ), stringToPrint,
+            report = new ReportEntry( testObject.getClass().getName(), getTestName( userFriendlyMethodName ), stringToPrint,
                                       new PojoStackTraceWriter( testObject.getClass().getName(), method.getName(),
                                                                 t ) );
 

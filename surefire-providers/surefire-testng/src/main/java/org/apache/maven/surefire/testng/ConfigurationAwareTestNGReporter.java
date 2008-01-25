@@ -35,7 +35,7 @@ public class ConfigurationAwareTestNGReporter
 
     public ConfigurationAwareTestNGReporter( ReporterManager reportManager, SurefireTestSuite source )
     {
-        super( reportManager, source );
+        super( reportManager );
     }
 
 }

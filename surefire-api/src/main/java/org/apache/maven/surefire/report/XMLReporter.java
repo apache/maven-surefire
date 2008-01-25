@@ -157,9 +157,9 @@ public class XMLReporter
         {
             testCase.setAttribute( "group", report.getGroup() );
         }
-        if ( report.getSource() != null )
+        if ( report.getSourceName() != null )
         {
-            testCase.setAttribute( "classname", report.getSource().getClass().getName() );
+            testCase.setAttribute( "classname", report.getSourceName() );
         }
         testCase.setAttribute( "time", elapsedTimeAsString( runTime ) );
         return testCase;

@@ -158,7 +158,7 @@ public class TestNGDirectoryTestSuite
     {
         String rawString = bundle.getString( "testSetStarting" );
 
-        ReportEntry report = new ReportEntry( suite, "TestSuite", rawString );
+        ReportEntry report = new ReportEntry( suite.getClass().getName(), "TestSuite", rawString );
 
         try
         {
@@ -175,7 +175,7 @@ public class TestNGDirectoryTestSuite
         String rawString = bundle.getString( "testSetCompletedNormally" );
 
         ReportEntry report =
-            new ReportEntry( suite, "TestSuite", rawString );
+            new ReportEntry( suite.getClass().getName(), "TestSuite", rawString );
 
         reporterManager.testSetCompleted( report );
 

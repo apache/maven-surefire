@@ -26,7 +26,6 @@ import org.apache.maven.surefire.report.PojoStackTraceWriter;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterManager;
-import org.apache.maven.surefire.suite.SurefireTestSuite;
 import org.testng.ISuite;
 import org.testng.ISuiteListener;
 import org.testng.ITestContext;
@@ -51,8 +50,6 @@ public class TestNGReporter
      */
     protected ReporterManager reportManager;
 
-    private Object source;
-
     /**
      * Constructs a new instance that will listen to
      * test updates from a {@link TestNG} class instance.
@@ -63,7 +60,7 @@ public class TestNGReporter
      *
      * @param reportManager Instance to report suite status to
      */
-    public TestNGReporter( ReporterManager reportManager, SurefireTestSuite source )
+    public TestNGReporter( ReporterManager reportManager )
     {
         this.reportManager = reportManager;
 
@@ -72,22 +69,26 @@ public class TestNGReporter
             throw new IllegalArgumentException( "ReportManager passed in was null." );
         }
 
-        this.source = source;
     }
 
     public void onTestStart( ITestResult result )
     {
         String rawString = bundle.getString( "testStarting" );
         String group = groupString( result.getMethod().getGroups(), result.getTestClass().getName() );
-        ReportEntry report = new ReportEntry( source, getUserFriendlyTestName( result ), group, rawString );
+        ReportEntry report = new ReportEntry( getSource( result ), getUserFriendlyTestName( result ), group, rawString );
 
         reportManager.testStarting( report );
+    }
+    
+    private String getSource( ITestResult result )
+    {
+        return result.getTestClass().getName();
     }
 
     public void onTestSuccess( ITestResult result )
     {
         ReportEntry report =
-            new ReportEntry( source, getUserFriendlyTestName( result ), bundle.getString( "testSuccessful" ) );
+            new ReportEntry( getSource( result ), getUserFriendlyTestName( result ), bundle.getString( "testSuccessful" ) );
         reportManager.testSucceeded( report );
     }
 
@@ -95,7 +96,7 @@ public class TestNGReporter
     {
         String rawString = bundle.getString( "executeException" );
 
-        ReportEntry report = new ReportEntry( source, getUserFriendlyTestName( result ), rawString,
+        ReportEntry report = new ReportEntry( getSource( result ), getUserFriendlyTestName( result ), rawString,
             new PojoStackTraceWriter( result.getTestClass().getRealClass().getName(),
             result.getMethod().getMethodName(), result.getThrowable() ) );
 
@@ -111,7 +112,7 @@ public class TestNGReporter
     public void onTestSkipped( ITestResult result )
     {
         ReportEntry report =
-            new ReportEntry( source, getUserFriendlyTestName( result ), bundle.getString( "testSkipped" ) );
+            new ReportEntry( getSource( result ), getUserFriendlyTestName( result ), bundle.getString( "testSkipped" ) );
 
         reportManager.testSkipped( report );
     }
@@ -121,7 +122,7 @@ public class TestNGReporter
         String rawString = bundle.getString( "executeException" );
 
         ReportEntry report =
-            new ReportEntry( source, getUserFriendlyTestName( result ), rawString,
+            new ReportEntry( getSource( result ), getUserFriendlyTestName( result ), rawString,
                 new PojoStackTraceWriter( result.getTestClass().getRealClass().getName(),
                 result.getMethod().getMethodName(), result.getThrowable() ) );
 

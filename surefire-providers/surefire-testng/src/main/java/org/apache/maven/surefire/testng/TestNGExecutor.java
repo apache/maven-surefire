@@ -145,7 +145,7 @@ public class TestNGExecutor
                 throw new RuntimeException("Bug in ConfigurationAwareTestNGReporter", e);
             }
         } catch (ClassNotFoundException e) {
-            return new TestNGReporter( reportManager, suite );
+            return new TestNGReporter( reportManager );
         }
     }
     

@@ -151,7 +151,7 @@ public class TestListenerInvocationHandler
     // Handler for TestListener.startTest(Test)
     public void handleStartTest( Object[] args )
     {
-        ReportEntry report = new ReportEntry( args[0], args[0].toString(), args[0].getClass().getName() );
+        ReportEntry report = new ReportEntry( args[0].getClass().getName(), args[0].toString(), args[0].getClass().getName() );
 
         reportManager.testStarting( report );
     }
@@ -161,7 +161,7 @@ public class TestListenerInvocationHandler
         throws IllegalAccessException, InvocationTargetException
     {
         ReportEntry report =
-            new ReportEntry( args[0], args[0].toString(), args[1].toString(), getStackTraceWriter( args ) );
+            new ReportEntry( args[0].getClass().getName(), args[0].toString(), args[1].toString(), getStackTraceWriter( args ) );
 
         reportManager.testError( report );
 
@@ -190,7 +190,7 @@ public class TestListenerInvocationHandler
         throws IllegalAccessException, InvocationTargetException
     {
         ReportEntry report =
-            new ReportEntry( args[0], args[0].toString(), args[1].toString(), getStackTraceWriter( args ) );
+            new ReportEntry( args[0].getClass().getName(), args[0].toString(), args[1].toString(), getStackTraceWriter( args ) );
 
         reportManager.testFailed( report );
 
@@ -203,7 +203,7 @@ public class TestListenerInvocationHandler
 
         if ( !testHadFailed )
         {
-            ReportEntry report = new ReportEntry( args[0], args[0].toString(), args[0].getClass().getName() );
+            ReportEntry report = new ReportEntry( args[0].getClass().getName(), args[0].toString(), args[0].getClass().getName() );
 
             reportManager.testSucceeded( report );
         }

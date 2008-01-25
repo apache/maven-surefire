@@ -39,7 +39,7 @@ public class XMLReporterTest
         super.setUp();
         reporter = new XMLReporter( null, Boolean.TRUE );
         message = "junit.framework.AssertionFailedError";
-        reportEntry = new ReportEntry( this, "XMLReporterTest", message,
+        reportEntry = new ReportEntry( this.getClass().getName(), "XMLReporterTest", message,
                                        new PojoStackTraceWriter( "", "", new AssertionFailedError() ) );
     }
 

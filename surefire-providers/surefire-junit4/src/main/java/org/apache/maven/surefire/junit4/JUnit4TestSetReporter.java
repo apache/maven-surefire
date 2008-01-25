@@ -19,6 +19,10 @@ package org.apache.maven.surefire.junit4;
  * under the License.
  */
 
+import java.util.ResourceBundle;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.apache.maven.surefire.Surefire;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterManager;
@@ -26,8 +30,6 @@ import org.junit.runner.Description;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunListener;
-
-import java.util.ResourceBundle;
 
 public class JUnit4TestSetReporter
     extends RunListener
@@ -67,7 +69,7 @@ public class JUnit4TestSetReporter
         throws Exception
     {
         String rawString = bundle.getString( "testSetStarting" );
-        ReportEntry report = new ReportEntry( testSet, testSet.getName(), rawString );
+        ReportEntry report = new ReportEntry( testSet.getName(), testSet.getName(), rawString );
 
         this.reportMgr.testSetStarting( report );
     }
@@ -81,7 +83,7 @@ public class JUnit4TestSetReporter
         throws Exception
     {
         String rawString = bundle.getString( "testSetCompletedNormally" );
-        ReportEntry report = new ReportEntry( testSet, testSet.getName(), rawString );
+        ReportEntry report = new ReportEntry( testSet.getName(), testSet.getName(), rawString );
 
         this.reportMgr.testSetCompleted( report );
         this.reportMgr.reset();
@@ -96,7 +98,7 @@ public class JUnit4TestSetReporter
         throws Exception
     {
         String rawString = bundle.getString( "testSkipped" );
-        ReportEntry report = new ReportEntry( testSet, description.getDisplayName(), rawString );
+        ReportEntry report = new ReportEntry( extractClassName( description ), description.getDisplayName(), rawString );
 
         this.reportMgr.testSkipped( report );
     }
@@ -110,7 +112,7 @@ public class JUnit4TestSetReporter
         throws Exception
     {
         String rawString = bundle.getString( "testStarting" );
-        ReportEntry report = new ReportEntry( testSet, description.getDisplayName(), rawString );
+        ReportEntry report = new ReportEntry( extractClassName( description ), description.getDisplayName(), rawString );
 
         this.reportMgr.testStarting( report );
 
@@ -127,7 +129,7 @@ public class JUnit4TestSetReporter
     {
         String rawString = bundle.getString( "executeException" );
         ReportEntry report =
-            new ReportEntry( testSet, failure.getTestHeader(), rawString, new JUnit4StackTraceWriter( failure ) );
+            new ReportEntry( extractClassName( failure.getDescription() ), failure.getTestHeader(), rawString, new JUnit4StackTraceWriter( failure ) );
 
         if ( failure.getException() instanceof AssertionError )
         {
@@ -152,9 +154,24 @@ public class JUnit4TestSetReporter
         if ( failureFlag == false )
         {
             String rawString = bundle.getString( "testSuccessful" );
-            ReportEntry report = new ReportEntry( testSet, description.getDisplayName(), rawString );
+            ReportEntry report = new ReportEntry( extractClassName( description ), description.getDisplayName(), rawString );
 
             this.reportMgr.testSucceeded( report );
         }
+    }
+    
+    private String extractClassName( Description description )
+    {
+        String displayName = description.getDisplayName();
+        final Pattern PARENS = Pattern.compile(
+                "^" +
+                "[^\\(\\)]+" + //non-parens
+        		"\\((" + // then an open-paren (start matching a group)
+        		"[^\\\\(\\\\)]+" + //non-parens
+        		")\\)" +
+        		"$" ); // then a close-paren (end group match)
+        Matcher m = PARENS.matcher( displayName );
+        if (!m.find()) return displayName;
+        return m.group( 1 );
     }
 }

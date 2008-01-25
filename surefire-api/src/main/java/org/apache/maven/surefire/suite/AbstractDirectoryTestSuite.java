@@ -133,7 +133,7 @@ public abstract class AbstractDirectoryTestSuite
     {
         String rawString = bundle.getString( "testSetStarting" );
 
-        ReportEntry report = new ReportEntry( this, testSet.getName(), rawString );
+        ReportEntry report = new ReportEntry( this.getClass().getName(), testSet.getName(), rawString );
 
         reporterManager.testSetStarting( report );
 
@@ -141,7 +141,7 @@ public abstract class AbstractDirectoryTestSuite
 
         rawString = bundle.getString( "testSetCompletedNormally" );
 
-        report = new ReportEntry( this, testSet.getName(), rawString );
+        report = new ReportEntry( this.getClass().getName(), testSet.getName(), rawString );
 
         reporterManager.testSetCompleted( report );
 

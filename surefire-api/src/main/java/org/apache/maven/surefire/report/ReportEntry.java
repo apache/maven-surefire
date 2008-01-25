@@ -25,7 +25,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 
 public class ReportEntry
 {
-    private Object source;
+    private String source;
 
     private String name;
 
@@ -41,20 +41,40 @@ public class ReportEntry
 
     public ReportEntry( Object source, String name, String message )
     {
-        this( source, name, null, message );
+        this( source.getClass().getName(), name, null, message );
     }
 
     public ReportEntry( Object source, String name, String group, String message )
     {
-        this( source, name, group, message, null );
+        this( source.getClass().getName(), name, group, message, null );
     }
 
     public ReportEntry( Object source, String name, String message, StackTraceWriter stackTraceWriter )
     {
-        this( source, name, null, message, stackTraceWriter );
+        this( source.getClass().getName(), name, null, message, stackTraceWriter );
     }
 
     public ReportEntry( Object source, String name, String group, String message, StackTraceWriter stackTraceWriter )
+    {
+        this( source.getClass().getName(), name, group, message, stackTraceWriter );
+    }
+    
+    public ReportEntry( String source, String name, String message )
+    {
+        this( source, name, null, message );
+    }
+
+    public ReportEntry( String source, String name, String group, String message )
+    {
+        this( source, name, group, message, null );
+    }
+
+    public ReportEntry( String source, String name, String message, StackTraceWriter stackTraceWriter )
+    {
+        this( source, name, null, message, stackTraceWriter );
+    }
+
+    public ReportEntry( String source, String name, String group, String message, StackTraceWriter stackTraceWriter )
     {
         if ( source == null )
         {
@@ -80,12 +100,20 @@ public class ReportEntry
         this.setStackTraceWriter( stackTraceWriter );
     }
 
-    public void setSource( Object source )
+    public void setSource( String source )
     {
         this.source = source;
     }
-
+    
+    /**
+     * @deprecated Use {@link #getSourceName()} instead
+     */
     public Object getSource()
+    {
+        return getSourceName();
+    }
+
+    public String getSourceName()
     {
         return source;
     }
@@ -142,7 +170,7 @@ public class ReportEntry
         }
         ReportEntry rhs = (ReportEntry) obj;
         return new EqualsBuilder()
-            .append( getSource(), rhs.getSource() )
+            .append( getSourceName(), rhs.getSourceName() )
             .append( getName(), rhs.getName() )
             .append( getGroup(), rhs.getGroup() )
             .append( getMessage(), rhs.getMessage() )
@@ -153,7 +181,7 @@ public class ReportEntry
     public String toString()
     {
         return new ToStringBuilder( this )
-            .append( "source", getSource() )
+            .append( "source", getSourceName() )
             .append( "name", getName() )
             .append( "group", getGroup() )
             .append( "message", getMessage() )
@@ -167,7 +195,7 @@ public class ReportEntry
         // ideally different for each class
         // good resource at http://primes.utm.edu/lists/small/1000.txt
         return new HashCodeBuilder( 5897, 6653 )
-            .append( getSource() )
+            .append( getSourceName() )
             .append( getName() )
             .append( getGroup() )
             .append( getMessage() )

@@ -81,7 +81,7 @@ public abstract class AbstractConsoleReporter
     private void printAbortionError( String msg, ReportEntry report )
     {
         writer.println( msg );
-        writer.println( report.getSource().getClass().getName() );
+        writer.println( report.getSourceName() );
         writer.println( report.getName() );
         writer.println( report.getMessage() );
         writer.println( getStackTrace( report ) );
