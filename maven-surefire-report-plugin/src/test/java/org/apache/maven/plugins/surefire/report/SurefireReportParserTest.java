@@ -53,7 +53,7 @@ public class SurefireReportParserTest
 
         List suites = report.parseXMLReportFiles();
 
-        assertEquals( 4, suites.size() );
+        assertEquals( 7, suites.size() );
 
         Iterator it = suites.iterator();
         while ( it.hasNext() )

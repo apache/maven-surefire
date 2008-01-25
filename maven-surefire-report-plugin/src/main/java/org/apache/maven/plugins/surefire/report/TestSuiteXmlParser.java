@@ -64,9 +64,12 @@ public class TestSuiteXmlParser
 
         saxParser.parse( new File( xmlPath ), this );
         
-        if ( defaultSuite.getNumberOfTests() == 0 )
-        {
-            classesToSuites.remove( defaultSuite.getFullClassName() );
+        if ( currentSuite != defaultSuite )
+        { // omit the defaultSuite if it's empty and there are alternatives
+            if ( defaultSuite.getNumberOfTests() == 0 ) 
+            {
+                classesToSuites.remove( defaultSuite.getFullClassName() );
+            }
         }
         
         return classesToSuites.values();
@@ -111,6 +114,7 @@ public class TestSuiteXmlParser
                 
                 String fullClassName = attributes.getValue( "classname" );
                 
+                // if the testcase declares its own classname, it may need to belong to its own suite
                 if ( fullClassName != null )
                 {
                     currentSuite = (ReportTestSuite) classesToSuites.get( fullClassName );
