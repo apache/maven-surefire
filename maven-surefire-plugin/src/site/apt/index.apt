@@ -49,6 +49,8 @@ Maven Surefire Plugin
 
   * {{{examples/forking.html}Forking}}
 
+  * {{{examples/debugging.html}Debugging Tests}}
+
   * {{{examples/system-properties.html}Using System Properties}}
 
   * {{{examples/testng.html}Using TestNG}}

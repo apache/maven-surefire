@@ -15,5 +15,16 @@ Running a Single Test
 mvn -Dtest=TestCircle test
 +---+
 
-  The value for the <<<test>>> parameter is the name of the test class(without
-  the extension).
+  The value for the <<<test>>> parameter is the name of the test class (without the extension; we'll strip off the extension if you accidentally provide one).
+
+  You may also use patterns to run a number of tests:
+
++---+
+mvn -Dtest=TestCi*le test
++---+
+
+  And you may use multiple names/patterns, separated by commas:
+
++---+
+mvn -Dtest=TestSquare,TestCi*le test
++---+

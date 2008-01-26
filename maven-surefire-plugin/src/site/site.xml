@@ -33,6 +33,7 @@
       <item name="Running a Single Test" href="examples/single-test.html"/>
       <item name="Class Loading Issues" href="examples/class-loading.html"/>
       <item name="Forking" href="examples/forking.html"/>
+      <item name="Debugging Tests" href="examples/debugging.html"/>
       <item name="Using System Properties" href="examples/system-properties.html"/>
       <item name="Using TestNG" href="examples/testng.html"/>
     </menu>
