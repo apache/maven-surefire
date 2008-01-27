@@ -48,8 +48,11 @@ public class PojoStackTraceWriter
     public String writeTraceToString()
     {
         StringWriter w = new StringWriter();
-        t.printStackTrace( new PrintWriter( w ) );
-        w.flush();
+        if ( t != null )
+        {
+            t.printStackTrace( new PrintWriter( w ) );
+            w.flush();
+        }
         return w.toString();
     }
 
@@ -69,7 +72,7 @@ public class PojoStackTraceWriter
             if ( line.startsWith( marker ) )
             {
                 lastLine = i;
-            } else if ( line.startsWith( "Caused by" ) ) 
+            } else if ( line.startsWith( "Caused by" ) )
             {
                 causedByLine = i;
                 break;
