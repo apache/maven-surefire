@@ -236,6 +236,7 @@ public class ForkConfiguration
             cp += UrlUtils.getURL( new File( el ) ).toExternalForm() + " ";
         }
 
+        writer.writeValue("Manifest-Version", "1.0");
         writer.writeValue("Class-Path", cp.trim());
         writer.writeValue("Main-Class", SurefireBooter.class.getName());
 
