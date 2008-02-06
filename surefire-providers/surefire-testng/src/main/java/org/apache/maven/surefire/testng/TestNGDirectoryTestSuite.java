@@ -95,9 +95,13 @@ public class TestNGDirectoryTestSuite
         {
             throw new TestSetFailedException( "Unable to find test set '" + testSetName + "' in suite" );
         }
+        
+        startTestSuite( reporterManager, this );
 
         TestNGExecutor.run( new Class[]{testSet.getTestClass()}, this.testSourceDirectory, this.options, this.version,
                             this.classifier, reporterManager, this, reportsDirectory );
+        
+        finishTestSuite( reporterManager, this );
     }
 
     public void execute( ReporterManager reporterManager, ClassLoader classLoader )
