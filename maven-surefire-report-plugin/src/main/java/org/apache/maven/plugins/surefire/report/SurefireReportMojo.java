@@ -42,7 +42,6 @@ import org.codehaus.plexus.util.StringUtils;
  * @version $Id$
  * @goal report
  * @execute phase="test" lifecycle="surefire"
- * @aggregator
  */
 public class SurefireReportMojo
     extends AbstractMavenReport
