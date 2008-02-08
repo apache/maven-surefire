@@ -24,12 +24,16 @@ import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.cli.Commandline;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
+import java.util.jar.Manifest;
 
 /**
  * Configuration for forking tests.
@@ -224,7 +228,13 @@ public class ForkConfiguration
         if ( !debug ) {
             file.deleteOnExit();
         }
-        ManifestJarWriter writer = new ManifestJarWriter(file);
+        FileOutputStream fos = new FileOutputStream( file );
+        JarOutputStream jos = new JarOutputStream( fos );
+        jos.setLevel( JarOutputStream.STORED );
+        JarEntry je = new JarEntry( "META-INF/MANIFEST.MF" );
+        jos.putNextEntry( je );
+
+        Manifest man = new Manifest();
 
         // we can't use StringUtils.join here since we need to add a '/' to
         // the end of directory entries - otherwise the jvm will ignore them.
@@ -236,11 +246,12 @@ public class ForkConfiguration
             cp += UrlUtils.getURL( new File( el ) ).toExternalForm() + " ";
         }
 
-        writer.writeValue("Manifest-Version", "1.0");
-        writer.writeValue("Class-Path", cp.trim());
-        writer.writeValue("Main-Class", SurefireBooter.class.getName());
+        man.getMainAttributes().putValue("Manifest-Version", "1.0");
+        man.getMainAttributes().putValue("Class-Path", cp.trim());
+        man.getMainAttributes().putValue("Main-Class", SurefireBooter.class.getName());
 
-        writer.close();
+        man.write(jos);
+        jos.close();
 
         return file;
     }
