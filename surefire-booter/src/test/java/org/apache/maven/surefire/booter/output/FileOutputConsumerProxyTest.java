@@ -38,18 +38,22 @@ public class FileOutputConsumerProxyTest
 {
 
     private static final String USER_DIR = System.getProperty( "user.dir" );
+    File targetDir;
 
     protected void setUp()
         throws Exception
     {
         super.setUp();
-        setOutputConsumer( new FileOutputConsumerProxy( (OutputConsumer) getOutputConsumerMock().proxy() ) );
+        targetDir = new File ( USER_DIR, "target" );
+        if ( !targetDir.exists() ) targetDir = new File( USER_DIR );
+        setOutputConsumer( new FileOutputConsumerProxy( (OutputConsumer) getOutputConsumerMock().proxy(), targetDir ) );
     }
 
     public void testConsumeOutputLine()
         throws Exception
     {
-        File reportFile = new File( USER_DIR, getReportEntry().getName() + "-output.txt" );
+        
+        File reportFile = new File( targetDir, getReportEntry().getName() + "-output.txt" );
         reportFile.delete();
 
         getOutputConsumerMock().expects( new InvokeOnceMatcher() ).method( "testSetStarting" )
