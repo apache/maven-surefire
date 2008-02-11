@@ -218,9 +218,9 @@ public class XMLReporter
 
             String message = t.getMessage();
 
-            if ( message != null && message.trim().length() > 0 )
+            if ( message != null )
             {
-                element.setAttribute( "message", escapeAttribute( message ) );
+                element.setAttribute( "message", message );
 
                 element.setAttribute( "type", ( stackTrace.indexOf( ":" ) > -1 ? stackTrace.substring( 0,
                                                                                                        stackTrace.indexOf(
@@ -235,7 +235,7 @@ public class XMLReporter
 
         if (stackTrace != null)
         {
-            element.setValue( escapeAttribute(stackTrace) );
+            element.setValue( stackTrace );
         }
 
         addOutputStreamElement( stdOut, "system-out", testCase );
@@ -292,35 +292,10 @@ public class XMLReporter
 
                 property.setAttribute( "name", key );
 
-                property.setAttribute( "value", escapeAttribute( value ) );
+                property.setAttribute( "value", value );
 
             }
         }
-    }
-
-    private static String escapeAttribute( String attribute )
-    {
-        // Shouldn't Xpp3Dom do this itself?
-        StringBuffer sb = new StringBuffer ( attribute.length() * 2 );
-        for (int i = 0; i < attribute.length(); i++ ) {
-            char c = attribute.charAt( i );
-            if ( c < 32 ) {
-                if ( c == '\n' || c == '\r' || c == '\t') {
-                    sb.append( c );
-                } else {
-                    sb.append( "&#" ).append( (int) c).append( ';' );
-                }
-            } else if ( c == '<') {
-                sb.append( "&lt;" );
-            } else if ( c == '>') {
-                sb.append( "&gt;" );
-            }
-            else {
-                sb.append( c );
-            }
-        }
-        return sb.toString();
-
     }
 
     public Iterator getResults()

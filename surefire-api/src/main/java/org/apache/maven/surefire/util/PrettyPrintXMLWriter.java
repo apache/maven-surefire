@@ -147,13 +147,35 @@ public class PrettyPrintXMLWriter
 
     private static String escapeXml( String text )
     {
-        text = StringUtils.replace( text, "&", "&amp;" );
-        text = StringUtils.replace( text, "<", "&amp;" );
-        text = StringUtils.replace( text, ">", "&amp;" );
-        text = StringUtils.replace( text, "\"", "&quot;" );
-        text = StringUtils.replace( text, "\'", "&apos;" );
-
-        return text;
+        StringBuffer sb = new StringBuffer ( text.length() * 2 );
+        for (int i = 0; i < text.length(); i++ ) {
+            char c = text.charAt( i );
+            if ( c < 32 ) {
+                if ( c == '\n' || c == '\r' || c == '\t') {
+                    sb.append( c );
+                } else {
+                    // uh-oh!  This character is illegal in XML 1.0!
+                    // http://www.w3.org/TR/1998/REC-xml-19980210#charsets
+                    // we're going to deliberately doubly-XML escape it...
+                    // there's nothing better we can do! :-(
+                    // SUREFIRE-456
+                    sb.append( "&amp;#" ).append( (int) c).append( ';' );
+                }
+            } else if ( c == '<') {
+                sb.append( "&lt;" );
+            } else if ( c == '>') {
+                sb.append( "&gt;" );
+            } else if (c == '&') {
+                sb.append("&amp;");
+            } else if (c == '"') {
+                sb.append("&quot;");
+            } else if (c == '\'') {
+                sb.append("&apos;");
+            } else {
+                sb.append( c );
+            }
+        }
+        return sb.toString();
     }
 
     public void addAttribute( String key, String value )
