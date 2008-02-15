@@ -74,6 +74,7 @@ public class TestNGDirectoryTestSuite
         this.version = artifactVersion;
         
         this.classifier = artifactClassifier;
+
     }
 
     protected SurefireTestSet createTestSet( Class testClass, ClassLoader classLoader )
@@ -161,8 +162,8 @@ public class TestNGDirectoryTestSuite
     public static void startTestSuite( ReporterManager reporterManager, Object suite )
     {
         String rawString = bundle.getString( "testSetStarting" );
-
-        ReportEntry report = new ReportEntry( suite.getClass().getName(), "TestSuite", rawString );
+        
+        ReportEntry report = new ReportEntry( suite.getClass().getName(), getSuiteName(suite), rawString );
 
         try
         {
@@ -179,10 +180,32 @@ public class TestNGDirectoryTestSuite
         String rawString = bundle.getString( "testSetCompletedNormally" );
 
         ReportEntry report =
-            new ReportEntry( suite.getClass().getName(), "TestSuite", rawString );
+            new ReportEntry( suite.getClass().getName(), getSuiteName(suite), rawString );
 
         reporterManager.testSetCompleted( report );
 
         reporterManager.reset();
     }
+    
+    public String getSuiteName() {
+        String result = (String) options.get("suitename");
+        if (result == null) {
+            result = "TestSuite";
+        }
+        return result;
+    }
+
+    private static String getSuiteName(Object suite)
+    {
+        String result;
+        if (suite instanceof TestNGDirectoryTestSuite) {
+            return ((TestNGDirectoryTestSuite) suite).getSuiteName();
+        } else if (suite instanceof TestNGXmlTestSuite) {
+            return ((TestNGXmlTestSuite) suite).getSuiteName();
+        }else {
+            result = "TestSuite";
+        }
+
+        return result;
+    }    
 }
