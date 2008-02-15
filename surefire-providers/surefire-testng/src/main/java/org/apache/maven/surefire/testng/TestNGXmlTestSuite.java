@@ -134,4 +134,12 @@ public class TestNGXmlTestSuite
 
         return this.testSets;
     }
+    
+    public String getSuiteName() {
+        String result = (String) options.get("suitename");
+        if (result == null) {
+            result = "TestSuite";
+        }
+        return result;
+    }
 }
