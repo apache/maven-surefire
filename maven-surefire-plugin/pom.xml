@@ -116,6 +116,17 @@
     </dependency>
   </dependencies>
 
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-site-plugin</artifactId>
+        <configuration>
+          <stagingSiteURL>scp://people.apache.org/www/maven.apache.org/plugins/${artifactId}-${version}</stagingSiteURL>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
   <profiles>
     <!-- Force JDK 1.4 for this one, plugins can never be built on 1.3 -->
     <profile>
