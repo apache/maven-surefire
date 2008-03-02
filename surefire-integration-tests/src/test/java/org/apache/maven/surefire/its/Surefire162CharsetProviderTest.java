@@ -4,6 +4,7 @@ package org.apache.maven.surefire.its;
 import junit.framework.TestCase;
 import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
+import org.codehaus.plexus.util.FileUtils;
 
 import java.io.File;
 
@@ -22,6 +23,10 @@ public class Surefire162CharsetProviderTest
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/surefire-162-charsetProvider" );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
+        File jarFile = new File( verifier.getArtifactPath( "jcharset", "jcharset", "1.2.1", "jar" ) );
+        jarFile.getParentFile().mkdirs();
+        FileUtils.copyFile( new File( testDir, "repo/jcharset/jcharset/1.2.1/jcharset-1.2.1.jar" ), jarFile );
+        FileUtils.copyFile( new File( testDir, "repo/jcharset/jcharset/1.2.1/jcharset-1.2.1.pom" ), new File( verifier.getArtifactPath( "jcharset", "jcharset", "1.2.1", "pom" ) ) );
         verifier.executeGoal( "test" );
         verifier.verifyErrorFreeLog();
         verifier.resetStreams();

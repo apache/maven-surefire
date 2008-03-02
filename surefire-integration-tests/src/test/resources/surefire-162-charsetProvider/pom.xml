@@ -37,10 +37,4 @@
 			<scope>runtime</scope>
 		</dependency>
 	</dependencies>
-	<repositories>
-		<repository>
-			<id>local</id>
-			<url>file://localhost/${basedir}/repo</url>
-		</repository>
-	</repositories>
 </project>
