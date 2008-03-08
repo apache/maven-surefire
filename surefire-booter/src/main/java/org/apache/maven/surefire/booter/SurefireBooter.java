@@ -570,17 +570,8 @@ public class SurefireBooter
     {
         if ( param instanceof File[] )
         {
-            String s = "[";
-            File[] f = (File[]) param;
-            for ( int i = 0; i < f.length; i++ )
-            {
-                s += f[i];
-                if ( i > 0 )
-                {
-                    s += ",";
-                }
-            }
-            return s + "]";
+            File[] files = (File[]) param;
+            return "[" + StringUtils.join( files, "," ) + "]";
         } else if ( param instanceof Properties ) {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             try
