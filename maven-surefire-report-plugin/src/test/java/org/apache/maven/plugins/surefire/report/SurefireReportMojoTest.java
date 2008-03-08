@@ -40,7 +40,7 @@ public class SurefireReportMojoTest
 
         assertNotNull( mojo );
 
-        String outputDir = (String) getVariableValueFromObject( mojo, "outputDirectory" );
+        File outputDir = (File) getVariableValueFromObject( mojo, "outputDirectory" );
 
         boolean showSuccess = ( (Boolean) getVariableValueFromObject( mojo, "showSuccess" ) ).booleanValue();
 
@@ -52,7 +52,7 @@ public class SurefireReportMojoTest
 
         boolean linkXRef = ( (Boolean) getVariableValueFromObject( mojo, "linkXRef" ) ).booleanValue();
 
-        assertEquals( getBasedir() + "/target/site/unit/basic-surefire-report-test", outputDir );
+        assertEquals( new File( getBasedir() + "/target/site/unit/basic-surefire-report-test" ), outputDir );
 
         assertTrue( showSuccess );
 

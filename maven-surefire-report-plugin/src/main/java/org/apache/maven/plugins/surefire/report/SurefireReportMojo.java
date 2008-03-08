@@ -51,7 +51,7 @@ public class SurefireReportMojo
      *
      * @parameter expression="${project.reporting.outputDirectory}"
      */
-    private String outputDirectory;
+    private File outputDirectory;
 
     /**
      * Doxia Site Renderer
@@ -186,7 +186,7 @@ public class SurefireReportMojo
 
         if ( linkXRef )
         {
-            String relativePath = PathTool.getRelativePath( outputDirectory, xrefLocation.getAbsolutePath() );
+            String relativePath = PathTool.getRelativePath( getOutputDirectory(), xrefLocation.getAbsolutePath() );
             if ( StringUtils.isEmpty( relativePath ) )
             {
                 relativePath = ".";
@@ -247,7 +247,7 @@ public class SurefireReportMojo
 
     protected String getOutputDirectory()
     {
-        return outputDirectory;
+        return outputDirectory.getAbsolutePath();
     }
 
     private ResourceBundle getBundle( Locale locale )
