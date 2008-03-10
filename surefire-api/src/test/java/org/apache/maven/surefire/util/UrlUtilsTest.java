@@ -70,7 +70,7 @@ public class UrlUtilsTest
         throws IOException
     {
         File f = new File( homeDir, "fo\u00DC.txt" );
-        assertEquals( new URL( "file:" + homeDir + "/fo%C3%9C.txt" ), UrlUtils.getURL( f ) );
+        assertEquals( new URL( "file:" + homeDir + "/fo%c3%9c.txt" ), UrlUtils.getURL( f ) );
     }
 
 }
