@@ -78,6 +78,7 @@ public class SurefirePlugin
      * convenient on occasion.
      * 
      * @parameter expression="${skipTests}"
+     * @since 2.4
      */
     private boolean skipTests;
     
@@ -87,6 +88,7 @@ public class SurefirePlugin
      * 
      * @deprecated
      * @parameter expression="${maven.test.skip.exec}"
+     * @since 2.3
      */
     private boolean skipExec;
     
@@ -154,6 +156,7 @@ public class SurefirePlugin
      * Additional elements to be appended to the classpath.
      * 
      * @parameter
+     * @since 2.4
      */
     private List additionalClasspathElements;
     
@@ -169,6 +172,7 @@ public class SurefirePlugin
      * 
      * @parameter expression="${project.build.testSourceDirectory}"
      * @required
+     * @since 2.2
      */
     private File testSourceDirectory;
 
@@ -225,6 +229,7 @@ public class SurefirePlugin
      * preferred method of configuring TestNG.
      *
      * @parameter
+     * @since 2.4
      */
     private Properties properties;
 
@@ -272,6 +277,7 @@ public class SurefirePlugin
      * reportsDirectory/testName-output.txt).
      * 
      * @parameter expression="${maven.test.redirectTestOutputToFile}" default-value="false"
+     * @since 2.3
      */
     private boolean redirectTestOutputToFile;
 
@@ -279,6 +285,7 @@ public class SurefirePlugin
      * Set this to "true" to cause a failure if there are no tests to run. Defaults to false.
      * 
      * @parameter expression="${failIfNoTests}"
+     * @since 2.4
      */
     private Boolean failIfNoTests;
     
@@ -287,6 +294,7 @@ public class SurefirePlugin
      * for backwards compatibility.
      * 
      * @parameter expression="${forkMode}" default-value="once"
+     * @since 2.1
      */
     private String forkMode;
 
@@ -295,6 +303,7 @@ public class SurefirePlugin
      * jvm will be the same as the one used to run Maven.
      * 
      * @parameter expression="${jvm}"
+     * @since 2.1
      */
     private String jvm;
 
@@ -302,6 +311,7 @@ public class SurefirePlugin
      * Arbitrary JVM options to set on the command line.
      * 
      * @parameter expression="${argLine}"
+     * @since 2.1
      */
     private String argLine;
 
@@ -312,6 +322,7 @@ public class SurefirePlugin
      * debuggability options (without overwriting the other options specified in the argLine).
      * 
      * @parameter expression="${maven.surefire.debug}"
+     * @since 2.4
      */
     private String debugForkedProcess;
     
@@ -320,6 +331,7 @@ public class SurefirePlugin
      * wait forever for the process, never timing out.
      * 
      * @parameter expression="${surefire.timeout}"
+     * @since 2.4
      */
     private int forkedProcessTimeoutInSeconds;
     
@@ -327,6 +339,7 @@ public class SurefirePlugin
      * Additional environments to set on the command line.
      * 
      * @parameter
+     * @since 2.1.3
      */
     private Map environmentVariables = new HashMap();
 
@@ -334,6 +347,7 @@ public class SurefirePlugin
      * Command line working directory.
      * 
      * @parameter expression="${basedir}"
+     * @since 2.1.3
      */
     private File workingDirectory;
 
@@ -343,6 +357,7 @@ public class SurefirePlugin
      * caused by conflicts between xml parsers in the classpath and the Java 5 provider parser.
      * 
      * @parameter expression="${childDelegation}" default-value="false"
+     * @since 2.1
      */
     private boolean childDelegation;
 
@@ -351,6 +366,7 @@ public class SurefirePlugin
      * in test run, if specified.  This parameter is overridden if suiteXmlFiles are specified.
      * 
      * @parameter expression="${groups}"
+     * @since 2.2
      */
     private String groups;
 
@@ -359,6 +375,7 @@ public class SurefirePlugin
      * run.  This parameter is overridden if suiteXmlFiles are specified.
      * 
      * @parameter expression="${excludedGroups}"
+     * @since 2.2
      */
     private String excludedGroups;
 
@@ -367,6 +384,7 @@ public class SurefirePlugin
      * specified, <b>no</b> other tests will be run, ignoring other parameters, like includes and excludes.
      * 
      * @parameter
+     * @since 2.2
      */
     private File[] suiteXmlFiles;
     
@@ -374,6 +392,7 @@ public class SurefirePlugin
      * Allows you to specify the name of the JUnit artifact. If not set, <code>junit:junit</code> will be used.
      * 
      * @parameter expression="${junitArtifactName}" default-value="junit:junit"
+     * @since 2.3.1
      */
     private String junitArtifactName;
     
@@ -381,6 +400,7 @@ public class SurefirePlugin
      * Allows you to specify the name of the TestNG artifact. If not set, <code>org.testng:testng</code> will be used.
      * 
      * @parameter expression="${testNGArtifactName}" default-value="org.testng:testng"
+     * @since 2.3.1
      */
     private String testNGArtifactName;
     
@@ -389,6 +409,7 @@ public class SurefirePlugin
      * makes sense to use in conjunction with parallel.
      * 
      * @parameter expression="${threadCount}"
+     * @since 2.2
      */
     private int threadCount;
 
@@ -399,6 +420,7 @@ public class SurefirePlugin
      * 
      * @parameter expression="${parallel}"
      * @todo test how this works with forking, and console/file output parallelism
+     * @since 2.2
      */
     private String parallel;
 
@@ -406,6 +428,7 @@ public class SurefirePlugin
      * Whether to trim the stack trace in the reports to just the lines within the test, or show the full trace.
      * 
      * @parameter expression="${trimStackTrace}" default-value="true"
+     * @since 2.2
      */
     private boolean trimStackTrace;
 
@@ -427,6 +450,7 @@ public class SurefirePlugin
      * The plugin remote repositories declared in the pom.
      * 
      * @parameter expression="${project.pluginArtifactRepositories}"
+     * @since 2.2
      */
     private List remoteRepositories;
 
@@ -447,6 +471,7 @@ public class SurefirePlugin
      * Flag to disable the generation of report files in xml format.
      * 
      * @parameter expression="${disableXmlReport}" default-value="false"
+     * @since 2.2
      */
     private boolean disableXmlReport;
 
@@ -456,6 +481,7 @@ public class SurefirePlugin
      * classloader.  Default value is "true".
      * 
      * @parameter expression="${surefire.useSystemClassLoader}"
+     * @since 2.3
      */
     private Boolean useSystemClassLoader;
 
@@ -464,6 +490,7 @@ public class SurefirePlugin
      * this flag to <code>false</code>.
      * 
      * @parameter expression="${enableAssertions}" default-value="true"
+     * @since 2.3.1
      */
     private boolean enableAssertions;
     
