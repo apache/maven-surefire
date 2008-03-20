@@ -58,7 +58,9 @@ public class SurefireReportGenerator
 
         sink.head();
 
-        sink.text( bundle.getString( "report.surefire.description" ) );
+        sink.title();
+        sink.text( bundle.getString( "report.surefire.header" ) );
+        sink.title_();
 
         StringBuffer str = new StringBuffer();
         str.append( "<script type=\"text/javascript\">\n" );
@@ -83,6 +85,10 @@ public class SurefireReportGenerator
         sink.head_();
 
         sink.body();
+
+        sink.sectionTitle1();
+        sink.text( bundle.getString( "report.surefire.header" ) );
+        sink.sectionTitle1_();
 
         constructSummarySection( bundle, sink );
 
