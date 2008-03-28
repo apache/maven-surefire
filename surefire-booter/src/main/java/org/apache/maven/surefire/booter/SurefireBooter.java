@@ -318,10 +318,17 @@ public class SurefireBooter
         {
             // The test classloader must be constructed first to avoid issues with commons-logging until we properly
             // separate the TestNG classloader
-            ClassLoader testsClassLoader = useSystemClassLoader() ? getClass().getClassLoader() // ClassLoader.getSystemClassLoader()
-                            : createClassLoader( classPathUrls, null, childDelegation );
-
-            recordTestClassPath();
+            ClassLoader testsClassLoader;
+            String testClassPath = getTestClassPathAsString();
+            System.setProperty( "surefire.test.class.path", testClassPath );
+            if (useSystemClassLoader()) {
+                testsClassLoader = getClass().getClassLoader(); // ClassLoader.getSystemClassLoader()
+                // SUREFIRE-459, trick the app under test into thinking its classpath was conventional (instead of a single manifest-only jar) 
+                System.setProperty( "surefire.real.class.path", System.getProperty( "java.class.path" ));
+                System.setProperty( "java.class.path", testClassPath );
+            } else {
+                testsClassLoader = createClassLoader( classPathUrls, null, childDelegation );
+            }
             
             ClassLoader surefireClassLoader = createClassLoader( surefireClassPathUrls, testsClassLoader );
 
@@ -357,13 +364,13 @@ public class SurefireBooter
 
     
     
-    private void recordTestClassPath()
+    private String getTestClassPathAsString()
     {
         StringBuffer sb = new StringBuffer();
         for (int i = 0; i < classPathUrls.size(); i++) {
             sb.append( classPathUrls.get( i ) ).append( File.pathSeparatorChar );
         }
-        System.setProperty( "surefire.test.class.path", sb.toString() );
+        return sb.toString();
     }
     
     private int runSuitesForkOnce()
