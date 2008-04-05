@@ -23,7 +23,9 @@ import junit.framework.TestCase;
 import org.apache.maven.reporting.MavenReportException;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -47,7 +49,7 @@ public class SurefireReportParserTest
     }
 
     public void testParseXMLReportFiles()
-        throws MavenReportException
+        throws MavenReportException, UnsupportedEncodingException
     {
         report.setReportsDirectory( getTestDir( "/test-reports" ) );
 
@@ -65,10 +67,11 @@ public class SurefireReportParserTest
         }
     }
 
-    private File getTestDir( String path )
+    private File getTestDir( String path ) throws UnsupportedEncodingException
     {
         URL resource = getClass().getResource( path );
-        return new File( resource.getPath() );
+        // URLDecoder.decode necessary for JDK 1.5+, where spaces are escaped to %20
+        return new File( URLDecoder.decode( resource.getPath(), "UTF-8" ) ).getAbsoluteFile();
     }
 
     public void testParseTestSuiteName()
