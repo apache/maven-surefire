@@ -33,14 +33,18 @@ public class UrlUtilsTest
 {
     private String homeDir;
 
+    private String homeUrlDir;
+
     public void setUp()
         throws Exception
     {
         super.setUp();
         homeDir = System.getProperty( "user.dir" );
+        homeUrlDir = UrlUtils.getURL( new File( homeDir ) ).getFile();
         if ( !homeDir.startsWith( "/" ) )
         {
             homeDir = "/" + homeDir;
+            homeUrlDir = "/" + homeUrlDir;
         }
     }
 
@@ -48,29 +52,29 @@ public class UrlUtilsTest
         throws IOException
     {
         File f = new File( homeDir, "foo.txt" );
-        assertEquals( new URL( "file:" + homeDir + "/foo.txt" ), UrlUtils.getURL( f ) );
+        assertEquals( new URL( "file:" + homeUrlDir + "foo.txt" ), UrlUtils.getURL( f ) );
         f = new File( homeDir, "qwertyuiopasdfghjklzxcvbnm.txt" );
-        assertEquals( new URL( "file:" + homeDir + "/qwertyuiopasdfghjklzxcvbnm.txt" ), UrlUtils.getURL( f ) );
+        assertEquals( new URL( "file:" + homeUrlDir + "qwertyuiopasdfghjklzxcvbnm.txt" ), UrlUtils.getURL( f ) );
         f = new File( homeDir, "QWERTYUIOPASDFGHJKLZXCVBNM.txt" );
-        assertEquals( new URL( "file:" + homeDir + "/QWERTYUIOPASDFGHJKLZXCVBNM.txt" ), UrlUtils.getURL( f ) );
+        assertEquals( new URL( "file:" + homeUrlDir + "QWERTYUIOPASDFGHJKLZXCVBNM.txt" ), UrlUtils.getURL( f ) );
         f = new File( homeDir, "1234567890.txt" );
-        assertEquals( new URL( "file:" + homeDir + "/1234567890.txt" ), UrlUtils.getURL( f ) );
+        assertEquals( new URL( "file:" + homeUrlDir + "1234567890.txt" ), UrlUtils.getURL( f ) );
         f = new File( homeDir, ")('*~!._-.txt" );
-        assertEquals( new URL( "file:" + homeDir + "/)('*~!._-.txt" ), UrlUtils.getURL( f ) );
+        assertEquals( new URL( "file:" + homeUrlDir + ")('*~!._-.txt" ), UrlUtils.getURL( f ) );
     }
 
     public void testTestWithSpaces()
         throws IOException
     {
         File f = new File( homeDir, "foo bar.txt" );
-        assertEquals( new URL( "file:" + homeDir + "/foo%20bar.txt" ), UrlUtils.getURL( f ) );
+        assertEquals( new URL( "file:" + homeUrlDir + "foo%20bar.txt" ), UrlUtils.getURL( f ) );
     }
     
     public void testTestWithUmlaut()
         throws IOException
     {
         File f = new File( homeDir, "fo\u00DC.txt" );
-        assertEquals( new URL( "file:" + homeDir + "/fo%c3%9c.txt" ), UrlUtils.getURL( f ) );
+        assertEquals( new URL( "file:" + homeUrlDir + "fo%c3%9c.txt" ), UrlUtils.getURL( f ) );
     }
 
 }
