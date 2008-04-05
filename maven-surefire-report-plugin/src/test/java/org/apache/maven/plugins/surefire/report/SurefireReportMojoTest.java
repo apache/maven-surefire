@@ -23,7 +23,9 @@ import org.apache.maven.plugin.testing.AbstractMojoTestCase;
 import org.codehaus.plexus.util.FileUtils;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.net.URLDecoder;
 
 /**
  * @author <a href="mailto:aramirez@apache.org">Allan Ramirez</a>
@@ -81,10 +83,11 @@ public class SurefireReportMojoTest
         assertTrue( idx >= 0 );
     }
 
-    private File getUnitBaseDir()
+    private File getUnitBaseDir() throws UnsupportedEncodingException
     {
         URL resource = getClass().getResource( "/unit" );
-        return new File( resource.getPath() ).getAbsoluteFile();
+        // URLDecoder.decode necessary for JDK 1.5+, where spaces are escaped to %20
+        return new File( URLDecoder.decode( resource.getPath(), "UTF-8" ) ).getAbsoluteFile();
     }
 
     public void testBasicSurefireReportIfShowSuccessIsFalse()
