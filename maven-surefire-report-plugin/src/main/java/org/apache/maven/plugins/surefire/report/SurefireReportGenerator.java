@@ -646,12 +646,7 @@ public class SurefireReportGenerator
 
     private void sinkLineBreak( Sink sink )
     {
-        sink.table();
-        sink.tableRow();
-        sink.tableRow_();
-        sink.tableRow();
-        sink.tableRow_();
-        sink.table_();
+        sink.lineBreak();
     }
 
     private void sinkIcon( String type, Sink sink )
