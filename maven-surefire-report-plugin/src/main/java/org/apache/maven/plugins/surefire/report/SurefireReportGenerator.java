@@ -86,9 +86,11 @@ public class SurefireReportGenerator
 
         sink.body();
 
+        sink.section1();
         sink.sectionTitle1();
         sink.text( bundle.getString( "report.surefire.header" ) );
         sink.sectionTitle1_();
+        sink.section1_();
 
         constructSummarySection( bundle, sink );
 
@@ -122,6 +124,7 @@ public class SurefireReportGenerator
     {
         Map summary = report.getSummary( testSuites );
 
+        sink.section1();
         sink.sectionTitle1();
 
         sinkAnchor( sink, "Summary" );
@@ -175,12 +178,15 @@ public class SurefireReportGenerator
         sink.rawText( bundle.getString( "report.surefire.text.note1" ) );
 
         sinkLineBreak( sink );
+
+        sink.section1_();
     }
 
     private void constructPackagesSection( ResourceBundle bundle, Sink sink, Map suitePackages )
     {
         NumberFormat numberFormat = report.getNumberFormat();
 
+        sink.section1();
         sink.sectionTitle1();
 
         sinkAnchor( sink, "Package_List" );
@@ -258,6 +264,7 @@ public class SurefireReportGenerator
 
             Iterator suiteIterator = testSuiteList.iterator();
 
+            sink.section2();
             sink.sectionTitle2();
 
             sinkAnchor( sink, packageName );
@@ -344,15 +351,20 @@ public class SurefireReportGenerator
             }
 
             sink.table_();
+
+            sink.section2_();
         }
 
         sinkLineBreak( sink );
+
+        sink.section1_();
     }
 
     private void constructTestCasesSection( ResourceBundle bundle, Sink sink )
     {
         NumberFormat numberFormat = report.getNumberFormat();
 
+        sink.section1();
         sink.sectionTitle1();
 
         sinkAnchor( sink, "Test_Cases" );
@@ -375,6 +387,7 @@ public class SurefireReportGenerator
             {
                 ListIterator caseIterator = testCases.listIterator();
 
+                sink.section2();
                 sink.sectionTitle2();
 
                 sinkAnchor( sink, suite.getPackageName() + suite.getName() );
@@ -483,10 +496,14 @@ public class SurefireReportGenerator
                 }
 
                 sink.table_();
+
+                sink.section2_();
             }
         }
 
         sinkLineBreak( sink );
+
+        sink.section1_();
     }
 
     private void constructFailureDetails( Sink sink, ResourceBundle bundle, List failureList )
@@ -495,6 +512,7 @@ public class SurefireReportGenerator
 
         if ( failIter != null )
         {
+            sink.section1();
             sink.sectionTitle1();
 
             sinkAnchor( sink, "Failure_Details" );
@@ -601,6 +619,8 @@ public class SurefireReportGenerator
         }
 
         sinkLineBreak( sink );
+
+        sink.section1_();
     }
 
     private String getErrorLineNumber( String className, String source )
