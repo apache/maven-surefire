@@ -632,13 +632,14 @@ public class SurefireReportGenerator
             sinkLink( sink, bundle.getString( "report.surefire.label.summary" ), "#Summary" );
             sink.rawText( "]" );
 
-            sink.rawText( "[" );
+            sink.rawText( " [" );
             sinkLink( sink, bundle.getString( "report.surefire.label.packagelist" ), "#Package_List" );
             sink.rawText( "]" );
 
-            sink.rawText( "[" );
+            sink.rawText( " [" );
             sinkLink( sink, bundle.getString( "report.surefire.label.testcases" ), "#Test_Cases" );
             sink.rawText( "]" );
+
             sink.section2_();
         }
     }
