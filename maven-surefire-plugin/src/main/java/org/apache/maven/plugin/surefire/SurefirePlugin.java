@@ -59,6 +59,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.toolchain.Toolchain;
+import org.apache.maven.toolchain.ToolchainManager;
+import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 
 /**
  * Run tests using Surefire.
@@ -814,7 +817,24 @@ public class SurefirePlugin
 
             surefireBooter.addClassPathUrl( classpathElement );
         }
-
+        
+        Toolchain tc = getToolchain();
+        
+        if (tc != null) 
+        {
+            getLog().info("Toolchain in surefire-plugin: " + tc);
+            if (ForkConfiguration.FORK_NEVER.equals( forkMode ) ) 
+            {
+                forkMode = ForkConfiguration.FORK_ONCE;
+            }
+            if ( jvm  != null ) 
+            {
+                getLog().warn("Toolchains are ignored, 'executable' parameter is set to " + jvm);
+            } else {
+                jvm = tc.findTool("java"); //NOI18N
+            }
+        }
+        
         if ( additionalClasspathElements != null )
         {
             for ( Iterator i = additionalClasspathElements.iterator(); i.hasNext(); )
@@ -1082,5 +1102,26 @@ public class SurefirePlugin
     public void setSkipExec( boolean skipExec )
     {
         this.skipTests = skipExec;
+    }
+    
+    //TODO remove the part with ToolchainManager lookup once we depend on
+    //3.0.9 (have it as prerequisite). Define as regular component field then.
+    private Toolchain getToolchain() 
+    {
+        Toolchain tc = null;
+        try 
+        {
+            if (session != null) //session is null in tests..
+            {
+                ToolchainManager toolchainManager = (ToolchainManager) session.getContainer().lookup(ToolchainManager.ROLE);
+                if (toolchainManager != null) 
+                {
+                    tc = toolchainManager.getToolchainFromBuildContext("jdk", session);
+                }
+            }
+        } catch (ComponentLookupException componentLookupException) {
+            //just ignore, could happen in pre-3.0.9 builds..
+        }
+        return tc;
     }
 }
