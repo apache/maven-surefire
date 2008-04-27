@@ -22,11 +22,11 @@
 <faqs id="FAQ" title="Frequently Asked Questions">
   <part id="General">
     <faq id="question">
-      <question>The surefire-report plugin reruns test. Is this its desired behavior?</question>
+      <question>The Surefire Report Plugin reruns test. Is this its desired behavior?</question>
       <answer>
         <p>
           No. This is a very known issue for the plugin. Please see
-          <a href="http://jira.codehaus.org/browse/MSUREFIREREP-6">MSUREFIREREP-6</a>
+          <a href="http://jira.codehaus.org/browse/SUREFIRE-257">SUREFIRE-257</a>
           for
           details.
         </p>

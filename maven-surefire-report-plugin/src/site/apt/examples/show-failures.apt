@@ -25,8 +25,8 @@
 
 Showing Failure Tests
 
-  By default, the surefire-report plugin shows all test result status(success
-  and failures) in the generated html. To be able to show the failures only, the
+  By default, the Surefire Report Plugin shows all test result status (success
+  and failures) in the generated HTML. To be able to show the failures only, the
   property <<showSuccess>> should be set to <<false>>.
 
 +----+
@@ -37,6 +37,7 @@ Showing Failure Tests
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-report-plugin</artifactId>
+        <version>2.4.2</version>
         <configuration>
            <showSuccess>false</showSuccess>
         </configuration>

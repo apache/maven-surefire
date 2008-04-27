@@ -27,9 +27,9 @@ Configuring the Output Location as part of the Project Reports
 
   To change the location of the generated output report along with other
   project reports. The <<outputDirectory>> property of both
-  <<<maven-site-plugin>>> and <<<maven-surefire-plugin>>> should be set to the
-  new path. For more information about <<<maven-site-plugin>>>, please click
-  {{{http://maven.apache.org/plugins/maven-site-plugin/}here}}.
+  <<<maven-site-plugin>>> and <<<maven-surefire-report-plugin>>> should be set to the
+  new path. For more information, see the documentation of the
+  {{{http://maven.apache.org/plugins/maven-site-plugin/}Maven Site Plugin}}.
 
 +----+
 <project>
@@ -39,6 +39,7 @@ Configuring the Output Location as part of the Project Reports
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-report-plugin</artifactId>
+        <version>2.4.2</version>
         <configuration>
            <outputDirectory>${basedir}/target/newsite</outputDirectory>
         </configuration>
@@ -46,6 +47,7 @@ Configuring the Output Location as part of the Project Reports
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-site-plugin</artifactId>
+        <version>2.0-beta-5</version>
         <configuration>
            <outputDirectory>${basedir}/target/newsite</outputDirectory>
         </configuration>
@@ -56,14 +58,14 @@ Configuring the Output Location as part of the Project Reports
 </project>
 +----+
 
-  Please take note that if the <<outputDirectory>> of the <<<site plugin>>>
-  is not configured, the output location of the surefire-report will still
+  Please take note that if the <<outputDirectory>> of the Site Plugin
+  is not configured, the output location of the Surefire report will still
   be the default.
 
-* Configuring the Output Location using standalone goal
+* Configuring the Output Location using Standalone Goal
 
   To change the location of the generated output report using the standalone
-  goal. The <<outputDirectory>> property should be set to the new path.
+  goal, the <<outputDirectory>> property should be set to the new path.
 
 +---+
 mvn surefire-report:report -DoutputDirectory=newpath
