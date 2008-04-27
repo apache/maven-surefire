@@ -9,7 +9,7 @@
 
 Usage
 
-  The surefire plugin can be invoked by calling the <<<test>>> phase of the
+  The Surefire Plugin can be invoked by calling the <<<test>>> phase of the
   build lifecycle.
 
 +---+
@@ -42,7 +42,7 @@ mvn test
   assertions, the JDK 1.4 <<<assert>>> keyword can be used, or you can use
   <<<org.apache.maven.surefire.assertion.Assert>>>.
 
-  All of the providers support the surefire plugin parameter configurations.
+  All of the providers support the Surefire Plugin parameter configurations.
   However, there are additional options available if you are running TestNG
   tests (including if you are using TestNG to execute your JUnit tests, which
   occurs by default if both are present in Surefire).

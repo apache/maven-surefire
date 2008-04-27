@@ -21,6 +21,7 @@ Skipping Tests
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
+        <version>2.4.2</version>
         <configuration>
           <skipTests>true</skipTests>
         </configuration>
@@ -37,7 +38,8 @@ Skipping Tests
 mvn install -DskipTests
 +---+
 
- If you absolutely must, you can also use the maven.test.skip property to skip compiling the tests.  maven.test.skip is honored by Surefire and the compiler plugin.
+ If you absolutely must, you can also use the <<<maven.test.skip>>> property to skip compiling the tests.
+ <<<maven.test.skip>>> is honored by Surefire and the Compiler Plugin.
 
 +---+
 mvn install -Dmaven.test.skip=true

@@ -10,7 +10,7 @@ Inclusions and Exclusions of Tests
 
 * Inclusions
 
-  By default, the surefire plugin will automatically include all test classes
+  By default, the Surefire Plugin will automatically include all test classes
   with the following wildcard patterns:
 
    * <"**/Test*.java"> - includes all of its subdirectory and all java
@@ -25,7 +25,7 @@ Inclusions and Exclusions of Tests
    []
 
   If the test classes does not go with the naming convention, then configure
-  surefire plugin and specify the tests you want to include.
+  Surefire Plugin and specify the tests you want to include.
 
 +---+
 <project>
@@ -35,6 +35,7 @@ Inclusions and Exclusions of Tests
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
+        <version>2.4.2</version>
         <configuration>
           <includes>
             <include>Sample.java</include>
@@ -62,6 +63,7 @@ Inclusions and Exclusions of Tests
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
+        <version>2.4.2</version>
         <configuration>
           <excludes>
             <exclude>**/TestCircle.java</exclude>

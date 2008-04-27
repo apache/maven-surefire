@@ -8,24 +8,24 @@
 
 Maven Surefire Plugin
 
-  The surefire plugin is used during the <<<test>>> phase of the build
+  The Surefire Plugin is used during the <<<test>>> phase of the build
   lifecycle to execute the unit tests of an application. It generates reports
   in 2 different file formats:
 
   * Plain text files (*.txt)
 
-  * Xml files (*.xml)
+  * XML files (*.xml)
 
   []
 
-  By default, these files are generated at <<<${basedir}/target/surefire-reports>>>.
+  By default, these files are generated at <<<$\{basedir\}/target/surefire-reports>>>.
 
-  For an html format of the report, please see the
-  {{{http://maven.apache.org/plugins/maven-surefire-report-plugin/}maven-surefire-report-plugin}}.
+  For an HTML format of the report, please see the
+  {{{http://maven.apache.org/plugins/maven-surefire-report-plugin/}Maven Surefire Report Plugin}}.
 
 * Goals Overview
 
-  The surefire plugin has only 1 goal:
+  The Surefire Plugin has only 1 goal:
 
   * {{{test-mojo.html}surefire:test}} runs the unit tests of an application.
 
@@ -33,11 +33,11 @@ Maven Surefire Plugin
 
 * Usage
 
-  Instructions on how to use the surefire plugin can be found {{{usage.html}here}}.
+  Instructions on how to use the Surefire Plugin can be found on the {{{usage.html}usage page}}.
 
 * Examples
 
-  The following examples show how to use the surefire plugin in more advanced use-cases:
+  The following examples show how to use the Surefire Plugin in more advanced use-cases:
 
   * {{{examples/skipping-test.html}Skipping Tests}}
 

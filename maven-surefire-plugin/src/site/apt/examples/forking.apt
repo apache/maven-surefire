@@ -21,6 +21,7 @@ Forking
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
+        <version>2.4.2</version>
         <configuration>
           <forkMode>pertest</forkMode>
           <argLine>-enableassertions</argLine>
