@@ -407,7 +407,7 @@ public class SurefireBooter
 
             for ( Iterator j = testSets.keySet().iterator(); j.hasNext(); )
             {
-                String testSet = (String) j.next();
+                Object testSet = j.next();
                 boolean showFooter = !j.hasNext() && !i.hasNext();
                 int result = forkSuite( testSuite, testSet, showHeading, showFooter, properties );
                 if ( result > globalResult )
@@ -479,13 +479,16 @@ public class SurefireBooter
         return fork( properties, showHeading, showFooter );
     }
 
-    private int forkSuite( Object[] testSuite, String testSet, boolean showHeading, boolean showFooter,
+    private int forkSuite( Object[] testSuite, Object testSet, boolean showHeading, boolean showFooter,
                                Properties properties )
         throws SurefireBooterForkException
     {
         setForkProperties( Collections.singletonList( testSuite ), properties );
 
-        properties.setProperty( "testSet", testSet );
+        if (testSet instanceof String)
+        {
+            properties.setProperty( "testSet", (String) testSet);
+        }
 
         return fork( properties, showHeading, showFooter );
     }
