@@ -23,6 +23,7 @@ import junit.framework.TestCase;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
 
 /**
@@ -33,48 +34,68 @@ public class UrlUtilsTest
 {
     private String homeDir;
 
-    private String homeUrlDir;
-
     public void setUp()
         throws Exception
     {
         super.setUp();
         homeDir = System.getProperty( "user.dir" );
-        homeUrlDir = UrlUtils.getURL( new File( homeDir ) ).getFile();
         if ( !homeDir.startsWith( "/" ) )
         {
             homeDir = "/" + homeDir;
-            homeUrlDir = "/" + homeUrlDir;
         }
     }
 
-    public void testTestNoSpecialCharacters()
-        throws IOException
+    private void verifyFileName( String fileName )
+        throws IOException, URISyntaxException
     {
-        File f = new File( homeDir, "foo.txt" );
-        assertEquals( new URL( "file:" + homeUrlDir + "foo.txt" ), UrlUtils.getURL( f ) );
-        f = new File( homeDir, "qwertyuiopasdfghjklzxcvbnm.txt" );
-        assertEquals( new URL( "file:" + homeUrlDir + "qwertyuiopasdfghjklzxcvbnm.txt" ), UrlUtils.getURL( f ) );
-        f = new File( homeDir, "QWERTYUIOPASDFGHJKLZXCVBNM.txt" );
-        assertEquals( new URL( "file:" + homeUrlDir + "QWERTYUIOPASDFGHJKLZXCVBNM.txt" ), UrlUtils.getURL( f ) );
-        f = new File( homeDir, "1234567890.txt" );
-        assertEquals( new URL( "file:" + homeUrlDir + "1234567890.txt" ), UrlUtils.getURL( f ) );
-        f = new File( homeDir, ")('*~!._-.txt" );
-        assertEquals( new URL( "file:" + homeUrlDir + ")('*~!._-.txt" ), UrlUtils.getURL( f ) );
+        verifyFileName( fileName, fileName );
+    }
+
+    private void verifyFileName( String fileName, String expectedFileName )
+        throws IOException, URISyntaxException
+    {
+        File f = new File( homeDir, fileName );
+        URL u = UrlUtils.getURL( f );
+        String url = u.toString();
+        assertStartsWith( url, "file:" );
+        assertEndsWith( url, expectedFileName );
+        // DGF this constructor is new for JDK 1.4, but we don't care if
+        // the TEST works in JDK 1.3; we just need the
+        // CODE to work in JDK 1.3, and this is a good way to test it.
+        File urlFile = new File( u.toURI() );
+        assertEquals( f, urlFile );
+    }
+
+    private void assertStartsWith( String string, String substring )
+    {
+        assertTrue( "<" + string + "> should start with <" + substring + ">", string.startsWith( substring ) );
+    }
+
+    private void assertEndsWith( String string, String substring )
+    {
+        assertTrue( "<" + string + "> should end with <" + substring + ">", string.endsWith( substring ) );
+    }
+
+    public void testTestNoSpecialCharacters()
+        throws IOException, URISyntaxException
+    {
+        verifyFileName( "foo.txt" );
+        verifyFileName( "qwertyuiopasdfghjklzxcvbnm.txt" );
+        verifyFileName( "QWERTYUIOPASDFGHJKLZXCVBNM.txt" );
+        verifyFileName( "1234567890.txt" );
+        verifyFileName( ")('*~!._-.txt" );
     }
 
     public void testTestWithSpaces()
-        throws IOException
+        throws IOException, URISyntaxException
     {
-        File f = new File( homeDir, "foo bar.txt" );
-        assertEquals( new URL( "file:" + homeUrlDir + "foo%20bar.txt" ), UrlUtils.getURL( f ) );
+        verifyFileName( "foo bar.txt", "foo%20bar.txt" );
     }
-    
+
     public void testTestWithUmlaut()
-        throws IOException
+        throws IOException, URISyntaxException
     {
-        File f = new File( homeDir, "fo\u00DC.txt" );
-        assertEquals( new URL( "file:" + homeUrlDir + "fo%c3%9c.txt" ), UrlUtils.getURL( f ) );
+        verifyFileName( "fo\u00DC.txt", "fo%c3%9c.txt" );
     }
 
 }
