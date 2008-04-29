@@ -84,9 +84,16 @@ public class TestSuiteXmlParser
             {
                 currentSuite = defaultSuite = new ReportTestSuite();
 
-                Number time = numberFormat.parse( attributes.getValue( "time" ) );
+                try
+                {
+                    Number time = numberFormat.parse( attributes.getValue( "time" ) );
 
-                defaultSuite.setTimeElapsed( time.floatValue() );
+                    defaultSuite.setTimeElapsed( time.floatValue() );
+                }
+                catch ( NullPointerException npe )
+                {
+                    System.err.println("WARNING: no time attribute found on testsuite element");
+                }
 
                 //check if group attribute is existing
                 if ( attributes.getValue( "group" ) != null && !"".equals( attributes.getValue( "group" ) ) )
@@ -186,6 +193,17 @@ public class TestSuiteXmlParser
             Map error = testCase.getFailure();
 
             error.put( "detail", parseCause( currentElement.toString() ) );
+        }
+        else if ( "time".equals( qName ) )
+        {
+            try {
+                Number time = numberFormat.parse( currentElement.toString() );
+                defaultSuite.setTimeElapsed( time.floatValue() );
+            }
+            catch ( ParseException e )
+            {
+                throw new SAXException( e.getMessage(), e );
+            }
         }
         // TODO extract real skipped reasons
     }
