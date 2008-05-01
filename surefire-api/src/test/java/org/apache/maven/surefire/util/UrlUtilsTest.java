@@ -23,7 +23,9 @@ import junit.framework.TestCase;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URL;
 
 /**
@@ -46,24 +48,37 @@ public class UrlUtilsTest
     }
 
     private void verifyFileName( String fileName )
-        throws IOException, URISyntaxException
+        throws Exception
     {
         verifyFileName( fileName, fileName );
     }
 
     private void verifyFileName( String fileName, String expectedFileName )
-        throws IOException, URISyntaxException
+        throws Exception
     {
         File f = new File( homeDir, fileName );
         URL u = UrlUtils.getURL( f );
         String url = u.toString();
         assertStartsWith( url, "file:" );
         assertEndsWith( url, expectedFileName );
-        // DGF this constructor is new for JDK 1.4, but we don't care if
-        // the TEST works in JDK 1.3; we just need the
-        // CODE to work in JDK 1.3, and this is a good way to test it.
-        File urlFile = new File( u.toURI() );
-        assertEquals( f, urlFile );
+
+        try
+        {
+            // use reflection to do "URI uri = u.toURI()" if JDK 1.5+
+            Method toURI = URL.class.getMethod( "toURI", null );
+            Object uri = toURI.invoke( u, null );
+
+            // use reflection to do "File urlFile = new File( uri )" if JDK 1.4+
+            Constructor newFile = File.class.getConstructor( new Class[] { uri.getClass() } );
+            File urlFile = (File) newFile.newInstance( new Object[] { uri } );
+
+            assertEquals( f, urlFile ); 
+        }
+        catch (NoSuchMethodException e )
+        {
+            // URL.toURI() method in JDK 1.5+, not available currently
+            // we won't be able to check for file equality...
+        }
     }
 
     private void assertStartsWith( String string, String substring )
@@ -77,7 +92,7 @@ public class UrlUtilsTest
     }
 
     public void testTestNoSpecialCharacters()
-        throws IOException, URISyntaxException
+        throws Exception
     {
         verifyFileName( "foo.txt" );
         verifyFileName( "qwertyuiopasdfghjklzxcvbnm.txt" );
@@ -87,13 +102,13 @@ public class UrlUtilsTest
     }
 
     public void testTestWithSpaces()
-        throws IOException, URISyntaxException
+        throws Exception
     {
         verifyFileName( "foo bar.txt", "foo%20bar.txt" );
     }
 
     public void testTestWithUmlaut()
-        throws IOException, URISyntaxException
+        throws Exception
     {
         verifyFileName( "fo\u00DC.txt", "fo%c3%9c.txt" );
     }
