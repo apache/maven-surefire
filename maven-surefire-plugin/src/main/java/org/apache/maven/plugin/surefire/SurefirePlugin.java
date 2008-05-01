@@ -180,11 +180,11 @@ public class SurefirePlugin
     private File testSourceDirectory;
 
     /**
-     * Specify this parameter to run individual tests by file name, overriding the <code>includes</code>
-     * and <code>excludes</code> parameters.  Each pattern you specify here will be used to create an 
+     * Specify this parameter to run individual tests by file name, overriding the <code>includes/excludes</code>
+     * parameters.  Each pattern you specify here will be used to create an 
      * include pattern formatted like <code>**&#47;${test}.java</code>, so you can just type "-Dtest=MyTest"
-     * to run a single test called "foo/MyTest.java".  This parameter is ignored if
-     * TestNG suiteXmlFiles are specified.
+     * to run a single test called "foo/MyTest.java".  This parameter will override the TestNG suiteXmlFiles
+     * parameter.
      * 
      * @parameter expression="${test}"
      */
@@ -383,8 +383,9 @@ public class SurefirePlugin
     private String excludedGroups;
 
     /**
-     * (TestNG only) List of TestNG suite xml file locations, seperated by commas. It should be noted that if suiteXmlFiles is
-     * specified, <b>no</b> other tests will be run, ignoring other parameters, like includes and excludes.
+     * (TestNG only) List of TestNG suite xml file locations, seperated by commas. Note that suiteXmlFiles is incompatible
+     * with several other parameters on this plugin, like includes/excludes.  This parameter is ignored if
+     * the "test" parameter is specified (allowing you to run a single test instead of an entire suite).
      * 
      * @parameter
      * @since 2.2
@@ -697,7 +698,7 @@ public class SurefirePlugin
             throw new MojoExecutionException( "Error to resolving surefire provider dependency: " + e.getMessage(), e );
         }
 
-        if ( suiteXmlFiles != null && suiteXmlFiles.length > 0 )
+        if ( suiteXmlFiles != null && suiteXmlFiles.length > 0 && test == null )
         {
             if ( testNgArtifact == null )
             {
