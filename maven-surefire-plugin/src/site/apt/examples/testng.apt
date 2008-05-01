@@ -17,7 +17,7 @@ Using TestNG
   <dependency>
     <groupId>org.testng</groupId>
     <artifactId>testng</artifactId>
-    <version>5.7</version>
+    <version>5.8</version>
     <scope>test</scope>
     <classifier>jdk15</classifier>
   </dependency>
@@ -55,6 +55,31 @@ Using TestNG
 
   This configuration will override the includes and excludes patterns and run all tests in the suite files.
 
+* Specifying Test Parameters
+
+  Your TestNG test can accept parameters with the @Parameters annotation.  You can also pass parameters from Maven
+  into your TestNG test, by specifying them as system properties, like this:
+
++---+
+[...]
+  <plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-surefire-plugin</artifactId>
+    <version>2.4.2</version>
+    <configuration>
+      <systemProperties>
+        <property>
+          <name>browser</name>
+          <value>firefox</value>
+        </property>
+      </systemProperties>
+    </configuration>
+  </plugin>
+[...]
++---+
+
+  For more information about setting system properties in Surefire tests, see {{{system-properties.html}System Properties}}.
+
 * Using Groups
 
   TestNG allows you to group your tests. You can then execute a specific group or groups. To do this with Surefire,
@@ -77,7 +102,7 @@ Using TestNG
 
 * Running tests in parallel
 
-  TestNG allows you to run your tests in parallel, including JUnit tests. To do this, you must enable the
+  TestNG allows you to run your tests in parallel, including JUnit tests. To do this, you must set the
   <<<parallel>>> parameter, and may change the <<<threadCount>>> parameter if the default of 5 is not sufficient.
   For example:
 
@@ -88,7 +113,7 @@ Using TestNG
     <artifactId>maven-surefire-plugin</artifactId>
     <version>2.4.2</version>
     <configuration>
-      <parallel>true</parallel>
+      <parallel>methods</parallel>
       <threadCount>10</threadCount>
     </configuration>
   </plugin>
@@ -97,6 +122,33 @@ Using TestNG
 
   This is particularly useful for slow tests that can have high concurrency, or to quickly and roughly assess the independance
   and thread safety of your tests and code.
+
+* Using custom listeners and reporters
+
+  TestNG provides support for attaching custom listeners, reporters, annotation transformers and method interceptors to your tests.
+  
+  You can configure multiple custom listeners like this:
+
++---+
+[...]
+  <plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-surefire-plugin</artifactId>
+    <configuration>
+      <properties>
+        <property>
+          <name>listener</name>
+          <value>com.mycompany.MyResultListener,com.mycompany.MyAnnotationTransformer,com.mycompany.MyMethodInterceptor</value>
+        </property>
+        <property>
+          <name>reporter</name>
+          <value>listenReport.Reporter</value>
+        </property>
+      </properties>
+    </configuration>
+  </plugin>
+[...]
++---+
 
   For more information on TestNG, see the {{{http://www.testng.org}TestNG web site}}.
 
