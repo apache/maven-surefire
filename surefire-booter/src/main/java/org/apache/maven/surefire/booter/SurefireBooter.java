@@ -321,7 +321,7 @@ public class SurefireBooter
             ClassLoader testsClassLoader;
             String testClassPath = getTestClassPathAsString();
             System.setProperty( "surefire.test.class.path", testClassPath );
-            if (useSystemClassLoader()) {
+            if (useManifestOnlyJar()) {
                 testsClassLoader = getClass().getClassLoader(); // ClassLoader.getSystemClassLoader()
                 // SUREFIRE-459, trick the app under test into thinking its classpath was conventional (instead of a single manifest-only jar) 
                 System.setProperty( "surefire.real.class.path", System.getProperty( "java.class.path" ));
@@ -513,6 +513,7 @@ public class SurefireBooter
         properties.setProperty( "childDelegation", String.valueOf( childDelegation ) );
         properties.setProperty( "enableAssertions", String.valueOf( enableAssertions ) );
         properties.setProperty( "useSystemClassLoader", String.valueOf( useSystemClassLoader() ) );
+        properties.setProperty( "useManifestOnlyJar", String.valueOf( useManifestOnlyJar() ) );
         properties.setProperty( "failIfNoTests", String.valueOf( failIfNoTests ) );
     }
 
@@ -604,6 +605,11 @@ public class SurefireBooter
     {
         return forkConfiguration.isUseSystemClassLoader() && ( isForked || forkConfiguration.isForking() );
     }
+    
+    private final boolean useManifestOnlyJar()
+    {
+        return forkConfiguration.isUseSystemClassLoader() && forkConfiguration.isUseManifestOnlyJar();
+    }
 
     private int fork( Properties properties, boolean showHeading, boolean showFooter )
         throws SurefireBooterForkException
@@ -632,7 +638,7 @@ public class SurefireBooter
             bootClasspath.addAll( classPathUrls );
         }
 
-        Commandline cli = forkConfiguration.createCommandLine( bootClasspath, useSystemClassLoader() );
+        Commandline cli = forkConfiguration.createCommandLine( bootClasspath, useManifestOnlyJar() );
 
         cli.createArg().setFile( surefireProperties );
 
@@ -968,6 +974,11 @@ public class SurefireBooter
                 {
                     surefireBooter.forkConfiguration.setUseSystemClassLoader( Boolean.valueOf(
                                                                                                p.getProperty( "useSystemClassLoader" ) ).booleanValue() );
+                }
+                else if ( "useManifestOnlyJar".equals( name ) )
+                {
+                    surefireBooter.forkConfiguration.setUseManifestOnlyJar( Boolean.valueOf(
+                                                                                               p.getProperty( "useManifestOnlyJar" ) ).booleanValue() );
                 }
                 else if ( "failIfNoTests".equals( name ) )
                 {

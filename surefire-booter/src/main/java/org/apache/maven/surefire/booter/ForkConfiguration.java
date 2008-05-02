@@ -52,6 +52,7 @@ public class ForkConfiguration
     private String forkMode;
 
     private boolean useSystemClassLoader;
+    private boolean useManifestOnlyJar;
 
     private Properties systemProperties;
 
@@ -264,5 +265,15 @@ public class ForkConfiguration
     public boolean isDebug()
     {
         return debug;
+    }
+
+    public void setUseManifestOnlyJar( boolean useManifestOnlyJar )
+    {
+        this.useManifestOnlyJar = useManifestOnlyJar;
+    }
+    
+    public boolean isUseManifestOnlyJar()
+    {
+        return useManifestOnlyJar;
     }
 }

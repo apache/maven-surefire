@@ -13,7 +13,7 @@ Classloading and Forking in Maven Surefire
 
 * Executive Summary
 
- If you're having problems, you'll probably want to tinker with these three settings: forkMode, useSystemClassLoader, and childDelegation.
+ If you're having problems, you'll probably want to tinker with these three settings: forkMode, useSystemClassLoader, and useManifestOnlyJar.
 
 * What problem does Surefire solve?
 
@@ -84,28 +84,37 @@ java -classpath booter.jar MyApp
  tests in the same process as Maven itself.  But that itself can be pretty risky,
  especially if Maven is running embedded in your IDE!
  
+ Finally, of course, you could just try to wire up a plain old Java classpath and hope
+ it's short enough.  The worst case there is that your classpath might work
+ on some machines and not others.  Windows boxes would behave differently from
+ Linux boxes; users with short user names might have more success than users
+ with long user names, etc.  For this reason, we chose not to make the basic
+ classpath the default, though we do provide it as an option (mostly as a last
+ resort).
+ 
 * What does Surefire do?
 
- Surefire provides a mechanism for using either strategy.  The parameter that
+ Surefire provides a mechanism for using multiple strategies.  The main parameter that
  determines this is called "useSystemClassLoader".  If useSystemClassLoader is
  true, then we use a manifest-only jar; otherwise, we use an isolated
- classloader.
+ classloader.  If you want to use a basic plain old Java classpath, you can set
+ useManifestOnlyJar=false which only has an effect when useSystemClassLoader=true.
  
- The default value for useSystemClassLoader changed between Surefire 2.3 and
+ (The default value for useSystemClassLoader changed between Surefire 2.3 and
  Surefire 2.4, which was a pretty significant change.  In Surefire 2.3,
  useSystemClassLoader was false by default, and we used an isolated classloader. 
  In Surefire 2.4, useSystemClassLoader is true by default.  No value works for
  everyone, but we think this default is an improvement; a bunch of
- hard-to-diagnose bugs get better when we useSystemClassLoader=true.
+ hard-to-diagnose bugs get better when we useSystemClassLoader=true.)
  
- Unfortunately, if this value is set incorrectly for your app, you're going to
+ Unfortunately, if useSystemClassLoader is set incorrectly for your app, you're going to
  have a problem on your hands that can be quite difficult to diagnose.  You might
  even be forced to read a long doc page like this one.  ;-)
  
- If you're having problems when upgrading from an older version of Surefire to a
- newer version, try setting useSystemClassLoader=false to see if that helps.  You
- can do that with the POM snippet below, or by setting
- "-Dsurefire.useSystemClassLoader=false".
+ If you're having problems loading classes, try setting useSystemClassLoader=false
+ to see if that helps.  You can do that with the POM snippet below, or by setting
+ "-Dsurefire.useSystemClassLoader=false".  If that doesn't work, try setting
+ useSystemClassLoader back to true and setting useManifestOnlyJar to false.
  
 +---+
 <project>
@@ -131,8 +140,8 @@ java -classpath booter.jar MyApp
 
  * Run mvn with --debug (aka -X) to get more detailed output
 
- * Check your forkMode.  If forkMode=never, it's impossible to use the system classloader; we have to use an isolated classloader.
+ * Check your forkMode.  If forkMode=never, it's impossible to use the system classloader or a plain old Java classpath; we have to use an isolated classloader.
 
- * If useSystemClassLoader=true, look at the surefire booter jar.  Open it up (it's just a zip) and read its manifest.
+ * If you're using the defaults, useSystemClassLoader=true and useManifestOnlyJar=false.  In that case, look at the generated manifest-only surefire booter jar.  Open it up (it's just a zip) and read its manifest.
 
  * Run mvn with -Dmaven.surefire.debug, and attach to the running process with a debugger.

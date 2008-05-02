@@ -488,6 +488,20 @@ public class SurefirePlugin
      * @since 2.3
      */
     private Boolean useSystemClassLoader;
+    
+    /**
+     * By default, Surefire forks your tests using a manifest-only jar; set this parameter
+     * to "false" to force it to launch your tests with a plain old Java classpath.
+     * (See http://maven.apache.org/plugins/maven-surefire-plugin/examples/class-loading.html
+     * for a more detailed explanation of manifest-only jars and their benefits.)
+     * 
+     * Default value is "true".  Beware, setting this to "false" may cause your tests to
+     * fail on Windows if your classpath is too long.
+     * 
+     * @parameter expression="${surefire.useManifestOnlyJar}" default-value="true"
+     * @since 2.4.3
+     */
+    private boolean useManifestOnlyJar;
 
     /**
      * By default, Surefire enables JVM assertions for the execution of your test cases. To disable the assertions, set
@@ -867,6 +881,7 @@ public class SurefirePlugin
         {
             useSystemClassLoader = useSystemClassLoader == null ? Boolean.TRUE : useSystemClassLoader;
             fork.setUseSystemClassLoader( useSystemClassLoader.booleanValue() );
+            fork.setUseManifestOnlyJar( useManifestOnlyJar );
 
             fork.setSystemProperties( systemProperties );
             
