@@ -54,7 +54,7 @@ public class TestNGExecutor
                             String classifier, ReporterManager reportManager, SurefireTestSuite suite, File reportsDirectory )
         throws TestSetFailedException
     {
-        TestNG testng = new TestNG( false );
+        TestNG testng = new TestNG( true );
         Configurator configurator = getConfigurator( version );
         configurator.configure( testng, options );
         postConfigure( testng, testSourceDirectory, classifier, reportManager, suite, reportsDirectory );
@@ -66,7 +66,7 @@ public class TestNGExecutor
                             String classifier, ReporterManager reportManager, SurefireTestSuite suite, File reportsDirectory )
         throws TestSetFailedException
     {
-        TestNG testng = new TestNG( false );
+        TestNG testng = new TestNG( true );
         Configurator configurator = getConfigurator( version );
         configurator.configure( testng, options );
         postConfigure( testng, testSourceDirectory, classifier, reportManager, suite, reportsDirectory );
@@ -112,8 +112,6 @@ public class TestNGExecutor
 
         TestNGReporter reporter = createTestNGReporter( reportManager, suite );
         testNG.addListener( (Object) reporter );
-        attachNonStandardReporter( testNG, "org.testng.reporters.XMLReporter" );
-        attachNonStandardReporter( testNG, "org.testng.reporters.FailedReporter" );
         
         // FIXME: use classifier to decide if we need to pass along the source dir (onyl for JDK14)
         if ( sourcePath != null )

@@ -126,6 +126,7 @@ Using TestNG
 * Using custom listeners and reporters
 
   TestNG provides support for attaching custom listeners, reporters, annotation transformers and method interceptors to your tests.
+  By default, TestNG attaches a few basic listeners to generate HTML and XML reports.
   
   You can configure multiple custom listeners like this:
 
@@ -136,6 +137,10 @@ Using TestNG
     <artifactId>maven-surefire-plugin</artifactId>
     <configuration>
       <properties>
+        <property>
+          <name>usedefaultlisteners</name>
+          <value>false</value> <!-- disabling default listeners is optional -->
+        </property>
         <property>
           <name>listener</name>
           <value>com.mycompany.MyResultListener,com.mycompany.MyAnnotationTransformer,com.mycompany.MyMethodInterceptor</value>

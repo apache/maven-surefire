@@ -42,6 +42,7 @@ public abstract class AbstractDirectConfigurator
         options.put( "excludedgroups", new Setter( "setExcludedGroups", String.class ) );
         options.put( "junit", new Setter( "setJUnit", Boolean.class ) );
         options.put( "threadcount", new Setter( "setThreadCount", int.class ) );
+        options.put( "usedefaultlisteners", new Setter( "setUseDefaultListeners", boolean.class ) );
         this.setters = options;
     }
 
@@ -49,6 +50,9 @@ public abstract class AbstractDirectConfigurator
     {
         // kind of ugly, but listeners are configured differently
         final String listeners = (String) options.remove("listener");
+        // DGF In 4.7, default listeners dump XML files in the surefire-reports directory,
+        // confusing the report plugin.  This was fixed in later versions.
+        testng.setUseDefaultListeners( false );
         for ( Iterator it = options.entrySet().iterator(); it.hasNext(); )
         {
             Map.Entry entry = (Map.Entry) it.next();

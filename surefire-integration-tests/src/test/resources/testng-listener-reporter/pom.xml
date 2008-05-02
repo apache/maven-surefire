@@ -57,6 +57,7 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <properties>
+            <property><name>usedefaultlisteners</name><value>false</value></property>
             <property><name>listener</name><value>listenReport.ResultListener,listenReport.SuiteListener</value></property>
             <property><name>reporter</name><value>listenReport.Reporter</value></property>
           </properties>
