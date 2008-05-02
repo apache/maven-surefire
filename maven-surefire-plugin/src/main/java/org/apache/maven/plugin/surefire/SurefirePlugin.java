@@ -1020,12 +1020,15 @@ public class SurefirePlugin
 
         originalSystemProperties = (Properties) System.getProperties().clone();
         
-        // SUREFIRE-121 overlay our system properties with user specified properties
-        // Is this wise? 
+        // We used to take all of our system properties and dump them in with the
+        // user specified properties for SUREFIRE-121, causing SUREFIRE-491.
+        // Not gonna do THAT any more... but I'm leaving this code here in case
+        // we need it later when we try to fix SUREFIRE-121 again.
+        
         // Get the properties from the MavenSession instance to make embedded use work correctly
         Properties userSpecifiedProperties = (Properties) session.getExecutionProperties().clone();
         userSpecifiedProperties.putAll( systemProperties );
-        systemProperties = userSpecifiedProperties;
+        //systemProperties = userSpecifiedProperties;
 
         systemProperties.setProperty( "basedir", basedir.getAbsolutePath() );
         systemProperties.setProperty( "user.dir", workingDirectory.getAbsolutePath() );
