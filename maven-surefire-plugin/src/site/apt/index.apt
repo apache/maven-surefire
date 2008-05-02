@@ -39,6 +39,8 @@ Maven Surefire Plugin
 
   The following examples show how to use the Surefire Plugin in more advanced use-cases:
 
+  * {{{examples/testng.html}Using TestNG}}
+
   * {{{examples/skipping-test.html}Skipping Tests}}
 
   * {{{examples/inclusion-exclusion.html}Inclusions and Exclusions of Tests}}
@@ -47,12 +49,10 @@ Maven Surefire Plugin
 
   * {{{examples/class-loading.html}Class Loading Issues}}
 
-  * {{{examples/forking.html}Forking}}
-
   * {{{examples/debugging.html}Debugging Tests}}
 
   * {{{examples/system-properties.html}Using System Properties}}
-
-  * {{{examples/testng.html}Using TestNG}}
-
+  
+  * {{{examples/additional-classpath.html}Additional Classpath Elements}}
+  
   []

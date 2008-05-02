@@ -1,0 +1,36 @@
+  ------
+  Additional Classpath
+  ------
+  Pascal Lambert
+  ------
+  March 2008
+  ------
+
+Additional Classpath Elements
+
+  If you need to put more stuff in your classpath when Surefire executes (e.g some funky resources or a container special jar),
+  we normally recommend you add it to your classpath as a dependency.  Consider deploying shared jars to a private remote repository for your
+  organization.
+  
+  But, if you must, you can use the <<<additionalClasspathElements>>> element to add custom resources/jars to your classpath.
+
++---+
+<project>
+  [...]
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <additionalClasspathElements>
+	        <additionalClasspathElement>path/to/additional/resources</additionalClasspathElement>
+	        <additionalClasspathElement>path/to/additional/jar</additionalClasspathElement>
+          </additionalClasspathElements>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+  [...]
+</project>
++---+
