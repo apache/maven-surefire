@@ -645,8 +645,7 @@ public class SurefirePlugin
             throw new MojoExecutionException( "Unable to locate surefire-booter in the list of plugin artifacts" );
         }
 
-        surefireArtifact.isSnapshot(); // TODO: this is ridiculous, but it fixes getBaseVersion to be -SNAPSHOT if
-        // needed
+        surefireArtifact.isSnapshot(); // MNG-2961: before Maven 2.0.8, fixes getBaseVersion to be -SNAPSHOT if needed
 
         Artifact junitArtifact;
         Artifact testNgArtifact;
@@ -1124,7 +1123,7 @@ public class SurefirePlugin
     }
     
     //TODO remove the part with ToolchainManager lookup once we depend on
-    //3.0.9 (have it as prerequisite). Define as regular component field then.
+    //2.0.9 (have it as prerequisite). Define as regular component field then.
     private Toolchain getToolchain() 
     {
         Toolchain tc = null;
@@ -1139,7 +1138,7 @@ public class SurefirePlugin
                 }
             }
         } catch (ComponentLookupException componentLookupException) {
-            //just ignore, could happen in pre-3.0.9 builds..
+            //just ignore, could happen in pre-2.0.9 builds..
         }
         return tc;
     }
