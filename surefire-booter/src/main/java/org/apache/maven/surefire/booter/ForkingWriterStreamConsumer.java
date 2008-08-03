@@ -19,7 +19,6 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import org.apache.maven.surefire.booter.output.ForkingStreamConsumer;
 import org.apache.maven.surefire.report.ForkingConsoleReporter;
 import org.codehaus.plexus.util.cli.StreamConsumer;
 
@@ -29,7 +28,7 @@ import java.io.Writer;
 /**
  * @author Jason van Zyl
  * @version $Revision$
- * @deprecated use {@link ForkingStreamConsumer}
+ * @deprecated use {@link org.apache.maven.surefire.booter.output.ForkingStreamConsumer}
  */
 public class ForkingWriterStreamConsumer
     implements StreamConsumer

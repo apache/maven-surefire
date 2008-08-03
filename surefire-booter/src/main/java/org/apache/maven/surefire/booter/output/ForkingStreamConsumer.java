@@ -33,11 +33,11 @@ import org.codehaus.plexus.util.cli.StreamConsumer;
 public class ForkingStreamConsumer
     implements StreamConsumer
 {
-    private static int STANDARD_PREFIX_LENGTH = ForkingConsoleReporter.FORKING_PREFIX_STANDARD.length();
+    private final static int STANDARD_PREFIX_LENGTH = ForkingConsoleReporter.FORKING_PREFIX_STANDARD.length();
 
-    private static int HEADING_PREFIX_LENGTH = ForkingConsoleReporter.FORKING_PREFIX_HEADING.length();
+    private final static int HEADING_PREFIX_LENGTH = ForkingConsoleReporter.FORKING_PREFIX_HEADING.length();
 
-    private static int FOOTER_PREFIX_LENGTH = ForkingConsoleReporter.FORKING_PREFIX_FOOTER.length();
+    private final static int FOOTER_PREFIX_LENGTH = ForkingConsoleReporter.FORKING_PREFIX_FOOTER.length();
 
     private OutputConsumer outputConsumer;
 

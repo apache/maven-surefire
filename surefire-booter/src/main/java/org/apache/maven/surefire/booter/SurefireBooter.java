@@ -227,7 +227,8 @@ public class SurefireBooter
         this.forkConfiguration = forkConfiguration;
     }
     
-    public boolean isForking() {
+    public boolean isForking()
+    {
         return forkConfiguration.isForking();
     }
 
@@ -321,12 +322,16 @@ public class SurefireBooter
             ClassLoader testsClassLoader;
             String testClassPath = getTestClassPathAsString();
             System.setProperty( "surefire.test.class.path", testClassPath );
-            if (useManifestOnlyJar()) {
+            if ( useManifestOnlyJar() )
+            {
                 testsClassLoader = getClass().getClassLoader(); // ClassLoader.getSystemClassLoader()
-                // SUREFIRE-459, trick the app under test into thinking its classpath was conventional (instead of a single manifest-only jar) 
-                System.setProperty( "surefire.real.class.path", System.getProperty( "java.class.path" ));
+                // SUREFIRE-459, trick the app under test into thinking its classpath was conventional
+                // (instead of a single manifest-only jar) 
+                System.setProperty( "surefire.real.class.path", System.getProperty( "java.class.path" ) );
                 System.setProperty( "java.class.path", testClassPath );
-            } else {
+            }
+            else
+            {
                 testsClassLoader = createClassLoader( classPathUrls, null, childDelegation );
             }
             
@@ -367,7 +372,8 @@ public class SurefireBooter
     private String getTestClassPathAsString()
     {
         StringBuffer sb = new StringBuffer();
-        for (int i = 0; i < classPathUrls.size(); i++) {
+        for ( int i = 0; i < classPathUrls.size(); i++ )
+        {
             sb.append( classPathUrls.get( i ) ).append( File.pathSeparatorChar );
         }
         return sb.toString();
@@ -443,8 +449,8 @@ public class SurefireBooter
         }
         catch ( NoSuchMethodException e )
         {
-            throw new SurefireBooterForkException( "Unable to find appropriate constructor for test suite '" +
-                className + "': " + e.getMessage(), e );
+            throw new SurefireBooterForkException( "Unable to find appropriate constructor for test suite '"
+                + className + "': " + e.getMessage(), e );
         }
 
         Map testSets;
@@ -485,9 +491,9 @@ public class SurefireBooter
     {
         setForkProperties( Collections.singletonList( testSuite ), properties );
 
-        if (testSet instanceof String)
+        if ( testSet instanceof String )
         {
-            properties.setProperty( "testSet", (String) testSet);
+            properties.setProperty( "testSet", (String) testSet );
         }
 
         return fork( properties, showHeading, showFooter );
@@ -583,7 +589,9 @@ public class SurefireBooter
         {
             File[] files = (File[]) param;
             return "[" + StringUtils.join( files, "," ) + "]";
-        } else if ( param instanceof Properties ) {
+        }
+        else if ( param instanceof Properties )
+        {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             try
             {
@@ -601,12 +609,12 @@ public class SurefireBooter
         }
     }
 
-    private final boolean useSystemClassLoader()
+    private boolean useSystemClassLoader()
     {
         return forkConfiguration.isUseSystemClassLoader() && ( isForked || forkConfiguration.isForking() );
     }
     
-    private final boolean useManifestOnlyJar()
+    private boolean useManifestOnlyJar()
     {
         return forkConfiguration.isUseSystemClassLoader() && forkConfiguration.isUseManifestOnlyJar();
     }
@@ -828,13 +836,11 @@ public class SurefireBooter
         {
             // bit of a glitch that it need sto be done twice to do an odd number of vertical bars (eg |||, |||||).
             String[] params =
-                StringUtils.split(
-                                   StringUtils.replace( StringUtils.replace( paramProperty, "||", "| |" ), "||", "| |" ),
-                                   "|" );
+                StringUtils.split( StringUtils.replace( StringUtils.replace( paramProperty, "||", "| |" ),
+                                                        "||", "| |" ), "|" );
             String[] types =
-                StringUtils.split(
-                                   StringUtils.replace( StringUtils.replace( typeProperty, "||", "| |" ), "||", "| |" ),
-                                   "|" );
+                StringUtils.split( StringUtils.replace( StringUtils.replace( typeProperty, "||", "| |" ),
+                                                        "||", "| |" ), "|" );
 
             paramObjects = new Object[params.length];
 
@@ -874,7 +880,8 @@ public class SurefireBooter
                 {
                     paramObjects[i] = Integer.valueOf( params[i] );
                 }
-                else if (types[i].equals(Properties.class.getName())) {
+                else if ( types[i].equals( Properties.class.getName() ) )
+                {
                     final Properties result = new Properties();
                     final String value = params[i];
                     try
@@ -932,7 +939,8 @@ public class SurefireBooter
             {
                 String name = (String) e.nextElement();
 
-                if ( name.startsWith( REPORT_PROPERTY_PREFIX ) && !name.endsWith( PARAMS_SUFIX ) && !name.endsWith( TYPES_SUFIX ) )
+                if ( name.startsWith( REPORT_PROPERTY_PREFIX ) && !name.endsWith( PARAMS_SUFIX )
+                                && !name.endsWith( TYPES_SUFIX ) )
                 {
                     String className = p.getProperty( name );
 
@@ -940,7 +948,8 @@ public class SurefireBooter
                     String types = p.getProperty( name + TYPES_SUFIX );
                     surefireBooter.addReport( className, constructParamObjects( params, types ) );
                 }
-                else if ( name.startsWith( TEST_SUITE_PROPERTY_PREFIX ) && !name.endsWith( PARAMS_SUFIX ) && !name.endsWith( TYPES_SUFIX ) )
+                else if ( name.startsWith( TEST_SUITE_PROPERTY_PREFIX ) && !name.endsWith( PARAMS_SUFIX )
+                                && !name.endsWith( TYPES_SUFIX ) )
                 {
                     String className = p.getProperty( name );
 
@@ -950,11 +959,13 @@ public class SurefireBooter
                 }
                 else if ( name.startsWith( "classPathUrl." ) )
                 {
-                    classPathUrls.put(Integer.valueOf(name.substring(name.indexOf('.') + 1)), p.getProperty( name ));
+                    classPathUrls.put( Integer.valueOf( name.substring( name.indexOf( '.' ) + 1 ) ),
+                                       p.getProperty( name ) );
                 }
                 else if ( name.startsWith( "surefireClassPathUrl." ) )
                 {
-                    surefireClassPathUrls.put(Integer.valueOf(name.substring(name.indexOf('.') + 1)), p.getProperty( name ));
+                    surefireClassPathUrls.put( Integer.valueOf( name.substring( name.indexOf( '.' ) + 1 ) ),
+                                               p.getProperty( name ) );
                 }
                 else if ( name.startsWith( "surefireBootClassPathUrl." ) )
                 {
@@ -972,30 +983,31 @@ public class SurefireBooter
                 }
                 else if ( "useSystemClassLoader".equals( name ) )
                 {
-                    surefireBooter.forkConfiguration.setUseSystemClassLoader( Boolean.valueOf(
-                                                                                               p.getProperty( "useSystemClassLoader" ) ).booleanValue() );
+                    boolean value = Boolean.valueOf( p.getProperty( "useSystemClassLoader" ) ).booleanValue();
+                    surefireBooter.forkConfiguration.setUseSystemClassLoader( value );
                 }
                 else if ( "useManifestOnlyJar".equals( name ) )
                 {
-                    surefireBooter.forkConfiguration.setUseManifestOnlyJar( Boolean.valueOf(
-                                                                                               p.getProperty( "useManifestOnlyJar" ) ).booleanValue() );
+                    boolean value = Boolean.valueOf( p.getProperty( "useManifestOnlyJar" ) ).booleanValue();
+                    surefireBooter.forkConfiguration.setUseManifestOnlyJar( value );
                 }
                 else if ( "failIfNoTests".equals( name ) )
                 {
-                    surefireBooter.setFailIfNoTests( Boolean.valueOf( p.getProperty( "failIfNoTests" ) ).booleanValue() );
+                    boolean value = Boolean.valueOf( p.getProperty( "failIfNoTests" ) ).booleanValue();
+                    surefireBooter.setFailIfNoTests( value );
                 }
             }
 
-            for (Iterator cpi = classPathUrls.keySet().iterator(); cpi.hasNext();)
+            for ( Iterator cpi = classPathUrls.keySet().iterator(); cpi.hasNext(); )
             {
-                String url = (String) classPathUrls.get(cpi.next());
-                surefireBooter.addClassPathUrl(url);
+                String url = (String) classPathUrls.get( cpi.next() );
+                surefireBooter.addClassPathUrl( url );
             }
 
-            for (Iterator scpi = surefireClassPathUrls.keySet().iterator(); scpi.hasNext();)
+            for ( Iterator scpi = surefireClassPathUrls.keySet().iterator(); scpi.hasNext(); )
             {
-                String url = (String) surefireClassPathUrls.get(scpi.next());
-                surefireBooter.addSurefireClassPathUrl(url);
+                String url = (String) surefireClassPathUrls.get( scpi.next() );
+                surefireBooter.addSurefireClassPathUrl( url );
             }
 
             String testSet = p.getProperty( "testSet" );

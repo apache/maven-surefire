@@ -226,7 +226,8 @@ public class ForkConfiguration
         throws IOException
     {
         File file = File.createTempFile( "surefirebooter", ".jar" );
-        if ( !debug ) {
+        if ( !debug )
+        {
             file.deleteOnExit();
         }
         FileOutputStream fos = new FileOutputStream( file );
@@ -247,11 +248,11 @@ public class ForkConfiguration
             cp += UrlUtils.getURL( new File( el ) ).toExternalForm() + " ";
         }
 
-        man.getMainAttributes().putValue("Manifest-Version", "1.0");
-        man.getMainAttributes().putValue("Class-Path", cp.trim());
-        man.getMainAttributes().putValue("Main-Class", SurefireBooter.class.getName());
+        man.getMainAttributes().putValue( "Manifest-Version", "1.0" );
+        man.getMainAttributes().putValue( "Class-Path", cp.trim() );
+        man.getMainAttributes().putValue( "Main-Class", SurefireBooter.class.getName() );
 
-        man.write(jos);
+        man.write( jos );
         jos.close();
 
         return file;
