@@ -50,7 +50,7 @@ public class Surefire
 
     // DGF backwards compatibility
     public boolean run( List reportDefinitions, Object[] testSuiteDefinition, String testSetName,
-                    ClassLoader surefireClassLoader, ClassLoader testsClassLoader)
+                    ClassLoader surefireClassLoader, ClassLoader testsClassLoader )
         throws ReporterException, TestSetFailedException
     {
         return run( reportDefinitions, testSuiteDefinition, testSetName, surefireClassLoader, testsClassLoader, null,
@@ -61,7 +61,8 @@ public class Surefire
                         ClassLoader surefireClassLoader, ClassLoader testsClassLoader, Boolean failIfNoTests )
         throws ReporterException, TestSetFailedException
     {
-        return run( reportDefinitions, testSuiteDefinition, testSetName, surefireClassLoader, testsClassLoader, null, failIfNoTests );
+        return run( reportDefinitions, testSuiteDefinition, testSetName, surefireClassLoader, testsClassLoader, null,
+                    failIfNoTests );
     }
 
     // DGF backwards compatibility
@@ -74,7 +75,8 @@ public class Surefire
     }
     
     public int run( List reportDefinitions, Object[] testSuiteDefinition, String testSetName,
-                        ClassLoader surefireClassLoader, ClassLoader testsClassLoader, Properties results, Boolean failIfNoTests )
+                    ClassLoader surefireClassLoader, ClassLoader testsClassLoader, Properties results,
+                    Boolean failIfNoTests )
         throws ReporterException, TestSetFailedException
     {
         ReporterManager reporterManager =
@@ -137,7 +139,8 @@ public class Surefire
                         ClassLoader testsClassLoader )
         throws ReporterException, TestSetFailedException
     {
-        return run ( reportDefinitions, testSuiteDefinitions, surefireClassLoader, testsClassLoader, Boolean.FALSE ) == 0;
+        return run ( reportDefinitions, testSuiteDefinitions, surefireClassLoader, testsClassLoader, Boolean.FALSE )
+               == 0;
     }
     public int run( List reportDefinitions, List testSuiteDefinitions, ClassLoader surefireClassLoader,
                         ClassLoader testsClassLoader, Boolean failIfNoTests )

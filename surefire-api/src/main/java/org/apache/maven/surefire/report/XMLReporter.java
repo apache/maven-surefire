@@ -208,7 +208,7 @@ public class XMLReporter
         String stackTrace = getStackTrace( report );
 
         Throwable t = null;
-        if (report.getStackTraceWriter() != null)
+        if ( report.getStackTraceWriter() != null )
         {
             t = report.getStackTraceWriter().getThrowable();
         }
@@ -222,10 +222,9 @@ public class XMLReporter
             {
                 element.setAttribute( "message", message );
 
-                element.setAttribute( "type", ( stackTrace.indexOf( ":" ) > -1 ? stackTrace.substring( 0,
-                                                                                                       stackTrace.indexOf(
-                                                                                                           ":" ) )
-                    : stackTrace ) );
+                element.setAttribute( "type", ( stackTrace.indexOf( ":" ) > -1
+                                                ? stackTrace.substring( 0, stackTrace.indexOf( ":" ) )
+                                                : stackTrace ) );
             }
             else
             {
@@ -233,7 +232,7 @@ public class XMLReporter
             }
         }
 
-        if (stackTrace != null)
+        if ( stackTrace != null )
         {
             element.setValue( stackTrace );
         }

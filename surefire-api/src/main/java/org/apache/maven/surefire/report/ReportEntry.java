@@ -160,7 +160,7 @@ public class ReportEntry
 
     public boolean equals( Object obj )
     {
-        if ( obj instanceof ReportEntry == false )
+        if ( !(obj instanceof ReportEntry ) )
         {
             return false;
         }

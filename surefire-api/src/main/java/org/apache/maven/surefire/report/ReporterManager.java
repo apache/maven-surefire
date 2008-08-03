@@ -190,8 +190,8 @@ public class ReporterManager
             }
             writeFooter( "" );
         }
-        writeFooter( "Tests run: " + completedCount + ", Failures: " + failures + ", Errors: " + errors +
-            ", Skipped: " + skipped );
+        writeFooter( "Tests run: " + completedCount + ", Failures: " + failures + ", Errors: " + errors
+            + ", Skipped: " + skipped );
         writeFooter( "" );
     }
 

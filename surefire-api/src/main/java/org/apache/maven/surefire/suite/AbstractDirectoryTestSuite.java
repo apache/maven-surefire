@@ -95,7 +95,10 @@ public abstract class AbstractDirectoryTestSuite
             {
                 SurefireTestSet testSet = createTestSet( testClass, classLoader );
                 
-                if ( testSet == null ) continue;
+                if ( testSet == null )
+                {
+                    continue;
+                }
 
                 if ( testSets.containsKey( testSet.getName() ) )
                 {

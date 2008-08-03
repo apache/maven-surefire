@@ -235,7 +235,10 @@ public abstract class AbstractReporter
     protected String getStackTrace( ReportEntry report )
     {
         StackTraceWriter writer = report.getStackTraceWriter();
-        if (writer == null) return null;
+        if ( writer == null )
+        {
+            return null;
+        }
         return trimStackTrace ? writer.writeTrimmedTraceToString()
             : writer.writeTraceToString();
     }

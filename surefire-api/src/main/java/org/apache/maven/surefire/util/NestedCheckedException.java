@@ -39,7 +39,7 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 
 /**
- * <p>Copied from Spring framework to keep Java 1.3 compatability.</p>
+ * <p>Copied from Spring framework to keep Java 1.3 compatibility.</p>
  * <p/>
  * <p>Handy class for wrapping checked Exceptions with a root cause.</p>
  * <p/>
@@ -57,8 +57,8 @@ import java.io.PrintWriter;
  * (ah, the inflexibility of concrete inheritance!).
  * <p/>
  * <p>As discussed in
- * <a href="http://www.amazon.com/exec/obidos/tg/detail/-/0764543857/">Expert One-On-One J2EE Design and Development</a>,
- * runtime exceptions are often a better alternative to checked exceptions.
+ * <a href="http://www.amazon.com/exec/obidos/tg/detail/-/0764543857/">Expert One-On-One J2EE Design and
+ * Development</a>, runtime exceptions are often a better alternative to checked exceptions.
  * However, all exceptions should preserve their stack trace, if caused by a
  * lower-level exception.
  *
@@ -143,8 +143,8 @@ public class NestedCheckedException
         }
         else
         {
-            return super.getMessage() + "; nested exception is " + getCause().getClass().getName() + ": " +
-                getCause().getMessage();
+            return super.getMessage() + "; nested exception is " + getCause().getClass().getName() + ": "
+                + getCause().getMessage();
         }
     }
 

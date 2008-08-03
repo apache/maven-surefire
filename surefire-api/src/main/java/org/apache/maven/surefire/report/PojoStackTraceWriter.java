@@ -72,7 +72,8 @@ public class PojoStackTraceWriter
             if ( line.startsWith( marker ) )
             {
                 lastLine = i;
-            } else if ( line.startsWith( "Caused by" ) )
+            }
+            else if ( line.startsWith( "Caused by" ) )
             {
                 causedByLine = i;
                 break;

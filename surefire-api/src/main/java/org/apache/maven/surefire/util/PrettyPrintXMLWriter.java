@@ -19,7 +19,6 @@ package org.apache.maven.surefire.util;
  * under the License.
  */
 
-import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.xml.XMLWriter;
 
 import java.io.PrintWriter;
@@ -148,12 +147,16 @@ public class PrettyPrintXMLWriter
     private static String escapeXml( String text )
     {
         StringBuffer sb = new StringBuffer ( text.length() * 2 );
-        for (int i = 0; i < text.length(); i++ ) {
+        for ( int i = 0; i < text.length(); i++ ) {
             char c = text.charAt( i );
-            if ( c < 32 ) {
-                if ( c == '\n' || c == '\r' || c == '\t') {
+            if ( c < 32 )
+            {
+                if ( c == '\n' || c == '\r' || c == '\t')
+                {
                     sb.append( c );
-                } else {
+                }
+                else
+                {
                     // uh-oh!  This character is illegal in XML 1.0!
                     // http://www.w3.org/TR/1998/REC-xml-19980210#charsets
                     // we're going to deliberately doubly-XML escape it...
@@ -161,17 +164,29 @@ public class PrettyPrintXMLWriter
                     // SUREFIRE-456
                     sb.append( "&amp;#" ).append( (int) c).append( ';' );
                 }
-            } else if ( c == '<') {
+            }
+            else if ( c == '<')
+            {
                 sb.append( "&lt;" );
-            } else if ( c == '>') {
+            }
+            else if ( c == '>')
+            {
                 sb.append( "&gt;" );
-            } else if (c == '&') {
+            }
+            else if (c == '&')
+            {
                 sb.append("&amp;");
-            } else if (c == '"') {
+            }
+            else if (c == '"')
+            {
                 sb.append("&quot;");
-            } else if (c == '\'') {
+            }
+            else if (c == '\'')
+            {
                 sb.append("&apos;");
-            } else {
+            }
+            else
+            {
                 sb.append( c );
             }
         }
