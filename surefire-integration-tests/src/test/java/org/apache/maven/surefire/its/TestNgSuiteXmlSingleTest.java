@@ -35,7 +35,7 @@ public class TestNgSuiteXmlSingleTest
 
         List reports = HelperAssertions.extractReports( ( new File[] { testDir } ) );
         ITSuiteResults results = HelperAssertions.parseReportList( reports );
-        HelperAssertions.assertTestSuiteResults( 1, 0, 0, 0, results );
+        HelperAssertions.assertTestSuiteResults( 2, 0, 0, 0, results );
     }
 
 }
