@@ -1,11 +1,11 @@
 package org.apache.maven.surefire.its;
 
+import java.io.File;
+
 import junit.framework.Assert;
-import junit.framework.TestCase;
+
 import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
-
-import java.io.File;
 
 /**
  * Test surefire-report on TestNG test
@@ -14,7 +14,7 @@ import java.io.File;
  * 
  */
 public class TestNgReportTest
-    extends TestCase
+    extends AbstractSurefireIT
 {
     public void testTestNgReport ()
         throws Exception
@@ -22,7 +22,7 @@ public class TestNgReportTest
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/testng-simple" );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        verifier.executeGoal( "surefire-report:report" );
+        this.executeGoal( verifier, "surefire-report:report" );
         verifier.verifyErrorFreeLog();
         verifier.resetStreams();
         

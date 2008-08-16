@@ -1,14 +1,13 @@
 package org.apache.maven.surefire.its;
 
 
-import junit.framework.TestCase;
-import org.apache.maven.it.VerificationException;
-import org.apache.maven.it.Verifier;
-import org.apache.maven.it.util.ResourceExtractor;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.apache.maven.it.VerificationException;
+import org.apache.maven.it.Verifier;
+import org.apache.maven.it.util.ResourceExtractor;
 
 /**
  * Test running a single test with -Dtest=BasicTest
@@ -17,7 +16,7 @@ import java.util.List;
  * 
  */
 public class TestSingleTest
-    extends TestCase
+    extends AbstractSurefireIT
 {
     public void testSingleTest ()
         throws Exception
@@ -25,7 +24,7 @@ public class TestSingleTest
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/default-configuration" );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        List goals = new ArrayList();
+        List goals = this.getInitialGoals();
         goals.add( "test" );
         goals.add( "-Dtest=BasicTest" );
         verifier.executeGoals( goals );
@@ -41,7 +40,7 @@ public class TestSingleTest
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/default-configuration" );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        List goals = new ArrayList();
+        List goals = this.getInitialGoals();
         goals.add( "test" );
         goals.add( "-Dtest=BasicTest.java" );
         verifier.executeGoals( goals );
@@ -57,7 +56,7 @@ public class TestSingleTest
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/default-configuration" );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        List goals = new ArrayList();
+        List goals = this.getInitialGoals();
         goals.add( "test" );
         goals.add( "-Dtest=DoesNotExist" );
 
@@ -86,7 +85,7 @@ public class TestSingleTest
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/default-configuration" );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        List goals = new ArrayList();
+        List goals = this.getInitialGoals();
         goals.add( "test" );
         goals.add( "-Dtest=DoesNotExist" );
         goals.add( "-DfailIfNoTests=false" );

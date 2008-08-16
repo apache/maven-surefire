@@ -5,8 +5,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import junit.framework.TestCase;
-
 import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
 import org.apache.maven.plugins.surefire.report.ReportTestSuite;
@@ -17,7 +15,7 @@ import org.apache.maven.plugins.surefire.report.ReportTestSuite;
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
 public class TwoTestCasesTest
-    extends TestCase
+    extends AbstractSurefireIT
 {
     public void testTwoTestCases()
         throws Exception
@@ -25,7 +23,7 @@ public class TwoTestCasesTest
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/junit-twoTestCases" );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        verifier.executeGoal( "test" );
+        this.executeGoal( verifier, "test" );
         verifier.verifyErrorFreeLog();
         verifier.resetStreams();
 
@@ -39,7 +37,7 @@ public class TwoTestCasesTest
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/junit-twoTestCaseSuite" );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        verifier.executeGoal( "test" );
+        this.executeGoal( verifier, "test" );
         verifier.verifyErrorFreeLog();
         verifier.resetStreams();
         List reports = HelperAssertions.extractReports( (new File[] { testDir }) );
@@ -75,7 +73,7 @@ public class TwoTestCasesTest
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/junit4-twoTestCaseSuite" );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        verifier.executeGoal( "test" );
+        this.executeGoal( verifier, "test" );
         verifier.verifyErrorFreeLog();
         verifier.resetStreams();
 
@@ -94,7 +92,7 @@ public class TwoTestCasesTest
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/testng-twoTestCaseSuite" );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        verifier.executeGoal( "test" );
+        this.executeGoal( verifier, "test" );
         verifier.verifyErrorFreeLog();
         verifier.resetStreams();
 

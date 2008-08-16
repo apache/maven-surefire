@@ -1,11 +1,10 @@
 package org.apache.maven.surefire.its;
 
 
-import junit.framework.TestCase;
+import java.io.File;
+
 import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
-
-import java.io.File;
 
 /**
  * Test aggregator as a sibling to child modules; invokes modules as "../child"
@@ -14,7 +13,7 @@ import java.io.File;
  * 
  */
 public class SiblingAggregatorTest
-    extends TestCase
+    extends AbstractSurefireIT
 {
     public void testSiblingAggregator ()
         throws Exception
@@ -24,7 +23,7 @@ public class SiblingAggregatorTest
         File aggregatorDir = new File( testDir, "aggregator" );
         
         Verifier verifier = new Verifier( aggregatorDir.getAbsolutePath() );
-        verifier.executeGoal( "test" );
+        this.executeGoal( verifier, "test" );
         verifier.verifyErrorFreeLog();
         verifier.resetStreams();
         

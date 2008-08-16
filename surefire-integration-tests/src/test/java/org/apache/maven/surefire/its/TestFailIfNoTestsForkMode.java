@@ -1,16 +1,14 @@
 package org.apache.maven.surefire.its;
 
 
-import junit.framework.TestCase;
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+
 import org.apache.maven.it.VerificationException;
 import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
 import org.apache.maven.reporting.MavenReportException;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Test failIfNoTests with various forkModes.
@@ -19,7 +17,7 @@ import java.util.List;
  * 
  */
 public class TestFailIfNoTestsForkMode
-    extends TestCase
+    extends AbstractSurefireIT
 {
     public void testFailIfNoTestsForkModeAlways () throws Exception
     {
@@ -57,7 +55,7 @@ public class TestFailIfNoTestsForkMode
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/default-configuration-classWithNoTests" );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        List goals = new ArrayList();
+        List goals = this.getInitialGoals();
         goals.add( "test" );
         goals.add( "-DforkMode=" + forkMode );
         goals.add( "-DfailIfNoTests=" + failIfNoTests );

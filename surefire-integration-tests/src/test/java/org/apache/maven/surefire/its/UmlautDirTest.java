@@ -1,14 +1,12 @@
 package org.apache.maven.surefire.its;
 
-
-import junit.framework.TestCase;
-import org.apache.maven.it.Verifier;
-import org.apache.maven.it.util.FileUtils;
-import org.apache.maven.it.util.ResourceExtractor;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+
+import org.apache.maven.it.Verifier;
+import org.apache.maven.it.util.FileUtils;
+import org.apache.maven.it.util.ResourceExtractor;
 
 /**
  * Test a directory with an umlaut
@@ -17,26 +15,26 @@ import java.util.ArrayList;
  * 
  */
 public class UmlautDirTest
-    extends TestCase
+    extends AbstractSurefireIT
 {
     File testDir;
 
-    public void testUmlaut ()
+    public void testUmlaut()
         throws Exception
     {
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        verifier.executeGoal( "test" );
+        this.executeGoal( verifier, "test" );
         verifier.verifyErrorFreeLog();
         verifier.resetStreams();
-        
+
         HelperAssertions.assertTestSuiteResults( 1, 0, 0, 0, testDir );
     }
 
-    public void testUmlautIsolatedClassLoader ()
+    public void testUmlautIsolatedClassLoader()
         throws Exception
     {
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        ArrayList goals = new ArrayList();
+        ArrayList goals = this.getInitialGoals();
         goals.add( "test" );
         goals.add( "-DuseSystemClassLoader=false" );
         verifier.executeGoals( goals );
@@ -50,13 +48,14 @@ public class UmlautDirTest
         throws IOException
     {
         String tempDirPath = System.getProperty( "maven.test.tmpdir", System.getProperty( "java.io.tmpdir" ) );
-        File tempDir = new File(tempDirPath);
-        File targetDir = new File("target").getAbsoluteFile();
-        if (targetDir.exists() && targetDir.isDirectory()) {
+        File tempDir = new File( tempDirPath );
+        File targetDir = new File( "target" ).getAbsoluteFile();
+        if ( targetDir.exists() && targetDir.isDirectory() )
+        {
             tempDir = targetDir;
         }
         testDir = new File( tempDir, "/junit-pathWith\u00DCmlaut" );
         FileUtils.deleteDirectory( testDir );
-        testDir = ResourceExtractor.extractResourcePath(getClass(), "/junit-pathWithUmlaut", testDir, true);
+        testDir = ResourceExtractor.extractResourcePath( getClass(), "/junit-pathWithUmlaut", testDir, true );
     }
 }

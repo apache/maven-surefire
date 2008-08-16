@@ -1,11 +1,10 @@
 package org.apache.maven.surefire.its;
 
 
-import junit.framework.TestCase;
+import java.io.File;
+
 import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
-
-import java.io.File;
 
 /**
  * Test simple TestNG listener and reporter
@@ -14,7 +13,7 @@ import java.io.File;
  * 
  */
 public class TestNgListenerReporter
-    extends TestCase
+    extends AbstractSurefireIT
 {
     public void testTestNgListenerReporter ()
         throws Exception
@@ -22,7 +21,7 @@ public class TestNgListenerReporter
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/testng-listener-reporter" );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        verifier.executeGoal( "test" );
+        this.executeGoal( verifier, "test" );
         verifier.verifyErrorFreeLog();
         verifier.resetStreams();
         

@@ -1,12 +1,10 @@
 package org.apache.maven.surefire.its;
 
 
-import junit.framework.TestCase;
 import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -16,7 +14,7 @@ import java.util.List;
  * 
  */
 public class AggregateReportTest
-    extends TestCase
+    extends AbstractSurefireIT
 {
     public void testAggregateReport ()
         throws Exception
@@ -24,7 +22,7 @@ public class AggregateReportTest
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/aggregate-report" );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        List goals = new ArrayList();
+        List goals = this.getInitialGoals();
         goals.add( "jxr:test-jxr" );
         goals.add( "surefire-report:report" );
         verifier.executeGoals( goals );

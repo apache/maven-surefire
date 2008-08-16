@@ -1,11 +1,10 @@
 package org.apache.maven.surefire.its;
 
 
-import junit.framework.TestCase;
+import java.io.File;
+
 import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
-
-import java.io.File;
 
 /**
  * SUREFIRE-377 (When JUnit and TestNG tests are in same project, only one set gets run).
@@ -14,7 +13,7 @@ import java.io.File;
  * 
  */
 public class Surefire377TestNgAndJUnitTogetherTest
-    extends TestCase
+    extends AbstractSurefireIT
 {
     public void testTestNgAndJUnitTogether ()
         throws Exception
@@ -22,7 +21,7 @@ public class Surefire377TestNgAndJUnitTogetherTest
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/testng-junit-together" );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        verifier.executeGoal( "test" );
+        this.executeGoal( verifier, "test" );
         verifier.verifyErrorFreeLog();
         verifier.resetStreams();
         

@@ -1,7 +1,6 @@
 package org.apache.maven.surefire.its;
 
 
-import junit.framework.TestCase;
 import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
 
@@ -14,7 +13,7 @@ import java.io.File;
  * 
  */
 public class AdditionalClasspathTest
-    extends TestCase
+    extends AbstractSurefireIT
 {
     public void testAdditionalClasspath ()
         throws Exception
@@ -22,7 +21,7 @@ public class AdditionalClasspathTest
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/additional-classpath" );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        verifier.executeGoal( "test" );
+        this.executeGoal( verifier, "test" );
         verifier.verifyErrorFreeLog();
         verifier.resetStreams();
         

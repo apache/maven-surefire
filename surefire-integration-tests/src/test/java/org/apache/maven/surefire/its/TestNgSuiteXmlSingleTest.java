@@ -1,15 +1,11 @@
 package org.apache.maven.surefire.its;
 
 
-import junit.framework.TestCase;
+import java.io.File;
+import java.util.List;
+
 import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
 
 /**
  * Use -Dtest to run a single TestNG test, overriding the suite XML parameter.
@@ -18,7 +14,7 @@ import java.util.Set;
  * 
  */
 public class TestNgSuiteXmlSingleTest
-    extends TestCase
+    extends AbstractSurefireIT
 {
     public void testTestNGSuite()
         throws Exception
@@ -26,7 +22,7 @@ public class TestNgSuiteXmlSingleTest
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/testng-twoTestCaseSuite" );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        List goals = new ArrayList();
+        List goals = this.getInitialGoals();
         goals.add( "test" );
         goals.add( "-Dtest=TestNGTestTwo" );
         verifier.executeGoals( goals );
@@ -35,7 +31,7 @@ public class TestNgSuiteXmlSingleTest
 
         List reports = HelperAssertions.extractReports( ( new File[] { testDir } ) );
         ITSuiteResults results = HelperAssertions.parseReportList( reports );
-        HelperAssertions.assertTestSuiteResults( 2, 0, 0, 0, results );
+        HelperAssertions.assertTestSuiteResults( 1, 0, 0, 0, results );
     }
 
 }

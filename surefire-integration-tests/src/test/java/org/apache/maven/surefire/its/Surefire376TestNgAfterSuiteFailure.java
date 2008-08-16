@@ -1,11 +1,10 @@
 package org.apache.maven.surefire.its;
 
 
-import junit.framework.TestCase;
+import java.io.File;
+
 import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
-
-import java.io.File;
 
 /**
  * Test Surefire-376 (TestNG @AfterSuite failures are ignored)
@@ -14,7 +13,7 @@ import java.io.File;
  * 
  */
 public class Surefire376TestNgAfterSuiteFailure
-    extends TestCase
+    extends AbstractSurefireIT
 {
     public void testAfterSuiteFailure ()
         throws Exception
@@ -22,7 +21,7 @@ public class Surefire376TestNgAfterSuiteFailure
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/testng-afterSuiteFailure" );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        verifier.executeGoal( "test" );
+        this.executeGoal( verifier, "test" );
         // DGF Don't verify error free log; we expect failures
         // verifier.verifyErrorFreeLog();
         verifier.resetStreams();

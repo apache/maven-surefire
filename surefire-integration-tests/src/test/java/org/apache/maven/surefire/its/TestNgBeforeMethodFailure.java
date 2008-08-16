@@ -1,12 +1,11 @@
 package org.apache.maven.surefire.its;
 
 
-import junit.framework.TestCase;
+import java.io.File;
+
 import org.apache.maven.it.VerificationException;
 import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
-
-import java.io.File;
 
 /**
  * Test failures in @BeforeMethod annotation on TestNg suite
@@ -15,7 +14,7 @@ import java.io.File;
  * 
  */
 public class TestNgBeforeMethodFailure
-    extends TestCase
+    extends AbstractSurefireIT
 {
     public void testTestNgBeforeMethodFailure ()
         throws Exception
@@ -25,7 +24,7 @@ public class TestNgBeforeMethodFailure
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
         try
         {
-            verifier.executeGoal( "test" );
+            this.executeGoal( verifier, "test" );
             verifier.resetStreams();
             verifier.verifyErrorFreeLog();
             fail( "Build didn't fail, but it should" );

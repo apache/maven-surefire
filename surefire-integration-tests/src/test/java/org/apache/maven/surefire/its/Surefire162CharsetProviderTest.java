@@ -1,12 +1,11 @@
 package org.apache.maven.surefire.its;
 
 
-import junit.framework.TestCase;
+import java.io.File;
+
 import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
 import org.codehaus.plexus.util.FileUtils;
-
-import java.io.File;
 
 /**
  * Test charset provider (SUREFIRE-162)
@@ -15,7 +14,7 @@ import java.io.File;
  * 
  */
 public class Surefire162CharsetProviderTest
-    extends TestCase
+    extends AbstractSurefireIT
 {
     public void testCharsetProvider ()
         throws Exception
@@ -27,7 +26,7 @@ public class Surefire162CharsetProviderTest
         jarFile.getParentFile().mkdirs();
         FileUtils.copyFile( new File( testDir, "repo/jcharset/jcharset/1.2.1/jcharset-1.2.1.jar" ), jarFile );
         FileUtils.copyFile( new File( testDir, "repo/jcharset/jcharset/1.2.1/jcharset-1.2.1.pom" ), new File( verifier.getArtifactPath( "jcharset", "jcharset", "1.2.1", "pom" ) ) );
-        verifier.executeGoal( "test" );
+        this.executeGoal( verifier, "test" );
         verifier.verifyErrorFreeLog();
         verifier.resetStreams();
         

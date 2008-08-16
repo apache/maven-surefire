@@ -1,13 +1,11 @@
 package org.apache.maven.surefire.its;
 
 
-import junit.framework.TestCase;
+import java.io.File;
+import java.util.List;
+
 import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Basic suite test using all known versions of JUnit 4.x
@@ -16,7 +14,7 @@ import java.util.List;
  * 
  */
 public class Junit4VersionsTest
-    extends TestCase
+    extends AbstractSurefireIT
 {
     
     public void test40 () throws Exception
@@ -55,7 +53,7 @@ public class Junit4VersionsTest
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/junit4" );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        List arguments = new ArrayList();
+        List arguments = this.getInitialGoals();
         arguments.add( "test" );
         // DGF we have to pass in the version as a command line argument
         // and NOT as a system property; otherwise our setting will be ignored

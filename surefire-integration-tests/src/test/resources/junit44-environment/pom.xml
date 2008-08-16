@@ -41,6 +41,7 @@
     <plugins>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
+        <version>${surefire.version}</version>
         <configuration>
           <environmentVariables>
             <DUMMY_ENV_VAR>foo</DUMMY_ENV_VAR>

@@ -1,14 +1,13 @@
 package org.apache.maven.surefire.its;
 
 
-import junit.framework.TestCase;
+import java.io.File;
+import java.util.List;
+
 import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
 import org.apache.maven.plugins.surefire.report.ReportTestCase;
 import org.apache.maven.plugins.surefire.report.ReportTestSuite;
-
-import java.io.File;
-import java.util.List;
 
 /**
  * Test Surefire-224 (XML test reports are not well-formed when failure message contains quotes)
@@ -17,7 +16,7 @@ import java.util.List;
  * 
  */
 public class Surefire224WellFormedXmlFailuresTest
-    extends TestCase
+    extends AbstractSurefireIT
 {
     public void testWellFormedXmlFailures ()
         throws Exception
@@ -25,7 +24,7 @@ public class Surefire224WellFormedXmlFailuresTest
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/surefire-224-wellFormedXmlFailures" );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        verifier.executeGoal( "test" );
+        this.executeGoal( verifier, "test" );
         // DGF Don't verify error free log; we expect failures
         // verifier.verifyErrorFreeLog();
         verifier.resetStreams();

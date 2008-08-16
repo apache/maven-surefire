@@ -1,11 +1,10 @@
 package org.apache.maven.surefire.its;
 
 
-import junit.framework.TestCase;
+import java.io.File;
+
 import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
-
-import java.io.File;
 
 /**
  * Test useSystemClassLoader option
@@ -14,7 +13,7 @@ import java.io.File;
  * 
  */
 public class TestUseIsolatedClassLoader
-    extends TestCase
+    extends AbstractSurefireIT
 {
     public void testUseSystemClassLoader ()
         throws Exception
@@ -22,7 +21,7 @@ public class TestUseIsolatedClassLoader
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/isolated-classloader" );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        verifier.executeGoal( "test" );
+        this.executeGoal( verifier, "test" );
         verifier.verifyErrorFreeLog();
         verifier.resetStreams();
         

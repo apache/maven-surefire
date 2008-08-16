@@ -1,11 +1,10 @@
 package org.apache.maven.surefire.its;
 
 
-import junit.framework.TestCase;
+import java.io.File;
+
 import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
-
-import java.io.File;
 
 /**
  * Test basic default configuration, runs the JUnit 3 test in the src/test directory.
@@ -14,7 +13,7 @@ import java.io.File;
  * 
  */
 public class DefaultConfigurationTest
-    extends TestCase
+    extends AbstractSurefireIT
 {
     public void testDefaultConfiguration ()
         throws Exception
@@ -22,7 +21,7 @@ public class DefaultConfigurationTest
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/default-configuration" );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        verifier.executeGoal( "test" );
+        this.executeGoal( verifier, "test" );
         verifier.verifyErrorFreeLog();
         verifier.resetStreams();
         

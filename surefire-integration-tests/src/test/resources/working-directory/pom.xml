@@ -31,4 +31,15 @@
   <modules>
     <module>child</module>
   </modules>
+
+  <build>
+    <plugins>  
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>${surefire.version}</version>
+      </plugin>
+      
+    </plugins>
+  </build>
 </project>

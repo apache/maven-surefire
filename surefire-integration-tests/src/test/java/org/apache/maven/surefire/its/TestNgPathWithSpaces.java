@@ -1,11 +1,10 @@
 package org.apache.maven.surefire.its;
 
 
-import junit.framework.TestCase;
+import java.io.File;
+
 import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
-
-import java.io.File;
 
 /**
  * Test TestNG test in a directory with spaces
@@ -14,7 +13,7 @@ import java.io.File;
  * 
  */
 public class TestNgPathWithSpaces
-    extends TestCase
+    extends AbstractSurefireIT
 {
     public void testTestNgTestWithSpaces ()
         throws Exception
@@ -22,7 +21,7 @@ public class TestNgPathWithSpaces
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/testng-path with spaces" );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        verifier.executeGoal( "test" );
+        this.executeGoal( verifier, "test" );
         verifier.verifyErrorFreeLog();
         verifier.resetStreams();
         

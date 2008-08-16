@@ -1,12 +1,11 @@
 package org.apache.maven.surefire.its;
 
 
-import junit.framework.TestCase;
-import org.apache.maven.it.Verifier;
-import org.apache.maven.it.util.ResourceExtractor;
-
 import java.io.File;
 import java.util.ArrayList;
+
+import org.apache.maven.it.Verifier;
+import org.apache.maven.it.util.ResourceExtractor;
 
 /**
  * Test library using a conflicting version of plexus-utils
@@ -15,7 +14,7 @@ import java.util.ArrayList;
  *
  */
 public class PlexusConflictTest
-    extends TestCase
+    extends AbstractSurefireIT
 {
     public void testPlexusConflict ()
         throws Exception
@@ -23,7 +22,7 @@ public class PlexusConflictTest
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/plexus-conflict" );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        verifier.executeGoal( "test" );
+        this.executeGoal( verifier, "test" );
         verifier.verifyErrorFreeLog();
         verifier.resetStreams();
 
@@ -36,7 +35,7 @@ public class PlexusConflictTest
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/plexus-conflict" );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        ArrayList goals = new ArrayList();
+        ArrayList goals = this.getInitialGoals();
         goals.add( "test" );
         goals.add( "-Dsurefire.useSystemClassLoader=false" );
         verifier.executeGoals( goals );

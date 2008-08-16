@@ -1,11 +1,10 @@
 package org.apache.maven.surefire.its;
 
 
-import junit.framework.TestCase;
+import java.io.File;
+
 import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
-
-import java.io.File;
 
 /**
  * Test project using JUnit4.4 -dep.  junit-dep includes only junit.* classes, and depends explicitly on hamcrest-core
@@ -14,7 +13,7 @@ import java.io.File;
  * 
  */
 public class JUnit44Dep
-    extends TestCase
+    extends AbstractSurefireIT
 {
     public void testJUnit44Dep ()
         throws Exception
@@ -22,7 +21,7 @@ public class JUnit44Dep
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/junit44-dep" );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        verifier.executeGoal( "test" );
+        this.executeGoal( verifier, "test" );
         verifier.verifyErrorFreeLog();
         verifier.resetStreams();
         

@@ -1,11 +1,10 @@
 package org.apache.maven.surefire.its;
 
 
-import junit.framework.TestCase;
+import java.io.File;
+
 import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
-
-import java.io.File;
 
 /**
  * Test JUnit 4 tests marked with "Ignore" attribute 
@@ -14,7 +13,7 @@ import java.io.File;
  * 
  */
 public class TestJunit4Ignore
-    extends TestCase
+    extends AbstractSurefireIT
 {
     public void testJunit4Ignore ()
         throws Exception
@@ -22,7 +21,7 @@ public class TestJunit4Ignore
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/junit44-ignore" );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        verifier.executeGoal( "test" );
+        this.executeGoal( verifier, "test" );
         verifier.verifyErrorFreeLog();
         verifier.resetStreams();
         

@@ -39,6 +39,7 @@
       </plugin>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
+        <version>${surefire.version}</version>
         <configuration>
           <forkMode>${forkMode}</forkMode>
         </configuration>

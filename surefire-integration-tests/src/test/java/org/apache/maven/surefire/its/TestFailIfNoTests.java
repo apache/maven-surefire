@@ -1,14 +1,12 @@
 package org.apache.maven.surefire.its;
 
 
-import junit.framework.TestCase;
+import java.io.File;
+import java.util.List;
+
 import org.apache.maven.it.VerificationException;
 import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Test failIfNoTests
@@ -17,7 +15,7 @@ import java.util.List;
  * 
  */
 public class TestFailIfNoTests
-    extends TestCase
+    extends AbstractSurefireIT
 {
     public void testFailIfNoTests ()
         throws Exception
@@ -25,7 +23,7 @@ public class TestFailIfNoTests
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/default-configuration-noTests" );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        List goals = new ArrayList();
+        List goals = this.getInitialGoals();
         goals.add( "test" );
         goals.add( "-DfailIfNoTests" );
 
@@ -53,7 +51,7 @@ public class TestFailIfNoTests
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/default-configuration-noTests" );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        verifier.executeGoal( "test" );
+        this.executeGoal( verifier, "test" );
         verifier.verifyErrorFreeLog();
         verifier.resetStreams();
 

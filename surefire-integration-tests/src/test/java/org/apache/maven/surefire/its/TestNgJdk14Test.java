@@ -1,11 +1,10 @@
 package org.apache.maven.surefire.its;
 
 
-import junit.framework.TestCase;
+import java.io.File;
+
 import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
-
-import java.io.File;
 
 /**
  * Test TestNG running in the JDK 1.4 JavaDoc style
@@ -14,7 +13,7 @@ import java.io.File;
  * 
  */
 public class TestNgJdk14Test
-    extends TestCase
+    extends AbstractSurefireIT
 {
     public void testTestNgJdk14 ()
         throws Exception
@@ -22,7 +21,7 @@ public class TestNgJdk14Test
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/testng-jdk14" );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        verifier.executeGoal( "test" );
+        this.executeGoal( verifier, "test" );
         verifier.verifyErrorFreeLog();
         verifier.resetStreams();
         

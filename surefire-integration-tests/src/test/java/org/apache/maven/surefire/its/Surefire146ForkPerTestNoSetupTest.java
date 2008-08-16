@@ -1,11 +1,10 @@
 package org.apache.maven.surefire.its;
 
 
-import junit.framework.TestCase;
+import java.io.File;
+
 import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
-
-import java.io.File;
 
 /**
  * Test Surefire-146 (forkMode=pertest fails to call setUp)
@@ -14,7 +13,7 @@ import java.io.File;
  * 
  */
 public class Surefire146ForkPerTestNoSetupTest
-    extends TestCase
+    extends AbstractSurefireIT
 {
     public void testForkPerTestNoSetup ()
         throws Exception
@@ -22,7 +21,7 @@ public class Surefire146ForkPerTestNoSetupTest
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/surefire-146-forkPerTestNoSetup" );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        verifier.executeGoal( "test" );
+        this.executeGoal( verifier, "test" );
         verifier.verifyErrorFreeLog();
         verifier.resetStreams();
         
