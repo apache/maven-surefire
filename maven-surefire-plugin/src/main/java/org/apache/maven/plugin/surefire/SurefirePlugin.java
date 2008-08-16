@@ -222,11 +222,19 @@ public class SurefirePlugin
 
     /**
      * List of System properties to pass to the JUnit tests.
-     * 
+     * @deprecated use systemPropertyVariables instead
      * @parameter
      */
     private Properties systemProperties;
 
+    /**
+     * List of System properties to pass to the JUnit tests. 
+     * 
+     * @parameter
+     * @since 2.5
+     */
+    private Map systemPropertyVariables;
+    
     /**
      * List of properties for configuring all TestNG related configurations. This is the new
      * preferred method of configuring TestNG.
@@ -472,6 +480,11 @@ public class SurefirePlugin
     private Properties originalSystemProperties;
 
     /**
+     * systemPropertyVariables + systemProperties
+     */
+    private Properties internalSystemProperties = new Properties();
+
+    /**
      * Flag to disable the generation of report files in xml format.
      * 
      * @parameter expression="${disableXmlReport}" default-value="false"
@@ -520,7 +533,6 @@ public class SurefirePlugin
      * @readonly
      */
     private MavenSession session;
-    
 
     public void execute()
         throws MojoExecutionException, MojoFailureException
@@ -873,7 +885,7 @@ public class SurefirePlugin
 
         if ( getLog().isDebugEnabled() )
         {
-            showMap( systemProperties, "system property" );
+            showMap( internalSystemProperties, "system property" );
         }
 
         if ( fork.isForking() )
@@ -882,7 +894,7 @@ public class SurefirePlugin
             fork.setUseSystemClassLoader( useSystemClassLoader.booleanValue() );
             fork.setUseManifestOnlyJar( useManifestOnlyJar );
 
-            fork.setSystemProperties( systemProperties );
+            fork.setSystemProperties( internalSystemProperties );
             
             if ( "true".equals( debugForkedProcess ) )
             {
@@ -1012,9 +1024,29 @@ public class SurefirePlugin
 
     protected void processSystemProperties( boolean setInSystem )
     {
-        if ( systemProperties == null )
+        if ( this.systemProperties != null )
         {
-            systemProperties = new Properties();
+            for ( Iterator i = systemProperties.keySet().iterator(); i.hasNext(); )
+            {
+                String key = (String) i.next();
+                String value = (String) systemProperties.get( key );
+                internalSystemProperties.setProperty( key, value );
+            }
+        }
+        
+        if ( this.systemPropertyVariables != null )
+        {
+            for ( Iterator i = systemPropertyVariables.keySet().iterator(); i.hasNext(); )
+            {
+                String key = (String) i.next();
+                String value = (String) systemPropertyVariables.get( key );
+                if ( value == null )
+                {
+                    this.getLog().error( key + "'s value cannot be null." );
+                }
+                internalSystemProperties.setProperty( key, value );
+            }
+            
         }
 
         originalSystemProperties = (Properties) System.getProperties().clone();
@@ -1026,24 +1058,24 @@ public class SurefirePlugin
         
         // Get the properties from the MavenSession instance to make embedded use work correctly
         Properties userSpecifiedProperties = (Properties) session.getExecutionProperties().clone();
-        userSpecifiedProperties.putAll( systemProperties );
+        userSpecifiedProperties.putAll( internalSystemProperties );
         //systemProperties = userSpecifiedProperties;
 
-        systemProperties.setProperty( "basedir", basedir.getAbsolutePath() );
-        systemProperties.setProperty( "user.dir", workingDirectory.getAbsolutePath() );
+        internalSystemProperties.setProperty( "basedir", basedir.getAbsolutePath() );
+        internalSystemProperties.setProperty( "user.dir", workingDirectory.getAbsolutePath() );
 
-        systemProperties.setProperty( "localRepository", localRepository.getBasedir() );
+        internalSystemProperties.setProperty( "localRepository", localRepository.getBasedir() );
 
         if ( setInSystem )
         {
             // Add all system properties configured by the user
-            Iterator iter = systemProperties.keySet().iterator();
+            Iterator iter = internalSystemProperties.keySet().iterator();
 
             while ( iter.hasNext() )
             {
                 String key = (String) iter.next();
 
-                String value = systemProperties.getProperty( key );
+                String value = internalSystemProperties.getProperty( key );
 
                 System.setProperty( key, value );
             }

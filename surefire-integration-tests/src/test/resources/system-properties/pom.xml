@@ -31,8 +31,30 @@
   <build>
     <plugins>
       <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>1.2</version>
+        <executions>
+          <execution>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>reserve-network-port</goal>
+            </goals>
+            <configuration>
+              <portNames>
+                <portName>reservedPort1</portName>
+                <portName>reservedPort2</portName>
+                <portName>reservedPort3</portName>
+              </portNames>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+        
+      
+      <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.4</version>
+        <version>${surefire.version}</version>
         <configuration>
           <systemProperties>
             <property>
@@ -40,18 +62,18 @@
               <value>foo</value>
             </property>
           </systemProperties>
+          <systemPropertyVariables>
+            <buildDirectory>${project.build.directory}</buildDirectory>
+            <reservedPort1>${reservedPort1}</reservedPort1>
+            <reservedPort2>${reservedPort2}</reservedPort2>
+            <reservedPort3>${reservedPort3}</reservedPort3>
+          </systemPropertyVariables>
           <argLine>-DsetOnArgLine=bar</argLine>
         </configuration>
       </plugin>
     </plugins>
     
   </build>
-  <pluginRepositories>
-        <pluginRepository>
-          <id>dfabulich</id>
-          <url>http://people.apache.org/~dfabulich/staging-repo/</url>
-        </pluginRepository>
-    </pluginRepositories>
 
   <dependencies>
     <dependency>
@@ -61,5 +83,9 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+  
+  <properties>
+    <reservedPort3>1</reservedPort3>
+  </properties>
 
 </project>

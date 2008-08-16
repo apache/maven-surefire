@@ -16,7 +16,7 @@ import java.util.List;
  * 
  */
 public class TestNgSuiteXmlTest
-    extends TestCase
+    extends AbstractSurefireIT
 {
     public void testTestNgSuiteXml ()
         throws Exception
@@ -24,7 +24,9 @@ public class TestNgSuiteXmlTest
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/testng-suite-xml" );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        verifier.executeGoal( "test" );
+        List goals = getInitialGoals();
+        goals.add( "test" );
+        verifier.executeGoals( goals );
         verifier.verifyErrorFreeLog();
         verifier.resetStreams();
         
@@ -37,7 +39,8 @@ public class TestNgSuiteXmlTest
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/testng-suite-xml" );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        List goals = Arrays.asList( new String[] {"test", "-DforkMode=always"} );
+        List goals = getInitialGoals();
+        goals.addAll( Arrays.asList( new String[] {"test", "-DforkMode=always" } ) );
         verifier.executeGoals( goals );
         verifier.verifyErrorFreeLog();
         verifier.resetStreams();

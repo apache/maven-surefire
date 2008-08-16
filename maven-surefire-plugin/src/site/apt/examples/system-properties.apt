@@ -2,13 +2,45 @@
   Using System Properties
   ------
   Allan Ramirez
+  Dan Tran
   ------
   July 2006
   ------
 
 Using System Properties
 
-  To add a system property, use the following configuration:
+  There are two ways to add a list of system properties to Surefire:
+
+* systemProperyVariable
+
+  This configuration is the replacement of the deprecated <systemProperies>.  It can accept any value
+  from Maven's properties that can be converted <<to String value>>
+
++---+
+<project>
+  [...]
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>2.4.2</version>
+        <configuration>
+          <systemPropertyVariables>
+            <propertyName>propertyValue</propertyName>
+            <buildDirectory>${project.build.directory}</buildDirectory>
+            [...]
+          </systemPropertyVariables>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+  [...]
+</project>
++---+
+
+
+* systemProperties ( deprecated ) 
 
 +---+
 <project>
@@ -25,6 +57,7 @@ Using System Properties
               <name>propertyName</name>
               <value>propertyValue</value>
             </property>
+            [...]
           </systemProperties>
         </configuration>
       </plugin>

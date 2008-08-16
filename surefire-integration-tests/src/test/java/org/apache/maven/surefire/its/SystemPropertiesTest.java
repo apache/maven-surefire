@@ -1,21 +1,20 @@
 package org.apache.maven.surefire.its;
 
 
-import junit.framework.TestCase;
-import org.apache.maven.it.Verifier;
-import org.apache.maven.it.util.ResourceExtractor;
-
 import java.io.File;
 import java.util.ArrayList;
 
+import org.apache.maven.it.Verifier;
+import org.apache.maven.it.util.ResourceExtractor;
+
 /**
  * Test system properties
- * 
+ *
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
- * 
+ *
  */
 public class SystemPropertiesTest
-    extends TestCase
+    extends AbstractSurefireIT
 {
     public void testSystemProperties ()
         throws Exception
@@ -23,24 +22,24 @@ public class SystemPropertiesTest
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/system-properties" );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        ArrayList goals = new ArrayList();
+        ArrayList goals = getInitialGoals();
         goals.add( "test" );
         // SUREFIRE-121... someday we should re-enable this
         // goals.add( "-DsetOnMavenCommandLine=baz" );
         verifier.executeGoals( goals );
         verifier.verifyErrorFreeLog();
         verifier.resetStreams();
-        
-        HelperAssertions.assertTestSuiteResults( 2, 0, 0, 0, testDir );        
+
+        HelperAssertions.assertTestSuiteResults( 4, 0, 0, 0, testDir );
     }
-    
+
     public void testSystemPropertiesNoFork()
         throws Exception
     {
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/system-properties" );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        ArrayList goals = new ArrayList();
+        ArrayList goals = getInitialGoals();
         goals.add( "test" );
         goals.add( "-DforkMode=never" );
         // SUREFIRE-121... someday we should re-enable this
@@ -51,6 +50,6 @@ public class SystemPropertiesTest
         verifier.verifyErrorFreeLog();
         verifier.resetStreams();
 
-        HelperAssertions.assertTestSuiteResults( 2, 0, 0, 0, testDir );
+        HelperAssertions.assertTestSuiteResults( 4, 0, 0, 0, testDir );
     }
 }

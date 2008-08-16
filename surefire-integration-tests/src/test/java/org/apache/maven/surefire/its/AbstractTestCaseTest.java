@@ -28,4 +28,5 @@ public class AbstractTestCaseTest
         
         HelperAssertions.assertTestSuiteResults( 1, 0, 0, 0, testDir );        
     }
+
 }
