@@ -34,12 +34,14 @@ Maven Surefire Plugin
 * Usage
 
   General instructions on how to use the Surefire Plugin can be found on the {{{usage.html}usage page}}. Some more
-  specific use cases are described in the examples given below.
+  specific use cases are described in the examples given below. Last but not least, users occasionally contribute
+  additional examples, tips or errata to the
+  {{{http://docs.codehaus.org/display/MAVENUSER/Surefire+Plugin}plugin's wiki page}}.
 
   In case you still have questions regarding the plugin's usage, please have a look at the {{{faq.html}FAQ}} and feel
   free to contact the {{{mail-lists.html}user mailing list}}. The posts to the mailing list are archived and could
   already contain the answer to your question as part of an older thread. Hence, it is also worth browsing/searching
-  the mail archive.
+  the {{{mail-lists.html}mail archive}}.
 
   If you feel like the plugin is missing a feature or has a defect, you can fill a feature request or bug report in our
   {{{issue-tracking.html}issue tracker}}. When creating a new issue, please provide a comprehensive description of your
