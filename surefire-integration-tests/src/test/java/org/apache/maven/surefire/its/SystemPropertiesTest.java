@@ -30,7 +30,7 @@ public class SystemPropertiesTest
         verifier.verifyErrorFreeLog();
         verifier.resetStreams();
 
-        HelperAssertions.assertTestSuiteResults( 4, 0, 0, 0, testDir );
+        HelperAssertions.assertTestSuiteResults( 5, 0, 0, 0, testDir );
     }
 
     public void testSystemPropertiesNoFork()
@@ -50,6 +50,6 @@ public class SystemPropertiesTest
         verifier.verifyErrorFreeLog();
         verifier.resetStreams();
 
-        HelperAssertions.assertTestSuiteResults( 4, 0, 0, 0, testDir );
+        HelperAssertions.assertTestSuiteResults( 5, 0, 0, 0, testDir );
     }
 }

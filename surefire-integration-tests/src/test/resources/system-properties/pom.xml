@@ -67,6 +67,8 @@
             <reservedPort1>${reservedPort1}</reservedPort1>
             <reservedPort2>${reservedPort2}</reservedPort2>
             <reservedPort3>${reservedPort3}</reservedPort3>
+            <nullProperty></nullProperty>
+            <blankProperty> </blankProperty>
           </systemPropertyVariables>
           <argLine>-DsetOnArgLine=bar</argLine>
         </configuration>

@@ -42,11 +42,16 @@ public class BasicTest
         
         assertTrue( reservedPort1 != reservedPort2 );
         
-        //plugin cannot overwrite the default value set in the pom, this is maven bug
+        //plugin cannot overwrite the default value set in the pom, this is maven bug but fixed at 2.1-M1
         assertEquals( 1, reservedPort3 );
         
     }
     
+    public void testEmptySystemProperties()
+    {
+        assertNull( "Null property is not null", System.getProperty(  "nullProperty" ) );
+        assertNull( "Blank property is not null", System.getProperty(  "blankProperty" ) );
+    }    
     
 // SUREFIRE-121; someday we should re-enable this    
 //    public void testSetOnMavenCommandLine()
