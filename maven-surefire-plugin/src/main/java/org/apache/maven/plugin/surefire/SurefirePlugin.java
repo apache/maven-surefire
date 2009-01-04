@@ -1040,13 +1040,12 @@ public class SurefirePlugin
             {
                 String key = (String) i.next();
                 String value = (String) systemPropertyVariables.get( key );
-                if ( value == null )
+                //java Properties does not accept null value
+                if ( value != null )
                 {
-                    this.getLog().error( key + "'s value cannot be null." );
+                    internalSystemProperties.setProperty( key, value );
                 }
-                internalSystemProperties.setProperty( key, value );
             }
-            
         }
 
         originalSystemProperties = (Properties) System.getProperties().clone();
