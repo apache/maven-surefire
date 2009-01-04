@@ -56,8 +56,7 @@ public class SurefireReportMojo
     /**
      * Doxia Site Renderer
      *
-     * @parameter expression="${component.org.codehaus.doxia.site.renderer.SiteRenderer}"
-     * @required @readonly
+     * @component
      */
     private SiteRenderer siteRenderer;
 
