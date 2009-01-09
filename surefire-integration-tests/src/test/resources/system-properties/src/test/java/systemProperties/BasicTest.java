@@ -52,6 +52,14 @@ public class BasicTest
         assertNull( "Null property is not null", System.getProperty(  "nullProperty" ) );
         assertNull( "Blank property is not null", System.getProperty(  "blankProperty" ) );
     }    
+
+    /**
+     * work around for SUREFIRE-121
+     */
+    public void testSetOnArgLineWorkAround()
+    {
+        assertEquals("property setOnArgLineWorkAround not set", "baz", System.getProperty( "setOnArgLineWorkAround" ) );
+    }
     
 // SUREFIRE-121; someday we should re-enable this    
 //    public void testSetOnMavenCommandLine()

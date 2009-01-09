@@ -26,11 +26,13 @@ public class SystemPropertiesTest
         goals.add( "test" );
         // SUREFIRE-121... someday we should re-enable this
         // goals.add( "-DsetOnMavenCommandLine=baz" );
+        
+        goals.add( "-DsetOnArgLineWorkAround=baz" );
         verifier.executeGoals( goals );
         verifier.verifyErrorFreeLog();
         verifier.resetStreams();
 
-        HelperAssertions.assertTestSuiteResults( 5, 0, 0, 0, testDir );
+        HelperAssertions.assertTestSuiteResults( 6, 0, 0, 0, testDir );
     }
 
     public void testSystemPropertiesNoFork()
@@ -42,6 +44,7 @@ public class SystemPropertiesTest
         ArrayList goals = getInitialGoals();
         goals.add( "test" );
         goals.add( "-DforkMode=never" );
+        goals.add( "-DsetOnArgLineWorkAround=baz" );
         // SUREFIRE-121... someday we should re-enable this
         // goals.add( "-DsetOnMavenCommandLine=baz" );
         // DGF fake the argLine, since we're not forking
@@ -50,6 +53,6 @@ public class SystemPropertiesTest
         verifier.verifyErrorFreeLog();
         verifier.resetStreams();
 
-        HelperAssertions.assertTestSuiteResults( 5, 0, 0, 0, testDir );
+        HelperAssertions.assertTestSuiteResults( 6, 0, 0, 0, testDir );
     }
 }

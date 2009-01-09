@@ -69,6 +69,8 @@
             <reservedPort3>${reservedPort3}</reservedPort3>
             <nullProperty></nullProperty>
             <blankProperty> </blankProperty>
+            <!--  this is a work around for SUREFIRE-121 -->
+            <setOnArgLineWorkAround>${setOnArgLineWorkAround}</setOnArgLineWorkAround>
           </systemPropertyVariables>
           <argLine>-DsetOnArgLine=bar</argLine>
         </configuration>
@@ -88,6 +90,7 @@
   
   <properties>
     <reservedPort3>1</reservedPort3>
+    <setOnArgLineWorkAround>fool</setOnArgLineWorkAround>
   </properties>
 
 </project>
