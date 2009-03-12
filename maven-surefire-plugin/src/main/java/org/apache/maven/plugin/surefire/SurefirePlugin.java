@@ -19,6 +19,16 @@ package org.apache.maven.plugin.surefire;
  * under the License.
  */
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
@@ -32,6 +42,7 @@ import org.apache.maven.artifact.resolver.filter.ExcludesArtifactFilter;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
 import org.apache.maven.artifact.versioning.VersionRange;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -79,27 +90,27 @@ public class SurefirePlugin
     /**
      * Set this to 'true' to skip running tests, but still compile them. Its use is NOT RECOMMENDED, but quite
      * convenient on occasion.
-     * 
+     *
      * @parameter expression="${skipTests}"
      * @since 2.4
      */
     private boolean skipTests;
-    
+
     /**
      * DEPRECATED This old parameter is just like skipTests, but bound to the old property maven.test.skip.exec.
      * Use -DskipTests instead; it's shorter.
-     * 
+     *
      * @deprecated
      * @parameter expression="${maven.test.skip.exec}"
      * @since 2.3
      */
     private boolean skipExec;
-    
+
     /**
      * Set this to 'true' to bypass unit tests entirely. Its use is NOT RECOMMENDED, especially if you
      * enable it using the "maven.test.skip" property, because maven.test.skip disables both running the
      * tests and compiling the tests.  Consider using the skipTests parameter instead.
-     * 
+     *
      * @parameter expression="${maven.test.skip}"
      */
     private boolean skip;
@@ -107,7 +118,7 @@ public class SurefirePlugin
     /**
      * Set this to true to ignore a failure during testing. Its use is NOT RECOMMENDED, but quite convenient on
      * occasion.
-     * 
+     *
      * @parameter expression="${maven.test.failure.ignore}"
      */
     private boolean testFailureIgnore;
@@ -115,7 +126,7 @@ public class SurefirePlugin
     /**
      * The base directory of the project being tested. This can be obtained in your unit test by
      * System.getProperty("basedir").
-     * 
+     *
      * @parameter expression="${basedir}"
      * @required
      */
@@ -123,7 +134,7 @@ public class SurefirePlugin
 
     /**
      * The directory containing generated test classes of the project being tested.
-     * 
+     *
      * @parameter expression="${project.build.testOutputDirectory}"
      * @required
      */
@@ -148,7 +159,7 @@ public class SurefirePlugin
 
     /**
      * The classpath elements of the project being tested.
-     * 
+     *
      * @parameter expression="${project.testClasspathElements}"
      * @required
      * @readonly
@@ -157,22 +168,22 @@ public class SurefirePlugin
 
     /**
      * Additional elements to be appended to the classpath.
-     * 
+     *
      * @parameter
      * @since 2.4
      */
     private List additionalClasspathElements;
-    
+
     /**
      * Base directory where all reports are written to.
-     * 
+     *
      * @parameter expression="${project.build.directory}/surefire-reports"
      */
     private File reportsDirectory;
 
     /**
      * The test source directory containing test class sources.
-     * 
+     *
      * @parameter expression="${project.build.testSourceDirectory}"
      * @required
      * @since 2.2
@@ -181,11 +192,11 @@ public class SurefirePlugin
 
     /**
      * Specify this parameter to run individual tests by file name, overriding the <code>includes/excludes</code>
-     * parameters.  Each pattern you specify here will be used to create an 
+     * parameters.  Each pattern you specify here will be used to create an
      * include pattern formatted like <code>**&#47;${test}.java</code>, so you can just type "-Dtest=MyTest"
      * to run a single test called "foo/MyTest.java".  This parameter will override the TestNG suiteXmlFiles
      * parameter.
-     * 
+     *
      * @parameter expression="${test}"
      */
     private String test;
@@ -195,7 +206,7 @@ public class SurefirePlugin
      * specified and when the <code>test</code> parameter is not specified, the default includes will be
      * <code>**&#47;Test*.java   **&#47;*Test.java   **&#47;*TestCase.java</code>.  This parameter is ignored if
      * TestNG suiteXmlFiles are specified.
-     * 
+     *
      * @parameter
      */
     private List includes;
@@ -205,7 +216,7 @@ public class SurefirePlugin
      * specified and when the <code>test</code> parameter is not specified, the default excludes will be
      * <code>**&#47;*$*</code> (which excludes all inner classes).  This parameter is ignored if
      * TestNG suiteXmlFiles are specified.
-     * 
+     *
      * @parameter
      */
     private List excludes;
@@ -213,7 +224,7 @@ public class SurefirePlugin
     /**
      * ArtifactRepository of the localRepository. To obtain the directory of localRepository in unit tests use
      * System.setProperty( "localRepository").
-     * 
+     *
      * @parameter expression="${localRepository}"
      * @required
      * @readonly
@@ -228,13 +239,13 @@ public class SurefirePlugin
     private Properties systemProperties;
 
     /**
-     * List of System properties to pass to the JUnit tests. 
-     * 
+     * List of System properties to pass to the JUnit tests.
+     *
      * @parameter
      * @since 2.5
      */
     private Map systemPropertyVariables;
-    
+
     /**
      * List of properties for configuring all TestNG related configurations. This is the new
      * preferred method of configuring TestNG.
@@ -246,7 +257,7 @@ public class SurefirePlugin
 
     /**
      * Map of of plugin artifacts.
-     * 
+     *
      * @parameter expression="${plugin.artifactMap}"
      * @required
      * @readonly
@@ -255,7 +266,7 @@ public class SurefirePlugin
 
     /**
      * Map of of project artifacts.
-     * 
+     *
      * @parameter expression="${project.artifactMap}"
      * @required
      * @readonly
@@ -264,21 +275,21 @@ public class SurefirePlugin
 
     /**
      * Option to print summary of test suites or just print the test cases that has errors.
-     * 
+     *
      * @parameter expression="${surefire.printSummary}" default-value="true"
      */
     private boolean printSummary;
 
     /**
      * Selects the formatting for the test report to be generated. Can be set as brief or plain.
-     * 
+     *
      * @parameter expression="${surefire.reportFormat}" default-value="brief"
      */
     private String reportFormat;
 
     /**
      * Option to generate a file test report or just output the test report to the console.
-     * 
+     *
      * @parameter expression="${surefire.useFile}" default-value="true"
      */
     private boolean useFile;
@@ -286,7 +297,7 @@ public class SurefirePlugin
     /**
      * When forking, set this to true to redirect the unit test standard output to a file (found in
      * reportsDirectory/testName-output.txt).
-     * 
+     *
      * @parameter expression="${maven.test.redirectTestOutputToFile}" default-value="false"
      * @since 2.3
      */
@@ -294,16 +305,16 @@ public class SurefirePlugin
 
     /**
      * Set this to "true" to cause a failure if there are no tests to run. Defaults to false.
-     * 
+     *
      * @parameter expression="${failIfNoTests}"
      * @since 2.4
      */
     private Boolean failIfNoTests;
-    
+
     /**
      * Option to specify the forking mode. Can be "never", "once" or "always". "none" and "pertest" are also accepted
      * for backwards compatibility.
-     * 
+     *
      * @parameter expression="${forkMode}" default-value="once"
      * @since 2.1
      */
@@ -312,7 +323,7 @@ public class SurefirePlugin
     /**
      * Option to specify the jvm (or path to the java executable) to use with the forking options. For the default, the
      * jvm will be the same as the one used to run Maven.
-     * 
+     *
      * @parameter expression="${jvm}"
      * @since 2.1
      */
@@ -320,35 +331,35 @@ public class SurefirePlugin
 
     /**
      * Arbitrary JVM options to set on the command line.
-     * 
+     *
      * @parameter expression="${argLine}"
      * @since 2.1
      */
     private String argLine;
 
     /**
-     * Attach a debugger to the forked JVM.  If set to "true", the process will suspend and 
+     * Attach a debugger to the forked JVM.  If set to "true", the process will suspend and
      * wait for a debugger to attach on port 5005.  If set to some other string, that
      * string will be appended to the argLine, allowing you to configure arbitrary
      * debuggability options (without overwriting the other options specified in the argLine).
-     * 
+     *
      * @parameter expression="${maven.surefire.debug}"
      * @since 2.4
      */
     private String debugForkedProcess;
-    
+
     /**
      * Kill the forked test process after a certain number of seconds.  If set to 0,
      * wait forever for the process, never timing out.
-     * 
+     *
      * @parameter expression="${surefire.timeout}"
      * @since 2.4
      */
     private int forkedProcessTimeoutInSeconds;
-    
+
     /**
      * Additional environments to set on the command line.
-     * 
+     *
      * @parameter
      * @since 2.1.3
      */
@@ -356,7 +367,7 @@ public class SurefirePlugin
 
     /**
      * Command line working directory.
-     * 
+     *
      * @parameter expression="${basedir}"
      * @since 2.1.3
      */
@@ -366,7 +377,7 @@ public class SurefirePlugin
      * When false it makes tests run using the standard classloader delegation instead of the default Maven isolated
      * classloader. Only used when forking (forkMode is not "none").<br/> Setting it to false helps with some problems
      * caused by conflicts between xml parsers in the classpath and the Java 5 provider parser.
-     * 
+     *
      * @parameter expression="${childDelegation}" default-value="false"
      * @since 2.1
      */
@@ -375,7 +386,7 @@ public class SurefirePlugin
     /**
      * (TestNG only) Groups for this test. Only classes/methods/etc decorated with one of the groups specified here will be included
      * in test run, if specified.  This parameter is overridden if suiteXmlFiles are specified.
-     * 
+     *
      * @parameter expression="${groups}"
      * @since 2.2
      */
@@ -384,7 +395,7 @@ public class SurefirePlugin
     /**
      * (TestNG only) Excluded groups. Any methods/classes/etc with one of the groups specified in this list will specifically not be
      * run.  This parameter is overridden if suiteXmlFiles are specified.
-     * 
+     *
      * @parameter expression="${excludedGroups}"
      * @since 2.2
      */
@@ -394,32 +405,32 @@ public class SurefirePlugin
      * (TestNG only) List of TestNG suite xml file locations, seperated by commas. Note that suiteXmlFiles is incompatible
      * with several other parameters on this plugin, like includes/excludes.  This parameter is ignored if
      * the "test" parameter is specified (allowing you to run a single test instead of an entire suite).
-     * 
+     *
      * @parameter
      * @since 2.2
      */
     private File[] suiteXmlFiles;
-    
+
     /**
      * Allows you to specify the name of the JUnit artifact. If not set, <code>junit:junit</code> will be used.
-     * 
+     *
      * @parameter expression="${junitArtifactName}" default-value="junit:junit"
      * @since 2.3.1
      */
     private String junitArtifactName;
-    
+
     /**
      * Allows you to specify the name of the TestNG artifact. If not set, <code>org.testng:testng</code> will be used.
-     * 
+     *
      * @parameter expression="${testNGArtifactName}" default-value="org.testng:testng"
      * @since 2.3.1
      */
     private String testNGArtifactName;
-    
+
     /**
      * (TestNG only) The attribute thread-count allows you to specify how many threads should be allocated for this execution. Only
      * makes sense to use in conjunction with parallel.
-     * 
+     *
      * @parameter expression="${threadCount}"
      * @since 2.2
      */
@@ -429,7 +440,7 @@ public class SurefirePlugin
      * (TestNG only) When you use the parallel attribute, TestNG will try to run all your test methods in separate threads, except for
      * methods that depend on each other, which will be run in the same thread in order to respect their order of
      * execution.
-     * 
+     *
      * @parameter expression="${parallel}"
      * @todo test how this works with forking, and console/file output parallelism
      * @since 2.2
@@ -438,7 +449,7 @@ public class SurefirePlugin
 
     /**
      * Whether to trim the stack trace in the reports to just the lines within the test, or show the full trace.
-     * 
+     *
      * @parameter expression="${trimStackTrace}" default-value="true"
      * @since 2.2
      */
@@ -446,21 +457,21 @@ public class SurefirePlugin
 
     /**
      * Resolves the artifacts needed.
-     * 
+     *
      * @component
      */
     private ArtifactResolver artifactResolver;
 
     /**
      * Creates the artifact
-     * 
+     *
      * @component
      */
     private ArtifactFactory artifactFactory;
 
     /**
      * The plugin remote repositories declared in the pom.
-     * 
+     *
      * @parameter expression="${project.pluginArtifactRepositories}"
      * @since 2.2
      */
@@ -468,7 +479,7 @@ public class SurefirePlugin
 
     /**
      * For retrieval of artifact's metadata.
-     * 
+     *
      * @component
      */
     private ArtifactMetadataSource metadataSource;
@@ -486,7 +497,7 @@ public class SurefirePlugin
 
     /**
      * Flag to disable the generation of report files in xml format.
-     * 
+     *
      * @parameter expression="${disableXmlReport}" default-value="false"
      * @since 2.2
      */
@@ -496,21 +507,21 @@ public class SurefirePlugin
      * Option to pass dependencies to the system's classloader instead of using an isolated class loader when forking.
      * Prevents problems with JDKs which implement the service provider lookup mechanism by using the system's
      * classloader.  Default value is "true".
-     * 
+     *
      * @parameter expression="${surefire.useSystemClassLoader}"
      * @since 2.3
      */
     private Boolean useSystemClassLoader;
-    
+
     /**
      * By default, Surefire forks your tests using a manifest-only jar; set this parameter
      * to "false" to force it to launch your tests with a plain old Java classpath.
      * (See http://maven.apache.org/plugins/maven-surefire-plugin/examples/class-loading.html
      * for a more detailed explanation of manifest-only jars and their benefits.)
-     * 
+     *
      * Default value is "true".  Beware, setting this to "false" may cause your tests to
      * fail on Windows if your classpath is too long.
-     * 
+     *
      * @parameter expression="${surefire.useManifestOnlyJar}" default-value="true"
      * @since 2.4.3
      */
@@ -519,20 +530,28 @@ public class SurefirePlugin
     /**
      * By default, Surefire enables JVM assertions for the execution of your test cases. To disable the assertions, set
      * this flag to <code>false</code>.
-     * 
+     *
      * @parameter expression="${enableAssertions}" default-value="true"
      * @since 2.3.1
      */
     private boolean enableAssertions;
-    
+
     /**
-     * The current build session instance. 
+     * The current build session instance.
      *
      * @parameter expression="${session}"
      * @required
      * @readonly
      */
     private MavenSession session;
+
+    /**
+     * (TestNG only) Define the factory class used to create all test instances
+     *
+     * @parameter expression="${objectFactory}"
+     * @since 2.5
+     */
+    private String objectFactory;
 
     public void execute()
         throws MojoExecutionException, MojoFailureException
@@ -564,9 +583,9 @@ public class SurefirePlugin
             }
 
             if ( result == 0 ) return;
-            
+
             String msg;
-            
+
             if ( result == SurefireBooter.NO_TESTS_EXIT_CODE )
             {
                 if ( ( failIfNoTests == null ) || !failIfNoTests.booleanValue() ) return;
@@ -577,7 +596,7 @@ public class SurefirePlugin
                 msg = "There are test failures.\n\nPlease refer to " + reportsDirectory + " for the individual test results.";
 
             }
-            
+
             if ( testFailureIgnore )
             {
                 getLog().error( msg );
@@ -643,6 +662,10 @@ public class SurefirePlugin
         if ( this.threadCount > 0 )
         {
             properties.setProperty( "threadcount", new Integer( this.threadCount ).toString() );
+        }
+        if ( this.objectFactory != null )
+        {
+            properties.setProperty( "objectfactory", this.objectFactory );
         }
     }
 
@@ -729,7 +752,7 @@ public class SurefirePlugin
             {
                 throw new MojoExecutionException( "suiteXmlFiles is configured, but there is no TestNG dependency" );
             }
- 
+
             // TODO: properties should be passed in here too
             surefireBooter.addTestSuite( "org.apache.maven.surefire.testng.TestNGXmlTestSuite", new Object[]{
                 suiteXmlFiles, testSourceDirectory.getAbsolutePath(), testNgArtifact.getVersion(), testNgArtifact.getClassifier(), properties, reportsDirectory} );
@@ -843,36 +866,36 @@ public class SurefirePlugin
 
             surefireBooter.addClassPathUrl( classpathElement );
         }
-        
+
         Toolchain tc = getToolchain();
-        
-        if (tc != null) 
+
+        if (tc != null)
         {
             getLog().info("Toolchain in surefire-plugin: " + tc);
-            if (ForkConfiguration.FORK_NEVER.equals( forkMode ) ) 
+            if (ForkConfiguration.FORK_NEVER.equals( forkMode ) )
             {
                 forkMode = ForkConfiguration.FORK_ONCE;
             }
-            if ( jvm  != null ) 
+            if ( jvm  != null )
             {
                 getLog().warn("Toolchains are ignored, 'executable' parameter is set to " + jvm);
             } else {
                 jvm = tc.findTool("java"); //NOI18N
             }
         }
-        
+
         if ( additionalClasspathElements != null )
         {
             for ( Iterator i = additionalClasspathElements.iterator(); i.hasNext(); )
             {
                 String classpathElement = (String) i.next();
-    
+
                 getLog().debug( "  " + classpathElement );
-    
+
                 surefireBooter.addClassPathUrl( classpathElement );
             }
         }
-        
+
         // ----------------------------------------------------------------------
         // Forking
         // ----------------------------------------------------------------------
@@ -895,12 +918,12 @@ public class SurefirePlugin
             fork.setUseManifestOnlyJar( useManifestOnlyJar );
 
             fork.setSystemProperties( internalSystemProperties );
-            
+
             if ( "true".equals( debugForkedProcess ) )
             {
                 debugForkedProcess = "-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005";
             }
-            
+
             fork.setDebugLine( debugForkedProcess );
 
             if ( jvm == null || "".equals( jvm ) )
@@ -943,7 +966,7 @@ public class SurefirePlugin
         }
 
         surefireBooter.setFailIfNoTests( failIfNoTests == null ? false : failIfNoTests.booleanValue() );
-        
+
         surefireBooter.setForkedProcessTimeoutInSeconds( forkedProcessTimeoutInSeconds );
 
         surefireBooter.setRedirectTestOutputToFile( redirectTestOutputToFile );
@@ -1033,7 +1056,7 @@ public class SurefirePlugin
                 internalSystemProperties.setProperty( key, value );
             }
         }
-        
+
         if ( this.systemPropertyVariables != null )
         {
             for ( Iterator i = systemPropertyVariables.keySet().iterator(); i.hasNext(); )
@@ -1049,12 +1072,12 @@ public class SurefirePlugin
         }
 
         originalSystemProperties = (Properties) System.getProperties().clone();
-        
+
         // We used to take all of our system properties and dump them in with the
         // user specified properties for SUREFIRE-121, causing SUREFIRE-491.
         // Not gonna do THAT any more... but I'm leaving this code here in case
         // we need it later when we try to fix SUREFIRE-121 again.
-        
+
         // Get the properties from the MavenSession instance to make embedded use work correctly
         Properties userSpecifiedProperties = (Properties) session.getExecutionProperties().clone();
         userSpecifiedProperties.putAll( internalSystemProperties );
@@ -1087,7 +1110,7 @@ public class SurefirePlugin
      * <p>
      * The Reporter that will be added will be based on the value of the parameter useFile, reportFormat, and
      * printSummary.
-     * 
+     *
      * @param surefireBooter The surefire booter that will run tests.
      * @param forking
      */
@@ -1152,18 +1175,18 @@ public class SurefirePlugin
     {
         this.skipTests = skipExec;
     }
-    
+
     //TODO remove the part with ToolchainManager lookup once we depend on
     //2.0.9 (have it as prerequisite). Define as regular component field then.
-    private Toolchain getToolchain() 
+    private Toolchain getToolchain()
     {
         Toolchain tc = null;
-        try 
+        try
         {
             if (session != null) //session is null in tests..
             {
                 ToolchainManager toolchainManager = (ToolchainManager) session.getContainer().lookup(ToolchainManager.ROLE);
-                if (toolchainManager != null) 
+                if (toolchainManager != null)
                 {
                     tc = toolchainManager.getToolchainFromBuildContext("jdk", session);
                 }

@@ -19,16 +19,16 @@ package org.apache.maven.surefire.testng.conf;
  * under the License.
  */
 
-import org.apache.maven.surefire.testset.TestSetFailedException;
-import org.apache.maven.surefire.util.NestedRuntimeException;
-import org.testng.TestNG;
-
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.maven.surefire.testset.TestSetFailedException;
+import org.apache.maven.surefire.util.NestedRuntimeException;
+import org.testng.TestNG;
 
 public abstract class AbstractDirectConfigurator
     implements Configurator
@@ -82,24 +82,32 @@ public abstract class AbstractDirectConfigurator
         if (listenerClasses == null || "".equals(listenerClasses.trim())) {
             return new ArrayList();
         }
-        
+
         List classes = new ArrayList();
         String[] classNames = listenerClasses.split(" *, *");
-        for(int i = 0; i < classNames.length; i++) 
+        for(int i = 0; i < classNames.length; i++)
         {
-            try 
-            {
-                classes.add(Class.forName(classNames[i]));
-            }
-            catch(Exception ex) 
-            {
-                throw new TestSetFailedException("Cannot find listener class " + classNames[i], ex);
-            }              
+            String className = classNames[i];
+            Class clazz = loadClass( className );
+            classes.add( clazz );
         }
-        
+
         return classes;
     }
-    
+
+    public static Class loadClass(String className )
+        throws TestSetFailedException
+    {
+        try
+        {
+            return Class.forName( className );
+        }
+        catch(Exception ex)
+        {
+            throw new TestSetFailedException("Cannot find listener class " + className, ex);
+        }
+    }
+
     public static final class Setter
     {
         private final String setterName;

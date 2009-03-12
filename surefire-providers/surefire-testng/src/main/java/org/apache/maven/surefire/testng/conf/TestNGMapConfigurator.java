@@ -25,6 +25,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.apache.maven.surefire.testng.conf.AbstractDirectConfigurator;
+import org.apache.maven.surefire.testng.conf.Configurator;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.testng.TestNG;
 
@@ -37,11 +39,11 @@ import org.testng.TestNG;
  * <code>TestNGCommandLineArgs.SKIP_FAILED_INVOCATION_COUNT_OPT</code> which is a <code>Boolean</code>,
  * <code>TestNGCommandLineArgs.OBJECT_FACTORY_COMMAND_OPT</code> which is a <code>Class</code>,
  * <code>TestNGCommandLineArgs.REPORTERS_LIST</code> which is a <code>List&gt;ReporterConfig&lt;</code>.
- * 
+ *
  * <p/>
  * Test classes and/or suite files are not passed along as options parameters, but
  * configured separately.
- * 
+ *
  * @author <a href='mailto:the[dot]mindstorm[at]gmail[dot]com'>Alex Popescu</a>
  */
 public class TestNGMapConfigurator
@@ -59,12 +61,16 @@ public class TestNGMapConfigurator
             {
                 val = AbstractDirectConfigurator.loadListenerClasses((String) val);
             }
+            if ( "objectfactory".equals( key ) )
+            {
+                val = AbstractDirectConfigurator.loadClass((String) val);
+            }
             if ( "reporter".equals( key ) )
             {
                 // TODO support multiple reporters?
                 val = convertReporterConfig( val );
                 key = "reporterslist";
-                
+
             }
             if ( "junit".equals( key ) )
             {
@@ -78,18 +84,18 @@ public class TestNGMapConfigurator
                 val = convert( val, String.class );
             }
             // TODO objectfactory... not even documented, does it work?
-            if ( key.startsWith("-") ) 
+            if ( key.startsWith("-") )
             {
               convertedOptions.put( key, val );
             }
-            else 
+            else
             {
               convertedOptions.put( "-" + key, val );
             }
         }
 
         testng.configure( convertedOptions );
-        
+
     }
 
     // ReporterConfig only became available in later versions of TestNG
