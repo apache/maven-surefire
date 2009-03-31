@@ -58,21 +58,9 @@ import org.apache.maven.surefire.report.DetailedConsoleReporter;
 import org.apache.maven.surefire.report.FileReporter;
 import org.apache.maven.surefire.report.ForkingConsoleReporter;
 import org.apache.maven.surefire.report.XMLReporter;
-import org.codehaus.plexus.util.StringUtils;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import org.apache.maven.execution.MavenSession;
 import org.apache.maven.toolchain.Toolchain;
 import org.apache.maven.toolchain.ToolchainManager;
-import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
+import org.codehaus.plexus.util.StringUtils;
 
 /**
  * Run tests using Surefire.
@@ -484,6 +472,8 @@ public class SurefirePlugin
      */
     private ArtifactMetadataSource metadataSource;
 
+    
+    
     private static final String BRIEF_REPORT_FORMAT = "brief";
 
     private static final String PLAIN_REPORT_FORMAT = "plain";
@@ -553,6 +543,10 @@ public class SurefirePlugin
      */
     private String objectFactory;
 
+    /** @component */
+    private ToolchainManager toolchainManager;
+    
+    
     public void execute()
         throws MojoExecutionException, MojoFailureException
     {
@@ -1181,19 +1175,12 @@ public class SurefirePlugin
     private Toolchain getToolchain()
     {
         Toolchain tc = null;
-        try
+        
+        if ( toolchainManager != null )
         {
-            if (session != null) //session is null in tests..
-            {
-                ToolchainManager toolchainManager = (ToolchainManager) session.getContainer().lookup(ToolchainManager.ROLE);
-                if (toolchainManager != null)
-                {
-                    tc = toolchainManager.getToolchainFromBuildContext("jdk", session);
-                }
-            }
-        } catch (ComponentLookupException componentLookupException) {
-            //just ignore, could happen in pre-2.0.9 builds..
+            tc = toolchainManager.getToolchainFromBuildContext( "jdk", session );
         }
+        
         return tc;
     }
 }
