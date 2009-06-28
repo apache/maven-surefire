@@ -66,7 +66,6 @@
             <buildDirectory>${project.build.directory}</buildDirectory>
             <reservedPort1>${reservedPort1}</reservedPort1>
             <reservedPort2>${reservedPort2}</reservedPort2>
-            <reservedPort3>${reservedPort3}</reservedPort3>
             <nullProperty></nullProperty>
             <blankProperty> </blankProperty>
             <!--  this is a work around for SUREFIRE-121 -->
@@ -89,7 +88,6 @@
   </dependencies>
   
   <properties>
-    <reservedPort3>1</reservedPort3>
     <setOnArgLineWorkAround>fool</setOnArgLineWorkAround>
   </properties>
 

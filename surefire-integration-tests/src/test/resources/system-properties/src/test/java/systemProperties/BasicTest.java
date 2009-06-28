@@ -33,24 +33,18 @@ public class BasicTest
     public void testSystemPropertyGenerateByOtherPlugin()
         throws Exception
     {
-        int  reservedPort1 = Integer.parseInt( System.getProperty(  "reservedPort1" ) );
-        int  reservedPort2 = Integer.parseInt( System.getProperty(  "reservedPort2" ) );
-        int  reservedPort3 = Integer.parseInt( System.getProperty(  "reservedPort3" ) );
+        int  reservedPort1 = Integer.parseInt( System.getProperty( "reservedPort1" ) );
+        int  reservedPort2 = Integer.parseInt( System.getProperty( "reservedPort2" ) );
         System.out.println( "reservedPort1: " + reservedPort1 );
         System.out.println( "reservedPort2: " + reservedPort2 );
-        System.out.println( "reservedPort3: " + reservedPort3 );
         
         assertTrue( reservedPort1 != reservedPort2 );
-        
-        //plugin cannot overwrite the default value set in the pom, this is maven bug but fixed at 2.1-M1
-        assertEquals( 1, reservedPort3 );
-        
     }
     
     public void testEmptySystemProperties()
     {
-        assertNull( "Null property is not null", System.getProperty(  "nullProperty" ) );
-        assertNull( "Blank property is not null", System.getProperty(  "blankProperty" ) );
+        assertNull( "Null property is not null", System.getProperty( "nullProperty" ) );
+        assertNull( "Blank property is not null", System.getProperty( "blankProperty" ) );
     }    
 
     /**
