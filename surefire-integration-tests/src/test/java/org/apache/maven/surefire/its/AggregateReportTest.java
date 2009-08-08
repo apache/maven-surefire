@@ -23,7 +23,6 @@ public class AggregateReportTest
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
         List goals = this.getInitialGoals();
-        goals.add( "jxr:test-jxr" );
         goals.add( "surefire-report:report" );
         verifier.executeGoals( goals );
         //DGF even though the build will succeed, the log will contain errors (from the failure)

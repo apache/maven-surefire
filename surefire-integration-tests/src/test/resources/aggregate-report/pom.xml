@@ -48,13 +48,8 @@
   <reporting>
     <plugins>
       <plugin>
-        <artifactId>maven-jxr-plugin</artifactId>
-        <configuration>
-          <aggregate>true</aggregate>
-        </configuration>
-      </plugin>
-      <plugin>
         <artifactId>maven-surefire-report-plugin</artifactId>
+        <version>${surefire.version}</version>
         <configuration>
           <aggregate>true</aggregate>
         </configuration>
