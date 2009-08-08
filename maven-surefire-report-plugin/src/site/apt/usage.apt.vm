@@ -1,5 +1,5 @@
   ------
-  Changing Report Name
+  Usage
   ------
   Allan Ramirez
   ------
@@ -23,30 +23,43 @@
 ~~ NOTE: For help with the syntax of this file, see:
 ~~ http://maven.apache.org/doxia/references/apt-format.html
 
-Changing Report Name
+Usage
 
-  In order to configure the file name of the generated report(which is
-  <"surefire-report"> by default), the <<outputName>> property should
-  be set to its new name.
+* Generate the report as part of Project Reports
 
-+----+
+  To generate the Surefire report as part of the site generation, add the following in
+  the \<reporting\> section of your POM:
+
++---+
 <project>
-  [...]
+  ...
   <reporting>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-report-plugin</artifactId>
-        <version>2.4.2</version>
-        <configuration>
-           <outputName>newname</outputName>
-        </configuration>
+        <version>${project.version}</version>
       </plugin>
     </plugins>
   </reporting>
-  [...]
+  ...
 </project>
-+----+
++---+
 
-  And after executing the <<<mvn site>>>, the generated report file is named
-  to <<newname.html>>.
+  When the <<<mvn site>>> is invoked, the report will be automatically
+  included in the Project Reports menu as shown in the figure below.
+
+[images/surefire-sample1.PNG] Sample Surefire Report
+
+* Generate the report as standalone
+
+  The Surefire report can also generate the report using its standalone goal:
+
++---+
+mvn surefire-report:report  
++---+
+
+  A HTML report should be generated in <<<$\{basedir\}/target/site/surefire-report.html>>>.
+
+[images/surefire-sample2.PNG] Sample standalone surefire-report
+

@@ -42,9 +42,9 @@ Source Code Cross Reference
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-report-plugin</artifactId>
-        <version>2.4.2</version>
+        <version>${project.version}</version>
         <configuration>
-           <!-- place your configuration here -->
+          <!-- place your configuration here -->
         </configuration>
       </plugin>
       <plugin>

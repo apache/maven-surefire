@@ -1,5 +1,5 @@
   ------
-  Usage
+  Showing Failure Tests
   ------
   Allan Ramirez
   ------
@@ -23,43 +23,35 @@
 ~~ NOTE: For help with the syntax of this file, see:
 ~~ http://maven.apache.org/doxia/references/apt-format.html
 
-Usage
+Showing Failure Tests
 
-* Generate the report as part of Project Reports
+  By default, the Surefire Report Plugin shows all test result status (success
+  and failures) in the generated HTML. To be able to show the failures only, the
+  property <<showSuccess>> should be set to <<false>>.
 
-  To generate the Surefire report as part of the site generation, add the following in
-  the \<reporting\> section of your POM:
-
-+---+
++----+
 <project>
-  ...
+  [...]
   <reporting>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-report-plugin</artifactId>
-        <version>2.4.2</version>
+        <version>${project.version}</version>
+        <configuration>
+          <showSuccess>false</showSuccess>
+        </configuration>
       </plugin>
     </plugins>
   </reporting>
-  ...
+  [...]
 </project>
-+---+
++----+
 
-  When the <<<mvn site>>> is invoked, the report will be automatically
-  included in the Project Reports menu as shown in the figure below.
+  Then execute <<<mvn site>>> for the report generation.
 
-[images/surefire-sample1.PNG] Sample Surefire Report
+  It can also be set via commandline with the standalone goal.
 
-* Generate the report as standalone
-
-  The Surefire report can also generate the report using its standalone goal:
-
-+---+
-mvn surefire-report:report  
-+---+
-
-  A HTML report should be generated in <<<$\{basedir\}/target/site/surefire-report.html>>>.
-
-[images/surefire-sample2.PNG] Sample standalone surefire-report
-
++----+
+  mvn surefire-report:report -DshowSuccess=false
++----+

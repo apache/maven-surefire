@@ -1,5 +1,5 @@
   ------
-  Showing Failure Tests
+  Changing Report Name
   ------
   Allan Ramirez
   ------
@@ -23,11 +23,11 @@
 ~~ NOTE: For help with the syntax of this file, see:
 ~~ http://maven.apache.org/doxia/references/apt-format.html
 
-Showing Failure Tests
+Changing Report Name
 
-  By default, the Surefire Report Plugin shows all test result status (success
-  and failures) in the generated HTML. To be able to show the failures only, the
-  property <<showSuccess>> should be set to <<false>>.
+  In order to configure the file name of the generated report(which is
+  <"surefire-report"> by default), the <<outputName>> property should
+  be set to its new name.
 
 +----+
 <project>
@@ -37,9 +37,9 @@ Showing Failure Tests
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-report-plugin</artifactId>
-        <version>2.4.2</version>
+        <version>${project.version}</version>
         <configuration>
-           <showSuccess>false</showSuccess>
+          <outputName>newname</outputName>
         </configuration>
       </plugin>
     </plugins>
@@ -48,10 +48,5 @@ Showing Failure Tests
 </project>
 +----+
 
-  Then execute <<<mvn site>>> for the report generation.
-
-  It can also be set via commandline with the standalone goal.
-
-+----+
-  mvn surefire-report:report -DshowSuccess=false
-+----+
+  And after executing the <<<mvn site>>>, the generated report file is named
+  to <<newname.html>>.

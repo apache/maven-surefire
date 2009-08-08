@@ -22,11 +22,11 @@ Additional Classpath Elements
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.4.3</version>
+        <version>${project.version}</version>
         <configuration>
           <additionalClasspathElements>
-          <additionalClasspathElement>path/to/additional/resources</additionalClasspathElement>
-          <additionalClasspathElement>path/to/additional/jar</additionalClasspathElement>
+            <additionalClasspathElement>path/to/additional/resources</additionalClasspathElement>
+            <additionalClasspathElement>path/to/additional/jar</additionalClasspathElement>
           </additionalClasspathElements>
         </configuration>
       </plugin>
