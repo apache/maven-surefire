@@ -114,8 +114,6 @@ public class SurefireReportGenerator
             constructFailureDetails( sink, bundle, failureList );
         }
 
-        sinkLineBreak( sink );
-
         sink.body_();
 
         sink.flush();
@@ -129,12 +127,10 @@ public class SurefireReportGenerator
 
         sink.section1();
         sink.sectionTitle1();
+        sink.text( bundle.getString( "report.surefire.label.summary" ) );
+        sink.sectionTitle1_();
 
         sinkAnchor( sink, "Summary" );
-
-        sink.text( bundle.getString( "report.surefire.label.summary" ) );
-
-        sink.sectionTitle1_();
 
         constructHotLinks( sink, bundle );
 
@@ -178,7 +174,9 @@ public class SurefireReportGenerator
 
         sink.lineBreak();
 
+        sink.paragraph();
         sink.rawText( bundle.getString( "report.surefire.text.note1" ) );
+        sink.paragraph_();
 
         sinkLineBreak( sink );
 
@@ -191,12 +189,10 @@ public class SurefireReportGenerator
 
         sink.section1();
         sink.sectionTitle1();
+        sink.text( bundle.getString( "report.surefire.label.packagelist" ) );
+        sink.sectionTitle1_();
 
         sinkAnchor( sink, "Package_List" );
-
-        sink.text( bundle.getString( "report.surefire.label.packagelist" ) );
-
-        sink.sectionTitle1_();
 
         constructHotLinks( sink, bundle );
 
@@ -255,7 +251,9 @@ public class SurefireReportGenerator
 
         sink.lineBreak();
 
+        sink.paragraph();
         sink.rawText( bundle.getString( "report.surefire.text.note2" ) );
+        sink.paragraph_();
 
         packIter = suitePackages.keySet().iterator();
 
@@ -269,12 +267,10 @@ public class SurefireReportGenerator
 
             sink.section2();
             sink.sectionTitle2();
+            sink.text( packageName );
+            sink.sectionTitle2_();
 
             sinkAnchor( sink, packageName );
-
-            sink.text( packageName );
-
-            sink.sectionTitle2_();
 
             sink.table();
 
@@ -369,12 +365,10 @@ public class SurefireReportGenerator
 
         sink.section1();
         sink.sectionTitle1();
+        sink.text( bundle.getString( "report.surefire.label.testcases" ) );
+        sink.sectionTitle1_();
 
         sinkAnchor( sink, "Test_Cases" );
-
-        sink.text( bundle.getString( "report.surefire.label.testcases" ) );
-
-        sink.sectionTitle1_();
 
         constructHotLinks( sink, bundle );
 
@@ -392,12 +386,10 @@ public class SurefireReportGenerator
 
                 sink.section2();
                 sink.sectionTitle2();
+                sink.text( suite.getName() );
+                sink.sectionTitle2_();
 
                 sinkAnchor( sink, suite.getPackageName() + suite.getName() );
-
-                sink.text( suite.getName() );
-
-                sink.sectionTitle2_();
 
                 sink.table();
 
@@ -517,12 +509,10 @@ public class SurefireReportGenerator
         {
             sink.section1();
             sink.sectionTitle1();
+            sink.text( bundle.getString( "report.surefire.label.failuredetails" ) );
+            sink.sectionTitle1_();
 
             sinkAnchor( sink, "Failure_Details" );
-
-            sink.text( bundle.getString( "report.surefire.label.failuredetails" ) );
-
-            sink.sectionTitle1_();
 
             constructHotLinks( sink, bundle );
 
