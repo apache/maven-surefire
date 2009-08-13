@@ -26,11 +26,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
+import org.apache.maven.doxia.siterenderer.Renderer;
 import org.apache.maven.model.ReportPlugin;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.reporting.AbstractMavenReport;
 import org.apache.maven.reporting.MavenReportException;
-import org.codehaus.doxia.site.renderer.SiteRenderer;
 import org.codehaus.plexus.util.PathTool;
 import org.codehaus.plexus.util.StringUtils;
 
@@ -58,7 +58,7 @@ public class SurefireReportMojo
      *
      * @component
      */
-    private SiteRenderer siteRenderer;
+    private Renderer siteRenderer;
 
     /**
      * Maven Project
@@ -91,7 +91,7 @@ public class SurefireReportMojo
      */
     private File reportsDirectory;
 
-    
+
     /**
      * The projects in the reactor for aggregation report.
      *
@@ -99,7 +99,7 @@ public class SurefireReportMojo
      * @readonly
      */
     private List reactorProjects;
-    
+
     /**
      * The filename to use for the report.
      *
@@ -121,7 +121,7 @@ public class SurefireReportMojo
      * @parameter expression="${linkXRef}" default-value="true"
      */
     private boolean linkXRef;
-    
+
     /**
      * Whether to build an aggregated report at the root, or build individual reports.
      *
@@ -151,7 +151,7 @@ public class SurefireReportMojo
             if ( !project.isExecutionRoot() ) return;
             if ( reportsDirectories == null )
             {
-                ArrayList reportsDirectoryList = new ArrayList(); 
+                ArrayList reportsDirectoryList = new ArrayList();
                 // TODO guess the real location
                 for (Iterator i = reactorProjects.iterator(); i.hasNext();)
                 {
@@ -171,8 +171,8 @@ public class SurefireReportMojo
                 reportsDirectories = new File[] { new File( project.getBuild().getDirectory() + "/surefire-reports" ) };
             }
         }
-        
-        
+
+
         SurefireReportGenerator report =
             new SurefireReportGenerator( reportsDirectories, locale, showSuccess, determineXrefLocation() );
 
@@ -229,7 +229,7 @@ public class SurefireReportMojo
         return getBundle( locale ).getString( "report.surefire.description" );
     }
 
-    protected SiteRenderer getSiteRenderer()
+    protected Renderer getSiteRenderer()
     {
         return siteRenderer;
     }

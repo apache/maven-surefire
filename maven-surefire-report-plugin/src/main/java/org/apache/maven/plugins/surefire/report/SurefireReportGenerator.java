@@ -19,8 +19,8 @@ package org.apache.maven.plugins.surefire.report;
  * under the License.
  */
 
+import org.apache.maven.doxia.sink.Sink;
 import org.apache.maven.reporting.MavenReportException;
-import org.codehaus.doxia.sink.Sink;
 
 import java.io.File;
 import java.text.NumberFormat;

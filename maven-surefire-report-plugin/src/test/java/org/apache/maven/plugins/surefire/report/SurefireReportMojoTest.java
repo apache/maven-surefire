@@ -19,13 +19,22 @@ package org.apache.maven.plugins.surefire.report;
  * under the License.
  */
 
-import org.apache.maven.plugin.testing.AbstractMojoTestCase;
-import org.codehaus.plexus.util.FileUtils;
-
 import java.io.File;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.util.Locale;
+
+import org.apache.maven.doxia.site.decoration.DecorationModel;
+import org.apache.maven.doxia.siterenderer.RendererException;
+import org.apache.maven.doxia.siterenderer.SiteRenderingContext;
+import org.apache.maven.doxia.siterenderer.sink.SiteRendererSink;
+import org.apache.maven.plugin.testing.AbstractMojoTestCase;
+import org.codehaus.plexus.util.FileUtils;
+import org.codehaus.plexus.util.IOUtil;
+import org.codehaus.plexus.util.WriterFactory;
 
 /**
  * @author <a href="mailto:aramirez@apache.org">Allan Ramirez</a>
@@ -63,7 +72,6 @@ public class SurefireReportMojoTest
                       reportsDir.getAbsolutePath() );
 
         assertEquals( "surefire-report", outputName );
-
         assertEquals(
             new File( getBasedir() + "/target/site/unit/basic-surefire-report-test/xref-test" ).getAbsolutePath(),
             xrefLocation.getAbsolutePath() );
@@ -73,6 +81,8 @@ public class SurefireReportMojoTest
         mojo.execute();
 
         File report = new File( getBasedir(), "target/site/unit/basic-surefire-report-test/surefire-report.html" );
+
+        renderer( mojo, report );
 
         assertTrue( report.exists() );
 
@@ -108,6 +118,8 @@ public class SurefireReportMojoTest
         File report =
             new File( getBasedir(), "target/site/unit/basic-surefire-report-success-false/surefire-report.html" );
 
+        renderer( mojo, report );
+
         assertTrue( report.exists() );
 
         String htmlContent = FileUtils.fileRead( report );
@@ -135,13 +147,15 @@ public class SurefireReportMojoTest
         File report =
             new File( getBasedir(), "target/site/unit/basic-surefire-report-success-false/surefire-report.html" );
 
+        renderer( mojo, report );
+
         assertTrue( report.exists() );
 
         String htmlContent = FileUtils.fileRead( report );
 
         int idx = htmlContent.indexOf( "./xref-test/com/shape/CircleTest.html#44" );
 
-        assertTrue( idx >= 0 );
+        assertTrue( idx == -1 );
     }
 
     public void testBasicSurefireReportIfReportingIsNull()
@@ -158,6 +172,8 @@ public class SurefireReportMojoTest
         File report =
             new File( getBasedir(), "target/site/unit/basic-surefire-report-reporting-null/surefire-report.html" );
 
+        renderer( mojo, report );
+
         assertTrue( report.exists() );
 
         String htmlContent = FileUtils.fileRead( report );
@@ -165,5 +181,36 @@ public class SurefireReportMojoTest
         int idx = htmlContent.indexOf( "./xref-test/com/shape/CircleTest.html#44" );
 
         assertTrue( idx < 0 );
+    }
+
+    /**
+     * Renderer the sink from the report mojo.
+     *
+     * @param mojo not null
+     * @param outputHtml not null
+     * @throws RendererException if any
+     * @throws IOException if any
+     */
+    private void renderer( SurefireReportMojo mojo, File outputHtml )
+        throws RendererException, IOException
+    {
+        Writer writer = null;
+        SiteRenderingContext context = new SiteRenderingContext();
+        context.setDecoration( new DecorationModel() );
+        context.setTemplateName( "org/apache/maven/doxia/siterenderer/resources/default-site.vm" );
+        context.setLocale( Locale.ENGLISH );
+
+        try
+        {
+            outputHtml.getParentFile().mkdirs();
+            writer = WriterFactory.newXmlWriter( outputHtml );
+
+            mojo.getSiteRenderer().generateDocument( writer, (SiteRendererSink) mojo.getSink(),
+                                                           context );
+        }
+        finally
+        {
+            IOUtil.close( writer );
+        }
     }
 }
