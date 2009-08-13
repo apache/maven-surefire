@@ -34,10 +34,6 @@
 
   <name>Maven Surefire Report Plugin</name>
 
-  <prerequisites>
-    <maven>2.0.3</maven>
-  </prerequisites>
-
   <developers>
     <developer>
       <id>jruiz</id>
@@ -46,6 +42,10 @@
     </developer>
   </developers>
 
+  <prerequisites>
+    <maven>2.0.3</maven>
+  </prerequisites>
+
   <distributionManagement>
     <site>
       <id>apache.website</id>
@@ -53,28 +53,36 @@
     </site>
   </distributionManagement>
 
+  <properties>
+    <mavenVersion>2.0</mavenVersion>
+  </properties>
+
   <dependencies>
+    <!-- maven -->
     <dependency>
       <groupId>org.apache.maven.reporting</groupId>
       <artifactId>maven-reporting-api</artifactId>
-      <version>2.0</version>
+      <version>${mavenVersion}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.reporting</groupId>
       <artifactId>maven-reporting-impl</artifactId>
-      <version>2.0</version>
+      <version>${mavenVersion}</version>
     </dependency>
+
+    <!-- test -->
     <dependency>
-      <groupId>org.apache.maven.shared</groupId>
+      <groupId>org.apache.maven.plugin-testing</groupId>
       <artifactId>maven-plugin-testing-harness</artifactId>
+      <version>1.2</version>
       <scope>test</scope>
-      <version>1.0-beta-1</version>
     </dependency>
   </dependencies>
 
   <build>
     <plugins>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-site-plugin</artifactId>
         <configuration>
           <stagingSiteURL>scp://people.apache.org/www/maven.apache.org/plugins/${project.artifactId}-${project.version}</stagingSiteURL>
@@ -82,6 +90,16 @@
       </plugin>
     </plugins>
   </build>
+
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-plugin-plugin</artifactId>
+        <version>2.5</version>
+      </plugin>
+    </plugins>
+  </reporting>
 
   <profiles>
     <!-- Force JDK 1.4 for this one, plugins can never be built on 1.3 -->
@@ -134,13 +152,4 @@
       </build>
     </profile>
   </profiles>
-
-  <reporting>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-plugin-plugin</artifactId>
-      </plugin>
-    </plugins>
-  </reporting>
 </project>
