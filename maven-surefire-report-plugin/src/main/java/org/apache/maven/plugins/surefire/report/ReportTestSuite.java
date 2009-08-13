@@ -22,6 +22,9 @@ package org.apache.maven.plugins.surefire.report;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * @version $Id$
+ */
 public class ReportTestSuite
 {
     private List testCases = new ArrayList();
@@ -41,7 +44,7 @@ public class ReportTestSuite
     private String packageName;
 
     private float timeElapsed;
-    
+
     public List getTestCases()
     {
         return this.testCases;
@@ -108,9 +111,9 @@ public class ReportTestSuite
     {
         this.fullClassName = fullClassName;
         int lastDotPosition = fullClassName.lastIndexOf( "." );
-        
+
         name = fullClassName.substring( lastDotPosition + 1, fullClassName.length() );
-        
+
         if ( lastDotPosition < 0 )
         {
             /* no package name */
@@ -146,7 +149,8 @@ public class ReportTestSuite
     {
         this.testCases = testCases;
     }
-    
+
+    /** {@inheritDoc} */
     public String toString()
     {
         return fullClassName + " ["+getNumberOfTests()+"/"+getNumberOfFailures()+"/"+getNumberOfErrors()+"/"+getNumberOfSkipped()+"]";

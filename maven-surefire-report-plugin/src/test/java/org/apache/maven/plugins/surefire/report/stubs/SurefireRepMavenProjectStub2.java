@@ -26,10 +26,12 @@ import java.util.List;
 
 /**
  * @author <a href="mailto:aramirez@apache.org">Allan Ramirez</a>
+ * @version $Id$
  */
 public class SurefireRepMavenProjectStub2
     extends MavenProjectStub
 {
+    /** {@inheritDoc} */
     public List getReportPlugins()
     {
         return new ArrayList();

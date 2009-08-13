@@ -23,18 +23,29 @@ import junit.framework.TestCase;
 
 /**
  * @author Jontri
+ * @version $Id$
  */
 public class ReportTestCaseTest
     extends TestCase
 {
     private ReportTestCase tCase;
 
+    /** {@inheritDoc} */
     protected void setUp()
         throws Exception
     {
         super.setUp();
 
         tCase = new ReportTestCase();
+    }
+
+    /** {@inheritDoc} */
+    protected void tearDown()
+        throws Exception
+    {
+        super.tearDown();
+
+        tCase = null;
     }
 
     public void testSetName()

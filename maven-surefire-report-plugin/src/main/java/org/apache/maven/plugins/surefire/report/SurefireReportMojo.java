@@ -129,6 +129,7 @@ public class SurefireReportMojo
      */
     private boolean aggregate;
 
+    /** {@inheritDoc} */
     public void executeReport( Locale locale )
         throws MavenReportException
     {
@@ -219,31 +220,37 @@ public class SurefireReportMojo
         return location;
     }
 
+    /** {@inheritDoc} */
     public String getName( Locale locale )
     {
         return getBundle( locale ).getString( "report.surefire.name" );
     }
 
+    /** {@inheritDoc} */
     public String getDescription( Locale locale )
     {
         return getBundle( locale ).getString( "report.surefire.description" );
     }
 
+    /** {@inheritDoc} */
     protected Renderer getSiteRenderer()
     {
         return siteRenderer;
     }
 
+    /** {@inheritDoc} */
     protected MavenProject getProject()
     {
         return project;
     }
 
+    /** {@inheritDoc} */
     public String getOutputName()
     {
         return outputName;
     }
 
+    /** {@inheritDoc} */
     protected String getOutputDirectory()
     {
         return outputDirectory.getAbsolutePath();
@@ -253,5 +260,4 @@ public class SurefireReportMojo
     {
         return ResourceBundle.getBundle( "surefire-report", locale, this.getClass().getClassLoader() );
     }
-
 }

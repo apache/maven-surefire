@@ -24,17 +24,30 @@ import junit.framework.TestCase;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * @version $Id$
+ */
 public class ReportTestSuiteTest
     extends TestCase
 {
     private ReportTestSuite tSuite;
 
+    /** {@inheritDoc} */
     protected void setUp()
         throws Exception
     {
         super.setUp();
 
         tSuite = new ReportTestSuite();
+    }
+
+    /** {@inheritDoc} */
+    protected void tearDown()
+        throws Exception
+    {
+        super.tearDown();
+
+        tSuite = null;
     }
 
     public void testSetTestCases()

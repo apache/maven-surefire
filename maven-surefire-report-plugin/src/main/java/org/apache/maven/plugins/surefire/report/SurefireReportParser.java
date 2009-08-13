@@ -37,6 +37,9 @@ import org.codehaus.plexus.util.DirectoryScanner;
 import org.codehaus.plexus.util.StringUtils;
 import org.xml.sax.SAXException;
 
+/**
+ * @version $Id$
+ */
 public class SurefireReportParser
 {
     private NumberFormat numberFormat = NumberFormat.getInstance();
@@ -173,7 +176,7 @@ public class SurefireReportParser
     {
         this.reportsDirectories = new File[] { reportsDirectory };
     }
-    
+
     public void setReportsDirectories( File[] reportsDirectories )
     {
         this.reportsDirectories = reportsDirectories;

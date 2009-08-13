@@ -32,6 +32,9 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 
+/**
+ * @version $Id$
+ */
 public class SurefireReportGenerator
 {
     private SurefireReportParser report;

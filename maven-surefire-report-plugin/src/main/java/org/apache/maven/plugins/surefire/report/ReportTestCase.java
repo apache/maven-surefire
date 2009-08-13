@@ -22,6 +22,9 @@ package org.apache.maven.plugins.surefire.report;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * @version $Id$
+ */
 public class ReportTestCase
 {
     private String fullClassName;
@@ -97,7 +100,8 @@ public class ReportTestCase
         failure.put( "message", message );
         failure.put( "type", type );
     }
-    
+
+    /** {@inheritDoc} */
     public String toString()
     {
         return fullName;

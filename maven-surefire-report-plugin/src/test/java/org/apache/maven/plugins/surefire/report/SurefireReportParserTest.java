@@ -33,11 +33,15 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+/**
+ * @version $Id$
+ */
 public class SurefireReportParserTest
     extends TestCase
 {
     private SurefireReportParser report;
 
+    /** {@inheritDoc} */
     protected void setUp()
         throws Exception
     {
@@ -46,6 +50,15 @@ public class SurefireReportParserTest
         report = new SurefireReportParser();
 
         report.setLocale( Locale.ENGLISH );
+    }
+
+    /** {@inheritDoc} */
+    protected void tearDown()
+        throws Exception
+    {
+        super.tearDown();
+
+        report = null;
     }
 
     public void testParseXMLReportFiles()

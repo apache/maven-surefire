@@ -38,6 +38,7 @@ import org.codehaus.plexus.util.WriterFactory;
 
 /**
  * @author <a href="mailto:aramirez@apache.org">Allan Ramirez</a>
+ * @version $Id$
  */
 public class SurefireReportMojoTest
     extends AbstractMojoTestCase

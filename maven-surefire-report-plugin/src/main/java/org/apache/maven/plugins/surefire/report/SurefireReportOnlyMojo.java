@@ -26,6 +26,7 @@ package org.apache.maven.plugins.surefire.report;
  * <a href="http://jira.codehaus.org/browse/MSUREFIREREP-6">http://jira.codehaus.org/browse/MSUREFIREREP-6</a>
  *
  * @author <a href="mailto:baerrach@gmail.com">Barrie Treloar</a>
+ * @version $Id$
  * @goal report-only
  * @execute phase="validate" lifecycle="surefire"
  * @since 2.3

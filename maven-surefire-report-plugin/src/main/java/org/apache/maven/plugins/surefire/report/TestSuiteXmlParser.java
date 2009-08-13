@@ -38,6 +38,9 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+/**
+ * @version $Id$
+ */
 public class TestSuiteXmlParser
     extends DefaultHandler
 {
@@ -59,22 +62,23 @@ public class TestSuiteXmlParser
         SAXParserFactory factory = SAXParserFactory.newInstance();
 
         SAXParser saxParser = factory.newSAXParser();
-        
+
         classesToSuites = new HashMap();
 
         saxParser.parse( new File( xmlPath ), this );
-        
+
         if ( currentSuite != defaultSuite )
         { // omit the defaultSuite if it's empty and there are alternatives
-            if ( defaultSuite.getNumberOfTests() == 0 ) 
+            if ( defaultSuite.getNumberOfTests() == 0 )
             {
                 classesToSuites.remove( defaultSuite.getFullClassName() );
             }
         }
-        
+
         return classesToSuites.values();
     }
 
+    /** {@inheritDoc} */
     public void startElement( String uri, String localName, String qName, Attributes attributes )
         throws SAXException
     {
@@ -116,11 +120,11 @@ public class TestSuiteXmlParser
                 currentElement = new StringBuffer();
 
                 testCase = new ReportTestCase();
-                
+
                 testCase.setName( attributes.getValue( "name" ) );
-                
+
                 String fullClassName = attributes.getValue( "classname" );
-                
+
                 // if the testcase declares its own classname, it may need to belong to its own suite
                 if ( fullClassName != null )
                 {
@@ -132,7 +136,7 @@ public class TestSuiteXmlParser
                         classesToSuites.put( fullClassName, currentSuite );
                     }
                 }
-                
+
                 testCase.setFullClassName( currentSuite.getFullClassName() );
                 testCase.setClassName( currentSuite.getName() );
                 testCase.setFullName( currentSuite.getFullClassName() + "." + testCase.getName() );
@@ -174,7 +178,7 @@ public class TestSuiteXmlParser
         }
     }
 
-
+    /** {@inheritDoc} */
     public void endElement( String uri, String localName, String qName )
         throws SAXException
     {
@@ -208,6 +212,7 @@ public class TestSuiteXmlParser
         // TODO extract real skipped reasons
     }
 
+    /** {@inheritDoc} */
     public void characters( char[] ch, int start, int length )
         throws SAXException
     {
