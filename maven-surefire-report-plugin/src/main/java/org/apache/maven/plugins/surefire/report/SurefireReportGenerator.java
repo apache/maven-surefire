@@ -380,7 +380,7 @@ public class SurefireReportGenerator
 
             List testCases = suite.getTestCases();
 
-            if ( testCases != null )
+            if ( testCases != null && !testCases.isEmpty() )
             {
                 ListIterator caseIterator = testCases.listIterator();
 
@@ -639,21 +639,21 @@ public class SurefireReportGenerator
     {
         if ( !testSuites.isEmpty() )
         {
-            sink.section2();
+            sink.paragraph();
 
-            sink.rawText( "[" );
+            sink.text( "[" );
             sinkLink( sink, bundle.getString( "report.surefire.label.summary" ), "#Summary" );
-            sink.rawText( "]" );
+            sink.text( "]" );
 
-            sink.rawText( " [" );
+            sink.text( " [" );
             sinkLink( sink, bundle.getString( "report.surefire.label.packagelist" ), "#Package_List" );
-            sink.rawText( "]" );
+            sink.text( "]" );
 
-            sink.rawText( " [" );
+            sink.text( " [" );
             sinkLink( sink, bundle.getString( "report.surefire.label.testcases" ), "#Test_Cases" );
-            sink.rawText( "]" );
+            sink.text( "]" );
 
-            sink.section2_();
+            sink.paragraph_();
         }
     }
 
