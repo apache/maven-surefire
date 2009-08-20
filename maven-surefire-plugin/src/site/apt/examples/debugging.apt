@@ -35,14 +35,14 @@ Non-forked Tests
   You can force Maven not to fork tests by configuring the <<<forkMode>>> configuration parameter.
 
 +---+
-mvn -DforkMode=none test
+mvn -DforkMode=never test
 +---+
 
   Then all you need to do is debug Maven itself.  Since Maven 2.0.8, Maven has shipped with a "mvnDebug" shell script that you can
   use to launch Maven with convenient debugging options:
   
 +---+
-mvnDebug -DforkMode=none test
+mvnDebug -DforkMode=never test
 +---+
 
   Then you can attach Eclipse to Maven itself, which may be easier/more convenient than debugging the forked executable.
