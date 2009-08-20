@@ -13,6 +13,9 @@ Additional Classpath Elements
   organization.
   
   But, if you must, you can use the <<<additionalClasspathElements>>> element to add custom resources/jars to your classpath.
+  This will be treated as an absolute file system path, so you may want use ${basedir} or another property combined with a relative path.
+  Note that additional classpath elements are added to the end of the classpath, so you cannot use these to 
+  override project dependencies or resources.
 
 +---+
 <project>
