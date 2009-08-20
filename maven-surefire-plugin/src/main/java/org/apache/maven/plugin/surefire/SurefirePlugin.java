@@ -116,23 +116,22 @@ public class SurefirePlugin
      * System.getProperty("basedir").
      *
      * @parameter expression="${basedir}"
-     * @required
      */
     private File basedir;
 
     /**
      * The directory containing generated test classes of the project being tested.
+     * This will be included at the beginning the test classpath.
      *
-     * @parameter expression="${project.build.testOutputDirectory}"
-     * @required
+     * @parameter default-value="${project.build.testOutputDirectory}"
      */
     private File testClassesDirectory;
 
     /**
      * The directory containing generated classes of the project being tested.
+     * This will be included after the test classes in the test classpath.
      *
-     * @parameter expression="${project.build.outputDirectory}"
-     * @required
+     * @parameter default-value="${project.build.outputDirectory}"
      */
     private File classesDirectory;
 
@@ -837,20 +836,39 @@ public class SurefirePlugin
         //
         // ----------------------------------------------------------------------
 
-        getLog().debug( "Test Classpath :" );
-
         // Check if we need to add configured classes/test classes directories here.
         // If they are configured, we should remove the default to avoid conflicts.
-        if ( !project.getBuild().getOutputDirectory().equals( classesDirectory.getAbsolutePath() ) )
+        File projectClassesDirectory = new File ( project.getBuild().getOutputDirectory() );
+        if ( ! projectClassesDirectory.equals( classesDirectory ) )
         {
-            classpathElements.remove( project.getBuild().getOutputDirectory() );
-            classpathElements.add( classesDirectory.getAbsolutePath() );
+            int indexToReplace = classpathElements.indexOf( project.getBuild().getOutputDirectory() );
+            if ( indexToReplace != -1 )
+            {
+                classpathElements.remove( indexToReplace );
+                classpathElements.add( indexToReplace, classesDirectory.getAbsolutePath() );
+            }
+            else
+            {
+                classpathElements.add( 1, classesDirectory.getAbsolutePath() );
+            }
         }
-        if ( !project.getBuild().getTestOutputDirectory().equals( testClassesDirectory.getAbsolutePath() ) )
+
+        File projectTestClassesDirectory = new File( project.getBuild().getTestOutputDirectory() );
+        if ( !projectTestClassesDirectory.equals( testClassesDirectory ) )
         {
-            classpathElements.remove( project.getBuild().getTestOutputDirectory() );
-            classpathElements.add( testClassesDirectory.getAbsolutePath() );
+            int indexToReplace = classpathElements.indexOf( project.getBuild().getTestOutputDirectory() );
+            if ( indexToReplace != -1 )
+            {
+                classpathElements.remove( indexToReplace );
+                classpathElements.add( indexToReplace, testClassesDirectory.getAbsolutePath() );
+            }
+            else
+            {
+                classpathElements.add( 0, testClassesDirectory.getAbsolutePath() );
+            }
         }
+
+        getLog().debug( "Test Classpath :" );
 
         for ( Iterator i = classpathElements.iterator(); i.hasNext(); )
         {
@@ -977,6 +995,11 @@ public class SurefirePlugin
 
         return surefireBooter;
     }
+    
+    /*private void replaceListItem( List list, Object item1, Object item2 )
+    {
+        list.r
+    }*/
 
     private void showMap( Map map, String setting )
     {
