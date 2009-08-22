@@ -20,19 +20,29 @@ package org.apache.maven.plugins.surefire.report;
  */
 
 import java.io.File;
+import java.io.IOException;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
+import org.apache.maven.doxia.site.decoration.DecorationModel;
 import org.apache.maven.doxia.siterenderer.Renderer;
+import org.apache.maven.doxia.siterenderer.RendererException;
+import org.apache.maven.doxia.siterenderer.SiteRenderingContext;
+import org.apache.maven.doxia.siterenderer.sink.SiteRendererSink;
 import org.apache.maven.model.ReportPlugin;
+import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.reporting.AbstractMavenReport;
 import org.apache.maven.reporting.MavenReportException;
+import org.apache.maven.reporting.sink.SinkFactory;
+import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.PathTool;
 import org.codehaus.plexus.util.StringUtils;
+import org.codehaus.plexus.util.WriterFactory;
 
 
 /**
@@ -128,6 +138,63 @@ public class SurefireReportMojo
      * @parameter expression="${aggregate}" default-value="false"
      */
     private boolean aggregate;
+
+    // TODO: Remove this override once MSHARED-120 is released
+    public void execute()
+        throws MojoExecutionException
+    {
+        Locale locale = Locale.getDefault();
+
+        SiteRendererSink sink;
+        try
+        {
+            sink = SinkFactory.createSink( new File( getOutputDirectory() ), getOutputName() + ".html" );
+
+            try
+            {
+                generate( sink, locale );
+            }
+            finally
+            {
+                sink.close();
+            }
+        }
+        catch ( MavenReportException e )
+        {
+            throw new MojoExecutionException( "An error has occurred in " + getName( Locale.ENGLISH )
+                + " report generation.", e );
+        }
+
+        File outputHtml = new File( getOutputDirectory(), getOutputName() + ".html" );
+        outputHtml.getParentFile().mkdirs();
+
+        Writer writer = null;
+        try
+        {
+            SiteRenderingContext context = new SiteRenderingContext();
+            context.setDecoration( new DecorationModel() );
+            context.setTemplateName( "org/apache/maven/doxia/siterenderer/resources/default-site.vm" );
+            context.setLocale( locale );
+
+            writer = WriterFactory.newXmlWriter( outputHtml );
+
+            getSiteRenderer().generateDocument( writer, sink, context );
+        }
+        catch ( RendererException e )
+        {
+            throw new MojoExecutionException( "An error has occurred in " + getName( Locale.ENGLISH )
+                + " report generation.", e );
+        }
+        catch ( IOException e )
+        {
+            throw new MojoExecutionException( "An error has occurred in " + getName( Locale.ENGLISH )
+                + " report generation.", e );
+        }
+        finally
+        {
+            IOUtil.close( writer );
+        }
+    }
 
     /** {@inheritDoc} */
     public void executeReport( Locale locale )
