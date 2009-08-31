@@ -30,9 +30,6 @@ import org.junit.runner.notification.RunNotifier;
 public class JUnit4TestSet
     extends AbstractTestSet
 {
-    // Member Variables
-    private Runner junitTestRunner;
-
     /**
      * Constructor.
      *
@@ -41,8 +38,6 @@ public class JUnit4TestSet
     protected JUnit4TestSet( Class testClass )
     {
         super( testClass );
-
-        junitTestRunner = Request.aClass( testClass ).getRunner();
     }
 
     /**
@@ -53,6 +48,8 @@ public class JUnit4TestSet
     public void execute( ReporterManager reportManager, ClassLoader loader )
         throws TestSetFailedException
     {
+        Runner junitTestRunner = Request.aClass( getTestClass() ).getRunner();
+        
         RunNotifier fNotifier = new RunNotifier();
         RunListener listener = new JUnit4TestSetReporter( this, reportManager );
         fNotifier.addListener( listener );
