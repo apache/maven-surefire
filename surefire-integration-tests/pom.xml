@@ -73,6 +73,10 @@
                <name>surefire.version</name>
                <value>${project.version}</value>
             </property>
+            <property>
+               <name>maven.home</name>
+               <value>${maven.home}</value>
+            </property>
           </systemProperties>
           
         </configuration>
