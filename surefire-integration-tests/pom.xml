@@ -39,6 +39,7 @@
       <artifactId>maven-surefire-report-plugin</artifactId>
       <groupId>org.apache.maven.plugins</groupId>
       <version>${project.version}</version>
+      <type>maven-plugin</type>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.shared</groupId>
