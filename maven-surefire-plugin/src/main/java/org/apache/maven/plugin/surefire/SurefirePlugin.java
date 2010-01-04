@@ -41,6 +41,7 @@ import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
 import org.apache.maven.artifact.resolver.filter.ExcludesArtifactFilter;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
+import org.apache.maven.artifact.versioning.OverConstrainedVersionException;
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
@@ -424,9 +425,27 @@ public class SurefirePlugin
     private int threadCount;
 
     /**
+     * (junitcore only) Indicates that threadCount is per cpu core. Defaults to true
+     *
+     * @parameter expression="${perCoreThreadCount}"
+     * @since 2.5
+     */
+    private String perCoreThreadCount;
+
+    /**
+     * (junitcore only) Indicates that the thread pool will be unlimited. paralell setting and the actual number of classes/methods
+     * will decide. Setting this to true effectively disables perCoreThreadCount and  threadCount
+     *
+     * @parameter expression="${useUnlimitedThreads}"
+     * @since 2.5
+     */
+    private String useUnlimitedThreads;
+    /**
      * (TestNG only) When you use the parallel attribute, TestNG will try to run all your test methods in separate threads, except for
      * methods that depend on each other, which will be run in the same thread in order to respect their order of
      * execution.
+     *
+     * JUNIT4.6 Values are classes/methods/both to run in separate threads, as controlled by threadCount.
      *
      * @parameter expression="${parallel}"
      * @todo test how this works with forking, and console/file output parallelism
@@ -662,6 +681,58 @@ public class SurefirePlugin
         }
     }
 
+    /**
+     * Converts old TestNG configuration parameters over to new properties based configuration
+     * method. (if any are defined the old way)
+     */
+    private void convertJunitCoreParameters()
+    {
+        if ( properties == null )
+        {
+            properties = new Properties();
+        }
+
+        if ( this.parallel != null )
+        {
+            properties.setProperty( "parallel", this.parallel );
+        }
+        if ( this.threadCount > 0 )
+        {
+            properties.setProperty( "threadCount", new Integer( this.threadCount ).toString() );
+        }
+        if ( this.perCoreThreadCount != null )
+        {
+            properties.setProperty( "perCoreThreadCount", perCoreThreadCount);
+        }
+        if ( this.useUnlimitedThreads != null )
+        {
+            properties.setProperty( "useUnlimitedThreads", useUnlimitedThreads);
+        }
+        Artifact configurableParallelComputer = (Artifact) projectArtifactMap.get("org.jdogma.junit:configurable-parallel-computer");
+        properties.setProperty("configurableParallelComputerPresent", Boolean.toString(configurableParallelComputer != null));
+
+    }
+
+    private boolean isJunit47Compatible(Artifact artifact) throws MojoExecutionException {
+        return isWithinVersionSpec(artifact, "[4.7,)");
+    }
+    
+    private boolean isJunit40to46(Artifact artifact)  throws MojoExecutionException {
+        return isWithinVersionSpec(artifact, "[4.0,4.7)");
+    }
+
+    private boolean isWithinVersionSpec(Artifact artifact, String versionSpec) throws MojoExecutionException {
+        try {
+            VersionRange  range = VersionRange.createFromVersionSpec( versionSpec);
+            return range.containsVersion( artifact.getSelectedVersion());
+        } catch (InvalidVersionSpecificationException e) {
+            throw new MojoExecutionException("Bug in junit 4.7 plugin. Please report with stacktrace");
+        } catch (OverConstrainedVersionException e) {
+            throw new MojoExecutionException("Bug in junit 4.7 plugin. Please report with stacktrace");
+        }
+    }
+
+
     private SurefireBooter constructSurefireBooter()
         throws MojoExecutionException, MojoFailureException
     {
@@ -714,7 +785,12 @@ public class SurefirePlugin
                 // different one since its based on the source level, not the JVM. Prune using the filter.
                 addProvider( surefireBooter, "surefire-testng", surefireArtifact.getBaseVersion(), testNgArtifact );
             }
-            else if ( junitArtifact != null && junitArtifact.getBaseVersion().startsWith( "4" ) )
+            else if ( isJunit47Compatible( junitArtifact))
+            {
+                convertJunitCoreParameters();                
+                addProvider( surefireBooter, "surefire-junit47", surefireArtifact.getBaseVersion(), null );
+            }
+            else if ( isJunit40to46( junitArtifact ))
             {
                 addProvider( surefireBooter, "surefire-junit4", surefireArtifact.getBaseVersion(), null );
             }
@@ -806,29 +882,29 @@ public class SurefirePlugin
                 }
             }
 
-            if ( testNgArtifact != null )
-            {
-                surefireBooter.addTestSuite( "org.apache.maven.surefire.testng.TestNGDirectoryTestSuite", new Object[] {
-                    testClassesDirectory, includes, excludes, testSourceDirectory.getAbsolutePath(),
-                    testNgArtifact.getVersion(), testNgArtifact.getClassifier(), properties, reportsDirectory} );
-            }
-            else
-            {
+            if (testNgArtifact != null) {
+                surefireBooter.addTestSuite("org.apache.maven.surefire.testng.TestNGDirectoryTestSuite", new Object[]{
+                        testClassesDirectory, includes, excludes, testSourceDirectory.getAbsolutePath(),
+                        testNgArtifact.getVersion(), testNgArtifact.getClassifier(), properties, reportsDirectory});
+            } else {
                 String junitDirectoryTestSuite;
-                if ( junitArtifact != null && junitArtifact.getBaseVersion() != null &&
-                    junitArtifact.getBaseVersion().startsWith( "4" ) )
+                if (isJunit47Compatible(junitArtifact))
                 {
-                    junitDirectoryTestSuite = "org.apache.maven.surefire.junit4.JUnit4DirectoryTestSuite";
-                }
-                else
-                {
-                    junitDirectoryTestSuite = "org.apache.maven.surefire.junit.JUnitDirectoryTestSuite";
+                    junitDirectoryTestSuite = "org.apache.maven.surefire.junitcore.JUnitCoreDirectoryTestSuite";
+                    getLog().warn( "Props are" + properties.toString());
+                    surefireBooter.addTestSuite(junitDirectoryTestSuite, new Object[]{testClassesDirectory, includes, excludes, properties});
+                } else {
+                    if (isJunit40to46(junitArtifact))
+                    {
+                        junitDirectoryTestSuite = "org.apache.maven.surefire.junit4.JUnit4DirectoryTestSuite";
+                    } else {
+                        // fall back to JUnit, which also contains POJO support. Also it can run
+                        // classes compiled against JUnit since it has a dependency on JUnit itself.
+                        junitDirectoryTestSuite = "org.apache.maven.surefire.junit.JUnitDirectoryTestSuite";
+                    }
+                    surefireBooter.addTestSuite(junitDirectoryTestSuite, new Object[]{testClassesDirectory, includes, excludes});
                 }
 
-                // fall back to JUnit, which also contains POJO support. Also it can run
-                // classes compiled against JUnit since it has a dependency on JUnit itself.
-                surefireBooter.addTestSuite( junitDirectoryTestSuite, new Object[] { testClassesDirectory, includes,
-                    excludes } );
             }
         }
 

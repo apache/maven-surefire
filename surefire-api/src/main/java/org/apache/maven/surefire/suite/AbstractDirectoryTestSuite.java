@@ -20,17 +20,14 @@ package org.apache.maven.surefire.suite;
  */
 
 import org.apache.maven.surefire.Surefire;
+import org.apache.maven.surefire.util.SurefireDirectoryScanner;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterManager;
 import org.apache.maven.surefire.testset.SurefireTestSet;
 import org.apache.maven.surefire.testset.TestSetFailedException;
-import org.codehaus.plexus.util.DirectoryScanner;
-import org.codehaus.plexus.util.StringUtils;
 
 import java.io.File;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -43,27 +40,16 @@ public abstract class AbstractDirectoryTestSuite
 {
     protected static ResourceBundle bundle = ResourceBundle.getBundle( Surefire.SUREFIRE_BUNDLE_NAME );
 
-    private static final String FS = System.getProperty( "file.separator" );
-
-    private File basedir;
-
-    private List includes;
-
-    private List excludes;
-
     protected Map testSets;
 
     private int totalTests;
+    
+    private final SurefireDirectoryScanner surefireDirectoryScanner;
 
-    private static final String[] EMPTY_STRING_ARRAY = new String[0];
 
     protected AbstractDirectoryTestSuite( File basedir, List includes, List excludes )
     {
-        this.basedir = basedir;
-
-        this.includes = new ArrayList( includes );
-
-        this.excludes = new ArrayList( excludes );
+        this.surefireDirectoryScanner = new SurefireDirectoryScanner(basedir, includes, excludes);
     }
 
     public Map locateTestSets( ClassLoader classLoader )
@@ -75,26 +61,13 @@ public abstract class AbstractDirectoryTestSuite
         }
         testSets = new HashMap();
 
-        String[] tests = collectTests( basedir, includes, excludes );
+        Class[] locatedClasses = surefireDirectoryScanner.locateTestClasses( classLoader);
 
-        for ( int i = 0; i < tests.length; i++ )
+        for ( int i = 0; i < locatedClasses.length; i++ )
         {
-            String className = tests[i];
+            Class testClass = locatedClasses[i];
+            SurefireTestSet testSet = createTestSet( testClass, classLoader );
 
-            Class testClass;
-            try
-            {
-                testClass = classLoader.loadClass( className );
-            }
-            catch ( ClassNotFoundException e )
-            {
-                throw new TestSetFailedException( "Unable to create test class '" + className + "'", e );
-            }
-
-            if ( !Modifier.isAbstract( testClass.getModifiers() ) )
-            {
-                SurefireTestSet testSet = createTestSet( testClass, classLoader );
-                
                 if ( testSet == null )
                 {
                     continue;
@@ -107,7 +80,6 @@ public abstract class AbstractDirectoryTestSuite
                 testSets.put( testSet.getName(), testSet );
 
                 totalTests++;
-            }
         }
 
         return Collections.unmodifiableMap( testSets );
@@ -177,47 +149,4 @@ public abstract class AbstractDirectoryTestSuite
         return totalTests;
     }
 
-    private String[] collectTests( File basedir, List includes, List excludes )
-    {
-        String[] tests = EMPTY_STRING_ARRAY;
-        if ( basedir.exists() )
-        {
-            DirectoryScanner scanner = new DirectoryScanner();
-
-            scanner.setBasedir( basedir );
-
-            if ( includes != null )
-            {
-                scanner.setIncludes( processIncludesExcludes( includes ) );
-            }
-
-            if ( excludes != null )
-            {
-                scanner.setExcludes( processIncludesExcludes( excludes ) );
-            }
-
-            scanner.scan();
-
-            tests = scanner.getIncludedFiles();
-            for ( int i = 0; i < tests.length; i++ )
-            {
-                String test = tests[i];
-                test = test.substring( 0, test.indexOf( "." ) );
-                tests[i] = test.replace( FS.charAt( 0 ), '.' );
-            }
-        }
-        return tests;
-    }
-
-    private static String[] processIncludesExcludes( List list )
-    {
-        String[] incs = new String[list.size()];
-
-        for ( int i = 0; i < incs.length; i++ )
-        {
-            incs[i] = StringUtils.replace( (String) list.get( i ), "java", "class" );
-
-        }
-        return incs;
-    }
 }
