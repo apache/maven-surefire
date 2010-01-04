@@ -206,6 +206,7 @@
             <configuration>
               <locales>
                 <locale>de</locale>
+                <locale>sv</locale>
               </locales>
             </configuration>
           </plugin>
