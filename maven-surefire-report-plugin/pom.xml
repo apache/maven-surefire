@@ -43,7 +43,7 @@
   </developers>
 
   <prerequisites>
-    <maven>2.0.3</maven>
+    <maven>${mavenVersion}</maven>
   </prerequisites>
 
   <distributionManagement>
