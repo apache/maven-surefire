@@ -23,7 +23,7 @@ package org.apache.maven.plugins.surefire.report;
  * Creates a nicely formatted Surefire Test Report in html format.
  * This goal does not run the tests, it only builds the reports.
  * This is a workaround for
- * <a href="http://jira.codehaus.org/browse/MSUREFIREREP-6">http://jira.codehaus.org/browse/MSUREFIREREP-6</a>
+ * <a href="http://jira.codehaus.org/browse/SUREFIRE-257">http://jira.codehaus.org/browse/SUREFIRE-257</a>
  *
  * @author <a href="mailto:baerrach@gmail.com">Barrie Treloar</a>
  * @version $Id$
