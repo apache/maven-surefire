@@ -722,6 +722,10 @@ public class SurefirePlugin
     }
 
     private boolean isWithinVersionSpec(Artifact artifact, String versionSpec) throws MojoExecutionException {
+        if ( artifact == null )
+        {
+            return false;
+        }
         try {
             VersionRange  range = VersionRange.createFromVersionSpec( versionSpec);
             return range.containsVersion( artifact.getSelectedVersion());
