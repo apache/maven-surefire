@@ -139,63 +139,6 @@ public class SurefireReportMojo
      */
     private boolean aggregate;
 
-    // TODO: Remove this override once MSHARED-120 is released
-    public void execute()
-        throws MojoExecutionException
-    {
-        Locale locale = Locale.getDefault();
-
-        SiteRendererSink sink;
-        try
-        {
-            sink = SinkFactory.createSink( new File( getOutputDirectory() ), getOutputName() + ".html" );
-
-            try
-            {
-                generate( sink, locale );
-            }
-            finally
-            {
-                sink.close();
-            }
-        }
-        catch ( MavenReportException e )
-        {
-            throw new MojoExecutionException( "An error has occurred in " + getName( Locale.ENGLISH )
-                + " report generation.", e );
-        }
-
-        File outputHtml = new File( getOutputDirectory(), getOutputName() + ".html" );
-        outputHtml.getParentFile().mkdirs();
-
-        Writer writer = null;
-        try
-        {
-            SiteRenderingContext context = new SiteRenderingContext();
-            context.setDecoration( new DecorationModel() );
-            context.setTemplateName( "org/apache/maven/doxia/siterenderer/resources/default-site.vm" );
-            context.setLocale( locale );
-
-            writer = WriterFactory.newXmlWriter( outputHtml );
-
-            getSiteRenderer().generateDocument( writer, sink, context );
-        }
-        catch ( RendererException e )
-        {
-            throw new MojoExecutionException( "An error has occurred in " + getName( Locale.ENGLISH )
-                + " report generation.", e );
-        }
-        catch ( IOException e )
-        {
-            throw new MojoExecutionException( "An error has occurred in " + getName( Locale.ENGLISH )
-                + " report generation.", e );
-        }
-        finally
-        {
-            IOUtil.close( writer );
-        }
-    }
-
     /** {@inheritDoc} */
     public void executeReport( Locale locale )
         throws MavenReportException
