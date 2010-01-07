@@ -11,8 +11,8 @@ import java.io.File;
  * 
  * @author Benjamin Bentmann
  */
-public class PojoSimpleTest
-    extends AbstractSurefireIT
+public class PojoSimpleIT
+    extends AbstractSurefireIntegrationTestClass
 {
 
     public void testit()
