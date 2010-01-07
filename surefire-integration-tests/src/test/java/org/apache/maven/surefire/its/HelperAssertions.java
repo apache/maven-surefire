@@ -13,12 +13,12 @@ public class HelperAssertions
     /** assert that the reports in the specified testDir have the right summary statistics */
     public static void assertTestSuiteResults( int total, int errors, int failures, int skipped,
                                                File testDir ) throws MavenReportException {
-        ITSuiteResults suite = parseTestResults( new File[] { testDir } );
+        IntegrationTestSuiteResults suite = parseTestResults( new File[] { testDir } );
         assertTestSuiteResults( total, errors, failures, skipped, suite );
     }
     
     protected static void assertTestSuiteResults( int total, int errors, int failures, int skipped,
-                                               ITSuiteResults actualSuite )
+                                               IntegrationTestSuiteResults actualSuite )
     {
         Assert.assertEquals( "wrong number of tests", total, actualSuite.getTotal() );
         Assert.assertEquals( "wrong number of errors", errors, actualSuite.getErrors() );
@@ -26,22 +26,22 @@ public class HelperAssertions
         Assert.assertEquals( "wrong number of skipped", skipped, actualSuite.getSkipped() );
     }
 
-    protected static ITSuiteResults parseTestResults( File testDir )
+    protected static IntegrationTestSuiteResults parseTestResults( File testDir )
         throws MavenReportException
     {
         return parseTestResults( new File[] { testDir } );
     }
 
-    protected static ITSuiteResults parseTestResults( File[] testDirs )
+    protected static IntegrationTestSuiteResults parseTestResults( File[] testDirs )
         throws MavenReportException
     {
         List reports = extractReports( testDirs );
-        ITSuiteResults results = parseReportList( reports );
+        IntegrationTestSuiteResults results = parseReportList( reports );
         return results;
     }
 
-    /** Converts a list of ReportTestSuites into an ITSuiteResults object, suitable for summary assertions */
-    protected static ITSuiteResults parseReportList( List reports )
+    /** Converts a list of ReportTestSuites into an IntegrationTestSuiteResults object, suitable for summary assertions */
+    protected static IntegrationTestSuiteResults parseReportList( List reports )
     {
         Assert.assertTrue( "No reports!", reports.size() > 0 );
         int total = 0, errors = 0, failures = 0, skipped = 0;
@@ -52,7 +52,7 @@ public class HelperAssertions
             failures += suite.getNumberOfFailures();
             skipped += suite.getNumberOfSkipped();
         }
-        ITSuiteResults results = new ITSuiteResults(total, errors, failures, skipped);
+        IntegrationTestSuiteResults results = new IntegrationTestSuiteResults(total, errors, failures, skipped);
         return results;
     }
 

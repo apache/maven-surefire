@@ -1,30 +1,30 @@
 package org.apache.maven.surefire.its;
 
 
-import java.io.File;
-
 import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
 
+import java.io.File;
+
 /**
- * Test project using JUnit4.4 -dep.  junit-dep includes only junit.* classes, and depends explicitly on hamcrest-core
+ * Test additionalClasspathElements
  * 
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  * 
  */
-public class JUnit44Dep
+public class AdditionalClasspathIT
     extends AbstractSurefireIntegrationTestClass
 {
-    public void testJUnit44Dep ()
+    public void testAdditionalClasspath ()
         throws Exception
     {
-        File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/junit44-dep" );
+        File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/additional-classpath" );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
         this.executeGoal( verifier, "test" );
         verifier.verifyErrorFreeLog();
         verifier.resetStreams();
         
-        HelperAssertions.assertTestSuiteResults( 1, 0, 0, 0, testDir );
+        HelperAssertions.assertTestSuiteResults( 1, 0, 0, 0, testDir );        
     }
 }
