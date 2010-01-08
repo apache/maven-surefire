@@ -33,7 +33,7 @@ public abstract class AbstractSurefireIntegrationTestClass
         if ( !verifier.getCliOptions().contains( "-s" ) )
         {
             verifier.getCliOptions().add( "-s" );
-            verifier.getCliOptions().add( System.getProperty( "maven.staged.local.repo" ) );
+            verifier.getCliOptions().add( System.getProperty( "maven.settings.file" ) + ".staged" );
         }
         verifier.executeGoals( goals );
     }
