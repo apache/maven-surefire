@@ -1,0 +1,15 @@
+import java.io.*;
+import java.util.*;
+
+try {
+    File file = new File(basedir, "target/failsafe-reports/failsafe-summary.xml");
+    if (!file.exists() || file.isDirectory()) {
+        System.err.println("Could not find failsafe summary: " + file);
+        return false;
+    }
+} catch (Throwable t) {
+    t.printStackTrace();
+    return false;
+}
+
+return true;

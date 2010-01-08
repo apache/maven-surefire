@@ -1,0 +1,177 @@
+ ------
+ Using TestNG
+ ------
+ Brett Porter <brett@apache.org>
+ ------
+ 2 May 2006
+ ------
+
+Using TestNG
+
+* Configuring TestNG
+
+  To get started with TestNG, include the following dependency in your project:
+
++---+
+[...]
+  <dependency>
+    <groupId>org.testng</groupId>
+    <artifactId>testng</artifactId>
+    <version>5.8</version>
+    <scope>test</scope>
+    <classifier>jdk15</classifier>
+  </dependency>
+[...]
++---+
+
+  <<Note:>> if you are using JDK 1.4 Javadoc annotations for your TestNG tests, replace jdk15 with jdk14 above.
+
+  This is the only step that is required to get started - you can now create tests in your test source directory
+  (eg, <<<src/test/java>>>, and as long as they are named using the defaults such as *IT.java they will be run
+  by Failsafe as TestNG tests.
+
+  If you'd like to use a different naming scheme, you can change the <<<includes>>> parameter, as discussed in the
+  {{{inclusion-exclusion.html}Inclusions and Exclusions of Tests}} example.
+
+* Using Suite XML Files
+
+  Another alternative is to use TestNG suite XML files. This allows flexible configuration of the tests to be run.
+  These files are created as normal, and then added to the Failsafe Plugin configuration:
+
++---+
+[...]
+  <plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-failsafe-plugin</artifactId>
+    <version>${project.version}</version>
+    <configuration>
+      <suiteXmlFiles>
+        <suiteXmlFile>testng.xml</suiteXmlFile>
+      </suiteXmlFiles>
+    </configuration>
+    <executions>
+      <execution>
+        <id>integration-test</id>
+        <phase>integration-test</phase>
+        <goals>
+          <goal>integration-test</goal>
+        </goals>
+      </execution>
+      <execution>
+        <id>verify</id>
+        <phase>verify</phase>
+        <goals>
+          <goal>verify</goal>
+        </goals>
+      </execution>
+    </executions>
+  </plugin>
+[...]
++---+
+
+  This configuration will override the includes and excludes patterns and run all tests in the suite files.
+
+* Specifying Test Parameters
+
+  Your TestNG test can accept parameters with the @Parameters annotation.  You can also pass parameters from Maven
+  into your TestNG test, by specifying them as system properties, like this:
+
++---+
+[...]
+  <plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-failsafe-plugin</artifactId>
+    <version>${project.version}</version>
+    <configuration>
+      <systemProperties>
+        <property>
+          <name>browser</name>
+          <value>firefox</value>
+        </property>
+      </systemProperties>
+    </configuration>
+  </plugin>
+[...]
++---+
+
+  For more information about setting system properties in Failsafe tests, see {{{system-properties.html}System Properties}}.
+
+* Using Groups
+
+  TestNG allows you to group your tests. You can then execute a specific group or groups. To do this with Failsafe,
+  use the <<<groups>>> parameter, for example:
+
++---+
+[...]
+  <plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-failsafe-plugin</artifactId>
+    <version>${project.version}</version>
+    <configuration>
+      <groups>functest,perftest</groups>
+    </configuration>
+  </plugin>
+[...]
++---+
+
+  Likewise, the <<<excludedGroups>>> parameter can be used to run all but a certain set of groups.
+
+* Running tests in parallel
+
+  TestNG allows you to run your tests in parallel, including JUnit tests. To do this, you must set the
+  <<<parallel>>> parameter, and may change the <<<threadCount>>> parameter if the default of 5 is not sufficient.
+  For example:
+
++---+
+[...]
+  <plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-failsafe-plugin</artifactId>
+    <version>${project.version}</version>
+    <configuration>
+      <parallel>methods</parallel>
+      <threadCount>10</threadCount>
+    </configuration>
+  </plugin>
+[...]
++---+
+
+  This is particularly useful for slow tests that can have high concurrency, or to quickly and roughly assess the independance
+  and thread safety of your tests and code.
+
+* Using custom listeners and reporters
+
+  TestNG provides support for attaching custom listeners, reporters, annotation transformers and method interceptors to your tests.
+  By default, TestNG attaches a few basic listeners to generate HTML and XML reports.
+  
+  You can configure multiple custom listeners like this:
+
++---+
+[...]
+  <plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-failsafe-plugin</artifactId>
+    <version>${project.version}</version>
+    <configuration>
+      <properties>
+        <property>
+          <name>usedefaultlisteners</name>
+          <value>false</value> <!-- disabling default listeners is optional -->
+        </property>
+        <property>
+          <name>listener</name>
+          <value>com.mycompany.MyResultListener,com.mycompany.MyAnnotationTransformer,com.mycompany.MyMethodInterceptor</value>
+        </property>
+        <property>
+          <name>reporter</name>
+          <value>listenReport.Reporter</value>
+        </property>
+      </properties>
+    </configuration>
+  </plugin>
+[...]
++---+
+
+  For more information on TestNG, see the {{{http://www.testng.org}TestNG web site}}.
+
+

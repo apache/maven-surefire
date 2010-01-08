@@ -28,11 +28,11 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <artifactId>maven-surefire-plugin</artifactId>
+  <artifactId>maven-failsafe-plugin</artifactId>
   <groupId>org.apache.maven.plugins</groupId>
   <packaging>maven-plugin</packaging>
 
-  <name>Maven Surefire Plugin</name>
+  <name>Maven Failsafe Plugin</name>
 
   <prerequisites>
     <maven>2.0.9</maven>
@@ -89,17 +89,10 @@
     </mailingList>
   </mailingLists>
 
-  <contributors>
-    <contributor>
-      <name>Joakim Erdfelt</name>
-      <email>joakim@erdfelt.com</email>
-    </contributor>
-  </contributors>
-
   <distributionManagement>
     <site>
       <id>apache.website</id>
-      <url>scp://people.apache.org/www/maven.apache.org/plugins/maven-surefire-plugin</url>
+      <url>scp://people.apache.org/www/maven.apache.org/plugins/maven-failsafe-plugin</url>
     </site>
   </distributionManagement>
 
@@ -116,6 +109,11 @@
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-utils</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-model</artifactId>
+      <version>2.0.9</version>
     </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>
@@ -158,6 +156,52 @@
         <artifactId>maven-site-plugin</artifactId>
         <configuration>
           <stagingSiteURL>scp://people.apache.org/www/maven.apache.org/plugins/${project.artifactId}-${project.version}</stagingSiteURL>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.modello</groupId>
+        <artifactId>modello-maven-plugin</artifactId>
+        <version>1.0.1</version>
+        <executions>
+          <execution>
+            <goals>
+              <!-- Generate the xpp3 reader code -->
+              <goal>xpp3-reader</goal>
+              <!-- Generate the xpp3 writer code -->
+              <goal>xpp3-writer</goal>
+              <!-- Generate the Java sources for the model itself -->
+              <goal>java</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <models>
+            <model>src/main/mdo/failsafe-summary.mdo</model>
+          </models>
+          <version>2.4.3</version>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-invoker-plugin</artifactId>
+        <version>1.5</version>
+        <configuration>
+          <projectsDirectory>src/it</projectsDirectory>
+          <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
+          <localRepositoryPath>${project.build.directory}/local-repo</localRepositoryPath>
+          <showErrors>true</showErrors>
+          <streamLogs>true</streamLogs>
+          <goals>
+            <goal>verify</goal>
+          </goals>
+          <setupIncludes>
+            <setupInclude>dummy-*/pom.xml</setupInclude>
+          </setupIncludes>
+          <pomIncludes>
+            <pomInclude>*/pom.xml</pomInclude>
+          </pomIncludes>
+          <postBuildHookScript>verify.bsh</postBuildHookScript>
+          <settingsFile>src/it/settings.xml</settingsFile>
         </configuration>
       </plugin>
     </plugins>
@@ -208,6 +252,34 @@
               <execution>
                 <goals>
                   <goal>check</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <!-- run integration tests
+          to use this profile:
+          or run integration tests: mvn -Prun-its
+      -->
+      <id>run-its</id>
+      <build>
+        <defaultGoal>verify</defaultGoal>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-invoker-plugin</artifactId>
+            <configuration>
+              <streamLogs>false</streamLogs>
+            </configuration>
+            <executions>
+              <execution>
+                <id>integration-test</id>
+                <goals>
+                  <goal>install</goal>
+                  <goal>run</goal>
                 </goals>
               </execution>
             </executions>

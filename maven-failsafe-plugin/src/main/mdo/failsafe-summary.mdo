@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+
+<model xsd.namespace="http://mojo.codehaus.org/plugins/failsafe-maven-plugin/failsafe-summary/2.4.3"
+       xsd.targetNamespace="http://mojo.codehaus.org/plugins/failsafe-maven-plugin/failsafe-summary/2.4.3">
+  <id>failsafe-summary</id>
+  <name>FailsafeSummary</name>
+  <description>
+    A summary of tests executed by the Failsafe Maven Plugin.
+  </description>
+  <defaults>
+    <default>
+      <key>package</key>
+      <value>org.apache.maven.surefire.failsafe.model</value>
+    </default>
+  </defaults>
+  <versionDefinition>
+    <type>namespace</type>
+  </versionDefinition>
+  <classes>
+    <class rootElement="true" xml.tagName="failsafe-summary">
+      <name>FailsafeSummary</name>
+      <description>
+        Describes the results of executing tests
+      </description>
+      <version>2.4.3</version>
+      <fields>
+        <field xml.attribute="true">
+          <name>result</name>
+          <version>2.4.3</version>
+          <required>true</required>
+          <type>int</type>
+          <description>The surefire result code</description>
+        </field>
+        <field>
+          <name>exception</name>
+          <version>2.4.3</version>
+          <required>false</required>
+          <type>String</type>
+          <description>The exception that caused surefire to bomb out</description>
+        </field>
+      </fields>
+    </class>
+  </classes>
+</model>

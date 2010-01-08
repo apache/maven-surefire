@@ -1,0 +1,48 @@
+  ------
+  Debugging Tests
+  ------
+  Dan Fabulich
+  ------
+  January 2008
+  ------
+
+Debugging Tests
+
+  Sometimes you need to debug the tests exactly as Maven ran them.  Here's how!
+  
+Forked Tests
+
+  By default, Maven runs your tests in a separate ("forked") process.  You can use the <<<maven.failsafe.debug>>> property
+  to debug your forked tests remotely, like this:
+
++---+
+mvn -Dmaven.failsafe.debug verify
++---+
+
+  The tests will automatically pause and await a remote debugger on port 5005.  You can then attach to the running tests
+  using Eclipse.  You can setup a "Remote Java Application" launch configuration via the menu
+  command "Run" > "Open Debug Dialog..."
+
+  If you need to configure a different port, you may pass a more detailed value.  For example, the value below will use port 8000
+  instead of port 5005.
+
++---+
+mvn -Dmaven.failsafe.debug="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000 -Xnoagent -Djava.compiler=NONE" verify
++---+
+
+Non-forked Tests
+
+  You can force Maven not to fork tests by configuring the <<<forkMode>>> configuration parameter.
+
++---+
+mvn -DforkMode=never test
++---+
+
+  Then all you need to do is debug Maven itself.  Since Maven 2.0.8, Maven has shipped with a "mvnDebug" shell script that you can
+  use to launch Maven with convenient debugging options:
+  
++---+
+mvnDebug -DforkMode=never test
++---+
+
+  Then you can attach Eclipse to Maven itself, which may be easier/more convenient than debugging the forked executable.

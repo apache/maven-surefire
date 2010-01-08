@@ -91,6 +91,7 @@
     <module>surefire-booter</module>
     <module>surefire-providers</module>
     <module>maven-surefire-plugin</module>
+    <module>maven-failsafe-plugin</module>
     <module>maven-surefire-report-plugin</module>
     <module>surefire-integration-tests</module>
   </modules>

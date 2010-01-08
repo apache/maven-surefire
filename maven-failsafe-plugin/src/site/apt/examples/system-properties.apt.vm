@@ -1,0 +1,127 @@
+  ------
+  Using System Properties
+  ------
+  Allan Ramirez
+  ------
+  July 2006
+  ------
+
+Using System Properties
+
+  There are two ways to add a list of system properties to Failsafe:
+
+* systemProperyVariable
+
+  This configuration is the replacement of the deprecated <systemProperies>.  It can accept any value
+  from Maven's properties that can be converted <<to String value>>
+
++---+
+<project>
+  [...]
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <version>${project.version}</version>
+        <configuration>
+          <systemPropertyVariables>
+            <propertyName>propertyValue</propertyName>
+            <buildDirectory>\${project.build.directory}</buildDirectory>
+            [...]
+          </systemPropertyVariables>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+  [...]
+</project>
++---+
+
+
+* systemProperties ( deprecated ) 
+
++---+
+<project>
+  [...]
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <version>${project.version}</version>
+        <configuration>
+          <systemProperties>
+            <property>
+              <name>propertyName</name>
+              <value>propertyValue</value>
+            </property>
+            [...]
+          </systemProperties>
+        </configuration>
+        <executions>
+          <execution>
+            <id>integration-test</id>
+            <goals>
+              <goal>integration-test</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>verify</id>
+            <goals>
+              <goal>verify</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+  [...]
+</project>
++---+
+
+  Take note that <<String valued>> properties can only be passed as system
+  properties. Any attempt to pass any other Maven variable type (i.e. <<<List>>>
+  or a <<<URL>>> variable) will cause the variable expression to be passed
+  literally (unevaluated). So having an example below:
+
++---+
+<project>
+  [...]
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <version>${project.version}</version>
+        <configuration>
+          <systemProperties>
+            <property>
+              <name>buildDir</name>
+              <value>\${project.build.outputDirectory}</value>
+            </property>
+          </systemProperties>
+        </configuration>
+        <executions>
+          <execution>
+            <id>integration-test</id>
+            <goals>
+              <goal>integration-test</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>verify</id>
+            <goals>
+              <goal>verify</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+  [...]
+</project>
++---+
+
+  will literally pass <<$\{project.build.outputDirectory\}>> because the value
+  of that expression is a <<<File>>>, not a <<<String>>>.

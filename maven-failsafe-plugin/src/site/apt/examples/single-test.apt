@@ -1,0 +1,30 @@
+  ------
+  Running a Single Test
+  ------
+  Allan Ramirez
+  ------
+  July 2006
+  ------
+
+Running a Single Test
+
+  During development, you may run a single test class repeatedly. To run this
+  through Maven, set the <<<it.test>>> property to a specific test case.
+
++---+
+mvn -Dit.test=ITCircle verify
++---+
+
+  The value for the <<<it.test>>> parameter is the name of the test class (without the extension; we'll strip off the extension if you accidentally provide one).
+
+  You may also use patterns to run a number of tests:
+
++---+
+mvn -Dit.test=ITCi*le verify
++---+
+
+  And you may use multiple names/patterns, separated by commas:
+
++---+
+mvn -Dit.test=ITSquare,ITCi*le verify
++---+

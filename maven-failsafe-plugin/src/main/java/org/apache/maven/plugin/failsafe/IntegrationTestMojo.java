@@ -1,4 +1,4 @@
-package org.apache.maven.plugin.surefire;
+package org.apache.maven.plugin.failsafe;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -22,7 +22,7 @@ package org.apache.maven.plugin.surefire;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.Collections;               
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -59,20 +59,44 @@ import org.apache.maven.surefire.report.DetailedConsoleReporter;
 import org.apache.maven.surefire.report.FileReporter;
 import org.apache.maven.surefire.report.ForkingConsoleReporter;
 import org.apache.maven.surefire.report.XMLReporter;
+import org.codehaus.plexus.util.StringUtils;
+import org.codehaus.plexus.util.ReaderFactory;
+import org.codehaus.plexus.util.FileUtils;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.FileOutputStream;
+import java.io.Writer;
+import java.io.OutputStreamWriter;
+import java.io.BufferedOutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.toolchain.Toolchain;
 import org.apache.maven.toolchain.ToolchainManager;
-import org.codehaus.plexus.util.StringUtils;
+import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
+import org.apache.maven.surefire.failsafe.model.io.xpp3.FailsafeSummaryXpp3Writer;
+import org.apache.maven.surefire.failsafe.model.FailsafeSummary;
 
 /**
- * Run tests using Surefire.
- * 
+ * Run integration tests using Surefire.
+ *
  * @author Jason van Zyl
- * @version $Id$
+ * @author Stephen Connolly
+ * @requiresProject true
  * @requiresDependencyResolution test
- * @goal test
- * @phase test
+ * @goal integration-test
+ * @phase integration-test
  */
-public class SurefirePlugin
+public class IntegrationTestMojo
     extends AbstractMojo
 {
 
@@ -86,12 +110,21 @@ public class SurefirePlugin
     private boolean skipTests;
 
     /**
+     * Set this to 'true' to skip running integration tests, but still compile them. Its use is NOT RECOMMENDED, but quite
+     * convenient on occasion.
+     *
+     * @parameter expression="${skipITs}"
+     * @since 2.4.3-alpha-2
+     */
+    private boolean skipITs;
+
+    /**
      * DEPRECATED This old parameter is just like skipTests, but bound to the old property maven.test.skip.exec.
      * Use -DskipTests instead; it's shorter.
      *
-     * @deprecated
      * @parameter expression="${maven.test.skip.exec}"
      * @since 2.3
+     * @deprecated
      */
     private boolean skipExec;
 
@@ -105,18 +138,11 @@ public class SurefirePlugin
     private boolean skip;
 
     /**
-     * Set this to true to ignore a failure during testing. Its use is NOT RECOMMENDED, but quite convenient on
-     * occasion.
-     *
-     * @parameter expression="${maven.test.failure.ignore}"
-     */
-    private boolean testFailureIgnore;
-
-    /**
      * The base directory of the project being tested. This can be obtained in your unit test by
      * System.getProperty("basedir").
      *
      * @parameter expression="${basedir}"
+     * @required
      */
     private File basedir;
 
@@ -125,6 +151,7 @@ public class SurefirePlugin
      * This will be included at the beginning the test classpath.
      *
      * @parameter default-value="${project.build.testOutputDirectory}"
+     * @required
      */
     private File testClassesDirectory;
 
@@ -133,6 +160,7 @@ public class SurefirePlugin
      * This will be included after the test classes in the test classpath.
      *
      * @parameter default-value="${project.build.outputDirectory}"
+     * @required
      */
     private File classesDirectory;
 
@@ -165,7 +193,7 @@ public class SurefirePlugin
     /**
      * Base directory where all reports are written to.
      *
-     * @parameter expression="${project.build.directory}/surefire-reports"
+     * @parameter expression="${project.build.directory}/failsafe-reports"
      */
     private File reportsDirectory;
 
@@ -185,14 +213,14 @@ public class SurefirePlugin
      * to run a single test called "foo/MyTest.java".  This parameter will override the TestNG suiteXmlFiles
      * parameter.
      *
-     * @parameter expression="${test}"
+     * @parameter expression="${it.test}"
      */
     private String test;
 
     /**
      * List of patterns (separated by commas) used to specify the tests that should be included in testing. When not
      * specified and when the <code>test</code> parameter is not specified, the default includes will be
-     * <code>**&#47;Test*.java   **&#47;*Test.java   **&#47;*TestCase.java</code>.  This parameter is ignored if
+     * <code>**&#47;IT*.java   **&#47;*IT.java   **&#47;*ITCase.java</code>.  This parameter is ignored if
      * TestNG suiteXmlFiles are specified.
      *
      * @parameter
@@ -262,23 +290,30 @@ public class SurefirePlugin
     private Map projectArtifactMap;
 
     /**
+     * The summary file to write integration test results to.
+     * @parameter expression="${project.build.directory}/failsafe-reports/failsafe-summary.xml"
+     * @required
+     */
+    private File summaryFile;
+
+    /**
      * Option to print summary of test suites or just print the test cases that has errors.
      *
-     * @parameter expression="${surefire.printSummary}" default-value="true"
+     * @parameter expression="${failsafe.printSummary}" default-value="true"
      */
     private boolean printSummary;
 
     /**
      * Selects the formatting for the test report to be generated. Can be set as brief or plain.
      *
-     * @parameter expression="${surefire.reportFormat}" default-value="brief"
+     * @parameter expression="${failsafe.reportFormat}" default-value="brief"
      */
     private String reportFormat;
 
     /**
      * Option to generate a file test report or just output the test report to the console.
      *
-     * @parameter expression="${surefire.useFile}" default-value="true"
+     * @parameter expression="${failsafe.useFile}" default-value="true"
      */
     private boolean useFile;
 
@@ -331,7 +366,7 @@ public class SurefirePlugin
      * string will be appended to the argLine, allowing you to configure arbitrary
      * debuggability options (without overwriting the other options specified in the argLine).
      *
-     * @parameter expression="${maven.surefire.debug}"
+     * @parameter expression="${maven.failsafe.debug}"
      * @since 2.4
      */
     private String debugForkedProcess;
@@ -340,7 +375,7 @@ public class SurefirePlugin
      * Kill the forked test process after a certain number of seconds.  If set to 0,
      * wait forever for the process, never timing out.
      *
-     * @parameter expression="${surefire.timeout}"
+     * @parameter expression="${failsafe.timeout}"
      * @since 2.4
      */
     private int forkedProcessTimeoutInSeconds;
@@ -516,7 +551,7 @@ public class SurefirePlugin
      * Prevents problems with JDKs which implement the service provider lookup mechanism by using the system's
      * classloader.  Default value is "true".
      *
-     * @parameter expression="${surefire.useSystemClassLoader}"
+     * @parameter expression="${failsafe.useSystemClassLoader}"
      * @since 2.3
      */
     private Boolean useSystemClassLoader;
@@ -530,7 +565,7 @@ public class SurefirePlugin
      * Default value is "true".  Beware, setting this to "false" may cause your tests to
      * fail on Windows if your classpath is too long.
      *
-     * @parameter expression="${surefire.useManifestOnlyJar}" default-value="true"
+     * @parameter expression="${failsafe.useManifestOnlyJar}" default-value="true"
      * @since 2.4.3
      */
     private boolean useManifestOnlyJar;
@@ -561,6 +596,13 @@ public class SurefirePlugin
      */
     private String objectFactory;
 
+    /**
+     * The character encoding scheme to be applied.
+     *
+     * @parameter expression="${encoding}" default-value="${project.reporting.outputEncoding}"
+     */
+    protected String encoding;
+
     /** @component */
     private ToolchainManager toolchainManager;
     
@@ -572,12 +614,12 @@ public class SurefirePlugin
         {
             SurefireBooter surefireBooter = constructSurefireBooter();
 
-            getLog().info( "Surefire report directory: " + reportsDirectory );
+            getLog().info( "Failsafe report directory: " + reportsDirectory );
 
-            int result;
+            FailsafeSummary result = new FailsafeSummary();
             try
             {
-                result = surefireBooter.run();
+                result.setResult(surefireBooter.run());
             }
             catch ( SurefireBooterForkException e )
             {
@@ -594,28 +636,32 @@ public class SurefirePlugin
                 System.setProperties( originalSystemProperties );
             }
 
-            if ( result == 0 ) return;
-
-            String msg;
-
-            if ( result == SurefireBooter.NO_TESTS_EXIT_CODE )
-            {
-                if ( ( failIfNoTests == null ) || !failIfNoTests.booleanValue() ) return;
-                // TODO: i18n
-                throw new MojoFailureException( "No tests were executed!  (Set -DfailIfNoTests=false to ignore this error.)" );
-            } else {
-                // TODO: i18n
-                msg = "There are test failures.\n\nPlease refer to " + reportsDirectory + " for the individual test results.";
-
+            if (!summaryFile.getParentFile().isDirectory()) {
+                summaryFile.getParentFile().mkdirs();
             }
 
-            if ( testFailureIgnore )
-            {
-                getLog().error( msg );
-            }
-            else
-            {
-                throw new MojoFailureException( msg );
+            try {
+                String encoding;
+                if ( StringUtils.isEmpty( this.encoding ) )
+                {
+                    getLog().warn(
+                        "File encoding has not been set, using platform encoding " + ReaderFactory.FILE_ENCODING
+                            + ", i.e. build is platform dependent!" );
+                    encoding = ReaderFactory.FILE_ENCODING;
+                } else {
+                    encoding = this.encoding;
+                }
+
+                FileOutputStream fileOutputStream = new FileOutputStream( summaryFile );
+                BufferedOutputStream bufferedOutputStream = new BufferedOutputStream( fileOutputStream);
+                Writer writer = new OutputStreamWriter( bufferedOutputStream, encoding );
+                FailsafeSummaryXpp3Writer xpp3Writer = new FailsafeSummaryXpp3Writer();
+                xpp3Writer.write( writer, result );
+                writer.close();
+                bufferedOutputStream.close();
+                fileOutputStream.close();
+            } catch ( IOException e ) {
+                throw new MojoExecutionException( e.getMessage(), e );
             }
         }
     }
@@ -623,7 +669,7 @@ public class SurefirePlugin
     private boolean verifyParameters()
         throws MojoFailureException
     {
-        if ( skip || skipTests || skipExec )
+        if ( skip || skipTests || skipITs || skipExec )
         {
             getLog().info( "Tests are skipped." );
             return false;
@@ -875,14 +921,12 @@ public class SurefirePlugin
                 // Have to wrap in an ArrayList as surefire expects an ArrayList instead of a List for some reason
                 if ( includes == null || includes.size() == 0 )
                 {
-                    includes =
-                        new ArrayList( Arrays.asList( new String[] { "**/Test*.java", "**/*Test.java",
-                            "**/*TestCase.java" } ) );
+                    includes = new ArrayList( Arrays.asList( new String[]{"**/IT*.java", "**/*IT.java",
+                        "**/*ITCase.java"} ) );
                 }
                 if ( excludes == null || excludes.size() == 0 )
                 {
-                    excludes =
-                        new ArrayList( Arrays.asList( new String[] { "**/*$*" } ) );
+                    excludes = new ArrayList( Arrays.asList( new String[]{"**/*$*"} ) );
                 }
             }
 
@@ -912,6 +956,7 @@ public class SurefirePlugin
                     {
                         // fall back to JUnit, which also contains POJO support. Also it can run
                         // classes compiled against JUnit since it has a dependency on JUnit itself.
+                        junitDirectoryTestSuite = "org.apache.maven.surefire.junit.JUnitDirectoryTestSuite";
                         junitDirectoryTestSuite = "org.apache.maven.surefire.junit.JUnitDirectoryTestSuite";
                     }
                     surefireBooter.addTestSuite( junitDirectoryTestSuite,
@@ -971,7 +1016,7 @@ public class SurefirePlugin
 
         if ( tc != null )
         {
-            getLog().info( "Toolchain in surefire-plugin: " + tc );
+            getLog().info( "Toolchain in failsafe-plugin: " + tc );
             if ( ForkConfiguration.FORK_NEVER.equals( forkMode ) )
             {
                 forkMode = ForkConfiguration.FORK_ONCE;

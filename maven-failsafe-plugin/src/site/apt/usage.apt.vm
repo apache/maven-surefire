@@ -1,0 +1,249 @@
+  ------
+  Usage
+  ------
+  Stephen Connolly
+  Brett Porter
+  Allan Ramirez
+  ------
+  May 2009
+  ------
+
+Usage
+
+  To use the Failsafe Plugin, you need to add the following configuration to
+  your pom.xml
+
++---+
+<project>
+  [...]
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <version>${project.version}</version>
+        <executions>
+          <execution>
+            <id>integration-test</id>
+            <goals>
+              <goal>integration-test</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>verify</id>
+            <goals>
+              <goal>verify</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+  [...]
+</project>
++---+
+
+  Then Failsafe Plugin can be invoked by calling the <<<verify>>> phase of the
+  build lifecycle.
+
++---+
+mvn verify
++---+
+
+* Using different testing providers
+
+  Tests in your test source directory can be any combination of the following:
+
+   * TestNG
+
+   * JUnit (3.8 or 4.x)
+
+   * POJO
+
+  Which providers are available is controlled simply by the inclusion of the
+  appropriate dependencies (ie, junit:junit for JUnit, org.testng:testng 4.7+
+  for TestNG). Since this is required to compile the test classes anyway, no
+  additional configuration is required.
+
+  Note that any normal Surefire integration works identically no matter which
+  providers are in use - so you can still produce a Cobertura report and a
+  Surefire results report on your project web site for your TestNG tests,
+  for example.
+
+  The POJO provider above allows you to write tests that do not depend on
+  JUnit. They behave in the same way, running all <<<test*>>> methods that are
+  public in the class, but the API dependency is not required. To perform
+  assertions, the JDK 1.4 <<<assert>>> keyword can be used, or you can use
+  <<<org.apache.maven.surefire.assertion.Assert>>>.
+
+  All of the providers support the Surefire Plugin parameter configurations.
+  However, there are additional options available if you are running TestNG
+  tests (including if you are using TestNG to execute your JUnit tests, which
+  occurs by default if both are present in Surefire).
+
+  See {{{examples/testng.html} Using TestNG}} for more information.
+
+* Using jetty and maven-failsafe-plugin
+
+  You need to bind one of <<<jetty:run>>>, <<<jetty:run-exploded>>> or <<<jetty:run-war>>>
+  to the <<<pre-integration-test>>> phase with <<<deamon>>> set to true, bind
+  <<<failsafe:integration-test>>> to the <<<integration-test>>> phase, bind <<<jetty:stop>>>
+  to the <<<post-integration-test>>> phase and finally bind <<<failsafe:verify>>> to
+  the <<<verify>>> phase.  Here is an example:
+
++---+
+<project>
+  [...]
+  <build>
+    [...]
+    <plugins>
+      [...]
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <version>${project.version}</version>
+        <executions>
+          <execution>
+            <id>integration-test</id>
+            <goals>
+              <goal>integration-test</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>verify</id>
+            <goals>
+              <goal>verify</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.mortbay.jetty</groupId>
+        <artifactId>maven-jetty-plugin</artifactId>
+        <version>6.1.16</version>
+        [...]
+        <configuration>
+          [...]
+          <scanIntervalSeconds>10</scanIntervalSeconds>
+          <stopPort>8005</stopPort>
+          <stopKey>STOP</stopKey>
+          <contextPath>/</contextPath>
+          [...]
+        </configuration>
+        [...]
+        <executions>
+          [...]
+          <execution>
+            <id>start-jetty</id>
+            <phase>pre-integration-test</phase>
+            <goals>
+              <goal>run-exploded</goal>
+            </goals>
+            <configuration>
+              <scanIntervalSeconds>0</scanIntervalSeconds>
+              <daemon>true</daemon>
+            </configuration>
+          </execution>
+          <execution>
+            <id>stop-jetty</id>
+            <phase>post-integration-test</phase>
+            <goals>
+              <goal>stop</goal>
+            </goals>
+          </execution>
+          [...]
+        </executions>
+        [...]
+      </plugin>
+      [...]
+    </plugins>
+    [...]
+  </build>
+  [...]
+</project>
++---+
+
+  You then invoke maven with a phase of <<<verify>>> or later in order to run
+  the integration tests.  DO NOT directly invoke any of the phases:
+  <<<pre-integration-test>>>, <<<integration-test>>>, or <<<post-integration-test>>> as
+  these are too long to type and they will likely leave a jetty container running.
+
++---+
+mvn verify
++---+
+
+  Note: during test development, you will likely run a jetty instance in the background.
+  to help running the integration tests, it can be handy to bind <<<jetty:stop>>> to
+  the <<<pre-integration-test>>> phase before <<<jetty:run>>> to flush out any
+  running jetty instance before starting the integration test jetty instance, e.g.
+
++---+
+<project>
+  [...]
+  <build>
+    [...]
+    <plugins>
+      [...]
+      <plugin>
+        <groupId>org.mortbay.jetty</groupId>
+        <artifactId>maven-jetty-plugin</artifactId>
+        <version>6.1.16</version>
+        [...]
+        <executions>
+          [...]
+          <execution>
+            <id>start-jetty</id>
+            <phase>pre-integration-test</phase>
+            <goals>
+              <!-- stop any previous instance to free up the port -->
+              <goal>stop</goal>
+              <goal>run-exploded</goal>
+            </goals>
+            [...]
+          </execution>
+          [...]
+        </executions>
+        [...]
+      </plugin>
+      [...]
+    </plugins>
+    [...]
+  </build>
+  [...]
+</project>
++---+
+
+* Reporting integration test results
+
+  The Failsafe Plugin uses the exact same format as the Surefire Plugin, so to generate a report you just add a second
+  Surefire Report Plugin report set using the Failsafe reports directory, e.g.
+
++---+
+<project>
+  [...]
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <version>${project.version}</version>
+        <reportSets>
+          <reportSet>
+            <id>integration-tests</id>
+            <reports>
+              <report>report-only</report>
+            </reports>
+            <configuration>
+              <outputName>failsafe-report</outputName>
+              <reportsDirectories>
+                <reportsDirectory>${project.build.directory}/failsafe-reports</reportsDirectory>
+              </reportsDirectories>
+            </configuration>
+        </reportSet>
+      </plugin>
+    </plugins>
+  </reporting>
+  [...]
+</project>
++---+
+
