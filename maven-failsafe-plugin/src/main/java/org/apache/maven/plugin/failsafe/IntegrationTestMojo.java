@@ -772,13 +772,25 @@ public class IntegrationTestMojo
         {
             return false;
         }
-        try {
-            VersionRange  range = VersionRange.createFromVersionSpec( versionSpec);
-            return range.containsVersion( artifact.getSelectedVersion());
-        } catch (InvalidVersionSpecificationException e) {
-            throw new MojoExecutionException("Bug in junit 4.7 plugin. Please report with stacktrace");
-        } catch (OverConstrainedVersionException e) {
-            throw new MojoExecutionException("Bug in junit 4.7 plugin. Please report with stacktrace");
+        try
+        {
+            VersionRange range = VersionRange.createFromVersionSpec( versionSpec );
+            try
+            {
+                return range.containsVersion( artifact.getSelectedVersion() );
+            }
+            catch ( NullPointerException e )
+            {
+                return range.containsVersion( new DefaultArtifactVersion( artifact.getBaseVersion() ) );
+            }
+        }
+        catch ( InvalidVersionSpecificationException e )
+        {
+            throw new MojoExecutionException( "Bug in junit 4.7 plugin. Please report with stacktrace" );
+        }
+        catch ( OverConstrainedVersionException e )
+        {
+            throw new MojoExecutionException( "Bug in junit 4.7 plugin. Please report with stacktrace" );
         }
     }
 
@@ -835,12 +847,12 @@ public class IntegrationTestMojo
                 // different one since its based on the source level, not the JVM. Prune using the filter.
                 addProvider( surefireBooter, "surefire-testng", surefireArtifact.getBaseVersion(), testNgArtifact );
             }
-            else if ( isJunit47Compatible( junitArtifact))
+            else if ( junitArtifact != null && isJunit47Compatible( junitArtifact ) )
             {
-                convertJunitCoreParameters();                
+                convertJunitCoreParameters();
                 addProvider( surefireBooter, "surefire-junit47", surefireArtifact.getBaseVersion(), null );
             }
-            else if ( isJunit40to46( junitArtifact ))
+            else if ( junitArtifact != null && isJunit40to46( junitArtifact ) )
             {
                 addProvider( surefireBooter, "surefire-junit4", surefireArtifact.getBaseVersion(), null );
             }
