@@ -66,7 +66,7 @@ import org.codehaus.plexus.util.StringUtils;
 
 /**
  * Run tests using Surefire.
- * 
+ *
  * @author Jason van Zyl
  * @version $Id$
  * @requiresDependencyResolution test
@@ -87,10 +87,9 @@ public class SurefirePlugin
     private boolean skipTests;
 
     /**
-     * DEPRECATED This old parameter is just like skipTests, but bound to the old property maven.test.skip.exec.
-     * Use -DskipTests instead; it's shorter.
+     * This old parameter is just like skipTests, but bound to the old property maven.test.skip.exec.
      *
-     * @deprecated
+     * @deprecated Use -DskipTests instead.
      * @parameter expression="${maven.test.skip.exec}"
      * @since 2.3
      */
@@ -222,7 +221,7 @@ public class SurefirePlugin
 
     /**
      * List of System properties to pass to the JUnit tests.
-     * @deprecated use systemPropertyVariables instead
+     * @deprecated Use systemPropertyVariables instead.
      * @parameter
      */
     private Properties systemProperties;
@@ -293,9 +292,9 @@ public class SurefirePlugin
     private boolean redirectTestOutputToFile;
 
     /**
-     * Set this to "true" to cause a failure if there are no tests to run. Defaults to false.
+     * Set this to "true" to cause a failure if there are no tests to run.
      *
-     * @parameter expression="${failIfNoTests}"
+     * @parameter expression="${failIfNoTests}" default-value="false"
      * @since 2.4
      */
     private Boolean failIfNoTests;
@@ -434,8 +433,8 @@ public class SurefirePlugin
     private String perCoreThreadCount;
 
     /**
-     * (junitcore only) Indicates that the thread pool will be unlimited. paralell setting and the actual number of classes/methods
-     * will decide. Setting this to true effectively disables perCoreThreadCount and  threadCount
+     * (junitcore only) Indicates that the thread pool will be unlimited. The parallel parameter and the actual number of classes/methods
+     * will decide. Setting this to true effectively disables perCoreThreadCount and threadCount.
      *
      * @parameter expression="${useUnlimitedThreads}"
      * @since 2.5
@@ -446,7 +445,7 @@ public class SurefirePlugin
      * methods that depend on each other, which will be run in the same thread in order to respect their order of
      * execution.
      *
-     * JUNIT4.6 Values are classes/methods/both to run in separate threads, as controlled by threadCount.
+     * In JUnit 4.6 the values are classes/methods/both to run in separate threads, as controlled by threadCount.
      *
      * @parameter expression="${parallel}"
      * @todo test how this works with forking, and console/file output parallelism
@@ -477,7 +476,7 @@ public class SurefirePlugin
     private ArtifactFactory artifactFactory;
 
     /**
-     * The plugin remote repositories declared in the pom.
+     * The plugin remote repositories declared in the POM.
      *
      * @parameter expression="${project.pluginArtifactRepositories}"
      * @since 2.2
@@ -491,8 +490,8 @@ public class SurefirePlugin
      */
     private ArtifactMetadataSource metadataSource;
 
-    
-    
+
+
     private static final String BRIEF_REPORT_FORMAT = "brief";
 
     private static final String PLAIN_REPORT_FORMAT = "plain";
@@ -523,12 +522,12 @@ public class SurefirePlugin
     private Boolean useSystemClassLoader;
 
     /**
-     * By default, Surefire forks your tests using a manifest-only jar; set this parameter
+     * By default, Surefire forks your tests using a manifest-only JAR; set this parameter
      * to "false" to force it to launch your tests with a plain old Java classpath.
      * (See http://maven.apache.org/plugins/maven-surefire-plugin/examples/class-loading.html
-     * for a more detailed explanation of manifest-only jars and their benefits.)
+     * for a more detailed explanation of manifest-only JARs and their benefits.)
      *
-     * Default value is "true".  Beware, setting this to "false" may cause your tests to
+     * Beware, setting this to "false" may cause your tests to
      * fail on Windows if your classpath is too long.
      *
      * @parameter expression="${surefire.useManifestOnlyJar}" default-value="true"
@@ -564,8 +563,8 @@ public class SurefirePlugin
 
     /** @component */
     private ToolchainManager toolchainManager;
-    
-    
+
+
     public void execute()
         throws MojoExecutionException, MojoFailureException
     {
@@ -717,7 +716,7 @@ public class SurefirePlugin
     private boolean isJunit47Compatible(Artifact artifact) throws MojoExecutionException {
         return isWithinVersionSpec(artifact, "[4.7,)");
     }
-    
+
     private boolean isJunit40to46(Artifact artifact)  throws MojoExecutionException {
         return isWithinVersionSpec(artifact, "[4.0,4.7)");
     }
@@ -1098,7 +1097,7 @@ public class SurefirePlugin
 
         return surefireBooter;
     }
-    
+
     private void showMap( Map map, String setting )
     {
         for ( Iterator i = map.keySet().iterator(); i.hasNext(); )
@@ -1295,12 +1294,12 @@ public class SurefirePlugin
     private Toolchain getToolchain()
     {
         Toolchain tc = null;
-        
+
         if ( toolchainManager != null )
         {
             tc = toolchainManager.getToolchainFromBuildContext( "jdk", session );
         }
-        
+
         return tc;
     }
 }
