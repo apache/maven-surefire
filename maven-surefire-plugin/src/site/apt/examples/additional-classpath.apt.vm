@@ -3,18 +3,18 @@
   ------
   Pascal Lambert
   ------
-  March 2008
+  2010-01-09
   ------
 
 Additional Classpath Elements
 
-  If you need to put more stuff in your classpath when Surefire executes (e.g some funky resources or a container special jar),
+  If you need to put more stuff in your classpath when Surefire executes (e.g some funky resources or a container specific JAR),
   we normally recommend you add it to your classpath as a dependency.  Consider deploying shared jars to a private remote repository for your
   organization.
-  
+
   But, if you must, you can use the <<<additionalClasspathElements>>> element to add custom resources/jars to your classpath.
-  This will be treated as an absolute file system path, so you may want use ${basedir} or another property combined with a relative path.
-  Note that additional classpath elements are added to the end of the classpath, so you cannot use these to 
+  This will be treated as an absolute file system path, so you may want use $\{basedir\} or another property combined with a relative path.
+  Note that additional classpath elements are added to the end of the classpath, so you cannot use these to
   override project dependencies or resources.
 
 +---+

@@ -4,17 +4,17 @@
   Allan Ramirez
   Dan Tran
   ------
-  July 2006
+  2010-01-09
   ------
 
 Using System Properties
 
   There are two ways to add a list of system properties to Surefire:
 
-* systemProperyVariable
+* systemPropertyVariables
 
-  This configuration is the replacement of the deprecated <systemProperies>.  It can accept any value
-  from Maven's properties that can be converted <<to String value>>
+  This configuration is the replacement of the deprecated <<<systemProperties>>>.  It can accept any value
+  from Maven's properties that can be converted <<to String value>>.
 
 +---+
 <project>
@@ -40,7 +40,7 @@ Using System Properties
 +---+
 
 
-* systemProperties ( deprecated ) 
+* systemProperties ( deprecated )
 
 +---+
 <project>
@@ -67,10 +67,10 @@ Using System Properties
 </project>
 +---+
 
-  Take note that <<String valued>> properties can only be passed as system
+  Take note that only <<String valued>> properties can be passed as system
   properties. Any attempt to pass any other Maven variable type (i.e. <<<List>>>
   or a <<<URL>>> variable) will cause the variable expression to be passed
-  literally (unevaluated). So having an example below:
+  literally (unevaluated). So having the example below:
 
 +---+
 <project>

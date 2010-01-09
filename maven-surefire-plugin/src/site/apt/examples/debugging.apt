@@ -3,13 +3,13 @@
   ------
   Dan Fabulich
   ------
-  January 2008
+  2010-01-09
   ------
 
 Debugging Tests
 
   Sometimes you need to debug the tests exactly as Maven ran them.  Here's how!
-  
+
 Forked Tests
 
   By default, Maven runs your tests in a separate ("forked") process.  You can use the <<<maven.surefire.debug>>> property
@@ -23,7 +23,7 @@ mvn -Dmaven.surefire.debug test
   using Eclipse.  You can setup a "Remote Java Application" launch configuration via the menu
   command "Run" > "Open Debug Dialog..."
 
-  If you need to configure a different port, you may pass a more detailed value.  For example, the value below will use port 8000
+  If you need to configure a different port, you may pass a more detailed value.  For example, the command below will use port 8000
   instead of port 5005.
 
 +---+
@@ -40,7 +40,7 @@ mvn -DforkMode=never test
 
   Then all you need to do is debug Maven itself.  Since Maven 2.0.8, Maven has shipped with a "mvnDebug" shell script that you can
   use to launch Maven with convenient debugging options:
-  
+
 +---+
 mvnDebug -DforkMode=never test
 +---+
