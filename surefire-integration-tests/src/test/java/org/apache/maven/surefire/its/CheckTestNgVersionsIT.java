@@ -13,7 +13,7 @@ import org.apache.maven.it.util.ResourceExtractor;
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  * 
  */
-public class ChekcTestNgVersionsIT
+public class CheckTestNgVersionsIT
     extends AbstractSurefireIntegrationTestClass
 {
     
