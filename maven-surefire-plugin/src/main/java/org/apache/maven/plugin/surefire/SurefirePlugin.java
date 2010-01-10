@@ -294,7 +294,7 @@ public class SurefirePlugin
     /**
      * Set this to "true" to cause a failure if there are no tests to run.
      *
-     * @parameter expression="${failIfNoTests}" default-value="false"
+     * @parameter expression="${failIfNoTests}"
      * @since 2.4
      */
     private Boolean failIfNoTests;
