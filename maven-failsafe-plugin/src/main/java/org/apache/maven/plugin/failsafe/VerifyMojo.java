@@ -19,55 +19,21 @@ package org.apache.maven.plugin.failsafe;
  * under the License.
  */
 
-import java.io.File;
-import java.io.IOException;
-import java.io.FileInputStream;
 import java.io.BufferedInputStream;
-import java.io.Reader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.io.Reader;
 
-import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.factory.ArtifactFactory;
-import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
-import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
-import org.apache.maven.artifact.resolver.ArtifactResolutionException;
-import org.apache.maven.artifact.resolver.ArtifactResolutionResult;
-import org.apache.maven.artifact.resolver.ArtifactResolver;
-import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
-import org.apache.maven.artifact.resolver.filter.ExcludesArtifactFilter;
-import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
-import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
-import org.apache.maven.artifact.versioning.OverConstrainedVersionException;
-import org.apache.maven.artifact.versioning.VersionRange;
-import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.project.MavenProject;
-import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.artifact.resolver.ArtifactResolver;
-import org.apache.maven.artifact.factory.ArtifactFactory;
-import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
-import org.apache.maven.execution.MavenSession;
-import org.apache.maven.surefire.booter.ForkConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooter;
-import org.apache.maven.surefire.booter.SurefireBooterForkException;
-import org.apache.maven.surefire.booter.SurefireExecutionException;
-import org.apache.maven.surefire.report.BriefConsoleReporter;
-import org.apache.maven.surefire.failsafe.model.io.xpp3.FailsafeSummaryXpp3Writer;
-import org.apache.maven.surefire.failsafe.model.io.xpp3.FailsafeSummaryXpp3Reader;
 import org.apache.maven.surefire.failsafe.model.FailsafeSummary;
-import org.codehaus.plexus.util.StringUtils;
+import org.apache.maven.surefire.failsafe.model.io.xpp3.FailsafeSummaryXpp3Reader;
 import org.codehaus.plexus.util.ReaderFactory;
+import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 
 /**
@@ -104,9 +70,9 @@ public class VerifyMojo
     /**
      * This old parameter is just like skipTests, but bound to the old property maven.test.skip.exec.
      *
-     * @deprecated Use -DskipTests instead.
      * @parameter expression="${maven.test.skip.exec}"
      * @since 2.3
+     * @deprecated Use -DskipTests instead.
      */
     private boolean skipExec;
 
