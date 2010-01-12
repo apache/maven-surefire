@@ -20,9 +20,15 @@ package org.apache.maven.plugin.failsafe;
  */
 
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.FileOutputStream;
+import java.io.Writer;
+import java.io.OutputStreamWriter;
+import java.io.BufferedOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;               
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -39,6 +45,7 @@ import org.apache.maven.artifact.resolver.ArtifactResolutionResult;
 import org.apache.maven.artifact.resolver.ArtifactResolver;
 import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
 import org.apache.maven.artifact.resolver.filter.ExcludesArtifactFilter;
+import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
 import org.apache.maven.artifact.versioning.OverConstrainedVersionException;
@@ -59,29 +66,13 @@ import org.apache.maven.surefire.report.DetailedConsoleReporter;
 import org.apache.maven.surefire.report.FileReporter;
 import org.apache.maven.surefire.report.ForkingConsoleReporter;
 import org.apache.maven.surefire.report.XMLReporter;
+import org.apache.maven.toolchain.Toolchain;
+import org.apache.maven.toolchain.ToolchainManager;
 import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.ReaderFactory;
 import org.codehaus.plexus.util.FileUtils;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.FileOutputStream;
-import java.io.Writer;
-import java.io.OutputStreamWriter;
-import java.io.BufferedOutputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
 
-import org.apache.maven.execution.MavenSession;
-import org.apache.maven.toolchain.Toolchain;
-import org.apache.maven.toolchain.ToolchainManager;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.apache.maven.surefire.failsafe.model.io.xpp3.FailsafeSummaryXpp3Writer;
 import org.apache.maven.surefire.failsafe.model.FailsafeSummary;
@@ -119,12 +110,11 @@ public class IntegrationTestMojo
     private boolean skipITs;
 
     /**
-     * DEPRECATED This old parameter is just like skipTests, but bound to the old property maven.test.skip.exec.
-     * Use -DskipTests instead; it's shorter.
+     * This old parameter is just like skipTests, but bound to the old property maven.test.skip.exec.
      *
+     * @deprecated Use -DskipTests instead.
      * @parameter expression="${maven.test.skip.exec}"
      * @since 2.3
-     * @deprecated
      */
     private boolean skipExec;
 
@@ -249,7 +239,7 @@ public class IntegrationTestMojo
 
     /**
      * List of System properties to pass to the JUnit tests.
-     * @deprecated use systemPropertyVariables instead
+     * @deprecated Use systemPropertyVariables instead.
      * @parameter
      */
     private Properties systemProperties;
@@ -468,8 +458,8 @@ public class IntegrationTestMojo
     private String perCoreThreadCount;
 
     /**
-     * (junitcore only) Indicates that the thread pool will be unlimited. paralell setting and the actual number of classes/methods
-     * will decide. Setting this to true effectively disables perCoreThreadCount and  threadCount
+     * (junitcore only) Indicates that the thread pool will be unlimited. The parallel parameter and the actual number of classes/methods
+     * will decide. Setting this to true effectively disables perCoreThreadCount and threadCount.
      *
      * @parameter expression="${useUnlimitedThreads}"
      * @since 2.5
@@ -480,7 +470,7 @@ public class IntegrationTestMojo
      * methods that depend on each other, which will be run in the same thread in order to respect their order of
      * execution.
      *
-     * JUNIT4.6 Values are classes/methods/both to run in separate threads, as controlled by threadCount.
+     * In JUnit 4.7 the values are classes/methods/both to run in separate threads, as controlled by threadCount.
      *
      * @parameter expression="${parallel}"
      * @todo test how this works with forking, and console/file output parallelism
@@ -511,7 +501,7 @@ public class IntegrationTestMojo
     private ArtifactFactory artifactFactory;
 
     /**
-     * The plugin remote repositories declared in the pom.
+     * The plugin remote repositories declared in the POM.
      *
      * @parameter expression="${project.pluginArtifactRepositories}"
      * @since 2.2
@@ -525,8 +515,6 @@ public class IntegrationTestMojo
      */
     private ArtifactMetadataSource metadataSource;
 
-    
-    
     private static final String BRIEF_REPORT_FORMAT = "brief";
 
     private static final String PLAIN_REPORT_FORMAT = "plain";
@@ -605,8 +593,8 @@ public class IntegrationTestMojo
 
     /** @component */
     private ToolchainManager toolchainManager;
-    
-    
+
+
     public void execute()
         throws MojoExecutionException, MojoFailureException
     {
@@ -727,6 +715,10 @@ public class IntegrationTestMojo
         }
     }
 
+    private boolean isAnyConcurrencySelected(){
+       return this.parallel != null && this.parallel.trim().length() > 0; 
+    }
+    
     /**
      * Converts old TestNG configuration parameters over to new properties based configuration
      * method. (if any are defined the old way)
@@ -762,9 +754,9 @@ public class IntegrationTestMojo
     private boolean isJunit47Compatible(Artifact artifact) throws MojoExecutionException {
         return isWithinVersionSpec(artifact, "[4.7,)");
     }
-    
-    private boolean isJunit40to46(Artifact artifact)  throws MojoExecutionException {
-        return isWithinVersionSpec(artifact, "[4.0,4.7)");
+
+    private boolean isAnyJunit4(Artifact artifact)  throws MojoExecutionException {
+        return isWithinVersionSpec(artifact, "[4.0,)");
     }
 
     private boolean isWithinVersionSpec(Artifact artifact, String versionSpec) throws MojoExecutionException {
@@ -846,15 +838,18 @@ public class IntegrationTestMojo
                 // The plugin uses a JDK based profile to select the right testng. We might be explicity using a
                 // different one since its based on the source level, not the JVM. Prune using the filter.
                 addProvider( surefireBooter, "surefire-testng", surefireArtifact.getBaseVersion(), testNgArtifact );
-            }
-            else if ( junitArtifact != null && isJunit47Compatible( junitArtifact ) )
+            } 
+            else if ( junitArtifact != null && isAnyJunit4( junitArtifact ) )
             {
-                convertJunitCoreParameters();
-                addProvider( surefireBooter, "surefire-junit47", surefireArtifact.getBaseVersion(), null );
-            }
-            else if ( junitArtifact != null && isJunit40to46( junitArtifact ) )
-            {
-                addProvider( surefireBooter, "surefire-junit4", surefireArtifact.getBaseVersion(), null );
+                    if ( isAnyConcurrencySelected() && isJunit47Compatible( junitArtifact ) )
+                    {
+                        convertJunitCoreParameters();
+                        addProvider( surefireBooter, "surefire-junit47", surefireArtifact.getBaseVersion(), null );
+                    } 
+                    else 
+                    {
+                        addProvider( surefireBooter, "surefire-junit4", surefireArtifact.getBaseVersion(), null );
+                    }
             }
             else
             {
@@ -951,16 +946,16 @@ public class IntegrationTestMojo
             else
             {
                 String junitDirectoryTestSuite;
-                if ( isJunit47Compatible( junitArtifact ) )
+                if (  isAnyConcurrencySelected() && isJunit47Compatible( junitArtifact ) )
                 {
                     junitDirectoryTestSuite = "org.apache.maven.surefire.junitcore.JUnitCoreDirectoryTestSuite";
-                    getLog().warn( "Props are" + properties.toString() );
+                    getLog().info( "Concurrency config is " + properties.toString() );
                     surefireBooter.addTestSuite( junitDirectoryTestSuite,
                                                  new Object[]{testClassesDirectory, includes, excludes, properties} );
                 }
                 else
                 {
-                    if ( isJunit40to46( junitArtifact ) )
+                    if ( isAnyJunit4( junitArtifact ) )
                     {
                         junitDirectoryTestSuite = "org.apache.maven.surefire.junit4.JUnit4DirectoryTestSuite";
                     }
@@ -968,7 +963,6 @@ public class IntegrationTestMojo
                     {
                         // fall back to JUnit, which also contains POJO support. Also it can run
                         // classes compiled against JUnit since it has a dependency on JUnit itself.
-                        junitDirectoryTestSuite = "org.apache.maven.surefire.junit.JUnitDirectoryTestSuite";
                         junitDirectoryTestSuite = "org.apache.maven.surefire.junit.JUnitDirectoryTestSuite";
                     }
                     surefireBooter.addTestSuite( junitDirectoryTestSuite,
@@ -1142,7 +1136,7 @@ public class IntegrationTestMojo
 
         return surefireBooter;
     }
-    
+
     private void showMap( Map map, String setting )
     {
         for ( Iterator i = map.keySet().iterator(); i.hasNext(); )
@@ -1339,12 +1333,12 @@ public class IntegrationTestMojo
     private Toolchain getToolchain()
     {
         Toolchain tc = null;
-        
+
         if ( toolchainManager != null )
         {
             tc = toolchainManager.getToolchainFromBuildContext( "jdk", session );
         }
-        
+
         return tc;
     }
 }

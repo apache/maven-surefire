@@ -490,8 +490,6 @@ public class SurefirePlugin
      */
     private ArtifactMetadataSource metadataSource;
 
-
-
     private static final String BRIEF_REPORT_FORMAT = "brief";
 
     private static final String PLAIN_REPORT_FORMAT = "plain";
@@ -804,11 +802,16 @@ public class SurefirePlugin
                 // The plugin uses a JDK based profile to select the right testng. We might be explicity using a
                 // different one since its based on the source level, not the JVM. Prune using the filter.
                 addProvider( surefireBooter, "surefire-testng", surefireArtifact.getBaseVersion(), testNgArtifact );
-            } else if (junitArtifact != null && isAnyJunit4( junitArtifact)){
-                    if ( isAnyConcurrencySelected() && isJunit47Compatible( junitArtifact ) ){
+            } 
+            else if ( junitArtifact != null && isAnyJunit4( junitArtifact ) )
+            {
+                    if ( isAnyConcurrencySelected() && isJunit47Compatible( junitArtifact ) )
+                    {
                         convertJunitCoreParameters();
                         addProvider( surefireBooter, "surefire-junit47", surefireArtifact.getBaseVersion(), null );
-                    } else {
+                    } 
+                    else 
+                    {
                         addProvider( surefireBooter, "surefire-junit4", surefireArtifact.getBaseVersion(), null );
                     }
             }

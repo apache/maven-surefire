@@ -20,6 +20,11 @@ package org.apache.maven.plugin.failsafe;
  */
 
 import java.io.File;
+import java.io.IOException;
+import java.io.FileInputStream;
+import java.io.BufferedInputStream;
+import java.io.Reader;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -65,21 +70,6 @@ import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.ReaderFactory;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.BufferedOutputStream;
-import java.io.Writer;
-import java.io.OutputStreamWriter;
-import java.io.IOException;
-import java.io.FileInputStream;
-import java.io.BufferedInputStream;
-import java.io.Reader;
-import java.io.InputStreamReader;
-import java.util.List;
-import java.util.Properties;
-import java.util.Map;
-import java.util.HashMap;
-
 /**
  * Verify integration tests ran using Surefire.
  *
@@ -112,12 +102,11 @@ public class VerifyMojo
     private boolean skipITs;
 
     /**
-     * DEPRECATED This old parameter is just like skipTests, but bound to the old property maven.test.skip.exec.
-     * Use -DskipTests instead; it's shorter.
+     * This old parameter is just like skipTests, but bound to the old property maven.test.skip.exec.
      *
+     * @deprecated Use -DskipTests instead.
      * @parameter expression="${maven.test.skip.exec}"
      * @since 2.3
-     * @deprecated
      */
     private boolean skipExec;
 
@@ -171,7 +160,7 @@ public class VerifyMojo
     private File summaryFile;
 
     /**
-     * Set this to "true" to cause a failure if there are no tests to run. Defaults to false.
+     * Set this to "true" to cause a failure if there are no tests to run.
      *
      * @parameter expression="${failIfNoTests}"
      * @since 2.4
