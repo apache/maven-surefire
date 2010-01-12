@@ -79,10 +79,8 @@ class JUnitCoreTestSet {
 
     public static void execute(Class[] classes, ReporterManager reportManager, JUnitCoreParameters jUnitCoreParameters)
             throws TestSetFailedException {
-        RunListener listener = new JUnitCoreTestSetReporter(reportManager);
-        if (jUnitCoreParameters.isAnyParallelitySelected()) {
-            listener = createRunListener(listener, jUnitCoreParameters.isConfigurableParallelComputerPresent());
-        }
+        RunListener realTarget = new JUnitCoreTestSetReporter(reportManager);
+        RunListener listener = createRunListener(realTarget, jUnitCoreParameters.isConfigurableParallelComputerPresent());
         Computer computer = getComputer(jUnitCoreParameters);
         try {
             runJunitCore(classes, computer, listener);
@@ -94,7 +92,9 @@ class JUnitCoreTestSet {
 
     private static RunListener createRunListener(RunListener realTarget, boolean configurableParallelComputerPresent)
             throws TestSetFailedException {
-        if (!configurableParallelComputerPresent) return new DemultiplexingRunListener(realTarget);
+        if (!configurableParallelComputerPresent) {
+            return new DemultiplexingRunListener(realTarget);
+        }
         try {
             Class<?> cpcClass = Class.forName(demuxerClassName);
             Constructor constructor = cpcClass.getConstructor(RunListener.class);

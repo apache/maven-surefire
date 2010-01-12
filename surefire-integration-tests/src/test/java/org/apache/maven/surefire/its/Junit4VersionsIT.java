@@ -46,6 +46,22 @@ public class Junit4VersionsIT
     {
         runJUnitTest( "4.4" );
     }
+
+    public void test45 () throws Exception
+    {
+        runJUnitTest( "4.5" );
+    }
+
+    public void test46 () throws Exception
+    {
+        runJUnitTest( "4.6" );
+    }
+
+    public void test47 () throws Exception
+    {
+        runJUnitTest( "4.7" );
+    }
+
     
     public void runJUnitTest (String version)
         throws Exception

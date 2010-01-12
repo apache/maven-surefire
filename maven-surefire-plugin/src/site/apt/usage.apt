@@ -4,7 +4,7 @@
   Brett Porter
   Allan Ramirez
   ------
-  July 2006
+  2010-01-09
   ------
 
 ~~ Licensed to the Apache Software Foundation (ASF) under one
@@ -53,7 +53,7 @@ mvn test
 
   Note that any normal Surefire integration works identically no matter which
   providers are in use - so you can still produce a Cobertura report and a
-  Surefire results report on your project web site for your TestNG tests,
+  Surefire report on your project web site for your TestNG tests,
   for example.
 
   The POJO provider above allows you to write tests that do not depend on

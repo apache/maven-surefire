@@ -39,7 +39,6 @@ import org.apache.maven.artifact.resolver.ArtifactResolutionResult;
 import org.apache.maven.artifact.resolver.ArtifactResolver;
 import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
 import org.apache.maven.artifact.resolver.filter.ExcludesArtifactFilter;
-import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
 import org.apache.maven.artifact.versioning.OverConstrainedVersionException;
@@ -66,7 +65,7 @@ import org.codehaus.plexus.util.StringUtils;
 
 /**
  * Run tests using Surefire.
- * 
+ *
  * @author Jason van Zyl
  * @version $Id$
  * @requiresDependencyResolution test
@@ -87,12 +86,11 @@ public class SurefirePlugin
     private boolean skipTests;
 
     /**
-     * DEPRECATED This old parameter is just like skipTests, but bound to the old property maven.test.skip.exec.
-     * Use -DskipTests instead; it's shorter.
+     * This old parameter is just like skipTests, but bound to the old property maven.test.skip.exec.
      *
-     * @deprecated
      * @parameter expression="${maven.test.skip.exec}"
      * @since 2.3
+     * @deprecated Use -DskipTests instead.
      */
     private boolean skipExec;
 
@@ -222,8 +220,9 @@ public class SurefirePlugin
 
     /**
      * List of System properties to pass to the JUnit tests.
-     * @deprecated use systemPropertyVariables instead
+     *
      * @parameter
+     * @deprecated Use systemPropertyVariables instead.
      */
     private Properties systemProperties;
 
@@ -293,7 +292,7 @@ public class SurefirePlugin
     private boolean redirectTestOutputToFile;
 
     /**
-     * Set this to "true" to cause a failure if there are no tests to run. Defaults to false.
+     * Set this to "true" to cause a failure if there are no tests to run.
      *
      * @parameter expression="${failIfNoTests}"
      * @since 2.4
@@ -434,19 +433,20 @@ public class SurefirePlugin
     private String perCoreThreadCount;
 
     /**
-     * (junitcore only) Indicates that the thread pool will be unlimited. paralell setting and the actual number of classes/methods
-     * will decide. Setting this to true effectively disables perCoreThreadCount and  threadCount
+     * (junitcore only) Indicates that the thread pool will be unlimited. The parallel parameter and the actual number of classes/methods
+     * will decide. Setting this to true effectively disables perCoreThreadCount and threadCount.
      *
      * @parameter expression="${useUnlimitedThreads}"
      * @since 2.5
      */
     private String useUnlimitedThreads;
+
     /**
      * (TestNG only) When you use the parallel attribute, TestNG will try to run all your test methods in separate threads, except for
      * methods that depend on each other, which will be run in the same thread in order to respect their order of
      * execution.
-     *
-     * JUNIT4.6 Values are classes/methods/both to run in separate threads, as controlled by threadCount.
+     * <p/>
+     * In JUnit 4.7 the values are classes/methods/both to run in separate threads, as controlled by threadCount.
      *
      * @parameter expression="${parallel}"
      * @todo test how this works with forking, and console/file output parallelism
@@ -477,7 +477,7 @@ public class SurefirePlugin
     private ArtifactFactory artifactFactory;
 
     /**
-     * The plugin remote repositories declared in the pom.
+     * The plugin remote repositories declared in the POM.
      *
      * @parameter expression="${project.pluginArtifactRepositories}"
      * @since 2.2
@@ -491,8 +491,6 @@ public class SurefirePlugin
      */
     private ArtifactMetadataSource metadataSource;
 
-    
-    
     private static final String BRIEF_REPORT_FORMAT = "brief";
 
     private static final String PLAIN_REPORT_FORMAT = "plain";
@@ -523,12 +521,12 @@ public class SurefirePlugin
     private Boolean useSystemClassLoader;
 
     /**
-     * By default, Surefire forks your tests using a manifest-only jar; set this parameter
+     * By default, Surefire forks your tests using a manifest-only JAR; set this parameter
      * to "false" to force it to launch your tests with a plain old Java classpath.
      * (See http://maven.apache.org/plugins/maven-surefire-plugin/examples/class-loading.html
-     * for a more detailed explanation of manifest-only jars and their benefits.)
-     *
-     * Default value is "true".  Beware, setting this to "false" may cause your tests to
+     * for a more detailed explanation of manifest-only JARs and their benefits.)
+     * <p/>
+     * Beware, setting this to "false" may cause your tests to
      * fail on Windows if your classpath is too long.
      *
      * @parameter expression="${surefire.useManifestOnlyJar}" default-value="true"
@@ -562,10 +560,12 @@ public class SurefirePlugin
      */
     private String objectFactory;
 
-    /** @component */
+    /**
+     * @component
+     */
     private ToolchainManager toolchainManager;
-    
-    
+
+
     public void execute()
         throws MojoExecutionException, MojoFailureException
     {
@@ -595,18 +595,28 @@ public class SurefirePlugin
                 System.setProperties( originalSystemProperties );
             }
 
-            if ( result == 0 ) return;
+            if ( result == 0 )
+            {
+                return;
+            }
 
             String msg;
 
             if ( result == SurefireBooter.NO_TESTS_EXIT_CODE )
             {
-                if ( ( failIfNoTests == null ) || !failIfNoTests.booleanValue() ) return;
+                if ( ( failIfNoTests == null ) || !failIfNoTests.booleanValue() )
+                {
+                    return;
+                }
                 // TODO: i18n
-                throw new MojoFailureException( "No tests were executed!  (Set -DfailIfNoTests=false to ignore this error.)" );
-            } else {
+                throw new MojoFailureException(
+                    "No tests were executed!  (Set -DfailIfNoTests=false to ignore this error.)" );
+            }
+            else
+            {
                 // TODO: i18n
-                msg = "There are test failures.\n\nPlease refer to " + reportsDirectory + " for the individual test results.";
+                msg = "There are test failures.\n\nPlease refer to " + reportsDirectory
+                    + " for the individual test results.";
 
             }
 
@@ -682,6 +692,11 @@ public class SurefirePlugin
         }
     }
 
+    private boolean isAnyConcurrencySelected()
+    {
+        return this.parallel != null && this.parallel.trim().length() > 0;
+    }
+
     /**
      * Converts old TestNG configuration parameters over to new properties based configuration
      * method. (if any are defined the old way)
@@ -703,26 +718,34 @@ public class SurefirePlugin
         }
         if ( this.perCoreThreadCount != null )
         {
-            properties.setProperty( "perCoreThreadCount", perCoreThreadCount);
+            properties.setProperty( "perCoreThreadCount", perCoreThreadCount );
         }
         if ( this.useUnlimitedThreads != null )
         {
-            properties.setProperty( "useUnlimitedThreads", useUnlimitedThreads);
+            properties.setProperty( "useUnlimitedThreads", useUnlimitedThreads );
         }
-        Artifact configurableParallelComputer = (Artifact) projectArtifactMap.get("org.jdogma.junit:configurable-parallel-computer");
-        properties.setProperty("configurableParallelComputerPresent", Boolean.toString(configurableParallelComputer != null));
+        Artifact configurableParallelComputer =
+            (Artifact) projectArtifactMap.get( "org.jdogma.junit:configurable-parallel-computer" );
+        properties.setProperty( "configurableParallelComputerPresent",
+                                Boolean.toString( configurableParallelComputer != null ) );
 
     }
 
-    private boolean isJunit47Compatible(Artifact artifact) throws MojoExecutionException {
-        return isWithinVersionSpec(artifact, "[4.7,)");
-    }
-    
-    private boolean isJunit40to46(Artifact artifact)  throws MojoExecutionException {
-        return isWithinVersionSpec(artifact, "[4.0,4.7)");
+    private boolean isJunit47Compatible( Artifact artifact )
+        throws MojoExecutionException
+    {
+        return isWithinVersionSpec( artifact, "[4.7,)" );
     }
 
-    private boolean isWithinVersionSpec(Artifact artifact, String versionSpec) throws MojoExecutionException {
+    private boolean isAnyJunit4( Artifact artifact )
+        throws MojoExecutionException
+    {
+        return isWithinVersionSpec( artifact, "[4.0,)" );
+    }
+
+    private boolean isWithinVersionSpec( Artifact artifact, String versionSpec )
+        throws MojoExecutionException
+    {
         if ( artifact == null )
         {
             return false;
@@ -782,11 +805,11 @@ public class SurefirePlugin
             if ( testNgArtifact != null )
             {
                 VersionRange range = VersionRange.createFromVersionSpec( "[4.7,)" );
-                if ( !range.containsVersion( new DefaultArtifactVersion(testNgArtifact.getVersion()) ) )
+                if ( !range.containsVersion( new DefaultArtifactVersion( testNgArtifact.getVersion() ) ) )
                 {
                     throw new MojoFailureException(
-                                                    "TestNG support requires version 4.7 or above. You have declared version " +
-                                                        testNgArtifact.getVersion() );
+                        "TestNG support requires version 4.7 or above. You have declared version "
+                            + testNgArtifact.getVersion() );
                 }
 
                 convertTestNGParameters();
@@ -802,14 +825,17 @@ public class SurefirePlugin
                 // different one since its based on the source level, not the JVM. Prune using the filter.
                 addProvider( surefireBooter, "surefire-testng", surefireArtifact.getBaseVersion(), testNgArtifact );
             }
-            else if ( junitArtifact != null && isJunit47Compatible( junitArtifact ) )
+            else if ( junitArtifact != null && isAnyJunit4( junitArtifact ) )
             {
-                convertJunitCoreParameters();
-                addProvider( surefireBooter, "surefire-junit47", surefireArtifact.getBaseVersion(), null );
-            }
-            else if ( junitArtifact != null && isJunit40to46( junitArtifact ) )
-            {
-                addProvider( surefireBooter, "surefire-junit4", surefireArtifact.getBaseVersion(), null );
+                if ( isAnyConcurrencySelected() && isJunit47Compatible( junitArtifact ) )
+                {
+                    convertJunitCoreParameters();
+                    addProvider( surefireBooter, "surefire-junit47", surefireArtifact.getBaseVersion(), null );
+                }
+                else
+                {
+                    addProvider( surefireBooter, "surefire-junit4", surefireArtifact.getBaseVersion(), null );
+                }
             }
             else
             {
@@ -820,8 +846,8 @@ public class SurefirePlugin
         }
         catch ( ArtifactNotFoundException e )
         {
-            throw new MojoExecutionException( "Unable to locate required surefire provider dependency: " +
-                e.getMessage(), e );
+            throw new MojoExecutionException(
+                "Unable to locate required surefire provider dependency: " + e.getMessage(), e );
         }
         catch ( InvalidVersionSpecificationException e )
         {
@@ -840,8 +866,10 @@ public class SurefirePlugin
             }
 
             // TODO: properties should be passed in here too
-            surefireBooter.addTestSuite( "org.apache.maven.surefire.testng.TestNGXmlTestSuite", new Object[]{
-                suiteXmlFiles, testSourceDirectory.getAbsolutePath(), testNgArtifact.getVersion(), testNgArtifact.getClassifier(), properties, reportsDirectory} );
+            surefireBooter.addTestSuite( "org.apache.maven.surefire.testng.TestNGXmlTestSuite",
+                                         new Object[]{suiteXmlFiles, testSourceDirectory.getAbsolutePath(),
+                                             testNgArtifact.getVersion(), testNgArtifact.getClassifier(), properties,
+                                             reportsDirectory} );
         }
         else
         {
@@ -888,36 +916,35 @@ public class SurefirePlugin
                 // Have to wrap in an ArrayList as surefire expects an ArrayList instead of a List for some reason
                 if ( includes == null || includes.size() == 0 )
                 {
-                    includes =
-                        new ArrayList( Arrays.asList( new String[] { "**/Test*.java", "**/*Test.java",
-                            "**/*TestCase.java" } ) );
+                    includes = new ArrayList(
+                        Arrays.asList( new String[]{"**/Test*.java", "**/*Test.java", "**/*TestCase.java"} ) );
                 }
                 if ( excludes == null || excludes.size() == 0 )
                 {
-                    excludes =
-                        new ArrayList( Arrays.asList( new String[] { "**/*$*" } ) );
+                    excludes = new ArrayList( Arrays.asList( new String[]{"**/*$*"} ) );
                 }
             }
 
             if ( testNgArtifact != null )
             {
-                surefireBooter.addTestSuite("org.apache.maven.surefire.testng.TestNGDirectoryTestSuite", new Object[]{
-                        testClassesDirectory, includes, excludes, testSourceDirectory.getAbsolutePath(),
-                        testNgArtifact.getVersion(), testNgArtifact.getClassifier(), properties, reportsDirectory});
+                surefireBooter.addTestSuite( "org.apache.maven.surefire.testng.TestNGDirectoryTestSuite",
+                                             new Object[]{testClassesDirectory, includes, excludes,
+                                                 testSourceDirectory.getAbsolutePath(), testNgArtifact.getVersion(),
+                                                 testNgArtifact.getClassifier(), properties, reportsDirectory} );
             }
             else
             {
                 String junitDirectoryTestSuite;
-                if ( isJunit47Compatible( junitArtifact ) )
+                if ( isAnyConcurrencySelected() && isJunit47Compatible( junitArtifact ) )
                 {
                     junitDirectoryTestSuite = "org.apache.maven.surefire.junitcore.JUnitCoreDirectoryTestSuite";
-                    getLog().warn( "Props are" + properties.toString() );
+                    getLog().info( "Concurrency config is " + properties.toString() );
                     surefireBooter.addTestSuite( junitDirectoryTestSuite,
                                                  new Object[]{testClassesDirectory, includes, excludes, properties} );
                 }
                 else
                 {
-                    if ( isJunit40to46( junitArtifact ) )
+                    if ( isAnyJunit4( junitArtifact ) )
                     {
                         junitDirectoryTestSuite = "org.apache.maven.surefire.junit4.JUnit4DirectoryTestSuite";
                     }
@@ -939,8 +966,8 @@ public class SurefirePlugin
 
         // Check if we need to add configured classes/test classes directories here.
         // If they are configured, we should remove the default to avoid conflicts.
-        File projectClassesDirectory = new File ( project.getBuild().getOutputDirectory() );
-        if ( ! projectClassesDirectory.equals( classesDirectory ) )
+        File projectClassesDirectory = new File( project.getBuild().getOutputDirectory() );
+        if ( !projectClassesDirectory.equals( classesDirectory ) )
         {
             int indexToReplace = classpathElements.indexOf( project.getBuild().getOutputDirectory() );
             if ( indexToReplace != -1 )
@@ -1036,7 +1063,8 @@ public class SurefirePlugin
 
             if ( "true".equals( debugForkedProcess ) )
             {
-                debugForkedProcess = "-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005";
+                debugForkedProcess =
+                    "-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005";
             }
 
             fork.setDebugLine( debugForkedProcess );
@@ -1098,7 +1126,7 @@ public class SurefirePlugin
 
         return surefireBooter;
     }
-    
+
     private void showMap( Map map, String setting )
     {
         for ( Iterator i = map.keySet().iterator(); i.hasNext(); )
@@ -1109,7 +1137,8 @@ public class SurefirePlugin
         }
     }
 
-    private void addProvider( SurefireBooter surefireBooter, String provider, String version, Artifact filteredArtifact )
+    private void addProvider( SurefireBooter surefireBooter, String provider, String version,
+                              Artifact filteredArtifact )
         throws ArtifactNotFoundException, ArtifactResolutionException
     {
         Artifact providerArtifact = artifactFactory.createDependencyArtifact( "org.apache.maven.surefire", provider,
@@ -1133,9 +1162,8 @@ public class SurefirePlugin
         ArtifactFilter filter = null;
         if ( filteredArtifact != null )
         {
-            filter =
-                new ExcludesArtifactFilter( Collections.singletonList( filteredArtifact.getGroupId() + ":" +
-                    filteredArtifact.getArtifactId() ) );
+            filter = new ExcludesArtifactFilter(
+                Collections.singletonList( filteredArtifact.getGroupId() + ":" + filteredArtifact.getArtifactId() ) );
         }
 
         Artifact originatingArtifact = artifactFactory.createBuildArtifact( "dummy", "dummy", "1.0", "jar" );
@@ -1219,9 +1247,9 @@ public class SurefirePlugin
     }
 
     /**
-     * <p>
+     * <p/>
      * Adds Reporters that will generate reports with different formatting.
-     * <p>
+     * <p/>
      * The Reporter that will be added will be based on the value of the parameter useFile, reportFormat, and
      * printSummary.
      *
@@ -1237,40 +1265,40 @@ public class SurefirePlugin
             {
                 if ( forking )
                 {
-                    surefireBooter.addReport( ForkingConsoleReporter.class.getName(), new Object[] { trimStackTrace } );
+                    surefireBooter.addReport( ForkingConsoleReporter.class.getName(), new Object[]{trimStackTrace} );
                 }
                 else
                 {
-                    surefireBooter.addReport( ConsoleReporter.class.getName(), new Object[] { trimStackTrace } );
+                    surefireBooter.addReport( ConsoleReporter.class.getName(), new Object[]{trimStackTrace} );
                 }
             }
 
             if ( BRIEF_REPORT_FORMAT.equals( reportFormat ) )
             {
-                surefireBooter.addReport( BriefFileReporter.class.getName(), new Object[] { reportsDirectory,
-                    trimStackTrace } );
+                surefireBooter.addReport( BriefFileReporter.class.getName(),
+                                          new Object[]{reportsDirectory, trimStackTrace} );
             }
             else if ( PLAIN_REPORT_FORMAT.equals( reportFormat ) )
             {
                 surefireBooter.addReport( FileReporter.class.getName(),
-                                          new Object[] { reportsDirectory, trimStackTrace } );
+                                          new Object[]{reportsDirectory, trimStackTrace} );
             }
         }
         else
         {
             if ( BRIEF_REPORT_FORMAT.equals( reportFormat ) )
             {
-                surefireBooter.addReport( BriefConsoleReporter.class.getName(), new Object[] { trimStackTrace } );
+                surefireBooter.addReport( BriefConsoleReporter.class.getName(), new Object[]{trimStackTrace} );
             }
             else if ( PLAIN_REPORT_FORMAT.equals( reportFormat ) )
             {
-                surefireBooter.addReport( DetailedConsoleReporter.class.getName(), new Object[] { trimStackTrace } );
+                surefireBooter.addReport( DetailedConsoleReporter.class.getName(), new Object[]{trimStackTrace} );
             }
         }
 
         if ( !disableXmlReport )
         {
-            surefireBooter.addReport( XMLReporter.class.getName(), new Object[] { reportsDirectory, trimStackTrace } );
+            surefireBooter.addReport( XMLReporter.class.getName(), new Object[]{reportsDirectory, trimStackTrace} );
         }
     }
 
@@ -1290,17 +1318,15 @@ public class SurefirePlugin
         this.skipTests = skipExec;
     }
 
-    //TODO remove the part with ToolchainManager lookup once we depend on
-    //2.0.9 (have it as prerequisite). Define as regular component field then.
     private Toolchain getToolchain()
     {
         Toolchain tc = null;
-        
+
         if ( toolchainManager != null )
         {
             tc = toolchainManager.getToolchainFromBuildContext( "jdk", session );
         }
-        
+
         return tc;
     }
 }

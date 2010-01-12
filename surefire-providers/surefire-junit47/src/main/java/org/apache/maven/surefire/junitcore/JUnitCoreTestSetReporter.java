@@ -21,6 +21,8 @@ package org.apache.maven.surefire.junitcore;
 
 
 import java.util.ResourceBundle;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.maven.surefire.Surefire;
 import org.apache.maven.surefire.report.ReportEntry;
@@ -33,10 +35,21 @@ import org.junit.runner.notification.RunListener;
 class JUnitCoreTestSetReporter
     extends RunListener
 {
+
+    private static final Pattern PARENS = Pattern.compile(
+            "^" +
+            "[^\\(\\)]+" + //non-parens
+            "\\((" + // then an open-paren (start matching a group)
+            "[^\\\\(\\\\)]+" + //non-parens
+            ")\\)" +
+            "$" ); // then a close-paren (end group match)
+
     // Constants
     private static ResourceBundle bundle = ResourceBundle.getBundle( Surefire.SUREFIRE_BUNDLE_NAME );
 
 
+    private Description currentRunStart;
+    private String currentClassName;
     private ReporterManager reportMgr;
 
     /**
@@ -63,8 +76,10 @@ class JUnitCoreTestSetReporter
         throws Exception
     {
         String rawString = bundle.getString( "testSetStarting" );
-        ReportEntry report = new ReportEntry( description.getClassName(), description.getDisplayName(), rawString );
+        currentClassName = extractClassName(description);
+        currentRunStart = description;
 
+        ReportEntry report = new ReportEntry( description.getClassName(), currentClassName, rawString );
         this.reportMgr.testSetStarting( report );
     }
 
@@ -77,7 +92,7 @@ class JUnitCoreTestSetReporter
         throws Exception
     {
         String rawString = bundle.getString( "testSetCompletedNormally" );
-        ReportEntry report = new ReportEntry( result.getClass().getCanonicalName(), result.getClass().getName(), rawString );
+        ReportEntry report = new ReportEntry( currentRunStart.getClassName(), currentClassName, rawString );
         this.reportMgr.testSetCompleted( report );
         this.reportMgr.reset();
     }
@@ -152,4 +167,13 @@ class JUnitCoreTestSetReporter
             this.reportMgr.testSucceeded( report );
         }
     }
+
+    private String extractClassName( Description description )
+    {
+        String displayName = description.getDisplayName();
+        Matcher m = PARENS.matcher( displayName );
+        if (!m.find()) return displayName;
+        return m.group( 1 );
+    }
+
 }

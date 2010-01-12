@@ -32,8 +32,13 @@ public abstract class AbstractSurefireIntegrationTestClass
         goals.add( goal );
         if ( !verifier.getCliOptions().contains( "-s" ) )
         {
+            String settingsPath = System.getProperty( "maven.settings.file" ) + ".staged";
+            if ( settingsPath.indexOf( ' ' ) >= 0 )
+            {
+                settingsPath = '"' + settingsPath + '"';
+            }
             verifier.getCliOptions().add( "-s" );
-            verifier.getCliOptions().add( System.getProperty( "maven.settings.file" ) + ".staged" );
+            verifier.getCliOptions().add( settingsPath );
         }
         verifier.executeGoals( goals );
     }

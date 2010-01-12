@@ -19,66 +19,22 @@ package org.apache.maven.plugin.failsafe;
  * under the License.
  */
 
+import java.io.BufferedInputStream;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 
-import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.factory.ArtifactFactory;
-import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
-import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
-import org.apache.maven.artifact.resolver.ArtifactResolutionException;
-import org.apache.maven.artifact.resolver.ArtifactResolutionResult;
-import org.apache.maven.artifact.resolver.ArtifactResolver;
-import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
-import org.apache.maven.artifact.resolver.filter.ExcludesArtifactFilter;
-import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
-import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
-import org.apache.maven.artifact.versioning.OverConstrainedVersionException;
-import org.apache.maven.artifact.versioning.VersionRange;
-import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.project.MavenProject;
-import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.artifact.resolver.ArtifactResolver;
-import org.apache.maven.artifact.factory.ArtifactFactory;
-import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
-import org.apache.maven.execution.MavenSession;
-import org.apache.maven.surefire.booter.ForkConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooter;
-import org.apache.maven.surefire.booter.SurefireBooterForkException;
-import org.apache.maven.surefire.booter.SurefireExecutionException;
-import org.apache.maven.surefire.report.BriefConsoleReporter;
-import org.apache.maven.surefire.failsafe.model.io.xpp3.FailsafeSummaryXpp3Writer;
-import org.apache.maven.surefire.failsafe.model.io.xpp3.FailsafeSummaryXpp3Reader;
 import org.apache.maven.surefire.failsafe.model.FailsafeSummary;
-import org.codehaus.plexus.util.StringUtils;
+import org.apache.maven.surefire.failsafe.model.io.xpp3.FailsafeSummaryXpp3Reader;
 import org.codehaus.plexus.util.ReaderFactory;
+import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.BufferedOutputStream;
-import java.io.Writer;
-import java.io.OutputStreamWriter;
-import java.io.IOException;
-import java.io.FileInputStream;
-import java.io.BufferedInputStream;
-import java.io.Reader;
-import java.io.InputStreamReader;
-import java.util.List;
-import java.util.Properties;
-import java.util.Map;
-import java.util.HashMap;
 
 /**
  * Verify integration tests ran using Surefire.
@@ -112,12 +68,11 @@ public class VerifyMojo
     private boolean skipITs;
 
     /**
-     * DEPRECATED This old parameter is just like skipTests, but bound to the old property maven.test.skip.exec.
-     * Use -DskipTests instead; it's shorter.
+     * This old parameter is just like skipTests, but bound to the old property maven.test.skip.exec.
      *
      * @parameter expression="${maven.test.skip.exec}"
      * @since 2.3
-     * @deprecated
+     * @deprecated Use -DskipTests instead.
      */
     private boolean skipExec;
 
@@ -171,7 +126,7 @@ public class VerifyMojo
     private File summaryFile;
 
     /**
-     * Set this to "true" to cause a failure if there are no tests to run. Defaults to false.
+     * Set this to "true" to cause a failure if there are no tests to run.
      *
      * @parameter expression="${failIfNoTests}"
      * @since 2.4
