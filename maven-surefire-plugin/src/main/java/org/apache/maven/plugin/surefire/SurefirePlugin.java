@@ -445,7 +445,7 @@ public class SurefirePlugin
      * methods that depend on each other, which will be run in the same thread in order to respect their order of
      * execution.
      *
-     * In JUnit 4.6 the values are classes/methods/both to run in separate threads, as controlled by threadCount.
+     * In JUnit 4.7 the values are classes/methods/both to run in separate threads, as controlled by threadCount.
      *
      * @parameter expression="${parallel}"
      * @todo test how this works with forking, and console/file output parallelism
@@ -681,6 +681,10 @@ public class SurefirePlugin
         }
     }
 
+    private boolean isAnyConcurrencySelected(){
+       return this.parallel != null && this.parallel.trim().length() > 0; 
+    }
+    
     /**
      * Converts old TestNG configuration parameters over to new properties based configuration
      * method. (if any are defined the old way)
@@ -717,8 +721,8 @@ public class SurefirePlugin
         return isWithinVersionSpec(artifact, "[4.7,)");
     }
 
-    private boolean isJunit40to46(Artifact artifact)  throws MojoExecutionException {
-        return isWithinVersionSpec(artifact, "[4.0,4.7)");
+    private boolean isAnyJunit4(Artifact artifact)  throws MojoExecutionException {
+        return isWithinVersionSpec(artifact, "[4.0,)");
     }
 
     private boolean isWithinVersionSpec(Artifact artifact, String versionSpec) throws MojoExecutionException {
@@ -800,15 +804,13 @@ public class SurefirePlugin
                 // The plugin uses a JDK based profile to select the right testng. We might be explicity using a
                 // different one since its based on the source level, not the JVM. Prune using the filter.
                 addProvider( surefireBooter, "surefire-testng", surefireArtifact.getBaseVersion(), testNgArtifact );
-            }
-            else if ( junitArtifact != null && isJunit47Compatible( junitArtifact ) )
-            {
-                convertJunitCoreParameters();
-                addProvider( surefireBooter, "surefire-junit47", surefireArtifact.getBaseVersion(), null );
-            }
-            else if ( junitArtifact != null && isJunit40to46( junitArtifact ) )
-            {
-                addProvider( surefireBooter, "surefire-junit4", surefireArtifact.getBaseVersion(), null );
+            } else if (junitArtifact != null && isAnyJunit4( junitArtifact)){
+                    if ( isAnyConcurrencySelected() && isJunit47Compatible( junitArtifact ) ){
+                        convertJunitCoreParameters();
+                        addProvider( surefireBooter, "surefire-junit47", surefireArtifact.getBaseVersion(), null );
+                    } else {
+                        addProvider( surefireBooter, "surefire-junit4", surefireArtifact.getBaseVersion(), null );
+                    }
             }
             else
             {
@@ -907,16 +909,16 @@ public class SurefirePlugin
             else
             {
                 String junitDirectoryTestSuite;
-                if ( isJunit47Compatible( junitArtifact ) )
+                if (  isAnyConcurrencySelected() && isJunit47Compatible( junitArtifact ) )
                 {
                     junitDirectoryTestSuite = "org.apache.maven.surefire.junitcore.JUnitCoreDirectoryTestSuite";
-                    getLog().warn( "Props are" + properties.toString() );
+                    getLog().info( "Concurrency config is " + properties.toString() );
                     surefireBooter.addTestSuite( junitDirectoryTestSuite,
                                                  new Object[]{testClassesDirectory, includes, excludes, properties} );
                 }
                 else
                 {
-                    if ( isJunit40to46( junitArtifact ) )
+                    if ( isAnyJunit4( junitArtifact ) )
                     {
                         junitDirectoryTestSuite = "org.apache.maven.surefire.junit4.JUnit4DirectoryTestSuite";
                     }
