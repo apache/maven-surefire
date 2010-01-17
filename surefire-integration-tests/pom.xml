@@ -152,9 +152,8 @@
         </configuration>
       </plugin>
       <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>failsafe-maven-plugin</artifactId>
-        <version>2.4.3-alpha-1</version>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <version>2.5</version>
         <configuration>
           <!-- Pass current surefire version to the main suite so that it -->
           <!-- can forward to all integration test projects. SUREFIRE-513 -->
