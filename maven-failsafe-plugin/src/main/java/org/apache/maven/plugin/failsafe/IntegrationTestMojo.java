@@ -686,6 +686,19 @@ public class IntegrationTestMojo
             return false;
         }
 
+        if ( !workingDirectory.exists() )
+        {
+            if ( !workingDirectory.mkdirs() )
+            {
+                throw new MojoFailureException( "Cannot create workingDirectory " + workingDirectory );
+            }
+        }
+
+        if ( !workingDirectory.isDirectory() )
+        {
+            throw new MojoFailureException( "workingDirectory " + workingDirectory + " exists and is not a directory" );
+        }
+
         if ( useSystemClassLoader != null && ForkConfiguration.FORK_NEVER.equals( forkMode ) )
         {
             getLog().warn( "useSystemClassloader setting has no effect when not forking" );
