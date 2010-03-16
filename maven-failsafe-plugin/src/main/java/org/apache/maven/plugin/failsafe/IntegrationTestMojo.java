@@ -610,11 +610,19 @@ public class IntegrationTestMojo
             }
             catch ( SurefireBooterForkException e )
             {
-                throw new MojoExecutionException( e.getMessage(), e );
+                // Don't stop processing when timeout or other exception occures
+                // Otherwise, the following life cycles (e.g. post-integration-test)
+                // won't be executed
+                result.setResult( SurefireBooter.TESTS_FAILED_EXIT_CODE );
+                result.setException( e.getMessage() );
             }
             catch ( SurefireExecutionException e )
             {
-                throw new MojoExecutionException( e.getMessage(), e );
+                // Don't stop processing when timeout or other exception occures
+                // Otherwise, the following life cycles (e.g. post-integration-test)
+                // won't be executed
+                result.setResult( SurefireBooter.TESTS_FAILED_EXIT_CODE );
+                result.setException( e.getMessage() );
             }
 
             if ( originalSystemProperties != null && !surefireBooter.isForking() )
