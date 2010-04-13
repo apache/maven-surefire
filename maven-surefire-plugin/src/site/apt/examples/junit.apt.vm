@@ -1,0 +1,70 @@
+ ------
+ Using Junit
+ ------
+ Kristian Rosenvold <krosenvold@apache.org>
+ ------
+ 2010-04-12
+ ------
+
+Using Junit
+
+* Configuring Junit
+
+  To get started with junit, you need to add the required version of junit to your project:
+
++---+
+  [...]
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.8.1</version>
+      <scope>test</scope>
+    </dependency>
+  [...]
++---+
+
+
+  This is the only step that is required to get started - you can now create tests in your test source directory
+  (eg, <<<src/test/java>>>.
+
+* Generations of junit support
+
+  Surefire supports three different generations of junit: Junit3.8.x, Junit 4.x (serial provider) and Junit 4.7 (junitcore provider
+   with parallel support). The provider is selected based on the junit version in your project and the configuration parameters (for parallel).
+
+* Running tests in parallel
+
+  From junit 4.7 and onwards you can run your tests in parallel. To do this, you must set the
+  <<<parallel>>> parameter, and may change the <<<threadCount>>> or <<<useUnlimitedThreads>>> attribute.
+  For example:
+
++---+
+    [...]
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>${project.version}</version>
+        <configuration>
+          <parallel>methods</parallel>
+          <threadCount>10</threadCount>
+        </configuration>
+      </plugin>
+    [...]
++---+
+
+* Using Junit core provider
+
+  If your tests specify any value for the "parallel" attribute and your project uses junit4.7+, your request will be routed to
+  the concurrent junit provider, which uses the JUnit JUnitCore testrunner.
+
+  This is particularly useful for slow tests that can have high concurrency, or to quickly and roughly assess the independance
+  and thread safety of your tests and code.
+
+  The JUnitCore test-runner has stricter test-compliance checking than earlier versions of junit; with this provider
+  your test must be legitimate junit tests to be run, whereas the old 4.x provider would also run tests that were not according to
+  junit spec.
+
+
+
+
+  For more information on JUnit, see the {{{http://www.junit.org}Junit web site}}.

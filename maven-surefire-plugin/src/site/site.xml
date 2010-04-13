@@ -31,6 +31,7 @@
     </menu>
     <menu name="Examples">
       <item name="Using TestNG" href="examples/testng.html"/>
+      <item name="Using JUnit" href="examples/junit.html"/>
       <item name="Skipping Tests" href="examples/skipping-test.html"/>
       <item name="Inclusions and Exclusions of Tests" href="examples/inclusion-exclusion.html"/>
       <item name="Running a Single Test" href="examples/single-test.html"/>

@@ -77,6 +77,8 @@ Maven Surefire Plugin
 
   * {{{./examples/testng.html}Using TestNG}}
 
+  * {{{./examples/junit.html}Using JUnit}}
+
   * {{{./examples/skipping-test.html}Skipping Tests}}
 
   * {{{./examples/inclusion-exclusion.html}Inclusions and Exclusions of Tests}}
