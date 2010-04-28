@@ -10,7 +10,20 @@ Using TestNG
 
 * Configuring TestNG
 
-  To get started with TestNG, include the following dependency in your project:
+  To get started with TestNG, include the following dependency in your project (replacing the version with the one you wish to use):
+
++---+
+  [...]
+    <dependency>
+      <groupId>org.testng</groupId>
+      <artifactId>testng</artifactId>
+      <version>5.12.1</version>
+      <scope>test</scope>
+    </dependency>
+  [...]
++---+
+
+  If you are using an older version of TestNG (\<= 5.11), the dependency would instead look like this:
 
 +---+
   [...]
