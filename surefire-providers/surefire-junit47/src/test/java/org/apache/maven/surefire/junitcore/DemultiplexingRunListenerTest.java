@@ -20,14 +20,20 @@
 package org.apache.maven.surefire.junitcore;
 
 
+import junit.framework.Assert;
+import org.junit.Ignore;
+import org.junit.runner.Computer;
 import org.junit.runner.Description;
+import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
 import org.junit.runner.notification.RunListener;
 import org.junit.Test;
+
+import static junit.framework.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 
 /*
- * @author Kristian Rosenvold, kristian.rosenvold@gmail com
+ * @author Kristian Rosenvold
  */
 
 public class DemultiplexingRunListenerTest {
@@ -39,6 +45,8 @@ public class DemultiplexingRunListenerTest {
         Description testRunDescription = Description.createSuiteDescription(DemultiplexingRunListenerTest.class);
         Description description1 = Description.createTestDescription( DemultiplexingRunListenerTest.class, "testStub1");
         Description description2 = Description.createTestDescription( Dummy.class, "testStub2");
+        testRunDescription.addChild( description1 );
+        testRunDescription.addChild( description2 );
 
         listener.testRunStarted(testRunDescription);
         listener.testStarted(description1);
@@ -48,25 +56,75 @@ public class DemultiplexingRunListenerTest {
         Result temp = new Result();
         listener.testRunFinished( temp);
 
-        verify(real).testRunStarted( description1);
+        verify(real).testRunStarted( any( Description.class));
         verify(real).testStarted( description1);
-        verify(real).testRunStarted( description2);
+        verify(real).testFinished( description1);
         verify(real).testStarted( description2);
+        verify(real).testFinished( description2);
+        verify(real).testRunFinished( any( Result.class));
     }
 
-    public class Dummy {
+    @Test
+    public void testJunitResultCountingReferenceValue() throws Exception {
+        Result result = new Result();
+        runACoupleOfClasses(  result );
+
+        assertEquals( 5, result.getRunCount());
+        assertEquals( 1, result.getIgnoreCount() );
+        assertEquals( 1, result.getFailureCount() );
+    }
+
+    @Test
+    public void testJunitResultCountingDemultiplexed() throws Exception {
+        Result result = new Result();
+        runACoupleOfClasses( result );
+
+        assertEquals(5, result.getRunCount());
+        assertEquals( 1, result.getIgnoreCount() );
+        assertEquals( 1, result.getFailureCount() );
+    }
+
+    private void runACoupleOfClasses( Result result )
+    {
+        DemultiplexingRunListener demultiplexingRunListener = new DemultiplexingRunListener(result.createListener());
+
+        JUnitCore jUnitCore = new JUnitCore();
+
+        jUnitCore.addListener( demultiplexingRunListener);
+        Computer computer = new Computer();
+
+        jUnitCore.run(computer, new Class[] { Dummy.class, Dummy2.class});
+    }
+
+    public static class Dummy {
         @Test
         public void testNotMuch(){
 
         }
 
-            @Test
+        @Ignore
+        @Test
         public void testStub1() {
-            // Add your code here
         }
         @Test
         public void testStub2() {
-            // Add your code here
         }
     }
+
+    public static class Dummy2 {
+
+        @Test
+        public void testNotMuchA(){
+
+        }
+
+        @Test
+        public void testStub1A() {
+            Assert.fail("We will fail");
+        }
+        @Test
+        public void testStub2A() {
+        }
+    }
+
 }
