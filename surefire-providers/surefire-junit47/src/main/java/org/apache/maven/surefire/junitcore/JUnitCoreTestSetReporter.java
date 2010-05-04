@@ -19,11 +19,6 @@
 package org.apache.maven.surefire.junitcore;
 
 
-
-import java.util.ResourceBundle;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.apache.maven.surefire.Surefire;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterManager;
@@ -32,24 +27,28 @@ import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunListener;
 
+import java.util.ResourceBundle;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 class JUnitCoreTestSetReporter
     extends RunListener
 {
 
-    private static final Pattern PARENS = Pattern.compile(
-            "^" +
-            "[^\\(\\)]+" + //non-parens
-            "\\((" + // then an open-paren (start matching a group)
-            "[^\\\\(\\\\)]+" + //non-parens
-            ")\\)" +
-            "$" ); // then a close-paren (end group match)
+    private static final Pattern PARENS = Pattern.compile( "^" + "[^\\(\\)]+" + //non-parens
+        "\\((" + // then an open-paren (start matching a group)
+        "[^\\\\(\\\\)]+" + //non-parens
+        ")\\)" + "$" ); // then a close-paren (end group match)
 
     // Constants
+
     private static ResourceBundle bundle = ResourceBundle.getBundle( Surefire.SUREFIRE_BUNDLE_NAME );
 
 
     private Description currentRunStart;
+
     private String currentClassName;
+
     private ReporterManager reportMgr;
 
     /**
@@ -62,7 +61,7 @@ class JUnitCoreTestSetReporter
      *
      * @param reportManager the report manager to log testing events to
      */
-    JUnitCoreTestSetReporter(ReporterManager reportManager)
+    JUnitCoreTestSetReporter( ReporterManager reportManager )
     {
         this.reportMgr = reportManager;
     }
@@ -76,7 +75,7 @@ class JUnitCoreTestSetReporter
         throws Exception
     {
         String rawString = bundle.getString( "testSetStarting" );
-        currentClassName = extractClassName(description);
+        currentClassName = extractClassName( description );
         currentRunStart = description;
 
         ReportEntry report = new ReportEntry( description.getClassName(), currentClassName, rawString );
@@ -106,7 +105,8 @@ class JUnitCoreTestSetReporter
         throws Exception
     {
         String rawString = bundle.getString( "testSkipped" );
-        ReportEntry report = new ReportEntry( description.getTestClass().getCanonicalName(), description.getDisplayName(), rawString );
+        ReportEntry report =
+            new ReportEntry( description.getTestClass().getCanonicalName(), description.getDisplayName(), rawString );
 
         this.reportMgr.testSkipped( report );
     }
@@ -120,7 +120,8 @@ class JUnitCoreTestSetReporter
         throws Exception
     {
         String rawString = bundle.getString( "testStarting" );
-        ReportEntry report = new ReportEntry( description.getTestClass().getCanonicalName(), description.getDisplayName(), rawString );
+        ReportEntry report =
+            new ReportEntry( description.getTestClass().getCanonicalName(), description.getDisplayName(), rawString );
 
         this.reportMgr.testStarting( report );
 
@@ -137,7 +138,8 @@ class JUnitCoreTestSetReporter
     {
         String rawString = bundle.getString( "executeException" );
         ReportEntry report =
-            new ReportEntry( failure.getDescription().getTestClass().getCanonicalName(), failure.getTestHeader(), rawString, new JUnitCoreStackTraceWriter( failure ) );
+            new ReportEntry( failure.getDescription().getTestClass().getCanonicalName(), failure.getTestHeader(),
+                             rawString, new JUnitCoreStackTraceWriter( failure ) );
 
         if ( failure.getException() instanceof AssertionError )
         {
@@ -162,7 +164,9 @@ class JUnitCoreTestSetReporter
         if ( failureFlag == false )
         {
             String rawString = bundle.getString( "testSuccessful" );
-            ReportEntry report = new ReportEntry( description.getTestClass().getCanonicalName(), description.getDisplayName(), rawString );
+            ReportEntry report =
+                new ReportEntry( description.getTestClass().getCanonicalName(), description.getDisplayName(),
+                                 rawString );
 
             this.reportMgr.testSucceeded( report );
         }
@@ -172,7 +176,10 @@ class JUnitCoreTestSetReporter
     {
         String displayName = description.getDisplayName();
         Matcher m = PARENS.matcher( displayName );
-        if (!m.find()) return displayName;
+        if ( !m.find() )
+        {
+            return displayName;
+        }
         return m.group( 1 );
     }
 

@@ -21,10 +21,10 @@ package org.apache.maven.surefire.junitcore;
 
 import org.apache.maven.surefire.report.ReporterManager;
 import org.apache.maven.surefire.testset.TestSetFailedException;
-import org.junit.runner.JUnitCore;
-import org.junit.runner.Computer;
-import org.junit.runner.notification.RunListener;
 import org.junit.experimental.ParallelComputer;
+import org.junit.runner.Computer;
+import org.junit.runner.JUnitCore;
+import org.junit.runner.notification.RunListener;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -39,16 +39,21 @@ import java.lang.reflect.Method;
  * @author Kristian Rosenvold (junit core adaption)
  */
 
-class JUnitCoreTestSet {
+class JUnitCoreTestSet
+{
     private final Class testClass;
+
     private static final String className = "org.jdogma.junit.ConfigurableParallelComputer";
+
     private static final String demuxerClassName = "org.jdogma.junit.DemultiplexingRunListener";
 
-    public String getName() {
+    public String getName()
+    {
         return testClass.getName();
     }
 
-    Class getTestClass() {
+    Class getTestClass()
+    {
         return testClass;
     }
 
@@ -57,7 +62,8 @@ class JUnitCoreTestSet {
      *
      * @param testClasses the classes to be run as a test
      */
-    protected JUnitCoreTestSet(Class testClasses) {
+    protected JUnitCoreTestSet( Class testClasses )
+    {
         this.testClass = testClasses;
     }
 
@@ -69,117 +75,179 @@ class JUnitCoreTestSet {
      * @throws TestSetFailedException If something fails
      * @see org.apache.maven.surefire.testset.SurefireTestSet#execute(org.apache.maven.surefire.report.ReporterManager,java.lang.ClassLoader)
      */
-    public void execute(ReporterManager reportManager, JUnitCoreParameters JUnitCoreParameters)
-            throws TestSetFailedException {
+    public void execute( ReporterManager reportManager, JUnitCoreParameters JUnitCoreParameters )
+        throws TestSetFailedException
+    {
 
         Class[] classes = new Class[1];
         classes[0] = testClass;
-        execute(classes, reportManager, JUnitCoreParameters);
+        execute( classes, reportManager, JUnitCoreParameters );
     }
 
-    public static void execute(Class[] classes, ReporterManager reportManager, JUnitCoreParameters jUnitCoreParameters)
-            throws TestSetFailedException {
-        RunListener realTarget = new JUnitCoreTestSetReporter(reportManager);
-        RunListener listener = createRunListener(realTarget, jUnitCoreParameters.isConfigurableParallelComputerPresent());
-        Computer computer = getComputer(jUnitCoreParameters);
-        try {
-            runJunitCore(classes, computer, listener);
-        } finally {
-            closeIfConfigurable(computer);
+    public static void execute( Class[] classes, ReporterManager reportManager,
+                                JUnitCoreParameters jUnitCoreParameters )
+        throws TestSetFailedException
+    {
+        RunListener realTarget = new JUnitCoreTestSetReporter( reportManager );
+        RunListener listener =
+            createRunListener( realTarget, jUnitCoreParameters.isConfigurableParallelComputerPresent() );
+        Computer computer = getComputer( jUnitCoreParameters );
+        try
+        {
+            runJunitCore( classes, computer, listener );
+        }
+        finally
+        {
+            closeIfConfigurable( computer );
             reportManager.reset();
         }
     }
 
-    private static RunListener createRunListener(RunListener realTarget, boolean configurableParallelComputerPresent)
-            throws TestSetFailedException {
-        if (!configurableParallelComputerPresent) {
-            return new DemultiplexingRunListener(realTarget);
+    private static RunListener createRunListener( RunListener realTarget, boolean configurableParallelComputerPresent )
+        throws TestSetFailedException
+    {
+        if ( !configurableParallelComputerPresent )
+        {
+            return new DemultiplexingRunListener( realTarget );
         }
-        try {
-            Class<?> cpcClass = Class.forName(demuxerClassName);
-            Constructor constructor = cpcClass.getConstructor(RunListener.class);
-            return (RunListener) constructor.newInstance(realTarget);
-        } catch (ClassNotFoundException e) {
-            throw new TestSetFailedException(e);
-        } catch (NoSuchMethodException e) {
-            throw new TestSetFailedException(e);
-        } catch (InvocationTargetException e) {
-            throw new TestSetFailedException(e);
-        } catch (IllegalAccessException e) {
-            throw new TestSetFailedException(e);
-        } catch (InstantiationException e) {
-            throw new TestSetFailedException(e);
+        try
+        {
+            Class<?> cpcClass = Class.forName( demuxerClassName );
+            Constructor constructor = cpcClass.getConstructor( RunListener.class );
+            return (RunListener) constructor.newInstance( realTarget );
+        }
+        catch ( ClassNotFoundException e )
+        {
+            throw new TestSetFailedException( e );
+        }
+        catch ( NoSuchMethodException e )
+        {
+            throw new TestSetFailedException( e );
+        }
+        catch ( InvocationTargetException e )
+        {
+            throw new TestSetFailedException( e );
+        }
+        catch ( IllegalAccessException e )
+        {
+            throw new TestSetFailedException( e );
+        }
+        catch ( InstantiationException e )
+        {
+            throw new TestSetFailedException( e );
         }
     }
 
-    private static void closeIfConfigurable(Computer computer) throws TestSetFailedException {
-        if (computer.getClass().getName().startsWith(className)) {
-            try {
-                Class<?> cpcClass = Class.forName(className);
-                Method method = cpcClass.getMethod("close");
-                method.invoke(computer);
-            } catch (ClassNotFoundException e) {
-                throw new TestSetFailedException(e);
-            } catch (NoSuchMethodException e) {
-                throw new TestSetFailedException(e);
-            } catch (InvocationTargetException e) {
-                throw new TestSetFailedException(e);
-            } catch (IllegalAccessException e) {
-                throw new TestSetFailedException(e);
+    private static void closeIfConfigurable( Computer computer )
+        throws TestSetFailedException
+    {
+        if ( computer.getClass().getName().startsWith( className ) )
+        {
+            try
+            {
+                Class<?> cpcClass = Class.forName( className );
+                Method method = cpcClass.getMethod( "close" );
+                method.invoke( computer );
+            }
+            catch ( ClassNotFoundException e )
+            {
+                throw new TestSetFailedException( e );
+            }
+            catch ( NoSuchMethodException e )
+            {
+                throw new TestSetFailedException( e );
+            }
+            catch ( InvocationTargetException e )
+            {
+                throw new TestSetFailedException( e );
+            }
+            catch ( IllegalAccessException e )
+            {
+                throw new TestSetFailedException( e );
             }
         }
     }
 
-    private static Computer getComputer(JUnitCoreParameters jUnitCoreParameters) throws TestSetFailedException {
-        if (jUnitCoreParameters.isNoThreading()) {
+    private static Computer getComputer( JUnitCoreParameters jUnitCoreParameters )
+        throws TestSetFailedException
+    {
+        if ( jUnitCoreParameters.isNoThreading() )
+        {
             return new Computer();
         }
-        return jUnitCoreParameters.isConfigurableParallelComputerPresent() ?
-                getConfigurableParallelComputer(jUnitCoreParameters) :
-                getParallelComputer(jUnitCoreParameters);
+        return jUnitCoreParameters.isConfigurableParallelComputerPresent() ? getConfigurableParallelComputer(
+            jUnitCoreParameters ) : getParallelComputer( jUnitCoreParameters );
     }
 
-    private static Computer getParallelComputer(JUnitCoreParameters JUnitCoreParameters) {
-        if (JUnitCoreParameters.isUseUnlimitedThreads())
-            return new ParallelComputer(true, true);
-        else {
-            return new ParallelComputer(JUnitCoreParameters.isParallelClasses(), JUnitCoreParameters.isParallelMethod());
+    private static Computer getParallelComputer( JUnitCoreParameters JUnitCoreParameters )
+    {
+        if ( JUnitCoreParameters.isUseUnlimitedThreads() )
+        {
+            return new ParallelComputer( true, true );
+        }
+        else
+        {
+            return new ParallelComputer( JUnitCoreParameters.isParallelClasses(),
+                                         JUnitCoreParameters.isParallelMethod() );
         }
     }
 
-    private static Computer getConfigurableParallelComputer(JUnitCoreParameters JUnitCoreParameters) throws TestSetFailedException {
+    private static Computer getConfigurableParallelComputer( JUnitCoreParameters JUnitCoreParameters )
+        throws TestSetFailedException
+    {
 
-        try {
-            Class<?> cpcClass = Class.forName(className);
-            if (JUnitCoreParameters.isUseUnlimitedThreads()) {
+        try
+        {
+            Class<?> cpcClass = Class.forName( className );
+            if ( JUnitCoreParameters.isUseUnlimitedThreads() )
+            {
                 Constructor<?> constructor = cpcClass.getConstructor();
                 return (Computer) constructor.newInstance();
-            } else {
-                Constructor<?> constructor = cpcClass.getConstructor(boolean.class, boolean.class, Integer.class, boolean.class);
-                return (Computer) constructor.newInstance(JUnitCoreParameters.isParallelClasses(),
-                        JUnitCoreParameters.isParallelMethod(),
-                        JUnitCoreParameters.getThreadCount(), JUnitCoreParameters.isPerCoreThreadCount());
             }
-        } catch (ClassNotFoundException e) {
-            throw new TestSetFailedException(e);
-        } catch (NoSuchMethodException e) {
-            throw new TestSetFailedException(e);
-        } catch (InvocationTargetException e) {
-            throw new TestSetFailedException(e);
-        } catch (InstantiationException e) {
-            throw new TestSetFailedException(e);
-        } catch (IllegalAccessException e) {
-            throw new TestSetFailedException(e);
+            else
+            {
+                Constructor<?> constructor =
+                    cpcClass.getConstructor( boolean.class, boolean.class, Integer.class, boolean.class );
+                return (Computer) constructor.newInstance( JUnitCoreParameters.isParallelClasses(),
+                                                           JUnitCoreParameters.isParallelMethod(),
+                                                           JUnitCoreParameters.getThreadCount(),
+                                                           JUnitCoreParameters.isPerCoreThreadCount() );
+            }
+        }
+        catch ( ClassNotFoundException e )
+        {
+            throw new TestSetFailedException( e );
+        }
+        catch ( NoSuchMethodException e )
+        {
+            throw new TestSetFailedException( e );
+        }
+        catch ( InvocationTargetException e )
+        {
+            throw new TestSetFailedException( e );
+        }
+        catch ( InstantiationException e )
+        {
+            throw new TestSetFailedException( e );
+        }
+        catch ( IllegalAccessException e )
+        {
+            throw new TestSetFailedException( e );
         }
     }
 
-    private static void runJunitCore(Class[] classes, Computer computer, RunListener real) throws TestSetFailedException {
+    private static void runJunitCore( Class[] classes, Computer computer, RunListener real )
+        throws TestSetFailedException
+    {
         JUnitCore junitCore = new JUnitCore();
-        junitCore.addListener(real);
-        try {
-            junitCore.run(computer, classes);
-        } finally {
-            junitCore.removeListener(real);
+        junitCore.addListener( real );
+        try
+        {
+            junitCore.run( computer, classes );
+        }
+        finally
+        {
+            junitCore.removeListener( real );
         }
     }
 

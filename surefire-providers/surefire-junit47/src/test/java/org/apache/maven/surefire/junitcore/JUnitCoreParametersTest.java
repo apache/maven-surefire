@@ -20,118 +20,151 @@ package org.apache.maven.surefire.junitcore;
 
 
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 import java.util.Properties;
+
+import static org.junit.Assert.*;
 
 /*
  * @author Kristian Rosenvold, kristian.rosenvold@gmail com
  */
 
-public class JUnitCoreParametersTest {
+public class JUnitCoreParametersTest
+{
     @Test
-    public void testIsParallelMethod() throws Exception {
-        assertFalse( getTestSetClasses().isParallelMethod());
-        assertTrue( getTestSetMethods().isParallelMethod());
-        assertFalse( getTestSetBoth().isParallelMethod());
+    public void testIsParallelMethod()
+        throws Exception
+    {
+        assertFalse( getTestSetClasses().isParallelMethod() );
+        assertTrue( getTestSetMethods().isParallelMethod() );
+        assertFalse( getTestSetBoth().isParallelMethod() );
     }
 
     @Test
-    public void testIsParallelClasses() throws Exception {
-        assertTrue( getTestSetClasses().isParallelClasses());
-        assertFalse( getTestSetMethods().isParallelClasses());
-        assertFalse( getTestSetBoth().isParallelClasses());
+    public void testIsParallelClasses()
+        throws Exception
+    {
+        assertTrue( getTestSetClasses().isParallelClasses() );
+        assertFalse( getTestSetMethods().isParallelClasses() );
+        assertFalse( getTestSetBoth().isParallelClasses() );
     }
 
     @Test
-    public void testIsParallelBoth() throws Exception {
-        assertFalse( getTestSetClasses().isParallelBoth());
-        assertFalse( getTestSetMethods().isParallelBoth());
-        assertTrue( getTestSetBoth().isParallelBoth());
+    public void testIsParallelBoth()
+        throws Exception
+    {
+        assertFalse( getTestSetClasses().isParallelBoth() );
+        assertFalse( getTestSetMethods().isParallelBoth() );
+        assertTrue( getTestSetBoth().isParallelBoth() );
     }
 
     @Test
-    public void testIsPerCoreThreadCount() throws Exception {
-        assertFalse( getTestSetClasses().isPerCoreThreadCount());
-        assertFalse( getTestSetMethods().isPerCoreThreadCount());
-        assertTrue( getTestSetBoth().isPerCoreThreadCount());
+    public void testIsPerCoreThreadCount()
+        throws Exception
+    {
+        assertFalse( getTestSetClasses().isPerCoreThreadCount() );
+        assertFalse( getTestSetMethods().isPerCoreThreadCount() );
+        assertTrue( getTestSetBoth().isPerCoreThreadCount() );
     }
 
     @Test
-    public void testGetThreadCount() throws Exception {
-        assertFalse( getTestSetClasses().isPerCoreThreadCount());
-        assertFalse( getTestSetMethods().isPerCoreThreadCount());
-        assertTrue( getTestSetBoth().isPerCoreThreadCount());
+    public void testGetThreadCount()
+        throws Exception
+    {
+        assertFalse( getTestSetClasses().isPerCoreThreadCount() );
+        assertFalse( getTestSetMethods().isPerCoreThreadCount() );
+        assertTrue( getTestSetBoth().isPerCoreThreadCount() );
     }
 
     @Test
-    public void testIsUseUnlimitedThreads() throws Exception {
-        assertFalse( getTestSetClasses().isUseUnlimitedThreads());
-        assertTrue( getTestSetMethods().isUseUnlimitedThreads());
-        assertFalse( getTestSetBoth().isUseUnlimitedThreads());
+    public void testIsUseUnlimitedThreads()
+        throws Exception
+    {
+        assertFalse( getTestSetClasses().isUseUnlimitedThreads() );
+        assertTrue( getTestSetMethods().isUseUnlimitedThreads() );
+        assertFalse( getTestSetBoth().isUseUnlimitedThreads() );
     }
 
     @Test
-    public void testIsNoThreading() throws Exception {
-        assertFalse( getTestSetClasses().isNoThreading());
-        assertFalse( getTestSetMethods().isNoThreading());
-        assertFalse( getTestSetBoth().isNoThreading());
+    public void testIsNoThreading()
+        throws Exception
+    {
+        assertFalse( getTestSetClasses().isNoThreading() );
+        assertFalse( getTestSetMethods().isNoThreading() );
+        assertFalse( getTestSetBoth().isNoThreading() );
     }
 
     @Test
-    public void testIsAnyParallelitySelected() throws Exception {
-        assertTrue( getTestSetClasses().isAnyParallelitySelected());
-        assertTrue( getTestSetMethods().isAnyParallelitySelected());
-        assertTrue( getTestSetBoth().isAnyParallelitySelected());
+    public void testIsAnyParallelitySelected()
+        throws Exception
+    {
+        assertTrue( getTestSetClasses().isAnyParallelitySelected() );
+        assertTrue( getTestSetMethods().isAnyParallelitySelected() );
+        assertTrue( getTestSetBoth().isAnyParallelitySelected() );
     }
 
     @Test
-    public void testIsConfigurableParallelComputerPresent() throws Exception {
-        assertFalse( getTestSetClasses().isConfigurableParallelComputerPresent());
-        assertFalse( getTestSetMethods().isConfigurableParallelComputerPresent());
-        assertTrue( getTestSetBoth().isConfigurableParallelComputerPresent());
+    public void testIsConfigurableParallelComputerPresent()
+        throws Exception
+    {
+        assertFalse( getTestSetClasses().isConfigurableParallelComputerPresent() );
+        assertFalse( getTestSetMethods().isConfigurableParallelComputerPresent() );
+        assertTrue( getTestSetBoth().isConfigurableParallelComputerPresent() );
     }
 
     @Test
-    public void testToString() throws Exception {
-        assertNotNull(getTestSetBoth().toString());
+    public void testToString()
+        throws Exception
+    {
+        assertNotNull( getTestSetBoth().toString() );
     }
 
 
-    public Properties getPropsetClasses(){
+    public Properties getPropsetClasses()
+    {
         Properties props = new Properties();
-        props.setProperty(JUnitCoreParameters.PARALLEL_KEY,  "classes");
-        props.setProperty(JUnitCoreParameters.PERCORETHREADCOUNT_KEY,  "false");
-        props.setProperty(JUnitCoreParameters.THREADCOUNT_KEY,  "2");
-        props.setProperty(JUnitCoreParameters.USEUNLIMITEDTHREADS_KEY,  "false");
-        props.setProperty(JUnitCoreParameters.CONFIGURABLEPARALLELCOMPUTERPRESENT_KEY,  "false");
+        props.setProperty( JUnitCoreParameters.PARALLEL_KEY, "classes" );
+        props.setProperty( JUnitCoreParameters.PERCORETHREADCOUNT_KEY, "false" );
+        props.setProperty( JUnitCoreParameters.THREADCOUNT_KEY, "2" );
+        props.setProperty( JUnitCoreParameters.USEUNLIMITEDTHREADS_KEY, "false" );
+        props.setProperty( JUnitCoreParameters.CONFIGURABLEPARALLELCOMPUTERPRESENT_KEY, "false" );
         return props;
     }
-    public Properties getPropsetMethods(){
+
+    public Properties getPropsetMethods()
+    {
         Properties props = new Properties();
-        props.setProperty(JUnitCoreParameters.PARALLEL_KEY,  "methods");
-        props.setProperty(JUnitCoreParameters.PERCORETHREADCOUNT_KEY,  "false");
-        props.setProperty(JUnitCoreParameters.THREADCOUNT_KEY,  "2");
-        props.setProperty(JUnitCoreParameters.USEUNLIMITEDTHREADS_KEY,  "true");
-        props.setProperty(JUnitCoreParameters.CONFIGURABLEPARALLELCOMPUTERPRESENT_KEY,  "false");
+        props.setProperty( JUnitCoreParameters.PARALLEL_KEY, "methods" );
+        props.setProperty( JUnitCoreParameters.PERCORETHREADCOUNT_KEY, "false" );
+        props.setProperty( JUnitCoreParameters.THREADCOUNT_KEY, "2" );
+        props.setProperty( JUnitCoreParameters.USEUNLIMITEDTHREADS_KEY, "true" );
+        props.setProperty( JUnitCoreParameters.CONFIGURABLEPARALLELCOMPUTERPRESENT_KEY, "false" );
         return props;
     }
-    public Properties getPropsetBoth(){
+
+    public Properties getPropsetBoth()
+    {
         Properties props = new Properties();
-        props.setProperty(JUnitCoreParameters.PARALLEL_KEY,  "both");
-        props.setProperty(JUnitCoreParameters.PERCORETHREADCOUNT_KEY,  "true");
-        props.setProperty(JUnitCoreParameters.THREADCOUNT_KEY,  "7");
-        props.setProperty(JUnitCoreParameters.USEUNLIMITEDTHREADS_KEY,  "false");
-        props.setProperty(JUnitCoreParameters.CONFIGURABLEPARALLELCOMPUTERPRESENT_KEY,  "true");
+        props.setProperty( JUnitCoreParameters.PARALLEL_KEY, "both" );
+        props.setProperty( JUnitCoreParameters.PERCORETHREADCOUNT_KEY, "true" );
+        props.setProperty( JUnitCoreParameters.THREADCOUNT_KEY, "7" );
+        props.setProperty( JUnitCoreParameters.USEUNLIMITEDTHREADS_KEY, "false" );
+        props.setProperty( JUnitCoreParameters.CONFIGURABLEPARALLELCOMPUTERPRESENT_KEY, "true" );
         return props;
     }
-    private JUnitCoreParameters getTestSetBoth(){
-      return new JUnitCoreParameters(getPropsetBoth());
+
+    private JUnitCoreParameters getTestSetBoth()
+    {
+        return new JUnitCoreParameters( getPropsetBoth() );
     }
-    private JUnitCoreParameters getTestSetClasses(){
-      return new JUnitCoreParameters(getPropsetClasses());
+
+    private JUnitCoreParameters getTestSetClasses()
+    {
+        return new JUnitCoreParameters( getPropsetClasses() );
     }
-    private JUnitCoreParameters getTestSetMethods(){
-      return new JUnitCoreParameters(getPropsetMethods());
+
+    private JUnitCoreParameters getTestSetMethods()
+    {
+        return new JUnitCoreParameters( getPropsetMethods() );
     }
 }

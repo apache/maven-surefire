@@ -1,5 +1,4 @@
 package org.apache.maven.surefire.its;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -19,14 +18,14 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import java.io.File;
-
 import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
 
+import java.io.File;
+
 /**
  * Test include/exclude patterns.
- * 
+ *
  * @author Benjamin Bentmann
  * @version $Id$
  */
@@ -49,7 +48,7 @@ public class IncludesExcludesIT
         verifier.verifyErrorFreeLog();
         verifier.resetStreams();
 
-        HelperAssertions.assertTestSuiteResults( 2, 0, 0, 0, testDir );        
+        HelperAssertions.assertTestSuiteResults( 2, 0, 0, 0, testDir );
     }
 
 }

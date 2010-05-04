@@ -20,51 +20,63 @@ package org.apache.maven.surefire.junitcore;
 
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
-import java.util.Map;
-import java.util.HashMap;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Contains all the tests that have been found according to specified include/exclude
  * specification for a given surefire run.
+ *
  * @author Kristian Rosenvold (junit core adaption)
  */
-class TestsToRun {
+class TestsToRun
+{
     final Class[] locatedClasses;
+
     final int totalTests;
+
     Map<String, JUnitCoreTestSet> testSets;
 
-    public TestsToRun(Class... locatedClasses) throws TestSetFailedException {
+    public TestsToRun( Class... locatedClasses )
+        throws TestSetFailedException
+    {
         this.locatedClasses = locatedClasses;
         testSets = new HashMap<String, JUnitCoreTestSet>();
         int testCount = 0;
-        for (int i = 0; i < locatedClasses.length; i++) {
+        for ( int i = 0; i < locatedClasses.length; i++ )
+        {
             Class testClass = locatedClasses[i];
-            JUnitCoreTestSet testSet = new JUnitCoreTestSet(testClass);
+            JUnitCoreTestSet testSet = new JUnitCoreTestSet( testClass );
 
-            if (testSets.containsKey(testSet.getName())) {
-                throw new TestSetFailedException("Duplicate test set '" + testSet.getName() + "'");
+            if ( testSets.containsKey( testSet.getName() ) )
+            {
+                throw new TestSetFailedException( "Duplicate test set '" + testSet.getName() + "'" );
             }
-            testSets.put(testSet.getName(), testSet);
+            testSets.put( testSet.getName(), testSet );
             testCount++;
         }
         this.totalTests = testCount;
     }
 
-    public Map<String, JUnitCoreTestSet> getTestSets() {
-        return Collections.unmodifiableMap(testSets);
+    public Map<String, JUnitCoreTestSet> getTestSets()
+    {
+        return Collections.unmodifiableMap( testSets );
     }
 
-    public int size() {
+    public int size()
+    {
         return testSets.size();
     }
 
-    public Class[] getLocatedClasses() {
+    public Class[] getLocatedClasses()
+    {
         return locatedClasses;
     }
 
-    public JUnitCoreTestSet getTestSet(String name){
-        return testSets.get( name);
+    public JUnitCoreTestSet getTestSet( String name )
+    {
+        return testSets.get( name );
     }
 
 }

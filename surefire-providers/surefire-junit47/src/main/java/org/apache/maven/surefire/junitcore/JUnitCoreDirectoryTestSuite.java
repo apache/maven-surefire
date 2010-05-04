@@ -19,14 +19,16 @@
 
 package org.apache.maven.surefire.junitcore;
 
+import org.apache.maven.surefire.report.ReporterException;
+import org.apache.maven.surefire.report.ReporterManager;
 import org.apache.maven.surefire.suite.SurefireTestSuite;
 import org.apache.maven.surefire.testset.TestSetFailedException;
-import org.apache.maven.surefire.report.ReporterManager;
-import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.util.SurefireDirectoryScanner;
 
-import java.util.*;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * Test suite for JUnitCore based on a directory of Java test classes.
@@ -34,56 +36,70 @@ import java.io.File;
  * @author Karl M. Davis
  * @author Kristian Rosenvold (junit core adaption)
  */
-public class JUnitCoreDirectoryTestSuite implements SurefireTestSuite {
+public class JUnitCoreDirectoryTestSuite
+    implements SurefireTestSuite
+{
     private final SurefireDirectoryScanner directoryScanner;
 
     private TestsToRun testsToRun;
 
     protected Map testSets;
+
     private final JUnitCoreParameters jUnitCoreParameters;
 
 
-    public JUnitCoreDirectoryTestSuite(File basedir, ArrayList includes, ArrayList excludes, Properties properties) {
-        directoryScanner = new SurefireDirectoryScanner(basedir, includes, excludes);
-        this.jUnitCoreParameters = new JUnitCoreParameters(properties);
+    public JUnitCoreDirectoryTestSuite( File basedir, ArrayList includes, ArrayList excludes, Properties properties )
+    {
+        directoryScanner = new SurefireDirectoryScanner( basedir, includes, excludes );
+        this.jUnitCoreParameters = new JUnitCoreParameters( properties );
     }
 
 
-    public void execute(ReporterManager reporterManager, ClassLoader classLoader)
-            throws ReporterException, TestSetFailedException {
-        if (testsToRun == null) {
-            throw new IllegalStateException("You must call locateTestSets before calling execute");
+    public void execute( ReporterManager reporterManager, ClassLoader classLoader )
+        throws ReporterException, TestSetFailedException
+    {
+        if ( testsToRun == null )
+        {
+            throw new IllegalStateException( "You must call locateTestSets before calling execute" );
         }
 
-        JUnitCoreTestSet.execute(testsToRun.getLocatedClasses(), reporterManager, jUnitCoreParameters);
+        JUnitCoreTestSet.execute( testsToRun.getLocatedClasses(), reporterManager, jUnitCoreParameters );
     }
 
-    public void execute(String testSetName, ReporterManager reporterManager, ClassLoader classLoader)
-            throws ReporterException, TestSetFailedException {
-        if (testsToRun == null) {
-            throw new IllegalStateException("You must call locateTestSets before calling execute");
+    public void execute( String testSetName, ReporterManager reporterManager, ClassLoader classLoader )
+        throws ReporterException, TestSetFailedException
+    {
+        if ( testsToRun == null )
+        {
+            throw new IllegalStateException( "You must call locateTestSets before calling execute" );
         }
-        JUnitCoreTestSet testSet = testsToRun.getTestSet( testSetName);
+        JUnitCoreTestSet testSet = testsToRun.getTestSet( testSetName );
 
-        if (testSet == null) {
-            throw new TestSetFailedException("Unable to find test set '" + testSetName + "' in suite");
+        if ( testSet == null )
+        {
+            throw new TestSetFailedException( "Unable to find test set '" + testSetName + "' in suite" );
         }
-        testSet.execute(reporterManager, jUnitCoreParameters);
+        testSet.execute( reporterManager, jUnitCoreParameters );
     }
 
-    public Map locateTestSets(ClassLoader classLoader) throws TestSetFailedException {
-        if (testSets != null) {
-            throw new IllegalStateException("You can't call locateTestSets twice");
+    public Map locateTestSets( ClassLoader classLoader )
+        throws TestSetFailedException
+    {
+        if ( testSets != null )
+        {
+            throw new IllegalStateException( "You can't call locateTestSets twice" );
         }
 
-        Class[] locatedClasses = directoryScanner.locateTestClasses(classLoader);
-        testsToRun = new TestsToRun(locatedClasses);
+        Class[] locatedClasses = directoryScanner.locateTestClasses( classLoader );
+        testsToRun = new TestsToRun( locatedClasses );
         return testsToRun.getTestSets();
     }
 
-    public int getNumTests() {
-        if (testsToRun == null) {
-            throw new IllegalStateException("You must call locateTestSets before calling getNumTests");
+    public int getNumTests()
+    {
+        if ( testsToRun == null )
+        {
+            throw new IllegalStateException( "You must call locateTestSets before calling getNumTests" );
         }
         return testsToRun.size();
     }

@@ -33,6 +33,7 @@ class JUnitCoreStackTraceWriter
     implements StackTraceWriter
 {
     // Member Variables
+
     private Failure junitFailure;
 
     /**
@@ -50,6 +51,7 @@ class JUnitCoreStackTraceWriter
       *
       * @see org.apache.maven.surefire.report.StackTraceWriter#writeTraceToString()
       */
+
     public String writeTraceToString()
     {
         return junitFailure.getTrace();

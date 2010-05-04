@@ -144,7 +144,7 @@ public class DemultiplexingRunListener
 
         private AtomicInteger numberOfCompletedChildren = new AtomicInteger( 0 );
 
-        private final List<TestMethod> testMethods = Collections.synchronizedList(new ArrayList<TestMethod>());
+        private final List<TestMethod> testMethods = Collections.synchronizedList( new ArrayList<TestMethod>() );
 
         public TestDescription( Description description )
         {
@@ -172,11 +172,13 @@ public class DemultiplexingRunListener
             return result;
         }
 
+        @SuppressWarnings( { "SynchronizationOnLocalVariableOrMethodParameter" } )
         private void notifyListener( final RunListener target )
         {
             try
             {
-                synchronized ( target ){
+                synchronized ( target )
+                {
                     target.testRunStarted( testRunStarted );
                     for ( TestMethod testMethod : testMethods )
                     {

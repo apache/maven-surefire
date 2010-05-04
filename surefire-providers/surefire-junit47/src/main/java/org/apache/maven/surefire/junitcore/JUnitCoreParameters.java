@@ -23,69 +23,91 @@ import java.util.Properties;
 /**
  * @author Kristian Rosenvold
  */
-class JUnitCoreParameters {
+class JUnitCoreParameters
+{
 
     private final String parallel;
+
     private final Boolean perCoreThreadCount;
+
     private final int threadCount;
+
     private final Boolean useUnlimitedThreads;
+
     private final Boolean configurableParallelComputerPresent;
+
     public static final String PARALLEL_KEY = "parallel";
+
     public static final String PERCORETHREADCOUNT_KEY = "perCoreThreadCount";
+
     public static final String THREADCOUNT_KEY = "threadCount";
+
     public static final String USEUNLIMITEDTHREADS_KEY = "useUnlimitedThreads";
+
     public static final String CONFIGURABLEPARALLELCOMPUTERPRESENT_KEY = "configurableParallelComputerPresent";
 
 
-    public JUnitCoreParameters(Properties properties) {
-        this.parallel = properties.getProperty(PARALLEL_KEY, "none").toLowerCase();
-        this.perCoreThreadCount = Boolean.valueOf( properties.getProperty(PERCORETHREADCOUNT_KEY, "true"));
-        this.threadCount = Integer.valueOf(properties.getProperty(THREADCOUNT_KEY, "8"));
-        this.useUnlimitedThreads = Boolean.valueOf(properties.getProperty(USEUNLIMITEDTHREADS_KEY, "false").toLowerCase());
-        this.configurableParallelComputerPresent = Boolean.valueOf(properties.getProperty(CONFIGURABLEPARALLELCOMPUTERPRESENT_KEY, "false").toLowerCase());
+    public JUnitCoreParameters( Properties properties )
+    {
+        this.parallel = properties.getProperty( PARALLEL_KEY, "none" ).toLowerCase();
+        this.perCoreThreadCount = Boolean.valueOf( properties.getProperty( PERCORETHREADCOUNT_KEY, "true" ) );
+        this.threadCount = Integer.valueOf( properties.getProperty( THREADCOUNT_KEY, "8" ) );
+        this.useUnlimitedThreads =
+            Boolean.valueOf( properties.getProperty( USEUNLIMITEDTHREADS_KEY, "false" ).toLowerCase() );
+        this.configurableParallelComputerPresent =
+            Boolean.valueOf( properties.getProperty( CONFIGURABLEPARALLELCOMPUTERPRESENT_KEY, "false" ).toLowerCase() );
     }
 
-    public boolean isParallelMethod(){
-        return "methods".equals( parallel);
-    }
-    public boolean isParallelClasses(){
-        return "classes".equals( parallel);
-    }
-    public boolean isParallelBoth(){
-        return "both".equals( parallel);
+    public boolean isParallelMethod()
+    {
+        return "methods".equals( parallel );
     }
 
-    public Boolean isPerCoreThreadCount() {
+    public boolean isParallelClasses()
+    {
+        return "classes".equals( parallel );
+    }
+
+    public boolean isParallelBoth()
+    {
+        return "both".equals( parallel );
+    }
+
+    public Boolean isPerCoreThreadCount()
+    {
         return perCoreThreadCount;
     }
 
-    public int getThreadCount() {
+    public int getThreadCount()
+    {
         return threadCount;
     }
 
-    public Boolean isUseUnlimitedThreads() {
+    public Boolean isUseUnlimitedThreads()
+    {
         return useUnlimitedThreads;
     }
 
-    public boolean isNoThreading(){
-        return !(isParallelClasses() || isParallelMethod() || isParallelBoth());
+    public boolean isNoThreading()
+    {
+        return !( isParallelClasses() || isParallelMethod() || isParallelBoth() );
     }
-    public boolean isAnyParallelitySelected(){
+
+    public boolean isAnyParallelitySelected()
+    {
         return !isNoThreading();
     }
 
-    public Boolean isConfigurableParallelComputerPresent() {
+    public Boolean isConfigurableParallelComputerPresent()
+    {
         return configurableParallelComputerPresent;
     }
 
     @Override
-    public String toString() {
-        return "JUnitCoreParameters{" +
-                "parallel='" + parallel + '\'' +
-                ", perCoreThreadCount=" + perCoreThreadCount +
-                ", threadCount=" + threadCount +
-                ", useUnlimitedThreads=" + useUnlimitedThreads +
-                ", configurableParallelComputerPresent=" + configurableParallelComputerPresent +
-                '}';
+    public String toString()
+    {
+        return "JUnitCoreParameters{" + "parallel='" + parallel + '\'' + ", perCoreThreadCount=" + perCoreThreadCount +
+            ", threadCount=" + threadCount + ", useUnlimitedThreads=" + useUnlimitedThreads +
+            ", configurableParallelComputerPresent=" + configurableParallelComputerPresent + '}';
     }
 }
