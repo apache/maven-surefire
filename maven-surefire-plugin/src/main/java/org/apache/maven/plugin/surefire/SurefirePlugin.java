@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -152,6 +153,25 @@ public class SurefirePlugin
      * @readonly
      */
     private List classpathElements;
+
+    /**
+     * the classpath elements to be excluded from classpath
+     * while executing tests. Permitted values are none, runtime
+     * and all. Meaning of values is:
+     * <ul>
+     * <li><i>none</i> - test classpath is not modified (the default)
+     * <li><i>runtime</i> - runtime classpath elements are removed from the classpath
+     * <li><i>all</i> - all default test classpath elements are removed from the classpath
+     * </ul>
+     * This feature is useful for overriding test classpath to
+     * test the project working with a particular set of libraries.
+     * For example with these shipped with a bigger project that
+     * includes the one under tests.
+     *
+     * @parameter expression="${maven.test.classpath.ignore}" default-value="none"
+     * @since 2.5.1
+     */
+    private String ignoreClasspathElements;
 
     /**
      * Additional elements to be appended to the classpath.
@@ -974,9 +994,28 @@ public class SurefirePlugin
         }
 
         // ----------------------------------------------------------------------
-        //
-        // ----------------------------------------------------------------------
-
+        // modify default classpath according to configuration
+        if ( ignoreClasspathElements.equals( "all" ) )
+        {
+            classpathElements.clear();
+        }
+        else if ( ignoreClasspathElements.equals( "runtime" ) )
+        {
+            try 
+            {
+               classpathElements.removeAll( project.getRuntimeClasspathElements() );
+            }
+            catch ( DependencyResolutionRequiredException e )
+            {
+                throw new MojoExecutionException ( "Unable to resolve runtime classpath elements: " + e, e );
+            }
+        }
+        else if ( ! ignoreClasspathElements.equals( "none" ) )
+        {
+            throw new MojoExecutionException( "Unsupported value for ignoreClasspathElements parameter: " +
+                                            ignoreClasspathElements );
+        }
+        
         // Check if we need to add configured classes/test classes directories here.
         // If they are configured, we should remove the default to avoid conflicts.
         File projectClassesDirectory = new File( project.getBuild().getOutputDirectory() );
@@ -1163,7 +1202,7 @@ public class SurefirePlugin
         {
             Artifact artifact = (Artifact) i.next();
 
-            getLog().debug( "Adding to surefire test classpath: " + artifact.getFile().getAbsolutePath() );
+            getLog().debug( "Adding to surefire test classpath: " + artifact.getFile().getAbsolutePath() + " Scope: " + artifact.getScope() );
 
             surefireBooter.addSurefireClassPathUrl( artifact.getFile().getAbsolutePath() );
         }
@@ -1194,7 +1233,7 @@ public class SurefirePlugin
         {
             Artifact artifact = (Artifact) i.next();
 
-            getLog().debug( "Adding to surefire booter test classpath: " + artifact.getFile().getAbsolutePath() );
+            getLog().debug( "Adding to surefire booter test classpath: " + artifact.getFile().getAbsolutePath() + " Scope: " + artifact.getScope() );
 
             surefireBooter.addSurefireBootClassPathUrl( artifact.getFile().getAbsolutePath() );
         }
