@@ -81,7 +81,7 @@ public class SurefirePlugin
      * Set this to 'true' to skip running tests, but still compile them. Its use is NOT RECOMMENDED, but quite
      * convenient on occasion.
      *
-     * @parameter expression="${skipTests}"
+     * @parameter default-value="false" expression="${skipTests}"
      * @since 2.4
      */
     private boolean skipTests;
@@ -100,7 +100,7 @@ public class SurefirePlugin
      * enable it using the "maven.test.skip" property, because maven.test.skip disables both running the
      * tests and compiling the tests.  Consider using the skipTests parameter instead.
      *
-     * @parameter expression="${maven.test.skip}"
+     * @parameter default-value="false" expression="${maven.test.skip}"
      */
     private boolean skip;
 
@@ -108,7 +108,7 @@ public class SurefirePlugin
      * Set this to true to ignore a failure during testing. Its use is NOT RECOMMENDED, but quite convenient on
      * occasion.
      *
-     * @parameter expression="${maven.test.failure.ignore}"
+     * @parameter default-value="false" expression="${maven.test.failure.ignore}"
      */
     private boolean testFailureIgnore;
 
@@ -116,7 +116,7 @@ public class SurefirePlugin
      * The base directory of the project being tested. This can be obtained in your unit test by
      * System.getProperty("basedir").
      *
-     * @parameter expression="${basedir}"
+     * @parameter default-value="${basedir}"
      */
     private File basedir;
 
@@ -139,8 +139,7 @@ public class SurefirePlugin
     /**
      * The Maven Project Object
      *
-     * @parameter expression="${project}"
-     * @required
+     * @parameter default-value="${project}"
      * @readonly
      */
     protected MavenProject project;
@@ -148,8 +147,7 @@ public class SurefirePlugin
     /**
      * The classpath elements of the project being tested.
      *
-     * @parameter expression="${project.testClasspathElements}"
-     * @required
+     * @parameter default-value="${project.testClasspathElements}"
      * @readonly
      */
     private List classpathElements;
@@ -184,14 +182,14 @@ public class SurefirePlugin
     /**
      * Base directory where all reports are written to.
      *
-     * @parameter expression="${project.build.directory}/surefire-reports"
+     * @parameter default-value="${project.build.directory}/surefire-reports"
      */
     private File reportsDirectory;
 
     /**
      * The test source directory containing test class sources.
      *
-     * @parameter expression="${project.build.testSourceDirectory}"
+     * @parameter default-value="${project.build.testSourceDirectory}"
      * @required
      * @since 2.2
      */
