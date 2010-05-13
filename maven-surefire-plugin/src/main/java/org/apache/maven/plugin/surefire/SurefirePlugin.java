@@ -993,29 +993,6 @@ public class SurefirePlugin
             }
         }
 
-        // ----------------------------------------------------------------------
-        // modify default classpath according to configuration
-        if ( ignoreClasspathElements.equals( "all" ) )
-        {
-            classpathElements.clear();
-        }
-        else if ( ignoreClasspathElements.equals( "runtime" ) )
-        {
-            try 
-            {
-               classpathElements.removeAll( project.getRuntimeClasspathElements() );
-            }
-            catch ( DependencyResolutionRequiredException e )
-            {
-                throw new MojoExecutionException ( "Unable to resolve runtime classpath elements: " + e, e );
-            }
-        }
-        else if ( ! ignoreClasspathElements.equals( "none" ) )
-        {
-            throw new MojoExecutionException( "Unsupported value for ignoreClasspathElements parameter: " +
-                                            ignoreClasspathElements );
-        }
-        
         // Check if we need to add configured classes/test classes directories here.
         // If they are configured, we should remove the default to avoid conflicts.
         File projectClassesDirectory = new File( project.getBuild().getOutputDirectory() );
@@ -1048,6 +1025,29 @@ public class SurefirePlugin
             }
         }
 
+        // ----------------------------------------------------------------------
+        // Remove elements from the classpath according to configuration
+        if ( ignoreClasspathElements.equals( "all" ) )
+        {
+            classpathElements.clear();
+        }
+        else if ( ignoreClasspathElements.equals( "runtime" ) )
+        {
+            try 
+            {
+               classpathElements.removeAll( project.getRuntimeClasspathElements() );
+            }
+            catch ( DependencyResolutionRequiredException e )
+            {
+                throw new MojoExecutionException ( "Unable to resolve runtime classpath elements: " + e, e );
+            }
+        }
+        else if ( ! ignoreClasspathElements.equals( "none" ) )
+        {
+            throw new MojoExecutionException( "Unsupported value for ignoreClasspathElements parameter: " +
+                                            ignoreClasspathElements );
+        }
+        
         getLog().debug( "Test Classpath :" );
 
         for ( Iterator i = classpathElements.iterator(); i.hasNext(); )
