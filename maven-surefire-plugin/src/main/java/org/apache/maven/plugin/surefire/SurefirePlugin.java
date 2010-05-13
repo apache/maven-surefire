@@ -169,7 +169,7 @@ public class SurefirePlugin
      * includes the one under tests.
      *
      * @parameter expression="${maven.test.classpath.ignore}" default-value="none"
-     * @since 2.5.1
+     * @since 2.6
      */
     private String ignoreClasspathElements;
 
