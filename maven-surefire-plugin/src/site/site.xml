@@ -38,7 +38,7 @@
       <item name="Class Loading Issues" href="examples/class-loading.html"/>
       <item name="Debugging Tests" href="examples/debugging.html"/>
       <item name="System Properties" href="examples/system-properties.html"/>
-      <item name="Additional Classpath Elements" href="examples/additional-classpath.html"/>
+      <item name="Configuring the Classpath" href="examples/configuring-classpath.html"/>
     </menu>
   </body>
 </project>

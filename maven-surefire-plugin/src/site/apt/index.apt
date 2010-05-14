@@ -91,6 +91,6 @@ Maven Surefire Plugin
 
   * {{{./examples/system-properties.html}Using System Properties}}
 
-  * {{{./examples/additional-classpath.html}Additional Classpath Elements}}
+  * {{{./examples/configuring-classpath.html}Configuring the Classpath}}
 
   []

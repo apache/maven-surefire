@@ -1111,9 +1111,10 @@ public class SurefirePlugin
 
         return surefireBooter;
     }
-    
+
     /**
      * Generate the test classpath.
+     * 
      * @return List containing the classpath elements
      * @throws DependencyResolutionRequiredException
      */
@@ -1125,12 +1126,12 @@ public class SurefirePlugin
         classpath.add( testClassesDirectory.getAbsolutePath() );
 
         classpath.add( classesDirectory.getAbsolutePath() );
-          
+
         for ( Iterator iter = project.getArtifacts().iterator(); iter.hasNext(); )
-        {      
+        {
             Artifact artifact = (Artifact) iter.next();
             if ( artifact.getArtifactHandler().isAddedToClasspath() )
-            {                
+            {
                 File file = artifact.getFile();
                 if ( file != null )
                 {
@@ -1148,12 +1149,12 @@ public class SurefirePlugin
         {
             classpath.removeAll( project.getRuntimeClasspathElements() );
         }
-        else if ( ! ignoreClasspathElements.equals( "none" ) )
+        else if ( !ignoreClasspathElements.equals( "none" ) )
         {
             throw new MojoExecutionException( "Unsupported value for ignoreClasspathElements parameter: " +
-                                            ignoreClasspathElements );
+                ignoreClasspathElements );
         }
-        
+
         // Add additional configured elements to the classpath
         if ( additionalClasspathElements != null )
         {
