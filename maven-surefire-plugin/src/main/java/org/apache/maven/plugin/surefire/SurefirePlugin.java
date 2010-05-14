@@ -145,14 +145,6 @@ public class SurefirePlugin
     protected MavenProject project;
 
     /**
-     * The classpath elements of the project being tested.
-     *
-     * @parameter default-value="${project.testClasspathElements}"
-     * @readonly
-     */
-    private List classpathElements;
-
-    /**
      * the classpath elements to be excluded from classpath
      * while executing tests. Permitted values are none, runtime
      * and all. Meaning of values is:
@@ -991,59 +983,14 @@ public class SurefirePlugin
             }
         }
 
-        // Check if we need to add configured classes/test classes directories here.
-        // If they are configured, we should remove the default to avoid conflicts.
-        File projectClassesDirectory = new File( project.getBuild().getOutputDirectory() );
-        if ( !projectClassesDirectory.equals( classesDirectory ) )
+        List classpathElements = null;
+        try 
         {
-            int indexToReplace = classpathElements.indexOf( project.getBuild().getOutputDirectory() );
-            if ( indexToReplace != -1 )
-            {
-                classpathElements.remove( indexToReplace );
-                classpathElements.add( indexToReplace, classesDirectory.getAbsolutePath() );
-            }
-            else
-            {
-                classpathElements.add( 1, classesDirectory.getAbsolutePath() );
-            }
+            classpathElements = generateTestClasspath();
         }
-
-        File projectTestClassesDirectory = new File( project.getBuild().getTestOutputDirectory() );
-        if ( !projectTestClassesDirectory.equals( testClassesDirectory ) )
+        catch ( DependencyResolutionRequiredException e )
         {
-            int indexToReplace = classpathElements.indexOf( project.getBuild().getTestOutputDirectory() );
-            if ( indexToReplace != -1 )
-            {
-                classpathElements.remove( indexToReplace );
-                classpathElements.add( indexToReplace, testClassesDirectory.getAbsolutePath() );
-            }
-            else
-            {
-                classpathElements.add( 0, testClassesDirectory.getAbsolutePath() );
-            }
-        }
-
-        // ----------------------------------------------------------------------
-        // Remove elements from the classpath according to configuration
-        if ( ignoreClasspathElements.equals( "all" ) )
-        {
-            classpathElements.clear();
-        }
-        else if ( ignoreClasspathElements.equals( "runtime" ) )
-        {
-            try 
-            {
-               classpathElements.removeAll( project.getRuntimeClasspathElements() );
-            }
-            catch ( DependencyResolutionRequiredException e )
-            {
-                throw new MojoExecutionException ( "Unable to resolve runtime classpath elements: " + e, e );
-            }
-        }
-        else if ( ! ignoreClasspathElements.equals( "none" ) )
-        {
-            throw new MojoExecutionException( "Unsupported value for ignoreClasspathElements parameter: " +
-                                            ignoreClasspathElements );
+            throw new MojoExecutionException( "Unable to generate test classpath: " + e, e );
         }
         
         getLog().debug( "Test Classpath :" );
@@ -1073,18 +1020,6 @@ public class SurefirePlugin
             else
             {
                 jvm = tc.findTool( "java" ); //NOI18N
-            }
-        }
-
-        if ( additionalClasspathElements != null )
-        {
-            for ( Iterator i = additionalClasspathElements.iterator(); i.hasNext(); )
-            {
-                String classpathElement = (String) i.next();
-
-                getLog().debug( "  " + classpathElement );
-
-                surefireBooter.addClassPathUrl( classpathElement );
             }
         }
 
@@ -1175,6 +1110,61 @@ public class SurefirePlugin
         addReporters( surefireBooter, fork.isForking() );
 
         return surefireBooter;
+    }
+    
+    /**
+     * Generate the test classpath.
+     * @return List containing the classpath elements
+     * @throws DependencyResolutionRequiredException
+     */
+    public List generateTestClasspath()
+        throws DependencyResolutionRequiredException, MojoExecutionException
+    {
+        List classpath = new ArrayList( 2 + project.getArtifacts().size() );
+
+        classpath.add( testClassesDirectory.getAbsolutePath() );
+
+        classpath.add( classesDirectory.getAbsolutePath() );
+          
+        for ( Iterator iter = project.getArtifacts().iterator(); iter.hasNext(); )
+        {      
+            Artifact artifact = (Artifact) iter.next();
+            if ( artifact.getArtifactHandler().isAddedToClasspath() )
+            {                
+                File file = artifact.getFile();
+                if ( file != null )
+                {
+                    classpath.add( file.getPath() );
+                }
+            }
+        }
+
+        // Remove elements from the classpath according to configuration
+        if ( ignoreClasspathElements.equals( "all" ) )
+        {
+            classpath.clear();
+        }
+        else if ( ignoreClasspathElements.equals( "runtime" ) )
+        {
+            classpath.removeAll( project.getRuntimeClasspathElements() );
+        }
+        else if ( ! ignoreClasspathElements.equals( "none" ) )
+        {
+            throw new MojoExecutionException( "Unsupported value for ignoreClasspathElements parameter: " +
+                                            ignoreClasspathElements );
+        }
+        
+        // Add additional configured elements to the classpath
+        if ( additionalClasspathElements != null )
+        {
+            for ( Iterator iter = additionalClasspathElements.iterator(); iter.hasNext(); )
+            {
+                String classpathElement = (String) iter.next();
+                classpath.add( classpathElement );
+            }
+        }
+
+        return classpath;
     }
 
     private void showMap( Map map, String setting )
