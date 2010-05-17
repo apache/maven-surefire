@@ -90,6 +90,7 @@
     <module>surefire-api</module>
     <module>surefire-booter</module>
     <module>surefire-providers</module>
+    <module>maven-surefire-common</module>
     <module>maven-surefire-plugin</module>
     <module>maven-failsafe-plugin</module>
     <module>maven-surefire-report-plugin</module>
@@ -116,6 +117,11 @@
       <dependency>
         <groupId>org.apache.maven.surefire</groupId>
         <artifactId>surefire-booter</artifactId>
+        <version>2.6-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.surefire</groupId>
+        <artifactId>maven-surefire-common</artifactId>
         <version>2.6-SNAPSHOT</version>
       </dependency>
       <dependency>

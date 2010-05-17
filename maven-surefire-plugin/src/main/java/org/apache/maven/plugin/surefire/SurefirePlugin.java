@@ -45,7 +45,6 @@ import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException
 import org.apache.maven.artifact.versioning.OverConstrainedVersionException;
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.execution.MavenSession;
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
@@ -74,7 +73,7 @@ import org.codehaus.plexus.util.StringUtils;
  * @phase test
  */
 public class SurefirePlugin
-    extends AbstractMojo
+    extends AbstractSurefireMojo
 {
 
     /**
@@ -142,7 +141,7 @@ public class SurefirePlugin
      * @parameter default-value="${project}"
      * @readonly
      */
-    protected MavenProject project;
+    private MavenProject project;
 
     /**
      * the classpath elements to be excluded from classpath
@@ -501,10 +500,6 @@ public class SurefirePlugin
      */
     private ArtifactMetadataSource metadataSource;
 
-    private static final String BRIEF_REPORT_FORMAT = "brief";
-
-    private static final String PLAIN_REPORT_FORMAT = "plain";
-
     private Properties originalSystemProperties;
 
     /**
@@ -583,7 +578,8 @@ public class SurefirePlugin
         {
             SurefireBooter surefireBooter = constructSurefireBooter();
 
-            getLog().info( "Surefire report directory: " + reportsDirectory );
+            getLog().info(
+                StringUtils.capitalizeFirstLetter( getPluginName() ) + " report directory: " + getReportsDirectory() );
 
             int result;
             try
@@ -599,10 +595,10 @@ public class SurefirePlugin
                 throw new MojoExecutionException( e.getMessage(), e );
             }
 
-            if ( originalSystemProperties != null && !surefireBooter.isForking() )
+            if ( getOriginalSystemProperties() != null && !surefireBooter.isForking() )
             {
                 // restore system properties, only makes sense when not forking..
-                System.setProperties( originalSystemProperties );
+                System.setProperties( getOriginalSystemProperties() );
             }
 
             if ( result == 0 )
@@ -614,7 +610,7 @@ public class SurefirePlugin
 
             if ( result == SurefireBooter.NO_TESTS_EXIT_CODE )
             {
-                if ( ( failIfNoTests == null ) || !failIfNoTests.booleanValue() )
+                if ( ( getFailIfNoTests() == null ) || !getFailIfNoTests().booleanValue() )
                 {
                     return;
                 }
@@ -625,12 +621,12 @@ public class SurefirePlugin
             else
             {
                 // TODO: i18n
-                msg = "There are test failures.\n\nPlease refer to " + reportsDirectory
+                msg = "There are test failures.\n\nPlease refer to " + getReportsDirectory()
                     + " for the individual test results.";
 
             }
 
-            if ( testFailureIgnore )
+            if ( isTestFailureIgnore() )
             {
                 getLog().error( msg );
             }
@@ -641,717 +637,623 @@ public class SurefirePlugin
         }
     }
 
-    private boolean verifyParameters()
-        throws MojoFailureException
+    protected boolean isTestsSkipped()
     {
-        if ( skip || skipTests || skipExec )
-        {
-            getLog().info( "Tests are skipped." );
-            return false;
-        }
-
-        if ( !testClassesDirectory.exists() )
-        {
-            if ( failIfNoTests != null && failIfNoTests.booleanValue() )
-            {
-                throw new MojoFailureException( "No tests to run!" );
-            }
-            getLog().info( "No tests to run." );
-            return false;
-        }
-
-        if ( !workingDirectory.exists() )
-        {
-            if ( !workingDirectory.mkdirs() )
-            {
-                throw new MojoFailureException( "Cannot create workingDirectory " + workingDirectory );
-            }
-        }
-
-        if ( !workingDirectory.isDirectory() )
-        {
-            throw new MojoFailureException( "workingDirectory " + workingDirectory + " exists and is not a directory" );
-        }
-
-        if ( useSystemClassLoader != null && ForkConfiguration.FORK_NEVER.equals( forkMode ) )
-        {
-            getLog().warn( "useSystemClassloader setting has no effect when not forking" );
-        }
-
-        return true;
+        return isSkip() || isSkipTests() || isSkipExec();
     }
 
-    /**
-     * Converts old TestNG configuration parameters over to new properties based configuration
-     * method. (if any are defined the old way)
-     */
-    private void convertTestNGParameters()
+    protected String getPluginName()
     {
-        if ( properties == null )
-        {
-            properties = new Properties();
-        }
-
-        if ( this.parallel != null )
-        {
-            properties.setProperty( "parallel", this.parallel );
-        }
-        if ( this.excludedGroups != null )
-        {
-            properties.setProperty( "excludegroups", this.excludedGroups );
-        }
-        if ( this.groups != null )
-        {
-            properties.setProperty( "groups", this.groups );
-        }
-
-        if ( this.threadCount > 0 )
-        {
-            properties.setProperty( "threadcount", new Integer( this.threadCount ).toString() );
-        }
-        if ( this.objectFactory != null )
-        {
-            properties.setProperty( "objectfactory", this.objectFactory );
-        }
+        return "surefire";
     }
 
-    private boolean isAnyConcurrencySelected()
+    protected String[] getDefaultIncludes()
     {
-        return this.parallel != null && this.parallel.trim().length() > 0;
+        return new String[]{"**/Test*.java", "**/*Test.java", "**/*TestCase.java"};
     }
 
-    /**
-     * Converts old TestNG configuration parameters over to new properties based configuration
-     * method. (if any are defined the old way)
-     */
-    private void convertJunitCoreParameters()
+    // now for the implementation of the field accessors
+
+    public boolean isSkipTests()
     {
-        if ( properties == null )
-        {
-            properties = new Properties();
-        }
-
-        if ( this.parallel != null )
-        {
-            properties.setProperty( "parallel", this.parallel );
-        }
-        if ( this.threadCount > 0 )
-        {
-            properties.setProperty( "threadCount", new Integer( this.threadCount ).toString() );
-        }
-        if ( this.perCoreThreadCount != null )
-        {
-            properties.setProperty( "perCoreThreadCount", perCoreThreadCount );
-        }
-        if ( this.useUnlimitedThreads != null )
-        {
-            properties.setProperty( "useUnlimitedThreads", useUnlimitedThreads );
-        }
-        Artifact configurableParallelComputer =
-            (Artifact) projectArtifactMap.get( "org.jdogma.junit:configurable-parallel-computer" );
-        properties.setProperty( "configurableParallelComputerPresent",
-                                Boolean.toString( configurableParallelComputer != null ) );
-
+        return skipTests;
     }
 
-    private boolean isJunit47Compatible( Artifact artifact )
-        throws MojoExecutionException
+    public void setSkipTests( boolean skipTests )
     {
-        return isWithinVersionSpec( artifact, "[4.7,)" );
+        this.skipTests = skipTests;
     }
 
-    private boolean isAnyJunit4( Artifact artifact )
-        throws MojoExecutionException
+    public boolean isSkipExec()
     {
-        return isWithinVersionSpec( artifact, "[4.0,)" );
+        return skipExec;
     }
 
-    private boolean isWithinVersionSpec( Artifact artifact, String versionSpec )
-        throws MojoExecutionException
+    public void setSkipExec( boolean skipExec )
     {
-        if ( artifact == null )
-        {
-            return false;
-        }
-        try
-        {
-            VersionRange range = VersionRange.createFromVersionSpec( versionSpec );
-            try
-            {
-                return range.containsVersion( artifact.getSelectedVersion() );
-            }
-            catch ( NullPointerException e )
-            {
-                return range.containsVersion( new DefaultArtifactVersion( artifact.getBaseVersion() ) );
-            }
-        }
-        catch ( InvalidVersionSpecificationException e )
-        {
-            throw new MojoExecutionException( "Bug in junit 4.7 plugin. Please report with stacktrace" );
-        }
-        catch ( OverConstrainedVersionException e )
-        {
-            throw new MojoExecutionException( "Bug in junit 4.7 plugin. Please report with stacktrace" );
-        }
+        this.skipExec = skipExec;
     }
 
-
-    private SurefireBooter constructSurefireBooter()
-        throws MojoExecutionException, MojoFailureException
+    public boolean isSkip()
     {
-        SurefireBooter surefireBooter = new SurefireBooter();
-
-        Artifact surefireArtifact = (Artifact) pluginArtifactMap.get( "org.apache.maven.surefire:surefire-booter" );
-        if ( surefireArtifact == null )
-        {
-            throw new MojoExecutionException( "Unable to locate surefire-booter in the list of plugin artifacts" );
-        }
-
-        surefireArtifact.isSnapshot(); // MNG-2961: before Maven 2.0.8, fixes getBaseVersion to be -SNAPSHOT if needed
-
-        Artifact junitArtifact;
-        Artifact testNgArtifact;
-        try
-        {
-            addArtifact( surefireBooter, surefireArtifact );
-
-            junitArtifact = (Artifact) projectArtifactMap.get( junitArtifactName );
-            // SUREFIRE-378, junit can have an alternate artifact name
-            if ( junitArtifact == null && "junit:junit".equals( junitArtifactName ) )
-            {
-                junitArtifact = (Artifact) projectArtifactMap.get( "junit:junit-dep" );
-            }
-
-            // TODO: this is pretty manual, but I'd rather not require the plugin > dependencies section right now
-            testNgArtifact = (Artifact) projectArtifactMap.get( testNGArtifactName );
-
-            if ( testNgArtifact != null )
-            {
-                VersionRange range = VersionRange.createFromVersionSpec( "[4.7,)" );
-                if ( !range.containsVersion( new DefaultArtifactVersion( testNgArtifact.getVersion() ) ) )
-                {
-                    throw new MojoFailureException(
-                        "TestNG support requires version 4.7 or above. You have declared version "
-                            + testNgArtifact.getVersion() );
-                }
-
-                convertTestNGParameters();
-
-                if ( this.testClassesDirectory != null )
-                {
-                    properties.setProperty( "testng.test.classpath", testClassesDirectory.getAbsolutePath() );
-                }
-
-                addArtifact( surefireBooter, testNgArtifact );
-
-                // The plugin uses a JDK based profile to select the right testng. We might be explicity using a
-                // different one since its based on the source level, not the JVM. Prune using the filter.
-                addProvider( surefireBooter, "surefire-testng", surefireArtifact.getBaseVersion(), testNgArtifact );
-            }
-            else if ( junitArtifact != null && isAnyJunit4( junitArtifact ) )
-            {
-                if ( isAnyConcurrencySelected() && isJunit47Compatible( junitArtifact ) )
-                {
-                    convertJunitCoreParameters();
-                    addProvider( surefireBooter, "surefire-junit47", surefireArtifact.getBaseVersion(), null );
-                }
-                else
-                {
-                    addProvider( surefireBooter, "surefire-junit4", surefireArtifact.getBaseVersion(), null );
-                }
-            }
-            else
-            {
-                // add the JUnit provider as default - it doesn't require JUnit to be present,
-                // since it supports POJO tests.
-                addProvider( surefireBooter, "surefire-junit", surefireArtifact.getBaseVersion(), null );
-            }
-        }
-        catch ( ArtifactNotFoundException e )
-        {
-            throw new MojoExecutionException(
-                "Unable to locate required surefire provider dependency: " + e.getMessage(), e );
-        }
-        catch ( InvalidVersionSpecificationException e )
-        {
-            throw new MojoExecutionException( "Error determining the TestNG version requested: " + e.getMessage(), e );
-        }
-        catch ( ArtifactResolutionException e )
-        {
-            throw new MojoExecutionException( "Error to resolving surefire provider dependency: " + e.getMessage(), e );
-        }
-
-        if ( suiteXmlFiles != null && suiteXmlFiles.length > 0 && test == null )
-        {
-            if ( testNgArtifact == null )
-            {
-                throw new MojoExecutionException( "suiteXmlFiles is configured, but there is no TestNG dependency" );
-            }
-
-            // TODO: properties should be passed in here too
-            surefireBooter.addTestSuite( "org.apache.maven.surefire.testng.TestNGXmlTestSuite",
-                                         new Object[]{suiteXmlFiles, testSourceDirectory.getAbsolutePath(),
-                                             testNgArtifact.getVersion(), testNgArtifact.getClassifier(), properties,
-                                             reportsDirectory} );
-        }
-        else
-        {
-            List includes;
-            List excludes;
-
-            if ( test != null )
-            {
-                // Check to see if we are running a single test. The raw parameter will
-                // come through if it has not been set.
-
-                // FooTest -> **/FooTest.java
-
-                includes = new ArrayList();
-
-                excludes = new ArrayList();
-
-                if ( failIfNoTests == null )
-                {
-                    failIfNoTests = Boolean.TRUE;
-                }
-
-                String[] testRegexes = StringUtils.split( test, "," );
-
-                for ( int i = 0; i < testRegexes.length; i++ )
-                {
-                    String testRegex = testRegexes[i];
-                    if ( testRegex.endsWith( ".java" ) )
-                    {
-                        testRegex = testRegex.substring( 0, testRegex.length() - 5 );
-                    }
-                    // Allow paths delimited by '.' or '/'
-                    testRegex = testRegex.replace( '.', '/' );
-                    includes.add( "**/" + testRegex + ".java" );
-                }
-            }
-            else
-            {
-                includes = this.includes;
-
-                excludes = this.excludes;
-
-                // defaults here, qdox doesn't like the end javadoc value
-                // Have to wrap in an ArrayList as surefire expects an ArrayList instead of a List for some reason
-                if ( includes == null || includes.size() == 0 )
-                {
-                    includes = new ArrayList(
-                        Arrays.asList( new String[]{"**/Test*.java", "**/*Test.java", "**/*TestCase.java"} ) );
-                }
-                if ( excludes == null || excludes.size() == 0 )
-                {
-                    excludes = new ArrayList( Arrays.asList( new String[]{"**/*$*"} ) );
-                }
-            }
-
-            if ( testNgArtifact != null )
-            {
-                surefireBooter.addTestSuite( "org.apache.maven.surefire.testng.TestNGDirectoryTestSuite",
-                                             new Object[]{testClassesDirectory, includes, excludes,
-                                                 testSourceDirectory.getAbsolutePath(), testNgArtifact.getVersion(),
-                                                 testNgArtifact.getClassifier(), properties, reportsDirectory} );
-            }
-            else
-            {
-                String junitDirectoryTestSuite;
-                if ( isAnyConcurrencySelected() && isJunit47Compatible( junitArtifact ) )
-                {
-                    junitDirectoryTestSuite = "org.apache.maven.surefire.junitcore.JUnitCoreDirectoryTestSuite";
-                    getLog().info( "Concurrency config is " + properties.toString() );
-                    surefireBooter.addTestSuite( junitDirectoryTestSuite,
-                                                 new Object[]{testClassesDirectory, includes, excludes, properties} );
-                }
-                else
-                {
-                    if ( isAnyJunit4( junitArtifact ) )
-                    {
-                        junitDirectoryTestSuite = "org.apache.maven.surefire.junit4.JUnit4DirectoryTestSuite";
-                    }
-                    else
-                    {
-                        // fall back to JUnit, which also contains POJO support. Also it can run
-                        // classes compiled against JUnit since it has a dependency on JUnit itself.
-                        junitDirectoryTestSuite = "org.apache.maven.surefire.junit.JUnitDirectoryTestSuite";
-                    }
-                    surefireBooter.addTestSuite( junitDirectoryTestSuite,
-                                                 new Object[]{testClassesDirectory, includes, excludes} );
-                }
-            }
-        }
-
-        List classpathElements = null;
-        try 
-        {
-            classpathElements = generateTestClasspath();
-        }
-        catch ( DependencyResolutionRequiredException e )
-        {
-            throw new MojoExecutionException( "Unable to generate test classpath: " + e, e );
-        }
-        
-        getLog().debug( "Test Classpath :" );
-
-        for ( Iterator i = classpathElements.iterator(); i.hasNext(); )
-        {
-            String classpathElement = (String) i.next();
-
-            getLog().debug( "  " + classpathElement );
-
-            surefireBooter.addClassPathUrl( classpathElement );
-        }
-
-        Toolchain tc = getToolchain();
-
-        if ( tc != null )
-        {
-            getLog().info( "Toolchain in surefire-plugin: " + tc );
-            if ( ForkConfiguration.FORK_NEVER.equals( forkMode ) )
-            {
-                forkMode = ForkConfiguration.FORK_ONCE;
-            }
-            if ( jvm != null )
-            {
-                getLog().warn( "Toolchains are ignored, 'executable' parameter is set to " + jvm );
-            }
-            else
-            {
-                jvm = tc.findTool( "java" ); //NOI18N
-            }
-        }
-
-        // ----------------------------------------------------------------------
-        // Forking
-        // ----------------------------------------------------------------------
-
-        ForkConfiguration fork = new ForkConfiguration();
-
-        fork.setForkMode( forkMode );
-
-        processSystemProperties( !fork.isForking() );
-
-        if ( getLog().isDebugEnabled() )
-        {
-            showMap( internalSystemProperties, "system property" );
-        }
-
-        if ( fork.isForking() )
-        {
-            useSystemClassLoader = useSystemClassLoader == null ? Boolean.TRUE : useSystemClassLoader;
-            fork.setUseSystemClassLoader( useSystemClassLoader.booleanValue() );
-            fork.setUseManifestOnlyJar( useManifestOnlyJar );
-
-            fork.setSystemProperties( internalSystemProperties );
-
-            if ( "true".equals( debugForkedProcess ) )
-            {
-                debugForkedProcess =
-                    "-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005";
-            }
-
-            fork.setDebugLine( debugForkedProcess );
-
-            if ( jvm == null || "".equals( jvm ) )
-            {
-                // use the same JVM as the one used to run Maven (the "java.home" one)
-                jvm = System.getProperty( "java.home" ) + File.separator + "bin" + File.separator + "java";
-                getLog().debug( "Using JVM: " + jvm );
-            }
-
-            fork.setJvmExecutable( jvm );
-
-            if ( workingDirectory != null )
-            {
-                fork.setWorkingDirectory( workingDirectory );
-            }
-            else
-            {
-                fork.setWorkingDirectory( basedir );
-            }
-
-            fork.setArgLine( argLine );
-
-            fork.setEnvironmentVariables( environmentVariables );
-
-            if ( getLog().isDebugEnabled() )
-            {
-                showMap( environmentVariables, "environment variable" );
-
-                fork.setDebug( true );
-            }
-
-            if ( argLine != null )
-            {
-                List args = Arrays.asList( argLine.split( " " ) );
-                if ( args.contains( "-da" ) || args.contains( "-disableassertions" ) )
-                {
-                    enableAssertions = false;
-                }
-            }
-        }
-
-        surefireBooter.setFailIfNoTests( failIfNoTests == null ? false : failIfNoTests.booleanValue() );
-
-        surefireBooter.setForkedProcessTimeoutInSeconds( forkedProcessTimeoutInSeconds );
-
-        surefireBooter.setRedirectTestOutputToFile( redirectTestOutputToFile );
-
-        surefireBooter.setForkConfiguration( fork );
-
-        surefireBooter.setChildDelegation( childDelegation );
-
-        surefireBooter.setEnableAssertions( enableAssertions );
-
-        surefireBooter.setReportsDirectory( reportsDirectory );
-
-        addReporters( surefireBooter, fork.isForking() );
-
-        return surefireBooter;
+        return skip;
     }
 
-    /**
-     * Generate the test classpath.
-     * 
-     * @return List containing the classpath elements
-     * @throws DependencyResolutionRequiredException
-     */
-    public List generateTestClasspath()
-        throws DependencyResolutionRequiredException, MojoExecutionException
+    public void setSkip( boolean skip )
     {
-        List classpath = new ArrayList( 2 + project.getArtifacts().size() );
-
-        classpath.add( testClassesDirectory.getAbsolutePath() );
-
-        classpath.add( classesDirectory.getAbsolutePath() );
-
-        for ( Iterator iter = project.getArtifacts().iterator(); iter.hasNext(); )
-        {
-            Artifact artifact = (Artifact) iter.next();
-            if ( artifact.getArtifactHandler().isAddedToClasspath() )
-            {
-                File file = artifact.getFile();
-                if ( file != null )
-                {
-                    classpath.add( file.getPath() );
-                }
-            }
-        }
-
-        // Remove elements from the classpath according to configuration
-        if ( ignoreClasspathElements.equals( "all" ) )
-        {
-            classpath.clear();
-        }
-        else if ( ignoreClasspathElements.equals( "runtime" ) )
-        {
-            classpath.removeAll( project.getRuntimeClasspathElements() );
-        }
-        else if ( !ignoreClasspathElements.equals( "none" ) )
-        {
-            throw new MojoExecutionException( "Unsupported value for ignoreClasspathElements parameter: " +
-                ignoreClasspathElements );
-        }
-
-        // Add additional configured elements to the classpath
-        if ( additionalClasspathElements != null )
-        {
-            for ( Iterator iter = additionalClasspathElements.iterator(); iter.hasNext(); )
-            {
-                String classpathElement = (String) iter.next();
-                classpath.add( classpathElement );
-            }
-        }
-
-        return classpath;
+        this.skip = skip;
     }
 
-    private void showMap( Map map, String setting )
+    public boolean isTestFailureIgnore()
     {
-        for ( Iterator i = map.keySet().iterator(); i.hasNext(); )
-        {
-            String key = (String) i.next();
-            String value = (String) map.get( key );
-            getLog().debug( "Setting " + setting + " [" + key + "]=[" + value + "]" );
-        }
+        return testFailureIgnore;
     }
 
-    private void addProvider( SurefireBooter surefireBooter, String provider, String version,
-                              Artifact filteredArtifact )
-        throws ArtifactNotFoundException, ArtifactResolutionException
+    public void setTestFailureIgnore( boolean testFailureIgnore )
     {
-        Artifact providerArtifact = artifactFactory.createDependencyArtifact( "org.apache.maven.surefire", provider,
-                                                                              VersionRange.createFromVersion( version ),
-                                                                              "jar", null, Artifact.SCOPE_TEST );
-        ArtifactResolutionResult result = resolveArtifact( filteredArtifact, providerArtifact );
-
-        for ( Iterator i = result.getArtifacts().iterator(); i.hasNext(); )
-        {
-            Artifact artifact = (Artifact) i.next();
-
-            getLog().debug( "Adding to surefire test classpath: " + artifact.getFile().getAbsolutePath() + " Scope: " + artifact.getScope() );
-
-            surefireBooter.addSurefireClassPathUrl( artifact.getFile().getAbsolutePath() );
-        }
+        this.testFailureIgnore = testFailureIgnore;
     }
 
-    private ArtifactResolutionResult resolveArtifact( Artifact filteredArtifact, Artifact providerArtifact )
-        throws ArtifactResolutionException, ArtifactNotFoundException
+    public File getBasedir()
     {
-        ArtifactFilter filter = null;
-        if ( filteredArtifact != null )
-        {
-            filter = new ExcludesArtifactFilter(
-                Collections.singletonList( filteredArtifact.getGroupId() + ":" + filteredArtifact.getArtifactId() ) );
-        }
-
-        Artifact originatingArtifact = artifactFactory.createBuildArtifact( "dummy", "dummy", "1.0", "jar" );
-
-        return artifactResolver.resolveTransitively( Collections.singleton( providerArtifact ), originatingArtifact,
-                                                     localRepository, remoteRepositories, metadataSource, filter );
+        return basedir;
     }
 
-    private void addArtifact( SurefireBooter surefireBooter, Artifact surefireArtifact )
-        throws ArtifactNotFoundException, ArtifactResolutionException
+    public void setBasedir( File basedir )
     {
-        ArtifactResolutionResult result = resolveArtifact( null, surefireArtifact );
-
-        for ( Iterator i = result.getArtifacts().iterator(); i.hasNext(); )
-        {
-            Artifact artifact = (Artifact) i.next();
-
-            getLog().debug( "Adding to surefire booter test classpath: " + artifact.getFile().getAbsolutePath() + " Scope: " + artifact.getScope() );
-
-            surefireBooter.addSurefireBootClassPathUrl( artifact.getFile().getAbsolutePath() );
-        }
+        this.basedir = basedir;
     }
 
-    protected void processSystemProperties( boolean setInSystem )
+    public File getTestClassesDirectory()
     {
-        if ( this.systemProperties != null )
-        {
-            for ( Iterator i = systemProperties.keySet().iterator(); i.hasNext(); )
-            {
-                String key = (String) i.next();
-                String value = (String) systemProperties.get( key );
-                internalSystemProperties.setProperty( key, value );
-            }
-        }
-
-        if ( this.systemPropertyVariables != null )
-        {
-            for ( Iterator i = systemPropertyVariables.keySet().iterator(); i.hasNext(); )
-            {
-                String key = (String) i.next();
-                String value = (String) systemPropertyVariables.get( key );
-                //java Properties does not accept null value
-                if ( value != null )
-                {
-                    internalSystemProperties.setProperty( key, value );
-                }
-            }
-        }
-
-        originalSystemProperties = (Properties) System.getProperties().clone();
-
-        // We used to take all of our system properties and dump them in with the
-        // user specified properties for SUREFIRE-121, causing SUREFIRE-491.
-        // Not gonna do THAT any more... but I'm leaving this code here in case
-        // we need it later when we try to fix SUREFIRE-121 again.
-
-        // Get the properties from the MavenSession instance to make embedded use work correctly
-        Properties userSpecifiedProperties = (Properties) session.getExecutionProperties().clone();
-        userSpecifiedProperties.putAll( internalSystemProperties );
-        //systemProperties = userSpecifiedProperties;
-
-        internalSystemProperties.setProperty( "basedir", basedir.getAbsolutePath() );
-        internalSystemProperties.setProperty( "user.dir", workingDirectory.getAbsolutePath() );
-
-        internalSystemProperties.setProperty( "localRepository", localRepository.getBasedir() );
-
-        if ( setInSystem )
-        {
-            // Add all system properties configured by the user
-            Iterator iter = internalSystemProperties.keySet().iterator();
-
-            while ( iter.hasNext() )
-            {
-                String key = (String) iter.next();
-
-                String value = internalSystemProperties.getProperty( key );
-
-                System.setProperty( key, value );
-            }
-        }
+        return testClassesDirectory;
     }
 
-    /**
-     * <p/>
-     * Adds Reporters that will generate reports with different formatting.
-     * <p/>
-     * The Reporter that will be added will be based on the value of the parameter useFile, reportFormat, and
-     * printSummary.
-     *
-     * @param surefireBooter The surefire booter that will run tests.
-     * @param forking
-     */
-    private void addReporters( SurefireBooter surefireBooter, boolean forking )
+    public void setTestClassesDirectory( File testClassesDirectory )
     {
-        Boolean trimStackTrace = Boolean.valueOf( this.trimStackTrace );
-        if ( useFile )
-        {
-            if ( printSummary )
-            {
-                if ( forking )
-                {
-                    surefireBooter.addReport( ForkingConsoleReporter.class.getName(), new Object[]{trimStackTrace} );
-                }
-                else
-                {
-                    surefireBooter.addReport( ConsoleReporter.class.getName(), new Object[]{trimStackTrace} );
-                }
-            }
-
-            if ( BRIEF_REPORT_FORMAT.equals( reportFormat ) )
-            {
-                surefireBooter.addReport( BriefFileReporter.class.getName(),
-                                          new Object[]{reportsDirectory, trimStackTrace} );
-            }
-            else if ( PLAIN_REPORT_FORMAT.equals( reportFormat ) )
-            {
-                surefireBooter.addReport( FileReporter.class.getName(),
-                                          new Object[]{reportsDirectory, trimStackTrace} );
-            }
-        }
-        else
-        {
-            if ( BRIEF_REPORT_FORMAT.equals( reportFormat ) )
-            {
-                surefireBooter.addReport( BriefConsoleReporter.class.getName(), new Object[]{trimStackTrace} );
-            }
-            else if ( PLAIN_REPORT_FORMAT.equals( reportFormat ) )
-            {
-                surefireBooter.addReport( DetailedConsoleReporter.class.getName(), new Object[]{trimStackTrace} );
-            }
-        }
-
-        if ( !disableXmlReport )
-        {
-            surefireBooter.addReport( XMLReporter.class.getName(), new Object[]{reportsDirectory, trimStackTrace} );
-        }
+        this.testClassesDirectory = testClassesDirectory;
     }
 
-    private Toolchain getToolchain()
+    public File getClassesDirectory()
     {
-        Toolchain tc = null;
-
-        if ( toolchainManager != null )
-        {
-            tc = toolchainManager.getToolchainFromBuildContext( "jdk", session );
-        }
-
-        return tc;
+        return classesDirectory;
     }
+
+    public void setClassesDirectory( File classesDirectory )
+    {
+        this.classesDirectory = classesDirectory;
+    }
+
+    public MavenProject getProject()
+    {
+        return project;
+    }
+
+    public void setProject( MavenProject project )
+    {
+        this.project = project;
+    }
+
+    public String getIgnoreClasspathElements()
+    {
+        return ignoreClasspathElements;
+    }
+
+    public void setIgnoreClasspathElements( String ignoreClasspathElements )
+    {
+        this.ignoreClasspathElements = ignoreClasspathElements;
+    }
+
+    public List getAdditionalClasspathElements()
+    {
+        return additionalClasspathElements;
+    }
+
+    public void setAdditionalClasspathElements( List additionalClasspathElements )
+    {
+        this.additionalClasspathElements = additionalClasspathElements;
+    }
+
+    public File getReportsDirectory()
+    {
+        return reportsDirectory;
+    }
+
+    public void setReportsDirectory( File reportsDirectory )
+    {
+        this.reportsDirectory = reportsDirectory;
+    }
+
+    public File getTestSourceDirectory()
+    {
+        return testSourceDirectory;
+    }
+
+    public void setTestSourceDirectory( File testSourceDirectory )
+    {
+        this.testSourceDirectory = testSourceDirectory;
+    }
+
+    public String getTest()
+    {
+        return test;
+    }
+
+    public void setTest( String test )
+    {
+        this.test = test;
+    }
+
+    public List getIncludes()
+    {
+        return includes;
+    }
+
+    public void setIncludes( List includes )
+    {
+        this.includes = includes;
+    }
+
+    public List getExcludes()
+    {
+        return excludes;
+    }
+
+    public void setExcludes( List excludes )
+    {
+        this.excludes = excludes;
+    }
+
+    public ArtifactRepository getLocalRepository()
+    {
+        return localRepository;
+    }
+
+    public void setLocalRepository( ArtifactRepository localRepository )
+    {
+        this.localRepository = localRepository;
+    }
+
+    public Properties getSystemProperties()
+    {
+        return systemProperties;
+    }
+
+    public void setSystemProperties( Properties systemProperties )
+    {
+        this.systemProperties = systemProperties;
+    }
+
+    public Map getSystemPropertyVariables()
+    {
+        return systemPropertyVariables;
+    }
+
+    public void setSystemPropertyVariables( Map systemPropertyVariables )
+    {
+        this.systemPropertyVariables = systemPropertyVariables;
+    }
+
+    public Properties getProperties()
+    {
+        return properties;
+    }
+
+    public void setProperties( Properties properties )
+    {
+        this.properties = properties;
+    }
+
+    public Map getPluginArtifactMap()
+    {
+        return pluginArtifactMap;
+    }
+
+    public void setPluginArtifactMap( Map pluginArtifactMap )
+    {
+        this.pluginArtifactMap = pluginArtifactMap;
+    }
+
+    public Map getProjectArtifactMap()
+    {
+        return projectArtifactMap;
+    }
+
+    public void setProjectArtifactMap( Map projectArtifactMap )
+    {
+        this.projectArtifactMap = projectArtifactMap;
+    }
+
+    public boolean isPrintSummary()
+    {
+        return printSummary;
+    }
+
+    public void setPrintSummary( boolean printSummary )
+    {
+        this.printSummary = printSummary;
+    }
+
+    public String getReportFormat()
+    {
+        return reportFormat;
+    }
+
+    public void setReportFormat( String reportFormat )
+    {
+        this.reportFormat = reportFormat;
+    }
+
+    public boolean isUseFile()
+    {
+        return useFile;
+    }
+
+    public void setUseFile( boolean useFile )
+    {
+        this.useFile = useFile;
+    }
+
+    public boolean isRedirectTestOutputToFile()
+    {
+        return redirectTestOutputToFile;
+    }
+
+    public void setRedirectTestOutputToFile( boolean redirectTestOutputToFile )
+    {
+        this.redirectTestOutputToFile = redirectTestOutputToFile;
+    }
+
+    public Boolean getFailIfNoTests()
+    {
+        return failIfNoTests;
+    }
+
+    public void setFailIfNoTests( Boolean failIfNoTests )
+    {
+        this.failIfNoTests = failIfNoTests;
+    }
+
+    public String getForkMode()
+    {
+        return forkMode;
+    }
+
+    public void setForkMode( String forkMode )
+    {
+        this.forkMode = forkMode;
+    }
+
+    public String getJvm()
+    {
+        return jvm;
+    }
+
+    public void setJvm( String jvm )
+    {
+        this.jvm = jvm;
+    }
+
+    public String getArgLine()
+    {
+        return argLine;
+    }
+
+    public void setArgLine( String argLine )
+    {
+        this.argLine = argLine;
+    }
+
+    public String getDebugForkedProcess()
+    {
+        return debugForkedProcess;
+    }
+
+    public void setDebugForkedProcess( String debugForkedProcess )
+    {
+        this.debugForkedProcess = debugForkedProcess;
+    }
+
+    public int getForkedProcessTimeoutInSeconds()
+    {
+        return forkedProcessTimeoutInSeconds;
+    }
+
+    public void setForkedProcessTimeoutInSeconds( int forkedProcessTimeoutInSeconds )
+    {
+        this.forkedProcessTimeoutInSeconds = forkedProcessTimeoutInSeconds;
+    }
+
+    public Map getEnvironmentVariables()
+    {
+        return environmentVariables;
+    }
+
+    public void setEnvironmentVariables( Map environmentVariables )
+    {
+        this.environmentVariables = environmentVariables;
+    }
+
+    public File getWorkingDirectory()
+    {
+        return workingDirectory;
+    }
+
+    public void setWorkingDirectory( File workingDirectory )
+    {
+        this.workingDirectory = workingDirectory;
+    }
+
+    public boolean isChildDelegation()
+    {
+        return childDelegation;
+    }
+
+    public void setChildDelegation( boolean childDelegation )
+    {
+        this.childDelegation = childDelegation;
+    }
+
+    public String getGroups()
+    {
+        return groups;
+    }
+
+    public void setGroups( String groups )
+    {
+        this.groups = groups;
+    }
+
+    public String getExcludedGroups()
+    {
+        return excludedGroups;
+    }
+
+    public void setExcludedGroups( String excludedGroups )
+    {
+        this.excludedGroups = excludedGroups;
+    }
+
+    public File[] getSuiteXmlFiles()
+    {
+        return suiteXmlFiles;
+    }
+
+    public void setSuiteXmlFiles( File[] suiteXmlFiles )
+    {
+        this.suiteXmlFiles = suiteXmlFiles;
+    }
+
+    public String getJunitArtifactName()
+    {
+        return junitArtifactName;
+    }
+
+    public void setJunitArtifactName( String junitArtifactName )
+    {
+        this.junitArtifactName = junitArtifactName;
+    }
+
+    public String getTestNGArtifactName()
+    {
+        return testNGArtifactName;
+    }
+
+    public void setTestNGArtifactName( String testNGArtifactName )
+    {
+        this.testNGArtifactName = testNGArtifactName;
+    }
+
+    public int getThreadCount()
+    {
+        return threadCount;
+    }
+
+    public void setThreadCount( int threadCount )
+    {
+        this.threadCount = threadCount;
+    }
+
+    public String getPerCoreThreadCount()
+    {
+        return perCoreThreadCount;
+    }
+
+    public void setPerCoreThreadCount( String perCoreThreadCount )
+    {
+        this.perCoreThreadCount = perCoreThreadCount;
+    }
+
+    public String getUseUnlimitedThreads()
+    {
+        return useUnlimitedThreads;
+    }
+
+    public void setUseUnlimitedThreads( String useUnlimitedThreads )
+    {
+        this.useUnlimitedThreads = useUnlimitedThreads;
+    }
+
+    public String getParallel()
+    {
+        return parallel;
+    }
+
+    public void setParallel( String parallel )
+    {
+        this.parallel = parallel;
+    }
+
+    public boolean isTrimStackTrace()
+    {
+        return trimStackTrace;
+    }
+
+    public void setTrimStackTrace( boolean trimStackTrace )
+    {
+        this.trimStackTrace = trimStackTrace;
+    }
+
+    public ArtifactResolver getArtifactResolver()
+    {
+        return artifactResolver;
+    }
+
+    public void setArtifactResolver( ArtifactResolver artifactResolver )
+    {
+        this.artifactResolver = artifactResolver;
+    }
+
+    public ArtifactFactory getArtifactFactory()
+    {
+        return artifactFactory;
+    }
+
+    public void setArtifactFactory( ArtifactFactory artifactFactory )
+    {
+        this.artifactFactory = artifactFactory;
+    }
+
+    public List getRemoteRepositories()
+    {
+        return remoteRepositories;
+    }
+
+    public void setRemoteRepositories( List remoteRepositories )
+    {
+        this.remoteRepositories = remoteRepositories;
+    }
+
+    public ArtifactMetadataSource getMetadataSource()
+    {
+        return metadataSource;
+    }
+
+    public void setMetadataSource( ArtifactMetadataSource metadataSource )
+    {
+        this.metadataSource = metadataSource;
+    }
+
+    public Properties getOriginalSystemProperties()
+    {
+        return originalSystemProperties;
+    }
+
+    public void setOriginalSystemProperties( Properties originalSystemProperties )
+    {
+        this.originalSystemProperties = originalSystemProperties;
+    }
+
+    public Properties getInternalSystemProperties()
+    {
+        return internalSystemProperties;
+    }
+
+    public void setInternalSystemProperties( Properties internalSystemProperties )
+    {
+        this.internalSystemProperties = internalSystemProperties;
+    }
+
+    public boolean isDisableXmlReport()
+    {
+        return disableXmlReport;
+    }
+
+    public void setDisableXmlReport( boolean disableXmlReport )
+    {
+        this.disableXmlReport = disableXmlReport;
+    }
+
+    public Boolean getUseSystemClassLoader()
+    {
+        return useSystemClassLoader;
+    }
+
+    public void setUseSystemClassLoader( Boolean useSystemClassLoader )
+    {
+        this.useSystemClassLoader = useSystemClassLoader;
+    }
+
+    public boolean isUseManifestOnlyJar()
+    {
+        return useManifestOnlyJar;
+    }
+
+    public void setUseManifestOnlyJar( boolean useManifestOnlyJar )
+    {
+        this.useManifestOnlyJar = useManifestOnlyJar;
+    }
+
+    public boolean isEnableAssertions()
+    {
+        return enableAssertions;
+    }
+
+    public void setEnableAssertions( boolean enableAssertions )
+    {
+        this.enableAssertions = enableAssertions;
+    }
+
+    public MavenSession getSession()
+    {
+        return session;
+    }
+
+    public void setSession( MavenSession session )
+    {
+        this.session = session;
+    }
+
+    public String getObjectFactory()
+    {
+        return objectFactory;
+    }
+
+    public void setObjectFactory( String objectFactory )
+    {
+        this.objectFactory = objectFactory;
+    }
+
+    public ToolchainManager getToolchainManager()
+    {
+        return toolchainManager;
+    }
+
+    public void setToolchainManager( ToolchainManager toolchainManager )
+    {
+        this.toolchainManager = toolchainManager;
+    }
+
+    // the following will be refactored out once the common code is all in one place
+
+    public String getEncoding()
+    {
+        return null; // ignore
+    }
+
+    public void setEncoding( String encoding )
+    {
+        // ignore
+    }
+
+    public boolean isSkipITs()
+    {
+        return false; // ignore
+    }
+
+    public void setSkipITs( boolean skipITs )
+    {
+        // ignore
+    }
+
+    public File getSummaryFile()
+    {
+        return null; // ignore
+    }
+
+    public void setSummaryFile( File summaryFile )
+    {
+        // ignore
+    }
+
 }
