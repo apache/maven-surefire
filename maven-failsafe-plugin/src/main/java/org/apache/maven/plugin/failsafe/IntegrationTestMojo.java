@@ -25,34 +25,20 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
 import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
-import org.apache.maven.artifact.resolver.ArtifactResolutionException;
-import org.apache.maven.artifact.resolver.ArtifactResolutionResult;
 import org.apache.maven.artifact.resolver.ArtifactResolver;
-import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
-import org.apache.maven.artifact.resolver.filter.ExcludesArtifactFilter;
-import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
-import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
-import org.apache.maven.artifact.versioning.OverConstrainedVersionException;
-import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.surefire.AbstractSurefireMojo;
+import org.apache.maven.plugin.surefire.SurefireExecutionParameters;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.surefire.booter.ForkConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooter;
@@ -60,14 +46,6 @@ import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.apache.maven.surefire.booter.SurefireExecutionException;
 import org.apache.maven.surefire.failsafe.model.FailsafeSummary;
 import org.apache.maven.surefire.failsafe.model.io.xpp3.FailsafeSummaryXpp3Writer;
-import org.apache.maven.surefire.report.BriefConsoleReporter;
-import org.apache.maven.surefire.report.BriefFileReporter;
-import org.apache.maven.surefire.report.ConsoleReporter;
-import org.apache.maven.surefire.report.DetailedConsoleReporter;
-import org.apache.maven.surefire.report.FileReporter;
-import org.apache.maven.surefire.report.ForkingConsoleReporter;
-import org.apache.maven.surefire.report.XMLReporter;
-import org.apache.maven.toolchain.Toolchain;
 import org.apache.maven.toolchain.ToolchainManager;
 import org.codehaus.plexus.util.ReaderFactory;
 import org.codehaus.plexus.util.StringUtils;
@@ -84,6 +62,7 @@ import org.codehaus.plexus.util.StringUtils;
  */
 public class IntegrationTestMojo
     extends AbstractSurefireMojo
+    implements SurefireExecutionParameters
 {
 
     /**
@@ -647,7 +626,7 @@ public class IntegrationTestMojo
             try
             {
                 String encoding;
-                if ( StringUtils.isEmpty( this.getEncoding() ) )
+                if ( StringUtils.isEmpty( this.encoding ) )
                 {
                     getLog().warn(
                         "File encoding has not been set, using platform encoding " + ReaderFactory.FILE_ENCODING
@@ -656,7 +635,7 @@ public class IntegrationTestMojo
                 }
                 else
                 {
-                    encoding = this.getEncoding();
+                    encoding = this.encoding;
                 }
 
                 FileOutputStream fileOutputStream = new FileOutputStream( getSummaryFile() );
@@ -675,9 +654,44 @@ public class IntegrationTestMojo
         }
     }
 
-    protected boolean isTestsSkipped()
+    protected boolean verifyParameters()
+        throws MojoFailureException
     {
-        return isSkip() || isSkipTests() || isSkipITs() || isSkipExec();
+        if ( isSkip() || isSkipTests() || isSkipITs() || isSkipExec() )
+        {
+            getLog().info( "Tests are skipped." );
+            return false;
+        }
+
+        if ( !getTestClassesDirectory().exists() )
+        {
+            if ( getFailIfNoTests() != null && getFailIfNoTests().booleanValue() )
+            {
+                throw new MojoFailureException( "No tests to run!" );
+            }
+            getLog().info( "No tests to run." );
+            return false;
+        }
+
+        if ( !getWorkingDirectory().exists() )
+        {
+            if ( !getWorkingDirectory().mkdirs() )
+            {
+                throw new MojoFailureException( "Cannot create workingDirectory " + getWorkingDirectory() );
+            }
+        }
+
+        if ( !getWorkingDirectory().isDirectory() )
+        {
+            throw new MojoFailureException( "workingDirectory " + getWorkingDirectory() + " exists and is not a directory" );
+        }
+
+        if ( getUseSystemClassLoader() != null && ForkConfiguration.FORK_NEVER.equals( getForkMode() ) )
+        {
+            getLog().warn( "useSystemClassloader setting has no effect when not forking" );
+        }
+
+        return true;
     }
 
     protected String getPluginName()
@@ -1258,16 +1272,6 @@ public class IntegrationTestMojo
     public void setObjectFactory( String objectFactory )
     {
         this.objectFactory = objectFactory;
-    }
-
-    public String getEncoding()
-    {
-        return encoding;
-    }
-
-    public void setEncoding( String encoding )
-    {
-        this.encoding = encoding;
     }
 
     public ToolchainManager getToolchainManager()

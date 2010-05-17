@@ -20,30 +20,15 @@ package org.apache.maven.plugin.surefire;
  */
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
 import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
-import org.apache.maven.artifact.resolver.ArtifactResolutionException;
-import org.apache.maven.artifact.resolver.ArtifactResolutionResult;
 import org.apache.maven.artifact.resolver.ArtifactResolver;
-import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
-import org.apache.maven.artifact.resolver.filter.ExcludesArtifactFilter;
-import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
-import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
-import org.apache.maven.artifact.versioning.OverConstrainedVersionException;
-import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -52,14 +37,6 @@ import org.apache.maven.surefire.booter.ForkConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooter;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.apache.maven.surefire.booter.SurefireExecutionException;
-import org.apache.maven.surefire.report.BriefConsoleReporter;
-import org.apache.maven.surefire.report.BriefFileReporter;
-import org.apache.maven.surefire.report.ConsoleReporter;
-import org.apache.maven.surefire.report.DetailedConsoleReporter;
-import org.apache.maven.surefire.report.FileReporter;
-import org.apache.maven.surefire.report.ForkingConsoleReporter;
-import org.apache.maven.surefire.report.XMLReporter;
-import org.apache.maven.toolchain.Toolchain;
 import org.apache.maven.toolchain.ToolchainManager;
 import org.codehaus.plexus.util.StringUtils;
 
@@ -74,6 +51,7 @@ import org.codehaus.plexus.util.StringUtils;
  */
 public class SurefirePlugin
     extends AbstractSurefireMojo
+    implements SurefireExecutionParameters, SurefireReportParameters
 {
 
     /**
@@ -601,45 +579,48 @@ public class SurefirePlugin
                 System.setProperties( getOriginalSystemProperties() );
             }
 
-            if ( result == 0 )
-            {
-                return;
-            }
-
-            String msg;
-
-            if ( result == SurefireBooter.NO_TESTS_EXIT_CODE )
-            {
-                if ( ( getFailIfNoTests() == null ) || !getFailIfNoTests().booleanValue() )
-                {
-                    return;
-                }
-                // TODO: i18n
-                throw new MojoFailureException(
-                    "No tests were executed!  (Set -DfailIfNoTests=false to ignore this error.)" );
-            }
-            else
-            {
-                // TODO: i18n
-                msg = "There are test failures.\n\nPlease refer to " + getReportsDirectory()
-                    + " for the individual test results.";
-
-            }
-
-            if ( isTestFailureIgnore() )
-            {
-                getLog().error( msg );
-            }
-            else
-            {
-                throw new MojoFailureException( msg );
-            }
+            SurefireHelper.reportExecution( this, result, getLog() );
         }
     }
 
-    protected boolean isTestsSkipped()
+    protected boolean verifyParameters()
+        throws MojoFailureException
     {
-        return isSkip() || isSkipTests() || isSkipExec();
+        if ( isSkip() || isSkipTests() || isSkipExec() )
+        {
+            getLog().info( "Tests are skipped." );
+            return false;
+        }
+
+        if ( !getTestClassesDirectory().exists() )
+        {
+            if ( getFailIfNoTests() != null && getFailIfNoTests().booleanValue() )
+            {
+                throw new MojoFailureException( "No tests to run!" );
+            }
+            getLog().info( "No tests to run." );
+            return false;
+        }
+
+        if ( !getWorkingDirectory().exists() )
+        {
+            if ( !getWorkingDirectory().mkdirs() )
+            {
+                throw new MojoFailureException( "Cannot create workingDirectory " + getWorkingDirectory() );
+            }
+        }
+
+        if ( !getWorkingDirectory().isDirectory() )
+        {
+            throw new MojoFailureException( "workingDirectory " + getWorkingDirectory() + " exists and is not a directory" );
+        }
+
+        if ( getUseSystemClassLoader() != null && ForkConfiguration.FORK_NEVER.equals( getForkMode() ) )
+        {
+            getLog().warn( "useSystemClassloader setting has no effect when not forking" );
+        }
+
+        return true;
     }
 
     protected String getPluginName()
@@ -1222,38 +1203,6 @@ public class SurefirePlugin
     public void setToolchainManager( ToolchainManager toolchainManager )
     {
         this.toolchainManager = toolchainManager;
-    }
-
-    // the following will be refactored out once the common code is all in one place
-
-    public String getEncoding()
-    {
-        return null; // ignore
-    }
-
-    public void setEncoding( String encoding )
-    {
-        // ignore
-    }
-
-    public boolean isSkipITs()
-    {
-        return false; // ignore
-    }
-
-    public void setSkipITs( boolean skipITs )
-    {
-        // ignore
-    }
-
-    public File getSummaryFile()
-    {
-        return null; // ignore
-    }
-
-    public void setSummaryFile( File summaryFile )
-    {
-        // ignore
     }
 
 }

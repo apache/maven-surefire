@@ -34,11 +34,13 @@ import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.ArtifactResolver;
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.surefire.AbstractSurefireMojo;
+import org.apache.maven.plugin.surefire.SurefireHelper;
+import org.apache.maven.plugin.surefire.SurefireReportParameters;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.surefire.booter.SurefireBooter;
 import org.apache.maven.surefire.failsafe.model.FailsafeSummary;
 import org.apache.maven.surefire.failsafe.model.io.xpp3.FailsafeSummaryXpp3Reader;
 import org.apache.maven.toolchain.ToolchainManager;
@@ -56,7 +58,8 @@ import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
  * @phase verify
  */
 public class VerifyMojo
-    extends AbstractSurefireMojo
+    extends AbstractMojo
+    implements SurefireReportParameters
 {
 
     /**
@@ -162,7 +165,7 @@ public class VerifyMojo
             try
             {
                 String encoding;
-                if ( StringUtils.isEmpty( this.getEncoding() ) )
+                if ( StringUtils.isEmpty( this.encoding ) )
                 {
                     getLog().warn(
                         "File encoding has not been set, using platform encoding " + ReaderFactory.FILE_ENCODING
@@ -171,10 +174,10 @@ public class VerifyMojo
                 }
                 else
                 {
-                    encoding = this.getEncoding();
+                    encoding = this.encoding;
                 }
 
-                FileInputStream fos = new FileInputStream( getSummaryFile() );
+                FileInputStream fos = new FileInputStream( summaryFile );
                 BufferedInputStream bos = new BufferedInputStream( fos );
                 Reader w = new InputStreamReader( bos, encoding );
                 FailsafeSummaryXpp3Reader reader = new FailsafeSummaryXpp3Reader();
@@ -193,45 +196,30 @@ public class VerifyMojo
                 throw new MojoExecutionException( e.getMessage(), e );
             }
 
-            if ( result == 0 )
-            {
-                return;
-            }
-
-            String msg;
-
-            if ( result == SurefireBooter.NO_TESTS_EXIT_CODE )
-            {
-                if ( ( getFailIfNoTests() == null ) || !getFailIfNoTests().booleanValue() )
-                {
-                    return;
-                }
-                // TODO: i18n
-                throw new MojoFailureException(
-                    "No tests were executed!  (Set -DfailIfNoTests=false to ignore this error.)" );
-            }
-            else
-            {
-                // TODO: i18n
-                msg = "There are test failures.\n\nPlease refer to " + getReportsDirectory()
-                    + " for the individual test results.";
-
-            }
-
-            if ( isTestFailureIgnore() )
-            {
-                getLog().error( msg );
-            }
-            else
-            {
-                throw new MojoFailureException( msg );
-            }
+            SurefireHelper.reportExecution( this, result, getLog() );
         }
     }
 
-    protected boolean isTestsSkipped()
+    protected boolean verifyParameters()
+        throws MojoFailureException
     {
-        return isSkip() || isSkipTests() || isSkipITs() || isSkipExec();
+        if ( isSkip() || isSkipTests() || isSkipITs() || isSkipExec() )
+        {
+            getLog().info( "Tests are skipped." );
+            return false;
+        }
+
+        if ( !getTestClassesDirectory().exists() )
+        {
+            if ( getFailIfNoTests() != null && getFailIfNoTests().booleanValue() )
+            {
+                throw new MojoFailureException( "No tests to run!" );
+            }
+            getLog().info( "No tests to run." );
+            return false;
+        }
+
+        return true;
     }
 
     protected String getPluginName()
@@ -324,16 +312,6 @@ public class VerifyMojo
         this.reportsDirectory = reportsDirectory;
     }
 
-    public File getSummaryFile()
-    {
-        return summaryFile;
-    }
-
-    public void setSummaryFile( File summaryFile )
-    {
-        this.summaryFile = summaryFile;
-    }
-
     public Boolean getFailIfNoTests()
     {
         return failIfNoTests;
@@ -344,505 +322,4 @@ public class VerifyMojo
         this.failIfNoTests = failIfNoTests;
     }
 
-    public String getEncoding()
-    {
-        return encoding;
-    }
-
-    public void setEncoding( String encoding )
-    {
-        this.encoding = encoding;
-    }
-
-    // the following will be refactored out once the common code is all in one place
-
-    public File getClassesDirectory()
-    {
-        return null; // ignore
-    }
-
-    public void setClassesDirectory( File classesDirectory )
-    {
-        // ignore
-    }
-
-    public MavenProject getProject()
-    {
-        return null; // ignore
-    }
-
-    public void setProject( MavenProject project )
-    {
-        // ignore
-    }
-
-    public String getIgnoreClasspathElements()
-    {
-        return null; // ignore
-    }
-
-    public void setIgnoreClasspathElements( String ignoreClasspathElements )
-    {
-        // ignore
-    }
-
-    public List getAdditionalClasspathElements()
-    {
-        return null; // ignore
-    }
-
-    public void setAdditionalClasspathElements( List additionalClasspathElements )
-    {
-        // ignore
-    }
-
-    public File getTestSourceDirectory()
-    {
-        return null; // ignore
-    }
-
-    public void setTestSourceDirectory( File testSourceDirectory )
-    {
-        // ignore
-    }
-
-    public String getTest()
-    {
-        return null; // ignore
-    }
-
-    public void setTest( String test )
-    {
-        // ignore
-    }
-
-    public List getIncludes()
-    {
-        return null; // ignore
-    }
-
-    public void setIncludes( List includes )
-    {
-        // ignore
-    }
-
-    public List getExcludes()
-    {
-        return null; // ignore
-    }
-
-    public void setExcludes( List excludes )
-    {
-        // ignore
-    }
-
-    public ArtifactRepository getLocalRepository()
-    {
-        return null; // ignore
-    }
-
-    public void setLocalRepository( ArtifactRepository localRepository )
-    {
-        // ignore
-    }
-
-    public Properties getSystemProperties()
-    {
-        return null; // ignore
-    }
-
-    public void setSystemProperties( Properties systemProperties )
-    {
-        // ignore
-    }
-
-    public Map getSystemPropertyVariables()
-    {
-        return null; // ignore
-    }
-
-    public void setSystemPropertyVariables( Map systemPropertyVariables )
-    {
-        // ignore
-    }
-
-    public Properties getProperties()
-    {
-        return null; // ignore
-    }
-
-    public void setProperties( Properties properties )
-    {
-        // ignore
-    }
-
-    public Map getPluginArtifactMap()
-    {
-        return null; // ignore
-    }
-
-    public void setPluginArtifactMap( Map pluginArtifactMap )
-    {
-        // ignore
-    }
-
-    public Map getProjectArtifactMap()
-    {
-        return null; // ignore
-    }
-
-    public void setProjectArtifactMap( Map projectArtifactMap )
-    {
-        // ignore
-    }
-
-    public boolean isPrintSummary()
-    {
-        return false; // ignore
-    }
-
-    public void setPrintSummary( boolean printSummary )
-    {
-        // ignore
-    }
-
-    public String getReportFormat()
-    {
-        return null; // ignore
-    }
-
-    public void setReportFormat( String reportFormat )
-    {
-        // ignore
-    }
-
-    public boolean isUseFile()
-    {
-        return false; // ignore  
-    }
-
-    public void setUseFile( boolean useFile )
-    {
-        // ignore
-    }
-
-    public boolean isRedirectTestOutputToFile()
-    {
-        return false; // ignore
-    }
-
-    public void setRedirectTestOutputToFile( boolean redirectTestOutputToFile )
-    {
-        // ignore
-    }
-
-    public String getForkMode()
-    {
-        return null; // ignore
-    }
-
-    public void setForkMode( String forkMode )
-    {
-        // ignore
-    }
-
-    public String getJvm()
-    {
-        return null; // ignore
-    }
-
-    public void setJvm( String jvm )
-    {
-        // ignore
-    }
-
-    public String getArgLine()
-    {
-        return null; // ignore
-    }
-
-    public void setArgLine( String argLine )
-    {
-        // ignore
-    }
-
-    public String getDebugForkedProcess()
-    {
-        return null; // ignore
-    }
-
-    public void setDebugForkedProcess( String debugForkedProcess )
-    {
-        // ignore
-    }
-
-    public int getForkedProcessTimeoutInSeconds()
-    {
-        return 0;  // ignore
-    }
-
-    public void setForkedProcessTimeoutInSeconds( int forkedProcessTimeoutInSeconds )
-    {
-        // ignore
-    }
-
-    public Map getEnvironmentVariables()
-    {
-        return null;  // ignore
-    }
-
-    public void setEnvironmentVariables( Map environmentVariables )
-    {
-        // ignore
-    }
-
-    public File getWorkingDirectory()
-    {
-        return null;  // ignore
-    }
-
-    public void setWorkingDirectory( File workingDirectory )
-    {
-        // ignore
-    }
-
-    public boolean isChildDelegation()
-    {
-        return false;  // ignore
-    }
-
-    public void setChildDelegation( boolean childDelegation )
-    {
-        // ignore
-    }
-
-    public String getGroups()
-    {
-        return null;  // ignore
-    }
-
-    public void setGroups( String groups )
-    {
-        // ignore
-    }
-
-    public String getExcludedGroups()
-    {
-        return null;  // ignore
-    }
-
-    public void setExcludedGroups( String excludedGroups )
-    {
-        // ignore
-    }
-
-    public File[] getSuiteXmlFiles()
-    {
-        return new File[0];  // ignore
-    }
-
-    public void setSuiteXmlFiles( File[] suiteXmlFiles )
-    {
-        // ignore
-    }
-
-    public String getJunitArtifactName()
-    {
-        return null;  // ignore
-    }
-
-    public void setJunitArtifactName( String junitArtifactName )
-    {
-        // ignore
-    }
-
-    public String getTestNGArtifactName()
-    {
-        return null;  // ignore
-    }
-
-    public void setTestNGArtifactName( String testNGArtifactName )
-    {
-        // ignore
-    }
-
-    public int getThreadCount()
-    {
-        return 0;  // ignore
-    }
-
-    public void setThreadCount( int threadCount )
-    {
-        // ignore
-    }
-
-    public String getPerCoreThreadCount()
-    {
-        return null;  // ignore
-    }
-
-    public void setPerCoreThreadCount( String perCoreThreadCount )
-    {
-        // ignore
-    }
-
-    public String getUseUnlimitedThreads()
-    {
-        return null;  // ignore
-    }
-
-    public void setUseUnlimitedThreads( String useUnlimitedThreads )
-    {
-        // ignore
-    }
-
-    public String getParallel()
-    {
-        return null;  // ignore
-    }
-
-    public void setParallel( String parallel )
-    {
-        // ignore
-    }
-
-    public boolean isTrimStackTrace()
-    {
-        return false;  // ignore
-    }
-
-    public void setTrimStackTrace( boolean trimStackTrace )
-    {
-        // ignore
-    }
-
-    public ArtifactResolver getArtifactResolver()
-    {
-        return null;  // ignore
-    }
-
-    public void setArtifactResolver( ArtifactResolver artifactResolver )
-    {
-        // ignore
-    }
-
-    public ArtifactFactory getArtifactFactory()
-    {
-        return null;  // ignore
-    }
-
-    public void setArtifactFactory( ArtifactFactory artifactFactory )
-    {
-        // ignore
-    }
-
-    public List getRemoteRepositories()
-    {
-        return null;  // ignore
-    }
-
-    public void setRemoteRepositories( List remoteRepositories )
-    {
-        // ignore
-    }
-
-    public ArtifactMetadataSource getMetadataSource()
-    {
-        return null;  // ignore
-    }
-
-    public void setMetadataSource( ArtifactMetadataSource metadataSource )
-    {
-        // ignore
-    }
-
-    public Properties getOriginalSystemProperties()
-    {
-        return null;  // ignore
-    }
-
-    public void setOriginalSystemProperties( Properties originalSystemProperties )
-    {
-        // ignore
-    }
-
-    public Properties getInternalSystemProperties()
-    {
-        return null;  // ignore
-    }
-
-    public void setInternalSystemProperties( Properties internalSystemProperties )
-    {
-        // ignore
-    }
-
-    public boolean isDisableXmlReport()
-    {
-        return false;  // ignore
-    }
-
-    public void setDisableXmlReport( boolean disableXmlReport )
-    {
-        // ignore
-    }
-
-    public Boolean getUseSystemClassLoader()
-    {
-        return null;  // ignore
-    }
-
-    public void setUseSystemClassLoader( Boolean useSystemClassLoader )
-    {
-        // ignore
-    }
-
-    public boolean isUseManifestOnlyJar()
-    {
-        return false;  // ignore
-    }
-
-    public void setUseManifestOnlyJar( boolean useManifestOnlyJar )
-    {
-        // ignore
-    }
-
-    public boolean isEnableAssertions()
-    {
-        return false;  // ignore
-    }
-
-    public void setEnableAssertions( boolean enableAssertions )
-    {
-        // ignore
-    }
-
-    public MavenSession getSession()
-    {
-        return null;  // ignore
-    }
-
-    public void setSession( MavenSession session )
-    {
-        // ignore
-    }
-
-    public String getObjectFactory()
-    {
-        return null;  // ignore
-    }
-
-    public void setObjectFactory( String objectFactory )
-    {
-        // ignore
-    }
-
-    public ToolchainManager getToolchainManager()
-    {
-        return null;  // ignore
-    }
-
-    public void setToolchainManager( ToolchainManager toolchainManager )
-    {
-        // ignore
-    }
 }

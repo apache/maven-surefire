@@ -2,24 +2,19 @@ package org.apache.maven.plugin.surefire;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
-import org.apache.maven.artifact.factory.ArtifactFactory;
-import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
-import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionResult;
-import org.apache.maven.artifact.resolver.ArtifactResolver;
 import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
 import org.apache.maven.artifact.resolver.filter.ExcludesArtifactFilter;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
 import org.apache.maven.artifact.versioning.OverConstrainedVersionException;
 import org.apache.maven.artifact.versioning.VersionRange;
-import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.project.MavenProject;
+import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.surefire.booter.ForkConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooter;
 import org.apache.maven.surefire.report.BriefConsoleReporter;
@@ -30,7 +25,6 @@ import org.apache.maven.surefire.report.FileReporter;
 import org.apache.maven.surefire.report.ForkingConsoleReporter;
 import org.apache.maven.surefire.report.XMLReporter;
 import org.apache.maven.toolchain.Toolchain;
-import org.apache.maven.toolchain.ToolchainManager;
 import org.codehaus.plexus.util.StringUtils;
 
 import java.io.File;
@@ -49,7 +43,7 @@ import java.util.Properties;
  * @version $Id: SurefirePlugin.java 945065 2010-05-17 10:26:22Z stephenc $
  */
 public abstract class AbstractSurefireMojo
-    extends AbstractMojo
+    extends AbstractMojo implements SurefireExecutionParameters
 {
 
     private static final String BRIEF_REPORT_FORMAT = "brief";
@@ -58,293 +52,14 @@ public abstract class AbstractSurefireMojo
 
     // common field getters/setters
 
-    public abstract boolean isSkipTests();
-
-    public abstract void setSkipTests( boolean skipTests );
-
-    public abstract boolean isSkipITs();
-
-    public abstract void setSkipITs( boolean skipITs );
-
-    public abstract boolean isSkipExec();
-
-    public abstract void setSkipExec( boolean skipExec );
-
-    public abstract boolean isSkip();
-
-    public abstract void setSkip( boolean skip );
-
-    public abstract boolean isTestFailureIgnore();
-
-    public abstract void setTestFailureIgnore( boolean testFailureIgnore );
-
-    public abstract File getBasedir();
-
-    public abstract void setBasedir( File basedir );
-
-    public abstract File getTestClassesDirectory();
-
-    public abstract void setTestClassesDirectory( File testClassesDirectory );
-
-    public abstract File getClassesDirectory();
-
-    public abstract void setClassesDirectory( File classesDirectory );
-
-    public abstract MavenProject getProject();
-
-    public abstract void setProject( MavenProject project );
-
-    public abstract String getIgnoreClasspathElements();
-
-    public abstract void setIgnoreClasspathElements( String ignoreClasspathElements );
-
-    public abstract List getAdditionalClasspathElements();
-
-    public abstract void setAdditionalClasspathElements( List additionalClasspathElements );
-
-    public abstract File getReportsDirectory();
-
-    public abstract void setReportsDirectory( File reportsDirectory );
-
-    public abstract File getTestSourceDirectory();
-
-    public abstract void setTestSourceDirectory( File testSourceDirectory );
-
-    public abstract String getTest();
-
-    public abstract void setTest( String test );
-
-    public abstract List getIncludes();
-
-    public abstract void setIncludes( List includes );
-
-    public abstract List getExcludes();
-
-    public abstract void setExcludes( List excludes );
-
-    public abstract ArtifactRepository getLocalRepository();
-
-    public abstract void setLocalRepository( ArtifactRepository localRepository );
-
-    public abstract Properties getSystemProperties();
-
-    public abstract void setSystemProperties( Properties systemProperties );
-
-    public abstract Map getSystemPropertyVariables();
-
-    public abstract void setSystemPropertyVariables( Map systemPropertyVariables );
-
-    public abstract Properties getProperties();
-
-    public abstract void setProperties( Properties properties );
-
-    public abstract Map getPluginArtifactMap();
-
-    public abstract void setPluginArtifactMap( Map pluginArtifactMap );
-
-    public abstract Map getProjectArtifactMap();
-
-    public abstract void setProjectArtifactMap( Map projectArtifactMap );
-
-    public abstract File getSummaryFile();
-
-    public abstract void setSummaryFile( File summaryFile );
-
-    public abstract boolean isPrintSummary();
-
-    public abstract void setPrintSummary( boolean printSummary );
-
-    public abstract String getReportFormat();
-
-    public abstract void setReportFormat( String reportFormat );
-
-    public abstract boolean isUseFile();
-
-    public abstract void setUseFile( boolean useFile );
-
-    public abstract boolean isRedirectTestOutputToFile();
-
-    public abstract void setRedirectTestOutputToFile( boolean redirectTestOutputToFile );
-
-    public abstract Boolean getFailIfNoTests();
-
-    public abstract void setFailIfNoTests( Boolean failIfNoTests );
-
-    public abstract String getForkMode();
-
-    public abstract void setForkMode( String forkMode );
-
-    public abstract String getJvm();
-
-    public abstract void setJvm( String jvm );
-
-    public abstract String getArgLine();
-
-    public abstract void setArgLine( String argLine );
-
-    public abstract String getDebugForkedProcess();
-
-    public abstract void setDebugForkedProcess( String debugForkedProcess );
-
-    public abstract int getForkedProcessTimeoutInSeconds();
-
-    public abstract void setForkedProcessTimeoutInSeconds( int forkedProcessTimeoutInSeconds );
-
-    public abstract Map getEnvironmentVariables();
-
-    public abstract void setEnvironmentVariables( Map environmentVariables );
-
-    public abstract File getWorkingDirectory();
-
-    public abstract void setWorkingDirectory( File workingDirectory );
-
-    public abstract boolean isChildDelegation();
-
-    public abstract void setChildDelegation( boolean childDelegation );
-
-    public abstract String getGroups();
-
-    public abstract void setGroups( String groups );
-
-    public abstract String getExcludedGroups();
-
-    public abstract void setExcludedGroups( String excludedGroups );
-
-    public abstract File[] getSuiteXmlFiles();
-
-    public abstract void setSuiteXmlFiles( File[] suiteXmlFiles );
-
-    public abstract String getJunitArtifactName();
-
-    public abstract void setJunitArtifactName( String junitArtifactName );
-
-    public abstract String getTestNGArtifactName();
-
-    public abstract void setTestNGArtifactName( String testNGArtifactName );
-
-    public abstract int getThreadCount();
-
-    public abstract void setThreadCount( int threadCount );
-
-    public abstract String getPerCoreThreadCount();
-
-    public abstract void setPerCoreThreadCount( String perCoreThreadCount );
-
-    public abstract String getUseUnlimitedThreads();
-
-    public abstract void setUseUnlimitedThreads( String useUnlimitedThreads );
-
-    public abstract String getParallel();
-
-    public abstract void setParallel( String parallel );
-
-    public abstract boolean isTrimStackTrace();
-
-    public abstract void setTrimStackTrace( boolean trimStackTrace );
-
-    public abstract ArtifactResolver getArtifactResolver();
-
-    public abstract void setArtifactResolver( ArtifactResolver artifactResolver );
-
-    public abstract ArtifactFactory getArtifactFactory();
-
-    public abstract void setArtifactFactory( ArtifactFactory artifactFactory );
-
-    public abstract List getRemoteRepositories();
-
-    public abstract void setRemoteRepositories( List remoteRepositories );
-
-    public abstract ArtifactMetadataSource getMetadataSource();
-
-    public abstract void setMetadataSource( ArtifactMetadataSource metadataSource );
-
-    public abstract Properties getOriginalSystemProperties();
-
-    public abstract void setOriginalSystemProperties( Properties originalSystemProperties );
-
-    public abstract Properties getInternalSystemProperties();
-
-    public abstract void setInternalSystemProperties( Properties internalSystemProperties );
-
-    public abstract boolean isDisableXmlReport();
-
-    public abstract void setDisableXmlReport( boolean disableXmlReport );
-
-    public abstract Boolean getUseSystemClassLoader();
-
-    public abstract void setUseSystemClassLoader( Boolean useSystemClassLoader );
-
-    public abstract boolean isUseManifestOnlyJar();
-
-    public abstract void setUseManifestOnlyJar( boolean useManifestOnlyJar );
-
-    public abstract boolean isEnableAssertions();
-
-    public abstract void setEnableAssertions( boolean enableAssertions );
-
-    public abstract MavenSession getSession();
-
-    public abstract void setSession( MavenSession session );
-
-    public abstract String getObjectFactory();
-
-    public abstract void setObjectFactory( String objectFactory );
-
-    public abstract String getEncoding();
-
-    public abstract void setEncoding( String encoding );
-
-    public abstract ToolchainManager getToolchainManager();
-
-    public abstract void setToolchainManager( ToolchainManager toolchainManager );
-
     // common code
-
-    protected abstract boolean isTestsSkipped();
 
     protected abstract String getPluginName();
 
-    protected boolean verifyParameters()
-        throws MojoFailureException
-    {
-        if ( isTestsSkipped() )
-        {
-            getLog().info( "Tests are skipped." );
-            return false;
-        }
+    protected abstract boolean verifyParameters()
+        throws MojoFailureException;
 
-        if ( !getTestClassesDirectory().exists() )
-        {
-            if ( getFailIfNoTests() != null && getFailIfNoTests().booleanValue() )
-            {
-                throw new MojoFailureException( "No tests to run!" );
-            }
-            getLog().info( "No tests to run." );
-            return false;
-        }
-
-        if ( !getWorkingDirectory().exists() )
-        {
-            if ( !getWorkingDirectory().mkdirs() )
-            {
-                throw new MojoFailureException( "Cannot create workingDirectory " + getWorkingDirectory() );
-            }
-        }
-
-        if ( !getWorkingDirectory().isDirectory() )
-        {
-            throw new MojoFailureException( "workingDirectory " + getWorkingDirectory() + " exists and is not a directory" );
-        }
-
-        if ( getUseSystemClassLoader() != null && ForkConfiguration.FORK_NEVER.equals( getForkMode() ) )
-        {
-            getLog().warn( "useSystemClassloader setting has no effect when not forking" );
-        }
-
-        return true;
-    }
-
-    protected Toolchain getToolchain()
+    protected final Toolchain getToolchain()
     {
         Toolchain tc = null;
 
@@ -382,7 +97,7 @@ public abstract class AbstractSurefireMojo
 
         if ( this.getThreadCount() > 0 )
         {
-            getProperties().setProperty( "threadcount", new Integer( this.getThreadCount() ).toString() );
+            getProperties().setProperty( "threadcount", Integer.toString( this.getThreadCount() ) );
         }
         if ( this.getObjectFactory() != null )
         {
@@ -412,7 +127,7 @@ public abstract class AbstractSurefireMojo
         }
         if ( this.getThreadCount() > 0 )
         {
-            getProperties().setProperty( "threadCount", new Integer( this.getThreadCount() ).toString() );
+            getProperties().setProperty( "threadCount", Integer.toString( this.getThreadCount() ) );
         }
         if ( this.getPerCoreThreadCount() != null )
         {
@@ -1020,4 +735,5 @@ public abstract class AbstractSurefireMojo
             surefireBooter.addReport( XMLReporter.class.getName(), new Object[]{ getReportsDirectory(), trimStackTrace} );
         }
     }
+
 }
