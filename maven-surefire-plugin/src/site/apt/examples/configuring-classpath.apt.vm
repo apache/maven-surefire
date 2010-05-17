@@ -17,7 +17,7 @@ The Default Classpath
   [[3]] The project dependencies
   
   [[4]] Additional classpath elements
-  
+
 Additional Classpath Elements
 
   If you need to put more stuff in your classpath when Surefire executes (e.g some funky resources or a container specific JAR),
@@ -43,6 +43,66 @@ Additional Classpath Elements
             <additionalClasspathElement>path/to/additional/resources</additionalClasspathElement>
             <additionalClasspathElement>path/to/additional/jar</additionalClasspathElement>
           </additionalClasspathElements>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+  [...]
+</project>
++---+
+
+Removing Dependency Classpath Elements
+
+  Dependencies can be removed from the test classpath using the parameters <<<classpathDependencyExcludes>>> and
+  <<<classpathDependencyScopeExclude>>>.  A list of specific dependencies can be removed from the 
+  classpath by specifying the groupId:artifactId to be removed.
+
++---+
+<project>
+  [...]
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>${project.version}</version>
+        <configuration>
+          <classpathDependencyExcludes>
+            <classpathDependencyExcludes>org.apache.commons:commons-email</classpathDependencyExcludes>
+          </classpathDependencyExcludes>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+  [...]
+</project>
++---+
+
+  Dependencies under a certain scope can be removed from the classpath using 
+  <<<classpathDependencyScopeExclude>>>.  The valid values for the dependency scope 
+  exclude are defined by <<<org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter>>>.
+  
+  * <<compile>> - system, provided, compile
+  
+  * <<runtime>> - compile, runtime
+  
+  * <<compile+runtime>> - system, provided, compile, runtime
+  
+  * <<runtime+system>> - system, compile, runtime
+  
+  * <<test>> - system, provided, compile, runtime, test
+
++---+
+<project>
+  [...]
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>${project.version}</version>
+        <configuration>
+          <classpathDependencyScopeExclude>runtime</classpathDependencyScopeExclude>
         </configuration>
       </plugin>
     </plugins>

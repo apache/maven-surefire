@@ -134,23 +134,32 @@ public class IntegrationTestMojo
     private MavenProject project;
 
     /**
-     * the classpath elements to be excluded from classpath
-     * while executing tests. Permitted values are none, runtime
-     * and all. Meaning of values is:
+     * List of dependencies to exclude from the test classpath.
+     * Each dependency string must follow the format <i>groupId:artifactId</i>.
+     * For example: <i>org.acme:project-a</i>
+     * 
+     *  @parameter
+     *  @since 2.6
+     */
+    private List classpathDependencyExcludes;
+    
+    /**
+     * A dependency scope to exclude from the test classpath
+     * The scope should be one of the scopes defined by org.apache.maven.artifact.Artifact.
+     * This includes the following
+     * 
      * <ul>
-     * <li><i>none</i> - test classpath is not modified (the default)
-     * <li><i>runtime</i> - runtime classpath elements are removed from the classpath
-     * <li><i>all</i> - all default test classpath elements are removed from the classpath
+     * <li><i>compile</i> - system, provided, compile
+     * <li><i>runtime</i> - compile, runtime
+     * <li><i>compile+runtime</i> - system, provided, compile, runtime
+     * <li><i>runtime+system</i> - system, compile, runtime
+     * <li><i>test</i> - system, provided, compile, runtime, test
      * </ul>
-     * This feature is useful for overriding test classpath to
-     * test the project working with a particular set of libraries.
-     * For example with these shipped with a bigger project that
-     * includes the one under tests.
-     *
-     * @parameter expression="${maven.test.classpath.ignore}" default-value="none"
+     * 
+     * @parameter default-value=""
      * @since 2.6
      */
-    private String ignoreClasspathElements;
+    private String classpathDependencyScopeExclude;
 
     /**
      * Additional elements to be appended to the classpath.
@@ -784,14 +793,24 @@ public class IntegrationTestMojo
         this.project = project;
     }
 
-    public String getIgnoreClasspathElements()
+    public List getClasspathDependencyExcludes()
     {
-        return ignoreClasspathElements;
+        return classpathDependencyExcludes;
     }
 
-    public void setIgnoreClasspathElements( String ignoreClasspathElements )
+    public void setClasspathDependencyExcludes( List classpathDependencyExcludes )
     {
-        this.ignoreClasspathElements = ignoreClasspathElements;
+        this.classpathDependencyExcludes = classpathDependencyExcludes;
+    }
+
+    public String getClasspathDependencyScopeExclude()
+    {
+        return classpathDependencyScopeExclude;
+    }
+
+    public void setClasspathDependencyScopeExclude( String classpathDependencyScopeExclude )
+    {
+        this.classpathDependencyScopeExclude = classpathDependencyScopeExclude;
     }
 
     public List getAdditionalClasspathElements()

@@ -7,6 +7,7 @@ import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionResult;
 import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
 import org.apache.maven.artifact.resolver.filter.ExcludesArtifactFilter;
+import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
 import org.apache.maven.artifact.versioning.OverConstrainedVersionException;
@@ -32,9 +33,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 /**
  * Abstract base class for running tests using Surefire.
@@ -519,7 +522,21 @@ public abstract class AbstractSurefireMojo
 
         classpath.add( getClassesDirectory().getAbsolutePath() );
 
-        for ( Iterator iter = getProject().getArtifacts().iterator(); iter.hasNext(); )
+        Set classpathArtifacts = getProject().getArtifacts();
+
+        if ( getClasspathDependencyScopeExclude() != null && !getClasspathDependencyScopeExclude().equals( "" ) )
+        {
+            ArtifactFilter dependencyFilter = new ScopeArtifactFilter( getClasspathDependencyScopeExclude() );
+            classpathArtifacts = this.filterArtifacts( classpathArtifacts, dependencyFilter );
+        }
+
+        if ( getClasspathDependencyExcludes() != null )
+        {
+            ArtifactFilter dependencyFilter = new ExcludesArtifactFilter( getClasspathDependencyExcludes() );
+            classpathArtifacts = this.filterArtifacts( classpathArtifacts, dependencyFilter );
+        }
+
+        for ( Iterator iter = classpathArtifacts.iterator(); iter.hasNext(); )
         {
             Artifact artifact = (Artifact) iter.next();
             if ( artifact.getArtifactHandler().isAddedToClasspath() )
@@ -530,21 +547,6 @@ public abstract class AbstractSurefireMojo
                     classpath.add( file.getPath() );
                 }
             }
-        }
-
-        // Remove elements from the classpath according to configuration
-        if ( getIgnoreClasspathElements().equals( "all" ) )
-        {
-            classpath.clear();
-        }
-        else if ( getIgnoreClasspathElements().equals( "runtime" ) )
-        {
-            classpath.removeAll( getProject().getRuntimeClasspathElements() );
-        }
-        else if ( !getIgnoreClasspathElements().equals( "none" ) )
-        {
-            throw new MojoExecutionException( "Unsupported value for ignoreClasspathElements parameter: " +
-                getIgnoreClasspathElements() );
         }
 
         // Add additional configured elements to the classpath
@@ -558,6 +560,28 @@ public abstract class AbstractSurefireMojo
         }
 
         return classpath;
+    }
+
+    /**
+     * Return a new set containing only the artifacts accepted by the given filter.
+     * 
+     * @param artifacts
+     * @param filter
+     */
+    private Set filterArtifacts( Set artifacts, ArtifactFilter filter )
+    {
+        Set filteredArtifacts = new LinkedHashSet();
+
+        for ( Iterator iter = artifacts.iterator(); iter.hasNext(); )
+        {
+            Artifact artifact = (Artifact) iter.next();
+            if ( filter.include( artifact ) )
+            {
+                filteredArtifacts.add( artifact );
+            }
+        }
+
+        return filteredArtifacts;
     }
 
     private void showMap( Map map, String setting )
