@@ -1376,22 +1376,6 @@ public class IntegrationTestMojo
         }
     }
 
-    /**
-     * @return SurefirePlugin Returns the skipExec.
-     */
-    public boolean isSkipExec()
-    {
-        return this.skipTests;
-    }
-
-    /**
-     * @param skipExec the skipExec to set
-     */
-    public void setSkipExec( boolean skipExec )
-    {
-        this.skipTests = skipExec;
-    }
-
     private Toolchain getToolchain()
     {
         Toolchain tc = null;
