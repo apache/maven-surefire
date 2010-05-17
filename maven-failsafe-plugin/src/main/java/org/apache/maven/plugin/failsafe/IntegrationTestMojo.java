@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -89,7 +90,7 @@ public class IntegrationTestMojo
      * Set this to 'true' to skip running tests, but still compile them. Its use is NOT RECOMMENDED, but quite
      * convenient on occasion.
      *
-     * @parameter expression="${skipTests}"
+     * @parameter default-value="false" expression="${skipTests}"
      * @since 2.4
      */
     private boolean skipTests;
@@ -117,7 +118,7 @@ public class IntegrationTestMojo
      * enable it using the "maven.test.skip" property, because maven.test.skip disables both running the
      * tests and compiling the tests.  Consider using the skipTests parameter instead.
      *
-     * @parameter expression="${maven.test.skip}"
+     * @parameter default-value="false" expression="${maven.test.skip}"
      */
     private boolean skip;
 
@@ -125,8 +126,7 @@ public class IntegrationTestMojo
      * The base directory of the project being tested. This can be obtained in your unit test by
      * System.getProperty("basedir").
      *
-     * @parameter expression="${basedir}"
-     * @required
+     * @parameter default-value="${basedir}"
      */
     private File basedir;
 
@@ -135,7 +135,6 @@ public class IntegrationTestMojo
      * This will be included at the beginning the test classpath.
      *
      * @parameter default-value="${project.build.testOutputDirectory}"
-     * @required
      */
     private File testClassesDirectory;
 
@@ -144,27 +143,35 @@ public class IntegrationTestMojo
      * This will be included after the test classes in the test classpath.
      *
      * @parameter default-value="${project.build.outputDirectory}"
-     * @required
      */
     private File classesDirectory;
 
     /**
      * The Maven Project Object
      *
-     * @parameter expression="${project}"
-     * @required
+     * @parameter default-value="${project}"
      * @readonly
      */
     protected MavenProject project;
 
     /**
-     * The classpath elements of the project being tested.
+     * the classpath elements to be excluded from classpath
+     * while executing tests. Permitted values are none, runtime
+     * and all. Meaning of values is:
+     * <ul>
+     * <li><i>none</i> - test classpath is not modified (the default)
+     * <li><i>runtime</i> - runtime classpath elements are removed from the classpath
+     * <li><i>all</i> - all default test classpath elements are removed from the classpath
+     * </ul>
+     * This feature is useful for overriding test classpath to
+     * test the project working with a particular set of libraries.
+     * For example with these shipped with a bigger project that
+     * includes the one under tests.
      *
-     * @parameter expression="${project.testClasspathElements}"
-     * @required
-     * @readonly
+     * @parameter expression="${maven.test.classpath.ignore}" default-value="none"
+     * @since 2.6
      */
-    private List classpathElements;
+    private String ignoreClasspathElements;
 
     /**
      * Additional elements to be appended to the classpath.
@@ -177,14 +184,14 @@ public class IntegrationTestMojo
     /**
      * Base directory where all reports are written to.
      *
-     * @parameter expression="${project.build.directory}/failsafe-reports"
+     * @parameter default-value="${project.build.directory}/failsafe-reports"
      */
     private File reportsDirectory;
 
     /**
      * The test source directory containing test class sources.
      *
-     * @parameter expression="${project.build.testSourceDirectory}"
+     * @parameter default-value="${project.build.testSourceDirectory}"
      * @required
      * @since 2.2
      */
@@ -965,8 +972,8 @@ public class IntegrationTestMojo
                 // Have to wrap in an ArrayList as surefire expects an ArrayList instead of a List for some reason
                 if ( includes == null || includes.size() == 0 )
                 {
-                    includes =
-                        new ArrayList( Arrays.asList( new String[]{"**/IT*.java", "**/*IT.java", "**/*ITCase.java"} ) );
+                    includes = new ArrayList(
+                        Arrays.asList( new String[]{"**/IT*.java", "**/*IT.java", "**/*ITCase.java"} ) );
                 }
                 if ( excludes == null || excludes.size() == 0 )
                 {
@@ -1009,40 +1016,14 @@ public class IntegrationTestMojo
             }
         }
 
-        // ----------------------------------------------------------------------
-        //
-        // ----------------------------------------------------------------------
-
-        // Check if we need to add configured classes/test classes directories here.
-        // If they are configured, we should remove the default to avoid conflicts.
-        File projectClassesDirectory = new File( project.getBuild().getOutputDirectory() );
-        if ( !projectClassesDirectory.equals( classesDirectory ) )
+        List classpathElements = null;
+        try
         {
-            int indexToReplace = classpathElements.indexOf( project.getBuild().getOutputDirectory() );
-            if ( indexToReplace != -1 )
-            {
-                classpathElements.remove( indexToReplace );
-                classpathElements.add( indexToReplace, classesDirectory.getAbsolutePath() );
-            }
-            else
-            {
-                classpathElements.add( 1, classesDirectory.getAbsolutePath() );
-            }
+            classpathElements = generateTestClasspath();
         }
-
-        File projectTestClassesDirectory = new File( project.getBuild().getTestOutputDirectory() );
-        if ( !projectTestClassesDirectory.equals( testClassesDirectory ) )
+        catch ( DependencyResolutionRequiredException e )
         {
-            int indexToReplace = classpathElements.indexOf( project.getBuild().getTestOutputDirectory() );
-            if ( indexToReplace != -1 )
-            {
-                classpathElements.remove( indexToReplace );
-                classpathElements.add( indexToReplace, testClassesDirectory.getAbsolutePath() );
-            }
-            else
-            {
-                classpathElements.add( 0, testClassesDirectory.getAbsolutePath() );
-            }
+            throw new MojoExecutionException( "Unable to generate test classpath: " + e, e );
         }
 
         getLog().debug( "Test Classpath :" );
@@ -1072,18 +1053,6 @@ public class IntegrationTestMojo
             else
             {
                 jvm = tc.findTool( "java" ); //NOI18N
-            }
-        }
-
-        if ( additionalClasspathElements != null )
-        {
-            for ( Iterator i = additionalClasspathElements.iterator(); i.hasNext(); )
-            {
-                String classpathElement = (String) i.next();
-
-                getLog().debug( "  " + classpathElement );
-
-                surefireBooter.addClassPathUrl( classpathElement );
             }
         }
 
@@ -1176,6 +1145,62 @@ public class IntegrationTestMojo
         return surefireBooter;
     }
 
+    /**
+     * Generate the test classpath.
+     *
+     * @return List containing the classpath elements
+     * @throws DependencyResolutionRequiredException
+     */
+    public List generateTestClasspath()
+        throws DependencyResolutionRequiredException, MojoExecutionException
+    {
+        List classpath = new ArrayList( 2 + project.getArtifacts().size() );
+
+        classpath.add( testClassesDirectory.getAbsolutePath() );
+
+        classpath.add( classesDirectory.getAbsolutePath() );
+
+        for ( Iterator iter = project.getArtifacts().iterator(); iter.hasNext(); )
+        {
+            Artifact artifact = (Artifact) iter.next();
+            if ( artifact.getArtifactHandler().isAddedToClasspath() )
+            {
+                File file = artifact.getFile();
+                if ( file != null )
+                {
+                    classpath.add( file.getPath() );
+                }
+            }
+        }
+
+        // Remove elements from the classpath according to configuration
+        if ( ignoreClasspathElements.equals( "all" ) )
+        {
+            classpath.clear();
+        }
+        else if ( ignoreClasspathElements.equals( "runtime" ) )
+        {
+            classpath.removeAll( project.getRuntimeClasspathElements() );
+        }
+        else if ( !ignoreClasspathElements.equals( "none" ) )
+        {
+            throw new MojoExecutionException( "Unsupported value for ignoreClasspathElements parameter: " +
+                ignoreClasspathElements );
+        }
+
+        // Add additional configured elements to the classpath
+        if ( additionalClasspathElements != null )
+        {
+            for ( Iterator iter = additionalClasspathElements.iterator(); iter.hasNext(); )
+            {
+                String classpathElement = (String) iter.next();
+                classpath.add( classpathElement );
+            }
+        }
+
+        return classpath;
+    }
+
     private void showMap( Map map, String setting )
     {
         for ( Iterator i = map.keySet().iterator(); i.hasNext(); )
@@ -1199,7 +1224,7 @@ public class IntegrationTestMojo
         {
             Artifact artifact = (Artifact) i.next();
 
-            getLog().debug( "Adding to surefire test classpath: " + artifact.getFile().getAbsolutePath() );
+            getLog().debug( "Adding to failsafe test classpath: " + artifact.getFile().getAbsolutePath() + " Scope: " + artifact.getScope() );
 
             surefireBooter.addSurefireClassPathUrl( artifact.getFile().getAbsolutePath() );
         }
@@ -1230,7 +1255,7 @@ public class IntegrationTestMojo
         {
             Artifact artifact = (Artifact) i.next();
 
-            getLog().debug( "Adding to surefire booter test classpath: " + artifact.getFile().getAbsolutePath() );
+            getLog().debug( "Adding to failsafe booter test classpath: " + artifact.getFile().getAbsolutePath() + " Scope: " + artifact.getScope() );
 
             surefireBooter.addSurefireBootClassPathUrl( artifact.getFile().getAbsolutePath() );
         }

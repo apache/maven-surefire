@@ -81,7 +81,7 @@ public class VerifyMojo
      * enable it using the "maven.test.skip" property, because maven.test.skip disables both running the
      * tests and compiling the tests.  Consider using the skipTests parameter instead.
      *
-     * @parameter expression="${maven.test.skip}"
+     * @parameter default-value="false" expression="${maven.test.skip}"
      */
     private boolean skip;
 
@@ -89,7 +89,7 @@ public class VerifyMojo
      * Set this to true to ignore a failure during testing. Its use is NOT RECOMMENDED, but quite convenient on
      * occasion.
      *
-     * @parameter expression="${maven.test.failure.ignore}"
+     * @parameter default-value="false" expression="${maven.test.failure.ignore}"
      */
     private boolean testFailureIgnore;
 
@@ -97,7 +97,7 @@ public class VerifyMojo
      * The base directory of the project being tested. This can be obtained in your unit test by
      * System.getProperty("basedir").
      *
-     * @parameter expression="${basedir}"
+     * @parameter default-value="${basedir}"
      */
     private File basedir;
 
@@ -106,14 +106,13 @@ public class VerifyMojo
      * This will be included at the beginning the test classpath.
      *
      * @parameter default-value="${project.build.testOutputDirectory}"
-     * @required
      */
     private File testClassesDirectory;
 
     /**
      * Base directory where all reports are written to.
      *
-     * @parameter expression="${project.build.directory}/failsafe-reports"
+     * @parameter default-value="${project.build.directory}/failsafe-reports"
      */
     private File reportsDirectory;
 
