@@ -86,10 +86,6 @@ Removing Dependency Classpath Elements
   
   * <<runtime>> - compile, runtime
   
-  * <<compile+runtime>> - system, provided, compile, runtime
-  
-  * <<runtime+system>> - system, compile, runtime
-  
   * <<test>> - system, provided, compile, runtime, test
 
 +---+

@@ -71,6 +71,11 @@
       <artifactId>maven-toolchain</artifactId>
       <version>2.0.9</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.maven.shared</groupId>
+      <artifactId>maven-common-artifact-filters</artifactId>
+      <version>1.2</version>
+    </dependency>
   </dependencies>
 
   <profiles>

@@ -133,14 +133,11 @@ public class SurefirePlugin
     
     /**
      * A dependency scope to exclude from the test classpath
-     * The scope should be one of the scopes defined by org.apache.maven.artifact.Artifact.
-     * This includes the following
+     * The scope can be one of the following scopes:
      * 
      * <ul>
      * <li><i>compile</i> - system, provided, compile
      * <li><i>runtime</i> - compile, runtime
-     * <li><i>compile+runtime</i> - system, provided, compile, runtime
-     * <li><i>runtime+system</i> - system, compile, runtime
      * <li><i>test</i> - system, provided, compile, runtime, test
      * </ul>
      * 

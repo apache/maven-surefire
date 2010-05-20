@@ -15,7 +15,7 @@ import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugin.logging.Log;
+import org.apache.maven.shared.artifact.filter.PatternIncludesArtifactFilter;
 import org.apache.maven.surefire.booter.ForkConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooter;
 import org.apache.maven.surefire.report.BriefConsoleReporter;
@@ -532,7 +532,7 @@ public abstract class AbstractSurefireMojo
 
         if ( getClasspathDependencyExcludes() != null )
         {
-            ArtifactFilter dependencyFilter = new ExcludesArtifactFilter( getClasspathDependencyExcludes() );
+            ArtifactFilter dependencyFilter = new PatternIncludesArtifactFilter( getClasspathDependencyExcludes() );
             classpathArtifacts = this.filterArtifacts( classpathArtifacts, dependencyFilter );
         }
 
@@ -575,7 +575,7 @@ public abstract class AbstractSurefireMojo
         for ( Iterator iter = artifacts.iterator(); iter.hasNext(); )
         {
             Artifact artifact = (Artifact) iter.next();
-            if ( filter.include( artifact ) )
+            if ( ! filter.include( artifact ) )
             {
                 filteredArtifacts.add( artifact );
             }

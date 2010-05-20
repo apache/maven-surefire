@@ -24,9 +24,9 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.apache.maven.plugins.surefire</groupId>
-  <artifactId>classpath-dependency-filter</artifactId>
+  <artifactId>classpath-scope-filter</artifactId>
   <version>1.0-SNAPSHOT</version>
-  <name>Test for filtering classpath dependencies</name>
+  <name>Test for classpath scope filter</name>
 
   <build>
     <plugins>
@@ -34,9 +34,7 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <version>${surefire.version}</version>
         <configuration>
-          <classpathDependencyExcludes>
-            <exclude>org.apache.commons:*</exclude>
-          </classpathDependencyExcludes>
+          <classpathDependencyScopeExclude>compile</classpathDependencyScopeExclude>
         </configuration>
       </plugin>
     </plugins>
