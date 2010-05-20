@@ -19,99 +19,54 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
-import org.apache.maven.surefire.util.TeeStream;
-import org.codehaus.plexus.util.IOUtil;
-
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Properties;
 
+/**
+ * A reporting front-end for providers.
+ * <p/>
+ * Synchronization/Threading note:
+ * <p/>
+ * This design is really only good for single-threaded test execution. Although it is currently
+ * used by multi-threaded providers too, the design does not really make sense (and is probably buggy).
+ * <p/>
+ * This is because to get correct results, the client basically needs to do something like this:
+ * synchronized( ReporterManger.getClass()){
+ * reporterManager.runStarted()
+ * reporterManager.testSetStarting()
+ * reporterManager.testStarting()
+ * reporterManager.testSucceeded()
+ * reporterManager.testSetCompleted()
+ * reporterManager.runCompleted()
+ * }
+ * <p/>
+ * This is because the underlying providers are singletons and keep state, if you remove the outer synchronized
+ * block, you may get mixups between results from different tests; although the end result (total test count etc)
+ * should probably be correct.
+ * <p/>
+ * The solution to this problem involves making a clearer separation between test-result collection and reporting,
+ * preferably removing singleton state approach out of the reporting interface.
+ * <p/>
+ * Please also note that the synchronization requirements of this interface severely limit the concurrency
+ * potential of all the parallel surefire providers, especially when runnning non-io bound tests,
+ */
 public class ReporterManager
 {
-    private int completedCount;
+    private final RunStatistics runStatistics;
 
-    private int errors;
+    private final MulticastingReporter multicastingReporter;
 
-    /**
-     * Holds the sources of the error.
-     */
-    private Collection errorSources = new ArrayList();
+    private final SystemStreamCapturer consoleCapturer = new SystemStreamCapturer();
 
-    private int failures;
-
-    /**
-     * Holds the sources of the failures.
-     */
-    private Collection failureSources = new ArrayList();
-
-    private List reports;
-
-    private PrintStream oldOut;
-
-    private PrintStream oldErr;
-
-    private PrintStream newErr;
-
-    private PrintStream newOut;
-
-    private int skipped;
-
-    private static final String RESULTS_ERRORS = "errors";
-
-    private static final String RESULTS_COMPLETED_COUNT = "completedCount";
-
-    private static final String RESULTS_FAILURES = "failures";
-
-    private static final String RESULTS_SKIPPED = "skipped";
-
-    public ReporterManager( List reports )
+    public ReporterManager( List reports, RunStatistics runStatistics )
     {
-        this.reports = reports;
-    }
-
-    public void addReporter( Reporter reporter )
-    {
-        if ( reporter == null )
-        {
-            throw new NullPointerException();
-        }
-
-        if ( !reports.contains( reporter ) )
-        {
-            reports.add( reporter );
-        }
-    }
-
-    public void removeReport( Reporter report )
-    {
-        if ( report == null )
-        {
-            throw new NullPointerException();
-        }
-
-        if ( reports.contains( report ) )
-        {
-            reports.remove( report );
-        }
-    }
-
-    public List getReports()
-    {
-        return reports;
+        multicastingReporter = new MulticastingReporter( reports );
+        this.runStatistics = runStatistics;
     }
 
     public synchronized void writeMessage( String message )
     {
-        for ( Iterator i = reports.iterator(); i.hasNext(); )
-        {
-            Reporter report = (Reporter) i.next();
-
-            report.writeMessage( message );
-        }
+        multicastingReporter.writeMessage( message );
     }
 
     // ----------------------------------------------------------------------
@@ -125,142 +80,52 @@ public class ReporterManager
             throw new IllegalArgumentException( "testCount is less than zero" );
         }
 
-        for ( Iterator i = reports.iterator(); i.hasNext(); )
-        {
-            Reporter report = (Reporter) i.next();
-
-            report.runStarting( testCount );
-        }
-    }
-
-    public synchronized void runStopped()
-    {
-        for ( Iterator it = reports.iterator(); it.hasNext(); )
-        {
-            Reporter reporter = (Reporter) it.next();
-
-            reporter.runStopped();
-        }
-    }
-
-    public synchronized void runAborted( ReportEntry report )
-    {
-        if ( report == null )
-        {
-            throw new NullPointerException();
-        }
-
-        for ( Iterator it = reports.iterator(); it.hasNext(); )
-        {
-            Reporter reporter = (Reporter) it.next();
-
-            reporter.runAborted( report );
-        }
-
-        ++errors;
+        multicastingReporter.runStarting( testCount );
     }
 
     public synchronized void runCompleted()
     {
-        for ( Iterator it = reports.iterator(); it.hasNext(); )
+        multicastingReporter.runCompleted();
+        multicastingReporter.writeFooter( "" );
+        multicastingReporter.writeFooter( "Results :" );
+        multicastingReporter.writeFooter( "" );
+        if ( runStatistics.hadFailures() )
         {
-            Reporter reporter = (Reporter) it.next();
-
-            reporter.runCompleted();
-        }
-
-        writeFooter( "" );
-        writeFooter( "Results :" );
-        writeFooter( "" );
-        if ( failures > 0 )
-        {
-            writeFooter( "Failed tests: " );
-            for ( Iterator iterator = this.failureSources.iterator(); iterator.hasNext(); )
+            multicastingReporter.writeFooter( "Failed tests: " );
+            for ( Iterator iterator = this.runStatistics.getFailureSources().iterator(); iterator.hasNext(); )
             {
-                writeFooter( "  " + iterator.next() );
+                multicastingReporter.writeFooter( "  " + iterator.next() );
             }
-            writeFooter( "" );
+            multicastingReporter.writeFooter( "" );
         }
-        if ( errors > 0 )
+        if ( runStatistics.hadErrors() )
         {
             writeFooter( "Tests in error: " );
-            for ( Iterator iterator = this.errorSources.iterator(); iterator.hasNext(); )
+            for ( Iterator iterator = this.runStatistics.getErrorSources().iterator(); iterator.hasNext(); )
             {
-                writeFooter( "  " + iterator.next() );
+                multicastingReporter.writeFooter( "  " + iterator.next() );
             }
-            writeFooter( "" );
+            multicastingReporter.writeFooter( "" );
         }
-        writeFooter( "Tests run: " + completedCount + ", Failures: " + failures + ", Errors: " + errors
-            + ", Skipped: " + skipped );
-        writeFooter( "" );
+        multicastingReporter.writeFooter( runStatistics.getSummary() );
+        multicastingReporter.writeFooter( "" );
     }
 
     private synchronized void writeFooter( String footer )
     {
-        for ( Iterator i = reports.iterator(); i.hasNext(); )
-        {
-            Reporter report = (Reporter) i.next();
-
-            report.writeFooter( footer );
-        }
+        multicastingReporter.writeFooter( footer );
     }
 
-    private ByteArrayOutputStream stdOut;
-
-    private ByteArrayOutputStream stdErr;
 
     public synchronized void testSetStarting( ReportEntry report )
         throws ReporterException
     {
-        for ( Iterator it = reports.iterator(); it.hasNext(); )
-        {
-            Reporter reporter = (Reporter) it.next();
-
-            reporter.testSetStarting( report );
-        }
+        multicastingReporter.testSetStarting( report );
     }
 
     public synchronized void testSetCompleted( ReportEntry report )
     {
-        if ( !reports.isEmpty() )
-        {
-            Reporter reporter = (Reporter) reports.get( 0 );
-
-            skipped += reporter.getNumSkipped();
-
-            errors += reporter.getNumErrors();
-            errorSources.addAll( reporter.getErrorSources() );
-
-            failures += reporter.getNumFailures();
-            failureSources.addAll( reporter.getFailureSources() );
-
-            completedCount += reporter.getNumTests();
-        }
-
-        for ( Iterator it = reports.iterator(); it.hasNext(); )
-        {
-            Reporter reporter = (Reporter) it.next();
-
-            try
-            {
-                reporter.testSetCompleted( report );
-            }
-            catch ( Exception e )
-            {
-            }
-        }
-    }
-
-    public synchronized void testSetAborted( ReportEntry report )
-    {
-        for ( Iterator it = reports.iterator(); it.hasNext(); )
-        {
-            Reporter reporter = (Reporter) it.next();
-
-            reporter.testSetAborted( report );
-        }
-
-        ++errors;
+        multicastingReporter.testSetCompleted( report );
     }
 
     // ----------------------------------------------------------------------
@@ -269,148 +134,48 @@ public class ReporterManager
 
     public synchronized void testStarting( ReportEntry report )
     {
-        stdOut = new ByteArrayOutputStream();
-
-        newOut = new PrintStream( stdOut );
-
-        oldOut = System.out;
-
-        TeeStream tee = new TeeStream( oldOut, newOut );
-        System.setOut( tee );
-
-        stdErr = new ByteArrayOutputStream();
-
-        newErr = new PrintStream( stdErr );
-
-        oldErr = System.err;
-
-        tee = new TeeStream( oldErr, newErr );
-        System.setErr( tee );
-
-        for ( Iterator it = reports.iterator(); it.hasNext(); )
-        {
-            Reporter reporter = (Reporter) it.next();
-
-            reporter.testStarting( report );
-        }
+        consoleCapturer.startCapture();
+        multicastingReporter.testStarting( report );
     }
 
     public synchronized void testSucceeded( ReportEntry report )
     {
-        resetStreams();
-
-        for ( Iterator it = reports.iterator(); it.hasNext(); )
-        {
-            Reporter reporter = (Reporter) it.next();
-
-            reporter.testSucceeded( report );
-        }
+        consoleCapturer.resetStreams();
+        runStatistics.incrementCompletedCount();
+        multicastingReporter.testSucceeded( report );
     }
 
     public synchronized void testError( ReportEntry reportEntry )
     {
-        testFailed( reportEntry, "error" );
+        multicastingReporter.testError( reportEntry, consoleCapturer.getStdOutLog(), consoleCapturer.getStdErrLog() );
+        runStatistics.incrementErrorsCount();
+        runStatistics.addErrorSource( reportEntry.getName() );
+        consoleCapturer.resetStreams();
     }
 
     public synchronized void testFailed( ReportEntry reportEntry )
     {
-        testFailed( reportEntry, "failure" );
-    }
-
-    private synchronized void testFailed( ReportEntry reportEntry, String typeError )
-    {
-        // Note that the fields can be null if the test hasn't even started yet (an early error)
-        String stdOutLog = stdOut != null ? stdOut.toString() : "";
-
-        String stdErrLog = stdErr != null ? stdErr.toString() : "";
-
-        resetStreams();
-
-        for ( Iterator it = reports.iterator(); it.hasNext(); )
-        {
-            Reporter reporter = (Reporter) it.next();
-
-            if ( "failure".equals( typeError ) )
-            {
-                reporter.testFailed( reportEntry, stdOutLog, stdErrLog );
-            }
-            else
-            {
-                reporter.testError( reportEntry, stdOutLog, stdErrLog );
-            }
-        }
-    }
-
-    private void resetStreams()
-    {
-        // Note that the fields can be null if the test hasn't even started yet (an early error)
-        if ( oldOut != null )
-        {
-            System.setOut( oldOut );
-        }
-        if ( oldErr != null )
-        {
-            System.setErr( oldErr );
-        }
-
-        IOUtil.close( newOut );
-        IOUtil.close( newErr );
-    }
-
-    public synchronized void reset()
-    {
-        for ( Iterator it = reports.iterator(); it.hasNext(); )
-        {
-            Reporter report = (Reporter) it.next();
-
-            report.reset();
-        }
+        multicastingReporter.testFailed( reportEntry, consoleCapturer.getStdOutLog(), consoleCapturer.getStdErrLog() );
+        runStatistics.incrementFailureCount();
+        runStatistics.addFailureSource( reportEntry.getName() );
+        consoleCapturer.resetStreams();
     }
 
     // ----------------------------------------------------------------------
     // Counters
     // ----------------------------------------------------------------------
 
-    public int getNumErrors()
-    {
-        return errors;
-    }
-
-    public int getNumFailures()
-    {
-        return failures;
-    }
-
-    public int getNbTests()
-    {
-        return completedCount;
-    }
-
     public synchronized void testSkipped( ReportEntry report )
     {
-        resetStreams();
+        consoleCapturer.resetStreams();
 
-        for ( Iterator it = reports.iterator(); it.hasNext(); )
-        {
-            Reporter reporter = (Reporter) it.next();
-
-            reporter.testSkipped( report );
-        }
+        runStatistics.incrementSkippedCount();
+        multicastingReporter.testSkipped( report );
     }
 
-    public void initResultsFromProperties( Properties results )
+    public synchronized void reset()
     {
-        errors = Integer.valueOf( results.getProperty( RESULTS_ERRORS, "0" ) ).intValue();
-        skipped = Integer.valueOf( results.getProperty( RESULTS_SKIPPED, "0" ) ).intValue();
-        failures = Integer.valueOf( results.getProperty( RESULTS_FAILURES, "0" ) ).intValue();
-        completedCount = Integer.valueOf( results.getProperty( RESULTS_COMPLETED_COUNT, "0" ) ).intValue();
+        multicastingReporter.reset();
     }
 
-    public void updateResultsProperties( Properties results )
-    {
-        results.setProperty( RESULTS_ERRORS, String.valueOf( errors ) );
-        results.setProperty( RESULTS_COMPLETED_COUNT, String.valueOf( completedCount ) );
-        results.setProperty( RESULTS_FAILURES, String.valueOf( failures ) );
-        results.setProperty( RESULTS_SKIPPED, String.valueOf( skipped ) );
-    }
 }

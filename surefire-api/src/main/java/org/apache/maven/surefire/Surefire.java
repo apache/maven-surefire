@@ -22,6 +22,7 @@ package org.apache.maven.surefire;
 import org.apache.maven.surefire.report.Reporter;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterManager;
+import org.apache.maven.surefire.report.RunStatistics;
 import org.apache.maven.surefire.suite.SurefireTestSuite;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
@@ -79,18 +80,18 @@ public class Surefire
                     Boolean failIfNoTests )
         throws ReporterException, TestSetFailedException
     {
+        RunStatistics runStatistics = new RunStatistics();
         ReporterManager reporterManager =
-            new ReporterManager( instantiateReports( reportDefinitions, surefireClassLoader ) );
+            new ReporterManager( instantiateReports( reportDefinitions, surefireClassLoader ) , runStatistics);
 
         if ( results != null )
         {
-            reporterManager.initResultsFromProperties( results );
+            runStatistics.initResultsFromProperties( results );
         }
 
         int totalTests = 0;
 
-        SurefireTestSuite suite =
-            createSuiteFromDefinition( testSuiteDefinition, surefireClassLoader, testsClassLoader );
+        SurefireTestSuite suite = createSuiteFromDefinition( testSuiteDefinition, surefireClassLoader, testsClassLoader );
 
         int testCount = suite.getNumTests();
         if ( testCount > 0 )
@@ -113,25 +114,19 @@ public class Surefire
 
         if ( results != null )
         {
-            reporterManager.updateResultsProperties( results );
+            runStatistics.updateResultsProperties( results );
         }
-        
+
         if ( failIfNoTests.booleanValue() )
         {
-            if ( reporterManager.getNbTests() == 0 )
+            if ( runStatistics.getCompletedCount() == 0 )
             {
                 return NO_TESTS;
             }
         }
         
-        if ( reporterManager.getNumErrors() == 0 && reporterManager.getNumFailures() == 0 )
-        {
-            return SUCCESS;
-        }
-        else
-        {
-            return FAILURE;
-        }
+
+        return runStatistics.isProblemFree() ? SUCCESS : FAILURE;
 
     }
 
@@ -146,8 +141,9 @@ public class Surefire
                         ClassLoader testsClassLoader, Boolean failIfNoTests )
         throws ReporterException, TestSetFailedException
     {
+        RunStatistics runStatistics = new RunStatistics();
         ReporterManager reporterManager =
-            new ReporterManager( instantiateReports( reportDefinitions, surefireClassLoader ) );
+            new ReporterManager( instantiateReports( reportDefinitions, surefireClassLoader ), runStatistics );
 
         List suites = new ArrayList();
 
@@ -184,20 +180,13 @@ public class Surefire
         reporterManager.runCompleted();
         if ( failIfNoTests.booleanValue() )
         {
-            if ( reporterManager.getNbTests() == 0 )
+            if ( runStatistics.getCompletedCount() == 0 )
             {
                 return NO_TESTS;
             }
         }
 
-        if ( reporterManager.getNumErrors() == 0 && reporterManager.getNumFailures() == 0 )
-        {
-            return SUCCESS;
-        }
-        else
-        {
-            return FAILURE;
-        }
+        return runStatistics.isProblemFree() ? SUCCESS : FAILURE;
     }
 
     private SurefireTestSuite createSuiteFromDefinition( Object[] definition, ClassLoader surefireClassLoader,

@@ -19,8 +19,6 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
-import java.util.Collection;
-
 /**
  * Contract between the different implementations of the Surefire reporters
  *
@@ -28,18 +26,10 @@ import java.util.Collection;
  */
 public interface Reporter
 {
-    void writeMessage( String message );
-
-    void writeFooter( String footer );
-
     // The entire run
     void runStarting( int testCount );
 
     void runCompleted();
-
-    void runStopped();
-
-    void runAborted( ReportEntry report );
 
     // Test Sets
     void testSetStarting( ReportEntry report )
@@ -47,8 +37,6 @@ public interface Reporter
 
     void testSetCompleted( ReportEntry report )
         throws ReporterException;
-
-    void testSetAborted( ReportEntry report );
 
     // Tests
 
@@ -89,45 +77,8 @@ public interface Reporter
     // Counters
     void reset();
 
-    /**
-     * Get the number of errors
-     *
-     * @return
-     */
-    int getNumErrors();
+    void writeMessage( String message );
 
-    /**
-     * Get the number of failures
-     *
-     * @return
-     */
-    int getNumFailures();
+    void writeFooter( String footer );
 
-    /**
-     * Get the number of tests
-     *
-     * @return
-     */
-    int getNumTests();
-
-    /**
-     * Get the number of tests skipped
-     *
-     * @return
-     */
-    int getNumSkipped();
-
-    /**
-     * Gives the source(s) that causes the error(s).
-     *
-     * @return The source(s).
-     */
-    Collection getErrorSources();
-
-    /**
-     * Gives the source(s) that causes the failures(s).
-     *
-     * @return The source(s).
-     */
-    Collection getFailureSources();
 }

@@ -20,8 +20,6 @@ package org.apache.maven.surefire.report;
  */
 
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Locale;
 
 /**
@@ -35,17 +33,7 @@ public abstract class AbstractReporter
 
     protected int errors;
 
-    /**
-     * Holds the source(s) that causes the error(s).
-     */
-    private Collection errorSources = new ArrayList();
-
     protected int failures;
-
-    /**
-     * Holds the source(s) that causes the failure(s).
-     */
-    private Collection failureSources = new ArrayList();
 
     protected long startTime;
 
@@ -86,14 +74,6 @@ public abstract class AbstractReporter
     {
     }
 
-    public void runStopped()
-    {
-    }
-
-    public void runAborted( ReportEntry report )
-    {
-    }
-
     public void testSetStarting( ReportEntry report )
         throws ReporterException
     {
@@ -103,26 +83,6 @@ public abstract class AbstractReporter
     public void testSetCompleted( ReportEntry report )
         throws ReporterException
     {
-    }
-
-    public void testSetAborted( ReportEntry report )
-    {
-    }
-
-    /**
-     * @see org.apache.maven.surefire.report.Reporter#getFailureSources()
-     */
-    public Collection getFailureSources()
-    {
-        return this.failureSources;
-    }
-
-    /**
-     * @see org.apache.maven.surefire.report.Reporter#getErrorSources()
-     */
-    public Collection getErrorSources()
-    {
-        return this.errorSources;
     }
 
     // ----------------------------------------------------------------------
@@ -149,14 +109,12 @@ public abstract class AbstractReporter
     public void testError( ReportEntry report, String stdOut, String stdErr )
     {
         ++errors;
-        errorSources.add( report.getName() );
         endTest();
     }
 
     public void testFailed( ReportEntry report, String stdOut, String stdErr )
     {
         ++failures;
-        failureSources.add( report.getName() );
         endTest();
     }
 
@@ -210,10 +168,6 @@ public abstract class AbstractReporter
         failures = 0;
 
         completedCount = 0;
-
-        this.failureSources = new ArrayList();
-
-        this.errorSources = new ArrayList();
 
     }
 
