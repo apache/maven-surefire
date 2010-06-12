@@ -54,7 +54,7 @@ public abstract class AbstractConsoleReporter
         writeMessage( getTestSetStartingMessage( report ) );
     }
 
-    public void runStarting( int testCount )
+    public void runStarting()
     {
         writeHeading( "" );
         writeHeading( "-------------------------------------------------------" );

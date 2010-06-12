@@ -73,14 +73,9 @@ public class ReporterManager
     // Run
     // ----------------------------------------------------------------------
 
-    public synchronized void runStarting( int testCount )
+    public synchronized void runStarting()
     {
-        if ( testCount < 0 )
-        {
-            throw new IllegalArgumentException( "testCount is less than zero" );
-        }
-
-        multicastingReporter.runStarting( testCount );
+        multicastingReporter.runStarting();
     }
 
     public synchronized void runCompleted()

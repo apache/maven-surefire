@@ -66,7 +66,7 @@ public abstract class AbstractReporter
         writeMessage( footer );
     }
 
-    public void runStarting( int testCount )
+    public void runStarting()
     {
     }
 

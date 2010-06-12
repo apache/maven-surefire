@@ -99,7 +99,7 @@ public class Surefire
             totalTests += testCount;
         }
 
-        reporterManager.runStarting( totalTests );
+        reporterManager.runStarting();
 
         if ( totalTests == 0 )
         {
@@ -162,7 +162,7 @@ public class Surefire
             }
         }
 
-        reporterManager.runStarting( totalTests );
+        reporterManager.runStarting();
 
         if ( totalTests == 0 )
         {

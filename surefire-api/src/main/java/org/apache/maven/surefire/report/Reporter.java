@@ -27,7 +27,7 @@ package org.apache.maven.surefire.report;
 public interface Reporter
 {
     // The entire run
-    void runStarting( int testCount );
+    void runStarting();
 
     void runCompleted();
 

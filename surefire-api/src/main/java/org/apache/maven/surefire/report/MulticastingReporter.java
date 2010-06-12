@@ -63,11 +63,11 @@ public class MulticastingReporter
     }
 
 
-    public void runStarting( int testCount )
+    public void runStarting()
     {
         for ( Iterator it = target.iterator(); it.hasNext(); )
         {
-            ( (Reporter) it.next() ).runStarting( testCount );
+            ( (Reporter) it.next() ).runStarting();
         }
     }
 
