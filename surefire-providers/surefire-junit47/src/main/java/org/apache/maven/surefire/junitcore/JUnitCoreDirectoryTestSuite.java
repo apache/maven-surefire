@@ -21,6 +21,7 @@ package org.apache.maven.surefire.junitcore;
 
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterManager;
+import org.apache.maven.surefire.report.ReporterManagerFactory;
 import org.apache.maven.surefire.suite.SurefireTestSuite;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.SurefireDirectoryScanner;
@@ -55,7 +56,7 @@ public class JUnitCoreDirectoryTestSuite
     }
 
 
-    public void execute( ReporterManager reporterManager, ClassLoader classLoader )
+    public void execute( ReporterManagerFactory reporterManagerFactory, ClassLoader classLoader )
         throws ReporterException, TestSetFailedException
     {
         if ( testsToRun == null )
@@ -63,10 +64,11 @@ public class JUnitCoreDirectoryTestSuite
             throw new IllegalStateException( "You must call locateTestSets before calling execute" );
         }
 
+        final ReporterManager reporterManager = reporterManagerFactory.createReporterManager();
         JUnitCoreTestSet.execute( testsToRun.getLocatedClasses(), reporterManager, jUnitCoreParameters );
     }
 
-    public void execute( String testSetName, ReporterManager reporterManager, ClassLoader classLoader )
+    public void execute( String testSetName, ReporterManagerFactory reporterManagerFactory, ClassLoader classLoader )
         throws ReporterException, TestSetFailedException
     {
         if ( testsToRun == null )
@@ -75,11 +77,12 @@ public class JUnitCoreDirectoryTestSuite
         }
         JUnitCoreTestSet testSet = testsToRun.getTestSet( testSetName );
 
+
         if ( testSet == null )
         {
             throw new TestSetFailedException( "Unable to find test set '" + testSetName + "' in suite" );
         }
-        testSet.execute( reporterManager, jUnitCoreParameters );
+        testSet.execute( reporterManagerFactory.createReporterManager(), jUnitCoreParameters );
     }
 
     public Map locateTestSets( ClassLoader classLoader )

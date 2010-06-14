@@ -21,6 +21,7 @@ package org.apache.maven.surefire.report;
 
 import java.io.BufferedOutputStream;
 import java.io.OutputStreamWriter;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 
 /**
@@ -39,10 +40,12 @@ public abstract class AbstractConsoleReporter
 
     protected static final int BUFFER_SIZE = 4096;
 
+    private static final PrintStream originalSystemOut = System.out;
+
     protected AbstractConsoleReporter( String format, Boolean trimStackTrace )
     {
         // TODO: use logger
-        super( new PrintWriter( new OutputStreamWriter( new BufferedOutputStream( System.out, BUFFER_SIZE ) ) ), format,
+        super( new PrintWriter( new OutputStreamWriter( new BufferedOutputStream( originalSystemOut, BUFFER_SIZE ) ) ), format,
                trimStackTrace );
     }
 

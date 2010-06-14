@@ -20,7 +20,7 @@ package org.apache.maven.surefire.suite;
  */
 
 import org.apache.maven.surefire.report.ReporterException;
-import org.apache.maven.surefire.report.ReporterManager;
+import org.apache.maven.surefire.report.ReporterManagerFactory;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
 import java.util.Map;
@@ -32,10 +32,10 @@ import java.util.Map;
  */
 public interface SurefireTestSuite
 {
-    void execute( ReporterManager reporterManager, ClassLoader classLoader )
+    void execute( ReporterManagerFactory reporterManagerFactory, ClassLoader classLoader )
         throws ReporterException, TestSetFailedException;
 
-    void execute( String testSetName, ReporterManager reporterManager, ClassLoader classLoader )
+    void execute( String testSetName, ReporterManagerFactory reporterManagerFactory, ClassLoader classLoader )
         throws ReporterException, TestSetFailedException;
 
     int getNumTests();

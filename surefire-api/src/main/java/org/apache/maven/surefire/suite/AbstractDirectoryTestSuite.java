@@ -20,6 +20,7 @@ package org.apache.maven.surefire.suite;
  */
 
 import org.apache.maven.surefire.Surefire;
+import org.apache.maven.surefire.report.ReporterManagerFactory;
 import org.apache.maven.surefire.util.SurefireDirectoryScanner;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterException;
@@ -88,7 +89,7 @@ public abstract class AbstractDirectoryTestSuite
     protected abstract SurefireTestSet createTestSet( Class testClass, ClassLoader classLoader )
         throws TestSetFailedException;
 
-    public void execute( ReporterManager reporterManager, ClassLoader classLoader )
+    public void execute( ReporterManagerFactory reporterManagerFactory, ClassLoader classLoader )
         throws ReporterException, TestSetFailedException
     {
         if ( testSets == null )
@@ -99,13 +100,17 @@ public abstract class AbstractDirectoryTestSuite
         {
             SurefireTestSet testSet = (SurefireTestSet) i.next();
 
-            executeTestSet( testSet, reporterManager, classLoader );
+            executeTestSet( testSet, reporterManagerFactory, classLoader );
         }
     }
 
-    private void executeTestSet( SurefireTestSet testSet, ReporterManager reporterManager, ClassLoader classLoader )
+    private void executeTestSet( SurefireTestSet testSet, ReporterManagerFactory reporterManagerFactory,
+                                 ClassLoader classLoader )
         throws ReporterException, TestSetFailedException
     {
+
+        ReporterManager reporterManager = reporterManagerFactory.createReporterManager();
+
         String rawString = bundle.getString( "testSetStarting" );
 
         ReportEntry report = new ReportEntry( this.getClass().getName(), testSet.getName(), rawString );
@@ -123,7 +128,7 @@ public abstract class AbstractDirectoryTestSuite
         reporterManager.reset();
     }
 
-    public void execute( String testSetName, ReporterManager reporterManager, ClassLoader classLoader )
+    public void execute( String testSetName, ReporterManagerFactory reporterManagerFactory, ClassLoader classLoader )
         throws ReporterException, TestSetFailedException
     {
         if ( testSets == null )
@@ -137,7 +142,7 @@ public abstract class AbstractDirectoryTestSuite
             throw new TestSetFailedException( "Unable to find test set '" + testSetName + "' in suite" );
         }
 
-        executeTestSet( testSet, reporterManager, classLoader );
+        executeTestSet( testSet, reporterManagerFactory, classLoader );
     }
 
     public int getNumTests()

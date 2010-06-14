@@ -32,6 +32,7 @@ import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterManager;
+import org.apache.maven.surefire.report.ReporterManagerFactory;
 import org.apache.maven.surefire.suite.SurefireTestSuite;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
@@ -81,20 +82,21 @@ public class TestNGXmlTestSuite
         this.reportsDirectory = reportsDirectory;
     }
 
-    public void execute( ReporterManager reporterManager, ClassLoader classLoader )
+    public void execute( ReporterManagerFactory reporterManagerFactory, ClassLoader classLoader )
         throws ReporterException, TestSetFailedException
     {
         if ( testSets == null )
         {
             throw new IllegalStateException( "You must call locateTestSets before calling execute" );
         }
+        ReporterManager reporterManager = reporterManagerFactory.createReporterManager();
         TestNGDirectoryTestSuite.startTestSuite( reporterManager, this );
         TestNGExecutor.run( this.suiteFilePaths, this.testSourceDirectory, this.options, this.version, 
                             this.classifier, reporterManager, this, reportsDirectory );
         TestNGDirectoryTestSuite.finishTestSuite( reporterManager, this );
     }
 
-    public void execute( String testSetName, ReporterManager reporterManager, ClassLoader classLoader )
+    public void execute( String testSetName, ReporterManagerFactory reporterManagerFactory, ClassLoader classLoader )
         throws TestSetFailedException
     {
         throw new TestSetFailedException( "Cannot run individual test when suite files are specified" );

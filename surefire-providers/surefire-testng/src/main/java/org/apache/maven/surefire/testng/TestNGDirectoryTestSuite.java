@@ -32,6 +32,7 @@ import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterManager;
+import org.apache.maven.surefire.report.ReporterManagerFactory;
 import org.apache.maven.surefire.suite.AbstractDirectoryTestSuite;
 import org.apache.maven.surefire.testset.SurefireTestSet;
 import org.apache.maven.surefire.testset.TestSetFailedException;
@@ -83,7 +84,7 @@ public class TestNGDirectoryTestSuite
     }
 
     // single class test
-    public void execute( String testSetName, ReporterManager reporterManager, ClassLoader classLoader )
+    public void execute( String testSetName, ReporterManagerFactory reporterManagerFactory, ClassLoader classLoader )
         throws ReporterException, TestSetFailedException
     {
         if ( testSets == null )
@@ -96,7 +97,8 @@ public class TestNGDirectoryTestSuite
         {
             throw new TestSetFailedException( "Unable to find test set '" + testSetName + "' in suite" );
         }
-        
+
+        ReporterManager reporterManager = reporterManagerFactory.createReporterManager();
         startTestSuite( reporterManager, this );
 
         TestNGExecutor.run( new Class[]{testSet.getTestClass()}, this.testSourceDirectory, this.options, this.version,
@@ -105,7 +107,7 @@ public class TestNGDirectoryTestSuite
         finishTestSuite( reporterManager, this );
     }
 
-    public void execute( ReporterManager reporterManager, ClassLoader classLoader )
+    public void execute( ReporterManagerFactory reporterManagerFactory, ClassLoader classLoader )
         throws ReporterException, TestSetFailedException
     {
         if ( testSets == null )
@@ -133,7 +135,8 @@ public class TestNGDirectoryTestSuite
             testNgReportsDirectory = new File( reportsDirectory, "testng-native-results");
             junitReportsDirectory = new File( reportsDirectory, "testng-junit-results");
         }
-        
+
+        ReporterManager reporterManager = reporterManagerFactory.createReporterManager();
         startTestSuite( reporterManager, this );
         
         Class[] testClasses = (Class[]) testNgTestClasses.toArray( new Class[0] );

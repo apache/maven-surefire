@@ -22,6 +22,7 @@ package org.apache.maven.surefire;
 import org.apache.maven.surefire.report.Reporter;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterManager;
+import org.apache.maven.surefire.report.ReporterManagerFactory;
 import org.apache.maven.surefire.report.RunStatistics;
 import org.apache.maven.surefire.suite.SurefireTestSuite;
 import org.apache.maven.surefire.testset.TestSetFailedException;
@@ -80,10 +81,10 @@ public class Surefire
                     Boolean failIfNoTests )
         throws ReporterException, TestSetFailedException
     {
-        RunStatistics runStatistics = new RunStatistics();
-        ReporterManager reporterManager =
-            new ReporterManager( instantiateReports( reportDefinitions, surefireClassLoader ) , runStatistics);
+        ReporterManagerFactory reporterManagerFactory =
+            new ReporterManagerFactory( reportDefinitions, surefireClassLoader);
 
+        RunStatistics runStatistics = reporterManagerFactory.getGlobalRunStatistics();
         if ( results != null )
         {
             runStatistics.initResultsFromProperties( results );
@@ -99,18 +100,16 @@ public class Surefire
             totalTests += testCount;
         }
 
-        reporterManager.runStarting();
-
         if ( totalTests == 0 )
         {
-            reporterManager.writeMessage( "There are no tests to run." );
+            reporterManagerFactory.createReporterManager().writeMessage( "There are no tests to run." );
         }
         else
         {
-            suite.execute( testSetName, reporterManager, testsClassLoader );
+            suite.execute( testSetName, reporterManagerFactory, testsClassLoader );
         }
 
-        reporterManager.runCompleted();
+        reporterManagerFactory.close();
 
         if ( results != null )
         {
@@ -141,9 +140,10 @@ public class Surefire
                         ClassLoader testsClassLoader, Boolean failIfNoTests )
         throws ReporterException, TestSetFailedException
     {
-        RunStatistics runStatistics = new RunStatistics();
-        ReporterManager reporterManager =
-            new ReporterManager( instantiateReports( reportDefinitions, surefireClassLoader ), runStatistics );
+        ReporterManagerFactory reporterManagerFactory =
+            new ReporterManagerFactory( reportDefinitions, surefireClassLoader);
+
+        RunStatistics runStatistics = reporterManagerFactory.getGlobalRunStatistics();
 
         List suites = new ArrayList();
 
@@ -162,22 +162,20 @@ public class Surefire
             }
         }
 
-        reporterManager.runStarting();
-
         if ( totalTests == 0 )
         {
-            reporterManager.writeMessage( "There are no tests to run." );
+            reporterManagerFactory.createReporterManager().writeMessage( "There are no tests to run." );
         }
         else
         {
             for ( Iterator i = suites.iterator(); i.hasNext(); )
             {
                 SurefireTestSuite suite = (SurefireTestSuite) i.next();
-                suite.execute( reporterManager, testsClassLoader );
+                suite.execute( reporterManagerFactory, testsClassLoader );
             }
         }
 
-        reporterManager.runCompleted();
+        reporterManagerFactory.close();
         if ( failIfNoTests.booleanValue() )
         {
             if ( runStatistics.getCompletedCount() == 0 )
