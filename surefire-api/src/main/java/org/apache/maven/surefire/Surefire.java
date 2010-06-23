@@ -19,9 +19,7 @@ package org.apache.maven.surefire;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.Reporter;
 import org.apache.maven.surefire.report.ReporterException;
-import org.apache.maven.surefire.report.ReporterManager;
 import org.apache.maven.surefire.report.ReporterManagerFactory;
 import org.apache.maven.surefire.report.RunStatistics;
 import org.apache.maven.surefire.suite.SurefireTestSuite;
@@ -33,7 +31,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import java.util.ResourceBundle;
 
 /**
  * @author Jason van Zyl
@@ -46,8 +43,6 @@ public class Surefire
     private static final int NO_TESTS = 254;
     private static final int FAILURE = 255;
     
-    private ResourceBundle bundle = ResourceBundle.getBundle( SUREFIRE_BUNDLE_NAME );
-
     public static final String SUREFIRE_BUNDLE_NAME = "org.apache.maven.surefire.surefire";
 
     // DGF backwards compatibility
@@ -201,44 +196,6 @@ public class Surefire
         return suite;
     }
 
-    private List instantiateReports( List reportDefinitions, ClassLoader classLoader )
-        throws TestSetFailedException
-    {
-        List reports = new ArrayList();
-
-        for ( Iterator i = reportDefinitions.iterator(); i.hasNext(); )
-        {
-            Object[] definition = (Object[]) i.next();
-
-            String className = (String) definition[0];
-            Object[] params = (Object[]) definition[1];
-
-            Reporter report = instantiateReport( className, params, classLoader );
-
-            reports.add( report );
-        }
-
-        return reports;
-    }
-
-    private static Reporter instantiateReport( String className, Object[] params, ClassLoader classLoader )
-        throws TestSetFailedException
-    {
-        try
-        {
-            return (Reporter) instantiateObject( className, params, classLoader );
-        }
-        catch ( ClassNotFoundException e )
-        {
-            throw new TestSetFailedException( "Unable to find class to create report '" + className + "'", e );
-        }
-        catch ( NoSuchMethodException e )
-        {
-            throw new TestSetFailedException(
-                "Unable to find appropriate constructor to create report: " + e.getMessage(), e );
-        }
-    }
-
     public static Object instantiateObject( String className, Object[] params, ClassLoader classLoader )
         throws TestSetFailedException, ClassNotFoundException, NoSuchMethodException
     {
@@ -305,8 +262,4 @@ public class Surefire
         }
     }
 
-    public String getResourceString( String key )
-    {
-        return bundle.getString( key );
-    }
 }

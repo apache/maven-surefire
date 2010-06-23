@@ -44,9 +44,8 @@ class TestsToRun
         this.locatedClasses = locatedClasses;
         testSets = new HashMap<String, JUnitCoreTestSet>();
         int testCount = 0;
-        for ( int i = 0; i < locatedClasses.length; i++ )
+        for ( Class testClass : locatedClasses )
         {
-            Class testClass = locatedClasses[i];
             JUnitCoreTestSet testSet = new JUnitCoreTestSet( testClass );
 
             if ( testSets.containsKey( testSet.getName() ) )

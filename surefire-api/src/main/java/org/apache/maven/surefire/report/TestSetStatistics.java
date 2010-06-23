@@ -22,7 +22,7 @@ package org.apache.maven.surefire.report;
 import java.util.Properties;
 
 /**
- * Run-statistcis for a testset
+ * Run-statistics for a testset
  *
  * @author Kristian Rosenvold
  *         Note; synchronization is questionable. Whiled this class alone is ok, there's a higher level concern about
@@ -85,6 +85,11 @@ public class TestSetStatistics
     public synchronized int getCompletedCount()
     {
         return completedCount;
+    }
+
+    public int getSkipped()
+    {
+        return skipped;
     }
 
     public synchronized void initResultsFromProperties( Properties results )

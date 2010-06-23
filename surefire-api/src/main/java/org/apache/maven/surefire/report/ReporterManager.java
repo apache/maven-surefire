@@ -52,21 +52,26 @@ import java.util.List;
  */
 public class ReporterManager
 {
-    private final RunStatistics runStatistics;
+    private final RunStatistics runStatisticsForThis;
 
     private final MulticastingReporter multicastingReporter;
 
     private final SystemStreamCapturer consoleCapturer = new SystemStreamCapturer();
 
-    public ReporterManager( List reports, RunStatistics runStatistics )
+    public ReporterManager( List reports, RunStatistics runStatisticsForThis )
     {
         multicastingReporter = new MulticastingReporter( reports );
-        this.runStatistics = runStatistics;
+        this.runStatisticsForThis = runStatisticsForThis;
     }
 
     public synchronized void writeMessage( String message )
     {
         multicastingReporter.writeMessage( message );
+    }
+    
+    public synchronized void writeConsoleMessage( String message )
+    {
+        multicastingReporter.writeConsoleMessage( message );
     }
 
     // ----------------------------------------------------------------------
@@ -84,29 +89,30 @@ public class ReporterManager
         multicastingReporter.writeFooter( "" );
         multicastingReporter.writeFooter( "Results :" );
         multicastingReporter.writeFooter( "" );
-        if ( runStatistics.hadFailures() )
+        if ( runStatisticsForThis.hadFailures() )
         {
             multicastingReporter.writeFooter( "Failed tests: " );
-            for ( Iterator iterator = this.runStatistics.getFailureSources().iterator(); iterator.hasNext(); )
+            for ( Iterator iterator = this.runStatisticsForThis.getFailureSources().iterator(); iterator.hasNext(); )
             {
                 multicastingReporter.writeFooter( "  " + iterator.next() );
             }
             multicastingReporter.writeFooter( "" );
         }
-        if ( runStatistics.hadErrors() )
+        if ( runStatisticsForThis.hadErrors() )
         {
             writeFooter( "Tests in error: " );
-            for ( Iterator iterator = this.runStatistics.getErrorSources().iterator(); iterator.hasNext(); )
+            for ( Iterator iterator = this.runStatisticsForThis.getErrorSources().iterator(); iterator.hasNext(); )
             {
                 multicastingReporter.writeFooter( "  " + iterator.next() );
             }
             multicastingReporter.writeFooter( "" );
         }
-        multicastingReporter.writeFooter( runStatistics.getSummary() );
+        multicastingReporter.writeFooter( runStatisticsForThis.getSummary() );
         multicastingReporter.writeFooter( "" );
+        consoleCapturer.restoreStreams();
     }
 
-    private synchronized void writeFooter( String footer )
+    public synchronized void writeFooter( String footer )
     {
         multicastingReporter.writeFooter( footer );
     }
@@ -129,31 +135,43 @@ public class ReporterManager
 
     public synchronized void testStarting( ReportEntry report )
     {
-        consoleCapturer.startCapture();
         multicastingReporter.testStarting( report );
     }
 
     public synchronized void testSucceeded( ReportEntry report )
     {
-        consoleCapturer.resetStreams();
-        runStatistics.incrementCompletedCount();
+        consoleCapturer.clearCapturedContent();
+        runStatisticsForThis.incrementCompletedCount();
         multicastingReporter.testSucceeded( report );
     }
 
     public synchronized void testError( ReportEntry reportEntry )
     {
-        multicastingReporter.testError( reportEntry, consoleCapturer.getStdOutLog(), consoleCapturer.getStdErrLog() );
-        runStatistics.incrementErrorsCount();
-        runStatistics.addErrorSource( reportEntry.getName() );
-        consoleCapturer.resetStreams();
+        testError( reportEntry, consoleCapturer.getStdOutLog(), consoleCapturer.getStdErrLog() );
+    }
+
+    public synchronized void testError( ReportEntry reportEntry, String stdOutLog, String stdErrLog )
+    {
+        multicastingReporter.testError( reportEntry, stdOutLog, stdErrLog );
+        runStatisticsForThis.incrementErrorsCount();
+        runStatisticsForThis.incrementCompletedCount();
+        runStatisticsForThis.addErrorSource( reportEntry.getName() );
+        consoleCapturer.clearCapturedContent();
     }
 
     public synchronized void testFailed( ReportEntry reportEntry )
     {
-        multicastingReporter.testFailed( reportEntry, consoleCapturer.getStdOutLog(), consoleCapturer.getStdErrLog() );
-        runStatistics.incrementFailureCount();
-        runStatistics.addFailureSource( reportEntry.getName() );
-        consoleCapturer.resetStreams();
+        testFailed( reportEntry, consoleCapturer.getStdOutLog(), consoleCapturer.getStdErrLog() );
+    }
+
+
+    public synchronized void testFailed( ReportEntry reportEntry, String stdOutLog, String stdErrLog )
+    {
+        multicastingReporter.testFailed( reportEntry, stdOutLog, stdErrLog );
+        runStatisticsForThis.incrementFailureCount();
+        runStatisticsForThis.incrementCompletedCount();
+        runStatisticsForThis.addFailureSource( reportEntry.getName() );
+        consoleCapturer.clearCapturedContent();
     }
 
     // ----------------------------------------------------------------------
@@ -162,9 +180,9 @@ public class ReporterManager
 
     public synchronized void testSkipped( ReportEntry report )
     {
-        consoleCapturer.resetStreams();
-
-        runStatistics.incrementSkippedCount();
+        consoleCapturer.clearCapturedContent();
+        runStatisticsForThis.incrementSkippedCount();
+        runStatisticsForThis.incrementCompletedCount();
         multicastingReporter.testSkipped( report );
     }
 

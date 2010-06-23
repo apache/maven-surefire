@@ -27,31 +27,31 @@ import java.io.PrintStream;
 
 /**
  * Captures System.out/System.err streams to buffers.
- *
+ * <p/>
  * Please note that this design is inherently single-threaded test-linear, and is intended only
  * for use with ReporterManager, which is also test-linear. While it will capture
  * output in a multi-threaded scenario, there's no way to associate ouput with the correct
  * test/thread.
- *
+ * <p/>
  * Note; this class does not need synchronization because all of these methods are serially invoked on
  * the same thread. Or maybe not. See notes inside ReporterManager about the general improperness
  * of this design in multithreading.
  */
 public class SystemStreamCapturer
 {
-    private PrintStream oldOut;
+    private final PrintStream oldOut;
 
-    private PrintStream oldErr;
+    private final PrintStream oldErr;
 
-    private PrintStream newErr;
+    private final PrintStream newErr;
 
-    private PrintStream newOut;
+    private final PrintStream newOut;
 
-    private ByteArrayOutputStream stdOut;
+    private final ByteArrayOutputStream stdOut;
 
-    private ByteArrayOutputStream stdErr;
+    private final ByteArrayOutputStream stdErr;
 
-    public void startCapture()
+    public SystemStreamCapturer()
     {
         stdOut = new ByteArrayOutputStream();
 
@@ -72,7 +72,8 @@ public class SystemStreamCapturer
         System.setErr( tee );
     }
 
-    public void resetStreams()
+
+    public void restoreStreams()
     {
         // Note that the fields can be null if the test hasn't even started yet (an early error)
         if ( oldOut != null )
@@ -86,6 +87,18 @@ public class SystemStreamCapturer
 
         IOUtil.close( newOut );
         IOUtil.close( newErr );
+    }
+
+    public void clearCapturedContent()
+    {
+        if ( stdOut != null )
+        {
+            stdOut.reset();
+        }
+        if ( stdErr != null )
+        {
+            stdErr.reset();
+        }
     }
 
     public String getStdOutLog()

@@ -19,7 +19,7 @@
 package org.apache.maven.surefire.junitcore;
 
 
-import org.apache.maven.surefire.report.ReporterManager;
+import org.apache.maven.surefire.report.ReporterManagerFactory;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.junit.experimental.ParallelComputer;
 import org.junit.runner.Computer;
@@ -45,8 +45,6 @@ class JUnitCoreTestSet
 
     private static final String className = "org.jdogma.junit.ConfigurableParallelComputer";
 
-    private static final String demuxerClassName = "org.jdogma.junit.DemultiplexingRunListener";
-
     public String getName()
     {
         return testClass.getName();
@@ -70,12 +68,12 @@ class JUnitCoreTestSet
     /**
      * Actually runs the test and adds the tests results to the <code>reportManager</code>.
      *
-     * @param JUnitCoreParameters The parameters for this test
      * @param reportManager       The report manager
+     * @param JUnitCoreParameters The parameters for this test
      * @throws TestSetFailedException If something fails
      * @see org.apache.maven.surefire.testset.SurefireTestSet#execute(org.apache.maven.surefire.report.ReporterManager,java.lang.ClassLoader)
      */
-    public void execute( ReporterManager reportManager, JUnitCoreParameters JUnitCoreParameters )
+    public void execute( ReporterManagerFactory reportManager, JUnitCoreParameters JUnitCoreParameters )
         throws TestSetFailedException
     {
 
@@ -84,13 +82,13 @@ class JUnitCoreTestSet
         execute( classes, reportManager, JUnitCoreParameters );
     }
 
-    public static void execute( Class[] classes, ReporterManager reportManager,
+    public static void execute( Class[] classes, ReporterManagerFactory reporterManagerFactory,
                                 JUnitCoreParameters jUnitCoreParameters )
         throws TestSetFailedException
     {
-        RunListener realTarget = new JUnitCoreTestSetReporter( reportManager );
-        RunListener listener =
-            createRunListener( realTarget, jUnitCoreParameters.isConfigurableParallelComputerPresent() );
+        final ConcurrentReportingRunListener listener =
+            ConcurrentReportingRunListener.createInstance( reporterManagerFactory, jUnitCoreParameters.isParallelClasses(),
+                                                      jUnitCoreParameters.isParallelBoth() );
         Computer computer = getComputer( jUnitCoreParameters );
         try
         {
@@ -99,42 +97,6 @@ class JUnitCoreTestSet
         finally
         {
             closeIfConfigurable( computer );
-            reportManager.reset();
-        }
-    }
-
-    private static RunListener createRunListener( RunListener realTarget, boolean configurableParallelComputerPresent )
-        throws TestSetFailedException
-    {
-        if ( !configurableParallelComputerPresent )
-        {
-            return new DemultiplexingRunListener( realTarget );
-        }
-        try
-        {
-            Class<?> cpcClass = Class.forName( demuxerClassName );
-            Constructor constructor = cpcClass.getConstructor( RunListener.class );
-            return (RunListener) constructor.newInstance( realTarget );
-        }
-        catch ( ClassNotFoundException e )
-        {
-            throw new TestSetFailedException( e );
-        }
-        catch ( NoSuchMethodException e )
-        {
-            throw new TestSetFailedException( e );
-        }
-        catch ( InvocationTargetException e )
-        {
-            throw new TestSetFailedException( e );
-        }
-        catch ( IllegalAccessException e )
-        {
-            throw new TestSetFailedException( e );
-        }
-        catch ( InstantiationException e )
-        {
-            throw new TestSetFailedException( e );
         }
     }
 

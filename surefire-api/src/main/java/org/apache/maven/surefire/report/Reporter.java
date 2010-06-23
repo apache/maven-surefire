@@ -43,21 +43,21 @@ public interface Reporter
     /**
      * Event fired when a test is about to start
      *
-     * @param report
+     * @param report The report entry to log for
      */
     void testStarting( ReportEntry report );
 
     /**
      * Event fired when a test ended successfully
      *
-     * @param report
+     * @param report The report entry to log for
      */
     void testSucceeded( ReportEntry report );
 
     /**
      * Event fired when a test ended with an error (non anticipated problem)
      *
-     * @param report
+     * @param report The report entry to log for
      * @param stdOut standard output from the test case
      * @param stdErr error output from the test case
      */
@@ -66,7 +66,7 @@ public interface Reporter
     /**
      * Event fired when a test ended with a failure (anticipated problem)
      *
-     * @param report
+     * @param report The report entry to log for
      * @param stdOut standard output from the test case
      * @param stdErr error output from the test case
      */

@@ -27,29 +27,24 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
- * SUREFIRE-613 Asserts proper test counts when running in parallel
+ * SUREFIRE-621 Asserts proper test counts when running junit 3 tests in parallel
  *
  * @author Kristian Rosenvold
  */
-public class Surefire613TestCountInParallelIT
+public class Surefire621TestCountingJunit3InParallelIT
     extends AbstractSurefireIntegrationTestClass
 {
-    public void testPaallelBuildResultCount()
+    public void testJunit3ParallelBuildResultCount()
         throws Exception
     {
-        File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/surefire-613-testCount-in-parallel" );
+        File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/surefire-621-testCounting-junit3-in-parallel" );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
         String[] opts = { "-fn" };
         verifier.setCliOptions( new ArrayList( Arrays.asList( opts ) ) );
-        this.executeGoal( verifier, "test" );
+        this.executeGoal( verifier, "install" );
         verifier.resetStreams();
 
-        verifier.verifyTextInLog("testAllok to stdout");
-        verifier.verifyTextInLog("testAllok to stderr");
-        verifier.verifyTextInLog("testWithException1 to stdout");
-        verifier.verifyTextInLog("testWithException1 to stderr");
-
-        HelperAssertions.assertTestSuiteResults( 15, 8, 4, 2, testDir );
+        HelperAssertions.assertTestSuiteResults( 6, 0, 0, 0, testDir );
     }
 }

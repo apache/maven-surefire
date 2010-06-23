@@ -69,6 +69,8 @@ public class ReporterManagerFactory
         throws TestSetFailedException
     {
         final List reports = instantiateReports( reportDefinitions, surefireClassLoader );
+        // Note, if we ever start making >1 reporter Managers, we have to aggregate run statistics
+        // i.e. we cannot use a single "globalRunStatistics"
         final ReporterManager reporterManager = new ReporterManager( reports, globalRunStatistics );
         if ( first == null )
         {
@@ -181,6 +183,4 @@ public class ReporterManagerFactory
         }
         return object;
     }
-
-
 }

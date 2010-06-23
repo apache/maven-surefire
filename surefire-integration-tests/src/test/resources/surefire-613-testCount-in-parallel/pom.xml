@@ -29,6 +29,7 @@
            <artifactId>maven-surefire-plugin</artifactId>
            <version>${surefire.version}</version>
            <configuration>
+             <forkMode>once</forkMode>
              <parallel>methods</parallel>
              <threadCount>10</threadCount>
              <includes>

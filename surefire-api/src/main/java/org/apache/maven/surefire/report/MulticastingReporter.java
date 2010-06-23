@@ -120,6 +120,17 @@ public class MulticastingReporter
         }
     }
 
+    public void writeConsoleMessage( String message )
+    {
+        for ( Iterator it = target.iterator(); it.hasNext(); )
+        {
+            Reporter reporter = ( (Reporter) it.next() );
+            // Todo: Really need to find out how the surefire4.x provider manages to avoid printing to this one.
+            if (!(reporter instanceof BriefFileReporter)){
+               reporter.writeMessage( message);
+            }
+        }
+    }
 
     public void writeMessage( String message )
     {
