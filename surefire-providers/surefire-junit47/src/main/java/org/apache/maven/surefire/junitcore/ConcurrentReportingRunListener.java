@@ -46,6 +46,9 @@ public abstract class ConcurrentReportingRunListener
 
     protected final boolean reportImmediately;
 
+    private final ConcurrentPrintStream out = new ConcurrentPrintStream( true );
+    private final ConcurrentPrintStream err = new ConcurrentPrintStream( false );
+
     public ConcurrentReportingRunListener( ReporterManagerFactory reporterFactory, boolean reportImmediately )
         throws TestSetFailedException
     {
@@ -54,8 +57,8 @@ public abstract class ConcurrentReportingRunListener
         // Important: We must capture System.out/System.err AFTER the  reportManager captures stdout/stderr
         // because we know how to demultiplex correctly. The redirection in reporterManager is basically
         // ignored/unused because we use ConcurrentPrintStream.
-        System.setOut( new ConcurrentPrintStream( true ) );
-        System.setErr( new ConcurrentPrintStream( false ) );
+        System.setOut( out );
+        System.setErr( err );
     }
 
     @Override
@@ -75,6 +78,9 @@ public abstract class ConcurrentReportingRunListener
         }
         System.setOut( orgSystemOut );
         System.setErr( orgSystemErr );
+
+        out.writeTo(  orgSystemOut );
+        err.writeTo(  orgSystemErr );
     }
 
     protected TestMethod getTestMethod()

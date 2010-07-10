@@ -1,0 +1,46 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>mag</groupId>
+  <artifactId>junit4-test</artifactId>
+  <packaging>jar</packaging>
+  <version>1.0-SNAPSHOT</version>
+  <name>junit4-test</name>
+  <url>http://maven.apache.org</url>
+  <properties>
+    <junit.version>4.8.1</junit.version>
+    <junit.parallel>methods</junit.parallel>
+  </properties>
+  <dependencies>
+      <dependency>
+          <groupId>junit</groupId>
+          <artifactId>junit</artifactId>
+          <version>${junit.version}</version>
+      </dependency>
+  </dependencies>
+  <build>
+     <plugins>
+        <plugin>
+           <groupId>org.apache.maven.plugins</groupId>
+           <artifactId>maven-compiler-plugin</artifactId>
+           <configuration>
+              <source>1.5</source>
+              <target>1.5</target>
+           </configuration>
+        </plugin>
+        <plugin>
+           <groupId>org.apache.maven.plugins</groupId>
+           <artifactId>maven-surefire-plugin</artifactId>
+           <version>${surefire.version}</version>
+           <configuration>
+             <forkMode>once</forkMode>
+             <parallel>${junit.parallel}</parallel>
+             <threadCount>5</threadCount>
+             <includes>
+                <include>**/Test*.java</include>
+             </includes>
+           </configuration>
+        </plugin>
+     </plugins>
+  </build>
+</project>

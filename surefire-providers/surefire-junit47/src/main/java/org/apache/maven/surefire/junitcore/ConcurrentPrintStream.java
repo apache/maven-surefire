@@ -19,12 +19,16 @@ package org.apache.maven.surefire.junitcore;
  */
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.PrintStream;
 
 class ConcurrentPrintStream
     extends PrintStream
 {
     private final boolean isStdout;
+
+    private final LogicalStream defaultStream = new  LogicalStream();
+
 
     ConcurrentPrintStream( boolean stdout )
     {
@@ -43,8 +47,14 @@ class ConcurrentPrintStream
         }
         else
         {
-           ( (ByteArrayOutputStream) out ).write( buf, off, len );
+            ( (ByteArrayOutputStream) out ).write( buf, off, len );
         }
+    }
+
+    public void writeTo(PrintStream printStream)
+        throws IOException
+    {
+         ( (ByteArrayOutputStream) out ).writeTo(  printStream );
     }
 
     public void close()
