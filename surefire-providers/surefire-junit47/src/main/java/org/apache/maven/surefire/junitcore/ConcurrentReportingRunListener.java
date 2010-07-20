@@ -102,7 +102,17 @@ public abstract class ConcurrentReportingRunListener
     public void testFailure( Failure failure )
         throws Exception
     {
-        TestMethod.getThreadTestMethod().testFailure( failure );
+        getOrCreateTestMethod(failure.getDescription()).testFailure( failure );
+    }
+
+    private TestMethod getOrCreateTestMethod( Description description )
+    {
+        TestMethod threadTestMethod = TestMethod.getThreadTestMethod();
+        if (threadTestMethod != null){
+            return threadTestMethod;
+        }
+        TestSet testSet = getTestSet( description );
+        return testSet.createTestMethod( description );
     }
 
     @Override
@@ -116,7 +126,8 @@ public abstract class ConcurrentReportingRunListener
         throws Exception
     {
         TestSet testSet = getTestSet( description );
-        testSet.createTestMethod( description ).testIgnored( description );
+        TestMethod testMethod = getTestSet( description ).createTestMethod( description );
+        testMethod.testIgnored( description );
         testSet.incrementFinishedTests( reporterManager, reportImmediately );
     }
 
