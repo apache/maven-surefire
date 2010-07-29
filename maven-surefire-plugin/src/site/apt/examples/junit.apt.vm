@@ -25,29 +25,31 @@ Using Junit
 
 
   This is the only step that is required to get started - you can now create tests in your test source directory
-  (eg, <<<src/test/java>>>.
+  (eg, <<<src/test/java>>>).
 
 * Generations of junit support
 
-  Surefire supports three different generations of junit: Junit3.8.x, Junit 4.x (serial provider) and Junit 4.7 (junitcore provider
+  Surefire supports three different generations of junit: Junit3.8.x, Junit 4.x (serial provider) and Junit 4.7 (junit-core provider
   with parallel support). The provider is selected based on the junit version in your project and the configuration parameters (for parallel).
 
 * How is the provider chosen ?
 
-  if the junit version in the project >= 4.7 and the parallel attribute has ANY value
-      use junit47 provider
-  if junit >= 4.0 is present
-      use junit4 provider
-  else
-      use junit3.8.1
++---+
+if the junit version in the project >= 4.7 and the parallel attribute has ANY value
+    use junit47 provider
+if junit >= 4.0 is present
+    use junit4 provider
+else
+    use junit3.8.1
++---+
 
-Please note that the "else" part of this algorithm is also a FAQ response:
+    Please note that the "else" part of this algorithm is also a FAQ response:
 
-You depend on the appropriate version of junit being present in the project dependencies, or surefire may choose the wrong
-provider. If, for instance, one of your dependencies pulls in junit 3.8.1 you risk that surefire chooses the
-3.8.1 provider, which will not support annotations or any of the 4.x features.
+    You depend on the appropriate version of junit being present in the project dependencies, or surefire may choose the wrong
+    provider. If, for instance, one of your dependencies pulls in junit 3.8.1 you risk that surefire chooses the
+    3.8.1 provider, which will not support annotations or any of the 4.x features.
 
-Use mvn dependency:tree, pom ordering and/or and exclusion of transitive dependencies to fix this problem.
+    Use mvn dependency:tree, pom dependency ordering and/or and exclusion of transitive dependencies to fix this problem.
 
 * Running tests in parallel
 
@@ -69,13 +71,11 @@ Use mvn dependency:tree, pom ordering and/or and exclusion of transitive depende
     [...]
 +---+
 
-* Using Junit core provider
 
   If your tests specify any value for the "parallel" attribute and your project uses junit4.7+, your request will be routed to
   the concurrent junit provider, which uses the JUnit JUnitCore testrunner.
 
-  This is particularly useful for slow tests that can have high concurrency, or to quickly and roughly assess the independance
-  and thread safety of your tests and code.
+  This is particularly useful for slow tests that can have high concurrency.
 
   The JUnitCore test-runner has stricter test-compliance checking than earlier versions of junit; with this provider
   your test must be legitimate junit tests to be run, whereas the old 4.x provider would also run tests that were not
