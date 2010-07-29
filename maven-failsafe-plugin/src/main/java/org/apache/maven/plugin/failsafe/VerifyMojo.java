@@ -56,6 +56,7 @@ import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
  * @requiresProject true
  * @goal verify
  * @phase verify
+ * @threadSafe
  */
 public class VerifyMojo
     extends AbstractMojo

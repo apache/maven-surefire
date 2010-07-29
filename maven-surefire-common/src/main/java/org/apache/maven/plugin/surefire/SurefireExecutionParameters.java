@@ -247,4 +247,7 @@ public interface SurefireExecutionParameters
     Boolean getFailIfNoTests();
 
     void setFailIfNoTests( Boolean failIfNoTests );
+
+    boolean isMavenParallel();
+
 }

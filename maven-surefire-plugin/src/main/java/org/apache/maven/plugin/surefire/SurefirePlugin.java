@@ -48,6 +48,7 @@ import org.codehaus.plexus.util.StringUtils;
  * @requiresDependencyResolution test
  * @goal test
  * @phase test
+ * @threadSafe
  */
 public class SurefirePlugin
     extends AbstractSurefireMojo
@@ -549,6 +550,10 @@ public class SurefirePlugin
      */
     private String objectFactory;
 
+
+    /** @parameter default-value="${session.parallel}" */
+    private Boolean parallelMavenExecution;
+    
     /**
      * @component
      */
@@ -605,26 +610,14 @@ public class SurefirePlugin
                 throw new MojoFailureException( "No tests to run!" );
             }
             getLog().info( "No tests to run." );
-            return false;
+            return true;
         }
 
-        if ( !getWorkingDirectory().exists() )
-        {
-            if ( !getWorkingDirectory().mkdirs() )
-            {
-                throw new MojoFailureException( "Cannot create workingDirectory " + getWorkingDirectory() );
-            }
-        }
+        ensureWorkingDirectoryExists();
 
-        if ( !getWorkingDirectory().isDirectory() )
-        {
-            throw new MojoFailureException( "workingDirectory " + getWorkingDirectory() + " exists and is not a directory" );
-        }
+        ensureParallelRunningCompatibility();
 
-        if ( getUseSystemClassLoader() != null && ForkConfiguration.FORK_NEVER.equals( getForkMode() ) )
-        {
-            getLog().warn( "useSystemClassloader setting has no effect when not forking" );
-        }
+        warnIfUselessUseSystemClassLoaderParameter();
 
         return true;
     }
@@ -645,6 +638,8 @@ public class SurefirePlugin
     {
         return skipTests;
     }
+
+
 
     public void setSkipTests( boolean skipTests )
     {
@@ -1220,5 +1215,11 @@ public class SurefirePlugin
     {
         this.toolchainManager = toolchainManager;
     }
+
+    public boolean isMavenParallel()
+    {
+        return parallelMavenExecution  != null && parallelMavenExecution.booleanValue();
+    }
+    
 
 }

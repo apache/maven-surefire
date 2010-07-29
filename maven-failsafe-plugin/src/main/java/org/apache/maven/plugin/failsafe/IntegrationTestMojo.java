@@ -59,6 +59,7 @@ import org.codehaus.plexus.util.StringUtils;
  * @requiresDependencyResolution test
  * @goal integration-test
  * @phase integration-test
+ * @threadSafe
  */
 public class IntegrationTestMojo
     extends AbstractSurefireMojo
@@ -583,6 +584,9 @@ public class IntegrationTestMojo
      */
     private String encoding;
 
+    /** @parameter default-value="${session.parallel}" */
+    private Boolean parallelMavenExecution;
+
     /**
      * @component
      */
@@ -672,6 +676,7 @@ public class IntegrationTestMojo
             return false;
         }
 
+
         if ( !getTestClassesDirectory().exists() )
         {
             if ( getFailIfNoTests() != null && getFailIfNoTests().booleanValue() )
@@ -682,23 +687,11 @@ public class IntegrationTestMojo
             return false;
         }
 
-        if ( !getWorkingDirectory().exists() )
-        {
-            if ( !getWorkingDirectory().mkdirs() )
-            {
-                throw new MojoFailureException( "Cannot create workingDirectory " + getWorkingDirectory() );
-            }
-        }
+        ensureWorkingDirectoryExists();
 
-        if ( !getWorkingDirectory().isDirectory() )
-        {
-            throw new MojoFailureException( "workingDirectory " + getWorkingDirectory() + " exists and is not a directory" );
-        }
+        ensureParallelRunningCompatibility();
 
-        if ( getUseSystemClassLoader() != null && ForkConfiguration.FORK_NEVER.equals( getForkMode() ) )
-        {
-            getLog().warn( "useSystemClassloader setting has no effect when not forking" );
-        }
+        warnIfUselessUseSystemClassLoaderParameter();
 
         return true;
     }
@@ -1314,5 +1307,11 @@ public class IntegrationTestMojo
     {
         // ignore
     }
+
+    public boolean isMavenParallel()
+    {
+        return parallelMavenExecution  != null && parallelMavenExecution.booleanValue();
+    }
+
 
 }

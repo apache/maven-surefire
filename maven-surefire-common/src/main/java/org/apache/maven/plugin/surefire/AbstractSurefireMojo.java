@@ -108,7 +108,7 @@ public abstract class AbstractSurefireMojo
         }
     }
 
-    private boolean isAnyConcurrencySelected()
+    protected boolean isAnyConcurrencySelected()
     {
         return this.getParallel() != null && this.getParallel().trim().length() > 0;
     }
@@ -186,6 +186,11 @@ public abstract class AbstractSurefireMojo
         {
             throw new MojoExecutionException( "Bug in junit 4.7 plugin. Please report with stacktrace" );
         }
+    }
+
+    protected boolean isForkModeNever()
+    {
+        return ForkConfiguration.FORK_NEVER.equals( getForkMode()); 
     }
 
     protected SurefireBooter constructSurefireBooter()
@@ -402,7 +407,7 @@ public abstract class AbstractSurefireMojo
         if ( tc != null )
         {
             getLog().info( "Toolchain in " + getPluginName() + "-plugin: " + tc );
-            if ( ForkConfiguration.FORK_NEVER.equals( getForkMode() ) )
+            if ( isForkModeNever() )
             {
                 setForkMode( ForkConfiguration.FORK_ONCE );
             }
@@ -760,4 +765,37 @@ public abstract class AbstractSurefireMojo
         }
     }
 
+    protected void ensureWorkingDirectoryExists()
+        throws MojoFailureException
+    {
+        if ( !getWorkingDirectory().exists() )
+        {
+            if ( !getWorkingDirectory().mkdirs() )
+            {
+                throw new MojoFailureException( "Cannot create workingDirectory " + getWorkingDirectory() );
+            }
+        }
+
+        if ( !getWorkingDirectory().isDirectory() )
+        {
+            throw new MojoFailureException( "workingDirectory " + getWorkingDirectory() + " exists and is not a directory" );
+        }
+    }
+
+    protected void ensureParallelRunningCompatibility()
+        throws MojoFailureException
+    {
+        if (isMavenParallel() && isForkModeNever())
+        {
+            throw new MojoFailureException( "parallel maven execution is not compatible with surefire forkmode NEVER");
+        }
+    }
+
+    protected void warnIfUselessUseSystemClassLoaderParameter()
+    {
+        if ( getUseSystemClassLoader() != null && isForkModeNever() )
+        {
+            getLog().warn( "useSystemClassloader setting has no effect when not forking" );
+        }
+    }
 }
