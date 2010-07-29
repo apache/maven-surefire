@@ -410,7 +410,7 @@ public class SurefirePlugin
     private String testNGArtifactName;
 
     /**
-     * (TestNG only) The attribute thread-count allows you to specify how many threads should be allocated for this execution. Only
+     * (TestNG/JUnit 4.7 provider only) The attribute thread-count allows you to specify how many threads should be allocated for this execution. Only
      * makes sense to use in conjunction with parallel.
      *
      * @parameter expression="${threadCount}"
@@ -419,7 +419,7 @@ public class SurefirePlugin
     private int threadCount;
 
     /**
-     * (junitcore only) Indicates that threadCount is per cpu core. Defaults to true
+     * (JUnit 4.7 provider) Indicates that threadCount is per cpu core. Defaults to true
      *
      * @parameter expression="${perCoreThreadCount}"
      * @since 2.5
@@ -427,7 +427,7 @@ public class SurefirePlugin
     private String perCoreThreadCount;
 
     /**
-     * (junitcore only) Indicates that the thread pool will be unlimited. The parallel parameter and the actual number of classes/methods
+     * (JUnit 4.7 provider) Indicates that the thread pool will be unlimited. The parallel parameter and the actual number of classes/methods
      * will decide. Setting this to true effectively disables perCoreThreadCount and threadCount.
      *
      * @parameter expression="${useUnlimitedThreads}"
@@ -440,7 +440,7 @@ public class SurefirePlugin
      * methods that depend on each other, which will be run in the same thread in order to respect their order of
      * execution.
      * <p/>
-     * In JUnit 4.7 the values are classes/methods/both to run in separate threads, as controlled by threadCount.
+     * (JUnit 4.7 provider) Supports values classes/methods/both to run in separate threads, as controlled by threadCount.
      *
      * @parameter expression="${parallel}"
      * @todo test how this works with forking, and console/file output parallelism
