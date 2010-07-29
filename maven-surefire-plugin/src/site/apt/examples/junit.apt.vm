@@ -30,7 +30,24 @@ Using Junit
 * Generations of junit support
 
   Surefire supports three different generations of junit: Junit3.8.x, Junit 4.x (serial provider) and Junit 4.7 (junitcore provider
-   with parallel support). The provider is selected based on the junit version in your project and the configuration parameters (for parallel).
+  with parallel support). The provider is selected based on the junit version in your project and the configuration parameters (for parallel).
+
+* How is the provider chosen ?
+
+  if the junit version in the project >= 4.7 and the parallel attribute has ANY value
+      use junit47 provider
+  if junit >= 4.0 is present
+      use junit4 provider
+  else
+      use junit3.8.1
+
+Please note that the "else" part of this algorithm is also a FAQ response:
+
+You depend on the appropriate version of junit being present in the project dependencies, or surefire may choose the wrong
+provider. If, for instance, one of your dependencies pulls in junit 3.8.1 you risk that surefire chooses the
+3.8.1 provider, which will not support annotations or any of the 4.x features.
+
+Use mvn dependency:tree, pom ordering and/or and exclusion of transitive dependencies to fix this problem.
 
 * Running tests in parallel
 
@@ -61,10 +78,8 @@ Using Junit
   and thread safety of your tests and code.
 
   The JUnitCore test-runner has stricter test-compliance checking than earlier versions of junit; with this provider
-  your test must be legitimate junit tests to be run, whereas the old 4.x provider would also run tests that were not according to
-  junit spec.
-
-
+  your test must be legitimate junit tests to be run, whereas the old 4.x provider would also run tests that were not
+  according to junit spec.
 
 
   For more information on JUnit, see the {{{http://www.junit.org}Junit web site}}.
