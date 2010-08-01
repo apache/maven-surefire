@@ -48,7 +48,8 @@
       <archive>http://mail-archives.apache.org/mod_mbox/maven-users</archive>
       <otherArchives>
         <otherArchive>http://www.mail-archive.com/users@maven.apache.org/</otherArchive>
-        <otherArchive>http://www.nabble.com/Maven---Users-f178.html</otherArchive>
+        <otherArchive>http://old.nabble.com/Maven---Users-f178.html</otherArchive>
+        <otherArchive>http://markmail.org/list/org.apache.maven.users</otherArchive>
       </otherArchives>
     </mailingList>
     <mailingList>
@@ -57,13 +58,22 @@
       <unsubscribe>dev-unsubscribe@maven.apache.org</unsubscribe>
       <post>dev@maven.apache.org</post>
       <archive>http://mail-archives.apache.org/mod_mbox/maven-dev</archive>
+      <otherArchives>
+        <otherArchive>http://www.mail-archive.com/dev@maven.apache.org/</otherArchive>
+        <otherArchive>http://old.nabble.com/Maven-Developers-f179.html</otherArchive>
+        <otherArchive>http://markmail.org/list/org.apache.maven.dev</otherArchive>
+      </otherArchives>
     </mailingList>
     <mailingList>
       <name>Maven Commits List</name>
       <subscribe>commits-subscribe@maven.apache.org</subscribe>
       <unsubscribe>commits-unsubscribe@maven.apache.org</unsubscribe>
-      <post>commits@maven.apache.org</post>
-      <archive>http://mail-archives.apache.org/mod_mbox/maven-dev</archive>
+      <archive>http://mail-archives.apache.org/mod_mbox/maven-commits</archive>
+      <otherArchives>
+        <otherArchive>http://www.mail-archive.com/commits@maven.apache.org</otherArchive>
+        <otherArchive>http://old.nabble.com/Maven---Commits-f15575.html</otherArchive>
+        <otherArchive>http://markmail.org/list/org.apache.maven.commits</otherArchive>
+      </otherArchives>
     </mailingList>
     <!-- duplication from maven-parent pom - temporary until they inherit properly -->
     <mailingList>
@@ -72,20 +82,33 @@
       <subscribe>announce-subscribe@maven.apache.org</subscribe>
       <unsubscribe>announce-unsubscribe@maven.apache.org</unsubscribe>
       <archive>http://mail-archives.apache.org/mod_mbox/maven-announce/</archive>
+      <otherArchives>
+        <otherArchive>http://www.mail-archive.com/announce@maven.apache.org</otherArchive>
+        <otherArchive>http://old.nabble.com/Maven-Announcements-f15617.html</otherArchive>
+        <otherArchive>http://markmail.org/list/org.apache.maven.announce</otherArchive>
+      </otherArchives>
     </mailingList>
     <mailingList>
       <name>Maven Issues List</name>
-      <post>issues@maven.apache.org</post>
       <subscribe>issues-subscribe@maven.apache.org</subscribe>
       <unsubscribe>issues-unsubscribe@maven.apache.org</unsubscribe>
       <archive>http://mail-archives.apache.org/mod_mbox/maven-issues/</archive>
+      <otherArchives>
+        <otherArchive>http://www.mail-archive.com/issues@maven.apache.org</otherArchive>
+        <otherArchive>http://old.nabble.com/Maven---Issues-f15573.html</otherArchive>
+        <otherArchive>http://markmail.org/list/org.apache.maven.issues</otherArchive>
+      </otherArchives>
     </mailingList>
     <mailingList>
       <name>Maven Notifications List</name>
-      <post>notifications@maven.apache.org</post>
       <subscribe>notifications-subscribe@maven.apache.org</subscribe>
       <unsubscribe>notifications-unsubscribe@maven.apache.org</unsubscribe>
       <archive>http://mail-archives.apache.org/mod_mbox/maven-notifications/</archive>
+      <otherArchives>
+        <otherArchive>http://www.mail-archive.com/notifications@maven.apache.org</otherArchive>
+        <otherArchive>http://old.nabble.com/Maven---Notifications-f15574.html</otherArchive>
+        <otherArchive>http://markmail.org/list/org.apache.maven.notifications</otherArchive>
+      </otherArchives>
     </mailingList>
   </mailingLists>
 

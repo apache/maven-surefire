@@ -46,7 +46,7 @@
       <archive>http://mail-archives.apache.org/mod_mbox/maven-surefire-users/</archive>
       <otherArchives>
         <otherArchive>http://www.mail-archive.com/surefire-users@maven.apache.org</otherArchive>
-        <otherArchive>http://maven.surefire.users.markmail.org/</otherArchive>
+        <otherArchive>http://markmail.org/list/org.apache.maven.surefire-users</otherArchive>
       </otherArchives>
     </mailingList>
     <mailingList>
@@ -57,7 +57,7 @@
       <archive>http://mail-archives.apache.org/mod_mbox/maven-surefire-dev/</archive>
       <otherArchives>
         <otherArchive>http://www.mail-archive.com/surefire-dev@maven.apache.org</otherArchive>
-        <otherArchive>http://maven.surefire.dev.markmail.org/</otherArchive>
+        <otherArchive>http://markmail.org/list/org.apache.maven.surefire-dev</otherArchive>
       </otherArchives>
     </mailingList>
     <mailingList>
@@ -67,7 +67,7 @@
       <archive>http://mail-archives.apache.org/mod_mbox/maven-surefire-commits/</archive>
       <otherArchives>
         <otherArchive>http://www.mail-archive.com/surefire-commits@maven.apache.org</otherArchive>
-        <otherArchive>http://maven.surefire.commits.markmail.org/</otherArchive>
+        <otherArchive>http://markmail.org/list/org.apache.maven.surefire-commits</otherArchive>
       </otherArchives>
     </mailingList>
   </mailingLists>
