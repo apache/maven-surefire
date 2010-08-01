@@ -21,7 +21,6 @@ package org.apache.maven.surefire.testng;
 
 import org.apache.maven.surefire.report.ReporterManager;
 import org.apache.maven.surefire.testset.AbstractTestSet;
-import org.apache.maven.surefire.testset.TestSetFailedException;
 
 /**
  * Main plugin point for running testng tests within the Surefire runtime

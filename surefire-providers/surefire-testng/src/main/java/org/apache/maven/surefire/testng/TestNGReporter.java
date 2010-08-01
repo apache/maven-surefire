@@ -24,7 +24,6 @@ import java.util.ResourceBundle;
 import org.apache.maven.surefire.Surefire;
 import org.apache.maven.surefire.report.PojoStackTraceWriter;
 import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterManager;
 import org.testng.ISuite;
 import org.testng.ISuiteListener;

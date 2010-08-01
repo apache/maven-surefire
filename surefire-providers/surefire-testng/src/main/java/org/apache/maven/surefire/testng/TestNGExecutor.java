@@ -21,7 +21,6 @@ package org.apache.maven.surefire.testng;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
