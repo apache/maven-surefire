@@ -40,15 +40,13 @@ public class SystemPropertiesTestIT
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
         ArrayList goals = getInitialGoals();
         goals.add( "test" );
-        // SUREFIRE-121... someday we should re-enable this
-        // goals.add( "-DsetOnMavenCommandLine=baz" );
-
+        goals.add( "-DsetOnMavenCommandLine=baz" );
         goals.add( "-DsetOnArgLineWorkAround=baz" );
         verifier.executeGoals( goals );
         verifier.verifyErrorFreeLog();
         verifier.resetStreams();
 
-        HelperAssertions.assertTestSuiteResults( 6, 0, 0, 0, testDir );
+        HelperAssertions.assertTestSuiteResults( 7, 0, 0, 0, testDir );
     }
 
     public void testSystemPropertiesNoFork()
@@ -61,14 +59,13 @@ public class SystemPropertiesTestIT
         goals.add( "test" );
         goals.add( "-DforkMode=never" );
         goals.add( "-DsetOnArgLineWorkAround=baz" );
-        // SUREFIRE-121... someday we should re-enable this
-        // goals.add( "-DsetOnMavenCommandLine=baz" );
+        goals.add( "-DsetOnMavenCommandLine=baz" );
         // DGF fake the argLine, since we're not forking
         goals.add( "-DsetOnArgLine=bar" );
         verifier.executeGoals( goals );
         verifier.verifyErrorFreeLog();
         verifier.resetStreams();
 
-        HelperAssertions.assertTestSuiteResults( 6, 0, 0, 0, testDir );
+        HelperAssertions.assertTestSuiteResults( 7, 0, 0, 0, testDir );
     }
 }

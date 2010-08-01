@@ -29,6 +29,7 @@ import org.apache.maven.toolchain.Toolchain;
 import org.codehaus.plexus.util.StringUtils;
 
 import java.io.File;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -680,13 +681,16 @@ public abstract class AbstractSurefireMojo
 
         // We used to take all of our system properties and dump them in with the
         // user specified properties for SUREFIRE-121, causing SUREFIRE-491.
-        // Not gonna do THAT any more... but I'm leaving this code here in case
-        // we need it later when we try to fix SUREFIRE-121 again.
+        // Not gonna do THAT any more... instead, we only propagate those system properties
+        // that have been explicitly specified by the user via -Dkey=value on the CLI
 
-        // Get the properties from the MavenSession instance to make embedded use work correctly
-        Properties userSpecifiedProperties = (Properties) getSession().getExecutionProperties().clone();
-        userSpecifiedProperties.putAll( getInternalSystemProperties() );
-        //systemProperties = userSpecifiedProperties;
+        Properties userProperties = getUserProperties();
+        for ( Iterator it = userProperties.keySet().iterator(); it.hasNext(); )
+        {
+            String key = (String) it.next();
+            String value = userProperties.getProperty( key );
+            getInternalSystemProperties().setProperty( key, value );
+        }
 
         getInternalSystemProperties().setProperty( "basedir", getBasedir().getAbsolutePath() );
         getInternalSystemProperties().setProperty( "user.dir", getWorkingDirectory().getAbsolutePath() );
@@ -707,6 +711,36 @@ public abstract class AbstractSurefireMojo
                 System.setProperty( key, value );
             }
         }
+    }
+
+    private Properties getUserProperties()
+    {
+        Properties props = null;
+        try
+        {
+            // try calling MavenSession.getUserProperties() from Maven 2.1.0-M1+
+            Method getUserProperties = getSession().getClass().getMethod( "getUserProperties", null );
+            props = (Properties) getUserProperties.invoke( getSession(), null );
+        }
+        catch ( Exception e )
+        {
+            String msg =
+                "Build uses Maven 2.0.x, cannot propagate system properties"
+                    + " from command line to tests (cf. SUREFIRE-121)";
+            if ( getLog().isDebugEnabled() )
+            {
+                getLog().warn( msg, e );
+            }
+            else
+            {
+                getLog().warn( msg );
+            }
+        }
+        if ( props == null )
+        {
+            props = new Properties();
+        }
+        return props;
     }
 
     /**

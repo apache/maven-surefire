@@ -55,10 +55,9 @@ public class BasicTest
         assertEquals("property setOnArgLineWorkAround not set", "baz", System.getProperty( "setOnArgLineWorkAround" ) );
     }
     
-// SUREFIRE-121; someday we should re-enable this    
-//    public void testSetOnMavenCommandLine()
-//    {
-//        assertEquals("property setOnMavenCommandLine not set", "baz", System.getProperty("setOnMavenCommandLine"));
-//    }
+    public void testSetOnMavenCommandLine()
+    {
+        assertEquals("property setOnMavenCommandLine not set", "baz", System.getProperty("setOnMavenCommandLine"));
+    }
     
 }
