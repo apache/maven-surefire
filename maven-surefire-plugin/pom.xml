@@ -205,7 +205,6 @@
         <version>2.6</version>
         <configuration>
           <requirements>
-            <maven>2.0.9</maven>
             <jdk>1.4</jdk>
           </requirements>
         </configuration>
