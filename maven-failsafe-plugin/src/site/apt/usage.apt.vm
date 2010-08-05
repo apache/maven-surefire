@@ -225,7 +225,7 @@ mvn verify
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-failsafe-plugin</artifactId>
+        <artifactId>maven-surefire-report-plugin</artifactId>
         <version>${project.version}</version>
         <reportSets>
           <reportSet>
@@ -240,6 +240,66 @@ mvn verify
               </reportsDirectories>
             </configuration>
         </reportSet>
+      </plugin>
+    </plugins>
+  </reporting>
+  [...]
+</project>
++---+
+
+* Running integration tests multiple times
+
+  If you need to run your integration tests multiple times, just use multiple executions of the <<<integration-test>>>
+  goal.  You will need to specify a different summary file for each execution, and then configure the <<<verify>>> goal
+  with the multiple summary files in order to fail the build when any one execution has failures, e.g.
+
++---+
+<project>
+  [...]
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <version>${project.version}</version>
+        <executions>
+          <execution>
+            <id>integration-test-red-bevels</id>
+            <goals>
+              <goal>integration-test</goal>
+            </goals>
+            <configuration>
+              <systemPropertyVariables>
+                <bevels>red</bevels>
+              </systemPropertyVariables>
+              <summaryFile>target/failsafe-reports/failsafe-summary-red-bevels.xml</summaryFile>
+            </configuration>
+          </execution>
+          <execution>
+            <id>integration-test-no-bevels</id>
+            <goals>
+              <goal>integration-test</goal>
+            </goals>
+            <configuration>
+              <systemPropertyVariables>
+                <bevels>none</bevels>
+              </systemPropertyVariables>
+              <summaryFile>target/failsafe-reports/failsafe-summary-no-bevels.xml</summaryFile>
+            </configuration>
+          </execution>
+          <execution>
+            <id>verify</id>
+            <goals>
+              <goal>verify</goal>
+            </goals>
+            <configuration>
+              <summaryFiles>
+                <summaryFile>target/failsafe-reports/failsafe-summary-red-bevels.xml</summaryFile>
+                <summaryFile>target/failsafe-reports/failsafe-summary-no-bevels.xml</summaryFile>
+              </summaryFiles>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </reporting>

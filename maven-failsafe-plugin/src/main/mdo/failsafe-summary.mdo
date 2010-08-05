@@ -24,7 +24,7 @@ under the License.
   <id>failsafe-summary</id>
   <name>FailsafeSummary</name>
   <description>
-    A summary of tests executed by the Failsafe Maven Plugin.
+    A summary of tests executed by the Maven Failsafe Plugin.
   </description>
   <defaults>
     <default>
@@ -41,23 +41,80 @@ under the License.
       <description>
         Describes the results of executing tests
       </description>
-      <version>2.4.3</version>
+      <version>2.4.3+</version>
       <fields>
         <field xml.attribute="true">
           <name>result</name>
-          <version>2.4.3</version>
+          <version>2.4.3+</version>
           <required>true</required>
           <type>int</type>
           <description>The surefire result code</description>
         </field>
         <field>
           <name>exception</name>
-          <version>2.4.3</version>
+          <version>2.4.3+</version>
           <required>false</required>
           <type>String</type>
           <description>The exception that caused surefire to bomb out</description>
         </field>
       </fields>
+      <codeSegments>
+        <codeSegment>
+          <version>2.6.0</version>
+          <code><![CDATA[
+    /**
+     * Merges the summary result with this summary result.
+     *
+     * @param summary The summary to merge.
+     * @since 2.6
+     */
+    public void merge( FailsafeSummary summary )
+    {
+        switch ( this.result )
+        {
+            case org.apache.maven.surefire.booter.SurefireBooter.TESTS_SUCCEEDED_EXIT_CODE:
+                this.result = summary.result;
+                break;
+            case org.apache.maven.surefire.booter.SurefireBooter.NO_TESTS_EXIT_CODE:
+                switch ( summary.result )
+                {
+                    case org.apache.maven.surefire.booter.SurefireBooter.TESTS_SUCCEEDED_EXIT_CODE:
+                        break;
+                    case org.apache.maven.surefire.booter.SurefireBooter.NO_TESTS_EXIT_CODE:
+                        break;
+                    case org.apache.maven.surefire.booter.SurefireBooter.TESTS_FAILED_EXIT_CODE:
+                        this.result = summary.result;
+                        break;
+                    default:
+                        this.result = summary.result;
+                        break;
+                }
+                break;
+            case org.apache.maven.surefire.booter.SurefireBooter.TESTS_FAILED_EXIT_CODE:
+                switch ( summary.result )
+                {
+                    case org.apache.maven.surefire.booter.SurefireBooter.TESTS_SUCCEEDED_EXIT_CODE:
+                        break;
+                    case org.apache.maven.surefire.booter.SurefireBooter.NO_TESTS_EXIT_CODE:
+                        break;
+                    case org.apache.maven.surefire.booter.SurefireBooter.TESTS_FAILED_EXIT_CODE:
+                        break;
+                    default:
+                        this.result = summary.result;
+                        break;
+                }
+                break;
+            default:
+                break;
+        }
+        if ( this.exception == null )
+        {
+            this.exception = summary.exception;
+        }
+    }
+          ]]></code>
+        </codeSegment>
+      </codeSegments>
     </class>
   </classes>
 </model>

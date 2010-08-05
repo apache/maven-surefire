@@ -32,6 +32,7 @@ import org.apache.maven.plugin.surefire.SurefireHelper;
 import org.apache.maven.plugin.surefire.SurefireReportParameters;
 import org.apache.maven.surefire.failsafe.model.FailsafeSummary;
 import org.apache.maven.surefire.failsafe.model.io.xpp3.FailsafeSummaryXpp3Reader;
+import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.ReaderFactory;
 import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
@@ -119,12 +120,19 @@ public class VerifyMojo
     private File reportsDirectory;
 
     /**
-     * The summary file to write integration test results to.
+     * The summary file to read integration test results from.
      *
      * @parameter expression="${project.build.directory}/failsafe-reports/failsafe-summary.xml"
      * @required
      */
     private File summaryFile;
+
+    /**
+     * Additional summary files to read integration test results from.
+     *
+     * @parameter
+     */
+    private File[] summaryFiles;
 
     /**
      * Set this to "true" to cause a failure if there are no tests to run.
@@ -166,15 +174,23 @@ public class VerifyMojo
                     encoding = this.encoding;
                 }
 
-                FileInputStream fos = new FileInputStream( summaryFile );
-                BufferedInputStream bos = new BufferedInputStream( fos );
-                Reader w = new InputStreamReader( bos, encoding );
-                FailsafeSummaryXpp3Reader reader = new FailsafeSummaryXpp3Reader();
-                final FailsafeSummary summary = reader.read( w );
+                final FailsafeSummary summary;
+                if ( !summaryFile.isFile() && summaryFiles != null )
+                {
+                    summary = new FailsafeSummary();
+                }
+                else
+                {                    
+                    summary = readSummary( encoding, summaryFile );
+                }
+                if ( summaryFiles != null )
+                {
+                    for ( int i = 0; i < summaryFiles.length; i++ )
+                    {
+                        summary.merge( readSummary( encoding, summaryFiles[i] ) );
+                    }
+                }
                 result = summary.getResult();
-                w.close();
-                bos.close();
-                fos.close();
             }
             catch ( IOException e )
             {
@@ -186,6 +202,28 @@ public class VerifyMojo
             }
 
             SurefireHelper.reportExecution( this, result, getLog() );
+        }
+    }
+
+    private FailsafeSummary readSummary( String encoding, File summaryFile )
+            throws IOException, XmlPullParserException
+    {
+        FileInputStream fileInputStream = null;
+        BufferedInputStream bufferedInputStream = null;
+        Reader reader = null;
+        try
+        {
+            fileInputStream = new FileInputStream( summaryFile );
+            bufferedInputStream = new BufferedInputStream( fileInputStream );
+            reader = new InputStreamReader( bufferedInputStream, encoding );
+            FailsafeSummaryXpp3Reader xpp3Reader = new FailsafeSummaryXpp3Reader();
+            return xpp3Reader.read( reader );
+        }
+        finally
+        {
+            IOUtil.close( reader );
+            IOUtil.close( bufferedInputStream );
+            IOUtil.close( fileInputStream );
         }
     }
 
