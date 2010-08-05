@@ -131,6 +131,7 @@ public class VerifyMojo
      * Additional summary files to read integration test results from.
      *
      * @parameter
+     * @since 2.6
      */
     private File[] summaryFiles;
 
