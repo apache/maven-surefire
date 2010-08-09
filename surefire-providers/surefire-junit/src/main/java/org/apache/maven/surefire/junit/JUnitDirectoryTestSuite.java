@@ -49,6 +49,10 @@ public class JUnitDirectoryTestSuite
         {
             junitClass = classLoader.loadClass( Test.class.getName() );
         }
+        catch ( NoClassDefFoundError e)
+        {
+            // ignore this
+        }
         catch ( ClassNotFoundException e )
         {
             // ignore this
@@ -69,7 +73,7 @@ public class JUnitDirectoryTestSuite
         }
         return testSet;
     }
-    
+
     private boolean classHasPublicNoArgConstructor( Class testClass )
     {
         try
