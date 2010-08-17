@@ -41,6 +41,6 @@ public class SurefireDirectoryScannerTest extends TestCase {
         SurefireDirectoryScanner surefireDirectoryScanner = new SurefireDirectoryScanner(baseDir, include, exclude);
         String[] classNames = surefireDirectoryScanner.collectTests();
         assertNotNull( classNames);
-        assertEquals(3, classNames.length);
+        assertEquals(4, classNames.length);
    }
 }

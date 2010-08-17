@@ -18,7 +18,6 @@ package org.apache.maven.surefire.util;
  * under the License.
  */
 
-import org.codehaus.plexus.util.StringUtils;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.testset.SurefireTestSet;
 
@@ -35,6 +34,8 @@ public class SurefireDirectoryScanner {
 
     private static final String FS = System.getProperty( "file.separator" );
     private static final String[] EMPTY_STRING_ARRAY = new String[0];
+    private static final String JAVA_SOURCE_FILE_EXTENSION = ".java";
+    private static final String JAVA_CLASS_FILE_EXTENSION = ".class";
 
     private final File basedir;
 
@@ -162,7 +163,16 @@ public class SurefireDirectoryScanner {
 
         for ( int i = 0; i < incs.length; i++ )
         {
-            incs[i] = StringUtils.replace( (String) list.get( i ), "java", "class" );
+        	String inc = (String) list.get( i );
+        	if ( inc.endsWith( JAVA_SOURCE_FILE_EXTENSION )) {
+        		inc = new StringBuffer( inc.length()
+        		                       - JAVA_SOURCE_FILE_EXTENSION.length()
+        		                       + JAVA_CLASS_FILE_EXTENSION.length() )
+        				.append( inc.substring(0, inc.lastIndexOf( JAVA_SOURCE_FILE_EXTENSION )))
+        				.append( JAVA_CLASS_FILE_EXTENSION )
+        				.toString();
+        	}
+            incs[i] = inc;
 
         }
         return incs;
