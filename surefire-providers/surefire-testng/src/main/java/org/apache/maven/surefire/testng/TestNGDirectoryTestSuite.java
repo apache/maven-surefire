@@ -115,15 +115,28 @@ public class TestNGDirectoryTestSuite
             throw new IllegalStateException( "You must call locateTestSets before calling execute" );
         }
 
+        Class junitTest;
+        try
+        {
+            junitTest = Class.forName( "junit.framework.Test" );
+        }
+        catch ( ClassNotFoundException e )
+        {
+            junitTest = null;
+        }
+
         List testNgTestClasses = new ArrayList();
         List junitTestClasses = new ArrayList();
         for ( Iterator it = testSets.values().iterator(); it.hasNext(); )
         {
             SurefireTestSet testSet = (SurefireTestSet) it.next();
             Class c = testSet.getTestClass();
-            if (junit.framework.Test.class.isAssignableFrom( c )) {
+            if ( junitTest != null && junitTest.isAssignableFrom( c ) )
+            {
                 junitTestClasses.add( c );
-            } else {
+            }
+            else
+            {
                 testNgTestClasses.add( c );
             }
         }
