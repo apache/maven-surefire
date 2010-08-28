@@ -54,7 +54,7 @@ public class UmlautDirIT
         ArrayList goals = this.getInitialGoals();
         goals.add( "test" );
         goals.add( "-DuseSystemClassLoader=false" );
-        verifier.executeGoals( goals );
+        executeGoals( verifier, goals );
         verifier.verifyErrorFreeLog();
         verifier.resetStreams();
 

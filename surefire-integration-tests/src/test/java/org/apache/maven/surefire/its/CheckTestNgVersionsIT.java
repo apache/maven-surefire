@@ -96,7 +96,7 @@ public class CheckTestNgVersionsIT
         // DGF we have to pass in the version as a command line argument
         // and NOT as a system property; otherwise our setting will be ignored
         arguments.add( "-DtestNgVersion=" + version );
-        verifier.executeGoals( arguments );
+        executeGoals( verifier, arguments );
         verifier.verifyErrorFreeLog();
         verifier.resetStreams();
 

@@ -41,7 +41,7 @@ public class AggregateReportIT
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
         List goals = this.getInitialGoals();
         goals.add( "surefire-report:report" );
-        verifier.executeGoals( goals );
+        executeGoals( verifier, goals );
         //DGF even though the build will succeed, the log will contain errors (from the failure)
         //verifier.verifyErrorFreeLog();
         verifier.resetStreams();

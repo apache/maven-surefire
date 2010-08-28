@@ -1,36 +1,40 @@
 package org.apache.maven.surefire.its;
 
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 import org.apache.maven.settings.Profile;
 import org.apache.maven.settings.Repository;
 import org.apache.maven.settings.RepositoryPolicy;
 import org.apache.maven.settings.Settings;
 import org.apache.maven.settings.io.xpp3.SettingsXpp3Reader;
 import org.apache.maven.settings.io.xpp3.SettingsXpp3Writer;
-import org.codehaus.plexus.util.xml.XmlStreamReader;
+import org.codehaus.plexus.util.ReaderFactory;
+import org.codehaus.plexus.util.WriterFactory;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Random;
-/*
-* Licensed to the Apache Software Foundation (ASF) under one
-* or more contributor license agreements.  See the NOTICE file
-* distributed with this work for additional information
-* regarding copyright ownership.  The ASF licenses this file
-* to you under the Apache License, Version 2.0 (the
-* "License"); you may not use this file except in compliance
-* with the License.  You may obtain a copy of the License at
-*
-*  http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing,
-* software distributed under the License is distributed on an
-* "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-* KIND, either express or implied.  See the License for the
-* specific language governing permissions and limitations
-* under the License.
-*/
 
 /**
  * Helper class to assist in using verifier with a staged local repository.
@@ -64,11 +68,9 @@ public final class StagedLocalRepoHelper
         throws IOException
     {
         Random entropy = new Random();
-        SettingsXpp3Reader reader = new SettingsXpp3Reader();
-        SettingsXpp3Writer writer = new SettingsXpp3Writer();
         try
         {
-            Settings settings = reader.read( new XmlStreamReader( originalSettingsXml ) );
+            Settings settings = new SettingsXpp3Reader().read( ReaderFactory.newXmlReader( originalSettingsXml ) );
 
             String localRepo = System.getProperty( "maven.repo.local" );
 
@@ -98,6 +100,7 @@ public final class StagedLocalRepoHelper
                 profile.setId( "stagedLocalRepo" + entropy.nextLong() );
             }
             while ( settings.getProfilesAsMap().containsKey( profile.getId() ) );
+
             Repository repository = new Repository();
             repository.setId( profile.getId() + entropy.nextLong() );
             RepositoryPolicy policy = new RepositoryPolicy();
@@ -114,7 +117,15 @@ public final class StagedLocalRepoHelper
             settings.addProfile( profile );
             settings.addActiveProfile( profile.getId() );
             settings.setLocalRepository( stagedLocalRepo.getAbsolutePath() );
-            writer.write( new FileWriter( stagedSettingsXml ), settings );
+
+            for ( Iterator it = settings.getProfiles().iterator(); it.hasNext(); )
+            {
+                profile = (Profile) it.next();
+                disableUpdates( profile.getRepositories() );
+                disableUpdates( profile.getPluginRepositories() );
+            }
+
+            new SettingsXpp3Writer().write( WriterFactory.newXmlWriter( stagedSettingsXml ), settings );
         }
         catch ( XmlPullParserException e )
         {
@@ -123,4 +134,30 @@ public final class StagedLocalRepoHelper
             throw ioe;
         }
     }
+
+    private static void disableUpdates( List repositories )
+    {
+        if ( repositories != null )
+        {
+            for ( Iterator it = repositories.iterator(); it.hasNext(); )
+            {
+                Repository repo = (Repository) it.next();
+                repo.setReleases( disableUpdates( repo.getReleases() ) );
+                repo.setSnapshots( disableUpdates( repo.getSnapshots() ) );
+            }
+        }
+    }
+
+    private static RepositoryPolicy disableUpdates( RepositoryPolicy policy )
+    {
+        if ( policy == null )
+        {
+            policy = new RepositoryPolicy();
+        }
+
+        policy.setUpdatePolicy( "never" );
+        
+        return policy;
+    }
+
 }

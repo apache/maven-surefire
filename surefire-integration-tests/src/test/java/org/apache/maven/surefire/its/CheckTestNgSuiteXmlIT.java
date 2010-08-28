@@ -42,7 +42,7 @@ public class CheckTestNgSuiteXmlIT
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
         List goals = getInitialGoals();
         goals.add( "test" );
-        verifier.executeGoals( goals );
+        executeGoals( verifier, goals );
         verifier.verifyErrorFreeLog();
         verifier.resetStreams();
 
@@ -57,7 +57,7 @@ public class CheckTestNgSuiteXmlIT
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
         List goals = getInitialGoals();
         goals.addAll( Arrays.asList( new String[]{ "test", "-DforkMode=always" } ) );
-        verifier.executeGoals( goals );
+        executeGoals( verifier, goals );
         verifier.verifyErrorFreeLog();
         verifier.resetStreams();
 

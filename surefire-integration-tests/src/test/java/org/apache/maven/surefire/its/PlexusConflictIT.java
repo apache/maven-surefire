@@ -55,7 +55,7 @@ public class PlexusConflictIT
         ArrayList goals = this.getInitialGoals();
         goals.add( "test" );
         goals.add( "-Dsurefire.useSystemClassLoader=false" );
-        verifier.executeGoals( goals );
+        executeGoals( verifier, goals );
         verifier.verifyErrorFreeLog();
         verifier.resetStreams();
 

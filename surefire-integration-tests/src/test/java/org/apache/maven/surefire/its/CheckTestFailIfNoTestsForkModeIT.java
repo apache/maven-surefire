@@ -87,7 +87,7 @@ public class CheckTestFailIfNoTestsForkModeIT
         {
             try
             {
-                verifier.executeGoals( goals );
+                executeGoals( verifier, goals );
                 verifier.resetStreams();
                 verifier.verifyErrorFreeLog();
                 fail( "Build did not fail, but it should have" );
@@ -99,7 +99,7 @@ public class CheckTestFailIfNoTestsForkModeIT
         }
         else
         {
-            verifier.executeGoals( goals );
+            executeGoals( verifier, goals );
             verifier.resetStreams();
             verifier.verifyErrorFreeLog();
             HelperAssertions.assertTestSuiteResults( 0, 0, 0, 0, testDir );

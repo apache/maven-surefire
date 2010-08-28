@@ -42,7 +42,7 @@ public class CheckTestNgSuiteXmlSingleIT
         List goals = this.getInitialGoals();
         goals.add( "test" );
         goals.add( "-Dtest=TestNGTestTwo" );
-        verifier.executeGoals( goals );
+        executeGoals( verifier, goals );
         verifier.verifyErrorFreeLog();
         verifier.resetStreams();
 

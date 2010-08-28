@@ -87,7 +87,7 @@ public class WorkingDirectoryIT
         ArrayList goals = this.getInitialGoals();
         goals.add( "test" );
         goals.add( "-DforkMode=never" );
-        verifier.executeGoals( goals );
+        executeGoals( verifier, goals );
         verifier.verifyErrorFreeLog();
         verifier.resetStreams();
 
@@ -115,7 +115,7 @@ public class WorkingDirectoryIT
         ArrayList goals = this.getInitialGoals();
         goals.add( "test" );
         goals.add( "-DforkMode=never" );
-        verifier.executeGoals( goals );
+        executeGoals( verifier, goals );
         verifier.verifyErrorFreeLog();
         verifier.resetStreams();
 

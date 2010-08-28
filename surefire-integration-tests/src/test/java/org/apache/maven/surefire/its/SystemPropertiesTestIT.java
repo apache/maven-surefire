@@ -42,7 +42,7 @@ public class SystemPropertiesTestIT
         goals.add( "test" );
         goals.add( "-DsetOnMavenCommandLine=baz" );
         goals.add( "-DsetOnArgLineWorkAround=baz" );
-        verifier.executeGoals( goals );
+        executeGoals( verifier, goals );
         verifier.verifyErrorFreeLog();
         verifier.resetStreams();
 
@@ -62,7 +62,7 @@ public class SystemPropertiesTestIT
         goals.add( "-DsetOnMavenCommandLine=baz" );
         // DGF fake the argLine, since we're not forking
         goals.add( "-DsetOnArgLine=bar" );
-        verifier.executeGoals( goals );
+        executeGoals( verifier, goals );
         verifier.verifyErrorFreeLog();
         verifier.resetStreams();
 

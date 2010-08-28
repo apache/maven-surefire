@@ -113,7 +113,7 @@ public class ForkModeIT
         List goals = this.getInitialGoals();
         goals.add( "test" );
         goals.add( "-DforkMode=" + forkMode );
-        verifier.executeGoals( goals );
+        executeGoals( verifier, goals );
         verifier.verifyErrorFreeLog();
         verifier.resetStreams();
 

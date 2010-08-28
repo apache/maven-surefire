@@ -44,7 +44,7 @@ public class CheckSingleTestIT
         List goals = this.getInitialGoals();
         goals.add( "test" );
         goals.add( "-Dtest=BasicTest" );
-        verifier.executeGoals( goals );
+        executeGoals( verifier, goals );
         verifier.verifyErrorFreeLog();
         verifier.resetStreams();
 
@@ -60,7 +60,7 @@ public class CheckSingleTestIT
         List goals = this.getInitialGoals();
         goals.add( "test" );
         goals.add( "-Dtest=BasicTest.java" );
-        verifier.executeGoals( goals );
+        executeGoals( verifier, goals );
         verifier.verifyErrorFreeLog();
         verifier.resetStreams();
 
@@ -79,7 +79,7 @@ public class CheckSingleTestIT
 
         try
         {
-            verifier.executeGoals( goals );
+            executeGoals( verifier, goals );
             verifier.verifyErrorFreeLog();
             fail( "Build should have failed" );
         }
@@ -106,7 +106,7 @@ public class CheckSingleTestIT
         goals.add( "test" );
         goals.add( "-Dtest=DoesNotExist" );
         goals.add( "-DfailIfNoTests=false" );
-        verifier.executeGoals( goals );
+        executeGoals( verifier, goals );
 
         verifier.verifyErrorFreeLog();
         verifier.resetStreams();

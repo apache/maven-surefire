@@ -46,7 +46,7 @@ public class CheckTestFailIfNoTestsIT
 
         try
         {
-            verifier.executeGoals( goals );
+            executeGoals( verifier, goals );
             verifier.resetStreams();
             verifier.verifyErrorFreeLog();
             fail( "Build didn't fail, but it should" );
