@@ -32,7 +32,7 @@ public abstract class AbstractSurefireIntegrationTestClass
         goals.add( goal );
         if ( !verifier.getCliOptions().contains( "-s" ) )
         {
-            String settingsPath = System.getProperty( "maven.settings.file" ) + ".staged";
+            String settingsPath = System.getProperty( "maven.settings.file" );
             if ( settingsPath.indexOf( ' ' ) >= 0 )
             {
                 settingsPath = '"' + settingsPath + '"';

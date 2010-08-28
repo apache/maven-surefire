@@ -38,7 +38,7 @@ public class SetUpForIntegrationTest
         // if the properties are missing we'll fail the test with an NPE and stop the build.
         File originalSettings = new File( System.getProperty( "maven.settings.file" ) );
         File newRepo = new File( System.getProperty( "maven.staged.local.repo" ) );
-        File newSettings = new File( originalSettings.getParentFile(), originalSettings.getName() + ".staged" );
+        File newSettings = new File( originalSettings.getParentFile(), "it-" + originalSettings.getName() );
         StagedLocalRepoHelper.createStagedSettingsXml( originalSettings, newRepo, newSettings );
     }
 }

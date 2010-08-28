@@ -115,6 +115,9 @@
       <plugin>
         <artifactId>maven-invoker-plugin</artifactId>
         <version>1.5</version>
+        <configuration>
+          <localRepositoryPath>${project.build.directory}/it-repo</localRepositoryPath>
+        </configuration>
         <executions>
           <execution>
             <goals>
@@ -168,10 +171,10 @@
             </property>
             <property>
               <name>maven.settings.file</name>
-              <value>${project.build.directory}/private/settings.xml</value>
+              <value>${project.build.directory}/private/it-settings.xml</value>
             </property>
             <property>
-              <name>maven.staged.local.repo</name>
+              <name>maven.repo.local</name>
               <value>${project.build.directory}/it-repo</value>
             </property>
           </systemProperties>
