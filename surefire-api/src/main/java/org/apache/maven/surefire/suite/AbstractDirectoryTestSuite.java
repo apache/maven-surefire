@@ -30,18 +30,19 @@ import org.apache.maven.surefire.testset.TestSetFailedException;
 
 import java.io.File;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 public abstract class AbstractDirectoryTestSuite
     implements SurefireTestSuite
 {
     protected static ResourceBundle bundle = ResourceBundle.getBundle( Surefire.SUREFIRE_BUNDLE_NAME );
 
-    protected Map testSets;
+    protected SortedMap testSets;
 
     private int totalTests;
     
@@ -60,7 +61,7 @@ public abstract class AbstractDirectoryTestSuite
         {
             throw new IllegalStateException( "You can't call locateTestSets twice" );
         }
-        testSets = new HashMap();
+        testSets = new TreeMap();
 
         Class[] locatedClasses = surefireDirectoryScanner.locateTestClasses( classLoader);
 
@@ -83,7 +84,7 @@ public abstract class AbstractDirectoryTestSuite
                 totalTests++;
         }
 
-        return Collections.unmodifiableMap( testSets );
+        return Collections.unmodifiableSortedMap( testSets );
     }
 
     protected abstract SurefireTestSet createTestSet( Class testClass, ClassLoader classLoader )
