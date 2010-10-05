@@ -20,6 +20,10 @@ package org.apache.maven.surefire.its;
  */
 
 import junit.framework.TestCase;
+import org.apache.maven.artifact.versioning.ArtifactVersion;
+import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
+import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
+import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.it.VerificationException;
 import org.apache.maven.it.Verifier;
 
@@ -37,10 +41,31 @@ public abstract class AbstractSurefireIntegrationTestClass
 {
     private String surefireVersion = System.getProperty( "surefire.version" );
 
+    private String testNgVersion = System.getProperty( "testng.version" );
+
     protected ArrayList getInitialGoals()
     {
         ArrayList goals = new ArrayList();
         goals.add( "-Dsurefire.version=" + surefireVersion );
+
+        if ( testNgVersion != null )
+        {
+            goals.add( "-DtestNgVersion=" + testNgVersion );
+
+            ArtifactVersion v = new DefaultArtifactVersion( testNgVersion );
+            try
+            {
+                if ( VersionRange.createFromVersionSpec( "(,5.13)" ).containsVersion( v ) )
+                {
+                    goals.add( "-DtestNgClassifier=jdk15" );
+                }
+            }
+            catch ( InvalidVersionSpecificationException e )
+            {
+                throw new RuntimeException( e.getMessage(), e );
+            }
+        }
+
         return goals;
     }
 

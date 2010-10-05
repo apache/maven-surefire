@@ -145,6 +145,10 @@
               <value>${project.version}</value>
             </property>
             <property>
+              <name>testng.version</name>
+              <value>${testng.version}</value>
+            </property>
+            <property>
               <name>maven.home</name>
               <value>${maven.home}</value>
             </property>
@@ -170,6 +174,10 @@
             <property>
               <name>surefire.version</name>
               <value>${project.version}</value>
+            </property>
+            <property>
+              <name>testng.version</name>
+              <value>${testng.version}</value>
             </property>
             <property>
               <name>maven.home</name>
@@ -220,5 +228,6 @@
   <properties>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <it.settings.showPasswords>false</it.settings.showPasswords>
+    <testng.version>5.7</testng.version>
   </properties>
 </project>
