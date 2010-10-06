@@ -45,6 +45,11 @@ public abstract class AbstractSurefireIntegrationTestClass
 
     protected ArrayList getInitialGoals()
     {
+        return getInitialGoals( testNgVersion );
+    }
+
+    protected ArrayList getInitialGoals( String testNgVersion )
+    {
         ArrayList goals = new ArrayList();
         goals.add( "-Dsurefire.version=" + surefireVersion );
 
@@ -55,7 +60,7 @@ public abstract class AbstractSurefireIntegrationTestClass
             ArtifactVersion v = new DefaultArtifactVersion( testNgVersion );
             try
             {
-                if ( VersionRange.createFromVersionSpec( "(,5.13)" ).containsVersion( v ) )
+                if ( VersionRange.createFromVersionSpec( "(,5.12.1)" ).containsVersion( v ) )
                 {
                     goals.add( "-DtestNgClassifier=jdk15" );
                 }

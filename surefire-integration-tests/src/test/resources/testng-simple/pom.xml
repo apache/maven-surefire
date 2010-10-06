@@ -74,7 +74,6 @@
 
   <properties>
      <testNgVersion>5.7</testNgVersion>
-     <testNgClassifier>jdk15</testNgClassifier>
   </properties>
 
   <build>

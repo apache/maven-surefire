@@ -39,7 +39,7 @@ public class CheckTestNgVersionsIT
     public void test47()
         throws Exception
     {
-        runTestNgTest( "4.7", "jdk15" );
+        runTestNgTest( "4.7" );
     }
 
     // DGF SUREFIRE-375 + MAVENUPLOAD-1024
@@ -48,67 +48,67 @@ public class CheckTestNgVersionsIT
     public void XXXtest50()
         throws Exception
     {
-        runTestNgTest( "5.0", "jdk15" );
+        runTestNgTest( "5.0" );
     }
 
     public void XXXtest501()
         throws Exception
     {
-        runTestNgTest( "5.0.1", "jdk15" );
+        runTestNgTest( "5.0.1" );
     }
 
     public void test502()
         throws Exception
     {
-        runTestNgTest( "5.0.2", "jdk15" );
+        runTestNgTest( "5.0.2" );
     }
 
     public void test51()
         throws Exception
     {
-        runTestNgTest( "5.1", "jdk15" );
+        runTestNgTest( "5.1" );
     }
 
     public void test55()
         throws Exception
     {
-        runTestNgTest( "5.5", "jdk15" );
+        runTestNgTest( "5.5" );
     }
 
     public void test56()
         throws Exception
     {
-        runTestNgTest( "5.6", "jdk15" );
+        runTestNgTest( "5.6" );
     }
 
     public void test57()
         throws Exception
     {
-        runTestNgTest( "5.7", "jdk15" );
+        runTestNgTest( "5.7" );
     }
 
     public void test58()
         throws Exception
     {
-        runTestNgTest( "5.8", "jdk15" );
+        runTestNgTest( "5.8" );
     }
 
     public void test59()
         throws Exception
     {
-        runTestNgTest( "5.9", "jdk15" );
+        runTestNgTest( "5.9" );
     }
 
     public void test510()
         throws Exception
     {
-        runTestNgTest( "5.10", "jdk15" );
+        runTestNgTest( "5.10" );
     }
 
     public void test511()
         throws Exception
     {
-        runTestNgTest( "5.11", "jdk15" );
+        runTestNgTest( "5.11" );
     }
 
     public void test512()
@@ -150,25 +150,11 @@ public class CheckTestNgVersionsIT
     public void runTestNgTest( String version )
         throws Exception
     {
-        runTestNgTest( version, null );
-    }
-
-    public void runTestNgTest( String version, String classifier )
-        throws Exception
-    {
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/testng-simple" );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        List arguments = this.getInitialGoals();
+        List arguments = this.getInitialGoals( version );
         arguments.add( "test" );
-        // DGF we have to pass in the version as a command line argument
-        // and NOT as a system property; otherwise our setting will be ignored
-        arguments.add( "-DtestNgVersion=" + version );
-
-        if ( classifier != null )
-        {
-            arguments.add( "-DtestNgClassifier=" + classifier );
-        }
 
         executeGoals( verifier, arguments );
         verifier.verifyErrorFreeLog();
