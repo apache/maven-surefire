@@ -449,6 +449,10 @@ public abstract class AbstractSurefireMojo
 
         fork.setForkMode( getForkMode() );
 
+        File tmpDir = new File( getReportsDirectory().getParentFile(), "surefire" );
+        tmpDir.mkdirs();
+        fork.setTempDirectory( tmpDir );
+
         processSystemProperties( !fork.isForking() );
 
         if ( getLog().isDebugEnabled() )

@@ -526,7 +526,7 @@ public class SurefireBooter
     private File writePropertiesFile( String name, Properties properties )
         throws IOException
     {
-        File file = File.createTempFile( name, "tmp" );
+        File file = File.createTempFile( name, "tmp", forkConfiguration.getTempDirectory() );
         if ( !forkConfiguration.isDebug() )
         {
             file.deleteOnExit();

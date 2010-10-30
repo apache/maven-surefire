@@ -64,6 +64,8 @@ public class ForkConfiguration
 
     private File workingDirectory;
 
+    private File tempDirectory;
+
     private boolean debug;
     
     private String debugLine;
@@ -131,6 +133,16 @@ public class ForkConfiguration
     public void setWorkingDirectory( File workingDirectory )
     {
         this.workingDirectory = workingDirectory;
+    }
+
+    public void setTempDirectory( File tempDirectory )
+    {
+        this.tempDirectory = tempDirectory;
+    }
+
+    public File getTempDirectory()
+    {
+        return tempDirectory;
     }
 
     public String getForkMode()
@@ -225,7 +237,7 @@ public class ForkConfiguration
     private File createJar( List classPath )
         throws IOException
     {
-        File file = File.createTempFile( "surefirebooter", ".jar" );
+        File file = File.createTempFile( "surefirebooter", ".jar", tempDirectory );
         if ( !debug )
         {
             file.deleteOnExit();
