@@ -37,7 +37,7 @@ public class StandardOutputConsumer
      */
     public StandardOutputConsumer()
     {
-        setPrintWriter( new PrintWriter( System.out ) );
+        super( new PrintWriter( System.out ) );
     }
 
 }

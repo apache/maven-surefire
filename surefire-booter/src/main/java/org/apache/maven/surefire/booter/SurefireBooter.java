@@ -186,7 +186,7 @@ public class SurefireBooter
     /**
      * Setting this to true will cause a failure if there are no tests to run
      *
-     * @param redirectTestOutputToFile
+     * @param failIfNoTests true if we should fail with no tests
      */
     public void setFailIfNoTests( boolean failIfNoTests )
     {

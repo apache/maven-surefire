@@ -32,7 +32,7 @@ public class OutputConsumerProxy
     implements OutputConsumer
 {
 
-    private OutputConsumer outputConsumer;
+    private final OutputConsumer outputConsumer;
 
     /**
      * Create a output consumer that will delegate all calls to the proxied output consumer
@@ -40,16 +40,6 @@ public class OutputConsumerProxy
      * @param outputConsumer output consumer to delegate to
      */
     public OutputConsumerProxy( OutputConsumer outputConsumer )
-    {
-        this.setOutputConsumer( outputConsumer );
-    }
-
-    /**
-     * {@link OutputConsumer} that calls will be delegated to
-     *
-     * @param outputConsumer the proxied {@link OutputConsumer}
-     */
-    public void setOutputConsumer( OutputConsumer outputConsumer )
     {
         this.outputConsumer = outputConsumer;
     }

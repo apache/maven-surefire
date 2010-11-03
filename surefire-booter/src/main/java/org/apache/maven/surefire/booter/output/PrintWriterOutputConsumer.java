@@ -35,14 +35,7 @@ public class PrintWriterOutputConsumer
     implements OutputConsumer
 {
 
-    private PrintWriter printWriter;
-
-    /**
-     * Create a consumer uninitialized, {@link #setPrintWriter(PrintWriter)} must be called before using it
-     */
-    public PrintWriterOutputConsumer()
-    {
-    }
+    private final PrintWriter printWriter;
 
     /**
      * Create a consumer that will write to the specified {@link Writer}
@@ -51,21 +44,23 @@ public class PrintWriterOutputConsumer
      */
     public PrintWriterOutputConsumer( Writer writer )
     {
-        this.setPrintWriter( new PrintWriter( writer ) );
+        this( new PrintWriter( writer ) );
     }
 
     /**
-     * Set the {@link PrintWriter} used by this object
+     * Create a consumer that will write to the specified {@link Writer}
      *
-     * @param writer
+     * @param writer where to write to
      */
-    public void setPrintWriter( PrintWriter writer )
+    public PrintWriterOutputConsumer( PrintWriter writer )
     {
         this.printWriter = writer;
     }
 
     /**
      * Get the {@link PrintWriter} used by this object
+     *
+     * @return the printWriter
      */
     public PrintWriter getPrintWriter()
     {
@@ -111,7 +106,7 @@ public class PrintWriterOutputConsumer
     /**
      * Write a line and flush
      *
-     * @param line
+     * @param line the content to write
      */
     private void write( String line )
     {

@@ -39,7 +39,7 @@ public class ForkingStreamConsumer
 
     private final static int FOOTER_PREFIX_LENGTH = ForkingConsoleReporter.FORKING_PREFIX_FOOTER.length();
 
-    private OutputConsumer outputConsumer;
+    private final OutputConsumer outputConsumer;
 
     public ForkingStreamConsumer( OutputConsumer outputConsumer )
     {
@@ -77,6 +77,7 @@ public class ForkingStreamConsumer
 
     /**
      * Get the underlying output consumer.
+     * @return the output consumer
      */
     public OutputConsumer getOutputConsumer()
     {

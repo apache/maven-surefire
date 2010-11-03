@@ -39,82 +39,36 @@ public class FileOutputConsumerProxy
     extends OutputConsumerProxy
 {
 
-    private static final String USER_DIR = System.getProperty( "user.dir" );
-
     private static final String LINE_SEPARATOR = System.getProperty( "line.separator" );
 
-    private File reportsDirectory;
+    private final File reportsDirectory;
 
-    private PrintWriter printWriter;
-    
-    private StringBuffer outputBuffer = new StringBuffer();
-    
-    /**
-     * Create a consumer that will write to a {@link File} for each test.
-     * Files will be saved in working directory.
-     */
-    public FileOutputConsumerProxy( OutputConsumer outputConsumer )
-    {
-        this( outputConsumer, new File( USER_DIR ) );
-    }
+    private final StringBuffer outputBuffer = new StringBuffer();
+
+    private volatile PrintWriter printWriter;
 
     /**
      * Create a consumer that will write to a {@link File} for each test
      *
+     * @param outputConsumer   the output consumer
      * @param reportsDirectory directory where files will be saved
      */
     public FileOutputConsumerProxy( OutputConsumer outputConsumer, File reportsDirectory )
     {
         super( outputConsumer );
-        this.setReportsDirectory( reportsDirectory );
-    }
-
-    /**
-     * Set the directory where reports will be saved
-     *
-     * @param reportsDirectory the directory
-     */
-    public void setReportsDirectory( File reportsDirectory )
-    {
         this.reportsDirectory = reportsDirectory;
-    }
-
-    /**
-     * Get the directory where reports will be saved
-     */
-    public File getReportsDirectory()
-    {
-        return reportsDirectory;
-    }
-
-    /**
-     * Set the {@link PrintWriter} used for the current test suite
-     *
-     * @param writer
-     */
-    public void setPrintWriter( PrintWriter writer )
-    {
-        this.printWriter = writer;
-    }
-
-    /**
-     * Get the {@link PrintWriter} used for the current test suite
-     */
-    public PrintWriter getPrintWriter()
-    {
-        return printWriter;
     }
 
     public void testSetStarting( ReportEntry reportEntry )
     {
-        if ( getPrintWriter() != null )
+        if ( printWriter != null )
         {
             throw new IllegalStateException( "testSetStarting called twice" );
         }
-        File file = new File( getReportsDirectory(), reportEntry.getName() + "-output.txt" );
+        File file = new File( reportsDirectory, reportEntry.getName() + "-output.txt" );
         try
         {
-            setPrintWriter( new PrintWriter( new BufferedWriter( new FileWriter( file ) ) ) );
+            this.printWriter = new PrintWriter( new BufferedWriter( new FileWriter( file ) ) );
         }
         catch ( IOException e )
         {
@@ -125,41 +79,43 @@ public class FileOutputConsumerProxy
 
     public void testSetCompleted()
     {
-        if ( getPrintWriter() == null )
+        if ( printWriter == null )
         {
             throw new IllegalStateException( "testSetCompleted called before testSetStarting" );
         }
         if ( outputBuffer.length() > 0 )
         {
-            getPrintWriter().write( outputBuffer.toString() );
-            getPrintWriter().write( LINE_SEPARATOR );
+            printWriter.write( outputBuffer.toString() );
+            printWriter.write( LINE_SEPARATOR );
             outputBuffer.setLength( 0 );
         }
-        getPrintWriter().close();
-        setPrintWriter( null );
+        printWriter.close();
+        this.printWriter = null;
         super.testSetCompleted();
     }
 
     /**
      * Write the output to the current test file
+     * <p/>
+     * This method may be called from multiple threads
      */
-    public void consumeOutputLine( String line )
+    public synchronized void consumeOutputLine( String line )
     {
-        if ( getPrintWriter() == null )
+        if ( printWriter == null )
         {
             outputBuffer.append( line );
             outputBuffer.append( LINE_SEPARATOR );
             return;
         }
-        
+
         if ( outputBuffer.length() > 0 )
         {
-            getPrintWriter().write( outputBuffer.toString() );
-            getPrintWriter().write( LINE_SEPARATOR );
+            printWriter.write( outputBuffer.toString() );
+            printWriter.write( LINE_SEPARATOR );
             outputBuffer.setLength( 0 );
         }
-        getPrintWriter().write( line );
-        getPrintWriter().write( LINE_SEPARATOR );
+        printWriter.write( line );
+        printWriter.write( LINE_SEPARATOR );
     }
 
 }
