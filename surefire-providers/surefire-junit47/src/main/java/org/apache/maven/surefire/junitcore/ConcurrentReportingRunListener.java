@@ -42,24 +42,55 @@ public abstract class ConcurrentReportingRunListener
 
     protected Map<Class, TestSet> classMethodCounts = new ConcurrentHashMap<Class, TestSet>();
 
-    protected final ReporterManager reporterManager;
+    private final ThreadLocal<ReporterManager> reporterManagerThreadLocal = new ThreadLocal<ReporterManager>();
 
     protected final boolean reportImmediately;
 
     private final ConcurrentPrintStream out = new ConcurrentPrintStream( true );
+
     private final ConcurrentPrintStream err = new ConcurrentPrintStream( false );
+
+    private ReporterManagerFactory reporterFactory;
 
     public ConcurrentReportingRunListener( ReporterManagerFactory reporterFactory, boolean reportImmediately )
         throws TestSetFailedException
     {
         this.reportImmediately = reportImmediately;
-        reporterManager = reporterFactory.createReporterManager();
+        this.reporterFactory = reporterFactory;
+        // We must create the first reporterManager here, even though we will never use it.
+        // There is some room for improvement here
+        this.reporterFactory.createReporterManager();
         // Important: We must capture System.out/System.err AFTER the  reportManager captures stdout/stderr
         // because we know how to demultiplex correctly. The redirection in reporterManager is basically
         // ignored/unused because we use ConcurrentPrintStream.
         System.setOut( out );
         System.setErr( err );
     }
+
+
+    protected ReporterManager getReporterManager()
+        throws TestSetFailedException
+    {
+        ReporterManager reporterManager = reporterManagerThreadLocal.get();
+        if ( reporterManager == null )
+        {
+            reporterManager = reporterFactory.createReporterManager();
+            reporterManagerThreadLocal.set( reporterManager );
+        }
+        return reporterManager;
+    }
+
+    public static ConcurrentReportingRunListener createInstance( ReporterManagerFactory reporterManagerFactory,
+                                                                 boolean parallelClasses, boolean parallelBoth )
+        throws TestSetFailedException
+    {
+        if ( parallelClasses )
+        {
+            return new ClassesParallelRunListener( reporterManagerFactory );
+        }
+        return new MethodsParallelRunListener( reporterManagerFactory, !parallelBoth );
+    }
+
 
     @Override
     public void testRunStarted( Description description )
@@ -74,13 +105,13 @@ public abstract class ConcurrentReportingRunListener
     {
         for ( TestSet testSet : classMethodCounts.values() )
         {
-            testSet.replay( reporterManager );
+            testSet.replay( getReporterManager() );
         }
         System.setOut( orgSystemOut );
         System.setErr( orgSystemErr );
 
-        out.writeTo(  orgSystemOut );
-        err.writeTo(  orgSystemErr );
+        out.writeTo( orgSystemOut );
+        err.writeTo( orgSystemErr );
     }
 
     protected TestMethod getTestMethod()
@@ -102,13 +133,14 @@ public abstract class ConcurrentReportingRunListener
     public void testFailure( Failure failure )
         throws Exception
     {
-        getOrCreateTestMethod(failure.getDescription()).testFailure( failure );
+        getOrCreateTestMethod( failure.getDescription() ).testFailure( failure );
     }
 
     private TestMethod getOrCreateTestMethod( Description description )
     {
         TestMethod threadTestMethod = TestMethod.getThreadTestMethod();
-        if (threadTestMethod != null){
+        if ( threadTestMethod != null )
+        {
             return threadTestMethod;
         }
         TestSet testSet = getTestSet( description );
@@ -128,7 +160,7 @@ public abstract class ConcurrentReportingRunListener
         TestSet testSet = getTestSet( description );
         TestMethod testMethod = getTestSet( description ).createTestMethod( description );
         testMethod.testIgnored( description );
-        testSet.incrementFinishedTests( reporterManager, reportImmediately );
+        testSet.incrementFinishedTests( getReporterManager(), reportImmediately );
     }
 
     @Override
@@ -141,75 +173,17 @@ public abstract class ConcurrentReportingRunListener
         testSet.attachToThread();
     }
 
-    public abstract void checkIfTestSetCanBeReported( TestSet testSetForTest );
+    public abstract void checkIfTestSetCanBeReported( TestSet testSetForTest )
+        throws TestSetFailedException;
 
     @Override
     public void testFinished( Description description )
         throws Exception
     {
         getTestMethod().testFinished();
-        TestSet.getThreadTestSet().incrementFinishedTests( reporterManager, reportImmediately );
+        TestSet.getThreadTestSet().incrementFinishedTests( getReporterManager(), reportImmediately );
         detachTestMethodFromThread();
     }
 
-    public static ConcurrentReportingRunListener createInstance( ReporterManagerFactory reporterManagerFactory,
-                                                                 boolean parallelClasses, boolean parallelBoth )
-        throws TestSetFailedException
-    {
-        if ( parallelClasses )
-        {
-            return new ClassesParallelRunListener( reporterManagerFactory );
-        }
-        return new MethodsParallelRunListener( reporterManagerFactory, !parallelBoth );
-    }
 
-    public static class ClassesParallelRunListener
-        extends ConcurrentReportingRunListener
-    {
-        public ClassesParallelRunListener( ReporterManagerFactory reporterFactory )
-            throws TestSetFailedException
-        {
-            super( reporterFactory, false );
-        }
-
-        @Override
-        public void checkIfTestSetCanBeReported( TestSet testSetForTest )
-        {
-            TestSet currentlyAttached = TestSet.getThreadTestSet();
-            if ( currentlyAttached != null && currentlyAttached != testSetForTest )
-            {
-                currentlyAttached.setAllScheduled( reporterManager );
-            }
-        }
-    }
-
-    public static class MethodsParallelRunListener
-        extends ConcurrentReportingRunListener
-    {
-        private volatile TestSet lastStarted;
-
-        private final Object lock = new Object();
-
-        public MethodsParallelRunListener( ReporterManagerFactory reporterFactory, boolean reportImmediately )
-            throws TestSetFailedException
-        {
-            super( reporterFactory, reportImmediately );
-        }
-
-        @Override
-        public void checkIfTestSetCanBeReported( TestSet testSetForTest )
-        {
-            synchronized ( lock )
-            {
-                if ( testSetForTest != lastStarted )
-                {
-                    if ( lastStarted != null )
-                    {
-                        lastStarted.setAllScheduled( reporterManager );
-                    }
-                    lastStarted = testSetForTest;
-                }
-            }
-        }
-    }
 }

@@ -89,7 +89,8 @@ public class TestNGXmlTestSuite
         {
             throw new IllegalStateException( "You must call locateTestSets before calling execute" );
         }
-        ReporterManager reporterManager = reporterManagerFactory.createReporterManager();
+        ReporterManager reporterManager =
+            new SynchronizedReporterManager( reporterManagerFactory.createReporterManager());
         TestNGDirectoryTestSuite.startTestSuite( reporterManager, this );
         TestNGExecutor.run( this.suiteFilePaths, this.testSourceDirectory, this.options, this.version, 
                             this.classifier, reporterManager, this, reportsDirectory );

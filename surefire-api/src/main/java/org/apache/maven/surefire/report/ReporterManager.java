@@ -27,28 +27,14 @@ import java.util.List;
  * <p/>
  * Synchronization/Threading note:
  * <p/>
- * This design is really only good for single-threaded test execution. Although it is currently
- * used by multi-threaded providers too, the design does not really make sense (and is probably buggy).
+ * This design is really only good for single-threaded test execution. With the use of the additional
+ * SynchronizedReporterManager you can get a buggy version that sort-of supports multithreading.
  * <p/>
- * This is because to get correct results, the client basically needs to do something like this:
- * synchronized( ReporterManger.getClass()){
- * reporterManager.runStarted()
- * reporterManager.testSetStarting()
- * reporterManager.testStarting()
- * reporterManager.testSucceeded()
- * reporterManager.testSetCompleted()
- * reporterManager.runCompleted()
- * }
- * <p/>
- * This is because the underlying providers are singletons and keep state, if you remove the outer synchronized
- * block, you may get mixups between results from different tests; although the end result (total test count etc)
- * should probably be correct.
+ * The underlying providers are singletons and keep state per ReporterManager instance
  * <p/>
  * The solution to this problem involves making a clearer separation between test-result collection and reporting,
  * preferably removing singleton state approach out of the reporting interface.
  * <p/>
- * Please also note that the synchronization requirements of this interface severely limit the concurrency
- * potential of all the parallel surefire providers, especially when runnning non-io bound tests,
  */
 public class ReporterManager
 {
@@ -56,20 +42,28 @@ public class ReporterManager
 
     private final MulticastingReporter multicastingReporter;
 
-    private final SystemStreamCapturer consoleCapturer = new SystemStreamCapturer();
+    private final SystemStreamCapturer consoleCapturer;
 
     public ReporterManager( List reports, RunStatistics runStatisticsForThis )
     {
+        this.consoleCapturer =  new SystemStreamCapturer();
         multicastingReporter = new MulticastingReporter( reports );
         this.runStatisticsForThis = runStatisticsForThis;
     }
 
-    public synchronized void writeMessage( String message )
+    protected ReporterManager( ReporterManager other )
+    {
+        this.multicastingReporter = other.multicastingReporter;
+        this.runStatisticsForThis = other.runStatisticsForThis;
+        this.consoleCapturer =  other.consoleCapturer;
+    }
+
+    public void writeMessage( String message )
     {
         multicastingReporter.writeMessage( message );
     }
-    
-    public synchronized void writeConsoleMessage( String message )
+
+    public void writeConsoleMessage( String message )
     {
         multicastingReporter.writeConsoleMessage( message );
     }
@@ -78,12 +72,12 @@ public class ReporterManager
     // Run
     // ----------------------------------------------------------------------
 
-    public synchronized void runStarting()
+    public void runStarting()
     {
         multicastingReporter.runStarting();
     }
 
-    public synchronized void runCompleted()
+    public void runCompleted()
     {
         multicastingReporter.runCompleted();
         multicastingReporter.writeFooter( "" );
@@ -112,19 +106,19 @@ public class ReporterManager
         consoleCapturer.restoreStreams();
     }
 
-    public synchronized void writeFooter( String footer )
+    public void writeFooter( String footer )
     {
         multicastingReporter.writeFooter( footer );
     }
 
 
-    public synchronized void testSetStarting( ReportEntry report )
+    public void testSetStarting( ReportEntry report )
         throws ReporterException
     {
         multicastingReporter.testSetStarting( report );
     }
 
-    public synchronized void testSetCompleted( ReportEntry report )
+    public void testSetCompleted( ReportEntry report )
     {
         multicastingReporter.testSetCompleted( report );
     }
@@ -133,24 +127,24 @@ public class ReporterManager
     // Test
     // ----------------------------------------------------------------------
 
-    public synchronized void testStarting( ReportEntry report )
+    public void testStarting( ReportEntry report )
     {
         multicastingReporter.testStarting( report );
     }
 
-    public synchronized void testSucceeded( ReportEntry report )
+    public void testSucceeded( ReportEntry report )
     {
         consoleCapturer.clearCapturedContent();
         runStatisticsForThis.incrementCompletedCount();
         multicastingReporter.testSucceeded( report );
     }
 
-    public synchronized void testError( ReportEntry reportEntry )
+    public void testError( ReportEntry reportEntry )
     {
         testError( reportEntry, consoleCapturer.getStdOutLog(), consoleCapturer.getStdErrLog() );
     }
 
-    public synchronized void testError( ReportEntry reportEntry, String stdOutLog, String stdErrLog )
+    public void testError( ReportEntry reportEntry, String stdOutLog, String stdErrLog )
     {
         multicastingReporter.testError( reportEntry, stdOutLog, stdErrLog );
         runStatisticsForThis.incrementErrorsCount();
@@ -159,13 +153,13 @@ public class ReporterManager
         consoleCapturer.clearCapturedContent();
     }
 
-    public synchronized void testFailed( ReportEntry reportEntry )
+    public void testFailed( ReportEntry reportEntry )
     {
         testFailed( reportEntry, consoleCapturer.getStdOutLog(), consoleCapturer.getStdErrLog() );
     }
 
 
-    public synchronized void testFailed( ReportEntry reportEntry, String stdOutLog, String stdErrLog )
+    public void testFailed( ReportEntry reportEntry, String stdOutLog, String stdErrLog )
     {
         multicastingReporter.testFailed( reportEntry, stdOutLog, stdErrLog );
         runStatisticsForThis.incrementFailureCount();
@@ -178,7 +172,7 @@ public class ReporterManager
     // Counters
     // ----------------------------------------------------------------------
 
-    public synchronized void testSkipped( ReportEntry report )
+    public void testSkipped( ReportEntry report )
     {
         consoleCapturer.clearCapturedContent();
         runStatisticsForThis.incrementSkippedCount();
@@ -186,7 +180,7 @@ public class ReporterManager
         multicastingReporter.testSkipped( report );
     }
 
-    public synchronized void reset()
+    public void reset()
     {
         multicastingReporter.reset();
     }

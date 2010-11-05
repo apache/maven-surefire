@@ -159,15 +159,15 @@ public class ConcurrentReportingRunListenerTest
         throws TestSetFailedException
     {
         ReporterManagerFactory reporterManagerFactory = createReporterFactory();
-        RunStatistics result = runClasses(reporterManagerFactory, new ConcurrentReportingRunListener.ClassesParallelRunListener( reporterManagerFactory ),  classes);
+        RunStatistics result = runClasses(reporterManagerFactory, new ClassesParallelRunListener( reporterManagerFactory ),  classes);
         assertReporter(  result, success, ignored ,failure, "classes" );
 
         reporterManagerFactory = createReporterFactory();
-        result = runClasses(reporterManagerFactory, new ConcurrentReportingRunListener.MethodsParallelRunListener(reporterManagerFactory, true) , classes);
+        result = runClasses(reporterManagerFactory, new MethodsParallelRunListener(reporterManagerFactory, true) , classes);
         assertReporter(  result, success, ignored ,failure, "methods" );
 
         reporterManagerFactory = createReporterFactory();
-        result = runClasses(reporterManagerFactory, new ConcurrentReportingRunListener.MethodsParallelRunListener(reporterManagerFactory, false) , classes);
+        result = runClasses(reporterManagerFactory, new MethodsParallelRunListener(reporterManagerFactory, false) , classes);
         assertReporter(  result, success, ignored ,failure, "methods" );
 
     }
@@ -203,7 +203,7 @@ public class ConcurrentReportingRunListenerTest
     private ConcurrentReportingRunListener createRunListener( ReporterManagerFactory reporterFactory )
         throws TestSetFailedException
     {
-        return new ConcurrentReportingRunListener.ClassesParallelRunListener( reporterFactory );
+        return new ClassesParallelRunListener( reporterFactory );
     }
 
 

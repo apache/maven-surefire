@@ -149,7 +149,8 @@ public class TestNGDirectoryTestSuite
             junitReportsDirectory = new File( reportsDirectory, "testng-junit-results");
         }
 
-        ReporterManager reporterManager = reporterManagerFactory.createReporterManager();
+        ReporterManager reporterManager =
+            new SynchronizedReporterManager( reporterManagerFactory.createReporterManager());
         startTestSuite( reporterManager, this );
         
         Class[] testClasses = (Class[]) testNgTestClasses.toArray( new Class[0] );
