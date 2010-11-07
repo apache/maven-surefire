@@ -40,6 +40,7 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.surefire.AbstractSurefireMojo;
 import org.apache.maven.plugin.surefire.SurefireExecutionParameters;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.surefire.booter.BooterConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooter;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.apache.maven.surefire.booter.SurefireExecutionException;
@@ -597,7 +598,9 @@ public class IntegrationTestMojo
     {
         if ( verifyParameters() )
         {
-            SurefireBooter surefireBooter = constructSurefireBooter();
+            BooterConfiguration booterConfiguration = createBooterConfiguration();
+            SurefireBooter booter = new SurefireBooter( booterConfiguration, reportsDirectory );
+
 
             getLog().info(
                 StringUtils.capitalizeFirstLetter( getPluginName() ) + " report directory: " + getReportsDirectory() );
@@ -605,14 +608,14 @@ public class IntegrationTestMojo
             FailsafeSummary result = new FailsafeSummary();
             try
             {
-                result.setResult( surefireBooter.run() );
+                result.setResult( booter.run() );
             }
             catch ( SurefireBooterForkException e )
             {
                 // Don't stop processing when timeout or other exception occures
                 // Otherwise, the following life cycles (e.g. post-integration-test)
                 // won't be executed
-                result.setResult( SurefireBooter.TESTS_FAILED_EXIT_CODE );
+                result.setResult( BooterConfiguration.TESTS_FAILED_EXIT_CODE );
                 result.setException( e.getMessage() );
             }
             catch ( SurefireExecutionException e )
@@ -620,11 +623,11 @@ public class IntegrationTestMojo
                 // Don't stop processing when timeout or other exception occures
                 // Otherwise, the following life cycles (e.g. post-integration-test)
                 // won't be executed
-                result.setResult( SurefireBooter.TESTS_FAILED_EXIT_CODE );
+                result.setResult( BooterConfiguration.TESTS_FAILED_EXIT_CODE );
                 result.setException( e.getMessage() );
             }
 
-            if ( getOriginalSystemProperties() != null && !surefireBooter.isForking() )
+            if ( getOriginalSystemProperties() != null && !booterConfiguration.isForking() )
             {
                 // restore system properties, only makes sense when not forking..
                 System.setProperties( getOriginalSystemProperties() );

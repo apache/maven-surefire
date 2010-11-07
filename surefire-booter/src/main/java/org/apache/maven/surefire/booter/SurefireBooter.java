@@ -19,27 +19,6 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.SortedMap;
-import java.util.TreeMap;
-
 import org.apache.maven.surefire.Surefire;
 import org.apache.maven.surefire.booter.output.FileOutputConsumerProxy;
 import org.apache.maven.surefire.booter.output.ForkingStreamConsumer;
@@ -51,11 +30,26 @@ import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.NestedRuntimeException;
 import org.apache.maven.surefire.util.UrlUtils;
 import org.codehaus.plexus.util.IOUtil;
-import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.cli.CommandLineException;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
 import org.codehaus.plexus.util.cli.Commandline;
 import org.codehaus.plexus.util.cli.StreamConsumer;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * @author Jason van Zyl
@@ -64,65 +58,26 @@ import org.codehaus.plexus.util.cli.StreamConsumer;
  */
 public class SurefireBooter
 {
-    private static final String TEST_SUITE_PROPERTY_PREFIX = "testSuite.";
-    private static final String REPORT_PROPERTY_PREFIX = "report.";
-    private static final String PARAMS_SUFIX = ".params";
-    private static final String TYPES_SUFIX = ".types";
 
-    private List reports = new ArrayList();
-
-    private List classPathUrls = new ArrayList();
-
-    private List surefireClassPathUrls = new ArrayList();
-
-    private List surefireBootClassPathUrls = new ArrayList();
-
-    private List testSuites = new ArrayList();
-    
-    private boolean failIfNoTests = false;
-    
     private int forkedProcessTimeoutInSeconds = 0;
 
-    private boolean redirectTestOutputToFile = false;
-
-    // ----------------------------------------------------------------------
-    //
-    // ----------------------------------------------------------------------
-
-    private ForkConfiguration forkConfiguration;
-
-    public static final int TESTS_SUCCEEDED_EXIT_CODE = 0;
-
-    public static final int TESTS_FAILED_EXIT_CODE = 255;
-    
-    public static final int NO_TESTS_EXIT_CODE = 254;
-
-    private static Method assertionStatusMethod;
-
-    /**
-     * @deprecated because the IsolatedClassLoader is really isolated - no parent.
-     */
-    private boolean childDelegation = true;
+    private final BooterConfiguration booterConfiguration;
 
     private File reportsDirectory;
 
     /**
      * This field is set to true if it's running from main. It's used to help decide what classloader to use.
      */
-    private final boolean isForked;
+//    private final boolean isForked;
 
-    /**
-     * Whether to enable assertions or not (can be affected by the fork arguments, and the ability to do so based on the
-     * JVM).
-     */
-    private boolean enableAssertions;
+    private static Method assertionStatusMethod;
 
     static
     {
         try
         {
             assertionStatusMethod =
-                ClassLoader.class.getMethod( "setDefaultAssertionStatus", new Class[] { boolean.class } );
+                ClassLoader.class.getMethod( "setDefaultAssertionStatus", new Class[]{ boolean.class } );
         }
         catch ( NoSuchMethodException e )
         {
@@ -130,128 +85,42 @@ public class SurefireBooter
         }
     }
 
-    public SurefireBooter()
+    public SurefireBooter( BooterConfiguration booterConfiguration, File reportsDirectory )
     {
-        isForked = false;
+        this.booterConfiguration = booterConfiguration;
+        this.reportsDirectory = reportsDirectory;
     }
 
-    private SurefireBooter( boolean isForked )
+    protected SurefireBooter( BooterConfiguration booterConfiguration )
     {
-        this.isForked = isForked;
+        this.booterConfiguration = booterConfiguration;
     }
 
     // ----------------------------------------------------------------------
     // Accessors
     // ----------------------------------------------------------------------
 
-    public void addReport( String report )
-    {
-        addReport( report, null );
-    }
-
-    public void addReport( String report, Object[] constructorParams )
-    {
-        reports.add( new Object[] { report, constructorParams } );
-    }
-
-    public void addTestSuite( String suiteClassName, Object[] constructorParams )
-    {
-        testSuites.add( new Object[] { suiteClassName, constructorParams } );
-    }
-
-    public void addClassPathUrl( String path )
-    {
-        if ( !classPathUrls.contains( path ) )
-        {
-            classPathUrls.add( path );
-        }
-    }
-
-    public void addSurefireClassPathUrl( String path )
-    {
-        if ( !surefireClassPathUrls.contains( path ) )
-        {
-            surefireClassPathUrls.add( path );
-        }
-    }
-
-    public void addSurefireBootClassPathUrl( String path )
-    {
-        if ( !surefireBootClassPathUrls.contains( path ) )
-        {
-            surefireBootClassPathUrls.add( path );
-        }
-    }
-
-    /**
-     * Setting this to true will cause a failure if there are no tests to run
-     *
-     * @param failIfNoTests true if we should fail with no tests
-     */
-    public void setFailIfNoTests( boolean failIfNoTests )
-    {
-        this.failIfNoTests = failIfNoTests;
-    }
-    
-    /**
-     * When forking, setting this to true will make the test output to be saved in a file instead of showing it on the
-     * standard output
-     *
-     * @param redirectTestOutputToFile
-     */
-    public void setRedirectTestOutputToFile( boolean redirectTestOutputToFile )
-    {
-        this.redirectTestOutputToFile = redirectTestOutputToFile;
-    }
-
-    /**
-     * Set the directory where reports will be saved
-     *
-     * @param reportsDirectory the directory
-     */
-    public void setReportsDirectory( File reportsDirectory )
-    {
-        this.reportsDirectory = reportsDirectory;
-    }
-
-    /**
-     * Get the directory where reports will be saved
-     */
-    public File getReportsDirectory()
-    {
-        return reportsDirectory;
-    }
-
-    public void setForkConfiguration( ForkConfiguration forkConfiguration )
-    {
-        this.forkConfiguration = forkConfiguration;
-    }
-    
-    public boolean isForking()
-    {
-        return forkConfiguration.isForking();
-    }
-
     public int run()
         throws SurefireBooterForkException, SurefireExecutionException
     {
         int result;
 
-        if (  ForkConfiguration.FORK_NEVER.equals( forkConfiguration.getForkMode() ) )
+        final String requestedForkMode = booterConfiguration.getForkConfiguration().getForkMode();
+        if ( ForkConfiguration.FORK_NEVER.equals( requestedForkMode ) )
         {
             result = runSuitesInProcess();
         }
-        else if ( ForkConfiguration.FORK_ONCE.equals( forkConfiguration.getForkMode() ) )
+        else if ( ForkConfiguration.FORK_ONCE.equals( requestedForkMode ) )
         {
             result = runSuitesForkOnce();
         }
-        else if ( ForkConfiguration.FORK_ALWAYS.equals( forkConfiguration.getForkMode() ) )
+        else if ( ForkConfiguration.FORK_ALWAYS.equals( requestedForkMode ) )
         {
             result = runSuitesForkPerTestSet();
         }
         else
         {
-            throw new SurefireExecutionException( "Unknown forkmode: " + forkConfiguration.getForkMode(), null );
+            throw new SurefireExecutionException( "Unknown forkmode: " + requestedForkMode, null );
         }
         return result;
     }
@@ -259,7 +128,7 @@ public class SurefireBooter
     private int runSuitesInProcess( String testSet, Properties results )
         throws SurefireExecutionException
     {
-        if ( testSuites.size() != 1 )
+        if ( booterConfiguration.getTestSuites().size() != 1 )
         {
             throw new IllegalArgumentException( "Cannot only specify testSet for single test suites" );
         }
@@ -270,26 +139,27 @@ public class SurefireBooter
         ClassLoader oldContextClassLoader = Thread.currentThread().getContextClassLoader();
         try
         {
-            ClassLoader testsClassLoader =
-                useSystemClassLoader() ? ClassLoader.getSystemClassLoader() : createClassLoader( classPathUrls, null,
-                                                                                                 childDelegation );
+            ClassLoader testsClassLoader = useSystemClassLoader()
+                ? ClassLoader.getSystemClassLoader()
+                : createClassLoader( booterConfiguration.getClassPathUrls(), null,
+                                     booterConfiguration.isChildDelegation() );
 
             // TODO: assertions = true shouldn't be required for this CL if we had proper separation (see TestNG)
-            ClassLoader surefireClassLoader = createClassLoader( surefireClassPathUrls, testsClassLoader );
+            ClassLoader surefireClassLoader =
+                createClassLoader( booterConfiguration.getSurefireClassPathUrls(), testsClassLoader );
 
             Class surefireClass = surefireClassLoader.loadClass( Surefire.class.getName() );
 
             Object surefire = surefireClass.newInstance();
 
-            Method run =
-                surefireClass.getMethod( "run", new Class[] { List.class, Object[].class, String.class,
-                    ClassLoader.class, ClassLoader.class, Properties.class, Boolean.class } );
+            Method run = surefireClass.getMethod( "run", new Class[]{ List.class, Object[].class, String.class,
+                ClassLoader.class, ClassLoader.class, Properties.class, Boolean.class } );
 
             Thread.currentThread().setContextClassLoader( testsClassLoader );
 
-            Integer result =
-                (Integer) run.invoke( surefire, new Object[] { reports, testSuites.get( 0 ), testSet,
-                    surefireClassLoader, testsClassLoader, results, new Boolean( failIfNoTests ) } );
+            Integer result = (Integer) run.invoke( surefire, new Object[]{ booterConfiguration.getReports(),
+                booterConfiguration.getTestSuites().get( 0 ), testSet, surefireClassLoader, testsClassLoader, results,
+                booterConfiguration.isFailIfNoTests() } );
 
             return result.intValue();
         }
@@ -332,24 +202,25 @@ public class SurefireBooter
             }
             else
             {
-                testsClassLoader = createClassLoader( classPathUrls, null, childDelegation );
+                testsClassLoader = createClassLoader( booterConfiguration.getClassPathUrls(), null,
+                                                      booterConfiguration.isChildDelegation() );
             }
-            
-            ClassLoader surefireClassLoader = createClassLoader( surefireClassPathUrls, testsClassLoader );
+
+            ClassLoader surefireClassLoader =
+                createClassLoader( booterConfiguration.getSurefireClassPathUrls(), testsClassLoader );
 
             Class surefireClass = surefireClassLoader.loadClass( Surefire.class.getName() );
 
             Object surefire = surefireClass.newInstance();
 
-            Method run =
-                surefireClass.getMethod( "run", new Class[] { List.class, List.class, ClassLoader.class,
-                    ClassLoader.class, Boolean.class } );
+            Method run = surefireClass.getMethod( "run", new Class[]{ List.class, List.class, ClassLoader.class,
+                ClassLoader.class, Boolean.class } );
 
             Thread.currentThread().setContextClassLoader( testsClassLoader );
 
-            Integer result =
-                (Integer) run.invoke( surefire, new Object[] { reports, testSuites, surefireClassLoader,
-                    testsClassLoader, new Boolean( failIfNoTests ) } );
+            Integer result = (Integer) run.invoke( surefire, new Object[]{ booterConfiguration.getReports(),
+                booterConfiguration.getTestSuites(), surefireClassLoader, testsClassLoader,
+                booterConfiguration.isFailIfNoTests() } );
 
             return result.intValue();
         }
@@ -367,22 +238,21 @@ public class SurefireBooter
         }
     }
 
-    
-    
+
     private String getTestClassPathAsString()
     {
         StringBuffer sb = new StringBuffer();
-        for ( int i = 0; i < classPathUrls.size(); i++ )
+        for ( int i = 0; i < booterConfiguration.getClassPathUrls().size(); i++ )
         {
-            sb.append( classPathUrls.get( i ) ).append( File.pathSeparatorChar );
+            sb.append( booterConfiguration.getClassPathUrls().get( i ) ).append( File.pathSeparatorChar );
         }
         return sb.toString();
     }
-    
+
     private int runSuitesForkOnce()
         throws SurefireBooterForkException
     {
-        return forkSuites( testSuites, true, true );
+        return forkSuites( booterConfiguration.getTestSuites(), true, true );
     }
 
     private int runSuitesForkPerTestSet()
@@ -392,9 +262,10 @@ public class SurefireBooter
         ClassLoader surefireClassLoader;
         try
         {
-            testsClassLoader = createClassLoader( classPathUrls, null, false );
+            testsClassLoader = createClassLoader( booterConfiguration.getClassPathUrls(), null, false );
             // TODO: assertions = true shouldn't be required if we had proper separation (see TestNG)
-            surefireClassLoader = createClassLoader( surefireClassPathUrls, testsClassLoader, false );
+            surefireClassLoader =
+                createClassLoader( booterConfiguration.getSurefireClassPathUrls(), testsClassLoader, false );
         }
         catch ( MalformedURLException e )
         {
@@ -405,7 +276,7 @@ public class SurefireBooter
 
         boolean showHeading = true;
         Properties properties = new Properties();
-        for ( Iterator i = testSuites.iterator(); i.hasNext(); )
+        for ( Iterator i = booterConfiguration.getTestSuites().iterator(); i.hasNext(); )
         {
             Object[] testSuite = (Object[]) i.next();
 
@@ -449,16 +320,16 @@ public class SurefireBooter
         }
         catch ( NoSuchMethodException e )
         {
-            throw new SurefireBooterForkException( "Unable to find appropriate constructor for test suite '"
-                + className + "': " + e.getMessage(), e );
+            throw new SurefireBooterForkException(
+                "Unable to find appropriate constructor for test suite '" + className + "': " + e.getMessage(), e );
         }
 
         Map testSets;
         try
         {
-            Method m = suite.getClass().getMethod( "locateTestSets", new Class[] { ClassLoader.class } );
+            Method m = suite.getClass().getMethod( "locateTestSets", new Class[]{ ClassLoader.class } );
 
-            testSets = (Map) m.invoke( suite, new Object[] { testsClassLoader } );
+            testSets = (Map) m.invoke( suite, new Object[]{ testsClassLoader } );
         }
         catch ( IllegalAccessException e )
         {
@@ -480,16 +351,16 @@ public class SurefireBooter
     {
         Properties properties = new Properties();
 
-        setForkProperties( testSuites, properties );
+        booterConfiguration.setForkProperties( testSuites, properties );
 
         return fork( properties, showHeading, showFooter );
     }
 
     private int forkSuite( Object[] testSuite, Object testSet, boolean showHeading, boolean showFooter,
-                               Properties properties )
+                           Properties properties )
         throws SurefireBooterForkException
     {
-        setForkProperties( Collections.singletonList( testSuite ), properties );
+        booterConfiguration.setForkProperties( Collections.singletonList( testSuite ), properties );
 
         if ( testSet instanceof String )
         {
@@ -499,124 +370,16 @@ public class SurefireBooter
         return fork( properties, showHeading, showFooter );
     }
 
-    private void setForkProperties( List testSuites, Properties properties )
-    {
-        addPropertiesForTypeHolder( reports, properties, REPORT_PROPERTY_PREFIX );
-        addPropertiesForTypeHolder( testSuites, properties, TEST_SUITE_PROPERTY_PREFIX );
-
-        for ( int i = 0; i < classPathUrls.size(); i++ )
-        {
-            String url = (String) classPathUrls.get( i );
-            properties.setProperty( "classPathUrl." + i, url );
-        }
-
-        for ( int i = 0; i < surefireClassPathUrls.size(); i++ )
-        {
-            String url = (String) surefireClassPathUrls.get( i );
-            properties.setProperty( "surefireClassPathUrl." + i, url );
-        }
-
-        properties.setProperty( "childDelegation", String.valueOf( childDelegation ) );
-        properties.setProperty( "enableAssertions", String.valueOf( enableAssertions ) );
-        properties.setProperty( "useSystemClassLoader", String.valueOf( useSystemClassLoader() ) );
-        properties.setProperty( "useManifestOnlyJar", String.valueOf( useManifestOnlyJar() ) );
-        properties.setProperty( "failIfNoTests", String.valueOf( failIfNoTests ) );
-    }
-
-    private File writePropertiesFile( String name, Properties properties )
-        throws IOException
-    {
-        File file = File.createTempFile( name, "tmp", forkConfiguration.getTempDirectory() );
-        if ( !forkConfiguration.isDebug() )
-        {
-            file.deleteOnExit();
-        }
-
-        writePropertiesFile( file, name, properties );
-
-        return file;
-    }
-
-    private void writePropertiesFile( File file, String name, Properties properties )
-        throws IOException
-    {
-        FileOutputStream out = new FileOutputStream( file );
-
-        try
-        {
-            properties.store( out, name );
-        }
-        finally
-        {
-            IOUtil.close( out );
-        }
-    }
-
-    private void addPropertiesForTypeHolder( List typeHolderList, Properties properties, String propertyPrefix )
-    {
-        for ( int i = 0; i < typeHolderList.size(); i++ )
-        {
-            Object[] report = (Object[]) typeHolderList.get( i );
-
-            String className = (String) report[0];
-            Object[] params = (Object[]) report[1];
-
-            properties.setProperty( propertyPrefix + i, className );
-
-            if ( params != null )
-            {
-                String paramProperty = convert( params[0] );
-                String typeProperty = params[0].getClass().getName();
-                for ( int j = 1; j < params.length; j++ )
-                {
-                    paramProperty += "|";
-                    typeProperty += "|";
-                    if ( params[j] != null )
-                    {
-                        paramProperty += convert( params[j] );
-                        typeProperty += params[j].getClass().getName();
-                    }
-                }
-                properties.setProperty( propertyPrefix + i + PARAMS_SUFIX, paramProperty );
-                properties.setProperty( propertyPrefix + i + TYPES_SUFIX, typeProperty );
-            }
-        }
-    }
-
-    private static String convert( Object param )
-    {
-        if ( param instanceof File[] )
-        {
-            File[] files = (File[]) param;
-            return "[" + StringUtils.join( files, "," ) + "]";
-        }
-        else if ( param instanceof Properties )
-        {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            try
-            {
-                ( (Properties) param ).store( baos, "" );
-                return new String( baos.toByteArray(), "8859_1" );
-            }
-            catch ( Exception e )
-            {
-                throw new RuntimeException ( "bug in property conversion", e );
-            }
-        }
-        else
-        {
-            return param.toString();
-        }
-    }
-
     private boolean useSystemClassLoader()
     {
-        return forkConfiguration.isUseSystemClassLoader() && ( isForked || forkConfiguration.isForking() );
+        return booterConfiguration.getForkConfiguration().isUseSystemClassLoader() &&
+            ( booterConfiguration.isForked() || booterConfiguration.getForkConfiguration().isForking() );
     }
-    
+
     private boolean useManifestOnlyJar()
     {
-        return forkConfiguration.isUseSystemClassLoader() && forkConfiguration.isUseManifestOnlyJar();
+        return booterConfiguration.getForkConfiguration().isUseSystemClassLoader() &&
+            booterConfiguration.getForkConfiguration().isUseManifestOnlyJar();
     }
 
     private int fork( Properties properties, boolean showHeading, boolean showFooter )
@@ -626,10 +389,11 @@ public class SurefireBooter
         File systemProperties = null;
         try
         {
-            surefireProperties = writePropertiesFile( "surefire", properties );
-            if ( forkConfiguration.getSystemProperties() != null )
+            surefireProperties = booterConfiguration.writePropertiesFile( "surefire", properties );
+            if ( booterConfiguration.getForkConfiguration().getSystemProperties() != null )
             {
-                systemProperties = writePropertiesFile( "surefire", forkConfiguration.getSystemProperties() );
+                systemProperties = booterConfiguration.writePropertiesFile( "surefire",
+                                                                            booterConfiguration.getForkConfiguration().getSystemProperties() );
             }
         }
         catch ( IOException e )
@@ -637,16 +401,18 @@ public class SurefireBooter
             throw new SurefireBooterForkException( "Error creating properties files for forking", e );
         }
 
-        List bootClasspath = new ArrayList( surefireBootClassPathUrls.size() + classPathUrls.size() );
+        List bootClasspath = new ArrayList(
+            booterConfiguration.getSurefireBootClassPathUrls().size() + booterConfiguration.getClassPathUrls().size() );
 
-        bootClasspath.addAll( surefireBootClassPathUrls );
+        bootClasspath.addAll( booterConfiguration.getSurefireBootClassPathUrls() );
 
         if ( useSystemClassLoader() )
         {
-            bootClasspath.addAll( classPathUrls );
+            bootClasspath.addAll( booterConfiguration.getClassPathUrls() );
         }
 
-        Commandline cli = forkConfiguration.createCommandLine( bootClasspath, useManifestOnlyJar() );
+        Commandline cli =
+            booterConfiguration.getForkConfiguration().createCommandLine( bootClasspath, useManifestOnlyJar() );
 
         cli.createArg().setFile( surefireProperties );
 
@@ -655,21 +421,21 @@ public class SurefireBooter
             cli.createArg().setFile( systemProperties );
         }
 
-        
-        ForkingStreamConsumer out = getForkingStreamConsumer( showHeading, showFooter, redirectTestOutputToFile );
+        ForkingStreamConsumer out =
+            getForkingStreamConsumer( showHeading, showFooter, booterConfiguration.isRedirectTestOutputToFile() );
 
         StreamConsumer err;
-        
-        if ( redirectTestOutputToFile )
+
+        if ( booterConfiguration.isRedirectTestOutputToFile() )
         {
             err = out;
         }
         else
-        { 
-            err = getForkingStreamConsumer( showHeading, showFooter, redirectTestOutputToFile );
+        {
+            err = getForkingStreamConsumer( showHeading, showFooter, booterConfiguration.isRedirectTestOutputToFile() );
         }
 
-        if ( forkConfiguration.isDebug() )
+        if ( booterConfiguration.getForkConfiguration().isDebug() )
         {
             System.out.println( "Forking command line: " + cli );
         }
@@ -685,7 +451,7 @@ public class SurefireBooter
             throw new SurefireBooterForkException( "Error while executing forked tests.", e );
         }
 
-        if ( redirectTestOutputToFile )
+        if ( booterConfiguration.isRedirectTestOutputToFile() )
         {
             // ensure the FileOutputConsumerProxy flushes/closes the output file
             try
@@ -751,7 +517,7 @@ public class SurefireBooter
         {
             try
             {
-                Object[] args = new Object[] { enableAssertions ? Boolean.TRUE : Boolean.FALSE };
+                Object[] args = new Object[]{ booterConfiguration.isEnableAssertions() ? Boolean.TRUE : Boolean.FALSE };
                 if ( parent != null )
                 {
                     assertionStatusMethod.invoke( parent, args );
@@ -773,26 +539,6 @@ public class SurefireBooter
             classLoader.addURL( url );
         }
         return classLoader;
-    }
-
-    private static List processStringList( String stringList )
-    {
-        String sl = stringList;
-
-        if ( sl.startsWith( "[" ) && sl.endsWith( "]" ) )
-        {
-            sl = sl.substring( 1, sl.length() - 1 );
-        }
-
-        List list = new ArrayList();
-
-        String[] stringArray = StringUtils.split( sl, "," );
-
-        for ( int i = 0; i < stringArray.length; i++ )
-        {
-            list.add( stringArray[i].trim() );
-        }
-        return list;
     }
 
     private static Properties loadProperties( File file )
@@ -829,87 +575,12 @@ public class SurefireBooter
         }
     }
 
-    private static Object[] constructParamObjects( String paramProperty, String typeProperty )
-    {
-        Object[] paramObjects = null;
-        if ( paramProperty != null )
-        {
-            // bit of a glitch that it need sto be done twice to do an odd number of vertical bars (eg |||, |||||).
-            String[] params =
-                StringUtils.split( StringUtils.replace( StringUtils.replace( paramProperty, "||", "| |" ),
-                                                        "||", "| |" ), "|" );
-            String[] types =
-                StringUtils.split( StringUtils.replace( StringUtils.replace( typeProperty, "||", "| |" ),
-                                                        "||", "| |" ), "|" );
-
-            paramObjects = new Object[params.length];
-
-            for ( int i = 0; i < types.length; i++ )
-            {
-                if ( types[i].trim().length() == 0 )
-                {
-                    params[i] = null;
-                }
-                else if ( types[i].equals( String.class.getName() ) )
-                {
-                    paramObjects[i] = params[i];
-                }
-                else if ( types[i].equals( File.class.getName() ) )
-                {
-                    paramObjects[i] = new File( params[i] );
-                }
-                else if ( types[i].equals( File[].class.getName() ) )
-                {
-                    List stringList = processStringList( params[i] );
-                    File[] fileList = new File[stringList.size()];
-                    for ( int j = 0; j < stringList.size(); j++ )
-                    {
-                        fileList[j] = new File( (String) stringList.get( j ) );
-                    }
-                    paramObjects[i] = fileList;
-                }
-                else if ( types[i].equals( ArrayList.class.getName() ) )
-                {
-                    paramObjects[i] = processStringList( params[i] );
-                }
-                else if ( types[i].equals( Boolean.class.getName() ) )
-                {
-                    paramObjects[i] = Boolean.valueOf( params[i] );
-                }
-                else if ( types[i].equals( Integer.class.getName() ) )
-                {
-                    paramObjects[i] = Integer.valueOf( params[i] );
-                }
-                else if ( types[i].equals( Properties.class.getName() ) )
-                {
-                    final Properties result = new Properties();
-                    final String value = params[i];
-                    try
-                    {
-                        ByteArrayInputStream bais = new ByteArrayInputStream( value.getBytes( "8859_1" ) );
-                        result.load( bais );
-                    }
-                    catch ( Exception e )
-                    {
-                        throw new RuntimeException( "bug in property conversion", e );
-                    }
-                    paramObjects[i] = result;
-                }
-                else
-                {
-                    // TODO: could attempt to construct with a String constructor if needed
-                    throw new IllegalArgumentException( "Unknown parameter type: " + types[i] );
-                }
-            }
-        }
-        return paramObjects;
-    }
-
     /**
      * This method is invoked when Surefire is forked - this method parses and organizes the arguments passed to it and
      * then calls the Surefire class' run method. <p/> The system exit code will be 1 if an exception is thrown.
      *
-     * @param args
+     * @param args Commandline arguments
+     * @throws Throwable Upon throwables
      */
     public static void main( String[] args )
         throws Throwable
@@ -923,105 +594,24 @@ public class SurefireBooter
             }
 
             File surefirePropertiesFile = new File( args[0] );
-            Properties p = loadProperties( surefirePropertiesFile );
+            InputStream stream = surefirePropertiesFile.exists() ? new FileInputStream( surefirePropertiesFile ) : null;
+            BooterConfiguration booterConfiguration = new BooterConfiguration( stream );
+            Properties p = booterConfiguration.getProperties();
 
-            SortedMap classPathUrls = new TreeMap();
-
-            SortedMap surefireClassPathUrls = new TreeMap();
-
-            SurefireBooter surefireBooter = new SurefireBooter( true );
-
-            ForkConfiguration forkConfiguration = new ForkConfiguration();
-            forkConfiguration.setForkMode( "never" );
-            surefireBooter.setForkConfiguration( forkConfiguration );
-
-            for ( Enumeration e = p.propertyNames(); e.hasMoreElements(); )
-            {
-                String name = (String) e.nextElement();
-
-                if ( name.startsWith( REPORT_PROPERTY_PREFIX ) && !name.endsWith( PARAMS_SUFIX )
-                                && !name.endsWith( TYPES_SUFIX ) )
-                {
-                    String className = p.getProperty( name );
-
-                    String params = p.getProperty( name + PARAMS_SUFIX );
-                    String types = p.getProperty( name + TYPES_SUFIX );
-                    surefireBooter.addReport( className, constructParamObjects( params, types ) );
-                }
-                else if ( name.startsWith( TEST_SUITE_PROPERTY_PREFIX ) && !name.endsWith( PARAMS_SUFIX )
-                                && !name.endsWith( TYPES_SUFIX ) )
-                {
-                    String className = p.getProperty( name );
-
-                    String params = p.getProperty( name + PARAMS_SUFIX );
-                    String types = p.getProperty( name + TYPES_SUFIX );
-                    surefireBooter.addTestSuite( className, constructParamObjects( params, types ) );
-                }
-                else if ( name.startsWith( "classPathUrl." ) )
-                {
-                    classPathUrls.put( Integer.valueOf( name.substring( name.indexOf( '.' ) + 1 ) ),
-                                       p.getProperty( name ) );
-                }
-                else if ( name.startsWith( "surefireClassPathUrl." ) )
-                {
-                    surefireClassPathUrls.put( Integer.valueOf( name.substring( name.indexOf( '.' ) + 1 ) ),
-                                               p.getProperty( name ) );
-                }
-                else if ( name.startsWith( "surefireBootClassPathUrl." ) )
-                {
-                    surefireBooter.addSurefireBootClassPathUrl( p.getProperty( name ) );
-                }
-                else if ( "childDelegation".equals( name ) )
-                {
-                    surefireBooter.childDelegation =
-                        Boolean.valueOf( p.getProperty( "childDelegation" ) ).booleanValue();
-                }
-                else if ( "enableAssertions".equals( name ) )
-                {
-                    surefireBooter.enableAssertions =
-                        Boolean.valueOf( p.getProperty( "enableAssertions" ) ).booleanValue();
-                }
-                else if ( "useSystemClassLoader".equals( name ) )
-                {
-                    boolean value = Boolean.valueOf( p.getProperty( "useSystemClassLoader" ) ).booleanValue();
-                    surefireBooter.forkConfiguration.setUseSystemClassLoader( value );
-                }
-                else if ( "useManifestOnlyJar".equals( name ) )
-                {
-                    boolean value = Boolean.valueOf( p.getProperty( "useManifestOnlyJar" ) ).booleanValue();
-                    surefireBooter.forkConfiguration.setUseManifestOnlyJar( value );
-                }
-                else if ( "failIfNoTests".equals( name ) )
-                {
-                    boolean value = Boolean.valueOf( p.getProperty( "failIfNoTests" ) ).booleanValue();
-                    surefireBooter.setFailIfNoTests( value );
-                }
-            }
-
-            for ( Iterator cpi = classPathUrls.keySet().iterator(); cpi.hasNext(); )
-            {
-                String url = (String) classPathUrls.get( cpi.next() );
-                surefireBooter.addClassPathUrl( url );
-            }
-
-            for ( Iterator scpi = surefireClassPathUrls.keySet().iterator(); scpi.hasNext(); )
-            {
-                String url = (String) surefireClassPathUrls.get( scpi.next() );
-                surefireBooter.addSurefireClassPathUrl( url );
-            }
+            SurefireBooter booter = new SurefireBooter( booterConfiguration );
 
             String testSet = p.getProperty( "testSet" );
             int result;
             if ( testSet != null )
             {
-                result = surefireBooter.runSuitesInProcess( testSet, p );
+                result = booter.runSuitesInProcess( testSet, p );
             }
             else
             {
-                result = surefireBooter.runSuitesInProcess();
+                result = booter.runSuitesInProcess();
             }
 
-            surefireBooter.writePropertiesFile( surefirePropertiesFile, "surefire", p );
+            booterConfiguration.writePropertiesFile( surefirePropertiesFile, "surefire", p );
 
             // noinspection CallToSystemExit
             System.exit( result );
@@ -1036,19 +626,14 @@ public class SurefireBooter
         }
     }
 
-    public void setChildDelegation( boolean childDelegation )
-    {
-        this.childDelegation = childDelegation;
-    }
-
     private ForkingStreamConsumer getForkingStreamConsumer( boolean showHeading, boolean showFooter,
-                                                     boolean redirectTestOutputToFile )
+                                                            boolean redirectTestOutputToFile )
     {
         OutputConsumer outputConsumer = new StandardOutputConsumer();
 
         if ( redirectTestOutputToFile )
         {
-            outputConsumer = new FileOutputConsumerProxy( outputConsumer, getReportsDirectory() );
+            outputConsumer = new FileOutputConsumerProxy( outputConsumer, reportsDirectory );
         }
 
         if ( !showHeading )
@@ -1063,11 +648,6 @@ public class SurefireBooter
         return new ForkingStreamConsumer( outputConsumer );
     }
 
-    public void setEnableAssertions( boolean enableAssertions )
-    {
-        this.enableAssertions = enableAssertions;
-    }
-    
     public void setForkedProcessTimeoutInSeconds( int forkedProcessTimeoutInSeconds )
     {
         this.forkedProcessTimeoutInSeconds = forkedProcessTimeoutInSeconds;

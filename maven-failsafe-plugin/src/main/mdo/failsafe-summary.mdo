@@ -72,17 +72,17 @@ under the License.
     {
         switch ( this.result )
         {
-            case org.apache.maven.surefire.booter.SurefireBooter.TESTS_SUCCEEDED_EXIT_CODE:
+            case org.apache.maven.surefire.booter.BooterConfiguration.TESTS_SUCCEEDED_EXIT_CODE:
                 this.result = summary.result;
                 break;
-            case org.apache.maven.surefire.booter.SurefireBooter.NO_TESTS_EXIT_CODE:
+            case org.apache.maven.surefire.booter.BooterConfiguration.NO_TESTS_EXIT_CODE:
                 switch ( summary.result )
                 {
-                    case org.apache.maven.surefire.booter.SurefireBooter.TESTS_SUCCEEDED_EXIT_CODE:
+                    case org.apache.maven.surefire.booter.BooterConfiguration.TESTS_SUCCEEDED_EXIT_CODE:
                         break;
-                    case org.apache.maven.surefire.booter.SurefireBooter.NO_TESTS_EXIT_CODE:
+                    case org.apache.maven.surefire.booter.BooterConfiguration.NO_TESTS_EXIT_CODE:
                         break;
-                    case org.apache.maven.surefire.booter.SurefireBooter.TESTS_FAILED_EXIT_CODE:
+                    case org.apache.maven.surefire.booter.BooterConfiguration.TESTS_FAILED_EXIT_CODE:
                         this.result = summary.result;
                         break;
                     default:
@@ -90,14 +90,14 @@ under the License.
                         break;
                 }
                 break;
-            case org.apache.maven.surefire.booter.SurefireBooter.TESTS_FAILED_EXIT_CODE:
+            case org.apache.maven.surefire.booter.BooterConfiguration.TESTS_FAILED_EXIT_CODE:
                 switch ( summary.result )
                 {
-                    case org.apache.maven.surefire.booter.SurefireBooter.TESTS_SUCCEEDED_EXIT_CODE:
+                    case org.apache.maven.surefire.booter.BooterConfiguration.TESTS_SUCCEEDED_EXIT_CODE:
                         break;
-                    case org.apache.maven.surefire.booter.SurefireBooter.NO_TESTS_EXIT_CODE:
+                    case org.apache.maven.surefire.booter.BooterConfiguration.NO_TESTS_EXIT_CODE:
                         break;
-                    case org.apache.maven.surefire.booter.SurefireBooter.TESTS_FAILED_EXIT_CODE:
+                    case org.apache.maven.surefire.booter.BooterConfiguration.TESTS_FAILED_EXIT_CODE:
                         break;
                     default:
                         this.result = summary.result;

@@ -21,7 +21,7 @@ package org.apache.maven.plugin.surefire;
 
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
-import org.apache.maven.surefire.booter.SurefireBooter;
+import org.apache.maven.surefire.booter.BooterConfiguration;
 
 /**
  * Helper class for surefire plugins
@@ -47,7 +47,7 @@ public final class SurefireHelper
 
         String msg;
 
-        if ( result == SurefireBooter.NO_TESTS_EXIT_CODE )
+        if ( result == BooterConfiguration.NO_TESTS_EXIT_CODE )
         {
             if ( ( reportParameters.getFailIfNoTests() == null ) || !reportParameters.getFailIfNoTests().booleanValue() )
             {

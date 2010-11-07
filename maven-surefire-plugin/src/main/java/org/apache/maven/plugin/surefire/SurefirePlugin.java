@@ -33,6 +33,7 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.surefire.booter.BooterConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooter;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.apache.maven.surefire.booter.SurefireExecutionException;
@@ -564,15 +565,19 @@ public class SurefirePlugin
     {
         if ( verifyParameters() )
         {
-            SurefireBooter surefireBooter = constructSurefireBooter();
+            BooterConfiguration booterConfiguration = createBooterConfiguration();
 
             getLog().info(
                 StringUtils.capitalizeFirstLetter( getPluginName() ) + " report directory: " + getReportsDirectory() );
 
+            SurefireBooter booter = new SurefireBooter(booterConfiguration, reportsDirectory);
+            booter.setForkedProcessTimeoutInSeconds( getForkedProcessTimeoutInSeconds() );
+
+
             int result;
             try
             {
-                result = surefireBooter.run();
+                result = booter.run();
             }
             catch ( SurefireBooterForkException e )
             {
@@ -583,7 +588,7 @@ public class SurefirePlugin
                 throw new MojoExecutionException( e.getMessage(), e );
             }
 
-            if ( getOriginalSystemProperties() != null && !surefireBooter.isForking() )
+            if ( getOriginalSystemProperties() != null && !booterConfiguration.isForking() )
             {
                 // restore system properties, only makes sense when not forking..
                 System.setProperties( getOriginalSystemProperties() );

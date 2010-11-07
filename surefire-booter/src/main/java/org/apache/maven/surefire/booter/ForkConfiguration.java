@@ -227,7 +227,7 @@ public class ForkConfiguration
     }
 
     /**
-     * Create a jar with just a manifest containing a Main-Class entry for SurefireBooter and a Class-Path entry
+     * Create a jar with just a manifest containing a Main-Class entry for BooterConfiguration and a Class-Path entry
      * for all classpath elements.
      *
      * @param classPath List&lt;String> of all classpath elements.

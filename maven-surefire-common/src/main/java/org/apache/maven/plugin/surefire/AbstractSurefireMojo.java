@@ -35,8 +35,8 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.shared.artifact.filter.PatternIncludesArtifactFilter;
+import org.apache.maven.surefire.booter.BooterConfiguration;
 import org.apache.maven.surefire.booter.ForkConfiguration;
-import org.apache.maven.surefire.booter.SurefireBooter;
 import org.apache.maven.surefire.report.BriefConsoleReporter;
 import org.apache.maven.surefire.report.BriefFileReporter;
 import org.apache.maven.surefire.report.ConsoleReporter;
@@ -213,10 +213,11 @@ public abstract class AbstractSurefireMojo
         return ForkConfiguration.FORK_NEVER.equals( getForkMode()); 
     }
 
-    protected SurefireBooter constructSurefireBooter()
+    protected BooterConfiguration createBooterConfiguration()
         throws MojoExecutionException, MojoFailureException
     {
-        SurefireBooter surefireBooter = new SurefireBooter();
+        final ForkConfiguration fork = getForkConfiguration();
+        BooterConfiguration booterConfiguration = new BooterConfiguration( fork );
 
         Artifact surefireArtifact = (Artifact) getPluginArtifactMap().get( "org.apache.maven.surefire:surefire-booter" );
         if ( surefireArtifact == null )
@@ -230,7 +231,7 @@ public abstract class AbstractSurefireMojo
         Artifact testNgArtifact;
         try
         {
-            addArtifact( surefireBooter, surefireArtifact );
+            addArtifact( booterConfiguration, surefireArtifact );
 
             junitArtifact = (Artifact) getProjectArtifactMap().get( getJunitArtifactName() );
             // SUREFIRE-378, junit can have an alternate artifact name
@@ -259,29 +260,29 @@ public abstract class AbstractSurefireMojo
                     getProperties().setProperty( "testng.test.classpath", getTestClassesDirectory().getAbsolutePath() );
                 }
 
-                addArtifact( surefireBooter, testNgArtifact );
+                addArtifact( booterConfiguration, testNgArtifact );
 
                 // The plugin uses a JDK based profile to select the right testng. We might be explicity using a
                 // different one since its based on the source level, not the JVM. Prune using the filter.
-                addProvider( surefireBooter, "surefire-testng", surefireArtifact.getBaseVersion(), testNgArtifact );
+                addProvider( booterConfiguration, "surefire-testng", surefireArtifact.getBaseVersion(), testNgArtifact );
             }
             else if ( junitArtifact != null && isAnyJunit4( junitArtifact ) )
             {
                 if ( isAnyConcurrencySelected() && isJunit47Compatible( junitArtifact ) )
                 {
                     convertJunitCoreParameters();
-                    addProvider( surefireBooter, "surefire-junit47", surefireArtifact.getBaseVersion(), null );
+                    addProvider( booterConfiguration, "surefire-junit47", surefireArtifact.getBaseVersion(), null );
                 }
                 else
                 {
-                    addProvider( surefireBooter, "surefire-junit4", surefireArtifact.getBaseVersion(), null );
+                    addProvider( booterConfiguration, "surefire-junit4", surefireArtifact.getBaseVersion(), null );
                 }
             }
             else
             {
                 // add the JUnit provider as default - it doesn't require JUnit to be present,
                 // since it supports POJO tests.
-                addProvider( surefireBooter, "surefire-junit", surefireArtifact.getBaseVersion(), null );
+                addProvider( booterConfiguration, "surefire-junit", surefireArtifact.getBaseVersion(), null );
             }
         }
         catch ( ArtifactNotFoundException e )
@@ -306,7 +307,7 @@ public abstract class AbstractSurefireMojo
             }
 
             // TODO: properties should be passed in here too
-            surefireBooter.addTestSuite( "org.apache.maven.surefire.testng.TestNGXmlTestSuite",
+            booterConfiguration.addTestSuite( "org.apache.maven.surefire.testng.TestNGXmlTestSuite",
                                          new Object[]{ getSuiteXmlFiles(), getTestSourceDirectory().getAbsolutePath(),
                                              testNgArtifact.getVersion(), testNgArtifact.getClassifier(),
                                              getProperties(), getReportsDirectory() } );
@@ -366,7 +367,7 @@ public abstract class AbstractSurefireMojo
 
             if ( testNgArtifact != null )
             {
-                surefireBooter.addTestSuite( "org.apache.maven.surefire.testng.TestNGDirectoryTestSuite",
+                booterConfiguration.addTestSuite( "org.apache.maven.surefire.testng.TestNGDirectoryTestSuite",
                                              new Object[]{ getTestClassesDirectory(), includes, excludes,
                                                  getTestSourceDirectory().getAbsolutePath(), testNgArtifact.getVersion(),
                                                  testNgArtifact.getClassifier(), getProperties(),
@@ -379,7 +380,7 @@ public abstract class AbstractSurefireMojo
                 {
                     junitDirectoryTestSuite = "org.apache.maven.surefire.junitcore.JUnitCoreDirectoryTestSuite";
                     getLog().info( "Concurrency config is " + getProperties().toString() );
-                    surefireBooter.addTestSuite( junitDirectoryTestSuite,
+                    booterConfiguration.addTestSuite( junitDirectoryTestSuite,
                                                  new Object[]{ getTestClassesDirectory(), includes, excludes,
                                                      getProperties() } );
                 }
@@ -395,7 +396,7 @@ public abstract class AbstractSurefireMojo
                         // classes compiled against JUnit since it has a dependency on JUnit itself.
                         junitDirectoryTestSuite = "org.apache.maven.surefire.junit.JUnitDirectoryTestSuite";
                     }
-                    surefireBooter.addTestSuite( junitDirectoryTestSuite,
+                    booterConfiguration.addTestSuite( junitDirectoryTestSuite,
                                                  new Object[]{ getTestClassesDirectory(), includes, excludes} );
                 }
             }
@@ -419,7 +420,7 @@ public abstract class AbstractSurefireMojo
 
             getLog().debug( "  " + classpathElement );
 
-            surefireBooter.addClassPathUrl( classpathElement );
+            booterConfiguration.addClassPathUrl( classpathElement );
         }
 
         Toolchain tc = getToolchain();
@@ -441,10 +442,22 @@ public abstract class AbstractSurefireMojo
             }
         }
 
-        // ----------------------------------------------------------------------
-        // Forking
-        // ----------------------------------------------------------------------
 
+        booterConfiguration.setFailIfNoTests( getFailIfNoTests() != null && getFailIfNoTests().booleanValue() );
+
+        booterConfiguration.setRedirectTestOutputToFile( isRedirectTestOutputToFile() );
+
+        booterConfiguration.setChildDelegation( isChildDelegation() );
+
+        booterConfiguration.setEnableAssertions( isEnableAssertions() );
+
+        addReporters( booterConfiguration, fork.isForking() );
+
+        return booterConfiguration;
+    }
+
+    private ForkConfiguration getForkConfiguration()
+    {
         ForkConfiguration fork = new ForkConfiguration();
 
         fork.setForkMode( getForkMode() );
@@ -514,24 +527,7 @@ public abstract class AbstractSurefireMojo
                 }
             }
         }
-
-        surefireBooter.setFailIfNoTests( getFailIfNoTests() == null ? false : getFailIfNoTests().booleanValue() );
-
-        surefireBooter.setForkedProcessTimeoutInSeconds( getForkedProcessTimeoutInSeconds() );
-
-        surefireBooter.setRedirectTestOutputToFile( isRedirectTestOutputToFile() );
-
-        surefireBooter.setForkConfiguration( fork );
-
-        surefireBooter.setChildDelegation( isChildDelegation() );
-
-        surefireBooter.setEnableAssertions( isEnableAssertions() );
-
-        surefireBooter.setReportsDirectory( getReportsDirectory() );
-
-        addReporters( surefireBooter, fork.isForking() );
-
-        return surefireBooter;
+        return fork;
     }
 
     protected abstract String[] getDefaultIncludes();
@@ -623,7 +619,7 @@ public abstract class AbstractSurefireMojo
         }
     }
 
-    private void addProvider( SurefireBooter surefireBooter, String provider, String version,
+    private void addProvider( BooterConfiguration booterConfiguration, String provider, String version,
                               Artifact filteredArtifact )
         throws ArtifactNotFoundException, ArtifactResolutionException
     {
@@ -638,7 +634,7 @@ public abstract class AbstractSurefireMojo
 
             getLog().debug( "Adding to " + getPluginName() + " test classpath: " + artifact.getFile().getAbsolutePath() + " Scope: " + artifact.getScope() );
 
-            surefireBooter.addSurefireClassPathUrl( artifact.getFile().getAbsolutePath() );
+            booterConfiguration.addSurefireClassPathUrl( artifact.getFile().getAbsolutePath() );
         }
     }
 
@@ -659,7 +655,7 @@ public abstract class AbstractSurefireMojo
                                                           getMetadataSource(), filter );
     }
 
-    private void addArtifact( SurefireBooter surefireBooter, Artifact surefireArtifact )
+    private void addArtifact( BooterConfiguration booterConfiguration, Artifact surefireArtifact )
         throws ArtifactNotFoundException, ArtifactResolutionException
     {
         ArtifactResolutionResult result = resolveArtifact( null, surefireArtifact );
@@ -670,7 +666,7 @@ public abstract class AbstractSurefireMojo
 
             getLog().debug( "Adding to " + getPluginName() + " booter test classpath: " + artifact.getFile().getAbsolutePath() + " Scope: " + artifact.getScope() );
 
-            surefireBooter.addSurefireBootClassPathUrl( artifact.getFile().getAbsolutePath() );
+            booterConfiguration.addSurefireBootClassPathUrl( artifact.getFile().getAbsolutePath() );
         }
     }
 
@@ -773,10 +769,10 @@ public abstract class AbstractSurefireMojo
      * The Reporter that will be added will be based on the value of the parameter useFile, reportFormat, and
      * printSummary.
      *
-     * @param surefireBooter The surefire booter that will run tests.
+     * @param booterConfiguration The surefire booter that will run tests.
      * @param forking
      */
-    private void addReporters( SurefireBooter surefireBooter, boolean forking )
+    private void addReporters( BooterConfiguration booterConfiguration, boolean forking )
     {
         Boolean trimStackTrace = Boolean.valueOf( this.isTrimStackTrace() );
         if ( isUseFile() )
@@ -785,22 +781,22 @@ public abstract class AbstractSurefireMojo
             {
                 if ( forking )
                 {
-                    surefireBooter.addReport( ForkingConsoleReporter.class.getName(), new Object[]{trimStackTrace} );
+                    booterConfiguration.addReport( ForkingConsoleReporter.class.getName(), new Object[]{trimStackTrace} );
                 }
                 else
                 {
-                    surefireBooter.addReport( ConsoleReporter.class.getName(), new Object[]{trimStackTrace} );
+                    booterConfiguration.addReport( ConsoleReporter.class.getName(), new Object[]{trimStackTrace} );
                 }
             }
 
             if ( BRIEF_REPORT_FORMAT.equals( getReportFormat() ) )
             {
-                surefireBooter.addReport( BriefFileReporter.class.getName(),
+                booterConfiguration.addReport( BriefFileReporter.class.getName(),
                                           new Object[]{ getReportsDirectory(), trimStackTrace} );
             }
             else if ( PLAIN_REPORT_FORMAT.equals( getReportFormat() ) )
             {
-                surefireBooter.addReport( FileReporter.class.getName(),
+                booterConfiguration.addReport( FileReporter.class.getName(),
                                           new Object[]{ getReportsDirectory(), trimStackTrace} );
             }
         }
@@ -808,17 +804,17 @@ public abstract class AbstractSurefireMojo
         {
             if ( BRIEF_REPORT_FORMAT.equals( getReportFormat() ) )
             {
-                surefireBooter.addReport( BriefConsoleReporter.class.getName(), new Object[]{trimStackTrace} );
+                booterConfiguration.addReport( BriefConsoleReporter.class.getName(), new Object[]{trimStackTrace} );
             }
             else if ( PLAIN_REPORT_FORMAT.equals( getReportFormat() ) )
             {
-                surefireBooter.addReport( DetailedConsoleReporter.class.getName(), new Object[]{trimStackTrace} );
+                booterConfiguration.addReport( DetailedConsoleReporter.class.getName(), new Object[]{trimStackTrace} );
             }
         }
 
         if ( !isDisableXmlReport() )
         {
-            surefireBooter.addReport( XMLReporter.class.getName(), new Object[]{ getReportsDirectory(), trimStackTrace} );
+            booterConfiguration.addReport( XMLReporter.class.getName(), new Object[]{ getReportsDirectory(), trimStackTrace} );
         }
     }
 

@@ -33,9 +33,9 @@ public class BooterConversionTest
 {
     Method convert, constructParamObjects;
     public void setUp() throws Exception {
-        convert = SurefireBooter.class.getDeclaredMethod( "convert", new Class[] { Object.class } );
+        convert = BooterConfiguration.class.getDeclaredMethod( "convert", new Class[] { Object.class } );
         convert.setAccessible( true );
-        constructParamObjects = SurefireBooter.class.getDeclaredMethod( "constructParamObjects", new Class[] { String.class, String.class } );
+        constructParamObjects = BooterConfiguration.class.getDeclaredMethod( "constructParamObjects", new Class[] { String.class, String.class } );
         constructParamObjects.setAccessible( true );
     }
     
