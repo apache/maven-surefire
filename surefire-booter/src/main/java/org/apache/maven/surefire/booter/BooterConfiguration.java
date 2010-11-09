@@ -29,8 +29,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.SortedMap;
@@ -65,17 +65,13 @@ public class BooterConfiguration
 
     private static final String TYPES_SUFIX = ".types";
 
+    private final ForkConfiguration forkConfiguration;
+
+    private final ClasspathConfiguration classpathConfiguration;
+
     private final List reports = new ArrayList();
 
-    private final List classPathUrls = new ArrayList();
-
-    private final List surefireClassPathUrls = new ArrayList();
-
-    private final List surefireBootClassPathUrls = new ArrayList();
-
     private final List testSuites = new ArrayList();
-
-    private final ForkConfiguration forkConfiguration;
 
     private boolean failIfNoTests = false;
 
@@ -88,38 +84,28 @@ public class BooterConfiguration
      */
     private boolean forked;
 
-    /**
-     *
-     */
-    // todo: @deprecated because the IsolatedClassLoader is really isolated - no parent.
-    private boolean childDelegation = true;
-
-
-    /**
-     * Whether to enable assertions or not (can be affected by the fork arguments, and the ability to do so based on the
-     * JVM).
-     */
-    private boolean enableAssertions;
-
-    public BooterConfiguration( ForkConfiguration forkConfiguration )
+    public BooterConfiguration( ForkConfiguration forkConfiguration, ClasspathConfiguration classpathConfiguration )
     {
         this.forkConfiguration = forkConfiguration;
+        this.classpathConfiguration = classpathConfiguration;
     }
 
     /*
     * Reads the config from the supplied stream. Closes the stream.
      */
-    public BooterConfiguration( InputStream config )
+    BooterConfiguration( InputStream config )
         throws IOException
     {
         this.forked = true;
         properties = loadProperties( config );
+        boolean enableAssertions = false;
+        boolean childDelegation = true;
 
         SortedMap classPathUrls = new TreeMap();
 
         SortedMap surefireClassPathUrls = new TreeMap();
 
-        BooterConfiguration booterConfiguration = this;
+        Collection booterClassPathUrl = new ArrayList();
 
         forkConfiguration = new ForkConfiguration();
         forkConfiguration.setForkMode( "never" );
@@ -135,7 +121,7 @@ public class BooterConfiguration
 
                 String params = properties.getProperty( name + PARAMS_SUFIX );
                 String types = properties.getProperty( name + TYPES_SUFIX );
-                booterConfiguration.addReport( className, constructParamObjects( params, types ) );
+                addReport( className, constructParamObjects( params, types ) );
             }
             else if ( name.startsWith( TEST_SUITE_PROPERTY_PREFIX ) && !name.endsWith( PARAMS_SUFIX ) &&
                 !name.endsWith( TYPES_SUFIX ) )
@@ -144,7 +130,7 @@ public class BooterConfiguration
 
                 String params = properties.getProperty( name + PARAMS_SUFIX );
                 String types = properties.getProperty( name + TYPES_SUFIX );
-                booterConfiguration.addTestSuite( className, constructParamObjects( params, types ) );
+                addTestSuite( className, constructParamObjects( params, types ) );
             }
             else if ( name.startsWith( "classPathUrl." ) )
             {
@@ -158,74 +144,57 @@ public class BooterConfiguration
             }
             else if ( name.startsWith( "surefireBootClassPathUrl." ) )
             {
-                booterConfiguration.addSurefireBootClassPathUrl( properties.getProperty( name ) );
+                booterClassPathUrl.add( properties.getProperty( name ) );
             }
             else if ( "childDelegation".equals( name ) )
             {
-                booterConfiguration.childDelegation =
-                    Boolean.valueOf( properties.getProperty( "childDelegation" ) ).booleanValue();
+                childDelegation = Boolean.valueOf( properties.getProperty( "childDelegation" ) ).booleanValue();
             }
             else if ( "enableAssertions".equals( name ) )
             {
-                booterConfiguration.enableAssertions =
-                    Boolean.valueOf( properties.getProperty( "enableAssertions" ) ).booleanValue();
+                enableAssertions = Boolean.valueOf( properties.getProperty( "enableAssertions" ) ).booleanValue();
             }
             else if ( "useSystemClassLoader".equals( name ) )
             {
                 boolean value = Boolean.valueOf( properties.getProperty( "useSystemClassLoader" ) ).booleanValue();
-                booterConfiguration.forkConfiguration.setUseSystemClassLoader( value );
+                forkConfiguration.setUseSystemClassLoader( value );
             }
             else if ( "useManifestOnlyJar".equals( name ) )
             {
                 boolean value = Boolean.valueOf( properties.getProperty( "useManifestOnlyJar" ) ).booleanValue();
-                booterConfiguration.forkConfiguration.setUseManifestOnlyJar( value );
+                forkConfiguration.setUseManifestOnlyJar( value );
             }
             else if ( "failIfNoTests".equals( name ) )
             {
                 boolean value = Boolean.valueOf( properties.getProperty( "failIfNoTests" ) ).booleanValue();
-                booterConfiguration.setFailIfNoTests( value );
+                setFailIfNoTests( value );
             }
         }
 
-        for ( Iterator cpi = classPathUrls.keySet().iterator(); cpi.hasNext(); )
-        {
-            String url = (String) classPathUrls.get( cpi.next() );
-            booterConfiguration.addClassPathUrl( url );
-        }
-
-        for ( Iterator scpi = surefireClassPathUrls.keySet().iterator(); scpi.hasNext(); )
-        {
-            String url = (String) surefireClassPathUrls.get( scpi.next() );
-            booterConfiguration.addSurefireClassPathUrl( url );
-        }
-
+        classpathConfiguration =
+            new ClasspathConfiguration( classPathUrls, surefireClassPathUrls, booterClassPathUrl, enableAssertions,
+                                        childDelegation );
     }
 
-    public void setForkProperties( List testSuites, Properties properties )
+    ClasspathConfiguration getClasspathConfiguration()
+    {
+        return classpathConfiguration;
+    }
+
+    void setForkProperties( List testSuites, Properties properties )
     {
         addPropertiesForTypeHolder( reports, properties, REPORT_PROPERTY_PREFIX );
         addPropertiesForTypeHolder( testSuites, properties, TEST_SUITE_PROPERTY_PREFIX );
 
-        for ( int i = 0; i < classPathUrls.size(); i++ )
-        {
-            String url = (String) classPathUrls.get( i );
-            properties.setProperty( "classPathUrl." + i, url );
-        }
+        classpathConfiguration.setForkProperties( properties );
 
-        for ( int i = 0; i < surefireClassPathUrls.size(); i++ )
-        {
-            String url = (String) surefireClassPathUrls.get( i );
-            properties.setProperty( "surefireClassPathUrl." + i, url );
-        }
-
-        properties.setProperty( "childDelegation", String.valueOf( childDelegation ) );
-        properties.setProperty( "enableAssertions", String.valueOf( enableAssertions ) );
         properties.setProperty( "useSystemClassLoader", String.valueOf( useSystemClassLoader() ) );
-        properties.setProperty( "useManifestOnlyJar", String.valueOf( useManifestOnlyJar() ) );
+        properties.setProperty( "useManifestOnlyJar",
+                                String.valueOf( forkConfiguration.isManifestOnlyJarRequestedAndUsable() ) );
         properties.setProperty( "failIfNoTests", String.valueOf( failIfNoTests ) );
     }
 
-    public File writePropertiesFile( String name, Properties properties )
+    File writePropertiesFile( String name, Properties properties )
         throws IOException
     {
         File file = File.createTempFile( name, "tmp", forkConfiguration.getTempDirectory() );
@@ -239,7 +208,7 @@ public class BooterConfiguration
         return file;
     }
 
-    public void writePropertiesFile( File file, String name, Properties properties )
+    void writePropertiesFile( File file, String name, Properties properties )
         throws IOException
     {
         FileOutputStream out = new FileOutputStream( file );
@@ -311,15 +280,11 @@ public class BooterConfiguration
         }
     }
 
-    private boolean useSystemClassLoader()
+    public boolean useSystemClassLoader()
     {
         return forkConfiguration.isUseSystemClassLoader() && ( forked || forkConfiguration.isForking() );
     }
 
-    private boolean useManifestOnlyJar()
-    {
-        return forkConfiguration.isUseSystemClassLoader() && forkConfiguration.isUseManifestOnlyJar();
-    }
 
     private static List processStringList( String stringList )
     {
@@ -438,16 +403,6 @@ public class BooterConfiguration
     }
 
 
-    public void setChildDelegation( boolean childDelegation )
-    {
-        this.childDelegation = childDelegation;
-    }
-
-    public void setEnableAssertions( boolean enableAssertions )
-    {
-        this.enableAssertions = enableAssertions;
-    }
-
     public List getReports()
     {
         return reports;
@@ -461,26 +416,6 @@ public class BooterConfiguration
     public boolean isRedirectTestOutputToFile()
     {
         return redirectTestOutputToFile;
-    }
-
-    public boolean isChildDelegation()
-    {
-        return childDelegation;
-    }
-
-    public boolean isEnableAssertions()
-    {
-        return enableAssertions;
-    }
-
-    public List getSurefireClassPathUrls()
-    {
-        return surefireClassPathUrls;
-    }
-
-    public List getSurefireBootClassPathUrls()
-    {
-        return surefireBootClassPathUrls;
     }
 
     public List getTestSuites()
@@ -508,30 +443,6 @@ public class BooterConfiguration
         testSuites.add( new Object[]{ suiteClassName, constructorParams } );
     }
 
-    public void addClassPathUrl( String path )
-    {
-        if ( !classPathUrls.contains( path ) )
-        {
-            classPathUrls.add( path );
-        }
-    }
-
-    public void addSurefireClassPathUrl( String path )
-    {
-        if ( !surefireClassPathUrls.contains( path ) )
-        {
-            surefireClassPathUrls.add( path );
-        }
-    }
-
-    public void addSurefireBootClassPathUrl( String path )
-    {
-        if ( !surefireBootClassPathUrls.contains( path ) )
-        {
-            surefireBootClassPathUrls.add( path );
-        }
-    }
-
     /**
      * Setting this to true will cause a failure if there are no tests to run
      *
@@ -556,17 +467,6 @@ public class BooterConfiguration
     public boolean isForking()
     {
         return forkConfiguration.isForking();
-    }
-
-
-    public List getClassPathUrls()
-    {
-        return classPathUrls;
-    }
-
-    public boolean isForked()
-    {
-        return this.forked;
     }
 }
 

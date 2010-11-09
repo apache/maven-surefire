@@ -157,12 +157,11 @@ public class ForkConfiguration
 
     /**
      * @throws SurefireBooterForkException
-     * @deprecated use the 2-arg alternative.
      */
     public Commandline createCommandLine( List classPath )
         throws SurefireBooterForkException
     {
-        return createCommandLine( classPath, false );
+        return createCommandLine( classPath, isManifestOnlyJarRequestedAndUsable() );
     }
 
     public Commandline createCommandLine( List classPath, boolean useJar )
@@ -289,4 +288,10 @@ public class ForkConfiguration
     {
         return useManifestOnlyJar;
     }
+
+    public boolean isManifestOnlyJarRequestedAndUsable()
+    {
+        return isUseSystemClassLoader() && isUseManifestOnlyJar();
+    }
+
 }

@@ -27,8 +27,6 @@ import org.apache.maven.surefire.booter.output.StandardOutputConsumer;
 import org.apache.maven.surefire.booter.output.SupressFooterOutputConsumerProxy;
 import org.apache.maven.surefire.booter.output.SupressHeaderOutputConsumerProxy;
 import org.apache.maven.surefire.testset.TestSetFailedException;
-import org.apache.maven.surefire.util.NestedRuntimeException;
-import org.apache.maven.surefire.util.UrlUtils;
 import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.cli.CommandLineException;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
@@ -42,9 +40,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -65,26 +60,6 @@ public class SurefireBooter
 
     private File reportsDirectory;
 
-    /**
-     * This field is set to true if it's running from main. It's used to help decide what classloader to use.
-     */
-//    private final boolean isForked;
-
-    private static Method assertionStatusMethod;
-
-    static
-    {
-        try
-        {
-            assertionStatusMethod =
-                ClassLoader.class.getMethod( "setDefaultAssertionStatus", new Class[]{ boolean.class } );
-        }
-        catch ( NoSuchMethodException e )
-        {
-            assertionStatusMethod = null;
-        }
-    }
-
     public SurefireBooter( BooterConfiguration booterConfiguration, File reportsDirectory )
     {
         this.booterConfiguration = booterConfiguration;
@@ -95,10 +70,6 @@ public class SurefireBooter
     {
         this.booterConfiguration = booterConfiguration;
     }
-
-    // ----------------------------------------------------------------------
-    // Accessors
-    // ----------------------------------------------------------------------
 
     public int run()
         throws SurefireBooterForkException, SurefireExecutionException
@@ -135,41 +106,21 @@ public class SurefireBooter
 
         // TODO: replace with plexus
 
-        // noinspection CatchGenericClass,OverlyBroadCatchBlock
         ClassLoader oldContextClassLoader = Thread.currentThread().getContextClassLoader();
         try
         {
-            ClassLoader testsClassLoader = useSystemClassLoader()
-                ? ClassLoader.getSystemClassLoader()
-                : createClassLoader( booterConfiguration.getClassPathUrls(), null,
-                                     booterConfiguration.isChildDelegation() );
+            ClassLoader testsClassLoader = getClasspathConfiguration().createTestClassLoaderConditionallySystem(
+                booterConfiguration.useSystemClassLoader() );
 
             // TODO: assertions = true shouldn't be required for this CL if we had proper separation (see TestNG)
-            ClassLoader surefireClassLoader =
-                createClassLoader( booterConfiguration.getSurefireClassPathUrls(), testsClassLoader );
+            ClassLoader surefireClassLoader = getClasspathConfiguration().createSurefireClassLoader( testsClassLoader );
 
-            Class surefireClass = surefireClassLoader.loadClass( Surefire.class.getName() );
-
-            Object surefire = surefireClass.newInstance();
-
-            Method run = surefireClass.getMethod( "run", new Class[]{ List.class, Object[].class, String.class,
-                ClassLoader.class, ClassLoader.class, Properties.class, Boolean.class } );
+            SurefireReflector reflector = new SurefireReflector( surefireClassLoader );
 
             Thread.currentThread().setContextClassLoader( testsClassLoader );
-
-            Integer result = (Integer) run.invoke( surefire, new Object[]{ booterConfiguration.getReports(),
-                booterConfiguration.getTestSuites().get( 0 ), testSet, surefireClassLoader, testsClassLoader, results,
-                booterConfiguration.isFailIfNoTests() } );
-
-            return result.intValue();
-        }
-        catch ( InvocationTargetException e )
-        {
-            throw new SurefireExecutionException( e.getTargetException().getMessage(), e.getTargetException() );
-        }
-        catch ( Exception e )
-        {
-            throw new SurefireExecutionException( "Unable to instantiate and execute Surefire", e );
+            return reflector.run( booterConfiguration.getReports(),
+                                  (Object[]) booterConfiguration.getTestSuites().get( 0 ), testSet, surefireClassLoader,
+                                  testsClassLoader, results, booterConfiguration.isFailIfNoTests() );
         }
         finally
         {
@@ -190,9 +141,9 @@ public class SurefireBooter
             // The test classloader must be constructed first to avoid issues with commons-logging until we properly
             // separate the TestNG classloader
             ClassLoader testsClassLoader;
-            String testClassPath = getTestClassPathAsString();
+            String testClassPath = getClasspathConfiguration().getTestClassPathAsString();
             System.setProperty( "surefire.test.class.path", testClassPath );
-            if ( useManifestOnlyJar() )
+            if ( booterConfiguration.getForkConfiguration().isManifestOnlyJarRequestedAndUsable() )
             {
                 testsClassLoader = getClass().getClassLoader(); // ClassLoader.getSystemClassLoader()
                 // SUREFIRE-459, trick the app under test into thinking its classpath was conventional
@@ -202,35 +153,18 @@ public class SurefireBooter
             }
             else
             {
-                testsClassLoader = createClassLoader( booterConfiguration.getClassPathUrls(), null,
-                                                      booterConfiguration.isChildDelegation() );
+                testsClassLoader = getClasspathConfiguration().createTestClassLoader(  );
             }
 
-            ClassLoader surefireClassLoader =
-                createClassLoader( booterConfiguration.getSurefireClassPathUrls(), testsClassLoader );
+            ClassLoader surefireClassLoader = getClasspathConfiguration().createSurefireClassLoader( testsClassLoader );
 
-            Class surefireClass = surefireClassLoader.loadClass( Surefire.class.getName() );
-
-            Object surefire = surefireClass.newInstance();
-
-            Method run = surefireClass.getMethod( "run", new Class[]{ List.class, List.class, ClassLoader.class,
-                ClassLoader.class, Boolean.class } );
+            SurefireReflector reflector = new SurefireReflector( surefireClassLoader );
 
             Thread.currentThread().setContextClassLoader( testsClassLoader );
 
-            Integer result = (Integer) run.invoke( surefire, new Object[]{ booterConfiguration.getReports(),
-                booterConfiguration.getTestSuites(), surefireClassLoader, testsClassLoader,
-                booterConfiguration.isFailIfNoTests() } );
+            return reflector.run( booterConfiguration.getReports(), booterConfiguration.getTestSuites(),
+                                  surefireClassLoader, testsClassLoader, booterConfiguration.isFailIfNoTests() );
 
-            return result.intValue();
-        }
-        catch ( InvocationTargetException e )
-        {
-            throw new SurefireExecutionException( e.getTargetException().getMessage(), e.getTargetException() );
-        }
-        catch ( Exception e )
-        {
-            throw new SurefireExecutionException( "Unable to instantiate and execute Surefire", e );
         }
         finally
         {
@@ -238,16 +172,6 @@ public class SurefireBooter
         }
     }
 
-
-    private String getTestClassPathAsString()
-    {
-        StringBuffer sb = new StringBuffer();
-        for ( int i = 0; i < booterConfiguration.getClassPathUrls().size(); i++ )
-        {
-            sb.append( booterConfiguration.getClassPathUrls().get( i ) ).append( File.pathSeparatorChar );
-        }
-        return sb.toString();
-    }
 
     private int runSuitesForkOnce()
         throws SurefireBooterForkException
@@ -262,12 +186,11 @@ public class SurefireBooter
         ClassLoader surefireClassLoader;
         try
         {
-            testsClassLoader = createClassLoader( booterConfiguration.getClassPathUrls(), null, false );
+            testsClassLoader = getClasspathConfiguration().createTestClassLoader( false );
             // TODO: assertions = true shouldn't be required if we had proper separation (see TestNG)
-            surefireClassLoader =
-                createClassLoader( booterConfiguration.getSurefireClassPathUrls(), testsClassLoader, false );
+            surefireClassLoader = getClasspathConfiguration().createSurefireClassLoader( testsClassLoader );
         }
-        catch ( MalformedURLException e )
+        catch ( SurefireExecutionException e )
         {
             throw new SurefireBooterForkException( "Unable to create classloader to find test suites", e );
         }
@@ -296,6 +219,11 @@ public class SurefireBooter
         }
 
         return globalResult;
+    }
+
+    private ClasspathConfiguration getClasspathConfiguration()
+    {
+        return booterConfiguration.getClasspathConfiguration();
     }
 
     private Map getTestSets( Object[] testSuite, ClassLoader testsClassLoader, ClassLoader surefireClassLoader )
@@ -370,18 +298,6 @@ public class SurefireBooter
         return fork( properties, showHeading, showFooter );
     }
 
-    private boolean useSystemClassLoader()
-    {
-        return booterConfiguration.getForkConfiguration().isUseSystemClassLoader() &&
-            ( booterConfiguration.isForked() || booterConfiguration.getForkConfiguration().isForking() );
-    }
-
-    private boolean useManifestOnlyJar()
-    {
-        return booterConfiguration.getForkConfiguration().isUseSystemClassLoader() &&
-            booterConfiguration.getForkConfiguration().isUseManifestOnlyJar();
-    }
-
     private int fork( Properties properties, boolean showHeading, boolean showFooter )
         throws SurefireBooterForkException
     {
@@ -401,18 +317,9 @@ public class SurefireBooter
             throw new SurefireBooterForkException( "Error creating properties files for forking", e );
         }
 
-        List bootClasspath = new ArrayList(
-            booterConfiguration.getSurefireBootClassPathUrls().size() + booterConfiguration.getClassPathUrls().size() );
+        List bootClasspath = getClasspathConfiguration().getBootClasspath( booterConfiguration.useSystemClassLoader() );
 
-        bootClasspath.addAll( booterConfiguration.getSurefireBootClassPathUrls() );
-
-        if ( useSystemClassLoader() )
-        {
-            bootClasspath.addAll( booterConfiguration.getClassPathUrls() );
-        }
-
-        Commandline cli =
-            booterConfiguration.getForkConfiguration().createCommandLine( bootClasspath, useManifestOnlyJar() );
+        Commandline cli = booterConfiguration.getForkConfiguration().createCommandLine( bootClasspath );
 
         cli.createArg().setFile( surefireProperties );
 
@@ -490,57 +397,6 @@ public class SurefireBooter
         return returnCode;
     }
 
-    private ClassLoader createClassLoader( List classPathUrls, ClassLoader parent )
-        throws MalformedURLException
-    {
-        return createClassLoader( classPathUrls, parent, false );
-    }
-
-    private ClassLoader createClassLoader( List classPathUrls, ClassLoader parent, boolean childDelegation )
-        throws MalformedURLException
-    {
-        List urls = new ArrayList();
-
-        for ( Iterator i = classPathUrls.iterator(); i.hasNext(); )
-        {
-            String url = (String) i.next();
-
-            if ( url != null )
-            {
-                File f = new File( url );
-                urls.add( UrlUtils.getURL( f ) );
-            }
-        }
-
-        IsolatedClassLoader classLoader = new IsolatedClassLoader( parent, childDelegation );
-        if ( assertionStatusMethod != null )
-        {
-            try
-            {
-                Object[] args = new Object[]{ booterConfiguration.isEnableAssertions() ? Boolean.TRUE : Boolean.FALSE };
-                if ( parent != null )
-                {
-                    assertionStatusMethod.invoke( parent, args );
-                }
-                assertionStatusMethod.invoke( classLoader, args );
-            }
-            catch ( IllegalAccessException e )
-            {
-                throw new NestedRuntimeException( "Unable to access the assertion enablement method", e );
-            }
-            catch ( InvocationTargetException e )
-            {
-                throw new NestedRuntimeException( "Unable to invoke the assertion enablement method", e );
-            }
-        }
-        for ( Iterator iter = urls.iterator(); iter.hasNext(); )
-        {
-            URL url = (URL) iter.next();
-            classLoader.addURL( url );
-        }
-        return classLoader;
-    }
-
     private static Properties loadProperties( File file )
         throws IOException
     {
@@ -585,7 +441,6 @@ public class SurefireBooter
     public static void main( String[] args )
         throws Throwable
     {
-        // noinspection CatchGenericClass,OverlyBroadCatchBlock
         try
         {
             if ( args.length > 1 )
