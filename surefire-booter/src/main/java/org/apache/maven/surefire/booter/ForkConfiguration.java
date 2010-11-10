@@ -52,6 +52,7 @@ public class ForkConfiguration
     private String forkMode;
 
     private boolean useSystemClassLoader;
+
     private boolean useManifestOnlyJar;
 
     private Properties systemProperties;
@@ -67,7 +68,7 @@ public class ForkConfiguration
     private File tempDirectory;
 
     private boolean debug;
-    
+
     private String debugLine;
 
     public void setForkMode( String forkMode )
@@ -119,7 +120,7 @@ public class ForkConfiguration
     {
         this.argLine = argLine;
     }
-    
+
     public void setDebugLine( String debugLine )
     {
         this.debugLine = debugLine;
@@ -156,7 +157,9 @@ public class ForkConfiguration
     }
 
     /**
-     * @throws SurefireBooterForkException
+     * @param classPath cla the classpath arguments
+     * @return A commandline
+     * @throws SurefireBooterForkException when unable to perform the fork
      */
     public Commandline createCommandLine( List classPath )
         throws SurefireBooterForkException
@@ -173,7 +176,7 @@ public class ForkConfiguration
 
         if ( argLine != null )
         {
-            cli.createArg().setLine( argLine );
+            cli.createArg().setLine( stripNewLines( argLine ) );
         }
 
         if ( environmentVariables != null )
@@ -230,8 +233,8 @@ public class ForkConfiguration
      * for all classpath elements.
      *
      * @param classPath List&lt;String> of all classpath elements.
-     * @return
-     * @throws IOException
+     * @return The file pointint to the jar
+     * @throws IOException When a file operation fails.
      */
     private File createJar( List classPath )
         throws IOException
@@ -283,7 +286,7 @@ public class ForkConfiguration
     {
         this.useManifestOnlyJar = useManifestOnlyJar;
     }
-    
+
     public boolean isUseManifestOnlyJar()
     {
         return useManifestOnlyJar;
@@ -294,4 +297,8 @@ public class ForkConfiguration
         return isUseSystemClassLoader() && isUseManifestOnlyJar();
     }
 
+    private String stripNewLines( String argline )
+    {
+        return argline.replace( "\n", " " ).replace( "\r", " " );
+    }
 }

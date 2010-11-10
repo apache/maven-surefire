@@ -19,14 +19,13 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
+import junit.framework.TestCase;
 import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.cli.Commandline;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
-
-import junit.framework.TestCase;
 
 public class ForkConfigurationTest
     extends TestCase
@@ -35,19 +34,50 @@ public class ForkConfigurationTest
     public void testCreateCommandLine_UseSystemClassLoaderForkOnce_ShouldConstructManifestOnlyJar()
         throws IOException, SurefireBooterForkException
     {
-        ForkConfiguration config = new ForkConfiguration();
+        ForkConfiguration config = getForkConfiguration();
+        File cpElement = getTempClasspathFile();
         config.setForkMode( ForkConfiguration.FORK_ONCE );
         config.setUseSystemClassLoader( true );
-        config.setWorkingDirectory( new File( "." ).getCanonicalFile() );
+        config.setUseSystemClassLoader( true );
         config.setJvmExecutable( "java" );
 
-        File cpElement = File.createTempFile( "ForkConfigurationTest.", ".file" );
-        cpElement.deleteOnExit();
 
-        Commandline cli = config.createCommandLine( Collections.singletonList( cpElement.getAbsolutePath() ), config.isUseSystemClassLoader() );
+        Commandline cli = config.createCommandLine( Collections.singletonList( cpElement.getAbsolutePath() ),
+                                                    config.isUseSystemClassLoader() );
 
         String line = StringUtils.join( cli.getCommandline(), " " );
         assertTrue( line.indexOf( "-jar" ) > -1 );
+    }
+
+    public void testArglineWithNewline()
+        throws IOException, SurefireBooterForkException
+    {
+        // SUREFIRE-657
+        File cpElement = getTempClasspathFile();
+        ForkConfiguration forkConfiguration = getForkConfiguration();
+
+        forkConfiguration.setArgLine( "abc\ndef" );
+
+
+        final Commandline commandLine =
+            forkConfiguration.createCommandLine( Collections.singletonList( cpElement.getAbsolutePath() ), false );
+        assertTrue( commandLine.toString().contains( "abc def" ) );
+    }
+
+    private File getTempClasspathFile()
+        throws IOException
+    {
+        File cpElement = File.createTempFile( "ForkConfigurationTest.", ".file" );
+        cpElement.deleteOnExit();
+        return cpElement;
+    }
+
+    private ForkConfiguration getForkConfiguration()
+        throws IOException
+    {
+        ForkConfiguration forkConfiguration = new ForkConfiguration();
+        forkConfiguration.setWorkingDirectory( new File( "." ).getCanonicalFile() );
+        return forkConfiguration;
     }
 
 }
