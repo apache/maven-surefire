@@ -22,7 +22,10 @@ import junit.framework.TestCase;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.junit.Test;
 import org.junit.internal.runners.InitializationError;
+import org.junit.runner.Description;
 import org.junit.runner.RunWith;
+import org.junit.runner.Runner;
+import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.Suite;
 
 import static org.junit.Assert.assertFalse;
@@ -70,6 +73,13 @@ public class JUnit4TestCheckerTest
     }
 
     @Test
+    public void validCustomRunner()
+        throws TestSetFailedException
+    {
+        assertTrue( jUnit4TestChecker.isValidJUnit4Test( SuiteValidCustomRunner.class ) );
+    }
+
+    @Test
     public void invalidTest()
         throws TestSetFailedException
     {
@@ -112,6 +122,30 @@ public class JUnit4TestCheckerTest
 
         }
     }
+
+    class CustomRunner
+        extends Runner {
+        @Override
+        public Description getDescription()
+        {
+            return Description.createSuiteDescription( "CustomRunner" );
+        }
+
+        @Override
+        public void run( RunNotifier runNotifier )
+        {
+        }
+    }
+
+    @RunWith(CustomRunner.class)
+    public static class SuiteValidCustomRunner
+    {
+        public void testSomething()
+        {
+
+        }
+    }
+
 
     @RunWith(MySuite.class)
     public static class SuiteValid2

@@ -33,12 +33,9 @@ public class JUnit4TestChecker
 
     private final Class runWith;
 
-    private final Class suite;
-
     public JUnit4TestChecker( ClassLoader testClassLoader )
     {
         this.junitClass = getJUnitClass( testClassLoader, junit.framework.Test.class.getName() );
-        this.suite = getJUnitClass( testClassLoader, org.junit.runners.Suite.class.getName() );
         this.runWith = getJUnitClass( testClassLoader, org.junit.runner.RunWith.class.getName() );
     }
 
@@ -51,14 +48,10 @@ public class JUnit4TestChecker
             return true;
         }
 
-        Annotation runWithAnno = testClass.getAnnotation( runWith );
-        if ( runWithAnno != null )
+        Annotation runWithAnnotation = testClass.getAnnotation( runWith );
+        if ( runWithAnnotation != null )
         {
-            final Class value = runWithValue( runWithAnno );
-            if ( suite.isAssignableFrom( value ) )
-            {
-                return true;
-            }
+            return true;
         }
 
         Class classToCheck = testClass;
@@ -102,29 +95,6 @@ public class JUnit4TestChecker
             // ignore this
         }
         return junitClass;
-    }
-
-    private Class runWithValue(Object object)
-        throws TestSetFailedException
-    {
-        final Method valueMethod;
-        try
-        {
-            valueMethod = object.getClass().getMethod( "value" );
-            return (Class) valueMethod.invoke(  object);
-        }
-        catch ( NoSuchMethodException e )
-        {
-            throw new TestSetFailedException( e );
-        }
-        catch ( InvocationTargetException e )
-        {
-            throw new TestSetFailedException( e );
-        }
-        catch ( IllegalAccessException e )
-        {
-            throw new TestSetFailedException( e );
-        }
     }
 
 }
