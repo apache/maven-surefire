@@ -19,11 +19,11 @@ package org.apache.maven.surefire.util;
  */
 
 import org.apache.maven.surefire.testset.TestSetFailedException;
-import org.apache.maven.surefire.testset.SurefireTestSet;
 
-import java.util.*;
 import java.io.File;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Scans directories looking for tests.
@@ -43,56 +43,11 @@ public class SurefireDirectoryScanner {
 
     private final List excludes;
 
-    protected Map testSets;
-
-    private int totalTests;
-
-
-    public Map getTestSets() {
-        return testSets;
-    }
 
     public SurefireDirectoryScanner(File basedir, List includes, List excludes) {
         this.basedir = basedir;
         this.includes = includes;
         this.excludes = excludes;
-    }
-
-    public interface TestSetCreator{
-        SurefireTestSet createTestSet(Class clazz);
-    }
-
-    public Map locateTestSets( ClassLoader classLoader, TestSetCreator testSetCreator )
-        throws TestSetFailedException
-    {
-        if ( testSets != null )
-        {
-            throw new IllegalStateException( "You can't call locateTestSets twice" );
-        }
-        testSets = new HashMap();
-
-        Class[] locatedClasses = locateTestClasses( classLoader);
-
-        for ( int i = 0; i < locatedClasses.length; i++ )
-        {
-            Class testClass = locatedClasses[i];
-            SurefireTestSet testSet = testSetCreator.createTestSet( testClass);
-
-                if ( testSet == null )
-                {
-                    continue;
-                }
-
-                if ( testSets.containsKey( testSet.getName() ) )
-                {
-                    throw new TestSetFailedException( "Duplicate test set '" + testSet.getName() + "'" );
-                }
-                testSets.put( testSet.getName(), testSet );
-
-                totalTests++;
-        }
-
-        return Collections.unmodifiableMap( testSets );
     }
 
     public Class[] locateTestClasses( ClassLoader classLoader)
