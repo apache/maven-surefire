@@ -193,9 +193,38 @@ public class Surefire
 
         suite.locateTestSets( testsClassLoader );
 
+        // Todo: Make this not ugly OR just leave it here as a transitional feature for a few versions
+        // I will move this into the JUnit4DirectoryTestSuite when fixing SUREFIRE-141 RSN
+        // SUREFIRE-141 will require loosening the relationship between surefire and the providers,
+        // which is basically way too constrained and locked into a design that is only correct for
+        // junit3 with the AbstractDirectoryTestSuite.
+        // This same constraint is making it hard to put this code in the proper place.
+        if (isJunit4UpgradeCheck() && suite.getClassesSkippedByValidation().size() > 0 &&
+            suite.getClass().getName().equals( "org.apache.maven.surefire.junit4.JUnit4DirectoryTestSuite" )){
+
+            StringBuilder reason = new StringBuilder(  );
+            reason.append( "Updated check failed\n" );
+            reason.append( "There are tests that would be run with junit4 / surefire 2.6 but not with [2.7,):\n" );
+            for ( Iterator i = suite.getClassesSkippedByValidation().iterator(); i.hasNext(); )
+            {
+                Class testClass = (Class) i.next();
+                reason.append("   ");
+                reason.append( testClass.getCanonicalName() );
+                reason.append("\n");
+            }
+            throw new TestSetFailedException(reason.toString());
+        }
+
         return suite;
     }
 
+    private boolean isJunit4UpgradeCheck()
+    {
+        final String property = System.getProperty( "surefire.junit4.upgradecheck" );
+        return property != null;
+    }
+
+    // This reflection is not due to linkage issues, but only an attempt at being generic.
     public static Object instantiateObject( String className, Object[] params, ClassLoader classLoader )
         throws TestSetFailedException, ClassNotFoundException, NoSuchMethodException
     {
@@ -244,6 +273,7 @@ public class Surefire
         return object;
     }
 
+    // This reflection is not due to linkage issues, but only an attempt at being generic.
     private static SurefireTestSuite instantiateSuite( String suiteClass, Object[] params, ClassLoader classLoader )
         throws TestSetFailedException
     {

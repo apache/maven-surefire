@@ -27,6 +27,7 @@ import org.apache.maven.surefire.util.SurefireDirectoryScanner;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -65,6 +66,12 @@ public class JUnitCoreDirectoryTestSuite
         }
 
         JUnitCoreTestSet.execute( testsToRun.getLocatedClasses(), reporterManagerFactory, jUnitCoreParameters );
+    }
+
+
+    public List getClassesSkippedByValidation()
+    {
+        return new ArrayList( );
     }
 
     public void execute( String testSetName, ReporterManagerFactory reporterManagerFactory, ClassLoader classLoader )

@@ -32,12 +32,10 @@ import java.util.ArrayList;
  *
  * @author Karl M. Davis
  */
+@SuppressWarnings( { "UnusedDeclaration" } )
 public class JUnit4DirectoryTestSuite
     extends AbstractDirectoryTestSuite
 {
-    /**
-     * Constructor.
-     */
     public JUnit4DirectoryTestSuite( File basedir, ArrayList includes, ArrayList excludes )
     {
         super( basedir, includes, excludes );
@@ -48,12 +46,13 @@ public class JUnit4DirectoryTestSuite
      * a surefire test set that will later be executed.
      *
      * @see org.apache.maven.surefire.suite.AbstractDirectoryTestSuite#createTestSet(java.lang.Class,
-     *java.lang.ClassLoader)
+     *      java.lang.ClassLoader)
      */
-    protected SurefireTestSet createTestSet( Class testClass, ClassLoader classLoader )
+    protected SurefireTestSet createTestSet( Class testClass, ClassLoader testsClassLoader )
         throws TestSetFailedException
     {
-        return new JUnit4TestSet( testClass );
+        JUnit4TestChecker jUnit4TestChecker = new JUnit4TestChecker( testsClassLoader );
+        return jUnit4TestChecker.isValidJUnit4Test( testClass ) ? new JUnit4TestSet( testClass ) : null;
     }
 
 }

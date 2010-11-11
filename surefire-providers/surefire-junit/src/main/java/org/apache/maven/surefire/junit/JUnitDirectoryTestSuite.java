@@ -44,19 +44,7 @@ public class JUnitDirectoryTestSuite
     protected SurefireTestSet createTestSet( Class testClass, ClassLoader classLoader )
         throws TestSetFailedException
     {
-        Class junitClass = null;
-        try
-        {
-            junitClass = classLoader.loadClass( Test.class.getName() );
-        }
-        catch ( NoClassDefFoundError e)
-        {
-            // ignore this
-        }
-        catch ( ClassNotFoundException e )
-        {
-            // ignore this
-        }
+        Class junitClass = getJUnitClass( classLoader );
 
         SurefireTestSet testSet;
         if ( junitClass != null && junitClass.isAssignableFrom( testClass ) )
@@ -72,6 +60,24 @@ public class JUnitDirectoryTestSuite
             testSet = null;
         }
         return testSet;
+    }
+
+    private Class getJUnitClass( ClassLoader classLoader )
+    {
+        Class junitClass = null;
+        try
+        {
+            junitClass = classLoader.loadClass( Test.class.getName() );
+        }
+        catch ( NoClassDefFoundError e)
+        {
+            // ignore this
+        }
+        catch ( ClassNotFoundException e )
+        {
+            // ignore this
+        }
+        return junitClass;
     }
 
     private boolean classHasPublicNoArgConstructor( Class testClass )

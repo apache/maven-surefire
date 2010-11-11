@@ -23,6 +23,7 @@ import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterManagerFactory;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -39,6 +40,8 @@ public interface SurefireTestSuite
         throws ReporterException, TestSetFailedException;
 
     int getNumTests();
+
+    List getClassesSkippedByValidation();
 
     Map locateTestSets( ClassLoader classLoader )
         throws TestSetFailedException;

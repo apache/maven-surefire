@@ -29,6 +29,7 @@ import org.apache.maven.surefire.testset.SurefireTestSet;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -45,6 +46,8 @@ public abstract class AbstractDirectoryTestSuite
     protected SortedMap testSets;
 
     private int totalTests;
+
+    private List classesSkippedByValidation = new ArrayList();
     
     private final SurefireDirectoryScanner surefireDirectoryScanner;
 
@@ -54,7 +57,7 @@ public abstract class AbstractDirectoryTestSuite
         this.surefireDirectoryScanner = new SurefireDirectoryScanner(basedir, includes, excludes);
     }
 
-    public Map locateTestSets( ClassLoader classLoader )
+    public Map locateTestSets( ClassLoader classLoader)
         throws TestSetFailedException
     {
         if ( testSets != null )
@@ -72,6 +75,7 @@ public abstract class AbstractDirectoryTestSuite
 
                 if ( testSet == null )
                 {
+                    classesSkippedByValidation.add(  testClass );
                     continue;
                 }
 
@@ -144,6 +148,11 @@ public abstract class AbstractDirectoryTestSuite
         }
 
         executeTestSet( testSet, reporterManagerFactory, classLoader );
+    }
+
+    public List getClassesSkippedByValidation()
+    {
+        return Collections.unmodifiableList(classesSkippedByValidation);
     }
 
     public int getNumTests()

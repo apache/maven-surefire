@@ -108,6 +108,11 @@ public class TestNGXmlTestSuite
         return suiteFiles.length;
     }
 
+    public List getClassesSkippedByValidation()
+    {
+        return new ArrayList(  );
+    }
+
     public Map locateTestSets( ClassLoader classLoader )
         throws TestSetFailedException
     {
