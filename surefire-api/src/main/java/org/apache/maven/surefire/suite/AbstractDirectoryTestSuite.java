@@ -21,12 +21,13 @@ package org.apache.maven.surefire.suite;
 
 import org.apache.maven.surefire.Surefire;
 import org.apache.maven.surefire.report.ReporterManagerFactory;
-import org.apache.maven.surefire.util.SurefireDirectoryScanner;
+import org.apache.maven.surefire.util.DefaultDirectoryScanner;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterManager;
 import org.apache.maven.surefire.testset.SurefireTestSet;
 import org.apache.maven.surefire.testset.TestSetFailedException;
+import org.apache.maven.surefire.util.DirectoryScanner;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -48,16 +49,16 @@ public abstract class AbstractDirectoryTestSuite
     private int totalTests;
 
     private List classesSkippedByValidation = new ArrayList();
-    
-    private final SurefireDirectoryScanner surefireDirectoryScanner;
+
+    private final DirectoryScanner surefireDirectoryScanner;
 
 
     protected AbstractDirectoryTestSuite( File basedir, List includes, List excludes )
     {
-        this.surefireDirectoryScanner = new SurefireDirectoryScanner(basedir, includes, excludes);
+        this.surefireDirectoryScanner = new DefaultDirectoryScanner( basedir, includes, excludes );
     }
 
-    public Map locateTestSets( ClassLoader classLoader)
+    public Map locateTestSets( ClassLoader classLoader )
         throws TestSetFailedException
     {
         if ( testSets != null )
@@ -66,26 +67,26 @@ public abstract class AbstractDirectoryTestSuite
         }
         testSets = new TreeMap();
 
-        Class[] locatedClasses = surefireDirectoryScanner.locateTestClasses( classLoader);
+        Class[] locatedClasses = surefireDirectoryScanner.locateTestClasses( classLoader );
 
         for ( int i = 0; i < locatedClasses.length; i++ )
         {
             Class testClass = locatedClasses[i];
             SurefireTestSet testSet = createTestSet( testClass, classLoader );
 
-                if ( testSet == null )
-                {
-                    classesSkippedByValidation.add(  testClass );
-                    continue;
-                }
+            if ( testSet == null )
+            {
+                classesSkippedByValidation.add( testClass );
+                continue;
+            }
 
-                if ( testSets.containsKey( testSet.getName() ) )
-                {
-                    throw new TestSetFailedException( "Duplicate test set '" + testSet.getName() + "'" );
-                }
-                testSets.put( testSet.getName(), testSet );
+            if ( testSets.containsKey( testSet.getName() ) )
+            {
+                throw new TestSetFailedException( "Duplicate test set '" + testSet.getName() + "'" );
+            }
+            testSets.put( testSet.getName(), testSet );
 
-                totalTests++;
+            totalTests++;
         }
 
         return Collections.unmodifiableSortedMap( testSets );
@@ -152,7 +153,7 @@ public abstract class AbstractDirectoryTestSuite
 
     public List getClassesSkippedByValidation()
     {
-        return Collections.unmodifiableList(classesSkippedByValidation);
+        return Collections.unmodifiableList( classesSkippedByValidation );
     }
 
     public int getNumTests()

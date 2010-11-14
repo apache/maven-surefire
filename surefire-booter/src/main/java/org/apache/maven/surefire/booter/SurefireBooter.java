@@ -153,7 +153,7 @@ public class SurefireBooter
             }
             else
             {
-                testsClassLoader = getClasspathConfiguration().createTestClassLoader(  );
+                testsClassLoader = getClasspathConfiguration().createTestClassLoader();
             }
 
             ClassLoader surefireClassLoader = getClasspathConfiguration().createSurefireClassLoader( testsClassLoader );
@@ -236,7 +236,7 @@ public class SurefireBooter
         Object suite;
         try
         {
-            suite = Surefire.instantiateObject( className, params, surefireClassLoader );
+            suite = SurefireReflector.instantiateObject( className, params, surefireClassLoader );
         }
         catch ( TestSetFailedException e )
         {
@@ -279,7 +279,8 @@ public class SurefireBooter
     {
         Properties properties = new Properties();
 
-        booterConfiguration.setForkProperties( testSuites, properties );
+        BooterSerializer booterSerializer = new BooterSerializer();
+        booterSerializer.setForkProperties( properties, testSuites, booterConfiguration );
 
         return fork( properties, showHeading, showFooter );
     }
@@ -288,7 +289,8 @@ public class SurefireBooter
                            Properties properties )
         throws SurefireBooterForkException
     {
-        booterConfiguration.setForkProperties( Collections.singletonList( testSuite ), properties );
+        BooterSerializer booterSerializer = new BooterSerializer();
+        booterSerializer.setForkProperties( properties, Collections.singletonList( testSuite ), booterConfiguration );
 
         if ( testSet instanceof String )
         {
@@ -303,13 +305,16 @@ public class SurefireBooter
     {
         File surefireProperties;
         File systemProperties = null;
+        final ForkConfiguration forkConfiguration = booterConfiguration.getForkConfiguration();
         try
         {
-            surefireProperties = booterConfiguration.writePropertiesFile( "surefire", properties );
-            if ( booterConfiguration.getForkConfiguration().getSystemProperties() != null )
+            BooterSerializer booterSerializer = new BooterSerializer();
+            surefireProperties = booterSerializer.writePropertiesFile( "surefire", properties, forkConfiguration );
+            if ( forkConfiguration.getSystemProperties() != null )
             {
-                systemProperties = booterConfiguration.writePropertiesFile( "surefire",
-                                                                            booterConfiguration.getForkConfiguration().getSystemProperties() );
+                systemProperties =
+                    booterSerializer.writePropertiesFile( "surefire", forkConfiguration.getSystemProperties(),
+                                                          forkConfiguration );
             }
         }
         catch ( IOException e )
@@ -319,7 +324,7 @@ public class SurefireBooter
 
         List bootClasspath = getClasspathConfiguration().getBootClasspath( booterConfiguration.useSystemClassLoader() );
 
-        Commandline cli = booterConfiguration.getForkConfiguration().createCommandLine( bootClasspath );
+        Commandline cli = forkConfiguration.createCommandLine( bootClasspath );
 
         cli.createArg().setFile( surefireProperties );
 
@@ -342,7 +347,7 @@ public class SurefireBooter
             err = getForkingStreamConsumer( showHeading, showFooter, booterConfiguration.isRedirectTestOutputToFile() );
         }
 
-        if ( booterConfiguration.getForkConfiguration().isDebug() )
+        if ( forkConfiguration.isDebug() )
         {
             System.out.println( "Forking command line: " + cli );
         }
@@ -450,7 +455,8 @@ public class SurefireBooter
 
             File surefirePropertiesFile = new File( args[0] );
             InputStream stream = surefirePropertiesFile.exists() ? new FileInputStream( surefirePropertiesFile ) : null;
-            BooterConfiguration booterConfiguration = new BooterConfiguration( stream );
+            BooterSerializer booterSerializer = new BooterSerializer();
+            BooterConfiguration booterConfiguration = booterSerializer.deserialize( stream );
             Properties p = booterConfiguration.getProperties();
 
             SurefireBooter booter = new SurefireBooter( booterConfiguration );
@@ -466,7 +472,7 @@ public class SurefireBooter
                 result = booter.runSuitesInProcess();
             }
 
-            booterConfiguration.writePropertiesFile( surefirePropertiesFile, "surefire", p );
+            booterSerializer.writePropertiesFile( surefirePropertiesFile, "surefire", p );
 
             // noinspection CallToSystemExit
             System.exit( result );

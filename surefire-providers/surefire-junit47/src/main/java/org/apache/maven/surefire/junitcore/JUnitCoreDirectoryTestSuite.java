@@ -23,7 +23,8 @@ import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterManagerFactory;
 import org.apache.maven.surefire.suite.SurefireTestSuite;
 import org.apache.maven.surefire.testset.TestSetFailedException;
-import org.apache.maven.surefire.util.SurefireDirectoryScanner;
+import org.apache.maven.surefire.util.DefaultDirectoryScanner;
+import org.apache.maven.surefire.util.DirectoryScanner;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -41,7 +42,7 @@ import java.util.Properties;
 public class JUnitCoreDirectoryTestSuite
     implements SurefireTestSuite
 {
-    private final SurefireDirectoryScanner directoryScanner;
+    private final DirectoryScanner directoryScanner;
 
     private TestsToRun testsToRun;
 
@@ -52,7 +53,7 @@ public class JUnitCoreDirectoryTestSuite
 
     public JUnitCoreDirectoryTestSuite( File basedir, ArrayList includes, ArrayList excludes, Properties properties )
     {
-        directoryScanner = new SurefireDirectoryScanner( basedir, includes, excludes );
+        directoryScanner = new DefaultDirectoryScanner( basedir, includes, excludes );
         this.jUnitCoreParameters = new JUnitCoreParameters( properties );
     }
 
@@ -71,7 +72,7 @@ public class JUnitCoreDirectoryTestSuite
 
     public List getClassesSkippedByValidation()
     {
-        return new ArrayList( );
+        return new ArrayList();
     }
 
     public void execute( String testSetName, ReporterManagerFactory reporterManagerFactory, ClassLoader classLoader )
@@ -82,7 +83,6 @@ public class JUnitCoreDirectoryTestSuite
             throw new IllegalStateException( "You must call locateTestSets before calling execute" );
         }
         JUnitCoreTestSet testSet = testsToRun.getTestSet( testSetName );
-
 
         if ( testSet == null )
         {

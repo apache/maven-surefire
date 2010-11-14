@@ -41,7 +41,6 @@ public class ForkConfigurationTest
         config.setUseSystemClassLoader( true );
         config.setJvmExecutable( "java" );
 
-
         Commandline cli = config.createCommandLine( Collections.singletonList( cpElement.getAbsolutePath() ),
                                                     config.isUseSystemClassLoader() );
 
@@ -58,7 +57,6 @@ public class ForkConfigurationTest
 
         forkConfiguration.setArgLine( "abc\ndef" );
 
-
         final Commandline commandLine =
             forkConfiguration.createCommandLine( Collections.singletonList( cpElement.getAbsolutePath() ), false );
         assertTrue( commandLine.toString().contains( "abc def" ) );
@@ -72,7 +70,7 @@ public class ForkConfigurationTest
         return cpElement;
     }
 
-    private ForkConfiguration getForkConfiguration()
+    public static ForkConfiguration getForkConfiguration()
         throws IOException
     {
         ForkConfiguration forkConfiguration = new ForkConfiguration();

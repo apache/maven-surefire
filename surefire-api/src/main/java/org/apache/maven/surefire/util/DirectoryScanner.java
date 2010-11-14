@@ -1,5 +1,4 @@
 package org.apache.maven.surefire.util;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -19,32 +18,13 @@ package org.apache.maven.surefire.util;
  * under the License.
  */
 
-import junit.framework.TestCase;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-import java.util.ArrayList;
-
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
 /**
- * Test of the directory scanner.
+ * @author Kristian Rosenvold
  */
-public class SurefireDirectoryScannerTest
-    extends TestCase
+public interface DirectoryScanner
 {
-    public void testLocateTestClasses()
-        throws IOException, TestSetFailedException
-    {
-        File baseDir = new File( new File( "." ).getCanonicalPath() );
-        List include = new ArrayList();
-        include.add( "**/*ZT*A.java" );
-        List exclude = new ArrayList();
-
-        DefaultDirectoryScanner surefireDirectoryScanner = new DefaultDirectoryScanner( baseDir, include, exclude );
-        String[] classNames = surefireDirectoryScanner.collectTests();
-        assertNotNull( classNames );
-        assertEquals( 4, classNames.length );
-    }
+    Class[] locateTestClasses( ClassLoader classLoader )
+        throws TestSetFailedException;
 }

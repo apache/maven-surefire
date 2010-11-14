@@ -27,14 +27,20 @@ import java.util.List;
 
 /**
  * Scans directories looking for tests.
+ *
  * @author Karl M. Davis
  * @author Kristian Rosenvold
  */
-public class SurefireDirectoryScanner {
+public class DefaultDirectoryScanner
+    implements DirectoryScanner
+{
 
     private static final String FS = System.getProperty( "file.separator" );
+
     private static final String[] EMPTY_STRING_ARRAY = new String[0];
+
     private static final String JAVA_SOURCE_FILE_EXTENSION = ".java";
+
     private static final String JAVA_CLASS_FILE_EXTENSION = ".class";
 
     private final File basedir;
@@ -44,16 +50,17 @@ public class SurefireDirectoryScanner {
     private final List excludes;
 
 
-    public SurefireDirectoryScanner(File basedir, List includes, List excludes) {
+    public DefaultDirectoryScanner( File basedir, List includes, List excludes )
+    {
         this.basedir = basedir;
         this.includes = includes;
         this.excludes = excludes;
     }
 
-    public Class[] locateTestClasses( ClassLoader classLoader)
+    public Class[] locateTestClasses( ClassLoader classLoader )
         throws TestSetFailedException
     {
-        String[] testClassNames =   collectTests( );
+        String[] testClassNames = collectTests();
         List result = new ArrayList();
 
         for ( int i = 0; i < testClassNames.length; i++ )
@@ -73,14 +80,14 @@ public class SurefireDirectoryScanner {
             if ( !Modifier.isAbstract( testClass.getModifiers() ) )
             {
 
-                result.add( testClass);
+                result.add( testClass );
             }
         }
-        return (Class[]) result.toArray(new Class[result.size()]);
+        return (Class[]) result.toArray( new Class[result.size()] );
     }
 
 
-    String[] collectTests( )
+    String[] collectTests()
     {
         String[] tests = EMPTY_STRING_ARRAY;
         if ( basedir.exists() )
@@ -118,21 +125,19 @@ public class SurefireDirectoryScanner {
 
         for ( int i = 0; i < incs.length; i++ )
         {
-        	String inc = (String) list.get( i );
-        	if ( inc.endsWith( JAVA_SOURCE_FILE_EXTENSION )) {
-        		inc = new StringBuffer( inc.length()
-        		                       - JAVA_SOURCE_FILE_EXTENSION.length()
-        		                       + JAVA_CLASS_FILE_EXTENSION.length() )
-        				.append( inc.substring(0, inc.lastIndexOf( JAVA_SOURCE_FILE_EXTENSION )))
-        				.append( JAVA_CLASS_FILE_EXTENSION )
-        				.toString();
-        	}
+            String inc = (String) list.get( i );
+            if ( inc.endsWith( JAVA_SOURCE_FILE_EXTENSION ) )
+            {
+                inc = new StringBuffer(
+                    inc.length() - JAVA_SOURCE_FILE_EXTENSION.length() + JAVA_CLASS_FILE_EXTENSION.length() ).append(
+                    inc.substring( 0, inc.lastIndexOf( JAVA_SOURCE_FILE_EXTENSION ) ) ).append(
+                    JAVA_CLASS_FILE_EXTENSION ).toString();
+            }
             incs[i] = inc;
 
         }
         return incs;
     }
-
 
 
 }
