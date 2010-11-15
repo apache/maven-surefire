@@ -19,20 +19,6 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import org.apache.maven.surefire.Surefire;
-import org.apache.maven.surefire.booter.output.FileOutputConsumerProxy;
-import org.apache.maven.surefire.booter.output.ForkingStreamConsumer;
-import org.apache.maven.surefire.booter.output.OutputConsumer;
-import org.apache.maven.surefire.booter.output.StandardOutputConsumer;
-import org.apache.maven.surefire.booter.output.SupressFooterOutputConsumerProxy;
-import org.apache.maven.surefire.booter.output.SupressHeaderOutputConsumerProxy;
-import org.apache.maven.surefire.testset.TestSetFailedException;
-import org.codehaus.plexus.util.IOUtil;
-import org.codehaus.plexus.util.cli.CommandLineException;
-import org.codehaus.plexus.util.cli.CommandLineUtils;
-import org.codehaus.plexus.util.cli.Commandline;
-import org.codehaus.plexus.util.cli.StreamConsumer;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -45,6 +31,19 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+
+import org.apache.maven.surefire.booter.output.FileOutputConsumerProxy;
+import org.apache.maven.surefire.booter.output.ForkingStreamConsumer;
+import org.apache.maven.surefire.booter.output.OutputConsumer;
+import org.apache.maven.surefire.booter.output.StandardOutputConsumer;
+import org.apache.maven.surefire.booter.output.SupressFooterOutputConsumerProxy;
+import org.apache.maven.surefire.booter.output.SupressHeaderOutputConsumerProxy;
+import org.apache.maven.surefire.testset.TestSetFailedException;
+import org.codehaus.plexus.util.IOUtil;
+import org.codehaus.plexus.util.cli.CommandLineException;
+import org.codehaus.plexus.util.cli.CommandLineUtils;
+import org.codehaus.plexus.util.cli.Commandline;
+import org.codehaus.plexus.util.cli.StreamConsumer;
 
 /**
  * @author Jason van Zyl
