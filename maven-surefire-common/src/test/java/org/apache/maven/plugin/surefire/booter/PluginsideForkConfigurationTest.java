@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.booter;
+package org.apache.maven.plugin.surefire.booter;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -20,6 +20,8 @@ package org.apache.maven.surefire.booter;
  */
 
 import junit.framework.TestCase;
+import org.apache.maven.surefire.booter.ForkConfiguration;
+import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.cli.Commandline;
 
@@ -27,14 +29,14 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 
-public class ForkConfigurationTest
+public class PluginsideForkConfigurationTest
     extends TestCase
 {
 
     public void testCreateCommandLine_UseSystemClassLoaderForkOnce_ShouldConstructManifestOnlyJar()
         throws IOException, SurefireBooterForkException
     {
-        ForkConfiguration config = getForkConfiguration();
+        PluginsideForkConfiguration config = getForkConfiguration();
         File cpElement = getTempClasspathFile();
         config.setForkMode( ForkConfiguration.FORK_ONCE );
         config.setUseSystemClassLoader( true );
@@ -53,7 +55,7 @@ public class ForkConfigurationTest
     {
         // SUREFIRE-657
         File cpElement = getTempClasspathFile();
-        ForkConfiguration forkConfiguration = getForkConfiguration();
+        PluginsideForkConfiguration forkConfiguration = getForkConfiguration();
 
         forkConfiguration.setArgLine( "abc\ndef" );
 
@@ -70,10 +72,10 @@ public class ForkConfigurationTest
         return cpElement;
     }
 
-    public static ForkConfiguration getForkConfiguration()
+    public static PluginsideForkConfiguration getForkConfiguration()
         throws IOException
     {
-        ForkConfiguration forkConfiguration = new ForkConfiguration();
+        PluginsideForkConfiguration forkConfiguration = new PluginsideForkConfiguration();
         forkConfiguration.setWorkingDirectory( new File( "." ).getCanonicalFile() );
         return forkConfiguration;
     }

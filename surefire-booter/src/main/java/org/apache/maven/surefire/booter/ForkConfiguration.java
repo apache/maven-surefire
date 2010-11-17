@@ -19,21 +19,7 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import org.apache.maven.surefire.util.UrlUtils;
-import org.codehaus.plexus.util.StringUtils;
-import org.codehaus.plexus.util.cli.Commandline;
-
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.jar.JarEntry;
-import java.util.jar.JarOutputStream;
-import java.util.jar.Manifest;
 
 /**
  * Configuration for forking tests.
@@ -55,21 +41,9 @@ public class ForkConfiguration
 
     private boolean useManifestOnlyJar;
 
-    private Properties systemProperties;
-
-    private String jvmExecutable;
-
-    private String argLine;
-
-    private Map environmentVariables;
-
-    private File workingDirectory;
-
     private File tempDirectory;
 
     private boolean debug;
-
-    private String debugLine;
 
     public void setForkMode( String forkMode )
     {
@@ -106,36 +80,6 @@ public class ForkConfiguration
         return useSystemClassLoader;
     }
 
-    public void setSystemProperties( Properties systemProperties )
-    {
-        this.systemProperties = (Properties) systemProperties.clone();
-    }
-
-    public void setJvmExecutable( String jvmExecutable )
-    {
-        this.jvmExecutable = jvmExecutable;
-    }
-
-    public void setArgLine( String argLine )
-    {
-        this.argLine = argLine;
-    }
-
-    public void setDebugLine( String debugLine )
-    {
-        this.debugLine = debugLine;
-    }
-
-    public void setEnvironmentVariables( Map environmentVariables )
-    {
-        this.environmentVariables = new HashMap( environmentVariables );
-    }
-
-    public void setWorkingDirectory( File workingDirectory )
-    {
-        this.workingDirectory = workingDirectory;
-    }
-
     public void setTempDirectory( File tempDirectory )
     {
         this.tempDirectory = tempDirectory;
@@ -144,132 +88,6 @@ public class ForkConfiguration
     public File getTempDirectory()
     {
         return tempDirectory;
-    }
-
-    public String getForkMode()
-    {
-        return forkMode;
-    }
-
-    public Properties getSystemProperties()
-    {
-        return systemProperties;
-    }
-
-    /**
-     * @param classPath cla the classpath arguments
-     * @return A commandline
-     * @throws SurefireBooterForkException when unable to perform the fork
-     */
-    public Commandline createCommandLine( List classPath )
-        throws SurefireBooterForkException
-    {
-        return createCommandLine( classPath, isManifestOnlyJarRequestedAndUsable() );
-    }
-
-    public Commandline createCommandLine( List classPath, boolean useJar )
-        throws SurefireBooterForkException
-    {
-        Commandline cli = new Commandline();
-
-        cli.setExecutable( jvmExecutable );
-
-        if ( argLine != null )
-        {
-            cli.createArg().setLine( stripNewLines( argLine ) );
-        }
-
-        if ( environmentVariables != null )
-        {
-            Iterator iter = environmentVariables.keySet().iterator();
-
-            while ( iter.hasNext() )
-            {
-                String key = (String) iter.next();
-
-                String value = (String) environmentVariables.get( key );
-
-                cli.addEnvironment( key, value );
-            }
-        }
-
-        if ( debugLine != null && !"".equals( debugLine ) )
-        {
-            cli.createArg().setLine( debugLine );
-        }
-
-        if ( useJar )
-        {
-            File jarFile;
-            try
-            {
-                jarFile = createJar( classPath );
-            }
-            catch ( IOException e )
-            {
-                throw new SurefireBooterForkException( "Error creating archive file", e );
-            }
-
-            cli.createArg().setValue( "-jar" );
-
-            cli.createArg().setValue( jarFile.getAbsolutePath() );
-        }
-        else
-        {
-            cli.createArg().setValue( "-classpath" );
-
-            cli.createArg().setValue( StringUtils.join( classPath.iterator(), File.pathSeparator ) );
-
-            cli.createArg().setValue( SurefireBooter.class.getName() );
-        }
-
-        cli.setWorkingDirectory( workingDirectory.getAbsolutePath() );
-
-        return cli;
-    }
-
-    /**
-     * Create a jar with just a manifest containing a Main-Class entry for BooterConfiguration and a Class-Path entry
-     * for all classpath elements.
-     *
-     * @param classPath List&lt;String> of all classpath elements.
-     * @return The file pointint to the jar
-     * @throws IOException When a file operation fails.
-     */
-    private File createJar( List classPath )
-        throws IOException
-    {
-        File file = File.createTempFile( "surefirebooter", ".jar", tempDirectory );
-        if ( !debug )
-        {
-            file.deleteOnExit();
-        }
-        FileOutputStream fos = new FileOutputStream( file );
-        JarOutputStream jos = new JarOutputStream( fos );
-        jos.setLevel( JarOutputStream.STORED );
-        JarEntry je = new JarEntry( "META-INF/MANIFEST.MF" );
-        jos.putNextEntry( je );
-
-        Manifest man = new Manifest();
-
-        // we can't use StringUtils.join here since we need to add a '/' to
-        // the end of directory entries - otherwise the jvm will ignore them.
-        String cp = "";
-        for ( Iterator it = classPath.iterator(); it.hasNext(); )
-        {
-            String el = (String) it.next();
-            // NOTE: if File points to a directory, this entry MUST end in '/'.
-            cp += UrlUtils.getURL( new File( el ) ).toExternalForm() + " ";
-        }
-
-        man.getMainAttributes().putValue( "Manifest-Version", "1.0" );
-        man.getMainAttributes().putValue( "Class-Path", cp.trim() );
-        man.getMainAttributes().putValue( "Main-Class", SurefireBooter.class.getName() );
-
-        man.write( jos );
-        jos.close();
-
-        return file;
     }
 
     public void setDebug( boolean debug )
@@ -297,8 +115,4 @@ public class ForkConfiguration
         return isUseSystemClassLoader() && isUseManifestOnlyJar();
     }
 
-    private String stripNewLines( String argline )
-    {
-        return argline.replace( "\n", " " ).replace( "\r", " " );
-    }
 }

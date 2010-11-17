@@ -22,20 +22,8 @@ import org.apache.maven.surefire.suite.SuiteDefinition;
 import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.StringUtils;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Properties;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.io.*;
+import java.util.*;
 
 /**
  * Knows how to serialize and deserialize the booter configuration.
@@ -160,35 +148,8 @@ public class BooterSerializer
                                         dirScannerParams, failIfNotests, properties );
     }
 
-    public void serialize( BooterConfiguration booterConfiguration, List testSuites, String name )
-        throws IOException
-    {
-        final ForkConfiguration forkConfiguration = booterConfiguration.getForkConfiguration();
-        File file = File.createTempFile( name, "tmp", forkConfiguration.getTempDirectory() );
-        if ( !forkConfiguration.isDebug() )
-        {
-            file.deleteOnExit();
-        }
-    }
-
-    public void serialize( BooterConfiguration booterConfiguration, List testSuites, OutputStream outputStream )
-        throws IOException
-    {
-        Properties properties = new Properties();
-
-        BooterSerializer booterSerializer = new BooterSerializer();
-        booterSerializer.setForkProperties( properties, testSuites, booterConfiguration );
-        try
-        {
-            properties.store( outputStream, "surefire" );
-        }
-        finally
-        {
-            outputStream.close();
-        }
-    }
-
-    public void setForkProperties( Properties properties, List testSuites, BooterConfiguration booterConfiguration )
+    public void setForkProperties( Properties properties, List testSuites, BooterConfiguration booterConfiguration,
+                                   ForkConfiguration forkConfiguration )
     {
         addPropertiesForTypeHolder( booterConfiguration.getReports(), properties, REPORT_PROPERTY_PREFIX );
         addPropertiesForTypeHolder( testSuites, properties, TEST_SUITE_PROPERTY_PREFIX );
@@ -198,14 +159,13 @@ public class BooterSerializer
 
         booterConfiguration.getClasspathConfiguration().setForkProperties( properties );
 
-        ForkConfiguration forkConfiguration = booterConfiguration.getForkConfiguration();
         properties.setProperty( "useSystemClassLoader", String.valueOf( forkConfiguration.isUseSystemClassLoader() ) );
         properties.setProperty( "useManifestOnlyJar",
                                 String.valueOf( forkConfiguration.isManifestOnlyJarRequestedAndUsable() ) );
         properties.setProperty( "failIfNoTests", String.valueOf( booterConfiguration.isFailIfNoTests() ) );
     }
 
-    File writePropertiesFile( String name, Properties properties, ForkConfiguration forkConfiguration )
+    public File writePropertiesFile( String name, Properties properties, ForkConfiguration forkConfiguration )
         throws IOException
     {
         File file = File.createTempFile( name, "tmp", forkConfiguration.getTempDirectory() );

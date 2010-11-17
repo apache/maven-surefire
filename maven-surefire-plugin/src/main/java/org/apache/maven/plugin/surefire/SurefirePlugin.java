@@ -19,12 +19,6 @@ package org.apache.maven.plugin.surefire;
  * under the License.
  */
 
-import java.io.File;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -32,13 +26,20 @@ import org.apache.maven.artifact.resolver.ArtifactResolver;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugin.surefire.booter.PluginSideBooter;
+import org.apache.maven.plugin.surefire.booter.PluginsideForkConfiguration;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.surefire.booter.BooterConfiguration;
-import org.apache.maven.surefire.booter.SurefireBooter;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.apache.maven.surefire.booter.SurefireExecutionException;
 import org.apache.maven.toolchain.ToolchainManager;
 import org.codehaus.plexus.util.StringUtils;
+
+import java.io.File;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * Run tests using Surefire.
@@ -49,6 +50,7 @@ import org.codehaus.plexus.util.StringUtils;
  * @goal test
  * @phase test
  * @threadSafe
+ * @noinspection JavaDoc
  */
 public class SurefirePlugin
     extends AbstractSurefireMojo
@@ -126,27 +128,27 @@ public class SurefirePlugin
      * List of dependencies to exclude from the test classpath.
      * Each dependency string must follow the format <i>groupId:artifactId</i>.
      * For example: <i>org.acme:project-a</i>
-     * 
-     *  @parameter
-     *  @since 2.6
+     *
+     * @parameter
+     * @since 2.6
      */
     private List classpathDependencyExcludes;
-    
+
     /**
      * A dependency scope to exclude from the test classpath
      * The scope can be one of the following scopes:
-     * 
+     * <p/>
      * <ul>
      * <li><i>compile</i> - system, provided, compile
      * <li><i>runtime</i> - compile, runtime
      * <li><i>test</i> - system, provided, compile, runtime, test
      * </ul>
-     * 
+     *
      * @parameter default-value=""
      * @since 2.6
      */
     private String classpathDependencyScopeExclude;
-    
+
     /**
      * Additional elements to be appended to the classpath.
      *
@@ -551,9 +553,11 @@ public class SurefirePlugin
     private String objectFactory;
 
 
-    /** @parameter default-value="${session.parallel}" */
+    /**
+     * @parameter default-value="${session.parallel}"
+     */
     private Boolean parallelMavenExecution;
-    
+
     /**
      * @component
      */
@@ -565,14 +569,14 @@ public class SurefirePlugin
     {
         if ( verifyParameters() )
         {
-            BooterConfiguration booterConfiguration = createBooterConfiguration();
+            PluginsideForkConfiguration forkConfiguration = getForkConfiguration();
+            BooterConfiguration booterConfiguration = createBooterConfiguration( forkConfiguration );
 
             getLog().info(
                 StringUtils.capitalizeFirstLetter( getPluginName() ) + " report directory: " + getReportsDirectory() );
 
-            SurefireBooter booter = new SurefireBooter(booterConfiguration, reportsDirectory);
+            PluginSideBooter booter = new PluginSideBooter( booterConfiguration, reportsDirectory, forkConfiguration );
             booter.setForkedProcessTimeoutInSeconds( getForkedProcessTimeoutInSeconds() );
-
 
             int result;
             try
@@ -588,7 +592,7 @@ public class SurefirePlugin
                 throw new MojoExecutionException( e.getMessage(), e );
             }
 
-            if ( getOriginalSystemProperties() != null && !booterConfiguration.isForking() )
+            if ( getOriginalSystemProperties() != null && !forkConfiguration.isForking() )
             {
                 // restore system properties, only makes sense when not forking..
                 System.setProperties( getOriginalSystemProperties() );
@@ -633,7 +637,7 @@ public class SurefirePlugin
 
     protected String[] getDefaultIncludes()
     {
-        return new String[]{"**/Test*.java", "**/*Test.java", "**/*TestCase.java"};
+        return new String[]{ "**/Test*.java", "**/*Test.java", "**/*TestCase.java" };
     }
 
     // now for the implementation of the field accessors
@@ -642,7 +646,6 @@ public class SurefirePlugin
     {
         return skipTests;
     }
-
 
 
     public void setSkipTests( boolean skipTests )
@@ -1222,8 +1225,8 @@ public class SurefirePlugin
 
     public boolean isMavenParallel()
     {
-        return parallelMavenExecution  != null && parallelMavenExecution.booleanValue();
+        return parallelMavenExecution != null && parallelMavenExecution.booleanValue();
     }
-    
+
 
 }

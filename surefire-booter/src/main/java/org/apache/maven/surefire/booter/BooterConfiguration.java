@@ -88,7 +88,7 @@ public class BooterConfiguration
     }
 
 
-    ClasspathConfiguration getClasspathConfiguration()
+    public ClasspathConfiguration getClasspathConfiguration()
     {
         return classpathConfiguration;
     }
@@ -125,11 +125,6 @@ public class BooterConfiguration
         return ( failIfNoTests ) ? Boolean.TRUE : Boolean.FALSE;
     }
 
-    public ForkConfiguration getForkConfiguration()
-    {
-        return forkConfiguration;
-    }
-
     public void addReport( String report, Object[] constructorParams )
     {
         reports.add( new Object[]{ report, constructorParams } );
@@ -154,11 +149,6 @@ public class BooterConfiguration
     public void setRedirectTestOutputToFile( boolean redirectTestOutputToFile )
     {
         this.redirectTestOutputToFile = redirectTestOutputToFile;
-    }
-
-    public boolean isForking()
-    {
-        return forkConfiguration.isForking();
     }
 
     public void setDirectoryScannerOptions( File testClassesDirectory, List includes, List excludes )
@@ -193,5 +183,10 @@ public class BooterConfiguration
     public void setSuiteDefinition( SuiteDefinition suiteDefinition )
     {
         this.suiteDefinition = suiteDefinition;
+    }
+
+    public boolean isManifestOnlyJarRequestedAndUsable()
+    {
+        return forkConfiguration.isManifestOnlyJarRequestedAndUsable();
     }
 }

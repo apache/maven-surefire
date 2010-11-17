@@ -38,10 +38,12 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.surefire.AbstractSurefireMojo;
+import org.apache.maven.plugin.surefire.booter.PluginSideBooter;
 import org.apache.maven.plugin.surefire.SurefireExecutionParameters;
+import org.apache.maven.plugin.surefire.booter.PluginsideForkConfiguration;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.surefire.booter.BooterConfiguration;
-import org.apache.maven.surefire.booter.SurefireBooter;
+import org.apache.maven.surefire.booter.ForkConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.apache.maven.surefire.booter.SurefireExecutionException;
 import org.apache.maven.surefire.failsafe.model.FailsafeSummary;
@@ -60,6 +62,7 @@ import org.codehaus.plexus.util.StringUtils;
  * @goal integration-test
  * @phase integration-test
  * @threadSafe
+ * @noinspection JavaDoc
  */
 public class IntegrationTestMojo
     extends AbstractSurefireMojo
@@ -138,17 +141,17 @@ public class IntegrationTestMojo
      * List of dependencies to exclude from the test classpath.
      * Each dependency string must follow the format <i>groupId:artifactId</i>.
      * For example: <i>org.acme:project-a</i>
-     * 
-     *  @parameter
-     *  @since 2.6
+     *
+     * @parameter
+     * @since 2.6
      */
     private List classpathDependencyExcludes;
-    
+
     /**
      * A dependency scope to exclude from the test classpath
      * The scope should be one of the scopes defined by org.apache.maven.artifact.Artifact.
      * This includes the following
-     * 
+     * <p/>
      * <ul>
      * <li><i>compile</i> - system, provided, compile
      * <li><i>runtime</i> - compile, runtime
@@ -156,7 +159,7 @@ public class IntegrationTestMojo
      * <li><i>runtime+system</i> - system, compile, runtime
      * <li><i>test</i> - system, provided, compile, runtime, test
      * </ul>
-     * 
+     *
      * @parameter default-value=""
      * @since 2.6
      */
@@ -584,7 +587,9 @@ public class IntegrationTestMojo
      */
     private String encoding;
 
-    /** @parameter default-value="${session.parallel}" */
+    /**
+     * @parameter default-value="${session.parallel}"
+     */
     private Boolean parallelMavenExecution;
 
     /**
@@ -598,9 +603,9 @@ public class IntegrationTestMojo
     {
         if ( verifyParameters() )
         {
-            BooterConfiguration booterConfiguration = createBooterConfiguration();
-            SurefireBooter booter = new SurefireBooter( booterConfiguration, reportsDirectory );
-
+            PluginsideForkConfiguration forkConfiguration = getForkConfiguration();
+            BooterConfiguration booterConfiguration = createBooterConfiguration( forkConfiguration );
+            PluginSideBooter booter = new PluginSideBooter( booterConfiguration, reportsDirectory, forkConfiguration );
 
             getLog().info(
                 StringUtils.capitalizeFirstLetter( getPluginName() ) + " report directory: " + getReportsDirectory() );
@@ -627,7 +632,7 @@ public class IntegrationTestMojo
                 result.setException( e.getMessage() );
             }
 
-            if ( getOriginalSystemProperties() != null && !booterConfiguration.isForking() )
+            if ( getOriginalSystemProperties() != null && !forkConfiguration.isForking() )
             {
                 // restore system properties, only makes sense when not forking..
                 System.setProperties( getOriginalSystemProperties() );
@@ -644,8 +649,8 @@ public class IntegrationTestMojo
                 if ( StringUtils.isEmpty( this.encoding ) )
                 {
                     getLog().warn(
-                        "File encoding has not been set, using platform encoding " + ReaderFactory.FILE_ENCODING
-                            + ", i.e. build is platform dependent!" );
+                        "File encoding has not been set, using platform encoding " + ReaderFactory.FILE_ENCODING +
+                            ", i.e. build is platform dependent!" );
                     encoding = ReaderFactory.FILE_ENCODING;
                 }
                 else
@@ -678,7 +683,6 @@ public class IntegrationTestMojo
             return false;
         }
 
-
         if ( !getTestClassesDirectory().exists() )
         {
             if ( getFailIfNoTests() != null && getFailIfNoTests().booleanValue() )
@@ -705,7 +709,7 @@ public class IntegrationTestMojo
 
     protected String[] getDefaultIncludes()
     {
-        return new String[]{"**/IT*.java", "**/*IT.java", "**/*ITCase.java"} ;
+        return new String[]{ "**/IT*.java", "**/*IT.java", "**/*ITCase.java" };
     }
 
     public boolean isSkipTests()
@@ -1312,7 +1316,7 @@ public class IntegrationTestMojo
 
     public boolean isMavenParallel()
     {
-        return parallelMavenExecution  != null && parallelMavenExecution.booleanValue();
+        return parallelMavenExecution != null && parallelMavenExecution.booleanValue();
     }
 
 

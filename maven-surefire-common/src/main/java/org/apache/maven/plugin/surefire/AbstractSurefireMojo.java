@@ -34,6 +34,7 @@ import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugin.surefire.booter.PluginsideForkConfiguration;
 import org.apache.maven.shared.artifact.filter.PatternIncludesArtifactFilter;
 import org.apache.maven.surefire.booter.BooterConfiguration;
 import org.apache.maven.surefire.booter.ClasspathConfiguration;
@@ -216,14 +217,14 @@ public abstract class AbstractSurefireMojo
         return ForkConfiguration.FORK_NEVER.equals( getForkMode() );
     }
 
-    protected BooterConfiguration createBooterConfiguration()
+    protected BooterConfiguration createBooterConfiguration( PluginsideForkConfiguration forkConfiguration )
         throws MojoExecutionException, MojoFailureException
     {
-        final ForkConfiguration fork = getForkConfiguration();
         final ClasspathConfiguration classpathConfiguration =
             new ClasspathConfiguration( isEnableAssertions(), isChildDelegation() );
 
-        BooterConfiguration booterConfiguration = new BooterConfiguration( fork, classpathConfiguration );
+        BooterConfiguration booterConfiguration =
+            new BooterConfiguration( forkConfiguration.getBooterForkConfiguration(), classpathConfiguration );
 
         Artifact surefireArtifact =
             (Artifact) getPluginArtifactMap().get( "org.apache.maven.surefire:surefire-booter" );
@@ -459,14 +460,14 @@ public abstract class AbstractSurefireMojo
 
         booterConfiguration.setRedirectTestOutputToFile( isRedirectTestOutputToFile() );
 
-        addReporters( booterConfiguration, fork.isForking() );
+        addReporters( booterConfiguration, forkConfiguration.isForking() );
 
         return booterConfiguration;
     }
 
-    private ForkConfiguration getForkConfiguration()
+    protected PluginsideForkConfiguration getForkConfiguration()
     {
-        ForkConfiguration fork = new ForkConfiguration();
+        PluginsideForkConfiguration fork = new PluginsideForkConfiguration();
 
         fork.setForkMode( getForkMode() );
 

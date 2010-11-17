@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.booter.output;
+package org.apache.maven.plugin.surefire.booter;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,6 +19,7 @@ package org.apache.maven.surefire.booter.output;
  * under the License.
  */
 
+import org.apache.maven.surefire.booter.output.OutputConsumer;
 import org.apache.maven.surefire.report.ForkingConsoleReporter;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.jmock.Mock;

@@ -34,10 +34,17 @@ public class BooterSerializerTest
     extends TestCase
 {
 
+    public static ForkConfiguration getForkConfiguration()
+        throws IOException
+    {
+        return new ForkConfiguration();
+    }
+
     public void testDirectoryScannerParams()
         throws IOException
     {
-        BooterConfiguration booterConfiguration = getTestBooterConfiguration();
+        ForkConfiguration forkConfiguration = getForkConfiguration();
+        BooterConfiguration booterConfiguration = getTestBooterConfiguration( forkConfiguration );
 
         File aDir = new File( "." );
         List includes = new ArrayList();
@@ -50,9 +57,8 @@ public class BooterSerializerTest
         BooterSerializer booterSerializer = new BooterSerializer();
         booterConfiguration.setDirectoryScannerOptions( aDir, includes, excludes );
         Properties props = new Properties();
-        booterSerializer.setForkProperties( props, new ArrayList(), booterConfiguration );
-        final File propsTest =
-            booterSerializer.writePropertiesFile( "propsTest", props, booterConfiguration.getForkConfiguration() );
+        booterSerializer.setForkProperties( props, new ArrayList(), booterConfiguration, forkConfiguration );
+        final File propsTest = booterSerializer.writePropertiesFile( "propsTest", props, forkConfiguration );
 
         BooterConfiguration read = booterSerializer.deserialize( new FileInputStream( propsTest ) );
 
@@ -64,10 +70,9 @@ public class BooterSerializerTest
 
     }
 
-    private BooterConfiguration getTestBooterConfiguration()
+    private BooterConfiguration getTestBooterConfiguration( ForkConfiguration forkConfiguration )
         throws IOException
     {
-        ForkConfiguration forkConfiguration = ForkConfigurationTest.getForkConfiguration();
         ClasspathConfiguration classpathConfiguration = new ClasspathConfiguration( true, true );
 
         return new BooterConfiguration( forkConfiguration, classpathConfiguration );

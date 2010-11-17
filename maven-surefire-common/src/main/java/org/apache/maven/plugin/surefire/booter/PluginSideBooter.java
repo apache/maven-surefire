@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.booter;
+package org.apache.maven.plugin.surefire.booter;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,21 +19,15 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
+import org.apache.maven.surefire.booter.BooterConfiguration;
+import org.apache.maven.surefire.booter.BooterSerializer;
+import org.apache.maven.surefire.booter.ClasspathConfiguration;
+import org.apache.maven.surefire.booter.ForkConfiguration;
+import org.apache.maven.surefire.booter.SurefireBooterForkException;
+import org.apache.maven.surefire.booter.SurefireExecutionException;
+import org.apache.maven.surefire.booter.SurefireReflector;
+import org.apache.maven.surefire.booter.TestVmBooter;
 import org.apache.maven.surefire.booter.output.FileOutputConsumerProxy;
-import org.apache.maven.surefire.booter.output.ForkingStreamConsumer;
 import org.apache.maven.surefire.booter.output.OutputConsumer;
 import org.apache.maven.surefire.booter.output.StandardOutputConsumer;
 import org.apache.maven.surefire.booter.output.SupressFooterOutputConsumerProxy;
@@ -45,29 +39,47 @@ import org.codehaus.plexus.util.cli.CommandLineUtils;
 import org.codehaus.plexus.util.cli.Commandline;
 import org.codehaus.plexus.util.cli.StreamConsumer;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
+
 /**
+ * The part of the booter that lives only on the plugin-side (not present in remote vms)
+ * <p/>
+ * Knows how to fork new vms and also how to delegate non-forking invocation to TestVmBooter directly
+ *
  * @author Jason van Zyl
  * @author Emmanuel Venisse
+ * @author Kristian Rosenvold
  * @version $Id$
  */
-public class SurefireBooter
+public class PluginSideBooter
 {
 
     private int forkedProcessTimeoutInSeconds = 0;
 
     private final BooterConfiguration booterConfiguration;
 
+    private final PluginsideForkConfiguration forkConfiguration;
+
     private File reportsDirectory;
 
-    public SurefireBooter( BooterConfiguration booterConfiguration, File reportsDirectory )
+
+    public PluginSideBooter( BooterConfiguration booterConfiguration, File reportsDirectory,
+                             PluginsideForkConfiguration forkConfiguration )
     {
+        this.forkConfiguration = forkConfiguration;
         this.booterConfiguration = booterConfiguration;
         this.reportsDirectory = reportsDirectory;
-    }
-
-    protected SurefireBooter( BooterConfiguration booterConfiguration )
-    {
-        this.booterConfiguration = booterConfiguration;
     }
 
     public int run()
@@ -75,10 +87,11 @@ public class SurefireBooter
     {
         int result;
 
-        final String requestedForkMode = booterConfiguration.getForkConfiguration().getForkMode();
+        final String requestedForkMode = forkConfiguration.getForkMode();
         if ( ForkConfiguration.FORK_NEVER.equals( requestedForkMode ) )
         {
-            result = runSuitesInProcess();
+            TestVmBooter testVmBooter = new TestVmBooter( booterConfiguration );
+            result = testVmBooter.runSuitesInProcess();
         }
         else if ( ForkConfiguration.FORK_ONCE.equals( requestedForkMode ) )
         {
@@ -93,82 +106,6 @@ public class SurefireBooter
             throw new SurefireExecutionException( "Unknown forkmode: " + requestedForkMode, null );
         }
         return result;
-    }
-
-    private int runSuitesInProcess( String testSet, Properties results )
-        throws SurefireExecutionException
-    {
-        if ( booterConfiguration.getTestSuites().size() != 1 )
-        {
-            throw new IllegalArgumentException( "Cannot only specify testSet for single test suites" );
-        }
-
-        // TODO: replace with plexus
-
-        ClassLoader oldContextClassLoader = Thread.currentThread().getContextClassLoader();
-        try
-        {
-            ClassLoader testsClassLoader = getClasspathConfiguration().createTestClassLoaderConditionallySystem(
-                booterConfiguration.useSystemClassLoader() );
-
-            // TODO: assertions = true shouldn't be required for this CL if we had proper separation (see TestNG)
-            ClassLoader surefireClassLoader = getClasspathConfiguration().createSurefireClassLoader( testsClassLoader );
-
-            SurefireReflector reflector = new SurefireReflector( surefireClassLoader );
-
-            Thread.currentThread().setContextClassLoader( testsClassLoader );
-            return reflector.run( booterConfiguration.getReports(),
-                                  (Object[]) booterConfiguration.getTestSuites().get( 0 ), testSet, surefireClassLoader,
-                                  testsClassLoader, results, booterConfiguration.isFailIfNoTests() );
-        }
-        finally
-        {
-            Thread.currentThread().setContextClassLoader( oldContextClassLoader );
-        }
-    }
-
-    private int runSuitesInProcess()
-        throws SurefireExecutionException
-    {
-        // TODO: replace with plexus
-
-        // noinspection CatchGenericClass,OverlyBroadCatchBlock
-        ClassLoader oldContextClassLoader = Thread.currentThread().getContextClassLoader();
-
-        try
-        {
-            // The test classloader must be constructed first to avoid issues with commons-logging until we properly
-            // separate the TestNG classloader
-            ClassLoader testsClassLoader;
-            String testClassPath = getClasspathConfiguration().getTestClassPathAsString();
-            System.setProperty( "surefire.test.class.path", testClassPath );
-            if ( booterConfiguration.getForkConfiguration().isManifestOnlyJarRequestedAndUsable() )
-            {
-                testsClassLoader = getClass().getClassLoader(); // ClassLoader.getSystemClassLoader()
-                // SUREFIRE-459, trick the app under test into thinking its classpath was conventional
-                // (instead of a single manifest-only jar) 
-                System.setProperty( "surefire.real.class.path", System.getProperty( "java.class.path" ) );
-                System.setProperty( "java.class.path", testClassPath );
-            }
-            else
-            {
-                testsClassLoader = getClasspathConfiguration().createTestClassLoader();
-            }
-
-            ClassLoader surefireClassLoader = getClasspathConfiguration().createSurefireClassLoader( testsClassLoader );
-
-            SurefireReflector reflector = new SurefireReflector( surefireClassLoader );
-
-            Thread.currentThread().setContextClassLoader( testsClassLoader );
-
-            return reflector.run( booterConfiguration.getReports(), booterConfiguration.getTestSuites(),
-                                  surefireClassLoader, testsClassLoader, booterConfiguration.isFailIfNoTests() );
-
-        }
-        finally
-        {
-            Thread.currentThread().setContextClassLoader( oldContextClassLoader );
-        }
     }
 
 
@@ -279,7 +216,8 @@ public class SurefireBooter
         Properties properties = new Properties();
 
         BooterSerializer booterSerializer = new BooterSerializer();
-        booterSerializer.setForkProperties( properties, testSuites, booterConfiguration );
+        booterSerializer.setForkProperties( properties, testSuites, booterConfiguration,
+                                            forkConfiguration.getBooterForkConfiguration() );
 
         return fork( properties, showHeading, showFooter );
     }
@@ -289,7 +227,8 @@ public class SurefireBooter
         throws SurefireBooterForkException
     {
         BooterSerializer booterSerializer = new BooterSerializer();
-        booterSerializer.setForkProperties( properties, Collections.singletonList( testSuite ), booterConfiguration );
+        booterSerializer.setForkProperties( properties, Collections.singletonList( testSuite ), booterConfiguration,
+                                            forkConfiguration.getBooterForkConfiguration() );
 
         if ( testSet instanceof String )
         {
@@ -304,16 +243,16 @@ public class SurefireBooter
     {
         File surefireProperties;
         File systemProperties = null;
-        final ForkConfiguration forkConfiguration = booterConfiguration.getForkConfiguration();
         try
         {
             BooterSerializer booterSerializer = new BooterSerializer();
-            surefireProperties = booterSerializer.writePropertiesFile( "surefire", properties, forkConfiguration );
+            surefireProperties = booterSerializer.writePropertiesFile( "surefire", properties,
+                                                                       forkConfiguration.getBooterForkConfiguration() );
             if ( forkConfiguration.getSystemProperties() != null )
             {
                 systemProperties =
                     booterSerializer.writePropertiesFile( "surefire", forkConfiguration.getSystemProperties(),
-                                                          forkConfiguration );
+                                                          forkConfiguration.getBooterForkConfiguration() );
             }
         }
         catch ( IOException e )
@@ -399,91 +338,6 @@ public class SurefireBooter
         }
 
         return returnCode;
-    }
-
-    private static Properties loadProperties( File file )
-        throws IOException
-    {
-        Properties p = new Properties();
-
-        if ( file != null && file.exists() )
-        {
-            FileInputStream inStream = new FileInputStream( file );
-            try
-            {
-                p.load( inStream );
-            }
-            finally
-            {
-                IOUtil.close( inStream );
-            }
-        }
-
-        return p;
-    }
-
-    private static void setSystemProperties( File file )
-        throws IOException
-    {
-        Properties p = loadProperties( file );
-
-        for ( Iterator i = p.keySet().iterator(); i.hasNext(); )
-        {
-            String key = (String) i.next();
-
-            System.setProperty( key, p.getProperty( key ) );
-        }
-    }
-
-    /**
-     * This method is invoked when Surefire is forked - this method parses and organizes the arguments passed to it and
-     * then calls the Surefire class' run method. <p/> The system exit code will be 1 if an exception is thrown.
-     *
-     * @param args Commandline arguments
-     * @throws Throwable Upon throwables
-     */
-    public static void main( String[] args )
-        throws Throwable
-    {
-        try
-        {
-            if ( args.length > 1 )
-            {
-                setSystemProperties( new File( args[1] ) );
-            }
-
-            File surefirePropertiesFile = new File( args[0] );
-            InputStream stream = surefirePropertiesFile.exists() ? new FileInputStream( surefirePropertiesFile ) : null;
-            BooterSerializer booterSerializer = new BooterSerializer();
-            BooterConfiguration booterConfiguration = booterSerializer.deserialize( stream );
-            Properties p = booterConfiguration.getProperties();
-
-            SurefireBooter booter = new SurefireBooter( booterConfiguration );
-
-            String testSet = p.getProperty( "testSet" );
-            int result;
-            if ( testSet != null )
-            {
-                result = booter.runSuitesInProcess( testSet, p );
-            }
-            else
-            {
-                result = booter.runSuitesInProcess();
-            }
-
-            booterSerializer.writePropertiesFile( surefirePropertiesFile, "surefire", p );
-
-            // noinspection CallToSystemExit
-            System.exit( result );
-        }
-        catch ( Throwable t )
-        {
-            // Just throwing does getMessage() and a local trace - we want to call printStackTrace for a full trace
-            // noinspection UseOfSystemOutOrSystemErr
-            t.printStackTrace( System.err );
-            // noinspection ProhibitedExceptionThrown,CallToSystemExit
-            System.exit( 1 );
-        }
     }
 
     private ForkingStreamConsumer getForkingStreamConsumer( boolean showHeading, boolean showFooter,
