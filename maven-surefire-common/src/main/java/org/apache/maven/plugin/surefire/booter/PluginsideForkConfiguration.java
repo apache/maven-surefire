@@ -51,7 +51,7 @@ public class PluginsideForkConfiguration
 
     public static final String FORK_ALWAYS = "always";
 
-    public static final String FORK_NEVER = "never";
+    public static final String FORK_NEVER = ForkConfiguration.FORK_NEVER;
 
     private String forkMode;
 
@@ -77,12 +77,7 @@ public class PluginsideForkConfiguration
 
     public ForkConfiguration getBooterForkConfiguration()
     {
-        ForkConfiguration forkConfiguration = new ForkConfiguration();
-        forkConfiguration.setUseSystemClassLoader( isUseSystemClassLoader() );
-        forkConfiguration.setUseManifestOnlyJar( isUseManifestOnlyJar() );
-        forkConfiguration.setTempDirectory( tempDirectory );
-        forkConfiguration.setDebug( debug );
-        return forkConfiguration;
+        return new ForkConfiguration(isUseSystemClassLoader() , isUseManifestOnlyJar(), forkMode);
     }
 
     public void setForkMode( String forkMode )
@@ -315,5 +310,11 @@ public class PluginsideForkConfiguration
     public String getDebugLine()
     {
         return debugLine;
+    }
+
+
+    public File getTempDirectory()
+    {
+        return tempDirectory;
     }
 }

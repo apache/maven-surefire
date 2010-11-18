@@ -20,7 +20,6 @@ package org.apache.maven.plugin.surefire.booter;
  */
 
 import junit.framework.TestCase;
-import org.apache.maven.surefire.booter.ForkConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.cli.Commandline;
@@ -38,7 +37,7 @@ public class PluginsideForkConfigurationTest
     {
         PluginsideForkConfiguration config = getForkConfiguration();
         File cpElement = getTempClasspathFile();
-        config.setForkMode( ForkConfiguration.FORK_ONCE );
+        config.setForkMode( PluginsideForkConfiguration.FORK_ONCE );
         config.setUseSystemClassLoader( true );
         config.setUseSystemClassLoader( true );
         config.setJvmExecutable( "java" );

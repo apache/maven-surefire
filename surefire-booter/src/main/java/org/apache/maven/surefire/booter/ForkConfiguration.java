@@ -19,8 +19,6 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import java.io.File;
-
 /**
  * Configuration for forking tests.
  *
@@ -29,40 +27,19 @@ import java.io.File;
  */
 public class ForkConfiguration
 {
-    public static final String FORK_ONCE = "once";
-
-    public static final String FORK_ALWAYS = "always";
-
     public static final String FORK_NEVER = "never";
 
-    private String forkMode;
+    private final String forkMode;
 
-    private boolean useSystemClassLoader;
+    private final boolean useSystemClassLoader;
 
-    private boolean useManifestOnlyJar;
+    private final boolean useManifestOnlyJar;
 
-    private File tempDirectory;
-
-    private boolean debug;
-
-    public void setForkMode( String forkMode )
+    public ForkConfiguration( boolean useSystemClassLoader, boolean useManifestOnlyJar, String forkMode )
     {
-        if ( "pertest".equalsIgnoreCase( forkMode ) )
-        {
-            this.forkMode = FORK_ALWAYS;
-        }
-        else if ( "none".equalsIgnoreCase( forkMode ) )
-        {
-            this.forkMode = FORK_NEVER;
-        }
-        else if ( forkMode.equals( FORK_NEVER ) || forkMode.equals( FORK_ONCE ) || forkMode.equals( FORK_ALWAYS ) )
-        {
-            this.forkMode = forkMode;
-        }
-        else
-        {
-            throw new IllegalArgumentException( "Fork mode " + forkMode + " is not a legal value" );
-        }
+        this.useSystemClassLoader = useSystemClassLoader;
+        this.useManifestOnlyJar = useManifestOnlyJar;
+        this.forkMode = forkMode;
     }
 
     public boolean isForking()
@@ -70,49 +47,14 @@ public class ForkConfiguration
         return !FORK_NEVER.equals( forkMode );
     }
 
-    public void setUseSystemClassLoader( boolean useSystemClassLoader )
-    {
-        this.useSystemClassLoader = useSystemClassLoader;
-    }
-
     public boolean isUseSystemClassLoader()
     {
         return useSystemClassLoader;
     }
 
-    public void setTempDirectory( File tempDirectory )
-    {
-        this.tempDirectory = tempDirectory;
-    }
-
-    public File getTempDirectory()
-    {
-        return tempDirectory;
-    }
-
-    public void setDebug( boolean debug )
-    {
-        this.debug = debug;
-    }
-
-    public boolean isDebug()
-    {
-        return debug;
-    }
-
-    public void setUseManifestOnlyJar( boolean useManifestOnlyJar )
-    {
-        this.useManifestOnlyJar = useManifestOnlyJar;
-    }
-
-    public boolean isUseManifestOnlyJar()
-    {
-        return useManifestOnlyJar;
-    }
-
     public boolean isManifestOnlyJarRequestedAndUsable()
     {
-        return isUseSystemClassLoader() && isUseManifestOnlyJar();
+        return isUseSystemClassLoader() && useManifestOnlyJar;
     }
 
 }

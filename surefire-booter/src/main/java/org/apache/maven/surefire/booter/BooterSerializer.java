@@ -22,8 +22,19 @@ import org.apache.maven.surefire.suite.SuiteDefinition;
 import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.StringUtils;
 
-import java.io.*;
-import java.util.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Properties;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 /**
  * Knows how to serialize and deserialize the booter configuration.
@@ -55,7 +66,6 @@ public class BooterSerializer
     public BooterConfiguration deserialize( InputStream inputStream )
         throws IOException
     {
-        boolean forked = true;
         Properties properties = loadProperties( inputStream );
         final List reports = new ArrayList();
         Object[] dirScannerParams = null;
@@ -63,15 +73,14 @@ public class BooterSerializer
         boolean childDelegation = true;
         SuiteDefinition suiteDefinition = null;
         boolean failIfNotests = false;  // todo; check this out.
+        boolean useSystemClassLoader = false; // todo check default value
+        boolean useManifestOnlyJar = false; // todo check default value
 
         SortedMap classPathUrls = new TreeMap();
 
         SortedMap surefireClassPathUrls = new TreeMap();
 
         Collection booterClassPathUrl = new ArrayList();
-
-        ForkConfiguration forkConfiguration = new ForkConfiguration();
-        forkConfiguration.setForkMode( "never" );
 
         for ( Enumeration e = properties.propertyNames(); e.hasMoreElements(); )
         {
@@ -126,13 +135,12 @@ public class BooterSerializer
             }
             else if ( "useSystemClassLoader".equals( name ) )
             {
-                boolean value = Boolean.valueOf( properties.getProperty( "useSystemClassLoader" ) ).booleanValue();
-                forkConfiguration.setUseSystemClassLoader( value );
+                useSystemClassLoader =
+                    Boolean.valueOf( properties.getProperty( "useSystemClassLoader" ) ).booleanValue();
             }
             else if ( "useManifestOnlyJar".equals( name ) )
             {
-                boolean value = Boolean.valueOf( properties.getProperty( "useManifestOnlyJar" ) ).booleanValue();
-                forkConfiguration.setUseManifestOnlyJar( value );
+                useManifestOnlyJar = Boolean.valueOf( properties.getProperty( "useManifestOnlyJar" ) ).booleanValue();
             }
             else if ( "failIfNoTests".equals( name ) )
             {
@@ -140,10 +148,15 @@ public class BooterSerializer
             }
         }
 
+        // todo check out this "never" value
+        ForkConfiguration forkConfiguration =
+            new ForkConfiguration( useSystemClassLoader, useManifestOnlyJar, "never" );
+
         ClasspathConfiguration classpathConfiguration =
             new ClasspathConfiguration( classPathUrls, surefireClassPathUrls, booterClassPathUrl, enableAssertions,
                                         childDelegation );
 
+        boolean forked = true;
         return new BooterConfiguration( forkConfiguration, classpathConfiguration, suiteDefinition, reports, forked,
                                         dirScannerParams, failIfNotests, properties );
     }
@@ -165,11 +178,11 @@ public class BooterSerializer
         properties.setProperty( "failIfNoTests", String.valueOf( booterConfiguration.isFailIfNoTests() ) );
     }
 
-    public File writePropertiesFile( String name, Properties properties, ForkConfiguration forkConfiguration )
+    public File writePropertiesFile( String name, Properties properties, boolean debug, File tempDirectory )
         throws IOException
     {
-        File file = File.createTempFile( name, "tmp", forkConfiguration.getTempDirectory() );
-        if ( !forkConfiguration.isDebug() )
+        File file = File.createTempFile( name, "tmp", tempDirectory );
+        if ( !debug )
         {
             file.deleteOnExit();
         }

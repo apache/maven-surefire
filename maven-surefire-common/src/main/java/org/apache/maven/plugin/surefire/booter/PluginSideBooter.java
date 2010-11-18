@@ -22,7 +22,6 @@ package org.apache.maven.plugin.surefire.booter;
 import org.apache.maven.surefire.booter.BooterConfiguration;
 import org.apache.maven.surefire.booter.BooterSerializer;
 import org.apache.maven.surefire.booter.ClasspathConfiguration;
-import org.apache.maven.surefire.booter.ForkConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.apache.maven.surefire.booter.SurefireExecutionException;
 import org.apache.maven.surefire.booter.SurefireReflector;
@@ -88,16 +87,16 @@ public class PluginSideBooter
         int result;
 
         final String requestedForkMode = forkConfiguration.getForkMode();
-        if ( ForkConfiguration.FORK_NEVER.equals( requestedForkMode ) )
+        if ( PluginsideForkConfiguration.FORK_NEVER.equals( requestedForkMode ) )
         {
             TestVmBooter testVmBooter = new TestVmBooter( booterConfiguration );
             result = testVmBooter.runSuitesInProcess();
         }
-        else if ( ForkConfiguration.FORK_ONCE.equals( requestedForkMode ) )
+        else if ( PluginsideForkConfiguration.FORK_ONCE.equals( requestedForkMode ) )
         {
             result = runSuitesForkOnce();
         }
-        else if ( ForkConfiguration.FORK_ALWAYS.equals( requestedForkMode ) )
+        else if ( PluginsideForkConfiguration.FORK_ALWAYS.equals( requestedForkMode ) )
         {
             result = runSuitesForkPerTestSet();
         }
@@ -246,13 +245,15 @@ public class PluginSideBooter
         try
         {
             BooterSerializer booterSerializer = new BooterSerializer();
-            surefireProperties = booterSerializer.writePropertiesFile( "surefire", properties,
-                                                                       forkConfiguration.getBooterForkConfiguration() );
+            surefireProperties =
+                booterSerializer.writePropertiesFile( "surefire", properties, forkConfiguration.isDebug(),
+                                                      forkConfiguration.getTempDirectory() );
             if ( forkConfiguration.getSystemProperties() != null )
             {
                 systemProperties =
                     booterSerializer.writePropertiesFile( "surefire", forkConfiguration.getSystemProperties(),
-                                                          forkConfiguration.getBooterForkConfiguration() );
+                                                          forkConfiguration.isDebug(),
+                                                          forkConfiguration.getTempDirectory() );
             }
         }
         catch ( IOException e )

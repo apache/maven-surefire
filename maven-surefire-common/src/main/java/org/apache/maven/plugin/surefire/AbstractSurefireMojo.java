@@ -38,7 +38,6 @@ import org.apache.maven.plugin.surefire.booter.PluginsideForkConfiguration;
 import org.apache.maven.shared.artifact.filter.PatternIncludesArtifactFilter;
 import org.apache.maven.surefire.booter.BooterConfiguration;
 import org.apache.maven.surefire.booter.ClasspathConfiguration;
-import org.apache.maven.surefire.booter.ForkConfiguration;
 import org.apache.maven.surefire.report.BriefConsoleReporter;
 import org.apache.maven.surefire.report.BriefFileReporter;
 import org.apache.maven.surefire.report.ConsoleReporter;
@@ -214,7 +213,7 @@ public abstract class AbstractSurefireMojo
 
     protected boolean isForkModeNever()
     {
-        return ForkConfiguration.FORK_NEVER.equals( getForkMode() );
+        return PluginsideForkConfiguration.FORK_NEVER.equals( getForkMode() );
     }
 
     protected BooterConfiguration createBooterConfiguration( PluginsideForkConfiguration forkConfiguration )
@@ -444,7 +443,7 @@ public abstract class AbstractSurefireMojo
             getLog().info( "Toolchain in " + getPluginName() + "-plugin: " + tc );
             if ( isForkModeNever() )
             {
-                setForkMode( ForkConfiguration.FORK_ONCE );
+                setForkMode( PluginsideForkConfiguration.FORK_ONCE );
             }
             if ( getJvm() != null )
             {
