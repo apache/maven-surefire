@@ -75,6 +75,6 @@ public class BooterSerializerTest
     {
         ClasspathConfiguration classpathConfiguration = new ClasspathConfiguration( true, true );
 
-        return new BooterConfiguration( forkConfiguration, classpathConfiguration );
+        return new BooterConfiguration( forkConfiguration, classpathConfiguration, false );
     }
 }

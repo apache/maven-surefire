@@ -223,7 +223,8 @@ public abstract class AbstractSurefireMojo
             new ClasspathConfiguration( isEnableAssertions(), isChildDelegation() );
 
         BooterConfiguration booterConfiguration =
-            new BooterConfiguration( forkConfiguration.getBooterForkConfiguration(), classpathConfiguration );
+            new BooterConfiguration( forkConfiguration.getBooterForkConfiguration(), classpathConfiguration,
+                                     isRedirectTestOutputToFile() );
 
         Artifact surefireArtifact =
             (Artifact) getPluginArtifactMap().get( "org.apache.maven.surefire:surefire-booter" );
@@ -240,58 +241,11 @@ public abstract class AbstractSurefireMojo
         {
             addArtifact( classpathConfiguration, surefireArtifact );
 
-            junitArtifact = (Artifact) getProjectArtifactMap().get( getJunitArtifactName() );
-            // SUREFIRE-378, junit can have an alternate artifact name
-            if ( junitArtifact == null && "junit:junit".equals( getJunitArtifactName() ) )
-            {
-                junitArtifact = (Artifact) getProjectArtifactMap().get( "junit:junit-dep" );
-            }
+            junitArtifact = getJunitArtifact();
 
-            // TODO: this is pretty manual, but I'd rather not require the plugin > dependencies section right now
-            testNgArtifact = (Artifact) getProjectArtifactMap().get( getTestNGArtifactName() );
+            testNgArtifact = getTestNgArtifact();
 
-            if ( testNgArtifact != null )
-            {
-                VersionRange range = VersionRange.createFromVersionSpec( "[4.7,)" );
-                if ( !range.containsVersion( new DefaultArtifactVersion( testNgArtifact.getVersion() ) ) )
-                {
-                    throw new MojoFailureException(
-                        "TestNG support requires version 4.7 or above. You have declared version " +
-                            testNgArtifact.getVersion() );
-                }
-
-                convertTestNGParameters();
-
-                if ( this.getTestClassesDirectory() != null )
-                {
-                    getProperties().setProperty( "testng.test.classpath", getTestClassesDirectory().getAbsolutePath() );
-                }
-
-                addArtifact( classpathConfiguration, testNgArtifact );
-
-                // The plugin uses a JDK based profile to select the right testng. We might be explicity using a
-                // different one since its based on the source level, not the JVM. Prune using the filter.
-                addProvider( classpathConfiguration, "surefire-testng", surefireArtifact.getBaseVersion(),
-                             testNgArtifact );
-            }
-            else if ( junitArtifact != null && isAnyJunit4( junitArtifact ) )
-            {
-                if ( isAnyConcurrencySelected() && isJunit47Compatible( junitArtifact ) )
-                {
-                    convertJunitCoreParameters();
-                    addProvider( classpathConfiguration, "surefire-junit47", surefireArtifact.getBaseVersion(), null );
-                }
-                else
-                {
-                    addProvider( classpathConfiguration, "surefire-junit4", surefireArtifact.getBaseVersion(), null );
-                }
-            }
-            else
-            {
-                // add the JUnit provider as default - it doesn't require JUnit to be present,
-                // since it supports POJO tests.
-                addProvider( classpathConfiguration, "surefire-junit", surefireArtifact.getBaseVersion(), null );
-            }
+            setCorrectProvider( classpathConfiguration, surefireArtifact, junitArtifact, testNgArtifact );
         }
         catch ( ArtifactNotFoundException e )
         {
@@ -307,10 +261,11 @@ public abstract class AbstractSurefireMojo
             throw new MojoExecutionException( "Error to resolving surefire provider dependency: " + e.getMessage(), e );
         }
 
+        final boolean isTestNg = testNgArtifact != null;
         String providerName;
         if ( getSuiteXmlFiles() != null && getSuiteXmlFiles().length > 0 && getTest() == null )
         {
-            if ( testNgArtifact == null )
+            if ( !isTestNg )
             {
                 throw new MojoExecutionException( "suiteXmlFiles is configured, but there is no TestNG dependency" );
             }
@@ -324,54 +279,14 @@ public abstract class AbstractSurefireMojo
         }
         else
         {
-            List includes;
-            List excludes;
+            List includes = getIncludeList();
+            List excludes = getExcludeList();
 
             if ( getTest() != null )
             {
-                // Check to see if we are running a single test. The raw parameter will
-                // come through if it has not been set.
-
-                // FooTest -> **/FooTest.java
-
-                includes = new ArrayList();
-
-                excludes = new ArrayList();
-
                 if ( getFailIfNoTests() == null )
                 {
                     setFailIfNoTests( Boolean.TRUE );
-                }
-
-                String[] testRegexes = StringUtils.split( getTest(), "," );
-
-                for ( int i = 0; i < testRegexes.length; i++ )
-                {
-                    String testRegex = testRegexes[i];
-                    if ( testRegex.endsWith( ".java" ) )
-                    {
-                        testRegex = testRegex.substring( 0, testRegex.length() - 5 );
-                    }
-                    // Allow paths delimited by '.' or '/'
-                    testRegex = testRegex.replace( '.', '/' );
-                    includes.add( "**/" + testRegex + ".java" );
-                }
-            }
-            else
-            {
-                includes = this.getIncludes();
-
-                excludes = this.getExcludes();
-
-                // defaults here, qdox doesn't like the end javadoc value
-                // Have to wrap in an ArrayList as surefire expects an ArrayList instead of a List for some reason
-                if ( includes == null || includes.size() == 0 )
-                {
-                    includes = new ArrayList( Arrays.asList( getDefaultIncludes() ) );
-                }
-                if ( excludes == null || excludes.size() == 0 )
-                {
-                    excludes = new ArrayList( Arrays.asList( new String[]{ "**/*$*" } ) );
                 }
             }
 
@@ -457,11 +372,153 @@ public abstract class AbstractSurefireMojo
 
         booterConfiguration.setFailIfNoTests( getFailIfNoTests() != null && getFailIfNoTests().booleanValue() );
 
-        booterConfiguration.setRedirectTestOutputToFile( isRedirectTestOutputToFile() );
-
         addReporters( booterConfiguration, forkConfiguration.isForking() );
 
         return booterConfiguration;
+    }
+
+    private List getExcludeList()
+    {
+        List excludes;
+        if ( getTest() != null )
+        {
+            // Check to see if we are running a single test. The raw parameter will
+            // come through if it has not been set.
+            // FooTest -> **/FooTest.java
+
+            excludes = new ArrayList();
+        }
+        else
+        {
+
+            excludes = this.getExcludes();
+
+            // defaults here, qdox doesn't like the end javadoc value
+            // Have to wrap in an ArrayList as surefire expects an ArrayList instead of a List for some reason
+            if ( excludes == null || excludes.size() == 0 )
+            {
+                excludes = new ArrayList( Arrays.asList( new String[]{ "**/*$*" } ) );
+            }
+        }
+        return excludes;
+    }
+
+    private List getIncludeList()
+    {
+        List includes;
+        if ( getTest() != null )
+        {
+            // Check to see if we are running a single test. The raw parameter will
+            // come through if it has not been set.
+
+            // FooTest -> **/FooTest.java
+
+            includes = new ArrayList();
+
+            String[] testRegexes = StringUtils.split( getTest(), "," );
+
+            for ( int i = 0; i < testRegexes.length; i++ )
+            {
+                String testRegex = testRegexes[i];
+                if ( testRegex.endsWith( ".java" ) )
+                {
+                    testRegex = testRegex.substring( 0, testRegex.length() - 5 );
+                }
+                // Allow paths delimited by '.' or '/'
+                testRegex = testRegex.replace( '.', '/' );
+                includes.add( "**/" + testRegex + ".java" );
+            }
+        }
+        else
+        {
+            includes = this.getIncludes();
+
+            // defaults here, qdox doesn't like the end javadoc value
+            // Have to wrap in an ArrayList as surefire expects an ArrayList instead of a List for some reason
+            if ( includes == null || includes.size() == 0 )
+            {
+                includes = new ArrayList( Arrays.asList( getDefaultIncludes() ) );
+            }
+        }
+        return includes;
+    }
+
+    private void setCorrectProvider( ClasspathConfiguration classpathConfiguration, Artifact surefireArtifact,
+                                     Artifact junitArtifact, Artifact testNgArtifact )
+        throws ArtifactNotFoundException, ArtifactResolutionException, MojoExecutionException
+    {
+        if ( testNgArtifact != null )
+        {
+            setTestNgProvider( classpathConfiguration, surefireArtifact, testNgArtifact );
+        }
+        else if ( junitArtifact != null && isAnyJunit4( junitArtifact ) )
+        {
+            if ( isAnyConcurrencySelected() && isJunit47Compatible( junitArtifact ) )
+            {
+                convertJunitCoreParameters();
+                setProvider( classpathConfiguration, "surefire-junit47", surefireArtifact.getBaseVersion(), null );
+            }
+            else
+            {
+                setProvider( classpathConfiguration, "surefire-junit4", surefireArtifact.getBaseVersion(), null );
+            }
+        }
+        else
+        {
+            // add the JUnit provider as default - it doesn't require JUnit to be present,
+            // since it supports POJO tests.
+            setProvider( classpathConfiguration, "surefire-junit", surefireArtifact.getBaseVersion(), null );
+        }
+    }
+
+    private void setTestNgProvider( ClasspathConfiguration classpathConfiguration, Artifact surefireArtifact,
+                                    Artifact testNgArtifact )
+        throws ArtifactNotFoundException, ArtifactResolutionException
+    {
+        convertTestNGParameters();
+
+        if ( this.getTestClassesDirectory() != null )
+        {
+            getProperties().setProperty( "testng.test.classpath", getTestClassesDirectory().getAbsolutePath() );
+        }
+
+        addArtifact( classpathConfiguration, testNgArtifact );
+
+        // The plugin uses a JDK based profile to select the right testng. We might be explicity using a
+        // different one since its based on the source level, not the JVM. Prune using the filter.
+        setProvider( classpathConfiguration, "surefire-testng", surefireArtifact.getBaseVersion(), testNgArtifact );
+    }
+
+    private Artifact getTestNgArtifact()
+        throws MojoFailureException, InvalidVersionSpecificationException
+    {
+        // TODO: this is pretty manual, but I'd rather not require the plugin > dependencies section right now
+        Artifact artifact = (Artifact) getProjectArtifactMap().get( getTestNGArtifactName() );
+
+        if ( artifact != null )
+        {
+            VersionRange range = VersionRange.createFromVersionSpec( "[4.7,)" );
+            if ( !range.containsVersion( new DefaultArtifactVersion( artifact.getVersion() ) ) )
+            {
+                throw new MojoFailureException(
+                    "TestNG support requires version 4.7 or above. You have declared version " +
+                        artifact.getVersion() );
+            }
+        }
+        return artifact;
+
+    }
+
+    private Artifact getJunitArtifact()
+    {
+        Artifact junitArtifact;
+        junitArtifact = (Artifact) getProjectArtifactMap().get( getJunitArtifactName() );
+        // SUREFIRE-378, junit can have an alternate artifact name
+        if ( junitArtifact == null && "junit:junit".equals( getJunitArtifactName() ) )
+        {
+            junitArtifact = (Artifact) getProjectArtifactMap().get( "junit:junit-dep" );
+        }
+        return junitArtifact;
     }
 
     protected PluginsideForkConfiguration getForkConfiguration()
@@ -632,7 +689,8 @@ public abstract class AbstractSurefireMojo
         }
     }
 
-    private void addProvider( ClasspathConfiguration classpathConfiguration, String provider, String version,
+
+    private void setProvider( ClasspathConfiguration classpathConfiguration, String provider, String version,
                               Artifact filteredArtifact )
         throws ArtifactNotFoundException, ArtifactResolutionException
     {

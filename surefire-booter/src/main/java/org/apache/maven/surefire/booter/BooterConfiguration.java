@@ -56,21 +56,21 @@ public class BooterConfiguration
 
     private boolean failIfNoTests = false;
 
-    private boolean redirectTestOutputToFile = false;
+    private final boolean redirectTestOutputToFile;
 
     private Properties properties; // todo: Zap out of here !
 
     Object[] dirScannerParams;
 
-    /**
-     * This field is set to true if it's running from main. It's used to help decide what classloader to use.
-     */
-    private boolean forked;
+    private final boolean isInForkedVm;
 
-    public BooterConfiguration( ForkConfiguration forkConfiguration, ClasspathConfiguration classpathConfiguration )
+    public BooterConfiguration( ForkConfiguration forkConfiguration, ClasspathConfiguration classpathConfiguration,
+                                boolean redirectTestOutputToFile)
     {
         this.forkConfiguration = forkConfiguration;
         this.classpathConfiguration = classpathConfiguration;
+        this.isInForkedVm = false;
+        this.redirectTestOutputToFile = redirectTestOutputToFile;
     }
 
     public BooterConfiguration( ForkConfiguration forkConfiguration, ClasspathConfiguration classpathConfiguration,
@@ -81,10 +81,11 @@ public class BooterConfiguration
         this.classpathConfiguration = classpathConfiguration;
         this.suiteDefinition = suiteDefinition;
         this.reports.addAll( reports );
-        this.forked = forked;
+        this.isInForkedVm = forked;
         this.dirScannerParams = dirScannerParams;
         this.failIfNoTests = failIfNoTests;
-        this.properties = properties; // Hack hack. This must go
+        this.redirectTestOutputToFile = false;
+        this.properties = properties; // Todo: Hack hack. This must go
     }
 
 
@@ -95,7 +96,7 @@ public class BooterConfiguration
 
     public boolean useSystemClassLoader()
     {
-        return forkConfiguration.isUseSystemClassLoader() && ( forked || forkConfiguration.isForking() );
+        return forkConfiguration.isUseSystemClassLoader() && ( isInForkedVm || forkConfiguration.isForking() );
     }
 
 
@@ -138,17 +139,6 @@ public class BooterConfiguration
     public void setFailIfNoTests( boolean failIfNoTests )
     {
         this.failIfNoTests = failIfNoTests;
-    }
-
-    /**
-     * When forking, setting this to true will make the test output to be saved in a file instead of showing it on the
-     * standard output
-     *
-     * @param redirectTestOutputToFile to redirect test output to file
-     */
-    public void setRedirectTestOutputToFile( boolean redirectTestOutputToFile )
-    {
-        this.redirectTestOutputToFile = redirectTestOutputToFile;
     }
 
     public void setDirectoryScannerOptions( File testClassesDirectory, List includes, List excludes )
