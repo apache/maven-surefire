@@ -33,13 +33,66 @@ import java.util.Properties;
  * <p/>
  * Deals with deserialization of the booter wire-level protocol
  *
+ * Todo: Look at releationship between this class and BooterSerializer (BooterDeserializer?)
+ *
  * @author Jason van Zyl
  * @author Emmanuel Venisse
  * @author Kristian Rosenvold
  * @version $Id$
  */
-public class RemoteBooter
+public class ForkedBooter
 {
+
+    /**
+     * This method is invoked when Surefire is forked - this method parses and organizes the arguments passed to it and
+     * then calls the Surefire class' run method. <p/> The system exit code will be 1 if an exception is thrown.
+     *
+     * @param args Commandline arguments
+     * @throws Throwable Upon throwables
+     */
+    public static void main( String[] args )
+        throws Throwable
+    {
+        try
+        {
+            if ( args.length > 1 )
+            {
+                SystemPropertyManager.setSystemProperties( new File( args[1] ) );
+            }
+
+            File surefirePropertiesFile = new File( args[0] );
+            InputStream stream = surefirePropertiesFile.exists() ? new FileInputStream( surefirePropertiesFile ) : null;
+            BooterDeserializer booterDeserializer = new BooterDeserializer();
+            BooterConfiguration booterConfiguration = booterDeserializer.deserialize( stream );
+            Properties p = booterConfiguration.getProperties();
+
+            SurefireStarter booter = new SurefireStarter( booterConfiguration );
+
+            String testSet = p.getProperty( "testSet" );
+            int result;
+            if ( testSet != null )
+            {
+                result = booter.runSuitesInProcess( testSet, p );
+            }
+            else
+            {
+                result = booter.runSuitesInProcess();
+            }
+
+            booterDeserializer.writePropertiesFile( surefirePropertiesFile, "surefire", p );
+
+            // noinspection CallToSystemExit
+            System.exit( result );
+        }
+        catch ( Throwable t )
+        {
+            // Just throwing does getMessage() and a local trace - we want to call printStackTrace for a full trace
+            // noinspection UseOfSystemOutOrSystemErr
+            t.printStackTrace( System.err );
+            // noinspection ProhibitedExceptionThrown,CallToSystemExit
+            System.exit( 1 );
+        }
+    }
 
     private static Properties loadProperties( File file )
         throws IOException
@@ -72,57 +125,6 @@ public class RemoteBooter
             String key = (String) i.next();
 
             System.setProperty( key, p.getProperty( key ) );
-        }
-    }
-
-    /**
-     * This method is invoked when Surefire is forked - this method parses and organizes the arguments passed to it and
-     * then calls the Surefire class' run method. <p/> The system exit code will be 1 if an exception is thrown.
-     *
-     * @param args Commandline arguments
-     * @throws Throwable Upon throwables
-     */
-    public static void main( String[] args )
-        throws Throwable
-    {
-        try
-        {
-            if ( args.length > 1 )
-            {
-                setSystemProperties( new File( args[1] ) );
-            }
-
-            File surefirePropertiesFile = new File( args[0] );
-            InputStream stream = surefirePropertiesFile.exists() ? new FileInputStream( surefirePropertiesFile ) : null;
-            BooterSerializer booterSerializer = new BooterSerializer();
-            BooterConfiguration booterConfiguration = booterSerializer.deserialize( stream );
-            Properties p = booterConfiguration.getProperties();
-
-            TestVmBooter booter = new TestVmBooter( booterConfiguration );
-
-            String testSet = p.getProperty( "testSet" );
-            int result;
-            if ( testSet != null )
-            {
-                result = booter.runSuitesInProcess( testSet, p );
-            }
-            else
-            {
-                result = booter.runSuitesInProcess();
-            }
-
-            booterSerializer.writePropertiesFile( surefirePropertiesFile, "surefire", p );
-
-            // noinspection CallToSystemExit
-            System.exit( result );
-        }
-        catch ( Throwable t )
-        {
-            // Just throwing does getMessage() and a local trace - we want to call printStackTrace for a full trace
-            // noinspection UseOfSystemOutOrSystemErr
-            t.printStackTrace( System.err );
-            // noinspection ProhibitedExceptionThrown,CallToSystemExit
-            System.exit( 1 );
         }
     }
 }

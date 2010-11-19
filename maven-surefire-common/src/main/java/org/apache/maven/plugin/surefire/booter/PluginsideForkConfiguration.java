@@ -20,7 +20,7 @@ package org.apache.maven.plugin.surefire.booter;
  */
 
 import org.apache.maven.surefire.booter.ForkConfiguration;
-import org.apache.maven.surefire.booter.RemoteBooter;
+import org.apache.maven.surefire.booter.ForkedBooter;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.apache.maven.surefire.util.UrlUtils;
 import org.codehaus.plexus.util.StringUtils;
@@ -225,7 +225,7 @@ public class PluginsideForkConfiguration
 
             cli.createArg().setValue( StringUtils.join( classPath.iterator(), File.pathSeparator ) );
 
-            cli.createArg().setValue( RemoteBooter.class.getName() );
+            cli.createArg().setValue( ForkedBooter.class.getName() );
         }
 
         cli.setWorkingDirectory( workingDirectory.getAbsolutePath() );
@@ -269,7 +269,7 @@ public class PluginsideForkConfiguration
 
         man.getMainAttributes().putValue( "Manifest-Version", "1.0" );
         man.getMainAttributes().putValue( "Class-Path", cp.trim() );
-        man.getMainAttributes().putValue( "Main-Class", RemoteBooter.class.getName() );
+        man.getMainAttributes().putValue( "Main-Class", ForkedBooter.class.getName() );
 
         man.write( jos );
         jos.close();

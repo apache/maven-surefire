@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.booter;
+package org.apache.maven.plugin.surefire.booter;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -26,7 +26,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Properties;
 
+import junit.framework.Assert;
 import junit.framework.TestCase;
+import org.apache.maven.surefire.booter.BooterDeserializer;
 
 public class BooterConversionTest
     extends TestCase
@@ -38,7 +40,7 @@ public class BooterConversionTest
     {
         convert = BooterSerializer.class.getDeclaredMethod( "convert", new Class[]{ Object.class } );
         convert.setAccessible( true );
-        constructParamObjects = BooterSerializer.class.getDeclaredMethod( "constructParamObjects",
+        constructParamObjects = BooterDeserializer.class.getDeclaredMethod( "constructParamObjects",
                                                                           new Class[]{ String.class, String.class } );
         constructParamObjects.setAccessible( true );
     }
@@ -109,8 +111,8 @@ public class BooterConversionTest
     {
         String serialized = serialize( o );
         Object[] output = deserialize( serialized, o.getClass().getName() );
-        assertEquals( "Wrong number of output elements: " + Arrays.asList( output ), 1, output.length );
-        assertEquals( o, output[0] );
+        Assert.assertEquals( "Wrong number of output elements: " + Arrays.asList( output ), 1, output.length );
+        Assert.assertEquals( o, output[0] );
     }
 
     public void doTestArray( Object[] o )
@@ -118,16 +120,16 @@ public class BooterConversionTest
     {
         String serialized = serialize( o );
         Object[] output = deserialize( serialized, o.getClass().getName() );
-        assertEquals( "Wrong number of output elements: " + Arrays.asList( output ), 1, output.length );
+        Assert.assertEquals( "Wrong number of output elements: " + Arrays.asList( output ), 1, output.length );
         assertArrayEquals( "Deserialized array didn't match", o, (Object[]) output[0] );
     }
 
     private void assertArrayEquals( String message, Object[] expected, Object[] actual )
     {
-        assertEquals( message + "; wrong number of elements", expected.length, actual.length );
+        Assert.assertEquals( message + "; wrong number of elements", expected.length, actual.length );
         for ( int i = 0; i < expected.length; i++ )
         {
-            assertEquals( message + "; element " + i + " differs", expected[i], actual[i] );
+            Assert.assertEquals( message + "; element " + i + " differs", expected[i], actual[i] );
         }
     }
 

@@ -22,19 +22,21 @@ package org.apache.maven.surefire.booter;
 import java.util.Properties;
 
 /**
- * The part of the booter that is always guaranteed to be in the
+ * Invokes surefire with the correct classloader setup.
+ *
+ * This part of the booter that is always guaranteed to be in the
  * same vm as the tests will be run in.
  *
  * @author Jason van Zyl
  * @author Emmanuel Venisse
  * @version $Id$
  */
-public class TestVmBooter
+public class SurefireStarter
 {
 
     private final BooterConfiguration booterConfiguration;
 
-    public TestVmBooter( BooterConfiguration booterConfiguration )
+    public SurefireStarter( BooterConfiguration booterConfiguration )
     {
         this.booterConfiguration = booterConfiguration;
     }

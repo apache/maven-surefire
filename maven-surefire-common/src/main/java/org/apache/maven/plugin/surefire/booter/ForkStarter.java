@@ -20,12 +20,11 @@ package org.apache.maven.plugin.surefire.booter;
  */
 
 import org.apache.maven.surefire.booter.BooterConfiguration;
-import org.apache.maven.surefire.booter.BooterSerializer;
 import org.apache.maven.surefire.booter.ClasspathConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.apache.maven.surefire.booter.SurefireExecutionException;
 import org.apache.maven.surefire.booter.SurefireReflector;
-import org.apache.maven.surefire.booter.TestVmBooter;
+import org.apache.maven.surefire.booter.SurefireStarter;
 import org.apache.maven.surefire.booter.output.FileOutputConsumerProxy;
 import org.apache.maven.surefire.booter.output.OutputConsumer;
 import org.apache.maven.surefire.booter.output.StandardOutputConsumer;
@@ -52,16 +51,18 @@ import java.util.Properties;
 
 
 /**
- * The part of the booter that lives only on the plugin-side (not present in remote vms)
+ * Starts the fork or runs in-process.
+ *
+ * Lives only on the plugin-side (not present in remote vms)
  * <p/>
  * Knows how to fork new vms and also how to delegate non-forking invocation to TestVmBooter directly
  *
  * @author Jason van Zyl
  * @author Emmanuel Venisse
- * @author Kristian Rosenvold
+ * @author Kristian Rosenvold    
  * @version $Id$
  */
-public class PluginSideBooter
+public class ForkStarter
 {
 
     private int forkedProcessTimeoutInSeconds = 0;
@@ -73,7 +74,7 @@ public class PluginSideBooter
     private File reportsDirectory;
 
 
-    public PluginSideBooter( BooterConfiguration booterConfiguration, File reportsDirectory,
+    public ForkStarter( BooterConfiguration booterConfiguration, File reportsDirectory,
                              PluginsideForkConfiguration forkConfiguration )
     {
         this.forkConfiguration = forkConfiguration;
@@ -89,7 +90,7 @@ public class PluginSideBooter
         final String requestedForkMode = forkConfiguration.getForkMode();
         if ( PluginsideForkConfiguration.FORK_NEVER.equals( requestedForkMode ) )
         {
-            TestVmBooter testVmBooter = new TestVmBooter( booterConfiguration );
+            SurefireStarter testVmBooter = new SurefireStarter( booterConfiguration );
             result = testVmBooter.runSuitesInProcess();
         }
         else if ( PluginsideForkConfiguration.FORK_ONCE.equals( requestedForkMode ) )

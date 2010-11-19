@@ -26,7 +26,7 @@ import org.apache.maven.artifact.resolver.ArtifactResolver;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugin.surefire.booter.PluginSideBooter;
+import org.apache.maven.plugin.surefire.booter.ForkStarter;
 import org.apache.maven.plugin.surefire.booter.PluginsideForkConfiguration;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.surefire.booter.BooterConfiguration;
@@ -575,7 +575,7 @@ public class SurefirePlugin
             getLog().info(
                 StringUtils.capitalizeFirstLetter( getPluginName() ) + " report directory: " + getReportsDirectory() );
 
-            PluginSideBooter booter = new PluginSideBooter( booterConfiguration, reportsDirectory, forkConfiguration );
+            ForkStarter booter = new ForkStarter( booterConfiguration, reportsDirectory, forkConfiguration );
             booter.setForkedProcessTimeoutInSeconds( getForkedProcessTimeoutInSeconds() );
 
             int result;

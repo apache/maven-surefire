@@ -89,6 +89,7 @@ public class BooterConfiguration
     }
 
 
+
     public ClasspathConfiguration getClasspathConfiguration()
     {
         return classpathConfiguration;
@@ -148,10 +149,10 @@ public class BooterConfiguration
 
     public File getBaseDir()
     {
-        return (File) getDirScannerParams()[0];
+        return (File) getDirScannerParamsPriv()[0];
     }
 
-    private Object[] getDirScannerParams()
+    private Object[] getDirScannerParamsPriv()
     {
         if ( dirScannerParams == null )
         {
@@ -160,14 +161,20 @@ public class BooterConfiguration
         return dirScannerParams;
     }
 
+
+    public Object[] getDirScannerParams()
+    {
+        return dirScannerParams;
+    }
+
     public List getIncludes()
     {
-        return (List) getDirScannerParams()[1];
+        return (List) getDirScannerParamsPriv()[1];
     }
 
     public List getExcludes()
     {
-        return (List) getDirScannerParams()[2];
+        return (List) getDirScannerParamsPriv()[2];
     }
 
     public void setSuiteDefinition( SuiteDefinition suiteDefinition )

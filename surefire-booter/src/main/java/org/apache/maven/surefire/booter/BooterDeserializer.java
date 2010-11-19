@@ -23,7 +23,6 @@ import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.StringUtils;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -50,7 +49,7 @@ import java.util.TreeMap;
  * @author Kristian Rosenvold
  * @version $Id$
  */
-public class BooterSerializer
+public class BooterDeserializer
 {
     private static final String TEST_SUITE_PROPERTY_PREFIX = "testSuite.";
 
@@ -66,7 +65,7 @@ public class BooterSerializer
     public BooterConfiguration deserialize( InputStream inputStream )
         throws IOException
     {
-        Properties properties = loadProperties( inputStream );
+        Properties properties = SystemPropertyManager.loadProperties( inputStream );
         final List reports = new ArrayList();
         Object[] dirScannerParams = null;
         boolean enableAssertions = false;
@@ -161,37 +160,6 @@ public class BooterSerializer
                                         dirScannerParams, failIfNotests, properties );
     }
 
-    public void setForkProperties( Properties properties, List testSuites, BooterConfiguration booterConfiguration,
-                                   ForkConfiguration forkConfiguration )
-    {
-        addPropertiesForTypeHolder( booterConfiguration.getReports(), properties, REPORT_PROPERTY_PREFIX );
-        addPropertiesForTypeHolder( testSuites, properties, TEST_SUITE_PROPERTY_PREFIX );
-        List params = new ArrayList();
-        params.add( new Object[]{ "directoryScannerOptions", booterConfiguration.dirScannerParams } ); // todo
-        addPropertiesForTypeHolder( params, properties, DIRSCANNER_PROPERTY_PREFIX );
-
-        booterConfiguration.getClasspathConfiguration().setForkProperties( properties );
-
-        properties.setProperty( "useSystemClassLoader", String.valueOf( forkConfiguration.isUseSystemClassLoader() ) );
-        properties.setProperty( "useManifestOnlyJar",
-                                String.valueOf( forkConfiguration.isManifestOnlyJarRequestedAndUsable() ) );
-        properties.setProperty( "failIfNoTests", String.valueOf( booterConfiguration.isFailIfNoTests() ) );
-    }
-
-    public File writePropertiesFile( String name, Properties properties, boolean debug, File tempDirectory )
-        throws IOException
-    {
-        File file = File.createTempFile( name, "tmp", tempDirectory );
-        if ( !debug )
-        {
-            file.deleteOnExit();
-        }
-
-        writePropertiesFile( file, name, properties );
-
-        return file;
-    }
-
     void writePropertiesFile( File file, String name, Properties properties )
         throws IOException
     {
@@ -204,63 +172,6 @@ public class BooterSerializer
         finally
         {
             IOUtil.close( out );
-        }
-    }
-
-    private void addPropertiesForTypeHolder( List typeHolderList, Properties properties, String propertyPrefix )
-    {
-        for ( int i = 0; i < typeHolderList.size(); i++ )
-        {
-            Object[] report = (Object[]) typeHolderList.get( i );
-
-            String className = (String) report[0];
-            Object[] params = (Object[]) report[1];
-
-            properties.setProperty( propertyPrefix + i, className );
-
-            if ( params != null )
-            {
-                String paramProperty = convert( params[0] );
-                String typeProperty = params[0].getClass().getName();
-                for ( int j = 1; j < params.length; j++ )
-                {
-                    paramProperty += "|";
-                    typeProperty += "|";
-                    if ( params[j] != null )
-                    {
-                        paramProperty += convert( params[j] );
-                        typeProperty += params[j].getClass().getName();
-                    }
-                }
-                properties.setProperty( propertyPrefix + i + PARAMS_SUFIX, paramProperty );
-                properties.setProperty( propertyPrefix + i + TYPES_SUFIX, typeProperty );
-            }
-        }
-    }
-
-    private static String convert( Object param )
-    {
-        if ( param instanceof File[] )
-        {
-            File[] files = (File[]) param;
-            return "[" + StringUtils.join( files, "," ) + "]";
-        }
-        else if ( param instanceof Properties )
-        {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            try
-            {
-                ( (Properties) param ).store( baos, "" );
-                return new String( baos.toByteArray(), "8859_1" );
-            }
-            catch ( Exception e )
-            {
-                throw new RuntimeException( "bug in property conversion", e );
-            }
-        }
-        else
-        {
-            return param.toString();
         }
     }
 
@@ -282,27 +193,6 @@ public class BooterSerializer
             list.add( stringArray[i].trim() );
         }
         return list;
-    }
-
-    /*
-    Loads the properties, closes the stream
-     */
-
-    private static Properties loadProperties( InputStream inStream )
-        throws IOException
-    {
-        Properties p = new Properties();
-
-        try
-        {
-            p.load( inStream );
-        }
-        finally
-        {
-            IOUtil.close( inStream );
-        }
-
-        return p;
     }
 
     private static Object[] constructParamObjects( String paramProperty, String typeProperty )
@@ -379,4 +269,5 @@ public class BooterSerializer
         }
         return paramObjects;
     }
+
 }

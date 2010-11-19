@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.booter;
+package org.apache.maven.plugin.surefire.booter;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -18,7 +18,12 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
+import junit.framework.Assert;
 import junit.framework.TestCase;
+import org.apache.maven.surefire.booter.BooterConfiguration;
+import org.apache.maven.surefire.booter.BooterDeserializer;
+import org.apache.maven.surefire.booter.ClasspathConfiguration;
+import org.apache.maven.surefire.booter.ForkConfiguration;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -28,9 +33,10 @@ import java.util.List;
 import java.util.Properties;
 
 /**
+ * Performs roundtrip testing of serialization/deserialization
  * @author Kristian Rosenvold
  */
-public class BooterSerializerTest
+public class BooterDeserializerTest
     extends TestCase
 {
 
@@ -60,13 +66,14 @@ public class BooterSerializerTest
         booterSerializer.setForkProperties( props, new ArrayList(), booterConfiguration, forkConfiguration );
         final File propsTest = booterSerializer.writePropertiesFile( "propsTest", props, false, null );
 
-        BooterConfiguration read = booterSerializer.deserialize( new FileInputStream( propsTest ) );
+        BooterDeserializer booterDeserializer = new BooterDeserializer();
+        BooterConfiguration read = booterDeserializer.deserialize( new FileInputStream( propsTest ) );
 
-        assertEquals( aDir, read.getBaseDir() );
-        assertEquals( includes.get( 0 ), read.getIncludes().get( 0 ) );
-        assertEquals( includes.get( 1 ), read.getIncludes().get( 1 ) );
-        assertEquals( excludes.get( 0 ), read.getExcludes().get( 0 ) );
-        assertEquals( excludes.get( 1 ), read.getExcludes().get( 1 ) );
+        Assert.assertEquals( aDir, read.getBaseDir() );
+        Assert.assertEquals( includes.get( 0 ), read.getIncludes().get( 0 ) );
+        Assert.assertEquals( includes.get( 1 ), read.getIncludes().get( 1 ) );
+        Assert.assertEquals( excludes.get( 0 ), read.getExcludes().get( 0 ) );
+        Assert.assertEquals( excludes.get( 1 ), read.getExcludes().get( 1 ) );
 
     }
 
