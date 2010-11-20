@@ -25,26 +25,17 @@ package org.apache.maven.surefire.booter;
  * @author <a href="mailto:brett@apache.org">Brett Porter</a>
  * @author <a href="mailto:kenney@apache.org">Kenney Westerhof</a>
  */
-public class ForkConfiguration
+public class ClassLoaderConfiguration
 {
-    public static final String FORK_NEVER = "never";
-
-    private final String forkMode;
 
     private final boolean useSystemClassLoader;
 
     private final boolean useManifestOnlyJar;
 
-    public ForkConfiguration( boolean useSystemClassLoader, boolean useManifestOnlyJar, String forkMode )
+    public ClassLoaderConfiguration( boolean useSystemClassLoader, boolean useManifestOnlyJar )
     {
         this.useSystemClassLoader = useSystemClassLoader;
         this.useManifestOnlyJar = useManifestOnlyJar;
-        this.forkMode = forkMode;
-    }
-
-    public boolean isForking()
-    {
-        return !FORK_NEVER.equals( forkMode );
     }
 
     public boolean isUseSystemClassLoader()
@@ -56,5 +47,4 @@ public class ForkConfiguration
     {
         return isUseSystemClassLoader() && useManifestOnlyJar;
     }
-
 }

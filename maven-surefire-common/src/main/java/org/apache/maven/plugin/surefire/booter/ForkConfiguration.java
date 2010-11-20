@@ -19,7 +19,7 @@ package org.apache.maven.plugin.surefire.booter;
  * under the License.
  */
 
-import org.apache.maven.surefire.booter.ForkConfiguration;
+import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
 import org.apache.maven.surefire.booter.ForkedBooter;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.apache.maven.surefire.util.UrlUtils;
@@ -45,13 +45,13 @@ import java.util.jar.Manifest;
  * @author <a href="mailto:kenney@apache.org">Kenney Westerhof</a>
  * @author <a href="mailto:krosenvold@apache.org">Kristian Rosenvold</a>
  */
-public class PluginsideForkConfiguration
+public class ForkConfiguration
 {
     public static final String FORK_ONCE = "once";
 
     public static final String FORK_ALWAYS = "always";
 
-    public static final String FORK_NEVER = ForkConfiguration.FORK_NEVER;
+    public static final String FORK_NEVER = "never";
 
     private String forkMode;
 
@@ -75,9 +75,9 @@ public class PluginsideForkConfiguration
 
     private String debugLine;
 
-    public ForkConfiguration getBooterForkConfiguration()
+    public ClassLoaderConfiguration getClassLoaderConfiguration()
     {
-        return new ForkConfiguration(isUseSystemClassLoader() , isUseManifestOnlyJar(), forkMode);
+        return new ClassLoaderConfiguration(isUseSystemClassLoader() , isUseManifestOnlyJar() );
     }
 
     public void setForkMode( String forkMode )

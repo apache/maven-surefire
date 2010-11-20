@@ -69,13 +69,13 @@ public class ForkStarter
 
     private final BooterConfiguration booterConfiguration;
 
-    private final PluginsideForkConfiguration forkConfiguration;
+    private final ForkConfiguration forkConfiguration;
 
     private File reportsDirectory;
 
 
     public ForkStarter( BooterConfiguration booterConfiguration, File reportsDirectory,
-                             PluginsideForkConfiguration forkConfiguration )
+                             ForkConfiguration forkConfiguration )
     {
         this.forkConfiguration = forkConfiguration;
         this.booterConfiguration = booterConfiguration;
@@ -88,16 +88,16 @@ public class ForkStarter
         int result;
 
         final String requestedForkMode = forkConfiguration.getForkMode();
-        if ( PluginsideForkConfiguration.FORK_NEVER.equals( requestedForkMode ) )
+        if ( ForkConfiguration.FORK_NEVER.equals( requestedForkMode ) )
         {
             SurefireStarter testVmBooter = new SurefireStarter( booterConfiguration );
             result = testVmBooter.runSuitesInProcess();
         }
-        else if ( PluginsideForkConfiguration.FORK_ONCE.equals( requestedForkMode ) )
+        else if ( ForkConfiguration.FORK_ONCE.equals( requestedForkMode ) )
         {
             result = runSuitesForkOnce();
         }
-        else if ( PluginsideForkConfiguration.FORK_ALWAYS.equals( requestedForkMode ) )
+        else if ( ForkConfiguration.FORK_ALWAYS.equals( requestedForkMode ) )
         {
             result = runSuitesForkPerTestSet();
         }
@@ -217,7 +217,7 @@ public class ForkStarter
 
         BooterSerializer booterSerializer = new BooterSerializer();
         booterSerializer.setForkProperties( properties, testSuites, booterConfiguration,
-                                            forkConfiguration.getBooterForkConfiguration() );
+                                            forkConfiguration.getClassLoaderConfiguration() );
 
         return fork( properties, showHeading, showFooter );
     }
@@ -228,7 +228,7 @@ public class ForkStarter
     {
         BooterSerializer booterSerializer = new BooterSerializer();
         booterSerializer.setForkProperties( properties, Collections.singletonList( testSuite ), booterConfiguration,
-                                            forkConfiguration.getBooterForkConfiguration() );
+                                            forkConfiguration.getClassLoaderConfiguration() );
 
         if ( testSet instanceof String )
         {

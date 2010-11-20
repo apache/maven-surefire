@@ -46,7 +46,7 @@ public class BooterConfiguration
 
     public static final int NO_TESTS_EXIT_CODE = 254;
 
-    private final ForkConfiguration forkConfiguration;
+    private final ClassLoaderConfiguration classLoaderConfiguration;
 
     private final ClasspathConfiguration classpathConfiguration;
 
@@ -60,32 +60,36 @@ public class BooterConfiguration
 
     private Properties properties; // todo: Zap out of here !
 
+    private final boolean isForkRequested;
+
     Object[] dirScannerParams;
 
     private final boolean isInForkedVm;
 
-    public BooterConfiguration( ForkConfiguration forkConfiguration, ClasspathConfiguration classpathConfiguration,
+    public BooterConfiguration( boolean isForkRequested, ClassLoaderConfiguration classLoaderConfiguration,
+                                ClasspathConfiguration classpathConfiguration,
                                 boolean redirectTestOutputToFile)
     {
-        this.forkConfiguration = forkConfiguration;
+        this.classLoaderConfiguration = classLoaderConfiguration;
         this.classpathConfiguration = classpathConfiguration;
         this.isInForkedVm = false;
+        this.isForkRequested = isForkRequested;
         this.redirectTestOutputToFile = redirectTestOutputToFile;
     }
 
-    public BooterConfiguration( ForkConfiguration forkConfiguration, ClasspathConfiguration classpathConfiguration,
-                                SuiteDefinition suiteDefinition, List reports, boolean forked,
-                                Object[] dirScannerParams, boolean failIfNoTests, Properties properties )
+    public BooterConfiguration( ClassLoaderConfiguration classLoaderConfiguration, ClasspathConfiguration classpathConfiguration,
+                                SuiteDefinition suiteDefinition, List reports, Object[] dirScannerParams, boolean failIfNoTests, Properties properties )
     {
-        this.forkConfiguration = forkConfiguration;
+        this.classLoaderConfiguration = classLoaderConfiguration;
         this.classpathConfiguration = classpathConfiguration;
         this.suiteDefinition = suiteDefinition;
         this.reports.addAll( reports );
-        this.isInForkedVm = forked;
         this.dirScannerParams = dirScannerParams;
         this.failIfNoTests = failIfNoTests;
         this.redirectTestOutputToFile = false;
         this.properties = properties; // Todo: Hack hack. This must go
+        this.isForkRequested = false;
+        this.isInForkedVm = true;
     }
 
 
@@ -97,7 +101,8 @@ public class BooterConfiguration
 
     public boolean useSystemClassLoader()
     {
-        return forkConfiguration.isUseSystemClassLoader() && ( isInForkedVm || forkConfiguration.isForking() );
+        // todo; I am not totally convinced this logic is as simple as it could be
+        return classLoaderConfiguration.isUseSystemClassLoader() && ( isInForkedVm || isForkRequested );
     }
 
 
@@ -184,6 +189,6 @@ public class BooterConfiguration
 
     public boolean isManifestOnlyJarRequestedAndUsable()
     {
-        return forkConfiguration.isManifestOnlyJarRequestedAndUsable();
+        return classLoaderConfiguration.isManifestOnlyJarRequestedAndUsable();
     }
 }

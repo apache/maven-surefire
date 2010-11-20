@@ -148,15 +148,14 @@ public class BooterDeserializer
         }
 
         // todo check out this "never" value
-        ForkConfiguration forkConfiguration =
-            new ForkConfiguration( useSystemClassLoader, useManifestOnlyJar, "never" );
+        ClassLoaderConfiguration forkConfiguration =
+            new ClassLoaderConfiguration( useSystemClassLoader, useManifestOnlyJar );
 
         ClasspathConfiguration classpathConfiguration =
             new ClasspathConfiguration( classPathUrls, surefireClassPathUrls, booterClassPathUrl, enableAssertions,
                                         childDelegation );
 
-        boolean forked = true;
-        return new BooterConfiguration( forkConfiguration, classpathConfiguration, suiteDefinition, reports, forked,
+        return new BooterConfiguration( forkConfiguration, classpathConfiguration, suiteDefinition, reports,
                                         dirScannerParams, failIfNotests, properties );
     }
 

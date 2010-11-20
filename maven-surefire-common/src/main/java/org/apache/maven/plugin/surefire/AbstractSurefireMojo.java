@@ -34,7 +34,7 @@ import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugin.surefire.booter.PluginsideForkConfiguration;
+import org.apache.maven.plugin.surefire.booter.ForkConfiguration;
 import org.apache.maven.shared.artifact.filter.PatternIncludesArtifactFilter;
 import org.apache.maven.surefire.booter.BooterConfiguration;
 import org.apache.maven.surefire.booter.ClasspathConfiguration;
@@ -213,17 +213,17 @@ public abstract class AbstractSurefireMojo
 
     protected boolean isForkModeNever()
     {
-        return PluginsideForkConfiguration.FORK_NEVER.equals( getForkMode() );
+        return ForkConfiguration.FORK_NEVER.equals( getForkMode() );
     }
 
-    protected BooterConfiguration createBooterConfiguration( PluginsideForkConfiguration forkConfiguration )
+    protected BooterConfiguration createBooterConfiguration( ForkConfiguration forkConfiguration )
         throws MojoExecutionException, MojoFailureException
     {
         final ClasspathConfiguration classpathConfiguration =
             new ClasspathConfiguration( isEnableAssertions(), isChildDelegation() );
 
         BooterConfiguration booterConfiguration =
-            new BooterConfiguration( forkConfiguration.getBooterForkConfiguration(), classpathConfiguration,
+            new BooterConfiguration( forkConfiguration.isForking(), forkConfiguration.getClassLoaderConfiguration(), classpathConfiguration,
                                      isRedirectTestOutputToFile() );
 
         Artifact surefireArtifact =
@@ -358,7 +358,7 @@ public abstract class AbstractSurefireMojo
             getLog().info( "Toolchain in " + getPluginName() + "-plugin: " + tc );
             if ( isForkModeNever() )
             {
-                setForkMode( PluginsideForkConfiguration.FORK_ONCE );
+                setForkMode( ForkConfiguration.FORK_ONCE );
             }
             if ( getJvm() != null )
             {
@@ -521,9 +521,9 @@ public abstract class AbstractSurefireMojo
         return junitArtifact;
     }
 
-    protected PluginsideForkConfiguration getForkConfiguration()
+    protected ForkConfiguration getForkConfiguration()
     {
-        PluginsideForkConfiguration fork = new PluginsideForkConfiguration();
+        ForkConfiguration fork = new ForkConfiguration();
 
         fork.setForkMode( getForkMode() );
 

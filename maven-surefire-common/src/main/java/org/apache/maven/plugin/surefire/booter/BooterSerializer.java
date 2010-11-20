@@ -19,7 +19,7 @@ package org.apache.maven.plugin.surefire.booter;
  */
 
 import org.apache.maven.surefire.booter.BooterConfiguration;
-import org.apache.maven.surefire.booter.ForkConfiguration;
+import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
 import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.StringUtils;
 
@@ -59,7 +59,7 @@ public class BooterSerializer
 
 
     public void setForkProperties( Properties properties, List testSuites, BooterConfiguration booterConfiguration,
-                                   ForkConfiguration forkConfiguration )
+                                   ClassLoaderConfiguration forkConfiguration )
     {
         addPropertiesForTypeHolder( booterConfiguration.getReports(), properties, REPORT_PROPERTY_PREFIX );
         addPropertiesForTypeHolder( testSuites, properties, TEST_SUITE_PROPERTY_PREFIX );

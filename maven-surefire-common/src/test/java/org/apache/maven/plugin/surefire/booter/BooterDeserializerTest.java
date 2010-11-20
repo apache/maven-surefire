@@ -22,8 +22,8 @@ import junit.framework.Assert;
 import junit.framework.TestCase;
 import org.apache.maven.surefire.booter.BooterConfiguration;
 import org.apache.maven.surefire.booter.BooterDeserializer;
+import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
 import org.apache.maven.surefire.booter.ClasspathConfiguration;
-import org.apache.maven.surefire.booter.ForkConfiguration;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -40,16 +40,16 @@ public class BooterDeserializerTest
     extends TestCase
 {
 
-    public static ForkConfiguration getForkConfiguration()
+    public static ClassLoaderConfiguration getForkConfiguration()
         throws IOException
     {
-        return new ForkConfiguration( true, false, ForkConfiguration.FORK_NEVER );
+        return new ClassLoaderConfiguration( true, false );
     }
 
     public void testDirectoryScannerParams()
         throws IOException
     {
-        ForkConfiguration forkConfiguration = getForkConfiguration();
+        ClassLoaderConfiguration forkConfiguration = getForkConfiguration();
         BooterConfiguration booterConfiguration = getTestBooterConfiguration( forkConfiguration );
 
         File aDir = new File( "." );
@@ -77,11 +77,11 @@ public class BooterDeserializerTest
 
     }
 
-    private BooterConfiguration getTestBooterConfiguration( ForkConfiguration forkConfiguration )
+    private BooterConfiguration getTestBooterConfiguration( ClassLoaderConfiguration forkConfiguration )
         throws IOException
     {
         ClasspathConfiguration classpathConfiguration = new ClasspathConfiguration( true, true );
 
-        return new BooterConfiguration( forkConfiguration, classpathConfiguration, false );
+        return new BooterConfiguration( false, forkConfiguration, classpathConfiguration, false );
     }
 }

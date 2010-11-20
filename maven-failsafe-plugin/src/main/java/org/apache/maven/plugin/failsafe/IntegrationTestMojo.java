@@ -38,9 +38,9 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.surefire.AbstractSurefireMojo;
+import org.apache.maven.plugin.surefire.booter.ForkConfiguration;
 import org.apache.maven.plugin.surefire.booter.ForkStarter;
 import org.apache.maven.plugin.surefire.SurefireExecutionParameters;
-import org.apache.maven.plugin.surefire.booter.PluginsideForkConfiguration;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.surefire.booter.BooterConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
@@ -602,7 +602,7 @@ public class IntegrationTestMojo
     {
         if ( verifyParameters() )
         {
-            PluginsideForkConfiguration forkConfiguration = getForkConfiguration();
+            ForkConfiguration forkConfiguration = getForkConfiguration();
             BooterConfiguration booterConfiguration = createBooterConfiguration( forkConfiguration );
             ForkStarter booter = new ForkStarter( booterConfiguration, reportsDirectory, forkConfiguration );
 

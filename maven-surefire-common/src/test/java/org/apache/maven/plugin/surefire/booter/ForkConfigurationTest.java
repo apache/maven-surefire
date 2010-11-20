@@ -28,16 +28,16 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 
-public class PluginsideForkConfigurationTest
+public class ForkConfigurationTest
     extends TestCase
 {
 
     public void testCreateCommandLine_UseSystemClassLoaderForkOnce_ShouldConstructManifestOnlyJar()
         throws IOException, SurefireBooterForkException
     {
-        PluginsideForkConfiguration config = getForkConfiguration();
+        ForkConfiguration config = getForkConfiguration();
         File cpElement = getTempClasspathFile();
-        config.setForkMode( PluginsideForkConfiguration.FORK_ONCE );
+        config.setForkMode( ForkConfiguration.FORK_ONCE );
         config.setUseSystemClassLoader( true );
         config.setUseSystemClassLoader( true );
         config.setJvmExecutable( "java" );
@@ -54,7 +54,7 @@ public class PluginsideForkConfigurationTest
     {
         // SUREFIRE-657
         File cpElement = getTempClasspathFile();
-        PluginsideForkConfiguration forkConfiguration = getForkConfiguration();
+        ForkConfiguration forkConfiguration = getForkConfiguration();
 
         forkConfiguration.setArgLine( "abc\ndef" );
 
@@ -71,10 +71,10 @@ public class PluginsideForkConfigurationTest
         return cpElement;
     }
 
-    public static PluginsideForkConfiguration getForkConfiguration()
+    public static ForkConfiguration getForkConfiguration()
         throws IOException
     {
-        PluginsideForkConfiguration forkConfiguration = new PluginsideForkConfiguration();
+        ForkConfiguration forkConfiguration = new ForkConfiguration();
         forkConfiguration.setWorkingDirectory( new File( "." ).getCanonicalFile() );
         return forkConfiguration;
     }
