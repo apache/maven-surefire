@@ -57,7 +57,7 @@ public class DefaultDirectoryScanner
         this.excludes = excludes;
     }
 
-    public Class[] locateTestClasses( ClassLoader classLoader )
+    public Class[] locateTestClasses( ClassLoader classLoader, ScannerFilter scannerFilter )
         throws TestSetFailedException
     {
         String[] testClassNames = collectTests();
@@ -77,9 +77,7 @@ public class DefaultDirectoryScanner
                 throw new TestSetFailedException( "Unable to create test class '" + className + "'", e );
             }
 
-            if ( !Modifier.isAbstract( testClass.getModifiers() ) )
-            {
-
+            if (scannerFilter.accept( testClass)){
                 result.add( testClass );
             }
         }

@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.util;
+package org.apache.maven.surefire;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -17,21 +17,18 @@ package org.apache.maven.surefire.util;
  * specific language governing permissions and limitations
  * under the License.
  */
+import org.apache.maven.surefire.util.ScannerFilter;
 
-import org.apache.maven.surefire.testset.TestSetFailedException;
+import java.lang.reflect.Modifier;
 
 /**
  * @author Kristian Rosenvold
  */
-public interface DirectoryScanner
+public class NonAbstractClassScannerFilter
+    implements ScannerFilter
 {
-    /**
-     * Locates tests based on scanning directories
-     * @param classLoader
-     * @param scannerFilter
-     * @return
-     * @throws TestSetFailedException
-     */
-    Class[] locateTestClasses( ClassLoader classLoader, ScannerFilter scannerFilter )
-        throws TestSetFailedException;
+    public boolean accept( Class testClass )
+    {
+        return !Modifier.isAbstract( testClass.getModifiers() );
+    }
 }

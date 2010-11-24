@@ -19,6 +19,7 @@
 
 package org.apache.maven.surefire.junitcore;
 
+import org.apache.maven.surefire.NonAbstractClassScannerFilter;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterManagerFactory;
 import org.apache.maven.surefire.suite.SurefireTestSuite;
@@ -99,7 +100,7 @@ public class JUnitCoreDirectoryTestSuite
             throw new IllegalStateException( "You can't call locateTestSets twice" );
         }
 
-        Class[] locatedClasses = directoryScanner.locateTestClasses( classLoader );
+        Class[] locatedClasses = directoryScanner.locateTestClasses( classLoader, new NonAbstractClassScannerFilter() );
         testsToRun = new TestsToRun( locatedClasses );
         return testsToRun.getTestSets();
     }

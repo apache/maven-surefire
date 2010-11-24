@@ -18,20 +18,16 @@ package org.apache.maven.surefire.util;
  * under the License.
  */
 
-import org.apache.maven.surefire.testset.TestSetFailedException;
-
 /**
  * @author Kristian Rosenvold
  */
-public interface DirectoryScanner
+public interface ScannerFilter
 {
     /**
-     * Locates tests based on scanning directories
-     * @param classLoader
-     * @param scannerFilter
-     * @return
-     * @throws TestSetFailedException
+     * Indicates if the class should be accepted by the directory scanner
+     *
+     * @param testClass The class in question
+     * @return true if the class should be part of the directory scan result.
      */
-    Class[] locateTestClasses( ClassLoader classLoader, ScannerFilter scannerFilter )
-        throws TestSetFailedException;
+    boolean accept( Class testClass );
 }

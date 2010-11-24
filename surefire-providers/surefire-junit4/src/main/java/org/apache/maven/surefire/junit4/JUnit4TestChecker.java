@@ -18,16 +18,16 @@ package org.apache.maven.surefire.junit4;
  * under the License.
  */
 
-import org.apache.maven.surefire.testset.TestSetFailedException;
+import org.apache.maven.surefire.util.ScannerFilter;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**
  * @author Kristian Rosenvold
  */
 public class JUnit4TestChecker
+    implements ScannerFilter
 {
     private final Class junitClass;
 
@@ -39,9 +39,13 @@ public class JUnit4TestChecker
         this.runWith = getJUnitClass( testClassLoader, org.junit.runner.RunWith.class.getName() );
     }
 
+    public boolean accept( Class testClass )
+    {
+        return isValidJUnit4Test( testClass );
+    }
+
     @SuppressWarnings( { "unchecked" } )
     public boolean isValidJUnit4Test( Class testClass )
-        throws TestSetFailedException
     {
         if ( junitClass != null && junitClass.isAssignableFrom( testClass ) )
         {
@@ -55,8 +59,10 @@ public class JUnit4TestChecker
         }
 
         Class classToCheck = testClass;
-        while (classToCheck != null){
-            if ( checkforTestAnnotatedMethod( classToCheck )){
+        while ( classToCheck != null )
+        {
+            if ( checkforTestAnnotatedMethod( classToCheck ) )
+            {
                 return true;
             }
             classToCheck = classToCheck.getSuperclass();
