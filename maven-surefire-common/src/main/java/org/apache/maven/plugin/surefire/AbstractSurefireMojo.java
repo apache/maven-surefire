@@ -34,7 +34,7 @@ import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugin.surefire.booter.ForkConfiguration;
+import org.apache.maven.plugin.surefire.booterclient.ForkConfiguration;
 import org.apache.maven.shared.artifact.filter.PatternIncludesArtifactFilter;
 import org.apache.maven.surefire.booter.BooterConfiguration;
 import org.apache.maven.surefire.booter.ClasspathConfiguration;

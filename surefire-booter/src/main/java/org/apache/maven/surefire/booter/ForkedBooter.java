@@ -19,13 +19,9 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import org.codehaus.plexus.util.IOUtil;
-
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.util.Iterator;
 import java.util.Properties;
 
 /**
@@ -91,40 +87,6 @@ public class ForkedBooter
             t.printStackTrace( System.err );
             // noinspection ProhibitedExceptionThrown,CallToSystemExit
             System.exit( 1 );
-        }
-    }
-
-    private static Properties loadProperties( File file )
-        throws IOException
-    {
-        Properties p = new Properties();
-
-        if ( file != null && file.exists() )
-        {
-            FileInputStream inStream = new FileInputStream( file );
-            try
-            {
-                p.load( inStream );
-            }
-            finally
-            {
-                IOUtil.close( inStream );
-            }
-        }
-
-        return p;
-    }
-
-    private static void setSystemProperties( File file )
-        throws IOException
-    {
-        Properties p = loadProperties( file );
-
-        for ( Iterator i = p.keySet().iterator(); i.hasNext(); )
-        {
-            String key = (String) i.next();
-
-            System.setProperty( key, p.getProperty( key ) );
         }
     }
 }

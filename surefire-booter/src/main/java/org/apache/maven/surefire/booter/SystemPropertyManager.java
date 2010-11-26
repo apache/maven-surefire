@@ -18,12 +18,7 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import org.codehaus.plexus.util.IOUtil;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.Iterator;
 import java.util.Properties;
 
@@ -53,7 +48,7 @@ public class SystemPropertyManager
         }
         finally
         {
-            IOUtil.close( inStream );
+            close(inStream);
         }
 
         return p;
@@ -72,4 +67,28 @@ public class SystemPropertyManager
             System.setProperty( key, p.getProperty( key ) );
         }
     }
+
+    /**
+     * Closes the input stream. The input stream can be null and any IOException's will be swallowed.
+     *
+     * @param inputStream The stream to close.
+     */
+    public static void close( InputStream inputStream )
+    {
+        if ( inputStream == null )
+        {
+            return;
+        }
+
+        try
+        {
+            inputStream.close();
+        }
+        catch( IOException ex )
+        {
+            // ignore
+        }
+    }
+
+
 }

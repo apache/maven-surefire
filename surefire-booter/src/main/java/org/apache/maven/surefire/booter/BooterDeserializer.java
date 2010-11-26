@@ -19,14 +19,8 @@ package org.apache.maven.surefire.booter;
  */
 
 import org.apache.maven.surefire.suite.SuiteDefinition;
-import org.codehaus.plexus.util.IOUtil;
-import org.codehaus.plexus.util.StringUtils;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -170,7 +164,7 @@ public class BooterDeserializer
         }
         finally
         {
-            IOUtil.close( out );
+            close( out );
         }
     }
 
@@ -267,6 +261,29 @@ public class BooterDeserializer
             }
         }
         return paramObjects;
+    }
+
+    /**
+     * From IOUtils
+     * Closes the output stream. The output stream can be null and any IOException's will be swallowed.
+     *
+     * @param outputStream The stream to close.
+     */
+    public static void close( OutputStream outputStream )
+    {
+        if ( outputStream == null )
+        {
+            return;
+        }
+
+        try
+        {
+            outputStream.close();
+        }
+        catch( IOException ex )
+        {
+            // ignore
+        }
     }
 
 }
