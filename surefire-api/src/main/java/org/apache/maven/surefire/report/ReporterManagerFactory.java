@@ -40,11 +40,13 @@ import java.util.List;
  * @author Jason van Zyl
  * @author Kristian Rosenvold (extracted factory)
  */
+/** NOTE: The ReporterManagerFactory2 should take over for this once we build surefire with 2.7,
+ * just merge it into this class, this is just a hack to be able to build 2.7 with 2.5 */
 public class ReporterManagerFactory
 {
-    private final List reportDefinitions;
+    protected final List reportDefinitions;
 
-    private final ClassLoader surefireClassLoader;
+    protected final ClassLoader surefireClassLoader;
 
     private final RunStatistics globalRunStatistics = new RunStatistics();
 

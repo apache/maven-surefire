@@ -23,7 +23,7 @@ import java.util.Properties;
 
 /**
  * Invokes surefire with the correct classloader setup.
- *
+ * <p/>
  * This part of the booter that is always guaranteed to be in the
  * same vm as the tests will be run in.
  *
@@ -44,11 +44,6 @@ public class SurefireStarter
     public int runSuitesInProcess( String testSet, Properties results )
         throws SurefireExecutionException
     {
-        if ( booterConfiguration.getTestSuites().size() != 1 )
-        {
-            throw new IllegalArgumentException( "Cannot only specify testSet for single test suites" );
-        }
-
         // TODO: replace with plexus
 
         ClassLoader oldContextClassLoader = Thread.currentThread().getContextClassLoader();
@@ -63,9 +58,13 @@ public class SurefireStarter
             SurefireReflector reflector = new SurefireReflector( surefireClassLoader );
 
             Thread.currentThread().setContextClassLoader( testsClassLoader );
-            return reflector.run( booterConfiguration.getReports(),
-                                  (Object[]) booterConfiguration.getTestSuites().get( 0 ), testSet, surefireClassLoader,
-                                  testsClassLoader, results, booterConfiguration.isFailIfNoTests() );
+            return reflector.runProvider( booterConfiguration.getReporterConfiguration(),
+                                          booterConfiguration.getReports(), surefireClassLoader, testsClassLoader,
+                                          results, booterConfiguration.isFailIfNoTests(),
+                                          booterConfiguration.getTestSuiteDefinition( testSet ),
+                                          booterConfiguration.getTestNg(),
+                                          booterConfiguration.getProviderConfiguration(),
+                                          booterConfiguration.getDirScannerParams() );
         }
         finally
         {
@@ -73,7 +72,7 @@ public class SurefireStarter
         }
     }
 
-    public int runSuitesInProcess()
+    public int runSuitesInProcess( Properties p )
         throws SurefireExecutionException
     {
         // TODO: replace with plexus
@@ -106,8 +105,12 @@ public class SurefireStarter
 
             Thread.currentThread().setContextClassLoader( testsClassLoader );
 
-            return reflector.run( booterConfiguration.getReports(), booterConfiguration.getTestSuites(),
-                                  surefireClassLoader, testsClassLoader, booterConfiguration.isFailIfNoTests() );
+            return reflector.runProvider( booterConfiguration.getReporterConfiguration(),
+                                          booterConfiguration.getReports(), surefireClassLoader, testsClassLoader, p,
+                                          booterConfiguration.isFailIfNoTests(),
+                                          booterConfiguration.getTestSuiteDefinition(), booterConfiguration.getTestNg(),
+                                          booterConfiguration.getProviderConfiguration(),
+                                          booterConfiguration.getDirScannerParams() );
 
         }
         finally

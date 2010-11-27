@@ -35,6 +35,7 @@ import java.util.Properties;
  * @author Jason van Zyl
  * @version $Id$
  */
+// todo: Remove once we build with 2.7
 public class Surefire
 {
 
@@ -82,6 +83,7 @@ public class Surefire
 
         SuiteDefinition suiteDefinition =
             SuiteDefinition.fromBooterFormat( Collections.singletonList( testSuiteDefinition ) );
+
         RunStatistics runStatistics = reporterManagerFactory.getGlobalRunStatistics();
         if ( results != null )
         {
@@ -153,8 +155,7 @@ public class Surefire
             totalTests += testCount;
         }
 
-        if ( totalTests == 0 )
-        {
+        if ( totalTests == 0 ){
             reporterManagerFactory.createReporterManager().writeMessage( "There are no tests to run." );
         }
         else

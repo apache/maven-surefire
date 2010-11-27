@@ -72,7 +72,7 @@ public class ForkedBooter
             }
             else
             {
-                result = booter.runSuitesInProcess();
+                result = booter.runSuitesInProcess(p);
             }
 
             booterDeserializer.writePropertiesFile( surefirePropertiesFile, "surefire", p );

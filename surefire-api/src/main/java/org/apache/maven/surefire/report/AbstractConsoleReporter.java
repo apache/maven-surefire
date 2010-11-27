@@ -42,6 +42,14 @@ public abstract class AbstractConsoleReporter
 
     private static final PrintStream originalSystemOut = System.out;
 
+    protected AbstractConsoleReporter( String format, ReporterConfiguration reporterConfiguration)
+    {
+        // TODO: use logger
+        super( new PrintWriter( new OutputStreamWriter( new BufferedOutputStream( originalSystemOut, BUFFER_SIZE ) ) ), format,
+               reporterConfiguration );
+    }
+
+    /** @deprecated Can be removed once we build surefire with 2.7 */
     protected AbstractConsoleReporter( String format, Boolean trimStackTrace )
     {
         // TODO: use logger

@@ -39,7 +39,6 @@ class TestsToRun
     Map<String, JUnitCoreTestSet> testSets;
 
     public TestsToRun( Class... locatedClasses )
-        throws TestSetFailedException
     {
         this.locatedClasses = locatedClasses;
         testSets = new HashMap<String, JUnitCoreTestSet>();
@@ -50,7 +49,7 @@ class TestsToRun
 
             if ( testSets.containsKey( testSet.getName() ) )
             {
-                throw new TestSetFailedException( "Duplicate test set '" + testSet.getName() + "'" );
+                throw new RuntimeException( "Duplicate test set '" + testSet.getName() + "'" );
             }
             testSets.put( testSet.getName(), testSet );
             testCount++;

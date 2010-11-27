@@ -55,12 +55,21 @@ public class XMLReporter
 
     private List results = Collections.synchronizedList( new ArrayList() );
 
+    public XMLReporter( ReporterConfiguration reporterConfiguration)
+    {
+        super( reporterConfiguration );
+
+        this.reportsDirectory = reporterConfiguration.getReportsDirectory();
+    }
+
+    /** @deprecated Can be removed once we build surfire with 2.7 */
     public XMLReporter( File reportsDirectory, Boolean trimStackTrace )
     {
         super( trimStackTrace );
 
         this.reportsDirectory = reportsDirectory;
     }
+
 
     public void writeMessage( String message )
     {

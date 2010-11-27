@@ -43,6 +43,12 @@ public class ForkingConsoleReporter
      */
     public static final String FORKING_PREFIX_FOOTER = "@FL";
 
+    public ForkingConsoleReporter( ReporterConfiguration reporterConfiguration )
+    {
+        super( reporterConfiguration );
+    }
+
+    /** @deprecated Can be removed once we build surfire with 2.7 */
     public ForkingConsoleReporter( Boolean trimStackTrace )
     {
         super( trimStackTrace );

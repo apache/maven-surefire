@@ -30,8 +30,6 @@ public interface DirectoryScanner
      * @param classLoader
      * @param scannerFilter
      * @return
-     * @throws TestSetFailedException
      */
-    Class[] locateTestClasses( ClassLoader classLoader, ScannerFilter scannerFilter )
-        throws TestSetFailedException;
+    Class[] locateTestClasses( ClassLoader classLoader, ScannerFilter scannerFilter );
 }

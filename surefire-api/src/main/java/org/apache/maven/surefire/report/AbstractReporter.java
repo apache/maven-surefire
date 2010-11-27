@@ -56,11 +56,15 @@ public abstract class AbstractReporter
     // ----------------------------------------------------------------------
 
 
+    protected AbstractReporter( ReporterConfiguration reporterConfiguration)
+    {
+        this.trimStackTrace = reporterConfiguration.isTrimStackTrace().booleanValue();
+    }
+
     protected AbstractReporter( Boolean trimStackTrace )
     {
         this.trimStackTrace = trimStackTrace.booleanValue();
     }
-
     public void writeFooter( String footer )
     {
         writeMessage( footer );

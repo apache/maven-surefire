@@ -30,7 +30,7 @@ import org.apache.maven.plugin.surefire.booterclient.output.OutputConsumer;
 import org.apache.maven.plugin.surefire.booterclient.output.StandardOutputConsumer;
 import org.apache.maven.plugin.surefire.booterclient.output.SupressFooterOutputConsumerProxy;
 import org.apache.maven.plugin.surefire.booterclient.output.SupressHeaderOutputConsumerProxy;
-import org.apache.maven.surefire.testset.TestSetFailedException;
+import org.apache.maven.surefire.booter.*;
 import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.cli.CommandLineException;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
@@ -41,41 +41,36 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 
 /**
  * Starts the fork or runs in-process.
- *
+ * <p/>
  * Lives only on the plugin-side (not present in remote vms)
  * <p/>
  * Knows how to fork new vms and also how to delegate non-forking invocation to TestVmBooter directly
  *
  * @author Jason van Zyl
  * @author Emmanuel Venisse
- * @author Kristian Rosenvold    
+ * @author Kristian Rosenvold
  * @version $Id$
  */
 public class ForkStarter
 {
-
     private int forkedProcessTimeoutInSeconds = 0;
 
     private final BooterConfiguration booterConfiguration;
+
 
     private final ForkConfiguration forkConfiguration;
 
     private File reportsDirectory;
 
-
     public ForkStarter( BooterConfiguration booterConfiguration, File reportsDirectory,
-                             ForkConfiguration forkConfiguration )
+                        ForkConfiguration forkConfiguration )
     {
         this.forkConfiguration = forkConfiguration;
         this.booterConfiguration = booterConfiguration;
@@ -91,7 +86,7 @@ public class ForkStarter
         if ( ForkConfiguration.FORK_NEVER.equals( requestedForkMode ) )
         {
             SurefireStarter testVmBooter = new SurefireStarter( booterConfiguration );
-            result = testVmBooter.runSuitesInProcess();
+            result = testVmBooter.runSuitesInProcess(booterConfiguration.getProviderProperties());
         }
         else if ( ForkConfiguration.FORK_ONCE.equals( requestedForkMode ) )
         {
@@ -108,16 +103,17 @@ public class ForkStarter
         return result;
     }
 
-
     private int runSuitesForkOnce()
         throws SurefireBooterForkException
     {
-        return forkSuites( booterConfiguration.getTestSuites(), true, true );
+        return forkSuites( true, true );
     }
 
     private int runSuitesForkPerTestSet()
         throws SurefireBooterForkException
     {
+        int globalResult = 0;
+
         ClassLoader testsClassLoader;
         ClassLoader surefireClassLoader;
         try
@@ -131,27 +127,24 @@ public class ForkStarter
             throw new SurefireBooterForkException( "Unable to create classloader to find test suites", e );
         }
 
-        int globalResult = 0;
 
         boolean showHeading = true;
+        final ProviderFactory providerFactory = new ProviderFactory( booterConfiguration, surefireClassLoader);
+        Object surefireProvider = providerFactory.createProvider(testsClassLoader);
+
         Properties properties = new Properties();
-        for ( Iterator i = booterConfiguration.getTestSuites().iterator(); i.hasNext(); )
+
+        final Iterator suites = (Iterator) SurefireReflector.getSuites(surefireProvider);
+        while ( suites.hasNext() )
         {
-            Object[] testSuite = (Object[]) i.next();
-
-            Map testSets = getTestSets( testSuite, testsClassLoader, surefireClassLoader );
-
-            for ( Iterator j = testSets.keySet().iterator(); j.hasNext(); )
+            Object testSet = suites.next();
+            boolean showFooter = !suites.hasNext();
+            int result = forkSuite( testSet, showHeading, showFooter, properties );
+            if ( result > globalResult )
             {
-                Object testSet = j.next();
-                boolean showFooter = !j.hasNext() && !i.hasNext();
-                int result = forkSuite( testSuite, testSet, showHeading, showFooter, properties );
-                if ( result > globalResult )
-                {
-                    globalResult = result;
-                }
-                showHeading = false;
+                globalResult = result;
             }
+            showHeading = false;
         }
 
         return globalResult;
@@ -162,72 +155,23 @@ public class ForkStarter
         return booterConfiguration.getClasspathConfiguration();
     }
 
-    private Map getTestSets( Object[] testSuite, ClassLoader testsClassLoader, ClassLoader surefireClassLoader )
+    private int forkSuites( boolean showHeading, boolean showFooter )
         throws SurefireBooterForkException
     {
-        String className = (String) testSuite[0];
-
-        Object[] params = (Object[]) testSuite[1];
-
-        Object suite;
-        try
-        {
-            suite = SurefireReflector.instantiateObject( className, params, surefireClassLoader );
-        }
-        catch ( TestSetFailedException e )
-        {
-            throw new SurefireBooterForkException( e.getMessage(), e.getCause() );
-        }
-        catch ( ClassNotFoundException e )
-        {
-            throw new SurefireBooterForkException( "Unable to find class for test suite '" + className + "'", e );
-        }
-        catch ( NoSuchMethodException e )
-        {
-            throw new SurefireBooterForkException(
-                "Unable to find appropriate constructor for test suite '" + className + "': " + e.getMessage(), e );
-        }
-
-        Map testSets;
-        try
-        {
-            Method m = suite.getClass().getMethod( "locateTestSets", new Class[]{ ClassLoader.class } );
-
-            testSets = (Map) m.invoke( suite, new Object[]{ testsClassLoader } );
-        }
-        catch ( IllegalAccessException e )
-        {
-            throw new SurefireBooterForkException( "Error obtaining test sets", e );
-        }
-        catch ( NoSuchMethodException e )
-        {
-            throw new SurefireBooterForkException( "Error obtaining test sets", e );
-        }
-        catch ( InvocationTargetException e )
-        {
-            throw new SurefireBooterForkException( e.getTargetException().getMessage(), e.getTargetException() );
-        }
-        return testSets;
-    }
-
-    private int forkSuites( List testSuites, boolean showHeading, boolean showFooter )
-        throws SurefireBooterForkException
-    {
-        Properties properties = new Properties();
+        Properties properties = booterConfiguration.getProviderProperties();
 
         BooterSerializer booterSerializer = new BooterSerializer();
-        booterSerializer.setForkProperties( properties, testSuites, booterConfiguration,
+        booterSerializer.setForkProperties( properties, booterConfiguration,
                                             forkConfiguration.getClassLoaderConfiguration() );
 
         return fork( properties, showHeading, showFooter );
     }
 
-    private int forkSuite( Object[] testSuite, Object testSet, boolean showHeading, boolean showFooter,
-                           Properties properties )
+    private int forkSuite( Object testSet, boolean showHeading, boolean showFooter, Properties properties )
         throws SurefireBooterForkException
     {
         BooterSerializer booterSerializer = new BooterSerializer();
-        booterSerializer.setForkProperties( properties, Collections.singletonList( testSuite ), booterConfiguration,
+        booterSerializer.setForkProperties( properties, booterConfiguration,
                                             forkConfiguration.getClassLoaderConfiguration() );
 
         if ( testSet instanceof String )

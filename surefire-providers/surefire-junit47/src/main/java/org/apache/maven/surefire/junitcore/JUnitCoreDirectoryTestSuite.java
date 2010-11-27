@@ -51,6 +51,8 @@ public class JUnitCoreDirectoryTestSuite
 
     private final JUnitCoreParameters jUnitCoreParameters;
 
+    private ReporterManagerFactory reporterManagerFactory;
+
 
     public JUnitCoreDirectoryTestSuite( File basedir, ArrayList includes, ArrayList excludes, Properties properties )
     {
@@ -58,6 +60,12 @@ public class JUnitCoreDirectoryTestSuite
         this.jUnitCoreParameters = new JUnitCoreParameters( properties );
     }
 
+    public JUnitCoreDirectoryTestSuite( DirectoryScanner directoryScanner, JUnitCoreParameters jUnitCoreParameters, ReporterManagerFactory reporterManagerFactory )
+    {
+        this.directoryScanner = directoryScanner;
+        this.jUnitCoreParameters = jUnitCoreParameters;
+        this.reporterManagerFactory = reporterManagerFactory;
+    }
 
     public void execute( ReporterManagerFactory reporterManagerFactory, ClassLoader classLoader )
         throws ReporterException, TestSetFailedException
@@ -79,6 +87,7 @@ public class JUnitCoreDirectoryTestSuite
     public void execute( String testSetName, ReporterManagerFactory reporterManagerFactory, ClassLoader classLoader )
         throws ReporterException, TestSetFailedException
     {
+        this.reporterManagerFactory = reporterManagerFactory;
         if ( testsToRun == null )
         {
             throw new IllegalStateException( "You must call locateTestSets before calling execute" );
@@ -89,11 +98,23 @@ public class JUnitCoreDirectoryTestSuite
         {
             throw new TestSetFailedException( "Unable to find test set '" + testSetName + "' in suite" );
         }
-        testSet.execute( reporterManagerFactory, jUnitCoreParameters );
+        testSet.execute( this.reporterManagerFactory, jUnitCoreParameters );
     }
 
     public Map locateTestSets( ClassLoader classLoader )
         throws TestSetFailedException
+    {
+        if ( testSets != null )
+        {
+            throw new IllegalStateException( "You can't call locateTestSets twice" );
+        }
+
+        Class[] locatedClasses = directoryScanner.locateTestClasses( classLoader, new NonAbstractClassScannerFilter() );
+        testsToRun = new TestsToRun( locatedClasses );
+        return testsToRun.getTestSets();
+    }
+
+    public Map locateTestSetsImpl( ClassLoader classLoader )
     {
         if ( testSets != null )
         {

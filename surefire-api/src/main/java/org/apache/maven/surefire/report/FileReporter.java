@@ -30,6 +30,12 @@ import java.io.File;
 public class FileReporter
     extends AbstractFileReporter
 {
+    public FileReporter( ReporterConfiguration reporterConfiguration)
+    {
+        super( reporterConfiguration, PLAIN );
+    }
+
+    /** @deprecated Can be removed once we build surfire with 2.7 */
     public FileReporter( File reportsDirectory, Boolean trimStackTrace )
     {
         super( reportsDirectory, PLAIN, trimStackTrace );

@@ -19,10 +19,14 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
+import org.apache.maven.surefire.providerapi.ProviderConfiguration;
+import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.suite.SuiteDefinition;
+import org.apache.maven.surefire.testset.DirectoryScannerParameters;
+import org.apache.maven.surefire.testset.TestArtifactInfo;
+import org.apache.maven.surefire.testset.TestSuiteDefinition;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
@@ -50,49 +54,82 @@ public class BooterConfiguration
 
     private final ClasspathConfiguration classpathConfiguration;
 
-    private final List reports = new ArrayList();
+    private final ProviderConfiguration providerConfiguration;
 
-    private SuiteDefinition suiteDefinition;
+    private final List reports;
 
-    private boolean failIfNoTests = false;
+
+    private final boolean failIfNoTests;
+
+    private final ReporterConfiguration reporterConfiguration;
 
     private final boolean redirectTestOutputToFile;
 
-    private Properties properties; // todo: Zap out of here !
 
     private final boolean isForkRequested;
 
-    Object[] dirScannerParams;
+
+    private final DirectoryScannerParameters dirScannerParams;
 
     private final boolean isInForkedVm;
 
-    public BooterConfiguration( boolean isForkRequested, ClassLoaderConfiguration classLoaderConfiguration,
-                                ClasspathConfiguration classpathConfiguration,
-                                boolean redirectTestOutputToFile)
-    {
-        this.classLoaderConfiguration = classLoaderConfiguration;
-        this.classpathConfiguration = classpathConfiguration;
-        this.isInForkedVm = false;
-        this.isForkRequested = isForkRequested;
-        this.redirectTestOutputToFile = redirectTestOutputToFile;
-    }
+    private final TestArtifactInfo testNg;
 
-    public BooterConfiguration( ClassLoaderConfiguration classLoaderConfiguration, ClasspathConfiguration classpathConfiguration,
-                                SuiteDefinition suiteDefinition, List reports, Object[] dirScannerParams, boolean failIfNoTests, Properties properties )
+    private final TestSuiteDefinition testSuiteDefinition;
+
+    private Properties providerProperties;
+
+    private Properties properties; // todo: Zap out of here !
+
+    public BooterConfiguration( ClassLoaderConfiguration classLoaderConfiguration,
+                                ClasspathConfiguration classpathConfiguration, List reports, DirectoryScannerParameters directoryScannerParameterses,
+                                boolean failIfNoTests, Properties properties, ReporterConfiguration reporterConfiguration,
+                                TestArtifactInfo testArtifactInfo, TestSuiteDefinition testSuiteDefinition,
+                                ProviderConfiguration providerConfiguration )
     {
         this.classLoaderConfiguration = classLoaderConfiguration;
         this.classpathConfiguration = classpathConfiguration;
-        this.suiteDefinition = suiteDefinition;
-        this.reports.addAll( reports );
-        this.dirScannerParams = dirScannerParams;
+        this.reports = reports;
+        this.dirScannerParams = directoryScannerParameterses;
         this.failIfNoTests = failIfNoTests;
         this.redirectTestOutputToFile = false;
+        this.reporterConfiguration = reporterConfiguration;
         this.properties = properties; // Todo: Hack hack. This must go
         this.isForkRequested = false;
         this.isInForkedVm = true;
+        this.testNg = testArtifactInfo;
+        this.testSuiteDefinition = testSuiteDefinition;
+        this.providerConfiguration = providerConfiguration;
+    }
+
+    public BooterConfiguration( Properties providerProperties, boolean isForkRequested,
+                                ClassLoaderConfiguration classLoaderConfiguration,
+                                ClasspathConfiguration classpathConfiguration, boolean redirectTestOutputToFile,
+                                ReporterConfiguration reporterConfiguration, TestArtifactInfo testNg,
+                                TestSuiteDefinition testSuiteDefinition,
+                                DirectoryScannerParameters directoryScannerParameters, boolean failIfNoTests,
+                                List reports, ProviderConfiguration providerConfiguration )
+    {
+        this.providerProperties = providerProperties;
+        this.classLoaderConfiguration = classLoaderConfiguration;
+        this.classpathConfiguration = classpathConfiguration;
+        this.reporterConfiguration = reporterConfiguration;
+        this.isInForkedVm = false;
+        this.isForkRequested = isForkRequested;
+        this.redirectTestOutputToFile = redirectTestOutputToFile;
+        this.testNg = testNg;
+        this.testSuiteDefinition = testSuiteDefinition;
+        this.dirScannerParams = directoryScannerParameters;
+        this.failIfNoTests = failIfNoTests;
+        this.reports = reports;
+        this.providerConfiguration = providerConfiguration;
     }
 
 
+    public ReporterConfiguration getReporterConfiguration()
+    {
+        return reporterConfiguration;
+    }
 
     public ClasspathConfiguration getClasspathConfiguration()
     {
@@ -121,74 +158,69 @@ public class BooterConfiguration
         return redirectTestOutputToFile;
     }
 
-    public List getTestSuites()
-    {
-        return suiteDefinition.asBooterFormat();
-    }
-
-
     public Boolean isFailIfNoTests()
     {
         return ( failIfNoTests ) ? Boolean.TRUE : Boolean.FALSE;
     }
 
-    public void addReport( String report, Object[] constructorParams )
-    {
-        reports.add( new Object[]{ report, constructorParams } );
-    }
-
-    /**
-     * Setting this to true will cause a failure if there are no tests to run
-     *
-     * @param failIfNoTests true if we should fail with no tests
-     */
-    public void setFailIfNoTests( boolean failIfNoTests )
-    {
-        this.failIfNoTests = failIfNoTests;
-    }
-
-    public void setDirectoryScannerOptions( File testClassesDirectory, List includes, List excludes )
-    {
-        dirScannerParams = new Object[]{ testClassesDirectory, includes, excludes };
-    }
-
     public File getBaseDir()
     {
-        return (File) getDirScannerParamsPriv()[0];
+        return dirScannerParams.getTestClassesDirectory();
     }
 
-    private Object[] getDirScannerParamsPriv()
+
+    public DirectoryScannerParameters getDirScannerParams()
+    {
+        return dirScannerParams;
+    }
+
+    public Object[] getDirScannerParamsArray()
     {
         if ( dirScannerParams == null )
         {
-            throw new IllegalStateException( "Requesting paramater basedir which has not been set" );
+            return null;
         }
-        return dirScannerParams;
-    }
-
-
-    public Object[] getDirScannerParams()
-    {
-        return dirScannerParams;
+        return new Object[]{ dirScannerParams.getTestClassesDirectory(), dirScannerParams.getIncludes(),
+            dirScannerParams.getExcludes() };
     }
 
     public List getIncludes()
     {
-        return (List) getDirScannerParamsPriv()[1];
+        return dirScannerParams.getIncludes();
     }
 
     public List getExcludes()
     {
-        return (List) getDirScannerParamsPriv()[2];
-    }
-
-    public void setSuiteDefinition( SuiteDefinition suiteDefinition )
-    {
-        this.suiteDefinition = suiteDefinition;
+        return dirScannerParams.getExcludes();
     }
 
     public boolean isManifestOnlyJarRequestedAndUsable()
     {
         return classLoaderConfiguration.isManifestOnlyJarRequestedAndUsable();
+    }
+
+    public TestArtifactInfo getTestNg()
+    {
+        return testNg;
+    }
+
+    public TestSuiteDefinition getTestSuiteDefinition()
+    {
+        return testSuiteDefinition;
+    }
+
+    public TestSuiteDefinition getTestSuiteDefinition(String testName)
+    {
+        return new TestSuiteDefinition( testSuiteDefinition.getSuiteXmlFiles(), testName, testSuiteDefinition.getTestSourceDirectory(), testSuiteDefinition.getRequestedTest() );
+    }
+
+    public ProviderConfiguration getProviderConfiguration()
+    {
+        return providerConfiguration;
+    }
+
+    public Properties getProviderProperties()
+    {
+        return providerProperties;
     }
 }

@@ -23,6 +23,7 @@ package org.apache.maven.surefire.junitcore;
 import junit.framework.Assert;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterManagerFactory;
 import org.apache.maven.surefire.report.RunStatistics;
 import org.apache.maven.surefire.testset.TestSetFailedException;
@@ -32,6 +33,7 @@ import org.junit.runner.Computer;
 import org.junit.runner.JUnitCore;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -399,6 +401,7 @@ public class ConcurrentReportingRunListenerTest
         Object[] reporter = new Object[]{MockReporter.class.getCanonicalName(), new Object[] {} };
         final List<Object> objects = new ArrayList();
         objects.add( reporter );
+        ReporterConfiguration reporterConfiguration = new ReporterConfiguration( new File( "." ), Boolean.TRUE);
         return new ReporterManagerFactory(objects, this.getClass().getClassLoader());
     }
 

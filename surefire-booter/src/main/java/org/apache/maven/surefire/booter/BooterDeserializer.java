@@ -18,9 +18,18 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import org.apache.maven.surefire.suite.SuiteDefinition;
+import org.apache.maven.surefire.providerapi.ProviderConfiguration;
+import org.apache.maven.surefire.report.ReporterConfiguration;
+import org.apache.maven.surefire.testset.DirectoryScannerParameters;
+import org.apache.maven.surefire.testset.TestArtifactInfo;
+import org.apache.maven.surefire.testset.TestSuiteDefinition;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -45,26 +54,25 @@ import java.util.TreeMap;
  */
 public class BooterDeserializer
 {
-    private static final String TEST_SUITE_PROPERTY_PREFIX = "testSuite.";
+    public static final String INCLUDES_PROPERTY_PREFIX = "includes";
+    public static final String EXCLUDES_PROPERTY_PREFIX = "excludes";
 
-    private static final String DIRSCANNER_PROPERTY_PREFIX = "dirscanner.";
+    public static final String DIRSCANNER_PROPERTY_PREFIX = "dirscanner.";
 
-    private static final String REPORT_PROPERTY_PREFIX = "report.";
+    public static final String REPORT_PROPERTY_PREFIX = "report.";
 
-    private static final String PARAMS_SUFIX = ".params";
+    public static final String PARAMS_SUFIX = ".params";
 
-    private static final String TYPES_SUFIX = ".types";
+    public static final String TYPES_SUFIX = ".types";
 
 
     public BooterConfiguration deserialize( InputStream inputStream )
         throws IOException
     {
         Properties properties = SystemPropertyManager.loadProperties( inputStream );
-        final List reports = new ArrayList();
-        Object[] dirScannerParams = null;
+        DirectoryScannerParameters dirScannerParams;
         boolean enableAssertions = false;
         boolean childDelegation = true;
-        SuiteDefinition suiteDefinition = null;
         boolean failIfNotests = false;  // todo; check this out.
         boolean useSystemClassLoader = false; // todo check default value
         boolean useManifestOnlyJar = false; // todo check default value
@@ -72,37 +80,41 @@ public class BooterDeserializer
         SortedMap classPathUrls = new TreeMap();
 
         SortedMap surefireClassPathUrls = new TreeMap();
+        SortedMap reportsMap = new TreeMap();
 
         Collection booterClassPathUrl = new ArrayList();
+        boolean isTrimStackTrace = false;
+        File reportsDirectory = null;
+
+        String testNgVersion = null;
+        String testNgClassifier = null;
+        String testForFork = null;
+        String requestedTest = null;
+        File testSuiteDefinitionTestSourceDirectory = null;
+        Object[] testSuiteXmlFiles = null;
+        String providerConfiguration = null;
+        SortedMap includes = new TreeMap();
+        SortedMap excludes = new TreeMap();
+        File testClassesDirectory = null;
 
         for ( Enumeration e = properties.propertyNames(); e.hasMoreElements(); )
         {
             String name = (String) e.nextElement();
 
-            if ( name.startsWith( REPORT_PROPERTY_PREFIX ) && !name.endsWith( PARAMS_SUFIX ) &&
-                !name.endsWith( TYPES_SUFIX ) )
+            if (name.startsWith(REPORT_PROPERTY_PREFIX) && !isTypeHolderProperty(name))
             {
                 String className = properties.getProperty( name );
-
-                String params = properties.getProperty( name + PARAMS_SUFIX );
-                String types = properties.getProperty( name + TYPES_SUFIX );
-                reports.add( new Object[]{ className, constructParamObjects( params, types ) } );
+                reportsMap.put( name, className );
             }
-            else if ( name.startsWith( TEST_SUITE_PROPERTY_PREFIX ) && !name.endsWith( PARAMS_SUFIX ) &&
-                !name.endsWith( TYPES_SUFIX ) )
+            else if ( name.startsWith( INCLUDES_PROPERTY_PREFIX ) && !isTypeHolderProperty(name)  )
             {
                 String className = properties.getProperty( name );
-
-                String params = properties.getProperty( name + PARAMS_SUFIX );
-                String types = properties.getProperty( name + TYPES_SUFIX );
-                suiteDefinition = new SuiteDefinition( className, constructParamObjects( params, types ) );
+                includes.put( name, className );
             }
-            else if ( name.startsWith( DIRSCANNER_PROPERTY_PREFIX ) && !name.endsWith( PARAMS_SUFIX ) &&
-                !name.endsWith( TYPES_SUFIX ) )
+            else if ( name.startsWith( EXCLUDES_PROPERTY_PREFIX) && !isTypeHolderProperty(name) )
             {
-                String params = properties.getProperty( name + PARAMS_SUFIX );
-                String types = properties.getProperty( name + TYPES_SUFIX );
-                dirScannerParams = constructParamObjects( params, types );
+                String className = properties.getProperty( name );
+                excludes.put( name, className );
             }
             else if ( name.startsWith( "classPathUrl." ) )
             {
@@ -139,9 +151,59 @@ public class BooterDeserializer
             {
                 failIfNotests = Boolean.valueOf( properties.getProperty( "failIfNoTests" ) ).booleanValue();
             }
+            else if ( "isTrimStackTrace".equals( name ) )
+            {
+                failIfNotests = Boolean.valueOf( properties.getProperty( "isTrimStackTrace" ) ).booleanValue();
+            }
+            else if ( "reportsDirectory".equals( name ) )
+            {
+                reportsDirectory = new File( properties.getProperty( "reportsDirectory" ) );
+            }
+            else if ( "testNgVersion".equals( name ) )
+            {
+                testNgVersion = properties.getProperty( "testNgVersion" );
+            }
+            else if ( "testNgClassifier".equals( name ) )
+            {
+                testNgClassifier = properties.getProperty( "testNgClassifier" );
+            }
+            else if ( "testSuiteDefinitionTest".equals( name ) )
+            {
+                testForFork = properties.getProperty( "testSuiteDefinitionTest" );
+            }
+            else if ( "requestedTest".equals( name ) )
+            {
+                requestedTest = properties.getProperty( "requestedTest" );
+            }
+            else if ( "testSuiteDefinitionTestSourceDirectory".equals( name ) )
+            {
+                testSuiteDefinitionTestSourceDirectory =
+                    (File) getParamValue( properties.getProperty( "testSuiteDefinitionTestSourceDirectory" ),
+                                          File.class.getName() );
+            }
+            else if ( "testClassesDirectory".equals( name ) )
+            {
+                testClassesDirectory = (File) getParamValue( properties.getProperty( "testClassesDirectory"), File.class.getName() );
+            }
+            else if ( "testSuiteXmlFiles".equals( name ) )
+            {
+                testSuiteXmlFiles =
+                     constructParamObjects( properties.getProperty( "testSuiteXmlFiles" ), File.class );
+            }
+            else if ( "providerConfiguration".equals( name ) )
+            {
+                providerConfiguration = properties.getProperty( "providerConfiguration" );
+            }
         }
 
-        // todo check out this "never" value
+
+        dirScannerParams = new DirectoryScannerParameters( testClassesDirectory, new ArrayList(includes.values()) ,new ArrayList(excludes.values()), Boolean.valueOf(failIfNotests));
+
+
+        TestArtifactInfo testNg = new TestArtifactInfo( testNgVersion, testNgClassifier );
+        TestSuiteDefinition testSuiteDefinition = new TestSuiteDefinition( testSuiteXmlFiles, testForFork,
+                                                                           testSuiteDefinitionTestSourceDirectory, requestedTest );
+
         ClassLoaderConfiguration forkConfiguration =
             new ClassLoaderConfiguration( useSystemClassLoader, useManifestOnlyJar );
 
@@ -149,8 +211,18 @@ public class BooterDeserializer
             new ClasspathConfiguration( classPathUrls, surefireClassPathUrls, booterClassPathUrl, enableAssertions,
                                         childDelegation );
 
-        return new BooterConfiguration( forkConfiguration, classpathConfiguration, suiteDefinition, reports,
-                                        dirScannerParams, failIfNotests, properties );
+        ReporterConfiguration reporterConfiguration =
+            new ReporterConfiguration( reportsDirectory, Boolean.valueOf( isTrimStackTrace ) );
+
+        ProviderConfiguration providerConfigurationObj = new ProviderConfiguration( providerConfiguration );
+        List reports = new ArrayList( reportsMap.values() );
+        return new BooterConfiguration( forkConfiguration, classpathConfiguration, reports,
+                                        dirScannerParams, failIfNotests, properties, reporterConfiguration, testNg,
+                                        testSuiteDefinition, providerConfigurationObj );
+    }
+
+    private boolean isTypeHolderProperty(String name) {
+        return name.endsWith(PARAMS_SUFIX) || name.endsWith(TYPES_SUFIX);
     }
 
     void writePropertiesFile( File file, String name, Properties properties )
@@ -188,7 +260,7 @@ public class BooterDeserializer
         return list;
     }
 
-    private static Object[] constructParamObjects( String paramProperty, String typeProperty )
+    private static Object[] constructParamObjects( String paramProperty, Class typeProperty )
     {
         Object[] paramObjects = null;
         if ( paramProperty != null )
@@ -196,68 +268,13 @@ public class BooterDeserializer
             // bit of a glitch that it need sto be done twice to do an odd number of vertical bars (eg |||, |||||).
             String[] params = StringUtils.split(
                 StringUtils.replace( StringUtils.replace( paramProperty, "||", "| |" ), "||", "| |" ), "|" );
-            String[] types =
-                StringUtils.split( StringUtils.replace( StringUtils.replace( typeProperty, "||", "| |" ), "||", "| |" ),
-                                   "|" );
-
             paramObjects = new Object[params.length];
 
-            for ( int i = 0; i < types.length; i++ )
+            String typeName = typeProperty.getName();
+            for ( int i = 0; i < params.length; i++ )
             {
-                if ( types[i].trim().length() == 0 )
-                {
-                    params[i] = null;
-                }
-                else if ( types[i].equals( String.class.getName() ) )
-                {
-                    paramObjects[i] = params[i];
-                }
-                else if ( types[i].equals( File.class.getName() ) )
-                {
-                    paramObjects[i] = new File( params[i] );
-                }
-                else if ( types[i].equals( File[].class.getName() ) )
-                {
-                    List stringList = processStringList( params[i] );
-                    File[] fileList = new File[stringList.size()];
-                    for ( int j = 0; j < stringList.size(); j++ )
-                    {
-                        fileList[j] = new File( (String) stringList.get( j ) );
-                    }
-                    paramObjects[i] = fileList;
-                }
-                else if ( types[i].equals( ArrayList.class.getName() ) )
-                {
-                    paramObjects[i] = processStringList( params[i] );
-                }
-                else if ( types[i].equals( Boolean.class.getName() ) )
-                {
-                    paramObjects[i] = Boolean.valueOf( params[i] );
-                }
-                else if ( types[i].equals( Integer.class.getName() ) )
-                {
-                    paramObjects[i] = Integer.valueOf( params[i] );
-                }
-                else if ( types[i].equals( Properties.class.getName() ) )
-                {
-                    final Properties result = new Properties();
-                    final String value = params[i];
-                    try
-                    {
-                        ByteArrayInputStream bais = new ByteArrayInputStream( value.getBytes( "8859_1" ) );
-                        result.load( bais );
-                    }
-                    catch ( Exception e )
-                    {
-                        throw new RuntimeException( "bug in property conversion", e );
-                    }
-                    paramObjects[i] = result;
-                }
-                else
-                {
-                    // TODO: could attempt to construct with a String constructor if needed
-                    throw new IllegalArgumentException( "Unknown parameter type: " + types[i] );
-                }
+                String param = params[i];
+                paramObjects[i] = getParamValue( param, typeName );
             }
         }
         return paramObjects;
@@ -286,4 +303,60 @@ public class BooterDeserializer
         }
     }
 
+    private static Object getParamValue( String param, String typeName )
+    {
+        if ( typeName.trim().length() == 0 )
+        {
+            return null;
+        }
+        else if ( typeName.equals( String.class.getName() ) )
+        {
+            return param;
+        }
+        else if ( typeName.equals( File.class.getName() ) )
+        {
+            return new File( param );
+        }
+        else if ( typeName.equals( File[].class.getName() ) )
+        {
+            List stringList = processStringList( param );
+            File[] fileList = new File[stringList.size()];
+            for ( int j = 0; j < stringList.size(); j++ )
+            {
+                fileList[j] = new File( (String) stringList.get( j ) );
+            }
+            return fileList;
+        }
+        else if ( typeName.equals( ArrayList.class.getName() ) )
+        {
+            return processStringList( param );
+        }
+        else if ( typeName.equals( Boolean.class.getName() ) )
+        {
+            return Boolean.valueOf( param );
+        }
+        else if ( typeName.equals( Integer.class.getName() ) )
+        {
+            return Integer.valueOf( param );
+        }
+        else if ( typeName.equals( Properties.class.getName() ) )
+        {
+            final Properties result = new Properties();
+            try
+            {
+                ByteArrayInputStream bais = new ByteArrayInputStream( param.getBytes( "8859_1" ) );
+                result.load( bais );
+            }
+            catch ( Exception e )
+            {
+                throw new RuntimeException( "bug in property conversion", e );
+            }
+            return result;
+        }
+        else
+        {
+            // TODO: could attempt to construct with a String constructor if needed
+            throw new IllegalArgumentException( "Unknown parameter type: " + typeName );
+        }
+    }
 }

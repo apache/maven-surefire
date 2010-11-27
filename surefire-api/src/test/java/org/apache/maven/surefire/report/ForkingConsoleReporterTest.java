@@ -33,7 +33,7 @@ public class ForkingConsoleReporterTest
         throws Exception
     {
         super.setUp();
-        ForkingConsoleReporter consoleReporter = new ForkingConsoleReporter( Boolean.TRUE );
+        ForkingConsoleReporter consoleReporter = new ForkingConsoleReporter( new ReporterConfiguration( null, Boolean.TRUE) );
         setConsoleReporter( consoleReporter );
     }
 

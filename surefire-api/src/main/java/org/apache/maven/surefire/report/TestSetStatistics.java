@@ -19,6 +19,8 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
+import org.apache.maven.surefire.suite.RunResult;
+
 import java.util.Properties;
 
 /**
@@ -106,6 +108,11 @@ public class TestSetStatistics
         results.setProperty( RESULTS_COMPLETED_COUNT, String.valueOf( completedCount ) );
         results.setProperty( RESULTS_FAILURES, String.valueOf( failures ) );
         results.setProperty( RESULTS_SKIPPED, String.valueOf( skipped ) );
+    }
+
+
+    public synchronized RunResult getRunResult(){
+        return new RunResult( completedCount, errors, failures, skipped );
     }
 
     public synchronized String getSummary()

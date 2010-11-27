@@ -24,6 +24,7 @@ import org.apache.maven.surefire.suite.AbstractDirectoryTestSuite;
 import org.apache.maven.surefire.testset.PojoTestSet;
 import org.apache.maven.surefire.testset.SurefireTestSet;
 import org.apache.maven.surefire.testset.TestSetFailedException;
+import org.apache.maven.surefire.util.DirectoryScanner;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -36,6 +37,11 @@ import java.util.ArrayList;
 public class JUnitDirectoryTestSuite
     extends AbstractDirectoryTestSuite
 {
+    public JUnitDirectoryTestSuite( DirectoryScanner surefireDirectoryScanner )
+    {
+        super( surefireDirectoryScanner );
+    }
+
     public JUnitDirectoryTestSuite( File basedir, ArrayList includes, ArrayList excludes )
     {
         super( basedir, includes, excludes );

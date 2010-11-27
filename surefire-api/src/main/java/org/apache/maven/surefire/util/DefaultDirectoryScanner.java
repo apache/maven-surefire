@@ -58,7 +58,6 @@ public class DefaultDirectoryScanner
     }
 
     public Class[] locateTestClasses( ClassLoader classLoader, ScannerFilter scannerFilter )
-        throws TestSetFailedException
     {
         String[] testClassNames = collectTests();
         List result = new ArrayList();
@@ -74,7 +73,7 @@ public class DefaultDirectoryScanner
             }
             catch ( ClassNotFoundException e )
             {
-                throw new TestSetFailedException( "Unable to create test class '" + className + "'", e );
+                throw new RuntimeException( "Unable to create test class '" + className + "'", e );
             }
 
             if (scannerFilter.accept( testClass)){
@@ -137,5 +136,18 @@ public class DefaultDirectoryScanner
         return incs;
     }
 
+    public File getBasedir()
+    {
+        return basedir;
+    }
 
+    public List getIncludes()
+    {
+        return includes;
+    }
+
+    public List getExcludes()
+    {
+        return excludes;
+    }
 }

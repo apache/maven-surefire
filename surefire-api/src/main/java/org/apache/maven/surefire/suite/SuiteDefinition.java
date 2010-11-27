@@ -25,6 +25,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.List;
 
+// todo: Remove once we build with 2.7
 public class SuiteDefinition
 {
     private final String suiteClassName;
@@ -128,5 +129,4 @@ public class SuiteDefinition
                 "Unable to find appropriate constructor to create suite: " + e.getMessage(), e );
         }
     }
-
 }

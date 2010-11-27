@@ -46,6 +46,14 @@ public abstract class AbstractTextReporter
 
     private List testResults;
 
+    protected AbstractTextReporter( ReporterConfiguration reporterConfiguration, String format )
+    {
+        super( reporterConfiguration );
+
+        this.format = format;
+    }
+
+    /** @deprecated Can be removed once we build surfire with 2.7 */
     protected AbstractTextReporter( String format, Boolean trimStackTrace )
     {
         super( trimStackTrace );
@@ -53,9 +61,20 @@ public abstract class AbstractTextReporter
         this.format = format;
     }
 
+    /** @deprecated Can be removed once we build surfire with 2.7 */
     protected AbstractTextReporter( PrintWriter writer, String format, Boolean trimStackTrace )
     {
         super( trimStackTrace );
+
+        this.writer = writer;
+
+        this.format = format;
+    }
+
+
+    protected AbstractTextReporter( PrintWriter writer, String format, ReporterConfiguration reporterConfiguration )
+    {
+        super( reporterConfiguration );
 
         this.writer = writer;
 

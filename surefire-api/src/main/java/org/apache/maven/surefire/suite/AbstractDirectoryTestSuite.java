@@ -54,6 +54,11 @@ public abstract class AbstractDirectoryTestSuite
     private final DirectoryScanner surefireDirectoryScanner;
 
 
+    protected AbstractDirectoryTestSuite( DirectoryScanner surefireDirectoryScanner )
+    {
+        this.surefireDirectoryScanner = surefireDirectoryScanner;
+    }
+
     protected AbstractDirectoryTestSuite( File basedir, List includes, List excludes )
     {
         this.surefireDirectoryScanner = new DefaultDirectoryScanner( basedir, includes, excludes );

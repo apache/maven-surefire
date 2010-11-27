@@ -42,7 +42,7 @@ public class BooterConversionTest
         convert = BooterSerializer.class.getDeclaredMethod( "convert", new Class[]{ Object.class } );
         convert.setAccessible( true );
         constructParamObjects = BooterDeserializer.class.getDeclaredMethod( "constructParamObjects",
-                                                                          new Class[]{ String.class, String.class } );
+                                                                          new Class[]{ String.class, Class.class } );
         constructParamObjects.setAccessible( true );
     }
 
@@ -111,7 +111,7 @@ public class BooterConversionTest
         throws Exception
     {
         String serialized = serialize( o );
-        Object[] output = deserialize( serialized, o.getClass().getName() );
+        Object[] output = deserialize( serialized, o.getClass());
         Assert.assertEquals( "Wrong number of output elements: " + Arrays.asList( output ), 1, output.length );
         Assert.assertEquals( o, output[0] );
     }
@@ -120,7 +120,7 @@ public class BooterConversionTest
         throws Exception
     {
         String serialized = serialize( o );
-        Object[] output = deserialize( serialized, o.getClass().getName() );
+        Object[] output = deserialize( serialized, o.getClass() );
         Assert.assertEquals( "Wrong number of output elements: " + Arrays.asList( output ), 1, output.length );
         assertArrayEquals( "Deserialized array didn't match", o, (Object[]) output[0] );
     }
@@ -134,7 +134,7 @@ public class BooterConversionTest
         }
     }
 
-    private Object[] deserialize( String paramProperty, String typeProperty )
+    private Object[] deserialize( String paramProperty, Class typeProperty )
         throws IllegalArgumentException, IllegalAccessException, InvocationTargetException
     {
         return (Object[]) constructParamObjects.invoke( null, new Object[]{ paramProperty, typeProperty } );

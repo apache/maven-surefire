@@ -22,6 +22,7 @@ package org.apache.maven.surefire.junit4;
 import org.apache.maven.surefire.suite.AbstractDirectoryTestSuite;
 import org.apache.maven.surefire.testset.SurefireTestSet;
 import org.apache.maven.surefire.testset.TestSetFailedException;
+import org.apache.maven.surefire.util.DirectoryScanner;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -36,10 +37,17 @@ import java.util.ArrayList;
 public class JUnit4DirectoryTestSuite
     extends AbstractDirectoryTestSuite
 {
+    // Remove when we no longer build with surefire 2.5
     public JUnit4DirectoryTestSuite( File basedir, ArrayList includes, ArrayList excludes )
     {
         super( basedir, includes, excludes );
     }
+
+    public JUnit4DirectoryTestSuite( DirectoryScanner surefireDirectoryScanner )
+    {
+        super( surefireDirectoryScanner );
+    }
+
 
     /**
      * This method will be called for each class to be run as a test. It returns

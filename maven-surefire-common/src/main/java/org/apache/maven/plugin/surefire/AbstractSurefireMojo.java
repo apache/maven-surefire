@@ -38,14 +38,18 @@ import org.apache.maven.plugin.surefire.booterclient.ForkConfiguration;
 import org.apache.maven.shared.artifact.filter.PatternIncludesArtifactFilter;
 import org.apache.maven.surefire.booter.BooterConfiguration;
 import org.apache.maven.surefire.booter.ClasspathConfiguration;
+import org.apache.maven.surefire.providerapi.ProviderConfiguration;
 import org.apache.maven.surefire.report.BriefConsoleReporter;
 import org.apache.maven.surefire.report.BriefFileReporter;
 import org.apache.maven.surefire.report.ConsoleReporter;
 import org.apache.maven.surefire.report.DetailedConsoleReporter;
 import org.apache.maven.surefire.report.FileReporter;
 import org.apache.maven.surefire.report.ForkingConsoleReporter;
+import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.XMLReporter;
-import org.apache.maven.surefire.suite.SuiteDefinition;
+import org.apache.maven.surefire.testset.DirectoryScannerParameters;
+import org.apache.maven.surefire.testset.TestSuiteDefinition;
+import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.toolchain.Toolchain;
 import org.codehaus.plexus.util.StringUtils;
 
@@ -103,7 +107,7 @@ public abstract class AbstractSurefireMojo
      */
     private void convertTestNGParameters()
     {
-        if ( getProperties() == null )
+        if ( getProperties() == null ) // May be predefined from plugin paramaters
         {
             setProperties( new Properties() );
         }
@@ -222,9 +226,9 @@ public abstract class AbstractSurefireMojo
         final ClasspathConfiguration classpathConfiguration =
             new ClasspathConfiguration( isEnableAssertions(), isChildDelegation() );
 
-        BooterConfiguration booterConfiguration =
-            new BooterConfiguration( forkConfiguration.isForking(), forkConfiguration.getClassLoaderConfiguration(), classpathConfiguration,
-                                     isRedirectTestOutputToFile() );
+        ReporterConfiguration reporterConfiguration =
+            new ReporterConfiguration( getReportsDirectory(), Boolean.valueOf( isTrimStackTrace() ) );
+
 
         Artifact surefireArtifact =
             (Artifact) getPluginArtifactMap().get( "org.apache.maven.surefire:surefire-booter" );
@@ -237,6 +241,7 @@ public abstract class AbstractSurefireMojo
 
         Artifact junitArtifact;
         Artifact testNgArtifact;
+        String providerName;
         try
         {
             addArtifact( classpathConfiguration, surefireArtifact );
@@ -245,7 +250,7 @@ public abstract class AbstractSurefireMojo
 
             testNgArtifact = getTestNgArtifact();
 
-            setCorrectProvider( classpathConfiguration, surefireArtifact, junitArtifact, testNgArtifact );
+            providerName = setCorrectProvider( classpathConfiguration, surefireArtifact, junitArtifact, testNgArtifact );
         }
         catch ( ArtifactNotFoundException e )
         {
@@ -261,74 +266,53 @@ public abstract class AbstractSurefireMojo
             throw new MojoExecutionException( "Error to resolving surefire provider dependency: " + e.getMessage(), e );
         }
 
+        DirectoryScannerParameters directoryScannerParameters = null;
         final boolean isTestNg = testNgArtifact != null;
-        String providerName;
-        if ( getSuiteXmlFiles() != null && getSuiteXmlFiles().length > 0 && getTest() == null )
+        TestArtifactInfo testNg = isTestNg ? new TestArtifactInfo( testNgArtifact.getVersion(), testNgArtifact.getClassifier()) : null;
+        TestSuiteDefinition testSuiteDefinition = new TestSuiteDefinition(getSuiteXmlFiles(), null, getTestSourceDirectory(), getTest());
+        final boolean failIfNoTests;
+
+        if ( isValidSuiteXmlFileConfig() && getTest() == null )
         {
+            failIfNoTests = getFailIfNoTests() != null && getFailIfNoTests().booleanValue();
             if ( !isTestNg )
             {
                 throw new MojoExecutionException( "suiteXmlFiles is configured, but there is no TestNG dependency" );
             }
 
-            // TODO: properties should be passed in here too
-            providerName = "org.apache.maven.surefire.testng.TestNGXmlTestSuite";
-            Object[] params =
-                { getSuiteXmlFiles(), getTestSourceDirectory().getAbsolutePath(), testNgArtifact.getVersion(),
-                    testNgArtifact.getClassifier(), getProperties(), getReportsDirectory() };
-            booterConfiguration.setSuiteDefinition( new SuiteDefinition( providerName, params ) );
+            testSuiteDefinition = new TestSuiteDefinition(getSuiteXmlFiles(), getTest(), getTestSourceDirectory(), getTest());
         }
         else
         {
+            if ( isSpecificTestSpecified() && getFailIfNoTests() == null )
+            {
+                setFailIfNoTests( Boolean.TRUE );
+            }
+
+            failIfNoTests = getFailIfNoTests() != null && getFailIfNoTests().booleanValue();
+
+            if ( isAnyConcurrencySelected() && isJunit47Compatible( junitArtifact ) )
+            {
+                getLog().info( "Concurrency config is " + getProperties().toString() );
+            }
+
             List includes = getIncludeList();
             List excludes = getExcludeList();
-
-            if ( getTest() != null )
-            {
-                if ( getFailIfNoTests() == null )
-                {
-                    setFailIfNoTests( Boolean.TRUE );
-                }
-            }
-
-            if ( testNgArtifact != null )
-            {
-                providerName = "org.apache.maven.surefire.testng.TestNGDirectoryTestSuite";
-                Object[] params =
-                    { getTestClassesDirectory(), includes, excludes, getTestSourceDirectory().getAbsolutePath(),
-                        testNgArtifact.getVersion(), testNgArtifact.getClassifier(), getProperties(),
-                        getReportsDirectory() };
-                booterConfiguration.setSuiteDefinition( new SuiteDefinition( providerName, params ) );
-            }
-            else
-            {
-                if ( isAnyConcurrencySelected() && isJunit47Compatible( junitArtifact ) )
-                {
-                    providerName = "org.apache.maven.surefire.junitcore.JUnitCoreDirectoryTestSuite";
-                    getLog().info( "Concurrency config is " + getProperties().toString() );
-                    Object[] params = { getTestClassesDirectory(), includes, excludes, getProperties() };
-                    booterConfiguration.setSuiteDefinition( new SuiteDefinition( providerName, params ) );
-                }
-                else
-                {
-                    if ( isAnyJunit4( junitArtifact ) )
-                    {
-                        providerName = "org.apache.maven.surefire.junit4.JUnit4DirectoryTestSuite";
-                    }
-                    else
-                    {
-                        // fall back to JUnit, which also contains POJO support. Also it can run
-                        // classes compiled against JUnit since it has a dependency on JUnit itself.
-                        providerName = "org.apache.maven.surefire.junit.JUnitDirectoryTestSuite";
-                    }
-                    Object[] params = { getTestClassesDirectory(), includes, excludes };
-                    booterConfiguration.setSuiteDefinition( new SuiteDefinition( providerName, params ) );
-                }
-            }
-            // Consider querying the plugin classpath and load the class, so we can invastigate if we need
-            // these parameters or not. Right now, just play stupid and send it all across.
-            // We're talking like 200 bytes extra in a file.
-            booterConfiguration.setDirectoryScannerOptions( getTestClassesDirectory(), includes, excludes );
+            directoryScannerParameters =
+                new DirectoryScannerParameters( getTestClassesDirectory(), includes, excludes, Boolean.valueOf( failIfNoTests) );
         }
+
+
+        ProviderConfiguration providerConfiguration = new ProviderConfiguration( providerName );
+        List reports = getReporters( forkConfiguration.isForking() );
+        Properties providerProperties = getProperties();
+        if (providerProperties == null) {
+            providerProperties = new Properties(  );
+        }
+        BooterConfiguration booterConfiguration =
+            new BooterConfiguration( providerProperties, forkConfiguration.isForking(), forkConfiguration.getClassLoaderConfiguration(),
+                                     classpathConfiguration, isRedirectTestOutputToFile(), reporterConfiguration, testNg, testSuiteDefinition, directoryScannerParameters, failIfNoTests, reports, providerConfiguration);
+
 
         List classpathElements;
         try
@@ -370,17 +354,24 @@ public abstract class AbstractSurefireMojo
             }
         }
 
-        booterConfiguration.setFailIfNoTests( getFailIfNoTests() != null && getFailIfNoTests().booleanValue() );
-
-        addReporters( booterConfiguration, forkConfiguration.isForking() );
 
         return booterConfiguration;
+    }
+
+    private boolean isSpecificTestSpecified()
+    {
+        return getTest() != null;
+    }
+
+    private boolean isValidSuiteXmlFileConfig()
+    {
+        return getSuiteXmlFiles() != null && getSuiteXmlFiles().length > 0;
     }
 
     private List getExcludeList()
     {
         List excludes;
-        if ( getTest() != null )
+        if ( isSpecificTestSpecified() )
         {
             // Check to see if we are running a single test. The raw parameter will
             // come through if it has not been set.
@@ -406,7 +397,7 @@ public abstract class AbstractSurefireMojo
     private List getIncludeList()
     {
         List includes;
-        if ( getTest() != null )
+        if ( isSpecificTestSpecified() )
         {
             // Check to see if we are running a single test. The raw parameter will
             // come through if it has not been set.
@@ -443,13 +434,15 @@ public abstract class AbstractSurefireMojo
         return includes;
     }
 
-    private void setCorrectProvider( ClasspathConfiguration classpathConfiguration, Artifact surefireArtifact,
+    private String setCorrectProvider( ClasspathConfiguration classpathConfiguration, Artifact surefireArtifact,
                                      Artifact junitArtifact, Artifact testNgArtifact )
         throws ArtifactNotFoundException, ArtifactResolutionException, MojoExecutionException
     {
         if ( testNgArtifact != null )
         {
             setTestNgProvider( classpathConfiguration, surefireArtifact, testNgArtifact );
+            return "org.apache.maven.surefire.testng.TestNGProvider";
+
         }
         else if ( junitArtifact != null && isAnyJunit4( junitArtifact ) )
         {
@@ -457,10 +450,12 @@ public abstract class AbstractSurefireMojo
             {
                 convertJunitCoreParameters();
                 setProvider( classpathConfiguration, "surefire-junit47", surefireArtifact.getBaseVersion(), null );
+                return "org.apache.maven.surefire.junitcore.JUnitCoreProvider";
             }
             else
             {
                 setProvider( classpathConfiguration, "surefire-junit4", surefireArtifact.getBaseVersion(), null );
+                return "org.apache.maven.surefire.junit4.JUnit4Provider";
             }
         }
         else
@@ -468,6 +463,7 @@ public abstract class AbstractSurefireMojo
             // add the JUnit provider as default - it doesn't require JUnit to be present,
             // since it supports POJO tests.
             setProvider( classpathConfiguration, "surefire-junit", surefireArtifact.getBaseVersion(), null );
+            return "org.apache.maven.surefire.junit.JUnit3Provider";
         }
     }
 
@@ -844,56 +840,52 @@ public abstract class AbstractSurefireMojo
      * The Reporter that will be added will be based on the value of the parameter useFile, reportFormat, and
      * printSummary.
      *
-     * @param booterConfiguration The surefire booter that will run tests.
      * @param forking             forking
+     * @return a list of reporters
      */
-    private void addReporters( BooterConfiguration booterConfiguration, boolean forking )
+    private List getReporters( boolean forking )
     {
-        Boolean trimStackTrace = Boolean.valueOf( this.isTrimStackTrace() );
+        List reports = new ArrayList(  );
         if ( isUseFile() )
         {
             if ( isPrintSummary() )
             {
                 if ( forking )
                 {
-                    booterConfiguration.addReport( ForkingConsoleReporter.class.getName(),
-                                                   new Object[]{ trimStackTrace } );
+                    reports.add( ForkingConsoleReporter.class.getName() );
                 }
                 else
                 {
-                    booterConfiguration.addReport( ConsoleReporter.class.getName(), new Object[]{ trimStackTrace } );
+                    reports.add( ConsoleReporter.class.getName() );
                 }
             }
 
             if ( BRIEF_REPORT_FORMAT.equals( getReportFormat() ) )
             {
-                booterConfiguration.addReport( BriefFileReporter.class.getName(),
-                                               new Object[]{ getReportsDirectory(), trimStackTrace } );
+                reports.add( BriefFileReporter.class.getName() );
             }
             else if ( PLAIN_REPORT_FORMAT.equals( getReportFormat() ) )
             {
-                booterConfiguration.addReport( FileReporter.class.getName(),
-                                               new Object[]{ getReportsDirectory(), trimStackTrace } );
+                reports.add( FileReporter.class.getName() );
             }
         }
         else
         {
             if ( BRIEF_REPORT_FORMAT.equals( getReportFormat() ) )
             {
-                booterConfiguration.addReport( BriefConsoleReporter.class.getName(), new Object[]{ trimStackTrace } );
+                reports.add( BriefConsoleReporter.class.getName() );
             }
             else if ( PLAIN_REPORT_FORMAT.equals( getReportFormat() ) )
             {
-                booterConfiguration.addReport( DetailedConsoleReporter.class.getName(),
-                                               new Object[]{ trimStackTrace } );
+                reports.add( DetailedConsoleReporter.class.getName() );
             }
         }
 
         if ( !isDisableXmlReport() )
         {
-            booterConfiguration.addReport( XMLReporter.class.getName(),
-                                           new Object[]{ getReportsDirectory(), trimStackTrace } );
+            reports.add( XMLReporter.class.getName() );
         }
+        return reports;
     }
 
     protected void ensureWorkingDirectoryExists()

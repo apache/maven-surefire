@@ -19,7 +19,12 @@ package org.apache.maven.plugin.surefire.booterclient;
  */
 
 import org.apache.maven.surefire.booter.BooterConfiguration;
+import org.apache.maven.surefire.booter.BooterDeserializer;
 import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
+import org.apache.maven.surefire.report.ReporterConfiguration;
+import org.apache.maven.surefire.testset.DirectoryScannerParameters;
+import org.apache.maven.surefire.testset.TestArtifactInfo;
+import org.apache.maven.surefire.testset.TestSuiteDefinition;
 import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.StringUtils;
 
@@ -47,32 +52,75 @@ import java.util.Properties;
  */
 public class BooterSerializer
 {
-    private static final String TEST_SUITE_PROPERTY_PREFIX = "testSuite.";
-
-    private static final String DIRSCANNER_PROPERTY_PREFIX = "dirscanner.";
-
-    private static final String REPORT_PROPERTY_PREFIX = "report.";
-
-    private static final String PARAMS_SUFIX = ".params";
-
-    private static final String TYPES_SUFIX = ".types";
-
-
-    public void setForkProperties( Properties properties, List testSuites, BooterConfiguration booterConfiguration,
+    public void setForkProperties( Properties properties, BooterConfiguration booterConfiguration,
                                    ClassLoaderConfiguration forkConfiguration )
     {
-        addPropertiesForTypeHolder( booterConfiguration.getReports(), properties, REPORT_PROPERTY_PREFIX );
-        addPropertiesForTypeHolder( testSuites, properties, TEST_SUITE_PROPERTY_PREFIX );
+        if (properties == null){
+            throw new IllegalStateException( "Properties cannot be null");
+        }
+        addList( booterConfiguration.getReports(), properties, BooterDeserializer.REPORT_PROPERTY_PREFIX );
         List params = new ArrayList();
-        params.add( new Object[]{ "directoryScannerOptions", booterConfiguration.getDirScannerParams() } ); 
-        addPropertiesForTypeHolder( params, properties, DIRSCANNER_PROPERTY_PREFIX );
+        params.add( new Object[]{ "directoryScannerOptions", booterConfiguration.getDirScannerParamsArray() } );
+        addPropertiesForTypeHolder( params, properties, BooterDeserializer.DIRSCANNER_PROPERTY_PREFIX );
 
         booterConfiguration.getClasspathConfiguration().setForkProperties( properties );
 
+        ReporterConfiguration reporterConfiguration = booterConfiguration.getReporterConfiguration();
+
+        TestArtifactInfo testNg = booterConfiguration.getTestNg();
+        if ( testNg != null )
+        {
+            if ( testNg.getVersion() != null )
+            {
+                properties.setProperty( "testNgVersion", testNg.getVersion() );
+            }
+            if ( testNg.getClassifier() != null )
+            {
+                properties.setProperty( "testNgClassifier", testNg.getClassifier() );
+            }
+        }
+
+        TestSuiteDefinition testSuiteDefinition = booterConfiguration.getTestSuiteDefinition();
+        if ( testSuiteDefinition != null )
+        {
+            if ( testSuiteDefinition.getTestForFork() != null )
+            {
+                properties.setProperty( "testSuiteDefinitionTest", testSuiteDefinition.getTestForFork() );
+            }
+            if ( testSuiteDefinition.getTestSourceDirectory() != null )
+            {
+                properties.setProperty( "testSuiteDefinitionTestSourceDirectory",
+                                        testSuiteDefinition.getTestSourceDirectory().toString() );
+            }
+            if ( testSuiteDefinition.getSuiteXmlFiles() != null )
+            {
+                properties.setProperty( "testSuiteXmlFiles", getValues( testSuiteDefinition.getSuiteXmlFiles() ) );
+            }
+            if ( testSuiteDefinition.getRequestedTest() != null )
+            {
+                properties.setProperty( "requestedTest", testSuiteDefinition.getRequestedTest() );
+            }
+        }
+
+        DirectoryScannerParameters directoryScannerParameters = booterConfiguration.getDirScannerParams();
+        if ( directoryScannerParameters != null )
+        {
+            properties.setProperty( "failIfNoTests", String.valueOf( directoryScannerParameters.isFailIfNoTests() ) );
+            addList( directoryScannerParameters.getIncludes(), properties, "includes" );
+            addList( directoryScannerParameters.getExcludes(), properties, "excludes" );
+            properties.setProperty( "testClassesDirectory",
+                                    directoryScannerParameters.getTestClassesDirectory().toString() );
+        }
+
+        Boolean rep = reporterConfiguration.isTrimStackTrace();
+        properties.setProperty( "isTrimStackTrace", rep.toString() );
+        properties.setProperty( "reportsDirectory", reporterConfiguration.getReportsDirectory().toString() );
         properties.setProperty( "useSystemClassLoader", String.valueOf( forkConfiguration.isUseSystemClassLoader() ) );
         properties.setProperty( "useManifestOnlyJar",
                                 String.valueOf( forkConfiguration.isManifestOnlyJarRequestedAndUsable() ) );
         properties.setProperty( "failIfNoTests", String.valueOf( booterConfiguration.isFailIfNoTests() ) );
+        properties.setProperty( "providerConfiguration",
+                                booterConfiguration.getProviderConfiguration().getClassName() );
     }
 
     public File writePropertiesFile( String name, Properties properties, boolean debug, File tempDirectory )
@@ -117,22 +165,48 @@ public class BooterSerializer
 
             if ( params != null )
             {
-                String paramProperty = convert( params[0] );
-                String typeProperty = params[0].getClass().getName();
-                for ( int j = 1; j < params.length; j++ )
-                {
-                    paramProperty += "|";
-                    typeProperty += "|";
-                    if ( params[j] != null )
-                    {
-                        paramProperty += convert( params[j] );
-                        typeProperty += params[j].getClass().getName();
-                    }
-                }
-                properties.setProperty( propertyPrefix + i + PARAMS_SUFIX, paramProperty );
-                properties.setProperty( propertyPrefix + i + TYPES_SUFIX, typeProperty );
+                String paramProperty = getValues( params );
+                String typeProperty = getTypes( params );
+                properties.setProperty( propertyPrefix + i + BooterDeserializer.PARAMS_SUFIX, paramProperty );
+                properties.setProperty( propertyPrefix + i + BooterDeserializer.TYPES_SUFIX, typeProperty );
             }
         }
+    }
+
+    private String getValues( Object[] params )
+    {
+        StringBuffer result = new StringBuffer();
+        if ( params != null && params.length > 0 )
+        {
+            result.append( convert( params[0] ) );
+            for ( int j = 1; j < params.length; j++ )
+            {
+                result.append( "|" );
+                if ( params[j] != null )
+                {
+                    result.append( convert( params[j] ) );
+                }
+            }
+        }
+        return result.toString();
+    }
+
+    private String getTypes( Object[] params )
+    {
+        StringBuffer result = new StringBuffer();
+        if ( params != null && params.length > 0 )
+        {
+            result.append( params[0].getClass().getName() );
+            for ( int j = 1; j < params.length; j++ )
+            {
+                result.append( "|" );
+                if ( params[j] != null )
+                {
+                    result.append( params[j].getClass().getName() );
+                }
+            }
+        }
+        return result.toString();
     }
 
     private static String convert( Object param )
@@ -158,6 +232,19 @@ public class BooterSerializer
         else
         {
             return param.toString();
+        }
+    }
+
+    private void addList( List items, Properties properties, String propertyPrefix )
+    {
+        for ( int i = 0; i < items.size(); i++ )
+        {
+            Object item = items.get( i );
+            if ( item == null )
+            {
+                throw new NullPointerException( propertyPrefix + i + " has null value" );
+            }
+            properties.setProperty( propertyPrefix + i, item.toString() );
         }
     }
 

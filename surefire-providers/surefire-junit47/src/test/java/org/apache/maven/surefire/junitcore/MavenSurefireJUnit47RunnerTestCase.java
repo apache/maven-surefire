@@ -18,6 +18,7 @@ package org.apache.maven.surefire.junitcore;
 
 import junit.framework.Assert;
 import org.apache.maven.surefire.report.ConsoleReporter;
+import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterManagerFactory;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -26,6 +27,7 @@ import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -118,6 +120,8 @@ public class MavenSurefireJUnit47RunnerTestCase
 
       List reportDefinitions = new ArrayList();
       reportDefinitions.add(reportDefinition);
+
+      ReporterConfiguration reporterConfiguration = new ReporterConfiguration( new File( "." ), Boolean.TRUE );
 
       ReporterManagerFactory reporterManagerFactory = new ReporterManagerFactory(reportDefinitions, this.getClass().getClassLoader());
 

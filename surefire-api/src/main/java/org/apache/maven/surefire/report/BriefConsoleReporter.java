@@ -29,6 +29,12 @@ package org.apache.maven.surefire.report;
 public class BriefConsoleReporter
     extends AbstractConsoleReporter
 {
+    public BriefConsoleReporter( ReporterConfiguration reporterConfiguration)
+    {
+        super( BRIEF, reporterConfiguration );
+    }
+
+    /** @deprecated Can be removed once we build surfire with 2.7 */
     public BriefConsoleReporter( Boolean trimStackTrace )
     {
         super( BRIEF, trimStackTrace );
