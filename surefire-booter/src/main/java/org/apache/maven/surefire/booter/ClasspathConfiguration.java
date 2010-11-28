@@ -64,7 +64,7 @@ public class ClasspathConfiguration
 
 
 
-    public ClasspathConfiguration( boolean enableAssertions, boolean childDelegation)
+    public ClasspathConfiguration( boolean enableAssertions, boolean childDelegation )
     {
         this.enableAssertions = enableAssertions;
         this.childDelegation = childDelegation;

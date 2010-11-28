@@ -42,7 +42,7 @@ public abstract class AbstractConsoleReporter
 
     private static final PrintStream originalSystemOut = System.out;
 
-    protected AbstractConsoleReporter( String format, ReporterConfiguration reporterConfiguration)
+    protected AbstractConsoleReporter( String format, ReporterConfiguration reporterConfiguration )
     {
         // TODO: use logger
         super( new PrintWriter( new OutputStreamWriter( new BufferedOutputStream( originalSystemOut, BUFFER_SIZE ) ) ), format,

@@ -21,7 +21,6 @@ package org.apache.maven.surefire.booter;
 
 import org.apache.maven.surefire.providerapi.ProviderConfiguration;
 import org.apache.maven.surefire.report.ReporterConfiguration;
-import org.apache.maven.surefire.suite.SuiteDefinition;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestSuiteDefinition;

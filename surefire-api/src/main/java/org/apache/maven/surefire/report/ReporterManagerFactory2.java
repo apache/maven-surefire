@@ -19,7 +19,6 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
-
 import org.apache.maven.surefire.report.Reporter;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterManager;

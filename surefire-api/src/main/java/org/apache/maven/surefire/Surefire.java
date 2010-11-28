@@ -155,7 +155,8 @@ public class Surefire
             totalTests += testCount;
         }
 
-        if ( totalTests == 0 ){
+        if ( totalTests == 0 )
+        {
             reporterManagerFactory.createReporterManager().writeMessage( "There are no tests to run." );
         }
         else

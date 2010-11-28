@@ -29,7 +29,7 @@ import java.util.Properties;
  * <p/>
  * Deals with deserialization of the booter wire-level protocol
  *
- * Todo: Look at releationship between this class and BooterSerializer (BooterDeserializer?)
+ * Todo: Look at relationship between this class and BooterSerializer (BooterDeserializer?)
  *
  * @author Jason van Zyl
  * @author Emmanuel Venisse
@@ -72,7 +72,7 @@ public class ForkedBooter
             }
             else
             {
-                result = booter.runSuitesInProcess(p);
+                result = booter.runSuitesInProcess( p );
             }
 
             booterDeserializer.writePropertiesFile( surefirePropertiesFile, "surefire", p );

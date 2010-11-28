@@ -1,4 +1,5 @@
 package org.apache.maven.surefire.testset;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -19,7 +20,6 @@ package org.apache.maven.surefire.testset;
  */
 
 import java.io.File;
-import java.lang.reflect.Field;
 import java.util.List;
 
 /**

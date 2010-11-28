@@ -32,7 +32,8 @@ public class ConsoleReporter
     {
         super( SUMMARY, reporterConfiguration );
     }
-    /** @deprecated Can be removed once we build surfire with 2.7 */
+
+    /** @deprecated Can be removed once we build Surefire with 2.7 */
     public ConsoleReporter( Boolean trimStackTrace )
     {
         super( SUMMARY, trimStackTrace );

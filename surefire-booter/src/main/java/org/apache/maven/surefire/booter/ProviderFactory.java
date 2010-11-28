@@ -1,4 +1,5 @@
 package org.apache.maven.surefire.booter;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -64,11 +65,12 @@ public class ProviderFactory
         surefireReflector.setReporterConfigurationAware( o, booterConfiguration.getReporterConfiguration() );
         surefireReflector.setTestClassLoaderAware( o, testClassLoader );
         surefireReflector.setTestArtifactInfoAware( o, booterConfiguration.getTestNg() );
-/*
 
-        if (o instanceof ReportingAware ){
-            ReporterManagerFactory reporterManagerFactory = new ReporterManagerFactory2( booterConfiguration.getReports(),  surefireClassLoader, booterConfiguration.getReporterConfiguration());
-            ((ReportingAware)o).setReporterManagerFactory( reporterManagerFactory );
+        /*
+        if ( o instanceof ReportingAware )
+        {
+            ReporterManagerFactory reporterManagerFactory = new ReporterManagerFactory2( booterConfiguration.getReports(), surefireClassLoader, booterConfiguration.getReporterConfiguration() );
+            ((ReportingAware) o).setReporterManagerFactory( reporterManagerFactory );
         }
 
         Thread.currentThread().setContextClassLoader( context );*/

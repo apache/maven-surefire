@@ -1,4 +1,5 @@
 package org.apache.maven.surefire.providerapi;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -19,7 +20,6 @@ package org.apache.maven.surefire.providerapi;
  */
 
 import org.apache.maven.surefire.testset.TestArtifactInfo;
-import org.apache.maven.surefire.testset.TestSuiteDefinition;
 
 /**
  * @author Kristian Rosenvold

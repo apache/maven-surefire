@@ -30,12 +30,12 @@ import java.io.File;
 public class BriefFileReporter
     extends AbstractFileReporter
 {
-    public BriefFileReporter( ReporterConfiguration reporterConfiguration)
+    public BriefFileReporter( ReporterConfiguration reporterConfiguration )
     {
-        super( reporterConfiguration, BRIEF);
+        super( reporterConfiguration, BRIEF );
     }
 
-    /** @deprecated Can be removed once we build surfire with 2.7 */
+    /** @deprecated Can be removed once we build Surefire with 2.7 */
     public BriefFileReporter( File reportsDirectory, Boolean trimStackTrace )
     {
         super( reportsDirectory, BRIEF, trimStackTrace );

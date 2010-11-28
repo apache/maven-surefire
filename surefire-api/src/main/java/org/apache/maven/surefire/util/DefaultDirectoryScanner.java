@@ -1,4 +1,5 @@
 package org.apache.maven.surefire.util;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -18,10 +19,7 @@ package org.apache.maven.surefire.util;
  * under the License.
  */
 
-import org.apache.maven.surefire.testset.TestSetFailedException;
-
 import java.io.File;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 

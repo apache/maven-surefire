@@ -1,4 +1,5 @@
 package org.apache.maven.surefire.report;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -28,8 +29,6 @@ import java.util.Collections;
 public class RunStatistics
     extends TestSetStatistics
 {
-
-
     /**
      * Holds the source(s) that causes the error(s).
      */

@@ -19,7 +19,6 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
-
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
 import java.lang.reflect.Constructor;

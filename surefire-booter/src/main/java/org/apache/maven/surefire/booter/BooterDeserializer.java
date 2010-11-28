@@ -101,17 +101,17 @@ public class BooterDeserializer
         {
             String name = (String) e.nextElement();
 
-            if (name.startsWith(REPORT_PROPERTY_PREFIX) && !isTypeHolderProperty(name))
+            if ( name.startsWith( REPORT_PROPERTY_PREFIX ) && !isTypeHolderProperty( name ) )
             {
                 String className = properties.getProperty( name );
                 reportsMap.put( name, className );
             }
-            else if ( name.startsWith( INCLUDES_PROPERTY_PREFIX ) && !isTypeHolderProperty(name)  )
+            else if ( name.startsWith( INCLUDES_PROPERTY_PREFIX ) && !isTypeHolderProperty( name ) )
             {
                 String className = properties.getProperty( name );
                 includes.put( name, className );
             }
-            else if ( name.startsWith( EXCLUDES_PROPERTY_PREFIX) && !isTypeHolderProperty(name) )
+            else if ( name.startsWith( EXCLUDES_PROPERTY_PREFIX ) && !isTypeHolderProperty( name ) )
             {
                 String className = properties.getProperty( name );
                 excludes.put( name, className );
@@ -183,7 +183,8 @@ public class BooterDeserializer
             }
             else if ( "testClassesDirectory".equals( name ) )
             {
-                testClassesDirectory = (File) getParamValue( properties.getProperty( "testClassesDirectory"), File.class.getName() );
+                testClassesDirectory =
+                    (File) getParamValue( properties.getProperty( "testClassesDirectory" ), File.class.getName() );
             }
             else if ( "testSuiteXmlFiles".equals( name ) )
             {
@@ -197,8 +198,9 @@ public class BooterDeserializer
         }
 
 
-        dirScannerParams = new DirectoryScannerParameters( testClassesDirectory, new ArrayList(includes.values()) ,new ArrayList(excludes.values()), Boolean.valueOf(failIfNotests));
-
+        dirScannerParams =
+            new DirectoryScannerParameters( testClassesDirectory, new ArrayList( includes.values() ),
+                                            new ArrayList( excludes.values() ), Boolean.valueOf( failIfNotests ) );
 
         TestArtifactInfo testNg = new TestArtifactInfo( testNgVersion, testNgClassifier );
         TestSuiteDefinition testSuiteDefinition = new TestSuiteDefinition( testSuiteXmlFiles, testForFork,
@@ -221,8 +223,9 @@ public class BooterDeserializer
                                         testSuiteDefinition, providerConfigurationObj );
     }
 
-    private boolean isTypeHolderProperty(String name) {
-        return name.endsWith(PARAMS_SUFIX) || name.endsWith(TYPES_SUFIX);
+    private boolean isTypeHolderProperty( String name )
+    {
+        return name.endsWith( PARAMS_SUFIX ) || name.endsWith( TYPES_SUFIX );
     }
 
     void writePropertiesFile( File file, String name, Properties properties )
@@ -297,7 +300,7 @@ public class BooterDeserializer
         {
             outputStream.close();
         }
-        catch( IOException ex )
+        catch ( IOException ex )
         {
             // ignore
         }

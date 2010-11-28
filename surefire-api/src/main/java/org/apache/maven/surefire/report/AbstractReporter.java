@@ -56,7 +56,7 @@ public abstract class AbstractReporter
     // ----------------------------------------------------------------------
 
 
-    protected AbstractReporter( ReporterConfiguration reporterConfiguration)
+    protected AbstractReporter( ReporterConfiguration reporterConfiguration )
     {
         this.trimStackTrace = reporterConfiguration.isTrimStackTrace().booleanValue();
     }
@@ -197,7 +197,6 @@ public abstract class AbstractReporter
         {
             return null;
         }
-        return trimStackTrace ? writer.writeTrimmedTraceToString()
-            : writer.writeTraceToString();
+        return trimStackTrace ? writer.writeTrimmedTraceToString() : writer.writeTraceToString();
     }
 }

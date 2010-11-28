@@ -1,4 +1,5 @@
 package org.apache.maven.surefire.util;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -17,8 +18,6 @@ package org.apache.maven.surefire.util;
  * specific language governing permissions and limitations
  * under the License.
  */
-
-import org.apache.maven.surefire.testset.TestSetFailedException;
 
 /**
  * @author Kristian Rosenvold

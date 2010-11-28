@@ -30,7 +30,7 @@ import java.io.PrintStream;
  * <p/>
  * Please note that this design is inherently single-threaded test-linear, and is intended only
  * for use with ReporterManager, which is also test-linear. While it will capture
- * output in a multi-threaded scenario, there's no way to associate ouput with the correct
+ * output in a multi-threaded scenario, there's no way to associate output with the correct
  * test/thread.
  * <p/>
  * Note; this class does not need synchronization because all of these methods are serially invoked on

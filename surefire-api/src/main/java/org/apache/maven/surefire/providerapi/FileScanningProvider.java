@@ -1,4 +1,5 @@
 package org.apache.maven.surefire.providerapi;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -31,7 +32,8 @@ import org.apache.maven.surefire.util.DirectoryScanner;
  * @author Kristian Rosenvold
  */
 public class FileScanningProvider
-    implements DirectoryScannerParametersAware, ReportingAware, TestClassLoaderAware, TestSuiteDefinitionAware,ReporterManagerFactoryAware
+    implements DirectoryScannerParametersAware, ReportingAware, TestClassLoaderAware, TestSuiteDefinitionAware,
+    ReporterManagerFactoryAware
 {
     private DirectoryScannerParameters directoryScannerParameters;
 

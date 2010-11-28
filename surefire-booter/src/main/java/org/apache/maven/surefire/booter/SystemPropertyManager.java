@@ -1,4 +1,5 @@
 package org.apache.maven.surefire.booter;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -33,10 +34,9 @@ public class SystemPropertyManager
         return loadProperties( new FileInputStream( file ) );
     }
 
-    /*
-    Loads the properties, closes the stream
+    /**
+     * Loads the properties, closes the stream
      */
-
     public static Properties loadProperties( InputStream inStream )
         throws IOException
     {
@@ -48,7 +48,7 @@ public class SystemPropertyManager
         }
         finally
         {
-            close(inStream);
+            close( inStream );
         }
 
         return p;

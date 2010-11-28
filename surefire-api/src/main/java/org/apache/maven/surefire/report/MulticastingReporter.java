@@ -126,8 +126,9 @@ public class MulticastingReporter
         {
             Reporter reporter = ( (Reporter) it.next() );
             // Todo: Really need to find out how the surefire4.x provider manages to avoid printing to this one.
-            if (!(reporter instanceof BriefFileReporter)){
-               reporter.writeMessage( message);
+            if ( !( reporter instanceof BriefFileReporter ) )
+            {
+                reporter.writeMessage( message );
             }
         }
     }

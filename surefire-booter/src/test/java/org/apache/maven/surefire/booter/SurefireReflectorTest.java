@@ -1,4 +1,5 @@
 package org.apache.maven.surefire.booter;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -26,7 +27,6 @@ import org.apache.maven.surefire.providerapi.TestArtifactInfoAware;
 import org.apache.maven.surefire.providerapi.TestClassLoaderAware;
 import org.apache.maven.surefire.providerapi.TestSuiteDefinitionAware;
 import org.apache.maven.surefire.report.ReporterConfiguration;
-import org.apache.maven.surefire.suite.SuiteDefinition;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestSuiteDefinition;

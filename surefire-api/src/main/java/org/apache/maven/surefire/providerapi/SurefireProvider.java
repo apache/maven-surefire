@@ -1,4 +1,5 @@
 package org.apache.maven.surefire.providerapi;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -25,7 +26,7 @@ import org.apache.maven.surefire.testset.TestSetFailedException;
 import java.util.Iterator;
 
 /**
- * Interface to be implemented by all surefire providers.
+ * Interface to be implemented by all Surefire providers.
  *
  * @author Kristian Rosenvold
  */

@@ -39,7 +39,6 @@ import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.codehaus.plexus.util.xml.Xpp3DomWriter;
 
-
 /**
  * XML format reporter.
  *
@@ -55,7 +54,7 @@ public class XMLReporter
 
     private List results = Collections.synchronizedList( new ArrayList() );
 
-    public XMLReporter( ReporterConfiguration reporterConfiguration)
+    public XMLReporter( ReporterConfiguration reporterConfiguration )
     {
         super( reporterConfiguration );
 

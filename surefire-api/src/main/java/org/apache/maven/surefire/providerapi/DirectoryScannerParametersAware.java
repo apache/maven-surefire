@@ -1,4 +1,5 @@
 package org.apache.maven.surefire.providerapi;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -19,13 +20,11 @@ package org.apache.maven.surefire.providerapi;
  */
 
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
-import org.apache.maven.surefire.util.DirectoryScanner;
 
 /**
  * @author Kristian Rosenvold
  */
 public interface DirectoryScannerParametersAware
 {
-    public void setDirectoryScannerParameters(
-        org.apache.maven.surefire.testset.DirectoryScannerParameters directoryScanner );
+    public void setDirectoryScannerParameters( DirectoryScannerParameters directoryScanner );
 }

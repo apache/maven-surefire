@@ -29,7 +29,6 @@ import org.apache.maven.surefire.report.ReporterManagerFactory;
 import org.apache.maven.surefire.report.ReporterManagerFactory2;
 import org.apache.maven.surefire.report.RunStatistics;
 import org.apache.maven.surefire.suite.RunResult;
-import org.apache.maven.surefire.suite.SuiteDefinition;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestSetFailedException;

@@ -111,14 +111,15 @@ public class TestSetStatistics
     }
 
 
-    public synchronized RunResult getRunResult(){
+    public synchronized RunResult getRunResult()
+    {
         return new RunResult( completedCount, errors, failures, skipped );
     }
 
     public synchronized String getSummary()
     {
-        return "Tests run: " + completedCount + ", Failures: " + failures + ", Errors: " + errors + ", Skipped: " +
-            skipped;
+        return "Tests run: " + completedCount + ", Failures: " + failures + ", Errors: " + errors + ", Skipped: "
+            + skipped;
     }
 
 }
