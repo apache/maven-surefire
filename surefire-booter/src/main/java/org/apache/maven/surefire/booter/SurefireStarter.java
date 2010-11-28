@@ -84,7 +84,7 @@ public class SurefireStarter
             // The test classloader must be constructed first to avoid issues with commons-logging until we properly
             // separate the TestNG classloader
             ClassLoader testsClassLoader;
-            String testClassPath = getClasspathConfiguration().getTestClassPathAsString();
+            String testClassPath = getClasspathConfiguration().getTestClasspath().getClassPathAsString();
             System.setProperty( "surefire.test.class.path", testClassPath );
             if ( booterConfiguration.isManifestOnlyJarRequestedAndUsable() )
             {

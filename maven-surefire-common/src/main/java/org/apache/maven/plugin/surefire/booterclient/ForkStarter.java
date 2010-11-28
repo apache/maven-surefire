@@ -19,18 +19,19 @@ package org.apache.maven.plugin.surefire.booterclient;
  * under the License.
  */
 
-import org.apache.maven.surefire.booter.BooterConfiguration;
-import org.apache.maven.surefire.booter.ClasspathConfiguration;
-import org.apache.maven.surefire.booter.SurefireBooterForkException;
-import org.apache.maven.surefire.booter.SurefireExecutionException;
-import org.apache.maven.surefire.booter.SurefireReflector;
-import org.apache.maven.surefire.booter.SurefireStarter;
 import org.apache.maven.plugin.surefire.booterclient.output.FileOutputConsumerProxy;
 import org.apache.maven.plugin.surefire.booterclient.output.OutputConsumer;
 import org.apache.maven.plugin.surefire.booterclient.output.StandardOutputConsumer;
 import org.apache.maven.plugin.surefire.booterclient.output.SupressFooterOutputConsumerProxy;
 import org.apache.maven.plugin.surefire.booterclient.output.SupressHeaderOutputConsumerProxy;
-import org.apache.maven.surefire.booter.*;
+import org.apache.maven.surefire.booter.BooterConfiguration;
+import org.apache.maven.surefire.booter.Classpath;
+import org.apache.maven.surefire.booter.ClasspathConfiguration;
+import org.apache.maven.surefire.booter.ProviderFactory;
+import org.apache.maven.surefire.booter.SurefireBooterForkException;
+import org.apache.maven.surefire.booter.SurefireExecutionException;
+import org.apache.maven.surefire.booter.SurefireReflector;
+import org.apache.maven.surefire.booter.SurefireStarter;
 import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.cli.CommandLineException;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
@@ -42,7 +43,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Properties;
 
 
@@ -86,7 +86,7 @@ public class ForkStarter
         if ( ForkConfiguration.FORK_NEVER.equals( requestedForkMode ) )
         {
             SurefireStarter testVmBooter = new SurefireStarter( booterConfiguration );
-            result = testVmBooter.runSuitesInProcess(booterConfiguration.getProviderProperties());
+            result = testVmBooter.runSuitesInProcess( booterConfiguration.getProviderProperties() );
         }
         else if ( ForkConfiguration.FORK_ONCE.equals( requestedForkMode ) )
         {
@@ -127,14 +127,13 @@ public class ForkStarter
             throw new SurefireBooterForkException( "Unable to create classloader to find test suites", e );
         }
 
-
         boolean showHeading = true;
-        final ProviderFactory providerFactory = new ProviderFactory( booterConfiguration, surefireClassLoader);
-        Object surefireProvider = providerFactory.createProvider(testsClassLoader);
+        final ProviderFactory providerFactory = new ProviderFactory( booterConfiguration, surefireClassLoader );
+        Object surefireProvider = providerFactory.createProvider( testsClassLoader );
 
         Properties properties = new Properties();
 
-        final Iterator suites = (Iterator) SurefireReflector.getSuites(surefireProvider);
+        final Iterator suites = (Iterator) SurefireReflector.getSuites( surefireProvider );
         while ( suites.hasNext() )
         {
             Object testSet = suites.next();
@@ -206,9 +205,14 @@ public class ForkStarter
             throw new SurefireBooterForkException( "Error creating properties files for forking", e );
         }
 
-        List bootClasspath = getClasspathConfiguration().getBootClasspath( booterConfiguration.useSystemClassLoader() );
+        final Classpath bootClasspathConfiguration = forkConfiguration.getBootClasspathConfiguration();
+        final Classpath additionlClassPathUrls = booterConfiguration.useSystemClassLoader()
+            ? booterConfiguration.getClasspathConfiguration().getTestClasspath()
+            : null;
 
-        Commandline cli = forkConfiguration.createCommandLine( bootClasspath );
+        Classpath bootClasspath = bootClasspathConfiguration.append( additionlClassPathUrls );
+
+        Commandline cli = forkConfiguration.createCommandLine( bootClasspath.getClassPath() );
 
         cli.createArg().setFile( surefireProperties );
 

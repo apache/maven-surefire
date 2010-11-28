@@ -20,7 +20,7 @@ package org.apache.maven.plugin.surefire.booterclient;
  */
 
 import junit.framework.TestCase;
-import org.apache.maven.plugin.surefire.booterclient.ForkConfiguration;
+import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.cli.Commandline;
@@ -75,7 +75,7 @@ public class ForkConfigurationTest
     public static ForkConfiguration getForkConfiguration()
         throws IOException
     {
-        ForkConfiguration forkConfiguration = new ForkConfiguration();
+        ForkConfiguration forkConfiguration = new ForkConfiguration( new Classpath() );
         forkConfiguration.setWorkingDirectory( new File( "." ).getCanonicalFile() );
         return forkConfiguration;
     }

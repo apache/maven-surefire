@@ -37,6 +37,7 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.surefire.booterclient.ForkConfiguration;
 import org.apache.maven.shared.artifact.filter.PatternIncludesArtifactFilter;
 import org.apache.maven.surefire.booter.BooterConfiguration;
+import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.ClasspathConfiguration;
 import org.apache.maven.surefire.providerapi.ProviderConfiguration;
 import org.apache.maven.surefire.report.BriefConsoleReporter;
@@ -48,8 +49,8 @@ import org.apache.maven.surefire.report.ForkingConsoleReporter;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.XMLReporter;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
-import org.apache.maven.surefire.testset.TestSuiteDefinition;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
+import org.apache.maven.surefire.testset.TestSuiteDefinition;
 import org.apache.maven.toolchain.Toolchain;
 import org.codehaus.plexus.util.StringUtils;
 
@@ -229,7 +230,6 @@ public abstract class AbstractSurefireMojo
         ReporterConfiguration reporterConfiguration =
             new ReporterConfiguration( getReportsDirectory(), Boolean.valueOf( isTrimStackTrace() ) );
 
-
         Artifact surefireArtifact =
             (Artifact) getPluginArtifactMap().get( "org.apache.maven.surefire:surefire-booter" );
         if ( surefireArtifact == null )
@@ -244,13 +244,15 @@ public abstract class AbstractSurefireMojo
         String providerName;
         try
         {
-            addArtifact( classpathConfiguration, surefireArtifact );
+            addArtifact( forkConfiguration.getBootClasspathConfiguration(), surefireArtifact );
 
             junitArtifact = getJunitArtifact();
 
             testNgArtifact = getTestNgArtifact();
 
-            providerName = setCorrectProvider( classpathConfiguration, surefireArtifact, junitArtifact, testNgArtifact );
+            providerName =
+                setCorrectProvider( forkConfiguration.getBootClasspathConfiguration(), classpathConfiguration,
+                                    surefireArtifact, junitArtifact, testNgArtifact );
         }
         catch ( ArtifactNotFoundException e )
         {
@@ -268,8 +270,10 @@ public abstract class AbstractSurefireMojo
 
         DirectoryScannerParameters directoryScannerParameters = null;
         final boolean isTestNg = testNgArtifact != null;
-        TestArtifactInfo testNg = isTestNg ? new TestArtifactInfo( testNgArtifact.getVersion(), testNgArtifact.getClassifier()) : null;
-        TestSuiteDefinition testSuiteDefinition = new TestSuiteDefinition(getSuiteXmlFiles(), null, getTestSourceDirectory(), getTest());
+        TestArtifactInfo testNg =
+            isTestNg ? new TestArtifactInfo( testNgArtifact.getVersion(), testNgArtifact.getClassifier() ) : null;
+        TestSuiteDefinition testSuiteDefinition =
+            new TestSuiteDefinition( getSuiteXmlFiles(), null, getTestSourceDirectory(), getTest() );
         final boolean failIfNoTests;
 
         if ( isValidSuiteXmlFileConfig() && getTest() == null )
@@ -280,7 +284,8 @@ public abstract class AbstractSurefireMojo
                 throw new MojoExecutionException( "suiteXmlFiles is configured, but there is no TestNG dependency" );
             }
 
-            testSuiteDefinition = new TestSuiteDefinition(getSuiteXmlFiles(), getTest(), getTestSourceDirectory(), getTest());
+            testSuiteDefinition =
+                new TestSuiteDefinition( getSuiteXmlFiles(), getTest(), getTestSourceDirectory(), getTest() );
         }
         else
         {
@@ -298,21 +303,22 @@ public abstract class AbstractSurefireMojo
 
             List includes = getIncludeList();
             List excludes = getExcludeList();
-            directoryScannerParameters =
-                new DirectoryScannerParameters( getTestClassesDirectory(), includes, excludes, Boolean.valueOf( failIfNoTests) );
+            directoryScannerParameters = new DirectoryScannerParameters( getTestClassesDirectory(), includes, excludes,
+                                                                         Boolean.valueOf( failIfNoTests ) );
         }
-
 
         ProviderConfiguration providerConfiguration = new ProviderConfiguration( providerName );
         List reports = getReporters( forkConfiguration.isForking() );
         Properties providerProperties = getProperties();
-        if (providerProperties == null) {
-            providerProperties = new Properties(  );
+        if ( providerProperties == null )
+        {
+            providerProperties = new Properties();
         }
         BooterConfiguration booterConfiguration =
-            new BooterConfiguration( providerProperties, forkConfiguration.isForking(), forkConfiguration.getClassLoaderConfiguration(),
-                                     classpathConfiguration, isRedirectTestOutputToFile(), reporterConfiguration, testNg, testSuiteDefinition, directoryScannerParameters, failIfNoTests, reports, providerConfiguration);
-
+            new BooterConfiguration( providerProperties, forkConfiguration.isForking(),
+                                     forkConfiguration.getClassLoaderConfiguration(), classpathConfiguration,
+                                     isRedirectTestOutputToFile(), reporterConfiguration, testNg, testSuiteDefinition,
+                                     directoryScannerParameters, failIfNoTests, reports, providerConfiguration );
 
         List classpathElements;
         try
@@ -332,7 +338,7 @@ public abstract class AbstractSurefireMojo
 
             getLog().debug( "  " + classpathElement );
 
-            classpathConfiguration.addClassPathUrl( classpathElement );
+            classpathConfiguration.addClasspathUrl( classpathElement );
         }
 
         Toolchain tc = getToolchain();
@@ -353,7 +359,6 @@ public abstract class AbstractSurefireMojo
                 setJvm( tc.findTool( "java" ) ); //NOI18N
             }
         }
-
 
         return booterConfiguration;
     }
@@ -434,13 +439,14 @@ public abstract class AbstractSurefireMojo
         return includes;
     }
 
-    private String setCorrectProvider( ClasspathConfiguration classpathConfiguration, Artifact surefireArtifact,
-                                     Artifact junitArtifact, Artifact testNgArtifact )
+    private String setCorrectProvider( Classpath bootClasspathConfiguration,
+                                       ClasspathConfiguration classpathConfiguration, Artifact surefireArtifact,
+                                       Artifact junitArtifact, Artifact testNgArtifact )
         throws ArtifactNotFoundException, ArtifactResolutionException, MojoExecutionException
     {
         if ( testNgArtifact != null )
         {
-            setTestNgProvider( classpathConfiguration, surefireArtifact, testNgArtifact );
+            setTestNgProvider( bootClasspathConfiguration, classpathConfiguration, surefireArtifact, testNgArtifact );
             return "org.apache.maven.surefire.testng.TestNGProvider";
 
         }
@@ -467,8 +473,8 @@ public abstract class AbstractSurefireMojo
         }
     }
 
-    private void setTestNgProvider( ClasspathConfiguration classpathConfiguration, Artifact surefireArtifact,
-                                    Artifact testNgArtifact )
+    private void setTestNgProvider( Classpath bootClasspathConfiguration, ClasspathConfiguration classpathConfiguration,
+                                    Artifact surefireArtifact, Artifact testNgArtifact )
         throws ArtifactNotFoundException, ArtifactResolutionException
     {
         convertTestNGParameters();
@@ -478,7 +484,7 @@ public abstract class AbstractSurefireMojo
             getProperties().setProperty( "testng.test.classpath", getTestClassesDirectory().getAbsolutePath() );
         }
 
-        addArtifact( classpathConfiguration, testNgArtifact );
+        addArtifact( bootClasspathConfiguration, testNgArtifact );
 
         // The plugin uses a JDK based profile to select the right testng. We might be explicity using a
         // different one since its based on the source level, not the JVM. Prune using the filter.
@@ -517,9 +523,9 @@ public abstract class AbstractSurefireMojo
         return junitArtifact;
     }
 
-    protected ForkConfiguration getForkConfiguration()
+    protected ForkConfiguration getForkConfiguration( Classpath bootClasspathConfiguration )
     {
-        ForkConfiguration fork = new ForkConfiguration();
+        ForkConfiguration fork = new ForkConfiguration( bootClasspathConfiguration );
 
         fork.setForkMode( getForkMode() );
 
@@ -704,7 +710,7 @@ public abstract class AbstractSurefireMojo
                 "Adding to " + getPluginName() + " test classpath: " + artifact.getFile().getAbsolutePath() +
                     " Scope: " + artifact.getScope() );
 
-            classpathConfiguration.addSurefireClassPathUrl( artifact.getFile().getAbsolutePath() );
+            classpathConfiguration.addSurefireClasspathUrl( artifact.getFile().getAbsolutePath() );
         }
     }
 
@@ -725,7 +731,7 @@ public abstract class AbstractSurefireMojo
                                                           getRemoteRepositories(), getMetadataSource(), filter );
     }
 
-    private void addArtifact( ClasspathConfiguration classpathConfiguration, Artifact surefireArtifact )
+    private void addArtifact( Classpath bootClasspath, Artifact surefireArtifact )
         throws ArtifactNotFoundException, ArtifactResolutionException
     {
         ArtifactResolutionResult result = resolveArtifact( null, surefireArtifact );
@@ -738,7 +744,7 @@ public abstract class AbstractSurefireMojo
                 "Adding to " + getPluginName() + " booter test classpath: " + artifact.getFile().getAbsolutePath() +
                     " Scope: " + artifact.getScope() );
 
-            classpathConfiguration.addSurefireBootClassPathUrl( artifact.getFile().getAbsolutePath() );
+            bootClasspath.addClassPathElementUrl( artifact.getFile().getAbsolutePath() );
         }
     }
 
@@ -840,12 +846,12 @@ public abstract class AbstractSurefireMojo
      * The Reporter that will be added will be based on the value of the parameter useFile, reportFormat, and
      * printSummary.
      *
-     * @param forking             forking
+     * @param forking forking
      * @return a list of reporters
      */
     private List getReporters( boolean forking )
     {
-        List reports = new ArrayList(  );
+        List reports = new ArrayList();
         if ( isUseFile() )
         {
             if ( isPrintSummary() )

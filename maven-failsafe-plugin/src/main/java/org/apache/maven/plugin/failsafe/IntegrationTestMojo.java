@@ -19,6 +19,28 @@ package org.apache.maven.plugin.failsafe;
  * under the License.
  */
 
+import org.apache.maven.artifact.factory.ArtifactFactory;
+import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
+import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.artifact.resolver.ArtifactResolver;
+import org.apache.maven.execution.MavenSession;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugin.surefire.AbstractSurefireMojo;
+import org.apache.maven.plugin.surefire.SurefireExecutionParameters;
+import org.apache.maven.plugin.surefire.booterclient.ForkConfiguration;
+import org.apache.maven.plugin.surefire.booterclient.ForkStarter;
+import org.apache.maven.project.MavenProject;
+import org.apache.maven.surefire.booter.BooterConfiguration;
+import org.apache.maven.surefire.booter.Classpath;
+import org.apache.maven.surefire.booter.SurefireBooterForkException;
+import org.apache.maven.surefire.booter.SurefireExecutionException;
+import org.apache.maven.surefire.failsafe.model.FailsafeSummary;
+import org.apache.maven.surefire.failsafe.model.io.xpp3.FailsafeSummaryXpp3Writer;
+import org.apache.maven.toolchain.ToolchainManager;
+import org.codehaus.plexus.util.ReaderFactory;
+import org.codehaus.plexus.util.StringUtils;
+
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -29,27 +51,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-
-import org.apache.maven.artifact.factory.ArtifactFactory;
-import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
-import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.artifact.resolver.ArtifactResolver;
-import org.apache.maven.execution.MavenSession;
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugin.surefire.AbstractSurefireMojo;
-import org.apache.maven.plugin.surefire.booterclient.ForkConfiguration;
-import org.apache.maven.plugin.surefire.booterclient.ForkStarter;
-import org.apache.maven.plugin.surefire.SurefireExecutionParameters;
-import org.apache.maven.project.MavenProject;
-import org.apache.maven.surefire.booter.BooterConfiguration;
-import org.apache.maven.surefire.booter.SurefireBooterForkException;
-import org.apache.maven.surefire.booter.SurefireExecutionException;
-import org.apache.maven.surefire.failsafe.model.FailsafeSummary;
-import org.apache.maven.surefire.failsafe.model.io.xpp3.FailsafeSummaryXpp3Writer;
-import org.apache.maven.toolchain.ToolchainManager;
-import org.codehaus.plexus.util.ReaderFactory;
-import org.codehaus.plexus.util.StringUtils;
 
 /**
  * Run integration tests using Surefire.
@@ -602,7 +603,9 @@ public class IntegrationTestMojo
     {
         if ( verifyParameters() )
         {
-            ForkConfiguration forkConfiguration = getForkConfiguration();
+            final Classpath bootClasspathConfiguration = new Classpath();
+            ForkConfiguration forkConfiguration = getForkConfiguration( bootClasspathConfiguration );
+
             BooterConfiguration booterConfiguration = createBooterConfiguration( forkConfiguration );
             ForkStarter booter = new ForkStarter( booterConfiguration, reportsDirectory, forkConfiguration );
 

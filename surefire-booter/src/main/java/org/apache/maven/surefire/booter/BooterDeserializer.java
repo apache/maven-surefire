@@ -31,7 +31,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
@@ -55,6 +54,7 @@ import java.util.TreeMap;
 public class BooterDeserializer
 {
     public static final String INCLUDES_PROPERTY_PREFIX = "includes";
+
     public static final String EXCLUDES_PROPERTY_PREFIX = "excludes";
 
     public static final String DIRSCANNER_PROPERTY_PREFIX = "dirscanner.";
@@ -82,7 +82,6 @@ public class BooterDeserializer
         SortedMap surefireClassPathUrls = new TreeMap();
         SortedMap reportsMap = new TreeMap();
 
-        Collection booterClassPathUrl = new ArrayList();
         boolean isTrimStackTrace = false;
         File reportsDirectory = null;
 
@@ -125,10 +124,6 @@ public class BooterDeserializer
             {
                 surefireClassPathUrls.put( Integer.valueOf( name.substring( name.indexOf( '.' ) + 1 ) ),
                                            properties.getProperty( name ) );
-            }
-            else if ( name.startsWith( "surefireBootClassPathUrl." ) )
-            {
-                booterClassPathUrl.add( properties.getProperty( name ) );
             }
             else if ( "childDelegation".equals( name ) )
             {
@@ -188,8 +183,7 @@ public class BooterDeserializer
             }
             else if ( "testSuiteXmlFiles".equals( name ) )
             {
-                testSuiteXmlFiles =
-                     constructParamObjects( properties.getProperty( "testSuiteXmlFiles" ), File.class );
+                testSuiteXmlFiles = constructParamObjects( properties.getProperty( "testSuiteXmlFiles" ), File.class );
             }
             else if ( "providerConfiguration".equals( name ) )
             {
@@ -197,30 +191,29 @@ public class BooterDeserializer
             }
         }
 
-
-        dirScannerParams =
-            new DirectoryScannerParameters( testClassesDirectory, new ArrayList( includes.values() ),
-                                            new ArrayList( excludes.values() ), Boolean.valueOf( failIfNotests ) );
+        dirScannerParams = new DirectoryScannerParameters( testClassesDirectory, new ArrayList( includes.values() ),
+                                                           new ArrayList( excludes.values() ),
+                                                           Boolean.valueOf( failIfNotests ) );
 
         TestArtifactInfo testNg = new TestArtifactInfo( testNgVersion, testNgClassifier );
-        TestSuiteDefinition testSuiteDefinition = new TestSuiteDefinition( testSuiteXmlFiles, testForFork,
-                                                                           testSuiteDefinitionTestSourceDirectory, requestedTest );
+        TestSuiteDefinition testSuiteDefinition =
+            new TestSuiteDefinition( testSuiteXmlFiles, testForFork, testSuiteDefinitionTestSourceDirectory,
+                                     requestedTest );
 
         ClassLoaderConfiguration forkConfiguration =
             new ClassLoaderConfiguration( useSystemClassLoader, useManifestOnlyJar );
 
         ClasspathConfiguration classpathConfiguration =
-            new ClasspathConfiguration( classPathUrls, surefireClassPathUrls, booterClassPathUrl, enableAssertions,
-                                        childDelegation );
+            new ClasspathConfiguration( classPathUrls, surefireClassPathUrls, enableAssertions, childDelegation );
 
         ReporterConfiguration reporterConfiguration =
             new ReporterConfiguration( reportsDirectory, Boolean.valueOf( isTrimStackTrace ) );
 
         ProviderConfiguration providerConfigurationObj = new ProviderConfiguration( providerConfiguration );
         List reports = new ArrayList( reportsMap.values() );
-        return new BooterConfiguration( forkConfiguration, classpathConfiguration, reports,
-                                        dirScannerParams, failIfNotests, properties, reporterConfiguration, testNg,
-                                        testSuiteDefinition, providerConfigurationObj );
+        return new BooterConfiguration( forkConfiguration, classpathConfiguration, reports, dirScannerParams,
+                                        failIfNotests, properties, reporterConfiguration, testNg, testSuiteDefinition,
+                                        providerConfigurationObj );
     }
 
     private boolean isTypeHolderProperty( String name )

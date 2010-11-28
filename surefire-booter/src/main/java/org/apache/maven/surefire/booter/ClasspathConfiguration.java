@@ -20,16 +20,12 @@ package org.apache.maven.surefire.booter;
  */
 
 import org.apache.maven.surefire.util.NestedRuntimeException;
-import org.apache.maven.surefire.util.UrlUtils;
 
-import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -47,11 +43,9 @@ import java.util.SortedMap;
 public class ClasspathConfiguration
 {
 
-    private final List classPathUrls = new ArrayList();
+    private final Classpath classpathUrls = new Classpath();
 
-    private final List surefireClassPathUrls = new ArrayList();
-
-    private final List surefireBootClassPathUrls = new ArrayList();
+    private final Classpath surefireClasspathUrls = new Classpath();
 
     /**
      * Whether to enable assertions or not (can be affected by the fork arguments, and the ability to do so based on the
@@ -63,7 +57,6 @@ public class ClasspathConfiguration
     private final boolean childDelegation;
 
 
-
     public ClasspathConfiguration( boolean enableAssertions, boolean childDelegation )
     {
         this.enableAssertions = enableAssertions;
@@ -73,8 +66,8 @@ public class ClasspathConfiguration
     /*
    * Reads the config from the supplied stream. Closes the stream.
     */
-    public ClasspathConfiguration( SortedMap classPathUrls, SortedMap surefireClassPathUrls, Collection booterClassPath,
-                                   boolean enableAssertions, boolean childDelegation )
+    public ClasspathConfiguration( SortedMap classPathUrls, SortedMap surefireClassPathUrls, boolean enableAssertions,
+                                   boolean childDelegation )
         throws IOException
     {
 
@@ -83,37 +76,21 @@ public class ClasspathConfiguration
         for ( Iterator cpi = classPathUrls.keySet().iterator(); cpi.hasNext(); )
         {
             String url = (String) classPathUrls.get( cpi.next() );
-            this.classPathUrls.add( url );
+            this.classpathUrls.addClassPathElementUrl( url );
         }
 
         for ( Iterator scpi = surefireClassPathUrls.keySet().iterator(); scpi.hasNext(); )
         {
             String url = (String) surefireClassPathUrls.get( scpi.next() );
-            this.surefireClassPathUrls.add( url );
+            this.surefireClasspathUrls.addClassPathElementUrl( url );
         }
-        for ( Iterator scpi = booterClassPath.iterator(); scpi.hasNext(); )
-        {
-            String url = (String) surefireClassPathUrls.get( scpi.next() );
-            this.surefireBootClassPathUrls.add( url );
-        }
-
     }
 
 
     public void setForkProperties( Properties properties )
     {
-        for ( int i = 0; i < classPathUrls.size(); i++ )
-        {
-            String url = (String) classPathUrls.get( i );
-            properties.setProperty( "classPathUrl." + i, url );
-        }
-
-        for ( int i = 0; i < surefireClassPathUrls.size(); i++ )
-        {
-            String url = (String) surefireClassPathUrls.get( i );
-            properties.setProperty( "surefireClassPathUrl." + i, url );
-        }
-
+        classpathUrls.setForkProperties( properties, "classPathUrl." );
+        surefireClasspathUrls.setForkProperties( properties, "surefireClassPathUrl." );
         properties.setProperty( "enableAssertions", String.valueOf( enableAssertions ) );
         properties.setProperty( "childDelegation", String.valueOf( childDelegation ) );
     }
@@ -134,54 +111,33 @@ public class ClasspathConfiguration
         }
     }
 
-    public List getBootClasspath( boolean useSystemClassLoader )
-    {
-        List bootClasspath = new ArrayList( getSurefireBootClassPathUrls().size() + getClassPathUrls().size() );
-
-        bootClasspath.addAll( getSurefireBootClassPathUrls() );
-
-        if ( useSystemClassLoader )
-        {
-            bootClasspath.addAll( getClassPathUrls() );
-        }
-        return bootClasspath;
-    }
-
-    public String getTestClassPathAsString()
-    {
-        StringBuffer sb = new StringBuffer();
-        for ( int i = 0; i < getClassPathUrls().size(); i++ )
-        {
-            sb.append( getClassPathUrls().get( i ) ).append( File.pathSeparatorChar );
-        }
-        return sb.toString();
-    }
-
     public ClassLoader createTestClassLoaderConditionallySystem( boolean useSystemClassLoader )
         throws SurefireExecutionException
     {
-        return useSystemClassLoader ? ClassLoader.getSystemClassLoader() : createTestClassLoader( this.childDelegation );
+        return useSystemClassLoader
+            ? ClassLoader.getSystemClassLoader()
+            : createTestClassLoader( this.childDelegation );
     }
 
     public ClassLoader createTestClassLoader( boolean childDelegation )
         throws SurefireExecutionException
     {
-        return createClassLoaderSEE( getClassPathUrls(), null, childDelegation );
+        return createClassLoaderSEE( classpathUrls, null, childDelegation );
     }
 
-    public ClassLoader createTestClassLoader( )
+    public ClassLoader createTestClassLoader()
         throws SurefireExecutionException
     {
-        return createClassLoaderSEE( getClassPathUrls(), null, this.childDelegation );
+        return createClassLoaderSEE( classpathUrls, null, this.childDelegation );
     }
 
     public ClassLoader createSurefireClassLoader( ClassLoader parent )
         throws SurefireExecutionException
     {
-        return createClassLoaderSEE( getSurefireClassPathUrls(), parent, false );
+        return createClassLoaderSEE( surefireClasspathUrls, parent, false );
     }
 
-    private ClassLoader createClassLoaderSEE( List classPathUrls, ClassLoader parent, boolean childDelegation )
+    private ClassLoader createClassLoaderSEE( Classpath classPathUrls, ClassLoader parent, boolean childDelegation )
         throws SurefireExecutionException
     {
         try
@@ -195,22 +151,10 @@ public class ClasspathConfiguration
 
     }
 
-    private ClassLoader createClassLoader( List classPathUrls, ClassLoader parent, boolean childDelegation )
+    private ClassLoader createClassLoader( Classpath classPathUrls, ClassLoader parent, boolean childDelegation )
         throws MalformedURLException
     {
-        List urls = new ArrayList();
-
-        for ( Iterator i = classPathUrls.iterator(); i.hasNext(); )
-        {
-            String url = (String) i.next();
-
-            if ( url != null )
-            {
-                File f = new File( url );
-                urls.add( UrlUtils.getURL( f ) );
-            }
-        }
-
+        List urls = classPathUrls.getAsUrlList();
         IsolatedClassLoader classLoader = new IsolatedClassLoader( parent, childDelegation );
         if ( assertionStatusMethod != null )
         {
@@ -240,42 +184,18 @@ public class ClasspathConfiguration
         return classLoader;
     }
 
-    public List getSurefireClassPathUrls()
+    public Classpath getTestClasspath()
     {
-        return surefireClassPathUrls;
+        return classpathUrls;
     }
 
-    public List getSurefireBootClassPathUrls()
+    public void addClasspathUrl( String path )
     {
-        return surefireBootClassPathUrls;
+        classpathUrls.addClassPathElementUrl( path );
     }
 
-    public void addClassPathUrl( String path )
+    public void addSurefireClasspathUrl( String path )
     {
-        if ( !classPathUrls.contains( path ) )
-        {
-            classPathUrls.add( path );
-        }
-    }
-
-    public void addSurefireClassPathUrl( String path )
-    {
-        if ( !surefireClassPathUrls.contains( path ) )
-        {
-            surefireClassPathUrls.add( path );
-        }
-    }
-
-    public void addSurefireBootClassPathUrl( String path )
-    {
-        if ( !surefireBootClassPathUrls.contains( path ) )
-        {
-            surefireBootClassPathUrls.add( path );
-        }
-    }
-
-    public List getClassPathUrls()
-    {
-        return classPathUrls;
+        surefireClasspathUrls.addClassPathElementUrl( path );
     }
 }

@@ -20,6 +20,7 @@ package org.apache.maven.plugin.surefire.booterclient;
  */
 
 import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
+import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.ForkedBooter;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.apache.maven.surefire.util.UrlUtils;
@@ -53,6 +54,8 @@ public class ForkConfiguration
 
     public static final String FORK_NEVER = "never";
 
+    private final Classpath bootClasspathConfiguration;
+
     private String forkMode;
 
     private boolean useSystemClassLoader;
@@ -75,9 +78,19 @@ public class ForkConfiguration
 
     private String debugLine;
 
+    public ForkConfiguration( Classpath bootClasspathConfiguration )
+    {
+        this.bootClasspathConfiguration = bootClasspathConfiguration;
+    }
+
+    public Classpath getBootClasspathConfiguration()
+    {
+        return bootClasspathConfiguration;
+    }
+
     public ClassLoaderConfiguration getClassLoaderConfiguration()
     {
-        return new ClassLoaderConfiguration(isUseSystemClassLoader() , isUseManifestOnlyJar() );
+        return new ClassLoaderConfiguration( isUseSystemClassLoader(), isUseManifestOnlyJar() );
     }
 
     public void setForkMode( String forkMode )

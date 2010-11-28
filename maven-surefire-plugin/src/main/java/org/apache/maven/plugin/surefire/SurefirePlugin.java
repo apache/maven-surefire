@@ -30,6 +30,7 @@ import org.apache.maven.plugin.surefire.booterclient.ForkConfiguration;
 import org.apache.maven.plugin.surefire.booterclient.ForkStarter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.surefire.booter.BooterConfiguration;
+import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.apache.maven.surefire.booter.SurefireExecutionException;
 import org.apache.maven.toolchain.ToolchainManager;
@@ -569,7 +570,9 @@ public class SurefirePlugin
     {
         if ( verifyParameters() )
         {
-            ForkConfiguration forkConfiguration = getForkConfiguration();
+            final Classpath bootClasspathConfiguration = new Classpath();
+            ForkConfiguration forkConfiguration = getForkConfiguration(bootClasspathConfiguration);
+
             BooterConfiguration booterConfiguration = createBooterConfiguration( forkConfiguration );
 
             getLog().info(
