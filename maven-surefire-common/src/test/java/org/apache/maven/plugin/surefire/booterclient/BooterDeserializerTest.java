@@ -174,10 +174,10 @@ public class BooterDeserializerTest
                                                BooterConfiguration booterConfiguration )
         throws IOException
     {
-        BooterSerializer booterSerializer = new BooterSerializer();
+        BooterSerializer booterSerializer = new BooterSerializer(ForkConfigurationTest.getForkConfiguration());
         Properties props = new Properties();
-        booterSerializer.setForkProperties( props, booterConfiguration, forkConfiguration );
-        final File propsTest = booterSerializer.writePropertiesFile( "propsTest", props, false, null );
+        booterSerializer.setForkProperties( props, booterConfiguration );
+        final File propsTest = booterSerializer.writePropertiesFile( "propsTest", props );
         BooterDeserializer booterDeserializer = new BooterDeserializer();
         return booterDeserializer.deserialize( new FileInputStream( propsTest ) );
     }

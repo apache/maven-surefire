@@ -273,7 +273,7 @@ public abstract class AbstractSurefireMojo
         TestArtifactInfo testNg =
             isTestNg ? new TestArtifactInfo( testNgArtifact.getVersion(), testNgArtifact.getClassifier() ) : null;
         TestSuiteDefinition testSuiteDefinition =
-            new TestSuiteDefinition( getSuiteXmlFiles(), null, getTestSourceDirectory(), getTest() );
+            new TestSuiteDefinition( getSuiteXmlFiles(), getTestSourceDirectory(), getTest() );
         final boolean failIfNoTests;
 
         if ( isValidSuiteXmlFileConfig() && getTest() == null )
@@ -285,7 +285,7 @@ public abstract class AbstractSurefireMojo
             }
 
             testSuiteDefinition =
-                new TestSuiteDefinition( getSuiteXmlFiles(), getTest(), getTestSourceDirectory(), getTest() );
+                new TestSuiteDefinition( getSuiteXmlFiles(), getTestSourceDirectory(), getTest() );
         }
         else
         {

@@ -21,6 +21,7 @@ package org.apache.maven.plugin.surefire.booterclient;
 import org.apache.maven.surefire.booter.BooterConfiguration;
 import org.apache.maven.surefire.booter.BooterDeserializer;
 import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
+import org.apache.maven.surefire.booter.SystemPropertyManager;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
@@ -52,11 +53,34 @@ import java.util.Properties;
  */
 public class BooterSerializer
 {
-    public void setForkProperties( Properties properties, BooterConfiguration booterConfiguration,
-                                   ClassLoaderConfiguration forkConfiguration )
+    private final ForkConfiguration forkConfiguration;
+
+    public BooterSerializer( ForkConfiguration forkConfiguration )
     {
-        if (properties == null){
-            throw new IllegalStateException( "Properties cannot be null");
+        this.forkConfiguration = forkConfiguration;
+    }
+
+
+    public File serialize( Properties properties, BooterConfiguration booterConfiguration,
+                           ForkConfiguration forkConfiguration, Object testSet )
+        throws IOException
+    {
+        setForkProperties( properties, booterConfiguration );
+
+        if ( testSet != null && testSet instanceof String )
+        {
+            properties.setProperty( "testSet", (String) testSet );
+        }
+        SystemPropertyManager systemPropertyManager = new SystemPropertyManager();
+        return systemPropertyManager.writePropertiesFile( properties, forkConfiguration.getTempDirectory(), "surefire",
+                                                          forkConfiguration.isDebug() );
+    }
+
+    public void setForkProperties( Properties properties, BooterConfiguration booterConfiguration )
+    {
+        if ( properties == null )
+        {
+            throw new IllegalStateException( "Properties cannot be null" );
         }
         addList( booterConfiguration.getReports(), properties, BooterDeserializer.REPORT_PROPERTY_PREFIX );
         List params = new ArrayList();
@@ -115,19 +139,21 @@ public class BooterSerializer
         Boolean rep = reporterConfiguration.isTrimStackTrace();
         properties.setProperty( "isTrimStackTrace", rep.toString() );
         properties.setProperty( "reportsDirectory", reporterConfiguration.getReportsDirectory().toString() );
-        properties.setProperty( "useSystemClassLoader", String.valueOf( forkConfiguration.isUseSystemClassLoader() ) );
+        ClassLoaderConfiguration classLoaderConfiguration = this.forkConfiguration.getClassLoaderConfiguration();
+        properties.setProperty( "useSystemClassLoader",
+                                String.valueOf( classLoaderConfiguration.isUseSystemClassLoader() ) );
         properties.setProperty( "useManifestOnlyJar",
-                                String.valueOf( forkConfiguration.isManifestOnlyJarRequestedAndUsable() ) );
+                                String.valueOf( classLoaderConfiguration.isManifestOnlyJarRequestedAndUsable() ) );
         properties.setProperty( "failIfNoTests", String.valueOf( booterConfiguration.isFailIfNoTests() ) );
         properties.setProperty( "providerConfiguration",
                                 booterConfiguration.getProviderConfiguration().getClassName() );
     }
 
-    public File writePropertiesFile( String name, Properties properties, boolean debug, File tempDirectory )
+    public File writePropertiesFile( String name, Properties properties )
         throws IOException
     {
-        File file = File.createTempFile( name, "tmp", tempDirectory );
-        if ( !debug )
+        File file = File.createTempFile( name, "tmp", forkConfiguration.getTempDirectory() );
+        if ( !forkConfiguration.isDebug() )
         {
             file.deleteOnExit();
         }

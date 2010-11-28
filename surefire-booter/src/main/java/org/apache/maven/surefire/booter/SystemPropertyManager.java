@@ -19,7 +19,11 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Iterator;
 import java.util.Properties;
 
@@ -36,6 +40,9 @@ public class SystemPropertyManager
 
     /**
      * Loads the properties, closes the stream
+     * @param inStream The stream to read from, will be closed
+     * @return The properties
+     * @throws java.io.IOException If something bad happens
      */
     public static Properties loadProperties( InputStream inStream )
         throws IOException
@@ -67,6 +74,36 @@ public class SystemPropertyManager
             System.setProperty( key, p.getProperty( key ) );
         }
     }
+
+    public File writePropertiesFile( Properties properties, File tempDirectory, String name, boolean deleteOnExit)
+        throws IOException
+    {
+        File file = File.createTempFile( name, "tmp", tempDirectory );
+        if ( deleteOnExit )
+        {
+            file.deleteOnExit();
+        }
+
+        writePropertiesFile( file, name, properties );
+
+        return file;
+    }
+
+    void writePropertiesFile( File file, String name, Properties properties )
+        throws IOException
+    {
+        FileOutputStream out = new FileOutputStream( file );
+
+        try
+        {
+            properties.store( out, name );
+        }
+        finally
+        {
+            out.close();
+        }
+    }
+
 
     /**
      * Closes the input stream. The input stream can be null and any IOException's will be swallowed.

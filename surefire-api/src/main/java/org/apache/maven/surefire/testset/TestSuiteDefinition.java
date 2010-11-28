@@ -46,6 +46,12 @@ public class TestSuiteDefinition
     }
 
 
+    public TestSuiteDefinition( File[] suiteXmlFiles, File testSourceDirectory, String requestedTest )
+    {
+        this( suiteXmlFiles, null, testSourceDirectory, requestedTest );
+    }
+
+
     public TestSuiteDefinition( File[] suiteXmlFiles, String testForFork, File testSourceDirectory,
                                 String requestedTest )
     {

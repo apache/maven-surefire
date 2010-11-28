@@ -32,6 +32,7 @@ import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.apache.maven.surefire.booter.SurefireExecutionException;
 import org.apache.maven.surefire.booter.SurefireReflector;
 import org.apache.maven.surefire.booter.SurefireStarter;
+import org.apache.maven.surefire.booter.SystemPropertyManager;
 import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.cli.CommandLineException;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
@@ -106,7 +107,7 @@ public class ForkStarter
     private int runSuitesForkOnce()
         throws SurefireBooterForkException
     {
-        return forkSuites( true, true );
+        return fork( null, booterConfiguration.getProviderProperties(), true, true );
     }
 
     private int runSuitesForkPerTestSet()
@@ -138,7 +139,8 @@ public class ForkStarter
         {
             Object testSet = suites.next();
             boolean showFooter = !suites.hasNext();
-            int result = forkSuite( testSet, showHeading, showFooter, properties );
+            int result = fork( testSet, properties, showHeading, showFooter );
+
             if ( result > globalResult )
             {
                 globalResult = result;
@@ -154,50 +156,24 @@ public class ForkStarter
         return booterConfiguration.getClasspathConfiguration();
     }
 
-    private int forkSuites( boolean showHeading, boolean showFooter )
-        throws SurefireBooterForkException
-    {
-        Properties properties = booterConfiguration.getProviderProperties();
-
-        BooterSerializer booterSerializer = new BooterSerializer();
-        booterSerializer.setForkProperties( properties, booterConfiguration,
-                                            forkConfiguration.getClassLoaderConfiguration() );
-
-        return fork( properties, showHeading, showFooter );
-    }
-
-    private int forkSuite( Object testSet, boolean showHeading, boolean showFooter, Properties properties )
-        throws SurefireBooterForkException
-    {
-        BooterSerializer booterSerializer = new BooterSerializer();
-        booterSerializer.setForkProperties( properties, booterConfiguration,
-                                            forkConfiguration.getClassLoaderConfiguration() );
-
-        if ( testSet instanceof String )
-        {
-            properties.setProperty( "testSet", (String) testSet );
-        }
-
-        return fork( properties, showHeading, showFooter );
-    }
-
-    private int fork( Properties properties, boolean showHeading, boolean showFooter )
+    private int fork( Object testSet, Properties properties, boolean showHeading, boolean showFooter )
         throws SurefireBooterForkException
     {
         File surefireProperties;
         File systemProperties = null;
         try
         {
-            BooterSerializer booterSerializer = new BooterSerializer();
+            BooterSerializer booterSerializer = new BooterSerializer( forkConfiguration );
+
             surefireProperties =
-                booterSerializer.writePropertiesFile( "surefire", properties, forkConfiguration.isDebug(),
-                                                      forkConfiguration.getTempDirectory() );
+                booterSerializer.serialize( properties, booterConfiguration, forkConfiguration, testSet );
+
             if ( forkConfiguration.getSystemProperties() != null )
             {
-                systemProperties =
-                    booterSerializer.writePropertiesFile( "surefire", forkConfiguration.getSystemProperties(),
-                                                          forkConfiguration.isDebug(),
-                                                          forkConfiguration.getTempDirectory() );
+                SystemPropertyManager systemPropertyManager = new SystemPropertyManager();
+                systemProperties = systemPropertyManager.writePropertiesFile( forkConfiguration.getSystemProperties(),
+                                                                              forkConfiguration.getTempDirectory(),
+                                                                              "surefire", forkConfiguration.isDebug() );
             }
         }
         catch ( IOException e )
