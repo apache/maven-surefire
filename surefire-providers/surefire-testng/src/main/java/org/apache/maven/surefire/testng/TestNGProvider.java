@@ -28,8 +28,8 @@ import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.suite.SurefireTestSuite;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
+import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.testset.TestSetFailedException;
-import org.apache.maven.surefire.testset.TestSuiteDefinition;
 import org.apache.maven.surefire.util.DefaultDirectoryScanner;
 
 import java.util.ArrayList;
@@ -51,14 +51,14 @@ public class TestNGProvider
     private ReporterConfiguration reporterConfiguration;
 
 
-    public RunResult invoke()
+    public RunResult invoke( Object forkTestSet )
         throws TestSetFailedException, ReporterException
     {
         SurefireTestSuite suite = getActiveSuite();
         suite.locateTestSets( getTestsClassLoader() );
-        if ( getTestSuiteDefinition().getTestForFork() != null )
+        if ( forkTestSet != null && getTestSuiteDefinition() == null)
         {
-            suite.execute( getTestSuiteDefinition().getTestForFork(), getReporterManagerFactory(),
+            suite.execute( (String) forkTestSet, getReporterManagerFactory(),
                            getTestsClassLoader() );
         }
         else
@@ -68,7 +68,7 @@ public class TestNGProvider
         return RunResult.totalCountOnly( suite.getNumTests() );
     }
 
-    boolean isTestNGXmlTestSuite( TestSuiteDefinition testSuiteDefinition )
+    boolean isTestNGXmlTestSuite( TestRequest testSuiteDefinition )
     {
         return testSuiteDefinition.getSuiteXmlFiles() != null && testSuiteDefinition.getSuiteXmlFiles().length > 0 &&
             testSuiteDefinition.getRequestedTest() == null;

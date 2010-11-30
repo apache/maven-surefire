@@ -20,7 +20,6 @@ package org.apache.maven.surefire;
  */
 
 import org.apache.maven.surefire.booter.SurefireReflector;
-import org.apache.maven.surefire.providerapi.ProviderConfiguration;
 import org.apache.maven.surefire.providerapi.ReporterManagerFactoryAware;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
 import org.apache.maven.surefire.report.ReporterConfiguration;
@@ -31,8 +30,8 @@ import org.apache.maven.surefire.report.RunStatistics;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
+import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.testset.TestSetFailedException;
-import org.apache.maven.surefire.testset.TestSuiteDefinition;
 
 import java.util.List;
 import java.util.Properties;
@@ -51,8 +50,9 @@ public class ProviderInvoker
 
     public int run( ReporterConfiguration reporterConfiguration, List reportDefinitions,
                     ClassLoader surefireClassLoader, ClassLoader testsClassLoader, Properties results,
-                    Boolean failIfNoTests, TestSuiteDefinition testSuiteDefinition, TestArtifactInfo testArtifactInfo,
-                    ProviderConfiguration providerConfiguration, DirectoryScannerParameters directoryScannerParameters )
+                    Boolean failIfNoTests, TestRequest testSuiteDefinition, TestArtifactInfo testArtifactInfo,
+                    String providerClassName, DirectoryScannerParameters directoryScannerParameters,
+                    Object forkTestSet)
         throws ReporterException, TestSetFailedException
     {
         ReporterManagerFactory reporterManagerFactory =
@@ -67,7 +67,7 @@ public class ProviderInvoker
         int totalTests = 0;
 
         SurefireReflector surefireReflector = new SurefireReflector( surefireClassLoader );
-        Object o = surefireReflector.newInstance( providerConfiguration );
+        Object o = surefireReflector.newInstance( providerClassName );
         SurefireProvider provider = (SurefireProvider) o;
         surefireReflector.setIfDirScannerAware( o, directoryScannerParameters );
         surefireReflector.setTestSuiteDefinitionAware( o, testSuiteDefinition );
@@ -80,7 +80,7 @@ public class ProviderInvoker
         surefireReflector.setTestClassLoaderAware( o, testsClassLoader );
         surefireReflector.setTestArtifactInfoAware( o, testArtifactInfo );
 
-        RunResult invoke = provider.invoke();
+        RunResult invoke = provider.invoke(forkTestSet);
         int testCount = invoke.getCompletedCount(); // TODO: Verify that this is correct digit
         if ( testCount > 0 )
         {

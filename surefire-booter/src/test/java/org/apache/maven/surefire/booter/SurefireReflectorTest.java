@@ -29,7 +29,7 @@ import org.apache.maven.surefire.providerapi.TestSuiteDefinitionAware;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
-import org.apache.maven.surefire.testset.TestSuiteDefinition;
+import org.apache.maven.surefire.testset.TestRequest;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -60,9 +60,8 @@ public class SurefireReflectorTest
         SurefireReflector surefireReflector = getReflector();
         Foo foo = new Foo();
 
-        TestSuiteDefinition testSuiteDefinition =
-            new TestSuiteDefinition( new File[]{ new File( "file1" ), new File( "file2" ) }, "aForkTest",
-                                     new File( "TestSOurce" ), "aUserRequestedTest" );
+        TestRequest testSuiteDefinition =
+            new TestRequest( new Object[]{  new File("file1"),new File("file2") }, new File( "TestSOurce" ), "aUserRequestedTest" );
         assertTrue( surefireReflector.isTestSuiteDefinitionAware( foo ) );
         surefireReflector.setTestSuiteDefinition( foo, testSuiteDefinition );
     }
@@ -122,7 +121,7 @@ public class SurefireReflectorTest
     {
         DirectoryScannerParameters directoryScannerParameters;
 
-        TestSuiteDefinition testSuiteDefinition;
+        TestRequest testSuiteDefinition;
 
         Properties providerProperties;
 
@@ -134,7 +133,7 @@ public class SurefireReflectorTest
         }
 
 
-        public void setTestSuiteDefinition( TestSuiteDefinition testSuiteDefinition )
+        public void setTestSuiteDefinition( TestRequest testSuiteDefinition )
         {
             this.testSuiteDefinition = testSuiteDefinition;
         }

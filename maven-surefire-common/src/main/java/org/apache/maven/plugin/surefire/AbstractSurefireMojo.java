@@ -39,7 +39,7 @@ import org.apache.maven.shared.artifact.filter.PatternIncludesArtifactFilter;
 import org.apache.maven.surefire.booter.BooterConfiguration;
 import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.ClasspathConfiguration;
-import org.apache.maven.surefire.providerapi.ProviderConfiguration;
+import org.apache.maven.surefire.booter.ProviderConfiguration;
 import org.apache.maven.surefire.report.BriefConsoleReporter;
 import org.apache.maven.surefire.report.BriefFileReporter;
 import org.apache.maven.surefire.report.ConsoleReporter;
@@ -50,7 +50,7 @@ import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.XMLReporter;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
-import org.apache.maven.surefire.testset.TestSuiteDefinition;
+import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.toolchain.Toolchain;
 import org.codehaus.plexus.util.StringUtils;
 
@@ -272,8 +272,8 @@ public abstract class AbstractSurefireMojo
         final boolean isTestNg = testNgArtifact != null;
         TestArtifactInfo testNg =
             isTestNg ? new TestArtifactInfo( testNgArtifact.getVersion(), testNgArtifact.getClassifier() ) : null;
-        TestSuiteDefinition testSuiteDefinition =
-            new TestSuiteDefinition( getSuiteXmlFiles(), getTestSourceDirectory(), getTest() );
+        TestRequest testSuiteDefinition =
+            new TestRequest( getSuiteXmlFiles(), getTestSourceDirectory(), getTest() );
         final boolean failIfNoTests;
 
         if ( isValidSuiteXmlFileConfig() && getTest() == null )
@@ -283,9 +283,6 @@ public abstract class AbstractSurefireMojo
             {
                 throw new MojoExecutionException( "suiteXmlFiles is configured, but there is no TestNG dependency" );
             }
-
-            testSuiteDefinition =
-                new TestSuiteDefinition( getSuiteXmlFiles(), getTestSourceDirectory(), getTest() );
         }
         else
         {
@@ -307,18 +304,20 @@ public abstract class AbstractSurefireMojo
                                                                          Boolean.valueOf( failIfNoTests ) );
         }
 
-        ProviderConfiguration providerConfiguration = new ProviderConfiguration( providerName );
         List reports = getReporters( forkConfiguration.isForking() );
         Properties providerProperties = getProperties();
         if ( providerProperties == null )
         {
             providerProperties = new Properties();
         }
+        ProviderConfiguration surefireStarterConfiguration =
+            new ProviderConfiguration( providerName, classpathConfiguration,
+                                       forkConfiguration.getClassLoaderConfiguration(), forkConfiguration.isForking(),
+                                       false, isRedirectTestOutputToFile() );
+
         BooterConfiguration booterConfiguration =
-            new BooterConfiguration( providerProperties, forkConfiguration.isForking(),
-                                     forkConfiguration.getClassLoaderConfiguration(), classpathConfiguration,
-                                     isRedirectTestOutputToFile(), reporterConfiguration, testNg, testSuiteDefinition,
-                                     directoryScannerParameters, failIfNoTests, reports, providerConfiguration );
+            new BooterConfiguration( surefireStarterConfiguration, reports, directoryScannerParameters, failIfNoTests,
+                                     reporterConfiguration, testNg, testSuiteDefinition, providerProperties, null );
 
         List classpathElements;
         try

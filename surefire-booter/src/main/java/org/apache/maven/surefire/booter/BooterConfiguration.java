@@ -19,11 +19,10 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import org.apache.maven.surefire.providerapi.ProviderConfiguration;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
-import org.apache.maven.surefire.testset.TestSuiteDefinition;
+import org.apache.maven.surefire.testset.TestRequest;
 
 import java.io.File;
 import java.util.List;
@@ -49,11 +48,7 @@ public class BooterConfiguration
 
     public static final int NO_TESTS_EXIT_CODE = 254;
 
-    private final ClassLoaderConfiguration classLoaderConfiguration;
-
-    private final ClasspathConfiguration classpathConfiguration;
-
-    private final ProviderConfiguration providerConfiguration;
+    private final ProviderConfiguration surefireStarterConfiguration;
 
     private final DirectoryScannerParameters dirScannerParams;
 
@@ -63,63 +58,29 @@ public class BooterConfiguration
 
     private final TestArtifactInfo testNg;
 
-    private final TestSuiteDefinition testSuiteDefinition;
+    private final TestRequest testSuiteDefinition;
 
     private Properties providerProperties;
 
-    private Properties properties; // todo: Zap out of here !
-
     private final boolean failIfNoTests;
 
-    private final boolean redirectTestOutputToFile;
+    private final Object forkTestSet;
 
-    private final boolean isForkRequested;
-
-    private final boolean isInForkedVm;
-
-    public BooterConfiguration( ClassLoaderConfiguration classLoaderConfiguration,
-                                ClasspathConfiguration classpathConfiguration, List reports,
-                                DirectoryScannerParameters directoryScannerParameterses, boolean failIfNoTests,
-                                Properties properties, ReporterConfiguration reporterConfiguration,
-                                TestArtifactInfo testArtifactInfo, TestSuiteDefinition testSuiteDefinition,
-                                ProviderConfiguration providerConfiguration )
-    {
-        this.classLoaderConfiguration = classLoaderConfiguration;
-        this.classpathConfiguration = classpathConfiguration;
-        this.reports = reports;
-        this.dirScannerParams = directoryScannerParameterses;
-        this.failIfNoTests = failIfNoTests;
-        this.redirectTestOutputToFile = false;
-        this.reporterConfiguration = reporterConfiguration;
-        this.properties = properties; // Todo: Hack hack. This must go
-        this.isForkRequested = false;
-        this.isInForkedVm = true;
-        this.testNg = testArtifactInfo;
-        this.testSuiteDefinition = testSuiteDefinition;
-        this.providerConfiguration = providerConfiguration;
-    }
-
-    public BooterConfiguration( Properties providerProperties, boolean isForkRequested,
-                                ClassLoaderConfiguration classLoaderConfiguration,
-                                ClasspathConfiguration classpathConfiguration, boolean redirectTestOutputToFile,
-                                ReporterConfiguration reporterConfiguration, TestArtifactInfo testNg,
-                                TestSuiteDefinition testSuiteDefinition,
+    public BooterConfiguration( ProviderConfiguration surefireStarterConfiguration, List reports,
                                 DirectoryScannerParameters directoryScannerParameters, boolean failIfNoTests,
-                                List reports, ProviderConfiguration providerConfiguration )
+                                ReporterConfiguration reporterConfiguration, TestArtifactInfo testNg,
+                                TestRequest testSuiteDefinition, Properties providerProperties,
+                                Object forkTestSet)
     {
+        this.surefireStarterConfiguration = surefireStarterConfiguration;
         this.providerProperties = providerProperties;
-        this.classLoaderConfiguration = classLoaderConfiguration;
-        this.classpathConfiguration = classpathConfiguration;
         this.reporterConfiguration = reporterConfiguration;
-        this.isInForkedVm = false;
-        this.isForkRequested = isForkRequested;
-        this.redirectTestOutputToFile = redirectTestOutputToFile;
         this.testNg = testNg;
         this.testSuiteDefinition = testSuiteDefinition;
         this.dirScannerParams = directoryScannerParameters;
         this.failIfNoTests = failIfNoTests;
         this.reports = reports;
-        this.providerConfiguration = providerConfiguration;
+        this.forkTestSet = forkTestSet;
     }
 
 
@@ -128,31 +89,15 @@ public class BooterConfiguration
         return reporterConfiguration;
     }
 
-    public ClasspathConfiguration getClasspathConfiguration()
+    public ProviderConfiguration getSurefireStarterConfiguration()
     {
-        return classpathConfiguration;
-    }
-
-    public boolean useSystemClassLoader()
-    {
-        // todo; I am not totally convinced this logic is as simple as it could be
-        return classLoaderConfiguration.isUseSystemClassLoader() && ( isInForkedVm || isForkRequested );
+        return surefireStarterConfiguration;
     }
 
 
     public List getReports()
     {
         return reports;
-    }
-
-    public Properties getProperties()
-    {
-        return properties;
-    }
-
-    public boolean isRedirectTestOutputToFile()
-    {
-        return redirectTestOutputToFile;
     }
 
     public Boolean isFailIfNoTests()
@@ -191,35 +136,34 @@ public class BooterConfiguration
         return dirScannerParams.getExcludes();
     }
 
-    public boolean isManifestOnlyJarRequestedAndUsable()
-    {
-        return classLoaderConfiguration.isManifestOnlyJarRequestedAndUsable();
-    }
-
     public TestArtifactInfo getTestNg()
     {
         return testNg;
     }
 
-    public TestSuiteDefinition getTestSuiteDefinition()
+    public TestRequest getTestSuiteDefinition()
     {
         return testSuiteDefinition;
-    }
-
-    public TestSuiteDefinition getTestSuiteDefinition( String testName )
-    {
-        return new TestSuiteDefinition( testSuiteDefinition.getSuiteXmlFiles(), testName,
-                                        testSuiteDefinition.getTestSourceDirectory(),
-                                        testSuiteDefinition.getRequestedTest() );
-    }
-
-    public ProviderConfiguration getProviderConfiguration()
-    {
-        return providerConfiguration;
     }
 
     public Properties getProviderProperties()
     {
         return providerProperties;
     }
+
+    public Object getTestForFork()
+    {
+        return forkTestSet;
+    }
+
+    public String getTestForForkString()
+    {
+        if ( forkTestSet instanceof File )
+        {
+            return forkTestSet.toString();
+        }
+        return (String) forkTestSet;
+    }
+
+
 }

@@ -60,15 +60,15 @@ public class ForkedBooter
             InputStream stream = surefirePropertiesFile.exists() ? new FileInputStream( surefirePropertiesFile ) : null;
             BooterDeserializer booterDeserializer = new BooterDeserializer();
             BooterConfiguration booterConfiguration = booterDeserializer.deserialize( stream );
-            Properties p = booterConfiguration.getProperties();
 
             SurefireStarter booter = new SurefireStarter( booterConfiguration );
 
-            String testSet = p.getProperty( "testSet" );
-            int result;
-            if ( testSet != null )
+            Object forkedTestSet = booterConfiguration.getTestForFork();
+            Properties p = booterConfiguration.getProviderProperties();
+            final int result;
+            if ( forkedTestSet != null )
             {
-                result = booter.runSuitesInProcess( testSet, p );
+                result = booter.runSuitesInProcess( forkedTestSet, p );
             }
             else
             {

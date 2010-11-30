@@ -24,8 +24,8 @@ import org.apache.maven.surefire.providerapi.SurefireProvider;
 import org.apache.maven.surefire.providerapi.TestSuiteDefinitionAware;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.suite.RunResult;
+import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.testset.TestSetFailedException;
-import org.apache.maven.surefire.testset.TestSuiteDefinition;
 
 import java.util.Iterator;
 import java.util.Properties;
@@ -41,18 +41,18 @@ public class JUnit4Provider
 
     private Properties providerProperties;
 
-    private TestSuiteDefinition testSuiteDefinition;
+    private TestRequest testSuiteDefinition;
 
 
     @SuppressWarnings( { "UnnecessaryUnboxing" } )
-    public RunResult invoke()
+    public RunResult invoke( Object forkTestSet )
         throws TestSetFailedException, ReporterException
     {
         JUnit4DirectoryTestSuite suite = getSuite();
         suite.locateTestSets( getTestsClassLoader() );
-        if ( testSuiteDefinition.getTestForFork() != null )
+        if ( forkTestSet != null )
         {
-            suite.execute( testSuiteDefinition.getTestForFork(), getReporterManagerFactory(), getTestsClassLoader() );
+            suite.execute( (String) forkTestSet, getReporterManagerFactory(), getTestsClassLoader() );
         }
         else
         {
@@ -85,7 +85,7 @@ public class JUnit4Provider
         this.providerProperties = providerProperties;
     }
 
-    public void setTestSuiteDefinition( TestSuiteDefinition testSuiteDefinition )
+    public void setTestSuiteDefinition( TestRequest testSuiteDefinition )
     {
         this.testSuiteDefinition = testSuiteDefinition;
     }

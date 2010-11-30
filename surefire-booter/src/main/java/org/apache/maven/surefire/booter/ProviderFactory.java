@@ -20,7 +20,6 @@ package org.apache.maven.surefire.booter;
  */
 
 import org.apache.maven.surefire.providerapi.DirectoryScannerParametersAware;
-import org.apache.maven.surefire.providerapi.ProviderConfiguration;
 
 /**
  * @author Kristian Rosenvold
@@ -57,8 +56,8 @@ public class ProviderFactory
         ClassLoader context = java.lang.Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader( surefireClassLoader );
 
-        ProviderConfiguration providerConfiguration = booterConfiguration.getProviderConfiguration();
-        final Object o = surefireReflector.newInstance( providerConfiguration );
+        ProviderConfiguration starterConfiguration = booterConfiguration.getSurefireStarterConfiguration();
+        final Object o = surefireReflector.newInstance( starterConfiguration.getProviderClassName() );
         surefireReflector.setIfDirScannerAware( o, booterConfiguration.getDirScannerParams() );
         surefireReflector.setTestSuiteDefinitionAware( o, booterConfiguration.getTestSuiteDefinition() );
         surefireReflector.setProviderPropertiesAware( o, booterConfiguration.getProviderProperties() );
@@ -73,7 +72,8 @@ public class ProviderFactory
             ((ReportingAware) o).setReporterManagerFactory( reporterManagerFactory );
         }
 
-        Thread.currentThread().setContextClassLoader( context );*/
+*/
+        Thread.currentThread().setContextClassLoader( context );
 
         return o;
     }

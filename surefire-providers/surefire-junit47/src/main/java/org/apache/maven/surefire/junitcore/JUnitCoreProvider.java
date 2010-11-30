@@ -41,7 +41,7 @@ public class JUnitCoreProvider
 
 
     @SuppressWarnings( { "UnnecessaryUnboxing" } )
-    public RunResult invoke()
+    public RunResult invoke( Object forkTestSet )
         throws TestSetFailedException, ReporterException
     {
         // Todo; Not there quite yet
@@ -66,9 +66,9 @@ public class JUnitCoreProvider
 
         // getLog().info( "Concurrency config is " + getProperties().toString() );
 
-        if ( getTestSuiteDefinition().getTestForFork() != null )
+        if ( forkTestSet != null )
         {
-            jUnitCoreDirectoryTestSuite.execute( getTestSuiteDefinition().getTestForFork(), getReporterManagerFactory(),
+            jUnitCoreDirectoryTestSuite.execute( (String) forkTestSet, getReporterManagerFactory(),
                                                  getTestsClassLoader() );
         }
         else

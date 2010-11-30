@@ -29,6 +29,7 @@ import java.util.Properties;
  *
  * @author Jason van Zyl
  * @author Emmanuel Venisse
+ * @author Kristian Rosenvold
  * @version $Id$
  */
 public class SurefireStarter
@@ -41,7 +42,7 @@ public class SurefireStarter
         this.booterConfiguration = booterConfiguration;
     }
 
-    public int runSuitesInProcess( String testSet, Properties results )
+    public int runSuitesInProcess( Object testSet, Properties results )
         throws SurefireExecutionException
     {
         // TODO: replace with plexus
@@ -49,11 +50,14 @@ public class SurefireStarter
         ClassLoader oldContextClassLoader = Thread.currentThread().getContextClassLoader();
         try
         {
-            ClassLoader testsClassLoader = getClasspathConfiguration().createTestClassLoaderConditionallySystem(
-                booterConfiguration.useSystemClassLoader() );
+            final ProviderConfiguration starterConfiguration = booterConfiguration.getSurefireStarterConfiguration();
+            final ClasspathConfiguration classpathConfiguration = starterConfiguration.getClasspathConfiguration();
+
+            ClassLoader testsClassLoader = classpathConfiguration.createTestClassLoaderConditionallySystem(
+                starterConfiguration.useSystemClassLoader() );
 
             // TODO: assertions = true shouldn't be required for this CL if we had proper separation (see TestNG)
-            ClassLoader surefireClassLoader = getClasspathConfiguration().createSurefireClassLoader( testsClassLoader );
+            ClassLoader surefireClassLoader = classpathConfiguration.createSurefireClassLoader( testsClassLoader );
 
             SurefireReflector reflector = new SurefireReflector( surefireClassLoader );
 
@@ -61,10 +65,9 @@ public class SurefireStarter
             return reflector.runProvider( booterConfiguration.getReporterConfiguration(),
                                           booterConfiguration.getReports(), surefireClassLoader, testsClassLoader,
                                           results, booterConfiguration.isFailIfNoTests(),
-                                          booterConfiguration.getTestSuiteDefinition( testSet ),
-                                          booterConfiguration.getTestNg(),
-                                          booterConfiguration.getProviderConfiguration(),
-                                          booterConfiguration.getDirScannerParams() );
+                                          booterConfiguration.getTestSuiteDefinition(),
+                                          booterConfiguration.getTestNg(), starterConfiguration.getProviderClassName(),
+                                          booterConfiguration.getDirScannerParams(), testSet );
         }
         finally
         {
@@ -84,9 +87,11 @@ public class SurefireStarter
             // The test classloader must be constructed first to avoid issues with commons-logging until we properly
             // separate the TestNG classloader
             ClassLoader testsClassLoader;
-            String testClassPath = getClasspathConfiguration().getTestClasspath().getClassPathAsString();
+            final ProviderConfiguration starterConfiguration = booterConfiguration.getSurefireStarterConfiguration();
+            final ClasspathConfiguration classpathConfiguration = starterConfiguration.getClasspathConfiguration();
+            String testClassPath = classpathConfiguration.getTestClasspath().getClassPathAsString();
             System.setProperty( "surefire.test.class.path", testClassPath );
-            if ( booterConfiguration.isManifestOnlyJarRequestedAndUsable() )
+            if ( starterConfiguration.isManifestOnlyJarRequestedAndUsable() )
             {
                 testsClassLoader = getClass().getClassLoader(); // ClassLoader.getSystemClassLoader()
                 // SUREFIRE-459, trick the app under test into thinking its classpath was conventional
@@ -96,10 +101,10 @@ public class SurefireStarter
             }
             else
             {
-                testsClassLoader = getClasspathConfiguration().createTestClassLoader();
+                testsClassLoader = classpathConfiguration.createTestClassLoader();
             }
 
-            ClassLoader surefireClassLoader = getClasspathConfiguration().createSurefireClassLoader( testsClassLoader );
+            ClassLoader surefireClassLoader = classpathConfiguration.createSurefireClassLoader( testsClassLoader );
 
             SurefireReflector reflector = new SurefireReflector( surefireClassLoader );
 
@@ -109,19 +114,14 @@ public class SurefireStarter
                                           booterConfiguration.getReports(), surefireClassLoader, testsClassLoader, p,
                                           booterConfiguration.isFailIfNoTests(),
                                           booterConfiguration.getTestSuiteDefinition(), booterConfiguration.getTestNg(),
-                                          booterConfiguration.getProviderConfiguration(),
-                                          booterConfiguration.getDirScannerParams() );
+                                          starterConfiguration.getProviderClassName(),
+                                          booterConfiguration.getDirScannerParams(), null );
 
         }
         finally
         {
             Thread.currentThread().setContextClassLoader( oldContextClassLoader );
         }
-    }
-
-    private ClasspathConfiguration getClasspathConfiguration()
-    {
-        return booterConfiguration.getClasspathConfiguration();
     }
 
 }

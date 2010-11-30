@@ -19,12 +19,12 @@ package org.apache.maven.surefire.providerapi;
  * under the License.
  */
 
-import org.apache.maven.surefire.testset.TestSuiteDefinition;
+import org.apache.maven.surefire.testset.TestRequest;
 
 /**
  * @author Kristian Rosenvold
  */
 public interface TestSuiteDefinitionAware
 {
-    void setTestSuiteDefinition( TestSuiteDefinition testSuiteDefinition );
+    void setTestSuiteDefinition( TestRequest testSuiteDefinition );
 }

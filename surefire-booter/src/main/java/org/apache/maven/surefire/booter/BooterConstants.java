@@ -24,10 +24,10 @@ public interface BooterConstants
     String REPORTSDIRECTORY = "reportsDirectory";
     String TESTNGVERSION = "testNgVersion";
     String TESTNG_CLASSIFIER = "testNgClassifier";
-    String TESTSUITEDEFINITIONTEST = "testSuiteDefinitionTest";
     String REQUESTEDTEST = "requestedTest";
     String SOURCE_DIRECTORY = "testSuiteDefinitionTestSourceDirectory";
     String TEST_CLASSES_DIRECTORY = "testClassesDirectory";
     String TEST_SUITE_XML_FILES = "testSuiteXmlFiles";
     String PROVIDER_CONFIGURATION = "providerConfiguration";
+    String FORKTESTSET = "forkTestSet";
 }

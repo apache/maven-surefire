@@ -39,6 +39,12 @@ public interface SurefireProvider
      */
     public Iterator getSuites();
 
-    public RunResult invoke()
+    /**
+     * The test that will be invoked through a fork; used only for forkmode=pertest, when the classpath
+     * scanning happens on the plugin-side. When this is set, the forked process will run only that test
+     * and not scan the classpath
+     */
+
+    public RunResult invoke( Object forkTestSet )
         throws TestSetFailedException, ReporterException;
 }

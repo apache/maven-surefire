@@ -23,8 +23,8 @@ import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterManagerFactory;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
+import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.testset.TestSetFailedException;
-import org.apache.maven.surefire.testset.TestSuiteDefinition;
 import org.apache.maven.surefire.util.DefaultDirectoryScanner;
 import org.apache.maven.surefire.util.DirectoryScanner;
 
@@ -41,7 +41,7 @@ public class FileScanningProvider
 
     private ClassLoader testsClassLoader;
 
-    private TestSuiteDefinition testSuiteDefinition;
+    private TestRequest testSuiteDefinition;
 
 
 
@@ -89,12 +89,12 @@ public class FileScanningProvider
         return directoryScannerParameters.isFailIfNoTests();
     }
 
-    protected TestSuiteDefinition getTestSuiteDefinition()
+    protected TestRequest getTestSuiteDefinition()
     {
         return testSuiteDefinition;
     }
 
-    public void setTestSuiteDefinition( TestSuiteDefinition testSuiteDefinition )
+    public void setTestSuiteDefinition( TestRequest testSuiteDefinition )
     {
         this.testSuiteDefinition = testSuiteDefinition;
     }

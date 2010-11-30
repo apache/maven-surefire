@@ -35,14 +35,14 @@ public class JUnit3Provider
     implements SurefireProvider
 {
 
-    public RunResult invoke()
+    public RunResult invoke( Object forkTestSet )
         throws TestSetFailedException, ReporterException
     {
         JUnitDirectoryTestSuite suite = getSuite();
         suite.locateTestSets( getTestsClassLoader() );
-        if ( getTestSuiteDefinition().getTestForFork() != null )
+        if ( forkTestSet != null )
         {
-            suite.execute( getTestSuiteDefinition().getTestForFork(), getReporterManagerFactory(),
+            suite.execute( (String) forkTestSet, getReporterManagerFactory(),
                            getTestsClassLoader() );
         }
         else

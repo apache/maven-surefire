@@ -18,18 +18,16 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import org.apache.maven.surefire.providerapi.ProviderConfiguration;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
-import org.apache.maven.surefire.testset.TestSuiteDefinition;
+import org.apache.maven.surefire.testset.TestRequest;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -77,7 +75,7 @@ public class BooterDeserializer
 
         String testNgVersion = null;
         String testNgClassifier = null;
-        String testForFork = null;
+        Object testForFork = null;
         String requestedTest = null;
         File sourceDirectory = null;
         Object[] testSuiteXmlFiles = null;
@@ -151,9 +149,9 @@ public class BooterDeserializer
             {
                 testNgClassifier = properties.getProperty( TESTNG_CLASSIFIER );
             }
-            else if ( TESTSUITEDEFINITIONTEST.equals( name ) )
+            else if ( FORKTESTSET.equals( name ) )
             {
-                testForFork = properties.getProperty( TESTSUITEDEFINITIONTEST );
+                testForFork = getTypeDecoded( properties.getProperty( FORKTESTSET ));
             }
             else if ( REQUESTEDTEST.equals( name ) )
             {
@@ -181,11 +179,11 @@ public class BooterDeserializer
 
         dirScannerParams = new DirectoryScannerParameters( testClassesDirectory, new ArrayList( includes.values() ),
                                                            new ArrayList( excludes.values() ),
-                                                           Boolean.valueOf( failIfNotests ) );
+                                                           valueOf( failIfNotests ) );
 
         TestArtifactInfo testNg = new TestArtifactInfo( testNgVersion, testNgClassifier );
-        TestSuiteDefinition testSuiteDefinition =
-            new TestSuiteDefinition( testSuiteXmlFiles, testForFork, sourceDirectory, requestedTest );
+        TestRequest testSuiteDefinition =
+            new TestRequest( testSuiteXmlFiles, sourceDirectory, requestedTest );
 
         ClassLoaderConfiguration classLoaderConfiguration =
             new ClassLoaderConfiguration( useSystemClassLoader, useManifestOnlyJar );
@@ -194,13 +192,18 @@ public class BooterDeserializer
             new ClasspathConfiguration( classPathUrls, surefireClassPathUrls, enableAssertions, childDelegation );
 
         ReporterConfiguration reporterConfiguration =
-            new ReporterConfiguration( reportsDirectory, Boolean.valueOf( isTrimStackTrace ) );
+            new ReporterConfiguration( reportsDirectory, valueOf( isTrimStackTrace ) );
 
-        ProviderConfiguration providerConfigurationObj = new ProviderConfiguration( providerConfiguration );
         List reports = new ArrayList( reportsMap.values() );
-        return new BooterConfiguration( classLoaderConfiguration, classpathConfiguration, reports, dirScannerParams,
-                                        failIfNotests, properties.getProperties(), reporterConfiguration, testNg,
-                                        testSuiteDefinition, providerConfigurationObj );
+        ProviderConfiguration surefireStarterConfiguration =
+            ProviderConfiguration.inForkedVm( providerConfiguration, classpathConfiguration, classLoaderConfiguration);
+        return new BooterConfiguration( surefireStarterConfiguration, reports, dirScannerParams, failIfNotests,
+                                        reporterConfiguration, testNg, testSuiteDefinition,
+                                        properties.getProperties(), testForFork );
+    }
+
+    private Boolean valueOf(boolean aBoolean){  // jdk1.3 compat
+        return aBoolean ? Boolean.TRUE : Boolean.FALSE;
     }
 
     private boolean isTypeHolderProperty( String name )
@@ -219,7 +222,7 @@ public class BooterDeserializer
         }
         finally
         {
-            close( out );
+            out.close();
         }
     }
 
@@ -263,27 +266,11 @@ public class BooterDeserializer
         return paramObjects;
     }
 
-    /**
-     * From IOUtils
-     * Closes the output stream. The output stream can be null and any IOException's will be swallowed.
-     *
-     * @param outputStream The stream to close.
-     */
-    public static void close( OutputStream outputStream )
-    {
-        if ( outputStream == null )
-        {
-            return;
-        }
-
-        try
-        {
-            outputStream.close();
-        }
-        catch ( IOException ex )
-        {
-            // ignore
-        }
+    private static Object getTypeDecoded(String typeEncoded){
+        int typeSep = typeEncoded.indexOf( "|" );
+        String type = typeEncoded.substring( 0, typeSep );
+        String value = typeEncoded.substring(  typeSep + 1);
+        return getParamValue(  value, type );
     }
 
     private static Object getParamValue( String param, String typeName )

@@ -22,41 +22,21 @@ package org.apache.maven.surefire.testset;
 import java.io.File;
 
 /**
+ * Information about the requested test.
+ *
  * @author Kristian Rosenvold
  */
-public class TestSuiteDefinition
+public class TestRequest
 {
     private final File[] suiteXmlFiles;
-
-    /**
-     * The test that will be invoked through a fork; used only for forkmode=pertest, when the classpath
-     * scanning happens on the plugin-side. When this is set, the forked process will run only that test
-     * and not scan the classpath
-     */
-    private final String testForFork;
 
     private final File testSourceDirectory;
 
     private final String requestedTest;
 
-    public TestSuiteDefinition( Object[] suiteXmlFiles, String testForFork, File testSourceDirectory,
-                                String requestedTest )
+    public TestRequest( Object[] suiteXmlFiles, File testSourceDirectory, String requestedTest )
     {
-        this( createFiles( suiteXmlFiles ), testForFork, testSourceDirectory, requestedTest );
-    }
-
-
-    public TestSuiteDefinition( File[] suiteXmlFiles, File testSourceDirectory, String requestedTest )
-    {
-        this( suiteXmlFiles, null, testSourceDirectory, requestedTest );
-    }
-
-
-    public TestSuiteDefinition( File[] suiteXmlFiles, String testForFork, File testSourceDirectory,
-                                String requestedTest )
-    {
-        this.suiteXmlFiles = suiteXmlFiles;
-        this.testForFork = testForFork;
+        this.suiteXmlFiles = createFiles( suiteXmlFiles );
         this.testSourceDirectory = testSourceDirectory;
         this.requestedTest = requestedTest;
     }
@@ -71,11 +51,6 @@ public class TestSuiteDefinition
         return testSourceDirectory;
     }
 
-    public String getTestForFork()
-    {
-        return testForFork;
-    }
-
     public String getRequestedTest()
     {
         return requestedTest;
@@ -86,9 +61,11 @@ public class TestSuiteDefinition
         if ( suiteXmlFiles != null )
         {
             File[] files = new File[suiteXmlFiles.length];
+            Object element;
             for ( int i = 0; i < suiteXmlFiles.length; i++ )
             {
-                files[i] = (File) suiteXmlFiles[i];
+                element = suiteXmlFiles[i];
+                files[i] = element instanceof String ? new File( (String) element ) : (File) element;
             }
             return files;
         }
