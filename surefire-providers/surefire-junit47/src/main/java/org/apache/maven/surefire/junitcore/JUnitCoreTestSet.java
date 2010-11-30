@@ -21,12 +21,10 @@ package org.apache.maven.surefire.junitcore;
 
 import org.apache.maven.surefire.report.ReporterManagerFactory;
 import org.apache.maven.surefire.testset.TestSetFailedException;
-import org.junit.experimental.ParallelComputer;
 import org.junit.runner.Computer;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.notification.RunListener;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -43,7 +41,7 @@ class JUnitCoreTestSet
 {
     private final Class testClass;
 
-    private static final String className = "org.jdogma.junit.ConfigurableParallelComputer";
+    private static final String className = "org.apache.maven.surefire.junitcore.ConfigurableParallelComputer";
 
     public String getName()
     {
@@ -137,64 +135,22 @@ class JUnitCoreTestSet
         {
             return new Computer();
         }
-        return jUnitCoreParameters.isConfigurableParallelComputerPresent() ? getConfigurableParallelComputer(
-            jUnitCoreParameters ) : getParallelComputer( jUnitCoreParameters );
-    }
-
-    private static Computer getParallelComputer( JUnitCoreParameters JUnitCoreParameters )
-    {
-        if ( JUnitCoreParameters.isUseUnlimitedThreads() )
-        {
-            return new ParallelComputer( true, true );
-        }
-        else
-        {
-            return new ParallelComputer( JUnitCoreParameters.isParallelClasses(),
-                                         JUnitCoreParameters.isParallelMethod() );
-        }
+        return getConfigurableParallelComputer( jUnitCoreParameters );
     }
 
     private static Computer getConfigurableParallelComputer( JUnitCoreParameters JUnitCoreParameters )
         throws TestSetFailedException
     {
-
-        try
+        if ( JUnitCoreParameters.isUseUnlimitedThreads() )
         {
-            Class<?> cpcClass = Class.forName( className );
-            if ( JUnitCoreParameters.isUseUnlimitedThreads() )
-            {
-                Constructor<?> constructor = cpcClass.getConstructor();
-                return (Computer) constructor.newInstance();
-            }
-            else
-            {
-                Constructor<?> constructor =
-                    cpcClass.getConstructor( boolean.class, boolean.class, Integer.class, boolean.class );
-                return (Computer) constructor.newInstance( JUnitCoreParameters.isParallelClasses(),
-                                                           JUnitCoreParameters.isParallelMethod(),
-                                                           JUnitCoreParameters.getThreadCount(),
-                                                           JUnitCoreParameters.isPerCoreThreadCount() );
-            }
+            return new ConfigurableParallelComputer();
         }
-        catch ( ClassNotFoundException e )
+        else
         {
-            throw new TestSetFailedException( e );
-        }
-        catch ( NoSuchMethodException e )
-        {
-            throw new TestSetFailedException( e );
-        }
-        catch ( InvocationTargetException e )
-        {
-            throw new TestSetFailedException( e );
-        }
-        catch ( InstantiationException e )
-        {
-            throw new TestSetFailedException( e );
-        }
-        catch ( IllegalAccessException e )
-        {
-            throw new TestSetFailedException( e );
+            return new ConfigurableParallelComputer( JUnitCoreParameters.isParallelClasses(),
+                                                     JUnitCoreParameters.isParallelMethod(),
+                                                     JUnitCoreParameters.getThreadCount(),
+                                                     JUnitCoreParameters.isPerCoreThreadCount() );
         }
     }
 

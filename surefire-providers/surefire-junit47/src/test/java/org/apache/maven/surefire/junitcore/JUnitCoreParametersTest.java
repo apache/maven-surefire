@@ -103,14 +103,6 @@ public class JUnitCoreParametersTest
         assertTrue( getTestSetBoth().isAnyParallelitySelected() );
     }
 
-    @Test
-    public void testIsConfigurableParallelComputerPresent()
-        throws Exception
-    {
-        assertFalse( getTestSetClasses().isConfigurableParallelComputerPresent() );
-        assertFalse( getTestSetMethods().isConfigurableParallelComputerPresent() );
-        assertTrue( getTestSetBoth().isConfigurableParallelComputerPresent() );
-    }
 
     @Test
     public void testToString()
@@ -127,7 +119,6 @@ public class JUnitCoreParametersTest
         props.setProperty( JUnitCoreParameters.PERCORETHREADCOUNT_KEY, "false" );
         props.setProperty( JUnitCoreParameters.THREADCOUNT_KEY, "2" );
         props.setProperty( JUnitCoreParameters.USEUNLIMITEDTHREADS_KEY, "false" );
-        props.setProperty( JUnitCoreParameters.CONFIGURABLEPARALLELCOMPUTERPRESENT_KEY, "false" );
         return props;
     }
 
@@ -138,7 +129,6 @@ public class JUnitCoreParametersTest
         props.setProperty( JUnitCoreParameters.PERCORETHREADCOUNT_KEY, "false" );
         props.setProperty( JUnitCoreParameters.THREADCOUNT_KEY, "2" );
         props.setProperty( JUnitCoreParameters.USEUNLIMITEDTHREADS_KEY, "true" );
-        props.setProperty( JUnitCoreParameters.CONFIGURABLEPARALLELCOMPUTERPRESENT_KEY, "false" );
         return props;
     }
 
@@ -149,7 +139,6 @@ public class JUnitCoreParametersTest
         props.setProperty( JUnitCoreParameters.PERCORETHREADCOUNT_KEY, "true" );
         props.setProperty( JUnitCoreParameters.THREADCOUNT_KEY, "7" );
         props.setProperty( JUnitCoreParameters.USEUNLIMITEDTHREADS_KEY, "false" );
-        props.setProperty( JUnitCoreParameters.CONFIGURABLEPARALLELCOMPUTERPRESENT_KEY, "true" );
         return props;
     }
 

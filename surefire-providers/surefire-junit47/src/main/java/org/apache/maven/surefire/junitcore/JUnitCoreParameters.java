@@ -34,8 +34,6 @@ class JUnitCoreParameters
 
     private final Boolean useUnlimitedThreads;
 
-    private final Boolean configurableParallelComputerPresent;
-
     public static final String PARALLEL_KEY = "parallel";
 
     public static final String PERCORETHREADCOUNT_KEY = "perCoreThreadCount";
@@ -43,8 +41,6 @@ class JUnitCoreParameters
     public static final String THREADCOUNT_KEY = "threadCount";
 
     public static final String USEUNLIMITEDTHREADS_KEY = "useUnlimitedThreads";
-
-    public static final String CONFIGURABLEPARALLELCOMPUTERPRESENT_KEY = "configurableParallelComputerPresent";
 
 
     public JUnitCoreParameters( Properties properties )
@@ -54,8 +50,6 @@ class JUnitCoreParameters
         this.threadCount = Integer.valueOf( properties.getProperty( THREADCOUNT_KEY, "8" ) );
         this.useUnlimitedThreads =
             Boolean.valueOf( properties.getProperty( USEUNLIMITEDTHREADS_KEY, "false" ).toLowerCase() );
-        this.configurableParallelComputerPresent =
-            Boolean.valueOf( properties.getProperty( CONFIGURABLEPARALLELCOMPUTERPRESENT_KEY, "false" ).toLowerCase() );
     }
 
     public boolean isParallelMethod()
@@ -98,16 +92,10 @@ class JUnitCoreParameters
         return !isNoThreading();
     }
 
-    public Boolean isConfigurableParallelComputerPresent()
-    {
-        return configurableParallelComputerPresent;
-    }
-
     @Override
     public String toString()
     {
         return "JUnitCoreParameters{" + "parallel='" + parallel + '\'' + ", perCoreThreadCount=" + perCoreThreadCount +
-            ", threadCount=" + threadCount + ", useUnlimitedThreads=" + useUnlimitedThreads +
-            ", configurableParallelComputerPresent=" + configurableParallelComputerPresent + '}';
+            ", threadCount=" + threadCount + ", useUnlimitedThreads=" + useUnlimitedThreads + '}';
     }
 }
