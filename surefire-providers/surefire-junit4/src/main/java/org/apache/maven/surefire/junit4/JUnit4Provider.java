@@ -1,4 +1,5 @@
 package org.apache.maven.surefire.junit4;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -36,11 +37,13 @@ public class JUnit4Provider
 {
 
     private final ReporterManagerFactory reporterManagerFactory;
+
     private final ClassLoader testClassLoader;
+
     private final DirectoryScanner directoryScanner;
 
     public JUnit4Provider( ReporterManagerFactory reporterManagerFactory, ClassLoader testClassLoader,
-                           DirectoryScanner directoryScanner)
+                           DirectoryScanner directoryScanner )
     {
         this.reporterManagerFactory = reporterManagerFactory;
         this.testClassLoader = testClassLoader;
@@ -61,8 +64,9 @@ public class JUnit4Provider
         {
             suite.execute( reporterManagerFactory, testClassLoader );
         }
-        reporterManagerFactory.close();
-        return reporterManagerFactory.getGlobalRunStatistics().getRunResult();
+        reporterManagerFactory.warnIfNoTests();
+
+        return reporterManagerFactory.close();
     }
 
     private JUnit4DirectoryTestSuite getSuite()

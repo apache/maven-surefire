@@ -133,7 +133,7 @@ public class MavenSurefireJUnit47RunnerTestCase
 
       junitCore.addListener(concurrentReportingRunListener);
 
-      Result result = junitCore.run(computer, FailingTestClassTest.class);
+      Result result = junitCore.run(computer, FailingTestClassTestNot.class);
 
       junitCore.removeListener(concurrentReportingRunListener);
 
@@ -163,7 +163,7 @@ public class MavenSurefireJUnit47RunnerTestCase
     * Simple TestCase to force a Exception in @BeforeClass.
     *
     */
-   public static class FailingTestClassTest
+   public static class FailingTestClassTestNot
    {
       @BeforeClass
       public static void failingBeforeClass() throws Exception

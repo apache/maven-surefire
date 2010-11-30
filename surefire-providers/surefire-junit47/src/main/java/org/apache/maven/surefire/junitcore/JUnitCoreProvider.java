@@ -73,8 +73,9 @@ public class JUnitCoreProvider
         {
             jUnitCoreDirectoryTestSuite.execute( reporterManagerFactory, testClassLoader );
         }
-        reporterManagerFactory.close();
-        return reporterManagerFactory.getGlobalRunStatistics().getRunResult();
+        reporterManagerFactory.warnIfNoTests();
+
+        return reporterManagerFactory.close();
     }
 
     private JUnitCoreDirectoryTestSuite getSuite()

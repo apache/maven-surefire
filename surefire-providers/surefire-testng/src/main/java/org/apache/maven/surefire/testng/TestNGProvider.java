@@ -1,4 +1,5 @@
 package org.apache.maven.surefire.testng;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -43,13 +44,19 @@ public class TestNGProvider
     implements SurefireProvider
 {
     private Properties providerProperties;
+
     private TestArtifactInfo testArtifactInfo;
+
     private ReporterConfiguration reporterConfiguration;
+
     private final ReporterManagerFactory reporterManagerFactory;
+
     private final ClassLoader testClassLoader;
+
     private final DirectoryScannerParameters directoryScannerParameters;
 
-    private final TestRequest  testRequest;
+    private final TestRequest testRequest;
+
     private final File basedir;
 
     public TestNGProvider( Properties providerProperties, TestArtifactInfo testArtifactInfo,
@@ -72,17 +79,16 @@ public class TestNGProvider
     {
         SurefireTestSuite suite = getActiveSuite();
         suite.locateTestSets( testClassLoader );
-        if ( forkTestSet != null && testRequest == null)
+        if ( forkTestSet != null && testRequest == null )
         {
-            suite.execute( (String) forkTestSet, reporterManagerFactory,
-                           testClassLoader );
+            suite.execute( (String) forkTestSet, reporterManagerFactory, testClassLoader );
         }
         else
         {
             suite.execute( reporterManagerFactory, testClassLoader );
         }
-        reporterManagerFactory.close();
-        return reporterManagerFactory.getGlobalRunStatistics().getRunResult();
+        reporterManagerFactory.warnIfNoTests();
+        return reporterManagerFactory.close();
     }
 
     boolean isTestNGXmlTestSuite( TestRequest testSuiteDefinition )
@@ -95,8 +101,7 @@ public class TestNGProvider
 
     private TestNGDirectoryTestSuite getDirectorySuite()
     {
-        return new TestNGDirectoryTestSuite( basedir,
-                                             new ArrayList( directoryScannerParameters.getIncludes() ),
+        return new TestNGDirectoryTestSuite( basedir, new ArrayList( directoryScannerParameters.getIncludes() ),
                                              new ArrayList( directoryScannerParameters.getExcludes() ),
                                              testRequest.getTestSourceDirectory().toString(),
                                              testArtifactInfo.getVersion(), testArtifactInfo.getClassifier(),
@@ -105,8 +110,7 @@ public class TestNGProvider
 
     private TestNGXmlTestSuite getXmlSuite()
     {
-        return new TestNGXmlTestSuite( testRequest.getSuiteXmlFiles(),
-                                       testRequest.getTestSourceDirectory().toString(),
+        return new TestNGXmlTestSuite( testRequest.getSuiteXmlFiles(), testRequest.getTestSourceDirectory().toString(),
                                        testArtifactInfo.getVersion(), testArtifactInfo.getClassifier(),
                                        providerProperties, reporterConfiguration.getReportsDirectory() );
     }
@@ -114,9 +118,7 @@ public class TestNGProvider
 
     public SurefireTestSuite getActiveSuite()
     {
-        return isTestNGXmlTestSuite( testRequest)
-            ? (SurefireTestSuite) getXmlSuite()
-            : getDirectorySuite();
+        return isTestNGXmlTestSuite( testRequest ) ? (SurefireTestSuite) getXmlSuite() : getDirectorySuite();
     }
 
     public Iterator getSuites()

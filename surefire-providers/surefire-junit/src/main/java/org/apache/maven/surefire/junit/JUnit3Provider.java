@@ -1,4 +1,5 @@
 package org.apache.maven.surefire.junit;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -35,7 +36,9 @@ public class JUnit3Provider
     implements SurefireProvider
 {
     private final ReporterManagerFactory reporterManagerFactory;
+
     private final ClassLoader testClassLoader;
+
     private final DirectoryScanner directoryScanner;
 
     public JUnit3Provider( ReporterManagerFactory reporterManagerFactory, ClassLoader testClassLoader,
@@ -50,7 +53,7 @@ public class JUnit3Provider
         throws TestSetFailedException, ReporterException
     {
         JUnitDirectoryTestSuite suite = getSuite();
-        suite.locateTestSets(testClassLoader);
+        suite.locateTestSets( testClassLoader );
         if ( forkTestSet != null )
         {
             suite.execute( (String) forkTestSet, reporterManagerFactory, testClassLoader );
@@ -59,8 +62,10 @@ public class JUnit3Provider
         {
             suite.execute( reporterManagerFactory, testClassLoader );
         }
-        reporterManagerFactory.close();
-        return reporterManagerFactory.getGlobalRunStatistics().getRunResult();
+
+        reporterManagerFactory.warnIfNoTests();
+
+        return reporterManagerFactory.close();
     }
 
     private JUnitDirectoryTestSuite getSuite()

@@ -29,7 +29,7 @@ import java.util.Properties;
 /**
  * Invokes surefire with the correct classloader setup.
  * <p/>
- * This part of the booter that is always guaranteed to be in the
+ * This part of the booter is always guaranteed to be in the
  * same vm as the tests will be run in.
  *
  * @author Jason van Zyl
@@ -52,21 +52,19 @@ public class SurefireStarter
         throws SurefireExecutionException
     {
 
-        // TODO: replace with plexus
         final ProviderConfiguration starterConfiguration = booterConfiguration.getSurefireStarterConfiguration();
         final ClasspathConfiguration classpathConfiguration = starterConfiguration.getClasspathConfiguration();
 
         ClassLoader testsClassLoader = classpathConfiguration.createTestClassLoaderConditionallySystem(
             starterConfiguration.useSystemClassLoader() );
 
-        // TODO: assertions = true shouldn't be required for this CL if we had proper separation (see TestNG)
         ClassLoader surefireClassLoader = classpathConfiguration.createSurefireClassLoader( testsClassLoader );
 
         RunResult runResult = invokeProvider( testSet, testsClassLoader, surefireClassLoader );
 
         updateResultsProperties( runResult, results );
 
-        return processRunCount( runResult, surefireClassLoader );
+        return processRunCount( runResult );
     }
 
     private static final String RESULTS_ERRORS = "errors";
@@ -88,16 +86,12 @@ public class SurefireStarter
 
     private RunResult invokeProvider( Object testSet, ClassLoader testsClassLoader, ClassLoader surefireClassLoader )
     {
-        ClassLoader oldContextClassLoader = Thread.currentThread().getContextClassLoader();
-        Thread.currentThread().setContextClassLoader( surefireClassLoader );
-
         ProviderFactory providerFactory = new ProviderFactory( booterConfiguration, surefireClassLoader );
         final SurefireProvider provider = providerFactory.createProvider( testsClassLoader );
 
         try
         {
-            final RunResult invoke = provider.invoke( testSet );
-            return invoke;
+            return provider.invoke( testSet );
         }
         catch ( TestSetFailedException e )
         {
@@ -107,18 +101,12 @@ public class SurefireStarter
         {
             throw new RuntimeException( e );
         }
-        finally
-        {
-            Thread.currentThread().setContextClassLoader( oldContextClassLoader );
-        }
     }
 
     public int runSuitesInProcess( Properties p )
         throws SurefireExecutionException
     {
         // TODO: replace with plexus
-
-        ClassLoader oldContextClassLoader = Thread.currentThread().getContextClassLoader();
 
         // The test classloader must be constructed first to avoid issues with commons-logging until we properly
         // separate the TestNG classloader
@@ -142,40 +130,20 @@ public class SurefireStarter
 
         ClassLoader surefireClassLoader = classpathConfiguration.createSurefireClassLoader( testsClassLoader );
 
-        Thread.currentThread().setContextClassLoader( surefireClassLoader );
         final RunResult runResult = invokeProvider( null, testsClassLoader, surefireClassLoader );
-        return processRunCount( runResult, surefireClassLoader );
+        return processRunCount( runResult );
     }
 
     /**
-     * Returns
+     * Returns the process return code based on the RunResult
      *
-     * @param runCount            The run result
-     * @param surefireClassLoader The sirefore classloader
+     * @param runCount The run result
      * @return The process result code
      * @throws SurefireExecutionException When an exception is found
      */
-    private int processRunCount( RunResult runCount, ClassLoader surefireClassLoader )
+    private int processRunCount( RunResult runCount )
         throws SurefireExecutionException
     {
-        if ( runCount.getCompletedCount() == 0 )
-        {
-            // TODO: Bugbug find out WTF this means. This blows up like crap when running here ;)
-/*            ReporterManagerFactory reporterManagerFactory =
-                new ReporterManagerFactory2( surefireClassLoader, booterConfiguration.getReporterConfiguration() );
-            try
-            {
-                reporterManagerFactory.createReporterManager().writeMessage( "There are no tests to run." );
-            }
-            catch ( TestSetFailedException e )
-            {
-                throw new SurefireExecutionException( "While reporting error", e );
-            }
-            finally
-            {
-                reporterManagerFactory.close();
-            }*/
-        }
 
         if ( runCount.getCompletedCount() == 0 && booterConfiguration.isFailIfNoTests().booleanValue() )
         {
