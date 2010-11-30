@@ -19,9 +19,17 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import org.apache.maven.surefire.providerapi.DirectoryScannerParametersAware;
+import org.apache.maven.surefire.providerapi.SurefireProvider;
+
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 
 /**
+ * Creates the surefire provider.
+ * <p/>
+ * Todo: This class does a little bit too little ;)
+ *
  * @author Kristian Rosenvold
  */
 public class ProviderFactory
@@ -30,28 +38,16 @@ public class ProviderFactory
 
     private final ClassLoader surefireClassLoader;
 
-    private final Class directoryScannerParametersAware;
-
     private final SurefireReflector surefireReflector;
-
 
     public ProviderFactory( BooterConfiguration booterConfiguration, ClassLoader surefireClassLoader )
     {
         this.booterConfiguration = booterConfiguration;
         this.surefireClassLoader = surefireClassLoader;
         this.surefireReflector = new SurefireReflector( surefireClassLoader );
-        try
-        {
-            directoryScannerParametersAware =
-                surefireClassLoader.loadClass( DirectoryScannerParametersAware.class.getName() );
-        }
-        catch ( ClassNotFoundException e )
-        {
-            throw new RuntimeException( "When loading class", e );
-        }
     }
 
-    public Object createProvider( ClassLoader testClassLoader )
+    public SurefireProvider createProvider( ClassLoader testClassLoader )
     {
         ClassLoader context = java.lang.Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader( surefireClassLoader );
@@ -65,16 +61,35 @@ public class ProviderFactory
         surefireReflector.setTestClassLoaderAware( o, testClassLoader );
         surefireReflector.setTestArtifactInfoAware( o, booterConfiguration.getTestNg() );
 
-        /*
-        if ( o instanceof ReportingAware )
-        {
-            ReporterManagerFactory reporterManagerFactory = new ReporterManagerFactory2( booterConfiguration.getReports(), surefireClassLoader, booterConfiguration.getReporterConfiguration() );
-            ((ReportingAware) o).setReporterManagerFactory( reporterManagerFactory );
-        }
-
-*/
         Thread.currentThread().setContextClassLoader( context );
 
-        return o;
+        return createClassLoaderProxy( o );
     }
+
+    private SurefireProvider createClassLoaderProxy( Object target )
+    {
+        return (SurefireProvider) Proxy.newProxyInstance( this.getClass().getClassLoader(),
+                                                          new Class[]{ SurefireProvider.class },
+                                                          new ClassLoaderProxy( target ) );
+    }
+
+    private class ClassLoaderProxy
+        implements InvocationHandler
+    {
+        private final Object target;
+
+        public ClassLoaderProxy( Object delegate )
+        {
+            this.target = delegate;
+        }
+
+        public Object invoke( Object proxy, Method method, Object[] args )
+            throws Throwable
+        {
+            Method delegateMethod = target.getClass().getMethod( method.getName(), method.getParameterTypes() );
+            final Object result = delegateMethod.invoke( target, args );
+            return surefireReflector.convertIfRunResult(result);
+        }
+    }
+
 }

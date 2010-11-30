@@ -27,6 +27,7 @@ import org.apache.maven.surefire.providerapi.TestArtifactInfoAware;
 import org.apache.maven.surefire.providerapi.TestClassLoaderAware;
 import org.apache.maven.surefire.providerapi.TestSuiteDefinitionAware;
 import org.apache.maven.surefire.report.ReporterConfiguration;
+import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestRequest;
@@ -72,6 +73,9 @@ public class SurefireReflector
 
     private final Class providerPropertiesAware;
 
+    private final Class runResult;
+
+    private static final Class[] noargs = new Class[0];
 
     public SurefireReflector( ClassLoader surefireClassLoader )
     {
@@ -90,11 +94,27 @@ public class SurefireReflector
             testClassLoaderAware = surefireClassLoader.loadClass( TestClassLoaderAware.class.getName() );
             reporterConfigurationAware = surefireClassLoader.loadClass( ReporterConfigurationAware.class.getName() );
             providerPropertiesAware = surefireClassLoader.loadClass( ProviderPropertiesAware.class.getName() );
+            runResult = surefireClassLoader.loadClass( RunResult.class.getName() );
         }
         catch ( ClassNotFoundException e )
         {
             throw new RuntimeException( "When loading class", e );
         }
+    }
+
+    public Object convertIfRunResult( Object result )
+    {
+        if ( result == null || !isRunResult( result ) )
+        {
+            return result;
+        }
+        final Integer getCompletedCount1 = (Integer) invokeGetter( result, "getCompletedCount" );
+        final Integer getErrors = (Integer) invokeGetter( result, "getErrors" );
+        final Integer getSkipped = (Integer) invokeGetter( result, "getSkipped" );
+        final Integer getFailures = (Integer) invokeGetter( result, "getFailures" );
+        return new RunResult( getCompletedCount1.intValue(), getErrors.intValue(), getSkipped.intValue(),
+                              getFailures.intValue() );
+
     }
 
 
@@ -335,6 +355,28 @@ public class SurefireReflector
         }
     }
 
+    private static Object invokeGetter( Object instance, String methodName )
+    {
+        try
+        {
+            final Method method = instance.getClass().getMethod( methodName, noargs );
+            final Object[] noargsValues = new Object[0];
+            return method.invoke( instance, noargsValues );
+        }
+        catch ( NoSuchMethodException e )
+        {
+            throw new RuntimeException( "When finding method " + methodName, e );
+        }
+        catch ( InvocationTargetException e )
+        {
+            throw new RuntimeException( "When running method " + methodName, e );
+        }
+        catch ( IllegalAccessException e )
+        {
+            throw new RuntimeException( "When accessing method " + methodName, e );
+        }
+    }
+
     private static Method getMethod( Object instance, String methodName, Class[] parameters )
     {
         try
@@ -468,4 +510,8 @@ public class SurefireReflector
         invokeSetter( o, setter, param );
     }
 
+    public boolean isRunResult( Object o )
+    {
+        return runResult.isAssignableFrom( o.getClass() );
+    }
 }

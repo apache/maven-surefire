@@ -33,6 +33,7 @@ import org.apache.maven.surefire.booter.SurefireExecutionException;
 import org.apache.maven.surefire.booter.SurefireReflector;
 import org.apache.maven.surefire.booter.SurefireStarter;
 import org.apache.maven.surefire.booter.SystemPropertyManager;
+import org.apache.maven.surefire.providerapi.SurefireProvider;
 import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.cli.CommandLineException;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
@@ -132,11 +133,11 @@ public class ForkStarter
 
         boolean showHeading = true;
         final ProviderFactory providerFactory = new ProviderFactory( booterConfiguration, surefireClassLoader );
-        Object surefireProvider = providerFactory.createProvider( testsClassLoader );
+        SurefireProvider surefireProvider = providerFactory.createProvider( testsClassLoader );
 
         Properties properties = new Properties();
 
-        final Iterator suites = (Iterator) SurefireReflector.getSuites( surefireProvider );
+        final Iterator suites = surefireProvider.getSuites();
         while ( suites.hasNext() )
         {
             Object testSet = suites.next();
