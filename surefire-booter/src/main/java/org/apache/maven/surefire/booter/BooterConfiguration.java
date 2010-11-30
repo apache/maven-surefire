@@ -55,22 +55,11 @@ public class BooterConfiguration
 
     private final ProviderConfiguration providerConfiguration;
 
-    private final List reports;
-
-
-    private final boolean failIfNoTests;
+    private final DirectoryScannerParameters dirScannerParams;
 
     private final ReporterConfiguration reporterConfiguration;
 
-    private final boolean redirectTestOutputToFile;
-
-
-    private final boolean isForkRequested;
-
-
-    private final DirectoryScannerParameters dirScannerParams;
-
-    private final boolean isInForkedVm;
+    private final List reports;
 
     private final TestArtifactInfo testNg;
 
@@ -80,9 +69,18 @@ public class BooterConfiguration
 
     private Properties properties; // todo: Zap out of here !
 
+    private final boolean failIfNoTests;
+
+    private final boolean redirectTestOutputToFile;
+
+    private final boolean isForkRequested;
+
+    private final boolean isInForkedVm;
+
     public BooterConfiguration( ClassLoaderConfiguration classLoaderConfiguration,
-                                ClasspathConfiguration classpathConfiguration, List reports, DirectoryScannerParameters directoryScannerParameterses,
-                                boolean failIfNoTests, Properties properties, ReporterConfiguration reporterConfiguration,
+                                ClasspathConfiguration classpathConfiguration, List reports,
+                                DirectoryScannerParameters directoryScannerParameterses, boolean failIfNoTests,
+                                Properties properties, ReporterConfiguration reporterConfiguration,
                                 TestArtifactInfo testArtifactInfo, TestSuiteDefinition testSuiteDefinition,
                                 ProviderConfiguration providerConfiguration )
     {
@@ -208,9 +206,11 @@ public class BooterConfiguration
         return testSuiteDefinition;
     }
 
-    public TestSuiteDefinition getTestSuiteDefinition(String testName)
+    public TestSuiteDefinition getTestSuiteDefinition( String testName )
     {
-        return new TestSuiteDefinition( testSuiteDefinition.getSuiteXmlFiles(), testName, testSuiteDefinition.getTestSourceDirectory(), testSuiteDefinition.getRequestedTest() );
+        return new TestSuiteDefinition( testSuiteDefinition.getSuiteXmlFiles(), testName,
+                                        testSuiteDefinition.getTestSourceDirectory(),
+                                        testSuiteDefinition.getRequestedTest() );
     }
 
     public ProviderConfiguration getProviderConfiguration()

@@ -32,11 +32,6 @@ import java.util.Properties;
  */
 public class SystemPropertyManager
 {
-    private static Properties loadProperties( File file )
-        throws IOException
-    {
-        return loadProperties( new FileInputStream( file ) );
-    }
 
     /**
      * Loads the properties, closes the stream
@@ -44,7 +39,7 @@ public class SystemPropertyManager
      * @return The properties
      * @throws java.io.IOException If something bad happens
      */
-    public static Properties loadProperties( InputStream inStream )
+    public static PropertiesWrapper loadProperties( InputStream inStream )
         throws IOException
     {
         Properties p = new Properties();
@@ -58,21 +53,21 @@ public class SystemPropertyManager
             close( inStream );
         }
 
-        return p;
+        return new PropertiesWrapper( p);
+    }
+
+    private static PropertiesWrapper loadProperties( File file )
+        throws IOException
+    {
+        return loadProperties( new FileInputStream( file ) );
     }
 
 
     public static void setSystemProperties( File file )
         throws IOException
     {
-        Properties p = loadProperties( file );
-
-        for ( Iterator i = p.keySet().iterator(); i.hasNext(); )
-        {
-            String key = (String) i.next();
-
-            System.setProperty( key, p.getProperty( key ) );
-        }
+        PropertiesWrapper p = loadProperties( file );
+        p.setAsSystemProperties();
     }
 
     public File writePropertiesFile( Properties properties, File tempDirectory, String name, boolean deleteOnExit)

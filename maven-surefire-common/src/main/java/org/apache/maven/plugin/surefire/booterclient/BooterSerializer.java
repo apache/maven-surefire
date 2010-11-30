@@ -19,7 +19,7 @@ package org.apache.maven.plugin.surefire.booterclient;
  */
 
 import org.apache.maven.surefire.booter.BooterConfiguration;
-import org.apache.maven.surefire.booter.BooterDeserializer;
+import org.apache.maven.surefire.booter.BooterConstants;
 import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
 import org.apache.maven.surefire.booter.SystemPropertyManager;
 import org.apache.maven.surefire.report.ReporterConfiguration;
@@ -51,9 +51,11 @@ import java.util.Properties;
  * @author Kristian Rosenvold
  * @version $Id$
  */
-public class BooterSerializer
+public class BooterSerializer implements BooterConstants
 {
     private final ForkConfiguration forkConfiguration;
+
+    public final String TESTSET = "testSet";
 
     public BooterSerializer( ForkConfiguration forkConfiguration )
     {
@@ -69,7 +71,7 @@ public class BooterSerializer
 
         if ( testSet != null && testSet instanceof String )
         {
-            properties.setProperty( "testSet", (String) testSet );
+            properties.setProperty( this.TESTSET, (String) testSet );
         }
         SystemPropertyManager systemPropertyManager = new SystemPropertyManager();
         return systemPropertyManager.writePropertiesFile( properties, forkConfiguration.getTempDirectory(), "surefire",
@@ -82,10 +84,10 @@ public class BooterSerializer
         {
             throw new IllegalStateException( "Properties cannot be null" );
         }
-        addList( booterConfiguration.getReports(), properties, BooterDeserializer.REPORT_PROPERTY_PREFIX );
+        addList( booterConfiguration.getReports(), properties, BooterConstants.REPORT_PROPERTY_PREFIX );
         List params = new ArrayList();
-        params.add( new Object[]{ "directoryScannerOptions", booterConfiguration.getDirScannerParamsArray() } );
-        addPropertiesForTypeHolder( params, properties, BooterDeserializer.DIRSCANNER_PROPERTY_PREFIX );
+        params.add( new Object[]{ DIRSCANNER_OPTIONS, booterConfiguration.getDirScannerParamsArray() } );
+        addPropertiesForTypeHolder( params, properties, BooterConstants.DIRSCANNER_PROPERTY_PREFIX );
 
         booterConfiguration.getClasspathConfiguration().setForkProperties( properties );
 
@@ -96,11 +98,11 @@ public class BooterSerializer
         {
             if ( testNg.getVersion() != null )
             {
-                properties.setProperty( "testNgVersion", testNg.getVersion() );
+                properties.setProperty( BooterConstants.TESTNGVERSION, testNg.getVersion() );
             }
             if ( testNg.getClassifier() != null )
             {
-                properties.setProperty( "testNgClassifier", testNg.getClassifier() );
+                properties.setProperty( BooterConstants.TESTNG_CLASSIFIER, testNg.getClassifier() );
             }
         }
 
@@ -109,43 +111,43 @@ public class BooterSerializer
         {
             if ( testSuiteDefinition.getTestForFork() != null )
             {
-                properties.setProperty( "testSuiteDefinitionTest", testSuiteDefinition.getTestForFork() );
+                properties.setProperty( BooterConstants.TESTSUITEDEFINITIONTEST, testSuiteDefinition.getTestForFork() );
             }
             if ( testSuiteDefinition.getTestSourceDirectory() != null )
             {
-                properties.setProperty( "testSuiteDefinitionTestSourceDirectory",
+                properties.setProperty( BooterConstants.SOURCE_DIRECTORY,
                                         testSuiteDefinition.getTestSourceDirectory().toString() );
             }
             if ( testSuiteDefinition.getSuiteXmlFiles() != null )
             {
-                properties.setProperty( "testSuiteXmlFiles", getValues( testSuiteDefinition.getSuiteXmlFiles() ) );
+                properties.setProperty( BooterConstants.TEST_SUITE_XML_FILES, getValues( testSuiteDefinition.getSuiteXmlFiles() ) );
             }
             if ( testSuiteDefinition.getRequestedTest() != null )
             {
-                properties.setProperty( "requestedTest", testSuiteDefinition.getRequestedTest() );
+                properties.setProperty( BooterConstants.REQUESTEDTEST, testSuiteDefinition.getRequestedTest() );
             }
         }
 
         DirectoryScannerParameters directoryScannerParameters = booterConfiguration.getDirScannerParams();
         if ( directoryScannerParameters != null )
         {
-            properties.setProperty( "failIfNoTests", String.valueOf( directoryScannerParameters.isFailIfNoTests() ) );
-            addList( directoryScannerParameters.getIncludes(), properties, "includes" );
-            addList( directoryScannerParameters.getExcludes(), properties, "excludes" );
-            properties.setProperty( "testClassesDirectory",
+            properties.setProperty(BooterConstants.FAILIFNOTESTS, String.valueOf( directoryScannerParameters.isFailIfNoTests() ) );
+            addList( directoryScannerParameters.getIncludes(), properties, BooterConstants.INCLUDES_PROPERTY_PREFIX);
+            addList( directoryScannerParameters.getExcludes(), properties, BooterConstants.EXCLUDES_PROPERTY_PREFIX );
+            properties.setProperty( BooterConstants.TEST_CLASSES_DIRECTORY,
                                     directoryScannerParameters.getTestClassesDirectory().toString() );
         }
 
         Boolean rep = reporterConfiguration.isTrimStackTrace();
-        properties.setProperty( "isTrimStackTrace", rep.toString() );
-        properties.setProperty( "reportsDirectory", reporterConfiguration.getReportsDirectory().toString() );
+        properties.setProperty( BooterConstants.ISTRIMSTACKTRACE, rep.toString() );
+        properties.setProperty( BooterConstants.REPORTSDIRECTORY, reporterConfiguration.getReportsDirectory().toString() );
         ClassLoaderConfiguration classLoaderConfiguration = this.forkConfiguration.getClassLoaderConfiguration();
-        properties.setProperty( "useSystemClassLoader",
+        properties.setProperty( BooterConstants.USESYSTEMCLASSLOADER,
                                 String.valueOf( classLoaderConfiguration.isUseSystemClassLoader() ) );
-        properties.setProperty( "useManifestOnlyJar",
+        properties.setProperty( BooterConstants.USEMANIFESTONLYJAR,
                                 String.valueOf( classLoaderConfiguration.isManifestOnlyJarRequestedAndUsable() ) );
-        properties.setProperty( "failIfNoTests", String.valueOf( booterConfiguration.isFailIfNoTests() ) );
-        properties.setProperty( "providerConfiguration",
+        properties.setProperty( BooterConstants.FAILIFNOTESTS, String.valueOf( booterConfiguration.isFailIfNoTests() ) );
+        properties.setProperty( BooterConstants.PROVIDER_CONFIGURATION,
                                 booterConfiguration.getProviderConfiguration().getClassName() );
     }
 
@@ -193,8 +195,8 @@ public class BooterSerializer
             {
                 String paramProperty = getValues( params );
                 String typeProperty = getTypes( params );
-                properties.setProperty( propertyPrefix + i + BooterDeserializer.PARAMS_SUFIX, paramProperty );
-                properties.setProperty( propertyPrefix + i + BooterDeserializer.TYPES_SUFIX, typeProperty );
+                properties.setProperty( propertyPrefix + i + BooterConstants.PARAMS_SUFIX, paramProperty );
+                properties.setProperty( propertyPrefix + i + BooterConstants.TYPES_SUFIX, typeProperty );
             }
         }
     }

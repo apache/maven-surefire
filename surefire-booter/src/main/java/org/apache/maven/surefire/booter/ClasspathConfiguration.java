@@ -89,10 +89,10 @@ public class ClasspathConfiguration
 
     public void setForkProperties( Properties properties )
     {
-        classpathUrls.setForkProperties( properties, "classPathUrl." );
-        surefireClasspathUrls.setForkProperties( properties, "surefireClassPathUrl." );
-        properties.setProperty( "enableAssertions", String.valueOf( enableAssertions ) );
-        properties.setProperty( "childDelegation", String.valueOf( childDelegation ) );
+        classpathUrls.setForkProperties( properties, BooterConstants.CLASSPATH_URL);
+        surefireClasspathUrls.setForkProperties( properties, BooterConstants.SUREFIRE_CLASSPATHURL );
+        properties.setProperty( BooterConstants.ENABLE_ASSERTIONS, String.valueOf( enableAssertions ) );
+        properties.setProperty( BooterConstants.CHILD_DELEGATION, String.valueOf( childDelegation ) );
     }
 
 

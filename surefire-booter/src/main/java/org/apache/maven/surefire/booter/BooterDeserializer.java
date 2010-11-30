@@ -52,24 +52,14 @@ import java.util.TreeMap;
  * @version $Id$
  */
 public class BooterDeserializer
+    implements BooterConstants
 {
-    public static final String INCLUDES_PROPERTY_PREFIX = "includes";
-
-    public static final String EXCLUDES_PROPERTY_PREFIX = "excludes";
-
-    public static final String DIRSCANNER_PROPERTY_PREFIX = "dirscanner.";
-
-    public static final String REPORT_PROPERTY_PREFIX = "report.";
-
-    public static final String PARAMS_SUFIX = ".params";
-
-    public static final String TYPES_SUFIX = ".types";
 
 
     public BooterConfiguration deserialize( InputStream inputStream )
         throws IOException
     {
-        Properties properties = SystemPropertyManager.loadProperties( inputStream );
+        PropertiesWrapper properties = SystemPropertyManager.loadProperties( inputStream );
         DirectoryScannerParameters dirScannerParams;
         boolean enableAssertions = false;
         boolean childDelegation = true;
@@ -89,7 +79,7 @@ public class BooterDeserializer
         String testNgClassifier = null;
         String testForFork = null;
         String requestedTest = null;
-        File testSuiteDefinitionTestSourceDirectory = null;
+        File sourceDirectory = null;
         Object[] testSuiteXmlFiles = null;
         String providerConfiguration = null;
         SortedMap includes = new TreeMap();
@@ -115,79 +105,77 @@ public class BooterDeserializer
                 String className = properties.getProperty( name );
                 excludes.put( name, className );
             }
-            else if ( name.startsWith( "classPathUrl." ) )
+            else if ( name.startsWith( CLASSPATH_URL ) )
             {
                 classPathUrls.put( Integer.valueOf( name.substring( name.indexOf( '.' ) + 1 ) ),
                                    properties.getProperty( name ) );
             }
-            else if ( name.startsWith( "surefireClassPathUrl." ) )
+            else if ( name.startsWith( SUREFIRE_CLASSPATHURL ) )
             {
                 surefireClassPathUrls.put( Integer.valueOf( name.substring( name.indexOf( '.' ) + 1 ) ),
                                            properties.getProperty( name ) );
             }
-            else if ( "childDelegation".equals( name ) )
+            else if ( CHILD_DELEGATION.equals( name ) )
             {
-                childDelegation = Boolean.valueOf( properties.getProperty( "childDelegation" ) ).booleanValue();
+                childDelegation = properties.getBooleanProperty( CHILD_DELEGATION );
             }
-            else if ( "enableAssertions".equals( name ) )
+            else if ( ENABLE_ASSERTIONS.equals( name ) )
             {
-                enableAssertions = Boolean.valueOf( properties.getProperty( "enableAssertions" ) ).booleanValue();
+                enableAssertions = properties.getBooleanProperty( ENABLE_ASSERTIONS );
             }
-            else if ( "useSystemClassLoader".equals( name ) )
+            else if ( USESYSTEMCLASSLOADER.equals( name ) )
             {
-                useSystemClassLoader =
-                    Boolean.valueOf( properties.getProperty( "useSystemClassLoader" ) ).booleanValue();
+                useSystemClassLoader = properties.getBooleanProperty( USESYSTEMCLASSLOADER );
             }
-            else if ( "useManifestOnlyJar".equals( name ) )
+            else if ( USEMANIFESTONLYJAR.equals( name ) )
             {
-                useManifestOnlyJar = Boolean.valueOf( properties.getProperty( "useManifestOnlyJar" ) ).booleanValue();
+                useManifestOnlyJar = properties.getBooleanProperty( USEMANIFESTONLYJAR );
             }
-            else if ( "failIfNoTests".equals( name ) )
+            else if ( FAILIFNOTESTS.equals( name ) )
             {
-                failIfNotests = Boolean.valueOf( properties.getProperty( "failIfNoTests" ) ).booleanValue();
+                failIfNotests = properties.getBooleanProperty( FAILIFNOTESTS );
             }
-            else if ( "isTrimStackTrace".equals( name ) )
+            else if ( ISTRIMSTACKTRACE.equals( name ) )
             {
-                failIfNotests = Boolean.valueOf( properties.getProperty( "isTrimStackTrace" ) ).booleanValue();
+                failIfNotests = properties.getBooleanProperty( ISTRIMSTACKTRACE );
             }
-            else if ( "reportsDirectory".equals( name ) )
+            else if ( REPORTSDIRECTORY.equals( name ) )
             {
-                reportsDirectory = new File( properties.getProperty( "reportsDirectory" ) );
+                reportsDirectory = new File( properties.getProperty( REPORTSDIRECTORY ) );
             }
-            else if ( "testNgVersion".equals( name ) )
+            else if ( TESTNGVERSION.equals( name ) )
             {
-                testNgVersion = properties.getProperty( "testNgVersion" );
+                testNgVersion = properties.getProperty( TESTNGVERSION );
             }
-            else if ( "testNgClassifier".equals( name ) )
+            else if ( TESTNG_CLASSIFIER.equals( name ) )
             {
-                testNgClassifier = properties.getProperty( "testNgClassifier" );
+                testNgClassifier = properties.getProperty( TESTNG_CLASSIFIER );
             }
-            else if ( "testSuiteDefinitionTest".equals( name ) )
+            else if ( TESTSUITEDEFINITIONTEST.equals( name ) )
             {
-                testForFork = properties.getProperty( "testSuiteDefinitionTest" );
+                testForFork = properties.getProperty( TESTSUITEDEFINITIONTEST );
             }
-            else if ( "requestedTest".equals( name ) )
+            else if ( REQUESTEDTEST.equals( name ) )
             {
-                requestedTest = properties.getProperty( "requestedTest" );
+                requestedTest = properties.getProperty( REQUESTEDTEST );
             }
-            else if ( "testSuiteDefinitionTestSourceDirectory".equals( name ) )
+            else if ( SOURCE_DIRECTORY.equals( name ) )
             {
-                testSuiteDefinitionTestSourceDirectory =
-                    (File) getParamValue( properties.getProperty( "testSuiteDefinitionTestSourceDirectory" ),
-                                          File.class.getName() );
+                sourceDirectory =
+                    (File) getParamValue( properties.getProperty( SOURCE_DIRECTORY ), File.class.getName() );
             }
-            else if ( "testClassesDirectory".equals( name ) )
+            else if ( TEST_CLASSES_DIRECTORY.equals( name ) )
             {
                 testClassesDirectory =
-                    (File) getParamValue( properties.getProperty( "testClassesDirectory" ), File.class.getName() );
+                    (File) getParamValue( properties.getProperty( TEST_CLASSES_DIRECTORY ), File.class.getName() );
             }
-            else if ( "testSuiteXmlFiles".equals( name ) )
+            else if ( TEST_SUITE_XML_FILES.equals( name ) )
             {
-                testSuiteXmlFiles = constructParamObjects( properties.getProperty( "testSuiteXmlFiles" ), File.class );
+                testSuiteXmlFiles = constructParamObjects( properties.getProperty( TEST_SUITE_XML_FILES ), File.class );
             }
-            else if ( "providerConfiguration".equals( name ) )
+            else if ( PROVIDER_CONFIGURATION.equals( name ) )
             {
-                providerConfiguration = properties.getProperty( "providerConfiguration" );
+                providerConfiguration = properties.getProperty( PROVIDER_CONFIGURATION );
             }
         }
 
@@ -197,10 +185,9 @@ public class BooterDeserializer
 
         TestArtifactInfo testNg = new TestArtifactInfo( testNgVersion, testNgClassifier );
         TestSuiteDefinition testSuiteDefinition =
-            new TestSuiteDefinition( testSuiteXmlFiles, testForFork, testSuiteDefinitionTestSourceDirectory,
-                                     requestedTest );
+            new TestSuiteDefinition( testSuiteXmlFiles, testForFork, sourceDirectory, requestedTest );
 
-        ClassLoaderConfiguration forkConfiguration =
+        ClassLoaderConfiguration classLoaderConfiguration =
             new ClassLoaderConfiguration( useSystemClassLoader, useManifestOnlyJar );
 
         ClasspathConfiguration classpathConfiguration =
@@ -211,9 +198,9 @@ public class BooterDeserializer
 
         ProviderConfiguration providerConfigurationObj = new ProviderConfiguration( providerConfiguration );
         List reports = new ArrayList( reportsMap.values() );
-        return new BooterConfiguration( forkConfiguration, classpathConfiguration, reports, dirScannerParams,
-                                        failIfNotests, properties, reporterConfiguration, testNg, testSuiteDefinition,
-                                        providerConfigurationObj );
+        return new BooterConfiguration( classLoaderConfiguration, classpathConfiguration, reports, dirScannerParams,
+                                        failIfNotests, properties.getProperties(), reporterConfiguration, testNg,
+                                        testSuiteDefinition, providerConfigurationObj );
     }
 
     private boolean isTypeHolderProperty( String name )
