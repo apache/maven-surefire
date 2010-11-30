@@ -73,7 +73,7 @@ public class ForkedBooter
             }
             else
             {
-                result = booter.runSuitesInProcess( p );
+                result = booter.runSuitesInProcess();
             }
 
 

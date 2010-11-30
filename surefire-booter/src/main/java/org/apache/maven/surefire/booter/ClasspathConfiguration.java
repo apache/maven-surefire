@@ -89,7 +89,7 @@ public class ClasspathConfiguration
 
     public void setForkProperties( Properties properties )
     {
-        classpathUrls.setForkProperties( properties, BooterConstants.CLASSPATH_URL);
+        classpathUrls.setForkProperties( properties, BooterConstants.CLASSPATH_URL );
         surefireClasspathUrls.setForkProperties( properties, BooterConstants.SUREFIRE_CLASSPATHURL );
         properties.setProperty( BooterConstants.ENABLE_ASSERTIONS, String.valueOf( enableAssertions ) );
         properties.setProperty( BooterConstants.CHILD_DELEGATION, String.valueOf( childDelegation ) );
@@ -114,30 +114,27 @@ public class ClasspathConfiguration
     public ClassLoader createTestClassLoaderConditionallySystem( boolean useSystemClassLoader )
         throws SurefireExecutionException
     {
-        final ClassLoader classLoader =
-            useSystemClassLoader ? ClassLoader.getSystemClassLoader() : createTestClassLoader( this.childDelegation );
-        return classLoader;
+        return useSystemClassLoader
+            ? ClassLoader.getSystemClassLoader()
+            : createTestClassLoader( this.childDelegation );
     }
 
     public ClassLoader createTestClassLoader( boolean childDelegation )
         throws SurefireExecutionException
     {
-        final ClassLoader classLoaderSEE = createClassLoaderSEE( classpathUrls, null, childDelegation );
-        return classLoaderSEE;
+        return createClassLoaderSEE( classpathUrls, null, childDelegation );
     }
 
     public ClassLoader createTestClassLoader()
         throws SurefireExecutionException
     {
-        final ClassLoader classLoaderSEE = createClassLoaderSEE( classpathUrls, null, this.childDelegation );
-        return classLoaderSEE;
+        return createClassLoaderSEE( classpathUrls, null, this.childDelegation );
     }
 
     public ClassLoader createSurefireClassLoader( ClassLoader parent )
         throws SurefireExecutionException
     {
-        final ClassLoader classLoaderSEE = createClassLoaderSEE( surefireClasspathUrls, parent, false );
-        return classLoaderSEE;
+        return createClassLoaderSEE( surefireClasspathUrls, parent, false );
     }
 
     private ClassLoader createClassLoaderSEE( Classpath classPathUrls, ClassLoader parent, boolean childDelegation )

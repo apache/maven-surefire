@@ -22,7 +22,6 @@ package org.apache.maven.surefire.util;
 import org.codehaus.plexus.util.xml.XMLWriter;
 
 import java.io.PrintWriter;
-import java.io.Writer;
 import java.util.LinkedList;
 
 public class PrettyPrintXMLWriter
@@ -46,24 +45,9 @@ public class PrettyPrintXMLWriter
 
     private boolean tagIsEmpty;
 
-    public PrettyPrintXMLWriter( PrintWriter writer, String lineIndenter )
-    {
-        this( writer, lineIndenter, null, null );
-    }
-
-    public PrettyPrintXMLWriter( Writer writer, String lineIndenter )
-    {
-        this( new PrintWriter( writer ), lineIndenter );
-    }
-
     public PrettyPrintXMLWriter( PrintWriter writer )
     {
         this( writer, null, null );
-    }
-
-    public PrettyPrintXMLWriter( Writer writer )
-    {
-        this( new PrintWriter( writer ) );
     }
 
     public PrettyPrintXMLWriter( PrintWriter writer, String lineIndenter, String encoding, String doctype )
@@ -82,19 +66,9 @@ public class PrettyPrintXMLWriter
         }
     }
 
-    public PrettyPrintXMLWriter( Writer writer, String lineIndenter, String encoding, String doctype )
-    {
-        this( new PrintWriter( writer ), lineIndenter, encoding, doctype );
-    }
-
     public PrettyPrintXMLWriter( PrintWriter writer, String encoding, String doctype )
     {
         this( writer, "  ", encoding, doctype );
-    }
-
-    public PrettyPrintXMLWriter( Writer writer, String encoding, String doctype )
-    {
-        this( new PrintWriter( writer ), encoding, doctype );
     }
 
     public void startElement( String name )

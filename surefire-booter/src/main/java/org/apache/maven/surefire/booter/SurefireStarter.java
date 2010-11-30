@@ -103,7 +103,7 @@ public class SurefireStarter
         }
     }
 
-    public int runSuitesInProcess( Properties p )
+    public int runSuitesInProcess()
         throws SurefireExecutionException
     {
         // TODO: replace with plexus

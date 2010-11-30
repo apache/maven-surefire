@@ -112,11 +112,6 @@ public abstract class BaseProviderFactory
         return testClassLoader;
     }
 
-    protected ClassLoader getSurefireClassLoader()
-    {
-        return surefireClassLoader;
-    }
-
     public void setProviderProperties( Properties providerProperties )
     {
         this.providerProperties = providerProperties;

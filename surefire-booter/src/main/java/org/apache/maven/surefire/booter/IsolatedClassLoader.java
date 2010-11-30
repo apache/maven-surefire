@@ -38,21 +38,11 @@ public class IsolatedClassLoader
 
     private static final URL[] EMPTY_URL_ARRAY = new URL[0];
 
-    public IsolatedClassLoader()
-    {
-        super( EMPTY_URL_ARRAY, null );
-    }
-
     public IsolatedClassLoader( ClassLoader parent, boolean childDelegation )
     {
         super( EMPTY_URL_ARRAY, parent );
 
         this.childDelegation = childDelegation;
-    }
-
-    public IsolatedClassLoader( ClassLoader parent )
-    {
-        super( EMPTY_URL_ARRAY, parent );
     }
 
     public void addURL( URL url )

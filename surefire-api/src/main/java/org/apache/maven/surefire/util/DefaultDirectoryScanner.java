@@ -134,11 +134,6 @@ public class DefaultDirectoryScanner
         return incs;
     }
 
-    public File getBasedir()
-    {
-        return basedir;
-    }
-
     public List getIncludes()
     {
         return includes;

@@ -30,7 +30,6 @@ import org.apache.maven.surefire.booter.ProviderConfiguration;
 import org.apache.maven.surefire.booter.ProviderFactory;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.apache.maven.surefire.booter.SurefireExecutionException;
-import org.apache.maven.surefire.booter.SurefireReflector;
 import org.apache.maven.surefire.booter.SurefireStarter;
 import org.apache.maven.surefire.booter.SystemPropertyManager;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
@@ -88,7 +87,7 @@ public class ForkStarter
         if ( ForkConfiguration.FORK_NEVER.equals( requestedForkMode ) )
         {
             SurefireStarter testVmBooter = new SurefireStarter( booterConfiguration );
-            result = testVmBooter.runSuitesInProcess( booterConfiguration.getProviderProperties() );
+            result = testVmBooter.runSuitesInProcess();
         }
         else if ( ForkConfiguration.FORK_ONCE.equals( requestedForkMode ) )
         {

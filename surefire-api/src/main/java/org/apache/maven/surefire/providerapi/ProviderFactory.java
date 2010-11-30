@@ -24,5 +24,6 @@ package org.apache.maven.surefire.providerapi;
  */
 public interface ProviderFactory
 {
+    /** @noinspection UnusedDeclaration*/
     SurefireProvider createProvider();
 }

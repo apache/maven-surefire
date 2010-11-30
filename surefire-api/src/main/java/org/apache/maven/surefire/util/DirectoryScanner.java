@@ -26,9 +26,9 @@ public interface DirectoryScanner
 {
     /**
      * Locates tests based on scanning directories
-     * @param classLoader
-     * @param scannerFilter
-     * @return
+     * @param classLoader The classloader to use when loading classes
+     * @param scannerFilter The filter to include/exclude test classes
+     * @return The found classes that match the filter
      */
     Class[] locateTestClasses( ClassLoader classLoader, ScannerFilter scannerFilter );
 }

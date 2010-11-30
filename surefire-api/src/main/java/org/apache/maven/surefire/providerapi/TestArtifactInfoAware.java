@@ -26,5 +26,6 @@ import org.apache.maven.surefire.testset.TestArtifactInfo;
  */
 public interface TestArtifactInfoAware
 {
+    /** @noinspection UnusedDeclaration*/
     void setTestArtifactInfo( TestArtifactInfo testArtifactInfo );
 }

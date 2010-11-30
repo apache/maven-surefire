@@ -19,8 +19,6 @@ package org.apache.maven.surefire.suite;
  * under the License.
  */
 
-import java.util.Properties;
-
 /**
  * Represents a test-run-result; this may be from a single test run or an aggregated result.
  *
@@ -36,13 +34,7 @@ public class RunResult
 
     private final int skipped;
 
-    public static final RunResult No_Tests = new RunResult( -1, -1, -1, -1 );
-
-    public static final RunResult Failure = new RunResult( -2, -2, -2, -2 );
-
     public static final int SUCCESS = 0;
-
-    public static final int NO_TESTS = 254;
 
     public static final int FAILURE = 255;
 
@@ -81,10 +73,6 @@ public class RunResult
 
     public int getBooterCode()
     {
-        if ( this == No_Tests )
-        {
-            return NO_TESTS;
-        }
         return getFailures() == 0 ? SUCCESS : FAILURE;
     }
 

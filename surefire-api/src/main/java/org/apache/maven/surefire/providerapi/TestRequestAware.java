@@ -26,5 +26,6 @@ import org.apache.maven.surefire.testset.TestRequest;
  */
 public interface TestRequestAware
 {
+    /** @noinspection UnusedDeclaration*/
     void setTestRequest( TestRequest testSuiteDefinition );
 }

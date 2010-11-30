@@ -26,5 +26,6 @@ import org.apache.maven.surefire.report.ReporterConfiguration;
  */
 public interface ReporterConfigurationAware
 {
+    /** @noinspection UnusedDeclaration*/
     void setReporterConfiguration( ReporterConfiguration reporterConfiguration );
 }

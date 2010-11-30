@@ -26,5 +26,6 @@ import java.util.Properties;
  */
 public interface ProviderPropertiesAware
 {
+    /** @noinspection UnusedDeclaration*/
     void setProviderProperties( Properties providerProperties );
 }

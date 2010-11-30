@@ -249,32 +249,6 @@ public class SurefireReflector
         return invokeMethod( providerFactory, createProvider, noargsValues );
     }
 
-    public static Object getSuites( Object surefireProvider )
-    {
-        final Method getSuites = getMethod( surefireProvider, "getSuites", new Class[]{ } );
-        return invokeMethod( surefireProvider, getSuites, new Object[]{ } );
-    }
-
-
-    private int invokeRunMethod( Object surefire, Method method, Object[] args )
-        throws RuntimeException
-
-    {
-        try
-        {
-            final Integer invoke = (Integer) method.invoke( surefire, args );
-            return invoke.intValue();
-        }
-        catch ( IllegalAccessException e )
-        {
-            throw new RuntimeException( "When instantiating surefire", e );
-        }
-        catch ( InvocationTargetException e )
-        {
-            throw new RuntimeException( e.getTargetException().getMessage(), e.getTargetException() );
-        }
-
-    }
 
     private static Object invokeSetter( Object surefire, Method method, Object value )
 
