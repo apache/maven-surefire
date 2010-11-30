@@ -227,8 +227,9 @@ public abstract class AbstractSurefireMojo
         final ClasspathConfiguration classpathConfiguration =
             new ClasspathConfiguration( isEnableAssertions(), isChildDelegation() );
 
+        List reports = getReporters( forkConfiguration.isForking() );
         ReporterConfiguration reporterConfiguration =
-            new ReporterConfiguration( getReportsDirectory(), Boolean.valueOf( isTrimStackTrace() ) );
+            new ReporterConfiguration( reports, getReportsDirectory(), Boolean.valueOf( isTrimStackTrace() ) );
 
         Artifact surefireArtifact =
             (Artifact) getPluginArtifactMap().get( "org.apache.maven.surefire:surefire-booter" );
@@ -241,7 +242,7 @@ public abstract class AbstractSurefireMojo
 
         Artifact junitArtifact;
         Artifact testNgArtifact;
-        String providerName;
+        String providerFactoryName;
         try
         {
             addArtifact( forkConfiguration.getBootClasspathConfiguration(), surefireArtifact );
@@ -250,7 +251,7 @@ public abstract class AbstractSurefireMojo
 
             testNgArtifact = getTestNgArtifact();
 
-            providerName =
+            providerFactoryName =
                 setCorrectProvider( forkConfiguration.getBootClasspathConfiguration(), classpathConfiguration,
                                     surefireArtifact, junitArtifact, testNgArtifact );
         }
@@ -304,14 +305,13 @@ public abstract class AbstractSurefireMojo
                                                                          Boolean.valueOf( failIfNoTests ) );
         }
 
-        List reports = getReporters( forkConfiguration.isForking() );
         Properties providerProperties = getProperties();
         if ( providerProperties == null )
         {
             providerProperties = new Properties();
         }
         ProviderConfiguration surefireStarterConfiguration =
-            new ProviderConfiguration( providerName, classpathConfiguration,
+            new ProviderConfiguration( providerFactoryName, classpathConfiguration,
                                        forkConfiguration.getClassLoaderConfiguration(), forkConfiguration.isForking(),
                                        false, isRedirectTestOutputToFile() );
 
@@ -446,7 +446,7 @@ public abstract class AbstractSurefireMojo
         if ( testNgArtifact != null )
         {
             setTestNgProvider( bootClasspathConfiguration, classpathConfiguration, surefireArtifact, testNgArtifact );
-            return "org.apache.maven.surefire.testng.TestNGProvider";
+            return "org.apache.maven.surefire.testng.TestNGProviderFactory";
 
         }
         else if ( junitArtifact != null && isAnyJunit4( junitArtifact ) )
@@ -455,12 +455,12 @@ public abstract class AbstractSurefireMojo
             {
                 convertJunitCoreParameters();
                 setProvider( classpathConfiguration, "surefire-junit47", surefireArtifact.getBaseVersion(), null );
-                return "org.apache.maven.surefire.junitcore.JUnitCoreProvider";
+                return "org.apache.maven.surefire.junitcore.JUnitCoreProviderFactory";
             }
             else
             {
                 setProvider( classpathConfiguration, "surefire-junit4", surefireArtifact.getBaseVersion(), null );
-                return "org.apache.maven.surefire.junit4.JUnit4Provider";
+                return "org.apache.maven.surefire.junit4.JUnit4ProviderFactory";
             }
         }
         else
@@ -468,7 +468,7 @@ public abstract class AbstractSurefireMojo
             // add the JUnit provider as default - it doesn't require JUnit to be present,
             // since it supports POJO tests.
             setProvider( classpathConfiguration, "surefire-junit", surefireArtifact.getBaseVersion(), null );
-            return "org.apache.maven.surefire.junit.JUnit3Provider";
+            return "org.apache.maven.surefire.junit.JUnit3ProviderFactory";
         }
     }
 

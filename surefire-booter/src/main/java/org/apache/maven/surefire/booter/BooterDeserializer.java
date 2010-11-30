@@ -191,10 +191,11 @@ public class BooterDeserializer
         ClasspathConfiguration classpathConfiguration =
             new ClasspathConfiguration( classPathUrls, surefireClassPathUrls, enableAssertions, childDelegation );
 
-        ReporterConfiguration reporterConfiguration =
-            new ReporterConfiguration( reportsDirectory, valueOf( isTrimStackTrace ) );
-
         List reports = new ArrayList( reportsMap.values() );
+
+        ReporterConfiguration reporterConfiguration =
+            new ReporterConfiguration( reports, reportsDirectory, valueOf( isTrimStackTrace ) );
+
         ProviderConfiguration surefireStarterConfiguration =
             ProviderConfiguration.inForkedVm( providerConfiguration, classpathConfiguration, classLoaderConfiguration);
         return new BooterConfiguration( surefireStarterConfiguration, reports, dirScannerParams, failIfNotests,

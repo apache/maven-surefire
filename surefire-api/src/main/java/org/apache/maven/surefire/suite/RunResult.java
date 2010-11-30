@@ -19,6 +19,8 @@ package org.apache.maven.surefire.suite;
  * under the License.
  */
 
+import java.util.Properties;
+
 /**
  * Represents a test-run-result; this may be from a single test run or an aggregated result.
  *
@@ -85,4 +87,5 @@ public class RunResult
         }
         return getFailures() == 0 ? SUCCESS : FAILURE;
     }
+
 }

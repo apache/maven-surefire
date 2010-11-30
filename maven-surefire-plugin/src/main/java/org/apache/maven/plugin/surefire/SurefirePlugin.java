@@ -578,13 +578,13 @@ public class SurefirePlugin
             getLog().info(
                 StringUtils.capitalizeFirstLetter( getPluginName() ) + " report directory: " + getReportsDirectory() );
 
-            ForkStarter booter = new ForkStarter( booterConfiguration, reportsDirectory, forkConfiguration );
-            booter.setForkedProcessTimeoutInSeconds( getForkedProcessTimeoutInSeconds() );
+            ForkStarter forkStarter = new ForkStarter( booterConfiguration, reportsDirectory, forkConfiguration );
+            forkStarter.setForkedProcessTimeoutInSeconds( getForkedProcessTimeoutInSeconds() );
 
             int result;
             try
             {
-                result = booter.run();
+                result = forkStarter.run();
             }
             catch ( SurefireBooterForkException e )
             {

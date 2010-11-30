@@ -18,20 +18,19 @@ package org.apache.maven.surefire.testng;
  * under the License.
  */
 
-import org.apache.maven.surefire.providerapi.FileScanningProvider;
-import org.apache.maven.surefire.providerapi.ProviderPropertiesAware;
-import org.apache.maven.surefire.providerapi.ReporterConfigurationAware;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
-import org.apache.maven.surefire.providerapi.TestArtifactInfoAware;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterException;
+import org.apache.maven.surefire.report.ReporterManagerFactory;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.suite.SurefireTestSuite;
+import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.testset.TestSetFailedException;
-import org.apache.maven.surefire.util.DefaultDirectoryScanner;
+import org.apache.maven.surefire.util.DirectoryScanner;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Properties;
@@ -41,31 +40,49 @@ import java.util.Properties;
  * @noinspection UnusedDeclaration
  */
 public class TestNGProvider
-    extends FileScanningProvider
-    implements SurefireProvider, ProviderPropertiesAware, TestArtifactInfoAware, ReporterConfigurationAware
+    implements SurefireProvider
 {
     private Properties providerProperties;
-
     private TestArtifactInfo testArtifactInfo;
-
     private ReporterConfiguration reporterConfiguration;
+    private final ReporterManagerFactory reporterManagerFactory;
+    private final ClassLoader testClassLoader;
+    private final DirectoryScannerParameters directoryScannerParameters;
 
+    private final TestRequest  testRequest;
+    private final File basedir;
+
+    public TestNGProvider( Properties providerProperties, TestArtifactInfo testArtifactInfo,
+                           ReporterConfiguration reporterConfiguration, ReporterManagerFactory reporterManagerFactory,
+                           ClassLoader testClassLoader, DirectoryScannerParameters directoryScannerParameters,
+                           DirectoryScanner directoryScanner, TestRequest testRequest, File basedir )
+    {
+        this.providerProperties = providerProperties;
+        this.testArtifactInfo = testArtifactInfo;
+        this.reporterConfiguration = reporterConfiguration;
+        this.reporterManagerFactory = reporterManagerFactory;
+        this.testClassLoader = testClassLoader;
+        this.directoryScannerParameters = directoryScannerParameters;
+        this.testRequest = testRequest;
+        this.basedir = basedir;
+    }
 
     public RunResult invoke( Object forkTestSet )
         throws TestSetFailedException, ReporterException
     {
         SurefireTestSuite suite = getActiveSuite();
-        suite.locateTestSets( getTestsClassLoader() );
-        if ( forkTestSet != null && getTestSuiteDefinition() == null)
+        suite.locateTestSets( testClassLoader );
+        if ( forkTestSet != null && testRequest == null)
         {
-            suite.execute( (String) forkTestSet, getReporterManagerFactory(),
-                           getTestsClassLoader() );
+            suite.execute( (String) forkTestSet, reporterManagerFactory,
+                           testClassLoader );
         }
         else
         {
-            suite.execute( getReporterManagerFactory(), getTestsClassLoader() );
+            suite.execute( reporterManagerFactory, testClassLoader );
         }
-        return RunResult.totalCountOnly( suite.getNumTests() );
+        reporterManagerFactory.close();
+        return reporterManagerFactory.getGlobalRunStatistics().getRunResult();
     }
 
     boolean isTestNGXmlTestSuite( TestRequest testSuiteDefinition )
@@ -75,26 +92,21 @@ public class TestNGProvider
 
     }
 
-    private DefaultDirectoryScanner getDefaultDirectoryScanner()
-    {
-        return (DefaultDirectoryScanner) getDirectoryScanner();  // A hack to get hold of parameters
-    }
 
     private TestNGDirectoryTestSuite getDirectorySuite()
     {
-        final DefaultDirectoryScanner defaultDirectoryScanner = getDefaultDirectoryScanner();
-        return new TestNGDirectoryTestSuite( defaultDirectoryScanner.getBasedir(),
-                                             new ArrayList( defaultDirectoryScanner.getIncludes() ),
-                                             new ArrayList( defaultDirectoryScanner.getExcludes() ),
-                                             getTestSuiteDefinition().getTestSourceDirectory().toString(),
+        return new TestNGDirectoryTestSuite( basedir,
+                                             new ArrayList( directoryScannerParameters.getIncludes() ),
+                                             new ArrayList( directoryScannerParameters.getExcludes() ),
+                                             testRequest.getTestSourceDirectory().toString(),
                                              testArtifactInfo.getVersion(), testArtifactInfo.getClassifier(),
                                              providerProperties, reporterConfiguration.getReportsDirectory() );
     }
 
     private TestNGXmlTestSuite getXmlSuite()
     {
-        return new TestNGXmlTestSuite( getTestSuiteDefinition().getSuiteXmlFiles(),
-                                       getTestSuiteDefinition().getTestSourceDirectory().toString(),
+        return new TestNGXmlTestSuite( testRequest.getSuiteXmlFiles(),
+                                       testRequest.getTestSourceDirectory().toString(),
                                        testArtifactInfo.getVersion(), testArtifactInfo.getClassifier(),
                                        providerProperties, reporterConfiguration.getReportsDirectory() );
     }
@@ -102,7 +114,7 @@ public class TestNGProvider
 
     public SurefireTestSuite getActiveSuite()
     {
-        return isTestNGXmlTestSuite( getTestSuiteDefinition() )
+        return isTestNGXmlTestSuite( testRequest)
             ? (SurefireTestSuite) getXmlSuite()
             : getDirectorySuite();
     }
@@ -111,27 +123,11 @@ public class TestNGProvider
     {
         try
         {
-            return getActiveSuite().locateTestSets( getTestsClassLoader() ).keySet().iterator();
+            return getActiveSuite().locateTestSets( testClassLoader ).keySet().iterator();
         }
         catch ( TestSetFailedException e )
         {
             throw new RuntimeException( e );
         }
-    }
-
-
-    public void setProviderProperties( Properties providerProperties )
-    {
-        this.providerProperties = providerProperties;
-    }
-
-    public void setTestArtifactInfo( TestArtifactInfo testArtifactInfo )
-    {
-        this.testArtifactInfo = testArtifactInfo;
-    }
-
-    public void setReporterConfiguration( ReporterConfiguration reporterConfiguration )
-    {
-        this.reporterConfiguration = reporterConfiguration;
     }
 }

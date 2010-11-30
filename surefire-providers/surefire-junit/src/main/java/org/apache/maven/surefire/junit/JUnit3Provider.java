@@ -18,11 +18,12 @@ package org.apache.maven.surefire.junit;
  * under the License.
  */
 
-import org.apache.maven.surefire.providerapi.FileScanningProvider;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
 import org.apache.maven.surefire.report.ReporterException;
+import org.apache.maven.surefire.report.ReporterManagerFactory;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
+import org.apache.maven.surefire.util.DirectoryScanner;
 
 import java.util.Iterator;
 
@@ -31,30 +32,40 @@ import java.util.Iterator;
  * @noinspection UnusedDeclaration
  */
 public class JUnit3Provider
-    extends FileScanningProvider
     implements SurefireProvider
 {
+    private final ReporterManagerFactory reporterManagerFactory;
+    private final ClassLoader testClassLoader;
+    private final DirectoryScanner directoryScanner;
+
+    public JUnit3Provider( ReporterManagerFactory reporterManagerFactory, ClassLoader testClassLoader,
+                           DirectoryScanner directoryScanner )
+    {
+        this.reporterManagerFactory = reporterManagerFactory;
+        this.testClassLoader = testClassLoader;
+        this.directoryScanner = directoryScanner;
+    }
 
     public RunResult invoke( Object forkTestSet )
         throws TestSetFailedException, ReporterException
     {
         JUnitDirectoryTestSuite suite = getSuite();
-        suite.locateTestSets( getTestsClassLoader() );
+        suite.locateTestSets(testClassLoader);
         if ( forkTestSet != null )
         {
-            suite.execute( (String) forkTestSet, getReporterManagerFactory(),
-                           getTestsClassLoader() );
+            suite.execute( (String) forkTestSet, reporterManagerFactory, testClassLoader );
         }
         else
         {
-            suite.execute( getReporterManagerFactory(), getTestsClassLoader() );
+            suite.execute( reporterManagerFactory, testClassLoader );
         }
-        return RunResult.totalCountOnly( suite.getNumTests() );
+        reporterManagerFactory.close();
+        return reporterManagerFactory.getGlobalRunStatistics().getRunResult();
     }
 
     private JUnitDirectoryTestSuite getSuite()
     {
-        return new JUnitDirectoryTestSuite( getDirectoryScanner() );
+        return new JUnitDirectoryTestSuite( directoryScanner );
 
     }
 
@@ -62,7 +73,7 @@ public class JUnit3Provider
     {
         try
         {
-            return getSuite().locateTestSets( getTestsClassLoader() ).keySet().iterator();
+            return getSuite().locateTestSets( testClassLoader ).keySet().iterator();
         }
         catch ( TestSetFailedException e )
         {

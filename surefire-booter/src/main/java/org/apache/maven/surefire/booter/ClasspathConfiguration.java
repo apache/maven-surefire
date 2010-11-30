@@ -114,27 +114,30 @@ public class ClasspathConfiguration
     public ClassLoader createTestClassLoaderConditionallySystem( boolean useSystemClassLoader )
         throws SurefireExecutionException
     {
-        return useSystemClassLoader
-            ? ClassLoader.getSystemClassLoader()
-            : createTestClassLoader( this.childDelegation );
+        final ClassLoader classLoader =
+            useSystemClassLoader ? ClassLoader.getSystemClassLoader() : createTestClassLoader( this.childDelegation );
+        return classLoader;
     }
 
     public ClassLoader createTestClassLoader( boolean childDelegation )
         throws SurefireExecutionException
     {
-        return createClassLoaderSEE( classpathUrls, null, childDelegation );
+        final ClassLoader classLoaderSEE = createClassLoaderSEE( classpathUrls, null, childDelegation );
+        return classLoaderSEE;
     }
 
     public ClassLoader createTestClassLoader()
         throws SurefireExecutionException
     {
-        return createClassLoaderSEE( classpathUrls, null, this.childDelegation );
+        final ClassLoader classLoaderSEE = createClassLoaderSEE( classpathUrls, null, this.childDelegation );
+        return classLoaderSEE;
     }
 
     public ClassLoader createSurefireClassLoader( ClassLoader parent )
         throws SurefireExecutionException
     {
-        return createClassLoaderSEE( surefireClasspathUrls, parent, false );
+        final ClassLoader classLoaderSEE = createClassLoaderSEE( surefireClasspathUrls, parent, false );
+        return classLoaderSEE;
     }
 
     private ClassLoader createClassLoaderSEE( Classpath classPathUrls, ClassLoader parent, boolean childDelegation )

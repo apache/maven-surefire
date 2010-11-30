@@ -19,10 +19,6 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.Reporter;
-import org.apache.maven.surefire.report.ReporterConfiguration;
-import org.apache.maven.surefire.report.ReporterManager;
-import org.apache.maven.surefire.report.RunStatistics;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
 import java.lang.reflect.Constructor;
@@ -46,20 +42,16 @@ import java.util.List;
 public class ReporterManagerFactory2
     extends ReporterManagerFactory
 {
-    private final RunStatistics globalRunStatistics = new RunStatistics();
-
-    private ReporterManager first;
-
-    private final Object lock = new Object();
-
     private final ReporterConfiguration reporterConfiguration;
 
 
-    public ReporterManagerFactory2( List reportDefinitions, ClassLoader surefireClassLoader,
-                                    ReporterConfiguration reporterConfiguration )
+    public ReporterManagerFactory2( ClassLoader surefireClassLoader, ReporterConfiguration reporterConfiguration )
     {
-        super( reportDefinitions, surefireClassLoader );
+        super( reporterConfiguration.getReports(), surefireClassLoader );
         this.reporterConfiguration = reporterConfiguration;
+/*        if (!reporterConfiguration.getClass().getClassLoader().equals(  surefireClassLoader )){
+            throw new IllegalStateException( "Skunkt classloader stuff" + reporterConfiguration.getClass().getClassLoader() + "sfc" + surefireClassLoader + "Tread" + Thread.currentThread().getContextClassLoader());
+        }*/
     }
 
 
@@ -137,7 +129,7 @@ public class ReporterManagerFactory2
             if ( params != null )
             {
                 Class[] paramTypes = new Class[1];
-                paramTypes[0] = ReporterConfiguration.class;
+                paramTypes[0] = classLoader.loadClass(ReporterConfiguration.class.getName());
 
                 Constructor constructor = clazz.getConstructor( paramTypes );
 

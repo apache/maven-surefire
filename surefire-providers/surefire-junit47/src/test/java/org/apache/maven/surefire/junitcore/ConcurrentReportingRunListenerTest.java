@@ -33,7 +33,6 @@ import org.junit.runner.Computer;
 import org.junit.runner.JUnitCore;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -401,9 +400,15 @@ public class ConcurrentReportingRunListenerTest
         Object[] reporter = new Object[]{MockReporter.class.getCanonicalName(), new Object[] {} };
         final List<Object> objects = new ArrayList();
         objects.add( reporter );
-        ReporterConfiguration reporterConfiguration = new ReporterConfiguration( new File( "." ), Boolean.TRUE);
+        ReporterConfiguration reporterConfiguration = getTestReporterConfiguration();
         return new ReporterManagerFactory(objects, this.getClass().getClassLoader());
     }
+
+    public static ReporterConfiguration getTestReporterConfiguration()
+    {
+        return new ReporterConfiguration( new ArrayList(), null, Boolean.TRUE );
+    }
+
 
     private void assertReporter( RunStatistics result, int success, int ignored, int failure, String message )
     {

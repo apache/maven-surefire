@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.providerapi;
+package org.apache.maven.surefire.junit4;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,10 +19,18 @@ package org.apache.maven.surefire.providerapi;
  * under the License.
  */
 
+
+import org.apache.maven.surefire.providerapi.BaseProviderFactory;
+import org.apache.maven.surefire.providerapi.SurefireProvider;
+
 /**
  * @author Kristian Rosenvold
  */
-public interface TestClassLoaderAware
+@SuppressWarnings( { "UnusedDeclaration" } )
+public class JUnit4ProviderFactory extends BaseProviderFactory
 {
-    void setTestClassLoader( ClassLoader classLoader );
+    public SurefireProvider createProvider()
+    {
+        return new JUnit4Provider(getReporterManagerFactory(), getTestClassLoader(), getDirectoryScanner());
+    }
 }

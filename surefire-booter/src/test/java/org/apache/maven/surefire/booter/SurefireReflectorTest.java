@@ -20,18 +20,14 @@ package org.apache.maven.surefire.booter;
  */
 
 import junit.framework.TestCase;
-import org.apache.maven.surefire.providerapi.DirectoryScannerParametersAware;
-import org.apache.maven.surefire.providerapi.ProviderPropertiesAware;
-import org.apache.maven.surefire.providerapi.ReporterConfigurationAware;
-import org.apache.maven.surefire.providerapi.TestArtifactInfoAware;
-import org.apache.maven.surefire.providerapi.TestClassLoaderAware;
-import org.apache.maven.surefire.providerapi.TestSuiteDefinitionAware;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestRequest;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Properties;
 
@@ -45,12 +41,12 @@ public class SurefireReflectorTest
         throws Exception
     {
         SurefireReflector surefireReflector = getReflector();
-        Foo foo = new Foo();
+        Object foo = getFoo();
 
         DirectoryScannerParameters directoryScannerParameters =
             new DirectoryScannerParameters( new File( "ABC" ), new ArrayList(), new ArrayList(), Boolean.FALSE );
-        assertTrue( surefireReflector.isDirectoryScannerParameterAware( foo ) );
         surefireReflector.setDirectoryScannerParameters( foo, directoryScannerParameters );
+        assertTrue( isCalled( foo ).booleanValue());
 
     }
 
@@ -58,55 +54,64 @@ public class SurefireReflectorTest
         throws Exception
     {
         SurefireReflector surefireReflector = getReflector();
-        Foo foo = new Foo();
+        Object foo = getFoo();
 
         TestRequest testSuiteDefinition =
             new TestRequest( new Object[]{  new File("file1"),new File("file2") }, new File( "TestSOurce" ), "aUserRequestedTest" );
         assertTrue( surefireReflector.isTestSuiteDefinitionAware( foo ) );
         surefireReflector.setTestSuiteDefinition( foo, testSuiteDefinition );
+        assertTrue( isCalled( foo ).booleanValue() );
     }
 
     public void testProviderProperties()
         throws Exception
     {
         SurefireReflector surefireReflector = getReflector();
-        Foo foo = new Foo();
+        Object foo = getFoo();
 
         assertTrue( surefireReflector.isProviderPropertiesAware( foo ) );
         surefireReflector.setProviderProperties( foo, new Properties() );
+        assertTrue( isCalled( foo ).booleanValue() );
     }
 
     public void testReporterConfiguration()
         throws Exception
     {
         SurefireReflector surefireReflector = getReflector();
-        Foo foo = new Foo();
+        Object foo = getFoo();
 
-        ReporterConfiguration reporterConfiguration = new ReporterConfiguration( new File( "CDE" ), Boolean.TRUE );
+        ReporterConfiguration reporterConfiguration = getReporterConfiguration();
         assertTrue( surefireReflector.isReporterConfigurationAwareAware( foo ) );
         surefireReflector.setReporterConfigurationAware( foo, reporterConfiguration );
+        assertTrue( isCalled( foo ).booleanValue() );
+    }
+
+    private ReporterConfiguration getReporterConfiguration()
+    {
+        return new ReporterConfiguration( new ArrayList(), new File( "CDE" ), Boolean.TRUE );
     }
 
     public void testTestClassLoaderAware()
         throws Exception
     {
         SurefireReflector surefireReflector = getReflector();
-        Foo foo = new Foo();
+        Object foo = getFoo();
 
-        ReporterConfiguration reporterConfiguration = new ReporterConfiguration( new File( "CDE" ), Boolean.TRUE );
         assertTrue( surefireReflector.isTestClassLoaderAware( foo ) );
-        surefireReflector.setTestClassLoader( foo, getClass().getClassLoader() );
+        surefireReflector.setTestClassLoader( foo, getClass().getClassLoader(), getClass().getClassLoader() );
+        assertTrue( isCalled( foo ).booleanValue() );
     }
 
     public void testArtifactInfoAware()
         throws Exception
     {
         SurefireReflector surefireReflector = getReflector();
-        Foo foo = new Foo();
+        Object foo = getFoo();
 
         TestArtifactInfo testArtifactInfo = new TestArtifactInfo( "12.3", "test" );
         assertTrue( surefireReflector.isTestArtifactInfoAware( foo ) );
         surefireReflector.setTestArtifactInfo( foo, testArtifactInfo );
+        assertTrue( isCalled( foo ).booleanValue() );
     }
 
     private SurefireReflector getReflector()
@@ -114,47 +119,32 @@ public class SurefireReflectorTest
         return new SurefireReflector( this.getClass().getClassLoader() );
     }
 
+    public Object getFoo()
+    { // Todo: Setup a different classloader so we can really test crossing
+        return new Foo();
+    }
 
-    class Foo
-        implements DirectoryScannerParametersAware, TestSuiteDefinitionAware, ProviderPropertiesAware,
-        ReporterConfigurationAware, TestClassLoaderAware, TestArtifactInfoAware
-    {
-        DirectoryScannerParameters directoryScannerParameters;
 
-        TestRequest testSuiteDefinition;
-
-        Properties providerProperties;
-
-        ReporterConfiguration reporterConfiguration;
-
-        public void setDirectoryScannerParameters( DirectoryScannerParameters directoryScanner )
+    private Boolean isCalled(Object foo){
+        final Method isCalled;
+        try
         {
-            this.directoryScannerParameters = directoryScanner;
+            isCalled = foo.getClass().getMethod( "isCalled", new Class[0] );
+            return (Boolean) isCalled.invoke(  foo, new Object[0] );
         }
-
-
-        public void setTestSuiteDefinition( TestRequest testSuiteDefinition )
+        catch ( IllegalAccessException e )
         {
-            this.testSuiteDefinition = testSuiteDefinition;
+            throw new RuntimeException( e );
         }
-
-        public void setProviderProperties( Properties providerProperties )
+        catch ( InvocationTargetException e )
         {
-            this.providerProperties = providerProperties;
+            throw new RuntimeException( e );
         }
-
-        public void setReporterConfiguration( ReporterConfiguration reporterConfiguration )
+        catch ( NoSuchMethodException e )
         {
-            reporterConfiguration = reporterConfiguration;
-        }
-
-        public void setTestClassLoader( ClassLoader classLoader )
-        {
-        }
-
-        public void setTestArtifactInfo( TestArtifactInfo testArtifactInfo )
-        {
-            //To change body of implemented methods use File | Settings | File Templates.
+            throw new RuntimeException( e );
         }
     }
+
+
 }

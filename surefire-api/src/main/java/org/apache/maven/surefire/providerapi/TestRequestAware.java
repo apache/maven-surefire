@@ -24,7 +24,7 @@ import org.apache.maven.surefire.testset.TestRequest;
 /**
  * @author Kristian Rosenvold
  */
-public interface TestSuiteDefinitionAware
+public interface TestRequestAware
 {
-    void setTestSuiteDefinition( TestRequest testSuiteDefinition );
+    void setTestRequest( TestRequest testSuiteDefinition );
 }

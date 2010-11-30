@@ -139,7 +139,7 @@ public class BooterDeserializerTest
     {
         BooterConfiguration reloaded = getReloladedConfig();
 
-        assertEquals( "com.provider", reloaded.getSurefireStarterConfiguration().getProviderClassName() );
+        assertEquals( "com.provider", reloaded.getSurefireStarterConfiguration().getProviderFactoryClassName() );
 
     }
 
@@ -193,7 +193,7 @@ public class BooterDeserializerTest
     {
         ClasspathConfiguration classpathConfiguration = new ClasspathConfiguration( true, true );
 
-        ReporterConfiguration reporterConfiguration = new ReporterConfiguration( new File( "." ), Boolean.TRUE );
+        ReporterConfiguration reporterConfiguration = new ReporterConfiguration(reports, new File( "." ), Boolean.TRUE );
         TestRequest testSuiteDefinition =
             new TestRequest( getSuiteXmlFileStrings(), getTEstSourceDirectory(), aUserRequestedTest );
         ProviderConfiguration surefireStarterConfiguration =

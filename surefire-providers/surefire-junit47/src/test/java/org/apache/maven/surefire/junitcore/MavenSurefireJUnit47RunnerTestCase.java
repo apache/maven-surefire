@@ -27,7 +27,6 @@ import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -121,7 +120,7 @@ public class MavenSurefireJUnit47RunnerTestCase
       List reportDefinitions = new ArrayList();
       reportDefinitions.add(reportDefinition);
 
-      ReporterConfiguration reporterConfiguration = new ReporterConfiguration( new File( "." ), Boolean.TRUE );
+      ReporterConfiguration reporterConfiguration = ConcurrentReportingRunListenerTest.getTestReporterConfiguration();
 
       ReporterManagerFactory reporterManagerFactory = new ReporterManagerFactory(reportDefinitions, this.getClass().getClassLoader());
 

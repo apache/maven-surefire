@@ -150,7 +150,7 @@ public class ForkStarter
             }
             showHeading = false;
         }
-
+        // At this place, show aggregated results ?
         return globalResult;
     }
 

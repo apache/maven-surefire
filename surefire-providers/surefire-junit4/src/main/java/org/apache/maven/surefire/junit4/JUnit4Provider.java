@@ -18,52 +18,56 @@ package org.apache.maven.surefire.junit4;
  * under the License.
  */
 
-import org.apache.maven.surefire.providerapi.FileScanningProvider;
-import org.apache.maven.surefire.providerapi.ProviderPropertiesAware;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
-import org.apache.maven.surefire.providerapi.TestSuiteDefinitionAware;
 import org.apache.maven.surefire.report.ReporterException;
+import org.apache.maven.surefire.report.ReporterManagerFactory;
 import org.apache.maven.surefire.suite.RunResult;
-import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.testset.TestSetFailedException;
+import org.apache.maven.surefire.util.DirectoryScanner;
 
 import java.util.Iterator;
-import java.util.Properties;
 
 /**
  * @author Kristian Rosenvold
  */
 @SuppressWarnings( { "UnusedDeclaration" } )
 public class JUnit4Provider
-    extends FileScanningProvider
-    implements SurefireProvider, ProviderPropertiesAware, TestSuiteDefinitionAware
+    implements SurefireProvider
 {
 
-    private Properties providerProperties;
+    private final ReporterManagerFactory reporterManagerFactory;
+    private final ClassLoader testClassLoader;
+    private final DirectoryScanner directoryScanner;
 
-    private TestRequest testSuiteDefinition;
-
+    public JUnit4Provider( ReporterManagerFactory reporterManagerFactory, ClassLoader testClassLoader,
+                           DirectoryScanner directoryScanner)
+    {
+        this.reporterManagerFactory = reporterManagerFactory;
+        this.testClassLoader = testClassLoader;
+        this.directoryScanner = directoryScanner;
+    }
 
     @SuppressWarnings( { "UnnecessaryUnboxing" } )
     public RunResult invoke( Object forkTestSet )
         throws TestSetFailedException, ReporterException
     {
         JUnit4DirectoryTestSuite suite = getSuite();
-        suite.locateTestSets( getTestsClassLoader() );
+        suite.locateTestSets( testClassLoader );
         if ( forkTestSet != null )
         {
-            suite.execute( (String) forkTestSet, getReporterManagerFactory(), getTestsClassLoader() );
+            suite.execute( (String) forkTestSet, reporterManagerFactory, testClassLoader );
         }
         else
         {
-            suite.execute( getReporterManagerFactory(), getTestsClassLoader() );
+            suite.execute( reporterManagerFactory, testClassLoader );
         }
-        return RunResult.totalCountOnly( suite.getNumTests() );
+        reporterManagerFactory.close();
+        return reporterManagerFactory.getGlobalRunStatistics().getRunResult();
     }
 
     private JUnit4DirectoryTestSuite getSuite()
     {
-        return new JUnit4DirectoryTestSuite( getDirectoryScanner() );
+        return new JUnit4DirectoryTestSuite( directoryScanner );
 
     }
 
@@ -71,25 +75,13 @@ public class JUnit4Provider
     {
         try
         {
-            return getSuite().locateTestSets( getTestsClassLoader() ).keySet().iterator();
+            return getSuite().locateTestSets( testClassLoader ).keySet().iterator();
         }
         catch ( TestSetFailedException e )
         {
             throw new RuntimeException( e );
         }
     }
-
-
-    public void setProviderProperties( Properties providerProperties )
-    {
-        this.providerProperties = providerProperties;
-    }
-
-    public void setTestSuiteDefinition( TestRequest testSuiteDefinition )
-    {
-        this.testSuiteDefinition = testSuiteDefinition;
-    }
-
 
     private void upgradeCheck( JUnit4DirectoryTestSuite suite )
         throws TestSetFailedException

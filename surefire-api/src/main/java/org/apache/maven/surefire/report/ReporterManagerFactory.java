@@ -47,11 +47,11 @@ public class ReporterManagerFactory
 
     protected final ClassLoader surefireClassLoader;
 
-    private final RunStatistics globalRunStatistics = new RunStatistics();
+    protected final RunStatistics globalRunStatistics = new RunStatistics();
 
-    private ReporterManager first;
+    protected ReporterManager first;
 
-    private final Object lock = new Object();
+    protected final Object lock = new Object();
 
 
     public ReporterManagerFactory( List reportDefinitions, ClassLoader surefireClassLoader )

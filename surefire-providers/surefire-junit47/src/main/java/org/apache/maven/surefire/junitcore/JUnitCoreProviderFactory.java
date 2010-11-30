@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.report;
+package org.apache.maven.surefire.junitcore;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,42 +19,32 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
-import java.io.File;
-import java.util.List;
+
+import org.apache.maven.surefire.providerapi.BaseProviderFactory;
+import org.apache.maven.surefire.providerapi.ProviderPropertiesAware;
+import org.apache.maven.surefire.providerapi.SurefireProvider;
+import org.junit.runner.JUnitCore;
+
+import java.util.Properties;
 
 /**
  * @author Kristian Rosenvold
  */
-public class ReporterConfiguration
+@SuppressWarnings( { "UnusedDeclaration" } )
+public class JUnitCoreProviderFactory
+    extends BaseProviderFactory
+    implements ProviderPropertiesAware
 {
-    private final List reports;
+    Properties providerProperties;
 
-    private final File reportsDirectory;
-
-    /**
-     * A non-null Boolean value
-     */
-    private final Boolean trimStackTrace;
-
-    public ReporterConfiguration( List reports, File reportsDirectory, Boolean trimStackTrace )
+    public void setProviderProperties( Properties providerProperties )
     {
-        this.reports = reports;
-        this.reportsDirectory = reportsDirectory;
-        this.trimStackTrace = trimStackTrace;
+        this.providerProperties = providerProperties;
     }
 
-    public File getReportsDirectory()
+    public SurefireProvider createProvider()
     {
-        return reportsDirectory;
-    }
-
-    public Boolean isTrimStackTrace()
-    {
-        return trimStackTrace;
-    }
-
-    public List getReports()
-    {
-        return reports;
+        return new JUnitCoreProvider( providerProperties, getReporterManagerFactory(), getTestClassLoader(),
+                                      getDirectoryScanner() );
     }
 }

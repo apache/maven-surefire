@@ -26,7 +26,7 @@ package org.apache.maven.surefire.booter;
  */
 public class ProviderConfiguration
 {
-    private final String providerClassName;
+    private final String providerFactoryClassName;
 
     private final ClasspathConfiguration classpathConfiguration;
 
@@ -39,11 +39,11 @@ public class ProviderConfiguration
     private final boolean redirectTestOutputToFile;
 
 
-    public ProviderConfiguration( String providerClassName, ClasspathConfiguration classpathConfiguration,
+    public ProviderConfiguration( String providerFactoryClassName, ClasspathConfiguration classpathConfiguration,
                                   ClassLoaderConfiguration classLoaderConfiguration, boolean forkRequested,
                                   boolean inForkedVm, boolean redirectTestOutputToFile )
     {
-        this.providerClassName = providerClassName;
+        this.providerFactoryClassName = providerFactoryClassName;
         this.classpathConfiguration = classpathConfiguration;
         this.classLoaderConfiguration = classLoaderConfiguration;
         isForkRequested = forkRequested;
@@ -77,9 +77,9 @@ public class ProviderConfiguration
         return redirectTestOutputToFile;
     }
 
-    public String getProviderClassName()
+    public String getProviderFactoryClassName()
     {
-        return providerClassName;
+        return providerFactoryClassName;
     }
 
 }

@@ -19,13 +19,12 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import org.apache.maven.surefire.ProviderInvoker;
 import org.apache.maven.surefire.providerapi.DirectoryScannerParametersAware;
 import org.apache.maven.surefire.providerapi.ProviderPropertiesAware;
 import org.apache.maven.surefire.providerapi.ReporterConfigurationAware;
+import org.apache.maven.surefire.providerapi.SurefireClassLoadersAware;
 import org.apache.maven.surefire.providerapi.TestArtifactInfoAware;
-import org.apache.maven.surefire.providerapi.TestClassLoaderAware;
-import org.apache.maven.surefire.providerapi.TestSuiteDefinitionAware;
+import org.apache.maven.surefire.providerapi.TestRequestAware;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
@@ -51,8 +50,6 @@ public class SurefireReflector
 {
     private final ClassLoader classLoader;
 
-    private final Class providerInvoker;
-
     private final Class reporterConfiguration;
 
     private final Class testSuiteDefinition;
@@ -77,12 +74,13 @@ public class SurefireReflector
 
     private static final Class[] noargs = new Class[0];
 
+    private static final Object[] noargsValues = new Object[0];
+
     public SurefireReflector( ClassLoader surefireClassLoader )
     {
         this.classLoader = surefireClassLoader;
         try
         {
-            providerInvoker = surefireClassLoader.loadClass( ProviderInvoker.class.getName() );
             reporterConfiguration = surefireClassLoader.loadClass( ReporterConfiguration.class.getName() );
             testSuiteDefinition = surefireClassLoader.loadClass( TestRequest.class.getName() );
             testArtifactInfo = surefireClassLoader.loadClass( TestArtifactInfo.class.getName() );
@@ -90,8 +88,8 @@ public class SurefireReflector
             directoryScannerParameters = surefireClassLoader.loadClass( DirectoryScannerParameters.class.getName() );
             directoryScannerParametersAware =
                 surefireClassLoader.loadClass( DirectoryScannerParametersAware.class.getName() );
-            testSuiteDefinitionAware = surefireClassLoader.loadClass( TestSuiteDefinitionAware.class.getName() );
-            testClassLoaderAware = surefireClassLoader.loadClass( TestClassLoaderAware.class.getName() );
+            testSuiteDefinitionAware = surefireClassLoader.loadClass( TestRequestAware.class.getName() );
+            testClassLoaderAware = surefireClassLoader.loadClass( SurefireClassLoadersAware.class.getName() );
             reporterConfigurationAware = surefireClassLoader.loadClass( ReporterConfigurationAware.class.getName() );
             providerPropertiesAware = surefireClassLoader.loadClass( ProviderPropertiesAware.class.getName() );
             runResult = surefireClassLoader.loadClass( RunResult.class.getName() );
@@ -112,8 +110,8 @@ public class SurefireReflector
         final Integer getErrors = (Integer) invokeGetter( result, "getErrors" );
         final Integer getSkipped = (Integer) invokeGetter( result, "getSkipped" );
         final Integer getFailures = (Integer) invokeGetter( result, "getFailures" );
-        return new RunResult( getCompletedCount1.intValue(), getErrors.intValue(), getSkipped.intValue(),
-                              getFailures.intValue() );
+        return new RunResult( getCompletedCount1.intValue(), getErrors.intValue(),
+                              getFailures.intValue(), getSkipped.intValue() );
 
     }
 
@@ -143,24 +141,6 @@ public class SurefireReflector
         }
     }
 
-
-    public int runProvider( ReporterConfiguration reporterConfiguration, List reportDefinitions,
-                            ClassLoader surefireClassLoader, ClassLoader testsClassLoader, Properties results,
-                            Boolean failIfNoTests, TestRequest testSuiteDefinition, TestArtifactInfo testArtifactInfo,
-                            String providerClassName, DirectoryScannerParameters dirScannerParams, Object forkTestSet )
-    {
-        Object surefire = instantiateProviderInvoker();
-        Method run = getRunMethod(
-            new Class[]{ this.reporterConfiguration, List.class, ClassLoader.class, ClassLoader.class, Properties.class,
-                Boolean.class, this.testSuiteDefinition, this.testArtifactInfo, String.class,
-                this.directoryScannerParameters, Object.class } );
-
-        Object[] args = { createReporterConfiguration( reporterConfiguration ), reportDefinitions, surefireClassLoader,
-            testsClassLoader, results, failIfNoTests, createTestSuiteDefinition( testSuiteDefinition ),
-            createTestArtifactInfo( testArtifactInfo ), providerClassName,
-            createDirectoryScannerParameters( dirScannerParams ), forkTestSet };
-        return invokeRunMethod( surefire, run, args );
-    }
 
     Object createTestSuiteDefinition( TestRequest suiteDefinition )
     {
@@ -204,8 +184,8 @@ public class SurefireReflector
     Object createReporterConfiguration( ReporterConfiguration reporterConfiguration )
     {
         Constructor constructor =
-            getConstructor( this.reporterConfiguration, new Class[]{ File.class, Boolean.class } );
-        return newInstance( constructor, new Object[]{ reporterConfiguration.getReportsDirectory(),
+            getConstructor( this.reporterConfiguration, new Class[]{ List.class, File.class, Boolean.class } );
+        return newInstance( constructor, new Object[]{ reporterConfiguration.getReports(), reporterConfiguration.getReportsDirectory(),
             reporterConfiguration.isTrimStackTrace() } );
     }
 
@@ -241,12 +221,12 @@ public class SurefireReflector
         }
     }
 
-    public Object newInstance( String providerClassName )
+    public Object createProviderFactory( String providerFactoryClassName )
     {
         try
         {
 
-            Class clazz = classLoader.loadClass( providerClassName );
+            Class clazz = classLoader.loadClass( providerFactoryClassName );
             return clazz.newInstance();
         }
         catch ( InstantiationException e )
@@ -261,6 +241,12 @@ public class SurefireReflector
         {
             throw new RuntimeException( e );
         }
+    }
+    public Object instantiateProviderByFactory( Object providerFactory )
+    {
+
+            Method createProvider = getMethod( providerFactory, "createProvider", noargs );
+        return invokeMethod( providerFactory, createProvider, noargsValues );
     }
 
     public static Object getSuites( Object surefireProvider )
@@ -326,41 +312,11 @@ public class SurefireReflector
 
     }
 
-    public Object instantiateProviderInvoker()
-        throws RuntimeException
-    {
-        try
-        {
-            return providerInvoker.newInstance();
-        }
-        catch ( InstantiationException e )
-        {
-            throw new RuntimeException( "When instanitating surefire", e );
-        }
-        catch ( IllegalAccessException e )
-        {
-            throw new RuntimeException( "When instanitating surefire", e );
-        }
-    }
-
-    private Method getRunMethod( Class[] parameters )
-    {
-        try
-        {
-            return providerInvoker.getMethod( "run", parameters );
-        }
-        catch ( NoSuchMethodException e )
-        {
-            throw new RuntimeException( "When finding run method", e );
-        }
-    }
-
     private static Object invokeGetter( Object instance, String methodName )
     {
         try
         {
             final Method method = instance.getClass().getMethod( methodName, noargs );
-            final Object[] noargsValues = new Object[0];
             return method.invoke( instance, noargsValues );
         }
         catch ( NoSuchMethodException e )
@@ -427,7 +383,7 @@ public class SurefireReflector
     void setTestSuiteDefinition( Object o, TestRequest testSuiteDefinition1 )
     {
         final Object param = createTestSuiteDefinition( testSuiteDefinition1 );
-        final Method setter = getMethod( o, "setTestSuiteDefinition", new Class[]{ testSuiteDefinition } );
+        final Method setter = getMethod( o, "setTestRequest", new Class[]{ testSuiteDefinition } );
         invokeSetter( o, setter, param );
     }
 
@@ -459,10 +415,6 @@ public class SurefireReflector
         }
     }
 
-    boolean isReporterConfigurationAwareAware( Object o )
-    {
-        return reporterConfigurationAware.isAssignableFrom( o.getClass() );
-    }
 
     void setReporterConfiguration( Object o, ReporterConfiguration reporterConfiguration )
     {
@@ -471,11 +423,16 @@ public class SurefireReflector
         invokeSetter( o, setter, param );
     }
 
-    public void setTestClassLoaderAware( Object o, ClassLoader testClassLoader )
+    boolean isReporterConfigurationAwareAware( Object o )
+    {
+        return reporterConfigurationAware.isAssignableFrom( o.getClass() );
+    }
+
+    public void setTestClassLoaderAware( Object o, ClassLoader surefireClassLoader, ClassLoader testClassLoader)
     {
         if ( isTestClassLoaderAware( o ) )
         {
-            setTestClassLoader( o, testClassLoader );
+            setTestClassLoader( o, surefireClassLoader, testClassLoader );
         }
     }
 
@@ -484,10 +441,10 @@ public class SurefireReflector
         return testClassLoaderAware.isAssignableFrom( o.getClass() );
     }
 
-    void setTestClassLoader( Object o, ClassLoader aClassLoader )
+    void setTestClassLoader( Object o, ClassLoader surefireClassLoader, ClassLoader testClassLoader )
     {
-        final Method setter = getMethod( o, "setTestClassLoader", new Class[]{ ClassLoader.class } );
-        invokeSetter( o, setter, aClassLoader );
+        final Method setter = getMethod( o, "setClassLoaders", new Class[]{ ClassLoader.class, ClassLoader.class  } );
+        invokeMethod( o, setter, new Object[]{ surefireClassLoader, testClassLoader } );
     }
 
     public void setTestArtifactInfoAware( Object o, TestArtifactInfo testArtifactInfo1 )

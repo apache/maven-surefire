@@ -1,4 +1,5 @@
 package org.apache.maven.surefire.junitcore;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -18,13 +19,13 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
-import org.apache.maven.surefire.providerapi.FileScanningProvider;
-import org.apache.maven.surefire.providerapi.ProviderPropertiesAware;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
 import org.apache.maven.surefire.report.ReporterException;
+import org.apache.maven.surefire.report.ReporterManagerFactory;
 import org.apache.maven.surefire.report.RunStatistics;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
+import org.apache.maven.surefire.util.DirectoryScanner;
 
 import java.util.Iterator;
 import java.util.Properties;
@@ -34,11 +35,22 @@ import java.util.Properties;
  */
 @SuppressWarnings( { "UnusedDeclaration" } )
 public class JUnitCoreProvider
-    extends FileScanningProvider
-    implements SurefireProvider, ProviderPropertiesAware
+    implements SurefireProvider
 {
-    private Properties providerProperties;
+    private final Properties providerProperties;
+    private final ReporterManagerFactory reporterManagerFactory;
+    private final ClassLoader testClassLoader;
+    private final DirectoryScanner directoryScanner;
 
+
+    public JUnitCoreProvider( Properties providerProperties, ReporterManagerFactory reporterManagerFactory,
+                              ClassLoader testClassLoader, DirectoryScanner directoryScanner )
+    {
+        this.providerProperties = providerProperties;
+        this.reporterManagerFactory = reporterManagerFactory;
+        this.testClassLoader = testClassLoader;
+        this.directoryScanner = directoryScanner;
+    }
 
     @SuppressWarnings( { "UnnecessaryUnboxing" } )
     public RunResult invoke( Object forkTestSet )
@@ -47,54 +59,32 @@ public class JUnitCoreProvider
         // Todo; Not there quite yet
         JUnitCoreDirectoryTestSuite jUnitCoreDirectoryTestSuite = getSuite();
 
-        RunStatistics runStatistics = getReporterManagerFactory().getGlobalRunStatistics();
+        RunStatistics runStatistics = reporterManagerFactory.getGlobalRunStatistics();
 
-        jUnitCoreDirectoryTestSuite.locateTestSets( getTestsClassLoader() );
-        int totalTests = 0;
-
-        int testCount = jUnitCoreDirectoryTestSuite.getNumTests();
-        if ( testCount > 0 )
-        {
-            totalTests += testCount;
-        }
-
-        if ( totalTests == 0 && getFailifNoTests().booleanValue() )
-        {
-            getReporterManagerFactory().createReporterManager().writeMessage( "There are no tests to run." );
-            return RunResult.No_Tests;
-        }
-
+        jUnitCoreDirectoryTestSuite.locateTestSets( testClassLoader );
         // getLog().info( "Concurrency config is " + getProperties().toString() );
 
         if ( forkTestSet != null )
         {
-            jUnitCoreDirectoryTestSuite.execute( (String) forkTestSet, getReporterManagerFactory(),
-                                                 getTestsClassLoader() );
+            jUnitCoreDirectoryTestSuite.execute( (String) forkTestSet, reporterManagerFactory,
+                                                 testClassLoader );
         }
         else
         {
-            jUnitCoreDirectoryTestSuite.execute( getReporterManagerFactory(), getTestsClassLoader() );
+            jUnitCoreDirectoryTestSuite.execute( reporterManagerFactory, testClassLoader );
         }
-
-        jUnitCoreDirectoryTestSuite.execute( getReporterManagerFactory(), getTestsClassLoader() );
-
-        return runStatistics.getRunResult();
+        reporterManagerFactory.close();
+        return reporterManagerFactory.getGlobalRunStatistics().getRunResult();
     }
 
     private JUnitCoreDirectoryTestSuite getSuite()
     {
-        return new JUnitCoreDirectoryTestSuite( getDirectoryScanner(), new JUnitCoreParameters( providerProperties ),
-                                                getReporterManagerFactory() );
+        return new JUnitCoreDirectoryTestSuite( directoryScanner, new JUnitCoreParameters( providerProperties ),
+                                                reporterManagerFactory );
     }
 
     public Iterator getSuites()
     {
-        return getSuite().locateTestSetsImpl( getTestsClassLoader() ).entrySet().iterator();
-    }
-
-
-    public void setProviderProperties( Properties providerProperties )
-    {
-        this.providerProperties = providerProperties;
+        return getSuite().locateTestSetsImpl( testClassLoader ).entrySet().iterator();
     }
 }

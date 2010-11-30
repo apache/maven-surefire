@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.report;
+package org.apache.maven.surefire.providerapi;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,30 +19,10 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
-import java.util.ArrayList;
-
 /**
- * Test for {@link ForkingConsoleReporter}
- *
- * @author <a href="mailto:carlos@apache.org">Carlos Sanchez</a>
- * @version $Id$
+ * @author Kristian Rosenvold
  */
-public class ForkingConsoleReporterTest
-    extends AbstractConsoleReporterTestCase
+public interface SurefireClassLoadersAware
 {
-
-    protected void setUp()
-        throws Exception
-    {
-        super.setUp();
-        ReporterConfiguration reporterConfiguration = getTestReporterConfiguration();
-        ForkingConsoleReporter consoleReporter = new ForkingConsoleReporter( reporterConfiguration );
-        setConsoleReporter( consoleReporter );
-    }
-
-    public static ReporterConfiguration getTestReporterConfiguration()
-    {
-        return new ReporterConfiguration( new ArrayList(), null, Boolean.TRUE );
-    }
-
+    void setClassLoaders( ClassLoader surefireClassLoader, ClassLoader testClassLoader);
 }

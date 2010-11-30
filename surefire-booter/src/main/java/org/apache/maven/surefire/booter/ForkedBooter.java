@@ -69,13 +69,13 @@ public class ForkedBooter
             if ( forkedTestSet != null )
             {
                 result = booter.runSuitesInProcess( forkedTestSet, p );
+                booterDeserializer.writePropertiesFile( surefirePropertiesFile, "surefire", p );
             }
             else
             {
                 result = booter.runSuitesInProcess( p );
             }
 
-            booterDeserializer.writePropertiesFile( surefirePropertiesFile, "surefire", p );
 
             // noinspection CallToSystemExit
             System.exit( result );

@@ -53,17 +53,19 @@ public class ProviderFactory
         Thread.currentThread().setContextClassLoader( surefireClassLoader );
 
         ProviderConfiguration starterConfiguration = booterConfiguration.getSurefireStarterConfiguration();
-        final Object o = surefireReflector.newInstance( starterConfiguration.getProviderClassName() );
-        surefireReflector.setIfDirScannerAware( o, booterConfiguration.getDirScannerParams() );
+        final Object o =
+            surefireReflector.createProviderFactory( starterConfiguration.getProviderFactoryClassName() );
         surefireReflector.setTestSuiteDefinitionAware( o, booterConfiguration.getTestSuiteDefinition() );
         surefireReflector.setProviderPropertiesAware( o, booterConfiguration.getProviderProperties() );
         surefireReflector.setReporterConfigurationAware( o, booterConfiguration.getReporterConfiguration() );
-        surefireReflector.setTestClassLoaderAware( o, testClassLoader );
+        surefireReflector.setTestClassLoaderAware( o, surefireClassLoader, testClassLoader );
         surefireReflector.setTestArtifactInfoAware( o, booterConfiguration.getTestNg() );
+        surefireReflector.setIfDirScannerAware( o, booterConfiguration.getDirScannerParams() );
 
+        Object provider = surefireReflector.instantiateProviderByFactory( o );
         Thread.currentThread().setContextClassLoader( context );
 
-        return createClassLoaderProxy( o );
+        return createClassLoaderProxy( provider );
     }
 
     private SurefireProvider createClassLoaderProxy( Object target )
@@ -86,9 +88,18 @@ public class ProviderFactory
         public Object invoke( Object proxy, Method method, Object[] args )
             throws Throwable
         {
-            Method delegateMethod = target.getClass().getMethod( method.getName(), method.getParameterTypes() );
-            final Object result = delegateMethod.invoke( target, args );
-            return surefireReflector.convertIfRunResult(result);
+            ClassLoader original = java.lang.Thread.currentThread().getContextClassLoader();
+            Thread.currentThread().setContextClassLoader( surefireClassLoader );
+            try
+            {
+                Method delegateMethod = target.getClass().getMethod( method.getName(), method.getParameterTypes() );
+                final Object result = delegateMethod.invoke( target, args );
+                return surefireReflector.convertIfRunResult( result );
+            }
+            finally
+            {
+                Thread.currentThread().setContextClassLoader( original );
+            }
         }
     }
 

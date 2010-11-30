@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.report;
+package org.apache.maven.surefire.junit;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,30 +19,16 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
-import java.util.ArrayList;
+import org.apache.maven.surefire.providerapi.BaseProviderFactory;
+import org.apache.maven.surefire.providerapi.SurefireProvider;
 
 /**
- * Test for {@link ForkingConsoleReporter}
- *
- * @author <a href="mailto:carlos@apache.org">Carlos Sanchez</a>
- * @version $Id$
+ * @author Kristian Rosenvold
  */
-public class ForkingConsoleReporterTest
-    extends AbstractConsoleReporterTestCase
+public class JUnit3ProviderFactory extends BaseProviderFactory
 {
-
-    protected void setUp()
-        throws Exception
+    public SurefireProvider createProvider()
     {
-        super.setUp();
-        ReporterConfiguration reporterConfiguration = getTestReporterConfiguration();
-        ForkingConsoleReporter consoleReporter = new ForkingConsoleReporter( reporterConfiguration );
-        setConsoleReporter( consoleReporter );
+        return new JUnit3Provider(getReporterManagerFactory(), getTestClassLoader(), getDirectoryScanner());
     }
-
-    public static ReporterConfiguration getTestReporterConfiguration()
-    {
-        return new ReporterConfiguration( new ArrayList(), null, Boolean.TRUE );
-    }
-
 }
