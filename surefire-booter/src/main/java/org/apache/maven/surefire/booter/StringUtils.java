@@ -77,70 +77,29 @@ import java.util.StringTokenizer;
  * @since 1.0
  * @version $Id: StringUtils.java 8001 2009-01-03 13:17:09Z vsiveton $
  * @noinspection JavaDoc
+ *
+ * A quick borrow from plexus-utils by Kristian Rosenvold, to restore jdk1.3 compat
+ * Threw away all the unused stuff.
  */
 public class StringUtils
 {
-    /**
-     * <p><code>StringUtils</code> instances should NOT be constructed in
-     * standard programming. Instead, the class should be used as
-     * <code>StringUtils.trim(" foo ");</code>.</p>
-     *
-     * <p>This constructor is public to permit tools that require a JavaBean
-     * manager to operate.</p>
-     */
-    public StringUtils()
-    {
-    }
-
-    public static boolean isEmpty( String str )
-    {
-        return ( ( str == null ) || ( str.trim().length() == 0 ) );
-    }
-
-    // Equals and IndexOf
-    //--------------------------------------------------------------------------
-
-    // Substring
-    //--------------------------------------------------------------------------
 
     // Splitting
     //--------------------------------------------------------------------------
 
     public static String[] split( String text, String separator )
     {
-        return split( text, separator, -1 );
-    }
-
-    /**
-     * <p>Splits the provided text into a array, based on a given separator.</p>
-     *
-     * <p>The separator is not included in the returned String array. The
-     * maximum number of splits to perform can be controlled. A <code>null</code>
-     * separator will cause parsing to be on whitespace.</p>
-     *
-     * <p>This is useful for quickly splitting a String directly into
-     * an array of tokens, instead of an enumeration of tokens (as
-     * <code>StringTokenizer</code> does).</p>
-     *
-     * @param str The string to parse.
-     * @param separator Characters used as the delimiters. If
-     *  <code>null</code>, splits on whitespace.
-     * @param max The maximum number of elements to include in the
-     *  array.  A zero or negative value implies no limit.
-     * @return an array of parsed Strings
-     */
-    public static String[] split( String str, String separator, int max )
-    {
+        int max = -1;
         StringTokenizer tok;
         if ( separator == null )
         {
             // Null separator means we're using StringTokenizer's default
             // delimiter, which comprises all whitespace characters.
-            tok = new StringTokenizer( str );
+            tok = new StringTokenizer( text );
         }
         else
         {
-            tok = new StringTokenizer( str, separator );
+            tok = new StringTokenizer( text, separator );
         }
 
         int listSize = tok.countTokens();
@@ -161,14 +120,14 @@ public class StringUtils
                 // tokens left over in our input, the last list
                 // element gets all remaining text.
                 String endToken = tok.nextToken();
-                lastTokenBegin = str.indexOf( endToken, lastTokenEnd );
-                list[i] = str.substring( lastTokenBegin );
+                lastTokenBegin = text.indexOf( endToken, lastTokenEnd );
+                list[i] = text.substring( lastTokenBegin );
                 break;
             }
             else
             {
                 list[i] = tok.nextToken();
-                lastTokenBegin = str.indexOf( list[i], lastTokenEnd );
+                lastTokenBegin = text.indexOf( list[i], lastTokenEnd );
                 lastTokenEnd = lastTokenBegin + list[i].length();
             }
             i++;
@@ -184,7 +143,6 @@ public class StringUtils
      *
      * <p>A <code>null</code> reference passed to this method is a no-op.</p>
      *
-     * @see #replace(String text, String repl, String with, int max)
      * @param text text to search and replace in
      * @param repl String to search for
      * @param with String to replace with
@@ -192,23 +150,7 @@ public class StringUtils
      */
     public static String replace( String text, String repl, String with )
     {
-        return replace( text, repl, with, -1 );
-    }
-
-    /**
-     * <p>Replace a String with another String inside a larger String,
-     * for the first <code>max</code> values of the search String.</p>
-     *
-     * <p>A <code>null</code> reference passed to this method is a no-op.</p>
-     *
-     * @param text text to search and replace in
-     * @param repl String to search for
-     * @param with String to replace with
-     * @param max maximum number of values to replace, or <code>-1</code> if no maximum
-     * @return the text with any replacements processed
-     */
-    public static String replace( String text, String repl, String with, int max )
-    {
+        int max = -1;
         if ( ( text == null ) || ( repl == null ) || ( with == null ) || ( repl.length() == 0 ) )
         {
             return text;
@@ -230,168 +172,5 @@ public class StringUtils
         return buf.toString();
     }
 
-
-    /**
-     * <p>Remove whitespace from the front and back of a String.</p>
-     *
-     * @param str the String to remove whitespace from
-     * @return the stripped String
-     */
-    public static String strip( String str )
-    {
-        return strip( str, null );
-    }
-
-    /**
-     * <p>Remove a specified String from the front and back of a
-     * String.</p>
-     *
-     * <p>If whitespace is wanted to be removed, used the
-     * {@link #strip(java.lang.String)} method.</p>
-     *
-     * @param str the String to remove a string from
-     * @param delim the String to remove at start and end
-     * @return the stripped String
-     */
-    public static String strip( String str, String delim )
-    {
-        str = stripStart( str, delim );
-        return stripEnd( str, delim );
-    }
-
-    /**
-     * <p>Strip any of a supplied String from the end of a String.</p>
-     *
-     * <p>If the strip String is <code>null</code>, whitespace is
-     * stripped.</p>
-     *
-     * @param str the String to remove characters from
-     * @param strip the String to remove
-     * @return the stripped String
-     */
-    public static String stripEnd( String str, String strip )
-    {
-        if ( str == null )
-        {
-            return null;
-        }
-        int end = str.length();
-
-        if ( strip == null )
-        {
-            while ( ( end != 0 ) && Character.isWhitespace( str.charAt( end - 1 ) ) )
-            {
-                end--;
-            }
-        }
-        else
-        {
-            while ( ( end != 0 ) && ( strip.indexOf( str.charAt( end - 1 ) ) != -1 ) )
-            {
-                end--;
-            }
-        }
-        return str.substring( 0, end );
-    }
-
-    /**
-     * <p>Strip any of a supplied String from the start of a String.</p>
-     *
-     * <p>If the strip String is <code>null</code>, whitespace is
-     * stripped.</p>
-     *
-     * @param str the String to remove characters from
-     * @param strip the String to remove
-     * @return the stripped String
-     */
-    public static String stripStart( String str, String strip )
-    {
-        if ( str == null )
-        {
-            return null;
-        }
-
-        int start = 0;
-
-        int sz = str.length();
-
-        if ( strip == null )
-        {
-            while ( ( start != sz ) && Character.isWhitespace( str.charAt( start ) ) )
-            {
-                start++;
-            }
-        }
-        else
-        {
-            while ( ( start != sz ) && ( strip.indexOf( str.charAt( start ) ) != -1 ) )
-            {
-                start++;
-            }
-        }
-        return str.substring( start );
-    }
-    // Difference
-    //--------------------------------------------------------------------------
-
-    /**
-     * <p>Checks if String contains a search character, handling <code>null</code>.
-     * This method uses {@link String#indexOf(int)}.</p>
-     *
-     * <p>A <code>null</code> or empty ("") String will return <code>false</code>.</p>
-     *
-     * <pre>
-     * StringUtils.contains(null, *)    = false
-     * StringUtils.contains("", *)      = false
-     * StringUtils.contains("abc", 'a') = true
-     * StringUtils.contains("abc", 'z') = false
-     * </pre>
-     *
-     * @param str  the String to check, may be null
-     * @param searchChar  the character to find
-     * @return true if the String contains the search character,
-     *  false if not or <code>null</code> string input
-     * @since 1.5.7
-     */
-    public static boolean contains( String str, char searchChar )
-    {
-        //noinspection SimplifiableIfStatement
-        if ( isEmpty( str ) )
-        {
-            return false;
-        }
-        return str.indexOf( searchChar ) >= 0;
-    }
-
-    /**
-     * <p>Checks if String contains a search String, handling <code>null</code>.
-     * This method uses {@link String#indexOf(int)}.</p>
-     *
-     * <p>A <code>null</code> String will return <code>false</code>.</p>
-     *
-     * <pre>
-     * StringUtils.contains(null, *)     = false
-     * StringUtils.contains(*, null)     = false
-     * StringUtils.contains("", "")      = true
-     * StringUtils.contains("abc", "")   = true
-     * StringUtils.contains("abc", "a")  = true
-     * StringUtils.contains("abc", "z")  = false
-     * </pre>
-     *
-     * @param str  the String to check, may be null
-     * @param searchStr  the String to find, may be null
-     * @return true if the String contains the search String,
-     *  false if not or <code>null</code> string input
-     * @since 1.5.7
-     */
-    public static boolean contains( String str, String searchStr )
-    {
-        //noinspection SimplifiableIfStatement
-        if ( str == null || searchStr == null )
-        {
-            return false;
-        }
-        return str.indexOf( searchStr ) >= 0;
-    }
 }
 

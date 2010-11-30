@@ -153,7 +153,7 @@ public class SurefireStarter
      * @param runCount            The run result
      * @param surefireClassLoader The sirefore classloader
      * @return The process result code
-     * @throws SurefireExecutionException
+     * @throws SurefireExecutionException When an exception is found
      */
     private int processRunCount( RunResult runCount, ClassLoader surefireClassLoader )
         throws SurefireExecutionException
