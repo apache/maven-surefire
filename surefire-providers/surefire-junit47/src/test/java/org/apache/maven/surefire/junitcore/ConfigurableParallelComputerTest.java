@@ -240,6 +240,17 @@ public class ConfigurableParallelComputerTest
         return realClasses.toArray( new Class[realClasses.size()] );
     }
 
+    static void sleepReallyEvenOnWindows(long ms)
+        throws InterruptedException
+    {
+        long endAt = System.currentTimeMillis() + ms;
+        Thread.sleep( ms);
+        while ( endAt > System.currentTimeMillis()){
+            Thread.sleep( ms/10);
+            Thread.yield();
+        }
+
+    }
     public static class Dummy
     {
         @Test
@@ -283,21 +294,21 @@ public class ConfigurableParallelComputerTest
         public void testNotMuch()
             throws InterruptedException
         {
-            Thread.sleep( scaling );
+            sleepReallyEvenOnWindows( scaling );
         }
 
         @Test
         public void testNotMuch2()
             throws InterruptedException
         {
-            Thread.sleep( 3 * scaling );
+            sleepReallyEvenOnWindows( 3 * scaling );
         }
 
         @Test
         public void testNotMuch3()
             throws InterruptedException
         {
-            Thread.sleep( 2 * scaling );
+            sleepReallyEvenOnWindows( 2 * scaling );
         }
 
 
