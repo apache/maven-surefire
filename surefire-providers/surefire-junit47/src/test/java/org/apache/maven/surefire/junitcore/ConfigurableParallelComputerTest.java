@@ -20,6 +20,7 @@
 package org.apache.maven.surefire.junitcore;
 
 import junit.framework.TestCase;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.ParallelComputer;
 import org.junit.runner.Computer;
@@ -110,15 +111,6 @@ public class ConfigurableParallelComputerTest
 
         JUnitCore jUnitCore = getJunitCore( result );
         runIt( realClasses, jUnitCore, computer );
-    }
-
-    @Test
-    public void testWithFailingAssertionC()
-        throws Exception
-    {
-        final ParallelComputer computer = new ParallelComputer( false, true );
-        runWithFailingAssertion( computer );
-        runWithFailingAssertion( new ParallelComputer( true, false ) );
     }
 
 
