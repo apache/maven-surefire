@@ -23,37 +23,47 @@ import org.apache.maven.surefire.report.ReportEntry;
 
 /**
  * Imposes synchronization on a non-thredsafe OutputConsumer
+ *
  * @author Kristian Rosenvold
  */
-public class SynchronizedOutputConsumer implements OutputConsumer {
+public class SynchronizedOutputConsumer
+    implements OutputConsumer
+{
 
     final OutputConsumer target;
 
-    public SynchronizedOutputConsumer(OutputConsumer target) {
+    public SynchronizedOutputConsumer( OutputConsumer target )
+    {
         this.target = target;
     }
 
-    public synchronized void consumeHeaderLine(String line) {
-        target.consumeHeaderLine(line);
+    public synchronized void consumeHeaderLine( String line )
+    {
+        target.consumeHeaderLine( line );
     }
 
-    public synchronized void consumeMessageLine(String line) {
-        target.consumeMessageLine(line);
+    public synchronized void consumeMessageLine( String line )
+    {
+        target.consumeMessageLine( line );
     }
 
-    public synchronized void consumeFooterLine(String line) {
-        target.consumeFooterLine(line);
+    public synchronized void consumeFooterLine( String line )
+    {
+        target.consumeFooterLine( line );
     }
 
-    public synchronized void consumeOutputLine(String line) {
-        target.consumeOutputLine(line);
+    public synchronized void consumeOutputLine( String line )
+    {
+        target.consumeOutputLine( line );
     }
 
-    public synchronized void testSetStarting(ReportEntry reportEntry) {
-        target.testSetStarting(reportEntry);
+    public synchronized void testSetStarting( ReportEntry reportEntry )
+    {
+        target.testSetStarting( reportEntry );
     }
 
-    public synchronized void testSetCompleted() {
+    public synchronized void testSetCompleted()
+    {
         target.testSetCompleted();
     }
 }
