@@ -215,4 +215,12 @@ public abstract class AbstractTextReporter
         return message.startsWith( TEST_SET_COMPLETED_PREFIX );
     }
 
+    public void reset()
+    {
+        super.reset();
+        if ( writer != null )
+        {
+            writer.flush();
+        }
+    }
 }
