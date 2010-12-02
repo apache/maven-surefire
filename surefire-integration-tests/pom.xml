@@ -18,7 +18,8 @@
   ~ under the License.
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -41,7 +42,7 @@
       <version>${project.version}</version>
       <type>maven-plugin</type>
     </dependency>
-   <dependency>
+    <dependency>
       <artifactId>maven-surefire-plugin</artifactId>
       <groupId>org.apache.maven.plugins</groupId>
       <version>${project.version}</version>
@@ -119,6 +120,13 @@
         </executions>
       </plugin>
       <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>1.4</source>
+          <target>1.4</target>
+        </configuration>
+      </plugin>
+      <plugin>
         <artifactId>maven-invoker-plugin</artifactId>
         <version>1.5</version>
         <configuration>
@@ -136,7 +144,7 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <test>SetUpForIntegrationTest</test>
-          
+
           <!-- Pass current surefire version to the main suite so that it -->
           <!-- can forward to all integration test projects. SUREFIRE-513 -->
           <systemProperties>
@@ -224,7 +232,7 @@
       </plugin>
     </plugins>
   </build>
-  
+
   <properties>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <it.settings.showPasswords>false</it.settings.showPasswords>
