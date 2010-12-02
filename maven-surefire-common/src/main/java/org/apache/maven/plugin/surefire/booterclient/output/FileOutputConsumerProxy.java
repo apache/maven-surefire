@@ -65,6 +65,13 @@ public class FileOutputConsumerProxy
         {
             throw new IllegalStateException( "testSetStarting called twice" );
         }
+
+        if ( !reportsDirectory.exists() )
+        {
+            //noinspection ResultOfMethodCallIgnored
+            reportsDirectory.mkdirs();
+        }
+
         File file = new File( reportsDirectory, reportEntry.getName() + "-output.txt" );
         try
         {
