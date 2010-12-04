@@ -33,6 +33,11 @@ import java.util.Iterator;
 public interface SurefireProvider
 {
     /**
+     * Returns true if the general dependencies/configuration of the environment allows this provider to run.
+     * @return
+     */
+    Boolean isRunnable();
+    /**
      * Called when forkmode is pertest, allows the provider to define what "pertest" will be.
      *
      * @return

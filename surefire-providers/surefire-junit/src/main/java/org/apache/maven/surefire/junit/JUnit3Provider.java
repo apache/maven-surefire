@@ -19,6 +19,7 @@ package org.apache.maven.surefire.junit;
  * under the License.
  */
 
+import org.apache.maven.surefire.providerapi.BooterParameters;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterManagerFactory;
@@ -41,12 +42,11 @@ public class JUnit3Provider
 
     private final DirectoryScanner directoryScanner;
 
-    public JUnit3Provider( ReporterManagerFactory reporterManagerFactory, ClassLoader testClassLoader,
-                           DirectoryScanner directoryScanner )
+    public JUnit3Provider( BooterParameters booterParameters )
     {
-        this.reporterManagerFactory = reporterManagerFactory;
-        this.testClassLoader = testClassLoader;
-        this.directoryScanner = directoryScanner;
+        this.reporterManagerFactory = booterParameters.getReporterManagerFactory();
+        this.testClassLoader = booterParameters.getTestClassLoader();
+        this.directoryScanner = booterParameters.getDirectoryScanner();
     }
 
     public RunResult invoke( Object forkTestSet )
@@ -84,5 +84,10 @@ public class JUnit3Provider
         {
             throw new RuntimeException( e );
         }
+    }
+
+    public Boolean isRunnable()
+    {
+        return Boolean.TRUE;
     }
 }

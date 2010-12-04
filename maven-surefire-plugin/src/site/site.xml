@@ -39,6 +39,7 @@
       <item name="Debugging Tests" href="examples/debugging.html"/>
       <item name="System Properties" href="examples/system-properties.html"/>
       <item name="Configuring the Classpath" href="examples/configuring-classpath.html"/>
+      <item name="Choosing providers" href="examples/providers.html"/>
     </menu>
   </body>
 </project>

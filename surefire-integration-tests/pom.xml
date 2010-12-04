@@ -62,7 +62,7 @@
     </dependency>
     <dependency>
       <groupId>org.apache.maven.surefire</groupId>
-      <artifactId>surefire-junit</artifactId>
+      <artifactId>surefire-junit3</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

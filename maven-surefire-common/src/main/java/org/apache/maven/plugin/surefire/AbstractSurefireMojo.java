@@ -29,7 +29,6 @@ import org.apache.maven.artifact.resolver.filter.ExcludesArtifactFilter;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
-import org.apache.maven.artifact.versioning.OverConstrainedVersionException;
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -40,6 +39,8 @@ import org.apache.maven.surefire.booter.BooterConfiguration;
 import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.ClasspathConfiguration;
 import org.apache.maven.surefire.booter.ProviderConfiguration;
+import org.apache.maven.surefire.booter.ProviderDetector;
+import org.apache.maven.surefire.providerapi.SurefireProvider;
 import org.apache.maven.surefire.report.BriefConsoleReporter;
 import org.apache.maven.surefire.report.BriefFileReporter;
 import org.apache.maven.surefire.report.ConsoleReporter;
@@ -55,6 +56,7 @@ import org.apache.maven.toolchain.Toolchain;
 import org.codehaus.plexus.util.StringUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -87,8 +89,83 @@ public abstract class AbstractSurefireMojo
 
     protected abstract String getPluginName();
 
+    protected SurefireDependencyResolver dependencyResolver;
+
     protected abstract boolean verifyParameters()
         throws MojoFailureException;
+
+    private Artifact surefireArtifact;
+
+
+    WellKnownProvider[] wellKnownProviders;
+
+    protected WellKnownProvider initialize()
+        throws MojoFailureException
+    {
+        dependencyResolver =
+            new SurefireDependencyResolver( getArtifactResolver(), getArtifactFactory(), getLog(), getLocalRepository(),
+                                            getRemoteRepositories(), getMetadataSource(), getPluginName() );
+
+        try
+        {
+            wellKnownProviders = new WellKnownProvider[]{ new TestNgProviderInfo( getTestNgArtifact() ),
+                new JUnitCoreProviderInfo( getJunitArtifact() ), new JUnit4ProviderInfo( getJunitArtifact() ),
+                new JUnit3ProviderInfo() };
+            String manuallyConfiguredProvider = getManuallyConfiguredProviderName();
+            if ( manuallyConfiguredProvider != null )
+            {
+                // Ok, all this code will have to go when we solve surefire-141. In the meantime we solve surefire-408
+                for ( int i = 0; i < wellKnownProviders.length; i++ )
+                {
+                    WellKnownProvider wellKnownProvider = wellKnownProviders[i];
+                    if ( wellKnownProvider.getProviderName().equals( manuallyConfiguredProvider ) )
+                    {
+                        getLog().info( "Using explicitly configured provider " + wellKnownProvider.getProviderName() );
+                        return wellKnownProvider;
+                    }
+                }
+                throw new IllegalArgumentException( "Unknown provider configured " + manuallyConfiguredProvider );
+            }
+            for ( int i = 0; i < wellKnownProviders.length; i++ )
+            {
+                if ( wellKnownProviders[i].isApplicable() )
+                {
+                    return wellKnownProviders[i];
+                }
+            }
+            return null;
+        }
+        catch ( InvalidVersionSpecificationException e )
+        {
+            throw new RuntimeException( e );
+        }
+    }
+
+    private String getManuallyConfiguredProviderName()
+    {
+        try
+        {
+            final Set objects = ProviderDetector.getServiceNames( SurefireProvider.class,
+                                                                  Thread.currentThread().getContextClassLoader() );
+            if ( objects == null || objects.size() == 0 )
+            {
+                return null;
+            }
+            if ( objects.size() > 1 )
+            {
+                throw new IllegalArgumentException( "Surefire currently only supports " );
+            }
+            return (String) objects.iterator().next();
+
+        }
+
+        catch ( IOException e )
+        {
+            throw new RuntimeException( e );
+        }
+
+
+    }
 
     protected final Toolchain getToolchain()
     {
@@ -134,6 +211,12 @@ public abstract class AbstractSurefireMojo
         {
             getProperties().setProperty( "objectfactory", this.getObjectFactory() );
         }
+        if ( this.getTestClassesDirectory() != null )
+        {
+            getProperties().setProperty( "testng.test.classpath", getTestClassesDirectory().getAbsolutePath() );
+        }
+
+
     }
 
     protected boolean isAnyConcurrencySelected()
@@ -168,52 +251,16 @@ public abstract class AbstractSurefireMojo
         {
             getProperties().setProperty( "useUnlimitedThreads", getUseUnlimitedThreads() );
         }
-        Artifact configurableParallelComputer =
-            (Artifact) getProjectArtifactMap().get( "org.jdogma.junit:configurable-parallel-computer" );
-        getProperties().setProperty( "configurableParallelComputerPresent",
-                                     Boolean.toString( configurableParallelComputer != null ) );
-
     }
 
     private boolean isJunit47Compatible( Artifact artifact )
-        throws MojoExecutionException
     {
-        return isWithinVersionSpec( artifact, "[4.7,)" );
+        return dependencyResolver.isWithinVersionSpec( artifact, "[4.7,)" );
     }
 
     private boolean isAnyJunit4( Artifact artifact )
-        throws MojoExecutionException
     {
-        return isWithinVersionSpec( artifact, "[4.0,)" );
-    }
-
-    private boolean isWithinVersionSpec( Artifact artifact, String versionSpec )
-        throws MojoExecutionException
-    {
-        if ( artifact == null )
-        {
-            return false;
-        }
-        try
-        {
-            VersionRange range = VersionRange.createFromVersionSpec( versionSpec );
-            try
-            {
-                return range.containsVersion( artifact.getSelectedVersion() );
-            }
-            catch ( NullPointerException e )
-            {
-                return range.containsVersion( new DefaultArtifactVersion( artifact.getBaseVersion() ) );
-            }
-        }
-        catch ( InvalidVersionSpecificationException e )
-        {
-            throw new MojoExecutionException( "Bug in junit 4.7 plugin. Please report with stacktrace" );
-        }
-        catch ( OverConstrainedVersionException e )
-        {
-            throw new MojoExecutionException( "Bug in junit 4.7 plugin. Please report with stacktrace" );
-        }
+        return dependencyResolver.isWithinVersionSpec( artifact, "[4.0,)" );
     }
 
     protected boolean isForkModeNever()
@@ -221,7 +268,8 @@ public abstract class AbstractSurefireMojo
         return ForkConfiguration.FORK_NEVER.equals( getForkMode() );
     }
 
-    protected BooterConfiguration createBooterConfiguration( ForkConfiguration forkConfiguration )
+    protected BooterConfiguration createBooterConfiguration( ForkConfiguration forkConfiguration,
+                                                             WellKnownProvider provider )
         throws MojoExecutionException, MojoFailureException
     {
         final ClasspathConfiguration classpathConfiguration =
@@ -231,8 +279,7 @@ public abstract class AbstractSurefireMojo
         ReporterConfiguration reporterConfiguration =
             new ReporterConfiguration( reports, getReportsDirectory(), Boolean.valueOf( isTrimStackTrace() ) );
 
-        Artifact surefireArtifact =
-            (Artifact) getPluginArtifactMap().get( "org.apache.maven.surefire:surefire-booter" );
+        surefireArtifact = (Artifact) getPluginArtifactMap().get( "org.apache.maven.surefire:surefire-booter" );
         if ( surefireArtifact == null )
         {
             throw new MojoExecutionException( "Unable to locate surefire-booter in the list of plugin artifacts" );
@@ -242,18 +289,19 @@ public abstract class AbstractSurefireMojo
 
         Artifact junitArtifact;
         Artifact testNgArtifact;
-        String providerFactoryName;
+        String providerName;
         try
         {
-            addArtifact( forkConfiguration.getBootClasspathConfiguration(), surefireArtifact );
+            addArtifact( forkConfiguration.getBootClasspath(), surefireArtifact );
 
             junitArtifact = getJunitArtifact();
 
             testNgArtifact = getTestNgArtifact();
 
-            providerFactoryName =
-                setCorrectProvider( forkConfiguration.getBootClasspathConfiguration(), classpathConfiguration,
-                                    surefireArtifact, junitArtifact, testNgArtifact );
+            provider.addProviderProperties();
+            provider.addProviderArtifactToBootClasspath( forkConfiguration.getBootClasspath() );
+            provider.addProviderArtifactToSurefireClasspath( classpathConfiguration );
+            providerName = provider.getProviderName();
         }
         catch ( ArtifactNotFoundException e )
         {
@@ -273,8 +321,7 @@ public abstract class AbstractSurefireMojo
         final boolean isTestNg = testNgArtifact != null;
         TestArtifactInfo testNg =
             isTestNg ? new TestArtifactInfo( testNgArtifact.getVersion(), testNgArtifact.getClassifier() ) : null;
-        TestRequest testSuiteDefinition =
-            new TestRequest( getSuiteXmlFiles(), getTestSourceDirectory(), getTest() );
+        TestRequest testSuiteDefinition = new TestRequest( getSuiteXmlFiles(), getTestSourceDirectory(), getTest() );
         final boolean failIfNoTests;
 
         if ( isValidSuiteXmlFileConfig() && getTest() == null )
@@ -311,7 +358,7 @@ public abstract class AbstractSurefireMojo
             providerProperties = new Properties();
         }
         ProviderConfiguration surefireStarterConfiguration =
-            new ProviderConfiguration( providerFactoryName, classpathConfiguration,
+            new ProviderConfiguration( providerName, classpathConfiguration,
                                        forkConfiguration.getClassLoaderConfiguration(), forkConfiguration.isForking(),
                                        false, isRedirectTestOutputToFile() );
 
@@ -436,58 +483,6 @@ public abstract class AbstractSurefireMojo
             }
         }
         return includes;
-    }
-
-    private String setCorrectProvider( Classpath bootClasspathConfiguration,
-                                       ClasspathConfiguration classpathConfiguration, Artifact surefireArtifact,
-                                       Artifact junitArtifact, Artifact testNgArtifact )
-        throws ArtifactNotFoundException, ArtifactResolutionException, MojoExecutionException
-    {
-        if ( testNgArtifact != null )
-        {
-            setTestNgProvider( bootClasspathConfiguration, classpathConfiguration, surefireArtifact, testNgArtifact );
-            return "org.apache.maven.surefire.testng.TestNGProviderFactory";
-
-        }
-        else if ( junitArtifact != null && isAnyJunit4( junitArtifact ) )
-        {
-            if ( isAnyConcurrencySelected() && isJunit47Compatible( junitArtifact ) )
-            {
-                convertJunitCoreParameters();
-                setProvider( classpathConfiguration, "surefire-junit47", surefireArtifact.getBaseVersion(), null );
-                return "org.apache.maven.surefire.junitcore.JUnitCoreProviderFactory";
-            }
-            else
-            {
-                setProvider( classpathConfiguration, "surefire-junit4", surefireArtifact.getBaseVersion(), null );
-                return "org.apache.maven.surefire.junit4.JUnit4ProviderFactory";
-            }
-        }
-        else
-        {
-            // add the JUnit provider as default - it doesn't require JUnit to be present,
-            // since it supports POJO tests.
-            setProvider( classpathConfiguration, "surefire-junit", surefireArtifact.getBaseVersion(), null );
-            return "org.apache.maven.surefire.junit.JUnit3ProviderFactory";
-        }
-    }
-
-    private void setTestNgProvider( Classpath bootClasspathConfiguration, ClasspathConfiguration classpathConfiguration,
-                                    Artifact surefireArtifact, Artifact testNgArtifact )
-        throws ArtifactNotFoundException, ArtifactResolutionException
-    {
-        convertTestNGParameters();
-
-        if ( this.getTestClassesDirectory() != null )
-        {
-            getProperties().setProperty( "testng.test.classpath", getTestClassesDirectory().getAbsolutePath() );
-        }
-
-        addArtifact( bootClasspathConfiguration, testNgArtifact );
-
-        // The plugin uses a JDK based profile to select the right testng. We might be explicity using a
-        // different one since its based on the source level, not the JVM. Prune using the filter.
-        setProvider( classpathConfiguration, "surefire-testng", surefireArtifact.getBaseVersion(), testNgArtifact );
     }
 
     private Artifact getTestNgArtifact()
@@ -690,28 +685,6 @@ public abstract class AbstractSurefireMojo
         }
     }
 
-
-    private void setProvider( ClasspathConfiguration classpathConfiguration, String provider, String version,
-                              Artifact filteredArtifact )
-        throws ArtifactNotFoundException, ArtifactResolutionException
-    {
-        Artifact providerArtifact =
-            getArtifactFactory().createDependencyArtifact( "org.apache.maven.surefire", provider,
-                                                           VersionRange.createFromVersion( version ), "jar", null,
-                                                           Artifact.SCOPE_TEST );
-        ArtifactResolutionResult result = resolveArtifact( filteredArtifact, providerArtifact );
-
-        for ( Iterator i = result.getArtifacts().iterator(); i.hasNext(); )
-        {
-            Artifact artifact = (Artifact) i.next();
-
-            getLog().debug(
-                "Adding to " + getPluginName() + " test classpath: " + artifact.getFile().getAbsolutePath() +
-                    " Scope: " + artifact.getScope() );
-
-            classpathConfiguration.addSurefireClasspathUrl( artifact.getFile().getAbsolutePath() );
-        }
-    }
 
     private ArtifactResolutionResult resolveArtifact( Artifact filteredArtifact, Artifact providerArtifact )
         throws ArtifactResolutionException, ArtifactNotFoundException
@@ -926,5 +899,194 @@ public abstract class AbstractSurefireMojo
         {
             getLog().warn( "useSystemClassloader setting has no effect when not forking" );
         }
+    }
+
+
+    public interface WellKnownProvider
+    {
+        String getProviderName();
+
+        String getProviderArtifactName();
+
+        public boolean isApplicable();
+
+        public void addProviderArtifactToBootClasspath( Classpath bootclasspath )
+            throws ArtifactResolutionException, ArtifactNotFoundException;
+
+        public void addProviderArtifactToSurefireClasspath( ClasspathConfiguration bootclasspath )
+            throws ArtifactResolutionException, ArtifactNotFoundException;
+
+        public void addProviderProperties();
+    }
+
+    class TestNgProviderInfo
+        implements WellKnownProvider
+    {
+        private final Artifact testNgArtifact;
+
+        TestNgProviderInfo( Artifact testNgArtifact )
+        {
+            this.testNgArtifact = testNgArtifact;
+        }
+
+        public String getProviderName()
+        {
+            return "org.apache.maven.surefire.testng.TestNGProvider";
+        }
+
+        public String getProviderArtifactName()
+        {
+            return "surefire-testng";
+        }
+
+        public boolean isApplicable()
+        {
+            return testNgArtifact != null;
+        }
+
+        public void addProviderProperties()
+        {
+            convertTestNGParameters();
+        }
+
+        public void addProviderArtifactToBootClasspath( Classpath bootclasspath )
+            throws ArtifactResolutionException, ArtifactNotFoundException
+        {
+
+            dependencyResolver.addResolvedArtifactToClasspath( bootclasspath, testNgArtifact );
+        }
+
+        public void addProviderArtifactToSurefireClasspath( ClasspathConfiguration bootclasspath )
+            throws ArtifactResolutionException, ArtifactNotFoundException
+        {
+            Artifact surefireArtifact =
+                (Artifact) getPluginArtifactMap().get( "org.apache.maven.surefire:surefire-booter" );
+            dependencyResolver.addProviderToClasspath( bootclasspath, "surefire-testng",
+                                                       surefireArtifact.getBaseVersion(), testNgArtifact );
+        }
+    }
+
+    class JUnit3ProviderInfo
+        implements WellKnownProvider
+    {
+        public String getProviderName()
+        {
+            return "org.apache.maven.surefire.junit.JUnit3Provider";
+        }
+
+        public String getProviderArtifactName()
+        {
+            return "surefire-junit3";
+        }
+
+        public boolean isApplicable()
+        {
+            return true;
+        }
+
+        public void addProviderProperties()
+        {
+        }
+
+        public void addProviderArtifactToBootClasspath( Classpath bootclasspath )
+        {
+        }
+
+        public void addProviderArtifactToSurefireClasspath( ClasspathConfiguration classpathConfiguration )
+            throws ArtifactResolutionException, ArtifactNotFoundException
+        {
+            // add the JUnit provider as default - it doesn't require JUnit to be present,
+            // since it supports POJO tests.
+            dependencyResolver.addProviderToClasspath( classpathConfiguration, getProviderArtifactName(),
+                                                       surefireArtifact.getBaseVersion(), null );
+
+        }
+
+    }
+
+    class JUnit4ProviderInfo
+        implements WellKnownProvider
+    {
+        private final Artifact junitArtifact;
+
+        JUnit4ProviderInfo( Artifact junitArtifact )
+        {
+            this.junitArtifact = junitArtifact;
+        }
+
+        public String getProviderName()
+        {
+            return "org.apache.maven.surefire.junit4.JUnit4Provider";
+        }
+
+        public String getProviderArtifactName()
+        {
+            return "surefire-junit4";
+        }
+
+        public boolean isApplicable()
+        {
+            return isAnyJunit4( junitArtifact );
+        }
+
+        public void addProviderProperties()
+        {
+        }
+
+        public void addProviderArtifactToBootClasspath( Classpath bootclasspath )
+        {
+        }
+
+        public void addProviderArtifactToSurefireClasspath( ClasspathConfiguration classpathConfiguration )
+            throws ArtifactResolutionException, ArtifactNotFoundException
+        {
+            dependencyResolver.addProviderToClasspath( classpathConfiguration, getProviderArtifactName(),
+                                                       surefireArtifact.getBaseVersion(), null );
+
+        }
+
+    }
+
+    class JUnitCoreProviderInfo
+        implements WellKnownProvider
+    {
+        private final Artifact junitArtifact;
+
+        JUnitCoreProviderInfo( Artifact junitArtifact )
+        {
+            this.junitArtifact = junitArtifact;
+        }
+
+        public String getProviderName()
+        {
+            return "org.apache.maven.surefire.junitcore.JUnitCoreProvider";
+        }
+
+        public String getProviderArtifactName()
+        {
+            return "surefire-junit47";
+        }
+
+        public boolean isApplicable()
+        {
+            return isAnyJunit4( junitArtifact ) && isAnyConcurrencySelected() && isJunit47Compatible( junitArtifact );
+        }
+
+        public void addProviderProperties()
+        {
+            convertJunitCoreParameters();
+        }
+
+        public void addProviderArtifactToBootClasspath( Classpath bootclasspath )
+        {
+        }
+
+        public void addProviderArtifactToSurefireClasspath( ClasspathConfiguration classpathConfiguration )
+            throws ArtifactResolutionException, ArtifactNotFoundException
+        {
+            dependencyResolver.addProviderToClasspath( classpathConfiguration, getProviderArtifactName(),
+                                                       surefireArtifact.getBaseVersion(), null );
+        }
+
     }
 }

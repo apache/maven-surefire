@@ -139,7 +139,7 @@ public class BooterDeserializerTest
     {
         BooterConfiguration reloaded = getReloladedConfig();
 
-        assertEquals( "com.provider", reloaded.getSurefireStarterConfiguration().getProviderFactoryClassName() );
+        assertEquals( "com.provider", reloaded.getSurefireStarterConfiguration().getProviderClassName() );
 
     }
 

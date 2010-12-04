@@ -179,7 +179,7 @@ public class ForkStarter
         }
 
         final ProviderConfiguration starterConfiguration = booterConfiguration.getSurefireStarterConfiguration();
-        final Classpath bootClasspathConfiguration = forkConfiguration.getBootClasspathConfiguration();
+        final Classpath bootClasspathConfiguration = forkConfiguration.getBootClasspath();
         final Classpath additionlClassPathUrls = starterConfiguration.useSystemClassLoader()
             ? starterConfiguration.getClasspathConfiguration().getTestClasspath()
             : null;

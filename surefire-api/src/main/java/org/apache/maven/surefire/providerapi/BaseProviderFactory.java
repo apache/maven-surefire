@@ -23,6 +23,7 @@ import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterManagerFactory;
 import org.apache.maven.surefire.report.ReporterManagerFactory2;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
+import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.util.DefaultDirectoryScanner;
 import org.apache.maven.surefire.util.DirectoryScanner;
@@ -32,9 +33,9 @@ import java.util.Properties;
 /**
  * @author Kristian Rosenvold
  */
-public abstract class BaseProviderFactory
+public class BaseProviderFactory
     implements DirectoryScannerParametersAware, ReporterConfigurationAware, SurefireClassLoadersAware, TestRequestAware,
-    ProviderFactory, ProviderPropertiesAware
+    ProviderPropertiesAware, BooterParameters, TestArtifactInfoAware
 {
     private Properties providerProperties;
 
@@ -48,8 +49,10 @@ public abstract class BaseProviderFactory
 
     private TestRequest testRequest;
 
+    private TestArtifactInfo testArtifactInfo;
 
-    protected DirectoryScanner getDirectoryScanner()
+
+    public DirectoryScanner getDirectoryScanner()
     {
         if ( directoryScannerParameters == null )
         {
@@ -60,7 +63,7 @@ public abstract class BaseProviderFactory
                                             directoryScannerParameters.getExcludes() );
     }
 
-    protected ReporterManagerFactory getReporterManagerFactory()
+    public ReporterManagerFactory getReporterManagerFactory()
     {
         ReporterManagerFactory reporterManagerFactory =
             new ReporterManagerFactory2( surefireClassLoader, reporterConfiguration );
@@ -92,22 +95,22 @@ public abstract class BaseProviderFactory
         this.testRequest = testRequest;
     }
 
-    protected DirectoryScannerParameters getDirectoryScannerParameters()
+    public DirectoryScannerParameters getDirectoryScannerParameters()
     {
         return directoryScannerParameters;
     }
 
-    protected ReporterConfiguration getReporterConfiguration()
+    public ReporterConfiguration getReporterConfiguration()
     {
         return reporterConfiguration;
     }
 
-    protected TestRequest getTestRequest()
+    public TestRequest getTestRequest()
     {
         return testRequest;
     }
 
-    protected ClassLoader getTestClassLoader()
+    public ClassLoader getTestClassLoader()
     {
         return testClassLoader;
     }
@@ -115,5 +118,20 @@ public abstract class BaseProviderFactory
     public void setProviderProperties( Properties providerProperties )
     {
         this.providerProperties = providerProperties;
+    }
+
+    public Properties getProviderProperties()
+    {
+        return providerProperties;
+    }
+
+    public TestArtifactInfo getTestArtifactInfo()
+    {
+        return testArtifactInfo;
+    }
+
+    public void setTestArtifactInfo( TestArtifactInfo testArtifactInfo )
+    {
+        this.testArtifactInfo = testArtifactInfo;
     }
 }

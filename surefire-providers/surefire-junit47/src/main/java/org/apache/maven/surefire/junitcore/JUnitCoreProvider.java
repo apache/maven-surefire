@@ -19,6 +19,7 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
+import org.apache.maven.surefire.providerapi.BooterParameters;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterManagerFactory;
@@ -43,14 +44,14 @@ public class JUnitCoreProvider
     private final DirectoryScanner directoryScanner;
 
 
-    public JUnitCoreProvider( Properties providerProperties, ReporterManagerFactory reporterManagerFactory,
-                              ClassLoader testClassLoader, DirectoryScanner directoryScanner )
+    public JUnitCoreProvider( BooterParameters booterParameters )
     {
-        this.providerProperties = providerProperties;
-        this.reporterManagerFactory = reporterManagerFactory;
-        this.testClassLoader = testClassLoader;
-        this.directoryScanner = directoryScanner;
+        this.reporterManagerFactory = booterParameters.getReporterManagerFactory();
+        this.testClassLoader = booterParameters.getTestClassLoader();
+        this.directoryScanner = booterParameters.getDirectoryScanner();
+        this.providerProperties = booterParameters.getProviderProperties();
     }
+
 
     @SuppressWarnings( { "UnnecessaryUnboxing" } )
     public RunResult invoke( Object forkTestSet )
@@ -88,4 +89,10 @@ public class JUnitCoreProvider
     {
         return getSuite().locateTestSetsImpl( testClassLoader ).entrySet().iterator();
     }
+
+    public Boolean isRunnable()
+    {
+        return Boolean.TRUE;
+    }
+
 }

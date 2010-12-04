@@ -83,7 +83,7 @@ public class ForkConfiguration
         this.bootClasspathConfiguration = bootClasspathConfiguration;
     }
 
-    public Classpath getBootClasspathConfiguration()
+    public Classpath getBootClasspath()
     {
         return bootClasspathConfiguration;
     }

@@ -19,6 +19,7 @@ package org.apache.maven.surefire.junit4;
  * under the License.
  */
 
+import org.apache.maven.surefire.providerapi.BooterParameters;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterManagerFactory;
@@ -42,12 +43,11 @@ public class JUnit4Provider
 
     private final DirectoryScanner directoryScanner;
 
-    public JUnit4Provider( ReporterManagerFactory reporterManagerFactory, ClassLoader testClassLoader,
-                           DirectoryScanner directoryScanner )
+    public JUnit4Provider( BooterParameters booterParameters )
     {
-        this.reporterManagerFactory = reporterManagerFactory;
-        this.testClassLoader = testClassLoader;
-        this.directoryScanner = directoryScanner;
+        this.reporterManagerFactory = booterParameters.getReporterManagerFactory();
+        this.testClassLoader = booterParameters.getTestClassLoader();
+        this.directoryScanner = booterParameters.getDirectoryScanner();
     }
 
     @SuppressWarnings( { "UnnecessaryUnboxing" } )
@@ -111,5 +111,11 @@ public class JUnit4Provider
         final String property = System.getProperty( "surefire.junit4.upgradecheck" );
         return property != null;
     }
+
+    public Boolean isRunnable()
+    {
+        return Boolean.TRUE;
+    }
+
 
 }

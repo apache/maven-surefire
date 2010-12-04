@@ -19,6 +19,7 @@ package org.apache.maven.surefire.testng;
  * under the License.
  */
 
+import org.apache.maven.surefire.providerapi.BooterParameters;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterException;
@@ -43,11 +44,11 @@ import java.util.Properties;
 public class TestNGProvider
     implements SurefireProvider
 {
-    private Properties providerProperties;
+    private final Properties providerProperties;
 
-    private TestArtifactInfo testArtifactInfo;
+    private final TestArtifactInfo testArtifactInfo;
 
-    private ReporterConfiguration reporterConfiguration;
+    private final ReporterConfiguration reporterConfiguration;
 
     private final ReporterManagerFactory reporterManagerFactory;
 
@@ -59,19 +60,21 @@ public class TestNGProvider
 
     private final File basedir;
 
-    public TestNGProvider( Properties providerProperties, TestArtifactInfo testArtifactInfo,
-                           ReporterConfiguration reporterConfiguration, ReporterManagerFactory reporterManagerFactory,
-                           ClassLoader testClassLoader, DirectoryScannerParameters directoryScannerParameters,
-                           DirectoryScanner directoryScanner, TestRequest testRequest, File basedir )
+    public TestNGProvider( BooterParameters booterParameters )
     {
-        this.providerProperties = providerProperties;
-        this.testArtifactInfo = testArtifactInfo;
-        this.reporterConfiguration = reporterConfiguration;
-        this.reporterManagerFactory = reporterManagerFactory;
-        this.testClassLoader = testClassLoader;
-        this.directoryScannerParameters = directoryScannerParameters;
-        this.testRequest = testRequest;
-        this.basedir = basedir;
+        this.reporterManagerFactory = booterParameters.getReporterManagerFactory();
+        this.testClassLoader = booterParameters.getTestClassLoader();
+        this.directoryScannerParameters = booterParameters.getDirectoryScannerParameters();
+        this.providerProperties = booterParameters.getProviderProperties();
+        this.testRequest = booterParameters.getTestRequest();
+        basedir = directoryScannerParameters != null ? directoryScannerParameters.getTestClassesDirectory() : null;
+        testArtifactInfo = booterParameters.getTestArtifactInfo();
+        reporterConfiguration = booterParameters.getReporterConfiguration();
+    }
+
+    public Boolean isRunnable()
+    {
+        return Boolean.TRUE;
     }
 
     public RunResult invoke( Object forkTestSet )

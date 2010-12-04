@@ -25,7 +25,6 @@ import java.util.Properties;
  */
 class JUnitCoreParameters
 {
-
     private final String parallel;
 
     private final Boolean perCoreThreadCount;

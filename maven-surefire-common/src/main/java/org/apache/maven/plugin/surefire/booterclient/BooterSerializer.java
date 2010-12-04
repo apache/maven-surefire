@@ -151,7 +151,7 @@ public class BooterSerializer
         properties.setProperty( BooterConstants.FAILIFNOTESTS,
                                 String.valueOf( booterConfiguration.isFailIfNoTests() ) );
         properties.setProperty( BooterConstants.PROVIDER_CONFIGURATION,
-                                surefireStarterConfiguration.getProviderFactoryClassName() );
+                                surefireStarterConfiguration.getProviderClassName() );
     }
 
     public File writePropertiesFile( String name, Properties properties )

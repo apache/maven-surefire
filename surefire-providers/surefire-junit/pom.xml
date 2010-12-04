@@ -27,10 +27,19 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <artifactId>surefire-junit</artifactId>
+  <artifactId>surefire-junit3</artifactId>
 
   <name>SureFire JUnit Runner</name>
 
+    <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources/META-INF</directory>
+        <targetPath>META-INF</targetPath>
+      </resource>
+    </resources>
+
+    </build>
   <dependencies>
     <dependency>
       <groupId>junit</groupId>

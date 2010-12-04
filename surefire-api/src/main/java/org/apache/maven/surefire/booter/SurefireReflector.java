@@ -19,6 +19,8 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
+import org.apache.maven.surefire.providerapi.BaseProviderFactory;
+import org.apache.maven.surefire.providerapi.BooterParameters;
 import org.apache.maven.surefire.providerapi.DirectoryScannerParametersAware;
 import org.apache.maven.surefire.providerapi.ProviderPropertiesAware;
 import org.apache.maven.surefire.providerapi.ReporterConfigurationAware;
@@ -72,6 +74,8 @@ public class SurefireReflector
 
     private final Class runResult;
 
+    private final Class booterParameters;
+
     private static final Class[] noargs = new Class[0];
 
     private static final Object[] noargsValues = new Object[0];
@@ -93,6 +97,7 @@ public class SurefireReflector
             reporterConfigurationAware = surefireClassLoader.loadClass( ReporterConfigurationAware.class.getName() );
             providerPropertiesAware = surefireClassLoader.loadClass( ProviderPropertiesAware.class.getName() );
             runResult = surefireClassLoader.loadClass( RunResult.class.getName() );
+            booterParameters= surefireClassLoader.loadClass( BooterParameters.class.getName() );
         }
         catch ( ClassNotFoundException e )
         {
@@ -221,12 +226,12 @@ public class SurefireReflector
         }
     }
 
-    public Object createProviderFactory( String providerFactoryClassName )
+    public Object createBooterConfiguration()
     {
         try
         {
 
-            Class clazz = classLoader.loadClass( providerFactoryClassName );
+            Class clazz = classLoader.loadClass( BaseProviderFactory.class.getName());
             return clazz.newInstance();
         }
         catch ( InstantiationException e )
@@ -242,11 +247,31 @@ public class SurefireReflector
             throw new RuntimeException( e );
         }
     }
-    public Object instantiateProviderByFactory( Object providerFactory )
+    public Object instantiateProvider( String providerClassName, Object booterParameters )
     {
 
-            Method createProvider = getMethod( providerFactory, "createProvider", noargs );
-        return invokeMethod( providerFactory, createProvider, noargsValues );
+        try
+        {
+            Class aClass = classLoader.loadClass( providerClassName );
+            Constructor constructor = getConstructor(  aClass,  new Class[]{ this.booterParameters } );
+            return constructor.newInstance( new Object []{booterParameters} );
+        }
+        catch ( ClassNotFoundException e )
+        {
+            throw new RuntimeException( e );
+        }
+        catch ( InvocationTargetException e )
+        {
+            throw new RuntimeException( e );
+        }
+        catch ( InstantiationException e )
+        {
+            throw new RuntimeException( e );
+        }
+        catch ( IllegalAccessException e )
+        {
+            throw new RuntimeException( e );
+        }
     }
 
 

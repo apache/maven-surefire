@@ -54,7 +54,7 @@ public class ProviderFactory
 
         ProviderConfiguration starterConfiguration = booterConfiguration.getSurefireStarterConfiguration();
         final Object o =
-            surefireReflector.createProviderFactory( starterConfiguration.getProviderFactoryClassName() );
+            surefireReflector.createBooterConfiguration();
         surefireReflector.setTestSuiteDefinitionAware( o, booterConfiguration.getTestSuiteDefinition() );
         surefireReflector.setProviderPropertiesAware( o, booterConfiguration.getProviderProperties() );
         surefireReflector.setReporterConfigurationAware( o, booterConfiguration.getReporterConfiguration() );
@@ -62,7 +62,7 @@ public class ProviderFactory
         surefireReflector.setTestArtifactInfoAware( o, booterConfiguration.getTestNg() );
         surefireReflector.setIfDirScannerAware( o, booterConfiguration.getDirScannerParams() );
 
-        Object provider = surefireReflector.instantiateProviderByFactory( o );
+        Object provider = surefireReflector.instantiateProvider( starterConfiguration.getProviderClassName(), o );
         Thread.currentThread().setContextClassLoader( context );
 
         return createClassLoaderProxy( provider );

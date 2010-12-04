@@ -601,12 +601,13 @@ public class IntegrationTestMojo
     public void execute()
         throws MojoExecutionException, MojoFailureException
     {
+        final AbstractSurefireMojo.WellKnownProvider provider = initialize();
         if ( verifyParameters() )
         {
             final Classpath bootClasspathConfiguration = new Classpath();
             ForkConfiguration forkConfiguration = getForkConfiguration( bootClasspathConfiguration );
 
-            BooterConfiguration booterConfiguration = createBooterConfiguration( forkConfiguration );
+            BooterConfiguration booterConfiguration = createBooterConfiguration( forkConfiguration, provider );
             ForkStarter booter = new ForkStarter( booterConfiguration, reportsDirectory, forkConfiguration );
 
             getLog().info(
