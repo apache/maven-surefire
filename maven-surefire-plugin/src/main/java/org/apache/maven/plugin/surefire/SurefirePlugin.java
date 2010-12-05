@@ -571,15 +571,15 @@ public class SurefirePlugin
         if ( verifyParameters() )
         {
             final Classpath bootClasspathConfiguration = new Classpath();
-            ForkConfiguration forkConfiguration = getForkConfiguration(bootClasspathConfiguration);
+            ForkConfiguration forkConfiguration = getForkConfiguration( bootClasspathConfiguration );
 
             BooterConfiguration booterConfiguration = createBooterConfiguration( forkConfiguration, provider );
 
             getLog().info(
                 StringUtils.capitalizeFirstLetter( getPluginName() ) + " report directory: " + getReportsDirectory() );
 
-            ForkStarter forkStarter = new ForkStarter( booterConfiguration, reportsDirectory, forkConfiguration );
-            forkStarter.setForkedProcessTimeoutInSeconds( getForkedProcessTimeoutInSeconds() );
+            ForkStarter forkStarter = new ForkStarter( booterConfiguration, reportsDirectory, forkConfiguration,
+                                                       getForkedProcessTimeoutInSeconds() );
 
             int result;
             try

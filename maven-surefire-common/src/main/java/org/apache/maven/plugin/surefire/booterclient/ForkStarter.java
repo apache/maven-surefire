@@ -33,6 +33,7 @@ import org.apache.maven.surefire.booter.SurefireExecutionException;
 import org.apache.maven.surefire.booter.SurefireStarter;
 import org.apache.maven.surefire.booter.SystemPropertyManager;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
+import org.apache.maven.surefire.suite.RunResult;
 import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.cli.CommandLineException;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
@@ -61,33 +62,34 @@ import java.util.Properties;
  */
 public class ForkStarter
 {
-    private int forkedProcessTimeoutInSeconds = 0;
+    private final int forkedProcessTimeoutInSeconds;
 
     private final BooterConfiguration booterConfiguration;
 
-
     private final ForkConfiguration forkConfiguration;
 
-    private File reportsDirectory;
+    private final File reportsDirectory;
 
     public ForkStarter( BooterConfiguration booterConfiguration, File reportsDirectory,
-                        ForkConfiguration forkConfiguration )
+                        ForkConfiguration forkConfiguration, int forkedProcessTimeoutInSeconds )
     {
         this.forkConfiguration = forkConfiguration;
         this.booterConfiguration = booterConfiguration;
         this.reportsDirectory = reportsDirectory;
+        this.forkedProcessTimeoutInSeconds = forkedProcessTimeoutInSeconds;
     }
 
     public int run()
         throws SurefireBooterForkException, SurefireExecutionException
     {
-        int result;
+        final int result;
 
         final String requestedForkMode = forkConfiguration.getForkMode();
         if ( ForkConfiguration.FORK_NEVER.equals( requestedForkMode ) )
         {
             SurefireStarter testVmBooter = new SurefireStarter( booterConfiguration );
-            result = testVmBooter.runSuitesInProcess();
+            RunResult runResult = testVmBooter.runSuitesInProcess();
+            result = testVmBooter.processRunCount( runResult );
         }
         else if ( ForkConfiguration.FORK_ONCE.equals( requestedForkMode ) )
         {
@@ -280,10 +282,5 @@ public class ForkStarter
         }
 
         return new ForkingStreamConsumer( outputConsumer );
-    }
-
-    public void setForkedProcessTimeoutInSeconds( int forkedProcessTimeoutInSeconds )
-    {
-        this.forkedProcessTimeoutInSeconds = forkedProcessTimeoutInSeconds;
     }
 }

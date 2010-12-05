@@ -48,10 +48,9 @@ public class SurefireStarter
         this.booterConfiguration = booterConfiguration;
     }
 
-    public int runSuitesInProcess( Object testSet, Properties results )
+    public RunResult runSuitesInProcess( Object testSet )
         throws SurefireExecutionException
     {
-
         final ProviderConfiguration starterConfiguration = booterConfiguration.getSurefireStarterConfiguration();
         final ClasspathConfiguration classpathConfiguration = starterConfiguration.getClasspathConfiguration();
 
@@ -60,11 +59,48 @@ public class SurefireStarter
 
         ClassLoader surefireClassLoader = classpathConfiguration.createSurefireClassLoader( testsClassLoader );
 
-        RunResult runResult = invokeProvider( testSet, testsClassLoader, surefireClassLoader );
+        return invokeProvider( testSet, testsClassLoader, surefireClassLoader );
+    }
 
-        updateResultsProperties( runResult, results );
+    public RunResult runSuitesInProcess()
+        throws SurefireExecutionException
+    {
+        // The test classloader must be constructed first to avoid issues with commons-logging until we properly
+        // separate the TestNG classloader
+        ClassLoader testsClassLoader = createInProcessTestClassLoader();
 
-        return processRunCount( runResult );
+        final ClasspathConfiguration classpathConfiguration =
+            booterConfiguration.getSurefireStarterConfiguration().getClasspathConfiguration();
+
+        ClassLoader surefireClassLoader = classpathConfiguration.createSurefireClassLoader( testsClassLoader );
+
+        return invokeProvider( null, testsClassLoader, surefireClassLoader );
+    }
+
+    private ClassLoader createInProcessTestClassLoader()
+        throws SurefireExecutionException
+    {
+        ClassLoader testsClassLoader;
+
+        final ProviderConfiguration starterConfiguration = booterConfiguration.getSurefireStarterConfiguration();
+        final ClasspathConfiguration classpathConfiguration = starterConfiguration.getClasspathConfiguration();
+
+        String testClassPath = classpathConfiguration.getTestClasspath().getClassPathAsString();
+
+        System.setProperty( "surefire.test.class.path", testClassPath );
+        if ( starterConfiguration.isManifestOnlyJarRequestedAndUsable() )
+        {
+            testsClassLoader = getClass().getClassLoader(); // ClassLoader.getSystemClassLoader()
+            // SUREFIRE-459, trick the app under test into thinking its classpath was conventional
+            // (instead of a single manifest-only jar)
+            System.setProperty( "surefire.real.class.path", System.getProperty( "java.class.path" ) );
+            System.setProperty( "java.class.path", testClassPath );
+        }
+        else
+        {
+            testsClassLoader = classpathConfiguration.createTestClassLoader();
+        }
+        return testsClassLoader;
     }
 
     private static final String RESULTS_ERRORS = "errors";
@@ -76,7 +112,7 @@ public class SurefireStarter
     private static final String RESULTS_SKIPPED = "skipped";
 
 
-    public synchronized void updateResultsProperties( RunResult runResult, Properties results )
+    public void updateResultsProperties( RunResult runResult, Properties results )
     {
         results.setProperty( RESULTS_ERRORS, String.valueOf( runResult.getErrors() ) );
         results.setProperty( RESULTS_COMPLETED_COUNT, String.valueOf( runResult.getCompletedCount() ) );
@@ -103,37 +139,6 @@ public class SurefireStarter
         }
     }
 
-    public int runSuitesInProcess()
-        throws SurefireExecutionException
-    {
-        // TODO: replace with plexus
-
-        // The test classloader must be constructed first to avoid issues with commons-logging until we properly
-        // separate the TestNG classloader
-        ClassLoader testsClassLoader;
-        final ProviderConfiguration starterConfiguration = booterConfiguration.getSurefireStarterConfiguration();
-        final ClasspathConfiguration classpathConfiguration = starterConfiguration.getClasspathConfiguration();
-        String testClassPath = classpathConfiguration.getTestClasspath().getClassPathAsString();
-        System.setProperty( "surefire.test.class.path", testClassPath );
-        if ( starterConfiguration.isManifestOnlyJarRequestedAndUsable() )
-        {
-            testsClassLoader = getClass().getClassLoader(); // ClassLoader.getSystemClassLoader()
-            // SUREFIRE-459, trick the app under test into thinking its classpath was conventional
-            // (instead of a single manifest-only jar)
-            System.setProperty( "surefire.real.class.path", System.getProperty( "java.class.path" ) );
-            System.setProperty( "java.class.path", testClassPath );
-        }
-        else
-        {
-            testsClassLoader = classpathConfiguration.createTestClassLoader();
-        }
-
-        ClassLoader surefireClassLoader = classpathConfiguration.createSurefireClassLoader( testsClassLoader );
-
-        final RunResult runResult = invokeProvider( null, testsClassLoader, surefireClassLoader );
-        return processRunCount( runResult );
-    }
-
     /**
      * Returns the process return code based on the RunResult
      *
@@ -141,7 +146,7 @@ public class SurefireStarter
      * @return The process result code
      * @throws SurefireExecutionException When an exception is found
      */
-    private int processRunCount( RunResult runCount )
+    public int processRunCount( RunResult runCount )
         throws SurefireExecutionException
     {
 
@@ -152,5 +157,4 @@ public class SurefireStarter
 
         return runCount.getBooterCode();
     }
-
 }

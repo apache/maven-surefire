@@ -608,7 +608,8 @@ public class IntegrationTestMojo
             ForkConfiguration forkConfiguration = getForkConfiguration( bootClasspathConfiguration );
 
             BooterConfiguration booterConfiguration = createBooterConfiguration( forkConfiguration, provider );
-            ForkStarter booter = new ForkStarter( booterConfiguration, reportsDirectory, forkConfiguration );
+            ForkStarter booter = new ForkStarter( booterConfiguration, reportsDirectory, forkConfiguration,
+                                                  getForkedProcessTimeoutInSeconds() );
 
             getLog().info(
                 StringUtils.capitalizeFirstLetter( getPluginName() ) + " report directory: " + getReportsDirectory() );

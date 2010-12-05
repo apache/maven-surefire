@@ -19,6 +19,8 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
+import org.apache.maven.surefire.suite.RunResult;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -28,7 +30,7 @@ import java.util.Properties;
  * The part of the booter that is unique to a forked vm.
  * <p/>
  * Deals with deserialization of the booter wire-level protocol
- *
+ * <p/>
  * Todo: Look at relationship between this class and BooterSerializer (BooterDeserializer?)
  *
  * @author Jason van Zyl
@@ -66,16 +68,18 @@ public class ForkedBooter
             Object forkedTestSet = booterConfiguration.getTestForFork();
             Properties p = booterConfiguration.getProviderProperties();
             final int result;
+            final RunResult runResult;
             if ( forkedTestSet != null )
             {
-                result = booter.runSuitesInProcess( forkedTestSet, p );
-                booterDeserializer.writePropertiesFile( surefirePropertiesFile, "surefire", p );
+                runResult = booter.runSuitesInProcess( forkedTestSet );
+                booter.updateResultsProperties( runResult, p );
+                SystemPropertyManager.writePropertiesFile( surefirePropertiesFile, "surefire", p );
             }
             else
             {
-                result = booter.runSuitesInProcess();
+                runResult = booter.runSuitesInProcess();
             }
-
+            result = booter.processRunCount( runResult );
 
             // noinspection CallToSystemExit
             System.exit( result );

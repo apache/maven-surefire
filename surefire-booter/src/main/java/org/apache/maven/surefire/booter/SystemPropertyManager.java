@@ -34,6 +34,7 @@ public class SystemPropertyManager
 
     /**
      * Loads the properties, closes the stream
+     *
      * @param inStream The stream to read from, will be closed
      * @return The properties
      * @throws java.io.IOException If something bad happens
@@ -52,7 +53,7 @@ public class SystemPropertyManager
             close( inStream );
         }
 
-        return new PropertiesWrapper( p);
+        return new PropertiesWrapper( p );
     }
 
     private static PropertiesWrapper loadProperties( File file )
@@ -69,7 +70,7 @@ public class SystemPropertyManager
         p.setAsSystemProperties();
     }
 
-    public File writePropertiesFile( Properties properties, File tempDirectory, String name, boolean deleteOnExit)
+    public File writePropertiesFile( Properties properties, File tempDirectory, String name, boolean deleteOnExit )
         throws IOException
     {
         File file = File.createTempFile( name, "tmp", tempDirectory );
@@ -83,7 +84,7 @@ public class SystemPropertyManager
         return file;
     }
 
-    void writePropertiesFile( File file, String name, Properties properties )
+    static void writePropertiesFile( File file, String name, Properties properties )
         throws IOException
     {
         FileOutputStream out = new FileOutputStream( file );
@@ -115,7 +116,7 @@ public class SystemPropertyManager
         {
             inputStream.close();
         }
-        catch( IOException ex )
+        catch ( IOException ex )
         {
             // ignore
         }
