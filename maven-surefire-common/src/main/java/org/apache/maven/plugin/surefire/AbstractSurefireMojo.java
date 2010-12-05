@@ -153,7 +153,7 @@ public abstract class AbstractSurefireMojo
             }
             if ( objects.size() > 1 )
             {
-                throw new IllegalArgumentException( "Surefire currently only supports " );
+                throw new IllegalArgumentException( "Surefire currently only supports on manually configured provider" );
             }
             return (String) objects.iterator().next();
 

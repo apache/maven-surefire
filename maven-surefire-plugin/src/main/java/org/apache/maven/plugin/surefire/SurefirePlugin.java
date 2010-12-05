@@ -31,26 +31,16 @@ import org.apache.maven.plugin.surefire.booterclient.ForkStarter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.surefire.booter.BooterConfiguration;
 import org.apache.maven.surefire.booter.Classpath;
-import org.apache.maven.surefire.booter.ProviderDetector;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.apache.maven.surefire.booter.SurefireExecutionException;
-import org.apache.maven.surefire.providerapi.ProviderFactory;
-import org.apache.maven.surefire.providerapi.SurefireProvider;
 import org.apache.maven.toolchain.ToolchainManager;
-import org.codehaus.plexus.PlexusConstants;
-import org.codehaus.plexus.PlexusContainer;
-import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
-import org.codehaus.plexus.context.Context;
-import org.codehaus.plexus.context.ContextException;
 import org.codehaus.plexus.util.StringUtils;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
 /**
  * Run tests using Surefire.
@@ -65,7 +55,7 @@ import java.util.Set;
  */
 public class SurefirePlugin
     extends AbstractSurefireMojo
-    implements SurefireExecutionParameters, SurefireReportParameters, org.codehaus.plexus.personality.plexus.lifecycle.phase.Contextualizable
+    implements SurefireExecutionParameters, SurefireReportParameters
 {
 
     /**
@@ -574,15 +564,6 @@ public class SurefirePlugin
      */
     private ToolchainManager toolchainManager;
 
-    private PlexusContainer container;
-
-
-    public void contextualize( Context context )
-        throws ContextException
-    {
-        container = (PlexusContainer) context.get( PlexusConstants.PLEXUS_KEY );
-    }
-
     public void execute()
         throws MojoExecutionException, MojoFailureException
     {
@@ -593,17 +574,6 @@ public class SurefirePlugin
             ForkConfiguration forkConfiguration = getForkConfiguration(bootClasspathConfiguration);
 
             BooterConfiguration booterConfiguration = createBooterConfiguration( forkConfiguration, provider );
-
-            try
-            {
-                final Set objects =
-                    ProviderDetector.getServiceNames( SurefireProvider.class, Thread.currentThread().getContextClassLoader());
-                System.out.println(objects);
-            }
-            catch ( IOException e )
-            {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-            }
 
             getLog().info(
                 StringUtils.capitalizeFirstLetter( getPluginName() ) + " report directory: " + getReportsDirectory() );
