@@ -70,7 +70,8 @@ public class SystemPropertyManager
         p.setAsSystemProperties();
     }
 
-    public File writePropertiesFile( Properties properties, File tempDirectory, String name, boolean deleteOnExit )
+    public static File writePropertiesFile( Properties properties, File tempDirectory, String name,
+                                            boolean deleteOnExit )
         throws IOException
     {
         File file = File.createTempFile( name, "tmp", tempDirectory );
@@ -84,7 +85,7 @@ public class SystemPropertyManager
         return file;
     }
 
-    static void writePropertiesFile( File file, String name, Properties properties )
+    public static void writePropertiesFile( File file, String name, Properties properties )
         throws IOException
     {
         FileOutputStream out = new FileOutputStream( file );
@@ -99,12 +100,6 @@ public class SystemPropertyManager
         }
     }
 
-
-    /**
-     * Closes the input stream. The input stream can be null and any IOException's will be swallowed.
-     *
-     * @param inputStream The stream to close.
-     */
     public static void close( InputStream inputStream )
     {
         if ( inputStream == null )

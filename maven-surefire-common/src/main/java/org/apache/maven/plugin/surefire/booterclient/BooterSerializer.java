@@ -18,10 +18,10 @@ package org.apache.maven.plugin.surefire.booterclient;
  * under the License.
  */
 
-import org.apache.maven.surefire.booter.BooterConfiguration;
+import org.apache.maven.surefire.booter.ProviderConfiguration;
 import org.apache.maven.surefire.booter.BooterConstants;
 import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
-import org.apache.maven.surefire.booter.ProviderConfiguration;
+import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.SystemPropertyManager;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
@@ -53,7 +53,6 @@ import java.util.Properties;
  * @version $Id$
  */
 public class BooterSerializer
-    implements BooterConstants
 {
     private final ForkConfiguration forkConfiguration;
 
@@ -63,18 +62,18 @@ public class BooterSerializer
     }
 
 
-    public File serialize( Properties properties, BooterConfiguration booterConfiguration,
-                           ForkConfiguration forkConfiguration, Object testSet )
+    public File serialize( Properties properties, ProviderConfiguration booterConfiguration, StartupConfiguration providerConfiguration,
+                           Object testSet )
         throws IOException
     {
-        setForkProperties( properties, booterConfiguration, testSet );
+        setForkProperties( properties, booterConfiguration, providerConfiguration, testSet );
 
         SystemPropertyManager systemPropertyManager = new SystemPropertyManager();
         return systemPropertyManager.writePropertiesFile( properties, forkConfiguration.getTempDirectory(), "surefire",
                                                           forkConfiguration.isDebug() );
     }
 
-    public void setForkProperties( Properties properties, BooterConfiguration booterConfiguration, Object testSet )
+    private void setForkProperties(Properties properties, ProviderConfiguration booterConfiguration, StartupConfiguration providerConfiguration, Object testSet)
     {
         if ( properties == null )
         {
@@ -82,25 +81,23 @@ public class BooterSerializer
         }
         addList( booterConfiguration.getReports(), properties, BooterConstants.REPORT_PROPERTY_PREFIX );
         List params = new ArrayList();
-        params.add( new Object[]{ DIRSCANNER_OPTIONS, booterConfiguration.getDirScannerParamsArray() } );
+        params.add( new Object[]{ BooterConstants.DIRSCANNER_OPTIONS, booterConfiguration.getDirScannerParamsArray() } );
         addPropertiesForTypeHolder( params, properties, BooterConstants.DIRSCANNER_PROPERTY_PREFIX );
 
-        final ProviderConfiguration surefireStarterConfiguration =
-            booterConfiguration.getSurefireStarterConfiguration();
-        surefireStarterConfiguration.getClasspathConfiguration().setForkProperties( properties );
+        providerConfiguration.getClasspathConfiguration().setForkProperties( properties );
 
         ReporterConfiguration reporterConfiguration = booterConfiguration.getReporterConfiguration();
 
-        TestArtifactInfo testNg = booterConfiguration.getTestNg();
+        TestArtifactInfo testNg = booterConfiguration.getTestArtifact();
         if ( testNg != null )
         {
             if ( testNg.getVersion() != null )
             {
-                properties.setProperty( BooterConstants.TESTNGVERSION, testNg.getVersion() );
+                properties.setProperty( BooterConstants.TESTARTIFACT_VERSION, testNg.getVersion() );
             }
             if ( testNg.getClassifier() != null )
             {
-                properties.setProperty( BooterConstants.TESTNG_CLASSIFIER, testNg.getClassifier() );
+                properties.setProperty( BooterConstants.TESTARTIFACT_CLASSIFIER, testNg.getClassifier() );
             }
         }
 
@@ -151,22 +148,9 @@ public class BooterSerializer
         properties.setProperty( BooterConstants.FAILIFNOTESTS,
                                 String.valueOf( booterConfiguration.isFailIfNoTests() ) );
         properties.setProperty( BooterConstants.PROVIDER_CONFIGURATION,
-                                surefireStarterConfiguration.getProviderClassName() );
+                                providerConfiguration.getProviderClassName() );
     }
 
-    public File writePropertiesFile( String name, Properties properties )
-        throws IOException
-    {
-        File file = File.createTempFile( name, "tmp", forkConfiguration.getTempDirectory() );
-        if ( !forkConfiguration.isDebug() )
-        {
-            file.deleteOnExit();
-        }
-
-        writePropertiesFile( file, name, properties );
-
-        return file;
-    }
 
     void writePropertiesFile( File file, String name, Properties properties )
         throws IOException

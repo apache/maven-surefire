@@ -24,10 +24,10 @@ import org.apache.maven.plugin.surefire.booterclient.output.OutputConsumer;
 import org.apache.maven.plugin.surefire.booterclient.output.StandardOutputConsumer;
 import org.apache.maven.plugin.surefire.booterclient.output.SupressFooterOutputConsumerProxy;
 import org.apache.maven.plugin.surefire.booterclient.output.SupressHeaderOutputConsumerProxy;
-import org.apache.maven.surefire.booter.BooterConfiguration;
 import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.ProviderConfiguration;
 import org.apache.maven.surefire.booter.ProviderFactory;
+import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.apache.maven.surefire.booter.SurefireExecutionException;
 import org.apache.maven.surefire.booter.SurefireStarter;
@@ -64,19 +64,22 @@ public class ForkStarter
 {
     private final int forkedProcessTimeoutInSeconds;
 
-    private final BooterConfiguration booterConfiguration;
+    private final ProviderConfiguration providerConfiguration;
+
+    private final StartupConfiguration startupConfiguration;
 
     private final ForkConfiguration forkConfiguration;
 
     private final File reportsDirectory;
 
-    public ForkStarter( BooterConfiguration booterConfiguration, File reportsDirectory,
-                        ForkConfiguration forkConfiguration, int forkedProcessTimeoutInSeconds )
+    public ForkStarter( ProviderConfiguration providerConfiguration, StartupConfiguration startupConfiguration,
+                        File reportsDirectory, ForkConfiguration forkConfiguration, int forkedProcessTimeoutInSeconds )
     {
         this.forkConfiguration = forkConfiguration;
-        this.booterConfiguration = booterConfiguration;
+        this.providerConfiguration = providerConfiguration;
         this.reportsDirectory = reportsDirectory;
         this.forkedProcessTimeoutInSeconds = forkedProcessTimeoutInSeconds;
+        this.startupConfiguration = startupConfiguration;
     }
 
     public int run()
@@ -87,9 +90,9 @@ public class ForkStarter
         final String requestedForkMode = forkConfiguration.getForkMode();
         if ( ForkConfiguration.FORK_NEVER.equals( requestedForkMode ) )
         {
-            SurefireStarter testVmBooter = new SurefireStarter( booterConfiguration );
-            RunResult runResult = testVmBooter.runSuitesInProcess();
-            result = testVmBooter.processRunCount( runResult );
+            SurefireStarter surefireStarter = new SurefireStarter( startupConfiguration, providerConfiguration );
+            RunResult runResult = surefireStarter.runSuitesInProcess();
+            result = surefireStarter.processRunCount( runResult );
         }
         else if ( ForkConfiguration.FORK_ONCE.equals( requestedForkMode ) )
         {
@@ -109,7 +112,7 @@ public class ForkStarter
     private int runSuitesForkOnce()
         throws SurefireBooterForkException
     {
-        return fork( null, booterConfiguration.getProviderProperties(), true, true );
+        return fork( null, providerConfiguration.getProviderProperties(), true, true );
     }
 
     private int runSuitesForkPerTestSet()
@@ -119,13 +122,12 @@ public class ForkStarter
 
         ClassLoader testsClassLoader;
         ClassLoader surefireClassLoader;
-        final ProviderConfiguration starterConfiguration = booterConfiguration.getSurefireStarterConfiguration();
         try
         {
-            testsClassLoader = starterConfiguration.getClasspathConfiguration().createTestClassLoader( false );
+            testsClassLoader = startupConfiguration.getClasspathConfiguration().createTestClassLoader( false );
             // TODO: assertions = true shouldn't be required if we had proper separation (see TestNG)
             surefireClassLoader =
-                starterConfiguration.getClasspathConfiguration().createSurefireClassLoader( testsClassLoader );
+                startupConfiguration.getClasspathConfiguration().createSurefireClassLoader( testsClassLoader );
         }
         catch ( SurefireExecutionException e )
         {
@@ -133,7 +135,8 @@ public class ForkStarter
         }
 
         boolean showHeading = true;
-        final ProviderFactory providerFactory = new ProviderFactory( booterConfiguration, surefireClassLoader );
+        final ProviderFactory providerFactory =
+            new ProviderFactory( startupConfiguration, providerConfiguration, surefireClassLoader );
         SurefireProvider surefireProvider = providerFactory.createProvider( testsClassLoader );
 
         Properties properties = new Properties();
@@ -165,7 +168,7 @@ public class ForkStarter
             BooterSerializer booterSerializer = new BooterSerializer( forkConfiguration );
 
             surefireProperties =
-                booterSerializer.serialize( properties, booterConfiguration, forkConfiguration, testSet );
+                booterSerializer.serialize( properties, providerConfiguration, startupConfiguration, testSet );
 
             if ( forkConfiguration.getSystemProperties() != null )
             {
@@ -180,10 +183,9 @@ public class ForkStarter
             throw new SurefireBooterForkException( "Error creating properties files for forking", e );
         }
 
-        final ProviderConfiguration starterConfiguration = booterConfiguration.getSurefireStarterConfiguration();
         final Classpath bootClasspathConfiguration = forkConfiguration.getBootClasspath();
-        final Classpath additionlClassPathUrls = starterConfiguration.useSystemClassLoader()
-            ? starterConfiguration.getClasspathConfiguration().getTestClasspath()
+        final Classpath additionlClassPathUrls = startupConfiguration.useSystemClassLoader()
+            ? startupConfiguration.getClasspathConfiguration().getTestClasspath()
             : null;
 
         Classpath bootClasspath = bootClasspathConfiguration.append( additionlClassPathUrls );
@@ -197,14 +199,14 @@ public class ForkStarter
             cli.createArg().setFile( systemProperties );
         }
 
-        final boolean willBeSharingConsumer = starterConfiguration.isRedirectTestOutputToFile();
+        final boolean willBeSharingConsumer = startupConfiguration.isRedirectTestOutputToFile();
 
         ForkingStreamConsumer out =
-            getForkingStreamConsumer( showHeading, showFooter, starterConfiguration.isRedirectTestOutputToFile() );
+            getForkingStreamConsumer( showHeading, showFooter, startupConfiguration.isRedirectTestOutputToFile() );
 
         StreamConsumer err = willBeSharingConsumer
             ? out
-            : getForkingStreamConsumer( showHeading, showFooter, starterConfiguration.isRedirectTestOutputToFile() );
+            : getForkingStreamConsumer( showHeading, showFooter, startupConfiguration.isRedirectTestOutputToFile() );
 
         if ( forkConfiguration.isDebug() )
         {
@@ -222,7 +224,7 @@ public class ForkStarter
             throw new SurefireBooterForkException( "Error while executing forked tests.", e );
         }
 
-        if ( starterConfiguration.isRedirectTestOutputToFile() )
+        if ( startupConfiguration.isRedirectTestOutputToFile() )
         {
             // ensure the FileOutputConsumerProxy flushes/closes the output file
             try

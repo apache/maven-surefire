@@ -34,16 +34,21 @@ import java.lang.reflect.Proxy;
  */
 public class ProviderFactory
 {
-    private final BooterConfiguration booterConfiguration;
+    private final StartupConfiguration startupConfiguration;
+
+    private final ProviderConfiguration providerConfiguration;
 
     private final ClassLoader surefireClassLoader;
 
     private final SurefireReflector surefireReflector;
 
-    public ProviderFactory( BooterConfiguration booterConfiguration, ClassLoader surefireClassLoader )
+
+    public ProviderFactory( StartupConfiguration startupConfiguration, ProviderConfiguration providerConfiguration,
+                            ClassLoader surefireClassLoader )
     {
-        this.booterConfiguration = booterConfiguration;
+        this.providerConfiguration = providerConfiguration;
         this.surefireClassLoader = surefireClassLoader;
+        this.startupConfiguration = startupConfiguration;
         this.surefireReflector = new SurefireReflector( surefireClassLoader );
     }
 
@@ -52,15 +57,15 @@ public class ProviderFactory
         ClassLoader context = java.lang.Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader( surefireClassLoader );
 
-        ProviderConfiguration starterConfiguration = booterConfiguration.getSurefireStarterConfiguration();
+        StartupConfiguration starterConfiguration = startupConfiguration;
         final Object o =
             surefireReflector.createBooterConfiguration();
-        surefireReflector.setTestSuiteDefinitionAware( o, booterConfiguration.getTestSuiteDefinition() );
-        surefireReflector.setProviderPropertiesAware( o, booterConfiguration.getProviderProperties() );
-        surefireReflector.setReporterConfigurationAware( o, booterConfiguration.getReporterConfiguration() );
+        surefireReflector.setTestSuiteDefinitionAware( o, providerConfiguration.getTestSuiteDefinition() );
+        surefireReflector.setProviderPropertiesAware( o, providerConfiguration.getProviderProperties() );
+        surefireReflector.setReporterConfigurationAware( o, providerConfiguration.getReporterConfiguration() );
         surefireReflector.setTestClassLoaderAware( o, surefireClassLoader, testClassLoader );
-        surefireReflector.setTestArtifactInfoAware( o, booterConfiguration.getTestNg() );
-        surefireReflector.setIfDirScannerAware( o, booterConfiguration.getDirScannerParams() );
+        surefireReflector.setTestArtifactInfoAware( o, providerConfiguration.getTestArtifact() );
+        surefireReflector.setIfDirScannerAware( o, providerConfiguration.getDirScannerParams() );
 
         Object provider = surefireReflector.instantiateProvider( starterConfiguration.getProviderClassName(), o );
         Thread.currentThread().setContextClassLoader( context );

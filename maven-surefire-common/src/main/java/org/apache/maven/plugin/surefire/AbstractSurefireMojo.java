@@ -34,12 +34,13 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.surefire.booterclient.ForkConfiguration;
+import org.apache.maven.plugin.surefire.booterclient.ForkStarter;
 import org.apache.maven.shared.artifact.filter.PatternIncludesArtifactFilter;
-import org.apache.maven.surefire.booter.BooterConfiguration;
 import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.ClasspathConfiguration;
 import org.apache.maven.surefire.booter.ProviderConfiguration;
 import org.apache.maven.surefire.booter.ProviderDetector;
+import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
 import org.apache.maven.surefire.report.BriefConsoleReporter;
 import org.apache.maven.surefire.report.BriefFileReporter;
@@ -141,6 +142,13 @@ public abstract class AbstractSurefireMojo
         }
     }
 
+    protected void logReportsDirectory()
+    {
+        getLog().info(
+            StringUtils.capitalizeFirstLetter( getPluginName() ) + " report directory: " + getReportsDirectory() );
+    }
+
+
     private String getManuallyConfiguredProviderName()
     {
         try
@@ -153,7 +161,8 @@ public abstract class AbstractSurefireMojo
             }
             if ( objects.size() > 1 )
             {
-                throw new IllegalArgumentException( "Surefire currently only supports on manually configured provider" );
+                throw new IllegalArgumentException(
+                    "Surefire currently only supports on manually configured provider" );
             }
             return (String) objects.iterator().next();
 
@@ -268,12 +277,11 @@ public abstract class AbstractSurefireMojo
         return ForkConfiguration.FORK_NEVER.equals( getForkMode() );
     }
 
-    protected BooterConfiguration createBooterConfiguration( ForkConfiguration forkConfiguration,
-                                                             WellKnownProvider provider )
+    protected ProviderConfiguration createProviderConfiguration( ForkConfiguration forkConfiguration,
+                                                                 WellKnownProvider provider,
+                                                                 StartupConfiguration startupConfiguration )
         throws MojoExecutionException, MojoFailureException
     {
-        final ClasspathConfiguration classpathConfiguration =
-            new ClasspathConfiguration( isEnableAssertions(), isChildDelegation() );
 
         List reports = getReporters( forkConfiguration.isForking() );
         ReporterConfiguration reporterConfiguration =
@@ -289,7 +297,6 @@ public abstract class AbstractSurefireMojo
 
         Artifact junitArtifact;
         Artifact testNgArtifact;
-        String providerName;
         try
         {
             addArtifact( forkConfiguration.getBootClasspath(), surefireArtifact );
@@ -300,8 +307,7 @@ public abstract class AbstractSurefireMojo
 
             provider.addProviderProperties();
             provider.addProviderArtifactToBootClasspath( forkConfiguration.getBootClasspath() );
-            provider.addProviderArtifactToSurefireClasspath( classpathConfiguration );
-            providerName = provider.getProviderName();
+            provider.addProviderArtifactToSurefireClasspath( startupConfiguration.getClasspathConfiguration() );
         }
         catch ( ArtifactNotFoundException e )
         {
@@ -357,14 +363,67 @@ public abstract class AbstractSurefireMojo
         {
             providerProperties = new Properties();
         }
-        ProviderConfiguration surefireStarterConfiguration =
-            new ProviderConfiguration( providerName, classpathConfiguration,
-                                       forkConfiguration.getClassLoaderConfiguration(), forkConfiguration.isForking(),
-                                       false, isRedirectTestOutputToFile() );
 
-        BooterConfiguration booterConfiguration =
-            new BooterConfiguration( surefireStarterConfiguration, reports, directoryScannerParameters, failIfNoTests,
-                                     reporterConfiguration, testNg, testSuiteDefinition, providerProperties, null );
+        ProviderConfiguration providerConfiguration1 =
+            new ProviderConfiguration( reports, directoryScannerParameters, failIfNoTests, reporterConfiguration,
+                                       testNg, testSuiteDefinition, providerProperties, null );
+
+        Toolchain tc = getToolchain();
+
+        if ( tc != null )
+        {
+            getLog().info( "Toolchain in " + getPluginName() + "-plugin: " + tc );
+            if ( isForkModeNever() )
+            {
+                setForkMode( ForkConfiguration.FORK_ONCE );
+            }
+            if ( getJvm() != null )
+            {
+                getLog().warn( "Toolchains are ignored, 'executable' parameter is set to " + getJvm() );
+            }
+            else
+            {
+                setJvm( tc.findTool( "java" ) ); //NOI18N
+            }
+        }
+
+        return providerConfiguration1;
+    }
+
+    protected StartupConfiguration createStartupConfiguration( ForkConfiguration forkConfiguration,
+                                                               WellKnownProvider provider )
+        throws MojoExecutionException, MojoFailureException
+    {
+        final ClasspathConfiguration classpathConfiguration =
+            new ClasspathConfiguration( isEnableAssertions(), isChildDelegation() );
+
+        surefireArtifact = (Artifact) getPluginArtifactMap().get( "org.apache.maven.surefire:surefire-booter" );
+        if ( surefireArtifact == null )
+        {
+            throw new MojoExecutionException( "Unable to locate surefire-booter in the list of plugin artifacts" );
+        }
+
+        surefireArtifact.isSnapshot(); // MNG-2961: before Maven 2.0.8, fixes getBaseVersion to be -SNAPSHOT if needed
+
+        String providerName;
+        try
+        {
+            addArtifact( forkConfiguration.getBootClasspath(), surefireArtifact );
+
+            provider.addProviderProperties();
+            provider.addProviderArtifactToBootClasspath( forkConfiguration.getBootClasspath() );
+            provider.addProviderArtifactToSurefireClasspath( classpathConfiguration );
+            providerName = provider.getProviderName();
+        }
+        catch ( ArtifactNotFoundException e )
+        {
+            throw new MojoExecutionException(
+                "Unable to locate required surefire provider dependency: " + e.getMessage(), e );
+        }
+        catch ( ArtifactResolutionException e )
+        {
+            throw new MojoExecutionException( "Error to resolving surefire provider dependency: " + e.getMessage(), e );
+        }
 
         List classpathElements;
         try
@@ -386,28 +445,11 @@ public abstract class AbstractSurefireMojo
 
             classpathConfiguration.addClasspathUrl( classpathElement );
         }
-
-        Toolchain tc = getToolchain();
-
-        if ( tc != null )
-        {
-            getLog().info( "Toolchain in " + getPluginName() + "-plugin: " + tc );
-            if ( isForkModeNever() )
-            {
-                setForkMode( ForkConfiguration.FORK_ONCE );
-            }
-            if ( getJvm() != null )
-            {
-                getLog().warn( "Toolchains are ignored, 'executable' parameter is set to " + getJvm() );
-            }
-            else
-            {
-                setJvm( tc.findTool( "java" ) ); //NOI18N
-            }
-        }
-
-        return booterConfiguration;
+        return new StartupConfiguration( providerName, classpathConfiguration,
+                                         forkConfiguration.getClassLoaderConfiguration(), forkConfiguration.isForking(),
+                                         false, isRedirectTestOutputToFile() );
     }
+
 
     private boolean isSpecificTestSpecified()
     {
@@ -517,8 +559,20 @@ public abstract class AbstractSurefireMojo
         return junitArtifact;
     }
 
-    protected ForkConfiguration getForkConfiguration( Classpath bootClasspathConfiguration )
+    protected ForkStarter createForkStarter( WellKnownProvider provider, ForkConfiguration forkConfiguration )
+        throws MojoExecutionException, MojoFailureException
     {
+        StartupConfiguration startupConfiguration = createStartupConfiguration( forkConfiguration, provider );
+        ProviderConfiguration providerConfiguration =
+            createProviderConfiguration( forkConfiguration, provider, startupConfiguration );
+        return new ForkStarter( providerConfiguration, startupConfiguration, getReportsDirectory(), forkConfiguration,
+                                getForkedProcessTimeoutInSeconds() );
+    }
+
+    protected ForkConfiguration getForkConfiguration()
+    {
+        final Classpath bootClasspathConfiguration = new Classpath();
+
         ForkConfiguration fork = new ForkConfiguration( bootClasspathConfiguration );
 
         fork.setForkMode( getForkMode() );

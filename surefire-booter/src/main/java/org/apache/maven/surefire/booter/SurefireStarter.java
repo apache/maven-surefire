@@ -41,17 +41,20 @@ public class SurefireStarter
 {
     private static final int NO_TESTS = 254;
 
-    private final BooterConfiguration booterConfiguration;
+    private final ProviderConfiguration booterConfiguration;
 
-    public SurefireStarter( BooterConfiguration booterConfiguration )
+    private final StartupConfiguration providerConfiguration;
+
+    public SurefireStarter( StartupConfiguration providerConfiguration, ProviderConfiguration booterConfiguration )
     {
         this.booterConfiguration = booterConfiguration;
+        this.providerConfiguration = providerConfiguration;
     }
 
     public RunResult runSuitesInProcess( Object testSet )
         throws SurefireExecutionException
     {
-        final ProviderConfiguration starterConfiguration = booterConfiguration.getSurefireStarterConfiguration();
+        final StartupConfiguration starterConfiguration = providerConfiguration;
         final ClasspathConfiguration classpathConfiguration = starterConfiguration.getClasspathConfiguration();
 
         ClassLoader testsClassLoader = classpathConfiguration.createTestClassLoaderConditionallySystem(
@@ -70,7 +73,7 @@ public class SurefireStarter
         ClassLoader testsClassLoader = createInProcessTestClassLoader();
 
         final ClasspathConfiguration classpathConfiguration =
-            booterConfiguration.getSurefireStarterConfiguration().getClasspathConfiguration();
+            providerConfiguration.getClasspathConfiguration();
 
         ClassLoader surefireClassLoader = classpathConfiguration.createSurefireClassLoader( testsClassLoader );
 
@@ -82,13 +85,12 @@ public class SurefireStarter
     {
         ClassLoader testsClassLoader;
 
-        final ProviderConfiguration starterConfiguration = booterConfiguration.getSurefireStarterConfiguration();
-        final ClasspathConfiguration classpathConfiguration = starterConfiguration.getClasspathConfiguration();
+        final ClasspathConfiguration classpathConfiguration = providerConfiguration.getClasspathConfiguration();
 
         String testClassPath = classpathConfiguration.getTestClasspath().getClassPathAsString();
 
         System.setProperty( "surefire.test.class.path", testClassPath );
-        if ( starterConfiguration.isManifestOnlyJarRequestedAndUsable() )
+        if ( providerConfiguration.isManifestOnlyJarRequestedAndUsable() )
         {
             testsClassLoader = getClass().getClassLoader(); // ClassLoader.getSystemClassLoader()
             // SUREFIRE-459, trick the app under test into thinking its classpath was conventional
@@ -122,7 +124,8 @@ public class SurefireStarter
 
     private RunResult invokeProvider( Object testSet, ClassLoader testsClassLoader, ClassLoader surefireClassLoader )
     {
-        ProviderFactory providerFactory = new ProviderFactory( booterConfiguration, surefireClassLoader );
+        ProviderFactory providerFactory = new ProviderFactory( providerConfiguration, booterConfiguration,
+                                                               surefireClassLoader );
         final SurefireProvider provider = providerFactory.createProvider( testsClassLoader );
 
         try

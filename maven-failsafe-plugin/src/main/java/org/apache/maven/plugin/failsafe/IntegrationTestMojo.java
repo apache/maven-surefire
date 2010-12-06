@@ -31,8 +31,7 @@ import org.apache.maven.plugin.surefire.SurefireExecutionParameters;
 import org.apache.maven.plugin.surefire.booterclient.ForkConfiguration;
 import org.apache.maven.plugin.surefire.booterclient.ForkStarter;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.surefire.booter.BooterConfiguration;
-import org.apache.maven.surefire.booter.Classpath;
+import org.apache.maven.surefire.booter.ProviderConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.apache.maven.surefire.booter.SurefireExecutionException;
 import org.apache.maven.surefire.failsafe.model.FailsafeSummary;
@@ -601,30 +600,25 @@ public class IntegrationTestMojo
     public void execute()
         throws MojoExecutionException, MojoFailureException
     {
-        final AbstractSurefireMojo.WellKnownProvider provider = initialize();
         if ( verifyParameters() )
         {
-            final Classpath bootClasspathConfiguration = new Classpath();
-            ForkConfiguration forkConfiguration = getForkConfiguration( bootClasspathConfiguration );
+            logReportsDirectory();
 
-            BooterConfiguration booterConfiguration = createBooterConfiguration( forkConfiguration, provider );
-            ForkStarter booter = new ForkStarter( booterConfiguration, reportsDirectory, forkConfiguration,
-                                                  getForkedProcessTimeoutInSeconds() );
-
-            getLog().info(
-                StringUtils.capitalizeFirstLetter( getPluginName() ) + " report directory: " + getReportsDirectory() );
+            final AbstractSurefireMojo.WellKnownProvider provider = initialize();
+            ForkConfiguration forkConfiguration = getForkConfiguration();
+            ForkStarter forkStarter = createForkStarter( provider, forkConfiguration );
 
             FailsafeSummary result = new FailsafeSummary();
             try
             {
-                result.setResult( booter.run() );
+                result.setResult( forkStarter.run() );
             }
             catch ( SurefireBooterForkException e )
             {
                 // Don't stop processing when timeout or other exception occures
                 // Otherwise, the following life cycles (e.g. post-integration-test)
                 // won't be executed
-                result.setResult( BooterConfiguration.TESTS_FAILED_EXIT_CODE );
+                result.setResult( ProviderConfiguration.TESTS_FAILED_EXIT_CODE );
                 result.setException( e.getMessage() );
             }
             catch ( SurefireExecutionException e )
@@ -632,7 +626,7 @@ public class IntegrationTestMojo
                 // Don't stop processing when timeout or other exception occures
                 // Otherwise, the following life cycles (e.g. post-integration-test)
                 // won't be executed
-                result.setResult( BooterConfiguration.TESTS_FAILED_EXIT_CODE );
+                result.setResult( ProviderConfiguration.TESTS_FAILED_EXIT_CODE );
                 result.setException( e.getMessage() );
             }
 

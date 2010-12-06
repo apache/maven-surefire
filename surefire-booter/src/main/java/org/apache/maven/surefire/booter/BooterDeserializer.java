@@ -53,10 +53,15 @@ public class BooterDeserializer
 {
 
 
-    public BooterConfiguration deserialize( InputStream inputStream )
+    final PropertiesWrapper properties;
+
+    public BooterDeserializer(InputStream inputStream ) throws IOException {
+        properties = SystemPropertyManager.loadProperties( inputStream );
+    }
+
+    public ProviderConfiguration deserialize()
         throws IOException
     {
-        PropertiesWrapper properties = SystemPropertyManager.loadProperties( inputStream );
         DirectoryScannerParameters dirScannerParams;
         boolean enableAssertions = false;
         boolean childDelegation = true;
@@ -140,13 +145,13 @@ public class BooterDeserializer
             {
                 reportsDirectory = new File( properties.getProperty( REPORTSDIRECTORY ) );
             }
-            else if ( TESTNGVERSION.equals( name ) )
+            else if ( TESTARTIFACT_VERSION.equals( name ) )
             {
-                testNgVersion = properties.getProperty( TESTNGVERSION );
+                testNgVersion = properties.getProperty( TESTARTIFACT_VERSION );
             }
-            else if ( TESTNG_CLASSIFIER.equals( name ) )
+            else if ( TESTARTIFACT_CLASSIFIER.equals( name ) )
             {
-                testNgClassifier = properties.getProperty( TESTNG_CLASSIFIER );
+                testNgClassifier = properties.getProperty( TESTARTIFACT_CLASSIFIER );
             }
             else if ( FORKTESTSET.equals( name ) )
             {
@@ -194,11 +199,72 @@ public class BooterDeserializer
         ReporterConfiguration reporterConfiguration =
             new ReporterConfiguration( reports, reportsDirectory, valueOf( isTrimStackTrace ) );
 
-        ProviderConfiguration surefireStarterConfiguration =
-            ProviderConfiguration.inForkedVm( providerConfiguration, classpathConfiguration, classLoaderConfiguration );
-        return new BooterConfiguration( surefireStarterConfiguration, reports, dirScannerParams, failIfNotests,
+        StartupConfiguration surefireStarterConfiguration =
+            StartupConfiguration.inForkedVm( providerConfiguration, classpathConfiguration, classLoaderConfiguration );
+        return new ProviderConfiguration(reports, dirScannerParams, failIfNotests,
                                         reporterConfiguration, testNg, testSuiteDefinition, properties.getProperties(),
                                         testForFork );
+    }
+
+    public StartupConfiguration getProviderConfiguration()
+        throws IOException
+    {
+        boolean enableAssertions = false;
+        boolean childDelegation = true;
+        boolean useSystemClassLoader = false; // todo check default value
+        boolean useManifestOnlyJar = false; // todo check default value
+
+        SortedMap classPathUrls = new TreeMap();
+
+        SortedMap surefireClassPathUrls = new TreeMap();
+
+        String providerConfiguration = null;
+
+        for ( Enumeration e = properties.propertyNames(); e.hasMoreElements(); )
+        {
+            String name = (String) e.nextElement();
+
+            if ( name.startsWith( CLASSPATH_URL ) )
+            {
+                classPathUrls.put( Integer.valueOf( name.substring( name.indexOf( '.' ) + 1 ) ),
+                                   properties.getProperty( name ) );
+            }
+            else if ( name.startsWith( SUREFIRE_CLASSPATHURL ) )
+            {
+                surefireClassPathUrls.put( Integer.valueOf( name.substring( name.indexOf( '.' ) + 1 ) ),
+                                           properties.getProperty( name ) );
+            }
+            else if ( CHILD_DELEGATION.equals( name ) )
+            {
+                childDelegation = properties.getBooleanProperty( CHILD_DELEGATION );
+            }
+            else if ( ENABLE_ASSERTIONS.equals( name ) )
+            {
+                enableAssertions = properties.getBooleanProperty( ENABLE_ASSERTIONS );
+            }
+            else if ( USESYSTEMCLASSLOADER.equals( name ) )
+            {
+                useSystemClassLoader = properties.getBooleanProperty( USESYSTEMCLASSLOADER );
+            }
+            else if ( USEMANIFESTONLYJAR.equals( name ) )
+            {
+                useManifestOnlyJar = properties.getBooleanProperty( USEMANIFESTONLYJAR );
+            }
+            else if ( PROVIDER_CONFIGURATION.equals( name ) )
+            {
+                providerConfiguration = properties.getProperty( PROVIDER_CONFIGURATION );
+            }
+        }
+
+
+        ClassLoaderConfiguration classLoaderConfiguration =
+            new ClassLoaderConfiguration( useSystemClassLoader, useManifestOnlyJar );
+
+        ClasspathConfiguration classpathConfiguration =
+            new ClasspathConfiguration( classPathUrls, surefireClassPathUrls, enableAssertions, childDelegation );
+
+        return StartupConfiguration.inForkedVm( providerConfiguration, classpathConfiguration,
+                                                classLoaderConfiguration );
     }
 
     private Boolean valueOf( boolean aBoolean )

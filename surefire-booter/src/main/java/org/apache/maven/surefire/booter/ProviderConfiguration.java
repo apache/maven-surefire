@@ -19,67 +19,143 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
+import org.apache.maven.surefire.report.ReporterConfiguration;
+import org.apache.maven.surefire.testset.DirectoryScannerParameters;
+import org.apache.maven.surefire.testset.TestArtifactInfo;
+import org.apache.maven.surefire.testset.TestRequest;
+
+import java.io.File;
+import java.util.List;
+import java.util.Properties;
+
 /**
- * Configuration that is used by the surefirestarter but does not make it into the provider itself.
+ * Represents the surefire configuration that passes all the way into the provider
+ * classloader and the provider.
+ * <p/>
  *
+ * @author Jason van Zyl
+ * @author Emmanuel Venisse
  * @author Kristian Rosenvold
+ * @version $Id$
  */
 public class ProviderConfiguration
 {
-    private final String providerClassName;
+    /**
+     * @noinspection UnusedDeclaration
+     */
+    public static final int TESTS_SUCCEEDED_EXIT_CODE = 0;
 
-    private final ClasspathConfiguration classpathConfiguration;
+    public static final int TESTS_FAILED_EXIT_CODE = 255;
 
-    private final ClassLoaderConfiguration classLoaderConfiguration;
+    public static final int NO_TESTS_EXIT_CODE = 254;
 
-    private final boolean isForkRequested;
+    private final DirectoryScannerParameters dirScannerParams;
 
-    private final boolean isInForkedVm;
+    private final ReporterConfiguration reporterConfiguration;
 
-    private final boolean redirectTestOutputToFile;
+    private final List reports;
 
+    private final TestArtifactInfo testArtifact;
 
-    public ProviderConfiguration( String providerClassName, ClasspathConfiguration classpathConfiguration,
-                                  ClassLoaderConfiguration classLoaderConfiguration, boolean forkRequested,
-                                  boolean inForkedVm, boolean redirectTestOutputToFile )
+    private final TestRequest testSuiteDefinition;
+
+    private Properties providerProperties;
+
+    private final boolean failIfNoTests;
+
+    private final Object forkTestSet;
+
+    public ProviderConfiguration( List reports, DirectoryScannerParameters directoryScannerParameters,
+                                  boolean failIfNoTests, ReporterConfiguration reporterConfiguration,
+                                  TestArtifactInfo testArtifact, TestRequest testSuiteDefinition,
+                                  Properties providerProperties, Object forkTestSet )
     {
-        this.providerClassName = providerClassName;
-        this.classpathConfiguration = classpathConfiguration;
-        this.classLoaderConfiguration = classLoaderConfiguration;
-        isForkRequested = forkRequested;
-        isInForkedVm = inForkedVm;
-        this.redirectTestOutputToFile = redirectTestOutputToFile;
+        this.providerProperties = providerProperties;
+        this.reporterConfiguration = reporterConfiguration;
+        this.testArtifact = testArtifact;
+        this.testSuiteDefinition = testSuiteDefinition;
+        this.dirScannerParams = directoryScannerParameters;
+        this.failIfNoTests = failIfNoTests;
+        this.reports = reports;
+        this.forkTestSet = forkTestSet;
     }
 
-    public static ProviderConfiguration inForkedVm(String providerClassName, ClasspathConfiguration classpathConfiguration,
-                                  ClassLoaderConfiguration classLoaderConfiguration){
-        return new ProviderConfiguration( providerClassName, classpathConfiguration, classLoaderConfiguration, false, true, false );
-    }
 
-    public ClasspathConfiguration getClasspathConfiguration()
+    public ReporterConfiguration getReporterConfiguration()
     {
-        return classpathConfiguration;
+        return reporterConfiguration;
     }
 
-    public boolean useSystemClassLoader()
+
+    public List getReports()
     {
-        // todo; I am not totally convinced this logic is as simple as it could be
-        return classLoaderConfiguration.isUseSystemClassLoader() && ( isInForkedVm || isForkRequested );
+        return reports;
     }
 
-    public boolean isManifestOnlyJarRequestedAndUsable()
+    public Boolean isFailIfNoTests()
     {
-        return classLoaderConfiguration.isManifestOnlyJarRequestedAndUsable();
+        return ( failIfNoTests ) ? Boolean.TRUE : Boolean.FALSE;
     }
 
-    public boolean isRedirectTestOutputToFile()
+    public File getBaseDir()
     {
-        return redirectTestOutputToFile;
+        return dirScannerParams.getTestClassesDirectory();
     }
 
-    public String getProviderClassName()
+
+    public DirectoryScannerParameters getDirScannerParams()
     {
-        return providerClassName;
+        return dirScannerParams;
     }
+
+    public Object[] getDirScannerParamsArray()
+    {
+        if ( dirScannerParams == null )
+        {
+            return null;
+        }
+        return new Object[]{ dirScannerParams.getTestClassesDirectory(), dirScannerParams.getIncludes(),
+            dirScannerParams.getExcludes() };
+    }
+
+    public List getIncludes()
+    {
+        return dirScannerParams.getIncludes();
+    }
+
+    public List getExcludes()
+    {
+        return dirScannerParams.getExcludes();
+    }
+
+    public TestArtifactInfo getTestArtifact()
+    {
+        return testArtifact;
+    }
+
+    public TestRequest getTestSuiteDefinition()
+    {
+        return testSuiteDefinition;
+    }
+
+    public Properties getProviderProperties()
+    {
+        return providerProperties;
+    }
+
+    public Object getTestForFork()
+    {
+        return forkTestSet;
+    }
+
+    public String getTestForForkString()
+    {
+        if ( forkTestSet instanceof File )
+        {
+            return forkTestSet.toString();
+        }
+        return (String) forkTestSet;
+    }
+
 
 }

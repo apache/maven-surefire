@@ -29,8 +29,6 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.surefire.booterclient.ForkConfiguration;
 import org.apache.maven.plugin.surefire.booterclient.ForkStarter;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.surefire.booter.BooterConfiguration;
-import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.apache.maven.surefire.booter.SurefireExecutionException;
 import org.apache.maven.toolchain.ToolchainManager;
@@ -567,19 +565,13 @@ public class SurefirePlugin
     public void execute()
         throws MojoExecutionException, MojoFailureException
     {
-        final WellKnownProvider provider = initialize();
         if ( verifyParameters() )
         {
-            final Classpath bootClasspathConfiguration = new Classpath();
-            ForkConfiguration forkConfiguration = getForkConfiguration( bootClasspathConfiguration );
+            logReportsDirectory();
 
-            BooterConfiguration booterConfiguration = createBooterConfiguration( forkConfiguration, provider );
-
-            getLog().info(
-                StringUtils.capitalizeFirstLetter( getPluginName() ) + " report directory: " + getReportsDirectory() );
-
-            ForkStarter forkStarter = new ForkStarter( booterConfiguration, reportsDirectory, forkConfiguration,
-                                                       getForkedProcessTimeoutInSeconds() );
+            final WellKnownProvider provider = initialize();
+            ForkConfiguration forkConfiguration = getForkConfiguration();
+            ForkStarter forkStarter = createForkStarter( provider, forkConfiguration );
 
             int result;
             try
