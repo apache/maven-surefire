@@ -19,7 +19,7 @@ package org.apache.maven.surefire.junit4;
  * under the License.
  */
 
-import org.apache.maven.surefire.providerapi.BooterParameters;
+import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterManagerFactory;
@@ -43,7 +43,7 @@ public class JUnit4Provider
 
     private final DirectoryScanner directoryScanner;
 
-    public JUnit4Provider( BooterParameters booterParameters )
+    public JUnit4Provider( ProviderParameters booterParameters )
     {
         this.reporterManagerFactory = booterParameters.getReporterManagerFactory();
         this.testClassLoader = booterParameters.getTestClassLoader();

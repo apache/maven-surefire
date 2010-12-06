@@ -20,7 +20,7 @@ package org.apache.maven.surefire.booter;
  */
 
 import org.apache.maven.surefire.providerapi.BaseProviderFactory;
-import org.apache.maven.surefire.providerapi.BooterParameters;
+import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.providerapi.DirectoryScannerParametersAware;
 import org.apache.maven.surefire.providerapi.ProviderPropertiesAware;
 import org.apache.maven.surefire.providerapi.ReporterConfigurationAware;
@@ -97,7 +97,7 @@ public class SurefireReflector
             reporterConfigurationAware = surefireClassLoader.loadClass( ReporterConfigurationAware.class.getName() );
             providerPropertiesAware = surefireClassLoader.loadClass( ProviderPropertiesAware.class.getName() );
             runResult = surefireClassLoader.loadClass( RunResult.class.getName() );
-            booterParameters= surefireClassLoader.loadClass( BooterParameters.class.getName() );
+            booterParameters= surefireClassLoader.loadClass( ProviderParameters.class.getName() );
         }
         catch ( ClassNotFoundException e )
         {

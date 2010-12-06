@@ -39,9 +39,7 @@ import org.apache.maven.shared.artifact.filter.PatternIncludesArtifactFilter;
 import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.ClasspathConfiguration;
 import org.apache.maven.surefire.booter.ProviderConfiguration;
-import org.apache.maven.surefire.booter.ProviderDetector;
 import org.apache.maven.surefire.booter.StartupConfiguration;
-import org.apache.maven.surefire.providerapi.SurefireProvider;
 import org.apache.maven.surefire.report.BriefConsoleReporter;
 import org.apache.maven.surefire.report.BriefFileReporter;
 import org.apache.maven.surefire.report.ConsoleReporter;
@@ -57,7 +55,6 @@ import org.apache.maven.toolchain.Toolchain;
 import org.codehaus.plexus.util.StringUtils;
 
 import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -98,9 +95,9 @@ public abstract class AbstractSurefireMojo
     private Artifact surefireArtifact;
 
 
-    WellKnownProvider[] wellKnownProviders;
+    ProviderList wellKnownProviders;
 
-    protected WellKnownProvider initialize()
+    protected List initialize()
         throws MojoFailureException
     {
         dependencyResolver =
@@ -109,32 +106,11 @@ public abstract class AbstractSurefireMojo
 
         try
         {
-            wellKnownProviders = new WellKnownProvider[]{ new TestNgProviderInfo( getTestNgArtifact() ),
+            wellKnownProviders = new ProviderList(new ProviderInfo[]{ new TestNgProviderInfo( getTestNgArtifact() ),
                 new JUnitCoreProviderInfo( getJunitArtifact() ), new JUnit4ProviderInfo( getJunitArtifact() ),
-                new JUnit3ProviderInfo() };
-            String manuallyConfiguredProvider = getManuallyConfiguredProviderName();
-            if ( manuallyConfiguredProvider != null )
-            {
-                // Ok, all this code will have to go when we solve surefire-141. In the meantime we solve surefire-408
-                for ( int i = 0; i < wellKnownProviders.length; i++ )
-                {
-                    WellKnownProvider wellKnownProvider = wellKnownProviders[i];
-                    if ( wellKnownProvider.getProviderName().equals( manuallyConfiguredProvider ) )
-                    {
-                        getLog().info( "Using explicitly configured provider " + wellKnownProvider.getProviderName() );
-                        return wellKnownProvider;
-                    }
-                }
-                throw new IllegalArgumentException( "Unknown provider configured " + manuallyConfiguredProvider );
-            }
-            for ( int i = 0; i < wellKnownProviders.length; i++ )
-            {
-                if ( wellKnownProviders[i].isApplicable() )
-                {
-                    return wellKnownProviders[i];
-                }
-            }
-            return null;
+                new JUnit3ProviderInfo() }, new DynamicProviderInfo( null ) );
+
+            return wellKnownProviders.resolve(getLog());
         }
         catch ( InvalidVersionSpecificationException e )
         {
@@ -148,33 +124,6 @@ public abstract class AbstractSurefireMojo
             StringUtils.capitalizeFirstLetter( getPluginName() ) + " report directory: " + getReportsDirectory() );
     }
 
-
-    private String getManuallyConfiguredProviderName()
-    {
-        try
-        {
-            final Set objects = ProviderDetector.getServiceNames( SurefireProvider.class,
-                                                                  Thread.currentThread().getContextClassLoader() );
-            if ( objects == null || objects.size() == 0 )
-            {
-                return null;
-            }
-            if ( objects.size() > 1 )
-            {
-                throw new IllegalArgumentException(
-                    "Surefire currently only supports on manually configured provider" );
-            }
-            return (String) objects.iterator().next();
-
-        }
-
-        catch ( IOException e )
-        {
-            throw new RuntimeException( e );
-        }
-
-
-    }
 
     protected final Toolchain getToolchain()
     {
@@ -277,9 +226,7 @@ public abstract class AbstractSurefireMojo
         return ForkConfiguration.FORK_NEVER.equals( getForkMode() );
     }
 
-    protected ProviderConfiguration createProviderConfiguration( ForkConfiguration forkConfiguration,
-                                                                 WellKnownProvider provider,
-                                                                 StartupConfiguration startupConfiguration )
+    protected ProviderConfiguration createProviderConfiguration( ForkConfiguration forkConfiguration )
         throws MojoExecutionException, MojoFailureException
     {
 
@@ -304,10 +251,6 @@ public abstract class AbstractSurefireMojo
             junitArtifact = getJunitArtifact();
 
             testNgArtifact = getTestNgArtifact();
-
-            provider.addProviderProperties();
-            provider.addProviderArtifactToBootClasspath( forkConfiguration.getBootClasspath() );
-            provider.addProviderArtifactToSurefireClasspath( startupConfiguration.getClasspathConfiguration() );
         }
         catch ( ArtifactNotFoundException e )
         {
@@ -391,7 +334,7 @@ public abstract class AbstractSurefireMojo
     }
 
     protected StartupConfiguration createStartupConfiguration( ForkConfiguration forkConfiguration,
-                                                               WellKnownProvider provider )
+                                                               ProviderInfo provider )
         throws MojoExecutionException, MojoFailureException
     {
         final ClasspathConfiguration classpathConfiguration =
@@ -559,12 +502,12 @@ public abstract class AbstractSurefireMojo
         return junitArtifact;
     }
 
-    protected ForkStarter createForkStarter( WellKnownProvider provider, ForkConfiguration forkConfiguration )
+    protected ForkStarter createForkStarter( ProviderInfo provider, ForkConfiguration forkConfiguration )
         throws MojoExecutionException, MojoFailureException
     {
         StartupConfiguration startupConfiguration = createStartupConfiguration( forkConfiguration, provider );
         ProviderConfiguration providerConfiguration =
-            createProviderConfiguration( forkConfiguration, provider, startupConfiguration );
+            createProviderConfiguration( forkConfiguration );
         return new ForkStarter( providerConfiguration, startupConfiguration, getReportsDirectory(), forkConfiguration,
                                 getForkedProcessTimeoutInSeconds() );
     }
@@ -955,26 +898,8 @@ public abstract class AbstractSurefireMojo
         }
     }
 
-
-    public interface WellKnownProvider
-    {
-        String getProviderName();
-
-        String getProviderArtifactName();
-
-        public boolean isApplicable();
-
-        public void addProviderArtifactToBootClasspath( Classpath bootclasspath )
-            throws ArtifactResolutionException, ArtifactNotFoundException;
-
-        public void addProviderArtifactToSurefireClasspath( ClasspathConfiguration bootclasspath )
-            throws ArtifactResolutionException, ArtifactNotFoundException;
-
-        public void addProviderProperties();
-    }
-
     class TestNgProviderInfo
-        implements WellKnownProvider
+        implements ProviderInfo
     {
         private final Artifact testNgArtifact;
 
@@ -986,11 +911,6 @@ public abstract class AbstractSurefireMojo
         public String getProviderName()
         {
             return "org.apache.maven.surefire.testng.TestNGProvider";
-        }
-
-        public String getProviderArtifactName()
-        {
-            return "surefire-testng";
         }
 
         public boolean isApplicable()
@@ -1021,16 +941,11 @@ public abstract class AbstractSurefireMojo
     }
 
     class JUnit3ProviderInfo
-        implements WellKnownProvider
+        implements ProviderInfo
     {
         public String getProviderName()
         {
             return "org.apache.maven.surefire.junit.JUnit3Provider";
-        }
-
-        public String getProviderArtifactName()
-        {
-            return "surefire-junit3";
         }
 
         public boolean isApplicable()
@@ -1051,7 +966,7 @@ public abstract class AbstractSurefireMojo
         {
             // add the JUnit provider as default - it doesn't require JUnit to be present,
             // since it supports POJO tests.
-            dependencyResolver.addProviderToClasspath( classpathConfiguration, getProviderArtifactName(),
+            dependencyResolver.addProviderToClasspath( classpathConfiguration, "surefire-junit3",
                                                        surefireArtifact.getBaseVersion(), null );
 
         }
@@ -1059,7 +974,7 @@ public abstract class AbstractSurefireMojo
     }
 
     class JUnit4ProviderInfo
-        implements WellKnownProvider
+        implements ProviderInfo
     {
         private final Artifact junitArtifact;
 
@@ -1071,11 +986,6 @@ public abstract class AbstractSurefireMojo
         public String getProviderName()
         {
             return "org.apache.maven.surefire.junit4.JUnit4Provider";
-        }
-
-        public String getProviderArtifactName()
-        {
-            return "surefire-junit4";
         }
 
         public boolean isApplicable()
@@ -1094,7 +1004,7 @@ public abstract class AbstractSurefireMojo
         public void addProviderArtifactToSurefireClasspath( ClasspathConfiguration classpathConfiguration )
             throws ArtifactResolutionException, ArtifactNotFoundException
         {
-            dependencyResolver.addProviderToClasspath( classpathConfiguration, getProviderArtifactName(),
+            dependencyResolver.addProviderToClasspath( classpathConfiguration, "surefire-junit4",
                                                        surefireArtifact.getBaseVersion(), null );
 
         }
@@ -1102,7 +1012,7 @@ public abstract class AbstractSurefireMojo
     }
 
     class JUnitCoreProviderInfo
-        implements WellKnownProvider
+        implements ProviderInfo
     {
         private final Artifact junitArtifact;
 
@@ -1114,11 +1024,6 @@ public abstract class AbstractSurefireMojo
         public String getProviderName()
         {
             return "org.apache.maven.surefire.junitcore.JUnitCoreProvider";
-        }
-
-        public String getProviderArtifactName()
-        {
-            return "surefire-junit47";
         }
 
         public boolean isApplicable()
@@ -1138,9 +1043,54 @@ public abstract class AbstractSurefireMojo
         public void addProviderArtifactToSurefireClasspath( ClasspathConfiguration classpathConfiguration )
             throws ArtifactResolutionException, ArtifactNotFoundException
         {
-            dependencyResolver.addProviderToClasspath( classpathConfiguration, getProviderArtifactName(),
+            dependencyResolver.addProviderToClasspath( classpathConfiguration, "surefire-junit47",
                                                        surefireArtifact.getBaseVersion(), null );
         }
 
     }
+    public class DynamicProviderInfo
+        implements ConfigurableProviderInfo
+    {
+        final String providerName;
+
+        DynamicProviderInfo( String providerName )
+        {
+            this.providerName = providerName;
+        }
+
+        public ProviderInfo instantiate(String providerName){
+            return new DynamicProviderInfo(providerName);
+        }
+
+        public String getProviderName()
+        {
+            return providerName;
+        }
+
+        public boolean isApplicable()
+        {
+            return true;
+        }
+
+        public void addProviderProperties()
+        {
+            // Ok this is a bit lazy.
+            convertJunitCoreParameters();
+            convertTestNGParameters();
+        }
+
+        public void addProviderArtifactToBootClasspath( Classpath bootclasspath )
+        {
+        }
+
+        public void addProviderArtifactToSurefireClasspath( ClasspathConfiguration classpathConfiguration )
+            throws ArtifactResolutionException, ArtifactNotFoundException
+        {
+            final Map pluginArtifactMap = getPluginArtifactMap();
+            Artifact plugin = (Artifact) pluginArtifactMap.get( "org.apache.maven.plugins:maven-surefire-plugin");
+            dependencyResolver.addProviderToClasspath( classpathConfiguration, pluginArtifactMap, plugin );
+        }
+
+    }
+
 }

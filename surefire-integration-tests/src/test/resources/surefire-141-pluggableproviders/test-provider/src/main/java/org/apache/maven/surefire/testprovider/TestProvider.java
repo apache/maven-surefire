@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.junit;
+package org.apache.maven.surefire.testprovider;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -25,69 +25,38 @@ import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterManagerFactory;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
-import org.apache.maven.surefire.util.DirectoryScanner;
 
 import java.util.Iterator;
 
 /**
  * @author Kristian Rosenvold
- * @noinspection UnusedDeclaration
  */
-public class JUnit3Provider
+public class TestProvider
     implements SurefireProvider
 {
     private final ReporterManagerFactory reporterManagerFactory;
-
     private final ClassLoader testClassLoader;
 
-    private final DirectoryScanner directoryScanner;
-
-    public JUnit3Provider( ProviderParameters booterParameters )
+    public TestProvider( ProviderParameters booterParameters )
     {
         this.reporterManagerFactory = booterParameters.getReporterManagerFactory();
         this.testClassLoader = booterParameters.getTestClassLoader();
-        this.directoryScanner = booterParameters.getDirectoryScanner();
+    }
+
+
+    public Boolean isRunnable()
+    {
+        return Boolean.TRUE;
+    }
+
+    public Iterator getSuites()
+    {
+        return null;
     }
 
     public RunResult invoke( Object forkTestSet )
         throws TestSetFailedException, ReporterException
     {
-        JUnitDirectoryTestSuite suite = getSuite();
-        suite.locateTestSets( testClassLoader );
-        if ( forkTestSet != null )
-        {
-            suite.execute( (String) forkTestSet, reporterManagerFactory, testClassLoader );
-        }
-        else
-        {
-            suite.execute( reporterManagerFactory, testClassLoader );
-        }
-
-        reporterManagerFactory.warnIfNoTests();
-
-        return reporterManagerFactory.close();
-    }
-
-    private JUnitDirectoryTestSuite getSuite()
-    {
-        return new JUnitDirectoryTestSuite( directoryScanner );
-
-    }
-
-    public Iterator getSuites()
-    {
-        try
-        {
-            return getSuite().locateTestSets( testClassLoader ).keySet().iterator();
-        }
-        catch ( TestSetFailedException e )
-        {
-            throw new RuntimeException( e );
-        }
-    }
-
-    public Boolean isRunnable()
-    {
-        return Boolean.TRUE;
+        return new RunResult( 1,0,0,2 );
     }
 }

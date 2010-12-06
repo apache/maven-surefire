@@ -19,7 +19,7 @@ package org.apache.maven.surefire.testng;
  * under the License.
  */
 
-import org.apache.maven.surefire.providerapi.BooterParameters;
+import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterException;
@@ -30,7 +30,6 @@ import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.testset.TestSetFailedException;
-import org.apache.maven.surefire.util.DirectoryScanner;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -60,7 +59,7 @@ public class TestNGProvider
 
     private final File basedir;
 
-    public TestNGProvider( BooterParameters booterParameters )
+    public TestNGProvider( ProviderParameters booterParameters )
     {
         this.reporterManagerFactory = booterParameters.getReporterManagerFactory();
         this.testClassLoader = booterParameters.getTestClassLoader();

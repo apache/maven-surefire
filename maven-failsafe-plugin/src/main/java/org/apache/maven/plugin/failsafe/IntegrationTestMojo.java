@@ -27,6 +27,7 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.surefire.AbstractSurefireMojo;
+import org.apache.maven.plugin.surefire.ProviderInfo;
 import org.apache.maven.plugin.surefire.SurefireExecutionParameters;
 import org.apache.maven.plugin.surefire.booterclient.ForkConfiguration;
 import org.apache.maven.plugin.surefire.booterclient.ForkStarter;
@@ -47,6 +48,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -604,33 +606,44 @@ public class IntegrationTestMojo
         {
             logReportsDirectory();
 
-            final AbstractSurefireMojo.WellKnownProvider provider = initialize();
-            ForkConfiguration forkConfiguration = getForkConfiguration();
-            ForkStarter forkStarter = createForkStarter( provider, forkConfiguration );
-
+            final List providers = initialize();
+            String exceptionMessage = null;
             FailsafeSummary result = new FailsafeSummary();
-            try
+
+            ForkConfiguration forkConfiguration = null;
+            for ( Iterator iter = providers.iterator(); iter.hasNext(); )
             {
-                result.setResult( forkStarter.run() );
-            }
-            catch ( SurefireBooterForkException e )
-            {
-                // Don't stop processing when timeout or other exception occures
-                // Otherwise, the following life cycles (e.g. post-integration-test)
-                // won't be executed
-                result.setResult( ProviderConfiguration.TESTS_FAILED_EXIT_CODE );
-                result.setException( e.getMessage() );
-            }
-            catch ( SurefireExecutionException e )
-            {
-                // Don't stop processing when timeout or other exception occures
-                // Otherwise, the following life cycles (e.g. post-integration-test)
-                // won't be executed
-                result.setResult( ProviderConfiguration.TESTS_FAILED_EXIT_CODE );
-                result.setException( e.getMessage() );
+                ProviderInfo provider = (ProviderInfo) iter.next();
+                forkConfiguration = getForkConfiguration();
+                ForkStarter forkStarter = createForkStarter( provider, forkConfiguration );
+                try
+                {
+                    result.setResult( forkStarter.run() );
+                }
+                catch ( SurefireBooterForkException e )
+                {
+                    if ( exceptionMessage == null )
+                    {
+                        exceptionMessage = e.getMessage();
+                    }
+                }
+                catch ( SurefireExecutionException e )
+                {
+                    if ( exceptionMessage == null )
+                    {
+                        exceptionMessage = e.getMessage();
+                    }
+                }
             }
 
-            if ( getOriginalSystemProperties() != null && !forkConfiguration.isForking() )
+            if ( exceptionMessage != null )
+            {
+                // Fail no matter what as long as any provider failed
+                result.setResult( ProviderConfiguration.TESTS_FAILED_EXIT_CODE );
+                result.setException( exceptionMessage );
+            }
+
+            if ( getOriginalSystemProperties() != null && forkConfiguration != null && !forkConfiguration.isForking() )
             {
                 // restore system properties, only makes sense when not forking..
                 System.setProperties( getOriginalSystemProperties() );

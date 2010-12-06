@@ -35,7 +35,7 @@ import java.util.Properties;
  */
 public class BaseProviderFactory
     implements DirectoryScannerParametersAware, ReporterConfigurationAware, SurefireClassLoadersAware, TestRequestAware,
-    ProviderPropertiesAware, BooterParameters, TestArtifactInfoAware
+    ProviderPropertiesAware, ProviderParameters, TestArtifactInfoAware
 {
     private Properties providerProperties;
 

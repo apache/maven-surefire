@@ -41,10 +41,11 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
- * Abstract base class for running tests using Surefire.
+ * Does dependency resolution and artifact handling for the surefire plugin.
  *
  * @author Stephen Connolly
  * @author Kristian Rosenvold
@@ -184,6 +185,19 @@ public class SurefireDependencyResolver
                            " Scope: " + artifact.getScope() );
 
             bootClasspath.addClassPathElementUrl( artifact.getFile().getAbsolutePath() );
+        }
+    }
+
+    public void addProviderToClasspath( ClasspathConfiguration classpathConfiguration, Map pluginArtifactMap,
+                                        Artifact surefireArtifact )
+        throws ArtifactResolutionException, ArtifactNotFoundException
+    {
+        final ArtifactResolutionResult artifactResolutionResult = resolveArtifact( null, surefireArtifact );
+        for (Iterator iterator = pluginArtifactMap.values().iterator(); iterator.hasNext();){
+            Artifact artifact = (Artifact) iterator.next();
+            if( !artifactResolutionResult.getArtifacts().contains( artifact )){
+                classpathConfiguration.addClasspathUrl(  artifact.getFile().getPath() );
+            }
         }
     }
 }

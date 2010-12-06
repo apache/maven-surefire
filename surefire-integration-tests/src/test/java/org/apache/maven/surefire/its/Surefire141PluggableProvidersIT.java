@@ -31,20 +31,26 @@ import java.util.Arrays;
  *
  * @author Kristian Rosenvold
  */
-public class Surefire408ManualProviderSelectionIT
+public class Surefire141PluggableProvidersIT
     extends AbstractSurefireIntegrationTestClass
 {
     public void testPaallelBuildResultCount()
         throws Exception
     {
-        File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/surefire-408-manual-provider-selection" );
-
+        File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/surefire-141-pluggableproviders/test-provider" );
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        String[] opts = { "-e" };
-        verifier.setCliOptions( new ArrayList( Arrays.asList( opts ) ) );
-        this.executeGoal( verifier, "test" );
+        this.executeGoal(  verifier, "install" );
         verifier.resetStreams();
 
+        testDir = ResourceExtractor.simpleExtractResources( getClass(), "/surefire-141-pluggableproviders/test" );
+        verifier = new Verifier( testDir.getAbsolutePath() );
+        String[] opts = { "-e" };
+        verifier.setCliOptions( new ArrayList( Arrays.asList( opts ) ) );
+        this.executeGoal( verifier, "install" );
+
+        verifier.verifyTextInLog("Using configured provider org.apache.maven.surefire.testprovider.TestProvider");
         verifier.verifyTextInLog("Using configured provider org.apache.maven.surefire.junit.JUnit3Provider");
+
+        verifier.verifyErrorFreeLog();
     }
 }

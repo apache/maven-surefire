@@ -32,10 +32,10 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.apache.maven.surefire.booter.SurefireExecutionException;
 import org.apache.maven.toolchain.ToolchainManager;
-import org.codehaus.plexus.util.StringUtils;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -569,25 +569,36 @@ public class SurefirePlugin
         {
             logReportsDirectory();
 
-            final WellKnownProvider provider = initialize();
-            ForkConfiguration forkConfiguration = getForkConfiguration();
-            ForkStarter forkStarter = createForkStarter( provider, forkConfiguration );
+            final List providers = initialize();
+            Exception exception = null;
+            ForkConfiguration forkConfiguration = null;
+            int result = 0;
+            for ( Iterator iter = providers.iterator(); iter.hasNext(); )
+            {
+                ProviderInfo provider = (ProviderInfo) iter.next();
+                forkConfiguration = getForkConfiguration();
+                ForkStarter forkStarter = createForkStarter( provider, forkConfiguration );
 
-            int result;
-            try
-            {
-                result = forkStarter.run();
-            }
-            catch ( SurefireBooterForkException e )
-            {
-                throw new MojoExecutionException( e.getMessage(), e );
-            }
-            catch ( SurefireExecutionException e )
-            {
-                throw new MojoExecutionException( e.getMessage(), e );
+                try
+                {
+                    result = forkStarter.run();
+                }
+                catch ( SurefireBooterForkException e )
+                {
+                    exception = e;
+                }
+                catch ( SurefireExecutionException e )
+                {
+                    exception = e;
+                }
             }
 
-            if ( getOriginalSystemProperties() != null && !forkConfiguration.isForking() )
+            if ( exception != null )
+            {
+                throw new MojoExecutionException( exception.getMessage(), exception );
+            }
+
+            if ( getOriginalSystemProperties() != null && forkConfiguration != null && !forkConfiguration.isForking() )
             {
                 // restore system properties, only makes sense when not forking..
                 System.setProperties( getOriginalSystemProperties() );
