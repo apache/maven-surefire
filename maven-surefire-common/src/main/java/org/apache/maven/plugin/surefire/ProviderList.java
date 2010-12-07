@@ -20,7 +20,7 @@ package org.apache.maven.plugin.surefire;
  */
 
 import org.apache.maven.plugin.logging.Log;
-import org.apache.maven.surefire.booter.ProviderDetector;
+import org.apache.maven.plugin.surefire.booterclient.ProviderDetector;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
 
 import java.io.IOException;
