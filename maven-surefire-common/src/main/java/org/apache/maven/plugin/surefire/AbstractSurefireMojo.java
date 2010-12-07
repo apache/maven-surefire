@@ -242,13 +242,10 @@ public abstract class AbstractSurefireMojo
 
         surefireArtifact.isSnapshot(); // MNG-2961: before Maven 2.0.8, fixes getBaseVersion to be -SNAPSHOT if needed
 
-        Artifact junitArtifact;
         Artifact testNgArtifact;
         try
         {
             addArtifact( forkConfiguration.getBootClasspath(), surefireArtifact );
-
-            junitArtifact = getJunitArtifact();
 
             testNgArtifact = getTestNgArtifact();
         }

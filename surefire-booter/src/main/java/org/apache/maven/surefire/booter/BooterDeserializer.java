@@ -63,15 +63,8 @@ public class BooterDeserializer
         throws IOException
     {
         DirectoryScannerParameters dirScannerParams;
-        boolean enableAssertions = false;
-        boolean childDelegation = true;
         boolean failIfNotests = false;  // todo; check this out.
-        boolean useSystemClassLoader = false; // todo check default value
-        boolean useManifestOnlyJar = false; // todo check default value
 
-        SortedMap classPathUrls = new TreeMap();
-
-        SortedMap surefireClassPathUrls = new TreeMap();
         SortedMap reportsMap = new TreeMap();
 
         boolean isTrimStackTrace = false;
@@ -83,7 +76,6 @@ public class BooterDeserializer
         String requestedTest = null;
         File sourceDirectory = null;
         Object[] testSuiteXmlFiles = null;
-        String providerConfiguration = null;
         SortedMap includes = new TreeMap();
         SortedMap excludes = new TreeMap();
         File testClassesDirectory = null;
@@ -106,32 +98,6 @@ public class BooterDeserializer
             {
                 String className = properties.getProperty( name );
                 excludes.put( name, className );
-            }
-            else if ( name.startsWith( CLASSPATH_URL ) )
-            {
-                classPathUrls.put( Integer.valueOf( name.substring( name.indexOf( '.' ) + 1 ) ),
-                                   properties.getProperty( name ) );
-            }
-            else if ( name.startsWith( SUREFIRE_CLASSPATHURL ) )
-            {
-                surefireClassPathUrls.put( Integer.valueOf( name.substring( name.indexOf( '.' ) + 1 ) ),
-                                           properties.getProperty( name ) );
-            }
-            else if ( CHILD_DELEGATION.equals( name ) )
-            {
-                childDelegation = properties.getBooleanProperty( CHILD_DELEGATION );
-            }
-            else if ( ENABLE_ASSERTIONS.equals( name ) )
-            {
-                enableAssertions = properties.getBooleanProperty( ENABLE_ASSERTIONS );
-            }
-            else if ( USESYSTEMCLASSLOADER.equals( name ) )
-            {
-                useSystemClassLoader = properties.getBooleanProperty( USESYSTEMCLASSLOADER );
-            }
-            else if ( USEMANIFESTONLYJAR.equals( name ) )
-            {
-                useManifestOnlyJar = properties.getBooleanProperty( USEMANIFESTONLYJAR );
             }
             else if ( FAILIFNOTESTS.equals( name ) )
             {
@@ -175,10 +141,6 @@ public class BooterDeserializer
             {
                 testSuiteXmlFiles = constructParamObjects( properties.getProperty( TEST_SUITE_XML_FILES ), File.class );
             }
-            else if ( PROVIDER_CONFIGURATION.equals( name ) )
-            {
-                providerConfiguration = properties.getProperty( PROVIDER_CONFIGURATION );
-            }
         }
 
         dirScannerParams = new DirectoryScannerParameters( testClassesDirectory, new ArrayList( includes.values() ),
@@ -188,19 +150,11 @@ public class BooterDeserializer
         TestArtifactInfo testNg = new TestArtifactInfo( testNgVersion, testNgClassifier );
         TestRequest testSuiteDefinition = new TestRequest( testSuiteXmlFiles, sourceDirectory, requestedTest );
 
-        ClassLoaderConfiguration classLoaderConfiguration =
-            new ClassLoaderConfiguration( useSystemClassLoader, useManifestOnlyJar );
-
-        ClasspathConfiguration classpathConfiguration =
-            new ClasspathConfiguration( classPathUrls, surefireClassPathUrls, enableAssertions, childDelegation );
-
         List reports = new ArrayList( reportsMap.values() );
 
         ReporterConfiguration reporterConfiguration =
             new ReporterConfiguration( reports, reportsDirectory, valueOf( isTrimStackTrace ) );
 
-        StartupConfiguration surefireStarterConfiguration =
-            StartupConfiguration.inForkedVm( providerConfiguration, classpathConfiguration, classLoaderConfiguration );
         return new ProviderConfiguration(reports, dirScannerParams, failIfNotests,
                                         reporterConfiguration, testNg, testSuiteDefinition, properties.getProperties(),
                                         testForFork );
