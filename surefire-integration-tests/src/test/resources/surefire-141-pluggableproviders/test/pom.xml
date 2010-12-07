@@ -26,7 +26,7 @@
     <groupId>org.apache.maven.plugins.surefire</groupId>
     <artifactId>junit-twoTestCases</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <name>Test for two test cases</name>
+    <name>surefire-414-pluggableproviders</name>
 
     <dependencies>
         <dependency>

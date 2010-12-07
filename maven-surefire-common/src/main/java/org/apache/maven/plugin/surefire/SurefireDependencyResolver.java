@@ -192,11 +192,25 @@ public class SurefireDependencyResolver
                                         Artifact surefireArtifact )
         throws ArtifactResolutionException, ArtifactNotFoundException
     {
-        final ArtifactResolutionResult artifactResolutionResult = resolveArtifact( null, surefireArtifact );
-        for (Iterator iterator = pluginArtifactMap.values().iterator(); iterator.hasNext();){
-            Artifact artifact = (Artifact) iterator.next();
-            if( !artifactResolutionResult.getArtifacts().contains( artifact )){
-                classpathConfiguration.addClasspathUrl(  artifact.getFile().getPath() );
+        if ( surefireArtifact != null )
+        {
+            final ArtifactResolutionResult artifactResolutionResult = resolveArtifact( null, surefireArtifact );
+            for ( Iterator iterator = pluginArtifactMap.values().iterator(); iterator.hasNext(); )
+            {
+                Artifact artifact = (Artifact) iterator.next();
+                if ( !artifactResolutionResult.getArtifacts().contains( artifact ) )
+                {
+                    classpathConfiguration.addClasspathUrl( artifact.getFile().getPath() );
+                }
+            }
+        }
+        else
+        {
+            // Bit of a brute force strategy if not found. Should probably be improved
+            for ( Iterator iterator = pluginArtifactMap.values().iterator(); iterator.hasNext(); )
+            {
+                Artifact artifact = (Artifact) iterator.next();
+                classpathConfiguration.addClasspathUrl( artifact.getFile().getPath() );
             }
         }
     }
