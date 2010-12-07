@@ -19,7 +19,7 @@ package org.apache.maven.surefire.suite;
  * under the License.
  */
 
-import org.apache.maven.surefire.NonAbstractClassScannerFilter;
+import org.apache.maven.surefire.NonAbstractClassFilter;
 import org.apache.maven.surefire.Surefire;
 import org.apache.maven.surefire.report.ReporterManagerFactory;
 import org.apache.maven.surefire.util.DefaultDirectoryScanner;
@@ -73,7 +73,7 @@ public abstract class AbstractDirectoryTestSuite
         }
         testSets = new TreeMap();
 
-        Class[] locatedClasses = surefireDirectoryScanner.locateTestClasses( classLoader, new NonAbstractClassScannerFilter() );
+        Class[] locatedClasses = surefireDirectoryScanner.locateTestClasses( classLoader, new NonAbstractClassFilter() );
 
         for ( int i = 0; i < locatedClasses.length; i++ )
         {

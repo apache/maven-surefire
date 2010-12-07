@@ -28,6 +28,12 @@ import java.util.Iterator;
 /**
  * Interface to be implemented by all Surefire providers.
  *
+ * Called in one of three ways:
+ * Forkmode = never: getSuites is not called, invoke is called with null parameter
+ * Forkmode = once: getSuites is not called, invoke is called with null parameter
+ * Forkmode anything else: getSuites is called, invoke is called on NEW INSTANCE for each item in getSuites
+ * response.
+ *
  * @author Kristian Rosenvold
  */
 public interface SurefireProvider

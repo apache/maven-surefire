@@ -290,11 +290,6 @@ public abstract class AbstractSurefireMojo
 
             failIfNoTests = getFailIfNoTests() != null && getFailIfNoTests().booleanValue();
 
-            if ( isAnyConcurrencySelected() && isJunit47Compatible( junitArtifact ) )
-            {
-                getLog().info( "Concurrency config is " + getProperties().toString() );
-            }
-
             List includes = getIncludeList();
             List excludes = getExcludeList();
             directoryScannerParameters = new DirectoryScannerParameters( getTestClassesDirectory(), includes, excludes,

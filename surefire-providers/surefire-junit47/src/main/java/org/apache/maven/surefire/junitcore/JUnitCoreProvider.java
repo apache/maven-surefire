@@ -19,17 +19,16 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
+import org.apache.maven.surefire.NonAbstractClassFilter;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterManagerFactory;
-import org.apache.maven.surefire.report.RunStatistics;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.DirectoryScanner;
 
 import java.util.Iterator;
-import java.util.Properties;
 
 /**
  * @author Kristian Rosenvold
@@ -38,56 +37,26 @@ import java.util.Properties;
 public class JUnitCoreProvider
     implements SurefireProvider
 {
-    private final Properties providerProperties;
     private final ReporterManagerFactory reporterManagerFactory;
+
     private final ClassLoader testClassLoader;
+
     private final DirectoryScanner directoryScanner;
 
+    private final JUnitCoreParameters jUnitCoreParameters;
 
+    private final NonAbstractClassFilter scannerFilter;
+
+    private TestsToRun testsToRun;
+
+    @SuppressWarnings( { "UnusedDeclaration" } )
     public JUnitCoreProvider( ProviderParameters booterParameters )
     {
         this.reporterManagerFactory = booterParameters.getReporterManagerFactory();
         this.testClassLoader = booterParameters.getTestClassLoader();
         this.directoryScanner = booterParameters.getDirectoryScanner();
-        this.providerProperties = booterParameters.getProviderProperties();
-    }
-
-
-    @SuppressWarnings( { "UnnecessaryUnboxing" } )
-    public RunResult invoke( Object forkTestSet )
-        throws TestSetFailedException, ReporterException
-    {
-        // Todo; Not there quite yet
-        JUnitCoreDirectoryTestSuite jUnitCoreDirectoryTestSuite = getSuite();
-
-        RunStatistics runStatistics = reporterManagerFactory.getGlobalRunStatistics();
-
-        jUnitCoreDirectoryTestSuite.locateTestSets( testClassLoader );
-        // getLog().info( "Concurrency config is " + getProperties().toString() );
-
-        if ( forkTestSet != null )
-        {
-            jUnitCoreDirectoryTestSuite.execute( (String) forkTestSet, reporterManagerFactory,
-                                                 testClassLoader );
-        }
-        else
-        {
-            jUnitCoreDirectoryTestSuite.execute( reporterManagerFactory, testClassLoader );
-        }
-        reporterManagerFactory.warnIfNoTests();
-
-        return reporterManagerFactory.close();
-    }
-
-    private JUnitCoreDirectoryTestSuite getSuite()
-    {
-        return new JUnitCoreDirectoryTestSuite( directoryScanner, new JUnitCoreParameters( providerProperties ),
-                                                reporterManagerFactory );
-    }
-
-    public Iterator getSuites()
-    {
-        return getSuite().locateTestSetsImpl( testClassLoader ).entrySet().iterator();
+        this.jUnitCoreParameters = new JUnitCoreParameters( booterParameters.getProviderProperties() );
+        this.scannerFilter = new NonAbstractClassFilter();
     }
 
     public Boolean isRunnable()
@@ -95,4 +64,31 @@ public class JUnitCoreProvider
         return Boolean.TRUE;
     }
 
+    public Iterator getSuites()
+    {
+        testsToRun = scanClassPath();
+        return testsToRun.iterator();
+    }
+
+    public RunResult invoke( Object forkTestSet )
+        throws TestSetFailedException, ReporterException
+    {
+        final String message = "Concurrency config is " + jUnitCoreParameters.toString();
+        this.reporterManagerFactory.createReporterManager().writeConsoleMessage( message );
+
+        if ( testsToRun == null )
+        {
+            testsToRun = forkTestSet == null
+                ? scanClassPath()
+                : TestsToRun.fromClassName( (String) forkTestSet, testClassLoader );
+        }
+        JUnitCoreWrapper.execute( testsToRun.getLocatedClasses(), this.reporterManagerFactory, jUnitCoreParameters );
+        reporterManagerFactory.warnIfNoTests();
+        return reporterManagerFactory.close();
+    }
+
+    private TestsToRun scanClassPath()
+    {
+        return new TestsToRun( directoryScanner.locateTestClasses( testClassLoader, scannerFilter ) );
+    }
 }

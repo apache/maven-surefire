@@ -21,8 +21,9 @@ package org.apache.maven.surefire.junitcore;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 /**
  * Contains all the tests that have been found according to specified include/exclude
@@ -32,34 +33,46 @@ import java.util.Map;
  */
 class TestsToRun
 {
-    final Class[] locatedClasses;
+    private final Class[] locatedClasses;
 
-    final int totalTests;
-
-    Map<String, JUnitCoreTestSet> testSets;
+    private final Set<Class> testSets;
 
     public TestsToRun( Class... locatedClasses )
     {
         this.locatedClasses = locatedClasses;
-        testSets = new HashMap<String, JUnitCoreTestSet>();
-        int testCount = 0;
+        testSets = new HashSet<Class>();
         for ( Class testClass : locatedClasses )
         {
-            JUnitCoreTestSet testSet = new JUnitCoreTestSet( testClass );
-
-            if ( testSets.containsKey( testSet.getName() ) )
+            if ( testSets.contains( testClass ) )
             {
-                throw new RuntimeException( "Duplicate test set '" + testSet.getName() + "'" );
+                throw new RuntimeException( "Duplicate test set '" + testClass.getName() + "'" );
             }
-            testSets.put( testSet.getName(), testSet );
-            testCount++;
+            testSets.add( testClass );
         }
-        this.totalTests = testCount;
     }
 
-    public Map<String, JUnitCoreTestSet> getTestSets()
+    private TestsToRun( String className, ClassLoader classLoader )
+        throws ClassNotFoundException
     {
-        return Collections.unmodifiableMap( testSets );
+        this( classLoader.loadClass( className ) );
+    }
+
+    public static TestsToRun fromClassName( String className, ClassLoader classLoader )
+        throws TestSetFailedException
+    {
+        try
+        {
+            return new TestsToRun( className, classLoader );
+        }
+        catch ( ClassNotFoundException e )
+        {
+            throw new TestSetFailedException( e );
+        }
+    }
+
+    public Set<Class> getTestSets()
+    {
+        return Collections.unmodifiableSet( testSets );
     }
 
     public int size()
@@ -72,9 +85,8 @@ class TestsToRun
         return locatedClasses;
     }
 
-    public JUnitCoreTestSet getTestSet( String name )
+    public Iterator iterator()
     {
-        return testSets.get( name );
+        return testSets.iterator();
     }
-
 }

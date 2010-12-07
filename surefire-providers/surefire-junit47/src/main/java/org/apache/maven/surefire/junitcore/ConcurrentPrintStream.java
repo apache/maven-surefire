@@ -27,9 +27,6 @@ class ConcurrentPrintStream
 {
     private final boolean isStdout;
 
-    private final LogicalStream defaultStream = new  LogicalStream();
-
-
     ConcurrentPrintStream( boolean stdout )
     {
         super( new ByteArrayOutputStream() );

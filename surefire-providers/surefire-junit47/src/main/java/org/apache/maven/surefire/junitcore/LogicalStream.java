@@ -28,7 +28,6 @@ import java.util.List;
  */
 public class LogicalStream
 {
-
     private final List<Entry> output = new ArrayList<Entry>();
 
     class Entry
@@ -80,7 +79,6 @@ public class LogicalStream
         }
     }
 
-
     public void writeToConsole( ReporterManager reporter )
     {
         for ( Entry entry : output )
@@ -101,5 +99,4 @@ public class LogicalStream
         }
         return stringBuilder.toString();
     }
-
 }

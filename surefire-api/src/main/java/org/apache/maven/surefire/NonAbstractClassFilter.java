@@ -26,7 +26,7 @@ import java.lang.reflect.Modifier;
 /**
  * @author Kristian Rosenvold
  */
-public class NonAbstractClassScannerFilter
+public class NonAbstractClassFilter
     implements ScannerFilter
 {
     public boolean accept( Class testClass )

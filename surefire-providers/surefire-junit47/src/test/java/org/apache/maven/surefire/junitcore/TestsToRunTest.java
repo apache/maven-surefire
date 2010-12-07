@@ -21,10 +21,10 @@ package org.apache.maven.surefire.junitcore;
 
 import org.junit.Test;
 
-import java.util.Map;
+import java.util.Set;
 
 import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertTrue;
 
 /*
  * @author Kristian Rosenvold, kristian.rosenvold@gmail com
@@ -38,10 +38,8 @@ public class TestsToRunTest
     {
         TestsToRun testsToRun = new TestsToRun( T1.class, T2.class );
         assertEquals( 2, testsToRun.size() );
-        JUnitCoreTestSet coreTestSet = testsToRun.getTestSet( "org.apache.maven.surefire.junitcore.TestsToRunTest$T1" );
-        assertNotNull( coreTestSet );
-        assertEquals( T1.class, coreTestSet.getTestClass() );
-        Map<String, JUnitCoreTestSet> stringJUnitCoreTestSetMap = testsToRun.getTestSets();
+        Set<Class> stringJUnitCoreTestSetMap = testsToRun.getTestSets();
+        assertTrue( stringJUnitCoreTestSetMap.contains( T1.class ) );
         assertEquals( 2, stringJUnitCoreTestSetMap.size() );
     }
 

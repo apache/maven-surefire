@@ -64,21 +64,27 @@ public class DefaultDirectoryScanner
         {
             String className = testClassNames[i];
 
-            Class testClass;
-            try
-            {
-                testClass = classLoader.loadClass( className );
-            }
-            catch ( ClassNotFoundException e )
-            {
-                throw new RuntimeException( "Unable to create test class '" + className + "'", e );
-            }
+            Class testClass = loadClass( classLoader, className );
 
             if (scannerFilter.accept( testClass)){
                 result.add( testClass );
             }
         }
         return (Class[]) result.toArray( new Class[result.size()] );
+    }
+
+    public static Class loadClass( ClassLoader classLoader, String className )
+    {
+        Class testClass;
+        try
+        {
+            testClass = classLoader.loadClass( className );
+        }
+        catch ( ClassNotFoundException e )
+        {
+            throw new RuntimeException( "Unable to create test class '" + className + "'", e );
+        }
+        return testClass;
     }
 
 
