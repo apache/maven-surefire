@@ -51,9 +51,12 @@ public class StartupConfiguration
         this.redirectTestOutputToFile = redirectTestOutputToFile;
     }
 
-    public static StartupConfiguration inForkedVm(String providerClassName, ClasspathConfiguration classpathConfiguration,
-                                  ClassLoaderConfiguration classLoaderConfiguration){
-        return new StartupConfiguration( providerClassName, classpathConfiguration, classLoaderConfiguration, false, true, false );
+    public static StartupConfiguration inForkedVm( String providerClassName,
+                                                   ClasspathConfiguration classpathConfiguration,
+                                                   ClassLoaderConfiguration classLoaderConfiguration )
+    {
+        return new StartupConfiguration( providerClassName, classpathConfiguration, classLoaderConfiguration, false,
+                                         true, false );
     }
 
     public ClasspathConfiguration getClasspathConfiguration()
@@ -82,4 +85,8 @@ public class StartupConfiguration
         return providerClassName;
     }
 
+    public ClassLoaderConfiguration getClassLoaderConfiguration()
+    {
+        return classLoaderConfiguration;
+    }
 }

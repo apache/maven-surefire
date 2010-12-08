@@ -21,13 +21,13 @@ package org.apache.maven.surefire.suite;
 
 import org.apache.maven.surefire.NonAbstractClassFilter;
 import org.apache.maven.surefire.Surefire;
-import org.apache.maven.surefire.report.ReporterManagerFactory;
-import org.apache.maven.surefire.util.DefaultDirectoryScanner;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterManager;
+import org.apache.maven.surefire.report.ReporterManagerFactory;
 import org.apache.maven.surefire.testset.SurefireTestSet;
 import org.apache.maven.surefire.testset.TestSetFailedException;
+import org.apache.maven.surefire.util.DefaultDirectoryScanner;
 import org.apache.maven.surefire.util.DirectoryScanner;
 
 import java.io.File;
@@ -73,7 +73,8 @@ public abstract class AbstractDirectoryTestSuite
         }
         testSets = new TreeMap();
 
-        Class[] locatedClasses = surefireDirectoryScanner.locateTestClasses( classLoader, new NonAbstractClassFilter() );
+        Class[] locatedClasses =
+            surefireDirectoryScanner.locateTestClasses( classLoader, new NonAbstractClassFilter() );
 
         for ( int i = 0; i < locatedClasses.length; i++ )
         {
@@ -114,6 +115,7 @@ public abstract class AbstractDirectoryTestSuite
 
             executeTestSet( testSet, reporterManagerFactory, classLoader );
         }
+
     }
 
     private void executeTestSet( SurefireTestSet testSet, ReporterManagerFactory reporterManagerFactory,

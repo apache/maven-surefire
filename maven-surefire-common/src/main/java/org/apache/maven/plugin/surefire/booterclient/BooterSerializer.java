@@ -18,21 +18,19 @@ package org.apache.maven.plugin.surefire.booterclient;
  * under the License.
  */
 
-import org.apache.maven.surefire.booter.ProviderConfiguration;
 import org.apache.maven.surefire.booter.BooterConstants;
 import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
+import org.apache.maven.surefire.booter.ProviderConfiguration;
 import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.SystemPropertyManager;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestRequest;
-import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.StringUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -62,31 +60,29 @@ public class BooterSerializer
     }
 
 
-    public File serialize( Properties properties, ProviderConfiguration booterConfiguration, StartupConfiguration providerConfiguration,
-                           Object testSet )
+    public File serialize( Properties properties, ProviderConfiguration booterConfiguration,
+                           StartupConfiguration providerConfiguration, Object testSet )
         throws IOException
     {
         setForkProperties( properties, booterConfiguration, providerConfiguration, testSet );
 
-        SystemPropertyManager systemPropertyManager = new SystemPropertyManager();
-        return systemPropertyManager.writePropertiesFile( properties, forkConfiguration.getTempDirectory(), "surefire",
+        return SystemPropertyManager.writePropertiesFile( properties, forkConfiguration.getTempDirectory(), "surefire",
                                                           forkConfiguration.isDebug() );
     }
 
-    private void setForkProperties(Properties properties, ProviderConfiguration booterConfiguration, StartupConfiguration providerConfiguration, Object testSet)
+    private void setForkProperties( Properties properties, ProviderConfiguration booterConfiguration,
+                                    StartupConfiguration providerConfiguration, Object testSet )
     {
         if ( properties == null )
         {
             throw new IllegalStateException( "Properties cannot be null" );
         }
-        addList( booterConfiguration.getReports(), properties, BooterConstants.REPORT_PROPERTY_PREFIX );
         List params = new ArrayList();
-        params.add( new Object[]{ BooterConstants.DIRSCANNER_OPTIONS, booterConfiguration.getDirScannerParamsArray() } );
+        params.add(
+            new Object[]{ BooterConstants.DIRSCANNER_OPTIONS, booterConfiguration.getDirScannerParamsArray() } );
         addPropertiesForTypeHolder( params, properties, BooterConstants.DIRSCANNER_PROPERTY_PREFIX );
 
         providerConfiguration.getClasspathConfiguration().setForkProperties( properties );
-
-        ReporterConfiguration reporterConfiguration = booterConfiguration.getReporterConfiguration();
 
         TestArtifactInfo testNg = booterConfiguration.getTestArtifact();
         if ( testNg != null )
@@ -136,38 +132,29 @@ public class BooterSerializer
                                     directoryScannerParameters.getTestClassesDirectory().toString() );
         }
 
+        ReporterConfiguration reporterConfiguration = booterConfiguration.getReporterConfiguration();
+        addList( reporterConfiguration.getReports(), properties, BooterConstants.REPORT_PROPERTY_PREFIX );
+
         Boolean rep = reporterConfiguration.isTrimStackTrace();
         properties.setProperty( BooterConstants.ISTRIMSTACKTRACE, rep.toString() );
         properties.setProperty( BooterConstants.REPORTSDIRECTORY,
                                 reporterConfiguration.getReportsDirectory().toString() );
-        ClassLoaderConfiguration classLoaderConfiguration = this.forkConfiguration.getClassLoaderConfiguration();
+        ClassLoaderConfiguration classLoaderConfiguration = providerConfiguration.getClassLoaderConfiguration();
         properties.setProperty( BooterConstants.USESYSTEMCLASSLOADER,
                                 String.valueOf( classLoaderConfiguration.isUseSystemClassLoader() ) );
+        // Note that using isManifestOnlyJarRequestedAndUsable has a really nasty code smell to it.
+        // Should probably be using the staright "isManifestOnlyJar" attribute.
+        // But this actually still does the correct thing as is.
         properties.setProperty( BooterConstants.USEMANIFESTONLYJAR,
                                 String.valueOf( classLoaderConfiguration.isManifestOnlyJarRequestedAndUsable() ) );
         properties.setProperty( BooterConstants.FAILIFNOTESTS,
                                 String.valueOf( booterConfiguration.isFailIfNoTests() ) );
-        properties.setProperty( BooterConstants.PROVIDER_CONFIGURATION,
-                                providerConfiguration.getProviderClassName() );
+        properties.setProperty( BooterConstants.PROVIDER_CONFIGURATION, providerConfiguration.getProviderClassName() );
     }
 
 
-    void writePropertiesFile( File file, String name, Properties properties )
-        throws IOException
+    private String getTypeEncoded( Object value )
     {
-        FileOutputStream out = new FileOutputStream( file );
-
-        try
-        {
-            properties.store( out, name );
-        }
-        finally
-        {
-            IOUtil.close( out );
-        }
-    }
-
-    private String getTypeEncoded(Object value){
         return value.getClass().getName() + "|" + value.toString();
     }
 

@@ -58,10 +58,6 @@ public class ForkConfiguration
 
     private String forkMode;
 
-    private boolean useSystemClassLoader;
-
-    private boolean useManifestOnlyJar;
-
     private Properties systemProperties;
 
     private String jvmExecutable;
@@ -88,11 +84,6 @@ public class ForkConfiguration
         return bootClasspathConfiguration;
     }
 
-    public ClassLoaderConfiguration getClassLoaderConfiguration()
-    {
-        return new ClassLoaderConfiguration( isUseSystemClassLoader(), isUseManifestOnlyJar() );
-    }
-
     public void setForkMode( String forkMode )
     {
         if ( "pertest".equalsIgnoreCase( forkMode ) )
@@ -116,16 +107,6 @@ public class ForkConfiguration
     public boolean isForking()
     {
         return !FORK_NEVER.equals( forkMode );
-    }
-
-    public void setUseSystemClassLoader( boolean useSystemClassLoader )
-    {
-        this.useSystemClassLoader = useSystemClassLoader;
-    }
-
-    public boolean isUseSystemClassLoader()
-    {
-        return useSystemClassLoader;
     }
 
     public void setSystemProperties( Properties systemProperties )
@@ -174,15 +155,16 @@ public class ForkConfiguration
     }
 
     /**
-     * @param classPath cla the classpath arguments
+     * @param classPath              cla the classpath arguments
+     * @param classpathConfiguration the classpath configuration
      * @return A commandline
      * @throws org.apache.maven.surefire.booter.SurefireBooterForkException
      *          when unable to perform the fork
      */
-    public Commandline createCommandLine( List classPath )
+    public Commandline createCommandLine( List classPath, ClassLoaderConfiguration classpathConfiguration )
         throws SurefireBooterForkException
     {
-        return createCommandLine( classPath, isManifestOnlyJarRequestedAndUsable() );
+        return createCommandLine( classPath, classpathConfiguration.isManifestOnlyJarRequestedAndUsable() );
     }
 
     public Commandline createCommandLine( List classPath, boolean useJar )
@@ -298,21 +280,6 @@ public class ForkConfiguration
     public boolean isDebug()
     {
         return debug;
-    }
-
-    public void setUseManifestOnlyJar( boolean useManifestOnlyJar )
-    {
-        this.useManifestOnlyJar = useManifestOnlyJar;
-    }
-
-    public boolean isUseManifestOnlyJar()
-    {
-        return useManifestOnlyJar;
-    }
-
-    public boolean isManifestOnlyJarRequestedAndUsable()
-    {
-        return isUseSystemClassLoader() && isUseManifestOnlyJar();
     }
 
     public String stripNewLines( String argline )

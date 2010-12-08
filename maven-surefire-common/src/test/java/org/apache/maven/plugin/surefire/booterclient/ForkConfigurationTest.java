@@ -39,12 +39,9 @@ public class ForkConfigurationTest
         ForkConfiguration config = getForkConfiguration();
         File cpElement = getTempClasspathFile();
         config.setForkMode( ForkConfiguration.FORK_ONCE );
-        config.setUseSystemClassLoader( true );
-        config.setUseSystemClassLoader( true );
         config.setJvmExecutable( "java" );
 
-        Commandline cli = config.createCommandLine( Collections.singletonList( cpElement.getAbsolutePath() ),
-                                                    config.isUseSystemClassLoader() );
+        Commandline cli = config.createCommandLine( Collections.singletonList( cpElement.getAbsolutePath() ), true );
 
         String line = StringUtils.join( cli.getCommandline(), " " );
         assertTrue( line.indexOf( "-jar" ) > -1 );

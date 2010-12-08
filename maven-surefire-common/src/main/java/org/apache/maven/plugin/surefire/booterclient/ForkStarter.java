@@ -172,8 +172,7 @@ public class ForkStarter
 
             if ( forkConfiguration.getSystemProperties() != null )
             {
-                SystemPropertyManager systemPropertyManager = new SystemPropertyManager();
-                systemProperties = systemPropertyManager.writePropertiesFile( forkConfiguration.getSystemProperties(),
+                systemProperties = SystemPropertyManager.writePropertiesFile( forkConfiguration.getSystemProperties(),
                                                                               forkConfiguration.getTempDirectory(),
                                                                               "surefire", forkConfiguration.isDebug() );
             }
@@ -190,7 +189,8 @@ public class ForkStarter
 
         Classpath bootClasspath = bootClasspathConfiguration.append( additionlClassPathUrls );
 
-        Commandline cli = forkConfiguration.createCommandLine( bootClasspath.getClassPath() );
+        Commandline cli = forkConfiguration.createCommandLine( bootClasspath.getClassPath(),
+                                                               startupConfiguration.getClassLoaderConfiguration() );
 
         cli.createArg().setFile( surefireProperties );
 

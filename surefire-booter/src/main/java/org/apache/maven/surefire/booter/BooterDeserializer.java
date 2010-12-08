@@ -55,7 +55,9 @@ public class BooterDeserializer
 
     final PropertiesWrapper properties;
 
-    public BooterDeserializer(InputStream inputStream ) throws IOException {
+    public BooterDeserializer( InputStream inputStream )
+        throws IOException
+    {
         properties = SystemPropertyManager.loadProperties( inputStream );
     }
 
@@ -155,9 +157,8 @@ public class BooterDeserializer
         ReporterConfiguration reporterConfiguration =
             new ReporterConfiguration( reports, reportsDirectory, valueOf( isTrimStackTrace ) );
 
-        return new ProviderConfiguration(reports, dirScannerParams, failIfNotests,
-                                        reporterConfiguration, testNg, testSuiteDefinition, properties.getProperties(),
-                                        testForFork );
+        return new ProviderConfiguration( dirScannerParams, failIfNotests, reporterConfiguration, testNg,
+                                          testSuiteDefinition, properties.getProperties(), testForFork );
     }
 
     public StartupConfiguration getProviderConfiguration()
@@ -209,7 +210,6 @@ public class BooterDeserializer
                 providerConfiguration = properties.getProperty( PROVIDER_CONFIGURATION );
             }
         }
-
 
         ClassLoaderConfiguration classLoaderConfiguration =
             new ClassLoaderConfiguration( useSystemClassLoader, useManifestOnlyJar );

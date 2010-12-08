@@ -29,6 +29,7 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.surefire.booterclient.ForkConfiguration;
 import org.apache.maven.plugin.surefire.booterclient.ForkStarter;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.apache.maven.surefire.booter.SurefireExecutionException;
 import org.apache.maven.toolchain.ToolchainManager;
@@ -577,7 +578,8 @@ public class SurefirePlugin
             {
                 ProviderInfo provider = (ProviderInfo) iter.next();
                 forkConfiguration = getForkConfiguration();
-                ForkStarter forkStarter = createForkStarter( provider, forkConfiguration );
+                ClassLoaderConfiguration classLoaderConfiguration = getClassLoaderConfiguration( forkConfiguration );
+                ForkStarter forkStarter = createForkStarter( provider, forkConfiguration, classLoaderConfiguration );
 
                 try
                 {

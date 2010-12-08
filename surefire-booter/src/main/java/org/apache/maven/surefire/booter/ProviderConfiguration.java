@@ -53,8 +53,6 @@ public class ProviderConfiguration
 
     private final ReporterConfiguration reporterConfiguration;
 
-    private final List reports;
-
     private final TestArtifactInfo testArtifact;
 
     private final TestRequest testSuiteDefinition;
@@ -65,10 +63,9 @@ public class ProviderConfiguration
 
     private final Object forkTestSet;
 
-    public ProviderConfiguration( List reports, DirectoryScannerParameters directoryScannerParameters,
-                                  boolean failIfNoTests, ReporterConfiguration reporterConfiguration,
-                                  TestArtifactInfo testArtifact, TestRequest testSuiteDefinition,
-                                  Properties providerProperties, Object forkTestSet )
+    public ProviderConfiguration( DirectoryScannerParameters directoryScannerParameters, boolean failIfNoTests,
+                                  ReporterConfiguration reporterConfiguration, TestArtifactInfo testArtifact,
+                                  TestRequest testSuiteDefinition, Properties providerProperties, Object forkTestSet )
     {
         this.providerProperties = providerProperties;
         this.reporterConfiguration = reporterConfiguration;
@@ -76,7 +73,6 @@ public class ProviderConfiguration
         this.testSuiteDefinition = testSuiteDefinition;
         this.dirScannerParams = directoryScannerParameters;
         this.failIfNoTests = failIfNoTests;
-        this.reports = reports;
         this.forkTestSet = forkTestSet;
     }
 
@@ -86,11 +82,6 @@ public class ProviderConfiguration
         return reporterConfiguration;
     }
 
-
-    public List getReports()
-    {
-        return reports;
-    }
 
     public Boolean isFailIfNoTests()
     {
