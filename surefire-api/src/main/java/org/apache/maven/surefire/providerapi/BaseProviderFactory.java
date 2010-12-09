@@ -20,6 +20,7 @@ package org.apache.maven.surefire.providerapi;
  */
 
 import org.apache.maven.surefire.report.ReporterConfiguration;
+import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.ReporterManagerFactory;
 import org.apache.maven.surefire.report.ReporterManagerFactory2;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
@@ -63,9 +64,9 @@ public class BaseProviderFactory
                                             directoryScannerParameters.getExcludes() );
     }
 
-    public ReporterManagerFactory getReporterManagerFactory()
+    public ReporterFactory getReporterFactory()
     {
-        ReporterManagerFactory reporterManagerFactory =
+        ReporterFactory reporterManagerFactory =
             new ReporterManagerFactory2( surefireClassLoader, reporterConfiguration );
         if ( providerProperties != null )
         {

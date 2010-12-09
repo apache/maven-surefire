@@ -1,6 +1,7 @@
 package org.apache.maven.surefire.providerapi;
 
 import org.apache.maven.surefire.report.ReporterConfiguration;
+import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.ReporterManagerFactory;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
@@ -27,7 +28,7 @@ public interface ProviderParameters
      * Provides features for creating reporting objects
      * @return A ReporterManagerFactory that allows the creation of one or more ReporterManagers
      */
-    ReporterManagerFactory getReporterManagerFactory();
+    ReporterFactory getReporterFactory();
 
     /**
      * The raw parameters used in creating the directory scanner

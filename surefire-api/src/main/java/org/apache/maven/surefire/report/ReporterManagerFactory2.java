@@ -40,7 +40,7 @@ import java.util.List;
  * @author Kristian Rosenvold (extracted factory)
  */
 public class ReporterManagerFactory2
-    extends ReporterManagerFactory
+    extends ReporterManagerFactory implements ReporterFactory
 {
     private final ReporterConfiguration reporterConfiguration;
 

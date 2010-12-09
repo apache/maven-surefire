@@ -23,6 +23,7 @@ import org.apache.maven.surefire.NonAbstractClassFilter;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
 import org.apache.maven.surefire.report.ReporterException;
+import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.ReporterManagerFactory;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
@@ -37,7 +38,7 @@ import java.util.Iterator;
 public class JUnitCoreProvider
     implements SurefireProvider
 {
-    private final ReporterManagerFactory reporterManagerFactory;
+    private final ReporterFactory reporterFactory;
 
     private final ClassLoader testClassLoader;
 
@@ -52,7 +53,7 @@ public class JUnitCoreProvider
     @SuppressWarnings( { "UnusedDeclaration" } )
     public JUnitCoreProvider( ProviderParameters booterParameters )
     {
-        this.reporterManagerFactory = booterParameters.getReporterManagerFactory();
+        this.reporterFactory = booterParameters.getReporterFactory();
         this.testClassLoader = booterParameters.getTestClassLoader();
         this.directoryScanner = booterParameters.getDirectoryScanner();
         this.jUnitCoreParameters = new JUnitCoreParameters( booterParameters.getProviderProperties() );
@@ -74,7 +75,7 @@ public class JUnitCoreProvider
         throws TestSetFailedException, ReporterException
     {
         final String message = "Concurrency config is " + jUnitCoreParameters.toString();
-        this.reporterManagerFactory.createReporterManager().writeConsoleMessage( message );
+        this.reporterFactory.createReporterManager().writeConsoleMessage( message );
 
         if ( testsToRun == null )
         {
@@ -82,9 +83,9 @@ public class JUnitCoreProvider
                 ? scanClassPath()
                 : TestsToRun.fromClassName( (String) forkTestSet, testClassLoader );
         }
-        JUnitCoreWrapper.execute( testsToRun.getLocatedClasses(), this.reporterManagerFactory, jUnitCoreParameters );
-        reporterManagerFactory.warnIfNoTests();
-        return reporterManagerFactory.close();
+        JUnitCoreWrapper.execute( testsToRun.getLocatedClasses(), ( ReporterManagerFactory)this.reporterFactory, jUnitCoreParameters );
+        reporterFactory.warnIfNoTests();
+        return reporterFactory.close();
     }
 
     private TestsToRun scanClassPath()

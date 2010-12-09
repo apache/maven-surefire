@@ -23,6 +23,7 @@ import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterException;
+import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.ReporterManagerFactory;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.suite.SurefireTestSuite;
@@ -49,7 +50,7 @@ public class TestNGProvider
 
     private final ReporterConfiguration reporterConfiguration;
 
-    private final ReporterManagerFactory reporterManagerFactory;
+    private final ReporterFactory reporterFactory;
 
     private final ClassLoader testClassLoader;
 
@@ -61,7 +62,7 @@ public class TestNGProvider
 
     public TestNGProvider( ProviderParameters booterParameters )
     {
-        this.reporterManagerFactory = booterParameters.getReporterManagerFactory();
+        this.reporterFactory = booterParameters.getReporterFactory();
         this.testClassLoader = booterParameters.getTestClassLoader();
         this.directoryScannerParameters = booterParameters.getDirectoryScannerParameters();
         this.providerProperties = booterParameters.getProviderProperties();
@@ -83,14 +84,14 @@ public class TestNGProvider
         suite.locateTestSets( testClassLoader );
         if ( forkTestSet != null && testRequest == null )
         {
-            suite.execute( (String) forkTestSet, reporterManagerFactory, testClassLoader );
+            suite.execute( (String) forkTestSet, (ReporterManagerFactory)reporterFactory, testClassLoader );
         }
         else
         {
-            suite.execute( reporterManagerFactory, testClassLoader );
+            suite.execute( (ReporterManagerFactory)reporterFactory, testClassLoader );
         }
-        reporterManagerFactory.warnIfNoTests();
-        return reporterManagerFactory.close();
+        reporterFactory.warnIfNoTests();
+        return reporterFactory.close();
     }
 
     boolean isTestNGXmlTestSuite( TestRequest testSuiteDefinition )

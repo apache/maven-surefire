@@ -22,6 +22,7 @@ package org.apache.maven.surefire.testprovider;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
 import org.apache.maven.surefire.report.ReporterException;
+import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.ReporterManagerFactory;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
@@ -34,12 +35,12 @@ import java.util.Iterator;
 public class TestProvider
     implements SurefireProvider
 {
-    private final ReporterManagerFactory reporterManagerFactory;
+    private final ReporterFactory reporterManagerFactory;
     private final ClassLoader testClassLoader;
 
     public TestProvider( ProviderParameters booterParameters )
     {
-        this.reporterManagerFactory = booterParameters.getReporterManagerFactory();
+        this.reporterManagerFactory = booterParameters.getReporterFactory();
         this.testClassLoader = booterParameters.getTestClassLoader();
     }
 

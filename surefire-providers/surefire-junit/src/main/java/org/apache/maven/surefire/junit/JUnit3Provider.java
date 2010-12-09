@@ -22,6 +22,7 @@ package org.apache.maven.surefire.junit;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
 import org.apache.maven.surefire.report.ReporterException;
+import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.ReporterManagerFactory;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
@@ -36,7 +37,7 @@ import java.util.Iterator;
 public class JUnit3Provider
     implements SurefireProvider
 {
-    private final ReporterManagerFactory reporterManagerFactory;
+    private final ReporterFactory reporterFactory;
 
     private final ClassLoader testClassLoader;
 
@@ -44,7 +45,7 @@ public class JUnit3Provider
 
     public JUnit3Provider( ProviderParameters booterParameters )
     {
-        this.reporterManagerFactory = booterParameters.getReporterManagerFactory();
+        this.reporterFactory = booterParameters.getReporterFactory();
         this.testClassLoader = booterParameters.getTestClassLoader();
         this.directoryScanner = booterParameters.getDirectoryScanner();
     }
@@ -56,16 +57,16 @@ public class JUnit3Provider
         suite.locateTestSets( testClassLoader );
         if ( forkTestSet != null )
         {
-            suite.execute( (String) forkTestSet, reporterManagerFactory, testClassLoader );
+            suite.execute( (String) forkTestSet, (ReporterManagerFactory) reporterFactory, testClassLoader );
         }
         else
         {
-            suite.execute( reporterManagerFactory, testClassLoader );
+            suite.execute( (ReporterManagerFactory) reporterFactory, testClassLoader );
         }
 
-        reporterManagerFactory.warnIfNoTests();
+        reporterFactory.warnIfNoTests();
 
-        return reporterManagerFactory.close();
+        return reporterFactory.close();
     }
 
     private JUnitDirectoryTestSuite getSuite()
