@@ -54,7 +54,7 @@ public class SurefireReflector
 
     private final Class reporterConfiguration;
 
-    private final Class testSuiteDefinition;
+    private final Class testRequest;
 
     private final Class testArtifactInfo;
 
@@ -86,7 +86,7 @@ public class SurefireReflector
         try
         {
             reporterConfiguration = surefireClassLoader.loadClass( ReporterConfiguration.class.getName() );
-            testSuiteDefinition = surefireClassLoader.loadClass( TestRequest.class.getName() );
+            testRequest = surefireClassLoader.loadClass( TestRequest.class.getName() );
             testArtifactInfo = surefireClassLoader.loadClass( TestArtifactInfo.class.getName() );
             testArtifactInfoAware = surefireClassLoader.loadClass( TestArtifactInfoAware.class.getName() );
             directoryScannerParameters = surefireClassLoader.loadClass( DirectoryScannerParameters.class.getName() );
@@ -153,8 +153,8 @@ public class SurefireReflector
         {
             return null;
         }
-        Class[] arguments = { Object[].class, File.class, String.class };
-        Constructor constructor = getConstructor( this.testSuiteDefinition, arguments );
+        Class[] arguments = { List.class, File.class, String.class };
+        Constructor constructor = getConstructor( this.testRequest, arguments );
         return newInstance( constructor,
                             new Object[]{ suiteDefinition.getSuiteXmlFiles(), suiteDefinition.getTestSourceDirectory(),
                                 suiteDefinition.getRequestedTest() } );
@@ -382,7 +382,7 @@ public class SurefireReflector
     void setTestSuiteDefinition( Object o, TestRequest testSuiteDefinition1 )
     {
         final Object param = createTestSuiteDefinition( testSuiteDefinition1 );
-        final Method setter = getMethod( o, "setTestRequest", new Class[]{ testSuiteDefinition } );
+        final Method setter = getMethod( o, "setTestRequest", new Class[]{ testRequest } );
         invokeSetter( o, setter, param );
     }
 

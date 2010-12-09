@@ -20,6 +20,7 @@ package org.apache.maven.plugin.surefire.booterclient;
 
 import org.apache.maven.surefire.booter.BooterConstants;
 import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
+import org.apache.maven.surefire.booter.PropertiesWrapper;
 import org.apache.maven.surefire.booter.ProviderConfiguration;
 import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.SystemPropertyManager;
@@ -54,71 +55,40 @@ public class BooterSerializer
 {
     private final ForkConfiguration forkConfiguration;
 
-    public BooterSerializer( ForkConfiguration forkConfiguration )
+    private final PropertiesWrapper properties;
+
+    public BooterSerializer( ForkConfiguration forkConfiguration, Properties properties )
     {
         this.forkConfiguration = forkConfiguration;
+        this.properties = new PropertiesWrapper( properties );
     }
 
 
-    public File serialize( Properties properties, ProviderConfiguration booterConfiguration,
-                           StartupConfiguration providerConfiguration, Object testSet )
+    public File serialize( ProviderConfiguration booterConfiguration, StartupConfiguration providerConfiguration,
+                           Object testSet )
         throws IOException
     {
-        setForkProperties( properties, booterConfiguration, providerConfiguration, testSet );
-
-        return SystemPropertyManager.writePropertiesFile( properties, forkConfiguration.getTempDirectory(), "surefire",
-                                                          forkConfiguration.isDebug() );
-    }
-
-    private void setForkProperties( Properties properties, ProviderConfiguration booterConfiguration,
-                                    StartupConfiguration providerConfiguration, Object testSet )
-    {
-        if ( properties == null )
-        {
-            throw new IllegalStateException( "Properties cannot be null" );
-        }
         List params = new ArrayList();
         params.add(
             new Object[]{ BooterConstants.DIRSCANNER_OPTIONS, booterConfiguration.getDirScannerParamsArray() } );
-        addPropertiesForTypeHolder( params, properties, BooterConstants.DIRSCANNER_PROPERTY_PREFIX );
+        addPropertiesForTypeHolder( params, properties.getProperties(), BooterConstants.DIRSCANNER_PROPERTY_PREFIX );
 
-        providerConfiguration.getClasspathConfiguration().setForkProperties( properties );
+        providerConfiguration.getClasspathConfiguration().setForkProperties( properties.getProperties() );
 
         TestArtifactInfo testNg = booterConfiguration.getTestArtifact();
         if ( testNg != null )
         {
-            if ( testNg.getVersion() != null )
-            {
-                properties.setProperty( BooterConstants.TESTARTIFACT_VERSION, testNg.getVersion() );
-            }
-            if ( testNg.getClassifier() != null )
-            {
-                properties.setProperty( BooterConstants.TESTARTIFACT_CLASSIFIER, testNg.getClassifier() );
-            }
+            properties.setProperty( BooterConstants.TESTARTIFACT_VERSION, testNg.getVersion() );
+            properties.setProperty( BooterConstants.TESTARTIFACT_CLASSIFIER, testNg.getClassifier() );
         }
 
-        if ( testSet != null )
-        {
-            properties.setProperty( BooterConstants.FORKTESTSET, getTypeEncoded( testSet ) );
-        }
-
+        properties.setProperty( BooterConstants.FORKTESTSET, getTypeEncoded( testSet ) );
         TestRequest testSuiteDefinition = booterConfiguration.getTestSuiteDefinition();
         if ( testSuiteDefinition != null )
         {
-            if ( testSuiteDefinition.getTestSourceDirectory() != null )
-            {
-                properties.setProperty( BooterConstants.SOURCE_DIRECTORY,
-                                        testSuiteDefinition.getTestSourceDirectory().toString() );
-            }
-            if ( testSuiteDefinition.getSuiteXmlFiles() != null )
-            {
-                properties.setProperty( BooterConstants.TEST_SUITE_XML_FILES,
-                                        getValues( testSuiteDefinition.getSuiteXmlFiles() ) );
-            }
-            if ( testSuiteDefinition.getRequestedTest() != null )
-            {
-                properties.setProperty( BooterConstants.REQUESTEDTEST, testSuiteDefinition.getRequestedTest() );
-            }
+            properties.setProperty( BooterConstants.SOURCE_DIRECTORY, testSuiteDefinition.getTestSourceDirectory() );
+            properties.addList( testSuiteDefinition.getSuiteXmlFiles(), BooterConstants.TEST_SUITE_XML_FILES );
+            properties.setProperty( BooterConstants.REQUESTEDTEST, testSuiteDefinition.getRequestedTest() );
         }
 
         DirectoryScannerParameters directoryScannerParameters = booterConfiguration.getDirScannerParams();
@@ -126,35 +96,41 @@ public class BooterSerializer
         {
             properties.setProperty( BooterConstants.FAILIFNOTESTS,
                                     String.valueOf( directoryScannerParameters.isFailIfNoTests() ) );
-            addList( directoryScannerParameters.getIncludes(), properties, BooterConstants.INCLUDES_PROPERTY_PREFIX );
-            addList( directoryScannerParameters.getExcludes(), properties, BooterConstants.EXCLUDES_PROPERTY_PREFIX );
+            properties.addList( directoryScannerParameters.getIncludes(), BooterConstants.INCLUDES_PROPERTY_PREFIX );
+            properties.addList( directoryScannerParameters.getExcludes(), BooterConstants.EXCLUDES_PROPERTY_PREFIX );
             properties.setProperty( BooterConstants.TEST_CLASSES_DIRECTORY,
-                                    directoryScannerParameters.getTestClassesDirectory().toString() );
+                                    directoryScannerParameters.getTestClassesDirectory() );
         }
 
         ReporterConfiguration reporterConfiguration = booterConfiguration.getReporterConfiguration();
-        addList( reporterConfiguration.getReports(), properties, BooterConstants.REPORT_PROPERTY_PREFIX );
+        addList( reporterConfiguration.getReports(), properties.getProperties(),
+                 BooterConstants.REPORT_PROPERTY_PREFIX );
 
         Boolean rep = reporterConfiguration.isTrimStackTrace();
-        properties.setProperty( BooterConstants.ISTRIMSTACKTRACE, rep.toString() );
+        properties.setProperty( BooterConstants.ISTRIMSTACKTRACE, rep );
         properties.setProperty( BooterConstants.REPORTSDIRECTORY,
-                                reporterConfiguration.getReportsDirectory().toString() );
+                                reporterConfiguration.getReportsDirectory());
         ClassLoaderConfiguration classLoaderConfiguration = providerConfiguration.getClassLoaderConfiguration();
         properties.setProperty( BooterConstants.USESYSTEMCLASSLOADER,
                                 String.valueOf( classLoaderConfiguration.isUseSystemClassLoader() ) );
-        // Note that using isManifestOnlyJarRequestedAndUsable has a really nasty code smell to it.
-        // Should probably be using the staright "isManifestOnlyJar" attribute.
-        // But this actually still does the correct thing as is.
         properties.setProperty( BooterConstants.USEMANIFESTONLYJAR,
-                                String.valueOf( classLoaderConfiguration.isManifestOnlyJarRequestedAndUsable() ) );
+                                String.valueOf( classLoaderConfiguration.isUseManifestOnlyJar() ) );
         properties.setProperty( BooterConstants.FAILIFNOTESTS,
                                 String.valueOf( booterConfiguration.isFailIfNoTests() ) );
         properties.setProperty( BooterConstants.PROVIDER_CONFIGURATION, providerConfiguration.getProviderClassName() );
+
+        return SystemPropertyManager.writePropertiesFile( properties.getProperties(),
+                                                          forkConfiguration.getTempDirectory(), "surefire",
+                                                          forkConfiguration.isDebug() );
     }
 
 
     private String getTypeEncoded( Object value )
     {
+        if ( value == null )
+        {
+            return null;
+        }
         return value.getClass().getName() + "|" + value.toString();
     }
 

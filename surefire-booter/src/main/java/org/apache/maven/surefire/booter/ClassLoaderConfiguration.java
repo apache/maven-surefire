@@ -43,6 +43,11 @@ public class ClassLoaderConfiguration
         return useSystemClassLoader;
     }
 
+    public boolean isUseManifestOnlyJar()
+    {
+        return useManifestOnlyJar;
+    }
+
     public boolean isManifestOnlyJarRequestedAndUsable()
     {
         return isUseSystemClassLoader() && useManifestOnlyJar;

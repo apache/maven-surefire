@@ -21,15 +21,14 @@ package org.apache.maven.surefire.booter;
 
 import org.apache.maven.surefire.util.NestedRuntimeException;
 
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import java.util.SortedMap;
 
 /**
  * Represents the classpaths for the BooterConfiguration.
@@ -43,9 +42,9 @@ import java.util.SortedMap;
 public class ClasspathConfiguration
 {
 
-    private final Classpath classpathUrls = new Classpath();
+    private final Classpath classpathUrls;
 
-    private final Classpath surefireClasspathUrls = new Classpath();
+    private final Classpath surefireClasspathUrls;
 
     /**
      * Whether to enable assertions or not (can be affected by the fork arguments, and the ability to do so based on the
@@ -59,30 +58,28 @@ public class ClasspathConfiguration
 
     public ClasspathConfiguration( boolean enableAssertions, boolean childDelegation )
     {
-        this.enableAssertions = enableAssertions;
-        this.childDelegation = childDelegation;
+        this( new ArrayList(), new ArrayList(), enableAssertions, childDelegation);
     }
 
     /*
    * Reads the config from the supplied stream. Closes the stream.
     */
-    public ClasspathConfiguration( SortedMap classPathUrls, SortedMap surefireClassPathUrls, boolean enableAssertions,
+    public ClasspathConfiguration( List classPathUrls, List surefireClassPathUrls, boolean enableAssertions,
                                    boolean childDelegation )
-        throws IOException
     {
 
         this.enableAssertions = enableAssertions;
         this.childDelegation = childDelegation;
-        for ( Iterator cpi = classPathUrls.keySet().iterator(); cpi.hasNext(); )
+        this.classpathUrls = new Classpath();
+        for ( Iterator cpi = classPathUrls.iterator(); cpi.hasNext(); )
         {
-            String url = (String) classPathUrls.get( cpi.next() );
-            this.classpathUrls.addClassPathElementUrl( url );
+            this.classpathUrls.addClassPathElementUrl( (String) cpi.next() );
         }
 
-        for ( Iterator scpi = surefireClassPathUrls.keySet().iterator(); scpi.hasNext(); )
+        this.surefireClasspathUrls = new Classpath();
+        for ( Iterator scpi = surefireClassPathUrls.iterator(); scpi.hasNext(); )
         {
-            String url = (String) surefireClassPathUrls.get( scpi.next() );
-            this.surefireClasspathUrls.addClassPathElementUrl( url );
+            this.surefireClasspathUrls.addClassPathElementUrl( (String) scpi.next() );
         }
     }
 

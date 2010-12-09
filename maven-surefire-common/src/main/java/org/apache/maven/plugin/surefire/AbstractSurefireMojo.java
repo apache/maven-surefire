@@ -268,7 +268,8 @@ public abstract class AbstractSurefireMojo
         final boolean isTestNg = testNgArtifact != null;
         TestArtifactInfo testNg =
             isTestNg ? new TestArtifactInfo( testNgArtifact.getVersion(), testNgArtifact.getClassifier() ) : null;
-        TestRequest testSuiteDefinition = new TestRequest( getSuiteXmlFiles(), getTestSourceDirectory(), getTest() );
+        List testXml = getSuiteXmlFiles() != null ? Arrays.asList( getSuiteXmlFiles() ) : null;
+        TestRequest testSuiteDefinition = new TestRequest( testXml, getTestSourceDirectory(), getTest() );
         final boolean failIfNoTests;
 
         if ( isValidSuiteXmlFileConfig() && getTest() == null )

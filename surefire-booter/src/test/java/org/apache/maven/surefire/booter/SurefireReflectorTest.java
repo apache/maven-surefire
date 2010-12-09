@@ -29,6 +29,7 @@ import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Properties;
 
 /**
@@ -57,7 +58,7 @@ public class SurefireReflectorTest
         Object foo = getFoo();
 
         TestRequest testSuiteDefinition =
-            new TestRequest( new Object[]{  new File("file1"),new File("file2") }, new File( "TestSOurce" ), "aUserRequestedTest" );
+            new TestRequest( Arrays.asList( new File[]{new File("file1"),new File("file2")} ), new File( "TestSOurce" ), "aUserRequestedTest" );
         assertTrue( surefireReflector.isTestSuiteDefinitionAware( foo ) );
         surefireReflector.setTestSuiteDefinition( foo, testSuiteDefinition );
         assertTrue( isCalled( foo ).booleanValue() );

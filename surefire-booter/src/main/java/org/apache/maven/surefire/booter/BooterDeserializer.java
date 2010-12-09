@@ -27,12 +27,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Properties;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * Knows how to serialize and deserialize the booter configuration.
@@ -64,158 +59,55 @@ public class BooterDeserializer
     public ProviderConfiguration deserialize()
         throws IOException
     {
-        DirectoryScannerParameters dirScannerParams;
-        boolean failIfNotests = false;  // todo; check this out.
 
-        SortedMap reportsMap = new TreeMap();
+        final File reportsDirectory = new File( properties.getProperty( REPORTSDIRECTORY ) );
+        final String testNgVersion = properties.getProperty( TESTARTIFACT_VERSION );
+        final String testArtifactClassifier = properties.getProperty( TESTARTIFACT_CLASSIFIER );
+        final Object testForFork = properties.getTypeDecoded( FORKTESTSET );
+        final String requestedTest = properties.getProperty( REQUESTEDTEST );
+        final File sourceDirectory =
+            (File) getParamValue( properties.getProperty( SOURCE_DIRECTORY ), File.class.getName() );
 
-        boolean isTrimStackTrace = false;
-        File reportsDirectory = null;
+        final List reports = properties.getStringList( REPORT_PROPERTY_PREFIX );
+        final List excludesList = properties.getStringList( EXCLUDES_PROPERTY_PREFIX );
+        final List includesList = properties.getStringList( INCLUDES_PROPERTY_PREFIX );
 
-        String testNgVersion = null;
-        String testNgClassifier = null;
-        Object testForFork = null;
-        String requestedTest = null;
-        File sourceDirectory = null;
-        Object[] testSuiteXmlFiles = null;
-        SortedMap includes = new TreeMap();
-        SortedMap excludes = new TreeMap();
-        File testClassesDirectory = null;
+        List testSuiteXmlFiles = properties.getStringList( TEST_SUITE_XML_FILES );
+        final File testClassesDirectory = properties.getFileProperty( TEST_CLASSES_DIRECTORY );
 
-        for ( Enumeration e = properties.propertyNames(); e.hasMoreElements(); )
-        {
-            String name = (String) e.nextElement();
+        DirectoryScannerParameters dirScannerParams =
+            new DirectoryScannerParameters( testClassesDirectory, includesList, excludesList,
+                                            valueOf( properties.getBooleanProperty( FAILIFNOTESTS ) ) );
 
-            if ( name.startsWith( REPORT_PROPERTY_PREFIX ) && !isTypeHolderProperty( name ) )
-            {
-                String className = properties.getProperty( name );
-                reportsMap.put( name, className );
-            }
-            else if ( name.startsWith( INCLUDES_PROPERTY_PREFIX ) && !isTypeHolderProperty( name ) )
-            {
-                String className = properties.getProperty( name );
-                includes.put( name, className );
-            }
-            else if ( name.startsWith( EXCLUDES_PROPERTY_PREFIX ) && !isTypeHolderProperty( name ) )
-            {
-                String className = properties.getProperty( name );
-                excludes.put( name, className );
-            }
-            else if ( FAILIFNOTESTS.equals( name ) )
-            {
-                failIfNotests = properties.getBooleanProperty( FAILIFNOTESTS );
-            }
-            else if ( ISTRIMSTACKTRACE.equals( name ) )
-            {
-                failIfNotests = properties.getBooleanProperty( ISTRIMSTACKTRACE );
-            }
-            else if ( REPORTSDIRECTORY.equals( name ) )
-            {
-                reportsDirectory = new File( properties.getProperty( REPORTSDIRECTORY ) );
-            }
-            else if ( TESTARTIFACT_VERSION.equals( name ) )
-            {
-                testNgVersion = properties.getProperty( TESTARTIFACT_VERSION );
-            }
-            else if ( TESTARTIFACT_CLASSIFIER.equals( name ) )
-            {
-                testNgClassifier = properties.getProperty( TESTARTIFACT_CLASSIFIER );
-            }
-            else if ( FORKTESTSET.equals( name ) )
-            {
-                testForFork = getTypeDecoded( properties.getProperty( FORKTESTSET ) );
-            }
-            else if ( REQUESTEDTEST.equals( name ) )
-            {
-                requestedTest = properties.getProperty( REQUESTEDTEST );
-            }
-            else if ( SOURCE_DIRECTORY.equals( name ) )
-            {
-                sourceDirectory =
-                    (File) getParamValue( properties.getProperty( SOURCE_DIRECTORY ), File.class.getName() );
-            }
-            else if ( TEST_CLASSES_DIRECTORY.equals( name ) )
-            {
-                testClassesDirectory =
-                    (File) getParamValue( properties.getProperty( TEST_CLASSES_DIRECTORY ), File.class.getName() );
-            }
-            else if ( TEST_SUITE_XML_FILES.equals( name ) )
-            {
-                testSuiteXmlFiles = constructParamObjects( properties.getProperty( TEST_SUITE_XML_FILES ), File.class );
-            }
-        }
-
-        dirScannerParams = new DirectoryScannerParameters( testClassesDirectory, new ArrayList( includes.values() ),
-                                                           new ArrayList( excludes.values() ),
-                                                           valueOf( failIfNotests ) );
-
-        TestArtifactInfo testNg = new TestArtifactInfo( testNgVersion, testNgClassifier );
+        TestArtifactInfo testNg = new TestArtifactInfo( testNgVersion, testArtifactClassifier );
         TestRequest testSuiteDefinition = new TestRequest( testSuiteXmlFiles, sourceDirectory, requestedTest );
 
-        List reports = new ArrayList( reportsMap.values() );
+        ReporterConfiguration reporterConfiguration = new ReporterConfiguration( reports, reportsDirectory, valueOf(
+            properties.getBooleanProperty( ISTRIMSTACKTRACE ) ) );
 
-        ReporterConfiguration reporterConfiguration =
-            new ReporterConfiguration( reports, reportsDirectory, valueOf( isTrimStackTrace ) );
-
-        return new ProviderConfiguration( dirScannerParams, failIfNotests, reporterConfiguration, testNg,
-                                          testSuiteDefinition, properties.getProperties(), testForFork );
+        return new ProviderConfiguration( dirScannerParams, properties.getBooleanProperty( FAILIFNOTESTS ),
+                                          reporterConfiguration, testNg, testSuiteDefinition,
+                                          properties.getProperties(), testForFork );
     }
 
     public StartupConfiguration getProviderConfiguration()
         throws IOException
     {
-        boolean enableAssertions = false;
-        boolean childDelegation = true;
-        boolean useSystemClassLoader = false; // todo check default value
-        boolean useManifestOnlyJar = false; // todo check default value
+        boolean enableAssertions = properties.getBooleanProperty( ENABLE_ASSERTIONS );
+        boolean childDelegation = properties.getBooleanProperty( CHILD_DELEGATION );
+        boolean useSystemClassLoader = properties.getBooleanProperty( USESYSTEMCLASSLOADER );
+        boolean useManifestOnlyJar = properties.getBooleanProperty( USEMANIFESTONLYJAR );
+        String providerConfiguration = properties.getProperty( PROVIDER_CONFIGURATION );
 
-        SortedMap classPathUrls = new TreeMap();
 
-        SortedMap surefireClassPathUrls = new TreeMap();
-
-        String providerConfiguration = null;
-
-        for ( Enumeration e = properties.propertyNames(); e.hasMoreElements(); )
-        {
-            String name = (String) e.nextElement();
-
-            if ( name.startsWith( CLASSPATH_URL ) )
-            {
-                classPathUrls.put( Integer.valueOf( name.substring( name.indexOf( '.' ) + 1 ) ),
-                                   properties.getProperty( name ) );
-            }
-            else if ( name.startsWith( SUREFIRE_CLASSPATHURL ) )
-            {
-                surefireClassPathUrls.put( Integer.valueOf( name.substring( name.indexOf( '.' ) + 1 ) ),
-                                           properties.getProperty( name ) );
-            }
-            else if ( CHILD_DELEGATION.equals( name ) )
-            {
-                childDelegation = properties.getBooleanProperty( CHILD_DELEGATION );
-            }
-            else if ( ENABLE_ASSERTIONS.equals( name ) )
-            {
-                enableAssertions = properties.getBooleanProperty( ENABLE_ASSERTIONS );
-            }
-            else if ( USESYSTEMCLASSLOADER.equals( name ) )
-            {
-                useSystemClassLoader = properties.getBooleanProperty( USESYSTEMCLASSLOADER );
-            }
-            else if ( USEMANIFESTONLYJAR.equals( name ) )
-            {
-                useManifestOnlyJar = properties.getBooleanProperty( USEMANIFESTONLYJAR );
-            }
-            else if ( PROVIDER_CONFIGURATION.equals( name ) )
-            {
-                providerConfiguration = properties.getProperty( PROVIDER_CONFIGURATION );
-            }
-        }
+        final List classpath = properties.getStringList( CLASSPATH_URL );
+        final List sureFireClasspath = properties.getStringList( SUREFIRE_CLASSPATHURL );
 
         ClassLoaderConfiguration classLoaderConfiguration =
             new ClassLoaderConfiguration( useSystemClassLoader, useManifestOnlyJar );
 
         ClasspathConfiguration classpathConfiguration =
-            new ClasspathConfiguration( classPathUrls, surefireClassPathUrls, enableAssertions, childDelegation );
+            new ClasspathConfiguration( classpath, sureFireClasspath, enableAssertions, childDelegation );
 
         return StartupConfiguration.inForkedVm( providerConfiguration, classpathConfiguration,
                                                 classLoaderConfiguration );
@@ -224,11 +116,6 @@ public class BooterDeserializer
     private Boolean valueOf( boolean aBoolean )
     {  // jdk1.3 compat
         return aBoolean ? Boolean.TRUE : Boolean.FALSE;
-    }
-
-    private boolean isTypeHolderProperty( String name )
-    {
-        return name.endsWith( PARAMS_SUFIX ) || name.endsWith( TYPES_SUFIX );
     }
 
     private static List processStringList( String stringList )
@@ -269,14 +156,6 @@ public class BooterDeserializer
             }
         }
         return paramObjects;
-    }
-
-    private static Object getTypeDecoded( String typeEncoded )
-    {
-        int typeSep = typeEncoded.indexOf( "|" );
-        String type = typeEncoded.substring( 0, typeSep );
-        String value = typeEncoded.substring( typeSep + 1 );
-        return getParamValue( value, type );
     }
 
     private static Object getParamValue( String param, String typeName )

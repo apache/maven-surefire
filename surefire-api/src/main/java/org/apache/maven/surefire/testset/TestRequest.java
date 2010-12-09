@@ -20,6 +20,8 @@ package org.apache.maven.surefire.testset;
  */
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Information about the requested test.
@@ -28,20 +30,20 @@ import java.io.File;
  */
 public class TestRequest
 {
-    private final File[] suiteXmlFiles;
+    private final List suiteXmlFiles;
 
     private final File testSourceDirectory;
 
     private final String requestedTest;
 
-    public TestRequest( Object[] suiteXmlFiles, File testSourceDirectory, String requestedTest )
+    public TestRequest( List suiteXmlFiles, File testSourceDirectory, String requestedTest )
     {
         this.suiteXmlFiles = createFiles( suiteXmlFiles );
         this.testSourceDirectory = testSourceDirectory;
         this.requestedTest = requestedTest;
     }
 
-    public File[] getSuiteXmlFiles()
+    public List getSuiteXmlFiles()
     {
         return suiteXmlFiles;
     }
@@ -56,16 +58,16 @@ public class TestRequest
         return requestedTest;
     }
 
-    private static File[] createFiles( Object[] suiteXmlFiles )
+    private static List createFiles( List suiteXmlFiles )
     {
         if ( suiteXmlFiles != null )
         {
-            File[] files = new File[suiteXmlFiles.length];
+            List files = new ArrayList();
             Object element;
-            for ( int i = 0; i < suiteXmlFiles.length; i++ )
+            for ( int i = 0; i < suiteXmlFiles.size(); i++ )
             {
-                element = suiteXmlFiles[i];
-                files[i] = element instanceof String ? new File( (String) element ) : (File) element;
+                element = suiteXmlFiles.get(i);
+                files.add( element instanceof String ? new File( (String) element ) : (File) element);
             }
             return files;
         }

@@ -95,7 +95,7 @@ public class TestNGProvider
 
     boolean isTestNGXmlTestSuite( TestRequest testSuiteDefinition )
     {
-        return testSuiteDefinition.getSuiteXmlFiles() != null && testSuiteDefinition.getSuiteXmlFiles().length > 0 &&
+        return testSuiteDefinition.getSuiteXmlFiles() != null && testSuiteDefinition.getSuiteXmlFiles().size() > 0 &&
             testSuiteDefinition.getRequestedTest() == null;
 
     }

@@ -45,7 +45,7 @@ import org.apache.maven.surefire.testset.TestSetFailedException;
 public class TestNGXmlTestSuite
     implements SurefireTestSuite
 {
-    private File[] suiteFiles;
+    private List suiteFiles;
 
     private List suiteFilePaths;
 
@@ -66,7 +66,7 @@ public class TestNGXmlTestSuite
      * Creates a testng testset to be configured by the specified
      * xml file(s). The XML files are suite definitions files according to TestNG DTD.
      */
-    public TestNGXmlTestSuite( File[] suiteFiles, String testSourceDirectory, String artifactVersion,
+    public TestNGXmlTestSuite( List suiteFiles, String testSourceDirectory, String artifactVersion,
                                String artifactClassifier, Properties confOptions, File reportsDirectory )
     {
         this.suiteFiles = suiteFiles;
@@ -105,7 +105,7 @@ public class TestNGXmlTestSuite
 
     public int getNumTests()
     {
-        return suiteFiles.length;
+        return suiteFiles.size();
     }
 
     public List getClassesSkippedByValidation()
@@ -129,7 +129,7 @@ public class TestNGXmlTestSuite
         this.testSets = new HashMap();
         this.suiteFilePaths = new ArrayList();
 
-        for ( Iterator i = Arrays.asList( suiteFiles ).iterator(); i.hasNext(); )
+        for ( Iterator i = suiteFiles.iterator(); i.hasNext(); )
         {
             File file = (File) i.next();
             if ( !file.exists() || !file.isFile() )

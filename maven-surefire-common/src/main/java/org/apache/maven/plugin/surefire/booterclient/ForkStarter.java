@@ -165,10 +165,10 @@ public class ForkStarter
         File systemProperties = null;
         try
         {
-            BooterSerializer booterSerializer = new BooterSerializer( forkConfiguration );
+            BooterSerializer booterSerializer = new BooterSerializer( forkConfiguration, properties );
 
             surefireProperties =
-                booterSerializer.serialize( properties, providerConfiguration, startupConfiguration, testSet );
+                booterSerializer.serialize( providerConfiguration, startupConfiguration, testSet );
 
             if ( forkConfiguration.getSystemProperties() != null )
             {
