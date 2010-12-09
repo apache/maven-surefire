@@ -44,21 +44,37 @@ public class DirectoryScannerParameters
         this.failIfNoTests = failIfNoTests;
     }
 
+    /**
+     * Returns the directory of the compiled classes, normally ${project.build.testOutputDirectory}
+     * @return A directory that can be scanned for .class files
+     */
     public File getTestClassesDirectory()
     {
         return testClassesDirectory;
     }
 
+    /**
+     * The includes pattern list, as specified on the plugin includes parameter.
+     * @return A list of patterns. May contain both source file designators and .class extensions.
+     */
     public List getIncludes()
     {
         return includes;
     }
 
+    /**
+     * The excludes pattern list, as specified on the plugin includes parameter.
+     * @return A list of patterns. May contain both source file designators and .class extensions.
+     */
     public List getExcludes()
     {
         return excludes;
     }
 
+    /**
+     * Indicates if lack of runable tests should fail the entire build
+     * @return true if no tests should fail the build
+     */
     public Boolean isFailIfNoTests()
     {
         return failIfNoTests;

@@ -18,13 +18,14 @@ public interface ProviderParameters
 {
     /**
      * Provides a directory scanner that enforces the includes/excludes parameters that were passed to surefire.
+     * See #getDirectoryScannerParameters for details
      * @return The directory scanner
      */
     DirectoryScanner getDirectoryScanner();
 
     /**
      * Provides features for creating reporting objects
-     * @return A reportermanager factory that allows the creation of one or more ReporterManagers
+     * @return A ReporterManagerFactory that allows the creation of one or more ReporterManagers
      */
     ReporterManagerFactory getReporterManagerFactory();
 

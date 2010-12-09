@@ -43,16 +43,28 @@ public class TestRequest
         this.requestedTest = requestedTest;
     }
 
+    /**
+     * Represents suitexmlfiles that define the test-run request
+     * @return A list of java.io.File objects.
+     */
     public List getSuiteXmlFiles()
     {
         return suiteXmlFiles;
     }
 
+    /**
+     * Test source directory, normally ${project.build.testSourceDirectory}
+     * @return A file pointing to test sources
+     */
     public File getTestSourceDirectory()
     {
         return testSourceDirectory;
     }
 
+    /**
+     * A specific test request issued with -Dtest= from the command line.
+     * @return The string specified at the command line
+     */
     public String getRequestedTest()
     {
         return requestedTest;

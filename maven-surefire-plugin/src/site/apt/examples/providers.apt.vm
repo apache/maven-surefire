@@ -10,12 +10,13 @@ Configuring providers
 
 * Selecting a provider
 
-Surefire normally automatically selects which test-framework provider to use based on the version of
-TestNG/JUnit present in your project's classpath. In some cases it may be desirable to manually
-override such a selection. This can be done by adding the required provider as a dependency to
-the surefire-plugin.
+  Surefire normally automatically selects which test-framework provider to use based on the version of
+  TestNG/JUnit present in your project's classpath. In some cases it may be desirable to manually
+  override such a selection. This can be done by adding the required provider as a dependency to
+  the surefire-plugin.
 
-The following example shows how to force the junit 4.7 provider:
+  The following example shows how to force the junit 4.7 provider:
+
 +---+
   [...]
             <plugin>
@@ -33,6 +34,6 @@ The following example shows how to force the junit 4.7 provider:
   [...]
 +---+
 
-The providers supplied with surefire are surefire-junit3, surefire-junit4, surefire-junit47 and surefire-testng.
-Please note that forcing a provider still requires that the test framework is properly set up on your project classpath.
+  The providers supplied with surefire are surefire-junit3, surefire-junit4, surefire-junit47 and surefire-testng.
+  Please note that forcing a provider still requires that the test framework is properly set up on your project classpath.
 

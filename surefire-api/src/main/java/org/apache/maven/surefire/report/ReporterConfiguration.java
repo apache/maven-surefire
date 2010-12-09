@@ -43,16 +43,29 @@ public class ReporterConfiguration
         this.trimStackTrace = trimStackTrace;
     }
 
+    /**
+     * The directory where reports will be created, normally ${project.build.directory}/surefire-reports
+     * @return A file pointing at the specified directory
+     */
     public File getReportsDirectory()
     {
         return reportsDirectory;
     }
 
+    /**
+     * Indicates if reporting should trim the stack traces.
+     * @return true if stacktraces should be trimmed in reporting
+     */
     public Boolean isTrimStackTrace()
     {
         return trimStackTrace;
     }
 
+    /**
+     * A list of classnames representing runnable reports for this test-run.
+     * @return A list of strings, each string is a classname of a class
+     * implementing the org.apache.maven.surefire.report.Reporter interface
+     */
     public List getReports()
     {
         return reports;

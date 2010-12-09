@@ -34,18 +34,26 @@ Maven Surefire Provider API
   The key features of surefire are forking, reporting and directory/classpath scanning.
   The remaining features are implemented in the providers.
 
-   Please note that this API is still subject to change until otherwise declared, even in minor revisions.
+  Please note that this API is still subject to change until otherwise declared, even in minor revisions. This would
+  mostly happen to facilitate needs in new providers.
 
 * Requirements for a provider
 
-  A provider contains a META-INF/services file entry named org.apache.maven.surefire.providerapi.SurefireProvider
+  There are three things any provider must fulfill:
+
+  * A provider must implement the org.apache.maven.surefire.providerapi.SurefireProvider interface.
+
+  * A provider contains a META-INF/services file entry named org.apache.maven.surefire.providerapi.SurefireProvider
   ( as per {{{http://download.oracle.com/javase/6/docs/api/java/util/ServiceLoader.html}ServiceLoader}}). This file
   contains the name of the actual provider class.
 
-  The actual provider class contains a one-arg constructor that accepts an instance of
+  * The actual provider class contains a one-arg constructor that accepts an instance of
   org.apache.maven.surefire.providerapi.ProviderParameters. This interface delivers all the surefire feature
   to the provider implementation, please see the javadoc of this interface for options.
 
   There are 4 well-known providers within surefire that are also implemented this way, so
   examples can be found by looking at the surefire source code itself. surefire-junit47 is
   the showcase implementation.
+
+  The javadoc on the intefaces mentioned in this article should otherwise be sufficient to write a provider.
+  Providers are added as dependencies to the surefire/failsafe plugins.
