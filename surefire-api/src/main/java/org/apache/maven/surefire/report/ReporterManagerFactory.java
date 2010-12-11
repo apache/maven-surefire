@@ -20,7 +20,9 @@ package org.apache.maven.surefire.report;
  */
 
 import org.apache.maven.surefire.suite.RunResult;
+import org.apache.maven.surefire.testset.SurefireConfigurationException;
 import org.apache.maven.surefire.testset.TestSetFailedException;
+import org.apache.maven.surefire.util.NestedRuntimeException;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -42,10 +44,10 @@ import java.util.List;
  */
 
 /**
- * NOTE: The ReporterManagerFactory2 should take over for this once we build surefire with 2.7,
- * just merge it into this class, this is just a hack to be able to build 2.7 with 2.5
+ * Note; this class contains "old" and "new" style instantiation, "old" style can be removed once we build 2.7.X + with 2.7
  */
 public class ReporterManagerFactory
+    implements ReporterFactory
 {
     protected final List reportDefinitions;
 
@@ -53,17 +55,30 @@ public class ReporterManagerFactory
 
     protected final RunStatistics globalRunStatistics = new RunStatistics();
 
-    protected ReporterManager first;
+    private final ReporterConfiguration reporterConfiguration;
+
+    protected RunReporter first;
 
     protected final Object lock = new Object();
 
 
     public ReporterManagerFactory( List reportDefinitions, ClassLoader surefireClassLoader )
     {
-        this.reportDefinitions = reportDefinitions;
-        this.surefireClassLoader = surefireClassLoader;
+        this( reportDefinitions, surefireClassLoader, null );
     }
 
+    public ReporterManagerFactory( List reportDefinitions, ClassLoader surefireClassLoader,
+                                   ReporterConfiguration reporterConfiguration )
+    {
+        this.reportDefinitions = reportDefinitions;
+        this.surefireClassLoader = surefireClassLoader;
+        this.reporterConfiguration = reporterConfiguration;
+    }
+
+    public ReporterManagerFactory( ClassLoader surefireClassLoader, ReporterConfiguration reporterConfiguration )
+    {
+        this( reporterConfiguration.getReports(), surefireClassLoader, reporterConfiguration );
+    }
 
     public RunStatistics getGlobalRunStatistics()
     {
@@ -74,6 +89,20 @@ public class ReporterManagerFactory
         throws TestSetFailedException
     {
         final List reports = instantiateReports( reportDefinitions, surefireClassLoader );
+        return (ReporterManager) setupReporter( reports );
+
+    }
+
+    public Reporter createReporter()
+    {
+        final List reports =
+            instantiateReportsNewStyle( reportDefinitions, reporterConfiguration, surefireClassLoader );
+        return setupReporter( reports );
+    }
+
+
+    private Reporter setupReporter( List reports )
+    {
         // Note, if we ever start making >1 reporter Managers, we have to aggregate run statistics
         // i.e. we cannot use a single "globalRunStatistics"
         final ReporterManager reporterManager = new ReporterManager( reports, globalRunStatistics );
@@ -91,8 +120,10 @@ public class ReporterManagerFactory
         return reporterManager;
     }
 
+
     public RunResult close()
     {
+        warnIfNoTests();
         synchronized ( lock )
         {
             if ( first != null )
@@ -103,8 +134,24 @@ public class ReporterManagerFactory
         }
     }
 
-
     private List instantiateReports( List reportDefinitions, ClassLoader classLoader )
+        throws TestSetFailedException
+    {
+        if ( reportDefinitions.size() == 0 )
+        {
+            return new ArrayList();
+        }
+        if ( reportDefinitions.iterator().next() instanceof String )
+        {
+            return instantiateReportsNewStyle( reportDefinitions, reporterConfiguration, classLoader );
+        }
+        else
+        {
+            return instantiateReportsOldStyle( reportDefinitions, classLoader );
+        }
+    }
+
+    private List instantiateReportsOldStyle( List reportDefinitions, ClassLoader classLoader )
         throws TestSetFailedException
     {
         List reports = new ArrayList();
@@ -123,6 +170,81 @@ public class ReporterManagerFactory
 
         return reports;
     }
+
+    protected List instantiateReportsNewStyle( List reportDefinitions, ReporterConfiguration reporterConfiguration,
+                                               ClassLoader classLoader )
+    {
+        List reports = new ArrayList();
+
+        for ( Iterator i = reportDefinitions.iterator(); i.hasNext(); )
+        {
+
+            String className = (String) i.next();
+
+            Reporter report = instantiateReportNewStyle( className, reporterConfiguration, classLoader );
+
+            reports.add( report );
+        }
+
+        return reports;
+    }
+
+    private static Reporter instantiateReportNewStyle( String className, ReporterConfiguration params,
+                                                       ClassLoader classLoader )
+    {
+        try
+        {
+            return (Reporter) instantiateObject( className, params, classLoader );
+        }
+        catch ( ClassNotFoundException e )
+        {
+            throw new SurefireConfigurationException( "Unable to find class to create report '" + className + "'", e );
+        }
+        catch ( NoSuchMethodException e )
+        {
+            throw new SurefireConfigurationException(
+                "Unable to find appropriate constructor to create report: " + e.getMessage(), e );
+        }
+    }
+
+
+    private static Object instantiateObject( String className, ReporterConfiguration params, ClassLoader classLoader )
+        throws SurefireConfigurationException, ClassNotFoundException, NoSuchMethodException
+    {
+        Class clazz = classLoader.loadClass( className );
+
+        Object object;
+        try
+        {
+            if ( params != null )
+            {
+                Class[] paramTypes = new Class[1];
+                paramTypes[0] = classLoader.loadClass( ReporterConfiguration.class.getName() );
+
+                Constructor constructor = clazz.getConstructor( paramTypes );
+
+                object = constructor.newInstance( new Object[]{ params } );
+            }
+            else
+            {
+                object = clazz.newInstance();
+            }
+        }
+        catch ( IllegalAccessException e )
+        {
+            throw new SurefireConfigurationException( "Unable to instantiate object: " + e.getMessage(), e );
+        }
+        catch ( InvocationTargetException e )
+        {
+            throw new SurefireConfigurationException( e.getTargetException().getMessage(), e.getTargetException() );
+        }
+        catch ( InstantiationException e )
+        {
+            throw new SurefireConfigurationException( "Unable to instantiate object: " + e.getMessage(), e );
+        }
+        return object;
+    }
+
 
     private static Reporter instantiateReport( String className, Object[] params, ClassLoader classLoader )
         throws TestSetFailedException
@@ -190,12 +312,18 @@ public class ReporterManagerFactory
         return object;
     }
 
-    public void warnIfNoTests()
-        throws TestSetFailedException
+    private void warnIfNoTests()
     {
         if ( getGlobalRunStatistics().getRunResult().getCompletedCount() == 0 )
         {
-            createReporterManager().writeMessage( "There are no tests to run." );
+            try
+            {
+                createReporterManager().writeMessage( "There are no tests to run." );
+            }
+            catch ( TestSetFailedException e )
+            {
+                throw new NestedRuntimeException( e );
+            }
         }
     }
 }

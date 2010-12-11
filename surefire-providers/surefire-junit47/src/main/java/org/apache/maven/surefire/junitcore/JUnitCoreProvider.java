@@ -22,9 +22,9 @@ package org.apache.maven.surefire.junitcore;
 import org.apache.maven.surefire.NonAbstractClassFilter;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
+import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterFactory;
-import org.apache.maven.surefire.report.ReporterManagerFactory;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.DirectoryScanner;
@@ -50,10 +50,13 @@ public class JUnitCoreProvider
 
     private TestsToRun testsToRun;
 
+    private final ReporterConfiguration reporterConfiguration;
+
     @SuppressWarnings( { "UnusedDeclaration" } )
     public JUnitCoreProvider( ProviderParameters booterParameters )
     {
         this.reporterFactory = booterParameters.getReporterFactory();
+        reporterConfiguration = booterParameters.getReporterConfiguration();
         this.testClassLoader = booterParameters.getTestClassLoader();
         this.directoryScanner = booterParameters.getDirectoryScanner();
         this.jUnitCoreParameters = new JUnitCoreParameters( booterParameters.getProviderProperties() );
@@ -75,7 +78,7 @@ public class JUnitCoreProvider
         throws TestSetFailedException, ReporterException
     {
         final String message = "Concurrency config is " + jUnitCoreParameters.toString();
-        this.reporterFactory.createReporterManager().writeConsoleMessage( message );
+        reporterFactory.createReporter().writeMessage( message );
 
         if ( testsToRun == null )
         {
@@ -83,8 +86,12 @@ public class JUnitCoreProvider
                 ? scanClassPath()
                 : TestsToRun.fromClassName( (String) forkTestSet, testClassLoader );
         }
-        JUnitCoreWrapper.execute( testsToRun.getLocatedClasses(), ( ReporterManagerFactory)this.reporterFactory, jUnitCoreParameters );
-        reporterFactory.warnIfNoTests();
+        ConcurrentReportingRunListener listener =
+            ConcurrentReportingRunListener.createInstance( this.reporterFactory, this.reporterConfiguration,
+                                                           jUnitCoreParameters.isParallelClasses(),
+                                                           jUnitCoreParameters.isParallelBoth() );
+
+        JUnitCoreWrapper.execute( testsToRun.getLocatedClasses(), jUnitCoreParameters, listener );
         return reporterFactory.close();
     }
 

@@ -821,20 +821,14 @@ public abstract class AbstractSurefireMojo
     private List getReporters( boolean forking )
     {
         List reports = new ArrayList();
+        final String consoleReporter = getConsoleReporter( forking );
+        if ( consoleReporter != null )
+        {
+            reports.add( consoleReporter );
+        }
+
         if ( isUseFile() )
         {
-            if ( isPrintSummary() )
-            {
-                if ( forking )
-                {
-                    reports.add( ForkingConsoleReporter.class.getName() );
-                }
-                else
-                {
-                    reports.add( ConsoleReporter.class.getName() );
-                }
-            }
-
             if ( BRIEF_REPORT_FORMAT.equals( getReportFormat() ) )
             {
                 reports.add( BriefFileReporter.class.getName() );
@@ -844,23 +838,36 @@ public abstract class AbstractSurefireMojo
                 reports.add( FileReporter.class.getName() );
             }
         }
-        else
-        {
-            if ( BRIEF_REPORT_FORMAT.equals( getReportFormat() ) )
-            {
-                reports.add( BriefConsoleReporter.class.getName() );
-            }
-            else if ( PLAIN_REPORT_FORMAT.equals( getReportFormat() ) )
-            {
-                reports.add( DetailedConsoleReporter.class.getName() );
-            }
-        }
 
         if ( !isDisableXmlReport() )
         {
             reports.add( XMLReporter.class.getName() );
         }
         return reports;
+    }
+
+
+    /**
+     * Returns the reporter that will write to the console
+     *
+     * @param forking forking
+     * @return a console reporter of null if no console reporting
+     */
+    private String getConsoleReporter( boolean forking )
+    {
+        if ( isUseFile() && isPrintSummary() )
+        {
+            return forking ? ForkingConsoleReporter.class.getName() : ConsoleReporter.class.getName();
+        }
+        else if ( BRIEF_REPORT_FORMAT.equals( getReportFormat() ) )
+        {
+            return BriefConsoleReporter.class.getName();
+        }
+        else if ( PLAIN_REPORT_FORMAT.equals( getReportFormat() ) )
+        {
+            return DetailedConsoleReporter.class.getName();
+        }
+        return null;
     }
 
     protected void ensureWorkingDirectoryExists()

@@ -23,9 +23,7 @@ package org.apache.maven.surefire.junitcore;
 import junit.framework.Assert;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-import org.apache.maven.surefire.report.ReporterConfiguration;
-import org.apache.maven.surefire.report.ReporterManagerFactory;
-import org.apache.maven.surefire.report.RunStatistics;
+import org.apache.maven.surefire.report.*;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -33,9 +31,10 @@ import org.junit.runner.Computer;
 import org.junit.runner.JUnitCore;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 
 import static junit.framework.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -48,34 +47,38 @@ public class ConcurrentReportingRunListenerTest
 {
     // Tests are in order of increasing complexity
     @Test
-    public void testNoErrorsCounting() throws Exception
+    public void testNoErrorsCounting()
+        throws Exception
     {
-        runClasses(  3, 0 ,0, DummyAllOk.class );
+        runClasses( 3, 0, 0, DummyAllOk.class );
     }
 
     @Test
-    public void testNoErrorsCounting2() throws Exception
+    public void testNoErrorsCounting2()
+        throws Exception
     {
-        runClasses( 2, 0 ,0 , Dummy3.class );
+        runClasses( 2, 0, 0, Dummy3.class );
     }
 
     @Test
-    public void testOneIgnoreCounting() throws Exception
+    public void testOneIgnoreCounting()
+        throws Exception
     {
-        runClasses( 3, 1, 0, DummyWithOneIgnore.class  );
+        runClasses( 3, 1, 0, DummyWithOneIgnore.class );
     }
 
     @Test
-    public void testOneFailureCounting() throws Exception
+    public void testOneFailureCounting()
+        throws Exception
     {
-        runClasses( 3, 0 ,1,  DummyWithFailure.class  );
+        runClasses( 3, 0, 1, DummyWithFailure.class );
     }
 
     @Test
     public void testWithErrorsCountingDemultiplexed()
         throws Exception
     {
-        runClasses( 6, 1, 1 , DummyWithOneIgnore.class, DummyWithFailure.class);
+        runClasses( 6, 1, 1, DummyWithOneIgnore.class, DummyWithFailure.class );
     }
 
 
@@ -83,35 +86,35 @@ public class ConcurrentReportingRunListenerTest
     public void testJunitResultCountingDemultiplexed()
         throws Exception
     {
-        runClasses( 8, 1, 1, DummyWithOneIgnore.class, DummyWithFailure.class, Dummy3.class   );
+        runClasses( 8, 1, 1, DummyWithOneIgnore.class, DummyWithFailure.class, Dummy3.class );
     }
 
     @Test
     public void testJunitResultCountingJUnit3Demultiplexed()
         throws Exception
     {
-        runClasses( 3, 0 ,0, Junit3Tc1.class, Junit3Tc2.class  );
+        runClasses( 3, 0, 0, Junit3Tc1.class, Junit3Tc2.class );
     }
 
     @Test
     public void testJunitResultCountingJUnit3OddTest()
         throws Exception
     {
-        runClasses( 2, 0 ,0, Junit3OddTest1.class );
+        runClasses( 2, 0, 0, Junit3OddTest1.class );
     }
 
     @Test
     public void testJunit3WithNestedSuite()
         throws TestSetFailedException
     {
-        runClasses(  4, 0 ,0, Junit3WithNestedSuite.class );
+        runClasses( 4, 0, 0, Junit3WithNestedSuite.class );
     }
 
     @Test
     public void testJunit3NestedSuite()
         throws Exception
     {
-        runClasses( 2, 0 ,0, Junit3OddTest1.class );
+        runClasses( 2, 0, 0, Junit3OddTest1.class );
     }
 
 
@@ -124,9 +127,8 @@ public class ConcurrentReportingRunListenerTest
         PrintStream orgOur = System.out;
         System.setOut( collector );
 
-        RunStatistics result = runClasses(Dummy3.class);
-        assertReporter( result,  2, 0 ,0, "msgs" );
-
+        RunStatistics result = runClasses( Dummy3.class );
+        assertReporter( result, 2, 0, 0, "msgs" );
 
         String foo = new String( byteArrayOutputStream.toByteArray() );
         assertNotNull( foo );
@@ -143,9 +145,8 @@ public class ConcurrentReportingRunListenerTest
         PrintStream orgOur = System.out;
         System.setOut( collector );
 
-        RunStatistics result = runClasses(DummyWithOneIgnore.class, DummyWithFailure.class, Dummy3.class);
-        assertReporter( result,  8, 1 ,1, "msgs" );
-
+        RunStatistics result = runClasses( DummyWithOneIgnore.class, DummyWithFailure.class, Dummy3.class );
+        assertReporter( result, 8, 1, 1, "msgs" );
 
         String foo = new String( byteArrayOutputStream.toByteArray() );
         assertNotNull( foo );
@@ -159,24 +160,30 @@ public class ConcurrentReportingRunListenerTest
     private void runClasses( int success, int ignored, int failure, Class... classes )
         throws TestSetFailedException
     {
-        ReporterManagerFactory reporterManagerFactory = createReporterFactory();
-        RunStatistics result = runClasses(reporterManagerFactory, new ClassesParallelRunListener( reporterManagerFactory ),  classes);
-        assertReporter(  result, success, ignored ,failure, "classes" );
+        ReporterFactory reporterManagerFactory = createReporterFactory();
+        RunStatistics result = runClasses( reporterManagerFactory,
+                                           new ClassesParallelRunListener( reporterManagerFactory,
+                                                                           getReporterConfiguration() ), classes );
+        assertReporter( result, success, ignored, failure, "classes" );
 
         reporterManagerFactory = createReporterFactory();
-        result = runClasses(reporterManagerFactory, new MethodsParallelRunListener(reporterManagerFactory, true) , classes);
-        assertReporter(  result, success, ignored ,failure, "methods" );
+        result = runClasses( reporterManagerFactory,
+                             new MethodsParallelRunListener( reporterManagerFactory, getReporterConfiguration(), true ),
+                             classes );
+        assertReporter( result, success, ignored, failure, "methods" );
 
         reporterManagerFactory = createReporterFactory();
-        result = runClasses(reporterManagerFactory, new MethodsParallelRunListener(reporterManagerFactory, false) , classes);
-        assertReporter(  result, success, ignored ,failure, "methods" );
+        result = runClasses( reporterManagerFactory,
+                             new MethodsParallelRunListener( reporterManagerFactory, getReporterConfiguration(),
+                                                             false ), classes );
+        assertReporter( result, success, ignored, failure, "methods" );
 
     }
 
     private RunStatistics runClasses( Class... classes )
         throws TestSetFailedException
     {
-        final ReporterManagerFactory reporterManagerFactory = createReporterFactory();
+        final ReporterFactory reporterManagerFactory = createReporterFactory();
         ConcurrentReportingRunListener demultiplexingRunListener = createRunListener( reporterManagerFactory );
 
         JUnitCore jUnitCore = new JUnitCore();
@@ -188,7 +195,8 @@ public class ConcurrentReportingRunListenerTest
         return reporterManagerFactory.getGlobalRunStatistics();
     }
 
-    private RunStatistics runClasses( ReporterManagerFactory reporterManagerFactory, ConcurrentReportingRunListener demultiplexingRunListener, Class... classes )
+    private RunStatistics runClasses( ReporterFactory reporterManagerFactory,
+                                      ConcurrentReportingRunListener demultiplexingRunListener, Class... classes )
         throws TestSetFailedException
     {
 
@@ -201,10 +209,15 @@ public class ConcurrentReportingRunListenerTest
         return reporterManagerFactory.getGlobalRunStatistics();
     }
 
-    private ConcurrentReportingRunListener createRunListener( ReporterManagerFactory reporterFactory )
+    private ConcurrentReportingRunListener createRunListener( ReporterFactory reporterFactory )
         throws TestSetFailedException
     {
-        return new ClassesParallelRunListener( reporterFactory );
+        return new ClassesParallelRunListener( reporterFactory, getReporterConfiguration() );
+    }
+
+    public ReporterConfiguration getReporterConfiguration()
+    {
+        return new ReporterConfiguration( new ArrayList(), new File( "." ), true );
     }
 
 
@@ -350,8 +363,6 @@ public class ConcurrentReportingRunListenerTest
             suite.addTest( new Junit3OddTest1( "testMe" ) );
             suite.addTest( new Junit3OddTest1( "testMe" ) );
 
-
-
             return suite;
         }
 
@@ -378,7 +389,7 @@ public class ConcurrentReportingRunListenerTest
 
             suite.addTest( new Junit3WithNestedSuite( "testMe2" ) );
             suite.addTest( new Junit3WithNestedSuite( "testMe2" ) );
-            suite.addTestSuite(   Junit3Tc2.class);
+            suite.addTestSuite( Junit3Tc2.class );
             return suite;
         }
 
@@ -395,26 +406,23 @@ public class ConcurrentReportingRunListenerTest
     }
 
 
-    private ReporterManagerFactory createReporterFactory()
+    private ReporterFactory createReporterFactory()
     {
-        Object[] reporter = new Object[]{MockReporter.class.getCanonicalName(), new Object[] {} };
-        final List<Object> objects = new ArrayList();
-        objects.add( reporter );
         ReporterConfiguration reporterConfiguration = getTestReporterConfiguration();
-        return new ReporterManagerFactory(objects, this.getClass().getClassLoader());
+        return new ReporterManagerFactory( this.getClass().getClassLoader(), reporterConfiguration );
     }
 
     public static ReporterConfiguration getTestReporterConfiguration()
     {
-        return new ReporterConfiguration( new ArrayList(), null, Boolean.TRUE );
+        return new ReporterConfiguration( Arrays.asList( ConsoleReporter.class.getName() ), null, Boolean.TRUE );
     }
 
 
     private void assertReporter( RunStatistics result, int success, int ignored, int failure, String message )
     {
-        assertEquals( message,  success, result.getCompletedCount() );
-        assertEquals( message,  failure, result.getFailureSources().size() );
-        assertEquals( message,  ignored, result.getSkipped() );
+        assertEquals( message, success, result.getCompletedCount() );
+        assertEquals( message, failure, result.getFailureSources().size() );
+        assertEquals( message, ignored, result.getSkipped() );
     }
 
 }

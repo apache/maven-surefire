@@ -18,15 +18,15 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.ReporterManager;
-import org.apache.maven.surefire.report.ReporterManagerFactory;
+import org.apache.maven.surefire.report.Reporter;
+import org.apache.maven.surefire.report.ReporterConfiguration;
+import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.junit.runner.Description;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunListener;
 
-import java.io.PrintStream;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -36,13 +36,11 @@ import java.util.concurrent.ConcurrentHashMap;
 public abstract class ConcurrentReportingRunListener
     extends RunListener
 {
-    private final PrintStream orgSystemOut = System.out;
-
-    private final PrintStream orgSystemErr = System.err;
-
     protected Map<Class, TestSet> classMethodCounts = new ConcurrentHashMap<Class, TestSet>();
 
-    private final ThreadLocal<ReporterManager> reporterManagerThreadLocal = new ThreadLocal<ReporterManager>();
+    private final ReporterConfiguration reporterConfiguration;
+
+    private final ThreadLocal<Reporter> reporterManagerThreadLocal = new ThreadLocal<Reporter>();
 
     protected final boolean reportImmediately;
 
@@ -50,16 +48,19 @@ public abstract class ConcurrentReportingRunListener
 
     private final ConcurrentPrintStream err = new ConcurrentPrintStream( false );
 
-    private ReporterManagerFactory reporterFactory;
+    private ReporterFactory reporterFactory;
 
-    public ConcurrentReportingRunListener( ReporterManagerFactory reporterFactory, boolean reportImmediately )
+    public ConcurrentReportingRunListener( ReporterFactory reporterFactory, boolean reportImmediately,
+                                           ReporterConfiguration reporterConfiguration )
         throws TestSetFailedException
     {
         this.reportImmediately = reportImmediately;
         this.reporterFactory = reporterFactory;
+        this.reporterConfiguration = reporterConfiguration;
+
         // We must create the first reporterManager here, even though we will never use it.
         // There is some room for improvement here
-        this.reporterFactory.createReporterManager();
+        this.reporterFactory.createReporter();
         // Important: We must capture System.out/System.err AFTER the  reportManager captures stdout/stderr
         // because we know how to demultiplex correctly. The redirection in reporterManager is basically
         // ignored/unused because we use ConcurrentPrintStream.
@@ -68,27 +69,28 @@ public abstract class ConcurrentReportingRunListener
     }
 
 
-    protected ReporterManager getReporterManager()
+    protected Reporter getReporterManager()
         throws TestSetFailedException
     {
-        ReporterManager reporterManager = reporterManagerThreadLocal.get();
+        Reporter reporterManager = reporterManagerThreadLocal.get();
         if ( reporterManager == null )
         {
-            reporterManager = reporterFactory.createReporterManager();
+            reporterManager = reporterFactory.createReporter();
             reporterManagerThreadLocal.set( reporterManager );
         }
         return reporterManager;
     }
 
-    public static ConcurrentReportingRunListener createInstance( ReporterManagerFactory reporterManagerFactory,
+    public static ConcurrentReportingRunListener createInstance( ReporterFactory reporterManagerFactory,
+                                                                 ReporterConfiguration reporterConfiguration,
                                                                  boolean parallelClasses, boolean parallelBoth )
         throws TestSetFailedException
     {
         if ( parallelClasses )
         {
-            return new ClassesParallelRunListener( reporterManagerFactory );
+            return new ClassesParallelRunListener( reporterManagerFactory, reporterConfiguration );
         }
-        return new MethodsParallelRunListener( reporterManagerFactory, !parallelBoth );
+        return new MethodsParallelRunListener( reporterManagerFactory, reporterConfiguration, !parallelBoth );
     }
 
 
@@ -107,11 +109,8 @@ public abstract class ConcurrentReportingRunListener
         {
             testSet.replay( getReporterManager() );
         }
-        System.setOut( orgSystemOut );
-        System.setErr( orgSystemErr );
-
-        out.writeTo( orgSystemOut );
-        err.writeTo( orgSystemErr );
+        out.writeTo( reporterConfiguration.getOriginalSystemOut() );
+        err.writeTo( reporterConfiguration.getOriginalSystemErr() );
     }
 
     protected TestMethod getTestMethod()

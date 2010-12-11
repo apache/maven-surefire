@@ -28,7 +28,7 @@ import java.util.List;
  * @author Kristian Rosenvold
  */
 public class MulticastingReporter
-    implements Reporter
+    implements Reporter, RunReporter
 {
     private final List target;
 
@@ -67,7 +67,11 @@ public class MulticastingReporter
     {
         for ( Iterator it = target.iterator(); it.hasNext(); )
         {
-            ( (Reporter) it.next() ).runStarting();
+            Object next = it.next();
+            if ( next instanceof RunReporter )
+            {
+                ( (RunReporter) next ).runStarting();
+            }
         }
     }
 
@@ -75,7 +79,11 @@ public class MulticastingReporter
     {
         for ( Iterator it = target.iterator(); it.hasNext(); )
         {
-            ( (Reporter) it.next() ).runCompleted();
+            Object next = it.next();
+            if ( next instanceof RunReporter )
+            {
+                ( (RunReporter) next ).runCompleted();
+            }
         }
     }
 
@@ -130,6 +138,15 @@ public class MulticastingReporter
             {
                 reporter.writeMessage( message );
             }
+        }
+    }
+
+    public void writeDetailMessage( String message )
+    {
+        for ( Iterator it = target.iterator(); it.hasNext(); )
+        {
+            Reporter reporter = ( (Reporter) it.next() );
+            reporter.writeDetailMessage( message );
         }
     }
 

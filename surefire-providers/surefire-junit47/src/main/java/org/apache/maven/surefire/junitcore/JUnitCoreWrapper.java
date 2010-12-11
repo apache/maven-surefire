@@ -19,7 +19,6 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.ReporterManagerFactory;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.junit.runner.Computer;
 import org.junit.runner.JUnitCore;
@@ -34,14 +33,10 @@ import java.util.concurrent.ExecutionException;
 
 class JUnitCoreWrapper
 {
-    public static void execute( Class[] classes, ReporterManagerFactory reporterManagerFactory,
-                                JUnitCoreParameters jUnitCoreParameters )
+    public static void execute( Class[] classes, JUnitCoreParameters jUnitCoreParameters,
+                                ConcurrentReportingRunListener listener )
         throws TestSetFailedException
     {
-        final ConcurrentReportingRunListener listener =
-            ConcurrentReportingRunListener.createInstance( reporterManagerFactory,
-                                                           jUnitCoreParameters.isParallelClasses(),
-                                                           jUnitCoreParameters.isParallelBoth() );
         Computer computer = getComputer( jUnitCoreParameters );
         JUnitCore junitCore = new JUnitCore();
         junitCore.addListener( listener );

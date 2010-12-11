@@ -30,10 +30,13 @@ public interface ReporterFactory
 {
     public RunStatistics getGlobalRunStatistics();
 
+    /**
+     * Creates a (non-thread-safe) reporter
+     *
+     * @return A reporter instance
+     */
+    public Reporter createReporter();
+
     public RunResult close();
-
-    public void warnIfNoTests() throws TestSetFailedException;
-
-    public ReporterManager createReporterManager() throws TestSetFailedException;
 
 }

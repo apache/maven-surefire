@@ -21,6 +21,7 @@ package org.apache.maven.surefire.suite;
 
 import org.apache.maven.surefire.NonAbstractClassFilter;
 import org.apache.maven.surefire.Surefire;
+import org.apache.maven.surefire.report.DefaultReportEntry;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterManager;
@@ -127,7 +128,7 @@ public abstract class AbstractDirectoryTestSuite
 
         String rawString = bundle.getString( "testSetStarting" );
 
-        ReportEntry report = new ReportEntry( this.getClass().getName(), testSet.getName(), rawString );
+        ReportEntry report = new DefaultReportEntry( this.getClass().getName(), testSet.getName(), rawString );
 
         reporterManager.testSetStarting( report );
 
@@ -135,7 +136,7 @@ public abstract class AbstractDirectoryTestSuite
 
         rawString = bundle.getString( "testSetCompletedNormally" );
 
-        report = new ReportEntry( this.getClass().getName(), testSet.getName(), rawString );
+        report = new DefaultReportEntry( this.getClass().getName(), testSet.getName(), rawString );
 
         reporterManager.testSetCompleted( report );
 

@@ -18,19 +18,20 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.ReporterManagerFactory;
+import org.apache.maven.surefire.report.ReporterConfiguration;
+import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
 /**
-* @author Kristian Rosenvold
-*/
+ * @author Kristian Rosenvold
+ */
 public class ClassesParallelRunListener
     extends ConcurrentReportingRunListener
 {
-    public ClassesParallelRunListener( ReporterManagerFactory reporterFactory )
+    public ClassesParallelRunListener( ReporterFactory reporterFactory, ReporterConfiguration reporterConfiguration )
         throws TestSetFailedException
     {
-        super( reporterFactory, false );
+        super( reporterFactory, false, reporterConfiguration );
     }
 
     @Override

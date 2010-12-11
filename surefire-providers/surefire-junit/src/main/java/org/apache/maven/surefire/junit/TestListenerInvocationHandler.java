@@ -19,6 +19,7 @@ package org.apache.maven.surefire.junit;
  * under the License.
  */
 
+import org.apache.maven.surefire.report.DefaultReportEntry;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterManager;
 
@@ -44,9 +45,9 @@ public class TestListenerInvocationHandler
 
     private ReporterManager reportManager;
 
-    private static final Class[] EMPTY_CLASS_ARRAY = new Class[]{};
+    private static final Class[] EMPTY_CLASS_ARRAY = new Class[]{ };
 
-    private static final String[] EMPTY_STRING_ARRAY = new String[]{};
+    private static final String[] EMPTY_STRING_ARRAY = new String[]{ };
 
     private static class FailedTest
     {
@@ -151,7 +152,8 @@ public class TestListenerInvocationHandler
     // Handler for TestListener.startTest(Test)
     public void handleStartTest( Object[] args )
     {
-        ReportEntry report = new ReportEntry( args[0].getClass().getName(), args[0].toString(), args[0].getClass().getName() );
+        ReportEntry report =
+            new DefaultReportEntry( args[0].getClass().getName(), args[0].toString(), args[0].getClass().getName() );
 
         reportManager.testStarting( report );
     }
@@ -161,7 +163,8 @@ public class TestListenerInvocationHandler
         throws IllegalAccessException, InvocationTargetException
     {
         ReportEntry report =
-            new ReportEntry( args[0].getClass().getName(), args[0].toString(), args[1].toString(), getStackTraceWriter( args ) );
+            new DefaultReportEntry( args[0].getClass().getName(), args[0].toString(), args[1].toString(),
+                                    getStackTraceWriter( args ) );
 
         reportManager.testError( report );
 
@@ -190,7 +193,8 @@ public class TestListenerInvocationHandler
         throws IllegalAccessException, InvocationTargetException
     {
         ReportEntry report =
-            new ReportEntry( args[0].getClass().getName(), args[0].toString(), args[1].toString(), getStackTraceWriter( args ) );
+            new DefaultReportEntry( args[0].getClass().getName(), args[0].toString(), args[1].toString(),
+                                    getStackTraceWriter( args ) );
 
         reportManager.testFailed( report );
 
@@ -203,7 +207,8 @@ public class TestListenerInvocationHandler
 
         if ( !testHadFailed )
         {
-            ReportEntry report = new ReportEntry( args[0].getClass().getName(), args[0].toString(), args[0].getClass().getName() );
+            ReportEntry report = new DefaultReportEntry( args[0].getClass().getName(), args[0].toString(),
+                                                         args[0].getClass().getName() );
 
             reportManager.testSucceeded( report );
         }

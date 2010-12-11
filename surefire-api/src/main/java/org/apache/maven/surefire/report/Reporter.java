@@ -20,21 +20,27 @@ package org.apache.maven.surefire.report;
  */
 
 /**
- * Contract between the different implementations of the Surefire reporters
- *
- * @version $Id$
+ * Used by providers to report results.
+ * Using this interface integrates the providers together into a common reporting infrastructure.
+ * <p/>
+ * An instance of a reporter is not guaranteed to be thread-safe and concurrent test frameworks
+ * must request an instance of a reporter per-thread from the ReporterFactory.
  */
 public interface Reporter
 {
-    // The entire run
-    void runStarting();
-
-    void runCompleted();
-
-    // Test Sets
+    /**
+     * Indicates the start of a given test-set
+     *
+     * @param report the report entry describing the testset
+     */
     void testSetStarting( ReportEntry report )
         throws ReporterException;
 
+    /**
+     * Indicates end of a given test-set
+     *
+     * @param report the report entry describing the testset
+     */
     void testSetCompleted( ReportEntry report )
         throws ReporterException;
 
@@ -74,11 +80,29 @@ public interface Reporter
 
     void testSkipped( ReportEntry report );
 
-    // Counters
-    void reset();
 
+    /**
+     * Writes a message that will be displayed in all free-text format reporters.
+     * These messages will be output regardless, as opposed to #writeDetailMessage,
+     * which is controlled by reportFormat.
+     *
+     * @param message The message to write.
+     */
     void writeMessage( String message );
 
-    void writeFooter( String footer );
+    /**
+     * Writes a detailed message that will not necessarily be displayed in all channels.
+     * This is controlled by reportFormat attribute on the plugin.
+     *
+     * @param message The message to write
+     */
+    void writeDetailMessage( String message );
 
+    /**
+     * Restores the instance of the reporter, making the instance re-usable for a subsequent run in the
+     * same thread.
+     */
+    void reset();
+
+    void writeFooter( String footer );
 }

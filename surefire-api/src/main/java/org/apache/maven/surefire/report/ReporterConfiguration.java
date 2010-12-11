@@ -20,6 +20,7 @@ package org.apache.maven.surefire.report;
  */
 
 import java.io.File;
+import java.io.PrintStream;
 import java.util.List;
 
 /**
@@ -31,6 +32,10 @@ public class ReporterConfiguration
 
     private final File reportsDirectory;
 
+    private final PrintStream originalSystemOut;
+
+    private final PrintStream originalSystemErr;
+
     /**
      * A non-null Boolean value
      */
@@ -41,10 +46,18 @@ public class ReporterConfiguration
         this.reports = reports;
         this.reportsDirectory = reportsDirectory;
         this.trimStackTrace = trimStackTrace;
+        /*
+        * While this may seem slightly odd, when this object is constructted no user code has been run
+        * (including classloading), and we can be guaranteed that no-one has modified System.out/System.err.
+        * As soon as we start loading user code, all h*ll breaks loose in this respect.
+         */
+        this.originalSystemOut = System.out;
+        this.originalSystemErr = System.err;
     }
 
     /**
      * The directory where reports will be created, normally ${project.build.directory}/surefire-reports
+     *
      * @return A file pointing at the specified directory
      */
     public File getReportsDirectory()
@@ -54,6 +67,7 @@ public class ReporterConfiguration
 
     /**
      * Indicates if reporting should trim the stack traces.
+     *
      * @return true if stacktraces should be trimmed in reporting
      */
     public Boolean isTrimStackTrace()
@@ -63,11 +77,34 @@ public class ReporterConfiguration
 
     /**
      * A list of classnames representing runnable reports for this test-run.
+     *
      * @return A list of strings, each string is a classname of a class
-     * implementing the org.apache.maven.surefire.report.Reporter interface
+     *         implementing the org.apache.maven.surefire.report.Reporter interface
      */
     public List getReports()
     {
         return reports;
+    }
+
+    /**
+     * The original system out belonging to the (possibly forked) surefire process.
+     * Note that users of Reporter/ReporterFactory should normally not be using this.
+     *
+     * @return A printstream.
+     */
+    public PrintStream getOriginalSystemOut()
+    {
+        return originalSystemOut;
+    }
+
+    /**
+     * The original system err belonging to the (possibly forked) surefire process.
+     * Note that users of Reporter/ReporterFactory should normally not be using this.
+     *
+     * @return A printstream.
+     */
+    public PrintStream getOriginalSystemErr()
+    {
+        return originalSystemErr;
     }
 }

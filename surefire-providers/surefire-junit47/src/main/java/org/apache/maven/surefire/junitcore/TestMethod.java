@@ -1,4 +1,5 @@
 package org.apache.maven.surefire.junitcore;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -19,8 +20,9 @@ package org.apache.maven.surefire.junitcore;
  */
 
 import org.apache.maven.surefire.Surefire;
+import org.apache.maven.surefire.report.DefaultReportEntry;
 import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.report.ReporterManager;
+import org.apache.maven.surefire.report.Reporter;
 import org.junit.runner.Description;
 import org.junit.runner.notification.Failure;
 
@@ -81,7 +83,7 @@ class TestMethod
         this.testAssumptionFailure = failure;
     }
 
-    public void replay( ReporterManager reporter )
+    public void replay( Reporter reporter )
         throws Exception
     {
 
@@ -94,8 +96,7 @@ class TestMethod
         reporter.testStarting( createReportEntry( "testStarting" ) );
         if ( output != null )
         {
-            // For some reason, console output is not written to the txt file.
-            output.writeToConsole( reporter );
+            output.writeDetails( reporter );
         }
         if ( testFailure != null )
         {
@@ -124,15 +125,15 @@ class TestMethod
     private ReportEntry createReportEntry( String rawString2 )
     {
         String rawString = bundle.getString( rawString2 );
-        return new ReportEntry( description.getTestClass().getCanonicalName(), description.getDisplayName(),
-                                rawString );
+        return new DefaultReportEntry( description.getTestClass().getCanonicalName(), description.getDisplayName(),
+                                       rawString );
     }
 
     private ReportEntry createFailureEntry( Failure failure, String rawString2 )
     {
         String rawString = bundle.getString( rawString2 );
-        return new ReportEntry( failure.getDescription().getTestClass().getCanonicalName(), failure.getTestHeader(),
-                                rawString, new JUnitCoreStackTraceWriter( failure ) );
+        return new DefaultReportEntry( failure.getDescription().getTestClass().getCanonicalName(),
+                                       failure.getTestHeader(), rawString, new JUnitCoreStackTraceWriter( failure ) );
     }
 
 

@@ -84,13 +84,13 @@ public class TestNGProvider
         suite.locateTestSets( testClassLoader );
         if ( forkTestSet != null && testRequest == null )
         {
-            suite.execute( (String) forkTestSet, (ReporterManagerFactory)reporterFactory, testClassLoader );
+            suite.execute( (String) forkTestSet, (ReporterManagerFactory) reporterFactory, testClassLoader );
         }
         else
         {
-            suite.execute( (ReporterManagerFactory)reporterFactory, testClassLoader );
+            suite.execute( (ReporterManagerFactory) reporterFactory, testClassLoader );
         }
-        reporterFactory.warnIfNoTests();
+
         return reporterFactory.close();
     }
 

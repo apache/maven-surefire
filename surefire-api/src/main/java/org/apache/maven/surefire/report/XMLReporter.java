@@ -61,7 +61,9 @@ public class XMLReporter
         this.reportsDirectory = reporterConfiguration.getReportsDirectory();
     }
 
-    /** @deprecated Can be removed once we build surfire with 2.7 */
+    /**
+     * @deprecated Can be removed once we build surfire with 2.7
+     */
     public XMLReporter( File reportsDirectory, Boolean trimStackTrace )
     {
         super( trimStackTrace );
@@ -71,6 +73,10 @@ public class XMLReporter
 
 
     public void writeMessage( String message )
+    {
+    }
+
+    public void writeDetailMessage( String message )
     {
     }
 
@@ -172,7 +178,7 @@ public class XMLReporter
         testCase.setAttribute( "time", elapsedTimeAsString( runTime ) );
         return testCase;
     }
-    
+
     private Xpp3Dom createTestSuiteElement( ReportEntry report, long runTime )
     {
         Xpp3Dom testCase = new Xpp3Dom( "testsuite" );
@@ -198,7 +204,7 @@ public class XMLReporter
 
         writeTestProblems( report, stdOut, stdErr, "failure" );
     }
-    
+
     public void testSkipped( ReportEntry report )
     {
         super.testSkipped( report );
@@ -231,8 +237,8 @@ public class XMLReporter
                 element.setAttribute( "message", message );
 
                 element.setAttribute( "type", ( stackTrace.indexOf( ":" ) > -1
-                                                ? stackTrace.substring( 0, stackTrace.indexOf( ":" ) )
-                                                : stackTrace ) );
+                    ? stackTrace.substring( 0, stackTrace.indexOf( ":" ) )
+                    : stackTrace ) );
             }
             else
             {

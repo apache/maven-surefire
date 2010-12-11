@@ -17,8 +17,8 @@
 package org.apache.maven.surefire.junitcore;
 
 import junit.framework.Assert;
-import org.apache.maven.surefire.report.ConsoleReporter;
 import org.apache.maven.surefire.report.ReporterConfiguration;
+import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.ReporterManagerFactory;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -27,58 +27,58 @@ import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 
+import java.io.File;
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * TestCase that expose "No tests were executed!" on Test failure using Maven Surefire 2.6-SNAPSHOT
  * and the JUnit 4.7 Runner.
- *
+ * <p/>
  * -------------------------------------------------------
- *  T E S T S
- *  -------------------------------------------------------
- *
- *  Results :
- *
- *  Tests run: 0, Failures: 0, Errors: 0, Skipped: 0
- *
- *  [INFO] ------------------------------------------------------------------------
- *  [INFO] BUILD FAILURE
- *  [INFO] ------------------------------------------------------------------------
- *  [INFO] Total time: 11.011s
- *  [INFO] Finished at: Thu Jul 15 13:59:14 CEST 2010
- *  [INFO] Final Memory: 24M/355M
- *  [INFO] ------------------------------------------------------------------------
- *  [ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:2.5:test
- *  (default-test) on project xxxxxx: No tests were executed!  (Set -DfailIfNoTests=false to
- *  ignore this error.) -> [Help 1]
- *
- *
- *  <dependency>
- *      <groupId>junit</groupId>
- *      <artifactId>junit</artifactId>
- *      <version>4.8.1</version>
- *      <scope>test</scope>
- *  </dependency>
- *
- *  <dependency>
- *      <groupId>org.apache.maven.surefire</groupId>
- *      <artifactId>surefire-booter</artifactId>
- *      <version>2.6-SNAPSHOT</version>
- *      <scope>test</scope>
- *      </dependency>
- *  <dependency>
- *      <groupId>org.apache.maven.plugins</groupId>
- *      <artifactId>maven-surefire-plugin</artifactId>
- *      <version>2.6-SNAPSHOT</version>
- *      <scope>test</scope>
- *  </dependency>
- *  <dependency>
- *      <groupId>org.apache.maven.surefire</groupId>
- *      <artifactId>surefire-junit47</artifactId>
- *      <version>2.6-SNAPSHOT</version>
- *      <scope>test</scope>
- *  </dependency>
+ * T E S T S
+ * -------------------------------------------------------
+ * <p/>
+ * Results :
+ * <p/>
+ * Tests run: 0, Failures: 0, Errors: 0, Skipped: 0
+ * <p/>
+ * [INFO] ------------------------------------------------------------------------
+ * [INFO] BUILD FAILURE
+ * [INFO] ------------------------------------------------------------------------
+ * [INFO] Total time: 11.011s
+ * [INFO] Finished at: Thu Jul 15 13:59:14 CEST 2010
+ * [INFO] Final Memory: 24M/355M
+ * [INFO] ------------------------------------------------------------------------
+ * [ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:2.5:test
+ * (default-test) on project xxxxxx: No tests were executed!  (Set -DfailIfNoTests=false to
+ * ignore this error.) -> [Help 1]
+ * <p/>
+ * <p/>
+ * <dependency>
+ * <groupId>junit</groupId>
+ * <artifactId>junit</artifactId>
+ * <version>4.8.1</version>
+ * <scope>test</scope>
+ * </dependency>
+ * <p/>
+ * <dependency>
+ * <groupId>org.apache.maven.surefire</groupId>
+ * <artifactId>surefire-booter</artifactId>
+ * <version>2.6-SNAPSHOT</version>
+ * <scope>test</scope>
+ * </dependency>
+ * <dependency>
+ * <groupId>org.apache.maven.plugins</groupId>
+ * <artifactId>maven-surefire-plugin</artifactId>
+ * <version>2.6-SNAPSHOT</version>
+ * <scope>test</scope>
+ * </dependency>
+ * <dependency>
+ * <groupId>org.apache.maven.surefire</groupId>
+ * <artifactId>surefire-junit47</artifactId>
+ * <version>2.6-SNAPSHOT</version>
+ * <scope>test</scope>
+ * </dependency>
  *
  * @author <a href="mailto:aslak@redhat.com">Aslak Knutsen</a>
  * @version $Revision: $
@@ -86,7 +86,7 @@ import java.util.List;
 public class MavenSurefireJUnit47RunnerTestCase
 {
 
-   /*
+    /*
     * Assumption:
     * The ConcurrentReportingRunListener assumes a Test will be Started before it Fails or Finishes.
     *
@@ -107,74 +107,69 @@ public class MavenSurefireJUnit47RunnerTestCase
     * and the recorded state will never be replayed on the ReportManager.
     *
     * The End result: ReporterManager falsely believe no Test were run.
-    *                                                                                                                                            t 
-    */
-   @SuppressWarnings( { "unchecked", "ThrowableResultOfMethodCallIgnored" } )
-   @Test
-   public void surefireShouldBeAbleToReportRunStatusEvenWithFailingTests() throws Exception
-   {
-      Object[] reportDefinition = new Object[2];
-      reportDefinition[0] = ConsoleReporter.class.getName();
-      reportDefinition[1] = new Object[] {true};
-
-      List reportDefinitions = new ArrayList();
-      reportDefinitions.add(reportDefinition);
-
-      ReporterConfiguration reporterConfiguration = ConcurrentReportingRunListenerTest.getTestReporterConfiguration();
-
-      ReporterManagerFactory reporterManagerFactory = new ReporterManagerFactory(reportDefinitions, this.getClass().getClassLoader());
-
-      ConcurrentReportingRunListener concurrentReportingRunListener = ConcurrentReportingRunListener.createInstance(
-            reporterManagerFactory, false, false);
-
-      Computer computer = new Computer();
-
-      JUnitCore junitCore = new JUnitCore();
-
-      junitCore.addListener(concurrentReportingRunListener);
-
-      Result result = junitCore.run(computer, FailingTestClassTestNot.class);
-
-      junitCore.removeListener(concurrentReportingRunListener);
-
-      Assert.assertEquals(
-            "JUnit should report correctly number of test ran(Finished)",
-            0,
-            result.getRunCount());
-
-      // Sys.out swallowed in ConsoleReporter..
-      for(Failure failure : result.getFailures())
-      {
-         System.out.println(failure.getException().getMessage());
-      }
-
-      Assert.assertEquals(
-            "There should only be one Exception reported, the one from the failing TestCase",
-            1,
-            result.getFailureCount());
-
-      Assert.assertEquals(
-            "The exception thrown by the failing TestCase",
-            RuntimeException.class,
-            result.getFailures().get(0).getException().getClass());
-   }
-
-   /**
-    * Simple TestCase to force a Exception in @BeforeClass.
     *
     */
-   public static class FailingTestClassTestNot
-   {
-      @BeforeClass
-      public static void failingBeforeClass() throws Exception
-      {
-         throw new RuntimeException("Opps, we failed in @BeforeClass");
-      }
+    @SuppressWarnings( { "unchecked", "ThrowableResultOfMethodCallIgnored" } )
+    @Test
+    public void surefireShouldBeAbleToReportRunStatusEvenWithFailingTests()
+        throws Exception
+    {
+        ReporterConfiguration reporterConfiguration = ConcurrentReportingRunListenerTest.getTestReporterConfiguration();
 
-      @Test
-      public void shouldNeverBeCalled() throws Exception
-      {
-         Assert.assertTrue(true);
-      }
-   }
+        ReporterFactory reporterManagerFactory =
+            new ReporterManagerFactory( this.getClass().getClassLoader(), reporterConfiguration );
+
+        ConcurrentReportingRunListener concurrentReportingRunListener =
+            ConcurrentReportingRunListener.createInstance( reporterManagerFactory, getReporterConfiguration(), false,
+                                                           false );
+
+        Computer computer = new Computer();
+
+        JUnitCore junitCore = new JUnitCore();
+
+        junitCore.addListener( concurrentReportingRunListener );
+
+        Result result = junitCore.run( computer, FailingTestClassTestNot.class );
+
+        junitCore.removeListener( concurrentReportingRunListener );
+
+        Assert.assertEquals( "JUnit should report correctly number of test ran(Finished)", 0, result.getRunCount() );
+
+        // Sys.out swallowed in ConsoleReporter..
+        for ( Failure failure : result.getFailures() )
+        {
+            System.out.println( failure.getException().getMessage() );
+        }
+
+        Assert.assertEquals( "There should only be one Exception reported, the one from the failing TestCase", 1,
+                             result.getFailureCount() );
+
+        Assert.assertEquals( "The exception thrown by the failing TestCase", RuntimeException.class,
+                             result.getFailures().get( 0 ).getException().getClass() );
+    }
+
+    private ReporterConfiguration getReporterConfiguration()
+    {
+        return new ReporterConfiguration( new ArrayList(), new File( "." ), true );
+    }
+
+    /**
+     * Simple TestCase to force a Exception in @BeforeClass.
+     */
+    public static class FailingTestClassTestNot
+    {
+        @BeforeClass
+        public static void failingBeforeClass()
+            throws Exception
+        {
+            throw new RuntimeException( "Opps, we failed in @BeforeClass" );
+        }
+
+        @Test
+        public void shouldNeverBeCalled()
+            throws Exception
+        {
+            Assert.assertTrue( true );
+        }
+    }
 }

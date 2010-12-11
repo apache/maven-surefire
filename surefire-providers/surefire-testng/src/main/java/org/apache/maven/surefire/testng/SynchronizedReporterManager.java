@@ -118,11 +118,6 @@ class SynchronizedReporterManager
         super.writeMessage( message );
     }
 
-    public synchronized void writeFooter( String footer )
-    {
-        super.writeFooter( footer );
-    }
-
     public synchronized void writeConsoleMessage( String message )
     {
         super.writeConsoleMessage( message );

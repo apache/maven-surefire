@@ -22,6 +22,7 @@ package org.apache.maven.surefire.testng;
 import java.util.ResourceBundle;
 
 import org.apache.maven.surefire.Surefire;
+import org.apache.maven.surefire.report.DefaultReportEntry;
 import org.apache.maven.surefire.report.PojoStackTraceWriter;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterManager;
@@ -74,11 +75,12 @@ public class TestNGReporter
     {
         String rawString = bundle.getString( "testStarting" );
         String group = groupString( result.getMethod().getGroups(), result.getTestClass().getName() );
-        ReportEntry report = new ReportEntry( getSource( result ), getUserFriendlyTestName( result ), group, rawString );
+        ReportEntry report =
+            new DefaultReportEntry( getSource( result ), getUserFriendlyTestName( result ), group, rawString );
 
         reportManager.testStarting( report );
     }
-    
+
     private String getSource( ITestResult result )
     {
         return result.getTestClass().getName();
@@ -86,8 +88,8 @@ public class TestNGReporter
 
     public void onTestSuccess( ITestResult result )
     {
-        ReportEntry report =
-            new ReportEntry( getSource( result ), getUserFriendlyTestName( result ), bundle.getString( "testSuccessful" ) );
+        ReportEntry report = new DefaultReportEntry( getSource( result ), getUserFriendlyTestName( result ),
+                                                     bundle.getString( "testSuccessful" ) );
         reportManager.testSucceeded( report );
     }
 
@@ -95,9 +97,10 @@ public class TestNGReporter
     {
         String rawString = bundle.getString( "executeException" );
 
-        ReportEntry report = new ReportEntry( getSource( result ), getUserFriendlyTestName( result ), rawString,
-            new PojoStackTraceWriter( result.getTestClass().getRealClass().getName(),
-            result.getMethod().getMethodName(), result.getThrowable() ) );
+        ReportEntry report = new DefaultReportEntry( getSource( result ), getUserFriendlyTestName( result ), rawString,
+                                                     new PojoStackTraceWriter(
+                                                         result.getTestClass().getRealClass().getName(),
+                                                         result.getMethod().getMethodName(), result.getThrowable() ) );
 
         reportManager.testFailed( report );
     }
@@ -110,8 +113,8 @@ public class TestNGReporter
 
     public void onTestSkipped( ITestResult result )
     {
-        ReportEntry report =
-            new ReportEntry( getSource( result ), getUserFriendlyTestName( result ), bundle.getString( "testSkipped" ) );
+        ReportEntry report = new DefaultReportEntry( getSource( result ), getUserFriendlyTestName( result ),
+                                                     bundle.getString( "testSkipped" ) );
 
         reportManager.testSkipped( report );
     }
@@ -120,30 +123,30 @@ public class TestNGReporter
     {
         String rawString = bundle.getString( "executeException" );
 
-        ReportEntry report =
-            new ReportEntry( getSource( result ), getUserFriendlyTestName( result ), rawString,
-                new PojoStackTraceWriter( result.getTestClass().getRealClass().getName(),
-                result.getMethod().getMethodName(), result.getThrowable() ) );
+        ReportEntry report = new DefaultReportEntry( getSource( result ), getUserFriendlyTestName( result ), rawString,
+                                                     new PojoStackTraceWriter(
+                                                         result.getTestClass().getRealClass().getName(),
+                                                         result.getMethod().getMethodName(), result.getThrowable() ) );
 
         reportManager.testError( report );
     }
 
     public void onStart( ITestContext context )
     {
-        
+
     }
 
     public void onFinish( ITestContext context )
     {
-        
+
     }
 
 
     public void onStart( ISuite suite )
     {
-        
+
     }
-    
+
     public void onFinish( ISuite suite )
     {
 

@@ -53,7 +53,9 @@ public abstract class AbstractTextReporter
         this.format = format;
     }
 
-    /** @deprecated Can be removed once we build Surefire with 2.7 */
+    /**
+     * @deprecated Can be removed once we build Surefire with 2.7
+     */
     protected AbstractTextReporter( String format, Boolean trimStackTrace )
     {
         super( trimStackTrace );
@@ -61,7 +63,9 @@ public abstract class AbstractTextReporter
         this.format = format;
     }
 
-    /** @deprecated Can be removed once we build Surefire with 2.7 */
+    /**
+     * @deprecated Can be removed once we build Surefire with 2.7
+     */
     protected AbstractTextReporter( PrintWriter writer, String format, Boolean trimStackTrace )
     {
         super( trimStackTrace );
@@ -94,6 +98,11 @@ public abstract class AbstractTextReporter
 
             writer.flush();
         }
+    }
+
+    public void writeDetailMessage( String message )
+    {
+        writeMessage( message );
     }
 
     public void testSucceeded( ReportEntry report )

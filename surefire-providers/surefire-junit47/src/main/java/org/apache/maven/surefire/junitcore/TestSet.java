@@ -19,8 +19,9 @@ package org.apache.maven.surefire.junitcore;
  */
 
 import org.apache.maven.surefire.Surefire;
+import org.apache.maven.surefire.report.DefaultReportEntry;
 import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.report.ReporterManager;
+import org.apache.maven.surefire.report.Reporter;
 import org.junit.runner.Description;
 
 import java.util.ArrayList;
@@ -51,6 +52,7 @@ public class TestSet
     private static final InheritableThreadLocal<TestSet> testSet = new InheritableThreadLocal<TestSet>();
 
     private AtomicBoolean allScheduled = new AtomicBoolean();
+
     private AtomicBoolean played = new AtomicBoolean();
 
 
@@ -59,9 +61,12 @@ public class TestSet
         this.testSetDescription = testSetDescription;
     }
 
-    public void replay( ReporterManager target )
+    public void replay( Reporter target )
     {
-        if (!played.compareAndSet( false, true )) return;
+        if ( !played.compareAndSet( false, true ) )
+        {
+            return;
+        }
 
         try
         {
@@ -98,7 +103,7 @@ public class TestSet
         boolean isJunit3 = testSetDescription.getTestClass() == null;
         String classNameToUse =
             isJunit3 ? testSetDescription.getChildren().get( 0 ).getClassName() : testSetDescription.getClassName();
-        return new ReportEntry( classNameToUse, classNameToUse, rawString );
+        return new DefaultReportEntry( classNameToUse, classNameToUse, rawString );
     }
 
     public void incrementTestMethodCount()
@@ -111,16 +116,16 @@ public class TestSet
         testMethods.add( testMethod );
     }
 
-    public void incrementFinishedTests( ReporterManager reporterManager, boolean reportImmediately )
+    public void incrementFinishedTests( Reporter reporterManager, boolean reportImmediately )
     {
         numberOfCompletedChildren.incrementAndGet();
-        if ( allScheduled.get() && isAllTestsDone() && reportImmediately)
+        if ( allScheduled.get() && isAllTestsDone() && reportImmediately )
         {
             replay( reporterManager );
         }
     }
 
-    public void setAllScheduled( ReporterManager reporterManager )
+    public void setAllScheduled( Reporter reporterManager )
     {
         allScheduled.set( true );
         if ( isAllTestsDone() )

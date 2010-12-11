@@ -31,6 +31,7 @@ import java.io.PrintWriter;
  */
 public abstract class AbstractConsoleReporter
     extends AbstractTextReporter
+    implements RunReporter
 {
     private static final String TEST_SET_STARTING_PREFIX = "Running ";
 
@@ -45,16 +46,18 @@ public abstract class AbstractConsoleReporter
     protected AbstractConsoleReporter( String format, ReporterConfiguration reporterConfiguration )
     {
         // TODO: use logger
-        super( new PrintWriter( new OutputStreamWriter( new BufferedOutputStream( originalSystemOut, BUFFER_SIZE ) ) ), format,
-               reporterConfiguration );
+        super( new PrintWriter( new OutputStreamWriter( new BufferedOutputStream( originalSystemOut, BUFFER_SIZE ) ) ),
+               format, reporterConfiguration );
     }
 
-    /** @deprecated Can be removed once we build surefire with 2.7 */
+    /**
+     * @deprecated Can be removed once we build surefire with 2.7
+     */
     protected AbstractConsoleReporter( String format, Boolean trimStackTrace )
     {
         // TODO: use logger
-        super( new PrintWriter( new OutputStreamWriter( new BufferedOutputStream( originalSystemOut, BUFFER_SIZE ) ) ), format,
-               trimStackTrace );
+        super( new PrintWriter( new OutputStreamWriter( new BufferedOutputStream( originalSystemOut, BUFFER_SIZE ) ) ),
+               format, trimStackTrace );
     }
 
     public void testSetStarting( ReportEntry report )
@@ -131,7 +134,8 @@ public abstract class AbstractConsoleReporter
      */
     public static ReportEntry parseTestSetStartingMessage( String message )
     {
-        ReportEntry reportEntry = new ReportEntry();
+        String name;
+        String group = null;
         int i = message.indexOf( TEST_SET_STARTING_GROUP_PREFIX );
         int j;
         if ( i >= 0 )
@@ -141,7 +145,7 @@ public abstract class AbstractConsoleReporter
             {
                 throw new RuntimeException( "Message provided can not be parsed" );
             }
-            reportEntry.setGroup( message.substring( i + TEST_SET_STARTING_GROUP_PREFIX.length(), j ) );
+            group = message.substring( i + TEST_SET_STARTING_GROUP_PREFIX.length(), j );
         }
         else
         {
@@ -151,8 +155,8 @@ public abstract class AbstractConsoleReporter
                 throw new RuntimeException( "Message provided can not be parsed" );
             }
         }
-        reportEntry.setName( message.substring( TEST_SET_STARTING_PREFIX.length(), i ) );
-        return reportEntry;
+        name = message.substring( TEST_SET_STARTING_PREFIX.length(), i );
+        return DefaultReportEntry.nameGroup( name, group );
     }
 
     /**

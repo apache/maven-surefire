@@ -23,58 +23,34 @@ import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
+// todo: Make this an interface when surefire 2.7.1 compiles with surefire 2.7.0
 public class ReportEntry
 {
-    private String source;
+    private final String source;
 
-    private String name;
+    private final String name;
 
-    private String group;
+    private final String group;
 
-    private String message;
+    private final String message;
 
-    private StackTraceWriter stackTraceWriter;
+    private final StackTraceWriter stackTraceWriter;
 
-    public ReportEntry()
+    protected ReportEntry( String name, String group )
     {
+        this.name = name;
+        this.group = group;
+        this.stackTraceWriter = null;
+        this.message = null;
+        this.source = null;
     }
 
-    public ReportEntry( Object source, String name, String message )
-    {
-        this( source.getClass().getName(), name, null, message );
-    }
-
-    public ReportEntry( Object source, String name, String group, String message )
-    {
-        this( source.getClass().getName(), name, group, message, null );
-    }
-
-    public ReportEntry( Object source, String name, String message, StackTraceWriter stackTraceWriter )
-    {
-        this( source.getClass().getName(), name, null, message, stackTraceWriter );
-    }
-
-    public ReportEntry( Object source, String name, String group, String message, StackTraceWriter stackTraceWriter )
-    {
-        this( source.getClass().getName(), name, group, message, stackTraceWriter );
-    }
-    
     public ReportEntry( String source, String name, String message )
     {
-        this( source, name, null, message );
+        this( source, name, null, message, null );
     }
 
-    public ReportEntry( String source, String name, String group, String message )
-    {
-        this( source, name, group, message, null );
-    }
-
-    public ReportEntry( String source, String name, String message, StackTraceWriter stackTraceWriter )
-    {
-        this( source, name, null, message, stackTraceWriter );
-    }
-
-    public ReportEntry( String source, String name, String group, String message, StackTraceWriter stackTraceWriter )
+    protected ReportEntry( String source, String name, String group, String message, StackTraceWriter stackTraceWriter )
     {
         if ( source == null )
         {
@@ -89,28 +65,15 @@ public class ReportEntry
             throw new NullPointerException( "message is null" );
         }
 
-        this.setSource( source );
-
-        this.setName( name );
-
-        this.setGroup( group );
-
-        this.setMessage( message );
-
-        this.setStackTraceWriter( stackTraceWriter );
-    }
-
-    public void setSource( String source )
-    {
         this.source = source;
-    }
-    
-    /**
-     * @deprecated Use {@link #getSourceName()} instead
-     */
-    public Object getSource()
-    {
-        return getSourceName();
+
+        this.name = name;
+
+        this.group = group;
+
+        this.message = message;
+
+        this.stackTraceWriter = stackTraceWriter;
     }
 
     public String getSourceName()
@@ -118,19 +81,9 @@ public class ReportEntry
         return source;
     }
 
-    public void setName( String name )
-    {
-        this.name = name;
-    }
-
     public String getName()
     {
         return name;
-    }
-
-    public void setGroup( String group )
-    {
-        this.group = group;
     }
 
     public String getGroup()
@@ -138,19 +91,9 @@ public class ReportEntry
         return group;
     }
 
-    public void setMessage( String message )
-    {
-        this.message = message;
-    }
-
     public String getMessage()
     {
         return message;
-    }
-
-    public void setStackTraceWriter( StackTraceWriter stackTraceWriter )
-    {
-        this.stackTraceWriter = stackTraceWriter;
     }
 
     public StackTraceWriter getStackTraceWriter()
@@ -169,24 +112,17 @@ public class ReportEntry
             return true;
         }
         ReportEntry rhs = (ReportEntry) obj;
-        return new EqualsBuilder()
-            .append( getSourceName(), rhs.getSourceName() )
-            .append( getName(), rhs.getName() )
-            .append( getGroup(), rhs.getGroup() )
-            .append( getMessage(), rhs.getMessage() )
-            .append( getStackTraceWriter(), rhs.getStackTraceWriter() )
-            .isEquals();
+        return new EqualsBuilder().append( getSourceName(), rhs.getSourceName() ).append( getName(),
+                                                                                          rhs.getName() ).append(
+            getGroup(), rhs.getGroup() ).append( getMessage(), rhs.getMessage() ).append( getStackTraceWriter(),
+                                                                                          rhs.getStackTraceWriter() ).isEquals();
     }
 
     public String toString()
     {
-        return new ToStringBuilder( this )
-            .append( "source", getSourceName() )
-            .append( "name", getName() )
-            .append( "group", getGroup() )
-            .append( "message", getMessage() )
-            .append( "stackTraceWriter", getStackTraceWriter() )
-            .toString();
+        return new ToStringBuilder( this ).append( "source", getSourceName() ).append( "name", getName() ).append(
+            "group", getGroup() ).append( "message", getMessage() ).append( "stackTraceWriter",
+                                                                            getStackTraceWriter() ).toString();
     }
 
     public int hashCode()
@@ -194,13 +130,8 @@ public class ReportEntry
         // you pick a hard-coded, randomly chosen, non-zero, odd number
         // ideally different for each class
         // good resource at http://primes.utm.edu/lists/small/1000.txt
-        return new HashCodeBuilder( 5897, 6653 )
-            .append( getSourceName() )
-            .append( getName() )
-            .append( getGroup() )
-            .append( getMessage() )
-            .append( getStackTraceWriter() )
-            .toHashCode();
+        return new HashCodeBuilder( 5897, 6653 ).append( getSourceName() ).append( getName() ).append(
+            getGroup() ).append( getMessage() ).append( getStackTraceWriter() ).toHashCode();
     }
 
 }

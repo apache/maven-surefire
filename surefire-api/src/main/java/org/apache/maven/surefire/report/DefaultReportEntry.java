@@ -19,31 +19,27 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
-import java.io.File;
-
 /**
- * Brief format file reporter.
- *
- * @author <a href="mailto:jruiz@exist.com">Johnny R. Ruiz III</a>
- * @version $Id$
+ * @author Kristian Rosenvold
  */
-public class BriefFileReporter
-    extends AbstractFileReporter
+public class DefaultReportEntry extends ReportEntry
 {
-    public BriefFileReporter( ReporterConfiguration reporterConfiguration )
+    public DefaultReportEntry( String source, String name, String message )
     {
-        super( reporterConfiguration, BRIEF );
+        super( source, name, null, message, null );
     }
 
-    /**
-     * @deprecated Can be removed once we build Surefire with 2.7
-     */
-    public BriefFileReporter( File reportsDirectory, Boolean trimStackTrace )
+    public DefaultReportEntry( String source, String name, String group, String message )
     {
-        super( reportsDirectory, BRIEF, trimStackTrace );
+        super( source, name, group, message, null );
     }
 
-    public void writeDetailMessage( String message )
+    public DefaultReportEntry( String source, String name, String message, StackTraceWriter stackTraceWriter )
     {
+        super( source, name, null, message, stackTraceWriter );
+    }
+
+    public static ReportEntry nameGroup(String name, String group){
+        return new ReportEntry( name, group);
     }
 }

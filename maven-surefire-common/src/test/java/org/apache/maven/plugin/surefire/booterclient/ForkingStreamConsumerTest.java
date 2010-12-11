@@ -19,8 +19,8 @@ package org.apache.maven.plugin.surefire.booterclient;
  * under the License.
  */
 
-import org.apache.maven.plugin.surefire.booterclient.ForkingStreamConsumer;
 import org.apache.maven.plugin.surefire.booterclient.output.OutputConsumer;
+import org.apache.maven.surefire.report.DefaultReportEntry;
 import org.apache.maven.surefire.report.ForkingConsoleReporter;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.jmock.Mock;
@@ -51,9 +51,7 @@ public class ForkingStreamConsumerTest
         outputConsumerMock = new Mock( OutputConsumer.class );
         streamConsumer = new ForkingStreamConsumer( (OutputConsumer) outputConsumerMock.proxy() );
         message = "message";
-        reportEntry = new ReportEntry();
-        reportEntry.setGroup( "group" );
-        reportEntry.setName( "name" );
+        reportEntry = DefaultReportEntry.nameGroup( "name", "group" );
     }
 
     public void testConsumeHeaderLine()

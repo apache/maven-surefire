@@ -19,31 +19,20 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
-import java.io.File;
-
 /**
- * Brief format file reporter.
- *
- * @author <a href="mailto:jruiz@exist.com">Johnny R. Ruiz III</a>
- * @version $Id$
+ * A reporter that is aware of run start/run finished events
  */
-public class BriefFileReporter
-    extends AbstractFileReporter
+public interface RunReporter
 {
-    public BriefFileReporter( ReporterConfiguration reporterConfiguration )
-    {
-        super( reporterConfiguration, BRIEF );
-    }
+    /**
+     * Indicates the start of the entire test run.
+     * Only called on the first provider, and just by the ReporterFactory
+     */
+    void runStarting();
 
     /**
-     * @deprecated Can be removed once we build Surefire with 2.7
+     * Indicates the end of the entire test run
+     * Only called on the first provider, and just by the ReporterFactory
      */
-    public BriefFileReporter( File reportsDirectory, Boolean trimStackTrace )
-    {
-        super( reportsDirectory, BRIEF, trimStackTrace );
-    }
-
-    public void writeDetailMessage( String message )
-    {
-    }
+    void runCompleted();
 }

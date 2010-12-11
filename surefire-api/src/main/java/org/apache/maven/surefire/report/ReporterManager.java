@@ -37,25 +37,29 @@ import java.util.List;
  * <p/>
  */
 public class ReporterManager
+    implements Reporter, RunReporter
 {
     private final RunStatistics runStatisticsForThis;
 
     private final MulticastingReporter multicastingReporter;
 
+    private final RunReporter runReporter;
+
     private final SystemStreamCapturer consoleCapturer;
 
     public ReporterManager( List reports, RunStatistics runStatisticsForThis )
     {
-        this.consoleCapturer =  new SystemStreamCapturer();
-        multicastingReporter = new MulticastingReporter( reports );
+        this.consoleCapturer = new SystemStreamCapturer();
+        runReporter = multicastingReporter = new MulticastingReporter( reports );
         this.runStatisticsForThis = runStatisticsForThis;
     }
 
     protected ReporterManager( ReporterManager other )
     {
         this.multicastingReporter = other.multicastingReporter;
+        this.runReporter = other.multicastingReporter;
         this.runStatisticsForThis = other.runStatisticsForThis;
-        this.consoleCapturer =  other.consoleCapturer;
+        this.consoleCapturer = other.consoleCapturer;
     }
 
     public void writeMessage( String message )
@@ -66,6 +70,11 @@ public class ReporterManager
     public void writeConsoleMessage( String message )
     {
         multicastingReporter.writeConsoleMessage( message );
+    }
+
+    public void writeDetailMessage( String message )
+    {
+        multicastingReporter.writeDetailMessage( message );
     }
 
     // ----------------------------------------------------------------------

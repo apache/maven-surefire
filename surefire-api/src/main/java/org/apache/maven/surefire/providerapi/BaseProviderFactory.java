@@ -22,7 +22,6 @@ package org.apache.maven.surefire.providerapi;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.ReporterManagerFactory;
-import org.apache.maven.surefire.report.ReporterManagerFactory2;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestRequest;
@@ -67,7 +66,7 @@ public class BaseProviderFactory
     public ReporterFactory getReporterFactory()
     {
         ReporterFactory reporterManagerFactory =
-            new ReporterManagerFactory2( surefireClassLoader, reporterConfiguration );
+            new ReporterManagerFactory( surefireClassLoader, reporterConfiguration );
         if ( providerProperties != null )
         {
             reporterManagerFactory.getGlobalRunStatistics().initResultsFromProperties( providerProperties );

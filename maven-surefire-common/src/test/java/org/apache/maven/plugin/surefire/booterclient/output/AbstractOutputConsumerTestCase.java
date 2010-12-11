@@ -20,6 +20,7 @@ package org.apache.maven.plugin.surefire.booterclient.output;
  */
 
 import junit.framework.TestCase;
+import org.apache.maven.surefire.report.DefaultReportEntry;
 import org.apache.maven.surefire.report.ReportEntry;
 
 /**
@@ -42,9 +43,7 @@ public abstract class AbstractOutputConsumerTestCase
     {
         super.setUp();
         setLine( "line" );
-        setReportEntry( new ReportEntry() );
-        getReportEntry().setGroup( "group" );
-        getReportEntry().setName( "name" );
+        setReportEntry( DefaultReportEntry.nameGroup( "name", "group" ) );
     }
 
     public void setOutputConsumer( OutputConsumer outputConsumer )

@@ -29,6 +29,7 @@ import java.util.Properties;
 
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
+import org.apache.maven.surefire.report.DefaultReportEntry;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterManager;
@@ -49,31 +50,33 @@ public class TestNGDirectoryTestSuite
     private ArtifactVersion version;
 
     private String classifier;
-    
+
     private Map options;
 
     private String testSourceDirectory;
-    
+
     private File reportsDirectory;
 
     public TestNGDirectoryTestSuite( File basedir, ArrayList includes, ArrayList excludes, String testSourceDirectory,
-                                     String artifactVersion, String artifactClassifier, Properties confOptions, File reportsDirectory )
+                                     String artifactVersion, String artifactClassifier, Properties confOptions,
+                                     File reportsDirectory )
     {
         this( basedir, includes, excludes, testSourceDirectory, new DefaultArtifactVersion( artifactVersion ),
               artifactClassifier, confOptions, reportsDirectory );
     }
 
     public TestNGDirectoryTestSuite( File basedir, List includes, List excludes, String testSourceDirectory,
-                                     ArtifactVersion artifactVersion, String artifactClassifier, Map confOptions, File reportsDirectory )
+                                     ArtifactVersion artifactVersion, String artifactClassifier, Map confOptions,
+                                     File reportsDirectory )
     {
         super( basedir, includes, excludes );
 
         this.options = confOptions;
-        
+
         this.testSourceDirectory = testSourceDirectory;
         this.reportsDirectory = reportsDirectory;
         this.version = artifactVersion;
-        
+
         this.classifier = artifactClassifier;
 
     }
@@ -101,9 +104,9 @@ public class TestNGDirectoryTestSuite
         ReporterManager reporterManager = reporterManagerFactory.createReporterManager();
         startTestSuite( reporterManager, this );
 
-        TestNGExecutor.run( new Class[]{testSet.getTestClass()}, this.testSourceDirectory, this.options, this.version,
+        TestNGExecutor.run( new Class[]{ testSet.getTestClass() }, this.testSourceDirectory, this.options, this.version,
                             this.classifier, reporterManager, this, reportsDirectory );
-        
+
         finishTestSuite( reporterManager, this );
     }
 
@@ -140,47 +143,49 @@ public class TestNGDirectoryTestSuite
                 testNgTestClasses.add( c );
             }
         }
-     
+
         File testNgReportsDirectory = reportsDirectory, junitReportsDirectory = reportsDirectory;
-        
+
         if ( junitTestClasses.size() > 0 && testNgTestClasses.size() > 0 )
         {
-            testNgReportsDirectory = new File( reportsDirectory, "testng-native-results");
-            junitReportsDirectory = new File( reportsDirectory, "testng-junit-results");
+            testNgReportsDirectory = new File( reportsDirectory, "testng-native-results" );
+            junitReportsDirectory = new File( reportsDirectory, "testng-junit-results" );
         }
 
         ReporterManager reporterManager =
-            new SynchronizedReporterManager( reporterManagerFactory.createReporterManager());
+            new SynchronizedReporterManager( reporterManagerFactory.createReporterManager() );
         startTestSuite( reporterManager, this );
-        
+
         Class[] testClasses = (Class[]) testNgTestClasses.toArray( new Class[0] );
 
-        TestNGExecutor.run( testClasses, this.testSourceDirectory, this.options, this.version, 
-                            this.classifier, reporterManager, this, testNgReportsDirectory );
-        
-        if (junitTestClasses.size() > 0) {
+        TestNGExecutor.run( testClasses, this.testSourceDirectory, this.options, this.version, this.classifier,
+                            reporterManager, this, testNgReportsDirectory );
+
+        if ( junitTestClasses.size() > 0 )
+        {
             testClasses = (Class[]) junitTestClasses.toArray( new Class[0] );
-            
+
             Map junitOptions = new HashMap();
-            for (Iterator it = this.options.keySet().iterator(); it.hasNext();) {
+            for ( Iterator it = this.options.keySet().iterator(); it.hasNext(); )
+            {
                 Object key = it.next();
                 junitOptions.put( key, options.get( key ) );
             }
-            
+
             junitOptions.put( "junit", Boolean.TRUE );
-            
+
             TestNGExecutor.run( testClasses, this.testSourceDirectory, junitOptions, this.version, this.classifier,
                                 reporterManager, this, junitReportsDirectory );
         }
-        
+
         finishTestSuite( reporterManager, this );
     }
 
     public static void startTestSuite( ReporterManager reporterManager, Object suite )
     {
         String rawString = bundle.getString( "testSetStarting" );
-        
-        ReportEntry report = new ReportEntry( suite.getClass().getName(), getSuiteName(suite), rawString );
+
+        ReportEntry report = new DefaultReportEntry( suite.getClass().getName(), getSuiteName( suite ), rawString );
 
         try
         {
@@ -191,38 +196,44 @@ public class TestNGDirectoryTestSuite
             // TODO: remove this exception from the report manager
         }
     }
-    
+
     public static void finishTestSuite( ReporterManager reporterManager, Object suite )
     {
         String rawString = bundle.getString( "testSetCompletedNormally" );
 
-        ReportEntry report =
-            new ReportEntry( suite.getClass().getName(), getSuiteName(suite), rawString );
+        ReportEntry report = new DefaultReportEntry( suite.getClass().getName(), getSuiteName( suite ), rawString );
 
         reporterManager.testSetCompleted( report );
 
         reporterManager.reset();
     }
-    
-    public String getSuiteName() {
-        String result = (String) options.get("suitename");
-        if (result == null) {
+
+    public String getSuiteName()
+    {
+        String result = (String) options.get( "suitename" );
+        if ( result == null )
+        {
             result = "TestSuite";
         }
         return result;
     }
 
-    private static String getSuiteName(Object suite)
+    private static String getSuiteName( Object suite )
     {
         String result;
-        if (suite instanceof TestNGDirectoryTestSuite) {
-            return ((TestNGDirectoryTestSuite) suite).getSuiteName();
-        } else if (suite instanceof TestNGXmlTestSuite) {
-            return ((TestNGXmlTestSuite) suite).getSuiteName();
-        }else {
+        if ( suite instanceof TestNGDirectoryTestSuite )
+        {
+            return ( (TestNGDirectoryTestSuite) suite ).getSuiteName();
+        }
+        else if ( suite instanceof TestNGXmlTestSuite )
+        {
+            return ( (TestNGXmlTestSuite) suite ).getSuiteName();
+        }
+        else
+        {
             result = "TestSuite";
         }
 
         return result;
-    }    
+    }
 }

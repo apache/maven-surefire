@@ -18,12 +18,13 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.ReporterManagerFactory;
+import org.apache.maven.surefire.report.ReporterConfiguration;
+import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
 /**
-* @author Kristian Rosenvold
-*/
+ * @author Kristian Rosenvold
+ */
 public class MethodsParallelRunListener
     extends ConcurrentReportingRunListener
 {
@@ -31,10 +32,11 @@ public class MethodsParallelRunListener
 
     private final Object lock = new Object();
 
-    public MethodsParallelRunListener( ReporterManagerFactory reporterFactory, boolean reportImmediately )
+    public MethodsParallelRunListener( ReporterFactory reporterFactory, ReporterConfiguration reporterConfiguration,
+                                       boolean reportImmediately )
         throws TestSetFailedException
     {
-        super( reporterFactory, reportImmediately );
+        super( reporterFactory, reportImmediately, reporterConfiguration );
     }
 
     @Override

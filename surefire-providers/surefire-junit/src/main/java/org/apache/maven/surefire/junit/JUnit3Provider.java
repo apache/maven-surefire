@@ -63,9 +63,6 @@ public class JUnit3Provider
         {
             suite.execute( (ReporterManagerFactory) reporterFactory, testClassLoader );
         }
-
-        reporterFactory.warnIfNoTests();
-
         return reporterFactory.close();
     }
 

@@ -24,6 +24,7 @@ import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
+import java.io.PrintStream;
 import java.util.Properties;
 
 /**
@@ -72,8 +73,7 @@ public class SurefireStarter
         // separate the TestNG classloader
         ClassLoader testsClassLoader = createInProcessTestClassLoader();
 
-        final ClasspathConfiguration classpathConfiguration =
-            startupConfiguration.getClasspathConfiguration();
+        final ClasspathConfiguration classpathConfiguration = startupConfiguration.getClasspathConfiguration();
 
         ClassLoader surefireClassLoader = classpathConfiguration.createSurefireClassLoader( testsClassLoader );
 
@@ -124,8 +124,12 @@ public class SurefireStarter
 
     private RunResult invokeProvider( Object testSet, ClassLoader testsClassLoader, ClassLoader surefireClassLoader )
     {
-        ProviderFactory providerFactory = new ProviderFactory( startupConfiguration, providerConfiguration,
-                                                               surefireClassLoader );
+        final PrintStream orgSystemOut = System.out;
+        final PrintStream orgSystemErr = System.err;
+        // Note that System.out/System.err are also read in the "ReporterConfiguration" instatiation
+        // in createProvider below. These are the same values as here.
+        ProviderFactory providerFactory =
+            new ProviderFactory( startupConfiguration, providerConfiguration, surefireClassLoader );
         final SurefireProvider provider = providerFactory.createProvider( testsClassLoader );
 
         try
@@ -139,6 +143,11 @@ public class SurefireStarter
         catch ( ReporterException e )
         {
             throw new RuntimeException( e );
+        }
+        finally
+        {
+            System.setOut( orgSystemOut );
+            System.setErr( orgSystemErr );
         }
     }
 
