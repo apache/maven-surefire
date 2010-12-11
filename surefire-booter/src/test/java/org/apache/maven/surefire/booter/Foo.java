@@ -36,7 +36,7 @@ import java.util.Properties;
 /**
 * @author Kristian Rosenvold
 */
-class Foo
+public class Foo
     implements DirectoryScannerParametersAware, TestRequestAware, ProviderPropertiesAware, ReporterConfigurationAware,
     SurefireClassLoadersAware, TestArtifactInfoAware
 {

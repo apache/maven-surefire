@@ -50,6 +50,11 @@ public class ReportEntry
         this( source, name, null, message, null );
     }
 
+    public ReportEntry( String source, String name, String message, StackTraceWriter stackTraceWriter )
+    {
+        this( source, name, null, message, stackTraceWriter );
+    }
+
     protected ReportEntry( String source, String name, String group, String message, StackTraceWriter stackTraceWriter )
     {
         if ( source == null )

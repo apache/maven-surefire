@@ -4,13 +4,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.lang.reflect.Array;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -20,33 +16,6 @@ import java.util.Set;
  */
 public class ProviderDetector
 {
-    /**
-     * Method loadServices loads the services of a class that are
-     * defined using the SPI mechanism.
-     *
-     * @param clazz       The interface / abstract class defining the service.
-     * @param classLoader of type ClassLoader the classloader to use.
-     * @return An array of instances.
-     * @throws IOException When unable to read/load the manifests
-     */
-    public static Object[] loadServices( Class clazz, ClassLoader classLoader )
-        throws IOException
-    {
-        final String resourceName = "META-INF/services/" + clazz.getName();
-
-        if ( classLoader == null )
-        {
-            return new Object[0];
-        }
-        final Enumeration urlEnumeration = classLoader.getResources( resourceName );
-        final Set names = getNames( urlEnumeration );
-        if ( names == null || names.size() == 0 )
-        {
-            return (Object[]) Array.newInstance( clazz, 0 );
-        }
-
-        return instantiateServices( clazz, classLoader, names );
-    }
 
     public static Set getServiceNames( Class clazz, ClassLoader classLoader )
         throws IOException
@@ -59,37 +28,6 @@ public class ProviderDetector
         }
         final Enumeration urlEnumeration = classLoader.getResources( resourceName );
         return getNames( urlEnumeration );
-    }
-
-    private static Object[] instantiateServices( Class clazz, ClassLoader classLoader, Set names )
-    {
-        List result = new ArrayList();
-        for ( Iterator i = names.iterator(); i.hasNext(); )
-        {
-            String name = (String) i.next();
-            try
-            {
-                Class implClass = classLoader.loadClass( name );
-                if ( !clazz.isAssignableFrom( implClass ) )
-                {
-                    continue;
-                }
-                result.add( implClass.newInstance() );
-            }
-            catch ( ClassNotFoundException e )
-            {
-                // ignore
-            }
-            catch ( IllegalAccessException e )
-            {
-                // ignore
-            }
-            catch ( InstantiationException e )
-            {
-                // ignore
-            }
-        }
-        return result.toArray( (Object[]) Array.newInstance( clazz, result.size() ) );
     }
 
 

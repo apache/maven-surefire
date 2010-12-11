@@ -20,12 +20,10 @@ package org.apache.maven.surefire.report;
  */
 
 import org.apache.maven.surefire.suite.RunResult;
-import org.apache.maven.surefire.testset.SurefireConfigurationException;
-import org.apache.maven.surefire.testset.TestSetFailedException;
-import org.apache.maven.surefire.util.NestedRuntimeException;
+import org.apache.maven.surefire.util.ReflectionUtils;
+import org.apache.maven.surefire.util.SurefireReflectionException;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -86,7 +84,6 @@ public class ReporterManagerFactory
     }
 
     public ReporterManager createReporterManager()
-        throws TestSetFailedException
     {
         final List reports = instantiateReports( reportDefinitions, surefireClassLoader );
         return (ReporterManager) setupReporter( reports );
@@ -135,7 +132,6 @@ public class ReporterManagerFactory
     }
 
     private List instantiateReports( List reportDefinitions, ClassLoader classLoader )
-        throws TestSetFailedException
     {
         if ( reportDefinitions.size() == 0 )
         {
@@ -152,7 +148,6 @@ public class ReporterManagerFactory
     }
 
     private List instantiateReportsOldStyle( List reportDefinitions, ClassLoader classLoader )
-        throws TestSetFailedException
     {
         List reports = new ArrayList();
 
@@ -194,136 +189,47 @@ public class ReporterManagerFactory
     {
         try
         {
-            return (Reporter) instantiateObject( className, params, classLoader );
-        }
-        catch ( ClassNotFoundException e )
-        {
-            throw new SurefireConfigurationException( "Unable to find class to create report '" + className + "'", e );
-        }
-        catch ( NoSuchMethodException e )
-        {
-            throw new SurefireConfigurationException(
-                "Unable to find appropriate constructor to create report: " + e.getMessage(), e );
-        }
-    }
+            Class clazz = ReflectionUtils.loadClass( classLoader, className );
 
-
-    private static Object instantiateObject( String className, ReporterConfiguration params, ClassLoader classLoader )
-        throws SurefireConfigurationException, ClassNotFoundException, NoSuchMethodException
-    {
-        Class clazz = classLoader.loadClass( className );
-
-        Object object;
-        try
-        {
             if ( params != null )
             {
                 Class[] paramTypes = new Class[1];
-                paramTypes[0] = classLoader.loadClass( ReporterConfiguration.class.getName() );
+                paramTypes[0] = ReflectionUtils.loadClass( classLoader,  ReporterConfiguration.class.getName() );
 
                 Constructor constructor = clazz.getConstructor( paramTypes );
 
-                object = constructor.newInstance( new Object[]{ params } );
+                return (Reporter) ReflectionUtils.newInstance( constructor, new Object[]{ params } );
             }
             else
             {
-                object = clazz.newInstance();
+                return (Reporter) clazz.newInstance();
             }
         }
         catch ( IllegalAccessException e )
         {
-            throw new SurefireConfigurationException( "Unable to instantiate object: " + e.getMessage(), e );
-        }
-        catch ( InvocationTargetException e )
-        {
-            throw new SurefireConfigurationException( e.getTargetException().getMessage(), e.getTargetException() );
+            throw new SurefireReflectionException( e );
         }
         catch ( InstantiationException e )
         {
-            throw new SurefireConfigurationException( "Unable to instantiate object: " + e.getMessage(), e );
+            throw new SurefireReflectionException( e );
         }
-        return object;
+        catch ( NoSuchMethodException e )
+        {
+            throw new SurefireReflectionException( e );
+        }
     }
 
 
     private static Reporter instantiateReport( String className, Object[] params, ClassLoader classLoader )
-        throws TestSetFailedException
     {
-        try
-        {
-            return (Reporter) instantiateObject( className, params, classLoader );
-        }
-        catch ( ClassNotFoundException e )
-        {
-            throw new TestSetFailedException( "Unable to find class to create report '" + className + "'", e );
-        }
-        catch ( NoSuchMethodException e )
-        {
-            throw new TestSetFailedException(
-                "Unable to find appropriate constructor to create report: " + e.getMessage(), e );
-        }
-    }
-
-    private static Object instantiateObject( String className, Object[] params, ClassLoader classLoader )
-        throws TestSetFailedException, ClassNotFoundException, NoSuchMethodException
-    {
-        Class clazz = classLoader.loadClass( className );
-
-        Object object;
-        try
-        {
-            if ( params != null )
-            {
-                Class[] paramTypes = new Class[params.length];
-
-                for ( int j = 0; j < params.length; j++ )
-                {
-                    if ( params[j] == null )
-                    {
-                        paramTypes[j] = String.class;
-                    }
-                    else
-                    {
-                        paramTypes[j] = params[j].getClass();
-                    }
-                }
-
-                Constructor constructor = clazz.getConstructor( paramTypes );
-
-                object = constructor.newInstance( params );
-            }
-            else
-            {
-                object = clazz.newInstance();
-            }
-        }
-        catch ( IllegalAccessException e )
-        {
-            throw new TestSetFailedException( "Unable to instantiate object: " + e.getMessage(), e );
-        }
-        catch ( InvocationTargetException e )
-        {
-            throw new TestSetFailedException( e.getTargetException().getMessage(), e.getTargetException() );
-        }
-        catch ( InstantiationException e )
-        {
-            throw new TestSetFailedException( "Unable to instantiate object: " + e.getMessage(), e );
-        }
-        return object;
+        return (Reporter) ReflectionUtils.instantiateObject( className, params, classLoader );
     }
 
     private void warnIfNoTests()
     {
         if ( getGlobalRunStatistics().getRunResult().getCompletedCount() == 0 )
         {
-            try
-            {
-                createReporterManager().writeMessage( "There are no tests to run." );
-            }
-            catch ( TestSetFailedException e )
-            {
-                throw new NestedRuntimeException( e );
-            }
+            createReporterManager().writeMessage( "There are no tests to run." );
         }
     }
 }

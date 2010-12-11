@@ -32,11 +32,12 @@ import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestRequest;
+import org.apache.maven.surefire.util.ReflectionUtils;
+import org.apache.maven.surefire.util.SurefireReflectionException;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Properties;
@@ -76,10 +77,6 @@ public class SurefireReflector
 
     private final Class booterParameters;
 
-    private static final Class[] noargs = new Class[0];
-
-    private static final Object[] noargsValues = new Object[0];
-
     public SurefireReflector( ClassLoader surefireClassLoader )
     {
         this.classLoader = surefireClassLoader;
@@ -97,11 +94,11 @@ public class SurefireReflector
             reporterConfigurationAware = surefireClassLoader.loadClass( ReporterConfigurationAware.class.getName() );
             providerPropertiesAware = surefireClassLoader.loadClass( ProviderPropertiesAware.class.getName() );
             runResult = surefireClassLoader.loadClass( RunResult.class.getName() );
-            booterParameters= surefireClassLoader.loadClass( ProviderParameters.class.getName() );
+            booterParameters = surefireClassLoader.loadClass( ProviderParameters.class.getName() );
         }
         catch ( ClassNotFoundException e )
         {
-            throw new RuntimeException( "When loading class", e );
+            throw new SurefireReflectionException( e );
         }
     }
 
@@ -111,12 +108,12 @@ public class SurefireReflector
         {
             return result;
         }
-        final Integer getCompletedCount1 = (Integer) invokeGetter( result, "getCompletedCount" );
-        final Integer getErrors = (Integer) invokeGetter( result, "getErrors" );
-        final Integer getSkipped = (Integer) invokeGetter( result, "getSkipped" );
-        final Integer getFailures = (Integer) invokeGetter( result, "getFailures" );
-        return new RunResult( getCompletedCount1.intValue(), getErrors.intValue(),
-                              getFailures.intValue(), getSkipped.intValue() );
+        final Integer getCompletedCount1 = (Integer) ReflectionUtils.invokeGetter( result, "getCompletedCount" );
+        final Integer getErrors = (Integer) ReflectionUtils.invokeGetter( result, "getErrors" );
+        final Integer getSkipped = (Integer) ReflectionUtils.invokeGetter( result, "getSkipped" );
+        final Integer getFailures = (Integer) ReflectionUtils.invokeGetter( result, "getFailures" );
+        return new RunResult( getCompletedCount1.intValue(), getErrors.intValue(), getFailures.intValue(),
+                              getSkipped.intValue() );
 
     }
 
@@ -147,17 +144,16 @@ public class SurefireReflector
     }
 
 
-    Object createTestSuiteDefinition( TestRequest suiteDefinition )
+    Object createTestRequest( TestRequest suiteDefinition )
     {
         if ( suiteDefinition == null )
         {
             return null;
         }
         Class[] arguments = { List.class, File.class, String.class };
-        Constructor constructor = getConstructor( this.testRequest, arguments );
-        return newInstance( constructor,
-                            new Object[]{ suiteDefinition.getSuiteXmlFiles(), suiteDefinition.getTestSourceDirectory(),
-                                suiteDefinition.getRequestedTest() } );
+        Constructor constructor = ReflectionUtils.getConstructor( this.testRequest, arguments );
+        return ReflectionUtils.newInstance( constructor, new Object[]{ suiteDefinition.getSuiteXmlFiles(),
+            suiteDefinition.getTestSourceDirectory(), suiteDefinition.getRequestedTest() } );
     }
 
 
@@ -168,10 +164,12 @@ public class SurefireReflector
             return null;
         }
         Class[] arguments = { File.class, List.class, List.class, Boolean.class };
-        Constructor constructor = getConstructor( this.directoryScannerParameters, arguments );
-        return newInstance( constructor, new Object[]{ directoryScannerParameters.getTestClassesDirectory(),
-            directoryScannerParameters.getIncludes(), directoryScannerParameters.getExcludes(),
-            directoryScannerParameters.isFailIfNoTests() } );
+        Constructor constructor = ReflectionUtils.getConstructor( this.directoryScannerParameters, arguments );
+        return ReflectionUtils.newInstance( constructor,
+                                            new Object[]{ directoryScannerParameters.getTestClassesDirectory(),
+                                                directoryScannerParameters.getIncludes(),
+                                                directoryScannerParameters.getExcludes(),
+                                                directoryScannerParameters.isFailIfNoTests() } );
     }
 
     Object createTestArtifactInfo( TestArtifactInfo testArtifactInfo )
@@ -181,168 +179,30 @@ public class SurefireReflector
             return null;
         }
         Class[] arguments = { String.class, String.class };
-        Constructor constructor = getConstructor( this.testArtifactInfo, arguments );
-        return newInstance( constructor,
-                            new Object[]{ testArtifactInfo.getVersion(), testArtifactInfo.getClassifier() } );
+        Constructor constructor = ReflectionUtils.getConstructor( this.testArtifactInfo, arguments );
+        return ReflectionUtils.newInstance( constructor, new Object[]{ testArtifactInfo.getVersion(),
+            testArtifactInfo.getClassifier() } );
     }
 
     Object createReporterConfiguration( ReporterConfiguration reporterConfiguration )
     {
-        Constructor constructor =
-            getConstructor( this.reporterConfiguration, new Class[]{ List.class, File.class, Boolean.class } );
-        return newInstance( constructor, new Object[]{ reporterConfiguration.getReports(), reporterConfiguration.getReportsDirectory(),
-            reporterConfiguration.isTrimStackTrace() } );
-    }
-
-    private Constructor getConstructor( Class clazz, Class[] arguments )
-    {
-        try
-        {
-            return clazz.getConstructor( arguments );
-        }
-        catch ( NoSuchMethodException e )
-        {
-            throw new RuntimeException( e );
-        }
-    }
-
-    private Object newInstance( Constructor constructor, Object[] params )
-    {
-        try
-        {
-            return constructor.newInstance( params );
-        }
-        catch ( InvocationTargetException e )
-        {
-            throw new RuntimeException( e );
-        }
-        catch ( InstantiationException e )
-        {
-            throw new RuntimeException( e );
-        }
-        catch ( IllegalAccessException e )
-        {
-            throw new RuntimeException( e );
-        }
+        Constructor constructor = ReflectionUtils.getConstructor( this.reporterConfiguration,
+                                                                  new Class[]{ List.class, File.class,
+                                                                      Boolean.class } );
+        return ReflectionUtils.newInstance( constructor, new Object[]{ reporterConfiguration.getReports(),
+            reporterConfiguration.getReportsDirectory(), reporterConfiguration.isTrimStackTrace() } );
     }
 
     public Object createBooterConfiguration()
     {
-        try
-        {
-
-            Class clazz = classLoader.loadClass( BaseProviderFactory.class.getName());
-            return clazz.newInstance();
-        }
-        catch ( InstantiationException e )
-        {
-            throw new RuntimeException( e );
-        }
-        catch ( IllegalAccessException e )
-        {
-            throw new RuntimeException( e );
-        }
-        catch ( ClassNotFoundException e )
-        {
-            throw new RuntimeException( e );
-        }
+        return ReflectionUtils.instantiate( classLoader, BaseProviderFactory.class.getName() );
     }
+
     public Object instantiateProvider( String providerClassName, Object booterParameters )
     {
-
-        try
-        {
-            Class aClass = classLoader.loadClass( providerClassName );
-            Constructor constructor = getConstructor(  aClass,  new Class[]{ this.booterParameters } );
-            return constructor.newInstance( new Object []{booterParameters} );
-        }
-        catch ( ClassNotFoundException e )
-        {
-            throw new RuntimeException( e );
-        }
-        catch ( InvocationTargetException e )
-        {
-            throw new RuntimeException( e );
-        }
-        catch ( InstantiationException e )
-        {
-            throw new RuntimeException( e );
-        }
-        catch ( IllegalAccessException e )
-        {
-            throw new RuntimeException( e );
-        }
+        return ReflectionUtils.instantiateOneArg( classLoader, providerClassName, this.booterParameters, booterParameters );
     }
 
-
-    private static Object invokeSetter( Object surefire, Method method, Object value )
-
-    {
-        try
-        {
-            return method.invoke( surefire, new Object[]{ value } );
-        }
-        catch ( IllegalAccessException e )
-        {
-            throw new RuntimeException( "When instantiating surefire", e );
-        }
-        catch ( InvocationTargetException e )
-        {
-            throw new RuntimeException( e.getTargetException().getMessage(), e.getTargetException() );
-        }
-
-    }
-
-    private static Object invokeMethod( Object surefire, Method method, Object[] args )
-
-    {
-        try
-        {
-            return method.invoke( surefire, args );
-        }
-        catch ( IllegalAccessException e )
-        {
-            throw new RuntimeException( "When instantiating surefire", e );
-        }
-        catch ( InvocationTargetException e )
-        {
-            throw new RuntimeException( e.getTargetException().getMessage(), e.getTargetException() );
-        }
-
-    }
-
-    private static Object invokeGetter( Object instance, String methodName )
-    {
-        try
-        {
-            final Method method = instance.getClass().getMethod( methodName, noargs );
-            return method.invoke( instance, noargsValues );
-        }
-        catch ( NoSuchMethodException e )
-        {
-            throw new RuntimeException( "When finding method " + methodName, e );
-        }
-        catch ( InvocationTargetException e )
-        {
-            throw new RuntimeException( "When running method " + methodName, e );
-        }
-        catch ( IllegalAccessException e )
-        {
-            throw new RuntimeException( "When accessing method " + methodName, e );
-        }
-    }
-
-    private static Method getMethod( Object instance, String methodName, Class[] parameters )
-    {
-        try
-        {
-            return instance.getClass().getMethod( methodName, parameters );
-        }
-        catch ( NoSuchMethodException e )
-        {
-            throw new RuntimeException( "When finding method " + methodName, e );
-        }
-    }
 
     public void setIfDirScannerAware( Object o, DirectoryScannerParameters dirScannerParams )
     {
@@ -360,9 +220,7 @@ public class SurefireReflector
     public void setDirectoryScannerParameters( Object o, DirectoryScannerParameters dirScannerParams )
     {
         final Object param = createDirectoryScannerParameters( dirScannerParams );
-        final Method setter =
-            getMethod( o, "setDirectoryScannerParameters", new Class[]{ directoryScannerParameters } );
-        invokeSetter( o, setter, param );
+        ReflectionUtils.invokeSetter( o, "setDirectoryScannerParameters", this.directoryScannerParameters, param );
     }
 
     public void setTestSuiteDefinitionAware( Object o, TestRequest testSuiteDefinition2 )
@@ -381,9 +239,8 @@ public class SurefireReflector
 
     void setTestSuiteDefinition( Object o, TestRequest testSuiteDefinition1 )
     {
-        final Object param = createTestSuiteDefinition( testSuiteDefinition1 );
-        final Method setter = getMethod( o, "setTestRequest", new Class[]{ testRequest } );
-        invokeSetter( o, setter, param );
+        final Object param = createTestRequest( testSuiteDefinition1 );
+        ReflectionUtils.invokeSetter( o, "setTestRequest", this.testRequest,  param );
     }
 
     public void setProviderPropertiesAware( Object o, Properties properties )
@@ -402,8 +259,7 @@ public class SurefireReflector
 
     void setProviderProperties( Object o, Properties providerProperties )
     {
-        final Method setter = getMethod( o, "setProviderProperties", new Class[]{ Properties.class } );
-        invokeSetter( o, setter, providerProperties );
+        ReflectionUtils.invokeSetter( o, "setProviderProperties", Properties.class, providerProperties );
     }
 
     public void setReporterConfigurationAware( Object o, ReporterConfiguration reporterConfiguration1 )
@@ -418,8 +274,7 @@ public class SurefireReflector
     void setReporterConfiguration( Object o, ReporterConfiguration reporterConfiguration )
     {
         final Object param = createReporterConfiguration( reporterConfiguration );
-        final Method setter = getMethod( o, "setReporterConfiguration", new Class[]{ this.reporterConfiguration } );
-        invokeSetter( o, setter, param );
+        ReflectionUtils.invokeSetter( o, "setReporterConfiguration", this.reporterConfiguration, param );
     }
 
     boolean isReporterConfigurationAwareAware( Object o )
@@ -427,7 +282,7 @@ public class SurefireReflector
         return reporterConfigurationAware.isAssignableFrom( o.getClass() );
     }
 
-    public void setTestClassLoaderAware( Object o, ClassLoader surefireClassLoader, ClassLoader testClassLoader)
+    public void setTestClassLoaderAware( Object o, ClassLoader surefireClassLoader, ClassLoader testClassLoader )
     {
         if ( isTestClassLoaderAware( o ) )
         {
@@ -442,8 +297,9 @@ public class SurefireReflector
 
     void setTestClassLoader( Object o, ClassLoader surefireClassLoader, ClassLoader testClassLoader )
     {
-        final Method setter = getMethod( o, "setClassLoaders", new Class[]{ ClassLoader.class, ClassLoader.class  } );
-        invokeMethod( o, setter, new Object[]{ surefireClassLoader, testClassLoader } );
+        final Method setter = ReflectionUtils.getMethod( o, "setClassLoaders",
+                                                         new Class[]{ ClassLoader.class, ClassLoader.class } );
+        ReflectionUtils.invokeMethodWithArray( o, setter, new Object[]{ surefireClassLoader, testClassLoader } );
     }
 
     public void setTestArtifactInfoAware( Object o, TestArtifactInfo testArtifactInfo1 )
@@ -462,8 +318,7 @@ public class SurefireReflector
     void setTestArtifactInfo( Object o, TestArtifactInfo testArtifactInfo )
     {
         final Object param = createTestArtifactInfo( testArtifactInfo );
-        final Method setter = getMethod( o, "setTestArtifactInfo", new Class[]{ this.testArtifactInfo } );
-        invokeSetter( o, setter, param );
+        ReflectionUtils.invokeSetter( o, "setTestArtifactInfo", this.testArtifactInfo, param );
     }
 
     public boolean isRunResult( Object o )

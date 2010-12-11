@@ -20,10 +20,8 @@ package org.apache.maven.surefire.suite;
  */
 
 import org.apache.maven.surefire.testset.TestSetFailedException;
+import org.apache.maven.surefire.util.ReflectionUtils;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.util.Collections;
 import java.util.List;
 
 // todo: Remove once we build with 2.7
@@ -47,11 +45,6 @@ public class SuiteDefinition
         return instantiateSuite( suiteClassName, params, surefireClassLoader );
     }
 
-    public List asBooterFormat()
-    {
-        return Collections.singletonList( new Object[]{ suiteClassName, params } );
-    }
-
     public static SuiteDefinition fromBooterFormat( List testSuiteDefinitions )
     {
         if ( testSuiteDefinitions.size() != 1 )
@@ -64,70 +57,8 @@ public class SuiteDefinition
     }
 
     // This reflection is not due to linkage issues, but only an attempt at being generic.
-    private static Object instantiateObject( String className, Object[] params, ClassLoader classLoader )
-        throws TestSetFailedException, ClassNotFoundException, NoSuchMethodException
-    {
-        Class clazz = classLoader.loadClass( className );
-
-        Object object;
-        try
-        {
-            if ( params != null )
-            {
-                Class[] paramTypes = new Class[params.length];
-
-                for ( int j = 0; j < params.length; j++ )
-                {
-                    if ( params[j] == null )
-                    {
-                        paramTypes[j] = String.class;
-                    }
-                    else
-                    {
-                        paramTypes[j] = params[j].getClass();
-                    }
-                }
-
-                Constructor constructor = clazz.getConstructor( paramTypes );
-
-                object = constructor.newInstance( params );
-            }
-            else
-            {
-                object = clazz.newInstance();
-            }
-        }
-        catch ( IllegalAccessException e )
-        {
-            throw new TestSetFailedException( "Unable to instantiate object: " + e.getMessage(), e );
-        }
-        catch ( InvocationTargetException e )
-        {
-            throw new TestSetFailedException( e.getTargetException().getMessage(), e.getTargetException() );
-        }
-        catch ( InstantiationException e )
-        {
-            throw new TestSetFailedException( "Unable to instantiate object: " + e.getMessage(), e );
-        }
-        return object;
-    }
-
-    // This reflection is not due to linkage issues, but only an attempt at being generic.
     private static SurefireTestSuite instantiateSuite( String suiteClass, Object[] params, ClassLoader classLoader )
-        throws TestSetFailedException
     {
-        try
-        {
-            return (SurefireTestSuite) instantiateObject( suiteClass, params, classLoader );
-        }
-        catch ( ClassNotFoundException e )
-        {
-            throw new TestSetFailedException( "Unable to find class to create suite '" + suiteClass + "'", e );
-        }
-        catch ( NoSuchMethodException e )
-        {
-            throw new TestSetFailedException(
-                "Unable to find appropriate constructor to create suite: " + e.getMessage(), e );
-        }
+        return (SurefireTestSuite) ReflectionUtils.instantiateObject( suiteClass, params, classLoader );
     }
 }

@@ -18,6 +18,7 @@ package org.apache.maven.surefire.junit4;
  * under the License.
  */
 
+import org.apache.maven.surefire.util.ReflectionUtils;
 import org.apache.maven.surefire.util.ScannerFilter;
 
 import java.lang.annotation.Annotation;
@@ -87,20 +88,7 @@ public class JUnit4TestChecker
 
     private Class getJUnitClass( ClassLoader classLoader, String className )
     {
-        Class junitClass = null;
-        try
-        {
-            junitClass = classLoader.loadClass( className );
-        }
-        catch ( NoClassDefFoundError e )
-        {
-            // ignore this
-        }
-        catch ( ClassNotFoundException e )
-        {
-            // ignore this
-        }
-        return junitClass;
+        return ReflectionUtils.tryLoadClass( classLoader, className );
     }
 
 }
