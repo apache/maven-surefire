@@ -28,6 +28,7 @@ import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.DirectoryScanner;
+import org.apache.maven.surefire.util.TestsToRun;
 
 import java.util.Iterator;
 
@@ -91,12 +92,12 @@ public class JUnitCoreProvider
                                                            jUnitCoreParameters.isParallelClasses(),
                                                            jUnitCoreParameters.isParallelBoth() );
 
-        JUnitCoreWrapper.execute( testsToRun.getLocatedClasses(), jUnitCoreParameters, listener );
+        JUnitCoreWrapper.execute( testsToRun, jUnitCoreParameters, listener );
         return reporterFactory.close();
     }
 
     private TestsToRun scanClassPath()
     {
-        return new TestsToRun( directoryScanner.locateTestClasses( testClassLoader, scannerFilter ) );
+        return directoryScanner.locateTestClasses( testClassLoader, scannerFilter );
     }
 }

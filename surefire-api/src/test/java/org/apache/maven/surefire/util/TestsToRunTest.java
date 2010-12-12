@@ -1,3 +1,5 @@
+package org.apache.maven.surefire.util;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -17,30 +19,26 @@
  * under the License.
  */
 
-package org.apache.maven.surefire.junitcore;
+import junit.framework.TestCase;
 
-import org.junit.Test;
-
-import java.util.Set;
-
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
+import java.util.Arrays;
 
 /*
- * @author Kristian Rosenvold, kristian.rosenvold@gmail com
+ * @author Kristian Rosenvold
  */
 
 public class TestsToRunTest
+    extends TestCase
 {
-    @Test
     public void testGetTestSets()
         throws Exception
     {
-        TestsToRun testsToRun = new TestsToRun( T1.class, T2.class );
+        TestsToRun testsToRun = new TestsToRun( Arrays.asList( new Class[]{ T1.class, T2.class } ) );
         assertEquals( 2, testsToRun.size() );
-        Set<Class> stringJUnitCoreTestSetMap = testsToRun.getTestSets();
-        assertTrue( stringJUnitCoreTestSetMap.contains( T1.class ) );
-        assertEquals( 2, stringJUnitCoreTestSetMap.size() );
+        Class[] stringJUnitCoreTestSetMap = testsToRun.getLocatedClasses();
+        assertEquals( stringJUnitCoreTestSetMap[0], T1.class );
+        assertEquals( stringJUnitCoreTestSetMap[1], T2.class );
+        assertEquals( 2, stringJUnitCoreTestSetMap.length );
     }
 
     class T1

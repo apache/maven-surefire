@@ -30,6 +30,7 @@ import org.apache.maven.surefire.testset.SurefireTestSet;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.DefaultDirectoryScanner;
 import org.apache.maven.surefire.util.DirectoryScanner;
+import org.apache.maven.surefire.util.TestsToRun;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -74,8 +75,9 @@ public abstract class AbstractDirectoryTestSuite
         }
         testSets = new TreeMap();
 
-        Class[] locatedClasses =
+        final TestsToRun testsToRun =
             surefireDirectoryScanner.locateTestClasses( classLoader, new NonAbstractClassFilter() );
+        Class[] locatedClasses = testsToRun.getLocatedClasses();
 
         for ( int i = 0; i < locatedClasses.length; i++ )
         {

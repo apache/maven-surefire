@@ -1,3 +1,5 @@
+package org.apache.maven.surefire.util;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -16,13 +18,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.maven.surefire.junitcore;
 
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -31,18 +33,23 @@ import java.util.Set;
  *
  * @author Kristian Rosenvold (junit core adaption)
  */
-class TestsToRun
+public class TestsToRun
 {
-    private final Class[] locatedClasses;
+    private final List locatedClasses;
 
-    private final Set<Class> testSets;
-
-    public TestsToRun( Class... locatedClasses )
+    /**
+     * Constructor
+     *
+     * @param locatedClasses A list of java.lang.Class objects representing tests to run
+     */
+    public TestsToRun( List locatedClasses )
     {
         this.locatedClasses = locatedClasses;
-        testSets = new HashSet<Class>();
-        for ( Class testClass : locatedClasses )
+        Set testSets = new HashSet();
+
+        for ( Iterator iterator = locatedClasses.iterator(); iterator.hasNext(); )
         {
+            Class testClass = (Class) iterator.next();
             if ( testSets.contains( testClass ) )
             {
                 throw new RuntimeException( "Duplicate test set '" + testClass.getName() + "'" );
@@ -51,18 +58,12 @@ class TestsToRun
         }
     }
 
-    private TestsToRun( String className, ClassLoader classLoader )
-        throws ClassNotFoundException
-    {
-        this( classLoader.loadClass( className ) );
-    }
-
     public static TestsToRun fromClassName( String className, ClassLoader classLoader )
         throws TestSetFailedException
     {
         try
         {
-            return new TestsToRun( className, classLoader );
+            return new TestsToRun( Arrays.asList( new Class[]{ classLoader.loadClass( className ) } ) );
         }
         catch ( ClassNotFoundException e )
         {
@@ -70,23 +71,21 @@ class TestsToRun
         }
     }
 
-    public Set<Class> getTestSets()
-    {
-        return Collections.unmodifiableSet( testSets );
-    }
-
     public int size()
     {
-        return testSets.size();
+        return locatedClasses.size();
     }
 
     public Class[] getLocatedClasses()
     {
-        return locatedClasses;
+        return (Class[]) locatedClasses.toArray( new Class[locatedClasses.size()] );
     }
 
+    /**
+     * Returns an iterator over the located java.lang.Class objects
+     */
     public Iterator iterator()
     {
-        return testSets.iterator();
+        return locatedClasses.iterator();
     }
 }

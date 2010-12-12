@@ -55,7 +55,7 @@ public class DefaultDirectoryScanner
         this.excludes = excludes;
     }
 
-    public Class[] locateTestClasses( ClassLoader classLoader, ScannerFilter scannerFilter )
+    public TestsToRun locateTestClasses( ClassLoader classLoader, ScannerFilter scannerFilter )
     {
         String[] testClassNames = collectTests();
         List result = new ArrayList();
@@ -66,11 +66,12 @@ public class DefaultDirectoryScanner
 
             Class testClass = loadClass( classLoader, className );
 
-            if (scannerFilter.accept( testClass)){
+            if ( scannerFilter.accept( testClass ) )
+            {
                 result.add( testClass );
             }
         }
-        return (Class[]) result.toArray( new Class[result.size()] );
+        return new TestsToRun( result );
     }
 
     public static Class loadClass( ClassLoader classLoader, String className )
