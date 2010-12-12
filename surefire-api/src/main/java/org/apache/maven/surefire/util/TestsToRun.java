@@ -22,6 +22,7 @@ package org.apache.maven.surefire.util;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -44,7 +45,7 @@ public class TestsToRun
      */
     public TestsToRun( List locatedClasses )
     {
-        this.locatedClasses = locatedClasses;
+        this.locatedClasses = Collections.unmodifiableList( locatedClasses);
         Set testSets = new HashSet();
 
         for ( Iterator iterator = locatedClasses.iterator(); iterator.hasNext(); )
@@ -83,6 +84,7 @@ public class TestsToRun
 
     /**
      * Returns an iterator over the located java.lang.Class objects
+     * @return an unmodifiable iterator
      */
     public Iterator iterator()
     {
