@@ -12,6 +12,11 @@ import java.util.Properties;
 /**
  * Injected into the providers upon provider construction. Allows the provider to request services and data it needs.
  *
+ * NOTE: This class is part of the proposed public api for surefire providers from 2.7 and up. It may
+ * still be subject to changes, even for minor revisions.
+ *
+ * The api covers this interface and all the types reachable from it. And nothing else.
+ *
  * @author Kristian Rosenvold
  */
 public interface ProviderParameters

@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.providerapi;
+package org.apache.maven.surefire.booter;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,13 +19,13 @@ package org.apache.maven.surefire.providerapi;
  * under the License.
  */
 
-import org.apache.maven.surefire.testset.TestArtifactInfo;
+import org.apache.maven.surefire.testset.TestRequest;
 
 /**
  * @author Kristian Rosenvold
  */
-public interface TestArtifactInfoAware
+interface TestRequestAware
 {
     /** @noinspection UnusedDeclaration*/
-    void setTestArtifactInfo( TestArtifactInfo testArtifactInfo );
+    void setTestRequest( TestRequest testSuiteDefinition );
 }

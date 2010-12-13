@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.providerapi;
+package org.apache.maven.surefire.booter;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,11 +19,13 @@ package org.apache.maven.surefire.providerapi;
  * under the License.
  */
 
+import java.util.Properties;
+
 /**
  * @author Kristian Rosenvold
  */
-public interface ProviderFactory
+interface ProviderPropertiesAware
 {
     /** @noinspection UnusedDeclaration*/
-    SurefireProvider createProvider();
+    void setProviderProperties( Properties providerProperties );
 }

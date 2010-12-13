@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.providerapi;
+package org.apache.maven.surefire.booter;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,13 +19,10 @@ package org.apache.maven.surefire.providerapi;
  * under the License.
  */
 
-import org.apache.maven.surefire.testset.TestRequest;
-
 /**
  * @author Kristian Rosenvold
  */
-public interface TestRequestAware
+public interface SurefireClassLoadersAware
 {
-    /** @noinspection UnusedDeclaration*/
-    void setTestRequest( TestRequest testSuiteDefinition );
+    void setClassLoaders( ClassLoader surefireClassLoader, ClassLoader testClassLoader);
 }

@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.providerapi;
+package org.apache.maven.surefire.booter;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,12 +19,13 @@ package org.apache.maven.surefire.providerapi;
  * under the License.
  */
 
-import org.apache.maven.surefire.testset.DirectoryScannerParameters;
+import org.apache.maven.surefire.report.ReporterConfiguration;
 
 /**
  * @author Kristian Rosenvold
  */
-public interface DirectoryScannerParametersAware
+interface ReporterConfigurationAware
 {
-    public void setDirectoryScannerParameters( DirectoryScannerParameters directoryScanner );
+    /** @noinspection UnusedDeclaration*/
+    void setReporterConfiguration( ReporterConfiguration reporterConfiguration );
 }

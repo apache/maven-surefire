@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.providerapi;
+package org.apache.maven.surefire.booter;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,13 +19,13 @@ package org.apache.maven.surefire.providerapi;
  * under the License.
  */
 
-import java.util.Properties;
+import org.apache.maven.surefire.testset.TestArtifactInfo;
 
 /**
  * @author Kristian Rosenvold
  */
-public interface ProviderPropertiesAware
+interface TestArtifactInfoAware
 {
     /** @noinspection UnusedDeclaration*/
-    void setProviderProperties( Properties providerProperties );
+    void setTestArtifactInfo( TestArtifactInfo testArtifactInfo );
 }

@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.providerapi;
+package org.apache.maven.surefire.booter;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,10 +19,12 @@ package org.apache.maven.surefire.providerapi;
  * under the License.
  */
 
+import org.apache.maven.surefire.testset.DirectoryScannerParameters;
+
 /**
  * @author Kristian Rosenvold
  */
-public interface SurefireClassLoadersAware
+interface DirectoryScannerParametersAware
 {
-    void setClassLoaders( ClassLoader surefireClassLoader, ClassLoader testClassLoader);
+    public void setDirectoryScannerParameters( DirectoryScannerParameters directoryScanner );
 }

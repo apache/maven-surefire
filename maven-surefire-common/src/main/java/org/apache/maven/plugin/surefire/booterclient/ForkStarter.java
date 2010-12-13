@@ -53,7 +53,7 @@ import java.util.Properties;
  * <p/>
  * Lives only on the plugin-side (not present in remote vms)
  * <p/>
- * Knows how to fork new vms and also how to delegate non-forking invocation to TestVmBooter directly
+ * Knows how to fork new vms and also how to delegate non-forking invocation to SurefireStarter directly
  *
  * @author Jason van Zyl
  * @author Emmanuel Venisse

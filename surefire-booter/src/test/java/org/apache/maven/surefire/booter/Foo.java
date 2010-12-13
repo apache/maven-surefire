@@ -20,12 +20,6 @@ package org.apache.maven.surefire.booter;
  */
 
 
-import org.apache.maven.surefire.providerapi.DirectoryScannerParametersAware;
-import org.apache.maven.surefire.providerapi.ProviderPropertiesAware;
-import org.apache.maven.surefire.providerapi.ReporterConfigurationAware;
-import org.apache.maven.surefire.providerapi.SurefireClassLoadersAware;
-import org.apache.maven.surefire.providerapi.TestArtifactInfoAware;
-import org.apache.maven.surefire.providerapi.TestRequestAware;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;

@@ -28,21 +28,22 @@ import java.util.Iterator;
 /**
  * Interface to be implemented by all Surefire providers.
  *
+ * NOTE: This class is part of the proposed public api for surefire providers for 2.7. It may
+ * still be subject to changes, even for minor revisions.
+ *
+ * The api covers this interface and all the types reachable from it. And nothing else.
+ *
+ * <p/>
  * Called in one of three ways:
  * Forkmode = never: getSuites is not called, invoke is called with null parameter
  * Forkmode = once: getSuites is not called, invoke is called with null parameter
- * Forkmode anything else: getSuites is called, invoke is called on NEW INSTANCE for each item in getSuites
+ * Forkmode anything else: getSuites is called, invoke is called on new provider instance for each item in getSuites
  * response.
  *
  * @author Kristian Rosenvold
  */
 public interface SurefireProvider
 {
-    /**
-     * Returns true if the general dependencies/configuration of the environment allows this provider to run.
-     * @return
-     */
-    Boolean isRunnable();
     /**
      * Called when forkmode is pertest, allows the provider to define what "pertest" will be.
      *

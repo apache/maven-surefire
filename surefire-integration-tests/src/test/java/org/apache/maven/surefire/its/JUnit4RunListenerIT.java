@@ -54,6 +54,7 @@ public class JUnit4RunListenerIT
     {
         HelperAssertions.assertTestSuiteResults( 1, 0, 0, 0, testDir );
         final File targetDir = new File(testDir, "target");
+
         assertFileExists(new File(targetDir, "runlistener-output-1.txt"));
         assertFileExists(new File(targetDir, "runlistener-output-2.txt"));
     }

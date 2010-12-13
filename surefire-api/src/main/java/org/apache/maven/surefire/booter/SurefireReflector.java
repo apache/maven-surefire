@@ -19,14 +19,7 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import org.apache.maven.surefire.providerapi.BaseProviderFactory;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
-import org.apache.maven.surefire.providerapi.DirectoryScannerParametersAware;
-import org.apache.maven.surefire.providerapi.ProviderPropertiesAware;
-import org.apache.maven.surefire.providerapi.ReporterConfigurationAware;
-import org.apache.maven.surefire.providerapi.SurefireClassLoadersAware;
-import org.apache.maven.surefire.providerapi.TestArtifactInfoAware;
-import org.apache.maven.surefire.providerapi.TestRequestAware;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;

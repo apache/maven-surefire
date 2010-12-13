@@ -70,11 +70,8 @@
             <artifactId>${provider}</artifactId>
             <version>${surefire.version}</version>
           </dependency>
-
         </dependencies>
       </plugin>
     </plugins>
   </build>
-
-
 </project>
