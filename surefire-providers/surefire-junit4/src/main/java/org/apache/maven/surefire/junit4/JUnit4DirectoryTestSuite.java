@@ -23,9 +23,11 @@ import org.apache.maven.surefire.suite.AbstractDirectoryTestSuite;
 import org.apache.maven.surefire.testset.SurefireTestSet;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.DirectoryScanner;
+import org.junit.runner.notification.RunListener;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Test suite for JUnit4 based on a directory of Java test classes. This is
@@ -37,15 +39,19 @@ import java.util.ArrayList;
 public class JUnit4DirectoryTestSuite
     extends AbstractDirectoryTestSuite
 {
+    private List<RunListener> customRunListeners;
+
     // Remove when we no longer build with surefire 2.5
     public JUnit4DirectoryTestSuite( File basedir, ArrayList includes, ArrayList excludes )
     {
         super( basedir, includes, excludes );
+
     }
 
-    public JUnit4DirectoryTestSuite( DirectoryScanner surefireDirectoryScanner )
+    public JUnit4DirectoryTestSuite( DirectoryScanner surefireDirectoryScanner, List<RunListener> customRunListeners )
     {
         super( surefireDirectoryScanner );
+        this.customRunListeners = customRunListeners;
     }
 
 
@@ -60,7 +66,9 @@ public class JUnit4DirectoryTestSuite
         throws TestSetFailedException
     {
         JUnit4TestChecker jUnit4TestChecker = new JUnit4TestChecker( testsClassLoader );
-        return jUnit4TestChecker.isValidJUnit4Test( testClass ) ? new JUnit4TestSet( testClass ) : null;
+        return jUnit4TestChecker.isValidJUnit4Test( testClass )
+            ? new JUnit4TestSet( testClass, customRunListeners )
+            : null;
     }
 
 }

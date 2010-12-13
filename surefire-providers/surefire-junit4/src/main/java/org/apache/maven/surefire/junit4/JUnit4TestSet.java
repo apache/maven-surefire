@@ -27,32 +27,45 @@ import org.junit.runner.Runner;
 import org.junit.runner.notification.RunListener;
 import org.junit.runner.notification.RunNotifier;
 
+import java.util.List;
+
 public class JUnit4TestSet
     extends AbstractTestSet
 {
+    private final List<RunListener> customRunListeners;
+
     /**
      * Constructor.
      *
      * @param testClass the class to be run as a test
      */
-    protected JUnit4TestSet( Class testClass )
+    protected JUnit4TestSet( Class testClass, List<RunListener> customRunListeners )
     {
         super( testClass );
+        this.customRunListeners = customRunListeners;
     }
 
     /**
      * Actually runs the test and adds the tests results to the <code>reportManager</code>.
      *
-     * @see org.apache.maven.surefire.testset.SurefireTestSet#execute(org.apache.maven.surefire.report.ReporterManager,java.lang.ClassLoader)
+     * @see org.apache.maven.surefire.testset.SurefireTestSet#execute(org.apache.maven.surefire.report.ReporterManager, java.lang.ClassLoader)
      */
     public void execute( ReporterManager reportManager, ClassLoader loader )
         throws TestSetFailedException
     {
         Runner junitTestRunner = Request.aClass( getTestClass() ).getRunner();
-        
+
         RunNotifier fNotifier = new RunNotifier();
         RunListener listener = new JUnit4TestSetReporter( this, reportManager );
         fNotifier.addListener( listener );
+
+        if ( customRunListeners != null )
+        {
+            for ( RunListener customRunListener : customRunListeners )
+            {
+                fNotifier.addListener( customRunListener );
+            }
+        }
 
         try
         {
@@ -61,6 +74,14 @@ public class JUnit4TestSet
         finally
         {
             fNotifier.removeListener( listener );
+
+            if ( customRunListeners != null )
+            {
+                for ( RunListener customRunListener : customRunListeners )
+                {
+                    fNotifier.removeListener( customRunListener );
+                }
+            }
         }
     }
 

@@ -27,8 +27,13 @@ import org.apache.maven.surefire.report.ReporterManagerFactory;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.DirectoryScanner;
+import org.apache.maven.surefire.util.ReflectionUtils;
+import org.junit.runner.notification.RunListener;
 
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+
 
 /**
  * @author Kristian Rosenvold
@@ -44,11 +49,16 @@ public class JUnit4Provider
 
     private final DirectoryScanner directoryScanner;
 
+    private final List<RunListener> customRunListeners;
+
     public JUnit4Provider( ProviderParameters booterParameters )
     {
         this.reporterFactory = booterParameters.getReporterFactory();
         this.testClassLoader = booterParameters.getTestClassLoader();
         this.directoryScanner = booterParameters.getDirectoryScanner();
+        customRunListeners =
+            createCustomListeners( booterParameters.getProviderProperties().getProperty( "listener" ) );
+
     }
 
     @SuppressWarnings( { "UnnecessaryUnboxing" } )
@@ -70,8 +80,7 @@ public class JUnit4Provider
 
     private JUnit4DirectoryTestSuite getSuite()
     {
-        return new JUnit4DirectoryTestSuite( directoryScanner );
-
+        return new JUnit4DirectoryTestSuite( directoryScanner, customRunListeners );
     }
 
     public Iterator getSuites()
@@ -116,5 +125,22 @@ public class JUnit4Provider
         return Boolean.TRUE;
     }
 
+    private List<RunListener> createCustomListeners( String listenerProperty )
+    {
+        List<RunListener> result = new LinkedList<RunListener>();
+        if ( listenerProperty == null )
+        {
+            return result;
+        }
 
+        for ( String thisListenerName : listenerProperty.split( "," ) )
+        {
+            RunListener customRunListener =
+                (RunListener) ReflectionUtils.instantiate( Thread.currentThread().getContextClassLoader(),
+                                                           thisListenerName );
+            result.add( customRunListener );
+        }
+
+        return result;
+    }
 }

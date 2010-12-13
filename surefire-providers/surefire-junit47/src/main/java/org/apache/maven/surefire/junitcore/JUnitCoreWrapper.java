@@ -23,7 +23,9 @@ import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.TestsToRun;
 import org.junit.runner.Computer;
 import org.junit.runner.JUnitCore;
+import org.junit.runner.notification.RunListener;
 
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -35,19 +37,25 @@ import java.util.concurrent.ExecutionException;
 class JUnitCoreWrapper
 {
     public static void execute( TestsToRun testsToRun, JUnitCoreParameters jUnitCoreParameters,
-                                ConcurrentReportingRunListener listener )
+                                List<RunListener> listeners )
         throws TestSetFailedException
     {
         Computer computer = getComputer( jUnitCoreParameters );
         JUnitCore junitCore = new JUnitCore();
-        junitCore.addListener( listener );
+        for ( RunListener runListener : listeners )
+        {
+            junitCore.addListener( runListener );
+        }
         try
         {
             junitCore.run( computer, testsToRun.getLocatedClasses() );
         }
         finally
         {
-            junitCore.removeListener( listener );
+            for ( RunListener runListener : listeners )
+            {
+                junitCore.removeListener( runListener );
+            }
             closeIfConfigurable( computer );
         }
     }

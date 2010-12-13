@@ -28,9 +28,13 @@ import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.DirectoryScanner;
+import org.apache.maven.surefire.util.ReflectionUtils;
 import org.apache.maven.surefire.util.TestsToRun;
+import org.junit.runner.notification.RunListener;
 
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * @author Kristian Rosenvold
@@ -49,6 +53,8 @@ public class JUnitCoreProvider
 
     private final NonAbstractClassFilter scannerFilter;
 
+    private final List<RunListener> customRunListeners;
+
     private TestsToRun testsToRun;
 
     private final ReporterConfiguration reporterConfiguration;
@@ -62,6 +68,9 @@ public class JUnitCoreProvider
         this.directoryScanner = booterParameters.getDirectoryScanner();
         this.jUnitCoreParameters = new JUnitCoreParameters( booterParameters.getProviderProperties() );
         this.scannerFilter = new NonAbstractClassFilter();
+        customRunListeners =
+            createCustomListeners( booterParameters.getProviderProperties().getProperty( "listener" ) );
+
     }
 
     public Boolean isRunnable()
@@ -91,8 +100,9 @@ public class JUnitCoreProvider
             ConcurrentReportingRunListener.createInstance( this.reporterFactory, this.reporterConfiguration,
                                                            jUnitCoreParameters.isParallelClasses(),
                                                            jUnitCoreParameters.isParallelBoth() );
+        customRunListeners.add( 0, listener );
 
-        JUnitCoreWrapper.execute( testsToRun, jUnitCoreParameters, listener );
+        JUnitCoreWrapper.execute( testsToRun, jUnitCoreParameters, customRunListeners );
         return reporterFactory.close();
     }
 
@@ -100,4 +110,25 @@ public class JUnitCoreProvider
     {
         return directoryScanner.locateTestClasses( testClassLoader, scannerFilter );
     }
+
+    // Todo; We really need a shared java-5 language level module for the providers.
+    private List<RunListener> createCustomListeners( String listenerProperty )
+    {
+        List<RunListener> result = new LinkedList<RunListener>();
+        if ( listenerProperty == null )
+        {
+            return result;
+        }
+
+        for ( String thisListenerName : listenerProperty.split( "," ) )
+        {
+            RunListener customRunListener =
+                (RunListener) ReflectionUtils.instantiate( Thread.currentThread().getContextClassLoader(),
+                                                           thisListenerName );
+            result.add( customRunListener );
+        }
+
+        return result;
+    }
+
 }
