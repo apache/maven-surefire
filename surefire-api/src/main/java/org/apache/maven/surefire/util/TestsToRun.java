@@ -45,7 +45,7 @@ public class TestsToRun
      */
     public TestsToRun( List locatedClasses )
     {
-        this.locatedClasses = Collections.unmodifiableList( locatedClasses);
+        this.locatedClasses = Collections.unmodifiableList( locatedClasses );
         Set testSets = new HashSet();
 
         for ( Iterator iterator = locatedClasses.iterator(); iterator.hasNext(); )
@@ -72,6 +72,12 @@ public class TestsToRun
         }
     }
 
+    public static TestsToRun fromClass( Class clazz )
+        throws TestSetFailedException
+    {
+        return new TestsToRun( Arrays.asList( new Class[]{ clazz } ) );
+    }
+
     public int size()
     {
         return locatedClasses.size();
@@ -84,6 +90,7 @@ public class TestsToRun
 
     /**
      * Returns an iterator over the located java.lang.Class objects
+     *
      * @return an unmodifiable iterator
      */
     public Iterator iterator()

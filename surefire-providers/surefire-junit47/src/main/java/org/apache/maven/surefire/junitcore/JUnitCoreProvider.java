@@ -92,9 +92,7 @@ public class JUnitCoreProvider
 
         if ( testsToRun == null )
         {
-            testsToRun = forkTestSet == null
-                ? scanClassPath()
-                : TestsToRun.fromClassName( (String) forkTestSet, testClassLoader );
+            testsToRun = forkTestSet == null ? scanClassPath() : TestsToRun.fromClass( (Class) forkTestSet );
         }
         ConcurrentReportingRunListener listener =
             ConcurrentReportingRunListener.createInstance( this.reporterFactory, this.reporterConfiguration,

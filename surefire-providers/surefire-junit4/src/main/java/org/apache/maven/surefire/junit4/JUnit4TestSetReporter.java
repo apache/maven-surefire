@@ -39,7 +39,7 @@ public class JUnit4TestSetReporter
     private static ResourceBundle bundle = ResourceBundle.getBundle( Surefire.SUREFIRE_BUNDLE_NAME );
 
     // Member Variables
-    private JUnit4TestSet testSet;
+    private Class testSet;
 
     private ReporterManager reportMgr;
 
@@ -51,13 +51,13 @@ public class JUnit4TestSetReporter
     /**
      * Constructor.
      *
-     * @param testSet       the specific test set that this will report on as it is
+     * @param testClass     the specific test set that this will report on as it is
      *                      executed
      * @param reportManager the report manager to log testing events to
      */
-    JUnit4TestSetReporter( JUnit4TestSet testSet, ReporterManager reportManager )
+    JUnit4TestSetReporter( Class testClass, ReporterManager reportManager )
     {
-        this.testSet = testSet;
+        this.testSet = testClass;
         this.reportMgr = reportManager;
     }
 
@@ -179,5 +179,15 @@ public class JUnit4TestSetReporter
             return displayName;
         }
         return m.group( 1 );
+    }
+
+    public void setTestSet( Class testSet )
+    {
+        this.testSet = testSet;
+    }
+
+    public void setReportMgr( ReporterManager reportMgr )
+    {
+        this.reportMgr = reportMgr;
     }
 }

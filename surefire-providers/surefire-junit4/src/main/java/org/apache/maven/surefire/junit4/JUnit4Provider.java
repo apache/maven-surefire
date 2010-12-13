@@ -19,20 +19,28 @@ package org.apache.maven.surefire.junit4;
  * under the License.
  */
 
+import org.apache.maven.surefire.Surefire;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
+import org.apache.maven.surefire.report.DefaultReportEntry;
+import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterFactory;
-import org.apache.maven.surefire.report.ReporterManagerFactory;
+import org.apache.maven.surefire.report.ReporterManager;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
+import org.apache.maven.surefire.util.DefaultDirectoryScanner;
 import org.apache.maven.surefire.util.DirectoryScanner;
 import org.apache.maven.surefire.util.ReflectionUtils;
+import org.apache.maven.surefire.util.TestsToRun;
 import org.junit.runner.notification.RunListener;
+import org.junit.runner.notification.RunNotifier;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ResourceBundle;
 
 
 /**
@@ -43,6 +51,8 @@ public class JUnit4Provider
     implements SurefireProvider
 {
 
+    private static ResourceBundle bundle = ResourceBundle.getBundle( Surefire.SUREFIRE_BUNDLE_NAME );
+
     private final ReporterFactory reporterFactory;
 
     private final ClassLoader testClassLoader;
@@ -51,6 +61,10 @@ public class JUnit4Provider
 
     private final List<RunListener> customRunListeners;
 
+    private final JUnit4TestChecker jUnit4TestChecker;
+
+    private TestsToRun testsToRun;
+
     public JUnit4Provider( ProviderParameters booterParameters )
     {
         this.reporterFactory = booterParameters.getReporterFactory();
@@ -58,6 +72,7 @@ public class JUnit4Provider
         this.directoryScanner = booterParameters.getDirectoryScanner();
         customRunListeners =
             createCustomListeners( booterParameters.getProviderProperties().getProperty( "listener" ) );
+        jUnit4TestChecker = new JUnit4TestChecker( testClassLoader );
 
     }
 
@@ -65,47 +80,100 @@ public class JUnit4Provider
     public RunResult invoke( Object forkTestSet )
         throws TestSetFailedException, ReporterException
     {
-        JUnit4DirectoryTestSuite suite = getSuite();
-        suite.locateTestSets( testClassLoader );
-        if ( forkTestSet != null )
+        if ( testsToRun == null )
         {
-            suite.execute( (String) forkTestSet, (ReporterManagerFactory) reporterFactory, testClassLoader );
+            testsToRun = forkTestSet == null ? scanClassPath() : TestsToRun.fromClass( (Class) forkTestSet );
         }
-        else
+
+        upgradeCheck();
+
+        JUnit4TestSetReporter jUnit4TestSetReporter = new JUnit4TestSetReporter( null, null );
+
+        RunNotifier runNotifer = getRunNotifer( jUnit4TestSetReporter, customRunListeners );
+        for ( Class clazz : testsToRun.getLocatedClasses() )
         {
-            suite.execute( (ReporterManagerFactory) reporterFactory, testClassLoader );
+            ReporterManager reporter = (ReporterManager) reporterFactory.createReporter();
+            jUnit4TestSetReporter.setTestSet( clazz );
+            jUnit4TestSetReporter.setReportMgr( reporter );
+            executeTestSet( clazz, reporter, testClassLoader, runNotifer );
         }
+
+        closeRunNotifer( jUnit4TestSetReporter, customRunListeners );
+
         return reporterFactory.close();
+
     }
 
-    private JUnit4DirectoryTestSuite getSuite()
+    private RunNotifier getRunNotifer( RunListener main, List<RunListener> others )
     {
-        return new JUnit4DirectoryTestSuite( directoryScanner, customRunListeners );
+        RunNotifier fNotifier = new RunNotifier();
+        fNotifier.addListener( main );
+        for ( RunListener listener : others )
+        {
+            fNotifier.addListener( listener );
+        }
+        return fNotifier;
+    }
+
+    // I am not entierly sure as to why we do this explicit freeing, it's one of those
+    // pieces of code that just seem to linger on in here ;)
+
+    private void closeRunNotifer( RunListener main, List<RunListener> others )
+    {
+        RunNotifier fNotifier = new RunNotifier();
+        fNotifier.removeListener( main );
+        for ( RunListener listener : others )
+        {
+            fNotifier.removeListener( listener );
+        }
     }
 
     public Iterator getSuites()
     {
-        try
-        {
-            return getSuite().locateTestSets( testClassLoader ).keySet().iterator();
-        }
-        catch ( TestSetFailedException e )
-        {
-            throw new RuntimeException( e );
-        }
+        testsToRun = scanClassPath();
+        return testsToRun.iterator();
     }
 
-    private void upgradeCheck( JUnit4DirectoryTestSuite suite )
+    private void executeTestSet( Class clazz, ReporterManager reporter, ClassLoader classLoader, RunNotifier listeners )
+        throws ReporterException, TestSetFailedException
+    {
+
+        String rawString = bundle.getString( "testSetStarting" );
+
+        ReportEntry report = new DefaultReportEntry( this.getClass().getName(), clazz.getName(), rawString );
+
+        reporter.testSetStarting( report );
+
+        JUnit4TestSet.execute( clazz, listeners );
+
+        rawString = bundle.getString( "testSetCompletedNormally" );
+
+        report = new DefaultReportEntry( this.getClass().getName(), clazz.getName(), rawString );
+
+        reporter.testSetCompleted( report );
+
+        reporter.reset();
+
+    }
+
+
+    private TestsToRun scanClassPath()
+    {
+        return directoryScanner.locateTestClasses( testClassLoader, jUnit4TestChecker );
+    }
+
+    private void upgradeCheck()
         throws TestSetFailedException
     {
-        if ( isJunit4UpgradeCheck() && suite.getClassesSkippedByValidation().size() > 0 )
+        if ( isJunit4UpgradeCheck() &&
+            ( (DefaultDirectoryScanner) directoryScanner ).getClassesSkippedByValidation().size() > 0 )
         {
             StringBuilder reason = new StringBuilder();
             reason.append( "Updated check failed\n" );
             reason.append( "There are tests that would be run with junit4 / surefire 2.6 but not with [2.7,):\n" );
-            for ( Object o : suite.getClassesSkippedByValidation() )
+            //noinspection unchecked
+            for ( Class testClass : (List<Class>) ( (DefaultDirectoryScanner) directoryScanner ).getClassesSkippedByValidation() )
             {
-                Class testClass = (Class) o;
                 reason.append( "   " );
                 reason.append( testClass.getCanonicalName() );
                 reason.append( "\n" );

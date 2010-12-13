@@ -19,6 +19,8 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
+import org.apache.maven.surefire.util.ReflectionUtils;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.util.*;
@@ -129,6 +131,10 @@ public class PropertiesWrapper
         {
             return param;
         }
+        else if ( typeName.equals( Class.class.getName() ) )
+        {
+            return ReflectionUtils.loadClass( Thread.currentThread().getContextClassLoader(), param );
+        }
         else if ( typeName.equals( File.class.getName() ) )
         {
             return new File( param );
@@ -203,6 +209,7 @@ public class PropertiesWrapper
             setProperty( key, file.toString() );
         }
     }
+
     public void setProperty( String key, Boolean aBoolean )
     {
         if ( aBoolean != null )

@@ -108,8 +108,7 @@ public class BooterSerializer
 
         Boolean rep = reporterConfiguration.isTrimStackTrace();
         properties.setProperty( BooterConstants.ISTRIMSTACKTRACE, rep );
-        properties.setProperty( BooterConstants.REPORTSDIRECTORY,
-                                reporterConfiguration.getReportsDirectory());
+        properties.setProperty( BooterConstants.REPORTSDIRECTORY, reporterConfiguration.getReportsDirectory() );
         ClassLoaderConfiguration classLoaderConfiguration = providerConfiguration.getClassLoaderConfiguration();
         properties.setProperty( BooterConstants.USESYSTEMCLASSLOADER,
                                 String.valueOf( classLoaderConfiguration.isUseSystemClassLoader() ) );
@@ -131,7 +130,16 @@ public class BooterSerializer
         {
             return null;
         }
-        return value.getClass().getName() + "|" + value.toString();
+        String valueToUse;
+        if ( value instanceof Class )
+        {
+            valueToUse = ( (Class) value ).getName();
+        }
+        else
+        {
+            valueToUse = value.toString();
+        }
+        return value.getClass().getName() + "|" + valueToUse;
     }
 
     private void addPropertiesForTypeHolder( List typeHolderList, Properties properties, String propertyPrefix )

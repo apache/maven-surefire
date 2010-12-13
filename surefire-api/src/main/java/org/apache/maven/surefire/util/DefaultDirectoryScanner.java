@@ -47,6 +47,8 @@ public class DefaultDirectoryScanner
 
     private final List excludes;
 
+    private final List classesSkippedByValidation = new ArrayList();
+
 
     public DefaultDirectoryScanner( File basedir, List includes, List excludes )
     {
@@ -69,6 +71,10 @@ public class DefaultDirectoryScanner
             if ( scannerFilter.accept( testClass ) )
             {
                 result.add( testClass );
+            }
+            else
+            {
+                classesSkippedByValidation.add( testClass );
             }
         }
         return new TestsToRun( result );
@@ -149,5 +155,10 @@ public class DefaultDirectoryScanner
     public List getExcludes()
     {
         return excludes;
+    }
+
+    public List getClassesSkippedByValidation()
+    {
+        return classesSkippedByValidation;
     }
 }

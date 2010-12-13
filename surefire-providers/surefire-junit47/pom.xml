@@ -70,6 +70,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <jvm>${java.home}/bin/java</jvm>
+                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
                 </configuration>
             </plugin>
             <plugin>

@@ -27,6 +27,7 @@ import org.junit.runner.Runner;
 import org.junit.runner.notification.RunListener;
 import org.junit.runner.notification.RunNotifier;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class JUnit4TestSet
@@ -37,12 +38,20 @@ public class JUnit4TestSet
     /**
      * Constructor.
      *
-     * @param testClass the class to be run as a test
+     * @param testClass          the class to be run as a test
+     * @param customRunListeners the custom run listeners to add
      */
     protected JUnit4TestSet( Class testClass, List<RunListener> customRunListeners )
     {
         super( testClass );
         this.customRunListeners = customRunListeners;
+    }
+
+    // Bogus constructor so we can build with 2.5. Remove for 2.7.1
+    protected JUnit4TestSet( Class testClass )
+    {
+        super( testClass );
+        this.customRunListeners = new ArrayList();
     }
 
     /**
@@ -53,36 +62,46 @@ public class JUnit4TestSet
     public void execute( ReporterManager reportManager, ClassLoader loader )
         throws TestSetFailedException
     {
-        Runner junitTestRunner = Request.aClass( getTestClass() ).getRunner();
+        List<RunListener> listeners = new ArrayList<RunListener>();
+        listeners.add( new JUnit4TestSetReporter( getTestClass(), reportManager ) );
+        listeners.addAll( customRunListeners );
+        execute( getTestClass(), listeners );
+    }
 
+    /**
+     * Actually runs the test and adds the tests results to the <code>reportManager</code>.
+     *
+     * @param testClass    The test class to run
+     * @param runListeners The run listeners to attach
+     * @see org.apache.maven.surefire.testset.SurefireTestSet#execute(org.apache.maven.surefire.report.ReporterManager, java.lang.ClassLoader)
+     */
+    public static void execute( Class testClass, List<RunListener> runListeners )
+        throws TestSetFailedException
+    {
         RunNotifier fNotifier = new RunNotifier();
-        RunListener listener = new JUnit4TestSetReporter( this, reportManager );
-        fNotifier.addListener( listener );
-
-        if ( customRunListeners != null )
+        for ( RunListener listener : runListeners )
         {
-            for ( RunListener customRunListener : customRunListeners )
-            {
-                fNotifier.addListener( customRunListener );
-            }
+            fNotifier.addListener( listener );
         }
-
         try
         {
-            junitTestRunner.run( fNotifier );
+            execute( testClass, fNotifier );
         }
         finally
         {
-            fNotifier.removeListener( listener );
-
-            if ( customRunListeners != null )
+            for ( RunListener listener : runListeners )
             {
-                for ( RunListener customRunListener : customRunListeners )
-                {
-                    fNotifier.removeListener( customRunListener );
-                }
+                fNotifier.removeListener( listener );
             }
         }
     }
 
+    public static void execute( Class testClass, RunNotifier fNotifier )
+        throws TestSetFailedException
+    {
+        Runner junitTestRunner = Request.aClass( testClass ).getRunner();
+
+        junitTestRunner.run( fNotifier );
+    }
 }
+

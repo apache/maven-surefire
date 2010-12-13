@@ -1,3 +1,5 @@
+package org.apache.maven.surefire.junitcore;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -16,7 +18,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.maven.surefire.junitcore;
 
 import java.util.Properties;
 
@@ -46,7 +47,7 @@ class JUnitCoreParameters
     {
         this.parallel = properties.getProperty( PARALLEL_KEY, "none" ).toLowerCase();
         this.perCoreThreadCount = Boolean.valueOf( properties.getProperty( PERCORETHREADCOUNT_KEY, "true" ) );
-        this.threadCount = Integer.valueOf( properties.getProperty( THREADCOUNT_KEY, "8" ) );
+        this.threadCount = Integer.valueOf( properties.getProperty( THREADCOUNT_KEY, "2" ) );
         this.useUnlimitedThreads =
             Boolean.valueOf( properties.getProperty( USEUNLIMITEDTHREADS_KEY, "false" ).toLowerCase() );
     }
@@ -94,7 +95,7 @@ class JUnitCoreParameters
     @Override
     public String toString()
     {
-        return "parallel='" + parallel + '\'' + ", perCoreThreadCount=" + perCoreThreadCount +
-            ", threadCount=" + threadCount + ", useUnlimitedThreads=" + useUnlimitedThreads;
+        return "parallel='" + parallel + '\'' + ", perCoreThreadCount=" + perCoreThreadCount + ", threadCount=" +
+            threadCount + ", useUnlimitedThreads=" + useUnlimitedThreads;
     }
 }

@@ -45,6 +45,7 @@ public class JUnit4DirectoryTestSuite
     public JUnit4DirectoryTestSuite( File basedir, ArrayList includes, ArrayList excludes )
     {
         super( basedir, includes, excludes );
+        this.customRunListeners = new ArrayList<RunListener>();
 
     }
 
