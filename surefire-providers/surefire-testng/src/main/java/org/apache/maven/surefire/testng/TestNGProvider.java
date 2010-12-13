@@ -26,11 +26,12 @@ import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.ReporterManagerFactory;
 import org.apache.maven.surefire.suite.RunResult;
-import org.apache.maven.surefire.suite.SurefireTestSuite;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.testset.TestSetFailedException;
+import org.apache.maven.surefire.util.DirectoryScanner;
+import org.apache.maven.surefire.util.TestsToRun;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -56,7 +57,11 @@ public class TestNGProvider
 
     private final DirectoryScannerParameters directoryScannerParameters;
 
+    private final DirectoryScanner directoryScanner;
+
     private final TestRequest testRequest;
+
+    private TestsToRun testsToRun;
 
     private final File basedir;
 
@@ -70,6 +75,7 @@ public class TestNGProvider
         basedir = directoryScannerParameters != null ? directoryScannerParameters.getTestClassesDirectory() : null;
         testArtifactInfo = booterParameters.getTestArtifactInfo();
         reporterConfiguration = booterParameters.getReporterConfiguration();
+        this.directoryScanner = booterParameters.getDirectoryScanner();
     }
 
     public Boolean isRunnable()
@@ -80,15 +86,29 @@ public class TestNGProvider
     public RunResult invoke( Object forkTestSet )
         throws TestSetFailedException, ReporterException
     {
-        SurefireTestSuite suite = getActiveSuite();
-        suite.locateTestSets( testClassLoader );
-        if ( forkTestSet != null && testRequest == null )
+
+        if ( isTestNGXmlTestSuite( testRequest ) )
         {
-            suite.execute( (String) forkTestSet, (ReporterManagerFactory) reporterFactory, testClassLoader );
+            TestNGXmlTestSuite testNGXmlTestSuite = getXmlSuite();
+            testNGXmlTestSuite.locateTestSets( testClassLoader );
+            if ( forkTestSet != null && testRequest == null )
+            {
+                testNGXmlTestSuite.execute( (String) forkTestSet, (ReporterManagerFactory) reporterFactory,
+                                            testClassLoader );
+            }
+            else
+            {
+                testNGXmlTestSuite.execute( (ReporterManagerFactory) reporterFactory, testClassLoader );
+            }
         }
         else
         {
-            suite.execute( (ReporterManagerFactory) reporterFactory, testClassLoader );
+            if ( testsToRun == null )
+            {
+                testsToRun = forkTestSet == null ? scanClassPath() : TestsToRun.fromClass( (Class) forkTestSet );
+            }
+            TestNGDirectoryTestSuite suite = getDirectorySuite();
+            suite.execute( testsToRun, reporterFactory );
         }
 
         return reporterFactory.close();
@@ -119,20 +139,30 @@ public class TestNGProvider
     }
 
 
-    public SurefireTestSuite getActiveSuite()
-    {
-        return isTestNGXmlTestSuite( testRequest ) ? (SurefireTestSuite) getXmlSuite() : getDirectorySuite();
-    }
-
     public Iterator getSuites()
     {
-        try
+        if ( isTestNGXmlTestSuite( testRequest ) )
         {
-            return getActiveSuite().locateTestSets( testClassLoader ).keySet().iterator();
+            try
+            {
+                return getXmlSuite().locateTestSets( testClassLoader ).keySet().iterator();
+            }
+            catch ( TestSetFailedException e )
+            {
+                throw new RuntimeException( e );
+            }
         }
-        catch ( TestSetFailedException e )
+        else
         {
-            throw new RuntimeException( e );
+            testsToRun = scanClassPath();
+            return testsToRun.iterator();
         }
     }
+
+    private TestsToRun scanClassPath()
+    {
+        return directoryScanner.locateTestClasses( testClassLoader, null );
+    }
+
+
 }

@@ -68,7 +68,7 @@ public class DefaultDirectoryScanner
 
             Class testClass = loadClass( classLoader, className );
 
-            if ( scannerFilter.accept( testClass ) )
+            if ( scannerFilter == null || scannerFilter.accept( testClass ) )
             {
                 result.add( testClass );
             }

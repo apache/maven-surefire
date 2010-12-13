@@ -19,6 +19,19 @@ package org.apache.maven.surefire.testng;
  * under the License.
  */
 
+import org.apache.maven.artifact.versioning.ArtifactVersion;
+import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
+import org.apache.maven.surefire.report.DefaultReportEntry;
+import org.apache.maven.surefire.report.ReportEntry;
+import org.apache.maven.surefire.report.ReporterException;
+import org.apache.maven.surefire.report.ReporterFactory;
+import org.apache.maven.surefire.report.ReporterManager;
+import org.apache.maven.surefire.report.ReporterManagerFactory;
+import org.apache.maven.surefire.suite.AbstractDirectoryTestSuite;
+import org.apache.maven.surefire.testset.SurefireTestSet;
+import org.apache.maven.surefire.testset.TestSetFailedException;
+import org.apache.maven.surefire.util.TestsToRun;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,17 +39,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-
-import org.apache.maven.artifact.versioning.ArtifactVersion;
-import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
-import org.apache.maven.surefire.report.DefaultReportEntry;
-import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.report.ReporterException;
-import org.apache.maven.surefire.report.ReporterManager;
-import org.apache.maven.surefire.report.ReporterManagerFactory;
-import org.apache.maven.surefire.suite.AbstractDirectoryTestSuite;
-import org.apache.maven.surefire.testset.SurefireTestSet;
-import org.apache.maven.surefire.testset.TestSetFailedException;
 
 /**
  * Test suite for TestNG based on a directory of Java test classes. Can also execute JUnit tests.
@@ -86,6 +88,94 @@ public class TestNGDirectoryTestSuite
         return new TestNGTestSet( testClass );
     }
 
+    public void execute( TestsToRun testsToRun, ReporterFactory reporterManagerFactory )
+        throws ReporterException, TestSetFailedException
+    {
+        ReporterManager reporterManager = (ReporterManager) reporterManagerFactory.createReporter();
+        startTestSuite( reporterManager, this );
+
+        if ( testsToRun.size() == 0 )
+        {
+            return;
+        }
+
+        if ( testsToRun.size() > 1 )
+        {
+            executeMulti( testsToRun, reporterManagerFactory );
+            return;
+        }
+        TestNGExecutor.run( new Class[]{ (Class) testsToRun.iterator().next() }, this.testSourceDirectory, this.options,
+                            this.version, this.classifier, reporterManager, this, reportsDirectory );
+
+        finishTestSuite( reporterManager, this );
+    }
+
+    public void executeMulti( TestsToRun testsToRun, ReporterFactory reporterManagerFactory )
+        throws ReporterException, TestSetFailedException
+    {
+        Class junitTest;
+        try
+        {
+            junitTest = Class.forName( "junit.framework.Test" );
+        }
+        catch ( ClassNotFoundException e )
+        {
+            junitTest = null;
+        }
+
+        List testNgTestClasses = new ArrayList();
+        List junitTestClasses = new ArrayList();
+        for ( Iterator it = testsToRun.iterator(); it.hasNext(); )
+        {
+            Class testSet = (Class) it.next();
+            Class c = testSet;
+            if ( junitTest != null && junitTest.isAssignableFrom( c ) )
+            {
+                junitTestClasses.add( c );
+            }
+            else
+            {
+                testNgTestClasses.add( c );
+            }
+        }
+
+        File testNgReportsDirectory = reportsDirectory, junitReportsDirectory = reportsDirectory;
+
+        if ( junitTestClasses.size() > 0 && testNgTestClasses.size() > 0 )
+        {
+            testNgReportsDirectory = new File( reportsDirectory, "testng-native-results" );
+            junitReportsDirectory = new File( reportsDirectory, "testng-junit-results" );
+        }
+
+        ReporterManager reporterManager =
+            new SynchronizedReporterManager( (ReporterManager) reporterManagerFactory.createReporter() );
+        startTestSuite( reporterManager, this );
+
+        Class[] testClasses = (Class[]) testNgTestClasses.toArray( new Class[0] );
+
+        TestNGExecutor.run( testClasses, this.testSourceDirectory, this.options, this.version, this.classifier,
+                            reporterManager, this, testNgReportsDirectory );
+
+        if ( junitTestClasses.size() > 0 )
+        {
+            testClasses = (Class[]) junitTestClasses.toArray( new Class[0] );
+
+            Map junitOptions = new HashMap();
+            for ( Iterator it = this.options.keySet().iterator(); it.hasNext(); )
+            {
+                Object key = it.next();
+                junitOptions.put( key, options.get( key ) );
+            }
+
+            junitOptions.put( "junit", Boolean.TRUE );
+
+            TestNGExecutor.run( testClasses, this.testSourceDirectory, junitOptions, this.version, this.classifier,
+                                reporterManager, this, junitReportsDirectory );
+        }
+
+        finishTestSuite( reporterManager, this );
+    }
+
     // single class test
     public void execute( String testSetName, ReporterManagerFactory reporterManagerFactory, ClassLoader classLoader )
         throws ReporterException, TestSetFailedException
@@ -110,6 +200,7 @@ public class TestNGDirectoryTestSuite
         finishTestSuite( reporterManager, this );
     }
 
+    // todo: Delete as soon as we build surefire itself with 2.7
     public void execute( ReporterManagerFactory reporterManagerFactory, ClassLoader classLoader )
         throws ReporterException, TestSetFailedException
     {
