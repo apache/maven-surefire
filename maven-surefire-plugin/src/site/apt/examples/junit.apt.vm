@@ -27,12 +27,14 @@ Using JUnit
   This is the only step that is required to get started - you can now create tests in your test source directory
   (eg, <<<src/test/java>>>).
 
-* Generations of JUnit support
+* Different Generations of JUnit support
 
   Surefire supports three different generations of JUnit: JUnit 3.8.x, JUnit 4.x (serial provider) and JUnit 4.7 (junit-core provider
   with parallel support). The provider is selected based on the JUnit version in your project and the configuration parameters (for parallel).
 
 * How is the provider chosen ?
+
+   If nothing is configured, surefire detects which junit version to use by the following algorithm:
 
 +---+
 if the JUnit version in the project >= 4.7 and the parallel attribute has ANY value
@@ -50,6 +52,29 @@ else
     3.8.1 provider, which will not support annotations or any of the 4.x features.
 
     Use mvn dependency:tree, pom dependency ordering and/or and exclusion of transitive dependencies to fix this problem.
+
+** Manually specifying a provider
+
+   You can also manually force a specific provider by adding it as a dependency to surefire itself:
+
++---+
+[...]
+  <plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-surefire-plugin</artifactId>
+    <version>${project.version}</version>
+    <dependencies>
+      <dependency>
+        <groupId>org.apache.maven.surefire</groupId>
+        <artifactId>surefire-junit47</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+    </dependencies>
+[...]
++---+
+
+  When using this technique there  is no check that the proper test-frameworks are present on your project's
+  classpath. Failing to add the proper test-frameworks will result in a build failure.
 
 * Running tests in parallel
 
@@ -77,9 +102,30 @@ else
 
   This is particularly useful for slow tests that can have high concurrency.
 
-  The JUnitCore test-runner has stricter test-compliance checking than earlier versions of JUnit; with this provider
-  your test must be legitimate JUnit tests to be run, whereas the old 4.x provider would also run tests that were not
-  according to JUnit spec.
+  As of surefire 2.7, no additional dependencies are needed to use the full set of options with parallel.
+
+* Using custom listeners and reporters
+
+  JUnit4/4.7 provider provides support for attaching custom RunListeners to uour tests.
+
+  You can configure multiple custom listeners like this:
+
++---+
+[...]
+  <plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-surefire-plugin</artifactId>
+    <version>${project.version}</version>
+    <configuration>
+      <properties>
+        <property>
+          <name>listener</name>
+          <value>com.mycompany.MyResultListener,com.mycompany.MyResultListener2</value>
+        </property>
+    </configuration>
+  </plugin>
+[...]
++---+
 
 
   For more information on JUnit, see the {{{http://www.junit.org}JUnit web site}}.
