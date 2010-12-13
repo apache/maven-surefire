@@ -1,4 +1,5 @@
 package org.apache.maven.surefire.junit;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -18,8 +19,11 @@ package org.apache.maven.surefire.junit;
  * under the License.
  */
 
+import org.apache.maven.surefire.NonAbstractClassFilter;
 import org.apache.maven.surefire.util.ReflectionUtils;
 import org.apache.maven.surefire.util.ScannerFilter;
+
+import java.lang.reflect.Modifier;
 
 /**
  * @author Kristian Rosenvold
@@ -29,6 +33,8 @@ public class JUnit3TestChecker
 {
     private final Class junitClass;
 
+    private final NonAbstractClassFilter nonAbstractClassFilter = new NonAbstractClassFilter();
+
 
     public JUnit3TestChecker( ClassLoader testClassLoader )
     {
@@ -37,16 +43,20 @@ public class JUnit3TestChecker
 
     public boolean accept( Class testClass )
     {
-        return isValidJUnit3Test( testClass );
+        return nonAbstractClassFilter.accept(  testClass ) && isValidJUnit3Test( testClass );
     }
 
     public boolean isValidJUnit3Test( Class testClass )
     {
-        return junitClass != null && junitClass.isAssignableFrom( testClass ) ||
-            classHasPublicNoArgConstructor( testClass );
+        return isJunit3Test( testClass ) || isPojoTest( testClass );
     }
 
-    private boolean classHasPublicNoArgConstructor( Class testClass )
+    public boolean isJunit3Test( Class testClass )
+    {
+        return junitClass != null && junitClass.isAssignableFrom( testClass );
+    }
+
+    private boolean isPojoTest( Class testClass )
     {
         try
         {

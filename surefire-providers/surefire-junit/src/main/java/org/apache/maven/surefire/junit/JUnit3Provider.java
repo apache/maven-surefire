@@ -19,16 +19,23 @@ package org.apache.maven.surefire.junit;
  * under the License.
  */
 
+import org.apache.maven.surefire.Surefire;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
+import org.apache.maven.surefire.report.DefaultReportEntry;
+import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterFactory;
-import org.apache.maven.surefire.report.ReporterManagerFactory;
+import org.apache.maven.surefire.report.ReporterManager;
 import org.apache.maven.surefire.suite.RunResult;
+import org.apache.maven.surefire.testset.PojoTestSet;
+import org.apache.maven.surefire.testset.SurefireTestSet;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.DirectoryScanner;
+import org.apache.maven.surefire.util.TestsToRun;
 
 import java.util.Iterator;
+import java.util.ResourceBundle;
 
 /**
  * @author Kristian Rosenvold
@@ -43,45 +50,83 @@ public class JUnit3Provider
 
     private final DirectoryScanner directoryScanner;
 
+    private final JUnit3TestChecker jUnit3TestChecker;
+
+    private TestsToRun testsToRun;
+
+    private static ResourceBundle bundle = ResourceBundle.getBundle( Surefire.SUREFIRE_BUNDLE_NAME );
+
     public JUnit3Provider( ProviderParameters booterParameters )
     {
         this.reporterFactory = booterParameters.getReporterFactory();
         this.testClassLoader = booterParameters.getTestClassLoader();
         this.directoryScanner = booterParameters.getDirectoryScanner();
+        this.jUnit3TestChecker = new JUnit3TestChecker( testClassLoader );
+
     }
 
     public RunResult invoke( Object forkTestSet )
         throws TestSetFailedException, ReporterException
     {
-        JUnitDirectoryTestSuite suite = getSuite();
-        suite.locateTestSets( testClassLoader );
-        if ( forkTestSet != null )
+        if ( testsToRun == null )
         {
-            suite.execute( (String) forkTestSet, (ReporterManagerFactory) reporterFactory, testClassLoader );
+            testsToRun = forkTestSet == null ? scanClassPath() : TestsToRun.fromClass( (Class) forkTestSet );
         }
-        else
+
+        for ( Iterator iter = testsToRun.iterator(); iter.hasNext();  )
         {
-            suite.execute( (ReporterManagerFactory) reporterFactory, testClassLoader );
+            Class clazz = (Class) iter.next();
+            ReporterManager reporter = (ReporterManager) reporterFactory.createReporter();
+            SurefireTestSet surefireTestSet = createTestSet(  clazz );
+            executeTestSet( surefireTestSet, reporterFactory, testClassLoader);
         }
+
         return reporterFactory.close();
     }
 
-    private JUnitDirectoryTestSuite getSuite()
+    private SurefireTestSet createTestSet( Class clazz )
+        throws TestSetFailedException
     {
-        return new JUnitDirectoryTestSuite( directoryScanner );
+        return jUnit3TestChecker.isJunit3Test( clazz )
+            ? new JUnitTestSet( clazz ) :
+            (SurefireTestSet) new PojoTestSet( clazz );
 
     }
 
+    private void executeTestSet( SurefireTestSet testSet, ReporterFactory reporterManagerFactory,
+                                 ClassLoader classLoader )
+        throws ReporterException, TestSetFailedException
+    {
+
+        ReporterManager reporterManager = (ReporterManager) reporterManagerFactory.createReporter();
+
+        String rawString = bundle.getString( "testSetStarting" );
+
+        ReportEntry report = new DefaultReportEntry( this.getClass().getName(), testSet.getName(), rawString );
+
+        reporterManager.testSetStarting( report );
+
+        testSet.execute( reporterManager, classLoader );
+
+        rawString = bundle.getString( "testSetCompletedNormally" );
+
+        report = new DefaultReportEntry( this.getClass().getName(), testSet.getName(), rawString );
+
+        reporterManager.testSetCompleted( report );
+
+        reporterManager.reset();
+    }
+
+    private TestsToRun scanClassPath()
+    {
+        return directoryScanner.locateTestClasses( testClassLoader, jUnit3TestChecker );
+    }
+
+
     public Iterator getSuites()
     {
-        try
-        {
-            return getSuite().locateTestSets( testClassLoader ).keySet().iterator();
-        }
-        catch ( TestSetFailedException e )
-        {
-            throw new RuntimeException( e );
-        }
+        testsToRun = scanClassPath();
+        return testsToRun.iterator();
     }
 
     public Boolean isRunnable()
