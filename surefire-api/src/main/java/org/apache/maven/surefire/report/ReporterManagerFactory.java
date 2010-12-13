@@ -59,10 +59,12 @@ public class ReporterManagerFactory
 
     protected final Object lock = new Object();
 
+    private final SystemStreamCapturer systemStreamCapturer = new SystemStreamCapturer();
 
     public ReporterManagerFactory( List reportDefinitions, ClassLoader surefireClassLoader )
     {
         this( reportDefinitions, surefireClassLoader, null );
+
     }
 
     public ReporterManagerFactory( List reportDefinitions, ClassLoader surefireClassLoader,
@@ -102,7 +104,8 @@ public class ReporterManagerFactory
     {
         // Note, if we ever start making >1 reporter Managers, we have to aggregate run statistics
         // i.e. we cannot use a single "globalRunStatistics"
-        final ReporterManager reporterManager = new ReporterManager( reports, globalRunStatistics );
+        final ReporterManager reporterManager = new ReporterManager( reports, globalRunStatistics,
+                                                                     systemStreamCapturer );
         if ( first == null )
         {
             synchronized ( lock )
