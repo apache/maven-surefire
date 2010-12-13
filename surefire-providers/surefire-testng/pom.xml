@@ -59,6 +59,8 @@
         <configuration>
           <fork>false</fork>
           <compilerVersion>1.4</compilerVersion>
+          <source>1.4</source>
+          <target>1.4</target>
         </configuration>
       </plugin>
       <plugin>
