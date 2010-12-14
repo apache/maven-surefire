@@ -152,7 +152,7 @@ public abstract class AbstractTextReporter
     {
         super.testSetCompleted( report );
 
-        writeMessage( getTestSetSummary() );
+        writeMessage( getTestSetSummary( report ) );
 
         if ( format.equals( BRIEF ) || format.equals( PLAIN ) )
         {
@@ -163,7 +163,7 @@ public abstract class AbstractTextReporter
         }
     }
 
-    protected String getTestSetSummary()
+    protected String getTestSetSummary( ReportEntry report )
     {
         StringBuffer buf = new StringBuffer();
 
@@ -176,7 +176,10 @@ public abstract class AbstractTextReporter
         buf.append( ", Skipped: " );
         buf.append( skipped );
         buf.append( ", Time elapsed: " );
-        buf.append( elapsedTimeAsString( System.currentTimeMillis() - testSetStartTime ) );
+        int elapsed = report.getElapsed() != null
+            ? report.getElapsed().intValue()
+            : (int) ( System.currentTimeMillis() - testSetStartTime );
+        buf.append( elapsedTimeAsString( elapsed ) );
         buf.append( " sec" );
 
         if ( failures > 0 || errors > 0 )
@@ -190,7 +193,7 @@ public abstract class AbstractTextReporter
     protected String getElapsedTimeSummary( ReportEntry report )
     {
         StringBuffer reportContent = new StringBuffer();
-        long runTime = this.endTime - this.startTime;
+        long runTime = getActualRunTime( report );
 
         reportContent.append( report.getName() );
         reportContent.append( "  Time elapsed: " );

@@ -35,9 +35,9 @@ public abstract class AbstractReporter
 
     protected int failures;
 
-    protected long startTime;
+    private long startTime;
 
-    protected long endTime;
+    private long endTime;
 
     private NumberFormat numberFormat = NumberFormat.getInstance( Locale.ENGLISH );
 
@@ -65,6 +65,7 @@ public abstract class AbstractReporter
     {
         this.trimStackTrace = trimStackTrace.booleanValue();
     }
+
     public void writeFooter( String footer )
     {
         writeMessage( footer );
@@ -198,5 +199,11 @@ public abstract class AbstractReporter
             return null;
         }
         return trimStackTrace ? writer.writeTrimmedTraceToString() : writer.writeTraceToString();
+    }
+
+    protected long getActualRunTime( ReportEntry reportEntry )
+    {
+        final Integer clientSpecifiedElapsed = reportEntry.getElapsed();
+        return clientSpecifiedElapsed != null ? clientSpecifiedElapsed.intValue() : endTime - startTime;
     }
 }

@@ -40,6 +40,10 @@ class TestMethod
 {
     private final Description description;
 
+    private final long startTime;
+
+    private long endTime;
+
     private volatile Failure testFailure;
 
     private volatile Failure testAssumptionFailure;
@@ -55,12 +59,14 @@ class TestMethod
     public TestMethod( Description description )
     {
         this.description = description;
+        startTime = System.currentTimeMillis();
     }
 
 
     public void testFinished()
         throws Exception
     {
+        setEndTime();
     }
 
 
@@ -68,20 +74,33 @@ class TestMethod
         throws Exception
     {
         ignored = description;
-
+        setEndTime();
     }
 
     public void testFailure( Failure failure )
         throws Exception
     {
         this.testFailure = failure;
+        setEndTime();
     }
 
 
     public void testAssumptionFailure( Failure failure )
     {
         this.testAssumptionFailure = failure;
+        setEndTime();
     }
+
+    private void setEndTime()
+    {
+        this.endTime = System.currentTimeMillis();
+    }
+
+    public int getElapsed()
+    {
+        return (int) ( endTime - startTime );
+    }
+
 
     public void replay( Reporter reporter )
         throws Exception
@@ -126,14 +145,15 @@ class TestMethod
     {
         String rawString = bundle.getString( rawString2 );
         return new DefaultReportEntry( description.getTestClass().getCanonicalName(), description.getDisplayName(),
-                                       rawString );
+                                       rawString, getElapsed() );
     }
 
     private ReportEntry createFailureEntry( Failure failure, String rawString2 )
     {
         String rawString = bundle.getString( rawString2 );
         return new DefaultReportEntry( failure.getDescription().getTestClass().getCanonicalName(),
-                                       failure.getTestHeader(), rawString, new JUnitCoreStackTraceWriter( failure ) );
+                                       failure.getTestHeader(), rawString, new JUnitCoreStackTraceWriter( failure ),
+                                       getElapsed() );
     }
 
 

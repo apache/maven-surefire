@@ -70,7 +70,12 @@ public class TestSet
 
         try
         {
-            ReportEntry report = createReportEntry( "testSetStarting" );
+            int elapsed = 0;
+            for ( TestMethod testMethod : testMethods )
+            {
+                elapsed += testMethod.getElapsed();
+            }
+            ReportEntry report = createReportEntry( "testSetStarting", null );
 
             target.testSetStarting( report );
 
@@ -78,7 +83,7 @@ public class TestSet
             {
                 testMethod.replay( target );
             }
-            report = createReportEntry( "testSetCompletedNormally" );
+            report = createReportEntry( "testSetCompletedNormally", elapsed );
 
             target.testSetCompleted( report );
 
@@ -97,13 +102,13 @@ public class TestSet
         return testMethod;
     }
 
-    private ReportEntry createReportEntry( String rawString2 )
+    private ReportEntry createReportEntry( String rawString2, Integer elapsed )
     {
         String rawString = bundle.getString( rawString2 );
         boolean isJunit3 = testSetDescription.getTestClass() == null;
         String classNameToUse =
             isJunit3 ? testSetDescription.getChildren().get( 0 ).getClassName() : testSetDescription.getClassName();
-        return new DefaultReportEntry( classNameToUse, classNameToUse, rawString );
+        return new DefaultReportEntry( classNameToUse, classNameToUse, rawString, elapsed);
     }
 
     public void incrementTestMethodCount()

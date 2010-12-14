@@ -36,26 +36,35 @@ public class ReportEntry
 
     private final StackTraceWriter stackTraceWriter;
 
+    private final Integer elapsed;
+
     protected ReportEntry( String name, String group )
     {
         this.name = name;
         this.group = group;
         this.stackTraceWriter = null;
+        this.elapsed = null;
         this.message = null;
         this.source = null;
     }
 
     public ReportEntry( String source, String name, String message )
     {
-        this( source, name, null, message, null );
+        this( source, name, null, message, null, null );
     }
 
     public ReportEntry( String source, String name, String message, StackTraceWriter stackTraceWriter )
     {
-        this( source, name, null, message, stackTraceWriter );
+        this( source, name, null, message, stackTraceWriter, null );
     }
 
-    protected ReportEntry( String source, String name, String group, String message, StackTraceWriter stackTraceWriter )
+    public ReportEntry( String source, String name, String group, String message, StackTraceWriter stackTraceWriter )
+    {
+        this( source, name, group, message, stackTraceWriter, null );
+    }
+
+    public ReportEntry( String source, String name, String group, String message, StackTraceWriter stackTraceWriter,
+                        Integer elapsed )
     {
         if ( source == null )
         {
@@ -79,6 +88,8 @@ public class ReportEntry
         this.message = message;
 
         this.stackTraceWriter = stackTraceWriter;
+
+        this.elapsed = elapsed;
     }
 
     public String getSourceName()
@@ -104,6 +115,11 @@ public class ReportEntry
     public StackTraceWriter getStackTraceWriter()
     {
         return stackTraceWriter;
+    }
+
+    public Integer getElapsed()
+    {
+        return elapsed;
     }
 
     public boolean equals( Object obj )

@@ -156,7 +156,7 @@ public class XMLReporter
     {
         super.testSucceeded( report );
 
-        long runTime = this.endTime - this.startTime;
+        long runTime = getActualRunTime(  report );
 
         Xpp3Dom testCase = createTestElement( report, runTime );
 
@@ -213,7 +213,7 @@ public class XMLReporter
 
     private void writeTestProblems( ReportEntry report, String stdOut, String stdErr, String name )
     {
-        long runTime = endTime - startTime;
+        long runTime = getActualRunTime( report );
 
         Xpp3Dom testCase = createTestElement( report, runTime );
 

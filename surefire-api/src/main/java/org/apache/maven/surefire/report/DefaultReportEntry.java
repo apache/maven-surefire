@@ -22,24 +22,37 @@ package org.apache.maven.surefire.report;
 /**
  * @author Kristian Rosenvold
  */
-public class DefaultReportEntry extends ReportEntry
+public class DefaultReportEntry
+    extends ReportEntry
 {
     public DefaultReportEntry( String source, String name, String message )
     {
-        super( source, name, null, message, null );
+        super( source, name, null, message, null);
+    }
+
+    public DefaultReportEntry( String source, String name, String message, Integer elapsed )
+    {
+        super( source, name, null, message, null, elapsed );
     }
 
     public DefaultReportEntry( String source, String name, String group, String message )
     {
-        super( source, name, group, message, null );
+        super( source, name, group, message, null, null );
     }
 
     public DefaultReportEntry( String source, String name, String message, StackTraceWriter stackTraceWriter )
     {
-        super( source, name, null, message, stackTraceWriter );
+        super( source, name, null, message, stackTraceWriter, null );
     }
 
-    public static ReportEntry nameGroup(String name, String group){
-        return new ReportEntry( name, group);
+    public DefaultReportEntry( String source, String name, String message, StackTraceWriter stackTraceWriter,
+                               Integer elapsed )
+    {
+        super( source, name, null, message, stackTraceWriter, elapsed );
+    }
+
+    public static ReportEntry nameGroup( String name, String group )
+    {
+        return new ReportEntry( name, group );
     }
 }
