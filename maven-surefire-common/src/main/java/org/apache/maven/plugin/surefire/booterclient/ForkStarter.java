@@ -57,6 +57,9 @@ import java.util.Properties;
  *
  * @author Jason van Zyl
  * @author Emmanuel Venisse
+ * @author Brett Porter
+ * @author Dan Fabulich
+ * @author Carlos Sanchez
  * @author Kristian Rosenvold
  * @version $Id$
  */

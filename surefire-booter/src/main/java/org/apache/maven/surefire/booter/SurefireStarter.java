@@ -34,7 +34,9 @@ import java.util.Properties;
  * same vm as the tests will be run in.
  *
  * @author Jason van Zyl
+ * @author Brett Porter
  * @author Emmanuel Venisse
+ * @author Dan Fabulich
  * @author Kristian Rosenvold
  * @version $Id$
  */
