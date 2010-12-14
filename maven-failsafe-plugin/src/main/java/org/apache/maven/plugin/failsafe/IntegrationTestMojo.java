@@ -591,21 +591,22 @@ public class IntegrationTestMojo
 
     /**
      * @parameter default-value="${session.parallel}"
+     * @readonly
      */
     private Boolean parallelMavenExecution;
 
     /**
-      * Defines the order the tests will be run in. Supported values are alphabetical, reversealphabetical
-      * random, hourly (alphabetical on even hours, reverse alphabetical on odd hours).
-      *
-      * Not supplying a value for this setting will run tests in filesystem order.
-      *
-      * Odd/Even is determined at the time the of scanning the classpath, meaning it could change during
-      * a multi-module build.
-      *
-      * @parameter
-      * @since 2.7
-      */
+     * Defines the order the tests will be run in. Supported values are alphabetical, reversealphabetical
+     * random, hourly (alphabetical on even hours, reverse alphabetical on odd hours) and filesystem.
+     * <p/>
+     * Not supplying a value for this setting will run tests in filesystem order.
+     * <p/>
+     * Odd/Even for hourly is determined at the time the of scanning the classpath, meaning it could change during
+     * a multi-module build.
+     *
+     * @parameter
+     * @since 2.7
+     */
      private String runOrder;
 
     /**
