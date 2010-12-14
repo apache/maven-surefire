@@ -19,10 +19,6 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.apache.commons.lang.builder.ToStringBuilder;
-
 // todo: Make this an interface when surefire 2.7.1 compiles with surefire 2.7.0
 public class ReportEntry
 {
@@ -122,37 +118,63 @@ public class ReportEntry
         return elapsed;
     }
 
-    public boolean equals( Object obj )
+    public boolean equals( Object o )
     {
-        if ( !( obj instanceof ReportEntry ) )
-        {
-            return false;
-        }
-        if ( this == obj )
+        if ( this == o )
         {
             return true;
         }
-        ReportEntry rhs = (ReportEntry) obj;
-        return new EqualsBuilder().append( getSourceName(), rhs.getSourceName() ).append( getName(),
-                                                                                          rhs.getName() ).append(
-            getGroup(), rhs.getGroup() ).append( getMessage(), rhs.getMessage() ).append( getStackTraceWriter(),
-                                                                                          rhs.getStackTraceWriter() ).isEquals();
-    }
+        if ( o == null || getClass() != o.getClass() )
+        {
+            return false;
+        }
 
-    public String toString()
-    {
-        return new ToStringBuilder( this ).append( "source", getSourceName() ).append( "name", getName() ).append(
-            "group", getGroup() ).append( "message", getMessage() ).append( "stackTraceWriter",
-                                                                            getStackTraceWriter() ).toString();
+        ReportEntry that = (ReportEntry) o;
+
+        if ( elapsed != null ? !elapsed.equals( that.elapsed ) : that.elapsed != null )
+        {
+            return false;
+        }
+        if ( group != null ? !group.equals( that.group ) : that.group != null )
+        {
+            return false;
+        }
+        if ( message != null ? !message.equals( that.message ) : that.message != null )
+        {
+            return false;
+        }
+        if ( name != null ? !name.equals( that.name ) : that.name != null )
+        {
+            return false;
+        }
+        if ( source != null ? !source.equals( that.source ) : that.source != null )
+        {
+            return false;
+        }
+        if ( stackTraceWriter != null
+            ? !stackTraceWriter.equals( that.stackTraceWriter )
+            : that.stackTraceWriter != null )
+        {
+            return false;
+        }
+
+        return true;
     }
 
     public int hashCode()
     {
-        // you pick a hard-coded, randomly chosen, non-zero, odd number
-        // ideally different for each class
-        // good resource at http://primes.utm.edu/lists/small/1000.txt
-        return new HashCodeBuilder( 5897, 6653 ).append( getSourceName() ).append( getName() ).append(
-            getGroup() ).append( getMessage() ).append( getStackTraceWriter() ).toHashCode();
+        int result = source != null ? source.hashCode() : 0;
+        result = 31 * result + ( name != null ? name.hashCode() : 0 );
+        result = 31 * result + ( group != null ? group.hashCode() : 0 );
+        result = 31 * result + ( message != null ? message.hashCode() : 0 );
+        result = 31 * result + ( stackTraceWriter != null ? stackTraceWriter.hashCode() : 0 );
+        result = 31 * result + ( elapsed != null ? elapsed.hashCode() : 0 );
+        return result;
     }
 
+    public String toString()
+    {
+        return "ReportEntry{" + "source='" + source + '\'' + ", name='" + name + '\'' + ", group='" + group + '\'' +
+            ", message='" + message + '\'' + ", stackTraceWriter=" + stackTraceWriter + ", elapsed=" + elapsed + '}';
+    }
 }

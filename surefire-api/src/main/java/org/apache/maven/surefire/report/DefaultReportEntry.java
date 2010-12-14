@@ -42,7 +42,7 @@ public class DefaultReportEntry
 
     public DefaultReportEntry( String source, String name, String message, StackTraceWriter stackTraceWriter )
     {
-        super( source, name, null, message, stackTraceWriter, null );
+        super( source, name, null, message, stackTraceWriter );
     }
 
     public DefaultReportEntry( String source, String name, String message, StackTraceWriter stackTraceWriter,
