@@ -3,4 +3,4 @@
 target
 *.iws
 surefire-api/dependency-reduced-pom.xml
-
+.classpath
