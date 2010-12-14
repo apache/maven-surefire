@@ -21,6 +21,9 @@ package org.apache.maven.surefire.util;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -49,12 +52,18 @@ public class DefaultDirectoryScanner
 
     private final List classesSkippedByValidation = new ArrayList();
 
+    private final Comparator sortOrder;
 
-    public DefaultDirectoryScanner( File basedir, List includes, List excludes )
+    private final String runOrder;
+
+
+    public DefaultDirectoryScanner( File basedir, List includes, List excludes, String runOrder )
     {
         this.basedir = basedir;
         this.includes = includes;
         this.excludes = excludes;
+        this.runOrder = runOrder;
+        this.sortOrder = getSortOrderComparator( runOrder );
     }
 
     public TestsToRun locateTestClasses( ClassLoader classLoader, ScannerFilter scannerFilter )
@@ -76,6 +85,14 @@ public class DefaultDirectoryScanner
             {
                 classesSkippedByValidation.add( testClass );
             }
+        }
+        if ( "random".equals( runOrder ) )
+        {
+            Collections.shuffle( result );
+        }
+        else if ( sortOrder != null )
+        {
+            Collections.sort( result, sortOrder );
         }
         return new TestsToRun( result );
     }
@@ -161,4 +178,48 @@ public class DefaultDirectoryScanner
     {
         return classesSkippedByValidation;
     }
+
+    private Comparator getSortOrderComparator( String runOrder )
+    {
+        if ( "alphabetical".equals( runOrder ) )
+        {
+            return getAlphabeticalComparator();
+        }
+
+        else if ( "reversealphabetical".equals( runOrder ) )
+        {
+            return getReverseAlphabeticalComparator();
+        }
+        else if ( "hourly".equals( runOrder ) )
+        {
+            final int hour = Calendar.getInstance().get( Calendar.HOUR_OF_DAY );
+            return ( ( hour % 2 ) == 0 )
+                ? getAlphabeticalComparator()
+                : getReverseAlphabeticalComparator();
+        }
+        return null;
+    }
+
+    private Comparator getReverseAlphabeticalComparator()
+    {
+        return new Comparator()
+        {
+            public int compare( Object o1, Object o2 )
+            {
+                return ( (Class) o2 ).getName().compareTo( ( (Class) o1 ).getName() );
+            }
+        };
+    }
+
+    private Comparator getAlphabeticalComparator()
+    {
+        return new Comparator()
+        {
+            public int compare( Object o1, Object o2 )
+            {
+                return ( (Class) o1 ).getName().compareTo( ( (Class) o2 ).getName() );
+            }
+        };
+    }
+
 }

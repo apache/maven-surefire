@@ -172,7 +172,7 @@ public class BooterDeserializerProviderConfigurationTest
         excludes.add( "xx1" );
         excludes.add( "xx2" );
 
-        return new DirectoryScannerParameters( aDir, includes, excludes, Boolean.TRUE );
+        return new DirectoryScannerParameters( aDir, includes, excludes, Boolean.TRUE, null );
     }
 
     private ProviderConfiguration saveAndReload( ProviderConfiguration booterConfiguration,

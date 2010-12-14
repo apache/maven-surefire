@@ -63,7 +63,8 @@ public abstract class AbstractDirectoryTestSuite
 
     protected AbstractDirectoryTestSuite( File basedir, List includes, List excludes )
     {
-        this.surefireDirectoryScanner = new DefaultDirectoryScanner( basedir, includes, excludes );
+        this.surefireDirectoryScanner = new DefaultDirectoryScanner( basedir, includes, excludes,
+                                                                     "filesystem" );
     }
 
     public Map locateTestSets( ClassLoader classLoader )

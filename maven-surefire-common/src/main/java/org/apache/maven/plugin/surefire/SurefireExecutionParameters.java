@@ -269,4 +269,8 @@ public interface SurefireExecutionParameters
 
     boolean isMavenParallel();
 
+    void setRunOrder(String runOrder);
+
+    String getRunOrder();
+
 }

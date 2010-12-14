@@ -72,12 +72,13 @@ public class BooterDeserializer
         final List excludesList = properties.getStringList( EXCLUDES_PROPERTY_PREFIX );
         final List includesList = properties.getStringList( INCLUDES_PROPERTY_PREFIX );
 
-        List testSuiteXmlFiles = properties.getStringList( TEST_SUITE_XML_FILES );
+        final List testSuiteXmlFiles = properties.getStringList( TEST_SUITE_XML_FILES );
         final File testClassesDirectory = properties.getFileProperty( TEST_CLASSES_DIRECTORY );
+        final String runOrder = properties.getProperty( RUN_ORDER );
 
         DirectoryScannerParameters dirScannerParams =
             new DirectoryScannerParameters( testClassesDirectory, includesList, excludesList,
-                                            valueOf( properties.getBooleanProperty( FAILIFNOTESTS ) ) );
+                                            valueOf( properties.getBooleanProperty( FAILIFNOTESTS ) ) , runOrder);
 
         TestArtifactInfo testNg = new TestArtifactInfo( testNgVersion, testArtifactClassifier );
         TestRequest testSuiteDefinition = new TestRequest( testSuiteXmlFiles, sourceDirectory, requestedTest );

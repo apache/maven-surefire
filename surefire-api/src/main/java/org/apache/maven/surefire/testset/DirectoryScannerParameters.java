@@ -35,13 +35,15 @@ public class DirectoryScannerParameters
 
     private final Boolean failIfNoTests;
 
+    private final String runOrder;
 
-    public DirectoryScannerParameters( File testClassesDirectory, List includes, List excludes, Boolean failIfNoTests )
+    public DirectoryScannerParameters( File testClassesDirectory, List includes, List excludes, Boolean failIfNoTests, String runOrder )
     {
         this.testClassesDirectory = testClassesDirectory;
         this.includes = includes;
         this.excludes = excludes;
         this.failIfNoTests = failIfNoTests;
+        this.runOrder = runOrder;
     }
 
     /**
@@ -78,5 +80,10 @@ public class DirectoryScannerParameters
     public Boolean isFailIfNoTests()
     {
         return failIfNoTests;
+    }
+
+    public String getRunOrder()
+    {
+        return runOrder;
     }
 }

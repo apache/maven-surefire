@@ -20,13 +20,12 @@ package org.apache.maven.surefire.util;
  */
 
 import junit.framework.TestCase;
+import org.apache.maven.surefire.testset.TestSetFailedException;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 import java.util.ArrayList;
-
-import org.apache.maven.surefire.testset.TestSetFailedException;
+import java.util.List;
 
 /**
  * Test of the directory scanner.
@@ -42,7 +41,8 @@ public class SurefireDirectoryScannerTest
         include.add( "**/*ZT*A.java" );
         List exclude = new ArrayList();
 
-        DefaultDirectoryScanner surefireDirectoryScanner = new DefaultDirectoryScanner( baseDir, include, exclude );
+        DefaultDirectoryScanner surefireDirectoryScanner = new DefaultDirectoryScanner( baseDir, include, exclude,
+                                                                                        "filesystem" );
         String[] classNames = surefireDirectoryScanner.collectTests();
         assertNotNull( classNames );
         assertEquals( 4, classNames.length );

@@ -156,13 +156,14 @@ public class SurefireReflector
         {
             return null;
         }
-        Class[] arguments = { File.class, List.class, List.class, Boolean.class };
+        Class[] arguments = { File.class, List.class, List.class, Boolean.class, String.class };
         Constructor constructor = ReflectionUtils.getConstructor( this.directoryScannerParameters, arguments );
         return ReflectionUtils.newInstance( constructor,
                                             new Object[]{ directoryScannerParameters.getTestClassesDirectory(),
                                                 directoryScannerParameters.getIncludes(),
                                                 directoryScannerParameters.getExcludes(),
-                                                directoryScannerParameters.isFailIfNoTests() } );
+                                                directoryScannerParameters.isFailIfNoTests(),
+                                                directoryScannerParameters.getRunOrder() } );
     }
 
     Object createTestArtifactInfo( TestArtifactInfo testArtifactInfo )

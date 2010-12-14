@@ -292,7 +292,8 @@ public abstract class AbstractSurefireMojo
             List includes = getIncludeList();
             List excludes = getExcludeList();
             directoryScannerParameters = new DirectoryScannerParameters( getTestClassesDirectory(), includes, excludes,
-                                                                         Boolean.valueOf( failIfNoTests ) );
+                                                                         Boolean.valueOf( failIfNoTests ),
+                                                                         getRunOrder() );
         }
 
         Properties providerProperties = getProperties();
@@ -855,9 +856,12 @@ public abstract class AbstractSurefireMojo
      */
     private String getConsoleReporter( boolean forking )
     {
-        if ( isUseFile() && isPrintSummary() )
+        if ( isUseFile() )
         {
-            return forking ? ForkingConsoleReporter.class.getName() : ConsoleReporter.class.getName();
+            if ( isPrintSummary() )
+            {
+                return forking ? ForkingConsoleReporter.class.getName() : ConsoleReporter.class.getName();
+            }
         }
         else if ( BRIEF_REPORT_FORMAT.equals( getReportFormat() ) )
         {
