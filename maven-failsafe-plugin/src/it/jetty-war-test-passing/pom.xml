@@ -72,6 +72,12 @@
           <stopPort>${integration-test-stop-port}</stopPort>
           <stopKey>STOP</stopKey>
           <contextPath>/</contextPath>
+          <connectors>
+            <connector implementation="org.mortbay.jetty.nio.SelectChannelConnector">
+              <port>${integration-test-port}</port>
+              <maxIdleTime>60000</maxIdleTime>
+            </connector>
+          </connectors>
         </configuration>
         <executions>
           <execution>
@@ -129,7 +135,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <integration-test-port>8080</integration-test-port>
+    <integration-test-port>8083</integration-test-port>
     <integration-test-stop-port>18009</integration-test-stop-port>
   </properties>
 
