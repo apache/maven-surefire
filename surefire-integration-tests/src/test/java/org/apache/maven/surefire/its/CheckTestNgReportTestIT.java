@@ -38,7 +38,8 @@ public class CheckTestNgReportTestIT
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/testng-simple" );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        this.executeGoal( verifier, "surefire-report:report" );
+        this.executeGoal( verifier,
+                          "org.apache.maven.plugins:maven-surefire-report-plugin:" + getSurefireVersion() + ":report" );
         verifier.verifyErrorFreeLog();
         verifier.resetStreams();
 
