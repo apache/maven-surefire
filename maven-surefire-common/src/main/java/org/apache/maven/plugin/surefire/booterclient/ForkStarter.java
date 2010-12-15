@@ -224,7 +224,7 @@ public class ForkStarter
         }
         catch ( CommandLineException e )
         {
-            throw new SurefireBooterForkException( "Error while executing forked tests.", e );
+            throw new SurefireBooterForkException( "Error while executing forked tests.", e.getCause() );
         }
 
         if ( startupConfiguration.isRedirectTestOutputToFile() )

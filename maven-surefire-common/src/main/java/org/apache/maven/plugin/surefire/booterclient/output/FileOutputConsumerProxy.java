@@ -84,7 +84,7 @@ public class FileOutputConsumerProxy
         super.testSetStarting( reportEntry );
     }
 
-    public void testSetCompleted()
+    public synchronized void testSetCompleted()
     {
         if ( printWriter == null )
         {
