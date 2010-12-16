@@ -31,6 +31,9 @@ import java.io.PrintWriter;
 /**
  * Surefire output consumer proxy that writes test output to a {@link File} for each test suite.
  *
+ * This class is not threadsafe, but can be encapsulated with a SynchronizedOutputConsumer. It may still be
+ * accessed from different threads (serially).
+ *
  * @author <a href="mailto:carlos@apache.org">Carlos Sanchez</a>
  * @version $Id$
  * @since 2.1
@@ -84,7 +87,7 @@ public class FileOutputConsumerProxy
         super.testSetStarting( reportEntry );
     }
 
-    public synchronized void testSetCompleted()
+    public void testSetCompleted()
     {
         if ( printWriter == null )
         {
@@ -104,9 +107,8 @@ public class FileOutputConsumerProxy
     /**
      * Write the output to the current test file
      * <p/>
-     * This method may be called from multiple threads
      */
-    public synchronized void consumeOutputLine( String line )
+    public void consumeOutputLine( String line )
     {
         if ( printWriter == null )
         {

@@ -24,6 +24,7 @@ import org.apache.maven.plugin.surefire.booterclient.output.OutputConsumer;
 import org.apache.maven.plugin.surefire.booterclient.output.StandardOutputConsumer;
 import org.apache.maven.plugin.surefire.booterclient.output.SupressFooterOutputConsumerProxy;
 import org.apache.maven.plugin.surefire.booterclient.output.SupressHeaderOutputConsumerProxy;
+import org.apache.maven.plugin.surefire.booterclient.output.SynchronizedOutputConsumer;
 import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.ProviderConfiguration;
 import org.apache.maven.surefire.booter.ProviderFactory;
@@ -170,8 +171,7 @@ public class ForkStarter
         {
             BooterSerializer booterSerializer = new BooterSerializer( forkConfiguration, properties );
 
-            surefireProperties =
-                booterSerializer.serialize( providerConfiguration, startupConfiguration, testSet );
+            surefireProperties = booterSerializer.serialize( providerConfiguration, startupConfiguration, testSet );
 
             if ( forkConfiguration.getSystemProperties() != null )
             {
@@ -205,11 +205,13 @@ public class ForkStarter
         final boolean willBeSharingConsumer = startupConfiguration.isRedirectTestOutputToFile();
 
         ForkingStreamConsumer out =
-            getForkingStreamConsumer( showHeading, showFooter, startupConfiguration.isRedirectTestOutputToFile() );
+            getForkingStreamConsumer( showHeading, showFooter, startupConfiguration.isRedirectTestOutputToFile(),
+                                      willBeSharingConsumer );
 
         StreamConsumer err = willBeSharingConsumer
             ? out
-            : getForkingStreamConsumer( showHeading, showFooter, startupConfiguration.isRedirectTestOutputToFile() );
+            : getForkingStreamConsumer( showHeading, showFooter, startupConfiguration.isRedirectTestOutputToFile(),
+                                        false );
 
         if ( forkConfiguration.isDebug() )
         {
@@ -267,7 +269,7 @@ public class ForkStarter
     }
 
     private ForkingStreamConsumer getForkingStreamConsumer( boolean showHeading, boolean showFooter,
-                                                            boolean redirectTestOutputToFile )
+                                                            boolean redirectTestOutputToFile, boolean mustBeThreadSafe )
     {
         OutputConsumer outputConsumer = new StandardOutputConsumer();
 
@@ -284,6 +286,11 @@ public class ForkStarter
         if ( !showFooter )
         {
             outputConsumer = new SupressFooterOutputConsumerProxy( outputConsumer );
+        }
+
+        if ( mustBeThreadSafe )
+        {
+            outputConsumer = new SynchronizedOutputConsumer( outputConsumer );
         }
 
         return new ForkingStreamConsumer( outputConsumer );
