@@ -19,7 +19,8 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
-import org.codehaus.plexus.util.StringUtils;
+
+import org.apache.maven.surefire.util.internal.StringUtils;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -62,7 +63,7 @@ public class PojoStackTraceWriter
 
         String marker = "at " + testClass + "." + testMethod;
 
-        String[] lines = StringUtils.split( text, "\n" );
+        String[] lines = StringUtils.split(text, "\n");
         int lastLine = lines.length - 1;
         int causedByLine = -1;
         // skip first

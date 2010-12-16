@@ -20,6 +20,7 @@ package org.apache.maven.surefire.booter;
  */
 
 import org.apache.maven.surefire.util.ReflectionUtils;
+import org.apache.maven.surefire.util.internal.StringUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -193,7 +194,7 @@ public class PropertiesWrapper
 
         List list = new ArrayList();
 
-        String[] stringArray = StringUtils.split( sl, "," );
+        String[] stringArray = StringUtils.split(sl, ",");
 
         for ( int i = 0; i < stringArray.length; i++ )
         {

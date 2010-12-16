@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.booter;
+package org.apache.maven.surefire.util.internal;
 
 /* ====================================================================
  * The Apache Software License, Version 1.1
@@ -80,6 +80,8 @@ import java.util.StringTokenizer;
  *
  * A quick borrow from plexus-utils by Kristian Rosenvold, to restore jdk1.3 compat
  * Threw away all the unused stuff.
+ *
+ * NOTE: This class is not part of any api and is public purely for technical reasons !
  */
 public class StringUtils
 {
