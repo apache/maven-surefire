@@ -306,7 +306,8 @@ public class SurefirePlugin
 
     /**
      * Option to specify the jvm (or path to the java executable) to use with the forking options. For the default, the
-     * jvm will be the same as the one used to run Maven.
+     * jvm will be a new instance of the same VM as the one used to run Maven. JVM settings are not inherited from
+     * MAVEN_OPTS
      *
      * @parameter expression="${jvm}"
      * @since 2.1

@@ -99,4 +99,8 @@ public abstract class AbstractSurefireIntegrationTestClass
         verifier.executeGoals( goals );
     }
 
+    protected String getSurefireVersion()
+    {
+        return surefireVersion;
+    }
 }

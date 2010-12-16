@@ -40,7 +40,7 @@ public class AggregateReportIT
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
         List goals = this.getInitialGoals();
-        goals.add( "surefire-report:report" );
+        goals.add( "org.apache.maven.plugins:maven-surefire-report-plugin:" + getSurefireVersion() + ":report" );
         executeGoals( verifier, goals );
         //DGF even though the build will succeed, the log will contain errors (from the failure)
         //verifier.verifyErrorFreeLog();

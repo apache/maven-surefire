@@ -22,6 +22,7 @@ import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestRequest;
+import org.apache.maven.surefire.util.internal.StringUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -130,7 +131,7 @@ public class BooterDeserializer
 
         List list = new ArrayList();
 
-        String[] stringArray = StringUtils.split( sl, "," );
+        String[] stringArray = StringUtils.split(sl, ",");
 
         for ( int i = 0; i < stringArray.length; i++ )
         {
