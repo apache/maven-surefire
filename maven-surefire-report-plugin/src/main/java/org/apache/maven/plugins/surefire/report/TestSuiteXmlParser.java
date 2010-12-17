@@ -96,7 +96,7 @@ public class TestSuiteXmlParser
                 }
                 catch ( NullPointerException npe )
                 {
-                    System.err.println("WARNING: no time attribute found on testsuite element");
+                    System.err.println( "WARNING: no time attribute found on testsuite element" );
                 }
 
                 //check if group attribute is existing
@@ -152,7 +152,8 @@ public class TestSuiteXmlParser
 
                 testCase.setTime( time.floatValue() );
 
-                if ( currentSuite != defaultSuite ) {
+                if ( currentSuite != defaultSuite )
+                {
                     currentSuite.setTimeElapsed( time.floatValue() + currentSuite.getTimeElapsed() );
                 }
             }
@@ -200,7 +201,8 @@ public class TestSuiteXmlParser
         }
         else if ( "time".equals( qName ) )
         {
-            try {
+            try
+            {
                 Number time = numberFormat.parse( currentElement.toString() );
                 defaultSuite.setTimeElapsed( time.floatValue() );
             }

@@ -165,8 +165,8 @@ public class SurefireDependencyResolver
             Artifact artifact = (Artifact) i.next();
 
             log.debug(
-                "Adding to " + pluginName + " test classpath: " + artifact.getFile().getAbsolutePath() + " Scope: " +
-                    artifact.getScope() );
+                "Adding to " + pluginName + " test classpath: " + artifact.getFile().getAbsolutePath() + " Scope: "
+                    + artifact.getScope() );
 
             classpathConfiguration.addSurefireClasspathUrl( artifact.getFile().getAbsolutePath() );
         }
@@ -181,8 +181,8 @@ public class SurefireDependencyResolver
         {
             Artifact artifact = (Artifact) i.next();
 
-            log.debug( "Adding to " + pluginName + " booter test classpath: " + artifact.getFile().getAbsolutePath() +
-                           " Scope: " + artifact.getScope() );
+            log.debug( "Adding to " + pluginName + " booter test classpath: " + artifact.getFile().getAbsolutePath()
+                           + " Scope: " + artifact.getScope() );
 
             bootClasspath.addClassPathElementUrl( artifact.getFile().getAbsolutePath() );
         }

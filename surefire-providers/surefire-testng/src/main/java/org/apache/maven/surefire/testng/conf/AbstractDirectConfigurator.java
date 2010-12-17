@@ -46,10 +46,11 @@ public abstract class AbstractDirectConfigurator
         this.setters = options;
     }
 
-    public void configure( TestNG testng, Map options ) throws TestSetFailedException
+    public void configure( TestNG testng, Map options )
+        throws TestSetFailedException
     {
         // kind of ugly, but listeners are configured differently
-        final String listeners = (String) options.remove("listener");
+        final String listeners = (String) options.remove( "listener" );
         // DGF In 4.7, default listeners dump XML files in the surefire-reports directory,
         // confusing the report plugin.  This was fixed in later versions.
         testng.setUseDefaultListeners( false );
@@ -74,18 +75,20 @@ public abstract class AbstractDirectConfigurator
             }
         }
         // TODO: we should have the Profile so that we can decide if this is needed or not
-        testng.setListenerClasses(loadListenerClasses(listeners));
+        testng.setListenerClasses( loadListenerClasses( listeners ) );
     }
 
-    public static List loadListenerClasses(String listenerClasses) throws TestSetFailedException
+    public static List loadListenerClasses( String listenerClasses )
+        throws TestSetFailedException
     {
-        if (listenerClasses == null || "".equals(listenerClasses.trim())) {
+        if ( listenerClasses == null || "".equals( listenerClasses.trim() ) )
+        {
             return new ArrayList();
         }
 
         List classes = new ArrayList();
-        String[] classNames = listenerClasses.split(" *, *");
-        for(int i = 0; i < classNames.length; i++)
+        String[] classNames = listenerClasses.split( " *, *" );
+        for ( int i = 0; i < classNames.length; i++ )
         {
             String className = classNames[i];
             Class clazz = loadClass( className );
@@ -95,16 +98,16 @@ public abstract class AbstractDirectConfigurator
         return classes;
     }
 
-    public static Class loadClass(String className )
+    public static Class loadClass( String className )
         throws TestSetFailedException
     {
         try
         {
             return Class.forName( className );
         }
-        catch(Exception ex)
+        catch ( Exception ex )
         {
-            throw new TestSetFailedException("Cannot find listener class " + className, ex);
+            throw new TestSetFailedException( "Cannot find listener class " + className, ex );
         }
     }
 
@@ -123,10 +126,10 @@ public abstract class AbstractDirectConfigurator
         public void invoke( Object target, Object value )
             throws Exception
         {
-            Method setter = target.getClass().getMethod( this.setterName, new Class[]{this.paramClass} );
+            Method setter = target.getClass().getMethod( this.setterName, new Class[] { this.paramClass } );
             if ( setter != null )
             {
-                setter.invoke( target, new Object[]{convertValue( value )} );
+                setter.invoke( target, new Object[] { convertValue( value ) } );
             }
         }
 

@@ -23,8 +23,6 @@ import org.apache.maven.surefire.NonAbstractClassFilter;
 import org.apache.maven.surefire.util.ReflectionUtils;
 import org.apache.maven.surefire.util.ScannerFilter;
 
-import java.lang.reflect.Modifier;
-
 /**
  * @author Kristian Rosenvold
  */

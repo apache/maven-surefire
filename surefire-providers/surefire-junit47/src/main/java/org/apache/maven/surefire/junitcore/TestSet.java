@@ -1,4 +1,5 @@
 package org.apache.maven.surefire.junitcore;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -36,7 +37,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class TestSet
 {
-    private static ResourceBundle bundle = ResourceBundle.getBundle( Surefire.SUREFIRE_BUNDLE_NAME );
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle( Surefire.SUREFIRE_BUNDLE_NAME );
 
     private final Description testSetDescription;
 
@@ -104,11 +105,11 @@ public class TestSet
 
     private ReportEntry createReportEntry( String rawString2, Integer elapsed )
     {
-        String rawString = bundle.getString( rawString2 );
+        String rawString = BUNDLE.getString( rawString2 );
         boolean isJunit3 = testSetDescription.getTestClass() == null;
         String classNameToUse =
             isJunit3 ? testSetDescription.getChildren().get( 0 ).getClassName() : testSetDescription.getClassName();
-        return new DefaultReportEntry( classNameToUse, classNameToUse, rawString, elapsed);
+        return new DefaultReportEntry( classNameToUse, classNameToUse, rawString, elapsed );
     }
 
     public void incrementTestMethodCount()

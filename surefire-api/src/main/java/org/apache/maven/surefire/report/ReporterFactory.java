@@ -19,24 +19,21 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
-
 import org.apache.maven.surefire.suite.RunResult;
-import org.apache.maven.surefire.testset.TestSetFailedException;
 
 /**
  * @author Kristian Rosenvold
  */
 public interface ReporterFactory
 {
-    public RunStatistics getGlobalRunStatistics();
+    RunStatistics getGlobalRunStatistics();
 
     /**
      * Creates a (non-thread-safe) reporter
      *
      * @return A reporter instance
      */
-    public Reporter createReporter();
+    Reporter createReporter();
 
-    public RunResult close();
-
+    RunResult close();
 }

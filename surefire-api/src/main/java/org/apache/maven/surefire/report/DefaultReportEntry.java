@@ -27,7 +27,7 @@ public class DefaultReportEntry
 {
     public DefaultReportEntry( String source, String name, String message )
     {
-        super( source, name, null, message, null);
+        super( source, name, null, message, null );
     }
 
     public DefaultReportEntry( String source, String name, String message, Integer elapsed )

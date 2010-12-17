@@ -25,8 +25,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.apache.maven.surefire.testng.conf.AbstractDirectConfigurator;
-import org.apache.maven.surefire.testng.conf.Configurator;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.testng.TestNG;
 
@@ -59,11 +57,11 @@ public class TestNGMapConfigurator
             Object val = entry.getValue();
             if ( "listener".equals( key ) )
             {
-                val = AbstractDirectConfigurator.loadListenerClasses((String) val);
+                val = AbstractDirectConfigurator.loadListenerClasses( (String) val );
             }
             if ( "objectfactory".equals( key ) )
             {
-                val = AbstractDirectConfigurator.loadClass((String) val);
+                val = AbstractDirectConfigurator.loadClass( (String) val );
             }
             if ( "reporter".equals( key ) )
             {
@@ -84,13 +82,13 @@ public class TestNGMapConfigurator
                 val = convert( val, String.class );
             }
             // TODO objectfactory... not even documented, does it work?
-            if ( key.startsWith("-") )
+            if ( key.startsWith( "-" ) )
             {
-              convertedOptions.put( key, val );
+                convertedOptions.put( key, val );
             }
             else
             {
-              convertedOptions.put( "-" + key, val );
+                convertedOptions.put( "-" + key, val );
             }
         }
 

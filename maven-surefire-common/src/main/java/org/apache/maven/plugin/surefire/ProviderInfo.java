@@ -31,13 +31,13 @@ public interface ProviderInfo
 {
     String getProviderName();
 
-    public boolean isApplicable();
+    boolean isApplicable();
 
-    public void addProviderArtifactToBootClasspath( Classpath bootclasspath )
+    void addProviderArtifactToBootClasspath( Classpath bootclasspath )
         throws ArtifactResolutionException, ArtifactNotFoundException;
 
-    public void addProviderArtifactToSurefireClasspath( ClasspathConfiguration bootclasspath )
+    void addProviderArtifactToSurefireClasspath( ClasspathConfiguration bootclasspath )
         throws ArtifactResolutionException, ArtifactNotFoundException;
 
-    public void addProviderProperties();
+    void addProviderProperties();
 }

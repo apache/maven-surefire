@@ -194,7 +194,8 @@ public class SurefireReflector
 
     public Object instantiateProvider( String providerClassName, Object booterParameters )
     {
-        return ReflectionUtils.instantiateOneArg( classLoader, providerClassName, this.booterParameters, booterParameters );
+        return ReflectionUtils.instantiateOneArg( classLoader, providerClassName, this.booterParameters,
+                                                  booterParameters );
     }
 
 

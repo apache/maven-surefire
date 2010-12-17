@@ -430,9 +430,9 @@ public class SurefireReportGenerator
 
                             sink.link( "javascript:toggleDisplay('" + testCase.getName() + "');" );
 
-                            sink.rawText( "<span style=\"display: inline;\" " + "id=\"" + testCase.getName() +
-                                "off\">+</span><span id=\"" + testCase.getName() + "on\" " +
-                                "style=\"display: none;\">-</span> " );
+                            sink.rawText( "<span style=\"display: inline;\" " + "id=\"" + testCase.getName()
+                                + "off\">+</span><span id=\"" + testCase.getName() + "on\" "
+                                + "style=\"display: none;\">-</span> " );
                             sink.text( "[ Detail ]" );
                             sink.link_();
 

@@ -26,5 +26,5 @@ import org.apache.maven.surefire.testset.DirectoryScannerParameters;
  */
 interface DirectoryScannerParametersAware
 {
-    public void setDirectoryScannerParameters( DirectoryScannerParameters directoryScanner );
+    void setDirectoryScannerParameters( DirectoryScannerParameters directoryScanner );
 }

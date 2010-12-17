@@ -36,7 +36,6 @@ import org.apache.maven.surefire.util.TestsToRun;
 import org.junit.runner.notification.RunListener;
 import org.junit.runner.notification.RunNotifier;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -165,8 +164,8 @@ public class JUnit4Provider
     private void upgradeCheck()
         throws TestSetFailedException
     {
-        if ( isJunit4UpgradeCheck() &&
-            ( (DefaultDirectoryScanner) directoryScanner ).getClassesSkippedByValidation().size() > 0 )
+        if ( isJunit4UpgradeCheck()
+            && ( (DefaultDirectoryScanner) directoryScanner ).getClassesSkippedByValidation().size() > 0 )
         {
             StringBuilder reason = new StringBuilder();
             reason.append( "Updated check failed\n" );

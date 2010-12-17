@@ -24,5 +24,5 @@ package org.apache.maven.surefire.booter;
  */
 public interface SurefireClassLoadersAware
 {
-    void setClassLoaders( ClassLoader surefireClassLoader, ClassLoader testClassLoader);
+    void setClassLoaders( ClassLoader surefireClassLoader, ClassLoader testClassLoader );
 }

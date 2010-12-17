@@ -41,12 +41,12 @@ public abstract class AbstractConsoleReporter
 
     protected static final int BUFFER_SIZE = 4096;
 
-    private static final PrintStream originalSystemOut = System.out;
+    private static final PrintStream ORIGINAL_SYSTEM_OUT = System.out;
 
     protected AbstractConsoleReporter( String format, ReporterConfiguration reporterConfiguration )
     {
         // TODO: use logger
-        super( new PrintWriter( new OutputStreamWriter( new BufferedOutputStream( originalSystemOut, BUFFER_SIZE ) ) ),
+        super( new PrintWriter( new OutputStreamWriter( new BufferedOutputStream( ORIGINAL_SYSTEM_OUT, BUFFER_SIZE ) ) ),
                format, reporterConfiguration );
     }
 
@@ -56,7 +56,7 @@ public abstract class AbstractConsoleReporter
     protected AbstractConsoleReporter( String format, Boolean trimStackTrace )
     {
         // TODO: use logger
-        super( new PrintWriter( new OutputStreamWriter( new BufferedOutputStream( originalSystemOut, BUFFER_SIZE ) ) ),
+        super( new PrintWriter( new OutputStreamWriter( new BufferedOutputStream( ORIGINAL_SYSTEM_OUT, BUFFER_SIZE ) ) ),
                format, trimStackTrace );
     }
 

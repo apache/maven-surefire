@@ -21,7 +21,6 @@ package org.apache.maven.surefire.testng;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -90,7 +89,7 @@ public class TestNGXmlTestSuite
             throw new IllegalStateException( "You must call locateTestSets before calling execute" );
         }
         ReporterManager reporterManager =
-            new SynchronizedReporterManager( reporterManagerFactory.createReporterManager());
+            new SynchronizedReporterManager( reporterManagerFactory.createReporterManager() );
         TestNGDirectoryTestSuite.startTestSuite( reporterManager, this );
         TestNGExecutor.run( this.suiteFilePaths, this.testSourceDirectory, this.options, this.version, 
                             this.classifier, reporterManager, this, reportsDirectory );
@@ -143,9 +142,11 @@ public class TestNGXmlTestSuite
         return this.testSets;
     }
     
-    public String getSuiteName() {
-        String result = (String) options.get("suitename");
-        if (result == null) {
+    public String getSuiteName()
+    {
+        String result = (String) options.get( "suitename" );
+        if ( result == null )
+        {
             result = "TestSuite";
         }
         return result;

@@ -50,9 +50,9 @@ class TestMethod
 
     private volatile Description ignored;
 
-    private static final ResourceBundle bundle = ResourceBundle.getBundle( Surefire.SUREFIRE_BUNDLE_NAME );
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle( Surefire.SUREFIRE_BUNDLE_NAME );
 
-    private static final InheritableThreadLocal<TestMethod> testMethod = new InheritableThreadLocal<TestMethod>();
+    private static final InheritableThreadLocal<TestMethod> TEST_METHOD = new InheritableThreadLocal<TestMethod>();
 
     private volatile LogicalStream output;
 
@@ -143,14 +143,14 @@ class TestMethod
 
     private ReportEntry createReportEntry( String rawString2 )
     {
-        String rawString = bundle.getString( rawString2 );
+        String rawString = BUNDLE.getString( rawString2 );
         return new DefaultReportEntry( description.getTestClass().getCanonicalName(), description.getDisplayName(),
                                        rawString, getElapsed() );
     }
 
     private ReportEntry createFailureEntry( Failure failure, String rawString2 )
     {
-        String rawString = bundle.getString( rawString2 );
+        String rawString = BUNDLE.getString( rawString2 );
         return new DefaultReportEntry( failure.getDescription().getTestClass().getCanonicalName(),
                                        failure.getTestHeader(), rawString, new JUnitCoreStackTraceWriter( failure ),
                                        getElapsed() );
@@ -159,17 +159,17 @@ class TestMethod
 
     public void attachToThread()
     {
-        testMethod.set( this );
+        TEST_METHOD.set( this );
     }
 
     public static void detachFromCurrentThread()
     {
-        testMethod.remove();
+        TEST_METHOD.remove();
     }
 
     public static TestMethod getThreadTestMethod()
     {
-        return testMethod.get();
+        return TEST_METHOD.get();
     }
 
     public LogicalStream getLogicalStream()

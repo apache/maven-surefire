@@ -28,9 +28,9 @@ import java.lang.reflect.Method;
  */
 public class ReflectionUtils
 {
-    private static final Class[] noargs = new Class[0];
+    private static final Class[] NO_ARGS = new Class[0];
 
-    private static final Object[] noargsValues = new Object[0];
+    private static final Object[] NO_ARGS_VALUES = new Object[0];
 
 
     public static Method getMethod( Object instance, String methodName, Class[] parameters )
@@ -47,8 +47,8 @@ public class ReflectionUtils
 
     public static Object invokeGetter( Object instance, String methodName )
     {
-        final Method method = getMethod( instance, methodName, noargs );
-        return invokeMethodWithArray( instance, method, noargsValues );
+        final Method method = getMethod( instance, methodName, NO_ARGS );
+        return invokeMethodWithArray( instance, method, NO_ARGS_VALUES );
     }
 
     public static Constructor getConstructor( Class clazz, Class[] arguments )
@@ -108,7 +108,7 @@ public class ReflectionUtils
 
         try
         {
-            Class aClass = loadClass(classLoader, className );
+            Class aClass = loadClass( classLoader, className );
             Constructor constructor = ReflectionUtils.getConstructor( aClass, new Class[]{ param1Class } );
             return constructor.newInstance( new Object[]{ param1 } );
         }

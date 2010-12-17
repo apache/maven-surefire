@@ -50,7 +50,8 @@ public class TestNGExecutor
     }
 
     public static void run( Class[] testClasses, String testSourceDirectory, Map options, ArtifactVersion version,
-                            String classifier, ReporterManager reportManager, SurefireTestSuite suite, File reportsDirectory )
+                            String classifier, ReporterManager reportManager, SurefireTestSuite suite,
+                            File reportsDirectory )
         throws TestSetFailedException
     {
         TestNG testng = new TestNG( true );
@@ -62,7 +63,8 @@ public class TestNGExecutor
     }
 
     public static void run( List suiteFiles, String testSourceDirectory, Map options, ArtifactVersion version,
-                            String classifier, ReporterManager reportManager, SurefireTestSuite suite, File reportsDirectory )
+                            String classifier, ReporterManager reportManager, SurefireTestSuite suite,
+                            File reportsDirectory )
         throws TestSetFailedException
     {
         TestNG testng = new TestNG( true );
@@ -73,7 +75,8 @@ public class TestNGExecutor
         testng.run();
     }
 
-    private static Configurator getConfigurator( ArtifactVersion version ) throws TestSetFailedException
+    private static Configurator getConfigurator( ArtifactVersion version )
+        throws TestSetFailedException
     {
         try
         {
@@ -123,8 +126,10 @@ public class TestNGExecutor
 
     // If we have access to IResultListener, return a ConfigurationAwareTestNGReporter
     // But don't cause NoClassDefFoundErrors if it isn't available; just return a regular TestNGReporter instead
-    private static TestNGReporter createTestNGReporter( ReporterManager reportManager, SurefireTestSuite suite ) {
-        try {
+    private static TestNGReporter createTestNGReporter( ReporterManager reportManager, SurefireTestSuite suite )
+    {
+        try
+        {
             Class.forName( "org.testng.internal.IResultListener" );
             Class c = Class.forName( "org.apache.maven.surefire.testng.ConfigurationAwareTestNGReporter" );
             try
@@ -134,9 +139,11 @@ public class TestNGExecutor
             }
             catch ( Exception e )
             {
-                throw new RuntimeException("Bug in ConfigurationAwareTestNGReporter", e);
+                throw new RuntimeException( "Bug in ConfigurationAwareTestNGReporter", e );
             }
-        } catch (ClassNotFoundException e) {
+        }
+        catch ( ClassNotFoundException e )
+        {
             return new TestNGReporter( reportManager );
         }
     }
@@ -146,11 +153,15 @@ public class TestNGExecutor
         try
         {
             Class c = Class.forName( className );
-            if (IReporter.class.isAssignableFrom( c )) {
+            if ( IReporter.class.isAssignableFrom( c ) )
+            {
                 testNG.addListener( c.newInstance() );
             }
         }
-        catch ( Exception e ) {} // ignore
+        catch ( Exception e )
+        {
+            // ignore
+        }
     }
 
 }

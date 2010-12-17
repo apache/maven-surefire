@@ -194,7 +194,7 @@ public class PropertiesWrapper
 
         List list = new ArrayList();
 
-        String[] stringArray = StringUtils.split(sl, ",");
+        String[] stringArray = StringUtils.split( sl, "," );
 
         for ( int i = 0; i < stringArray.length; i++ )
         {

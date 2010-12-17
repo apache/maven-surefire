@@ -132,8 +132,8 @@ public class Surefire
                         ClassLoader testsClassLoader )
         throws ReporterException, TestSetFailedException
     {
-        return run( reportDefinitions, testSuiteDefinitions, surefireClassLoader, testsClassLoader, Boolean.FALSE ) ==
-            0;
+        return run( reportDefinitions, testSuiteDefinitions, surefireClassLoader, testsClassLoader, Boolean.FALSE )
+            == 0;
     }
 
     public int run( List reportDefinitions, List testSuiteDefinitions, ClassLoader surefireClassLoader,

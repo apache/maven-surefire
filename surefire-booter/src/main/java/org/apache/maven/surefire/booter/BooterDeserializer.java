@@ -1,4 +1,5 @@
 package org.apache.maven.surefire.booter;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -79,13 +80,14 @@ public class BooterDeserializer
 
         DirectoryScannerParameters dirScannerParams =
             new DirectoryScannerParameters( testClassesDirectory, includesList, excludesList,
-                                            valueOf( properties.getBooleanProperty( FAILIFNOTESTS ) ) , runOrder);
+                                            valueOf( properties.getBooleanProperty( FAILIFNOTESTS ) ), runOrder );
 
         TestArtifactInfo testNg = new TestArtifactInfo( testNgVersion, testArtifactClassifier );
         TestRequest testSuiteDefinition = new TestRequest( testSuiteXmlFiles, sourceDirectory, requestedTest );
 
-        ReporterConfiguration reporterConfiguration = new ReporterConfiguration( reports, reportsDirectory, valueOf(
-            properties.getBooleanProperty( ISTRIMSTACKTRACE ) ) );
+        ReporterConfiguration reporterConfiguration =
+            new ReporterConfiguration( reports, reportsDirectory,
+                                       valueOf( properties.getBooleanProperty( ISTRIMSTACKTRACE ) ) );
 
         return new ProviderConfiguration( dirScannerParams, properties.getBooleanProperty( FAILIFNOTESTS ),
                                           reporterConfiguration, testNg, testSuiteDefinition,
@@ -131,7 +133,7 @@ public class BooterDeserializer
 
         List list = new ArrayList();
 
-        String[] stringArray = StringUtils.split(sl, ",");
+        String[] stringArray = StringUtils.split( sl, "," );
 
         for ( int i = 0; i < stringArray.length; i++ )
         {

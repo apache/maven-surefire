@@ -95,7 +95,7 @@ class JUnitCoreParameters
     @Override
     public String toString()
     {
-        return "parallel='" + parallel + '\'' + ", perCoreThreadCount=" + perCoreThreadCount + ", threadCount=" +
-            threadCount + ", useUnlimitedThreads=" + useUnlimitedThreads;
+        return "parallel='" + parallel + '\'' + ", perCoreThreadCount=" + perCoreThreadCount + ", threadCount="
+            + threadCount + ", useUnlimitedThreads=" + useUnlimitedThreads;
     }
 }

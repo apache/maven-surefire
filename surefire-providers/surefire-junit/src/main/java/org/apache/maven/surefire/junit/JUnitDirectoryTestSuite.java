@@ -57,7 +57,7 @@ public class JUnitDirectoryTestSuite
         {
             testSet = new JUnitTestSet( testClass );
         }
-        else if (classHasPublicNoArgConstructor( testClass ))
+        else if ( classHasPublicNoArgConstructor( testClass ) )
         {
             testSet = new PojoTestSet( testClass );
         }
@@ -75,7 +75,7 @@ public class JUnitDirectoryTestSuite
         {
             junitClass = classLoader.loadClass( Test.class.getName() );
         }
-        catch ( NoClassDefFoundError e)
+        catch ( NoClassDefFoundError e )
         {
             // ignore this
         }

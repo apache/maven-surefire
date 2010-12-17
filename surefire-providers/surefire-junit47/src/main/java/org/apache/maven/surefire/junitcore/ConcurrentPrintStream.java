@@ -1,4 +1,5 @@
 package org.apache.maven.surefire.junitcore;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -33,7 +34,6 @@ class ConcurrentPrintStream
         isStdout = stdout;
     }
 
-
     public void write( byte[] buf, int off, int len )
     {
 
@@ -48,20 +48,17 @@ class ConcurrentPrintStream
         }
     }
 
-    public void writeTo(PrintStream printStream)
+    public void writeTo( PrintStream printStream )
         throws IOException
     {
-         ( (ByteArrayOutputStream) out ).writeTo(  printStream );
+        ( (ByteArrayOutputStream) out ).writeTo( printStream );
     }
 
     public void close()
     {
-
     }
 
     public void flush()
     {
     }
-
-
 }

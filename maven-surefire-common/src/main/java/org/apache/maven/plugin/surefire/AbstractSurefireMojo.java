@@ -477,8 +477,8 @@ public abstract class AbstractSurefireMojo
             if ( !range.containsVersion( new DefaultArtifactVersion( artifact.getVersion() ) ) )
             {
                 throw new MojoFailureException(
-                    "TestNG support requires version 4.7 or above. You have declared version " +
-                        artifact.getVersion() );
+                    "TestNG support requires version 4.7 or above. You have declared version "
+                        + artifact.getVersion() );
             }
         }
         return artifact;
@@ -711,8 +711,8 @@ public abstract class AbstractSurefireMojo
             Artifact artifact = (Artifact) i.next();
 
             getLog().debug(
-                "Adding to " + getPluginName() + " booter test classpath: " + artifact.getFile().getAbsolutePath() +
-                    " Scope: " + artifact.getScope() );
+                "Adding to " + getPluginName() + " booter test classpath: " + artifact.getFile().getAbsolutePath()
+                    + " Scope: " + artifact.getScope() );
 
             bootClasspath.addClassPathElementUrl( artifact.getFile().getAbsolutePath() );
         }
@@ -791,8 +791,8 @@ public abstract class AbstractSurefireMojo
         }
         catch ( Exception e )
         {
-            String msg = "Build uses Maven 2.0.x, cannot propagate system properties" +
-                " from command line to tests (cf. SUREFIRE-121)";
+            String msg = "Build uses Maven 2.0.x, cannot propagate system properties"
+                + " from command line to tests (cf. SUREFIRE-121)";
             if ( getLog().isDebugEnabled() )
             {
                 getLog().warn( msg, e );

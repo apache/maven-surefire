@@ -1,3 +1,5 @@
+package org.apache.maven.surefire.junitcore;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -16,7 +18,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.maven.surefire.junitcore;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -57,8 +58,9 @@ public class ConfigurableParallelComputer
         this( true, true, Executors.newCachedThreadPool(), false );
     }
 
-    public ConfigurableParallelComputer(boolean fClasses, boolean fMethods) {
-        this ( fClasses, fMethods, Executors.newCachedThreadPool(), false);
+    public ConfigurableParallelComputer( boolean fClasses, boolean fMethods )
+    {
+        this( fClasses, fMethods, Executors.newCachedThreadPool(), false );
     }
 
     public ConfigurableParallelComputer( boolean fClasses, boolean fMethods, Integer numberOfThreads, boolean perCore )
@@ -144,8 +146,8 @@ public class ConfigurableParallelComputer
     @Override
     public String toString()
     {
-        return "ConfigurableParallelComputer{" + "classes=" + fClasses + ", methods=" + fMethods + ", fixedPool=" +
-            fixedPool + '}';
+        return "ConfigurableParallelComputer{" + "classes=" + fClasses + ", methods=" + fMethods + ", fixedPool="
+            + fixedPool + '}';
     }
 
     public class SynchronousRunner

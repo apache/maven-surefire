@@ -44,7 +44,8 @@ public class JUnit4TestSetReporter
     private ReporterManager reportMgr;
 
     /**
-     * This flag is set after a failure has occurred so that a <code>testSucceeded</code> event is not fired.  This is necessary because JUnit4 always fires a <code>testRunFinished</code> event-- even if there was a failure.
+     * This flag is set after a failure has occurred so that a <code>testSucceeded</code> event is not fired.
+     * This is necessary because JUnit4 always fires a <code>testRunFinished</code> event-- even if there was a failure.
      */
     private boolean failureFlag;
 
@@ -169,10 +170,10 @@ public class JUnit4TestSetReporter
     private String extractClassName( Description description )
     {
         String displayName = description.getDisplayName();
-        final Pattern PARENS = Pattern.compile( "^" + "[^\\(\\)]+" + //non-parens
-                                                    "\\((" + // then an open-paren (start matching a group)
-                                                    "[^\\\\(\\\\)]+" + //non-parens
-                                                    ")\\)" + "$" ); // then a close-paren (end group match)
+        final Pattern PARENS = Pattern.compile( "^" + "[^\\(\\)]+" //non-parens
+                                                    + "\\((" // then an open-paren (start matching a group)
+                                                    + "[^\\\\(\\\\)]+" //non-parens
+                                                    + ")\\)" + "$" ); // then a close-paren (end group match)
         Matcher m = PARENS.matcher( displayName );
         if ( !m.find() )
         {

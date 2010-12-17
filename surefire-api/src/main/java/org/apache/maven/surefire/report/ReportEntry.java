@@ -174,7 +174,7 @@ public class ReportEntry
 
     public String toString()
     {
-        return "ReportEntry{" + "source='" + source + '\'' + ", name='" + name + '\'' + ", group='" + group + '\'' +
-            ", message='" + message + '\'' + ", stackTraceWriter=" + stackTraceWriter + ", elapsed=" + elapsed + '}';
+        return "ReportEntry{" + "source='" + source + '\'' + ", name='" + name + '\'' + ", group='" + group + '\''
+            + ", message='" + message + '\'' + ", stackTraceWriter=" + stackTraceWriter + ", elapsed=" + elapsed + '}';
     }
 }

@@ -121,11 +121,12 @@ public class PrettyPrintXMLWriter
     private static String escapeXml( String text )
     {
         StringBuffer sb = new StringBuffer ( text.length() * 2 );
-        for ( int i = 0; i < text.length(); i++ ) {
+        for ( int i = 0; i < text.length(); i++ )
+        {
             char c = text.charAt( i );
             if ( c < 32 )
             {
-                if ( c == '\n' || c == '\r' || c == '\t')
+                if ( c == '\n' || c == '\r' || c == '\t' )
                 {
                     sb.append( c );
                 }
@@ -136,28 +137,28 @@ public class PrettyPrintXMLWriter
                     // we're going to deliberately doubly-XML escape it...
                     // there's nothing better we can do! :-(
                     // SUREFIRE-456
-                    sb.append( "&amp;#" ).append( (int) c).append( ';' );
+                    sb.append( "&amp;#" ).append( (int) c ).append( ';' );
                 }
             }
-            else if ( c == '<')
+            else if ( c == '<' )
             {
                 sb.append( "&lt;" );
             }
-            else if ( c == '>')
+            else if ( c == '>' )
             {
                 sb.append( "&gt;" );
             }
-            else if (c == '&')
+            else if ( c == '&' )
             {
-                sb.append("&amp;");
+                sb.append( "&amp;" );
             }
-            else if (c == '"')
+            else if ( c == '"' )
             {
-                sb.append("&quot;");
+                sb.append( "&quot;" );
             }
-            else if (c == '\'')
+            else if ( c == '\'' )
             {
-                sb.append("&apos;");
+                sb.append( "&apos;" );
             }
             else
             {

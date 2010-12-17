@@ -58,11 +58,11 @@ public class ClasspathConfiguration
 
     public ClasspathConfiguration( boolean enableAssertions, boolean childDelegation )
     {
-        this( new ArrayList(), new ArrayList(), enableAssertions, childDelegation);
+        this( new ArrayList(), new ArrayList(), enableAssertions, childDelegation );
     }
 
     /*
-   * Reads the config from the supplied stream. Closes the stream.
+    * Reads the config from the supplied stream. Closes the stream.
     */
     public ClasspathConfiguration( List classPathUrls, List surefireClassPathUrls, boolean enableAssertions,
                                    boolean childDelegation )

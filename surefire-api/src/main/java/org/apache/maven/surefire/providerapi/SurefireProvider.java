@@ -49,7 +49,7 @@ public interface SurefireProvider
      *
      * @return
      */
-    public Iterator getSuites();
+    Iterator getSuites();
 
     /**
      * The test that will be invoked through a fork; used only for forkmode=pertest, when the classpath
@@ -57,6 +57,6 @@ public interface SurefireProvider
      * and not scan the classpath
      */
 
-    public RunResult invoke( Object forkTestSet )
+    RunResult invoke( Object forkTestSet )
         throws TestSetFailedException, ReporterException;
 }

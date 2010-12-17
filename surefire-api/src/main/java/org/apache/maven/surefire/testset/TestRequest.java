@@ -78,8 +78,8 @@ public class TestRequest
             Object element;
             for ( int i = 0; i < suiteXmlFiles.size(); i++ )
             {
-                element = suiteXmlFiles.get(i);
-                files.add( element instanceof String ? new File( (String) element ) : (File) element);
+                element = suiteXmlFiles.get( i );
+                files.add( element instanceof String ? new File( (String) element ) : (File) element );
             }
             return files;
         }

@@ -82,8 +82,14 @@ public class ReportTestSuite
 
     public int getNumberOfTests()
     {
-        if ( numberOfTests != null ) return numberOfTests.intValue();
-        if ( testCases != null ) return testCases.size();
+        if ( numberOfTests != null )
+        {
+            return numberOfTests.intValue();
+        }
+        if ( testCases != null )
+        {
+            return testCases.size();
+        }
         return 0;
     }
 
@@ -153,6 +159,7 @@ public class ReportTestSuite
     /** {@inheritDoc} */
     public String toString()
     {
-        return fullClassName + " ["+getNumberOfTests()+"/"+getNumberOfFailures()+"/"+getNumberOfErrors()+"/"+getNumberOfSkipped()+"]";
+        return fullClassName + " [" + getNumberOfTests() + "/" + getNumberOfFailures() + "/" + getNumberOfErrors()
+            + "/" + getNumberOfSkipped() + "]";
     }
 }

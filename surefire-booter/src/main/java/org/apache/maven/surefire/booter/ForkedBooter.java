@@ -60,7 +60,7 @@ public class ForkedBooter
 
             File surefirePropertiesFile = new File( args[0] );
             InputStream stream = surefirePropertiesFile.exists() ? new FileInputStream( surefirePropertiesFile ) : null;
-            BooterDeserializer booterDeserializer = new BooterDeserializer(stream);
+            BooterDeserializer booterDeserializer = new BooterDeserializer( stream );
             ProviderConfiguration booterConfiguration = booterDeserializer.deserialize();
             final StartupConfiguration providerConfiguration = booterDeserializer.getProviderConfiguration();
 

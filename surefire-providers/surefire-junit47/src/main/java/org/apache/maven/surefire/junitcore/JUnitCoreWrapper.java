@@ -86,19 +86,19 @@ class JUnitCoreWrapper
         return getConfigurableParallelComputer( jUnitCoreParameters );
     }
 
-    private static Computer getConfigurableParallelComputer( JUnitCoreParameters JUnitCoreParameters )
+    private static Computer getConfigurableParallelComputer( JUnitCoreParameters jUnitCoreParameters )
         throws TestSetFailedException
     {
-        if ( JUnitCoreParameters.isUseUnlimitedThreads() )
+        if ( jUnitCoreParameters.isUseUnlimitedThreads() )
         {
             return new ConfigurableParallelComputer();
         }
         else
         {
-            return new ConfigurableParallelComputer( JUnitCoreParameters.isParallelClasses(),
-                                                     JUnitCoreParameters.isParallelMethod(),
-                                                     JUnitCoreParameters.getThreadCount(),
-                                                     JUnitCoreParameters.isPerCoreThreadCount() );
+            return new ConfigurableParallelComputer( jUnitCoreParameters.isParallelClasses(),
+                                                     jUnitCoreParameters.isParallelMethod(),
+                                                     jUnitCoreParameters.getThreadCount(),
+                                                     jUnitCoreParameters.isPerCoreThreadCount() );
         }
     }
 }

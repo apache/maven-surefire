@@ -70,8 +70,13 @@ public class SurefireReportParser
         for ( int i = 0; i < reportsDirectories.length; i++ )
         {
             File reportsDirectory = reportsDirectories[i];
-            if ( !reportsDirectory.exists() ) continue;
-            String[] xmlReportFiles = getIncludedFiles( reportsDirectory, "*.xml", "*.txt, testng-failed.xml, testng-failures.xml, testng-results.xml" );
+            if ( !reportsDirectory.exists() )
+            {
+                continue;
+            }
+            String[] xmlReportFiles =
+                getIncludedFiles( reportsDirectory, "*.xml",
+                                  "*.txt, testng-failed.xml, testng-failures.xml, testng-results.xml" );
             for ( int j = 0; j < xmlReportFiles.length; j++ )
             {
                 File xmlReport = new File( reportsDirectory, xmlReportFiles[j] );

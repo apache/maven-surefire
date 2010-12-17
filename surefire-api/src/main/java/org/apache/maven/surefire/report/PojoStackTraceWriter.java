@@ -63,7 +63,7 @@ public class PojoStackTraceWriter
 
         String marker = "at " + testClass + "." + testMethod;
 
-        String[] lines = StringUtils.split(text, "\n");
+        String[] lines = StringUtils.split( text, "\n" );
         int lastLine = lines.length - 1;
         int causedByLine = -1;
         // skip first
