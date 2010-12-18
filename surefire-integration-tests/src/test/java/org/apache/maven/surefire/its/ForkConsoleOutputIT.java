@@ -44,7 +44,6 @@ public class ForkConsoleOutputIT
         printSummary(true);
 
         Verifier verifier = execute("test");
-        verifier.verifyTextInLog( "Test1" );
         verifier.assertFilePresent( getSurefireReportsFile( "forkConsoleOutput.Test1-output.txt" ) );
     }
 
