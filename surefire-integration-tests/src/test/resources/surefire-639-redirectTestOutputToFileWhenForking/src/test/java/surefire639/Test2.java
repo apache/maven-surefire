@@ -1,5 +1,4 @@
-package forkConsoleOutput;
-
+package surefire639;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -19,6 +18,7 @@ package forkConsoleOutput;
  * under the License.
  */
 
+
 import org.junit.Test;
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
@@ -28,21 +28,21 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assume.*;
-public class Test1
+public class Test2
 {
     @Test
     public void test6281() {
-        System.out.println( "Test1 on" + Thread.currentThread().getName());
+        System.out.println( "628Test2 on" + Thread.currentThread().getName());
     }
 
     @BeforeClass
     public static void testWithFailingAssumption2() {
-        System.out.println( "BeforeTest1 on" + Thread.currentThread().getName());
+        System.out.println( "Before628Test2 on" + Thread.currentThread().getName());
     }
-    
+
     @AfterClass
     public static void testWithFailingAssumption3() {
-        System.out.println( "AfterTest1 on" + Thread.currentThread().getName());
+        System.out.println( "After628Test2 on" + Thread.currentThread().getName());
     }
 
 }
