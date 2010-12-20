@@ -59,19 +59,6 @@ public class TestsToRun
         }
     }
 
-    public static TestsToRun fromClassName( String className, ClassLoader classLoader )
-        throws TestSetFailedException
-    {
-        try
-        {
-            return new TestsToRun( Arrays.asList( new Class[]{ classLoader.loadClass( className ) } ) );
-        }
-        catch ( ClassNotFoundException e )
-        {
-            throw new TestSetFailedException( e );
-        }
-    }
-
     public static TestsToRun fromClass( Class clazz )
         throws TestSetFailedException
     {

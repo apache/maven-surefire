@@ -25,11 +25,10 @@ import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.util.internal.StringUtils;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.List;
 
 /**
  * Knows how to serialize and deserialize the booter configuration.
@@ -67,8 +66,7 @@ public class BooterDeserializer
         final String testArtifactClassifier = properties.getProperty( TESTARTIFACT_CLASSIFIER );
         final Object testForFork = properties.getTypeDecoded( FORKTESTSET );
         final String requestedTest = properties.getProperty( REQUESTEDTEST );
-        final File sourceDirectory =
-            (File) getParamValue( properties.getProperty( SOURCE_DIRECTORY ), File.class.getName() );
+        final File sourceDirectory = properties.getFileProperty( SOURCE_DIRECTORY );
 
         final List reports = properties.getStringList( REPORT_PROPERTY_PREFIX );
         final List excludesList = properties.getStringList( EXCLUDES_PROPERTY_PREFIX );
@@ -122,100 +120,4 @@ public class BooterDeserializer
         return aBoolean ? Boolean.TRUE : Boolean.FALSE;
     }
 
-    private static List processStringList( String stringList )
-    {
-        String sl = stringList;
-
-        if ( sl.startsWith( "[" ) && sl.endsWith( "]" ) )
-        {
-            sl = sl.substring( 1, sl.length() - 1 );
-        }
-
-        List list = new ArrayList();
-
-        String[] stringArray = StringUtils.split( sl, "," );
-
-        for ( int i = 0; i < stringArray.length; i++ )
-        {
-            list.add( stringArray[i].trim() );
-        }
-        return list;
-    }
-
-    private static Object[] constructParamObjects( String paramProperty, Class typeProperty )
-    {
-        Object[] paramObjects = null;
-        if ( paramProperty != null )
-        {
-            // bit of a glitch that it need sto be done twice to do an odd number of vertical bars (eg |||, |||||).
-            String[] params = StringUtils.split(
-                StringUtils.replace( StringUtils.replace( paramProperty, "||", "| |" ), "||", "| |" ), "|" );
-            paramObjects = new Object[params.length];
-
-            String typeName = typeProperty.getName();
-            for ( int i = 0; i < params.length; i++ )
-            {
-                String param = params[i];
-                paramObjects[i] = getParamValue( param, typeName );
-            }
-        }
-        return paramObjects;
-    }
-
-    private static Object getParamValue( String param, String typeName )
-    {
-        if ( typeName.trim().length() == 0 )
-        {
-            return null;
-        }
-        else if ( typeName.equals( String.class.getName() ) )
-        {
-            return param;
-        }
-        else if ( typeName.equals( File.class.getName() ) )
-        {
-            return new File( param );
-        }
-        else if ( typeName.equals( File[].class.getName() ) )
-        {
-            List stringList = processStringList( param );
-            File[] fileList = new File[stringList.size()];
-            for ( int j = 0; j < stringList.size(); j++ )
-            {
-                fileList[j] = new File( (String) stringList.get( j ) );
-            }
-            return fileList;
-        }
-        else if ( typeName.equals( ArrayList.class.getName() ) )
-        {
-            return processStringList( param );
-        }
-        else if ( typeName.equals( Boolean.class.getName() ) )
-        {
-            return Boolean.valueOf( param );
-        }
-        else if ( typeName.equals( Integer.class.getName() ) )
-        {
-            return Integer.valueOf( param );
-        }
-        else if ( typeName.equals( Properties.class.getName() ) )
-        {
-            final Properties result = new Properties();
-            try
-            {
-                ByteArrayInputStream bais = new ByteArrayInputStream( param.getBytes( "8859_1" ) );
-                result.load( bais );
-            }
-            catch ( Exception e )
-            {
-                throw new RuntimeException( "bug in property conversion", e );
-            }
-            return result;
-        }
-        else
-        {
-            // TODO: could attempt to construct with a String constructor if needed
-            throw new IllegalArgumentException( "Unknown parameter type: " + typeName );
-        }
-    }
 }

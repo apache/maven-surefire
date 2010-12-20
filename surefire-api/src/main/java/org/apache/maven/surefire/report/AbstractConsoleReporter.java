@@ -50,16 +50,6 @@ public abstract class AbstractConsoleReporter
                format, reporterConfiguration );
     }
 
-    /**
-     * @deprecated Can be removed once we build surefire with 2.7
-     */
-    protected AbstractConsoleReporter( String format, Boolean trimStackTrace )
-    {
-        // TODO: use logger
-        super( new PrintWriter( new OutputStreamWriter( new BufferedOutputStream( ORIGINAL_SYSTEM_OUT, BUFFER_SIZE ) ) ),
-               format, trimStackTrace );
-    }
-
     public void testSetStarting( ReportEntry report )
         throws ReporterException
     {
@@ -82,33 +72,12 @@ public abstract class AbstractConsoleReporter
         writer.flush();
     }
 
-    public void runAborted( ReportEntry report )
-    {
-        printAbortionError( "RUN ABORTED", report );
-    }
-
-    public void testSetAborted( ReportEntry report )
-    {
-        printAbortionError( "TEST SET ABORTED", report );
-    }
-
-    private void printAbortionError( String msg, ReportEntry report )
-    {
-        writer.println( msg );
-        writer.println( report.getSourceName() );
-        writer.println( report.getName() );
-        writer.println( report.getMessage() );
-        writer.println( getStackTrace( report ) );
-        writer.flush();
-    }
-
     /**
      * Get the test set starting message for a report.
      * eg. "Running org.foo.BarTest ( of group )"
      *
      * @param report report whose test set is starting
      * @return the message
-     * @todo internationalize
      */
     public static String getTestSetStartingMessage( ReportEntry report )
     {
@@ -129,7 +98,7 @@ public abstract class AbstractConsoleReporter
      * Parses a Surefire test set starting message into a {@link ReportEntry} object.
      * Only name and group will be set if applicable.
      *
-     * @param message
+     * @param message The test starting message
      * @return the parsed {@link ReportEntry}
      */
     public static ReportEntry parseTestSetStartingMessage( String message )

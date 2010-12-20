@@ -59,7 +59,6 @@ public class SurefireReflectorTest
 
         TestRequest testSuiteDefinition =
             new TestRequest( Arrays.asList( new File[]{new File("file1"),new File("file2")} ), new File( "TestSOurce" ), "aUserRequestedTest" );
-        assertTrue( surefireReflector.isTestSuiteDefinitionAware( foo ) );
         surefireReflector.setTestSuiteDefinition( foo, testSuiteDefinition );
         assertTrue( isCalled( foo ).booleanValue() );
     }
@@ -70,7 +69,6 @@ public class SurefireReflectorTest
         SurefireReflector surefireReflector = getReflector();
         Object foo = getFoo();
 
-        assertTrue( surefireReflector.isProviderPropertiesAware( foo ) );
         surefireReflector.setProviderProperties( foo, new Properties() );
         assertTrue( isCalled( foo ).booleanValue() );
     }
@@ -82,7 +80,6 @@ public class SurefireReflectorTest
         Object foo = getFoo();
 
         ReporterConfiguration reporterConfiguration = getReporterConfiguration();
-        assertTrue( surefireReflector.isReporterConfigurationAwareAware( foo ) );
         surefireReflector.setReporterConfigurationAware( foo, reporterConfiguration );
         assertTrue( isCalled( foo ).booleanValue() );
     }
@@ -98,7 +95,6 @@ public class SurefireReflectorTest
         SurefireReflector surefireReflector = getReflector();
         Object foo = getFoo();
 
-        assertTrue( surefireReflector.isTestClassLoaderAware( foo ) );
         surefireReflector.setTestClassLoader( foo, getClass().getClassLoader(), getClass().getClassLoader() );
         assertTrue( isCalled( foo ).booleanValue() );
     }
@@ -110,7 +106,6 @@ public class SurefireReflectorTest
         Object foo = getFoo();
 
         TestArtifactInfo testArtifactInfo = new TestArtifactInfo( "12.3", "test" );
-        assertTrue( surefireReflector.isTestArtifactInfoAware( foo ) );
         surefireReflector.setTestArtifactInfo( foo, testArtifactInfo );
         assertTrue( isCalled( foo ).booleanValue() );
     }

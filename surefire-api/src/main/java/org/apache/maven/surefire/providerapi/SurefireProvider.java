@@ -47,7 +47,7 @@ public interface SurefireProvider
     /**
      * Called when forkmode is pertest, allows the provider to define what "pertest" will be.
      *
-     * @return
+     * @return An iterator that will trigger one fork per item
      */
     Iterator getSuites();
 
@@ -55,6 +55,10 @@ public interface SurefireProvider
      * The test that will be invoked through a fork; used only for forkmode=pertest, when the classpath
      * scanning happens on the plugin-side. When this is set, the forked process will run only that test
      * and not scan the classpath
+     * @param forkTestSet An item from the iterator in #getSuites
+     * @return A result of the invocation
+     * @throws org.apache.maven.surefire.report.ReporterException      When reporting fails
+     * @throws org.apache.maven.surefire.testset.TestSetFailedException  When testset fails
      */
 
     RunResult invoke( Object forkTestSet )

@@ -19,16 +19,10 @@ package org.apache.maven.surefire.testng;
  * under the License.
  */
 
-import java.io.File;
-import java.lang.reflect.Constructor;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.surefire.report.ReporterManager;
-import org.apache.maven.surefire.suite.SurefireTestSuite;
 import org.apache.maven.surefire.testng.conf.Configurator;
 import org.apache.maven.surefire.testng.conf.TestNG4751Configurator;
 import org.apache.maven.surefire.testng.conf.TestNG52Configurator;
@@ -36,6 +30,11 @@ import org.apache.maven.surefire.testng.conf.TestNGMapConfigurator;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.testng.IReporter;
 import org.testng.TestNG;
+
+import java.io.File;
+import java.lang.reflect.Constructor;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Contains utility methods for executing TestNG.
@@ -50,7 +49,7 @@ public class TestNGExecutor
     }
 
     public static void run( Class[] testClasses, String testSourceDirectory, Map options, ArtifactVersion version,
-                            String classifier, ReporterManager reportManager, SurefireTestSuite suite,
+                            String classifier, ReporterManager reportManager, TestNgTestSuite suite,
                             File reportsDirectory )
         throws TestSetFailedException
     {
@@ -63,7 +62,7 @@ public class TestNGExecutor
     }
 
     public static void run( List suiteFiles, String testSourceDirectory, Map options, ArtifactVersion version,
-                            String classifier, ReporterManager reportManager, SurefireTestSuite suite,
+                            String classifier, ReporterManager reportManager, TestNgTestSuite suite,
                             File reportsDirectory )
         throws TestSetFailedException
     {
@@ -105,8 +104,8 @@ public class TestNGExecutor
     }
 
 
-    private static void postConfigure( TestNG testNG, String sourcePath, String classifier, 
-                                       ReporterManager reportManager, SurefireTestSuite suite, File reportsDirectory )
+    private static void postConfigure( TestNG testNG, String sourcePath, String classifier,
+                                       ReporterManager reportManager, TestNgTestSuite suite, File reportsDirectory )
         throws TestSetFailedException
     {
         // turn off all TestNG output
@@ -114,7 +113,7 @@ public class TestNGExecutor
 
         TestNGReporter reporter = createTestNGReporter( reportManager, suite );
         testNG.addListener( (Object) reporter );
-        
+
         // FIXME: use classifier to decide if we need to pass along the source dir (onyl for JDK14)
         if ( sourcePath != null )
         {
@@ -126,7 +125,7 @@ public class TestNGExecutor
 
     // If we have access to IResultListener, return a ConfigurationAwareTestNGReporter
     // But don't cause NoClassDefFoundErrors if it isn't available; just return a regular TestNGReporter instead
-    private static TestNGReporter createTestNGReporter( ReporterManager reportManager, SurefireTestSuite suite )
+    private static TestNGReporter createTestNGReporter( ReporterManager reportManager, TestNgTestSuite suite )
     {
         try
         {
@@ -134,8 +133,8 @@ public class TestNGExecutor
             Class c = Class.forName( "org.apache.maven.surefire.testng.ConfigurationAwareTestNGReporter" );
             try
             {
-                Constructor ctor = c.getConstructor( new Class[] { ReporterManager.class, SurefireTestSuite.class } );
-                return (TestNGReporter) ctor.newInstance( new Object[] { reportManager, suite } );
+                Constructor ctor = c.getConstructor( new Class[]{ ReporterManager.class, TestNgTestSuite.class } );
+                return (TestNGReporter) ctor.newInstance( new Object[]{ reportManager, suite } );
             }
             catch ( Exception e )
             {

@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.testset;
+package org.apache.maven.surefire.testng;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,31 +19,23 @@ package org.apache.maven.surefire.testset;
  * under the License.
  */
 
+import org.apache.maven.surefire.report.ReporterException;
+import org.apache.maven.surefire.report.ReporterManagerFactory;
+import org.apache.maven.surefire.testset.TestSetFailedException;
+
+import java.util.Map;
+
 /**
- * Base test class.
+ * A complete test suite that contains one or more test sets.
+ *
+ * @author <a href="mailto:brett@apache.org">Brett Porter</a>
  */
-public abstract class AbstractTestSet
-    implements SurefireTestSet
+public interface TestNgTestSuite
 {
-    private Class testClass;
 
-    protected AbstractTestSet( Class testClass )
-    {
-        if ( testClass == null )
-        {
-            throw new NullPointerException( "testClass is null" );
-        }
+    void execute( String testSetName, ReporterManagerFactory reporterManagerFactory, ClassLoader classLoader )
+        throws ReporterException, TestSetFailedException;
 
-        this.testClass = testClass;
-    }
-
-    public String getName()
-    {
-        return testClass.getName();
-    }
-
-    public Class getTestClass()
-    {
-        return testClass;
-    }
+    Map locateTestSets( ClassLoader classLoader )
+        throws TestSetFailedException;
 }

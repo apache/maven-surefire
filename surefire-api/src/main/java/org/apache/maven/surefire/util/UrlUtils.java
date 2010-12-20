@@ -63,6 +63,7 @@ public class UrlUtils
         throws MalformedURLException
     {
         // with JDK 1.4+, code would be: return new URL( file.toURI().toASCIIString() );
+        //noinspection deprecation
         URL url = file.toURL();
         // encode any characters that do not comply with RFC 2396
         // this is primarily to handle Windows where the user's home directory contains spaces

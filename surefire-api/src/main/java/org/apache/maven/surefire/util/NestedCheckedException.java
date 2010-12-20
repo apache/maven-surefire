@@ -109,17 +109,6 @@ public class NestedCheckedException
     }
 
     /**
-     * Construct a <code>NestedCheckedException</code> with the specified nested exception.
-     *
-     * @param ex the nested exception
-     */
-    public NestedCheckedException( Throwable ex )
-    {
-        super();
-        this.cause = ex;
-    }
-
-    /**
      * Return the nested cause, or <code>null</code> if none.
      */
     public Throwable getCause()
@@ -192,6 +181,7 @@ public class NestedCheckedException
      * the JDK 1.4 exception cause mechanism once Spring requires JDK 1.4.
      *
      * @param exClass the exception class to look for
+     * @return true if it is contained
      */
     public boolean contains( Class exClass )
     {
@@ -210,7 +200,7 @@ public class NestedCheckedException
             {
                 // Cast is necessary on JDK 1.3, where Throwable does not
                 // provide a "getCause" method itself.
-                ex = ( (NestedCheckedException) ex ).getCause();
+                ex = ex.getCause();
             }
             else
             {

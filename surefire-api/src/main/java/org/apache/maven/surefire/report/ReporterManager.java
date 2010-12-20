@@ -43,22 +43,19 @@ public class ReporterManager
 
     private final MulticastingReporter multicastingReporter;
 
-    private final RunReporter runReporter;
-
     private final SystemStreamCapturer consoleCapturer;
 
     public ReporterManager( List reports, RunStatistics runStatisticsForThis,
                             SystemStreamCapturer systemStreamCapturer )
     {
         this.consoleCapturer = systemStreamCapturer;
-        runReporter = multicastingReporter = new MulticastingReporter( reports );
+        multicastingReporter = new MulticastingReporter( reports );
         this.runStatisticsForThis = runStatisticsForThis;
     }
 
     protected ReporterManager( ReporterManager other )
     {
         this.multicastingReporter = other.multicastingReporter;
-        this.runReporter = other.multicastingReporter;
         this.runStatisticsForThis = other.runStatisticsForThis;
         this.consoleCapturer = other.consoleCapturer;
     }

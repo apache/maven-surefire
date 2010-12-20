@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.testset;
+package org.apache.maven.surefire.junit;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -24,6 +24,7 @@ import org.apache.maven.surefire.report.DefaultReportEntry;
 import org.apache.maven.surefire.report.PojoStackTraceWriter;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterManager;
+import org.apache.maven.surefire.testset.TestSetFailedException;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -34,7 +35,7 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 public class PojoTestSet
-    extends AbstractTestSet
+    implements SurefireTestSet
 {
     private ResourceBundle bundle = ResourceBundle.getBundle( Surefire.SUREFIRE_BUNDLE_NAME );
 
@@ -46,10 +47,17 @@ public class PojoTestSet
 
     protected List testMethods;
 
+    private Class testClass;
+
     public PojoTestSet( Class testClass )
         throws TestSetFailedException
     {
-        super( testClass );
+        if ( testClass == null )
+        {
+            throw new NullPointerException( "testClass is null" );
+        }
+
+        this.testClass = testClass;
 
         try
         {
@@ -294,5 +302,15 @@ public class PojoTestSet
         boolean hasNoParams = m.getParameterTypes().length == 0;
 
         return isInstanceMethod && returnsVoid && hasNoParams;
+    }
+
+    public String getName()
+    {
+        return testClass.getName();
+    }
+
+    public Class getTestClass()
+    {
+        return testClass;
     }
 }

@@ -32,7 +32,6 @@ import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterManager;
 import org.apache.maven.surefire.report.ReporterManagerFactory;
-import org.apache.maven.surefire.suite.SurefireTestSuite;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
 /**
@@ -42,7 +41,7 @@ import org.apache.maven.surefire.testset.TestSetFailedException;
  * @author <a href='mailto:the[dot]mindstorm[at]gmail[dot]com'>Alex Popescu</a>
  */
 public class TestNGXmlTestSuite
-    implements SurefireTestSuite
+    implements TestNgTestSuite
 {
     private List suiteFiles;
 
@@ -81,7 +80,7 @@ public class TestNGXmlTestSuite
         this.reportsDirectory = reportsDirectory;
     }
 
-    public void execute( ReporterManagerFactory reporterManagerFactory, ClassLoader classLoader )
+    public void execute( ReporterManagerFactory reporterManagerFactory )
         throws ReporterException, TestSetFailedException
     {
         if ( testSets == null )
@@ -100,16 +99,6 @@ public class TestNGXmlTestSuite
         throws TestSetFailedException
     {
         throw new TestSetFailedException( "Cannot run individual test when suite files are specified" );
-    }
-
-    public int getNumTests()
-    {
-        return suiteFiles.size();
-    }
-
-    public List getClassesSkippedByValidation()
-    {
-        return new ArrayList(  );
     }
 
     public Map locateTestSets( ClassLoader classLoader )

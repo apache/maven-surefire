@@ -20,7 +20,6 @@ package org.apache.maven.surefire.junit;
  */
 
 import org.apache.maven.surefire.report.ReporterManager;
-import org.apache.maven.surefire.testset.AbstractTestSet;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
 import java.lang.reflect.Constructor;
@@ -30,7 +29,7 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.Proxy;
 
 public final class JUnitTestSet
-    extends AbstractTestSet
+    implements SurefireTestSet
 {
     public static final String TEST_CASE = "junit.framework.Test";
 
@@ -44,12 +43,6 @@ public final class JUnitTestSet
 
     public static final String RUN_METHOD = "run";
 
-    public static final String COUNT_TEST_CASES_METHOD = "countTestCases";
-
-    public static final String SETUP_METHOD = "setUp";
-
-    public static final String TEARDOWN_METHOD = "tearDown";
-
     private static final String TEST_SUITE = "junit.framework.TestSuite";
 
     private Class[] interfacesImplementedByDynamicProxy;
@@ -58,18 +51,23 @@ public final class JUnitTestSet
 
     private Method addListenerMethod;
 
-    private Method countTestCasesMethod;
-
     private Method runMethod;
 
     private static final Class[] EMPTY_CLASS_ARRAY = new Class[0];
 
     private static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
 
+    private Class testClass;
+
     public JUnitTestSet( Class testClass )
         throws TestSetFailedException
     {
-        super( testClass );
+        if ( testClass == null )
+        {
+            throw new NullPointerException( "testClass is null" );
+        }
+
+        this.testClass = testClass;
 
         processTestClass();
     }
@@ -111,15 +109,11 @@ public final class JUnitTestSet
 
             if ( testInterface.isAssignableFrom( testClass ) )//testObject.getClass() ) )
             {
-                countTestCasesMethod = testInterface.getMethod( COUNT_TEST_CASES_METHOD, EMPTY_CLASS_ARRAY );
-
                 runMethod = testInterface.getMethod( RUN_METHOD, new Class[]{testResultClass} );
 
             }
             else
             {
-                countTestCasesMethod = testClass.getMethod( COUNT_TEST_CASES_METHOD, EMPTY_CLASS_ARRAY );
-
                 runMethod = testClass.getMethod( RUN_METHOD, new Class[]{testResultClass} );
             }
         }
@@ -251,5 +245,15 @@ public final class JUnitTestSet
             constructor = testClass.getConstructor( EMPTY_CLASS_ARRAY );
         }
         return constructor;
+    }
+
+    public String getName()
+    {
+        return testClass.getName();
+    }
+
+    public Class getTestClass()
+    {
+        return testClass;
     }
 }

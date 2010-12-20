@@ -61,12 +61,6 @@ public class ReporterManagerFactory
 
     private final SystemStreamCapturer systemStreamCapturer = new SystemStreamCapturer();
 
-    public ReporterManagerFactory( List reportDefinitions, ClassLoader surefireClassLoader )
-    {
-        this( reportDefinitions, surefireClassLoader, null );
-
-    }
-
     public ReporterManagerFactory( List reportDefinitions, ClassLoader surefireClassLoader,
                                    ReporterConfiguration reporterConfiguration )
     {
@@ -104,8 +98,8 @@ public class ReporterManagerFactory
     {
         // Note, if we ever start making >1 reporter Managers, we have to aggregate run statistics
         // i.e. we cannot use a single "globalRunStatistics"
-        final ReporterManager reporterManager = new ReporterManager( reports, globalRunStatistics,
-                                                                     systemStreamCapturer );
+        final ReporterManager reporterManager =
+            new ReporterManager( reports, globalRunStatistics, systemStreamCapturer );
         if ( first == null )
         {
             synchronized ( lock )
@@ -140,33 +134,7 @@ public class ReporterManagerFactory
         {
             return new ArrayList();
         }
-        if ( reportDefinitions.iterator().next() instanceof String )
-        {
-            return instantiateReportsNewStyle( reportDefinitions, reporterConfiguration, classLoader );
-        }
-        else
-        {
-            return instantiateReportsOldStyle( reportDefinitions, classLoader );
-        }
-    }
-
-    private List instantiateReportsOldStyle( List reportDefinitions, ClassLoader classLoader )
-    {
-        List reports = new ArrayList();
-
-        for ( Iterator i = reportDefinitions.iterator(); i.hasNext(); )
-        {
-            Object[] definition = (Object[]) i.next();
-
-            String className = (String) definition[0];
-            Object[] params = (Object[]) definition[1];
-
-            Reporter report = instantiateReport( className, params, classLoader );
-
-            reports.add( report );
-        }
-
-        return reports;
+        return instantiateReportsNewStyle( reportDefinitions, reporterConfiguration, classLoader );
     }
 
     protected List instantiateReportsNewStyle( List reportDefinitions, ReporterConfiguration reporterConfiguration,
@@ -190,42 +158,31 @@ public class ReporterManagerFactory
     private static Reporter instantiateReportNewStyle( String className, ReporterConfiguration params,
                                                        ClassLoader classLoader )
     {
-        try
+        Class clazz = ReflectionUtils.loadClass( classLoader, className );
+
+        if ( params != null )
         {
-            Class clazz = ReflectionUtils.loadClass( classLoader, className );
-
-            if ( params != null )
-            {
-                Class[] paramTypes = new Class[1];
-                paramTypes[0] = ReflectionUtils.loadClass( classLoader,  ReporterConfiguration.class.getName() );
-
-                Constructor constructor = clazz.getConstructor( paramTypes );
-
-                return (Reporter) ReflectionUtils.newInstance( constructor, new Object[]{ params } );
-            }
-            else
+            Class[] paramTypes = new Class[1];
+            paramTypes[0] = ReflectionUtils.loadClass( classLoader, ReporterConfiguration.class.getName() );
+            Constructor constructor = ReflectionUtils.getConstructor( clazz, paramTypes );
+            return (Reporter) ReflectionUtils.newInstance( constructor, new Object[]{ params } );
+        }
+        else
+        {
+            try
             {
                 return (Reporter) clazz.newInstance();
             }
+            catch ( IllegalAccessException e )
+            {
+                throw new SurefireReflectionException( e );
+            }
+            catch ( InstantiationException e )
+            {
+                throw new SurefireReflectionException( e );
+            }
         }
-        catch ( IllegalAccessException e )
-        {
-            throw new SurefireReflectionException( e );
-        }
-        catch ( InstantiationException e )
-        {
-            throw new SurefireReflectionException( e );
-        }
-        catch ( NoSuchMethodException e )
-        {
-            throw new SurefireReflectionException( e );
-        }
-    }
 
-
-    private static Reporter instantiateReport( String className, Object[] params, ClassLoader classLoader )
-    {
-        return (Reporter) ReflectionUtils.instantiateObject( className, params, classLoader );
     }
 
     private void warnIfNoTests()

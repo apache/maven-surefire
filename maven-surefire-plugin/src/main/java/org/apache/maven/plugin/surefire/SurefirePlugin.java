@@ -556,6 +556,7 @@ public class SurefirePlugin
     /**
      * @parameter default-value="${session.parallel}"   '
      * @readonly
+     * @noinspection UnusedDeclaration
      */
     private Boolean parallelMavenExecution;
 
@@ -676,11 +677,13 @@ public class SurefirePlugin
         this.skipTests = skipTests;
     }
 
+    /** @noinspection deprecation*/
     public boolean isSkipExec()
     {
         return skipExec;
     }
 
+    /** @noinspection deprecation*/
     public void setSkipExec( boolean skipExec )
     {
         this.skipExec = skipExec;
@@ -836,11 +839,13 @@ public class SurefirePlugin
         this.localRepository = localRepository;
     }
 
+    /** @noinspection deprecation*/
     public Properties getSystemProperties()
     {
         return systemProperties;
     }
 
+    /** @noinspection deprecation*/
     public void setSystemProperties( Properties systemProperties )
     {
         this.systemProperties = systemProperties;

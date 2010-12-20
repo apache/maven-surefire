@@ -32,10 +32,4 @@ public class DetailedConsoleReporter
     {
         super( PLAIN, reporterConfiguration );
     }
-
-    /** @deprecated Can be removed once we build Surefire with 2.7 */
-    public DetailedConsoleReporter( Boolean trimStackTrace )
-    {
-        super( PLAIN, trimStackTrace );
-    }
 }

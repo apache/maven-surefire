@@ -98,7 +98,7 @@ public class TestNGProvider
             }
             else
             {
-                testNGXmlTestSuite.execute( (ReporterManagerFactory) reporterFactory, testClassLoader );
+                testNGXmlTestSuite.execute( (ReporterManagerFactory) reporterFactory );
             }
         }
         else

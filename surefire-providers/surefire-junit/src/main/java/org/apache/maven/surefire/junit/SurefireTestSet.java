@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.suite;
+package org.apache.maven.surefire.junit;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,30 +19,15 @@ package org.apache.maven.surefire.suite;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.ReporterException;
-import org.apache.maven.surefire.report.ReporterManagerFactory;
+import org.apache.maven.surefire.report.ReporterManager;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
-import java.util.List;
-import java.util.Map;
-
-/**
- * A complete test suite that contains one or more test sets.
- *
- * @author <a href="mailto:brett@apache.org">Brett Porter</a>
- */
-public interface SurefireTestSuite
+public interface SurefireTestSet
 {
-    void execute( ReporterManagerFactory reporterManagerFactory, ClassLoader classLoader )
-        throws ReporterException, TestSetFailedException;
-
-    void execute( String testSetName, ReporterManagerFactory reporterManagerFactory, ClassLoader classLoader )
-        throws ReporterException, TestSetFailedException;
-
-    int getNumTests();
-
-    List getClassesSkippedByValidation();
-
-    Map locateTestSets( ClassLoader classLoader )
+    void execute( ReporterManager reportManager, ClassLoader loader )
         throws TestSetFailedException;
+
+    String getName();
+
+    Class getTestClass();
 }

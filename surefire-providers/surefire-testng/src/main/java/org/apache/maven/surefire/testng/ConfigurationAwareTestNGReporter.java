@@ -21,19 +21,19 @@ package org.apache.maven.surefire.testng;
 
 
 import org.apache.maven.surefire.report.ReporterManager;
-import org.apache.maven.surefire.suite.SurefireTestSuite;
 import org.testng.internal.IResultListener;
 
 /** Just like TestNGReporter, but explicitly implements IResultListener; this interface is new in TestNG 5.5
  * 
  * @author Dan Fabulich
+ * @noinspection UnusedDeclaration
  */
 public class ConfigurationAwareTestNGReporter
     extends TestNGReporter
     implements IResultListener
 {
 
-    public ConfigurationAwareTestNGReporter( ReporterManager reportManager, SurefireTestSuite source )
+    public ConfigurationAwareTestNGReporter( ReporterManager reportManager, TestNgTestSuite source )
     {
         super( reportManager );
     }

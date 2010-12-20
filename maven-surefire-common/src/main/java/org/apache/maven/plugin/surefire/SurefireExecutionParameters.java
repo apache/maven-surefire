@@ -36,6 +36,7 @@ import java.util.Properties;
  * The parameters required to execute surefire.
  *
  * @author Stephen Connolly
+ * @noinspection UnusedDeclaration, UnusedDeclaration
  */
 public interface SurefireExecutionParameters
 {

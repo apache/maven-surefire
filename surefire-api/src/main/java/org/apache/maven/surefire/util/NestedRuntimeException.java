@@ -78,24 +78,6 @@ public class NestedRuntimeException
     private Throwable cause;
 
     /**
-     * Construct a <code>NestedRuntimeException</code> with no message or exception
-     */
-    public NestedRuntimeException()
-    {
-        super();
-    }
-
-    /**
-     * Construct a <code>NestedRuntimeException</code> with the specified detail message.
-     *
-     * @param msg the detail message
-     */
-    public NestedRuntimeException( String msg )
-    {
-        super( msg );
-    }
-
-    /**
      * Construct a <code>NestedRuntimeException</code> with the specified detail message
      * and nested exception.
      *
@@ -216,6 +198,7 @@ public class NestedRuntimeException
      * the JDK 1.4 exception cause mechanism once Spring requires JDK 1.4.
      *
      * @param exClass the exception class to look for
+     * @return true if the class is contained
      */
     public boolean contains( Class exClass )
     {

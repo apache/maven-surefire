@@ -69,11 +69,6 @@ public class TestSetStatistics
         skipped += 1;
     }
 
-    public synchronized boolean isProblemFree()
-    {
-        return !hadFailures() && !hadErrors();
-    }
-
     public synchronized boolean hadFailures()
     {
         return failures > 0;
@@ -100,14 +95,6 @@ public class TestSetStatistics
         skipped = Integer.valueOf( results.getProperty( RESULTS_SKIPPED, "0" ) ).intValue();
         failures = Integer.valueOf( results.getProperty( RESULTS_FAILURES, "0" ) ).intValue();
         completedCount = Integer.valueOf( results.getProperty( RESULTS_COMPLETED_COUNT, "0" ) ).intValue();
-    }
-
-    public synchronized void updateResultsProperties( Properties results )
-    {
-        results.setProperty( RESULTS_ERRORS, String.valueOf( errors ) );
-        results.setProperty( RESULTS_COMPLETED_COUNT, String.valueOf( completedCount ) );
-        results.setProperty( RESULTS_FAILURES, String.valueOf( failures ) );
-        results.setProperty( RESULTS_SKIPPED, String.valueOf( skipped ) );
     }
 
 

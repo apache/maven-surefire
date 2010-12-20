@@ -29,15 +29,6 @@ import org.apache.maven.surefire.util.NestedCheckedException;
 public class SurefireBooterForkException
     extends NestedCheckedException
 {
-    public SurefireBooterForkException( String message )
-    {
-        super( message );
-    }
-
-    public SurefireBooterForkException( Throwable cause )
-    {
-        super( cause );
-    }
 
     public SurefireBooterForkException( String message, Throwable cause )
     {

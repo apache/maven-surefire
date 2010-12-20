@@ -48,8 +48,6 @@ public class SurefireReportParser
 
     private List testSuites = new ArrayList();
 
-    private Locale locale;
-
     private static final int PCENT = 100;
 
     public SurefireReportParser()
@@ -194,18 +192,7 @@ public class SurefireReportParser
 
     public final void setLocale( Locale locale )
     {
-        this.locale = locale;
         numberFormat = NumberFormat.getInstance( locale );
-    }
-
-    public Locale getLocale()
-    {
-        return this.locale;
-    }
-
-    public void setNumberFormat( NumberFormat numberFormat )
-    {
-        this.numberFormat = numberFormat;
     }
 
     public NumberFormat getNumberFormat()

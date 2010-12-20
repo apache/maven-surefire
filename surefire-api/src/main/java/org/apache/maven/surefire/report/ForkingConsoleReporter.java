@@ -48,12 +48,6 @@ public class ForkingConsoleReporter
         super( reporterConfiguration );
     }
 
-    /** @deprecated Can be removed once we build Surefire with 2.7 */
-    public ForkingConsoleReporter( Boolean trimStackTrace )
-    {
-        super( trimStackTrace );
-    }
-
     /**
      * Write a header line prepending {@link #FORKING_PREFIX_HEADING}
      */

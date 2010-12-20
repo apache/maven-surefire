@@ -53,28 +53,6 @@ public abstract class AbstractTextReporter
         this.format = format;
     }
 
-    /**
-     * @deprecated Can be removed once we build Surefire with 2.7
-     */
-    protected AbstractTextReporter( String format, Boolean trimStackTrace )
-    {
-        super( trimStackTrace );
-
-        this.format = format;
-    }
-
-    /**
-     * @deprecated Can be removed once we build Surefire with 2.7
-     */
-    protected AbstractTextReporter( PrintWriter writer, String format, Boolean trimStackTrace )
-    {
-        super( trimStackTrace );
-
-        this.writer = writer;
-
-        this.format = format;
-    }
-
 
     protected AbstractTextReporter( PrintWriter writer, String format, ReporterConfiguration reporterConfiguration )
     {

@@ -41,14 +41,6 @@ public abstract class AbstractFileReporter
         this.reportsDirectory = reporterConfiguration.getReportsDirectory();
     }
 
-    /** @deprecated Can be removed once we build surfire with 2.7 */
-    protected AbstractFileReporter( File reportsDirectory, String format, Boolean trimStackTrace )
-    {
-        super( format, trimStackTrace );
-
-        this.reportsDirectory = reportsDirectory;
-    }
-
 
     public void testSetStarting( ReportEntry report )
         throws ReporterException
@@ -59,6 +51,7 @@ public abstract class AbstractFileReporter
 
         File reportDir = reportFile.getParentFile();
 
+        //noinspection ResultOfMethodCallIgnored
         reportDir.mkdirs();
 
         try

@@ -32,6 +32,7 @@ public interface Reporter
      * Indicates the start of a given test-set
      *
      * @param report the report entry describing the testset
+     * @throws ReporterException When reporting fails
      */
     void testSetStarting( ReportEntry report )
         throws ReporterException;
@@ -40,6 +41,7 @@ public interface Reporter
      * Indicates end of a given test-set
      *
      * @param report the report entry describing the testset
+     * @throws ReporterException When reporting fails
      */
     void testSetCompleted( ReportEntry report )
         throws ReporterException;

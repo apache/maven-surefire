@@ -25,6 +25,7 @@ import java.io.File;
  * The parameters required to report on a surefire execution.
  *
  * @author Stephen Connolly
+ * @noinspection UnusedDeclaration
  */
 public interface SurefireReportParameters
 {

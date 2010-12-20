@@ -19,8 +19,6 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
-import java.io.File;
-
 /**
  * Text file reporter.
  *
@@ -33,11 +31,5 @@ public class FileReporter
     public FileReporter( ReporterConfiguration reporterConfiguration )
     {
         super( reporterConfiguration, PLAIN );
-    }
-
-    /** @deprecated Can be removed once we build Surefire with 2.7 */
-    public FileReporter( File reportsDirectory, Boolean trimStackTrace )
-    {
-        super( reportsDirectory, PLAIN, trimStackTrace );
     }
 }

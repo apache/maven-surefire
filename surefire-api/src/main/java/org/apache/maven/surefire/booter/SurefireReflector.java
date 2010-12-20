@@ -198,18 +198,12 @@ public class SurefireReflector
                                                   booterParameters );
     }
 
-
     public void setIfDirScannerAware( Object o, DirectoryScannerParameters dirScannerParams )
     {
-        if ( isDirectoryScannerParameterAware( o ) )
+        if ( directoryScannerParametersAware.isAssignableFrom( o.getClass() ) )
         {
             setDirectoryScannerParameters( o, dirScannerParams );
         }
-    }
-
-    boolean isDirectoryScannerParameterAware( Object o )
-    {
-        return directoryScannerParametersAware.isAssignableFrom( o.getClass() );
     }
 
     public void setDirectoryScannerParameters( Object o, DirectoryScannerParameters dirScannerParams )
@@ -220,16 +214,10 @@ public class SurefireReflector
 
     public void setTestSuiteDefinitionAware( Object o, TestRequest testSuiteDefinition2 )
     {
-        if ( isTestSuiteDefinitionAware( o ) )
+        if ( testSuiteDefinitionAware.isAssignableFrom( o.getClass() ) )
         {
             setTestSuiteDefinition( o, testSuiteDefinition2 );
         }
-    }
-
-
-    boolean isTestSuiteDefinitionAware( Object o )
-    {
-        return testSuiteDefinitionAware.isAssignableFrom( o.getClass() );
     }
 
     void setTestSuiteDefinition( Object o, TestRequest testSuiteDefinition1 )
@@ -240,16 +228,10 @@ public class SurefireReflector
 
     public void setProviderPropertiesAware( Object o, Properties properties )
     {
-        if ( isProviderPropertiesAware( o ) )
+        if ( providerPropertiesAware.isAssignableFrom( o.getClass() ) )
         {
             setProviderProperties( o, properties );
         }
-    }
-
-
-    boolean isProviderPropertiesAware( Object o )
-    {
-        return providerPropertiesAware.isAssignableFrom( o.getClass() );
     }
 
     void setProviderProperties( Object o, Properties providerProperties )
@@ -259,7 +241,7 @@ public class SurefireReflector
 
     public void setReporterConfigurationAware( Object o, ReporterConfiguration reporterConfiguration1 )
     {
-        if ( isReporterConfigurationAwareAware( o ) )
+        if ( reporterConfigurationAware.isAssignableFrom( o.getClass() ) )
         {
             setReporterConfiguration( o, reporterConfiguration1 );
         }
@@ -272,22 +254,12 @@ public class SurefireReflector
         ReflectionUtils.invokeSetter( o, "setReporterConfiguration", this.reporterConfiguration, param );
     }
 
-    boolean isReporterConfigurationAwareAware( Object o )
-    {
-        return reporterConfigurationAware.isAssignableFrom( o.getClass() );
-    }
-
     public void setTestClassLoaderAware( Object o, ClassLoader surefireClassLoader, ClassLoader testClassLoader )
     {
-        if ( isTestClassLoaderAware( o ) )
+        if ( testClassLoaderAware.isAssignableFrom( o.getClass() ) )
         {
             setTestClassLoader( o, surefireClassLoader, testClassLoader );
         }
-    }
-
-    boolean isTestClassLoaderAware( Object o )
-    {
-        return testClassLoaderAware.isAssignableFrom( o.getClass() );
     }
 
     void setTestClassLoader( Object o, ClassLoader surefireClassLoader, ClassLoader testClassLoader )
@@ -299,15 +271,10 @@ public class SurefireReflector
 
     public void setTestArtifactInfoAware( Object o, TestArtifactInfo testArtifactInfo1 )
     {
-        if ( isTestArtifactInfoAware( o ) )
+        if ( testArtifactInfoAware.isAssignableFrom( o.getClass() ) )
         {
             setTestArtifactInfo( o, testArtifactInfo1 );
         }
-    }
-
-    public boolean isTestArtifactInfoAware( Object o )
-    {
-        return testArtifactInfoAware.isAssignableFrom( o.getClass() );
     }
 
     void setTestArtifactInfo( Object o, TestArtifactInfo testArtifactInfo )
@@ -316,7 +283,7 @@ public class SurefireReflector
         ReflectionUtils.invokeSetter( o, "setTestArtifactInfo", this.testArtifactInfo, param );
     }
 
-    public boolean isRunResult( Object o )
+    private boolean isRunResult( Object o )
     {
         return runResult.isAssignableFrom( o.getClass() );
     }

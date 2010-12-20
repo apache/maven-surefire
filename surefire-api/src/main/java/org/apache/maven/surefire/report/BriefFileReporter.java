@@ -19,8 +19,6 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
-import java.io.File;
-
 /**
  * Brief format file reporter.
  *
@@ -33,14 +31,6 @@ public class BriefFileReporter
     public BriefFileReporter( ReporterConfiguration reporterConfiguration )
     {
         super( reporterConfiguration, BRIEF );
-    }
-
-    /**
-     * @deprecated Can be removed once we build Surefire with 2.7
-     */
-    public BriefFileReporter( File reportsDirectory, Boolean trimStackTrace )
-    {
-        super( reportsDirectory, BRIEF, trimStackTrace );
     }
 
     public void writeDetailMessage( String message )

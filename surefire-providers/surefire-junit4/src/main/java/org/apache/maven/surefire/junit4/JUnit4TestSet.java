@@ -19,82 +19,13 @@ package org.apache.maven.surefire.junit4;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.ReporterManager;
-import org.apache.maven.surefire.testset.AbstractTestSet;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.junit.runner.Request;
 import org.junit.runner.Runner;
-import org.junit.runner.notification.RunListener;
 import org.junit.runner.notification.RunNotifier;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class JUnit4TestSet
-    extends AbstractTestSet
 {
-    private final List<RunListener> customRunListeners;
-
-    /**
-     * Constructor.
-     *
-     * @param testClass          the class to be run as a test
-     * @param customRunListeners the custom run listeners to add
-     */
-    protected JUnit4TestSet( Class testClass, List<RunListener> customRunListeners )
-    {
-        super( testClass );
-        this.customRunListeners = customRunListeners;
-    }
-
-    // Bogus constructor so we can build with 2.5. Remove for 2.7.1
-    protected JUnit4TestSet( Class testClass )
-    {
-        super( testClass );
-        this.customRunListeners = new ArrayList();
-    }
-
-    /**
-     * Actually runs the test and adds the tests results to the <code>reportManager</code>.
-     *
-     * @see org.apache.maven.surefire.testset.SurefireTestSet#execute(org.apache.maven.surefire.report.ReporterManager, java.lang.ClassLoader)
-     */
-    public void execute( ReporterManager reportManager, ClassLoader loader )
-        throws TestSetFailedException
-    {
-        List<RunListener> listeners = new ArrayList<RunListener>();
-        listeners.add( new JUnit4TestSetReporter( getTestClass(), reportManager ) );
-        listeners.addAll( customRunListeners );
-        execute( getTestClass(), listeners );
-    }
-
-    /**
-     * Actually runs the test and adds the tests results to the <code>reportManager</code>.
-     *
-     * @param testClass    The test class to run
-     * @param runListeners The run listeners to attach
-     * @see org.apache.maven.surefire.testset.SurefireTestSet#execute(org.apache.maven.surefire.report.ReporterManager, java.lang.ClassLoader)
-     */
-    public static void execute( Class testClass, List<RunListener> runListeners )
-        throws TestSetFailedException
-    {
-        RunNotifier fNotifier = new RunNotifier();
-        for ( RunListener listener : runListeners )
-        {
-            fNotifier.addListener( listener );
-        }
-        try
-        {
-            execute( testClass, fNotifier );
-        }
-        finally
-        {
-            for ( RunListener listener : runListeners )
-            {
-                fNotifier.removeListener( listener );
-            }
-        }
-    }
 
     public static void execute( Class testClass, RunNotifier fNotifier )
         throws TestSetFailedException

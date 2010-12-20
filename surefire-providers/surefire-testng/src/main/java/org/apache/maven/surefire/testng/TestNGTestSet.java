@@ -19,9 +19,6 @@ package org.apache.maven.surefire.testng;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.ReporterManager;
-import org.apache.maven.surefire.testset.AbstractTestSet;
-
 /**
  * Main plugin point for running testng tests within the Surefire runtime
  * infrastructure.
@@ -29,20 +26,31 @@ import org.apache.maven.surefire.testset.AbstractTestSet;
  * @author jkuhnert
  */
 public class TestNGTestSet
-    extends AbstractTestSet
 {
+    private Class testClass;
+
     /**
      * Creates a new test testset that will process the class being
      * passed in to determine the testing configuration.
+     * @param testClass The test class
      */
     public TestNGTestSet( Class testClass )
     {
-        super( testClass );
+        if ( testClass == null )
+        {
+            throw new NullPointerException( "testClass is null" );
+        }
+
+        this.testClass = testClass;
     }
 
-    public void execute( ReporterManager reportManager, ClassLoader loader )
+    public String getName()
     {
-        throw new UnsupportedOperationException(
-            "This should have been called directly from TestNGDirectoryTestSuite" );
+        return testClass.getName();
+    }
+
+    public Class getTestClass()
+    {
+        return testClass;
     }
 }

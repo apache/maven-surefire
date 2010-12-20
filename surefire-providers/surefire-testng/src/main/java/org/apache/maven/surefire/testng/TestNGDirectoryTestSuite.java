@@ -21,24 +21,30 @@ package org.apache.maven.surefire.testng;
 
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
+import org.apache.maven.surefire.NonAbstractClassFilter;
+import org.apache.maven.surefire.Surefire;
 import org.apache.maven.surefire.report.DefaultReportEntry;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.ReporterManager;
 import org.apache.maven.surefire.report.ReporterManagerFactory;
-import org.apache.maven.surefire.suite.AbstractDirectoryTestSuite;
-import org.apache.maven.surefire.testset.SurefireTestSet;
 import org.apache.maven.surefire.testset.TestSetFailedException;
+import org.apache.maven.surefire.util.DefaultDirectoryScanner;
+import org.apache.maven.surefire.util.DirectoryScanner;
 import org.apache.maven.surefire.util.TestsToRun;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.ResourceBundle;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 /**
  * Test suite for TestNG based on a directory of Java test classes. Can also execute JUnit tests.
@@ -47,8 +53,10 @@ import java.util.Properties;
  * @author <a href='mailto:the[dot]mindstorm[at]gmail[dot]com'>Alex Popescu</a>
  */
 public class TestNGDirectoryTestSuite
-    extends AbstractDirectoryTestSuite
+    implements TestNgTestSuite
 {
+    protected static ResourceBundle bundle = ResourceBundle.getBundle( Surefire.SUREFIRE_BUNDLE_NAME );
+
     private ArtifactVersion version;
 
     private String classifier;
@@ -58,6 +66,10 @@ public class TestNGDirectoryTestSuite
     private String testSourceDirectory;
 
     private File reportsDirectory;
+
+    protected SortedMap testSets;
+
+    private final DirectoryScanner surefireDirectoryScanner;
 
     public TestNGDirectoryTestSuite( File basedir, ArrayList includes, ArrayList excludes, String testSourceDirectory,
                                      String artifactVersion, String artifactClassifier, Properties confOptions,
@@ -71,7 +83,8 @@ public class TestNGDirectoryTestSuite
                                      ArtifactVersion artifactVersion, String artifactClassifier, Map confOptions,
                                      File reportsDirectory )
     {
-        super( basedir, includes, excludes );
+        this.surefireDirectoryScanner = new DefaultDirectoryScanner( basedir, includes, excludes,
+                                                                     "filesystem" );
 
         this.options = confOptions;
 
@@ -81,11 +94,6 @@ public class TestNGDirectoryTestSuite
 
         this.classifier = artifactClassifier;
 
-    }
-
-    protected SurefireTestSet createTestSet( Class testClass, ClassLoader classLoader )
-    {
-        return new TestNGTestSet( testClass );
     }
 
     public void execute( TestsToRun testsToRun, ReporterFactory reporterManagerFactory )
@@ -127,8 +135,7 @@ public class TestNGDirectoryTestSuite
         List junitTestClasses = new ArrayList();
         for ( Iterator it = testsToRun.iterator(); it.hasNext(); )
         {
-            Class testSet = (Class) it.next();
-            Class c = testSet;
+            Class c = (Class) it.next();
             if ( junitTest != null && junitTest.isAssignableFrom( c ) )
             {
                 junitTestClasses.add( c );
@@ -151,14 +158,14 @@ public class TestNGDirectoryTestSuite
             new SynchronizedReporterManager( (ReporterManager) reporterManagerFactory.createReporter() );
         startTestSuite( reporterManager, this );
 
-        Class[] testClasses = (Class[]) testNgTestClasses.toArray( new Class[0] );
+        Class[] testClasses = (Class[]) testNgTestClasses.toArray( new Class[testNgTestClasses.size()] );
 
         TestNGExecutor.run( testClasses, this.testSourceDirectory, this.options, this.version, this.classifier,
                             reporterManager, this, testNgReportsDirectory );
 
         if ( junitTestClasses.size() > 0 )
         {
-            testClasses = (Class[]) junitTestClasses.toArray( new Class[0] );
+            testClasses = (Class[]) junitTestClasses.toArray( new Class[junitTestClasses.size()] );
 
             Map junitOptions = new HashMap();
             for ( Iterator it = this.options.keySet().iterator(); it.hasNext(); )
@@ -184,7 +191,7 @@ public class TestNGDirectoryTestSuite
         {
             throw new IllegalStateException( "You must call locateTestSets before calling execute" );
         }
-        SurefireTestSet testSet = (SurefireTestSet) testSets.get( testSetName );
+        TestNGTestSet testSet = (TestNGTestSet) testSets.get( testSetName );
 
         if ( testSet == null )
         {
@@ -196,78 +203,6 @@ public class TestNGDirectoryTestSuite
 
         TestNGExecutor.run( new Class[]{ testSet.getTestClass() }, this.testSourceDirectory, this.options, this.version,
                             this.classifier, reporterManager, this, reportsDirectory );
-
-        finishTestSuite( reporterManager, this );
-    }
-
-    // todo: Delete as soon as we build surefire itself with 2.7
-    public void execute( ReporterManagerFactory reporterManagerFactory, ClassLoader classLoader )
-        throws ReporterException, TestSetFailedException
-    {
-        if ( testSets == null )
-        {
-            throw new IllegalStateException( "You must call locateTestSets before calling execute" );
-        }
-
-        Class junitTest;
-        try
-        {
-            junitTest = Class.forName( "junit.framework.Test" );
-        }
-        catch ( ClassNotFoundException e )
-        {
-            junitTest = null;
-        }
-
-        List testNgTestClasses = new ArrayList();
-        List junitTestClasses = new ArrayList();
-        for ( Iterator it = testSets.values().iterator(); it.hasNext(); )
-        {
-            SurefireTestSet testSet = (SurefireTestSet) it.next();
-            Class c = testSet.getTestClass();
-            if ( junitTest != null && junitTest.isAssignableFrom( c ) )
-            {
-                junitTestClasses.add( c );
-            }
-            else
-            {
-                testNgTestClasses.add( c );
-            }
-        }
-
-        File testNgReportsDirectory = reportsDirectory, junitReportsDirectory = reportsDirectory;
-
-        if ( junitTestClasses.size() > 0 && testNgTestClasses.size() > 0 )
-        {
-            testNgReportsDirectory = new File( reportsDirectory, "testng-native-results" );
-            junitReportsDirectory = new File( reportsDirectory, "testng-junit-results" );
-        }
-
-        ReporterManager reporterManager =
-            new SynchronizedReporterManager( reporterManagerFactory.createReporterManager() );
-        startTestSuite( reporterManager, this );
-
-        Class[] testClasses = (Class[]) testNgTestClasses.toArray( new Class[0] );
-
-        TestNGExecutor.run( testClasses, this.testSourceDirectory, this.options, this.version, this.classifier,
-                            reporterManager, this, testNgReportsDirectory );
-
-        if ( junitTestClasses.size() > 0 )
-        {
-            testClasses = (Class[]) junitTestClasses.toArray( new Class[0] );
-
-            Map junitOptions = new HashMap();
-            for ( Iterator it = this.options.keySet().iterator(); it.hasNext(); )
-            {
-                Object key = it.next();
-                junitOptions.put( key, options.get( key ) );
-            }
-
-            junitOptions.put( "junit", Boolean.TRUE );
-
-            TestNGExecutor.run( testClasses, this.testSourceDirectory, junitOptions, this.version, this.classifier,
-                                reporterManager, this, junitReportsDirectory );
-        }
 
         finishTestSuite( reporterManager, this );
     }
@@ -327,4 +262,34 @@ public class TestNGDirectoryTestSuite
 
         return result;
     }
+
+    public Map locateTestSets( ClassLoader classLoader )
+        throws TestSetFailedException
+    {
+        if ( testSets != null )
+        {
+            throw new IllegalStateException( "You can't call locateTestSets twice" );
+        }
+        testSets = new TreeMap();
+
+        final TestsToRun testsToRun =
+            surefireDirectoryScanner.locateTestClasses( classLoader, new NonAbstractClassFilter() );
+        Class[] locatedClasses = testsToRun.getLocatedClasses();
+
+        for ( int i = 0; i < locatedClasses.length; i++ )
+        {
+            Class testClass = locatedClasses[i];
+            TestNGTestSet testSet = new TestNGTestSet( testClass );
+
+            if ( testSets.containsKey( testSet.getName() ) )
+            {
+                throw new TestSetFailedException( "Duplicate test set '" + testSet.getName() + "'" );
+            }
+            testSets.put( testSet.getName(), testSet );
+
+        }
+
+        return Collections.unmodifiableSortedMap( testSets );
+    }
+
 }

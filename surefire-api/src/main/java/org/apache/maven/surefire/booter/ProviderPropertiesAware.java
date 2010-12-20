@@ -23,9 +23,9 @@ import java.util.Properties;
 
 /**
  * @author Kristian Rosenvold
+ * @noinspection UnusedDeclaration
  */
 interface ProviderPropertiesAware
 {
-    /** @noinspection UnusedDeclaration*/
     void setProviderProperties( Properties providerProperties );
 }

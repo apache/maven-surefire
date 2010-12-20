@@ -19,162 +19,17 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
-// todo: Make this an interface when surefire 2.7.1 compiles with surefire 2.7.0
-public class ReportEntry
+public interface ReportEntry
 {
-    private final String source;
+    public String getSourceName();
 
-    private final String name;
+    public String getName();
 
-    private final String group;
+    public String getGroup();
 
-    private final String message;
+    public String getMessage();
 
-    private final StackTraceWriter stackTraceWriter;
+    public StackTraceWriter getStackTraceWriter();
 
-    private final Integer elapsed;
-
-    protected ReportEntry( String name, String group )
-    {
-        this.name = name;
-        this.group = group;
-        this.stackTraceWriter = null;
-        this.elapsed = null;
-        this.message = null;
-        this.source = null;
-    }
-
-    public ReportEntry( String source, String name, String message )
-    {
-        this( source, name, null, message, null, null );
-    }
-
-    public ReportEntry( String source, String name, String message, StackTraceWriter stackTraceWriter )
-    {
-        this( source, name, null, message, stackTraceWriter, null );
-    }
-
-    public ReportEntry( String source, String name, String group, String message, StackTraceWriter stackTraceWriter )
-    {
-        this( source, name, group, message, stackTraceWriter, null );
-    }
-
-    public ReportEntry( String source, String name, String group, String message, StackTraceWriter stackTraceWriter,
-                        Integer elapsed )
-    {
-        if ( source == null )
-        {
-            throw new NullPointerException( "source is null" );
-        }
-        if ( name == null )
-        {
-            throw new NullPointerException( "name is null" );
-        }
-        if ( message == null )
-        {
-            throw new NullPointerException( "message is null" );
-        }
-
-        this.source = source;
-
-        this.name = name;
-
-        this.group = group;
-
-        this.message = message;
-
-        this.stackTraceWriter = stackTraceWriter;
-
-        this.elapsed = elapsed;
-    }
-
-    public String getSourceName()
-    {
-        return source;
-    }
-
-    public String getName()
-    {
-        return name;
-    }
-
-    public String getGroup()
-    {
-        return group;
-    }
-
-    public String getMessage()
-    {
-        return message;
-    }
-
-    public StackTraceWriter getStackTraceWriter()
-    {
-        return stackTraceWriter;
-    }
-
-    public Integer getElapsed()
-    {
-        return elapsed;
-    }
-
-    public boolean equals( Object o )
-    {
-        if ( this == o )
-        {
-            return true;
-        }
-        if ( o == null || getClass() != o.getClass() )
-        {
-            return false;
-        }
-
-        ReportEntry that = (ReportEntry) o;
-
-        if ( elapsed != null ? !elapsed.equals( that.elapsed ) : that.elapsed != null )
-        {
-            return false;
-        }
-        if ( group != null ? !group.equals( that.group ) : that.group != null )
-        {
-            return false;
-        }
-        if ( message != null ? !message.equals( that.message ) : that.message != null )
-        {
-            return false;
-        }
-        if ( name != null ? !name.equals( that.name ) : that.name != null )
-        {
-            return false;
-        }
-        if ( source != null ? !source.equals( that.source ) : that.source != null )
-        {
-            return false;
-        }
-        if ( stackTraceWriter != null
-            ? !stackTraceWriter.equals( that.stackTraceWriter )
-            : that.stackTraceWriter != null )
-        {
-            return false;
-        }
-
-        return true;
-    }
-
-    public int hashCode()
-    {
-        int result = source != null ? source.hashCode() : 0;
-        result = 31 * result + ( name != null ? name.hashCode() : 0 );
-        result = 31 * result + ( group != null ? group.hashCode() : 0 );
-        result = 31 * result + ( message != null ? message.hashCode() : 0 );
-        result = 31 * result + ( stackTraceWriter != null ? stackTraceWriter.hashCode() : 0 );
-        result = 31 * result + ( elapsed != null ? elapsed.hashCode() : 0 );
-        return result;
-    }
-
-    public String toString()
-    {
-        return "ReportEntry{" + "source='" + source + '\'' + ", name='" + name + '\'' + ", group='" + group + '\''
-            + ", message='" + message + '\'' + ", stackTraceWriter=" + stackTraceWriter + ", elapsed=" + elapsed + '}';
-    }
+    public Integer getElapsed();
 }

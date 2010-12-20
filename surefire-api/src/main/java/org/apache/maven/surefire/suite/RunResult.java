@@ -46,11 +46,6 @@ public class RunResult
         this.skipped = skipped;
     }
 
-    public static RunResult totalCountOnly( int totalCount )
-    {
-        return new RunResult( totalCount, 0, 0, 0 );
-    }
-
     public int getCompletedCount()
     {
         return completedCount;

@@ -28,8 +28,6 @@ import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.ReporterManager;
 import org.apache.maven.surefire.suite.RunResult;
-import org.apache.maven.surefire.testset.PojoTestSet;
-import org.apache.maven.surefire.testset.SurefireTestSet;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.DirectoryScanner;
 import org.apache.maven.surefire.util.TestsToRun;

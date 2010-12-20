@@ -23,9 +23,9 @@ import org.apache.maven.surefire.testset.TestRequest;
 
 /**
  * @author Kristian Rosenvold
+ * @noinspection UnusedDeclaration
  */
 interface TestRequestAware
 {
-    /** @noinspection UnusedDeclaration*/
     void setTestRequest( TestRequest testSuiteDefinition );
 }
