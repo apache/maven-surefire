@@ -19,6 +19,7 @@ package org.apache.maven.surefire.junit4;
  * under the License.
  */
 
+import org.apache.maven.surefire.NonAbstractClassFilter;
 import org.apache.maven.surefire.util.ReflectionUtils;
 import org.apache.maven.surefire.util.ScannerFilter;
 
@@ -33,12 +34,15 @@ public class JUnit4TestChecker
 {
     private final Class junitClass;
 
+    private final NonAbstractClassFilter nonAbstractClassFilter;
+
     private final Class runWith;
 
     public JUnit4TestChecker( ClassLoader testClassLoader )
     {
         this.junitClass = getJUnitClass( testClassLoader, junit.framework.Test.class.getName() );
         this.runWith = getJUnitClass( testClassLoader, org.junit.runner.RunWith.class.getName() );
+        this.nonAbstractClassFilter = new NonAbstractClassFilter();
     }
 
     public boolean accept( Class testClass )
@@ -49,6 +53,10 @@ public class JUnit4TestChecker
     @SuppressWarnings( { "unchecked" } )
     public boolean isValidJUnit4Test( Class testClass )
     {
+        if ( !nonAbstractClassFilter.accept( testClass ) )
+        {
+            return false;
+        }
         if ( junitClass != null && junitClass.isAssignableFrom( testClass ) )
         {
             return true;

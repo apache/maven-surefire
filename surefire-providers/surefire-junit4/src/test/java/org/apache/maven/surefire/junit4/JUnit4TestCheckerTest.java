@@ -86,6 +86,11 @@ public class JUnit4TestCheckerTest
         assertFalse( jUnit4TestChecker.isValidJUnit4Test( NotValidTest.class ) );
     }
 
+    @Test
+    public void dontAcceptAbstractClasses(){
+        assertFalse( jUnit4TestChecker.isValidJUnit4Test( BaseClassWithTest.class ) );
+    }
+
 
     public static class AlsoValid
         extends TestCase
