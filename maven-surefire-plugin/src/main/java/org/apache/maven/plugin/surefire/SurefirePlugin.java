@@ -138,11 +138,9 @@ public class SurefirePlugin
      * A dependency scope to exclude from the test classpath
      * The scope can be one of the following scopes:
      * <p/>
-     * <ul>
-     * <li><i>compile</i> - system, provided, compile
+     * <ul><li><i>compile</i> - system, provided, compile
      * <li><i>runtime</i> - compile, runtime
-     * <li><i>test</i> - system, provided, compile, runtime, test
-     * </ul>
+     * <li><i>test</i> - system, provided, compile, runtime, test</ul>
      *
      * @parameter default-value=""
      * @since 2.6
@@ -185,10 +183,16 @@ public class SurefirePlugin
     private String test;
 
     /**
-     * List of patterns (separated by commas) used to specify the tests that should be included in testing. When not
+     * A list of &lt;include> elements used to specify the the tests that should be included in testing. When not
      * specified and when the <code>test</code> parameter is not specified, the default includes will be
-     * <code>**&#47;Test*.java   **&#47;*Test.java   **&#47;*TestCase.java</code>.  This parameter is ignored if
-     * TestNG suiteXmlFiles are specified.
+     * <code><br/>
+        &lt;includes><br/>
+            &nbsp;&lt;include>**&#47;Test*.java&lt;/include><br/>
+            &nbsp;&lt;include>**&#47;*Test.java&lt;/include><br/>
+            &nbsp;&lt;include>**&#47;*TestCase.java&lt;/include><br/>
+        &lt;/includes><br/>
+     * </code>
+     * This parameter is ignored if TestNG suiteXmlFiles are specified.
      *
      * @parameter
      */
@@ -197,8 +201,12 @@ public class SurefirePlugin
     /**
      * List of patterns (separated by commas) used to specify the tests that should be excluded in testing. When not
      * specified and when the <code>test</code> parameter is not specified, the default excludes will be
-     * <code>**&#47;*$*</code> (which excludes all inner classes).  This parameter is ignored if
-     * TestNG suiteXmlFiles are specified.
+     * <code><br/>
+        &lt;excludes><br/>
+            &nbsp;&lt;exclude>**&#47;*$*&lt;/exclude><br/>
+        &lt;/excludes><br/>
+     * </code>
+     * (which excludes all inner classes).  This parameter is ignored if TestNG suiteXmlFiles are specified.
      *
      * @parameter
      */
@@ -562,10 +570,8 @@ public class SurefirePlugin
 
     /**
      * Defines the order the tests will be run in. Supported values are alphabetical, reversealphabetical
-     * random, hourly (alphabetical on even hours, reverse alphabetical on odd hours) and filesystem.
-     * <p/>
-     * Not supplying a value for this setting will run tests in filesystem order.
-     * <p/>
+     * random, hourly (alphabetical on even hours, reverse alphabetical on odd hours) and filesystem.<p/>
+     * Not supplying a value for this setting will run tests in filesystem order. <p/>
      * Odd/Even for hourly is determined at the time the of scanning the classpath, meaning it could change during
      * a multi-module build.
      *

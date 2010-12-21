@@ -203,10 +203,16 @@ public class IntegrationTestMojo
     private String test;
 
     /**
-     * List of patterns (separated by commas) used to specify the tests that should be included in testing. When not
+     * A list of &lt;include> elements used to specify the the tests that should be included in testing. When not
      * specified and when the <code>test</code> parameter is not specified, the default includes will be
-     * <code>**&#47;IT*.java   **&#47;*IT.java   **&#47;*ITCase.java</code>.  This parameter is ignored if
-     * TestNG suiteXmlFiles are specified.
+     * <code><br/>
+        &lt;includes><br/>
+            &nbsp;&lt;include>**&#47;Test*.java&lt;/include><br/>
+            &nbsp;&lt;include>**&#47;*Test.java&lt;/include><br/>
+            &nbsp;&lt;include>**&#47;*TestCase.java&lt;/include><br/>
+        &lt;/includes><br/>
+     * </code>
+     * This parameter is ignored if TestNG suiteXmlFiles are specified.
      *
      * @parameter
      */
@@ -215,8 +221,12 @@ public class IntegrationTestMojo
     /**
      * List of patterns (separated by commas) used to specify the tests that should be excluded in testing. When not
      * specified and when the <code>test</code> parameter is not specified, the default excludes will be
-     * <code>**&#47;*$*</code> (which excludes all inner classes).  This parameter is ignored if
-     * TestNG suiteXmlFiles are specified.
+     * <code><br/>
+        &lt;excludes><br/>
+            &nbsp;&lt;exclude>**&#47;*$*&lt;/exclude><br/>
+        &lt;/excludes><br/>
+     * </code>
+     * (which excludes all inner classes).  This parameter is ignored if TestNG suiteXmlFiles are specified.
      *
      * @parameter
      */

@@ -93,4 +93,4 @@ Maven Surefire Plugin
 
   * {{{./examples/configuring-classpath.html}Configuring the Classpath}}
 
-  []
+  * {{{./examples/providers.html}Selecting providers}}

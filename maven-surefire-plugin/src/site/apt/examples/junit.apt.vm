@@ -38,7 +38,7 @@ Using JUnit
   has run. Form 2.7 and on only run valid JUnit tests for all versions of JUnit, where older versions
   would run invalid tests that satisfied a naming convention.
 
-  When upgrading from a version < 2.7 to a newer version, the build can be run with
+  When upgrading from a version &lt; 2.7 to a newer version, the build can be run with
   the flag -Dsurefire.junit4.upgradecheck which will notify you of any tests that
   will not be run any more (and the build fails). This is only meant to be used as a tool
   when upgrading to check that all your tests will be run. It is a transitional

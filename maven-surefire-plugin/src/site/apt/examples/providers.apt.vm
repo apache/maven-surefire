@@ -1,12 +1,12 @@
  ------
- Configuring providers
+ Selecting providers
  ------
  Kristian Rosenvold <krosenvold@apache.org>
  ------
  2010-12-04
  ------
 
-Configuring providers
+Selecting providers
 
 * Selecting a provider
 
@@ -22,12 +22,12 @@ Configuring providers
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>${surefire.version}</version>
+                <version>${project.version}</version>
                 <dependencies>
                     <dependency>
                         <groupId>org.apache.maven.surefire</groupId>
                         <artifactId>surefire-junit47</artifactId>
-                        <version>${surefire.version}</version>
+                        <version>${project.version}</version>
                     </dependency>
                 </dependencies>
             </plugin>
@@ -36,4 +36,7 @@ Configuring providers
 
   The providers supplied with surefire are surefire-junit3, surefire-junit4, surefire-junit47 and surefire-testng.
   Please note that forcing a provider still requires that the test framework is properly set up on your project classpath.
+
+  You can also specify multiple providers as dependencies, and they will all be run and produce a common report.
+  This may be especially handy with external providers, since there are few use-cases for combining the included providers.
 
