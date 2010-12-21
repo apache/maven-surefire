@@ -68,7 +68,7 @@ public class RunResult
 
     public int getBooterCode()
     {
-        return getFailures() == 0 ? SUCCESS : FAILURE;
+        return getFailures() == 0 && getErrors() == 0 ? SUCCESS : FAILURE;
     }
 
 }
