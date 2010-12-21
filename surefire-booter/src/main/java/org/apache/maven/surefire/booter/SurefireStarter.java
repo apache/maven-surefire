@@ -131,8 +131,8 @@ public class SurefireStarter
         // Note that System.out/System.err are also read in the "ReporterConfiguration" instatiation
         // in createProvider below. These are the same values as here.
         ProviderFactory providerFactory =
-            new ProviderFactory( startupConfiguration, providerConfiguration, surefireClassLoader );
-        final SurefireProvider provider = providerFactory.createProvider( testsClassLoader );
+            new ProviderFactory( startupConfiguration, providerConfiguration, surefireClassLoader, testsClassLoader );
+        final SurefireProvider provider = providerFactory.createProvider( );
 
         try
         {

@@ -40,30 +40,32 @@ public class ProviderFactory
 
     private final ClassLoader surefireClassLoader;
 
+    private final ClassLoader testsClassLoader;
+
     private final SurefireReflector surefireReflector;
 
 
     public ProviderFactory( StartupConfiguration startupConfiguration, ProviderConfiguration providerConfiguration,
-                            ClassLoader surefireClassLoader )
+                            ClassLoader surefireClassLoader, ClassLoader testsClassLoader )
     {
         this.providerConfiguration = providerConfiguration;
         this.surefireClassLoader = surefireClassLoader;
         this.startupConfiguration = startupConfiguration;
         this.surefireReflector = new SurefireReflector( surefireClassLoader );
+        this.testsClassLoader = testsClassLoader;
     }
 
-    public SurefireProvider createProvider( ClassLoader testClassLoader )
+    public SurefireProvider createProvider()
     {
         ClassLoader context = java.lang.Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader( surefireClassLoader );
 
         StartupConfiguration starterConfiguration = startupConfiguration;
-        final Object o =
-            surefireReflector.createBooterConfiguration();
+        final Object o = surefireReflector.createBooterConfiguration();
         surefireReflector.setTestSuiteDefinitionAware( o, providerConfiguration.getTestSuiteDefinition() );
         surefireReflector.setProviderPropertiesAware( o, providerConfiguration.getProviderProperties() );
         surefireReflector.setReporterConfigurationAware( o, providerConfiguration.getReporterConfiguration() );
-        surefireReflector.setTestClassLoaderAware( o, surefireClassLoader, testClassLoader );
+        surefireReflector.setTestClassLoaderAware( o, surefireClassLoader, testsClassLoader );
         surefireReflector.setTestArtifactInfoAware( o, providerConfiguration.getTestArtifact() );
         surefireReflector.setIfDirScannerAware( o, providerConfiguration.getDirScannerParams() );
 
@@ -94,7 +96,7 @@ public class ProviderFactory
             throws Throwable
         {
             ClassLoader original = java.lang.Thread.currentThread().getContextClassLoader();
-            Thread.currentThread().setContextClassLoader( surefireClassLoader );
+            Thread.currentThread().setContextClassLoader( testsClassLoader );
             try
             {
                 Method delegateMethod = target.getClass().getMethod( method.getName(), method.getParameterTypes() );

@@ -23,6 +23,8 @@ import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * SUREFIRE-674 Asserts that the build fails when tests have errors
@@ -37,6 +39,8 @@ public class Surefire674BuildFailingWhenErrorsIT
     {
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/surefire-674-buildFailingWhenErrors" );
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
+        String[] opts = { "-fn" };
+        verifier.setCliOptions( new ArrayList( Arrays.asList( opts ) ) );
         this.executeGoal( verifier, "test" );
         verifier.resetStreams();
         verifier.verifyTextInLog(  "BUILD FAILURE");

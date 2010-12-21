@@ -140,8 +140,8 @@ public class ForkStarter
 
         boolean showHeading = true;
         final ProviderFactory providerFactory =
-            new ProviderFactory( startupConfiguration, providerConfiguration, surefireClassLoader );
-        SurefireProvider surefireProvider = providerFactory.createProvider( testsClassLoader );
+            new ProviderFactory( startupConfiguration, providerConfiguration, surefireClassLoader, testsClassLoader );
+        SurefireProvider surefireProvider = providerFactory.createProvider();
 
         Properties properties = new Properties();
 
