@@ -106,9 +106,9 @@ public class Classpath
     public String getClassPathAsString()
     {
         StringBuffer sb = new StringBuffer();
-        for ( int i = 0; i < elements.size(); i++ )
+        for ( Iterator i = elements.iterator(); i.hasNext(); )
         {
-            sb.append( elements.get( i ) ).append( File.pathSeparatorChar );
+            sb.append( (String) i.next() ).append( File.pathSeparatorChar );
         }
         return sb.toString();
     }
