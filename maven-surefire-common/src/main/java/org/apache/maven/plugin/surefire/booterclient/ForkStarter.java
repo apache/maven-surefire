@@ -20,6 +20,7 @@ package org.apache.maven.plugin.surefire.booterclient;
  */
 
 import org.apache.maven.plugin.surefire.booterclient.output.FileOutputConsumerProxy;
+import org.apache.maven.plugin.surefire.booterclient.output.NullOutputConsumer;
 import org.apache.maven.plugin.surefire.booterclient.output.OutputConsumer;
 import org.apache.maven.plugin.surefire.booterclient.output.StandardOutputConsumer;
 import org.apache.maven.plugin.surefire.booterclient.output.SupressFooterOutputConsumerProxy;
@@ -75,14 +76,18 @@ public class ForkStarter
 
     private final File reportsDirectory;
 
+    private final boolean printSummary;
+
     public ForkStarter( ProviderConfiguration providerConfiguration, StartupConfiguration startupConfiguration,
-                        File reportsDirectory, ForkConfiguration forkConfiguration, int forkedProcessTimeoutInSeconds )
+                        File reportsDirectory, ForkConfiguration forkConfiguration, int forkedProcessTimeoutInSeconds,
+                        boolean printSummary )
     {
         this.forkConfiguration = forkConfiguration;
         this.providerConfiguration = providerConfiguration;
         this.reportsDirectory = reportsDirectory;
         this.forkedProcessTimeoutInSeconds = forkedProcessTimeoutInSeconds;
         this.startupConfiguration = startupConfiguration;
+        this.printSummary = printSummary;
     }
 
     public int run()
@@ -204,12 +209,12 @@ public class ForkStarter
 
         ForkingStreamConsumer out =
             getForkingStreamConsumer( showHeading, showFooter, startupConfiguration.isRedirectTestOutputToFile(),
-                                      willBeSharingConsumer );
+                                      willBeSharingConsumer, printSummary );
 
         StreamConsumer err = willBeSharingConsumer
             ? out
             : getForkingStreamConsumer( showHeading, showFooter, startupConfiguration.isRedirectTestOutputToFile(),
-                                        false );
+                                        false, printSummary );
 
         if ( forkConfiguration.isDebug() )
         {
@@ -267,9 +272,11 @@ public class ForkStarter
     }
 
     private ForkingStreamConsumer getForkingStreamConsumer( boolean showHeading, boolean showFooter,
-                                                            boolean redirectTestOutputToFile, boolean mustBeThreadSafe )
+                                                            boolean redirectTestOutputToFile, boolean mustBeThreadSafe,
+                                                            boolean printSummary )
     {
-        OutputConsumer outputConsumer = new StandardOutputConsumer();
+        OutputConsumer outputConsumer =
+            printSummary ? new StandardOutputConsumer() : (OutputConsumer) new NullOutputConsumer();
 
         if ( redirectTestOutputToFile )
         {

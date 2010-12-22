@@ -505,7 +505,7 @@ public abstract class AbstractSurefireMojo
             createStartupConfiguration( forkConfiguration, provider, classLoaderConfiguration );
         ProviderConfiguration providerConfiguration = createProviderConfiguration( forkConfiguration );
         return new ForkStarter( providerConfiguration, startupConfiguration, getReportsDirectory(), forkConfiguration,
-                                getForkedProcessTimeoutInSeconds() );
+                                getForkedProcessTimeoutInSeconds(), isPrintSummary() );
     }
 
     protected ForkConfiguration getForkConfiguration()
@@ -858,9 +858,13 @@ public abstract class AbstractSurefireMojo
     {
         if ( isUseFile() )
         {
-            if ( isPrintSummary() )
+            if ( forking )
             {
-                return forking ? ForkingConsoleReporter.class.getName() : ConsoleReporter.class.getName();
+                return ForkingConsoleReporter.class.getName();
+            }
+            else
+            {
+                return isPrintSummary() ? ConsoleReporter.class.getName() : null;
             }
         }
         else if ( BRIEF_REPORT_FORMAT.equals( getReportFormat() ) )

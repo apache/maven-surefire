@@ -2,16 +2,12 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.apache.maven.plugins.surefire</groupId>
-  <artifactId>junit4-test</artifactId>
+  <artifactId>fork-consoleOutput</artifactId>
   <packaging>jar</packaging>
   <version>1.0-SNAPSHOT</version>
-  <name>junit4-test</name>
+  <name>fork-consoleOutput</name>
   <url>http://maven.apache.org</url>
-  <properties>
-    <junit.version>4.8.1</junit.version>
-    <redirect.to.file>true</redirect.to.file>
-    <forkMode>once</forkMode>
-  </properties>
+
   <dependencies>
       <dependency>
           <groupId>junit</groupId>
@@ -35,6 +31,7 @@
            <version>${surefire.version}</version>
            <configuration>
              <forkMode>${forkMode}</forkMode>
+             <printSummary>${printSummary}</printSummary>
              <redirectTestOutputToFile>${redirect.to.file}</redirectTestOutputToFile>
              <includes>
                 <include>**/Test*.java</include>
@@ -42,5 +39,14 @@
            </configuration>
         </plugin>
      </plugins>
+
   </build>
+
+    <properties>
+      <junit.version>4.8.1</junit.version>
+      <redirect.to.file>true</redirect.to.file>
+      <forkMode>once</forkMode>
+      <printSummary>true</printSummary>
+    </properties>
+
 </project>

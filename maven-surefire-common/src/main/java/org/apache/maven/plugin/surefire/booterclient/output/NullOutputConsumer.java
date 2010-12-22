@@ -1,4 +1,4 @@
-package surefire639;
+package org.apache.maven.plugin.surefire.booterclient.output;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,30 +19,34 @@ package surefire639;
  * under the License.
  */
 
-import org.junit.Test;
-import org.junit.BeforeClass;
-import org.junit.AfterClass;
+import org.apache.maven.surefire.report.ReportEntry;
 
-
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assume.*;
-public class Test1
+/**
+ * @author Kristian Rosenvold
+ */
+public class NullOutputConsumer implements OutputConsumer
 {
-    @Test
-    public void test6281() {
-        System.out.println( "628Test1 on" + Thread.currentThread().getName());
+    public void consumeHeaderLine( String line )
+    {
     }
 
-    @BeforeClass
-    public static void testWithFailingAssumption2() {
-        System.out.println( "Before628Test1 on" + Thread.currentThread().getName());
-    }
-    
-    @AfterClass
-    public static void testWithFailingAssumption3() {
-        System.out.println( "After628Test1 on" + Thread.currentThread().getName());
+    public void consumeMessageLine( String line )
+    {
     }
 
+    public void consumeFooterLine( String line )
+    {
+    }
+
+    public void consumeOutputLine( String line )
+    {
+    }
+
+    public void testSetStarting( ReportEntry reportEntry )
+    {
+    }
+
+    public void testSetCompleted()
+    {
+    }
 }
