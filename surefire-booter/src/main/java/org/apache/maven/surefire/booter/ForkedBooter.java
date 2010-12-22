@@ -62,13 +62,13 @@ public class ForkedBooter
             ProviderConfiguration booterConfiguration = booterDeserializer.deserialize();
             final StartupConfiguration providerConfiguration = booterDeserializer.getProviderConfiguration();
 
-            SurefireStarter booter = new SurefireStarter( providerConfiguration, booterConfiguration );
+            SurefireStarter starter = new SurefireStarter( providerConfiguration, booterConfiguration );
 
             Object forkedTestSet = booterConfiguration.getTestForFork();
             Properties p = booterConfiguration.getProviderProperties();
             final int result = forkedTestSet != null
-                ? booter.runSuitesInProcess( forkedTestSet, surefirePropertiesFile, p )
-                : booter.runSuitesInProcess();
+                ? starter.runSuitesInProcess( forkedTestSet, surefirePropertiesFile, p )
+                : starter.runSuitesInProcess();
 
             // noinspection CallToSystemExit
             System.exit( result );
