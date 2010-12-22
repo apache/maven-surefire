@@ -19,8 +19,6 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import org.apache.maven.surefire.suite.RunResult;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -68,19 +66,9 @@ public class ForkedBooter
 
             Object forkedTestSet = booterConfiguration.getTestForFork();
             Properties p = booterConfiguration.getProviderProperties();
-            final int result;
-            final RunResult runResult;
-            if ( forkedTestSet != null )
-            {
-                runResult = booter.runSuitesInProcess( forkedTestSet );
-                booter.updateResultsProperties( runResult, p );
-                SystemPropertyManager.writePropertiesFile( surefirePropertiesFile, "surefire", p );
-            }
-            else
-            {
-                runResult = booter.runSuitesInProcess();
-            }
-            result = booter.processRunCount( runResult );
+            final int result = forkedTestSet != null
+                ? booter.runSuitesInProcess( forkedTestSet, surefirePropertiesFile, p )
+                : booter.runSuitesInProcess();
 
             // noinspection CallToSystemExit
             System.exit( result );

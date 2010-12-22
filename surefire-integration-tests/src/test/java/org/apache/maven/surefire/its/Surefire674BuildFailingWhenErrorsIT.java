@@ -19,6 +19,7 @@ package org.apache.maven.surefire.its;
  */
 
 
+import junit.framework.Assert;
 import org.apache.maven.it.VerificationException;
 import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
@@ -41,11 +42,10 @@ public class Surefire674BuildFailingWhenErrorsIT
         try
         {
             this.executeGoal( verifier, "test" );
+            Assert.fail("The verifier should throw an exception");
         }
         catch ( VerificationException ignore )
         {
-            // We're supposed to fail and verifier does not allow us to ignore it. Maybe not the most convincing
-            // os solutions
         }
         verifier.resetStreams();
         verifier.verifyTextInLog( "BUILD FAILURE" );

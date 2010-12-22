@@ -34,7 +34,6 @@ import org.apache.maven.surefire.booter.SurefireExecutionException;
 import org.apache.maven.surefire.booter.SurefireStarter;
 import org.apache.maven.surefire.booter.SystemPropertyManager;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
-import org.apache.maven.surefire.suite.RunResult;
 import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.cli.CommandLineException;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
@@ -95,8 +94,7 @@ public class ForkStarter
         if ( ForkConfiguration.FORK_NEVER.equals( requestedForkMode ) )
         {
             SurefireStarter surefireStarter = new SurefireStarter( startupConfiguration, providerConfiguration );
-            RunResult runResult = surefireStarter.runSuitesInProcess();
-            result = surefireStarter.processRunCount( runResult );
+            result = surefireStarter.runSuitesInProcess();
         }
         else if ( ForkConfiguration.FORK_ONCE.equals( requestedForkMode ) )
         {

@@ -24,6 +24,8 @@ import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Properties;
 
@@ -54,8 +56,8 @@ public class SurefireStarter
         this.startupConfiguration = startupConfiguration;
     }
 
-    public RunResult runSuitesInProcess( Object testSet )
-        throws SurefireExecutionException
+    public int runSuitesInProcess( Object testSet, File surefirePropertiesFile, Properties p )
+        throws SurefireExecutionException, IOException
     {
         final StartupConfiguration starterConfiguration = startupConfiguration;
         final ClasspathConfiguration classpathConfiguration = starterConfiguration.getClasspathConfiguration();
@@ -65,10 +67,13 @@ public class SurefireStarter
 
         ClassLoader surefireClassLoader = classpathConfiguration.createSurefireClassLoader( testsClassLoader );
 
-        return invokeProvider( testSet, testsClassLoader, surefireClassLoader );
+        final RunResult runResult = invokeProvider( testSet, testsClassLoader, surefireClassLoader );
+        updateResultsProperties( runResult, p );
+        SystemPropertyManager.writePropertiesFile( surefirePropertiesFile, "surefire", p );
+        return processRunCount( runResult );
     }
 
-    public RunResult runSuitesInProcess()
+    public int runSuitesInProcess()
         throws SurefireExecutionException
     {
         // The test classloader must be constructed first to avoid issues with commons-logging until we properly
@@ -79,7 +84,8 @@ public class SurefireStarter
 
         ClassLoader surefireClassLoader = classpathConfiguration.createSurefireClassLoader( testsClassLoader );
 
-        return invokeProvider( null, testsClassLoader, surefireClassLoader );
+        final RunResult runResult = invokeProvider( null, testsClassLoader, surefireClassLoader );
+        return processRunCount( runResult);
     }
 
     private ClassLoader createInProcessTestClassLoader()
@@ -116,7 +122,7 @@ public class SurefireStarter
     private static final String RESULTS_SKIPPED = "skipped";
 
 
-    public void updateResultsProperties( RunResult runResult, Properties results )
+    private void updateResultsProperties( RunResult runResult, Properties results )
     {
         results.setProperty( RESULTS_ERRORS, String.valueOf( runResult.getErrors() ) );
         results.setProperty( RESULTS_COMPLETED_COUNT, String.valueOf( runResult.getCompletedCount() ) );
@@ -160,7 +166,7 @@ public class SurefireStarter
      * @return The process result code
      * @throws SurefireExecutionException When an exception is found
      */
-    public int processRunCount( RunResult runCount )
+    private int processRunCount( RunResult runCount )
         throws SurefireExecutionException
     {
 
