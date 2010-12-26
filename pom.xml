@@ -199,7 +199,7 @@
       <plugins>
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
-          <version>2.7</version>
+          <version>2.7.1</version>
           <configuration>
             <!-- NOTE: Be sure to isolate the Surefire version under test from the version running the tests! -->
             <useSystemClassLoader>false</useSystemClassLoader>

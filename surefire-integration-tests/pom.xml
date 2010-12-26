@@ -173,7 +173,7 @@
       </plugin>
       <plugin>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <version>2.7</version>
+        <version>2.7.1</version>
         <configuration>
           <!-- Pass current surefire version to the main suite so that it -->
           <!-- can forward to all integration test projects. SUREFIRE-513 -->
