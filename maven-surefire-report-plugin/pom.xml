@@ -54,7 +54,6 @@
   </distributionManagement>
 
   <properties>
-    <mavenVersion>2.0.6</mavenVersion>
     <doxiaVersion>1.0</doxiaVersion>
   </properties>
 
@@ -63,17 +62,14 @@
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-project</artifactId>
-      <version>${mavenVersion}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-model</artifactId>
-      <version>${mavenVersion}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-plugin-api</artifactId>
-      <version>${mavenVersion}</version>
     </dependency>
 
     <!-- shared -->

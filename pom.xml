@@ -106,6 +106,10 @@
     <system>jira</system>
     <url>http://jira.codehaus.org/browse/SUREFIRE</url>
   </issueManagement>
+  
+  <properties>
+    <mavenVersion>2.0.9</mavenVersion>
+  </properties>
 
   <dependencyManagement>
     <dependencies>
@@ -127,7 +131,7 @@
       <dependency>
         <groupId>org.apache.maven</groupId>
         <artifactId>maven-core</artifactId>
-        <version>2.0.9</version>
+        <version>${mavenVersion}</version>
         <exclusions>
           <exclusion>
             <groupId>org.apache.maven.wagon</groupId>
@@ -163,6 +167,31 @@
           </exclusion>
         </exclusions>
       </dependency>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-plugin-api</artifactId>
+        <version>${mavenVersion}</version>
+      </dependency>   
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-artifact</artifactId>
+        <version>${mavenVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-project</artifactId>
+        <version>${mavenVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-model</artifactId>
+        <version>${mavenVersion}</version>
+      </dependency>      
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-toolchain</artifactId>
+        <version>${mavenVersion}</version>
+      </dependency>                                                      
       <dependency>
         <groupId>org.codehaus.plexus</groupId>
         <artifactId>plexus-utils</artifactId>
