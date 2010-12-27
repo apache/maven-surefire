@@ -42,7 +42,7 @@ public class ForkConsoleOutputIT
         printSummary( true );
 
         execute( "test" );
-//        assertPresent( getSurefireReportsFile( "forkConsoleOutput.Test1-output.txt" ) );
+        assertPresent( getSurefireReportsFile( "forkConsoleOutput.Test1-output.txt" ) );
     }
 
     public void testPrintSummaryTrueWithoutRedirect()
@@ -52,7 +52,7 @@ public class ForkConsoleOutputIT
         printSummary( true );
 
         execute( "test" );
-//        assertNotPresent( getSurefireReportsFile( "forkConsoleOutput.Test1-output.txt" ) );
+        assertNotPresent( getSurefireReportsFile( "forkConsoleOutput.Test1-output.txt" ) );
     }
 
     public void testPrintSummaryFalseWithRedirect()
@@ -62,7 +62,7 @@ public class ForkConsoleOutputIT
         printSummary( false );
 
         execute( "test" );
-//        assertPresent( getSurefireReportsFile( "forkConsoleOutput.Test1-output.txt" ) );
+        assertPresent( getSurefireReportsFile( "forkConsoleOutput.Test1-output.txt" ) );
     }
 
     public void testPrintSummaryFalseWithoutRedirect()
@@ -72,7 +72,7 @@ public class ForkConsoleOutputIT
         printSummary( false );
 
         execute( "test" );
-//        assertNotPresent( getSurefireReportsFile( "forkConsoleOutput.Test1-output.txt" ) );
+        assertNotPresent( getSurefireReportsFile( "forkConsoleOutput.Test1-output.txt" ) );
     }
 
 }

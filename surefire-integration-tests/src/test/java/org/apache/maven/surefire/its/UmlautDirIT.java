@@ -24,7 +24,7 @@ import org.apache.maven.it.util.ResourceExtractor;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Test a directory with an umlaut
@@ -51,7 +51,7 @@ public class UmlautDirIT
         throws Exception
     {
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        ArrayList goals = this.getInitialGoals();
+        List<String> goals = this.getInitialGoals();
         goals.add( "test" );
         goals.add( "-DuseSystemClassLoader=false" );
         executeGoals( verifier, goals );

@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -84,7 +85,7 @@ public class WorkingDirectoryIT
         throws Exception
     {
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        ArrayList goals = this.getInitialGoals();
+        List<String> goals = this.getInitialGoals();
         goals.add( "test" );
         goals.add( "-DforkMode=never" );
         executeGoals( verifier, goals );
@@ -112,7 +113,7 @@ public class WorkingDirectoryIT
     {
 
         Verifier verifier = new Verifier( childTestDir.getAbsolutePath() );
-        ArrayList goals = this.getInitialGoals();
+        List<String> goals = this.getInitialGoals();
         goals.add( "test" );
         goals.add( "-DforkMode=never" );
         executeGoals( verifier, goals );

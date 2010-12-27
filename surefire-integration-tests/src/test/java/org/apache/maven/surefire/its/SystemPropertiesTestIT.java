@@ -23,6 +23,7 @@ import org.apache.maven.it.util.ResourceExtractor;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Test system properties
@@ -38,7 +39,7 @@ public class SystemPropertiesTestIT
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/system-properties" );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        ArrayList goals = getInitialGoals();
+        List<String> goals = getInitialGoals();
         goals.add( "test" );
         goals.add( "-DsetOnMavenCommandLine=baz" );
         goals.add( "-DsetOnArgLineWorkAround=baz" );
@@ -55,7 +56,7 @@ public class SystemPropertiesTestIT
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/system-properties" );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        ArrayList goals = getInitialGoals();
+        List<String> goals = getInitialGoals();
         goals.add( "test" );
         goals.add( "-DforkMode=never" );
         goals.add( "-DsetOnArgLineWorkAround=baz" );

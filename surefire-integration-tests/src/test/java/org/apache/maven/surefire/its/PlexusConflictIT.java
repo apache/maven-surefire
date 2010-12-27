@@ -23,7 +23,7 @@ import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
 
 import java.io.File;
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Test library using a conflicting version of plexus-utils
@@ -52,7 +52,7 @@ public class PlexusConflictIT
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/plexus-conflict" );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        ArrayList goals = this.getInitialGoals();
+        List<String> goals = this.getInitialGoals();
         goals.add( "test" );
         goals.add( "-Dsurefire.useSystemClassLoader=false" );
         executeGoals( verifier, goals );

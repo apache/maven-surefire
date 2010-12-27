@@ -43,14 +43,14 @@ public abstract class AbstractSurefireIntegrationTestClass
 
     private String testNgVersion = System.getProperty( "testng.version" );
 
-    protected ArrayList getInitialGoals()
+    protected List<String> getInitialGoals()
     {
         return getInitialGoals( testNgVersion );
     }
 
-    protected ArrayList getInitialGoals( String testNgVersion )
+    protected List<String> getInitialGoals( String testNgVersion )
     {
-        ArrayList goals = new ArrayList();
+        List<String> goals = new ArrayList<String>();
         goals.add( "-Dsurefire.version=" + surefireVersion );
 
         if ( testNgVersion != null )
@@ -77,11 +77,12 @@ public abstract class AbstractSurefireIntegrationTestClass
     protected void executeGoal( Verifier verifier, String goal )
         throws VerificationException
     {
-        List goals = getInitialGoals();
+        List<String> goals = getInitialGoals();
         goals.add( goal );
         executeGoals( verifier, goals );
     }
 
+    @SuppressWarnings( { "unchecked" } )
     protected void executeGoals( Verifier verifier, List goals )
         throws VerificationException
     {

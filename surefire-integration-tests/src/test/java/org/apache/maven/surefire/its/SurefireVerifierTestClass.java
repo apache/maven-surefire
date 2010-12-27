@@ -37,13 +37,11 @@ import java.util.List;
 public abstract class SurefireVerifierTestClass
     extends AbstractSurefireIntegrationTestClass
 {
-    private final String testProject;
-
     private final File testDir;
 
-    private final List cliOptions = new ArrayList();
+    private final List<String> cliOptions = new ArrayList<String>();
 
-    private final List goals;
+    private final List<String> goals;
 
     private final Verifier verifier;
 
@@ -52,8 +50,7 @@ public abstract class SurefireVerifierTestClass
     {
         try
         {
-            this.testProject = testProject;
-            testDir = ResourceExtractor.simpleExtractResources( getClass(), "/fork-consoleOutput" );
+            testDir = ResourceExtractor.simpleExtractResources( getClass(), testProject );
             this.goals = getInitialGoals();
             this.verifier = new Verifier( testDir.getAbsolutePath() );
         }
