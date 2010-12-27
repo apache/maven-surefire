@@ -80,6 +80,12 @@ public abstract class SurefireVerifierTestClass
         cliOptions.add( "-e" );
     }
 
+    protected void debugLogging()
+    {
+        cliOptions.add( "-X" );
+    }
+
+
     protected void failNever()
     {
         cliOptions.add( "-fn" );
