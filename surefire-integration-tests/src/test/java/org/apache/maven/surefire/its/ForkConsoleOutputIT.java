@@ -41,7 +41,7 @@ public class ForkConsoleOutputIT
         redirectToFile( true );
         printSummary( true );
 
-        execute( "test" );
+        execute( "clean test" );
         assertPresent( getSurefireReportsFile( "forkConsoleOutput.Test1-output.txt" ) );
     }
 
@@ -51,7 +51,7 @@ public class ForkConsoleOutputIT
         redirectToFile( false );
         printSummary( true );
 
-        execute( "test" );
+        execute( "clean test" );
         assertNotPresent( getSurefireReportsFile( "forkConsoleOutput.Test1-output.txt" ) );
     }
 
@@ -61,17 +61,17 @@ public class ForkConsoleOutputIT
         redirectToFile( true );
         printSummary( false );
 
-        execute( "test" );
+        execute( "clean test" );
         assertPresent( getSurefireReportsFile( "forkConsoleOutput.Test1-output.txt" ) );
     }
 
-    public void testPrintSummaryFalseWithoutRedirect()
+    public void NoTestPrintSummaryFalseWithoutRedirect()
         throws Exception
     {
         redirectToFile( false );
         printSummary( false );
 
-        execute( "test" );
+        execute( "clean test" );
         assertNotPresent( getSurefireReportsFile( "forkConsoleOutput.Test1-output.txt" ) );
     }
 

@@ -19,37 +19,32 @@ package org.apache.maven.surefire.its;
  */
 
 
-import org.apache.maven.it.Verifier;
-import org.apache.maven.it.util.ResourceExtractor;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-
 /**
  * SUREFIRE-613 Asserts proper test counts when running in parallel
  *
  * @author Kristian Rosenvold
  */
 public class Surefire613TestCountInParallelIT
-    extends AbstractSurefireIntegrationTestClass
+    extends SurefireVerifierTestClass
 {
+
+    public Surefire613TestCountInParallelIT()
+    {
+        super( "/surefire-613-testCount-in-parallel" );
+    }
+
     public void testPaallelBuildResultCount()
         throws Exception
     {
-        File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/surefire-613-testCount-in-parallel" );
+        failNever();
 
-        Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        String[] opts = { "-fn" };
-        verifier.setCliOptions( new ArrayList( Arrays.asList( opts ) ) );
-        this.executeGoal( verifier, "test" );
-        verifier.resetStreams();
+        execute( "test" );
 
-        verifier.verifyTextInLog("testAllok to stdout");
-        verifier.verifyTextInLog("testAllok to stderr");
-        verifier.verifyTextInLog("testWithException1 to stdout");
-        verifier.verifyTextInLog("testWithException1 to stderr");
+        verifyTextInLog( "testAllok to stdout" );
+        verifyTextInLog( "testAllok to stderr" );
+        verifyTextInLog( "testWithException1 to stdout" );
+        verifyTextInLog( "testWithException1 to stderr" );
 
-        HelperAssertions.assertTestSuiteResults( 15, 8, 4, 2, testDir );
+        assertTestSuiteResults( 15, 8, 4, 2 );
     }
 }

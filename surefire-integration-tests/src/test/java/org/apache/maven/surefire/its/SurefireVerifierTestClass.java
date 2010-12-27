@@ -22,6 +22,7 @@ package org.apache.maven.surefire.its;
 import org.apache.maven.it.VerificationException;
 import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
+import org.apache.maven.reporting.MavenReportException;
 
 import java.io.File;
 import java.io.IOException;
@@ -74,16 +75,26 @@ public abstract class SurefireVerifierTestClass
         verifier.assertFileNotPresent( file.getAbsolutePath() );
     }
 
-    protected SurefireVerifierTestClass failNever()
+    protected void showErrorStackTraces()
+    {
+        cliOptions.add( "-e" );
+    }
+
+    protected void failNever()
     {
         cliOptions.add( "-fn" );
-        return this;
     }
 
     protected SurefireVerifierTestClass addGoal( String goal )
     {
         goals.add( goal );
         return this;
+    }
+
+    protected Verifier executeTest()
+        throws VerificationException
+    {
+        return execute( "test" );
     }
 
     protected Verifier execute( String goal )
@@ -132,4 +143,16 @@ public abstract class SurefireVerifierTestClass
         addGoal( "-DforkMode=" + forkMode );
     }
 
+    public void assertTestSuiteResults( int total, int errors, int failures, int skipped )
+        throws MavenReportException
+    {
+        HelperAssertions.assertTestSuiteResults( total, errors, failures, skipped, testDir );
+    }
+
+    public void verifyTextInLog( String text )
+        throws VerificationException
+
+    {
+        verifier.verifyTextInLog( text );
+    }
 }
