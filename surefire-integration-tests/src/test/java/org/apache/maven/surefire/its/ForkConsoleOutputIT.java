@@ -41,7 +41,6 @@ public class ForkConsoleOutputIT
         redirectToFile( true );
         printSummary( true );
 
-        addGoal( "clean" );
         execute( "test" );
         assertPresent( getSurefireReportsFile( "forkConsoleOutput.Test1-output.txt" ) );
     }
@@ -52,7 +51,6 @@ public class ForkConsoleOutputIT
         redirectToFile( false );
         printSummary( true );
 
-        addGoal( "clean" );
         execute( "test" );
         assertNotPresent( getSurefireReportsFile( "forkConsoleOutput.Test1-output.txt" ) );
     }
@@ -65,7 +63,6 @@ public class ForkConsoleOutputIT
         debugLogging();
         showErrorStackTraces();
 
-        addGoal( "clean" );
         execute( "test" );
         assertPresent( getSurefireReportsFile( "forkConsoleOutput.Test1-output.txt" ) );
     }
@@ -76,7 +73,6 @@ public class ForkConsoleOutputIT
         redirectToFile( false );
         printSummary( false );
 
-        addGoal( "clean" );
         execute( "test" );
         assertNotPresent( getSurefireReportsFile( "forkConsoleOutput.Test1-output.txt" ) );
     }

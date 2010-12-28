@@ -71,11 +71,11 @@ public class SystemPropertyManager
     }
 
     public static File writePropertiesFile( Properties properties, File tempDirectory, String name,
-                                            boolean deleteOnExit )
+                                            boolean isDebug )
         throws IOException
     {
         File file = File.createTempFile( name, "tmp", tempDirectory );
-        if ( deleteOnExit )
+        if ( !isDebug )
         {
             file.deleteOnExit();
         }
