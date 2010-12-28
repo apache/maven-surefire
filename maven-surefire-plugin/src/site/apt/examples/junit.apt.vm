@@ -32,16 +32,16 @@ Using JUnit
   Surefire supports three different generations of JUnit: JUnit 3.8.x, JUnit 4.x (serial provider) and JUnit 4.7 (junit-core provider
   with parallel support). The provider is selected based on the JUnit version in your project and the configuration parameters (for parallel).
 
-* Upgrade check for JUnit  4.x
+* Upgrade check for JUnit 4.x
 
-  As of version 2.7, the algorithm for choosing which tests to change
-  has run. Form 2.7 and on only run valid JUnit tests for all versions of JUnit, where older versions
-  would run invalid tests that satisfied a naming convention.
+  As of Surefire version 2.7, the algorithm for choosing which tests to run
+  has changed. From 2.7 and on, only valid JUnit tests are run for all versions of JUnit, where older versions
+  of the plugin would also run invalid tests that satisfied the naming convention.
 
-  When upgrading from a version &lt; 2.7 to a newer version, the build can be run with
-  the flag -Dsurefire.junit4.upgradecheck which will notify you of any tests that
-  will not be run any more (and the build fails). This is only meant to be used as a tool
-  when upgrading to check that all your tests will be run. It is a transitional
+  When upgrading from a Surefire version prior to 2.7, the build can be run with
+  the flag -Dsurefire.junit4.upgradecheck. This will perform a check and notify you of any invalid tests that
+  will not be run with this version of Surefire (and the build fails). This is only meant to be used as a tool
+  when upgrading to check that all expected tests will be run. It is a transitional
   feature that will be removed in a future version of surefire.
 
 * How is the provider chosen ?
