@@ -58,7 +58,7 @@ public class SurefirePlugin
 {
 
     /**
-     * Set this to 'true' to skip running tests, but still compile them. Its use is NOT RECOMMENDED, but quite
+     * Set this to "true" to skip running tests, but still compile them. Its use is NOT RECOMMENDED, but quite
      * convenient on occasion.
      *
      * @parameter default-value="false" expression="${skipTests}"
@@ -67,25 +67,25 @@ public class SurefirePlugin
     private boolean skipTests;
 
     /**
-     * This old parameter is just like skipTests, but bound to the old property maven.test.skip.exec.
+     * This old parameter is just like <code>skipTests</code>, but bound to the old property "maven.test.skip.exec".
      *
      * @parameter expression="${maven.test.skip.exec}"
      * @since 2.3
-     * @deprecated Use -DskipTests instead.
+     * @deprecated Use skipTests instead.
      */
     private boolean skipExec;
 
     /**
-     * Set this to 'true' to bypass unit tests entirely. Its use is NOT RECOMMENDED, especially if you
+     * Set this to "true" to bypass unit tests entirely. Its use is NOT RECOMMENDED, especially if you
      * enable it using the "maven.test.skip" property, because maven.test.skip disables both running the
-     * tests and compiling the tests.  Consider using the skipTests parameter instead.
+     * tests and compiling the tests.  Consider using the <code>skipTests</code> parameter instead.
      *
      * @parameter default-value="false" expression="${maven.test.skip}"
      */
     private boolean skip;
 
     /**
-     * Set this to true to ignore a failure during testing. Its use is NOT RECOMMENDED, but quite convenient on
+     * Set this to "true" to ignore a failure during testing. Its use is NOT RECOMMENDED, but quite convenient on
      * occasion.
      *
      * @parameter default-value="false" expression="${maven.test.failure.ignore}"
@@ -93,7 +93,7 @@ public class SurefirePlugin
     private boolean testFailureIgnore;
 
     /**
-     * The base directory of the project being tested. This can be obtained in your unit test by
+     * The base directory of the project being tested. This can be obtained in your unit test via
      * System.getProperty("basedir").
      *
      * @parameter default-value="${basedir}"
@@ -102,7 +102,7 @@ public class SurefirePlugin
 
     /**
      * The directory containing generated test classes of the project being tested.
-     * This will be included at the beginning the test classpath.
+     * This will be included at the beginning of the test classpath.
      *
      * @parameter default-value="${project.build.testOutputDirectory}"
      */
@@ -117,7 +117,7 @@ public class SurefirePlugin
     private File classesDirectory;
 
     /**
-     * The Maven Project Object
+     * The Maven Project Object.
      *
      * @parameter default-value="${project}"
      * @readonly
@@ -135,7 +135,7 @@ public class SurefirePlugin
     private List classpathDependencyExcludes;
 
     /**
-     * A dependency scope to exclude from the test classpath
+     * A dependency scope to exclude from the test classpath.
      * The scope can be one of the following scopes:
      * <p/>
      * <ul><li><i>compile</i> - system, provided, compile
@@ -175,15 +175,16 @@ public class SurefirePlugin
      * Specify this parameter to run individual tests by file name, overriding the <code>includes/excludes</code>
      * parameters.  Each pattern you specify here will be used to create an
      * include pattern formatted like <code>**&#47;${test}.java</code>, so you can just type "-Dtest=MyTest"
-     * to run a single test called "foo/MyTest.java".  This parameter will override the TestNG suiteXmlFiles
-     * parameter.
+     * to run a single test called "foo/MyTest.java".<br/>
+     * This parameter overrides the <code>includes/excludes</code> parameters, and the TestNG
+     * <code>suiteXmlFiles</code> parameter.
      *
      * @parameter expression="${test}"
      */
     private String test;
 
     /**
-     * A list of &lt;include> elements used to specify the the tests that should be included in testing. When not
+     * A list of &lt;include> elements specifying the tests (by pattern) that should be included in testing. When not
      * specified and when the <code>test</code> parameter is not specified, the default includes will be
      * <code><br/>
         &lt;includes><br/>
@@ -192,21 +193,22 @@ public class SurefirePlugin
             &nbsp;&lt;include>**&#47;*TestCase.java&lt;/include><br/>
         &lt;/includes><br/>
      * </code>
-     * This parameter is ignored if TestNG suiteXmlFiles are specified.
+     * This parameter is ignored if the TestNG <code>suiteXmlFiles</code> parameter is specified.
      *
      * @parameter
      */
     private List includes;
 
     /**
-     * List of patterns (separated by commas) used to specify the tests that should be excluded in testing. When not
+     * A list of &lt;exclude> elements specifying the tests (by pattern) that should be excluded in testing. When not
      * specified and when the <code>test</code> parameter is not specified, the default excludes will be
      * <code><br/>
         &lt;excludes><br/>
             &nbsp;&lt;exclude>**&#47;*$*&lt;/exclude><br/>
         &lt;/excludes><br/>
      * </code>
-     * (which excludes all inner classes).  This parameter is ignored if TestNG suiteXmlFiles are specified.
+     * (which excludes all inner classes).<br>
+     * This parameter is ignored if the TestNG <code>suiteXmlFiles</code> parameter is specified.
      *
      * @parameter
      */
@@ -214,7 +216,7 @@ public class SurefirePlugin
 
     /**
      * ArtifactRepository of the localRepository. To obtain the directory of localRepository in unit tests use
-     * System.setProperty( "localRepository").
+     * System.getProperty("localRepository").
      *
      * @parameter expression="${localRepository}"
      * @required
@@ -248,7 +250,7 @@ public class SurefirePlugin
     private Properties properties;
 
     /**
-     * Map of of plugin artifacts.
+     * Map of plugin artifacts.
      *
      * @parameter expression="${plugin.artifactMap}"
      * @required
@@ -257,7 +259,7 @@ public class SurefirePlugin
     private Map pluginArtifactMap;
 
     /**
-     * Map of of project artifacts.
+     * Map of project artifacts.
      *
      * @parameter expression="${project.artifactMap}"
      * @required
@@ -266,14 +268,14 @@ public class SurefirePlugin
     private Map projectArtifactMap;
 
     /**
-     * Option to print summary of test suites or just print the test cases that has errors.
+     * Option to print summary of test suites or just print the test cases that have errors.
      *
      * @parameter expression="${surefire.printSummary}" default-value="true"
      */
     private boolean printSummary;
 
     /**
-     * Selects the formatting for the test report to be generated. Can be set as brief or plain.
+     * Selects the formatting for the test report to be generated. Can be set as "brief" or "plain".
      *
      * @parameter expression="${surefire.reportFormat}" default-value="brief"
      */
@@ -287,7 +289,7 @@ public class SurefirePlugin
     private boolean useFile;
 
     /**
-     * When forking, set this to true to redirect the unit test standard output to a file (found in
+     * When forking, set this to "true" to redirect the unit test standard output to a file (found in
      * reportsDirectory/testName-output.txt).
      *
      * @parameter expression="${maven.test.redirectTestOutputToFile}" default-value="false"
@@ -296,7 +298,7 @@ public class SurefirePlugin
     private boolean redirectTestOutputToFile;
 
     /**
-     * Set this to "true" to cause a failure if there are no tests to run.
+     * Set this to "true" to cause a failure if there are no tests to run. Defaults to "false".
      *
      * @parameter expression="${failIfNoTests}"
      * @since 2.4
@@ -315,7 +317,7 @@ public class SurefirePlugin
     /**
      * Option to specify the jvm (or path to the java executable) to use with the forking options. For the default, the
      * jvm will be a new instance of the same VM as the one used to run Maven. JVM settings are not inherited from
-     * MAVEN_OPTS
+     * MAVEN_OPTS.
      *
      * @parameter expression="${jvm}"
      * @since 2.1
@@ -334,7 +336,8 @@ public class SurefirePlugin
      * Attach a debugger to the forked JVM.  If set to "true", the process will suspend and
      * wait for a debugger to attach on port 5005.  If set to some other string, that
      * string will be appended to the argLine, allowing you to configure arbitrary
-     * debuggability options (without overwriting the other options specified in the argLine).
+     * debuggability options (without overwriting the other options specified through the <code>argLine</code>
+     * parameter).
      *
      * @parameter expression="${maven.surefire.debug}"
      * @since 2.4
@@ -351,7 +354,7 @@ public class SurefirePlugin
     private int forkedProcessTimeoutInSeconds;
 
     /**
-     * Additional environments to set on the command line.
+     * Additional environment variables to set on the command line.
      *
      * @parameter
      * @since 2.1.3
@@ -378,7 +381,8 @@ public class SurefirePlugin
 
     /**
      * (TestNG only) Groups for this test. Only classes/methods/etc decorated with one of the groups specified here will be included
-     * in test run, if specified.  This parameter is overridden if suiteXmlFiles are specified.
+     * in test run, if specified.<br/>
+     * This parameter is ignored if the <code>suiteXmlFiles</code> parameter is specified.
      *
      * @parameter expression="${groups}"
      * @since 2.2
@@ -387,7 +391,8 @@ public class SurefirePlugin
 
     /**
      * (TestNG only) Excluded groups. Any methods/classes/etc with one of the groups specified in this list will specifically not be
-     * run.  This parameter is overridden if suiteXmlFiles are specified.
+     * run.<br/>
+     * This parameter is ignored if the <code>suiteXmlFiles</code> parameter is specified.
      *
      * @parameter expression="${excludedGroups}"
      * @since 2.2
@@ -395,9 +400,10 @@ public class SurefirePlugin
     private String excludedGroups;
 
     /**
-     * (TestNG only) List of TestNG suite xml file locations, seperated by commas. Note that suiteXmlFiles is incompatible
-     * with several other parameters on this plugin, like includes/excludes.  This parameter is ignored if
-     * the "test" parameter is specified (allowing you to run a single test instead of an entire suite).
+     * (TestNG only) List of &lt;suiteXmlFile> elements specifying TestNG suite xml file locations. Note that <code>suiteXmlFiles</code> is incompatible
+     * with several other parameters of this plugin, like <code>includes/excludes</code>.<br/>
+     * This parameter is ignored if the <code>test</code> parameter is specified (allowing you to run a single
+     * test instead of an entire suite).
      *
      * @parameter
      * @since 2.2
@@ -422,7 +428,7 @@ public class SurefirePlugin
 
     /**
      * (TestNG/JUnit 4.7 provider only) The attribute thread-count allows you to specify how many threads should be allocated for this execution. Only
-     * makes sense to use in conjunction with parallel.
+     * makes sense to use in conjunction with the <code>parallel</code> parameter.
      *
      * @parameter expression="${threadCount}"
      * @since 2.2
@@ -430,7 +436,7 @@ public class SurefirePlugin
     private int threadCount;
 
     /**
-     * (JUnit 4.7 provider) Indicates that threadCount is per cpu core. Defaults to true
+     * (JUnit 4.7 provider) Indicates that threadCount is per cpu core. Defaults to "true".
      *
      * @parameter expression="${perCoreThreadCount}"
      * @since 2.5
@@ -438,8 +444,8 @@ public class SurefirePlugin
     private String perCoreThreadCount;
 
     /**
-     * (JUnit 4.7 provider) Indicates that the thread pool will be unlimited. The parallel parameter and the actual number of classes/methods
-     * will decide. Setting this to true effectively disables perCoreThreadCount and threadCount.
+     * (JUnit 4.7 provider) Indicates that the thread pool will be unlimited. The <code>parallel</code> parameter and the actual number of classes/methods
+     * will decide. Setting this to "true" effectively disables <code>perCoreThreadCount</code> and <code>threadCount</code>. Defaults to "false".
      *
      * @parameter expression="${useUnlimitedThreads}"
      * @since 2.5
@@ -447,11 +453,11 @@ public class SurefirePlugin
     private String useUnlimitedThreads;
 
     /**
-     * (TestNG only) When you use the parallel attribute, TestNG will try to run all your test methods in separate threads, except for
+     * (TestNG only) When you use the <code>parallel</code> attribute, TestNG will try to run all your test methods in separate threads, except for
      * methods that depend on each other, which will be run in the same thread in order to respect their order of
      * execution.
      * <p/>
-     * (JUnit 4.7 provider) Supports values classes/methods/both to run in separate threads, as controlled by threadCount.
+     * (JUnit 4.7 provider) Supports values "classes"/"methods"/"both" to run in separate threads, as controlled by <code>threadCount</code>.
      *
      * @parameter expression="${parallel}"
      * @since 2.2
@@ -474,14 +480,14 @@ public class SurefirePlugin
     private ArtifactResolver artifactResolver;
 
     /**
-     * Creates the artifact
+     * Creates the artifact.
      *
      * @component
      */
     private ArtifactFactory artifactFactory;
 
     /**
-     * The plugin remote repositories declared in the POM.
+     * The remote plugin repositories declared in the POM.
      *
      * @parameter expression="${project.pluginArtifactRepositories}"
      * @since 2.2
@@ -536,7 +542,7 @@ public class SurefirePlugin
 
     /**
      * By default, Surefire enables JVM assertions for the execution of your test cases. To disable the assertions, set
-     * this flag to <code>false</code>.
+     * this flag to "false".
      *
      * @parameter expression="${enableAssertions}" default-value="true"
      * @since 2.3.1
@@ -553,7 +559,7 @@ public class SurefirePlugin
     private MavenSession session;
 
     /**
-     * (TestNG only) Define the factory class used to create all test instances
+     * (TestNG only) Define the factory class used to create all test instances.
      *
      * @parameter expression="${objectFactory}"
      * @since 2.5
@@ -562,16 +568,16 @@ public class SurefirePlugin
 
 
     /**
-     * @parameter default-value="${session.parallel}"   '
+     * @parameter default-value="${session.parallel}"
      * @readonly
      * @noinspection UnusedDeclaration
      */
     private Boolean parallelMavenExecution;
 
     /**
-     * Defines the order the tests will be run in. Supported values are alphabetical, reversealphabetical
-     * random, hourly (alphabetical on even hours, reverse alphabetical on odd hours) and filesystem.<p/>
-     * Not supplying a value for this setting will run tests in filesystem order. <p/>
+     * Defines the order the tests will be run in. Supported values are "alphabetical", "reversealphabetical",
+     * "random", "hourly" (alphabetical on even hours, reverse alphabetical on odd hours) and "filesystem".<p/>
+     * Not supplying a value for this setting will run tests in filesystem order.<p/>
      * Odd/Even for hourly is determined at the time the of scanning the classpath, meaning it could change during
      * a multi-module build.
      *
