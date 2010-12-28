@@ -63,6 +63,7 @@ public class ForkConsoleOutputIT
         redirectToFile( true );
         printSummary( false );
         debugLogging();
+        showErrorStackTraces();
 
         addGoal( "clean" );
         execute( "test" );
