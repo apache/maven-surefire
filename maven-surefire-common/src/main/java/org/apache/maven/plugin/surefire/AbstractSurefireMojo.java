@@ -856,8 +856,6 @@ public abstract class AbstractSurefireMojo
      */
     private String getConsoleReporter( boolean forking )
     {
-        getLog().debug( "Forking " + forking + ", isUseFile=" + isUseFile() + ", isPrintSummary=" + isPrintSummary()
-                            + ",reportFormat=" + getReportFormat() );
         if ( isUseFile() )
         {
             if ( forking )
