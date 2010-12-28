@@ -18,55 +18,41 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.it.Verifier;
-import org.apache.maven.it.util.ResourceExtractor;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Test system properties
  *
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
 public class SystemPropertiesTestIT
-    extends AbstractSurefireIntegrationTestClass
+    extends SurefireVerifierTestClass
 {
+
+    public SystemPropertiesTestIT()
+    {
+        super( "/system-properties" );
+    }
+
     public void testSystemProperties()
         throws Exception
     {
-        File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/system-properties" );
-
-        Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        List<String> goals = getInitialGoals();
-        goals.add( "test" );
-        goals.add( "-DsetOnMavenCommandLine=baz" );
-        goals.add( "-DsetOnArgLineWorkAround=baz" );
-        executeGoals( verifier, goals );
-        verifier.verifyErrorFreeLog();
-        verifier.resetStreams();
-
-        HelperAssertions.assertTestSuiteResults( 7, 0, 0, 0, testDir );
+        addGoal( "-DsetOnMavenCommandLine=baz" );
+        addGoal( "-DsetOnArgLineWorkAround=baz" );
+        executeTest();
+        verifyErrorFreeLog();
+        assertTestSuiteResults( 7, 0, 0, 0 );
     }
 
     public void testSystemPropertiesNoFork()
         throws Exception
     {
-        File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/system-properties" );
-
-        Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        List<String> goals = getInitialGoals();
-        goals.add( "test" );
-        goals.add( "-DforkMode=never" );
-        goals.add( "-DsetOnArgLineWorkAround=baz" );
-        goals.add( "-DsetOnMavenCommandLine=baz" );
+        addGoal( "-DforkMode=never" );
+        addGoal( "-DsetOnArgLineWorkAround=baz" );
+        addGoal( "-DsetOnMavenCommandLine=baz" );
         // DGF fake the argLine, since we're not forking
-        goals.add( "-DsetOnArgLine=bar" );
-        executeGoals( verifier, goals );
-        verifier.verifyErrorFreeLog();
-        verifier.resetStreams();
+        addGoal( "-DsetOnArgLine=bar" );
+        executeTest();
+        verifyErrorFreeLog();
 
-        HelperAssertions.assertTestSuiteResults( 7, 0, 0, 0, testDir );
+        assertTestSuiteResults( 7, 0, 0, 0 );
     }
 }

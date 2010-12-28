@@ -19,38 +19,32 @@ package org.apache.maven.surefire.its;
  */
 
 
-import org.apache.maven.it.Verifier;
-import org.apache.maven.it.util.ResourceExtractor;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-
 /**
  * SUREFIRE-621 Asserts that console output always goes somewhere ;)
  *
  * @author Kristian Rosenvold
  */
 public class Surefire628ConsoleOutputBeforeAndAfterClassIT
-    extends AbstractSurefireIntegrationTestClass
+    extends SurefireVerifierTestClass
 {
+
+    public Surefire628ConsoleOutputBeforeAndAfterClassIT()
+    {
+        super( "/surefire-628-consoleoutputbeforeandafterclass" );
+    }
+
     public void testJunit3ParallelBuildResultCount()
         throws Exception
     {
-        File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/surefire-628-consoleoutputbeforeandafterclass" );
+        failNever();
+        executeTest();
 
-        Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        String[] opts = { "-fn" };
-        verifier.setCliOptions( new ArrayList( Arrays.asList( opts ) ) );
-        this.executeGoal( verifier, "test" );
-        verifier.resetStreams();
-
-        verifier.verifyTextInLog(  "628Test1");
-        verifier.verifyTextInLog(  "Before628Test1");
-        verifier.verifyTextInLog(  "After628Test1");
-        verifier.verifyTextInLog(  "628Test2");
-        verifier.verifyTextInLog(  "Before628Test2");
-        verifier.verifyTextInLog(  "After628Test2");
+        verifyTextInLog( "628Test1" );
+        verifyTextInLog( "Before628Test1" );
+        verifyTextInLog( "After628Test1" );
+        verifyTextInLog( "628Test2" );
+        verifyTextInLog( "Before628Test2" );
+        verifyTextInLog( "After628Test2" );
     }
 
 }

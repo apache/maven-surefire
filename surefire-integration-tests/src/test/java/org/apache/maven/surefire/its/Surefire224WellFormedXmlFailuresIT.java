@@ -33,22 +33,22 @@ import java.util.List;
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
 public class Surefire224WellFormedXmlFailuresIT
-    extends AbstractSurefireIntegrationTestClass
+    extends SurefireVerifierTestClass
 {
+
+    public Surefire224WellFormedXmlFailuresIT()
+    {
+        super( "/surefire-224-wellFormedXmlFailures" );
+    }
+
     public void testWellFormedXmlFailures()
         throws Exception
     {
-        File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/surefire-224-wellFormedXmlFailures" );
+        executeTest( );
 
-        Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        this.executeGoal( verifier, "test" );
-        // DGF Don't verify error free log; we expect failures
-        // verifier.verifyErrorFreeLog();
-        verifier.resetStreams();
+        assertTestSuiteResults( 4, 0, 4, 0 );
 
-        HelperAssertions.assertTestSuiteResults( 4, 0, 4, 0, testDir );
-
-        ReportTestSuite suite = (ReportTestSuite) HelperAssertions.extractReports( ( new File[]{ testDir } ) ).get( 0 );
+        ReportTestSuite suite = (ReportTestSuite) HelperAssertions.extractReports( ( new File[]{ getTestDir() } ) ).get( 0 );
         List testCases = suite.getTestCases();
         assertEquals( "Wrong number of test case objects", 4, testCases.size() );
         ReportTestCase current, testQuote = null, testLower = null, testGreater = null, testU0000 = null;

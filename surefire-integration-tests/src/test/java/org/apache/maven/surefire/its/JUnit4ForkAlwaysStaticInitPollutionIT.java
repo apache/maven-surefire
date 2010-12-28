@@ -30,18 +30,19 @@ import java.io.File;
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
 public class JUnit4ForkAlwaysStaticInitPollutionIT
-    extends AbstractSurefireIntegrationTestClass
+    extends SurefireVerifierTestClass
 {
+
+    public JUnit4ForkAlwaysStaticInitPollutionIT()
+    {
+        super( "/junit4-forkAlways-staticInit" );
+    }
+
     public void testJunit4Ignore()
         throws Exception
     {
-        File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/junit4-forkAlways-staticInit" );
-
-        Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        this.executeGoal( verifier, "test" );
-        verifier.verifyErrorFreeLog();
-        verifier.resetStreams();
-
-        HelperAssertions.assertTestSuiteResults( 2, 0, 0, 0, testDir );
+        this.executeTest(  );
+        verifyErrorFreeLog();
+        assertTestSuiteResults( 2, 0, 0, 0 );
     }
 }

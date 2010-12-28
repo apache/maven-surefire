@@ -19,6 +19,11 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
+import junit.framework.TestCase;
+import org.apache.maven.artifact.versioning.ArtifactVersion;
+import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
+import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
+import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.it.VerificationException;
 import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
@@ -36,7 +41,7 @@ import java.util.List;
  * @author Kristian Rosenvold
  */
 public abstract class SurefireVerifierTestClass
-    extends AbstractSurefireIntegrationTestClass
+    extends TestCase
 {
     private final File testDir;
 
@@ -45,6 +50,11 @@ public abstract class SurefireVerifierTestClass
     private final List<String> goals;
 
     private final Verifier verifier;
+
+    private final String testNgVersion = System.getProperty( "testng.version" );
+
+    private final String surefireVersion = System.getProperty( "surefire.version" );
+
 
 
     protected SurefireVerifierTestClass( String testProject )
@@ -63,6 +73,70 @@ public abstract class SurefireVerifierTestClass
         {
             throw new RuntimeException( e );
         }
+    }
+
+
+    private List<String> getInitialGoals()
+    {
+        List<String> goals1 = new ArrayList<String>();
+        goals1.add( "-Dsurefire.version=" + surefireVersion );
+
+        if ( testNgVersion != null )
+        {
+            goals1.add( "-DtestNgVersion=" + testNgVersion );
+
+            ArtifactVersion v = new DefaultArtifactVersion( testNgVersion );
+            try
+            {
+                if ( VersionRange.createFromVersionSpec( "(,5.12.1)" ).containsVersion( v ) )
+                {
+                    goals1.add( "-DtestNgClassifier=jdk15" );
+                }
+            }
+            catch ( InvalidVersionSpecificationException e )
+            {
+                throw new RuntimeException( e.getMessage(), e );
+            }
+        }
+
+        return goals1;
+    }
+
+    protected List<String> getInitialGoals( String testNgVersion )
+    {
+        List<String> goals = new ArrayList<String>();
+        goals.add( "-Dsurefire.version=" + surefireVersion );
+
+        if ( testNgVersion != null )
+        {
+            goals.add( "-DtestNgVersion=" + testNgVersion );
+
+            ArtifactVersion v = new DefaultArtifactVersion( testNgVersion );
+            try
+            {
+                if ( VersionRange.createFromVersionSpec( "(,5.12.1)" ).containsVersion( v ) )
+                {
+                    goals.add( "-DtestNgClassifier=jdk15" );
+                }
+            }
+            catch ( InvalidVersionSpecificationException e )
+            {
+                throw new RuntimeException( e.getMessage(), e );
+            }
+        }
+
+        return goals;
+    }
+
+    /**
+     * Returns a file, referenced from the extracted root (where pom.xml is located)
+     *
+     * @param path The subdirectory under basedir
+     * @return A file
+     */
+    protected File getSubFile( String path )
+    {
+        return new File( testDir, path );
     }
 
     protected void assertPresent( File file )
@@ -108,14 +182,20 @@ public abstract class SurefireVerifierTestClass
     {
         addGoal( goal );
         verifier.setCliOptions( cliOptions );
-        verifier.executeGoals( goals );
-        verifier.resetStreams();
-        return verifier;
+        try
+        {
+            verifier.executeGoals( goals );
+            return verifier;
+        }
+        finally
+        {
+            verifier.resetStreams();
+        }
     }
 
     protected File getSurefireReportsFile( String fileName )
     {
-        File targetDir = new File( testDir, "target/surefire-reports" );
+        File targetDir = getSubFile( "target/surefire-reports" );
         return new File( targetDir, fileName );
     }
 
@@ -161,4 +241,22 @@ public abstract class SurefireVerifierTestClass
     {
         verifier.verifyTextInLog( text );
     }
+
+    protected void verifyErrorFreeLog()
+        throws VerificationException
+    {
+        verifier.verifyErrorFreeLog();
+    }
+
+    protected Verifier getVerifier()
+    {
+        return verifier;
+    }
+
+    public File getTestDir()
+    {
+        return testDir;
+    }
 }
+
+

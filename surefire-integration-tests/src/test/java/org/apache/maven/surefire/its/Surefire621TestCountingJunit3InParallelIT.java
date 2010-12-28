@@ -19,32 +19,25 @@ package org.apache.maven.surefire.its;
  */
 
 
-import org.apache.maven.it.Verifier;
-import org.apache.maven.it.util.ResourceExtractor;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-
 /**
  * SUREFIRE-621 Asserts proper test counts when running junit 3 tests in parallel
  *
  * @author Kristian Rosenvold
  */
 public class Surefire621TestCountingJunit3InParallelIT
-    extends AbstractSurefireIntegrationTestClass
+    extends SurefireVerifierTestClass
 {
+
+    public Surefire621TestCountingJunit3InParallelIT()
+    {
+        super( "/surefire-621-testCounting-junit3-in-parallel" );
+    }
+
     public void testJunit3ParallelBuildResultCount()
         throws Exception
     {
-        File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/surefire-621-testCounting-junit3-in-parallel" );
-
-        Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        String[] opts = { "-fn" };
-        verifier.setCliOptions( new ArrayList( Arrays.asList( opts ) ) );
-        this.executeGoal( verifier, "install" );
-        verifier.resetStreams();
-
-        HelperAssertions.assertTestSuiteResults( 6, 0, 0, 0, testDir );
+        failNever();
+        execute( "install" );
+        assertTestSuiteResults( 6, 0, 0, 0 );
     }
 }

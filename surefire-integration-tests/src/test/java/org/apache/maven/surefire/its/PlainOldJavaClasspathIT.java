@@ -19,29 +19,25 @@ package org.apache.maven.surefire.its;
  */
 
 
-import org.apache.maven.it.Verifier;
-import org.apache.maven.it.util.ResourceExtractor;
-
-import java.io.File;
-
 /**
  * Test useManifestOnlyJar option
  *
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
 public class PlainOldJavaClasspathIT
-    extends AbstractSurefireIntegrationTestClass
+    extends SurefireVerifierTestClass
 {
+
+    public PlainOldJavaClasspathIT()
+    {
+        super( "/plain-old-java-classpath" );
+    }
+
     public void testPlainOldJavaClasspath()
         throws Exception
     {
-        File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/plain-old-java-classpath" );
-
-        Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        this.executeGoal( verifier, "test" );
-        verifier.verifyErrorFreeLog();
-        verifier.resetStreams();
-
-        HelperAssertions.assertTestSuiteResults( 1, 0, 0, 0, testDir );
+        this.executeTest();
+        verifyErrorFreeLog();
+        assertTestSuiteResults( 1, 0, 0, 0 );
     }
 }

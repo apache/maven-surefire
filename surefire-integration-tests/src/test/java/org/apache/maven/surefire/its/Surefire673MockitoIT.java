@@ -19,26 +19,23 @@ package org.apache.maven.surefire.its;
  */
 
 
-import org.apache.maven.it.Verifier;
-import org.apache.maven.it.util.ResourceExtractor;
-
-import java.io.File;
-
 /**
  * SUREFIRE-673 Asserts that a given mockito build works as it should (classloader problem in 2.7)
  *
  * @author Kristian Rosenvold
  */
 public class Surefire673MockitoIT
-    extends AbstractSurefireIntegrationTestClass
+    extends SurefireVerifierTestClass
 {
+    public Surefire673MockitoIT()
+    {
+        super( "/surefire-673-mockito" );
+    }
+
     public void testBuildFailingWhenErrors()
         throws Exception
     {
-        File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/surefire-673-mockito" );
-        Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        this.executeGoal( verifier, "test" );
-        verifier.resetStreams();
-        verifier.verifyErrorFreeLog( );
+        executeTest();
+        verifyErrorFreeLog();
     }
 }

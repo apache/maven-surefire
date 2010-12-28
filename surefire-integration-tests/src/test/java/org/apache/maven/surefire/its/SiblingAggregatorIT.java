@@ -32,6 +32,7 @@ import java.io.File;
 public class SiblingAggregatorIT
     extends AbstractSurefireIntegrationTestClass
 {
+
     public void testSiblingAggregator()
         throws Exception
     {

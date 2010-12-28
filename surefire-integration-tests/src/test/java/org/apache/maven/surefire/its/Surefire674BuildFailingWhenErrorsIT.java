@@ -21,10 +21,6 @@ package org.apache.maven.surefire.its;
 
 import junit.framework.Assert;
 import org.apache.maven.it.VerificationException;
-import org.apache.maven.it.Verifier;
-import org.apache.maven.it.util.ResourceExtractor;
-
-import java.io.File;
 
 /**
  * SUREFIRE-674 Asserts that the build fails when tests have errors
@@ -32,22 +28,25 @@ import java.io.File;
  * @author Kristian Rosenvold
  */
 public class Surefire674BuildFailingWhenErrorsIT
-    extends AbstractSurefireIntegrationTestClass
+    extends SurefireVerifierTestClass
 {
+
+    public Surefire674BuildFailingWhenErrorsIT()
+    {
+        super( "/surefire-674-buildFailingWhenErrors" );
+    }
+
     public void testBuildFailingWhenErrors()
         throws Exception
     {
-        File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/surefire-674-buildFailingWhenErrors" );
-        Verifier verifier = new Verifier( testDir.getAbsolutePath() );
         try
         {
-            this.executeGoal( verifier, "test" );
-            Assert.fail("The verifier should throw an exception");
+            executeTest();
+            Assert.fail( "The verifier should throw an exception" );
         }
         catch ( VerificationException ignore )
         {
         }
-        verifier.resetStreams();
-        verifier.verifyTextInLog( "BUILD FAILURE" );
+        verifyTextInLog( "BUILD FAILURE" );
     }
 }

@@ -20,7 +20,6 @@ package org.apache.maven.surefire.its;
 
 
 import org.apache.maven.it.Verifier;
-import org.apache.maven.it.util.ResourceExtractor;
 import org.codehaus.plexus.util.FileUtils;
 
 import java.io.File;
@@ -31,23 +30,26 @@ import java.io.File;
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
 public class Surefire162CharsetProviderIT
-    extends AbstractSurefireIntegrationTestClass
+    extends SurefireVerifierTestClass
 {
+    public Surefire162CharsetProviderIT()
+    {
+        super( "/surefire-162-charsetProvider" );
+    }
+
+    @SuppressWarnings( { "ResultOfMethodCallIgnored" } )
     public void testCharsetProvider()
         throws Exception
     {
-        File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/surefire-162-charsetProvider" );
-
-        Verifier verifier = new Verifier( testDir.getAbsolutePath() );
+        Verifier verifier = getVerifier();
         File jarFile = new File( verifier.getArtifactPath( "jcharset", "jcharset", "1.2.1", "jar" ) );
         jarFile.getParentFile().mkdirs();
-        FileUtils.copyFile( new File( testDir, "repo/jcharset/jcharset/1.2.1/jcharset-1.2.1.jar" ), jarFile );
-        FileUtils.copyFile( new File( testDir, "repo/jcharset/jcharset/1.2.1/jcharset-1.2.1.pom" ),
+        FileUtils.copyFile( getSubFile( "repo/jcharset/jcharset/1.2.1/jcharset-1.2.1.jar" ), jarFile );
+        FileUtils.copyFile( getSubFile( "repo/jcharset/jcharset/1.2.1/jcharset-1.2.1.pom" ),
                             new File( verifier.getArtifactPath( "jcharset", "jcharset", "1.2.1", "pom" ) ) );
-        this.executeGoal( verifier, "test" );
-        verifier.verifyErrorFreeLog();
-        verifier.resetStreams();
+        executeTest();
 
-        HelperAssertions.assertTestSuiteResults( 1, 0, 0, 0, testDir );
+        verifyErrorFreeLog();
+        assertTestSuiteResults( 1, 0, 0, 0 );
     }
 }
