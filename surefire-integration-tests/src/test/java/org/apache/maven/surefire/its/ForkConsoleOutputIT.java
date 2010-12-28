@@ -35,7 +35,7 @@ public class ForkConsoleOutputIT
         super( "/fork-consoleOutput" );
     }
 
-    public void NoTestPrintSummaryTrueWithRedirect()
+    public void testPrintSummaryTrueWithRedirect()
         throws Exception
     {
         redirectToFile( true );
@@ -45,7 +45,7 @@ public class ForkConsoleOutputIT
         assertPresent( getSurefireReportsFile( "forkConsoleOutput.Test1-output.txt" ) );
     }
 
-    public void NoTestPrintSummaryTrueWithoutRedirect()
+    public void testPrintSummaryTrueWithoutRedirect()
         throws Exception
     {
         redirectToFile( false );
@@ -67,7 +67,7 @@ public class ForkConsoleOutputIT
         assertPresent( getSurefireReportsFile( "forkConsoleOutput.Test1-output.txt" ) );
     }
 
-    public void NoTestPrintSummaryFalseWithoutRedirect()
+    public void testPrintSummaryFalseWithoutRedirect()
         throws Exception
     {
         redirectToFile( false );
