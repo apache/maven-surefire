@@ -524,7 +524,7 @@ public abstract class AbstractSurefireMojo
 
         if ( fork.isForking() )
         {
-            setUseSystemClassLoader( getUseSystemClassLoader() == null ? Boolean.TRUE : getUseSystemClassLoader() );
+            setUseSystemClassLoader( isUseSystemClassLoader() );
 
             fork.setSystemProperties( getInternalSystemProperties() );
 
@@ -579,7 +579,7 @@ public abstract class AbstractSurefireMojo
 
     protected ClassLoaderConfiguration getClassLoaderConfiguration( ForkConfiguration fork )
     {
-        return fork.isForking() ? new ClassLoaderConfiguration( getUseSystemClassLoader().booleanValue(),
+        return fork.isForking() ? new ClassLoaderConfiguration( isUseSystemClassLoader(),
                                                                 isUseManifestOnlyJar() )
             : new ClassLoaderConfiguration( false, false );
     }
@@ -901,7 +901,7 @@ public abstract class AbstractSurefireMojo
 
     protected void warnIfUselessUseSystemClassLoaderParameter()
     {
-        if ( getUseSystemClassLoader() != null && isForkModeNever() )
+        if ( isUseSystemClassLoader() && isForkModeNever() )
         {
             getLog().warn( "useSystemClassloader setting has no effect when not forking" );
         }

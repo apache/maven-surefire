@@ -240,9 +240,9 @@ public interface SurefireExecutionParameters
 
     void setDisableXmlReport( boolean disableXmlReport );
 
-    Boolean getUseSystemClassLoader();
+    boolean isUseSystemClassLoader();
 
-    void setUseSystemClassLoader( Boolean useSystemClassLoader );
+    void setUseSystemClassLoader( boolean useSystemClassLoader );
 
     boolean isUseManifestOnlyJar();
 

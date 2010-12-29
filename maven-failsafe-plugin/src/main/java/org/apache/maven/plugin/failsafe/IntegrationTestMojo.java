@@ -552,12 +552,12 @@ public class IntegrationTestMojo
     /**
      * Option to pass dependencies to the system's classloader instead of using an isolated class loader when forking.
      * Prevents problems with JDKs which implement the service provider lookup mechanism by using the system's
-     * classloader.  Default value is "true".
+     * classloader.
      *
-     * @parameter expression="${failsafe.useSystemClassLoader}"
+     * @parameter expression="${failsafe.useSystemClassLoader}" default-value="true"
      * @since 2.3
      */
-    private Boolean useSystemClassLoader;
+    private boolean useSystemClassLoader;
 
     /**
      * By default, Surefire forks your tests using a manifest-only JAR; set this parameter
@@ -615,11 +615,11 @@ public class IntegrationTestMojo
     /**
      * Defines the order the tests will be run in. Supported values are "alphabetical", "reversealphabetical",
      * "random", "hourly" (alphabetical on even hours, reverse alphabetical on odd hours) and "filesystem".<p/>
-     * Not supplying a value for this setting will run tests in filesystem order.<p/>
+     * <p/>
      * Odd/Even for hourly is determined at the time the of scanning the classpath, meaning it could change during
      * a multi-module build.
      *
-     * @parameter
+     * @parameter default-value="filesystem"
      * @since 2.7
      */
     private String runOrder;
@@ -1285,12 +1285,12 @@ public class IntegrationTestMojo
         this.disableXmlReport = disableXmlReport;
     }
 
-    public Boolean getUseSystemClassLoader()
+    public boolean isUseSystemClassLoader()
     {
         return useSystemClassLoader;
     }
 
-    public void setUseSystemClassLoader( Boolean useSystemClassLoader )
+    public void setUseSystemClassLoader( boolean useSystemClassLoader )
     {
         this.useSystemClassLoader = useSystemClassLoader;
     }
