@@ -464,21 +464,21 @@ public class IntegrationTestMojo
     private int threadCount;
 
     /**
-     * (JUnit 4.7 provider) Indicates that threadCount is per cpu core. Defaults to "true".
+     * (JUnit 4.7 provider) Indicates that threadCount is per cpu core.
      *
-     * @parameter expression="${perCoreThreadCount}"
+     * @parameter expression="${perCoreThreadCount}" default-value="true"
      * @since 2.5
      */
-    private String perCoreThreadCount;
+    private boolean perCoreThreadCount;
 
     /**
      * (JUnit 4.7 provider) Indicates that the thread pool will be unlimited. The <code>parallel</code> parameter and the actual number of classes/methods
      * will decide. Setting this to "true" effectively disables <code>perCoreThreadCount</code> and <code>threadCount</code>. Defaults to "false".
      *
-     * @parameter expression="${useUnlimitedThreads}"
+     * @parameter expression="${useUnlimitedThreads}" default-value="false"
      * @since 2.5
      */
-    private String useUnlimitedThreads;
+    private boolean useUnlimitedThreads;
 
     /**
      * (TestNG only) When you use the <code>parallel</code> attribute, TestNG will try to run all your test methods in separate threads, except for
@@ -1175,22 +1175,22 @@ public class IntegrationTestMojo
         this.threadCount = threadCount;
     }
 
-    public String getPerCoreThreadCount()
+    public boolean getPerCoreThreadCount()
     {
         return perCoreThreadCount;
     }
 
-    public void setPerCoreThreadCount( String perCoreThreadCount )
+    public void setPerCoreThreadCount( boolean perCoreThreadCount )
     {
         this.perCoreThreadCount = perCoreThreadCount;
     }
 
-    public String getUseUnlimitedThreads()
+    public boolean getUseUnlimitedThreads()
     {
         return useUnlimitedThreads;
     }
 
-    public void setUseUnlimitedThreads( String useUnlimitedThreads )
+    public void setUseUnlimitedThreads( boolean useUnlimitedThreads )
     {
         this.useUnlimitedThreads = useUnlimitedThreads;
     }

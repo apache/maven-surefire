@@ -184,7 +184,7 @@ public abstract class AbstractSurefireMojo
     }
 
     /**
-     * Converts old TestNG configuration parameters over to new properties based configuration
+     * Converts old JUnit configuration parameters over to new properties based configuration
      * method. (if any are defined the old way)
      */
     private void convertJunitCoreParameters()
@@ -202,14 +202,8 @@ public abstract class AbstractSurefireMojo
         {
             getProperties().setProperty( "threadCount", Integer.toString( this.getThreadCount() ) );
         }
-        if ( this.getPerCoreThreadCount() != null )
-        {
-            getProperties().setProperty( "perCoreThreadCount", getPerCoreThreadCount() );
-        }
-        if ( this.getUseUnlimitedThreads() != null )
-        {
-            getProperties().setProperty( "useUnlimitedThreads", getUseUnlimitedThreads() );
-        }
+        getProperties().setProperty( "perCoreThreadCount", Boolean.toString( getPerCoreThreadCount() ) );
+        getProperties().setProperty( "useUnlimitedThreads", Boolean.toString( getUseUnlimitedThreads() ) );
     }
 
     private boolean isJunit47Compatible( Artifact artifact )

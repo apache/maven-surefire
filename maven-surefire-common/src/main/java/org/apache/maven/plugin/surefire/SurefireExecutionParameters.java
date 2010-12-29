@@ -196,13 +196,13 @@ public interface SurefireExecutionParameters
 
     void setThreadCount( int threadCount );
 
-    String getPerCoreThreadCount();
+    boolean getPerCoreThreadCount();
 
-    void setPerCoreThreadCount( String perCoreThreadCount );
+    void setPerCoreThreadCount( boolean perCoreThreadCount );
 
-    String getUseUnlimitedThreads();
+    boolean getUseUnlimitedThreads();
 
-    void setUseUnlimitedThreads( String useUnlimitedThreads );
+    void setUseUnlimitedThreads( boolean useUnlimitedThreads );
 
     String getParallel();
 
