@@ -140,4 +140,8 @@ public class Classpath
         }
     }
 
+    public void setAsSystemProperty( String propertyName ){
+         System.setProperty( propertyName, getClassPathAsString());
+    }
+
 }

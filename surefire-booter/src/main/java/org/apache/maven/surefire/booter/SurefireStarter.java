@@ -50,6 +50,8 @@ public class SurefireStarter
 
     private final StartupConfiguration startupConfiguration;
 
+    private final String SUREFIRE_TEST_CLASSPATH = "surefire.test.class.path";
+
     public SurefireStarter( StartupConfiguration startupConfiguration, ProviderConfiguration providerConfiguration )
     {
         this.providerConfiguration = providerConfiguration;
@@ -61,6 +63,8 @@ public class SurefireStarter
     {
         final StartupConfiguration starterConfiguration = startupConfiguration;
         final ClasspathConfiguration classpathConfiguration = starterConfiguration.getClasspathConfiguration();
+
+        classpathConfiguration.getTestClasspath().setAsSystemProperty( SUREFIRE_TEST_CLASSPATH );
 
         ClassLoader testsClassLoader = classpathConfiguration.createTestClassLoaderConditionallySystem(
             starterConfiguration.useSystemClassLoader() );
@@ -97,7 +101,8 @@ public class SurefireStarter
 
         String testClassPath = classpathConfiguration.getTestClasspath().getClassPathAsString();
 
-        System.setProperty( "surefire.test.class.path", testClassPath );
+        classpathConfiguration.getTestClasspath().setAsSystemProperty( SUREFIRE_TEST_CLASSPATH );
+
         if ( startupConfiguration.isManifestOnlyJarRequestedAndUsable() )
         {
             testsClassLoader = getClass().getClassLoader(); // ClassLoader.getSystemClassLoader()
