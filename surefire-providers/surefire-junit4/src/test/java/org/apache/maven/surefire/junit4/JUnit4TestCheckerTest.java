@@ -106,6 +106,12 @@ public class JUnit4TestCheckerTest
         assertTrue( jUnit4TestChecker.isValidJUnit4Test( CustomSuiteOnlyTest.class ) );
     }
 
+    @Test
+    public void innerClassNotAutomaticallyTc(){
+        assertTrue( jUnit4TestChecker.isValidJUnit4Test( NestedTC.class));
+        assertFalse( jUnit4TestChecker.isValidJUnit4Test( NestedTC.Inner.class));
+    }
+
 
     public static class AlsoValid
         extends TestCase
@@ -216,6 +222,12 @@ public class JUnit4TestCheckerTest
             throws InitializationError
         {
             super( klass );
+        }
+    }
+
+    class NestedTC extends TestCase {
+        public class Inner {
+
         }
     }
 
