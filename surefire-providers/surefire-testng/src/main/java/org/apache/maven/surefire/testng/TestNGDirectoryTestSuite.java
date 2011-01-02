@@ -99,8 +99,6 @@ public class TestNGDirectoryTestSuite
     public void execute( TestsToRun testsToRun, ReporterFactory reporterManagerFactory )
         throws ReporterException, TestSetFailedException
     {
-        ReporterManager reporterManager = (ReporterManager) reporterManagerFactory.createReporter();
-        startTestSuite( reporterManager, this );
 
         if ( testsToRun.size() == 0 )
         {
@@ -112,6 +110,10 @@ public class TestNGDirectoryTestSuite
             executeMulti( testsToRun, reporterManagerFactory );
             return;
         }
+
+        ReporterManager reporterManager = (ReporterManager) reporterManagerFactory.createReporter();
+        startTestSuite( reporterManager, this );
+
         TestNGExecutor.run( new Class[]{ (Class) testsToRun.iterator().next() }, this.testSourceDirectory, this.options,
                             this.version, this.classifier, reporterManager, this, reportsDirectory );
 
