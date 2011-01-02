@@ -23,13 +23,24 @@ import org.apache.maven.surefire.NonAbstractClassFilter;
 import org.apache.maven.surefire.util.ReflectionUtils;
 import org.apache.maven.surefire.util.ScannerFilter;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+
 /**
+ * Missing tests ? This class is basically a subset of the JUnit4TestChecker, which is tested
+ * to boredom and back. Unfortunately we don't have any common module between these providers,
+ * so this stuff is duplicated. We should probably make some modules and just shade the content
+ * into the providers.
+ *
  * @author Kristian Rosenvold
  */
 public class JUnit3TestChecker
     implements ScannerFilter
 {
     private final Class junitClass;
+
+    private static final Class[] EMPTY_CLASS_ARRAY = new Class[0];
+
 
     private final NonAbstractClassFilter nonAbstractClassFilter = new NonAbstractClassFilter();
 
@@ -41,7 +52,7 @@ public class JUnit3TestChecker
 
     public boolean accept( Class testClass )
     {
-        return nonAbstractClassFilter.accept(  testClass ) && isValidJUnit3Test( testClass );
+        return nonAbstractClassFilter.accept( testClass ) && isValidJUnit3Test( testClass );
     }
 
     public boolean isValidJUnit3Test( Class testClass )
@@ -49,9 +60,24 @@ public class JUnit3TestChecker
         return isJunit3Test( testClass ) || isPojoTest( testClass );
     }
 
+    public boolean isSuiteOnly( Class testClass )
+    {
+        final Method suite = ReflectionUtils.tryGetMethod( testClass, "suite", EMPTY_CLASS_ARRAY );
+        if ( suite != null )
+        {
+
+            final int modifiers = suite.getModifiers();
+            if ( Modifier.isPublic( modifiers ) && Modifier.isStatic( modifiers ) )
+            {
+                return junit.framework.Test.class.isAssignableFrom( suite.getReturnType() );
+            }
+        }
+        return false;
+    }
+
     public boolean isJunit3Test( Class testClass )
     {
-        return junitClass != null && junitClass.isAssignableFrom( testClass );
+        return junitClass != null && ( junitClass.isAssignableFrom( testClass ) || isSuiteOnly( testClass ) );
     }
 
     private boolean isPojoTest( Class testClass )

@@ -35,15 +35,33 @@ public class ReflectionUtils
 
     public static Method getMethod( Object instance, String methodName, Class[] parameters )
     {
+        return getMethod( instance.getClass(), methodName, parameters );
+    }
+
+    public static Method getMethod( Class clazz, String methodName, Class[] parameters )
+    {
         try
         {
-            return instance.getClass().getMethod( methodName, parameters );
+            return clazz.getMethod( methodName, parameters );
         }
         catch ( NoSuchMethodException e )
         {
             throw new RuntimeException( "When finding method " + methodName, e );
         }
     }
+
+    public static Method tryGetMethod( Class clazz, String methodName, Class[] parameters )
+    {
+        try
+        {
+            return clazz.getMethod( methodName, parameters );
+        }
+        catch ( NoSuchMethodException e )
+        {
+            return null;
+        }
+    }
+
 
     public static Object invokeGetter( Object instance, String methodName )
     {
@@ -88,8 +106,7 @@ public class ReflectionUtils
         try
         {
 
-
-            Class clazz = loadClass(  classLoader, classname );
+            Class clazz = loadClass( classLoader, classname );
             return clazz.newInstance();
         }
         catch ( InstantiationException e )
@@ -179,7 +196,6 @@ public class ReflectionUtils
                         paramTypes[j] = params[j].getClass();
                     }
                 }
-
 
                 Constructor constructor = getConstructor( clazz, paramTypes );
 

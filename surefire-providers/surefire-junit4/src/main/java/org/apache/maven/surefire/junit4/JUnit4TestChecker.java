@@ -25,6 +25,7 @@ import org.apache.maven.surefire.util.ScannerFilter;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 
 /**
  * @author Kristian Rosenvold
@@ -37,6 +38,9 @@ public class JUnit4TestChecker
     private final NonAbstractClassFilter nonAbstractClassFilter;
 
     private final Class runWith;
+
+    private static final Class[] EMPTY_CLASS_ARRAY = new Class[0];
+
 
     public JUnit4TestChecker( ClassLoader testClassLoader )
     {
@@ -57,7 +61,7 @@ public class JUnit4TestChecker
         {
             return false;
         }
-        if ( junitClass != null && junitClass.isAssignableFrom( testClass ) )
+        if ( junitClass != null && ( junitClass.isAssignableFrom( testClass ) || isSuiteOnly( testClass ) ) )
         {
             return true;
         }
@@ -90,6 +94,21 @@ public class JUnit4TestChecker
                 {
                     return true;
                 }
+            }
+        }
+        return false;
+    }
+
+    public boolean isSuiteOnly( Class testClass )
+    {
+        final Method suite = ReflectionUtils.tryGetMethod( testClass, "suite", EMPTY_CLASS_ARRAY );
+        if ( suite != null )
+        {
+
+            final int modifiers = suite.getModifiers();
+            if ( Modifier.isPublic( modifiers ) && Modifier.isStatic( modifiers ) )
+            {
+                return junit.framework.Test.class.isAssignableFrom( suite.getReturnType() );
             }
         }
         return false;

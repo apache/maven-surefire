@@ -19,6 +19,7 @@ package org.apache.maven.surefire.junit4;
  */
 
 import junit.framework.TestCase;
+import junit.framework.TestResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.junit.Test;
 import org.junit.internal.runners.InitializationError;
@@ -65,6 +66,7 @@ public class JUnit4TestCheckerTest
     {
         assertTrue( jUnit4TestChecker.isValidJUnit4Test( SuiteValid1.class ) );
     }
+
     @Test
     public void validCustomSuite()
         throws TestSetFailedException
@@ -87,8 +89,21 @@ public class JUnit4TestCheckerTest
     }
 
     @Test
-    public void dontAcceptAbstractClasses(){
+    public void dontAcceptAbstractClasses()
+    {
         assertFalse( jUnit4TestChecker.isValidJUnit4Test( BaseClassWithTest.class ) );
+    }
+
+    @Test
+    public void suiteOnlyTest()
+    {
+        assertTrue( jUnit4TestChecker.isValidJUnit4Test( SuiteOnlyTest.class ) );
+    }
+
+    @Test
+    public void customSuiteOnlyTest()
+    {
+        assertTrue( jUnit4TestChecker.isValidJUnit4Test( CustomSuiteOnlyTest.class ) );
     }
 
 
@@ -100,6 +115,36 @@ public class JUnit4TestCheckerTest
 
         }
     }
+
+    public static class SuiteOnlyTest
+    {
+        public static junit.framework.Test suite()
+        {
+            return null;
+        }
+    }
+
+    public static class CustomSuiteOnlyTest
+    {
+        public static MySuite2 suite()
+        {
+            return null;
+        }
+    }
+
+    public static class MySuite2
+        implements junit.framework.Test
+    {
+        public int countTestCases()
+        {
+            return 0;
+        }
+
+        public void run( TestResult testResult )
+        {
+        }
+    }
+
 
     public static class NotValidTest
     {
@@ -115,11 +160,13 @@ public class JUnit4TestCheckerTest
         {
         }
     }
-    public static class SubClassWithoutOwnTestMethods extends BaseClassWithTest
+
+    public static class SubClassWithoutOwnTestMethods
+        extends BaseClassWithTest
     {
     }
 
-    @RunWith(Suite.class)
+    @RunWith( Suite.class )
     public static class SuiteValid1
     {
         public void testSomething()
@@ -129,7 +176,8 @@ public class JUnit4TestCheckerTest
     }
 
     class CustomRunner
-        extends Runner {
+        extends Runner
+    {
         @Override
         public Description getDescription()
         {
@@ -142,7 +190,7 @@ public class JUnit4TestCheckerTest
         }
     }
 
-    @RunWith(CustomRunner.class)
+    @RunWith( CustomRunner.class )
     public static class SuiteValidCustomRunner
     {
         public void testSomething()
@@ -152,7 +200,7 @@ public class JUnit4TestCheckerTest
     }
 
 
-    @RunWith(MySuite.class)
+    @RunWith( MySuite.class )
     public static class SuiteValid2
     {
         public void testSomething()
@@ -161,7 +209,9 @@ public class JUnit4TestCheckerTest
         }
     }
 
-    class MySuite extends Suite {
+    class MySuite
+        extends Suite
+    {
         MySuite( Class<?> klass )
             throws InitializationError
         {
