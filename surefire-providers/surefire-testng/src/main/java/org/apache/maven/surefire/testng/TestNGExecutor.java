@@ -28,7 +28,6 @@ import org.apache.maven.surefire.testng.conf.TestNG4751Configurator;
 import org.apache.maven.surefire.testng.conf.TestNG52Configurator;
 import org.apache.maven.surefire.testng.conf.TestNGMapConfigurator;
 import org.apache.maven.surefire.testset.TestSetFailedException;
-import org.testng.IReporter;
 import org.testng.TestNG;
 
 import java.io.File;
@@ -49,27 +48,25 @@ public class TestNGExecutor
     }
 
     public static void run( Class[] testClasses, String testSourceDirectory, Map options, ArtifactVersion version,
-                            String classifier, ReporterManager reportManager, TestNgTestSuite suite,
-                            File reportsDirectory )
+                            ReporterManager reportManager, TestNgTestSuite suite, File reportsDirectory )
         throws TestSetFailedException
     {
         TestNG testng = new TestNG( true );
         Configurator configurator = getConfigurator( version );
         configurator.configure( testng, options );
-        postConfigure( testng, testSourceDirectory, classifier, reportManager, suite, reportsDirectory );
+        postConfigure( testng, testSourceDirectory, reportManager, suite, reportsDirectory );
         testng.setTestClasses( testClasses );
         testng.run();
     }
 
     public static void run( List suiteFiles, String testSourceDirectory, Map options, ArtifactVersion version,
-                            String classifier, ReporterManager reportManager, TestNgTestSuite suite,
-                            File reportsDirectory )
+                            ReporterManager reportManager, TestNgTestSuite suite, File reportsDirectory )
         throws TestSetFailedException
     {
         TestNG testng = new TestNG( true );
         Configurator configurator = getConfigurator( version );
         configurator.configure( testng, options );
-        postConfigure( testng, testSourceDirectory, classifier, reportManager, suite, reportsDirectory );
+        postConfigure( testng, testSourceDirectory, reportManager, suite, reportsDirectory );
         testng.setTestSuites( suiteFiles );
         testng.run();
     }
@@ -104,8 +101,7 @@ public class TestNGExecutor
     }
 
 
-    private static void postConfigure( TestNG testNG, String sourcePath, String classifier,
-                                       ReporterManager reportManager, TestNgTestSuite suite, File reportsDirectory )
+    private static void postConfigure( TestNG testNG, String sourcePath, ReporterManager reportManager, TestNgTestSuite suite, File reportsDirectory )
         throws TestSetFailedException
     {
         // turn off all TestNG output
@@ -146,21 +142,4 @@ public class TestNGExecutor
             return new TestNGReporter( reportManager );
         }
     }
-
-    private static void attachNonStandardReporter( TestNG testNG, String className )
-    {
-        try
-        {
-            Class c = Class.forName( className );
-            if ( IReporter.class.isAssignableFrom( c ) )
-            {
-                testNG.addListener( c.newInstance() );
-            }
-        }
-        catch ( Exception e )
-        {
-            // ignore
-        }
-    }
-
 }

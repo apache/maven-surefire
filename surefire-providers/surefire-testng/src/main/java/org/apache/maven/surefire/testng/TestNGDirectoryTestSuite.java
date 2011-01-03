@@ -59,8 +59,6 @@ public class TestNGDirectoryTestSuite
 
     private ArtifactVersion version;
 
-    private String classifier;
-
     private Map options;
 
     private String testSourceDirectory;
@@ -72,16 +70,14 @@ public class TestNGDirectoryTestSuite
     private final DirectoryScanner surefireDirectoryScanner;
 
     public TestNGDirectoryTestSuite( File basedir, ArrayList includes, ArrayList excludes, String testSourceDirectory,
-                                     String artifactVersion, String artifactClassifier, Properties confOptions,
-                                     File reportsDirectory )
+                                     String artifactVersion, Properties confOptions, File reportsDirectory )
     {
         this( basedir, includes, excludes, testSourceDirectory, new DefaultArtifactVersion( artifactVersion ),
-              artifactClassifier, confOptions, reportsDirectory );
+              confOptions, reportsDirectory );
     }
 
     public TestNGDirectoryTestSuite( File basedir, List includes, List excludes, String testSourceDirectory,
-                                     ArtifactVersion artifactVersion, String artifactClassifier, Map confOptions,
-                                     File reportsDirectory )
+                                     ArtifactVersion artifactVersion, Map confOptions, File reportsDirectory )
     {
         this.surefireDirectoryScanner = new DefaultDirectoryScanner( basedir, includes, excludes,
                                                                      "filesystem" );
@@ -91,8 +87,6 @@ public class TestNGDirectoryTestSuite
         this.testSourceDirectory = testSourceDirectory;
         this.reportsDirectory = reportsDirectory;
         this.version = artifactVersion;
-
-        this.classifier = artifactClassifier;
 
     }
 
@@ -115,7 +109,7 @@ public class TestNGDirectoryTestSuite
         startTestSuite( reporterManager, this );
 
         TestNGExecutor.run( new Class[]{ (Class) testsToRun.iterator().next() }, this.testSourceDirectory, this.options,
-                            this.version, this.classifier, reporterManager, this, reportsDirectory );
+                            this.version, reporterManager, this, reportsDirectory );
 
         finishTestSuite( reporterManager, this );
     }
@@ -162,8 +156,7 @@ public class TestNGDirectoryTestSuite
 
         Class[] testClasses = (Class[]) testNgTestClasses.toArray( new Class[testNgTestClasses.size()] );
 
-        TestNGExecutor.run( testClasses, this.testSourceDirectory, this.options, this.version, this.classifier,
-                            reporterManager, this, testNgReportsDirectory );
+        TestNGExecutor.run( testClasses, this.testSourceDirectory, this.options, this.version, reporterManager, this, testNgReportsDirectory );
 
         if ( junitTestClasses.size() > 0 )
         {
@@ -178,8 +171,7 @@ public class TestNGDirectoryTestSuite
 
             junitOptions.put( "junit", Boolean.TRUE );
 
-            TestNGExecutor.run( testClasses, this.testSourceDirectory, junitOptions, this.version, this.classifier,
-                                reporterManager, this, junitReportsDirectory );
+            TestNGExecutor.run( testClasses, this.testSourceDirectory, junitOptions, this.version, reporterManager, this, junitReportsDirectory );
         }
 
         finishTestSuite( reporterManager, this );
@@ -204,7 +196,7 @@ public class TestNGDirectoryTestSuite
         startTestSuite( reporterManager, this );
 
         TestNGExecutor.run( new Class[]{ testSet.getTestClass() }, this.testSourceDirectory, this.options, this.version,
-                            this.classifier, reporterManager, this, reportsDirectory );
+                            reporterManager, this, reportsDirectory );
 
         finishTestSuite( reporterManager, this );
     }

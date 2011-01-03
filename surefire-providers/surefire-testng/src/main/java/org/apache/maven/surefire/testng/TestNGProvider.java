@@ -116,8 +116,8 @@ public class TestNGProvider
 
     boolean isTestNGXmlTestSuite( TestRequest testSuiteDefinition )
     {
-        return testSuiteDefinition.getSuiteXmlFiles() != null && testSuiteDefinition.getSuiteXmlFiles().size() > 0 &&
-            testSuiteDefinition.getRequestedTest() == null;
+        return testSuiteDefinition.getSuiteXmlFiles() != null && testSuiteDefinition.getSuiteXmlFiles().size() > 0
+            && testSuiteDefinition.getRequestedTest() == null;
 
     }
 
@@ -127,15 +127,15 @@ public class TestNGProvider
         return new TestNGDirectoryTestSuite( basedir, new ArrayList( directoryScannerParameters.getIncludes() ),
                                              new ArrayList( directoryScannerParameters.getExcludes() ),
                                              testRequest.getTestSourceDirectory().toString(),
-                                             testArtifactInfo.getVersion(), testArtifactInfo.getClassifier(),
-                                             providerProperties, reporterConfiguration.getReportsDirectory() );
+                                             testArtifactInfo.getVersion(), providerProperties,
+                                             reporterConfiguration.getReportsDirectory() );
     }
 
     private TestNGXmlTestSuite getXmlSuite()
     {
         return new TestNGXmlTestSuite( testRequest.getSuiteXmlFiles(), testRequest.getTestSourceDirectory().toString(),
-                                       testArtifactInfo.getVersion(), testArtifactInfo.getClassifier(),
-                                       providerProperties, reporterConfiguration.getReportsDirectory() );
+                                       testArtifactInfo.getVersion(), providerProperties,
+                                       reporterConfiguration.getReportsDirectory() );
     }
 
 
