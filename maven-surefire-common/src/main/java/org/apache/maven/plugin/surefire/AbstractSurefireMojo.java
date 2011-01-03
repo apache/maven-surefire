@@ -108,8 +108,9 @@ public abstract class AbstractSurefireMojo
         try
         {
             wellKnownProviders = new ProviderList( new ProviderInfo[]{ new TestNgProviderInfo( getTestNgArtifact() ),
-                new JUnitCoreProviderInfo( getJunitArtifact() ), new JUnit4ProviderInfo( getJunitArtifact() ),
-                new JUnit3ProviderInfo() }, new DynamicProviderInfo( null ) );
+                new JUnitCoreProviderInfo( getJunitArtifact() ),
+                new JUnit4ProviderInfo( getJunitArtifact(), getJunitDepArtifact() ), new JUnit3ProviderInfo() },
+                                                   new DynamicProviderInfo( null ) );
 
             return wellKnownProviders.resolve( getLog() );
         }
@@ -481,14 +482,12 @@ public abstract class AbstractSurefireMojo
 
     private Artifact getJunitArtifact()
     {
-        Artifact junitArtifact;
-        junitArtifact = (Artifact) getProjectArtifactMap().get( getJunitArtifactName() );
-        // SUREFIRE-378, junit can have an alternate artifact name
-        if ( junitArtifact == null && "junit:junit".equals( getJunitArtifactName() ) )
-        {
-            junitArtifact = (Artifact) getProjectArtifactMap().get( "junit:junit-dep" );
-        }
-        return junitArtifact;
+        return (Artifact) getProjectArtifactMap().get( getJunitArtifactName() );
+    }
+
+    private Artifact getJunitDepArtifact()
+    {
+        return (Artifact) getProjectArtifactMap().get( "junit:junit-dep" );
     }
 
     protected ForkStarter createForkStarter( ProviderInfo provider, ForkConfiguration forkConfiguration,
@@ -578,8 +577,8 @@ public abstract class AbstractSurefireMojo
 
     protected ClassLoaderConfiguration getClassLoaderConfiguration( ForkConfiguration fork )
     {
-        return fork.isForking() ? new ClassLoaderConfiguration( isUseSystemClassLoader(),
-                                                                isUseManifestOnlyJar() )
+        return fork.isForking()
+            ? new ClassLoaderConfiguration( isUseSystemClassLoader(), isUseManifestOnlyJar() )
             : new ClassLoaderConfiguration( false, false );
     }
 
@@ -986,9 +985,12 @@ public abstract class AbstractSurefireMojo
     {
         private final Artifact junitArtifact;
 
-        JUnit4ProviderInfo( Artifact junitArtifact )
+        private final Artifact junitDepArtifact;
+
+        JUnit4ProviderInfo( Artifact junitArtifact, Artifact junitDepArtifact )
         {
             this.junitArtifact = junitArtifact;
+            this.junitDepArtifact = junitDepArtifact;
         }
 
         public String getProviderName()
@@ -998,7 +1000,7 @@ public abstract class AbstractSurefireMojo
 
         public boolean isApplicable()
         {
-            return isAnyJunit4( junitArtifact );
+            return junitDepArtifact != null || isAnyJunit4( junitArtifact );
         }
 
         public void addProviderProperties()

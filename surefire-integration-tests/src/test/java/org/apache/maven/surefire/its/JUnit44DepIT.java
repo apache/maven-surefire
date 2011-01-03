@@ -24,10 +24,10 @@ package org.apache.maven.surefire.its;
  *
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
-public class JUnit44Dep
+public class JUnit44DepIT
     extends SurefireVerifierTestClass
 {
-    public JUnit44Dep()
+    public JUnit44DepIT()
     {
         super( "/junit44-dep" );
     }
@@ -39,4 +39,14 @@ public class JUnit44Dep
         verifyErrorFreeLog();
         assertTestSuiteResults( 1, 0, 0, 0 );
     }
+    public void testJUnit44DepWithSneaky381()
+        throws Exception
+    {
+        activateProfile("provided381");
+        executeTest();
+        verifyErrorFreeLog();
+        assertTestSuiteResults( 1, 0, 0, 0 );
+    }
+
+
 }

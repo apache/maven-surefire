@@ -229,6 +229,12 @@ public abstract class SurefireVerifierTestClass
         addGoal( "-DforkMode=" + forkMode );
     }
 
+    protected void activateProfile( String profile )
+    {
+        addGoal("-P" + profile);
+    }
+
+
     public void assertTestSuiteResults( int total, int errors, int failures, int skipped )
         throws MavenReportException
     {
