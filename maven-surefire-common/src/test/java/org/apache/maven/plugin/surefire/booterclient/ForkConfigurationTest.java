@@ -38,7 +38,6 @@ public class ForkConfigurationTest
     {
         ForkConfiguration config = getForkConfiguration();
         File cpElement = getTempClasspathFile();
-        config.setForkMode( ForkConfiguration.FORK_ONCE );
         config.setJvmExecutable( "java" );
 
         Commandline cli = config.createCommandLine( Collections.singletonList( cpElement.getAbsolutePath() ), true );
@@ -72,7 +71,7 @@ public class ForkConfigurationTest
     public static ForkConfiguration getForkConfiguration()
         throws IOException
     {
-        ForkConfiguration forkConfiguration = new ForkConfiguration( new Classpath() );
+        ForkConfiguration forkConfiguration = new ForkConfiguration( new Classpath(), ForkConfiguration.FORK_ONCE, null );
         forkConfiguration.setWorkingDirectory( new File( "." ).getCanonicalFile() );
         return forkConfiguration;
     }

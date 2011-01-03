@@ -56,7 +56,7 @@ public class ForkConfiguration
 
     private final Classpath bootClasspathConfiguration;
 
-    private String forkMode;
+    private final String forkMode;
 
     private Properties systemProperties;
 
@@ -74,9 +74,11 @@ public class ForkConfiguration
 
     private String debugLine;
 
-    public ForkConfiguration( Classpath bootClasspathConfiguration )
+    public ForkConfiguration( Classpath bootClasspathConfiguration, String forkMode, File tmpDir )
     {
         this.bootClasspathConfiguration = bootClasspathConfiguration;
+        this.forkMode = getForkMode( forkMode );
+        this.tempDirectory = tmpDir;
     }
 
     public Classpath getBootClasspath()
@@ -84,19 +86,19 @@ public class ForkConfiguration
         return bootClasspathConfiguration;
     }
 
-    public void setForkMode( String forkMode )
+    private static String getForkMode( String forkMode )
     {
         if ( "pertest".equalsIgnoreCase( forkMode ) )
         {
-            this.forkMode = FORK_ALWAYS;
+            return FORK_ALWAYS;
         }
         else if ( "none".equalsIgnoreCase( forkMode ) )
         {
-            this.forkMode = FORK_NEVER;
+            return FORK_NEVER;
         }
         else if ( forkMode.equals( FORK_NEVER ) || forkMode.equals( FORK_ONCE ) || forkMode.equals( FORK_ALWAYS ) )
         {
-            this.forkMode = forkMode;
+            return forkMode;
         }
         else
         {

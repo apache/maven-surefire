@@ -504,15 +504,14 @@ public abstract class AbstractSurefireMojo
 
     protected ForkConfiguration getForkConfiguration()
     {
-        final Classpath bootClasspathConfiguration = new Classpath();
-
-        ForkConfiguration fork = new ForkConfiguration( bootClasspathConfiguration );
-
-        fork.setForkMode( getForkMode() );
-
         File tmpDir = new File( getReportsDirectory().getParentFile(), "surefire" );
         //noinspection ResultOfMethodCallIgnored
         tmpDir.mkdirs();
+
+        final Classpath bootClasspathConfiguration = new Classpath();
+
+        ForkConfiguration fork = new ForkConfiguration( bootClasspathConfiguration, getForkMode(), tmpDir );
+
         fork.setTempDirectory( tmpDir );
 
         processSystemProperties( !fork.isForking() );
