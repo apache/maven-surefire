@@ -46,8 +46,9 @@ public abstract class AbstractConsoleReporter
     protected AbstractConsoleReporter( String format, ReporterConfiguration reporterConfiguration )
     {
         // TODO: use logger
-        super( new PrintWriter( new OutputStreamWriter( new BufferedOutputStream( ORIGINAL_SYSTEM_OUT, BUFFER_SIZE ) ) ),
-               format, reporterConfiguration );
+        super(
+            new PrintWriter( new OutputStreamWriter( new BufferedOutputStream( ORIGINAL_SYSTEM_OUT, BUFFER_SIZE ) ) ),
+            format, reporterConfiguration );
     }
 
     public void testSetStarting( ReportEntry report )
@@ -125,7 +126,7 @@ public abstract class AbstractConsoleReporter
             }
         }
         name = message.substring( TEST_SET_STARTING_PREFIX.length(), i );
-        return DefaultReportEntry.nameGroup( name, group );
+        return CategorizedReportEntry.nameGroup( name, group );
     }
 
     /**

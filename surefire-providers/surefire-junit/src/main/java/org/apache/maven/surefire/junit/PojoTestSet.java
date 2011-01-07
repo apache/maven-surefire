@@ -19,25 +19,21 @@ package org.apache.maven.surefire.junit;
  * under the License.
  */
 
-import org.apache.maven.surefire.Surefire;
-import org.apache.maven.surefire.report.DefaultReportEntry;
 import org.apache.maven.surefire.report.PojoStackTraceWriter;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterManager;
+import org.apache.maven.surefire.report.SimpleReportEntry;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.ResourceBundle;
 
 public class PojoTestSet
     implements SurefireTestSet
 {
-    private ResourceBundle bundle = ResourceBundle.getBundle( Surefire.SUREFIRE_BUNDLE_NAME );
 
     private static final String TEST_METHOD_PREFIX = "test";
 
@@ -124,7 +120,7 @@ public class PojoTestSet
         userFriendlyMethodName += ')';
 
         ReportEntry report =
-            new DefaultReportEntry( testObject.getClass().getName(), getTestName( userFriendlyMethodName ), getName() );
+            new SimpleReportEntry( testObject.getClass().getName(), getTestName( userFriendlyMethodName ) );
 
         reportManager.testStarting( report );
 
@@ -134,18 +130,9 @@ public class PojoTestSet
         }
         catch ( Exception e )
         {
-            // Treat any exception from setUpFixture as a failure of the test.
-            String rawString = bundle.getString( "setupFixtureFailed" );
-
-            MessageFormat msgFmt = new MessageFormat( rawString );
-
-            Object[] stringArgs = { method.getName() };
-
-            String stringToPrint = msgFmt.format( stringArgs );
-
-            report = new DefaultReportEntry( testObject.getClass().getName(), getTestName( userFriendlyMethodName ),
-                                             stringToPrint, new PojoStackTraceWriter( testObject.getClass().getName(),
-                                                                                      method.getName(), e ) );
+            report = new SimpleReportEntry( testObject.getClass().getName(), getTestName( userFriendlyMethodName ),
+                                            new PojoStackTraceWriter( testObject.getClass().getName(), method.getName(),
+                                                                      e ) );
 
             reportManager.testFailed( report );
 
@@ -162,8 +149,7 @@ public class PojoTestSet
         {
             method.invoke( testObject, args );
 
-            report = new DefaultReportEntry( testObject.getClass().getName(), getTestName( userFriendlyMethodName ),
-                                             getName() );
+            report = new SimpleReportEntry( testObject.getClass().getName(), getTestName( userFriendlyMethodName ) );
 
             reportManager.testSucceeded( report );
         }
@@ -171,17 +157,9 @@ public class PojoTestSet
         {
             Throwable t = ite.getTargetException();
 
-            String msg = t.getMessage();
-
-            if ( msg == null )
-            {
-                msg = t.toString();
-            }
-
-            report =
-                new DefaultReportEntry( testObject.getClass().getName(), getTestName( userFriendlyMethodName ), msg,
-                                        new PojoStackTraceWriter( testObject.getClass().getName(), method.getName(),
-                                                                  t ) );
+            report = new SimpleReportEntry( testObject.getClass().getName(), getTestName( userFriendlyMethodName ),
+                                            new PojoStackTraceWriter( testObject.getClass().getName(), method.getName(),
+                                                                      t ) );
 
             reportManager.testFailed( report );
             // Don't return  here, because tearDownFixture should be called even
@@ -189,17 +167,9 @@ public class PojoTestSet
         }
         catch ( Throwable t )
         {
-            String msg = t.getMessage();
-
-            if ( msg == null )
-            {
-                msg = t.toString();
-            }
-
-            report =
-                new DefaultReportEntry( testObject.getClass().getName(), getTestName( userFriendlyMethodName ), msg,
-                                        new PojoStackTraceWriter( testObject.getClass().getName(), method.getName(),
-                                                                  t ) );
+            report = new SimpleReportEntry( testObject.getClass().getName(), getTestName( userFriendlyMethodName ),
+                                            new PojoStackTraceWriter( testObject.getClass().getName(), method.getName(),
+                                                                      t ) );
 
             reportManager.testFailed( report );
             // Don't return  here, because tearDownFixture should be called even
@@ -213,17 +183,9 @@ public class PojoTestSet
         catch ( Throwable t )
         {
             // Treat any exception from tearDownFixture as a failure of the test.
-            String rawString = bundle.getString( "cleanupFixtureFailed" );
-
-            MessageFormat msgFmt = new MessageFormat( rawString );
-
-            Object[] stringArgs = { method.getName() };
-
-            String stringToPrint = msgFmt.format( stringArgs );
-
-            report = new DefaultReportEntry( testObject.getClass().getName(), getTestName( userFriendlyMethodName ),
-                                             stringToPrint, new PojoStackTraceWriter( testObject.getClass().getName(),
-                                                                                      method.getName(), t ) );
+            report = new SimpleReportEntry( testObject.getClass().getName(), getTestName( userFriendlyMethodName ),
+                                            new PojoStackTraceWriter( testObject.getClass().getName(), method.getName(),
+                                                                      t ) );
 
             reportManager.testFailed( report );
 

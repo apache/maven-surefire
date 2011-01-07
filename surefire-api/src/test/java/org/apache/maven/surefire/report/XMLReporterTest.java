@@ -39,8 +39,7 @@ public class XMLReporterTest
         super.setUp();
         reporter = new XMLReporter( ForkingConsoleReporterTest.getTestReporterConfiguration() );
         message = "junit.framework.AssertionFailedError";
-        reportEntry = new DefaultReportEntry( this.getClass().getName(), "XMLReporterTest", message,
-                                              new PojoStackTraceWriter( "", "", new AssertionFailedError() ) );
+        reportEntry = new SimpleReportEntry( this.getClass().getName(), "XMLReporterTest", new PojoStackTraceWriter( "", "", new AssertionFailedError() ) );
     }
 
     /*

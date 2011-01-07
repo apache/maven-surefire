@@ -22,13 +22,12 @@ package org.apache.maven.surefire.testng;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.surefire.NonAbstractClassFilter;
-import org.apache.maven.surefire.Surefire;
-import org.apache.maven.surefire.report.DefaultReportEntry;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.ReporterManager;
 import org.apache.maven.surefire.report.ReporterManagerFactory;
+import org.apache.maven.surefire.report.SimpleReportEntry;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.DefaultDirectoryScanner;
 import org.apache.maven.surefire.util.DirectoryScanner;
@@ -42,7 +41,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.ResourceBundle;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -55,8 +53,6 @@ import java.util.TreeMap;
 public class TestNGDirectoryTestSuite
     implements TestNgTestSuite
 {
-    protected static ResourceBundle bundle = ResourceBundle.getBundle( Surefire.SUREFIRE_BUNDLE_NAME );
-
     private ArtifactVersion version;
 
     private Map options;
@@ -79,8 +75,7 @@ public class TestNGDirectoryTestSuite
     public TestNGDirectoryTestSuite( File basedir, List includes, List excludes, String testSourceDirectory,
                                      ArtifactVersion artifactVersion, Map confOptions, File reportsDirectory )
     {
-        this.surefireDirectoryScanner = new DefaultDirectoryScanner( basedir, includes, excludes,
-                                                                     "filesystem" );
+        this.surefireDirectoryScanner = new DefaultDirectoryScanner( basedir, includes, excludes, "filesystem" );
 
         this.options = confOptions;
 
@@ -156,7 +151,8 @@ public class TestNGDirectoryTestSuite
 
         Class[] testClasses = (Class[]) testNgTestClasses.toArray( new Class[testNgTestClasses.size()] );
 
-        TestNGExecutor.run( testClasses, this.testSourceDirectory, this.options, this.version, reporterManager, this, testNgReportsDirectory );
+        TestNGExecutor.run( testClasses, this.testSourceDirectory, this.options, this.version, reporterManager, this,
+                            testNgReportsDirectory );
 
         if ( junitTestClasses.size() > 0 )
         {
@@ -171,7 +167,8 @@ public class TestNGDirectoryTestSuite
 
             junitOptions.put( "junit", Boolean.TRUE );
 
-            TestNGExecutor.run( testClasses, this.testSourceDirectory, junitOptions, this.version, reporterManager, this, junitReportsDirectory );
+            TestNGExecutor.run( testClasses, this.testSourceDirectory, junitOptions, this.version, reporterManager,
+                                this, junitReportsDirectory );
         }
 
         finishTestSuite( reporterManager, this );
@@ -203,9 +200,7 @@ public class TestNGDirectoryTestSuite
 
     public static void startTestSuite( ReporterManager reporterManager, Object suite )
     {
-        String rawString = bundle.getString( "testSetStarting" );
-
-        ReportEntry report = new DefaultReportEntry( suite.getClass().getName(), getSuiteName( suite ), rawString );
+        ReportEntry report = new SimpleReportEntry( suite.getClass().getName(), getSuiteName( suite ) );
 
         try
         {
@@ -219,9 +214,7 @@ public class TestNGDirectoryTestSuite
 
     public static void finishTestSuite( ReporterManager reporterManager, Object suite )
     {
-        String rawString = bundle.getString( "testSetCompletedNormally" );
-
-        ReportEntry report = new DefaultReportEntry( suite.getClass().getName(), getSuiteName( suite ), rawString );
+        ReportEntry report = new SimpleReportEntry( suite.getClass().getName(), getSuiteName( suite ) );
 
         reporterManager.testSetCompleted( report );
 

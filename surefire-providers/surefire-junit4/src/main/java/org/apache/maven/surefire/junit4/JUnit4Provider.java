@@ -22,11 +22,11 @@ package org.apache.maven.surefire.junit4;
 import org.apache.maven.surefire.Surefire;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
-import org.apache.maven.surefire.report.DefaultReportEntry;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.ReporterManager;
+import org.apache.maven.surefire.report.SimpleReportEntry;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.DefaultDirectoryScanner;
@@ -137,17 +137,13 @@ public class JUnit4Provider
         throws ReporterException, TestSetFailedException
     {
 
-        String rawString = bundle.getString( "testSetStarting" );
-
-        ReportEntry report = new DefaultReportEntry( this.getClass().getName(), clazz.getName(), rawString );
+        ReportEntry report = new SimpleReportEntry( this.getClass().getName(), clazz.getName() );
 
         reporter.testSetStarting( report );
 
         JUnit4TestSet.execute( clazz, listeners );
 
-        rawString = bundle.getString( "testSetCompletedNormally" );
-
-        report = new DefaultReportEntry( this.getClass().getName(), clazz.getName(), rawString );
+        report = new SimpleReportEntry( this.getClass().getName(), clazz.getName() );
 
         reporter.testSetCompleted( report );
 

@@ -20,9 +20,9 @@ package org.apache.maven.surefire.junitcore;
  */
 
 import org.apache.maven.surefire.Surefire;
-import org.apache.maven.surefire.report.DefaultReportEntry;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.Reporter;
+import org.apache.maven.surefire.report.SimpleReportEntry;
 import org.junit.runner.Description;
 
 import java.util.ArrayList;
@@ -37,8 +37,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class TestSet
 {
-    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle( Surefire.SUREFIRE_BUNDLE_NAME );
-
     private final Description testSetDescription;
 
     private AtomicInteger numberOfCompletedChildren = new AtomicInteger( 0 );
@@ -105,11 +103,10 @@ public class TestSet
 
     private ReportEntry createReportEntry( String rawString2, Integer elapsed )
     {
-        String rawString = BUNDLE.getString( rawString2 );
         boolean isJunit3 = testSetDescription.getTestClass() == null;
         String classNameToUse =
             isJunit3 ? testSetDescription.getChildren().get( 0 ).getClassName() : testSetDescription.getClassName();
-        return new DefaultReportEntry( classNameToUse, classNameToUse, rawString, elapsed );
+        return new SimpleReportEntry( classNameToUse, classNameToUse, elapsed );
     }
 
     public void incrementTestMethodCount()

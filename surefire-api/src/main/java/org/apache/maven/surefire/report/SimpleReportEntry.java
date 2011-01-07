@@ -21,51 +21,43 @@ package org.apache.maven.surefire.report;
 
 /**
  * @author Kristian Rosenvold
- * @deprecated Delete once we build with 2.7.2
  */
-public class DefaultReportEntry
+public class SimpleReportEntry
     implements ReportEntry
 {
     private final String source;
 
     private final String name;
 
-    private final String group;
-
-    private final String message;
-
     private final StackTraceWriter stackTraceWriter;
 
     private final Integer elapsed;
 
-    protected DefaultReportEntry( String name, String group )
+    public SimpleReportEntry( String source, String name )
+    {
+        this( source, name, null, null );
+    }
+
+    public SimpleReportEntry( String source, String name, StackTraceWriter stackTraceWriter )
+    {
+        this( source, name, stackTraceWriter, null );
+    }
+
+    public SimpleReportEntry( String source, String name, Integer elapsed )
+    {
+        this( source, name, null, elapsed );
+    }
+
+    protected SimpleReportEntry( String name )
     {
         this.name = name;
-        this.group = group;
         this.stackTraceWriter = null;
         this.elapsed = null;
-        this.message = null;
         this.source = null;
     }
 
-    public DefaultReportEntry( String source, String name, String message )
-    {
-        this( source, name, null, message, null, null );
-    }
 
-    public DefaultReportEntry( String source, String name, String message, StackTraceWriter stackTraceWriter )
-    {
-        this( source, name, null, message, stackTraceWriter, null );
-    }
-
-    public DefaultReportEntry( String source, String name, String group, String message,
-                               StackTraceWriter stackTraceWriter )
-    {
-        this( source, name, group, message, stackTraceWriter, null );
-    }
-
-    public DefaultReportEntry( String source, String name, String group, String message,
-                               StackTraceWriter stackTraceWriter, Integer elapsed )
+    public SimpleReportEntry( String source, String name, StackTraceWriter stackTraceWriter, Integer elapsed )
     {
         if ( source == null )
         {
@@ -75,23 +67,16 @@ public class DefaultReportEntry
         {
             throw new NullPointerException( "name is null" );
         }
-        if ( message == null )
-        {
-            throw new NullPointerException( "message is null" );
-        }
 
         this.source = source;
 
         this.name = name;
 
-        this.group = group;
-
-        this.message = message;
-
         this.stackTraceWriter = stackTraceWriter;
 
         this.elapsed = elapsed;
     }
+
 
     public String getSourceName()
     {
@@ -105,12 +90,7 @@ public class DefaultReportEntry
 
     public String getGroup()
     {
-        return group;
-    }
-
-    public String getMessage()
-    {
-        return message;
+        return null;
     }
 
     public StackTraceWriter getStackTraceWriter()
@@ -125,32 +105,14 @@ public class DefaultReportEntry
 
     public String toString()
     {
-        return "ReportEntry{" + "source='" + source + '\'' + ", name='" + name + '\'' + ", group='" + group + '\''
-            + ", message='" + message + '\'' + ", stackTraceWriter=" + stackTraceWriter + ", elapsed=" + elapsed + '}';
+        return "ReportEntry{" + "source='" + source + '\'' + ", name='" + name + '\'' + ", stackTraceWriter="
+            + stackTraceWriter + ", elapsed=" + elapsed + '}';
     }
 
-    public DefaultReportEntry( String source, String name, String message, Integer elapsed )
-    {
-        this( source, name, null, message, null, elapsed );
-    }
 
-    public DefaultReportEntry( String source, String name, String group, String message )
-    {
-        this( source, name, group, message, null, null );
-    }
-
-    public DefaultReportEntry( String source, String name, String message, StackTraceWriter stackTraceWriter,
-                               Integer elapsed )
-    {
-        this( source, name, null, message, stackTraceWriter, elapsed );
-    }
-
-    public static ReportEntry nameGroup( String name, String group )
-    {
-        return new DefaultReportEntry( name, group );
-    }
-
-    /** @noinspection RedundantIfStatement*/
+    /**
+     * @noinspection RedundantIfStatement
+     */
     public boolean equals( Object o )
     {
         if ( this == o )
@@ -162,17 +124,9 @@ public class DefaultReportEntry
             return false;
         }
 
-        DefaultReportEntry that = (DefaultReportEntry) o;
+        SimpleReportEntry that = (SimpleReportEntry) o;
 
         if ( elapsed != null ? !elapsed.equals( that.elapsed ) : that.elapsed != null )
-        {
-            return false;
-        }
-        if ( group != null ? !group.equals( that.group ) : that.group != null )
-        {
-            return false;
-        }
-        if ( message != null ? !message.equals( that.message ) : that.message != null )
         {
             return false;
         }
@@ -198,8 +152,6 @@ public class DefaultReportEntry
     {
         int result = source != null ? source.hashCode() : 0;
         result = 31 * result + ( name != null ? name.hashCode() : 0 );
-        result = 31 * result + ( group != null ? group.hashCode() : 0 );
-        result = 31 * result + ( message != null ? message.hashCode() : 0 );
         result = 31 * result + ( stackTraceWriter != null ? stackTraceWriter.hashCode() : 0 );
         result = 31 * result + ( elapsed != null ? elapsed.hashCode() : 0 );
         return result;

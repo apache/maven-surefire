@@ -19,21 +19,19 @@ package org.apache.maven.surefire.junit;
  * under the License.
  */
 
-import org.apache.maven.surefire.Surefire;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
-import org.apache.maven.surefire.report.DefaultReportEntry;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.ReporterManager;
+import org.apache.maven.surefire.report.SimpleReportEntry;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.DirectoryScanner;
 import org.apache.maven.surefire.util.TestsToRun;
 
 import java.util.Iterator;
-import java.util.ResourceBundle;
 
 /**
  * @author Kristian Rosenvold
@@ -52,8 +50,6 @@ public class JUnit3Provider
 
     private TestsToRun testsToRun;
 
-    private static ResourceBundle bundle = ResourceBundle.getBundle( Surefire.SUREFIRE_BUNDLE_NAME );
-
     public JUnit3Provider( ProviderParameters booterParameters )
     {
         this.reporterFactory = booterParameters.getReporterFactory();
@@ -71,12 +67,12 @@ public class JUnit3Provider
             testsToRun = forkTestSet == null ? scanClassPath() : TestsToRun.fromClass( (Class) forkTestSet );
         }
 
-        for ( Iterator iter = testsToRun.iterator(); iter.hasNext();  )
+        for ( Iterator iter = testsToRun.iterator(); iter.hasNext(); )
         {
             Class clazz = (Class) iter.next();
             ReporterManager reporter = (ReporterManager) reporterFactory.createReporter();
-            SurefireTestSet surefireTestSet = createTestSet(  clazz );
-            executeTestSet( surefireTestSet, reporterFactory, testClassLoader);
+            SurefireTestSet surefireTestSet = createTestSet( clazz );
+            executeTestSet( surefireTestSet, reporterFactory, testClassLoader );
         }
 
         return reporterFactory.close();
@@ -86,8 +82,8 @@ public class JUnit3Provider
         throws TestSetFailedException
     {
         return jUnit3TestChecker.isJunit3Test( clazz )
-            ? new JUnitTestSet( clazz ) :
-            (SurefireTestSet) new PojoTestSet( clazz );
+            ? new JUnitTestSet( clazz )
+            : (SurefireTestSet) new PojoTestSet( clazz );
 
     }
 
@@ -98,17 +94,13 @@ public class JUnit3Provider
 
         ReporterManager reporterManager = (ReporterManager) reporterManagerFactory.createReporter();
 
-        String rawString = bundle.getString( "testSetStarting" );
-
-        ReportEntry report = new DefaultReportEntry( this.getClass().getName(), testSet.getName(), rawString );
+        ReportEntry report = new SimpleReportEntry( this.getClass().getName(), testSet.getName() );
 
         reporterManager.testSetStarting( report );
 
         testSet.execute( reporterManager, classLoader );
 
-        rawString = bundle.getString( "testSetCompletedNormally" );
-
-        report = new DefaultReportEntry( this.getClass().getName(), testSet.getName(), rawString );
+        report = new SimpleReportEntry( this.getClass().getName(), testSet.getName() );
 
         reporterManager.testSetCompleted( report );
 

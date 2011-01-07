@@ -20,9 +20,9 @@ package org.apache.maven.surefire.junitcore;
  */
 
 import org.apache.maven.surefire.Surefire;
-import org.apache.maven.surefire.report.DefaultReportEntry;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.Reporter;
+import org.apache.maven.surefire.report.SimpleReportEntry;
 import org.junit.runner.Description;
 import org.junit.runner.notification.Failure;
 
@@ -49,8 +49,6 @@ class TestMethod
     private volatile Failure testAssumptionFailure;
 
     private volatile Description ignored;
-
-    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle( Surefire.SUREFIRE_BUNDLE_NAME );
 
     private static final InheritableThreadLocal<TestMethod> TEST_METHOD = new InheritableThreadLocal<TestMethod>();
 
@@ -108,18 +106,18 @@ class TestMethod
 
         if ( ignored != null )
         {
-            reporter.testSkipped( createReportEntry( "testSkipped" ) );
+            reporter.testSkipped( createReportEntry() );
             return;
         }
 
-        reporter.testStarting( createReportEntry( "testStarting" ) );
+        reporter.testStarting( createReportEntry() );
         if ( output != null )
         {
             output.writeDetails( reporter );
         }
         if ( testFailure != null )
         {
-            ReportEntry report = createFailureEntry( testFailure, "executeException" );
+            ReportEntry report = createFailureEntry( testFailure );
             //noinspection ThrowableResultOfMethodCallIgnored
             if ( testFailure.getException() instanceof AssertionError )
             {
@@ -137,23 +135,20 @@ class TestMethod
         }
         else
         {
-            reporter.testSucceeded( createReportEntry( "testSuccessful" ) );
+            reporter.testSucceeded( createReportEntry() );
         }
     }
 
-    private ReportEntry createReportEntry( String rawString2 )
+    private ReportEntry createReportEntry()
     {
-        String rawString = BUNDLE.getString( rawString2 );
-        return new DefaultReportEntry( description.getTestClass().getCanonicalName(), description.getDisplayName(),
-                                       rawString, getElapsed() );
+        return new SimpleReportEntry( description.getTestClass().getCanonicalName(), description.getDisplayName(),
+                                      getElapsed() );
     }
 
-    private ReportEntry createFailureEntry( Failure failure, String rawString2 )
+    private ReportEntry createFailureEntry( Failure failure )
     {
-        String rawString = BUNDLE.getString( rawString2 );
-        return new DefaultReportEntry( failure.getDescription().getTestClass().getCanonicalName(),
-                                       failure.getTestHeader(), rawString, new JUnitCoreStackTraceWriter( failure ),
-                                       getElapsed() );
+        return new SimpleReportEntry( failure.getDescription().getTestClass().getCanonicalName(),
+                                      failure.getTestHeader(), new JUnitCoreStackTraceWriter( failure ), getElapsed() );
     }
 
 

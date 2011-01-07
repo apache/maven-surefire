@@ -39,7 +39,7 @@ public abstract class AbstractConsoleReporterTestCase
         throws Exception
     {
         super.setUp();
-        report = DefaultReportEntry.nameGroup( "name", "group" );
+        report = CategorizedReportEntry.nameGroup( "name", "group" );
     }
 
     protected void setConsoleReporter( AbstractConsoleReporter consoleReporter )
@@ -64,7 +64,7 @@ public abstract class AbstractConsoleReporterTestCase
         String message = AbstractConsoleReporter.getTestSetStartingMessage( report );
         assertEquals( "Running name (of group)", message );
 
-        report = DefaultReportEntry.nameGroup( "name", null );
+        report = CategorizedReportEntry.nameGroup( "name", null );
 
         message = AbstractConsoleReporter.getTestSetStartingMessage( report );
         assertEquals( "Running name", message );

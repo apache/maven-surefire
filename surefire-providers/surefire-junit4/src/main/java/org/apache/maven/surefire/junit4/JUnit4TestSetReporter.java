@@ -19,25 +19,20 @@ package org.apache.maven.surefire.junit4;
  * under the License.
  */
 
-import java.util.ResourceBundle;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.apache.maven.surefire.Surefire;
-import org.apache.maven.surefire.report.DefaultReportEntry;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterManager;
+import org.apache.maven.surefire.report.SimpleReportEntry;
 import org.junit.runner.Description;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunListener;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class JUnit4TestSetReporter
     extends RunListener
 {
-    // Constants
-    private static ResourceBundle bundle = ResourceBundle.getBundle( Surefire.SUREFIRE_BUNDLE_NAME );
-
     // Member Variables
     private Class testSet;
 
@@ -70,8 +65,7 @@ public class JUnit4TestSetReporter
     public void testRunStarted( Description description )
         throws Exception
     {
-        String rawString = bundle.getString( "testSetStarting" );
-        ReportEntry report = new DefaultReportEntry( testSet.getName(), testSet.getName(), rawString );
+        ReportEntry report = new SimpleReportEntry( testSet.getName(), testSet.getName() );
 
         this.reportMgr.testSetStarting( report );
     }
@@ -84,8 +78,7 @@ public class JUnit4TestSetReporter
     public void testRunFinished( Result result )
         throws Exception
     {
-        String rawString = bundle.getString( "testSetCompletedNormally" );
-        ReportEntry report = new DefaultReportEntry( testSet.getName(), testSet.getName(), rawString );
+        ReportEntry report = new SimpleReportEntry( testSet.getName(), testSet.getName() );
 
         this.reportMgr.testSetCompleted( report );
         this.reportMgr.reset();
@@ -99,9 +92,7 @@ public class JUnit4TestSetReporter
     public void testIgnored( Description description )
         throws Exception
     {
-        String rawString = bundle.getString( "testSkipped" );
-        ReportEntry report =
-            new DefaultReportEntry( extractClassName( description ), description.getDisplayName(), rawString );
+        ReportEntry report = new SimpleReportEntry( extractClassName( description ), description.getDisplayName() );
 
         this.reportMgr.testSkipped( report );
     }
@@ -114,9 +105,7 @@ public class JUnit4TestSetReporter
     public void testStarted( Description description )
         throws Exception
     {
-        String rawString = bundle.getString( "testStarting" );
-        ReportEntry report =
-            new DefaultReportEntry( extractClassName( description ), description.getDisplayName(), rawString );
+        ReportEntry report = new SimpleReportEntry( extractClassName( description ), description.getDisplayName() );
 
         this.reportMgr.testStarting( report );
 
@@ -132,10 +121,9 @@ public class JUnit4TestSetReporter
     public void testFailure( Failure failure )
         throws Exception
     {
-        String rawString = bundle.getString( "executeException" );
         ReportEntry report =
-            new DefaultReportEntry( extractClassName( failure.getDescription() ), failure.getTestHeader(), rawString,
-                                    new JUnit4StackTraceWriter( failure ) );
+            new SimpleReportEntry( extractClassName( failure.getDescription() ), failure.getTestHeader(),
+                                   new JUnit4StackTraceWriter( failure ) );
 
         if ( failure.getException() instanceof AssertionError )
         {
@@ -159,9 +147,7 @@ public class JUnit4TestSetReporter
     {
         if ( !failureFlag )
         {
-            String rawString = bundle.getString( "testSuccessful" );
-            ReportEntry report =
-                new DefaultReportEntry( extractClassName( description ), description.getDisplayName(), rawString );
+            ReportEntry report = new SimpleReportEntry( extractClassName( description ), description.getDisplayName() );
 
             this.reportMgr.testSucceeded( report );
         }

@@ -19,18 +19,11 @@ package org.apache.maven.surefire.testng;
  * under the License.
  */
 
-import java.util.ResourceBundle;
-
 import org.apache.maven.surefire.Surefire;
-import org.apache.maven.surefire.report.DefaultReportEntry;
-import org.apache.maven.surefire.report.PojoStackTraceWriter;
-import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.report.ReporterManager;
-import org.testng.ISuite;
-import org.testng.ISuiteListener;
-import org.testng.ITestContext;
-import org.testng.ITestListener;
-import org.testng.ITestResult;
+import org.apache.maven.surefire.report.*;
+import org.testng.*;
+
+import java.util.ResourceBundle;
 
 /**
  * Listens for and provides and adaptor layer so that
@@ -38,6 +31,7 @@ import org.testng.ITestResult;
  * {@link org.apache.maven.surefire.report.ReporterManager}.
  *
  * @author jkuhnert
+ * @noinspection ThrowableResultOfMethodCallIgnored
  */
 public class TestNGReporter
     implements ITestListener, ISuiteListener
@@ -75,8 +69,7 @@ public class TestNGReporter
         String rawString = bundle.getString( "testStarting" );
         String group = groupString( result.getMethod().getGroups(), result.getTestClass().getName() );
         ReportEntry report =
-            new DefaultReportEntry( getSource( result ), getUserFriendlyTestName( result ), group, rawString );
-
+            new CategorizedReportEntry( getSource( result ), getUserFriendlyTestName( result ), group, rawString );
         reportManager.testStarting( report );
     }
 
@@ -87,19 +80,16 @@ public class TestNGReporter
 
     public void onTestSuccess( ITestResult result )
     {
-        ReportEntry report = new DefaultReportEntry( getSource( result ), getUserFriendlyTestName( result ),
-                                                     bundle.getString( "testSuccessful" ) );
+        ReportEntry report = new SimpleReportEntry( getSource( result ), getUserFriendlyTestName( result ) );
         reportManager.testSucceeded( report );
     }
 
     public void onTestFailure( ITestResult result )
     {
-        String rawString = bundle.getString( "executeException" );
-
-        ReportEntry report = new DefaultReportEntry( getSource( result ), getUserFriendlyTestName( result ), rawString,
-                                                     new PojoStackTraceWriter(
-                                                         result.getTestClass().getRealClass().getName(),
-                                                         result.getMethod().getMethodName(), result.getThrowable() ) );
+        ReportEntry report = new SimpleReportEntry( getSource( result ), getUserFriendlyTestName( result ),
+                                                    new PojoStackTraceWriter(
+                                                        result.getTestClass().getRealClass().getName(),
+                                                        result.getMethod().getMethodName(), result.getThrowable() ) );
 
         reportManager.testFailed( report );
     }
@@ -112,20 +102,17 @@ public class TestNGReporter
 
     public void onTestSkipped( ITestResult result )
     {
-        ReportEntry report = new DefaultReportEntry( getSource( result ), getUserFriendlyTestName( result ),
-                                                     bundle.getString( "testSkipped" ) );
+        ReportEntry report = new SimpleReportEntry( getSource( result ), getUserFriendlyTestName( result ) );
 
         reportManager.testSkipped( report );
     }
 
     public void onTestFailedButWithinSuccessPercentage( ITestResult result )
     {
-        String rawString = bundle.getString( "executeException" );
-
-        ReportEntry report = new DefaultReportEntry( getSource( result ), getUserFriendlyTestName( result ), rawString,
-                                                     new PojoStackTraceWriter(
-                                                         result.getTestClass().getRealClass().getName(),
-                                                         result.getMethod().getMethodName(), result.getThrowable() ) );
+        ReportEntry report = new SimpleReportEntry( getSource( result ), getUserFriendlyTestName( result ),
+                                                    new PojoStackTraceWriter(
+                                                        result.getTestClass().getRealClass().getName(),
+                                                        result.getMethod().getMethodName(), result.getThrowable() ) );
 
         reportManager.testError( report );
     }
@@ -155,8 +142,9 @@ public class TestNGReporter
      * Creates a string out of the list of testng groups in the
      * form of <pre>"group1,group2,group3"</pre>.
      *
-     * @param groups
-     * @param defaultValue
+     * @param groups The groups being run
+     * @param defaultValue The default to use if no groups
+     * @return a string describing the groups
      */
     private static String groupString( String[] groups, String defaultValue )
     {

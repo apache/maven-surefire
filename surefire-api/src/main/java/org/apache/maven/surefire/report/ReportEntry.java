@@ -27,8 +27,6 @@ public interface ReportEntry
 
     public String getGroup();
 
-    public String getMessage();
-
     public StackTraceWriter getStackTraceWriter();
 
     public Integer getElapsed();
