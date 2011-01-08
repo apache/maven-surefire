@@ -33,6 +33,11 @@ import java.util.regex.Pattern;
 public class JUnit4TestSetReporter
     extends RunListener
 {
+    private static final Pattern PARENS = Pattern.compile( "^" + "[^\\(\\)]+" //non-parens
+                                                + "\\((" // then an open-paren (start matching a group)
+                                                + "[^\\\\(\\\\)]+" //non-parens
+                                                + ")\\)" + "$" ); // then a close-paren (end group match)
+
     // Member Variables
     private Class testSet;
 
@@ -156,10 +161,6 @@ public class JUnit4TestSetReporter
     private String extractClassName( Description description )
     {
         String displayName = description.getDisplayName();
-        final Pattern PARENS = Pattern.compile( "^" + "[^\\(\\)]+" //non-parens
-                                                    + "\\((" // then an open-paren (start matching a group)
-                                                    + "[^\\\\(\\\\)]+" //non-parens
-                                                    + ")\\)" + "$" ); // then a close-paren (end group match)
         Matcher m = PARENS.matcher( displayName );
         if ( !m.find() )
         {

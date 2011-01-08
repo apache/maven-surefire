@@ -86,14 +86,13 @@ public class JUnit4Provider
 
         upgradeCheck();
 
-        JUnit4TestSetReporter jUnit4TestSetReporter = new JUnit4TestSetReporter( null, null );
-
+        ReporterManager reporter = (ReporterManager) reporterFactory.createReporter();
+        JUnit4TestSetReporter jUnit4TestSetReporter = new JUnit4TestSetReporter( null, reporter );
         RunNotifier runNotifer = getRunNotifer( jUnit4TestSetReporter, customRunListeners );
+
         for ( Class clazz : testsToRun.getLocatedClasses() )
         {
-            ReporterManager reporter = (ReporterManager) reporterFactory.createReporter();
             jUnit4TestSetReporter.setTestSet( clazz );
-            jUnit4TestSetReporter.setReportMgr( reporter );
             executeTestSet( clazz, reporter, testClassLoader, runNotifer );
         }
 
@@ -101,6 +100,20 @@ public class JUnit4Provider
 
         return reporterFactory.close();
 
+    }
+
+    private void executeTestSet( Class clazz, ReporterManager reporter, ClassLoader classLoader, RunNotifier listeners )
+        throws ReporterException, TestSetFailedException
+    {
+        final ReportEntry report = new SimpleReportEntry( this.getClass().getName(), clazz.getName() );
+
+        reporter.testSetStarting( report );
+
+        JUnit4TestSet.execute( clazz, listeners );
+
+        reporter.testSetCompleted( report );
+
+        reporter.reset();
     }
 
     private RunNotifier getRunNotifer( RunListener main, List<RunListener> others )
@@ -116,7 +129,6 @@ public class JUnit4Provider
 
     // I am not entierly sure as to why we do this explicit freeing, it's one of those
     // pieces of code that just seem to linger on in here ;)
-
     private void closeRunNotifer( RunListener main, List<RunListener> others )
     {
         RunNotifier fNotifier = new RunNotifier();
@@ -132,25 +144,6 @@ public class JUnit4Provider
         testsToRun = scanClassPath();
         return testsToRun.iterator();
     }
-
-    private void executeTestSet( Class clazz, ReporterManager reporter, ClassLoader classLoader, RunNotifier listeners )
-        throws ReporterException, TestSetFailedException
-    {
-
-        ReportEntry report = new SimpleReportEntry( this.getClass().getName(), clazz.getName() );
-
-        reporter.testSetStarting( report );
-
-        JUnit4TestSet.execute( clazz, listeners );
-
-        report = new SimpleReportEntry( this.getClass().getName(), clazz.getName() );
-
-        reporter.testSetCompleted( report );
-
-        reporter.reset();
-
-    }
-
 
     private TestsToRun scanClassPath()
     {
