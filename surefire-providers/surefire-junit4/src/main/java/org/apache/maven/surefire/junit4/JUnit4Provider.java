@@ -33,6 +33,7 @@ import org.apache.maven.surefire.util.DefaultDirectoryScanner;
 import org.apache.maven.surefire.util.DirectoryScanner;
 import org.apache.maven.surefire.util.ReflectionUtils;
 import org.apache.maven.surefire.util.TestsToRun;
+import org.apache.maven.surefire.common.junit4.JUnit4TestChecker;
 import org.junit.runner.notification.RunListener;
 import org.junit.runner.notification.RunNotifier;
 

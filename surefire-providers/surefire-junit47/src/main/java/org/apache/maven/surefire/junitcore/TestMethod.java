@@ -20,6 +20,7 @@ package org.apache.maven.surefire.junitcore;
  */
 
 import org.apache.maven.surefire.Surefire;
+import org.apache.maven.surefire.common.junit4.JUnit4StackTraceWriter;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.Reporter;
 import org.apache.maven.surefire.report.SimpleReportEntry;
@@ -148,7 +149,7 @@ class TestMethod
     private ReportEntry createFailureEntry( Failure failure )
     {
         return new SimpleReportEntry( failure.getDescription().getTestClass().getCanonicalName(),
-                                      failure.getTestHeader(), new JUnitCoreStackTraceWriter( failure ), getElapsed() );
+                                      failure.getTestHeader(), new JUnit4StackTraceWriter( failure ), getElapsed() );
     }
 
 
