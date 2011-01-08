@@ -59,7 +59,6 @@ public class JUnitCoreProvider
 
     private final ReporterConfiguration reporterConfiguration;
 
-    @SuppressWarnings( { "UnusedDeclaration" } )
     public JUnitCoreProvider( ProviderParameters booterParameters )
     {
         this.reporterFactory = booterParameters.getReporterFactory();

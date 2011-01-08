@@ -48,6 +48,9 @@ public class JUnit3Provider
 
     private final JUnit3TestChecker jUnit3TestChecker;
 
+    private final JUnit3Reflector reflector;
+
+
     private TestsToRun testsToRun;
 
     public JUnit3Provider( ProviderParameters booterParameters )
@@ -55,8 +58,8 @@ public class JUnit3Provider
         this.reporterFactory = booterParameters.getReporterFactory();
         this.testClassLoader = booterParameters.getTestClassLoader();
         this.directoryScanner = booterParameters.getDirectoryScanner();
-        this.jUnit3TestChecker = new JUnit3TestChecker( testClassLoader );
-
+        this.reflector = new JUnit3Reflector( testClassLoader );
+        this.jUnit3TestChecker = new JUnit3TestChecker( testClassLoader ); // Todo; use reflector
     }
 
     public RunResult invoke( Object forkTestSet )
@@ -67,12 +70,13 @@ public class JUnit3Provider
             testsToRun = forkTestSet == null ? scanClassPath() : TestsToRun.fromClass( (Class) forkTestSet );
         }
 
+        ReporterManager reporter = (ReporterManager) reporterFactory.createReporter();
+
         for ( Iterator iter = testsToRun.iterator(); iter.hasNext(); )
         {
             Class clazz = (Class) iter.next();
-            ReporterManager reporter = (ReporterManager) reporterFactory.createReporter();
             SurefireTestSet surefireTestSet = createTestSet( clazz );
-            executeTestSet( surefireTestSet, reporterFactory, testClassLoader );
+            executeTestSet( surefireTestSet, reporter, testClassLoader );
         }
 
         return reporterFactory.close();
@@ -81,26 +85,21 @@ public class JUnit3Provider
     private SurefireTestSet createTestSet( Class clazz )
         throws TestSetFailedException
     {
-        return jUnit3TestChecker.isJunit3Test( clazz )
-            ? new JUnitTestSet( clazz )
+        return reflector.isJUnit3Available() && jUnit3TestChecker.isJunit3Test( clazz )
+            ? new JUnitTestSet( clazz, reflector )
             : (SurefireTestSet) new PojoTestSet( clazz );
 
     }
 
-    private void executeTestSet( SurefireTestSet testSet, ReporterFactory reporterManagerFactory,
-                                 ClassLoader classLoader )
+    private void executeTestSet( SurefireTestSet testSet, ReporterManager reporterManager, ClassLoader classLoader )
         throws ReporterException, TestSetFailedException
     {
-
-        ReporterManager reporterManager = (ReporterManager) reporterManagerFactory.createReporter();
 
         ReportEntry report = new SimpleReportEntry( this.getClass().getName(), testSet.getName() );
 
         reporterManager.testSetStarting( report );
 
         testSet.execute( reporterManager, classLoader );
-
-        report = new SimpleReportEntry( this.getClass().getName(), testSet.getName() );
 
         reporterManager.testSetCompleted( report );
 
