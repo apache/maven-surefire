@@ -22,18 +22,19 @@ package org.apache.maven.surefire.testng;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
 import org.apache.maven.artifact.versioning.VersionRange;
-import org.apache.maven.surefire.report.ReporterManager;
+import org.apache.maven.surefire.report.Reporter;
 import org.apache.maven.surefire.testng.conf.Configurator;
 import org.apache.maven.surefire.testng.conf.TestNG4751Configurator;
 import org.apache.maven.surefire.testng.conf.TestNG52Configurator;
 import org.apache.maven.surefire.testng.conf.TestNGMapConfigurator;
 import org.apache.maven.surefire.testset.TestSetFailedException;
-import org.testng.TestNG;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.util.List;
 import java.util.Map;
+
+import org.testng.TestNG;
 
 /**
  * Contains utility methods for executing TestNG.
@@ -48,7 +49,7 @@ public class TestNGExecutor
     }
 
     public static void run( Class[] testClasses, String testSourceDirectory, Map options, ArtifactVersion version,
-                            ReporterManager reportManager, TestNgTestSuite suite, File reportsDirectory )
+                            Reporter reportManager, TestNgTestSuite suite, File reportsDirectory )
         throws TestSetFailedException
     {
         TestNG testng = new TestNG( true );
@@ -60,7 +61,7 @@ public class TestNGExecutor
     }
 
     public static void run( List suiteFiles, String testSourceDirectory, Map options, ArtifactVersion version,
-                            ReporterManager reportManager, TestNgTestSuite suite, File reportsDirectory )
+                            Reporter reportManager, TestNgTestSuite suite, File reportsDirectory )
         throws TestSetFailedException
     {
         TestNG testng = new TestNG( true );
@@ -101,7 +102,8 @@ public class TestNGExecutor
     }
 
 
-    private static void postConfigure( TestNG testNG, String sourcePath, ReporterManager reportManager, TestNgTestSuite suite, File reportsDirectory )
+    private static void postConfigure( TestNG testNG, String sourcePath, Reporter reportManager, TestNgTestSuite suite,
+                                       File reportsDirectory )
         throws TestSetFailedException
     {
         // turn off all TestNG output
@@ -121,7 +123,7 @@ public class TestNGExecutor
 
     // If we have access to IResultListener, return a ConfigurationAwareTestNGReporter
     // But don't cause NoClassDefFoundErrors if it isn't available; just return a regular TestNGReporter instead
-    private static TestNGReporter createTestNGReporter( ReporterManager reportManager, TestNgTestSuite suite )
+    private static TestNGReporter createTestNGReporter( Reporter reportManager, TestNgTestSuite suite )
     {
         try
         {
@@ -129,7 +131,7 @@ public class TestNGExecutor
             Class c = Class.forName( "org.apache.maven.surefire.testng.ConfigurationAwareTestNGReporter" );
             try
             {
-                Constructor ctor = c.getConstructor( new Class[]{ ReporterManager.class, TestNgTestSuite.class } );
+                Constructor ctor = c.getConstructor( new Class[]{ Reporter.class, TestNgTestSuite.class } );
                 return (TestNGReporter) ctor.newInstance( new Object[]{ reportManager, suite } );
             }
             catch ( Exception e )

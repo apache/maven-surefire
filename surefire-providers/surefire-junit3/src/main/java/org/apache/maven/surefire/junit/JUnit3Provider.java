@@ -24,9 +24,9 @@ import org.apache.maven.surefire.common.junit3.JUnit3TestChecker;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
 import org.apache.maven.surefire.report.ReportEntry;
+import org.apache.maven.surefire.report.Reporter;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterFactory;
-import org.apache.maven.surefire.report.ReporterManager;
 import org.apache.maven.surefire.report.SimpleReportEntry;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
@@ -75,7 +75,7 @@ public class JUnit3Provider
             testsToRun = forkTestSet == null ? scanClassPath() : TestsToRun.fromClass( (Class) forkTestSet );
         }
 
-        ReporterManager reporter = (ReporterManager) reporterFactory.createReporter();
+        Reporter reporter = reporterFactory.createReporter();
 
         for ( Iterator iter = testsToRun.iterator(); iter.hasNext(); )
         {
@@ -96,19 +96,17 @@ public class JUnit3Provider
 
     }
 
-    private void executeTestSet( SurefireTestSet testSet, ReporterManager reporterManager, ClassLoader classLoader )
+    private void executeTestSet( SurefireTestSet testSet, Reporter reporter, ClassLoader classLoader )
         throws ReporterException, TestSetFailedException
     {
 
         ReportEntry report = new SimpleReportEntry( this.getClass().getName(), testSet.getName() );
 
-        reporterManager.testSetStarting( report );
+        reporter.testSetStarting( report );
 
-        testSet.execute( reporterManager, classLoader );
+        testSet.execute( reporter, classLoader );
 
-        reporterManager.testSetCompleted( report );
-
-        reporterManager.reset();
+        reporter.testSetCompleted( report );
     }
 
     private TestsToRun scanClassPath()

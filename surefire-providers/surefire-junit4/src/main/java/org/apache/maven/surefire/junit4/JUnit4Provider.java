@@ -20,12 +20,14 @@ package org.apache.maven.surefire.junit4;
  */
 
 import org.apache.maven.surefire.Surefire;
+import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
+import org.apache.maven.surefire.common.junit4.JUnit4TestChecker;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
 import org.apache.maven.surefire.report.ReportEntry;
+import org.apache.maven.surefire.report.Reporter;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterFactory;
-import org.apache.maven.surefire.report.ReporterManager;
 import org.apache.maven.surefire.report.SimpleReportEntry;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
@@ -33,14 +35,14 @@ import org.apache.maven.surefire.util.DefaultDirectoryScanner;
 import org.apache.maven.surefire.util.DirectoryScanner;
 import org.apache.maven.surefire.util.ReflectionUtils;
 import org.apache.maven.surefire.util.TestsToRun;
-import org.apache.maven.surefire.common.junit4.JUnit4TestChecker;
-import org.junit.runner.notification.RunListener;
-import org.junit.runner.notification.RunNotifier;
 
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ResourceBundle;
+
+import org.junit.runner.notification.RunListener;
+import org.junit.runner.notification.RunNotifier;
 
 
 /**
@@ -87,13 +89,12 @@ public class JUnit4Provider
 
         upgradeCheck();
 
-        ReporterManager reporter = (ReporterManager) reporterFactory.createReporter();
-        JUnit4TestSetReporter jUnit4TestSetReporter = new JUnit4TestSetReporter( null, reporter );
+        Reporter reporter = reporterFactory.createReporter();
+        JUnit4RunListener jUnit4TestSetReporter = new JUnit4RunListener( reporter );
         RunNotifier runNotifer = getRunNotifer( jUnit4TestSetReporter, customRunListeners );
 
         for ( Class clazz : testsToRun.getLocatedClasses() )
         {
-            jUnit4TestSetReporter.setTestSet( clazz );
             executeTestSet( clazz, reporter, testClassLoader, runNotifer );
         }
 
@@ -103,7 +104,7 @@ public class JUnit4Provider
 
     }
 
-    private void executeTestSet( Class clazz, ReporterManager reporter, ClassLoader classLoader, RunNotifier listeners )
+    private void executeTestSet( Class clazz, Reporter reporter, ClassLoader classLoader, RunNotifier listeners )
         throws ReporterException, TestSetFailedException
     {
         final ReportEntry report = new SimpleReportEntry( this.getClass().getName(), clazz.getName() );
@@ -113,8 +114,6 @@ public class JUnit4Provider
         JUnit4TestSet.execute( clazz, listeners );
 
         reporter.testSetCompleted( report );
-
-        reporter.reset();
     }
 
     private RunNotifier getRunNotifer( RunListener main, List<RunListener> others )

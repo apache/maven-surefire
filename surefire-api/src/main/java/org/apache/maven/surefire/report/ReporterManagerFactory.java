@@ -59,6 +59,8 @@ public class ReporterManagerFactory
 
     protected final Object lock = new Object();
 
+    private List reports;
+
     private final SystemStreamCapturer systemStreamCapturer = new SystemStreamCapturer();
 
     public ReporterManagerFactory( List reportDefinitions, ClassLoader surefireClassLoader,
@@ -67,6 +69,7 @@ public class ReporterManagerFactory
         this.reportDefinitions = reportDefinitions;
         this.surefireClassLoader = surefireClassLoader;
         this.reporterConfiguration = reporterConfiguration;
+        this.reports = instantiateReportsNewStyle( reportDefinitions, reporterConfiguration, surefireClassLoader );
     }
 
     public ReporterManagerFactory( ClassLoader surefireClassLoader, ReporterConfiguration reporterConfiguration )
@@ -79,17 +82,9 @@ public class ReporterManagerFactory
         return globalRunStatistics;
     }
 
-    public ReporterManager createReporterManager()
-    {
-        final List reports = instantiateReports( reportDefinitions, surefireClassLoader );
-        return (ReporterManager) setupReporter( reports );
-
-    }
-
     public Reporter createReporter()
     {
-        final List reports =
-            instantiateReportsNewStyle( reportDefinitions, reporterConfiguration, surefireClassLoader );
+        reports = instantiateReportsNewStyle( reportDefinitions, reporterConfiguration, surefireClassLoader );
         return setupReporter( reports );
     }
 
@@ -126,15 +121,6 @@ public class ReporterManagerFactory
             }
             return globalRunStatistics.getRunResult();
         }
-    }
-
-    private List instantiateReports( List reportDefinitions, ClassLoader classLoader )
-    {
-        if ( reportDefinitions.size() == 0 )
-        {
-            return new ArrayList();
-        }
-        return instantiateReportsNewStyle( reportDefinitions, reporterConfiguration, classLoader );
     }
 
     protected List instantiateReportsNewStyle( List reportDefinitions, ReporterConfiguration reporterConfiguration,
@@ -189,7 +175,7 @@ public class ReporterManagerFactory
     {
         if ( getGlobalRunStatistics().getRunResult().getCompletedCount() == 0 )
         {
-            createReporterManager().writeMessage( "There are no tests to run." );
+            new MulticastingReporter( reports ).writeMessage( "There are no tests to run." );
         }
     }
 }

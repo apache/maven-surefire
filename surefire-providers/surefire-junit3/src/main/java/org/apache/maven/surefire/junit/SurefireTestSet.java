@@ -19,12 +19,12 @@ package org.apache.maven.surefire.junit;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.ReporterManager;
+import org.apache.maven.surefire.report.Reporter;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
 public interface SurefireTestSet
 {
-    void execute( ReporterManager reportManager, ClassLoader loader )
+    void execute( Reporter reportManager, ClassLoader loader )
         throws TestSetFailedException;
 
     String getName();

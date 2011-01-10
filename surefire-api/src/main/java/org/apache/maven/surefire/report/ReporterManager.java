@@ -53,21 +53,9 @@ public class ReporterManager
         this.runStatisticsForThis = runStatisticsForThis;
     }
 
-    protected ReporterManager( ReporterManager other )
-    {
-        this.multicastingReporter = other.multicastingReporter;
-        this.runStatisticsForThis = other.runStatisticsForThis;
-        this.consoleCapturer = other.consoleCapturer;
-    }
-
     public void writeMessage( String message )
     {
         multicastingReporter.writeMessage( message );
-    }
-
-    public void writeConsoleMessage( String message )
-    {
-        multicastingReporter.writeConsoleMessage( message );
     }
 
     public void writeDetailMessage( String message )
@@ -128,6 +116,7 @@ public class ReporterManager
     public void testSetCompleted( ReportEntry report )
     {
         multicastingReporter.testSetCompleted( report );
+        multicastingReporter.reset();
     }
 
     // ----------------------------------------------------------------------

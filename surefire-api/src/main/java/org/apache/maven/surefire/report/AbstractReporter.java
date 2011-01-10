@@ -27,7 +27,7 @@ import java.util.Locale;
  * @version $Id$
  */
 public abstract class AbstractReporter
-    implements Reporter
+    implements Reporter, ReportWriter
 {
     protected int completedCount;
 
@@ -205,5 +205,17 @@ public abstract class AbstractReporter
     {
         final Integer clientSpecifiedElapsed = reportEntry.getElapsed();
         return clientSpecifiedElapsed != null ? clientSpecifiedElapsed.intValue() : endTime - startTime;
+    }
+
+    // @deprecated dont use.  TODO remove for 2.7.2
+    public void testError( ReportEntry report )
+    {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    // @deprecated dont use.  TODO remove for 2.7.2
+    public void testFailed( ReportEntry report )
+    {
+        //To change body of implemented methods use File | Settings | File Templates.
     }
 }

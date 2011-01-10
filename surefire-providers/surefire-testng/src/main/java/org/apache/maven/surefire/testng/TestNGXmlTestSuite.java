@@ -21,8 +21,8 @@ package org.apache.maven.surefire.testng;
 
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
+import org.apache.maven.surefire.report.Reporter;
 import org.apache.maven.surefire.report.ReporterException;
-import org.apache.maven.surefire.report.ReporterManager;
 import org.apache.maven.surefire.report.ReporterManagerFactory;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
@@ -83,12 +83,11 @@ public class TestNGXmlTestSuite
         {
             throw new IllegalStateException( "You must call locateTestSets before calling execute" );
         }
-        ReporterManager reporterManager =
-            new SynchronizedReporterManager( reporterManagerFactory.createReporterManager() );
-        TestNGDirectoryTestSuite.startTestSuite( reporterManager, this );
-        TestNGExecutor.run( this.suiteFilePaths, this.testSourceDirectory, this.options, this.version, reporterManager,
+        Reporter reporter = new SynchronizedReporterManager( reporterManagerFactory.createReporter() );
+        TestNGDirectoryTestSuite.startTestSuite( reporter, this );
+        TestNGExecutor.run( this.suiteFilePaths, this.testSourceDirectory, this.options, this.version, reporter,
                             this, reportsDirectory );
-        TestNGDirectoryTestSuite.finishTestSuite( reporterManager, this );
+        TestNGDirectoryTestSuite.finishTestSuite( reporter, this );
     }
 
     public void execute( String testSetName, ReporterManagerFactory reporterManagerFactory, ClassLoader classLoader )

@@ -20,19 +20,19 @@ package org.apache.maven.surefire.report;
  */
 
 /**
- * Used by providers to report results.
- * Using this interface integrates the providers together into a common reporting infrastructure.
+ * Persists reports somewhere
  * <p/>
  * An instance of a reporter is not guaranteed to be thread-safe and concurrent test frameworks
  * must request an instance of a reporter per-thread from the ReporterFactory.
  */
-public interface Reporter
+public interface ReportWriter
 {
     /**
      * Indicates the start of a given test-set
      *
      * @param report the report entry describing the testset
-     * @throws ReporterException When reporting fails
+     * @throws org.apache.maven.surefire.report.ReporterException
+     *          When reporting fails
      */
     void testSetStarting( ReportEntry report )
         throws ReporterException;
@@ -41,7 +41,8 @@ public interface Reporter
      * Indicates end of a given test-set
      *
      * @param report the report entry describing the testset
-     * @throws ReporterException When reporting fails
+     * @throws org.apache.maven.surefire.report.ReporterException
+     *          When reporting fails
      */
     void testSetCompleted( ReportEntry report )
         throws ReporterException;
@@ -67,14 +68,14 @@ public interface Reporter
      *
      * @param report The report entry to log for
      */
-    void testError( ReportEntry report);
+    void testError( ReportEntry report );
 
     /**
      * Event fired when a test ended with a failure (anticipated problem)
      *
      * @param report The report entry to log for
      */
-    void testFailed( ReportEntry report);
+    void testFailed( ReportEntry report );
 
 
     void testSkipped( ReportEntry report );
@@ -105,7 +106,6 @@ public interface Reporter
      * which is controlled by reportFormat.
      *
      * @param message The message to write.
-     * @deprecated remove when building with 2.7.2
      */
     void writeMessage( String message );
 
@@ -114,19 +114,14 @@ public interface Reporter
      * This is controlled by reportFormat attribute on the plugin.
      *
      * @param message The message to write
-     * @deprecated remove when building with 2.7.2
      */
     void writeDetailMessage( String message );
 
     /**
      * Restores the instance of the reporter, making the instance re-usable for a subsequent run in the
      * same thread.
-     * @deprecated remove when building with 2.7.2
      */
     void reset();
 
-    /**
-     * @deprecated remove when building with 2.7.2
-     */
     void writeFooter( String footer );
 }

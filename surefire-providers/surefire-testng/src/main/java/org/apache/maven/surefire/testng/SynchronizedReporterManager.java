@@ -20,8 +20,8 @@ package org.apache.maven.surefire.testng;
  */
 
 import org.apache.maven.surefire.report.ReportEntry;
+import org.apache.maven.surefire.report.Reporter;
 import org.apache.maven.surefire.report.ReporterException;
-import org.apache.maven.surefire.report.ReporterManager;
 
 /**
  * A proxy that imposes synchronization on the Reporter.
@@ -53,83 +53,84 @@ import org.apache.maven.surefire.report.ReporterManager;
  * should probably be correct.
  * <p/>
  * <p/>
+ * @noinspection deprecation
  */
 class SynchronizedReporterManager
-    extends ReporterManager
+    implements Reporter
 {
-    public SynchronizedReporterManager( ReporterManager target )
-    {
-        super( target );
-    }
 
-    public synchronized void runStarting()
-    {
-        super.runStarting();
-    }
+    private final Reporter target;
 
-    public synchronized void runCompleted()
+    public SynchronizedReporterManager( Reporter target )
     {
-        super.runCompleted();
+        this.target = target;
     }
 
     public synchronized void testSetStarting( ReportEntry report )
         throws ReporterException
     {
-        super.testSetStarting( report );
+        target.testSetStarting( report );
     }
 
     public synchronized void testSetCompleted( ReportEntry report )
+        throws ReporterException
     {
-        super.testSetCompleted( report );
+        target.testSetCompleted( report );
     }
 
     public synchronized void testStarting( ReportEntry report )
     {
-        super.testStarting( report );
+        target.testStarting( report );
     }
 
     public synchronized void testSucceeded( ReportEntry report )
     {
-        super.testSucceeded( report );
+        target.testSucceeded( report );
     }
 
     public synchronized void testError( ReportEntry report, String stdOut, String stdErr )
     {
-        super.testError( report, stdOut, stdErr );
+        target.testError( report, stdOut, stdErr );
     }
 
     public synchronized void testFailed( ReportEntry report, String stdOut, String stdErr )
     {
-        super.testFailed( report, stdOut, stdErr );
+        target.testFailed( report, stdOut, stdErr );
     }
 
     public synchronized void testSkipped( ReportEntry report )
     {
-        super.testSkipped( report );
+        target.testSkipped( report );
     }
 
     public synchronized void reset()
     {
-        super.reset();
+        target.reset();
     }
 
     public synchronized void writeMessage( String message )
     {
-        super.writeMessage( message );
+        target.writeMessage( message );
     }
 
-    public synchronized void writeConsoleMessage( String message )
-    {
-        super.writeConsoleMessage( message );
-    }
 
     public synchronized void testError( ReportEntry reportEntry )
     {
-        super.testError( reportEntry );
+        target.testError( reportEntry );
     }
 
     public synchronized void testFailed( ReportEntry reportEntry )
     {
-        super.testFailed( reportEntry );
+        target.testFailed( reportEntry );
+    }
+
+    public synchronized void writeDetailMessage( String message )
+    {
+        target.writeDetailMessage( message );
+    }
+
+    public synchronized void writeFooter( String footer )
+    {
+        target.writeFooter( footer );
     }
 }

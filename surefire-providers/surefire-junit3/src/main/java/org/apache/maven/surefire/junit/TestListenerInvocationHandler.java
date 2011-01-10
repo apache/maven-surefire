@@ -20,7 +20,7 @@ package org.apache.maven.surefire.junit;
  */
 
 import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.report.ReporterManager;
+import org.apache.maven.surefire.report.Reporter;
 import org.apache.maven.surefire.report.SimpleReportEntry;
 
 import java.lang.reflect.InvocationHandler;
@@ -43,7 +43,7 @@ public class TestListenerInvocationHandler
 
     private Set failedTestsSet = new HashSet();
 
-    private ReporterManager reportManager;
+    private Reporter reportManager;
 
     private static final Class[] EMPTY_CLASS_ARRAY = new Class[]{ };
 
@@ -103,8 +103,7 @@ public class TestListenerInvocationHandler
         }
     }
 
-    public TestListenerInvocationHandler( ReporterManager reportManager, Object instanceOfTestResult,
-                                          ClassLoader loader )
+    public TestListenerInvocationHandler( Reporter reportManager, Object instanceOfTestResult, ClassLoader loader )
     {
         if ( reportManager == null )
         {

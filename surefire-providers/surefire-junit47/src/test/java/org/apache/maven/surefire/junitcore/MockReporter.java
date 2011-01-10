@@ -159,4 +159,12 @@ public class MockReporter
     public void writeConsoleMessage( String message )
     {
     }
+
+    public void testError( ReportEntry report )
+    {
+    }
+
+    public void testFailed( ReportEntry report )
+    {
+    }
 }

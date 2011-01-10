@@ -20,10 +20,20 @@ package org.apache.maven.surefire.testng;
  */
 
 import org.apache.maven.surefire.Surefire;
-import org.apache.maven.surefire.report.*;
-import org.testng.*;
+import org.apache.maven.surefire.report.CategorizedReportEntry;
+import org.apache.maven.surefire.report.PojoStackTraceWriter;
+import org.apache.maven.surefire.report.ReportEntry;
+import org.apache.maven.surefire.report.Reporter;
+import org.apache.maven.surefire.report.SimpleReportEntry;
 
 import java.util.ResourceBundle;
+
+import org.testng.ISuite;
+import org.testng.ISuiteListener;
+import org.testng.ITestContext;
+import org.testng.ITestListener;
+import org.testng.ITestResult;
+import org.testng.TestNG;
 
 /**
  * Listens for and provides and adaptor layer so that
@@ -41,7 +51,7 @@ public class TestNGReporter
     /**
      * core Surefire reporting
      */
-    protected ReporterManager reportManager;
+    protected Reporter reporter;
 
     /**
      * Constructs a new instance that will listen to
@@ -53,9 +63,9 @@ public class TestNGReporter
      *
      * @param reportManager Instance to report suite status to
      */
-    public TestNGReporter( ReporterManager reportManager )
+    public TestNGReporter( Reporter reportManager )
     {
-        this.reportManager = reportManager;
+        this.reporter = reportManager;
 
         if ( reportManager == null )
         {
@@ -70,7 +80,7 @@ public class TestNGReporter
         String group = groupString( result.getMethod().getGroups(), result.getTestClass().getName() );
         ReportEntry report =
             new CategorizedReportEntry( getSource( result ), getUserFriendlyTestName( result ), group, rawString );
-        reportManager.testStarting( report );
+        reporter.testStarting( report );
     }
 
     private String getSource( ITestResult result )
@@ -81,7 +91,7 @@ public class TestNGReporter
     public void onTestSuccess( ITestResult result )
     {
         ReportEntry report = new SimpleReportEntry( getSource( result ), getUserFriendlyTestName( result ) );
-        reportManager.testSucceeded( report );
+        reporter.testSucceeded( report );
     }
 
     public void onTestFailure( ITestResult result )
@@ -91,7 +101,7 @@ public class TestNGReporter
                                                         result.getTestClass().getRealClass().getName(),
                                                         result.getMethod().getMethodName(), result.getThrowable() ) );
 
-        reportManager.testFailed( report );
+        reporter.testFailed( report );
     }
 
     private static String getUserFriendlyTestName( ITestResult result )
@@ -104,7 +114,7 @@ public class TestNGReporter
     {
         ReportEntry report = new SimpleReportEntry( getSource( result ), getUserFriendlyTestName( result ) );
 
-        reportManager.testSkipped( report );
+        reporter.testSkipped( report );
     }
 
     public void onTestFailedButWithinSuccessPercentage( ITestResult result )
@@ -114,7 +124,7 @@ public class TestNGReporter
                                                         result.getTestClass().getRealClass().getName(),
                                                         result.getMethod().getMethodName(), result.getThrowable() ) );
 
-        reportManager.testError( report );
+        reporter.testError( report );
     }
 
     public void onStart( ITestContext context )
@@ -142,7 +152,7 @@ public class TestNGReporter
      * Creates a string out of the list of testng groups in the
      * form of <pre>"group1,group2,group3"</pre>.
      *
-     * @param groups The groups being run
+     * @param groups       The groups being run
      * @param defaultValue The default to use if no groups
      * @return a string describing the groups
      */

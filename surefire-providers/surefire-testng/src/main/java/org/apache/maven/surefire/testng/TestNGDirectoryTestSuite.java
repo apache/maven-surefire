@@ -23,9 +23,9 @@ import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.surefire.NonAbstractClassFilter;
 import org.apache.maven.surefire.report.ReportEntry;
+import org.apache.maven.surefire.report.Reporter;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterFactory;
-import org.apache.maven.surefire.report.ReporterManager;
 import org.apache.maven.surefire.report.ReporterManagerFactory;
 import org.apache.maven.surefire.report.SimpleReportEntry;
 import org.apache.maven.surefire.testset.TestSetFailedException;
@@ -100,16 +100,16 @@ public class TestNGDirectoryTestSuite
             return;
         }
 
-        ReporterManager reporterManager = (ReporterManager) reporterManagerFactory.createReporter();
-        startTestSuite( reporterManager, this );
+        Reporter reporter = reporterManagerFactory.createReporter();
+        startTestSuite( reporter, this );
 
         TestNGExecutor.run( new Class[]{ (Class) testsToRun.iterator().next() }, this.testSourceDirectory, this.options,
-                            this.version, reporterManager, this, reportsDirectory );
+                            this.version, reporter, this, reportsDirectory );
 
-        finishTestSuite( reporterManager, this );
+        finishTestSuite( reporter, this );
     }
 
-    public void executeMulti( TestsToRun testsToRun, ReporterFactory reporterManagerFactory )
+    public void executeMulti( TestsToRun testsToRun, ReporterFactory reporterFactory )
         throws ReporterException, TestSetFailedException
     {
         Class junitTest;
@@ -145,8 +145,7 @@ public class TestNGDirectoryTestSuite
             junitReportsDirectory = new File( reportsDirectory, "testng-junit-results" );
         }
 
-        ReporterManager reporterManager =
-            new SynchronizedReporterManager( (ReporterManager) reporterManagerFactory.createReporter() );
+        Reporter reporterManager = new SynchronizedReporterManager( reporterFactory.createReporter() );
         startTestSuite( reporterManager, this );
 
         Class[] testClasses = (Class[]) testNgTestClasses.toArray( new Class[testNgTestClasses.size()] );
@@ -189,22 +188,22 @@ public class TestNGDirectoryTestSuite
             throw new TestSetFailedException( "Unable to find test set '" + testSetName + "' in suite" );
         }
 
-        ReporterManager reporterManager = reporterManagerFactory.createReporterManager();
-        startTestSuite( reporterManager, this );
+        Reporter reporter = reporterManagerFactory.createReporter();
+        startTestSuite( reporter, this );
 
         TestNGExecutor.run( new Class[]{ testSet.getTestClass() }, this.testSourceDirectory, this.options, this.version,
-                            reporterManager, this, reportsDirectory );
+                            reporter, this, reportsDirectory );
 
-        finishTestSuite( reporterManager, this );
+        finishTestSuite( reporter, this );
     }
 
-    public static void startTestSuite( ReporterManager reporterManager, Object suite )
+    public static void startTestSuite( Reporter reporter, Object suite )
     {
         ReportEntry report = new SimpleReportEntry( suite.getClass().getName(), getSuiteName( suite ) );
 
         try
         {
-            reporterManager.testSetStarting( report );
+            reporter.testSetStarting( report );
         }
         catch ( ReporterException e )
         {
@@ -212,13 +211,12 @@ public class TestNGDirectoryTestSuite
         }
     }
 
-    public static void finishTestSuite( ReporterManager reporterManager, Object suite )
+    public static void finishTestSuite( Reporter reporterManager, Object suite )
+        throws ReporterException
     {
         ReportEntry report = new SimpleReportEntry( suite.getClass().getName(), getSuiteName( suite ) );
 
         reporterManager.testSetCompleted( report );
-
-        reporterManager.reset();
     }
 
     public String getSuiteName()

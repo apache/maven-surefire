@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.junit4;
+package org.apache.maven.surefire.common.junit4;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,30 +19,25 @@ package org.apache.maven.surefire.junit4;
  * under the License.
  */
 
-import org.apache.maven.surefire.common.junit4.JUnit4StackTraceWriter;
 import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.report.ReporterManager;
+import org.apache.maven.surefire.report.Reporter;
 import org.apache.maven.surefire.report.SimpleReportEntry;
 import org.junit.runner.Description;
-import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunListener;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class JUnit4TestSetReporter
+public class JUnit4RunListener
     extends RunListener
 {
     private static final Pattern PARENS = Pattern.compile( "^" + "[^\\(\\)]+" //non-parens
-                                                + "\\((" // then an open-paren (start matching a group)
-                                                + "[^\\\\(\\\\)]+" //non-parens
-                                                + ")\\)" + "$" ); // then a close-paren (end group match)
+                                                               + "\\((" // then an open-paren (start matching a group)
+                                                               + "[^\\\\(\\\\)]+" //non-parens
+                                                               + ")\\)" + "$" ); // then a close-paren (end group match)
 
-    // Member Variables
-    private Class testSet;
-
-    private ReporterManager reportMgr;
+    protected final Reporter reportMgr;
 
     /**
      * This flag is set after a failure has occurred so that a <code>testSucceeded</code> event is not fired.
@@ -53,42 +48,14 @@ public class JUnit4TestSetReporter
     /**
      * Constructor.
      *
-     * @param testClass     the specific test set that this will report on as it is
-     *                      executed
      * @param reportManager the report manager to log testing events to
      */
-    JUnit4TestSetReporter( Class testClass, ReporterManager reportManager )
+    public JUnit4RunListener( Reporter reportManager )
     {
-        this.testSet = testClass;
         this.reportMgr = reportManager;
     }
 
-    /**
-     * Called right before any tests from a specific class are run.
-     *
-     * @see org.junit.runner.notification.RunListener#testRunStarted(org.junit.runner.Description)
-     */
-    public void testRunStarted( Description description )
-        throws Exception
-    {
-        ReportEntry report = new SimpleReportEntry( testSet.getName(), testSet.getName() );
-
-        this.reportMgr.testSetStarting( report );
-    }
-
-    /**
-     * Called right after all tests from a specific class are run.
-     *
-     * @see org.junit.runner.notification.RunListener#testRunFinished(org.junit.runner.Result)
-     */
-    public void testRunFinished( Result result )
-        throws Exception
-    {
-        ReportEntry report = new SimpleReportEntry( testSet.getName(), testSet.getName() );
-
-        this.reportMgr.testSetCompleted( report );
-        this.reportMgr.reset();
-    }
+    // Testrun methods are not invoked when using the runner
 
     /**
      * Called when a specific test has been skipped (for whatever reason).
@@ -98,9 +65,7 @@ public class JUnit4TestSetReporter
     public void testIgnored( Description description )
         throws Exception
     {
-        ReportEntry report = new SimpleReportEntry( extractClassName( description ), description.getDisplayName() );
-
-        this.reportMgr.testSkipped( report );
+        reportMgr.testSkipped( createReportEntry( description ) );
     }
 
     /**
@@ -111,11 +76,8 @@ public class JUnit4TestSetReporter
     public void testStarted( Description description )
         throws Exception
     {
-        ReportEntry report = new SimpleReportEntry( extractClassName( description ), description.getDisplayName() );
-
-        this.reportMgr.testStarting( report );
-
-        this.failureFlag = false;
+        reportMgr.testStarting( createReportEntry( description ) );
+        failureFlag = false;
     }
 
     /**
@@ -153,13 +115,20 @@ public class JUnit4TestSetReporter
     {
         if ( !failureFlag )
         {
-            ReportEntry report = new SimpleReportEntry( extractClassName( description ), description.getDisplayName() );
-
-            this.reportMgr.testSucceeded( report );
+            reportMgr.testSucceeded( createReportEntry( description ) );
         }
     }
 
-    private String extractClassName( Description description )
+    private SimpleReportEntry createReportEntry( Description description )
+    {
+        return new SimpleReportEntry( extractClassName( description ), description.getDisplayName() );
+    }
+
+    public void testAssumptionFailure( Failure failure )
+    {
+    }
+
+    protected String extractClassName( Description description )
     {
         String displayName = description.getDisplayName();
         Matcher m = PARENS.matcher( displayName );
@@ -168,15 +137,5 @@ public class JUnit4TestSetReporter
             return displayName;
         }
         return m.group( 1 );
-    }
-
-    public void setTestSet( Class testSet )
-    {
-        this.testSet = testSet;
-    }
-
-    public void setReportMgr( ReporterManager reportMgr )
-    {
-        this.reportMgr = reportMgr;
     }
 }

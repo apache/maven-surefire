@@ -85,8 +85,6 @@ public class TestSet
             report = createReportEntry( "testSetCompletedNormally", elapsed );
 
             target.testSetCompleted( report );
-
-            target.reset();
         }
         catch ( Exception e )
         {

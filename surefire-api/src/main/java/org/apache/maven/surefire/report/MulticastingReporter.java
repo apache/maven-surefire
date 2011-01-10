@@ -28,7 +28,7 @@ import java.util.List;
  * @author Kristian Rosenvold
  */
 public class MulticastingReporter
-    implements Reporter, RunReporter
+    implements Reporter, RunReporter, ReportWriter
 {
     private final List target;
 
@@ -42,7 +42,7 @@ public class MulticastingReporter
     {
         for ( Iterator it = target.iterator(); it.hasNext(); )
         {
-            ( (Reporter) it.next() ).testSetStarting( report );
+            ( (ReportWriter) it.next() ).testSetStarting( report );
         }
     }
 
@@ -52,7 +52,7 @@ public class MulticastingReporter
         {
             try
             {
-                ( (Reporter) it.next() ).testSetCompleted( report );
+                ( (ReportWriter) it.next() ).testSetCompleted( report );
             }
             catch ( ReporterException e )
             {
@@ -92,7 +92,7 @@ public class MulticastingReporter
     {
         for ( Iterator it = target.iterator(); it.hasNext(); )
         {
-            ( (Reporter) it.next() ).testStarting( report );
+            ( (ReportWriter) it.next() ).testStarting( report );
         }
     }
 
@@ -100,7 +100,7 @@ public class MulticastingReporter
     {
         for ( Iterator it = target.iterator(); it.hasNext(); )
         {
-            ( (Reporter) it.next() ).testSucceeded( report );
+            ( (ReportWriter) it.next() ).testSucceeded( report );
         }
     }
 
@@ -108,7 +108,7 @@ public class MulticastingReporter
     {
         for ( Iterator it = target.iterator(); it.hasNext(); )
         {
-            ( (Reporter) it.next() ).testError( report, stdOut, stdErr );
+            ( (ReportWriter) it.next() ).testError( report, stdOut, stdErr );
         }
     }
 
@@ -116,7 +116,7 @@ public class MulticastingReporter
     {
         for ( Iterator it = target.iterator(); it.hasNext(); )
         {
-            ( (Reporter) it.next() ).testFailed( report, stdOut, stdErr );
+            ( (ReportWriter) it.next() ).testFailed( report, stdOut, stdErr );
         }
     }
 
@@ -124,7 +124,7 @@ public class MulticastingReporter
     {
         for ( Iterator it = target.iterator(); it.hasNext(); )
         {
-            ( (Reporter) it.next() ).testSkipped( report );
+            ( (ReportWriter) it.next() ).testSkipped( report );
         }
     }
 
@@ -132,7 +132,7 @@ public class MulticastingReporter
     {
         for ( Iterator it = target.iterator(); it.hasNext(); )
         {
-            Reporter reporter = ( (Reporter) it.next() );
+            ReportWriter reporter = ( (ReportWriter) it.next() );
             // Todo: Really need to find out how the surefire4.x provider manages to avoid printing to this one.
             if ( !( reporter instanceof BriefFileReporter ) )
             {
@@ -145,7 +145,7 @@ public class MulticastingReporter
     {
         for ( Iterator it = target.iterator(); it.hasNext(); )
         {
-            Reporter reporter = ( (Reporter) it.next() );
+            ReportWriter reporter = ( (ReportWriter) it.next() );
             reporter.writeDetailMessage( message );
         }
     }
@@ -154,7 +154,7 @@ public class MulticastingReporter
     {
         for ( Iterator it = target.iterator(); it.hasNext(); )
         {
-            ( (Reporter) it.next() ).writeMessage( message );
+            ( (ReportWriter) it.next() ).writeMessage( message );
         }
     }
 
@@ -162,7 +162,7 @@ public class MulticastingReporter
     {
         for ( Iterator it = target.iterator(); it.hasNext(); )
         {
-            ( (Reporter) it.next() ).writeFooter( footer );
+            ( (ReportWriter) it.next() ).writeFooter( footer );
         }
     }
 
@@ -170,7 +170,23 @@ public class MulticastingReporter
     {
         for ( Iterator it = target.iterator(); it.hasNext(); )
         {
-            ( (Reporter) it.next() ).reset();
+            ( (ReportWriter) it.next() ).reset();
+        }
+    }
+
+    public void testError( ReportEntry report )
+    {
+        for ( Iterator it = target.iterator(); it.hasNext(); )
+        {
+            ( (ReportWriter) it.next() ).testError( report );
+        }
+    }
+
+    public void testFailed( ReportEntry report )
+    {
+        for ( Iterator it = target.iterator(); it.hasNext(); )
+        {
+            ( (ReportWriter) it.next() ).testFailed( report );
         }
     }
 }

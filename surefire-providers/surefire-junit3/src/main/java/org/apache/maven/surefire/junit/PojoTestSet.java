@@ -21,7 +21,7 @@ package org.apache.maven.surefire.junit;
 
 import org.apache.maven.surefire.report.PojoStackTraceWriter;
 import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.report.ReporterManager;
+import org.apache.maven.surefire.report.Reporter;
 import org.apache.maven.surefire.report.SimpleReportEntry;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
@@ -69,7 +69,7 @@ public class PojoTestSet
         }
     }
 
-    public void execute( ReporterManager reportManager, ClassLoader loader )
+    public void execute( Reporter reportManager, ClassLoader loader )
         throws TestSetFailedException
     {
         if ( reportManager == null )
@@ -80,7 +80,7 @@ public class PojoTestSet
         executeTestMethods( reportManager );
     }
 
-    protected void executeTestMethods( ReporterManager reportManager )
+    protected void executeTestMethods( Reporter reportManager )
     {
         if ( reportManager == null )
         {
@@ -103,7 +103,7 @@ public class PojoTestSet
     /**
      * @noinspection CatchGenericClass, OverlyBroadCatchBlock, MethodWithMultipleReturnPoints
      */
-    protected boolean executeTestMethod( Method method, Object[] args, ReporterManager reportManager )
+    protected boolean executeTestMethod( Method method, Object[] args, Reporter reportManager )
     {
         if ( method == null || args == null || reportManager == null )
         {
