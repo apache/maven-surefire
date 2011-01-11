@@ -167,4 +167,8 @@ public class MockReporter
     public void testFailed( ReportEntry report )
     {
     }
+
+    public void testAssumptionFailure( ReportEntry report )
+    {
+    }
 }

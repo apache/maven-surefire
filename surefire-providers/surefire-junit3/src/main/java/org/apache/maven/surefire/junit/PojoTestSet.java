@@ -22,6 +22,7 @@ package org.apache.maven.surefire.junit;
 import org.apache.maven.surefire.report.PojoStackTraceWriter;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.Reporter;
+import org.apache.maven.surefire.report.ReporterManager;
 import org.apache.maven.surefire.report.SimpleReportEntry;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
@@ -134,7 +135,7 @@ public class PojoTestSet
                                             new PojoStackTraceWriter( testObject.getClass().getName(), method.getName(),
                                                                       e ) );
 
-            reportManager.testFailed( report );
+            ( (ReporterManager) reportManager ).testFailed( report );
 
             // A return value of true indicates to this class's executeTestMethods
             // method that it should abort and not attempt to execute
@@ -161,7 +162,7 @@ public class PojoTestSet
                                             new PojoStackTraceWriter( testObject.getClass().getName(), method.getName(),
                                                                       t ) );
 
-            reportManager.testFailed( report );
+            ( (ReporterManager) reportManager ).testFailed( report );
             // Don't return  here, because tearDownFixture should be called even
             // if the test method throws an exception.
         }
@@ -171,7 +172,7 @@ public class PojoTestSet
                                             new PojoStackTraceWriter( testObject.getClass().getName(), method.getName(),
                                                                       t ) );
 
-            reportManager.testFailed( report );
+            ( (ReporterManager) reportManager ).testFailed( report );
             // Don't return  here, because tearDownFixture should be called even
             // if the test method throws an exception.
         }
@@ -187,7 +188,7 @@ public class PojoTestSet
                                             new PojoStackTraceWriter( testObject.getClass().getName(), method.getName(),
                                                                       t ) );
 
-            reportManager.testFailed( report );
+            ( (ReporterManager) reportManager ).testFailed( report );
 
             // A return value of true indicates to this class's executeTestMethods
             // method that it should abort and not attempt to execute

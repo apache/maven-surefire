@@ -23,26 +23,27 @@ import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
+import java.util.Map;
+
 /**
  * @author Kristian Rosenvold
  */
 public class MethodsParallelRunListener
-    extends ConcurrentReportingRunListener
+    extends ConcurrentReporterManager
 {
     private volatile TestSet lastStarted;
 
     private final Object lock = new Object();
 
-    public MethodsParallelRunListener( ReporterFactory reporterFactory, ReporterConfiguration reporterConfiguration,
-                                       boolean reportImmediately )
+    public MethodsParallelRunListener( Map<String, TestSet> classMethodCounts, ReporterFactory reporterFactory,
+                                       ReporterConfiguration reporterConfiguration, boolean reportImmediately )
         throws TestSetFailedException
     {
-        super( reporterFactory, reportImmediately, reporterConfiguration );
+        super( reporterFactory, reportImmediately, reporterConfiguration, classMethodCounts );
     }
 
     @Override
     public void checkIfTestSetCanBeReported( TestSet testSetForTest )
-        throws TestSetFailedException
     {
         synchronized ( lock )
         {

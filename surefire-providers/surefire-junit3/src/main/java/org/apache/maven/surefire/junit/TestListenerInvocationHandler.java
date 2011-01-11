@@ -21,6 +21,7 @@ package org.apache.maven.surefire.junit;
 
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.Reporter;
+import org.apache.maven.surefire.report.ReporterManager;
 import org.apache.maven.surefire.report.SimpleReportEntry;
 
 import java.lang.reflect.InvocationHandler;
@@ -43,7 +44,7 @@ public class TestListenerInvocationHandler
 
     private Set failedTestsSet = new HashSet();
 
-    private Reporter reportManager;
+    private ReporterManager reportManager;  // todo: Switch to ReportWriter for 2.7.2
 
     private static final Class[] EMPTY_CLASS_ARRAY = new Class[]{ };
 
@@ -120,7 +121,7 @@ public class TestListenerInvocationHandler
             throw new NullPointerException( "loader is null" );
         }
 
-        this.reportManager = reportManager;
+        this.reportManager = (ReporterManager) reportManager;
     }
 
     public Object invoke( Object proxy, Method method, Object[] args )
@@ -163,7 +164,7 @@ public class TestListenerInvocationHandler
         ReportEntry report =
             new SimpleReportEntry( args[0].getClass().getName(), args[0].toString(), getStackTraceWriter( args ) );
 
-        reportManager.testError( report );
+        ( (ReporterManager) reportManager ).testError( report );
 
         failedTestsSet.add( new FailedTest( args[0], Thread.currentThread() ) );
     }

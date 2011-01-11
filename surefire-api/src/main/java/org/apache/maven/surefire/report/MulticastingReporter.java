@@ -189,4 +189,9 @@ public class MulticastingReporter
             ( (ReportWriter) it.next() ).testFailed( report );
         }
     }
+
+    public void testAssumptionFailure( ReportEntry report )
+    {
+        // Do nothing right now.
+    }
 }

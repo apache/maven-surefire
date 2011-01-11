@@ -19,17 +19,8 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
-import org.apache.maven.surefire.Surefire;
-import org.apache.maven.surefire.common.junit4.JUnit4StackTraceWriter;
 import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.report.Reporter;
-import org.apache.maven.surefire.report.SimpleReportEntry;
-import org.junit.runner.Description;
-import org.junit.runner.notification.Failure;
-
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.ResourceBundle;
+import org.apache.maven.surefire.report.ReportWriter;
 
 /**
  * Represents the test-state of a single test method that is run.
@@ -39,54 +30,55 @@ import java.util.ResourceBundle;
  */
 class TestMethod
 {
-    private final Description description;
+    private final ReportEntry description;
 
     private final long startTime;
 
     private long endTime;
 
-    private volatile Failure testFailure;
+    private volatile ReportEntry testFailure;
 
-    private volatile Failure testAssumptionFailure;
+    private volatile ReportEntry testError;
 
-    private volatile Description ignored;
+    private volatile ReportEntry testAssumptionFailure;
+
+    private volatile ReportEntry ignored;
 
     private static final InheritableThreadLocal<TestMethod> TEST_METHOD = new InheritableThreadLocal<TestMethod>();
 
     private volatile LogicalStream output;
 
-    public TestMethod( Description description )
+    public TestMethod( ReportEntry description )
     {
         this.description = description;
         startTime = System.currentTimeMillis();
     }
 
-
     public void testFinished()
-        throws Exception
     {
         setEndTime();
     }
 
-
-    public void testIgnored( Description description )
-        throws Exception
+    public void testIgnored( ReportEntry description )
     {
         ignored = description;
         setEndTime();
     }
 
-    public void testFailure( Failure failure )
-        throws Exception
+    public void testFailure( ReportEntry failure )
     {
         this.testFailure = failure;
+    }
+
+    public void testAssumptionFailure( ReportEntry testAssumptionFailure )
+    {
+        this.testAssumptionFailure = testAssumptionFailure;
         setEndTime();
     }
 
-
-    public void testAssumptionFailure( Failure failure )
+    public void testError( ReportEntry failure )
     {
-        this.testAssumptionFailure = failure;
+        this.testError = failure;
         setEndTime();
     }
 
@@ -101,7 +93,7 @@ class TestMethod
     }
 
 
-    public void replay( Reporter reporter )
+    public void replay( ReportWriter reporter )
         throws Exception
     {
 
@@ -116,19 +108,14 @@ class TestMethod
         {
             output.writeDetails( reporter );
         }
+
         if ( testFailure != null )
         {
-            ReportEntry report = createFailureEntry( testFailure );
-            //noinspection ThrowableResultOfMethodCallIgnored
-            if ( testFailure.getException() instanceof AssertionError )
-            {
-                reporter.testFailed( report, getStdout(), getStdErr() );
-            }
-            else
-            {
-                reporter.testError( report, getStdout(), getStdErr() );
-            }
-
+            reporter.testFailed( testFailure, getStdout(), getStdErr() );
+        }
+        else if ( testError != null )
+        {
+            reporter.testError( testError, getStdout(), getStdErr() );
         }
         else if ( testAssumptionFailure != null )
         {
@@ -142,16 +129,8 @@ class TestMethod
 
     private ReportEntry createReportEntry()
     {
-        return new SimpleReportEntry( description.getTestClass().getCanonicalName(), description.getDisplayName(),
-                                      getElapsed() );
+        return this.description;
     }
-
-    private ReportEntry createFailureEntry( Failure failure )
-    {
-        return new SimpleReportEntry( failure.getDescription().getTestClass().getCanonicalName(),
-                                      failure.getTestHeader(), new JUnit4StackTraceWriter( failure ), getElapsed() );
-    }
-
 
     public void attachToThread()
     {
@@ -187,32 +166,4 @@ class TestMethod
     {
         return output != null ? output.getOutput( false ) : "";
     }
-
-    public static void fillTestCountMap( Description description, Map<Class, TestSet> methodCount )
-    {
-        final ArrayList<Description> children = description.getChildren();
-
-        TestSet testSet = new TestSet( description );
-        Class<?> itemTestClass = null;
-        for ( Description item : children )
-        {
-            if ( item.isTest() )
-            {
-                testSet.incrementTestMethodCount();
-                if ( itemTestClass == null )
-                {
-                    itemTestClass = item.getTestClass();
-                }
-            }
-            else if ( item.getChildren().size() > 0 )
-            {
-                fillTestCountMap( item, methodCount );
-            }
-        }
-        if ( itemTestClass != null )
-        {
-            methodCount.put( itemTestClass, testSet );
-        }
-    }
-
 }

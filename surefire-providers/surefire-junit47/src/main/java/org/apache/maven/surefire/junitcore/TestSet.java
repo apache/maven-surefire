@@ -19,18 +19,18 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
-import org.apache.maven.surefire.Surefire;
 import org.apache.maven.surefire.report.ReportEntry;
+import org.apache.maven.surefire.report.ReportWriter;
 import org.apache.maven.surefire.report.Reporter;
 import org.apache.maven.surefire.report.SimpleReportEntry;
-import org.junit.runner.Description;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.ResourceBundle;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.junit.runner.Description;
 
 /**
  * * Represents the test-state of a testset that is run.
@@ -74,15 +74,15 @@ public class TestSet
             {
                 elapsed += testMethod.getElapsed();
             }
-            ReportEntry report = createReportEntry( "testSetStarting", null );
+            ReportEntry report = createReportEntry( null );
 
             target.testSetStarting( report );
 
             for ( TestMethod testMethod : testMethods )
             {
-                testMethod.replay( target );
+                testMethod.replay( (ReportWriter) target );
             }
-            report = createReportEntry( "testSetCompletedNormally", elapsed );
+            report = createReportEntry( elapsed );
 
             target.testSetCompleted( report );
         }
@@ -92,14 +92,14 @@ public class TestSet
         }
     }
 
-    public TestMethod createTestMethod( Description description )
+    public TestMethod createTestMethod( ReportEntry description )
     {
         TestMethod testMethod = new TestMethod( description );
         addTestMethod( testMethod );
         return testMethod;
     }
 
-    private ReportEntry createReportEntry( String rawString2, Integer elapsed )
+    private ReportEntry createReportEntry( Integer elapsed )
     {
         boolean isJunit3 = testSetDescription.getTestClass() == null;
         String classNameToUse =

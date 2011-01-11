@@ -22,6 +22,7 @@ package org.apache.maven.surefire.junitcore;
 import org.apache.maven.surefire.NonAbstractClassFilter;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
+import org.apache.maven.surefire.report.Reporter;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterFactory;
@@ -30,11 +31,14 @@ import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.DirectoryScanner;
 import org.apache.maven.surefire.util.ReflectionUtils;
 import org.apache.maven.surefire.util.TestsToRun;
-import org.junit.runner.notification.RunListener;
 
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.junit.runner.notification.RunListener;
 
 /**
  * @author Kristian Rosenvold
@@ -93,11 +97,14 @@ public class JUnitCoreProvider
         {
             testsToRun = forkTestSet == null ? scanClassPath() : TestsToRun.fromClass( (Class) forkTestSet );
         }
-        ConcurrentReportingRunListener listener =
-            ConcurrentReportingRunListener.createInstance( this.reporterFactory, this.reporterConfiguration,
+        final Map<String, TestSet> testSetMap = new ConcurrentHashMap<String, TestSet>();
+
+        Reporter listener =
+            ConcurrentReporterManager.createInstance( testSetMap, this.reporterFactory, this.reporterConfiguration,
                                                            jUnitCoreParameters.isParallelClasses(),
                                                            jUnitCoreParameters.isParallelBoth() );
-        customRunListeners.add( 0, listener );
+        RunListener jUnit4RunListener = new JUnitCoreRunListener( listener, testSetMap);
+        customRunListeners.add( 0, jUnit4RunListener );
 
         JUnitCoreWrapper.execute( testsToRun, jUnitCoreParameters, customRunListeners );
         return reporterFactory.close();

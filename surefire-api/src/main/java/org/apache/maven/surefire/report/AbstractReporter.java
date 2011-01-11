@@ -210,12 +210,15 @@ public abstract class AbstractReporter
     // @deprecated dont use.  TODO remove for 2.7.2
     public void testError( ReportEntry report )
     {
-        //To change body of implemented methods use File | Settings | File Templates.
     }
 
     // @deprecated dont use.  TODO remove for 2.7.2
     public void testFailed( ReportEntry report )
     {
-        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    // @deprecated dont use.  TODO remove for 2.7.2
+    public void testAssumptionFailure( ReportEntry report )
+    {
     }
 }

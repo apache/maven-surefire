@@ -37,7 +37,7 @@ import java.util.List;
  * <p/>
  */
 public class ReporterManager
-    implements Reporter, RunReporter
+    implements Reporter, RunReporter, ReportWriter
 {
     private final RunStatistics runStatisticsForThis;
 
@@ -181,4 +181,8 @@ public class ReporterManager
         multicastingReporter.reset();
     }
 
+    public void testAssumptionFailure( ReportEntry report )
+    {
+        // Ignore for now.
+    }
 }

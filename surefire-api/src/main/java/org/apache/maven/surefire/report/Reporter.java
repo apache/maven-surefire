@@ -63,18 +63,27 @@ public interface Reporter
     void testSucceeded( ReportEntry report );
 
     /**
+     * Event fired when a test assumption failure was encountered.
+     * An assumption failure indicates that the test is not relevant
+     *
+     * @param report The report entry to log for
+     */
+    void testAssumptionFailure( ReportEntry report );
+
+
+    /**
      * Event fired when a test ended with an error (non anticipated problem)
      *
      * @param report The report entry to log for
      */
-    void testError( ReportEntry report);
+    void testError( ReportEntry report );
 
     /**
      * Event fired when a test ended with a failure (anticipated problem)
      *
      * @param report The report entry to log for
      */
-    void testFailed( ReportEntry report);
+    void testFailed( ReportEntry report );
 
 
     void testSkipped( ReportEntry report );
@@ -121,6 +130,7 @@ public interface Reporter
     /**
      * Restores the instance of the reporter, making the instance re-usable for a subsequent run in the
      * same thread.
+     *
      * @deprecated remove when building with 2.7.2
      */
     void reset();

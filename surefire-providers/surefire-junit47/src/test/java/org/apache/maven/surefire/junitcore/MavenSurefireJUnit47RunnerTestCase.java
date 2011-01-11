@@ -16,19 +16,23 @@
  */
 package org.apache.maven.surefire.junitcore;
 
-import junit.framework.Assert;
+import org.apache.maven.surefire.report.Reporter;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.ReporterManagerFactory;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+
+import junit.framework.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.Computer;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
-
-import java.io.File;
-import java.util.ArrayList;
+import org.junit.runner.notification.RunListener;
 
 /**
  * TestCase that expose "No tests were executed!" on Test failure using Maven Surefire 2.6-SNAPSHOT
@@ -114,15 +118,16 @@ public class MavenSurefireJUnit47RunnerTestCase
     public void surefireShouldBeAbleToReportRunStatusEvenWithFailingTests()
         throws Exception
     {
-        ReporterConfiguration reporterConfiguration = ConcurrentReportingRunListenerTest.getTestReporterConfiguration();
+        ReporterConfiguration reporterConfiguration = ConcurrentReporterManagerTest.getTestReporterConfiguration();
 
         ReporterFactory reporterManagerFactory =
             new ReporterManagerFactory( this.getClass().getClassLoader(), reporterConfiguration );
 
-        ConcurrentReportingRunListener concurrentReportingRunListener =
-            ConcurrentReportingRunListener.createInstance( reporterManagerFactory, getReporterConfiguration(), false,
-                                                           false );
+        final HashMap<String, TestSet> classMethodCounts = new HashMap<String, TestSet>();
+        Reporter reporter = ConcurrentReporterManager.createInstance( classMethodCounts, reporterManagerFactory,
+                                                                      getReporterConfiguration(), false, false );
 
+        RunListener concurrentReportingRunListener = new JUnitCoreRunListener( reporter, classMethodCounts );
         Computer computer = new Computer();
 
         JUnitCore junitCore = new JUnitCore();

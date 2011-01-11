@@ -22,12 +22,13 @@ package org.apache.maven.surefire.common.junit4;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.Reporter;
 import org.apache.maven.surefire.report.SimpleReportEntry;
-import org.junit.runner.Description;
-import org.junit.runner.notification.Failure;
-import org.junit.runner.notification.RunListener;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.junit.runner.Description;
+import org.junit.runner.notification.Failure;
+import org.junit.runner.notification.RunListener;
 
 public class JUnit4RunListener
     extends RunListener
@@ -37,7 +38,7 @@ public class JUnit4RunListener
                                                                + "[^\\\\(\\\\)]+" //non-parens
                                                                + ")\\)" + "$" ); // then a close-paren (end group match)
 
-    protected final Reporter reportMgr;
+    protected final Reporter reporter;
 
     /**
      * This flag is set after a failure has occurred so that a <code>testSucceeded</code> event is not fired.
@@ -48,11 +49,11 @@ public class JUnit4RunListener
     /**
      * Constructor.
      *
-     * @param reportManager the report manager to log testing events to
+     * @param reporter the reporter to log testing events to
      */
-    public JUnit4RunListener( Reporter reportManager )
+    public JUnit4RunListener( Reporter reporter )
     {
-        this.reportMgr = reportManager;
+        this.reporter = reporter;
     }
 
     // Testrun methods are not invoked when using the runner
@@ -65,7 +66,7 @@ public class JUnit4RunListener
     public void testIgnored( Description description )
         throws Exception
     {
-        reportMgr.testSkipped( createReportEntry( description ) );
+        reporter.testSkipped( createReportEntry( description ) );
     }
 
     /**
@@ -76,7 +77,7 @@ public class JUnit4RunListener
     public void testStarted( Description description )
         throws Exception
     {
-        reportMgr.testStarting( createReportEntry( description ) );
+        reporter.testStarting( createReportEntry( description ) );
         failureFlag = false;
     }
 
@@ -95,11 +96,11 @@ public class JUnit4RunListener
 
         if ( failure.getException() instanceof AssertionError )
         {
-            this.reportMgr.testFailed( report );
+            this.reporter.testFailed( report );
         }
         else
         {
-            this.reportMgr.testError( report );
+            this.reporter.testError( report );
         }
 
         failureFlag = true;
@@ -115,7 +116,7 @@ public class JUnit4RunListener
     {
         if ( !failureFlag )
         {
-            reportMgr.testSucceeded( createReportEntry( description ) );
+            reporter.testSucceeded( createReportEntry( description ) );
         }
     }
 
@@ -124,8 +125,10 @@ public class JUnit4RunListener
         return new SimpleReportEntry( extractClassName( description ), description.getDisplayName() );
     }
 
+
     public void testAssumptionFailure( Failure failure )
     {
+        this.reporter.testAssumptionFailure( createReportEntry( failure.getDescription() ) );
     }
 
     protected String extractClassName( Description description )

@@ -86,7 +86,6 @@ public interface ReportWriter
      * @param report The report entry to log for
      * @param stdOut standard output from the test case
      * @param stdErr error output from the test case
-     * @deprecated remove when building with 2.7.2
      */
     void testError( ReportEntry report, String stdOut, String stdErr );
 
@@ -96,7 +95,6 @@ public interface ReportWriter
      * @param report The report entry to log for
      * @param stdOut standard output from the test case
      * @param stdErr error output from the test case
-     * @deprecated remove when building with 2.7.2
      */
     void testFailed( ReportEntry report, String stdOut, String stdErr );
 

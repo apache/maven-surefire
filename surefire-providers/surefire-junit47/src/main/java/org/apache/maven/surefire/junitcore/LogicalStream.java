@@ -19,7 +19,7 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.Reporter;
+import org.apache.maven.surefire.report.ReportWriter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,7 +54,7 @@ public class LogicalStream
         }
 
 
-        public void writeDetails( Reporter reporter )
+        public void writeDetails( ReportWriter reporter )
         {
             reporter.writeDetailMessage( value );
         }
@@ -80,7 +80,7 @@ public class LogicalStream
         }
     }
 
-    public void writeDetails( Reporter reporter )
+    public void writeDetails( ReportWriter reporter )
     {
         for ( Entry entry : output )
         {

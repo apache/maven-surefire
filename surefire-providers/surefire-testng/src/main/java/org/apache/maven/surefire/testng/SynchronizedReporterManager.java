@@ -53,6 +53,7 @@ import org.apache.maven.surefire.report.ReporterException;
  * should probably be correct.
  * <p/>
  * <p/>
+ *
  * @noinspection deprecation
  */
 class SynchronizedReporterManager
@@ -132,5 +133,10 @@ class SynchronizedReporterManager
     public synchronized void writeFooter( String footer )
     {
         target.writeFooter( footer );
+    }
+
+    public synchronized void testAssumptionFailure( ReportEntry report )
+    {
+        target.testAssumptionFailure( report );
     }
 }
