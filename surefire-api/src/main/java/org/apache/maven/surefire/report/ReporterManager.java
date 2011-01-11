@@ -145,7 +145,7 @@ public class ReporterManager
         multicastingReporter.testError( reportEntry, stdOutLog, stdErrLog );
         runStatisticsForThis.incrementErrorsCount();
         runStatisticsForThis.incrementCompletedCount();
-        runStatisticsForThis.addErrorSource( reportEntry.getName() );
+        runStatisticsForThis.addErrorSource( reportEntry.getName(), reportEntry.getStackTraceWriter() );
         consoleCapturer.clearCapturedContent();
     }
 
@@ -154,13 +154,12 @@ public class ReporterManager
         testFailed( reportEntry, consoleCapturer.getStdOutLog(), consoleCapturer.getStdErrLog() );
     }
 
-
     public void testFailed( ReportEntry reportEntry, String stdOutLog, String stdErrLog )
     {
         multicastingReporter.testFailed( reportEntry, stdOutLog, stdErrLog );
         runStatisticsForThis.incrementFailureCount();
         runStatisticsForThis.incrementCompletedCount();
-        runStatisticsForThis.addFailureSource( reportEntry.getName() );
+        runStatisticsForThis.addFailureSource( reportEntry.getName(), reportEntry.getStackTraceWriter() );
         consoleCapturer.clearCapturedContent();
     }
 

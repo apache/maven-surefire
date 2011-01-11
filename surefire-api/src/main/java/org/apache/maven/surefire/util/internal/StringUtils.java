@@ -139,5 +139,17 @@ public class StringUtils
         return buf.toString();
     }
 
+
+    /**
+     * <p>Checks if a (trimmed) String is <code>null</code> or blank.</p>
+     *
+     * @param str the String to check
+     * @return <code>true</code> if the String is <code>null</code>, or
+     *  length zero once trimmed
+     */
+    public static boolean isBlank( String str )
+    {
+        return ( ( str == null ) || ( str.trim().length() == 0 ) );
+    }
 }
 

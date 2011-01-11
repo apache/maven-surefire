@@ -19,6 +19,8 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
+import org.apache.maven.surefire.util.internal.StringUtils;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -32,46 +34,82 @@ public class RunStatistics
     /**
      * Holds the source(s) that causes the error(s).
      */
-    private final Collection errorSources = new ArrayList();
+    private final Sources errorSources = new Sources();
 
     /**
      * Holds the source(s) that causes the failure(s).
      */
-    private final Collection failureSources = new ArrayList();
+    private final Sources failureSources = new Sources();
 
 
+    // Todo remove when building with 2.7.2
     public void addErrorSource( String errorSource )
     {
-        synchronized ( errorSources )
-        {
-            errorSources.add( errorSource );
-        }
+        errorSources.addSource( errorSource );
     }
 
-    public void addFailureSource( String errorSource )
+    public void addErrorSource( String errorSource, StackTraceWriter stackTraceWriter )
     {
-        synchronized ( failureSources )
-        {
-            failureSources.add( errorSource );
-        }
+        errorSources.addSource( errorSource, stackTraceWriter );
     }
 
-
-    public Collection getFailureSources()
+    // Todo remove when building with 2.7.2
+    public void addFailureSource( String failureSource )
     {
-        synchronized ( failureSources )
-        {
-            return Collections.unmodifiableCollection( failureSources );
-        }
+    	failureSources.addSource( failureSource );
+    }
+
+    public void addFailureSource( String failureSource, StackTraceWriter stackTraceWriter  )
+    {
+    	failureSources.addSource( failureSource, stackTraceWriter );
     }
 
     public Collection getErrorSources()
     {
-        synchronized ( errorSources )
-        {
-            return Collections.unmodifiableCollection( errorSources );
-        }
+        return errorSources.getListOfSources();
     }
 
+    public Collection getFailureSources()
+    {
+        return failureSources.getListOfSources();
+    }
 
+    private static class Sources
+    {
+        private final Collection listOfSources = new ArrayList();
+
+        void addSource( String source )
+        {
+            synchronized ( listOfSources )
+            {
+                listOfSources.add( source );  		
+            }
+        }
+
+        void addSource( String source, StackTraceWriter stackTraceWriter )
+        {
+            String message = getMessageOfThrowable( stackTraceWriter );
+            String extendedSource = StringUtils.isBlank( message ) ? source : source + ": " + message;
+            addSource( extendedSource );
+        }
+
+        Collection getListOfSources()
+        {
+            synchronized ( listOfSources )
+            {
+                return Collections.unmodifiableCollection( listOfSources );
+            }
+        }
+
+        private String getMessageOfThrowable( StackTraceWriter stackTraceWriter )
+        {
+            //noinspection ThrowableResultOfMethodCallIgnored
+            return stackTraceWriter != null ? getMessageOfThrowable( stackTraceWriter.getThrowable() ) : "";
+        }
+
+        private String getMessageOfThrowable( Throwable throwable )
+        {
+            return throwable != null ? throwable.getLocalizedMessage() : "";
+        }
+    }
 }
