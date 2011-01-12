@@ -43,6 +43,10 @@ public class PojoTestSet
     private Object testObject;
 
     protected List testMethods;
+    
+    protected Method setUpMethod;
+    
+    protected Method tearDownMethod;
 
     private Class testClass;
 
@@ -129,7 +133,7 @@ public class PojoTestSet
         {
             setUpFixture();
         }
-        catch ( Exception e )
+        catch ( Throwable e )
         {
             report = new SimpleReportEntry( testObject.getClass().getName(), getTestName( userFriendlyMethodName ),
                                             new PojoStackTraceWriter( testObject.getClass().getName(), method.getName(),
@@ -216,12 +220,14 @@ public class PojoTestSet
         return getTestClass().getName() + "." + testMethodName;
     }
 
-    public void setUpFixture()
+    public void setUpFixture() throws Throwable
     {
+    	if (setUpMethod != null) setUpMethod.invoke( testObject, new Object[0] );        
     }
 
-    public void tearDownFixture()
+    public void tearDownFixture() throws Throwable
     {
+    	if (tearDownMethod != null) tearDownMethod.invoke( testObject, new Object[0] );        
     }
 
     private void discoverTestMethods()
@@ -251,6 +257,14 @@ public class PojoTestSet
                             testMethods.add( m );
                         }
                     }
+                }
+                else if (m.getName().equals("setUp") && m.getParameterTypes().length == 0)
+                {
+                	setUpMethod = m;
+                }
+                else if (m.getName().equals("tearDown") && m.getParameterTypes().length == 0)
+                {
+                	tearDownMethod = m;
                 }
             }
         }

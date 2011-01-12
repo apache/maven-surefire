@@ -79,6 +79,8 @@ Maven Surefire Plugin
 
   * {{{./examples/junit.html}Using JUnit}}
 
+  * {{{./examples/pojo-test.html}Using POJO Tests}}
+
   * {{{./examples/skipping-test.html}Skipping Tests}}
 
   * {{{./examples/inclusion-exclusion.html}Inclusions and Exclusions of Tests}}
@@ -92,5 +94,6 @@ Maven Surefire Plugin
   * {{{./examples/system-properties.html}Using System Properties}}
 
   * {{{./examples/configuring-classpath.html}Configuring the Classpath}}
+
 
   * {{{./examples/providers.html}Selecting providers}}
