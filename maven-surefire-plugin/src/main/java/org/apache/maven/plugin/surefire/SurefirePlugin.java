@@ -306,7 +306,7 @@ public class SurefirePlugin
 
     /**
      * Option to specify the forking mode. Can be "never", "once" or "always". "none" and "pertest" are also accepted
-     * for backwards compatibility.
+     * for backwards compatibility. "always" forks for each test-class.
      *
      * @parameter expression="${forkMode}" default-value="once"
      * @since 2.1
