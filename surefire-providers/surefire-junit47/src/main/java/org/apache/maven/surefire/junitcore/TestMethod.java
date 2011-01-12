@@ -40,8 +40,6 @@ class TestMethod
 
     private volatile ReportEntry testError;
 
-    private volatile ReportEntry testAssumptionFailure;
-
     private volatile ReportEntry ignored;
 
     private static final InheritableThreadLocal<TestMethod> TEST_METHOD = new InheritableThreadLocal<TestMethod>();
@@ -68,12 +66,6 @@ class TestMethod
     public void testFailure( ReportEntry failure )
     {
         this.testFailure = failure;
-    }
-
-    public void testAssumptionFailure( ReportEntry testAssumptionFailure )
-    {
-        this.testAssumptionFailure = testAssumptionFailure;
-        setEndTime();
     }
 
     public void testError( ReportEntry failure )
@@ -116,10 +108,6 @@ class TestMethod
         else if ( testError != null )
         {
             reporter.testError( testError, getStdout(), getStdErr() );
-        }
-        else if ( testAssumptionFailure != null )
-        {
-            // Does nothing...
         }
         else
         {

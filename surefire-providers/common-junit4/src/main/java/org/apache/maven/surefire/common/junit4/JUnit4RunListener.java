@@ -22,13 +22,12 @@ package org.apache.maven.surefire.common.junit4;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.Reporter;
 import org.apache.maven.surefire.report.SimpleReportEntry;
-
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.junit.runner.Description;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunListener;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class JUnit4RunListener
     extends RunListener
@@ -102,9 +101,15 @@ public class JUnit4RunListener
         {
             this.reporter.testError( report );
         }
-
         failureFlag = true;
     }
+
+    public void testAssumptionFailure( Failure failure )
+    {
+        this.reporter.testAssumptionFailure( createReportEntry( failure.getDescription() ) );
+        failureFlag = true;
+    }
+
 
     /**
      * Called after a specific test has finished.
@@ -125,11 +130,6 @@ public class JUnit4RunListener
         return new SimpleReportEntry( extractClassName( description ), description.getDisplayName() );
     }
 
-
-    public void testAssumptionFailure( Failure failure )
-    {
-        this.reporter.testAssumptionFailure( createReportEntry( failure.getDescription() ) );
-    }
 
     protected String extractClassName( Description description )
     {

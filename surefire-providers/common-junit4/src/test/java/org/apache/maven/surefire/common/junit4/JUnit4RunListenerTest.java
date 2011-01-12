@@ -63,4 +63,5 @@ public class JUnit4RunListenerTest
 
         }
     }
+
 }

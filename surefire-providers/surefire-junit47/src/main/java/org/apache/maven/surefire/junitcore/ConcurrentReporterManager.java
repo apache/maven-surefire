@@ -91,11 +91,6 @@ public abstract class ConcurrentReporterManager
         }
     }
 
-    public void testAssumptionFailure( ReportEntry failure )
-    {
-        getOrCreateTestMethod( failure ).testAssumptionFailure( failure );
-    }
-
     public void testFailed( ReportEntry failure )
     {
         getOrCreateTestMethod( failure ).testFailure( failure );
@@ -106,13 +101,17 @@ public abstract class ConcurrentReporterManager
         getOrCreateTestMethod( failure ).testError( failure );
     }
 
-
     public void testSkipped( ReportEntry description )
     {
         TestSet testSet = getTestSet( description );
         TestMethod testMethod = getTestSet( description ).createTestMethod( description );
         testMethod.testIgnored( description );
         testSet.incrementFinishedTests( getReporterManager(), reportImmediately );
+    }
+
+    public void testAssumptionFailure( ReportEntry failure )
+    {
+        getOrCreateTestMethod( failure ).testIgnored( failure );
     }
 
     public void testStarting( ReportEntry description )

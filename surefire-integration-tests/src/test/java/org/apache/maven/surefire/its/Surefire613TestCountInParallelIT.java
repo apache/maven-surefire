@@ -45,6 +45,6 @@ public class Surefire613TestCountInParallelIT
         verifyTextInLog( "testWithException1 to stdout" );
         verifyTextInLog( "testWithException1 to stderr" );
 
-        assertTestSuiteResults( 15, 8, 4, 2 );
+        assertTestSuiteResults( 30, 8, 4, 17 );
     }
 }

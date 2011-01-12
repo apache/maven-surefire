@@ -175,13 +175,14 @@ public class ReporterManager
         multicastingReporter.testSkipped( report );
     }
 
+    public void testAssumptionFailure( ReportEntry report )
+    {
+        testSkipped( report );
+    }
+
     public void reset()
     {
         multicastingReporter.reset();
     }
 
-    public void testAssumptionFailure( ReportEntry report )
-    {
-        // Ignore for now.
-    }
 }
