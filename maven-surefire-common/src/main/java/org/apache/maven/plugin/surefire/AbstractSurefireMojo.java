@@ -712,15 +712,7 @@ public abstract class AbstractSurefireMojo
 
     protected void processSystemProperties( boolean setInSystem )
     {
-        if ( this.getSystemProperties() != null )
-        {
-            for ( Iterator i = getSystemProperties().keySet().iterator(); i.hasNext(); )
-            {
-                String key = (String) i.next();
-                String value = (String) getSystemProperties().get( key );
-                getInternalSystemProperties().setProperty( key, value );
-            }
-        }
+    	copyPropertiesToInternalSystemProperties( getSystemProperties() );
 
         if ( this.getSystemPropertyVariables() != null )
         {
@@ -743,17 +735,10 @@ public abstract class AbstractSurefireMojo
         // Not gonna do THAT any more... instead, we only propagate those system properties
         // that have been explicitly specified by the user via -Dkey=value on the CLI
 
-        Properties userProperties = getUserProperties();
-        for ( Iterator it = userProperties.keySet().iterator(); it.hasNext(); )
-        {
-            String key = (String) it.next();
-            String value = userProperties.getProperty( key );
-            getInternalSystemProperties().setProperty( key, value );
-        }
+    	copyPropertiesToInternalSystemProperties( getUserProperties() );
 
         getInternalSystemProperties().setProperty( "basedir", getBasedir().getAbsolutePath() );
         getInternalSystemProperties().setProperty( "user.dir", getWorkingDirectory().getAbsolutePath() );
-
         getInternalSystemProperties().setProperty( "localRepository", getLocalRepository().getBasedir() );
 
         if ( setInSystem )
@@ -768,6 +753,19 @@ public abstract class AbstractSurefireMojo
                 String value = getInternalSystemProperties().getProperty( key );
 
                 System.setProperty( key, value );
+            }
+        }
+    }
+
+    private void copyPropertiesToInternalSystemProperties( Properties properties )
+    {
+        if ( properties != null )
+        {
+            for ( Iterator i = properties.keySet().iterator(); i.hasNext(); )
+            {
+                String key = (String) i.next();
+                String value = properties.getProperty( key );
+                getInternalSystemProperties().setProperty( key, value );
             }
         }
     }
