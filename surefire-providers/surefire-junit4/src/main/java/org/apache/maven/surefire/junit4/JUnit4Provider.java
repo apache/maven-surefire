@@ -24,6 +24,7 @@ import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
 import org.apache.maven.surefire.common.junit4.JUnit4TestChecker;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
+import org.apache.maven.surefire.report.PojoStackTraceWriter;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.Reporter;
 import org.apache.maven.surefire.report.ReporterException;
@@ -111,7 +112,20 @@ public class JUnit4Provider
 
         reporter.testSetStarting( report );
 
-        JUnit4TestSet.execute( clazz, listeners );
+        try
+        {
+            JUnit4TestSet.execute( clazz, listeners );
+        }
+        catch ( TestSetFailedException e )
+        {
+          throw e;
+        }
+        catch ( Throwable e )
+        {
+            reporter.testFailed( new SimpleReportEntry( report.getSourceName(), report.getName(),
+                                                        new PojoStackTraceWriter( report.getSourceName(),
+                                                                                  report.getName(), e ) ) );
+        }
 
         reporter.testSetCompleted( report );
     }
