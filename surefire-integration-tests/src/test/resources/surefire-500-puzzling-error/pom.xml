@@ -36,6 +36,9 @@
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
           <version>${surefire.version}</version>
+            <configuration>
+                <reportFormat>brief</reportFormat>
+            </configuration>
         </plugin>
 
       </plugins>
