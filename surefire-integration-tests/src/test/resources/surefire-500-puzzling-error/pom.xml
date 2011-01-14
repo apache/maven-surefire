@@ -38,6 +38,7 @@
           <version>${surefire.version}</version>
             <configuration>
                 <reportFormat>brief</reportFormat>
+                <useFile>true</useFile>
             </configuration>
         </plugin>
 
