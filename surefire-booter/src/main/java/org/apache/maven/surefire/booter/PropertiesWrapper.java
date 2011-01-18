@@ -233,14 +233,23 @@ public class PropertiesWrapper
         {
             return;
         }
-        for ( int i = 0; i < items.size(); i++ )
+        int i = 0;
+        for (Iterator iterator = items.iterator(); iterator.hasNext();)
         {
-            Object item = items.get( i );
+            Object item = iterator.next();
             if ( item == null )
             {
                 throw new NullPointerException( propertyPrefix + i + " has null value" );
             }
-            properties.setProperty( propertyPrefix + i, item.toString() );
+
+            String[] stringArray = StringUtils.split(item.toString(), ",");
+
+            for ( int j = 0; j < stringArray.length; j++ )
+            {
+                properties.setProperty( propertyPrefix + i, stringArray[j] );
+                i++;
+            }
+
         }
     }
 

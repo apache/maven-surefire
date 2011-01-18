@@ -213,6 +213,10 @@ public class IntegrationTestMojo
             &nbsp;&lt;include>**&#47;*ITCase.java&lt;/include><br/>
         &lt;/includes><br/>
      * </code>
+     *
+     * Each include item may also contain a comma-separated sublist of items, which will be treated as multiple &nbsp;&lt;include>
+     * entries.<br/>
+     *
      * This parameter is ignored if the TestNG <code>suiteXmlFiles</code> parameter is specified.
      *
      * @parameter
@@ -229,6 +233,9 @@ public class IntegrationTestMojo
      * </code>
      * (which excludes all inner classes).<br>
      * This parameter is ignored if the TestNG <code>suiteXmlFiles</code> parameter is specified.
+     *
+     * Each exclude item may also contain a comma-separated sublist of items, which will be treated as multiple &nbsp;&lt;exclude>
+     * entries.<br/>
      *
      * @parameter
      */
