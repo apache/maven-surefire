@@ -118,16 +118,18 @@ public class JUnit4Provider
         }
         catch ( TestSetFailedException e )
         {
-          throw e;
+            throw e;
         }
         catch ( Throwable e )
         {
             reporter.testError( new SimpleReportEntry( report.getSourceName(), report.getName(),
-                                                        new PojoStackTraceWriter( report.getSourceName(),
-                                                                                  report.getName(), e ) ) );
+                                                       new PojoStackTraceWriter( report.getSourceName(),
+                                                                                 report.getName(), e ) ) );
         }
-
-        reporter.testSetCompleted( report );
+        finally
+        {
+            reporter.testSetCompleted( report );
+        }
     }
 
     private RunNotifier getRunNotifer( RunListener main, List<RunListener> others )
