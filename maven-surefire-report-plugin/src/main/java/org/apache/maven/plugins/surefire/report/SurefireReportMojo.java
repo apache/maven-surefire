@@ -21,6 +21,8 @@ package org.apache.maven.plugins.surefire.report;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -86,8 +88,8 @@ public class SurefireReportMojo
     /**
      * (Deprecated, use reportsDirectories) This directory contains the XML Report files that will be parsed and rendered to HTML format.
      *
-     * @deprecated
      * @parameter
+     * @deprecated
      */
     private File reportsDirectory;
 
@@ -129,55 +131,95 @@ public class SurefireReportMojo
      */
     private boolean aggregate;
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void executeReport( Locale locale )
         throws MavenReportException
     {
+        final List reportsDirectoryList = new ArrayList();
+
         if ( reportsDirectory != null )
         {
-            if ( reportsDirectories == null )
+            if ( reportsDirectories != null )
             {
-                reportsDirectories = new File[] { reportsDirectory };
+                reportsDirectoryList.addAll( Arrays.asList( reportsDirectories ) );
             }
-            else
-            {
-                File[] oldReports = reportsDirectories;
-                reportsDirectories = new File[oldReports.length+1];
-                System.arraycopy( oldReports, 0, reportsDirectories, 0, oldReports.length );
-                reportsDirectories[oldReports.length] = reportsDirectory;
-            }
+            reportsDirectoryList.add( reportsDirectory );
         }
         if ( aggregate )
         {
-            if ( !project.isExecutionRoot() ) return;
+            if ( !project.isExecutionRoot() )
+            {
+                return;
+            }
             if ( reportsDirectories == null )
             {
-                ArrayList reportsDirectoryList = new ArrayList();
-                // TODO guess the real location
-                for (Iterator i = reactorProjects.iterator(); i.hasNext();)
+                for ( Iterator i = getProjectsWithoutRoot().iterator(); i.hasNext(); )
+                {
+                    reportsDirectoryList.add( getSurefireReportsDirectory( (MavenProject) i.next() ) );
+                }
+            }
+            else
+            {
+                // Multiple report directories are configured.
+                // Let's see if those directories exist in each sub-module to fix SUREFIRE-570
+                String parentBaseDir = getProject().getBasedir().getAbsolutePath();
+                for ( Iterator i = getProjectsWithoutRoot().iterator(); i.hasNext(); )
                 {
                     MavenProject subProject = (MavenProject) i.next();
-                    if ( project.equals( subProject ) ) continue;
-                    String buildDir = subProject.getBuild().getDirectory();
-                    File reportsDirectory = new File( buildDir + "/surefire-reports" );
-                    reportsDirectoryList.add( reportsDirectory );
+                    String moduleBaseDir = subProject.getBasedir().getAbsolutePath();
+                    for ( int d = 0; d < reportsDirectories.length; d++ )
+                    {
+                        String reportDir = reportsDirectories[d].getPath();
+                        if ( reportDir.startsWith( parentBaseDir ) )
+                        {
+                            reportDir = reportDir.substring( parentBaseDir.length() );
+                        }
+                        File reportsDirectory = new File( moduleBaseDir, reportDir );
+                        if ( reportsDirectory.exists() && reportsDirectory.isDirectory() )
+                        {
+                            getLog().debug( "Adding report dir : " + moduleBaseDir + reportDir );
+                            reportsDirectoryList.add( reportsDirectory );
+                        }
+                    }
                 }
-                reportsDirectories = (File[]) reportsDirectoryList.toArray( new File[0] );
             }
         }
         else
         {
-            if ( reportsDirectories == null )
+            if ( reportsDirectoryList.size() == 0 )
             {
-                reportsDirectories = new File[] { new File( project.getBuild().getDirectory() + "/surefire-reports" ) };
+
+                reportsDirectoryList.add( getSurefireReportsDirectory( project ) );
             }
         }
 
-
         SurefireReportGenerator report =
-            new SurefireReportGenerator( reportsDirectories, locale, showSuccess, determineXrefLocation() );
+            new SurefireReportGenerator( reportsDirectoryList, locale, showSuccess, determineXrefLocation() );
 
         report.doGenerateReport( getBundle( locale ), getSink() );
+    }
+
+    private File getSurefireReportsDirectory( MavenProject subProject )
+    {
+        String buildDir = subProject.getBuild().getDirectory();
+        return new File( buildDir + "/surefire-reports" );
+    }
+
+    private List getProjectsWithoutRoot()
+    {
+        List result = new ArrayList();
+        for ( Iterator i = reactorProjects.iterator(); i.hasNext(); )
+        {
+            MavenProject subProject = (MavenProject) i.next();
+            if ( !project.equals( subProject ) )
+            {
+                result.add( subProject );
+            }
+        }
+        return result;
+
     }
 
     private String determineXrefLocation()
@@ -220,37 +262,49 @@ public class SurefireReportMojo
         return location;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public String getName( Locale locale )
     {
         return getBundle( locale ).getString( "report.surefire.name" );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public String getDescription( Locale locale )
     {
         return getBundle( locale ).getString( "report.surefire.description" );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     protected Renderer getSiteRenderer()
     {
         return siteRenderer;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     protected MavenProject getProject()
     {
         return project;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public String getOutputName()
     {
         return outputName;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     protected String getOutputDirectory()
     {
         return outputDirectory.getAbsolutePath();

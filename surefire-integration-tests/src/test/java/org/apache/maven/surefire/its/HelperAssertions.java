@@ -18,13 +18,16 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import junit.framework.Assert;
 import org.apache.maven.plugins.surefire.report.ReportTestSuite;
 import org.apache.maven.plugins.surefire.report.SurefireReportParser;
 import org.apache.maven.reporting.MavenReportException;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+
+import junit.framework.Assert;
 
 public class HelperAssertions
 {
@@ -90,16 +93,15 @@ public class HelperAssertions
      */
     protected static List extractReports( File[] testDirs )
     {
-        SurefireReportParser parser = new SurefireReportParser();
-        File[] reportsDirs = new File[testDirs.length];
+        List reportsDirs = new ArrayList();
         for ( int i = 0; i < testDirs.length; i++ )
         {
             File testDir = testDirs[i];
             File reportsDir = new File( testDir, "target/surefire-reports" );
             Assert.assertTrue( "Reports directory is missing: " + reportsDir.getAbsolutePath(), reportsDir.exists() );
-            reportsDirs[i] = reportsDir;
+            reportsDirs.add( reportsDir);
         }
-        parser.setReportsDirectories( reportsDirs );
+        SurefireReportParser parser = new SurefireReportParser(reportsDirs, Locale.getDefault());
         List reports;
         try
         {

@@ -20,32 +20,35 @@ package org.apache.maven.surefire.its;
 
 
 import java.io.File;
-import java.util.List;
-
-import junit.framework.Assert;
-import org.apache.maven.it.VerificationException;
 
 /**
- * SUREFIRE-500 Asserts correct error handling for the "odd" surefire-500 (and 625) issues.
+ * Test Surefire-570 Multiple report directories
  *
  * @author Kristian Rosenvold
  */
-public class Surefire500PuzzlingErrorIT
+public class Surefire570MultipleReportDirectoriesIT
     extends SurefireVerifierTestClass
 {
-    public Surefire500PuzzlingErrorIT()
+
+    public Surefire570MultipleReportDirectoriesIT()
     {
-        super( "/surefire-500-puzzling-error" );
+        super( "/surefire-570-multipleReportDirectories" );
     }
 
-    public void testBuildFailingWhenErrors()
+    public void testForkPerTestNoSetup()
         throws Exception
     {
+
         failNever();
-        executeTest();
+        executeTest(); // Hmm. This shouldn't be necessary but is another bug
 
-        File surefireReportsFile = getSurefireReportsFile( "surefire500.ExplodingTest.txt" );
-        assertContainsText( surefireReportsFile, "java.lang.NoClassDefFoundError: whoops!" );
+        reset();
+
+        addGoal( "-Daggregate=true" );
+        execute( "surefire-report:report" );
+        File siteFile = getSiteFile( "surefire-report.html" );
+        assertContainsText( siteFile, "MyModule1ClassTest" );
+        assertContainsText( siteFile, "MyModule2ClassTest" );
+        assertContainsText( siteFile, "MyDummyClassTest" );
     }
-
 }

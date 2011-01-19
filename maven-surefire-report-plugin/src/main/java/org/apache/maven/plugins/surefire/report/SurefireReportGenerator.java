@@ -22,7 +22,6 @@ package org.apache.maven.plugins.surefire.report;
 import org.apache.maven.doxia.sink.Sink;
 import org.apache.maven.reporting.MavenReportException;
 
-import java.io.File;
 import java.text.NumberFormat;
 import java.util.Iterator;
 import java.util.List;
@@ -45,7 +44,7 @@ public class SurefireReportGenerator
 
     private String xrefLocation;
 
-    public SurefireReportGenerator( File[] reportsDirectories, Locale locale, boolean showSuccess, String xrefLocation )
+    public SurefireReportGenerator( List reportsDirectories, Locale locale, boolean showSuccess, String xrefLocation )
     {
         report = new SurefireReportParser( reportsDirectories, locale );
 

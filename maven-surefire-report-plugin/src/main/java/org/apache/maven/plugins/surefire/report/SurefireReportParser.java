@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
@@ -44,7 +45,7 @@ public class SurefireReportParser
 {
     private NumberFormat numberFormat = NumberFormat.getInstance();
 
-    private File[] reportsDirectories;
+    private List reportsDirectories;
 
     private List testSuites = new ArrayList();
 
@@ -54,9 +55,9 @@ public class SurefireReportParser
     {
     }
 
-    public SurefireReportParser( File[] reportsDirectories, Locale locale )
+    public SurefireReportParser( List reportsDirectoriesFiles , Locale locale )
     {
-        this.reportsDirectories = reportsDirectories;
+        this.reportsDirectories = reportsDirectoriesFiles;
 
         setLocale( locale );
     }
@@ -65,9 +66,9 @@ public class SurefireReportParser
         throws MavenReportException
     {
         List xmlReportFileList = new ArrayList();
-        for ( int i = 0; i < reportsDirectories.length; i++ )
+        for ( int i = 0; i < reportsDirectories.size(); i++ )
         {
-            File reportsDirectory = reportsDirectories[i];
+            File reportsDirectory = (File) reportsDirectories.get(i);
             if ( !reportsDirectory.exists() )
             {
                 continue;
@@ -177,17 +178,7 @@ public class SurefireReportParser
 
     public void setReportsDirectory( File reportsDirectory )
     {
-        this.reportsDirectories = new File[] { reportsDirectory };
-    }
-
-    public void setReportsDirectories( File[] reportsDirectories )
-    {
-        this.reportsDirectories = reportsDirectories;
-    }
-
-    public File[] getReportsDirectories()
-    {
-        return this.reportsDirectories;
+        this.reportsDirectories = Collections.singletonList( reportsDirectory );
     }
 
     public final void setLocale( Locale locale )
