@@ -427,10 +427,10 @@ public class SurefireReportGenerator
 
                             sink.rawText( "  <div class=\"detailToggle\" style=\"display:inline\">" );
 
-                            sink.link( "javascript:toggleDisplay('" + testCase.getName() + "');" );
+                            sink.link( "javascript:toggleDisplay('" + toHtmlId(testCase.getFullName()) + "');" );
 
-                            sink.rawText( "<span style=\"display: inline;\" " + "id=\"" + testCase.getName()
-                                + "off\">+</span><span id=\"" + testCase.getName() + "on\" "
+                            sink.rawText( "<span style=\"display: inline;\" " + "id=\"" + toHtmlId(testCase.getFullName())
+                                + "off\">+</span><span id=\"" + toHtmlId(testCase.getFullName()) + "on\" "
                                 + "style=\"display: none;\">-</span> " );
                             sink.text( "[ Detail ]" );
                             sink.link_();
@@ -466,7 +466,7 @@ public class SurefireReportGenerator
 
                                 sink.tableCell();
                                 sink.rawText(
-                                    "  <div id=\"" + testCase.getName() + "error\" style=\"display:none;\">" );
+                                    "  <div id=\"" + toHtmlId(testCase.getFullName()) + "error\" style=\"display:none;\">" );
 
                                 Iterator it = detail.iterator();
 
@@ -500,6 +500,10 @@ public class SurefireReportGenerator
         sink.section1_();
     }
 
+
+    private String toHtmlId(String id){
+        return id.replace(".", "_");
+    }
     private void constructFailureDetails( Sink sink, ResourceBundle bundle, List failureList )
     {
         Iterator failIter = failureList.iterator();
