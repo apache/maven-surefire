@@ -20,6 +20,7 @@ package org.apache.maven.surefire.junitcore;
  */
 
 import org.apache.maven.surefire.NonAbstractClassFilter;
+import org.apache.maven.surefire.common.junit4.JUnit4TestChecker;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
 import org.apache.maven.surefire.report.Reporter;
@@ -30,6 +31,7 @@ import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.DirectoryScanner;
 import org.apache.maven.surefire.util.ReflectionUtils;
+import org.apache.maven.surefire.util.ScannerFilter;
 import org.apache.maven.surefire.util.TestsToRun;
 
 import java.util.Iterator;
@@ -55,7 +57,7 @@ public class JUnitCoreProvider
 
     private final JUnitCoreParameters jUnitCoreParameters;
 
-    private final NonAbstractClassFilter scannerFilter;
+    private final ScannerFilter scannerFilter;
 
     private final List<RunListener> customRunListeners;
 
@@ -70,7 +72,7 @@ public class JUnitCoreProvider
         this.testClassLoader = booterParameters.getTestClassLoader();
         this.directoryScanner = booterParameters.getDirectoryScanner();
         this.jUnitCoreParameters = new JUnitCoreParameters( booterParameters.getProviderProperties() );
-        this.scannerFilter = new NonAbstractClassFilter();
+        this.scannerFilter = new JUnit4TestChecker(testClassLoader);
         customRunListeners =
             createCustomListeners( booterParameters.getProviderProperties().getProperty( "listener" ) );
 
