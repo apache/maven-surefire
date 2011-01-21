@@ -199,7 +199,7 @@ public class ReporterManagerFactory
         }
     }
 
-    public void startTimer()
+    private void startTimer()
     {
         if ( timer != null )
         {
@@ -207,7 +207,7 @@ public class ReporterManagerFactory
         }
     }
 
-    public void cancelTimerIfActive()
+    private void cancelTimerIfActive()
     {
         if ( timer != null )
         {
