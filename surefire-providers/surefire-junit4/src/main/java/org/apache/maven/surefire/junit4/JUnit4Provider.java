@@ -21,6 +21,7 @@ package org.apache.maven.surefire.junit4;
 
 import org.apache.maven.surefire.Surefire;
 import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
+import org.apache.maven.surefire.common.junit4.JUnit4RunListenerFactory;
 import org.apache.maven.surefire.common.junit4.JUnit4TestChecker;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
@@ -34,16 +35,13 @@ import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.DefaultDirectoryScanner;
 import org.apache.maven.surefire.util.DirectoryScanner;
-import org.apache.maven.surefire.util.ReflectionUtils;
 import org.apache.maven.surefire.util.TestsToRun;
-
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.ResourceBundle;
-
 import org.junit.runner.notification.RunListener;
 import org.junit.runner.notification.RunNotifier;
+
+import java.util.Iterator;
+import java.util.List;
+import java.util.ResourceBundle;
 
 
 /**
@@ -73,7 +71,7 @@ public class JUnit4Provider
         this.reporterFactory = booterParameters.getReporterFactory();
         this.testClassLoader = booterParameters.getTestClassLoader();
         this.directoryScanner = booterParameters.getDirectoryScanner();
-        customRunListeners =
+        customRunListeners = JUnit4RunListenerFactory.
             createCustomListeners( booterParameters.getProviderProperties().getProperty( "listener" ) );
         jUnit4TestChecker = new JUnit4TestChecker( testClassLoader );
 
@@ -195,24 +193,5 @@ public class JUnit4Provider
     public Boolean isRunnable()
     {
         return Boolean.TRUE;
-    }
-
-    private List<RunListener> createCustomListeners( String listenerProperty )
-    {
-        List<RunListener> result = new LinkedList<RunListener>();
-        if ( listenerProperty == null )
-        {
-            return result;
-        }
-
-        for ( String thisListenerName : listenerProperty.split( "," ) )
-        {
-            RunListener customRunListener =
-                (RunListener) ReflectionUtils.instantiate( Thread.currentThread().getContextClassLoader(),
-                                                           thisListenerName );
-            result.add( customRunListener );
-        }
-
-        return result;
     }
 }
