@@ -34,11 +34,15 @@ public abstract class AbstractFileReporter
 {
     private File reportsDirectory;
 
+    private final boolean deleteOnStarting;
+
     protected AbstractFileReporter( ReporterConfiguration reporterConfiguration, String format )
     {
         super( reporterConfiguration, format );
 
         this.reportsDirectory = reporterConfiguration.getReportsDirectory();
+
+        this.deleteOnStarting = reporterConfiguration.isForkWithTimeout();
     }
 
 
@@ -47,12 +51,18 @@ public abstract class AbstractFileReporter
     {
         super.testSetStarting( report );
 
-        File reportFile = new File( reportsDirectory, report.getName() + ".txt" );
+        File reportFile = getReportFile( report );
 
         File reportDir = reportFile.getParentFile();
 
         //noinspection ResultOfMethodCallIgnored
         reportDir.mkdirs();
+
+        if ( deleteOnStarting && reportFile.exists() )
+        {
+            //noinspection ResultOfMethodCallIgnored
+            reportFile.delete();
+        }
 
         try
         {
@@ -72,6 +82,11 @@ public abstract class AbstractFileReporter
         }
     }
 
+    private File getReportFile( ReportEntry report )
+    {
+        return new File( reportsDirectory, report.getName() + ".txt" );
+    }
+
     public void testSetCompleted( ReportEntry report )
         throws ReporterException
     {
@@ -82,5 +97,10 @@ public abstract class AbstractFileReporter
         writer.close();
 
         writer = null;
+
+        if ( isTimedOut() )
+        {
+            deleteIfExisting( getReportFile( report ) );
+        }
     }
 }

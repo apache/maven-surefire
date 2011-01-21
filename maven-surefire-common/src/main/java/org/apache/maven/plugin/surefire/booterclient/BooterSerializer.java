@@ -103,8 +103,7 @@ public class BooterSerializer
             properties.addList( directoryScannerParameters.getExcludes(), BooterConstants.EXCLUDES_PROPERTY_PREFIX );
             properties.setProperty( BooterConstants.TEST_CLASSES_DIRECTORY,
                                     directoryScannerParameters.getTestClassesDirectory() );
-            properties.setProperty( BooterConstants.RUN_ORDER,
-                                    directoryScannerParameters.getRunOrder() );
+            properties.setProperty( BooterConstants.RUN_ORDER, directoryScannerParameters.getRunOrder() );
         }
 
         ReporterConfiguration reporterConfiguration = booterConfiguration.getReporterConfiguration();
@@ -114,6 +113,7 @@ public class BooterSerializer
         Boolean rep = reporterConfiguration.isTrimStackTrace();
         properties.setProperty( BooterConstants.ISTRIMSTACKTRACE, rep );
         properties.setProperty( BooterConstants.REPORTSDIRECTORY, reporterConfiguration.getReportsDirectory() );
+        properties.setProperty( BooterConstants.FORKTIMEOUT, reporterConfiguration.getForkTimeout() );
         ClassLoaderConfiguration classLoaderConfiguration = providerConfiguration.getClassLoaderConfiguration();
         properties.setProperty( BooterConstants.USESYSTEMCLASSLOADER,
                                 String.valueOf( classLoaderConfiguration.isUseSystemClassLoader() ) );

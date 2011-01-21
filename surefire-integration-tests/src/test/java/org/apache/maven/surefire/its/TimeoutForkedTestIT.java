@@ -39,6 +39,8 @@ public class TimeoutForkedTestIT
     {
         try
         {
+            addGoal( "-DsleepLength=10000" );
+            addGoal( "-DforkTimeout=1" );
             executeTest();
             verifyErrorFreeLog();
             fail( "Build didn't fail, but it should have" );
@@ -46,5 +48,7 @@ public class TimeoutForkedTestIT
         catch ( VerificationException ignore )
         {
         }
+        assertFalse( getSurefireReportsFile( "TEST-timeoutForked.BasicTest.xml" ).exists() );
+        assertFalse( getSurefireReportsFile( "timeoutForked.BasicTest.txt" ).exists() );
     }
 }

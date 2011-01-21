@@ -11,7 +11,8 @@ public class BasicTest
 
     public void testSleep() throws Exception
     {
-        Thread.sleep(10000);
+        int sleepLength = Integer.valueOf( System.getProperty( "sleepLength", "10000" ));
+        Thread.sleep(sleepLength);
     }
 
 }

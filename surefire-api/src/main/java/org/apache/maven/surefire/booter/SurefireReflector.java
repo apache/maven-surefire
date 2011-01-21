@@ -181,10 +181,11 @@ public class SurefireReflector
     Object createReporterConfiguration( ReporterConfiguration reporterConfiguration )
     {
         Constructor constructor = ReflectionUtils.getConstructor( this.reporterConfiguration,
-                                                                  new Class[]{ List.class, File.class,
-                                                                      Boolean.class } );
+                                                                  new Class[]{ List.class, File.class, Boolean.class,
+                                                                      Integer.class } );
         return ReflectionUtils.newInstance( constructor, new Object[]{ reporterConfiguration.getReports(),
-            reporterConfiguration.getReportsDirectory(), reporterConfiguration.isTrimStackTrace() } );
+            reporterConfiguration.getReportsDirectory(), reporterConfiguration.isTrimStackTrace(),
+            reporterConfiguration.getForkTimeout() } );
     }
 
     public Object createBooterConfiguration()
@@ -223,7 +224,7 @@ public class SurefireReflector
     void setTestSuiteDefinition( Object o, TestRequest testSuiteDefinition1 )
     {
         final Object param = createTestRequest( testSuiteDefinition1 );
-        ReflectionUtils.invokeSetter( o, "setTestRequest", this.testRequest,  param );
+        ReflectionUtils.invokeSetter( o, "setTestRequest", this.testRequest, param );
     }
 
     public void setProviderPropertiesAware( Object o, Properties properties )
@@ -264,8 +265,8 @@ public class SurefireReflector
 
     void setTestClassLoader( Object o, ClassLoader surefireClassLoader, ClassLoader testClassLoader )
     {
-        final Method setter = ReflectionUtils.getMethod( o, "setClassLoaders",
-                                                         new Class[]{ ClassLoader.class, ClassLoader.class } );
+        final Method setter =
+            ReflectionUtils.getMethod( o, "setClassLoaders", new Class[]{ ClassLoader.class, ClassLoader.class } );
         ReflectionUtils.invokeMethodWithArray( o, setter, new Object[]{ surefireClassLoader, testClassLoader } );
     }
 

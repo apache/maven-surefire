@@ -19,6 +19,7 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
+import java.io.File;
 import java.text.NumberFormat;
 import java.util.Locale;
 
@@ -51,6 +52,8 @@ public abstract class AbstractReporter
 
     private boolean trimStackTrace;
 
+    private final ReporterConfiguration reporterConfiguration;
+
     // ----------------------------------------------------------------------
     // Report interface
     // ----------------------------------------------------------------------
@@ -58,12 +61,19 @@ public abstract class AbstractReporter
 
     protected AbstractReporter( ReporterConfiguration reporterConfiguration )
     {
+        this.reporterConfiguration = reporterConfiguration;
         this.trimStackTrace = reporterConfiguration.isTrimStackTrace().booleanValue();
     }
 
     protected AbstractReporter( Boolean trimStackTrace )
     {
         this.trimStackTrace = trimStackTrace.booleanValue();
+        this.reporterConfiguration = null;
+    }
+
+    protected boolean isTimedOut()
+    {
+        return reporterConfiguration.isTimedOut();
     }
 
     public void writeFooter( String footer )
@@ -220,5 +230,14 @@ public abstract class AbstractReporter
     // @deprecated dont use.  TODO remove for 2.7.2
     public void testAssumptionFailure( ReportEntry report )
     {
+    }
+
+    protected void deleteIfExisting( File reportFile )
+    {
+        if ( reportFile.exists() )
+        {
+            //noinspection ResultOfMethodCallIgnored
+            reportFile.delete();
+        }
     }
 }

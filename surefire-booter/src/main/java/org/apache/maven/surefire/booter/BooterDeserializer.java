@@ -23,7 +23,6 @@ import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestRequest;
-import org.apache.maven.surefire.util.internal.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -62,6 +61,7 @@ public class BooterDeserializer
     {
 
         final File reportsDirectory = new File( properties.getProperty( REPORTSDIRECTORY ) );
+        Integer timeout = properties.getIntegerObjectProperty( FORKTIMEOUT );
         final String testNgVersion = properties.getProperty( TESTARTIFACT_VERSION );
         final String testArtifactClassifier = properties.getProperty( TESTARTIFACT_CLASSIFIER );
         final Object testForFork = properties.getTypeDecoded( FORKTESTSET );
@@ -78,14 +78,14 @@ public class BooterDeserializer
 
         DirectoryScannerParameters dirScannerParams =
             new DirectoryScannerParameters( testClassesDirectory, includesList, excludesList,
-                                            valueOf( properties.getBooleanProperty( FAILIFNOTESTS ) ), runOrder );
+                                            properties.getBooleanObjectProperty( FAILIFNOTESTS ), runOrder );
 
         TestArtifactInfo testNg = new TestArtifactInfo( testNgVersion, testArtifactClassifier );
         TestRequest testSuiteDefinition = new TestRequest( testSuiteXmlFiles, sourceDirectory, requestedTest );
 
-        ReporterConfiguration reporterConfiguration =
-            new ReporterConfiguration( reports, reportsDirectory,
-                                       valueOf( properties.getBooleanProperty( ISTRIMSTACKTRACE ) ) );
+        ReporterConfiguration reporterConfiguration = new ReporterConfiguration( reports, reportsDirectory,
+                                                                                 properties.getBooleanObjectProperty(
+                                                                                     ISTRIMSTACKTRACE ), timeout );
 
         return new ProviderConfiguration( dirScannerParams, properties.getBooleanProperty( FAILIFNOTESTS ),
                                           reporterConfiguration, testNg, testSuiteDefinition,
@@ -100,7 +100,6 @@ public class BooterDeserializer
         boolean useSystemClassLoader = properties.getBooleanProperty( USESYSTEMCLASSLOADER );
         boolean useManifestOnlyJar = properties.getBooleanProperty( USEMANIFESTONLYJAR );
         String providerConfiguration = properties.getProperty( PROVIDER_CONFIGURATION );
-
 
         final List classpath = properties.getStringList( CLASSPATH_URL );
         final List sureFireClasspath = properties.getStringList( SUREFIRE_CLASSPATHURL );

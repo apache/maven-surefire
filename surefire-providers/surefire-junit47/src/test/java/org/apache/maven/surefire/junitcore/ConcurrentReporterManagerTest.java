@@ -20,6 +20,9 @@
 package org.apache.maven.surefire.junitcore;
 
 
+import junit.framework.Assert;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 import org.apache.maven.surefire.report.ConsoleReporter;
 import org.apache.maven.surefire.report.Reporter;
 import org.apache.maven.surefire.report.ReporterConfiguration;
@@ -27,6 +30,11 @@ import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.ReporterManagerFactory;
 import org.apache.maven.surefire.report.RunStatistics;
 import org.apache.maven.surefire.testset.TestSetFailedException;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.runner.Computer;
+import org.junit.runner.JUnitCore;
+import org.junit.runner.notification.RunListener;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -35,15 +43,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-
-import junit.framework.Assert;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.Computer;
-import org.junit.runner.JUnitCore;
-import org.junit.runner.notification.RunListener;
 
 import static junit.framework.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -225,7 +224,7 @@ public class ConcurrentReporterManagerTest
 
     public ReporterConfiguration getReporterConfiguration()
     {
-        return new ReporterConfiguration( new ArrayList(), new File( "." ), true );
+        return new ReporterConfiguration( new ArrayList(), new File( "." ), true, null );
     }
 
 
@@ -422,7 +421,8 @@ public class ConcurrentReporterManagerTest
 
     public static ReporterConfiguration getTestReporterConfiguration()
     {
-        return new ReporterConfiguration( Arrays.asList( ConsoleReporter.class.getName() ), null, Boolean.TRUE );
+        return new ReporterConfiguration( Arrays.asList( ConsoleReporter.class.getName() ), null, Boolean.TRUE,
+                                          null );
     }
 
 

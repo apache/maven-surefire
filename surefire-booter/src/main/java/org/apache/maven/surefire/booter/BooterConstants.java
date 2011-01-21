@@ -22,6 +22,7 @@ package org.apache.maven.surefire.booter;
 
 /**
  * Constants used by the serializer/deserializer
+ *
  * @author Kristian Rosenvold
  */
 public interface BooterConstants
@@ -42,6 +43,7 @@ public interface BooterConstants
     String FAILIFNOTESTS = "failIfNoTests";
     String ISTRIMSTACKTRACE = "isTrimStackTrace";
     String REPORTSDIRECTORY = "reportsDirectory";
+    String FORKTIMEOUT = "forkTimeout";
     String TESTARTIFACT_VERSION = "testFwJarVersion";
     String TESTARTIFACT_CLASSIFIER = "testFwJarClassifier";
     String REQUESTEDTEST = "requestedTest";

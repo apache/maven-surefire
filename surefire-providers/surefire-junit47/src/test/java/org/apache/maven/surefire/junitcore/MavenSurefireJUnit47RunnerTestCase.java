@@ -155,7 +155,7 @@ public class MavenSurefireJUnit47RunnerTestCase
 
     private ReporterConfiguration getReporterConfiguration()
     {
-        return new ReporterConfiguration( new ArrayList(), new File( "." ), true );
+        return new ReporterConfiguration( new ArrayList(), new File( "." ), true, null );
     }
 
     /**

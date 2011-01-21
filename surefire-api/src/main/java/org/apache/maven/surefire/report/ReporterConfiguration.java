@@ -22,6 +22,7 @@ package org.apache.maven.surefire.report;
 import java.io.File;
 import java.io.PrintStream;
 import java.util.List;
+import java.util.Timer;
 
 /**
  * @author Kristian Rosenvold
@@ -36,16 +37,22 @@ public class ReporterConfiguration
 
     private final PrintStream originalSystemErr;
 
+    private final Integer forkTimeout;
+
     /**
      * A non-null Boolean value
      */
     private final Boolean trimStackTrace;
 
-    public ReporterConfiguration( List reports, File reportsDirectory, Boolean trimStackTrace )
+    private volatile boolean timedOut = false;
+
+
+    public ReporterConfiguration( List reports, File reportsDirectory, Boolean trimStackTrace, Integer forkWithTimeout )
     {
         this.reports = reports;
         this.reportsDirectory = reportsDirectory;
         this.trimStackTrace = trimStackTrace;
+        this.forkTimeout = forkWithTimeout;
         /*
         * While this may seem slightly odd, when this object is constructted no user code has been run
         * (including classloading), and we can be guaranteed that no-one has modified System.out/System.err.
@@ -53,6 +60,13 @@ public class ReporterConfiguration
          */
         this.originalSystemOut = System.out;
         this.originalSystemErr = System.err;
+
+    }
+
+    // todo: remove once we build with 2.7.2
+    public ReporterConfiguration( List reports, File reportsDirectory, Boolean trimStackTrace )
+    {
+        this( reports, reportsDirectory, trimStackTrace, null );
     }
 
     /**
@@ -106,5 +120,31 @@ public class ReporterConfiguration
     public PrintStream getOriginalSystemErr()
     {
         return originalSystemErr;
+    }
+
+    /**
+     * Indicates that the test is running timed out, meaning this process could be abruptly killed.
+     * This will normally tell the reporter to delete result files upon startup.
+     *
+     * @return true if test run can be killed by timeout
+     */
+    public boolean isForkWithTimeout()
+    {
+        return getForkTimeout() != null;
+    }
+
+    public Integer getForkTimeout()
+    {
+        return forkTimeout;
+    }
+
+    public void setTimedOut( boolean timedOut )
+    {
+        this.timedOut = timedOut;
+    }
+
+    public boolean isTimedOut()
+    {
+        return this.timedOut;
     }
 }

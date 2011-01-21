@@ -19,8 +19,6 @@ package org.apache.maven.plugin.surefire.booterclient;
  * under the License.
  */
 
-import junit.framework.Assert;
-import junit.framework.TestCase;
 import org.apache.maven.surefire.booter.BooterDeserializer;
 import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
 import org.apache.maven.surefire.booter.ClasspathConfiguration;
@@ -39,6 +37,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+
+import junit.framework.Assert;
+import junit.framework.TestCase;
 
 /**
  * Performs roundtrip testing of serialization/deserialization of the ProviderConfiguration
@@ -74,7 +75,7 @@ public class BooterDeserializerProviderConfigurationTest
 
         ClassLoaderConfiguration forkConfiguration = getForkConfiguration();
         final StartupConfiguration testStartupConfiguration = getTestStartupConfiguration( forkConfiguration );
-        ProviderConfiguration providerConfiguration = getReloadedProviderConfiguration(new ArrayList(  ) );
+        ProviderConfiguration providerConfiguration = getReloadedProviderConfiguration( new ArrayList() );
         ProviderConfiguration read = saveAndReload( providerConfiguration, testStartupConfiguration );
 
         Assert.assertEquals( aDir, read.getBaseDir() );
@@ -98,7 +99,8 @@ public class BooterDeserializerProviderConfigurationTest
         reports.add( second );
         reports.add( third );
 
-        ProviderConfiguration providerConfiguration = getTestProviderConfiguration( directoryScannerParameters, reports );
+        ProviderConfiguration providerConfiguration =
+            getTestProviderConfiguration( directoryScannerParameters, reports );
 
         final ReporterConfiguration reporterConfiguration = providerConfiguration.getReporterConfiguration();
         reporterConfiguration.getReports().add( first );
@@ -125,13 +127,13 @@ public class BooterDeserializerProviderConfigurationTest
     public void testTestRequest()
         throws IOException
     {
-        ProviderConfiguration reloaded = getReloadedProviderConfiguration(new ArrayList(  ) );
+        ProviderConfiguration reloaded = getReloadedProviderConfiguration( new ArrayList() );
 
         TestRequest testSuiteDefinition = reloaded.getTestSuiteDefinition();
         List suiteXmlFiles = testSuiteDefinition.getSuiteXmlFiles();
         File[] expected = getSuiteXmlFiles();
-        Assert.assertEquals( expected[0], suiteXmlFiles.get(0) );
-        Assert.assertEquals( expected[1], suiteXmlFiles.get(1) );
+        Assert.assertEquals( expected[0], suiteXmlFiles.get( 0 ) );
+        Assert.assertEquals( expected[1], suiteXmlFiles.get( 1 ) );
         Assert.assertEquals( getTestSourceDirectory(), testSuiteDefinition.getTestSourceDirectory() );
         Assert.assertEquals( aUserRequestedTest, testSuiteDefinition.getRequestedTest() );
     }
@@ -195,7 +197,8 @@ public class BooterDeserializerProviderConfigurationTest
     {
 
         File cwd = new File( "." );
-        ReporterConfiguration reporterConfiguration = new ReporterConfiguration( reports, cwd, Boolean.TRUE );
+        ReporterConfiguration reporterConfiguration =
+            new ReporterConfiguration( reports, cwd, Boolean.TRUE, null );
         TestRequest testSuiteDefinition =
             new TestRequest( getSuiteXmlFileStrings(), getTestSourceDirectory(), aUserRequestedTest );
         return new ProviderConfiguration( directoryScannerParameters, true, reporterConfiguration,
@@ -223,6 +226,6 @@ public class BooterDeserializerProviderConfigurationTest
 
     private List getSuiteXmlFileStrings()
     {
-        return Arrays.asList( new Object[]{ "A1", "A2" });
+        return Arrays.asList( new Object[]{ "A1", "A2" } );
     }
 }

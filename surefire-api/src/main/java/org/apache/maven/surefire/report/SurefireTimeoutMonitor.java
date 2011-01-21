@@ -19,30 +19,30 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
-import java.util.ArrayList;
+import java.util.TimerTask;
 
 /**
- * Test for {@link ForkingConsoleReporter}
- *
- * @author <a href="mailto:carlos@apache.org">Carlos Sanchez</a>
- * @version $Id$
+ * @author Kristian Rosenvold
  */
-public class ForkingConsoleReporterTest
-    extends AbstractConsoleReporterTestCase
+class SurefireTimeoutMonitor
+    extends TimerTask
 {
+    private final Thread mainThread;
 
-    protected void setUp()
-        throws Exception
+    private final ReporterConfiguration reporterConfiguration;
+
+    public SurefireTimeoutMonitor( ReporterConfiguration reporterConfiguration )
     {
-        super.setUp();
-        ReporterConfiguration reporterConfiguration = getTestReporterConfiguration();
-        ForkingConsoleReporter consoleReporter = new ForkingConsoleReporter( reporterConfiguration );
-        setConsoleReporter( consoleReporter );
+        this.mainThread = Thread.currentThread();
+        this.reporterConfiguration = reporterConfiguration;
     }
 
-    public static ReporterConfiguration getTestReporterConfiguration()
+    public void run()
     {
-        return new ReporterConfiguration( new ArrayList(), null, Boolean.TRUE, null );
+        reporterConfiguration.setTimedOut(  true );
+        synchronized ( mainThread )
+        {
+            mainThread.interrupt();
+        }
     }
-
 }

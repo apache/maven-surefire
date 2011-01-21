@@ -19,6 +19,11 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
+import org.apache.maven.surefire.util.PrettyPrintXMLWriter;
+import org.codehaus.plexus.util.IOUtil;
+import org.codehaus.plexus.util.xml.Xpp3Dom;
+import org.codehaus.plexus.util.xml.Xpp3DomWriter;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -34,11 +39,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
-import org.apache.maven.surefire.util.PrettyPrintXMLWriter;
-import org.codehaus.plexus.util.IOUtil;
-import org.codehaus.plexus.util.xml.Xpp3Dom;
-import org.codehaus.plexus.util.xml.Xpp3DomWriter;
-
 /**
  * XML format reporter.
  *
@@ -52,6 +52,9 @@ public class XMLReporter
 
     private File reportsDirectory;
 
+    private final boolean deleteOnStarting;
+
+
     private List results = Collections.synchronizedList( new ArrayList() );
 
     public XMLReporter( ReporterConfiguration reporterConfiguration )
@@ -59,16 +62,8 @@ public class XMLReporter
         super( reporterConfiguration );
 
         this.reportsDirectory = reporterConfiguration.getReportsDirectory();
-    }
 
-    /**
-     * @deprecated Can be removed once we build surfire with 2.7
-     */
-    public XMLReporter( File reportsDirectory, Boolean trimStackTrace )
-    {
-        super( trimStackTrace );
-
-        this.reportsDirectory = reportsDirectory;
+        this.deleteOnStarting = reporterConfiguration.isForkWithTimeout();
     }
 
 
@@ -80,11 +75,28 @@ public class XMLReporter
     {
     }
 
+
+    public void testSetStarting( ReportEntry report )
+        throws ReporterException
+    {
+        super.testSetStarting( report );
+
+        if ( deleteOnStarting )
+        {
+            final File reportFile = getReportFile( report );
+            deleteIfExisting( reportFile );
+        }
+    }
+
     public void testSetCompleted( ReportEntry report )
         throws ReporterException
     {
         super.testSetCompleted( report );
 
+        if ( isTimedOut() )
+        {
+            return;
+        }
         long runTime = System.currentTimeMillis() - testSetStartTime;
 
         Xpp3Dom testSuite = createTestSuiteElement( report, runTime );
@@ -105,7 +117,7 @@ public class XMLReporter
             testSuite.addChild( testcase );
         }
 
-        File reportFile = new File( reportsDirectory, "TEST-" + report.getName() + ".xml" );
+        File reportFile = getReportFile( report );
 
         File reportDir = reportFile.getParentFile();
 
@@ -137,6 +149,11 @@ public class XMLReporter
         }
     }
 
+    private File getReportFile( ReportEntry report )
+    {
+        return new File( reportsDirectory, "TEST-" + report.getName() + ".xml" );
+    }
+
     private String getReportName( ReportEntry report )
     {
         String reportName;
@@ -156,7 +173,7 @@ public class XMLReporter
     {
         super.testSucceeded( report );
 
-        long runTime = getActualRunTime(  report );
+        long runTime = getActualRunTime( report );
 
         Xpp3Dom testCase = createTestElement( report, runTime );
 

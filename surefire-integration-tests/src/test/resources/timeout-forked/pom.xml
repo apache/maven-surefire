@@ -34,7 +34,8 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <version>${surefire.version}</version>
         <configuration>
-          <forkedProcessTimeoutInSeconds>3</forkedProcessTimeoutInSeconds>
+          <forkedProcessTimeoutInSeconds>${forkTimeout}</forkedProcessTimeoutInSeconds>
+          <reportFormat>plain</reportFormat>
         </configuration>
       </plugin>
     </plugins>

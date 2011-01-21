@@ -2,7 +2,8 @@ package org.apache.maven.surefire.booter;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
+ * or more contributor lice
+nse agreements.  See the NOTICE file
  * distributed with this work for additional information
  * regarding copyright ownership.  The ASF licenses this file
  * to you under the Apache License, Version 2.0 (the
@@ -19,7 +20,6 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import junit.framework.TestCase;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
@@ -31,6 +31,8 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Properties;
+
+import junit.framework.TestCase;
 
 /**
  * @author Kristian Rosenvold
@@ -45,9 +47,10 @@ public class SurefireReflectorTest
         Object foo = getFoo();
 
         DirectoryScannerParameters directoryScannerParameters =
-            new DirectoryScannerParameters( new File( "ABC" ), new ArrayList(), new ArrayList(), Boolean.FALSE, "hourly" );
+            new DirectoryScannerParameters( new File( "ABC" ), new ArrayList(), new ArrayList(), Boolean.FALSE,
+                                            "hourly" );
         surefireReflector.setDirectoryScannerParameters( foo, directoryScannerParameters );
-        assertTrue( isCalled( foo ).booleanValue());
+        assertTrue( isCalled( foo ).booleanValue() );
 
     }
 
@@ -58,7 +61,8 @@ public class SurefireReflectorTest
         Object foo = getFoo();
 
         TestRequest testSuiteDefinition =
-            new TestRequest( Arrays.asList( new File[]{new File("file1"),new File("file2")} ), new File( "TestSOurce" ), "aUserRequestedTest" );
+            new TestRequest( Arrays.asList( new File[]{ new File( "file1" ), new File( "file2" ) } ),
+                             new File( "TestSOurce" ), "aUserRequestedTest" );
         surefireReflector.setTestSuiteDefinition( foo, testSuiteDefinition );
         assertTrue( isCalled( foo ).booleanValue() );
     }
@@ -86,7 +90,7 @@ public class SurefireReflectorTest
 
     private ReporterConfiguration getReporterConfiguration()
     {
-        return new ReporterConfiguration( new ArrayList(), new File( "CDE" ), Boolean.TRUE );
+        return new ReporterConfiguration( new ArrayList(), new File( "CDE" ), Boolean.TRUE, null );
     }
 
     public void testTestClassLoaderAware()
@@ -121,12 +125,13 @@ public class SurefireReflectorTest
     }
 
 
-    private Boolean isCalled(Object foo){
+    private Boolean isCalled( Object foo )
+    {
         final Method isCalled;
         try
         {
             isCalled = foo.getClass().getMethod( "isCalled", new Class[0] );
-            return (Boolean) isCalled.invoke(  foo, new Object[0] );
+            return (Boolean) isCalled.invoke( foo, new Object[0] );
         }
         catch ( IllegalAccessException e )
         {

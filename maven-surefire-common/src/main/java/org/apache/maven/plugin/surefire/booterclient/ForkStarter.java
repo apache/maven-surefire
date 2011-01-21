@@ -35,11 +35,7 @@ import org.apache.maven.surefire.booter.SurefireExecutionException;
 import org.apache.maven.surefire.booter.SurefireStarter;
 import org.apache.maven.surefire.booter.SystemPropertyManager;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
-import org.codehaus.plexus.util.IOUtil;
-import org.codehaus.plexus.util.cli.CommandLineException;
-import org.codehaus.plexus.util.cli.CommandLineUtils;
-import org.codehaus.plexus.util.cli.Commandline;
-import org.codehaus.plexus.util.cli.StreamConsumer;
+import org.apache.maven.surefire.suite.RunResult;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -47,6 +43,13 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Properties;
+
+import org.codehaus.plexus.util.IOUtil;
+import org.codehaus.plexus.util.cli.CommandLineException;
+import org.codehaus.plexus.util.cli.CommandLineTimeOutException;
+import org.codehaus.plexus.util.cli.CommandLineUtils;
+import org.codehaus.plexus.util.cli.Commandline;
+import org.codehaus.plexus.util.cli.StreamConsumer;
 
 
 /**
@@ -225,7 +228,11 @@ public class ForkStarter
 
         try
         {
-            returnCode = CommandLineUtils.executeCommandLine( cli, out, err, forkedProcessTimeoutInSeconds );
+            returnCode = CommandLineUtils.executeCommandLine( cli, out, err, forkedProcessTimeoutInSeconds > 0 ? forkedProcessTimeoutInSeconds + 1 : 0 );
+        }
+        catch ( CommandLineTimeOutException e )
+        {
+            returnCode = RunResult.FAILURE;
         }
         catch ( CommandLineException e )
         {

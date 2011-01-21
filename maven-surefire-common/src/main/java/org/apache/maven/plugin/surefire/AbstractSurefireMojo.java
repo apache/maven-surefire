@@ -227,8 +227,11 @@ public abstract class AbstractSurefireMojo
     {
 
         List reports = getReporters( forkConfiguration.isForking() );
+        Integer timeoutSet =
+            getForkedProcessTimeoutInSeconds() > 0 ? Integer.valueOf( getForkedProcessTimeoutInSeconds() ) : null;
         ReporterConfiguration reporterConfiguration =
-            new ReporterConfiguration( reports, getReportsDirectory(), Boolean.valueOf( isTrimStackTrace() ) );
+            new ReporterConfiguration( reports, getReportsDirectory(), Boolean.valueOf( isTrimStackTrace() ),
+                                       timeoutSet );
 
         surefireArtifact = (Artifact) getPluginArtifactMap().get( "org.apache.maven.surefire:surefire-booter" );
         if ( surefireArtifact == null )
@@ -712,7 +715,7 @@ public abstract class AbstractSurefireMojo
 
     protected void processSystemProperties( boolean setInSystem )
     {
-    	copyPropertiesToInternalSystemProperties( getSystemProperties() );
+        copyPropertiesToInternalSystemProperties( getSystemProperties() );
 
         if ( this.getSystemPropertyVariables() != null )
         {
@@ -735,7 +738,7 @@ public abstract class AbstractSurefireMojo
         // Not gonna do THAT any more... instead, we only propagate those system properties
         // that have been explicitly specified by the user via -Dkey=value on the CLI
 
-    	copyPropertiesToInternalSystemProperties( getUserProperties() );
+        copyPropertiesToInternalSystemProperties( getUserProperties() );
 
         getInternalSystemProperties().setProperty( "basedir", getBasedir().getAbsolutePath() );
         getInternalSystemProperties().setProperty( "user.dir", getWorkingDirectory().getAbsolutePath() );

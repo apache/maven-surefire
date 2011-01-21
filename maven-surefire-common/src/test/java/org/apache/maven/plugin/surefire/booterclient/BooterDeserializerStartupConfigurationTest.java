@@ -19,7 +19,6 @@ package org.apache.maven.plugin.surefire.booterclient;
  * under the License.
  */
 
-import junit.framework.TestCase;
 import org.apache.maven.surefire.booter.BooterConstants;
 import org.apache.maven.surefire.booter.BooterDeserializer;
 import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
@@ -38,6 +37,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Properties;
+
+import junit.framework.TestCase;
 
 /**
  * Performs roundtrip testing of serialization/deserialization of The StartupConfiguration
@@ -69,8 +70,8 @@ public class BooterDeserializerStartupConfigurationTest
         assertEquals( "true", props.get( BooterConstants.CHILD_DELEGATION ) );
         assertEquals( "CP1", classpathConfiguration.getTestClasspath().get( 0 ) );
         assertEquals( "CP2", classpathConfiguration.getTestClasspath().get( 1 ) );
-        assertEquals( "SP1", props.get( BooterConstants.SUREFIRE_CLASSPATHURL + "0" ));
-        assertEquals( "SP2", props.get( BooterConstants.SUREFIRE_CLASSPATHURL + "1" ));
+        assertEquals( "SP1", props.get( BooterConstants.SUREFIRE_CLASSPATHURL + "0" ) );
+        assertEquals( "SP2", props.get( BooterConstants.SUREFIRE_CLASSPATHURL + "1" ) );
     }
 
     public void testClassLoaderConfiguration()
@@ -112,8 +113,7 @@ public class BooterDeserializerStartupConfigurationTest
     private StartupConfiguration saveAndReload( StartupConfiguration startupConfiguration )
         throws IOException
     {
-        final ForkConfiguration forkConfiguration =
-            ForkConfigurationTest.getForkConfiguration();
+        final ForkConfiguration forkConfiguration = ForkConfigurationTest.getForkConfiguration();
         Properties props = new Properties();
         BooterSerializer booterSerializer = new BooterSerializer( forkConfiguration, props );
         booterSerializer.serialize( getProviderConfiguration(), startupConfiguration, aTest );
@@ -130,9 +130,10 @@ public class BooterDeserializerStartupConfigurationTest
         File cwd = new File( "." );
         DirectoryScannerParameters directoryScannerParameters =
             new DirectoryScannerParameters( cwd, new ArrayList(), new ArrayList(), Boolean.TRUE, "hourly" );
-        ReporterConfiguration reporterConfiguration = new ReporterConfiguration( new ArrayList(), cwd, Boolean.TRUE );
+        ReporterConfiguration reporterConfiguration =
+            new ReporterConfiguration( new ArrayList(), cwd, Boolean.TRUE, null );
         TestRequest testSuiteDefinition =
-            new TestRequest( Arrays.asList( getSuiteXmlFileStrings()), getTestSourceDirectory(), aUserRequestedTest );
+            new TestRequest( Arrays.asList( getSuiteXmlFileStrings() ), getTestSourceDirectory(), aUserRequestedTest );
         return new ProviderConfiguration( directoryScannerParameters, true, reporterConfiguration,
                                           new TestArtifactInfo( "5.0", "ABC" ), testSuiteDefinition, new Properties(),
                                           aTest );

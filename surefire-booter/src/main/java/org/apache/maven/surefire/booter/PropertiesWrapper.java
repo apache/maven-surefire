@@ -24,7 +24,10 @@ import org.apache.maven.surefire.util.internal.StringUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * @author Kristian Rosenvold
@@ -66,6 +69,17 @@ public class PropertiesWrapper
     {
         final Boolean aBoolean = Boolean.valueOf( properties.getProperty( propertyName ) );
         return aBoolean.booleanValue();
+    }
+
+    public Boolean getBooleanObjectProperty( String propertyName )
+    {
+        return Boolean.valueOf( properties.getProperty( propertyName ) );
+    }
+
+    public Integer getIntegerObjectProperty( String propertyName )
+    {
+        String property = properties.getProperty( propertyName );
+        return property != null ? Integer.valueOf( property ) : null;
     }
 
     public File getFileProperty( String key )
@@ -218,6 +232,15 @@ public class PropertiesWrapper
             setProperty( key, aBoolean.toString() );
         }
     }
+
+    public void setProperty( String key, Integer integer )
+    {
+        if ( integer != null )
+        {
+            setProperty( key, integer.toString() );
+        }
+    }
+
 
     public void setProperty( String key, String value )
     {
