@@ -29,6 +29,7 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.surefire.AbstractSurefireMojo;
 import org.apache.maven.plugin.surefire.ProviderInfo;
 import org.apache.maven.plugin.surefire.SurefireExecutionParameters;
+import org.apache.maven.plugin.surefire.booterclient.ChecksumCalculator;
 import org.apache.maven.plugin.surefire.booterclient.ForkConfiguration;
 import org.apache.maven.plugin.surefire.booterclient.ForkStarter;
 import org.apache.maven.project.MavenProject;
@@ -207,16 +208,16 @@ public class IntegrationTestMojo
      * A list of &lt;include> elements specifying the tests (by pattern) that should be included in testing. When not
      * specified and when the <code>test</code> parameter is not specified, the default includes will be
      * <code><br/>
-        &lt;includes><br/>
-            &nbsp;&lt;include>**&#47;IT*.java&lt;/include><br/>
-            &nbsp;&lt;include>**&#47;*IT.java&lt;/include><br/>
-            &nbsp;&lt;include>**&#47;*ITCase.java&lt;/include><br/>
-        &lt;/includes><br/>
+     * &lt;includes><br/>
+     * &nbsp;&lt;include>**&#47;IT*.java&lt;/include><br/>
+     * &nbsp;&lt;include>**&#47;*IT.java&lt;/include><br/>
+     * &nbsp;&lt;include>**&#47;*ITCase.java&lt;/include><br/>
+     * &lt;/includes><br/>
      * </code>
-     *
+     * <p/>
      * Each include item may also contain a comma-separated sublist of items, which will be treated as multiple &nbsp;&lt;include>
      * entries.<br/>
-     *
+     * <p/>
      * This parameter is ignored if the TestNG <code>suiteXmlFiles</code> parameter is specified.
      *
      * @parameter
@@ -227,13 +228,13 @@ public class IntegrationTestMojo
      * A list of &lt;exclude> elements specifying the tests (by pattern) that should be excluded in testing. When not
      * specified and when the <code>test</code> parameter is not specified, the default excludes will be
      * <code><br/>
-        &lt;excludes><br/>
-            &nbsp;&lt;exclude>**&#47;*$*&lt;/exclude><br/>
-        &lt;/excludes><br/>
+     * &lt;excludes><br/>
+     * &nbsp;&lt;exclude>**&#47;*$*&lt;/exclude><br/>
+     * &lt;/excludes><br/>
      * </code>
      * (which excludes all inner classes).<br>
      * This parameter is ignored if the TestNG <code>suiteXmlFiles</code> parameter is specified.
-     *
+     * <p/>
      * Each exclude item may also contain a comma-separated sublist of items, which will be treated as multiple &nbsp;&lt;exclude>
      * entries.<br/>
      *
@@ -642,6 +643,10 @@ public class IntegrationTestMojo
     {
         if ( verifyParameters() )
         {
+            if ( hasExecutedBefore() )
+            {
+                return;
+            }
             logReportsDirectory();
 
             final List providers = initialize();
@@ -699,8 +704,8 @@ public class IntegrationTestMojo
                 if ( StringUtils.isEmpty( this.encoding ) )
                 {
                     getLog().warn(
-                        "File encoding has not been set, using platform encoding " + ReaderFactory.FILE_ENCODING +
-                            ", i.e. build is platform dependent!" );
+                        "File encoding has not been set, using platform encoding " + ReaderFactory.FILE_ENCODING
+                            + ", i.e. build is platform dependent!" );
                     encoding = ReaderFactory.FILE_ENCODING;
                 }
                 else
@@ -723,6 +728,7 @@ public class IntegrationTestMojo
             }
         }
     }
+
 
     protected boolean verifyParameters()
         throws MojoFailureException
@@ -1377,5 +1383,11 @@ public class IntegrationTestMojo
     public void setRunOrder( String runOrder )
     {
         this.runOrder = runOrder;
+    }
+
+    protected void addPluginSpecificChecksumItems( ChecksumCalculator checksum )
+    {
+        checksum.add(skipITs);
+        checksum.add(summaryFile);
     }
 }

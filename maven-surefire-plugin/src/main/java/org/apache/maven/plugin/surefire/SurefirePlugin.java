@@ -26,6 +26,7 @@ import org.apache.maven.artifact.resolver.ArtifactResolver;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugin.surefire.booterclient.ChecksumCalculator;
 import org.apache.maven.plugin.surefire.booterclient.ForkConfiguration;
 import org.apache.maven.plugin.surefire.booterclient.ForkStarter;
 import org.apache.maven.project.MavenProject;
@@ -103,6 +104,7 @@ public class SurefirePlugin
     /**
      * The directory containing generated test classes of the project being tested.
      * This will be included at the beginning of the test classpath.                                                                                                                            *
+     *
      * @parameter default-value="${project.build.testOutputDirectory}"
      */
     private File testClassesDirectory;
@@ -186,11 +188,11 @@ public class SurefirePlugin
      * A list of &lt;include> elements specifying the tests (by pattern) that should be included in testing. When not
      * specified and when the <code>test</code> parameter is not specified, the default includes will be
      * <code><br/>
-        &lt;includes><br/>
-            &nbsp;&lt;include>**&#47;Test*.java&lt;/include><br/>
-            &nbsp;&lt;include>**&#47;*Test.java&lt;/include><br/>
-            &nbsp;&lt;include>**&#47;*TestCase.java&lt;/include><br/>
-        &lt;/includes><br/>
+     * &lt;includes><br/>
+     * &nbsp;&lt;include>**&#47;Test*.java&lt;/include><br/>
+     * &nbsp;&lt;include>**&#47;*Test.java&lt;/include><br/>
+     * &nbsp;&lt;include>**&#47;*TestCase.java&lt;/include><br/>
+     * &lt;/includes><br/>
      * </code>
      * This parameter is ignored if the TestNG <code>suiteXmlFiles</code> parameter is specified.
      *
@@ -202,9 +204,9 @@ public class SurefirePlugin
      * A list of &lt;exclude> elements specifying the tests (by pattern) that should be excluded in testing. When not
      * specified and when the <code>test</code> parameter is not specified, the default excludes will be
      * <code><br/>
-        &lt;excludes><br/>
-            &nbsp;&lt;exclude>**&#47;*$*&lt;/exclude><br/>
-        &lt;/excludes><br/>
+     * &lt;excludes><br/>
+     * &nbsp;&lt;exclude>**&#47;*$*&lt;/exclude><br/>
+     * &lt;/excludes><br/>
      * </code>
      * (which excludes all inner classes).<br>
      * This parameter is ignored if the TestNG <code>suiteXmlFiles</code> parameter is specified.
@@ -595,6 +597,10 @@ public class SurefirePlugin
     {
         if ( verifyParameters() )
         {
+            if ( hasExecutedBefore() )
+            {
+                return;
+            }
             logReportsDirectory();
 
             final List providers = initialize();
@@ -688,13 +694,17 @@ public class SurefirePlugin
         this.skipTests = skipTests;
     }
 
-    /** @noinspection deprecation*/
+    /**
+     * @noinspection deprecation
+     */
     public boolean isSkipExec()
     {
         return skipExec;
     }
 
-    /** @noinspection deprecation*/
+    /**
+     * @noinspection deprecation
+     */
     public void setSkipExec( boolean skipExec )
     {
         this.skipExec = skipExec;
@@ -850,13 +860,17 @@ public class SurefirePlugin
         this.localRepository = localRepository;
     }
 
-    /** @noinspection deprecation*/
+    /**
+     * @noinspection deprecation
+     */
     public Properties getSystemProperties()
     {
         return systemProperties;
     }
 
-    /** @noinspection deprecation*/
+    /**
+     * @noinspection deprecation
+     */
     public void setSystemProperties( Properties systemProperties )
     {
         this.systemProperties = systemProperties;
@@ -1275,5 +1289,9 @@ public class SurefirePlugin
     public void setRunOrder( String runOrder )
     {
         this.runOrder = runOrder;
+    }
+
+    protected void addPluginSpecificChecksumItems( ChecksumCalculator checksum )
+    {
     }
 }

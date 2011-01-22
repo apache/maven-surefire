@@ -33,6 +33,7 @@ import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugin.surefire.booterclient.ChecksumCalculator;
 import org.apache.maven.plugin.surefire.booterclient.ForkConfiguration;
 import org.apache.maven.plugin.surefire.booterclient.ForkStarter;
 import org.apache.maven.shared.artifact.filter.PatternIncludesArtifactFilter;
@@ -506,7 +507,7 @@ public abstract class AbstractSurefireMojo
 
     protected ForkConfiguration getForkConfiguration()
     {
-        File tmpDir = new File( getReportsDirectory().getParentFile(), "surefire" );
+        File tmpDir = getSurefireTempDir();
         //noinspection ResultOfMethodCallIgnored
         tmpDir.mkdirs();
 
@@ -576,6 +577,90 @@ public abstract class AbstractSurefireMojo
             }
         }
         return fork;
+    }
+
+
+    /**
+     * Where surefire stores its own temp files
+     *
+     * @return A file pointing to the location of surefire's own temp files
+     */
+    private File getSurefireTempDir()
+    {
+        return new File( getReportsDirectory().getParentFile(), "surefire" );
+    }
+
+    private String getConfigChecksum()
+    {
+        ChecksumCalculator checksum = new ChecksumCalculator();
+        checksum.add( getPluginName() );
+        checksum.add( isSkipTests() );
+        checksum.add( isSkipExec() );
+        checksum.add( isSkip() );
+        checksum.add( getTestClassesDirectory() );
+        checksum.add( getClassesDirectory() );
+        checksum.add( getClasspathDependencyExcludes() );
+        checksum.add( getClasspathDependencyScopeExclude() );
+        checksum.add( getAdditionalClasspathElements() );
+        checksum.add( getReportsDirectory() );
+        checksum.add( getTestSourceDirectory() );
+        checksum.add( getTest() );
+        checksum.add( getIncludes() );
+        checksum.add( getExcludes() );
+        checksum.add( getLocalRepository() );
+        checksum.add( getSystemProperties() );
+        checksum.add( getSystemPropertyVariables() );
+        checksum.add( getProperties() );
+        checksum.add( isPrintSummary() );
+        checksum.add( getReportFormat() );
+        checksum.add( isUseFile() );
+        checksum.add( isRedirectTestOutputToFile() );
+        checksum.add( getForkMode() );
+        checksum.add( getJvm() );
+        checksum.add( getArgLine() );
+        checksum.add( getDebugForkedProcess() );
+        checksum.add( getForkedProcessTimeoutInSeconds() );
+        checksum.add( getEnvironmentVariables() );
+        checksum.add( getWorkingDirectory() );
+        checksum.add( isChildDelegation() );
+        checksum.add( getGroups() );
+        checksum.add( getExcludedGroups() );
+        checksum.add( getSuiteXmlFiles() );
+        checksum.add( getJunitArtifact() );
+        checksum.add( getTestNGArtifactName() );
+        checksum.add( getThreadCount() );
+        checksum.add( getPerCoreThreadCount() );
+        checksum.add( getUseUnlimitedThreads() );
+        checksum.add( getParallel() );
+        checksum.add( isTrimStackTrace() );
+        checksum.add( getRemoteRepositories() );
+        checksum.add( isDisableXmlReport() );
+        checksum.add( isUseSystemClassLoader() );
+        checksum.add( isUseManifestOnlyJar() );
+        checksum.add( isEnableAssertions() );
+        checksum.add( getObjectFactory() );
+        checksum.add( getFailIfNoTests() );
+        checksum.add( getRunOrder() );
+        addPluginSpecificChecksumItems(checksum);
+        return checksum.getSha1();
+
+    }
+
+    protected abstract void addPluginSpecificChecksumItems( ChecksumCalculator checksum );
+
+    protected boolean hasExecutedBefore()
+    {
+        // A tribute to Linus Torvalds
+        String configChecksum = getConfigChecksum();
+        Map pluginContext = getPluginContext();
+        if ( pluginContext.containsKey( configChecksum ) )
+        {
+            getLog().info( "Skipping execution of surefire because it has already been run for this configuration" );
+            return true;
+        }
+        pluginContext.put( configChecksum, configChecksum );
+
+        return false;
     }
 
     protected ClassLoaderConfiguration getClassLoaderConfiguration( ForkConfiguration fork )
