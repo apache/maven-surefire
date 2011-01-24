@@ -31,7 +31,7 @@ Using TestNG
   by Failsafe as TestNG tests.
 
   If you'd like to use a different naming scheme, you can change the <<<includes>>> parameter, as discussed in the
-  {{{inclusion-exclusion.html}Inclusions and Exclusions of Tests}} example.
+  {{{./inclusion-exclusion.html}Inclusions and Exclusions of Tests}} example.
 
 * Using Suite XML Files
 
@@ -94,7 +94,7 @@ Using TestNG
 [...]
 +---+
 
-  For more information about setting system properties in Failsafe tests, see {{{system-properties.html}System Properties}}.
+  For more information about setting system properties in Failsafe tests, see {{{./system-properties.html}System Properties}}.
 
 * Using Groups
 

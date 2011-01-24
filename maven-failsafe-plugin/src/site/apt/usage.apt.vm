@@ -81,7 +81,7 @@ mvn verify
   tests (including if you are using TestNG to execute your JUnit tests, which
   occurs by default if both are present in Surefire).
 
-  See {{{examples/testng.html} Using TestNG}} for more information.
+  See {{{./examples/testng.html} Using TestNG}} for more information.
 
 * Using jetty and maven-failsafe-plugin
 

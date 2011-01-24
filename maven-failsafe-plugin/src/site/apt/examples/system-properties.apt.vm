@@ -10,7 +10,7 @@ Using System Properties
 
   There are two ways to add a list of system properties to Failsafe:
 
-* systemProperyVariable
+* systemPropertyVariable
 
   This configuration is the replacement of the deprecated <systemProperies>.  It can accept any value
   from Maven's properties that can be converted <<to String value>>
