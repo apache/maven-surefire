@@ -39,7 +39,7 @@ import java.util.Timer;
  * is allocated, but none of the subsequent managers.
  *
  * @author Jason van Zyl
- * @author Kristian Rosenvold (extracted factory)
+ * @author Kristian Rosenvold
  */
 
 /**
@@ -68,11 +68,9 @@ public class ReporterManagerFactory
 
     private final Timer timer;
 
-
-    public ReporterManagerFactory( List reportDefinitions, ClassLoader surefireClassLoader,
-                                   ReporterConfiguration reporterConfiguration )
+    public ReporterManagerFactory( ClassLoader surefireClassLoader, ReporterConfiguration reporterConfiguration )
     {
-        this.reportDefinitions = reportDefinitions;
+        this.reportDefinitions = reporterConfiguration.getReports();
         this.surefireClassLoader = surefireClassLoader;
         this.reporterConfiguration = reporterConfiguration;
         this.reports = instantiateReportsNewStyle( reportDefinitions, reporterConfiguration, surefireClassLoader );
@@ -87,12 +85,6 @@ public class ReporterManagerFactory
             timer = null;
         }
 
-
-    }
-
-    public ReporterManagerFactory( ClassLoader surefireClassLoader, ReporterConfiguration reporterConfiguration )
-    {
-        this( reporterConfiguration.getReports(), surefireClassLoader, reporterConfiguration );
     }
 
     public RunStatistics getGlobalRunStatistics()

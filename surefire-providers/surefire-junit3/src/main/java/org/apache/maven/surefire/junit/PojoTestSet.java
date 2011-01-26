@@ -22,7 +22,6 @@ package org.apache.maven.surefire.junit;
 import org.apache.maven.surefire.report.PojoStackTraceWriter;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.Reporter;
-import org.apache.maven.surefire.report.ReporterManager;
 import org.apache.maven.surefire.report.SimpleReportEntry;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
@@ -40,15 +39,15 @@ public class PojoTestSet
 
     private static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
 
-    private Object testObject;
+    private final Object testObject;
 
-    protected List testMethods;
+    private List testMethods;
     
-    protected Method setUpMethod;
+    private Method setUpMethod;
     
-    protected Method tearDownMethod;
+    private Method tearDownMethod;
 
-    private Class testClass;
+    private final Class testClass;
 
     public PojoTestSet( Class testClass )
         throws TestSetFailedException
@@ -85,7 +84,7 @@ public class PojoTestSet
         executeTestMethods( reportManager );
     }
 
-    protected void executeTestMethods( Reporter reportManager )
+    private void executeTestMethods( Reporter reportManager )
     {
         if ( reportManager == null )
         {
@@ -105,10 +104,7 @@ public class PojoTestSet
         }
     }
 
-    /**
-     * @noinspection CatchGenericClass, OverlyBroadCatchBlock, MethodWithMultipleReturnPoints
-     */
-    protected boolean executeTestMethod( Method method, Object[] args, Reporter reportManager )
+    private boolean executeTestMethod( Method method, Object[] args, Reporter reportManager )
     {
         if ( method == null || args == null || reportManager == null )
         {
@@ -139,7 +135,7 @@ public class PojoTestSet
                                             new PojoStackTraceWriter( testObject.getClass().getName(), method.getName(),
                                                                       e ) );
 
-            ( (ReporterManager) reportManager ).testFailed( report );
+            reportManager.testFailed( report );
 
             // A return value of true indicates to this class's executeTestMethods
             // method that it should abort and not attempt to execute
@@ -166,7 +162,7 @@ public class PojoTestSet
                                             new PojoStackTraceWriter( testObject.getClass().getName(), method.getName(),
                                                                       t ) );
 
-            ( (ReporterManager) reportManager ).testFailed( report );
+            reportManager.testFailed( report );
             // Don't return  here, because tearDownFixture should be called even
             // if the test method throws an exception.
         }
@@ -176,7 +172,7 @@ public class PojoTestSet
                                             new PojoStackTraceWriter( testObject.getClass().getName(), method.getName(),
                                                                       t ) );
 
-            ( (ReporterManager) reportManager ).testFailed( report );
+            reportManager.testFailed( report );
             // Don't return  here, because tearDownFixture should be called even
             // if the test method throws an exception.
         }
@@ -192,7 +188,7 @@ public class PojoTestSet
                                             new PojoStackTraceWriter( testObject.getClass().getName(), method.getName(),
                                                                       t ) );
 
-            ( (ReporterManager) reportManager ).testFailed( report );
+            reportManager.testFailed( report );
 
             // A return value of true indicates to this class's executeTestMethods
             // method that it should abort and not attempt to execute
@@ -210,7 +206,7 @@ public class PojoTestSet
         return false;
     }
 
-    public String getTestName( String testMethodName )
+    private String getTestName( String testMethodName )
     {
         if ( testMethodName == null )
         {
@@ -220,12 +216,12 @@ public class PojoTestSet
         return getTestClass().getName() + "." + testMethodName;
     }
 
-    public void setUpFixture() throws Throwable
+    private void setUpFixture() throws Throwable
     {
     	if (setUpMethod != null) setUpMethod.invoke( testObject, new Object[0] );        
     }
 
-    public void tearDownFixture() throws Throwable
+    private void tearDownFixture() throws Throwable
     {
     	if (tearDownMethod != null) tearDownMethod.invoke( testObject, new Object[0] );        
     }

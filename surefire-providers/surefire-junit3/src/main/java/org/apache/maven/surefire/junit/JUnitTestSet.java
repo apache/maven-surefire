@@ -30,7 +30,7 @@ import java.lang.reflect.Proxy;
 public final class JUnitTestSet
     implements SurefireTestSet
 {
-    private Method runMethod;
+    private final Method runMethod;
 
     private final Class testClass;
 
@@ -72,7 +72,7 @@ public final class JUnitTestSet
     }
 
 
-    public void execute( Reporter reportManager, ClassLoader loader )
+    public void execute( Reporter reporter, ClassLoader loader )
         throws TestSetFailedException
     {
         Class testClass = getTestClass();
@@ -83,8 +83,7 @@ public final class JUnitTestSet
 
             Object instanceOfTestResult = reflector.getTestResultClass().newInstance();
 
-            TestListenerInvocationHandler invocationHandler =
-                new TestListenerInvocationHandler( reportManager, instanceOfTestResult, loader );
+            TestListenerInvocationHandler invocationHandler = new TestListenerInvocationHandler( reporter );
 
             Object testListener =
                 Proxy.newProxyInstance( loader, reflector.getInterfacesImplementedByDynamicProxy(), invocationHandler );

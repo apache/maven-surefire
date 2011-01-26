@@ -54,7 +54,6 @@ public class JUnit3Provider
 
     private final JUnit3Reflector reflector;
 
-
     private TestsToRun testsToRun;
 
     public JUnit3Provider( ProviderParameters booterParameters )
@@ -113,7 +112,6 @@ public class JUnit3Provider
     {
         return directoryScanner.locateTestClasses( testClassLoader, testChecker );
     }
-
 
     public Iterator getSuites()
     {

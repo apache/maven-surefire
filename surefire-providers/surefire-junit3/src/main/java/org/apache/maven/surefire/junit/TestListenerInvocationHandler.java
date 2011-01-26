@@ -21,7 +21,6 @@ package org.apache.maven.surefire.junit;
 
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.Reporter;
-import org.apache.maven.surefire.report.ReporterManager;
 import org.apache.maven.surefire.report.SimpleReportEntry;
 
 import java.lang.reflect.InvocationHandler;
@@ -44,7 +43,7 @@ public class TestListenerInvocationHandler
 
     private Set failedTestsSet = new HashSet();
 
-    private ReporterManager reportManager;  // todo: Switch to ReportWriter for 2.7.2
+    private Reporter reporter;
 
     private static final Class[] EMPTY_CLASS_ARRAY = new Class[]{ };
 
@@ -104,24 +103,14 @@ public class TestListenerInvocationHandler
         }
     }
 
-    public TestListenerInvocationHandler( Reporter reportManager, Object instanceOfTestResult, ClassLoader loader )
+    public TestListenerInvocationHandler( Reporter reporter )
     {
-        if ( reportManager == null )
+        if ( reporter == null )
         {
-            throw new NullPointerException( "reportManager is null" );
+            throw new NullPointerException( "reporter is null" );
         }
 
-        if ( instanceOfTestResult == null )
-        {
-            throw new NullPointerException( "instanceOfTestResult is null" );
-        }
-
-        if ( loader == null )
-        {
-            throw new NullPointerException( "loader is null" );
-        }
-
-        this.reportManager = (ReporterManager) reportManager;
+        this.reporter = reporter;
     }
 
     public Object invoke( Object proxy, Method method, Object[] args )
@@ -154,7 +143,7 @@ public class TestListenerInvocationHandler
     {
         ReportEntry report = new SimpleReportEntry( args[0].getClass().getName(), args[0].toString() );
 
-        reportManager.testStarting( report );
+        reporter.testStarting( report );
     }
 
     // Handler for TestListener.addFailure(Test, Throwable)
@@ -164,7 +153,7 @@ public class TestListenerInvocationHandler
         ReportEntry report =
             new SimpleReportEntry( args[0].getClass().getName(), args[0].toString(), getStackTraceWriter( args ) );
 
-        ( (ReporterManager) reportManager ).testError( report );
+        reporter.testError( report );
 
         failedTestsSet.add( new FailedTest( args[0], Thread.currentThread() ) );
     }
@@ -193,7 +182,7 @@ public class TestListenerInvocationHandler
         ReportEntry report =
             new SimpleReportEntry( args[0].getClass().getName(), args[0].toString(), getStackTraceWriter( args ) );
 
-        reportManager.testFailed( report );
+        reporter.testFailed( report );
 
         failedTestsSet.add( new FailedTest( args[0], Thread.currentThread() ) );
     }
@@ -206,7 +195,7 @@ public class TestListenerInvocationHandler
         {
             ReportEntry report = new SimpleReportEntry( args[0].getClass().getName(), args[0].toString() );
 
-            reportManager.testSucceeded( report );
+            reporter.testSucceeded( report );
         }
     }
 }
