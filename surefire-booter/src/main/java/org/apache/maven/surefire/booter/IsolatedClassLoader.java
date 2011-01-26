@@ -30,9 +30,9 @@ import java.util.Set;
 public class IsolatedClassLoader
     extends URLClassLoader
 {
-    private ClassLoader parent = ClassLoader.getSystemClassLoader();
+    private final ClassLoader parent = ClassLoader.getSystemClassLoader();
 
-    private Set urls = new HashSet();
+    private final Set urls = new HashSet();
 
     private boolean childDelegation = true;
 

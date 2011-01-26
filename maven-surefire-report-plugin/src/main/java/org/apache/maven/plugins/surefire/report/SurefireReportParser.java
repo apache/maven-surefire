@@ -47,7 +47,7 @@ public class SurefireReportParser
 
     private List reportsDirectories;
 
-    private List testSuites = new ArrayList();
+    private final List testSuites = new ArrayList();
 
     private static final int PCENT = 100;
 

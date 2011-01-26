@@ -75,7 +75,7 @@ public class NestedRuntimeException
     /**
      * Root cause of this nested exception
      */
-    private Throwable cause;
+    private final Throwable cause;
 
     /**
      * Construct a <code>NestedRuntimeException</code> with the specified detail message

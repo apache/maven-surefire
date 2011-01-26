@@ -43,17 +43,17 @@ import java.util.Properties;
 public class TestNGXmlTestSuite
     implements TestNgTestSuite
 {
-    private List suiteFiles;
+    private final List suiteFiles;
 
     private List suiteFilePaths;
 
-    private String testSourceDirectory;
+    private final String testSourceDirectory;
 
-    private ArtifactVersion version;
+    private final ArtifactVersion version;
 
-    private Map options;
+    private final Map options;
 
-    private File reportsDirectory;
+    private final File reportsDirectory;
 
     // Not really used
     private Map testSets;

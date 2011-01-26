@@ -39,11 +39,11 @@ public abstract class AbstractConsoleReporter
 
     private static final String TEST_SET_STARTING_GROUP_SUFIX = ")";
 
-    protected static final int BUFFER_SIZE = 4096;
+    private static final int BUFFER_SIZE = 4096;
 
     private static final PrintStream ORIGINAL_SYSTEM_OUT = System.out;
 
-    protected AbstractConsoleReporter( String format, ReporterConfiguration reporterConfiguration )
+    AbstractConsoleReporter( String format, ReporterConfiguration reporterConfiguration )
     {
         // TODO: use logger
         super(
@@ -67,7 +67,7 @@ public abstract class AbstractConsoleReporter
         writeHeading( "-------------------------------------------------------" );
     }
 
-    public void writeHeading( String message )
+    void writeHeading( String message )
     {
         writer.println( message );
         writer.flush();

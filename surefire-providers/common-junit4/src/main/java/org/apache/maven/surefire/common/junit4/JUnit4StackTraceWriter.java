@@ -32,7 +32,7 @@ public class JUnit4StackTraceWriter
     implements StackTraceWriter
 {
     // Member Variables
-    private Failure junitFailure;
+    private final Failure junitFailure;
 
     /**
      * Constructor.

@@ -27,19 +27,19 @@ import java.util.LinkedList;
 public class PrettyPrintXMLWriter
     implements XMLWriter
 {
-    private PrintWriter writer;
+    private final PrintWriter writer;
 
-    private LinkedList elementStack = new LinkedList();
+    private final LinkedList elementStack = new LinkedList();
 
     private boolean tagInProgress;
 
     private int depth;
 
-    private String lineIndenter;
+    private final String lineIndenter;
 
-    private String encoding;
+    private final String encoding;
 
-    private String docType;
+    private final String docType;
 
     private boolean readyForNewLine;
 
@@ -50,7 +50,7 @@ public class PrettyPrintXMLWriter
         this( writer, null, null );
     }
 
-    public PrettyPrintXMLWriter( PrintWriter writer, String lineIndenter, String encoding, String doctype )
+    private PrettyPrintXMLWriter( PrintWriter writer, String lineIndenter, String encoding, String doctype )
     {
         this.writer = writer;
 
@@ -66,7 +66,7 @@ public class PrettyPrintXMLWriter
         }
     }
 
-    public PrettyPrintXMLWriter( PrintWriter writer, String encoding, String doctype )
+    private PrettyPrintXMLWriter( PrintWriter writer, String encoding, String doctype )
     {
         this( writer, "  ", encoding, doctype );
     }

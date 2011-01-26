@@ -27,11 +27,11 @@ import java.util.List;
  */
 public class DirectoryScannerParameters
 {
-    final File testClassesDirectory;
+    private final File testClassesDirectory;
 
-    final List includes;
+    private final List includes;
 
-    final List excludes;
+    private final List excludes;
 
     private final Boolean failIfNoTests;
 

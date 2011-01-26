@@ -36,13 +36,13 @@ import java.util.StringTokenizer;
  */
 public class SurefireReportGenerator
 {
-    private SurefireReportParser report;
+    private final SurefireReportParser report;
 
     private List testSuites;
 
-    private boolean showSuccess;
+    private final boolean showSuccess;
 
-    private String xrefLocation;
+    private final String xrefLocation;
 
     public SurefireReportGenerator( List reportsDirectories, Locale locale, boolean showSuccess, String xrefLocation )
     {

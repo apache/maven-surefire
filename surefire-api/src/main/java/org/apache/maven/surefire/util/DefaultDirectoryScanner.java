@@ -97,7 +97,7 @@ public class DefaultDirectoryScanner
         return new TestsToRun( result );
     }
 
-    public static Class loadClass( ClassLoader classLoader, String className )
+    private static Class loadClass( ClassLoader classLoader, String className )
     {
         Class testClass;
         try

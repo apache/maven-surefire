@@ -150,7 +150,7 @@ public class ConfigurableParallelComputer
             + fixedPool + '}';
     }
 
-    public class SynchronousRunner
+    private class SynchronousRunner
         implements RunnerScheduler
     {
         public void schedule( final Runnable childStatement )

@@ -102,7 +102,7 @@ public final class JUnit3Reflector
         }
     }
 
-    public static Method getMethod( Class clazz, String methodName, Class[] parameters )
+    private static Method getMethod( Class clazz, String methodName, Class[] parameters )
     {
         try
         {
@@ -144,7 +144,7 @@ public final class JUnit3Reflector
         return testObject;
     }
 
-    static Object createInstanceFromSuiteMethod( Class testClass )
+    private static Object createInstanceFromSuiteMethod( Class testClass )
         throws IllegalAccessException, InvocationTargetException
     {
         Object testObject = null;
@@ -164,7 +164,7 @@ public final class JUnit3Reflector
         return testObject;
     }
 
-    static Constructor getTestConstructor( Class testClass )
+    private static Constructor getTestConstructor( Class testClass )
         throws NoSuchMethodException
     {
         Constructor constructor;

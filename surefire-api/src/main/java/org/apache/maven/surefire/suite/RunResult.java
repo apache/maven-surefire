@@ -34,7 +34,7 @@ public class RunResult
 
     private final int skipped;
 
-    public static final int SUCCESS = 0;
+    private static final int SUCCESS = 0;
 
     public static final int FAILURE = 255;
 

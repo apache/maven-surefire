@@ -39,7 +39,7 @@ public class TestSet
 {
     private final Description testSetDescription;
 
-    private AtomicInteger numberOfCompletedChildren = new AtomicInteger( 0 );
+    private final AtomicInteger numberOfCompletedChildren = new AtomicInteger( 0 );
 
     // While the two parameters below may seem duplicated, it is not entirely the case,
     // since numberOfTests has the correct value from the start, while testMethods grows as method execution starts.
@@ -50,9 +50,9 @@ public class TestSet
 
     private static final InheritableThreadLocal<TestSet> testSet = new InheritableThreadLocal<TestSet>();
 
-    private AtomicBoolean allScheduled = new AtomicBoolean();
+    private final AtomicBoolean allScheduled = new AtomicBoolean();
 
-    private AtomicBoolean played = new AtomicBoolean();
+    private final AtomicBoolean played = new AtomicBoolean();
 
 
     public TestSet( Description testSetDescription )

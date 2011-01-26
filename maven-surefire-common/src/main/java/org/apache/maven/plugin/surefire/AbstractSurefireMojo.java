@@ -89,7 +89,7 @@ public abstract class AbstractSurefireMojo
 
     protected abstract String getPluginName();
 
-    protected SurefireDependencyResolver dependencyResolver;
+    private SurefireDependencyResolver dependencyResolver;
 
     protected abstract boolean verifyParameters()
         throws MojoFailureException;
@@ -97,7 +97,7 @@ public abstract class AbstractSurefireMojo
     private Artifact surefireArtifact;
 
 
-    ProviderList wellKnownProviders;
+    private ProviderList wellKnownProviders;
 
     protected List initialize()
         throws MojoFailureException

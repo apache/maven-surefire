@@ -50,12 +50,11 @@ public class XMLReporter
 {
     private static final String LS = System.getProperty( "line.separator" );
 
-    private File reportsDirectory;
+    private final File reportsDirectory;
 
     private final boolean deleteOnStarting;
 
-
-    private List results = Collections.synchronizedList( new ArrayList() );
+    private final List results = Collections.synchronizedList( new ArrayList() );
 
     public XMLReporter( ReporterConfiguration reporterConfiguration )
     {

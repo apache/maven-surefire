@@ -48,7 +48,7 @@ public class BooterDeserializer
 {
 
 
-    final PropertiesWrapper properties;
+    private final PropertiesWrapper properties;
 
     public BooterDeserializer( InputStream inputStream )
         throws IOException

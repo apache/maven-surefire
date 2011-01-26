@@ -39,7 +39,7 @@ public class ChecksumCalculator
 {
     private static final String HEX = "0123456789ABCDEF";
 
-    List checksumItems = new ArrayList();
+    private final List checksumItems = new ArrayList();
 
     private void appendObject( Object item )
     {

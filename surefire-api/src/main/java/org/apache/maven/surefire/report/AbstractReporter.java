@@ -30,27 +30,27 @@ import java.util.Locale;
 public abstract class AbstractReporter
     implements Reporter, ReportWriter
 {
-    protected int completedCount;
+    int completedCount;
 
-    protected int errors;
+    int errors;
 
-    protected int failures;
+    int failures;
 
     private long startTime;
 
     private long endTime;
 
-    private NumberFormat numberFormat = NumberFormat.getInstance( Locale.ENGLISH );
+    private final NumberFormat numberFormat = NumberFormat.getInstance( Locale.ENGLISH );
 
-    protected static final String NL = System.getProperty( "line.separator" );
+    static final String NL = System.getProperty( "line.separator" );
 
     private static final int MS_PER_SEC = 1000;
 
-    protected long testSetStartTime;
+    long testSetStartTime;
 
-    protected int skipped;
+    int skipped;
 
-    private boolean trimStackTrace;
+    private final boolean trimStackTrace;
 
     private final ReporterConfiguration reporterConfiguration;
 
@@ -59,19 +59,13 @@ public abstract class AbstractReporter
     // ----------------------------------------------------------------------
 
 
-    protected AbstractReporter( ReporterConfiguration reporterConfiguration )
+    AbstractReporter( ReporterConfiguration reporterConfiguration )
     {
         this.reporterConfiguration = reporterConfiguration;
         this.trimStackTrace = reporterConfiguration.isTrimStackTrace().booleanValue();
     }
 
-    protected AbstractReporter( Boolean trimStackTrace )
-    {
-        this.trimStackTrace = trimStackTrace.booleanValue();
-        this.reporterConfiguration = null;
-    }
-
-    protected boolean isTimedOut()
+    boolean isTimedOut()
     {
         return reporterConfiguration.isTimedOut();
     }
@@ -150,22 +144,22 @@ public abstract class AbstractReporter
     // Counters
     // ----------------------------------------------------------------------
 
-    public int getNumErrors()
+    int getNumErrors()
     {
         return errors;
     }
 
-    public int getNumSkipped()
+    int getNumSkipped()
     {
         return skipped;
     }
 
-    public int getNumFailures()
+    int getNumFailures()
     {
         return failures;
     }
 
-    public int getNumTests()
+    int getNumTests()
     {
         return completedCount;
     }
@@ -190,7 +184,7 @@ public abstract class AbstractReporter
     //
     // ----------------------------------------------------------------------
 
-    protected String elapsedTimeAsString( long runTime )
+    String elapsedTimeAsString( long runTime )
     {
         return numberFormat.format( (double) runTime / MS_PER_SEC );
     }
@@ -201,7 +195,7 @@ public abstract class AbstractReporter
      * @param report ReportEntry object.
      * @return stacktrace as string.
      */
-    protected String getStackTrace( ReportEntry report )
+    String getStackTrace( ReportEntry report )
     {
         StackTraceWriter writer = report.getStackTraceWriter();
         if ( writer == null )
@@ -211,7 +205,7 @@ public abstract class AbstractReporter
         return trimStackTrace ? writer.writeTrimmedTraceToString() : writer.writeTraceToString();
     }
 
-    protected long getActualRunTime( ReportEntry reportEntry )
+    long getActualRunTime( ReportEntry reportEntry )
     {
         final Integer clientSpecifiedElapsed = reportEntry.getElapsed();
         return clientSpecifiedElapsed != null ? clientSpecifiedElapsed.intValue() : endTime - startTime;
@@ -232,7 +226,7 @@ public abstract class AbstractReporter
     {
     }
 
-    protected void deleteIfExisting( File reportFile )
+    void deleteIfExisting( File reportFile )
     {
         if ( reportFile.exists() )
         {

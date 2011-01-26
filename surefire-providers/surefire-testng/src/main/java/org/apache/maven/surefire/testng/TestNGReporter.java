@@ -46,12 +46,12 @@ import org.testng.TestNG;
 public class TestNGReporter
     implements ITestListener, ISuiteListener
 {
-    private ResourceBundle bundle = ResourceBundle.getBundle( Surefire.SUREFIRE_BUNDLE_NAME );
+    private final ResourceBundle bundle = ResourceBundle.getBundle( Surefire.SUREFIRE_BUNDLE_NAME );
 
     /**
      * core Surefire reporting
      */
-    protected Reporter reporter;
+    private final Reporter reporter;
 
     /**
      * Constructs a new instance that will listen to

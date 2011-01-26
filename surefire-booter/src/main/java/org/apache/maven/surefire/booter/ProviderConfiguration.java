@@ -57,7 +57,7 @@ public class ProviderConfiguration
 
     private final TestRequest testSuiteDefinition;
 
-    private Properties providerProperties;
+    private final Properties providerProperties;
 
     private final boolean failIfNoTests;
 

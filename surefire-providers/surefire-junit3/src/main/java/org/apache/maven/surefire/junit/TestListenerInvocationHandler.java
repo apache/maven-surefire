@@ -41,7 +41,7 @@ public class TestListenerInvocationHandler
 
     private static final String END_TEST = "endTest";
 
-    private Set failedTestsSet = new HashSet();
+    private final Set failedTestsSet = new HashSet();
 
     private Reporter reporter;
 

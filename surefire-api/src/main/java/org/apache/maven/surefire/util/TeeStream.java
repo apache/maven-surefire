@@ -28,7 +28,7 @@ import java.io.PrintStream;
 public class TeeStream
     extends PrintStream
 {
-    private PrintStream tee;
+    private final PrintStream tee;
 
     public TeeStream( PrintStream out1, PrintStream out2 )
     {

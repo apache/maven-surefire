@@ -32,11 +32,11 @@ import java.io.PrintWriter;
 public abstract class AbstractFileReporter
     extends AbstractTextReporter
 {
-    private File reportsDirectory;
+    private final File reportsDirectory;
 
     private final boolean deleteOnStarting;
 
-    protected AbstractFileReporter( ReporterConfiguration reporterConfiguration, String format )
+    AbstractFileReporter( ReporterConfiguration reporterConfiguration, String format )
     {
         super( reporterConfiguration, format );
 

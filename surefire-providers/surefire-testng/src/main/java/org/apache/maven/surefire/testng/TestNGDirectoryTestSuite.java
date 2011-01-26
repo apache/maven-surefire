@@ -53,36 +53,29 @@ import java.util.TreeMap;
 public class TestNGDirectoryTestSuite
     implements TestNgTestSuite
 {
-    private ArtifactVersion version;
+    private final ArtifactVersion version;
 
-    private Map options;
+    private final Map options;
 
-    private String testSourceDirectory;
+    private final String testSourceDirectory;
 
-    private File reportsDirectory;
+    private final File reportsDirectory;
 
-    protected SortedMap testSets;
+    private SortedMap testSets;
 
     private final DirectoryScanner surefireDirectoryScanner;
 
     public TestNGDirectoryTestSuite( File basedir, ArrayList includes, ArrayList excludes, String testSourceDirectory,
                                      String artifactVersion, Properties confOptions, File reportsDirectory )
     {
-        this( basedir, includes, excludes, testSourceDirectory, new DefaultArtifactVersion( artifactVersion ),
-              confOptions, reportsDirectory );
-    }
 
-    public TestNGDirectoryTestSuite( File basedir, List includes, List excludes, String testSourceDirectory,
-                                     ArtifactVersion artifactVersion, Map confOptions, File reportsDirectory )
-    {
         this.surefireDirectoryScanner = new DefaultDirectoryScanner( basedir, includes, excludes, "filesystem" );
 
         this.options = confOptions;
 
         this.testSourceDirectory = testSourceDirectory;
         this.reportsDirectory = reportsDirectory;
-        this.version = artifactVersion;
-
+        this.version =  new DefaultArtifactVersion( artifactVersion );
     }
 
     public void execute( TestsToRun testsToRun, ReporterFactory reporterManagerFactory )

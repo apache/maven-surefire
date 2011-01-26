@@ -48,17 +48,17 @@ import java.util.Timer;
 public class ReporterManagerFactory
     implements ReporterFactory
 {
-    protected final List reportDefinitions;
+    private final List reportDefinitions;
 
-    protected final ClassLoader surefireClassLoader;
+    private final ClassLoader surefireClassLoader;
 
-    protected final RunStatistics globalRunStatistics = new RunStatistics();
+    private final RunStatistics globalRunStatistics = new RunStatistics();
 
     private final ReporterConfiguration reporterConfiguration;
 
-    protected RunReporter first;
+    private RunReporter first;
 
-    protected final Object lock = new Object();
+    private final Object lock = new Object();
 
     private List reports;
 

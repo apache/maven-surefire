@@ -47,7 +47,7 @@ public class TestSuiteXmlParser
     private ReportTestSuite defaultSuite;
     private ReportTestSuite currentSuite;
     private Map classesToSuites;
-    private NumberFormat numberFormat = NumberFormat.getInstance();
+    private final NumberFormat numberFormat = NumberFormat.getInstance();
 
     /**
      * @noinspection StringBufferField

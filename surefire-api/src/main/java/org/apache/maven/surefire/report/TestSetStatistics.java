@@ -41,13 +41,13 @@ public class TestSetStatistics
     private static final String RESULTS_SKIPPED = "skipped";
 
 
-    protected int completedCount;
+    private int completedCount;
 
-    protected int errors;
+    private int errors;
 
-    protected int failures;
+    private int failures;
 
-    protected int skipped;
+    private int skipped;
 
     public synchronized void incrementCompletedCount()
     {

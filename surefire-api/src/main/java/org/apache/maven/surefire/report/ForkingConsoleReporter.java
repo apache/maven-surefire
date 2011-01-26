@@ -51,7 +51,7 @@ public class ForkingConsoleReporter
     /**
      * Write a header line prepending {@link #FORKING_PREFIX_HEADING}
      */
-    public void writeHeading( String message )
+    void writeHeading( String message )
     {
         writer.print( FORKING_PREFIX_HEADING );
 

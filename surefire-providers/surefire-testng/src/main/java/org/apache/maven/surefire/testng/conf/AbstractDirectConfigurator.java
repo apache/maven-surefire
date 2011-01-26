@@ -33,9 +33,9 @@ import org.testng.TestNG;
 public abstract class AbstractDirectConfigurator
     implements Configurator
 {
-    protected final Map setters;
+    final Map setters;
 
-    protected AbstractDirectConfigurator()
+    AbstractDirectConfigurator()
     {
         Map options = new HashMap();
         options.put( "groups", new Setter( "setGroups", String.class ) );
@@ -133,7 +133,7 @@ public abstract class AbstractDirectConfigurator
             }
         }
 
-        protected Object convertValue( Object value )
+        Object convertValue( Object value )
         {
             if ( value == null )
             {

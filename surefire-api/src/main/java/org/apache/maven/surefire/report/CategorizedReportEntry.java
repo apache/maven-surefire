@@ -28,7 +28,7 @@ public class CategorizedReportEntry
 {
     private final String group;
 
-    protected CategorizedReportEntry( String name, String group )
+    private CategorizedReportEntry( String name, String group )
     {
         super( name );
         this.group = group;
@@ -39,7 +39,7 @@ public class CategorizedReportEntry
         this( source, name, group, message, null, null );
     }
 
-    public CategorizedReportEntry( String source, String name, String group, String message,
+    private CategorizedReportEntry( String source, String name, String group, String message,
                                    StackTraceWriter stackTraceWriter, Integer elapsed )
     {
         super( source, name, stackTraceWriter, elapsed );

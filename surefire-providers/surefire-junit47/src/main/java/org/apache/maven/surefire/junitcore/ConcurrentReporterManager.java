@@ -35,21 +35,21 @@ import java.util.Map;
 public abstract class ConcurrentReporterManager
     implements Reporter
 {
-    protected Map<String, TestSet> classMethodCounts;
+    private final Map<String, TestSet> classMethodCounts;
 
     private final ReporterConfiguration reporterConfiguration;
 
     private final ThreadLocal<Reporter> reporterManagerThreadLocal = new ThreadLocal<Reporter>();
 
-    protected final boolean reportImmediately;
+    private final boolean reportImmediately;
 
     private final ConcurrentPrintStream out = new ConcurrentPrintStream( true );
 
     private final ConcurrentPrintStream err = new ConcurrentPrintStream( false );
 
-    private ReporterFactory reporterFactory;
+    private final ReporterFactory reporterFactory;
 
-    public ConcurrentReporterManager( ReporterFactory reporterFactory, boolean reportImmediately,
+    ConcurrentReporterManager( ReporterFactory reporterFactory, boolean reportImmediately,
                                       ReporterConfiguration reporterConfiguration,
                                       Map<String, TestSet> classMethodCounts )
         throws TestSetFailedException
@@ -140,7 +140,7 @@ public abstract class ConcurrentReporterManager
         return testSet.createTestMethod( description );
     }
 
-    public abstract void checkIfTestSetCanBeReported( TestSet testSetForTest );
+    protected abstract void checkIfTestSetCanBeReported( TestSet testSetForTest );
 
     public void writeFooter( String footer )
     {
@@ -172,22 +172,22 @@ public abstract class ConcurrentReporterManager
         throw new UnsupportedOperationException();
     }
 
-    protected TestMethod getTestMethod()
+    TestMethod getTestMethod()
     {
         return TestMethod.getThreadTestMethod();
     }
 
-    protected void detachTestMethodFromThread()
+    void detachTestMethodFromThread()
     {
         TestMethod.detachFromCurrentThread();
     }
 
-    protected TestSet getTestSet( ReportEntry description )
+    TestSet getTestSet( ReportEntry description )
     {
         return classMethodCounts.get( description.getSourceName() );
     }
 
-    protected Reporter getReporterManager()
+    Reporter getReporterManager()
     {
         Reporter reporterManager = reporterManagerThreadLocal.get();
         if ( reporterManager == null )
