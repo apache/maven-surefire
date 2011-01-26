@@ -38,7 +38,7 @@ import org.testng.TestNG;
 /**
  * Listens for and provides and adaptor layer so that
  * TestNG tests can report their status to the current
- * {@link org.apache.maven.surefire.report.ReporterManager}.
+ * {@link org.apache.maven.surefire.report.Reporter}.
  *
  * @author jkuhnert
  * @noinspection ThrowableResultOfMethodCallIgnored

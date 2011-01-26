@@ -45,17 +45,20 @@ import java.util.Iterator;
 public interface SurefireProvider
 {
     /**
-     * Called when forkmode is pertest, allows the provider to define what "pertest" will be.
+     * Determines the number of forks.
+     *
+     * Called when forkmode is different from "never" or "always", allows the provider to define
+     * how to behave for the fork.
      *
      * @return An iterator that will trigger one fork per item
      */
     Iterator getSuites();
 
     /**
-     * The test that will be invoked through a fork; used only for forkmode=pertest, when the classpath
-     * scanning happens on the plugin-side. When this is set, the forked process will run only that test
-     * and not scan the classpath
-     * @param forkTestSet An item from the iterator in #getSuites
+     * Runs a forked test
+     * @param forkTestSet An item from the iterator in #getSuites. Will be null for forkmode never or always.
+     *                    When this is non-null, the forked process will run only that test
+     *                    and probably not scan the classpath
      * @return A result of the invocation
      * @throws org.apache.maven.surefire.report.ReporterException      When reporting fails
      * @throws org.apache.maven.surefire.testset.TestSetFailedException  When testset fails

@@ -29,7 +29,8 @@ public interface ReporterFactory
     RunStatistics getGlobalRunStatistics();
 
     /**
-     * Creates a (non-thread-safe) reporter
+     * Creates a reporter. The reporter is a singleton that is expected to be
+     * used in the provider.
      *
      * @return A reporter instance
      */
