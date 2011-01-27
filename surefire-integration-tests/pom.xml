@@ -18,7 +18,8 @@
   ~ under the License.
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -90,14 +91,47 @@
       <artifactId>plexus-utils</artifactId>
       <scope>test</scope>
     </dependency>
-      <dependency>
-        <groupId>net.sourceforge.htmlunit</groupId>
-        <artifactId>htmlunit</artifactId>
-        <version>2.8</version>
-        <scope>test</scope>
-      </dependency>
+    <dependency>
+      <groupId>net.sourceforge.htmlunit</groupId>
+      <artifactId>htmlunit</artifactId>
+      <version>2.8</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
+  <profiles>
+    <profile>
+      <id>parallel</id>  <!-- Experimental profile to try out parallel building of surefire itself -->
+      <build>
+        <pluginManagement>
+          <plugins>
+            <plugin>
+              <artifactId>maven-failsafe-plugin</artifactId>
+              <version>${surefire.build.version}</version>
+              <configuration>
+                <parallel>classes</parallel>
+                <threadCount>${surefire.threadcount}</threadCount>
+              </configuration>
+            </plugin>
+
+          </plugins>
+        </pluginManagement>
+
+      </build>
+      <dependencies>
+        <dependency>
+          <groupId>junit</groupId>
+          <artifactId>junit</artifactId>
+          <version>4.8.2</version>
+          <scope>test</scope>
+        </dependency>
+      </dependencies>
+      <properties>
+        <surefire.build.version>${project.version}</surefire.build.version> <!-- Until we release 2.7.3 -->
+      </properties>
+    </profile>
+
+  </profiles>
   <build>
     <plugins>
       <plugin>
@@ -171,7 +205,7 @@
       </plugin>
       <plugin>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <version>2.7.2</version>
+        <version>${surefire.build.version}</version>
         <configuration>
           <!-- Pass current surefire version to the main suite so that it -->
           <!-- can forward to all integration test projects. SUREFIRE-513 -->
@@ -234,5 +268,7 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <it.settings.showPasswords>false</it.settings.showPasswords>
     <testng.version>5.7</testng.version>
+    <surefire.threadcount>2</surefire.threadcount>
+    <surefire.build.version>2.7.2</surefire.build.version>
   </properties>
 </project>

@@ -31,22 +31,21 @@ import java.util.List;
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
 public class CheckTestNgSuiteXmlSingleIT
-    extends AbstractSurefireIntegrationTestClass
+    extends SurefireVerifierTestClass
 {
+    public CheckTestNgSuiteXmlSingleIT()
+    {
+        super( "/testng-twoTestCaseSuite" );
+    }
+
     public void testTestNGSuite()
         throws Exception
     {
-        File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/testng-twoTestCaseSuite" );
+        addGoal( "-Dtest=TestNGTestTwo"  );
+        executeTest();
+        verifyErrorFreeLog();
 
-        Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        List goals = this.getInitialGoals();
-        goals.add( "test" );
-        goals.add( "-Dtest=TestNGTestTwo" );
-        executeGoals( verifier, goals );
-        verifier.verifyErrorFreeLog();
-        verifier.resetStreams();
-
-        List reports = HelperAssertions.extractReports( ( new File[]{ testDir } ) );
+        List reports = HelperAssertions.extractReports( ( new File[]{ getTestDir() } ) );
         IntegrationTestSuiteResults results = HelperAssertions.parseReportList( reports );
         HelperAssertions.assertTestSuiteResults( 1, 0, 0, 0, results );
     }

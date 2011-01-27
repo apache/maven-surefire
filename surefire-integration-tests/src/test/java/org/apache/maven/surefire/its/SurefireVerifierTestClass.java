@@ -27,6 +27,7 @@ import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.it.VerificationException;
 import org.apache.maven.it.Verifier;
+import org.apache.maven.it.util.FileUtils;
 import org.apache.maven.it.util.ResourceExtractor;
 import org.apache.maven.reporting.MavenReportException;
 
@@ -37,7 +38,11 @@ import java.util.List;
 
 /**
  * Contains commonly used featurtes for most tests, encapsulating
- * common use cases
+ * common use cases.
+ *
+ * Also includes thread-safe access to the extracted resource
+ * files, which AbstractSurefireIntegrationTestClass does not.
+ * Thread safe only for running in "classes" mode.
  *
  * @author Kristian Rosenvold
  */
@@ -57,7 +62,7 @@ public abstract class SurefireVerifierTestClass extends TestCase {
 
     protected SurefireVerifierTestClass(String testProject) {
         try {
-            testDir = ResourceExtractor.simpleExtractResources(getClass(), testProject);
+            testDir = simpleExtractResources(getClass(), testProject);
             this.goals = getInitialGoals();
             this.verifier = new Verifier(testDir.getAbsolutePath());
         } catch (VerificationException e) {
@@ -66,6 +71,18 @@ public abstract class SurefireVerifierTestClass extends TestCase {
             throw new RuntimeException(e);
         }
     }
+
+    private File simpleExtractResources(Class cl, String resourcePath) throws IOException {
+        String tempDirPath = System.getProperty( "maven.test.tmpdir", System.getProperty( "java.io.tmpdir" ) );
+        File tempDir = new File(tempDirPath, this.getClass().getSimpleName());
+        System.out.println( "tempDir = " + tempDir );
+
+        File testDir = new File( tempDir, resourcePath );
+        FileUtils.deleteDirectory( testDir );
+
+        return ResourceExtractor.extractResourcePath(cl, resourcePath, tempDir, true);
+    }
+
 
 
     protected void reset(){
@@ -277,6 +294,12 @@ public abstract class SurefireVerifierTestClass extends TestCase {
             throw new IllegalStateException("Cannot determine maven version");
         }
     }
+
+    protected String getSurefireVersion()
+    {
+        return surefireVersion;
+    }
+
 }
 
 

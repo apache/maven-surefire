@@ -30,21 +30,22 @@ import java.io.File;
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
 public class CheckTestNgReportTestIT
-    extends AbstractSurefireIntegrationTestClass
+    extends SurefireVerifierTestClass
 {
+
+    public CheckTestNgReportTestIT()
+    {
+        super( "/testng-simple" );
+    }
+
     public void testTestNgReport()
         throws Exception
     {
-        File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/testng-simple" );
+        execute( "org.apache.maven.plugins:maven-surefire-report-plugin:" + getSurefireVersion() + ":report" );
+        verifyErrorFreeLog();
 
-        Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        this.executeGoal( verifier,
-                          "org.apache.maven.plugins:maven-surefire-report-plugin:" + getSurefireVersion() + ":report" );
-        verifier.verifyErrorFreeLog();
-        verifier.resetStreams();
-
-        HelperAssertions.assertTestSuiteResults( 1, 0, 0, 0, testDir );
-        File reportHtml = new File( testDir, "target/site/surefire-report.html" );
+        HelperAssertions.assertTestSuiteResults( 1, 0, 0, 0, getTestDir() );
+        File reportHtml = new File( getTestDir(), "target/site/surefire-report.html" );
         Assert.assertTrue( "surefire-report is missing", reportHtml.exists() );
     }
 }
