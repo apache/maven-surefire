@@ -36,6 +36,8 @@
         <configuration>
           <additionalClasspathElements>
             <additionalClasspathElement>${basedir}/extraResource</additionalClasspathElement>
+            <additionalClasspathElement>${abc}</additionalClasspathElement><!-- SUREFIRE-694 -->
+            <additionalClasspathElement></additionalClasspathElement><!-- SUREFIRE-694 -->
           </additionalClasspathElements>
         </configuration>
       </plugin>

@@ -82,33 +82,7 @@ public class ClasspathTest
         assertEquals( DUMMY_URL_2, properties.get( "test1" ) );
     }
 
-    public void testShouldThrowIllegalArgumentExceptionWhenNullIsAddedAsClassPathElementUrl()
-        throws Exception
-    {
-        Classpath classpath = new Classpath();
-        try
-        {
-            classpath.addClassPathElementUrl( null );
-            fail( "IllegalArgumentException not thrown." );
-        }
-        catch ( IllegalArgumentException expected )
-        {
-        }
-    }
 
-    public void testShouldNotAddNullAsClassPathElementUrl()
-        throws Exception
-    {
-        Classpath classpath = new Classpath();
-        try
-        {
-            classpath.addClassPathElementUrl( null );
-        }
-        catch ( IllegalArgumentException ignored )
-        {
-        }
-        assertEmptyClasspath( classpath );
-    }
 
     public void testShouldJoinTwoNullClasspaths()
     {
@@ -182,5 +156,33 @@ public class ClasspathTest
         classpath.addClassPathElementUrl( DUMMY_URL_1 );
         classpath.addClassPathElementUrl( DUMMY_URL_2 );
         return classpath;
+    }
+
+    public void testShouldThrowIllegalArgumentExceptionWhenNullIsAddedAsClassPathElementUrl()
+        throws Exception
+    {
+        Classpath classpath = new Classpath();
+        try
+        {
+            classpath.addClassPathElementUrl( null );
+            fail("IllegalArgumentException not thrown.");
+        }
+        catch (IllegalArgumentException expected)
+        {
+        }
+    }
+
+    public void testShouldNotAddNullAsClassPathElementUrl()
+        throws Exception
+    {
+        Classpath classpath = new Classpath();
+        try
+        {
+            classpath.addClassPathElementUrl( null );
+        }
+        catch (IllegalArgumentException ignored)
+        {
+        }
+        assertEmptyClasspath( classpath );
     }
 }

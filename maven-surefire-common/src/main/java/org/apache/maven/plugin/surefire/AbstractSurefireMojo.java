@@ -375,20 +375,28 @@ public abstract class AbstractSurefireMojo
             throw new MojoExecutionException( "Unable to generate test classpath: " + e, e );
         }
 
-        getLog().debug( "Test Classpath :" );
-
-        for ( Iterator i = classpathElements.iterator(); i.hasNext(); )
-        {
-            String classpathElement = (String) i.next();
-
-            getLog().debug( "  " + classpathElement );
-
-            classpathConfiguration.addClasspathUrl( classpathElement );
-        }
+        addClasspathElementsToClasspathConfiguration(classpathElements, classpathConfiguration);
         return new StartupConfiguration( providerName, classpathConfiguration, classLoaderConfiguration,
                                          forkConfiguration.isForking(), false, isRedirectTestOutputToFile() );
     }
 
+    private void addClasspathElementsToClasspathConfiguration(List classpathElements, ClasspathConfiguration classpathConfiguration)
+    {
+        getLog().debug( "Test classpath:" );
+        for ( Iterator i = classpathElements.iterator(); i.hasNext(); )
+        {
+            String classpathElement = (String) i.next();
+            if ( classpathElement == null )
+            {
+                getLog().warn("The test classpath contains a null element.");
+            }
+            else
+            {
+                getLog().debug( "  " + classpathElement );
+                classpathConfiguration.addClasspathUrl( classpathElement );
+            }
+        }
+    }
 
     private boolean isSpecificTestSpecified()
     {
