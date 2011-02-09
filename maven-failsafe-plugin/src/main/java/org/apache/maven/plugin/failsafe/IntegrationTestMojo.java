@@ -28,7 +28,6 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.surefire.AbstractSurefireMojo;
 import org.apache.maven.plugin.surefire.ProviderInfo;
-import org.apache.maven.plugin.surefire.SurefireExecutionParameters;
 import org.apache.maven.plugin.surefire.booterclient.ChecksumCalculator;
 import org.apache.maven.plugin.surefire.booterclient.ForkConfiguration;
 import org.apache.maven.plugin.surefire.booterclient.ForkStarter;
@@ -69,7 +68,6 @@ import java.util.Properties;
  */
 public class IntegrationTestMojo
     extends AbstractSurefireMojo
-    implements SurefireExecutionParameters
 {
 
     /**
@@ -538,10 +536,6 @@ public class IntegrationTestMojo
      */
     private ArtifactMetadataSource metadataSource;
 
-    private static final String BRIEF_REPORT_FORMAT = "brief";
-
-    private static final String PLAIN_REPORT_FORMAT = "plain";
-
     private Properties originalSystemProperties;
 
     /**
@@ -638,124 +632,96 @@ public class IntegrationTestMojo
     private ToolchainManager toolchainManager;
 
 
-    public void execute()
+    public void executeAfterPreconditionsChecked()
         throws MojoExecutionException, MojoFailureException
     {
-        if ( verifyParameters() )
+        final List providers = initialize();
+        String exceptionMessage = null;
+        FailsafeSummary result = new FailsafeSummary();
+
+        ForkConfiguration forkConfiguration = null;
+        for ( Iterator iter = providers.iterator(); iter.hasNext(); )
         {
-            if ( hasExecutedBefore() )
-            {
-                return;
-            }
-            logReportsDirectory();
-
-            final List providers = initialize();
-            String exceptionMessage = null;
-            FailsafeSummary result = new FailsafeSummary();
-
-            ForkConfiguration forkConfiguration = null;
-            for ( Iterator iter = providers.iterator(); iter.hasNext(); )
-            {
-                ProviderInfo provider = (ProviderInfo) iter.next();
-                forkConfiguration = getForkConfiguration();
-                ClassLoaderConfiguration classLoaderConfiguration = getClassLoaderConfiguration( forkConfiguration );
-                ForkStarter forkStarter = createForkStarter( provider, forkConfiguration, classLoaderConfiguration );
-                try
-                {
-                    result.setResult( forkStarter.run() );
-                }
-                catch ( SurefireBooterForkException e )
-                {
-                    if ( exceptionMessage == null )
-                    {
-                        exceptionMessage = e.getMessage();
-                    }
-                }
-                catch ( SurefireExecutionException e )
-                {
-                    if ( exceptionMessage == null )
-                    {
-                        exceptionMessage = e.getMessage();
-                    }
-                }
-            }
-
-            if ( exceptionMessage != null )
-            {
-                // Fail no matter what as long as any provider failed
-                result.setResult( ProviderConfiguration.TESTS_FAILED_EXIT_CODE );
-                result.setException( exceptionMessage );
-            }
-
-            if ( getOriginalSystemProperties() != null && forkConfiguration != null && !forkConfiguration.isForking() )
-            {
-                // restore system properties, only makes sense when not forking..
-                System.setProperties( getOriginalSystemProperties() );
-            }
-
-            if ( !getSummaryFile().getParentFile().isDirectory() )
-            {
-                getSummaryFile().getParentFile().mkdirs();
-            }
-
+            ProviderInfo provider = (ProviderInfo) iter.next();
+            forkConfiguration = getForkConfiguration();
+            ClassLoaderConfiguration classLoaderConfiguration = getClassLoaderConfiguration( forkConfiguration );
+            ForkStarter forkStarter = createForkStarter( provider, forkConfiguration, classLoaderConfiguration );
             try
             {
-                String encoding;
-                if ( StringUtils.isEmpty( this.encoding ) )
-                {
-                    getLog().warn(
-                        "File encoding has not been set, using platform encoding " + ReaderFactory.FILE_ENCODING
-                            + ", i.e. build is platform dependent!" );
-                    encoding = ReaderFactory.FILE_ENCODING;
-                }
-                else
-                {
-                    encoding = this.encoding;
-                }
-
-                FileOutputStream fileOutputStream = new FileOutputStream( getSummaryFile() );
-                BufferedOutputStream bufferedOutputStream = new BufferedOutputStream( fileOutputStream );
-                Writer writer = new OutputStreamWriter( bufferedOutputStream, encoding );
-                FailsafeSummaryXpp3Writer xpp3Writer = new FailsafeSummaryXpp3Writer();
-                xpp3Writer.write( writer, result );
-                writer.close();
-                bufferedOutputStream.close();
-                fileOutputStream.close();
+                result.setResult( forkStarter.run() );
             }
-            catch ( IOException e )
+            catch ( SurefireBooterForkException e )
             {
-                throw new MojoExecutionException( e.getMessage(), e );
+                if ( exceptionMessage == null )
+                {
+                    exceptionMessage = e.getMessage();
+                }
+            }
+            catch ( SurefireExecutionException e )
+            {
+                if ( exceptionMessage == null )
+                {
+                    exceptionMessage = e.getMessage();
+                }
             }
         }
+
+        if ( exceptionMessage != null )
+        {
+            // Fail no matter what as long as any provider failed
+            result.setResult( ProviderConfiguration.TESTS_FAILED_EXIT_CODE );
+            result.setException( exceptionMessage );
+        }
+
+        if ( getOriginalSystemProperties() != null && forkConfiguration != null && !forkConfiguration.isForking() )
+        {
+            // restore system properties, only makes sense when not forking..
+            System.setProperties( getOriginalSystemProperties() );
+        }
+
+        writeSummary(result);
     }
 
-
-    protected boolean verifyParameters()
-        throws MojoFailureException
-    {
-        if ( isSkip() || isSkipTests() || isSkipITs() || isSkipExec() )
+	private void writeSummary(FailsafeSummary summary)
+			throws MojoExecutionException {
+		File summaryFile = getSummaryFile();
+        if ( !summaryFile.getParentFile().isDirectory() )
         {
-            getLog().info( "Tests are skipped." );
-            return false;
+        	summaryFile.getParentFile().mkdirs();
         }
-
-        if ( !getTestClassesDirectory().exists() )
+		try
         {
-            if ( getFailIfNoTests() != null && getFailIfNoTests().booleanValue() )
+            String encoding;
+            if ( StringUtils.isEmpty( this.encoding ) )
             {
-                throw new MojoFailureException( "No tests to run!" );
+                getLog().warn(
+                    "File encoding has not been set, using platform encoding " + ReaderFactory.FILE_ENCODING
+                        + ", i.e. build is platform dependent!" );
+                encoding = ReaderFactory.FILE_ENCODING;
             }
-            getLog().info( "No tests to run." );
-            return false;
+            else
+            {
+                encoding = this.encoding;
+            }
+
+            FileOutputStream fileOutputStream = new FileOutputStream( summaryFile );
+            BufferedOutputStream bufferedOutputStream = new BufferedOutputStream( fileOutputStream );
+            Writer writer = new OutputStreamWriter( bufferedOutputStream, encoding );
+            FailsafeSummaryXpp3Writer xpp3Writer = new FailsafeSummaryXpp3Writer();
+            xpp3Writer.write( writer, summary );
+            writer.close();
+            bufferedOutputStream.close();
+            fileOutputStream.close();
         }
+        catch ( IOException e )
+        {
+            throw new MojoExecutionException( e.getMessage(), e );
+        }
+	}
 
-        ensureWorkingDirectoryExists();
-
-        ensureParallelRunningCompatibility();
-
-        warnIfUselessUseSystemClassLoaderParameter();
-
-        return true;
+    protected boolean isSkipExecution()
+    {
+    	return isSkip() || isSkipTests() || isSkipITs() || isSkipExec();
     }
 
     protected String getPluginName()

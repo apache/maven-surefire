@@ -92,8 +92,48 @@ public abstract class AbstractSurefireMojo
 
     private SurefireDependencyResolver dependencyResolver;
 
-    protected abstract boolean verifyParameters()
-        throws MojoFailureException;
+    public void execute()
+        throws MojoExecutionException, MojoFailureException
+    {
+
+        if ( verifyParameters() && !hasExecutedBefore() )
+        {
+            logReportsDirectory();
+        	executeAfterPreconditionsChecked();
+        }
+    }
+
+    protected boolean verifyParameters()
+        throws MojoFailureException
+	{
+	    if ( isSkipExecution() )
+	    {
+	        getLog().info( "Tests are skipped." );
+	        return false;
+	    }
+	
+	    if ( !getTestClassesDirectory().exists() )
+	    {
+	        if ( Boolean.TRUE.equals(getFailIfNoTests()) )
+	        {
+	            throw new MojoFailureException( "No tests to run!" );
+	        }
+	        getLog().info( "No tests to run." );
+	    }
+	    else
+	    {
+	        ensureWorkingDirectoryExists();
+	        ensureParallelRunningCompatibility();
+	        warnIfUselessUseSystemClassLoaderParameter();
+	    }
+	
+	    return true;
+	}
+    
+    protected abstract boolean isSkipExecution();
+    
+    protected abstract void executeAfterPreconditionsChecked()
+        throws MojoExecutionException, MojoFailureException;
 
     private Artifact surefireArtifact;
 

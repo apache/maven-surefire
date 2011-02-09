@@ -55,7 +55,7 @@ import java.util.Properties;
  */
 public class SurefirePlugin
     extends AbstractSurefireMojo
-    implements SurefireExecutionParameters, SurefireReportParameters
+    implements SurefireReportParameters
 {
 
     /**
@@ -592,83 +592,55 @@ public class SurefirePlugin
      */
     private ToolchainManager toolchainManager;
 
-    public void execute()
+    public void executeAfterPreconditionsChecked()
         throws MojoExecutionException, MojoFailureException
     {
-        if ( verifyParameters() )
+        final List providers = initialize();
+        Exception exception = null;
+        ForkConfiguration forkConfiguration = null;
+        int result = 0;
+        for ( Iterator iter = providers.iterator(); iter.hasNext(); )
         {
-            if ( hasExecutedBefore() )
+            ProviderInfo provider = (ProviderInfo) iter.next();
+            forkConfiguration = getForkConfiguration();
+            ClassLoaderConfiguration classLoaderConfiguration = getClassLoaderConfiguration( forkConfiguration );
+            ForkStarter forkStarter = createForkStarter( provider, forkConfiguration, classLoaderConfiguration );
+
+            try
             {
-                return;
+                result = forkStarter.run();
             }
-            logReportsDirectory();
-
-            final List providers = initialize();
-            Exception exception = null;
-            ForkConfiguration forkConfiguration = null;
-            int result = 0;
-            for ( Iterator iter = providers.iterator(); iter.hasNext(); )
+            catch ( SurefireBooterForkException e )
             {
-                ProviderInfo provider = (ProviderInfo) iter.next();
-                forkConfiguration = getForkConfiguration();
-                ClassLoaderConfiguration classLoaderConfiguration = getClassLoaderConfiguration( forkConfiguration );
-                ForkStarter forkStarter = createForkStarter( provider, forkConfiguration, classLoaderConfiguration );
-
-                try
-                {
-                    result = forkStarter.run();
-                }
-                catch ( SurefireBooterForkException e )
-                {
-                    exception = e;
-                }
-                catch ( SurefireExecutionException e )
-                {
-                    exception = e;
-                }
+                exception = e;
             }
-
-            if ( exception != null )
+            catch ( SurefireExecutionException e )
             {
-                throw new MojoExecutionException( exception.getMessage(), exception );
+                exception = e;
             }
-
-            if ( getOriginalSystemProperties() != null && forkConfiguration != null && !forkConfiguration.isForking() )
-            {
-                // restore system properties, only makes sense when not forking..
-                System.setProperties( getOriginalSystemProperties() );
-            }
-
-            SurefireHelper.reportExecution( this, result, getLog() );
         }
+
+        if ( exception != null )
+        {
+            throw new MojoExecutionException( exception.getMessage(), exception );
+        }
+
+        if ( getOriginalSystemProperties() != null && forkConfiguration != null && !forkConfiguration.isForking() )
+        {
+            // restore system properties, only makes sense when not forking..
+            System.setProperties( getOriginalSystemProperties() );
+        }
+
+        writeSummary(result);
     }
 
-    protected boolean verifyParameters()
-        throws MojoFailureException
+	private void writeSummary(int result) throws MojoFailureException {
+		SurefireHelper.reportExecution( this, result, getLog() );
+	}
+
+    protected boolean isSkipExecution()
     {
-        if ( isSkip() || isSkipTests() || isSkipExec() )
-        {
-            getLog().info( "Tests are skipped." );
-            return false;
-        }
-
-        if ( !getTestClassesDirectory().exists() )
-        {
-            if ( getFailIfNoTests() != null && getFailIfNoTests().booleanValue() )
-            {
-                throw new MojoFailureException( "No tests to run!" );
-            }
-            getLog().info( "No tests to run." );
-            return true;
-        }
-
-        ensureWorkingDirectoryExists();
-
-        ensureParallelRunningCompatibility();
-
-        warnIfUselessUseSystemClassLoaderParameter();
-
-        return true;
+    	return isSkip() || isSkipTests() || isSkipExec();
     }
 
     protected String getPluginName()
