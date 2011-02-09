@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.maven.surefire.util.NestedRuntimeException;
 import org.junit.runner.Description;
 
 /**
@@ -88,7 +89,7 @@ public class TestSet
         }
         catch ( Exception e )
         {
-            throw new RuntimeException( e );
+            throw new NestedRuntimeException( e );
         }
     }
 

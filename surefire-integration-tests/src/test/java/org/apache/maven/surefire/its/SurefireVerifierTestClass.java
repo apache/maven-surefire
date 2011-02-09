@@ -30,6 +30,7 @@ import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.FileUtils;
 import org.apache.maven.it.util.ResourceExtractor;
 import org.apache.maven.reporting.MavenReportException;
+import org.apache.maven.surefire.util.NestedRuntimeException;
 
 import java.io.File;
 import java.io.IOException;
@@ -66,9 +67,9 @@ public abstract class SurefireVerifierTestClass extends TestCase {
             this.goals = getInitialGoals();
             this.verifier = new Verifier(testDir.getAbsolutePath());
         } catch (VerificationException e) {
-            throw new RuntimeException(e);
+            throw new NestedRuntimeException(e);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new NestedRuntimeException(e);
         }
     }
 
@@ -104,7 +105,7 @@ public abstract class SurefireVerifierTestClass extends TestCase {
                     goals1.add("-DtestNgClassifier=jdk15");
                 }
             } catch (InvalidVersionSpecificationException e) {
-                throw new RuntimeException(e.getMessage(), e);
+                throw new NestedRuntimeException(e.getMessage(), e);
             }
         }
 
@@ -124,7 +125,7 @@ public abstract class SurefireVerifierTestClass extends TestCase {
                     goals.add("-DtestNgClassifier=jdk15");
                 }
             } catch (InvalidVersionSpecificationException e) {
-                throw new RuntimeException(e.getMessage(), e);
+                throw new NestedRuntimeException(e.getMessage(), e);
             }
         }
 
@@ -268,7 +269,7 @@ public abstract class SurefireVerifierTestClass extends TestCase {
                 return new DefaultArtifactVersion(v);
             }
         } catch (VerificationException e) {
-            throw new RuntimeException(e);
+            throw new NestedRuntimeException(e);
         }
 
         return null;

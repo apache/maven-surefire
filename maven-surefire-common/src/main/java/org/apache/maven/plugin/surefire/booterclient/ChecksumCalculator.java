@@ -21,6 +21,7 @@ package org.apache.maven.plugin.surefire.booterclient;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.surefire.util.NestedRuntimeException;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
@@ -165,11 +166,11 @@ public class ChecksumCalculator
         }
         catch ( NoSuchAlgorithmException e )
         {
-            throw new RuntimeException( e );
+            throw new NestedRuntimeException( e );
         }
         catch ( UnsupportedEncodingException e )
         {
-            throw new RuntimeException( e );
+            throw new NestedRuntimeException( e );
         }
     }
 

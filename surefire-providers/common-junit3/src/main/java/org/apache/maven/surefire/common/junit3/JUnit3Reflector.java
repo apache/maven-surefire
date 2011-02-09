@@ -19,6 +19,7 @@ package org.apache.maven.surefire.common.junit3;
  * under the License.
  */
 
+import org.apache.maven.surefire.util.NestedRuntimeException;
 import org.apache.maven.surefire.util.ReflectionUtils;
 
 import java.lang.reflect.Constructor;
@@ -110,7 +111,7 @@ public final class JUnit3Reflector
         }
         catch ( NoSuchMethodException e )
         {
-            throw new RuntimeException( "When finding method " + methodName, e );
+            throw new NestedRuntimeException( "When finding method " + methodName, e );
         }
     }
 

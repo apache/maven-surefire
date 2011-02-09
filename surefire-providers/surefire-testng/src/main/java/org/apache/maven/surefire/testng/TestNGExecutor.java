@@ -34,6 +34,7 @@ import java.lang.reflect.Constructor;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.maven.surefire.util.NestedRuntimeException;
 import org.testng.TestNG;
 
 /**
@@ -136,7 +137,7 @@ public class TestNGExecutor
             }
             catch ( Exception e )
             {
-                throw new RuntimeException( "Bug in ConfigurationAwareTestNGReporter", e );
+                throw new NestedRuntimeException( "Bug in ConfigurationAwareTestNGReporter", e );
             }
         }
         catch ( ClassNotFoundException e )

@@ -28,6 +28,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
+import org.apache.maven.surefire.util.NestedRuntimeException;
 import org.junit.runner.Computer;
 import org.junit.runner.Runner;
 import org.junit.runners.ParentRunner;
@@ -94,7 +95,7 @@ public class ConfigurableParallelComputer
         }
         catch ( InterruptedException e )
         {
-            throw new RuntimeException( e );
+            throw new NestedRuntimeException( e );
         }
     }
 
@@ -198,7 +199,7 @@ public class ConfigurableParallelComputer
             }
             catch ( ExecutionException e )
             {
-                throw new RuntimeException( e );
+                throw new NestedRuntimeException( e );
             }
         }
 
@@ -213,7 +214,7 @@ public class ConfigurableParallelComputer
                 }
                 catch ( InterruptedException e )
                 {
-                    throw new RuntimeException( e );
+                    throw new NestedRuntimeException( e );
                 }
             }
         }

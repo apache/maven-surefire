@@ -22,6 +22,7 @@ package org.apache.maven.plugin.surefire;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugin.surefire.booterclient.ProviderDetector;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
+import org.apache.maven.surefire.util.NestedRuntimeException;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -92,7 +93,7 @@ public class ProviderList
 
         catch ( IOException e )
         {
-            throw new RuntimeException( e );
+            throw new NestedRuntimeException( e );
         }
 
 

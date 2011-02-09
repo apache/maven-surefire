@@ -29,6 +29,7 @@ import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestRequest;
+import org.apache.maven.surefire.util.NestedRuntimeException;
 import org.codehaus.plexus.util.StringUtils;
 
 import java.io.ByteArrayOutputStream;
@@ -221,7 +222,7 @@ public class BooterSerializer
             }
             catch ( Exception e )
             {
-                throw new RuntimeException( "bug in property conversion", e );
+                throw new NestedRuntimeException( "bug in property conversion", e );
             }
         }
         else

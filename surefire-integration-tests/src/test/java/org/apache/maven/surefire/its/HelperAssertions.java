@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Locale;
 
 import junit.framework.Assert;
+import org.apache.maven.surefire.util.NestedRuntimeException;
 
 public class HelperAssertions
 {
@@ -109,7 +110,7 @@ public class HelperAssertions
         }
         catch ( Exception e )
         {
-            throw new RuntimeException( "Couldn't parse XML reports", e );
+            throw new NestedRuntimeException( "Couldn't parse XML reports", e );
         }
         return reports;
     }

@@ -23,6 +23,7 @@ import org.apache.maven.surefire.providerapi.SurefireProvider;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
+import org.apache.maven.surefire.util.NestedRuntimeException;
 
 import java.io.File;
 import java.io.IOException;
@@ -149,11 +150,11 @@ public class SurefireStarter
         }
         catch ( TestSetFailedException e )
         {
-            throw new RuntimeException( e );
+            throw new NestedRuntimeException( e );
         }
         catch ( ReporterException e )
         {
-            throw new RuntimeException( e );
+            throw new NestedRuntimeException( e );
         }
         finally
         {

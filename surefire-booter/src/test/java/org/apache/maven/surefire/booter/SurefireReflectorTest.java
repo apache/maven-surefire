@@ -33,6 +33,7 @@ import java.util.Arrays;
 import java.util.Properties;
 
 import junit.framework.TestCase;
+import org.apache.maven.surefire.util.NestedRuntimeException;
 
 /**
  * @author Kristian Rosenvold
@@ -135,15 +136,15 @@ public class SurefireReflectorTest
         }
         catch ( IllegalAccessException e )
         {
-            throw new RuntimeException( e );
+            throw new NestedRuntimeException( e );
         }
         catch ( InvocationTargetException e )
         {
-            throw new RuntimeException( e );
+            throw new NestedRuntimeException( e );
         }
         catch ( NoSuchMethodException e )
         {
-            throw new RuntimeException( e );
+            throw new NestedRuntimeException( e );
         }
     }
 

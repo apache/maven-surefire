@@ -31,6 +31,7 @@ import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.DirectoryScanner;
+import org.apache.maven.surefire.util.NestedRuntimeException;
 import org.apache.maven.surefire.util.TestsToRun;
 
 import java.io.File;
@@ -149,7 +150,7 @@ public class TestNGProvider
             }
             catch ( TestSetFailedException e )
             {
-                throw new RuntimeException( e );
+                throw new NestedRuntimeException( e );
             }
         }
         else

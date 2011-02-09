@@ -19,6 +19,7 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
+import org.apache.maven.surefire.util.NestedRuntimeException;
 import org.apache.maven.surefire.util.ReflectionUtils;
 import org.apache.maven.surefire.util.internal.StringUtils;
 
@@ -186,7 +187,7 @@ public class PropertiesWrapper
             }
             catch ( Exception e )
             {
-                throw new RuntimeException( "bug in property conversion", e );
+                throw new NestedRuntimeException( "bug in property conversion", e );
             }
             return result;
         }
