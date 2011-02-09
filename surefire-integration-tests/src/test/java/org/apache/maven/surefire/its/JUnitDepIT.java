@@ -24,10 +24,10 @@ package org.apache.maven.surefire.its;
  *
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
-public class JUnit44DepIT
+public class JUnitDepIT
     extends SurefireVerifierTestClass
 {
-    public JUnit44DepIT()
+    public JUnitDepIT()
     {
         super( "/junit44-dep" );
     }
@@ -35,17 +35,34 @@ public class JUnit44DepIT
     public void testJUnit44Dep()
         throws Exception
     {
+        debugLogging();
+        addGoal( "-Djunit-dep.version=4.4" );
         executeTest();
+
         verifyErrorFreeLog();
         assertTestSuiteResults( 1, 0, 0, 0 );
+        verifyTextInLog( "surefire-junit4" ); // Ahem. Will match on the 4.7 provider too
     }
     public void testJUnit44DepWithSneaky381()
         throws Exception
     {
+        debugLogging();
         activateProfile("provided381");
+        addGoal( "-Djunit-dep.version=4.4" );
         executeTest();
         verifyErrorFreeLog();
         assertTestSuiteResults( 1, 0, 0, 0 );
+    }
+
+    public void testJUnit47Dep()
+        throws Exception
+    {
+        debugLogging();
+        addGoal( "-Djunit-dep.version=4.7" );
+        executeTest();
+        verifyErrorFreeLog();
+        assertTestSuiteResults( 1, 0, 0, 0 );
+        verifyTextInLog( "surefire-junit47" );
     }
 
 

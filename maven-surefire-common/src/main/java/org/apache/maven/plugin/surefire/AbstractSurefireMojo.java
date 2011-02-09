@@ -109,9 +109,10 @@ public abstract class AbstractSurefireMojo
 
         try
         {
+            final Artifact junitDepArtifact = getJunitDepArtifact();
             wellKnownProviders = new ProviderList( new ProviderInfo[]{ new TestNgProviderInfo( getTestNgArtifact() ),
-                new JUnitCoreProviderInfo( getJunitArtifact() ),
-                new JUnit4ProviderInfo( getJunitArtifact(), getJunitDepArtifact() ), new JUnit3ProviderInfo() },
+                new JUnitCoreProviderInfo( getJunitArtifact(), junitDepArtifact ),
+                new JUnit4ProviderInfo( getJunitArtifact(), junitDepArtifact ), new JUnit3ProviderInfo() },
                                                    new DynamicProviderInfo( null ) );
 
             return wellKnownProviders.resolve( getLog() );
@@ -477,8 +478,8 @@ public abstract class AbstractSurefireMojo
             if ( !range.containsVersion( new DefaultArtifactVersion( artifact.getVersion() ) ) )
             {
                 throw new MojoFailureException(
-                    "TestNG support requires version 4.7 or above. You have declared version "
-                        + artifact.getVersion() );
+                    "TestNG support requires version 4.7 or above. You have declared version " +
+                        artifact.getVersion() );
             }
         }
         return artifact;
@@ -642,7 +643,7 @@ public abstract class AbstractSurefireMojo
         checksum.add( getObjectFactory() );
         checksum.add( getFailIfNoTests() );
         checksum.add( getRunOrder() );
-        addPluginSpecificChecksumItems(checksum);
+        addPluginSpecificChecksumItems( checksum );
         return checksum.getSha1();
 
     }
@@ -792,8 +793,8 @@ public abstract class AbstractSurefireMojo
             Artifact artifact = (Artifact) i.next();
 
             getLog().debug(
-                "Adding to " + getPluginName() + " booter test classpath: " + artifact.getFile().getAbsolutePath()
-                    + " Scope: " + artifact.getScope() );
+                "Adding to " + getPluginName() + " booter test classpath: " + artifact.getFile().getAbsolutePath() +
+                    " Scope: " + artifact.getScope() );
 
             bootClasspath.addClassPathElementUrl( artifact.getFile().getAbsolutePath() );
         }
@@ -870,8 +871,8 @@ public abstract class AbstractSurefireMojo
         }
         catch ( Exception e )
         {
-            String msg = "Build uses Maven 2.0.x, cannot propagate system properties"
-                + " from command line to tests (cf. SUREFIRE-121)";
+            String msg = "Build uses Maven 2.0.x, cannot propagate system properties" +
+                " from command line to tests (cf. SUREFIRE-121)";
             if ( getLog().isDebugEnabled() )
             {
                 getLog().warn( msg, e );
@@ -1113,9 +1114,12 @@ public abstract class AbstractSurefireMojo
     {
         private final Artifact junitArtifact;
 
-        JUnitCoreProviderInfo( Artifact junitArtifact )
+        private final Artifact junitDepArtifact;
+
+        JUnitCoreProviderInfo( Artifact junitArtifact, Artifact junitDepArtifact )
         {
             this.junitArtifact = junitArtifact;
+            this.junitDepArtifact = junitDepArtifact;
         }
 
         public String getProviderName()
@@ -1123,9 +1127,15 @@ public abstract class AbstractSurefireMojo
             return "org.apache.maven.surefire.junitcore.JUnitCoreProvider";
         }
 
+        private boolean is47CompatibleJunitDep()
+        {
+            return junitDepArtifact != null && isJunit47Compatible( junitDepArtifact );
+        }
+
         public boolean isApplicable()
         {
-            return isAnyJunit4( junitArtifact ) && isAnyConcurrencySelected() && isJunit47Compatible( junitArtifact );
+            final boolean isJunitArtifact47 = isAnyJunit4( junitArtifact ) && isJunit47Compatible( junitArtifact );
+            return isAnyConcurrencySelected() && ( isJunitArtifact47 || is47CompatibleJunitDep() );
         }
 
         public void addProviderProperties()
