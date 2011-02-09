@@ -19,6 +19,16 @@ package org.apache.maven.plugin.surefire.booterclient;
  * under the License.
  */
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
+
+import junit.framework.TestCase;
+
 import org.apache.maven.surefire.booter.BooterConstants;
 import org.apache.maven.surefire.booter.BooterDeserializer;
 import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
@@ -30,15 +40,6 @@ import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestRequest;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Properties;
-
-import junit.framework.TestCase;
 
 /**
  * Performs roundtrip testing of serialization/deserialization of The StartupConfiguration
@@ -66,10 +67,12 @@ public class BooterDeserializerStartupConfigurationTest
             getReloadedStartupConfiguration().getClasspathConfiguration();
         Properties props = new Properties();
         classpathConfiguration.setForkProperties( props );
+        List testClassPathUrls = classpathConfiguration.getTestClasspath().getClassPath();
         assertEquals( "true", props.get( BooterConstants.ENABLE_ASSERTIONS ) );
         assertEquals( "true", props.get( BooterConstants.CHILD_DELEGATION ) );
-        assertEquals( "CP1", classpathConfiguration.getTestClasspath().get( 0 ) );
-        assertEquals( "CP2", classpathConfiguration.getTestClasspath().get( 1 ) );
+        assertEquals( 2, testClassPathUrls.size() );
+        assertEquals( "CP1", testClassPathUrls.get( 0 ) );
+        assertEquals( "CP2", testClassPathUrls.get( 1 ) );
         assertEquals( "SP1", props.get( BooterConstants.SUREFIRE_CLASSPATHURL + "0" ) );
         assertEquals( "SP2", props.get( BooterConstants.SUREFIRE_CLASSPATHURL + "1" ) );
     }

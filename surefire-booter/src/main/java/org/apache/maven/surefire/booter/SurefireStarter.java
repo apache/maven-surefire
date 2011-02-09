@@ -61,13 +61,11 @@ public class SurefireStarter
     public int runSuitesInProcess( Object testSet, File surefirePropertiesFile, Properties p )
         throws SurefireExecutionException, IOException
     {
-        final StartupConfiguration starterConfiguration = startupConfiguration;
-        final ClasspathConfiguration classpathConfiguration = starterConfiguration.getClasspathConfiguration();
-
-        classpathConfiguration.getTestClasspath().setAsSystemProperty( SUREFIRE_TEST_CLASSPATH );
+        writeSurefireTestClasspathProperty();
+        final ClasspathConfiguration classpathConfiguration = startupConfiguration.getClasspathConfiguration();
 
         ClassLoader testsClassLoader = classpathConfiguration.createTestClassLoaderConditionallySystem(
-            starterConfiguration.useSystemClassLoader() );
+            startupConfiguration.useSystemClassLoader() );
 
         ClassLoader surefireClassLoader = classpathConfiguration.createSurefireClassLoader( testsClassLoader );
 
@@ -95,27 +93,27 @@ public class SurefireStarter
     private ClassLoader createInProcessTestClassLoader()
         throws SurefireExecutionException
     {
-        ClassLoader testsClassLoader;
-
-        final ClasspathConfiguration classpathConfiguration = startupConfiguration.getClasspathConfiguration();
-
-        String testClassPath = classpathConfiguration.getTestClasspath().getClassPathAsString();
-
-        classpathConfiguration.getTestClasspath().setAsSystemProperty( SUREFIRE_TEST_CLASSPATH );
-
+        writeSurefireTestClasspathProperty();
+        ClasspathConfiguration classpathConfiguration = startupConfiguration.getClasspathConfiguration();
         if ( startupConfiguration.isManifestOnlyJarRequestedAndUsable() )
         {
-            testsClassLoader = getClass().getClassLoader(); // ClassLoader.getSystemClassLoader()
+            ClassLoader testsClassLoader = getClass().getClassLoader(); // ClassLoader.getSystemClassLoader()
             // SUREFIRE-459, trick the app under test into thinking its classpath was conventional
             // (instead of a single manifest-only jar)
             System.setProperty( "surefire.real.class.path", System.getProperty( "java.class.path" ) );
-            System.setProperty( "java.class.path", testClassPath );
+            classpathConfiguration.getTestClasspath().writeToSystemProperty( "java.class.path" );
+            return testsClassLoader;
         }
         else
         {
-            testsClassLoader = classpathConfiguration.createTestClassLoader();
+            return classpathConfiguration.createTestClassLoader();
         }
-        return testsClassLoader;
+    }
+
+    private void writeSurefireTestClasspathProperty()
+    {
+        ClasspathConfiguration classpathConfiguration = startupConfiguration.getClasspathConfiguration();
+        classpathConfiguration.getTestClasspath().writeToSystemProperty( SUREFIRE_TEST_CLASSPATH );
     }
 
     private static final String RESULTS_ERRORS = "errors";

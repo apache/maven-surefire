@@ -101,8 +101,8 @@ public class BooterDeserializer
         boolean useManifestOnlyJar = properties.getBooleanProperty( USEMANIFESTONLYJAR );
         String providerConfiguration = properties.getProperty( PROVIDER_CONFIGURATION );
 
-        final List classpath = properties.getStringList( CLASSPATH_URL );
-        final List sureFireClasspath = properties.getStringList( SUREFIRE_CLASSPATHURL );
+        Classpath classpath = Classpath.readFromForkProperties( properties, CLASSPATH_URL );
+        Classpath sureFireClasspath = Classpath.readFromForkProperties( properties, SUREFIRE_CLASSPATHURL );
 
         ClassLoaderConfiguration classLoaderConfiguration =
             new ClassLoaderConfiguration( useSystemClassLoader, useManifestOnlyJar );
@@ -113,10 +113,4 @@ public class BooterDeserializer
         return StartupConfiguration.inForkedVm( providerConfiguration, classpathConfiguration,
                                                 classLoaderConfiguration );
     }
-
-    private Boolean valueOf( boolean aBoolean )
-    {  // jdk1.3 compat
-        return aBoolean ? Boolean.TRUE : Boolean.FALSE;
-    }
-
 }

@@ -25,7 +25,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -33,7 +32,7 @@ import java.util.Properties;
 /**
  * Represents the classpaths for the BooterConfiguration.
  * <p/>
- *
+ * 
  * @author Jason van Zyl
  * @author Emmanuel Venisse
  * @author Kristian Rosenvold
@@ -55,43 +54,30 @@ public class ClasspathConfiguration
     // todo: @deprecated because the IsolatedClassLoader is really isolated - no parent.
     private final boolean childDelegation;
 
-
     public ClasspathConfiguration( boolean enableAssertions, boolean childDelegation )
     {
-        this( new ArrayList(), new ArrayList(), enableAssertions, childDelegation );
+        this( new Classpath(), new Classpath(), enableAssertions, childDelegation );
     }
 
     /*
     * Reads the config from the supplied stream. Closes the stream.
     */
-    public ClasspathConfiguration( List classPathUrls, List surefireClassPathUrls, boolean enableAssertions,
+    public ClasspathConfiguration( Classpath classPathUrls, Classpath surefireClassPathUrls, boolean enableAssertions,
                                    boolean childDelegation )
     {
-
         this.enableAssertions = enableAssertions;
         this.childDelegation = childDelegation;
-        this.classpathUrls = new Classpath();
-        for ( Iterator cpi = classPathUrls.iterator(); cpi.hasNext(); )
-        {
-            this.classpathUrls.addClassPathElementUrl( (String) cpi.next() );
-        }
-
-        this.surefireClasspathUrls = new Classpath();
-        for ( Iterator scpi = surefireClassPathUrls.iterator(); scpi.hasNext(); )
-        {
-            this.surefireClasspathUrls.addClassPathElementUrl( (String) scpi.next() );
-        }
+        this.classpathUrls = classPathUrls;
+        this.surefireClasspathUrls = surefireClassPathUrls;
     }
-
 
     public void setForkProperties( Properties properties )
     {
-        classpathUrls.setForkProperties( properties, BooterConstants.CLASSPATH_URL );
-        surefireClasspathUrls.setForkProperties( properties, BooterConstants.SUREFIRE_CLASSPATHURL );
+        classpathUrls.writeToForkProperties( properties, BooterConstants.CLASSPATH_URL );
+        surefireClasspathUrls.writeToForkProperties( properties, BooterConstants.SUREFIRE_CLASSPATHURL );
         properties.setProperty( BooterConstants.ENABLE_ASSERTIONS, String.valueOf( enableAssertions ) );
         properties.setProperty( BooterConstants.CHILD_DELEGATION, String.valueOf( childDelegation ) );
     }
-
 
     private static Method assertionStatusMethod;
 

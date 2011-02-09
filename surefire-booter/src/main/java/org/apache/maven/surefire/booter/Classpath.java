@@ -19,16 +19,15 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import org.apache.maven.surefire.util.UrlUtils;
-
 import java.io.File;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import java.util.Set;
+
+import org.apache.maven.surefire.util.UrlUtils;
 
 /**
  * An ordered set of classpath elements
@@ -37,111 +36,95 @@ import java.util.Set;
  */
 public class Classpath
 {
-    private final List elements;
+    static Classpath readFromForkProperties( PropertiesWrapper properties, String prefix )
+    {
+        List elements = properties.getStringList( prefix );
+        return new Classpath( elements );
+    }
 
-    private final Set elementSet;
+    public static Classpath join( Classpath firstClasspath, Classpath secondClasspath )
+    {
+        Classpath joinedClasspath = new Classpath();
+        joinedClasspath.addElementsOfClasspath( firstClasspath );
+        joinedClasspath.addElementsOfClasspath( secondClasspath );
+        return joinedClasspath;
+    }
+
+    private final List elements = new ArrayList();
 
     public Classpath()
     {
-        this( new ArrayList() );
     }
 
-    private Classpath( List elements )
+    private Classpath( Collection elements )
     {
-        this.elements = elements;
-        this.elementSet = new HashSet( elements );
-        if ( elements.size() != elementSet.size() )
+        this();
+        addElements( elements );
+    }
+
+    public void addClassPathElementUrl( String path )
+    {
+        if ( path == null )
         {
-            throw new IllegalStateException( "This is not permitted and is a violation of contract" );
+            throw new IllegalArgumentException( "Null is not a valid class path element url." );
+        }
+        else if ( !elements.contains( path ) )
+        {
+            elements.add( path );
+        }
+    }
+
+    private void addElements( Collection additionalElements )
+    {
+        for ( Iterator it = additionalElements.iterator(); it.hasNext(); )
+        {
+            String element = (String) it.next();
+            addClassPathElementUrl( element );
+        }
+    }
+
+    private void addElementsOfClasspath( Classpath otherClasspath )
+    {
+        if ( otherClasspath != null )
+        {
+            addElements( otherClasspath.elements );
         }
     }
 
     public List getClassPath()
     {
-        return elements;
-    }
-
-    public Classpath append( Classpath otherClassPathToAppend )
-    {
-        int additionalLength = otherClassPathToAppend != null ? otherClassPathToAppend.size() : 0;
-        List combinedClassPath = new ArrayList( elements.size() + additionalLength );
-
-        combinedClassPath.addAll( elements );
-
-        if ( otherClassPathToAppend != null )
-        {
-            Iterator iterator = otherClassPathToAppend.getClassPath().iterator();
-            while ( iterator.hasNext() )
-            {
-                String element = (String) iterator.next();
-                if ( !elementSet.contains( element ) )
-                {
-                    combinedClassPath.add( element );
-                }
-            }
-        }
-        return new Classpath( combinedClassPath );
-    }
-
-
-    public void addClassPathElementUrl( String path )
-    {
-        if ( !elementSet.contains( path ) )
-        {
-            elements.add( path );
-            elementSet.add( path );
-        }
-    }
-
-    public Object get( int index )
-    {
-        return elements.get( index );
-    }
-
-    public int size()
-    {
-        return elements.size();
-    }
-
-    public String getClassPathAsString()
-    {
-        StringBuffer sb = new StringBuffer();
-        for ( Iterator i = elements.iterator(); i.hasNext(); )
-        {
-            sb.append( (String) i.next() ).append( File.pathSeparatorChar );
-        }
-        return sb.toString();
+        return new ArrayList( elements );
     }
 
     public List getAsUrlList()
         throws MalformedURLException
     {
         List urls = new ArrayList();
-
         for ( Iterator i = elements.iterator(); i.hasNext(); )
         {
             String url = (String) i.next();
-
-            if ( url != null )
-            {
-                File f = new File( url );
-                urls.add( UrlUtils.getURL( f ) );
-            }
+            File f = new File( url );
+            urls.add( UrlUtils.getURL( f ) );
         }
         return urls;
     }
 
-    public void setForkProperties( Properties properties, String prefix )
+    void writeToForkProperties( Properties properties, String prefix )
     {
-        for ( int i = 0; i < elements.size(); i++ )
+        for ( int i = 0; i < elements.size(); ++i )
         {
-            String url = (String) elements.get( i );
-            properties.setProperty( prefix + i, url );
+            String element = (String) elements.get( i );
+            properties.setProperty( prefix + i, element );
         }
     }
 
-    public void setAsSystemProperty( String propertyName ){
-         System.setProperty( propertyName, getClassPathAsString());
+    public void writeToSystemProperty( String propertyName )
+    {
+        StringBuffer sb = new StringBuffer();
+        for ( Iterator i = elements.iterator(); i.hasNext(); )
+        {
+            sb.append( (String) i.next() ).append( File.pathSeparatorChar );
+        }
+        System.setProperty( propertyName, sb.toString() );
     }
-
 }

@@ -196,7 +196,7 @@ public class ForkStarter
             ? startupConfiguration.getClasspathConfiguration().getTestClasspath()
             : null;
 
-        Classpath bootClasspath = bootClasspathConfiguration.append( additionlClassPathUrls );
+        Classpath bootClasspath = Classpath.join( bootClasspathConfiguration, additionlClassPathUrls );
 
         Commandline cli = forkConfiguration.createCommandLine( bootClasspath.getClassPath(),
                                                                startupConfiguration.getClassLoaderConfiguration() );
