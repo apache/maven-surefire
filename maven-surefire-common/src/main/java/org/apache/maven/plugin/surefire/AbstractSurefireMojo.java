@@ -391,7 +391,6 @@ public abstract class AbstractSurefireMojo
             addArtifact( forkConfiguration.getBootClasspath(), surefireArtifact );
 
             provider.addProviderProperties();
-            provider.addProviderArtifactToBootClasspath( forkConfiguration.getBootClasspath() );
             provider.addProviderArtifactToSurefireClasspath( classpathConfiguration );
             providerName = provider.getProviderName();
         }
@@ -1066,13 +1065,6 @@ public abstract class AbstractSurefireMojo
             convertTestNGParameters();
         }
 
-        public void addProviderArtifactToBootClasspath( Classpath bootclasspath )
-            throws ArtifactResolutionException, ArtifactNotFoundException
-        {
-
-            dependencyResolver.addResolvedArtifactToClasspath( bootclasspath, testNgArtifact );
-        }
-
         public void addProviderArtifactToSurefireClasspath( ClasspathConfiguration bootclasspath )
             throws ArtifactResolutionException, ArtifactNotFoundException
         {
@@ -1097,10 +1089,6 @@ public abstract class AbstractSurefireMojo
         }
 
         public void addProviderProperties()
-        {
-        }
-
-        public void addProviderArtifactToBootClasspath( Classpath bootclasspath )
         {
         }
 
@@ -1140,10 +1128,6 @@ public abstract class AbstractSurefireMojo
         }
 
         public void addProviderProperties()
-        {
-        }
-
-        public void addProviderArtifactToBootClasspath( Classpath bootclasspath )
         {
         }
 
@@ -1191,10 +1175,6 @@ public abstract class AbstractSurefireMojo
             convertJunitCoreParameters();
         }
 
-        public void addProviderArtifactToBootClasspath( Classpath bootclasspath )
-        {
-        }
-
         public void addProviderArtifactToSurefireClasspath( ClasspathConfiguration classpathConfiguration )
             throws ArtifactResolutionException, ArtifactNotFoundException
         {
@@ -1234,10 +1214,6 @@ public abstract class AbstractSurefireMojo
             // Ok this is a bit lazy.
             convertJunitCoreParameters();
             convertTestNGParameters();
-        }
-
-        public void addProviderArtifactToBootClasspath( Classpath bootclasspath )
-        {
         }
 
         public void addProviderArtifactToSurefireClasspath( ClasspathConfiguration classpathConfiguration )

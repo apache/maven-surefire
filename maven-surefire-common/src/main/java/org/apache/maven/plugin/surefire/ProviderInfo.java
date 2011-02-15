@@ -21,7 +21,6 @@ package org.apache.maven.plugin.surefire;
 
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
-import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.ClasspathConfiguration;
 
 /**
@@ -32,9 +31,6 @@ public interface ProviderInfo
     String getProviderName();
 
     boolean isApplicable();
-
-    void addProviderArtifactToBootClasspath( Classpath bootclasspath )
-        throws ArtifactResolutionException, ArtifactNotFoundException;
 
     void addProviderArtifactToSurefireClasspath( ClasspathConfiguration bootclasspath )
         throws ArtifactResolutionException, ArtifactNotFoundException;
