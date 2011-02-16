@@ -21,6 +21,7 @@ package org.apache.maven.surefire.junitcore;
 
 import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
 import org.apache.maven.surefire.report.Reporter;
+import org.apache.maven.surefire.util.NestedRuntimeException;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -75,7 +76,16 @@ public class JUnitCoreRunListener
                 testSet.incrementTestMethodCount();
                 if ( itemTestClass == null )
                 {
-                    itemTestClass = item.getTestClass();
+                    String className = item.getClassName();
+                    try
+                    {
+                        itemTestClass = Class.forName( className);
+                    }
+                    catch ( ClassNotFoundException ignore )
+                    {
+                        throw new NestedRuntimeException( "Should not have trouble with this" , ignore );
+                    }
+
                 }
             }
             else if ( item.getChildren().size() > 0 )

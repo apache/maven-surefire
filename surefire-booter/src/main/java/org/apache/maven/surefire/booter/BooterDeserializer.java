@@ -103,12 +103,13 @@ public class BooterDeserializer
 
         Classpath classpath = Classpath.readFromForkProperties( properties, CLASSPATH_URL );
         Classpath sureFireClasspath = Classpath.readFromForkProperties( properties, SUREFIRE_CLASSPATHURL );
+        Classpath testFrameworkClasspath = Classpath.readFromForkProperties( properties, TEST_FRAMEWORK_CLASSPATHURL );
 
         ClassLoaderConfiguration classLoaderConfiguration =
             new ClassLoaderConfiguration( useSystemClassLoader, useManifestOnlyJar );
 
         ClasspathConfiguration classpathConfiguration =
-            new ClasspathConfiguration( classpath, sureFireClasspath, enableAssertions, childDelegation );
+            new ClasspathConfiguration( classpath, sureFireClasspath, testFrameworkClasspath, enableAssertions, childDelegation );
 
         return StartupConfiguration.inForkedVm( providerConfiguration, classpathConfiguration,
                                                 classLoaderConfiguration );

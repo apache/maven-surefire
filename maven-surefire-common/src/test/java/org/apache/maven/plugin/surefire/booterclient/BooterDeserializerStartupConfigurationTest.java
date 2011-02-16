@@ -19,6 +19,19 @@ package org.apache.maven.plugin.surefire.booterclient;
  * under the License.
  */
 
+import org.apache.maven.surefire.booter.BooterConstants;
+import org.apache.maven.surefire.booter.BooterDeserializer;
+import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
+import org.apache.maven.surefire.booter.Classpath;
+import org.apache.maven.surefire.booter.ClasspathConfiguration;
+import org.apache.maven.surefire.booter.ProviderConfiguration;
+import org.apache.maven.surefire.booter.StartupConfiguration;
+import org.apache.maven.surefire.booter.SystemPropertyManager;
+import org.apache.maven.surefire.report.ReporterConfiguration;
+import org.apache.maven.surefire.testset.DirectoryScannerParameters;
+import org.apache.maven.surefire.testset.TestArtifactInfo;
+import org.apache.maven.surefire.testset.TestRequest;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -28,18 +41,6 @@ import java.util.List;
 import java.util.Properties;
 
 import junit.framework.TestCase;
-
-import org.apache.maven.surefire.booter.BooterConstants;
-import org.apache.maven.surefire.booter.BooterDeserializer;
-import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
-import org.apache.maven.surefire.booter.ClasspathConfiguration;
-import org.apache.maven.surefire.booter.ProviderConfiguration;
-import org.apache.maven.surefire.booter.StartupConfiguration;
-import org.apache.maven.surefire.booter.SystemPropertyManager;
-import org.apache.maven.surefire.report.ReporterConfiguration;
-import org.apache.maven.surefire.testset.DirectoryScannerParameters;
-import org.apache.maven.surefire.testset.TestArtifactInfo;
-import org.apache.maven.surefire.testset.TestRequest;
 
 /**
  * Performs roundtrip testing of serialization/deserialization of The StartupConfiguration
@@ -71,10 +72,10 @@ public class BooterDeserializerStartupConfigurationTest
         assertEquals( "true", props.get( BooterConstants.ENABLE_ASSERTIONS ) );
         assertEquals( "true", props.get( BooterConstants.CHILD_DELEGATION ) );
         assertEquals( 2, testClassPathUrls.size() );
-        assertEquals( "CP1", testClassPathUrls.get( 0 ) );
-        assertEquals( "CP2", testClassPathUrls.get( 1 ) );
-        assertEquals( "SP1", props.get( BooterConstants.SUREFIRE_CLASSPATHURL + "0" ) );
-        assertEquals( "SP2", props.get( BooterConstants.SUREFIRE_CLASSPATHURL + "1" ) );
+        assertEquals( "T1", testClassPathUrls.get( 0 ) );
+        assertEquals( "T2", testClassPathUrls.get( 1 ) );
+        assertEquals( "P1", props.get( BooterConstants.SUREFIRE_CLASSPATHURL + "0" ) );
+        assertEquals( "P2", props.get( BooterConstants.SUREFIRE_CLASSPATHURL + "1" ) );
     }
 
     public void testClassLoaderConfiguration()
@@ -144,11 +145,11 @@ public class BooterDeserializerStartupConfigurationTest
 
     private StartupConfiguration getTestStartupConfiguration( ClassLoaderConfiguration classLoaderConfiguration )
     {
-        ClasspathConfiguration classpathConfiguration = new ClasspathConfiguration( true, true );
-        classpathConfiguration.addClasspathUrl( "CP1" );
-        classpathConfiguration.addClasspathUrl( "CP2" );
-        classpathConfiguration.addSurefireClasspathUrl( "SP1" );
-        classpathConfiguration.addSurefireClasspathUrl( "SP2" );
+        Classpath testClasspath = new Classpath( Arrays.asList( new String[]{ "T1", "T2" } ) );
+        Classpath providerClasspath = new Classpath( Arrays.asList( new String[]{ "P1", "P2" } ) );
+        Classpath testFrameworkClasspath = new Classpath();
+        ClasspathConfiguration classpathConfiguration =
+            new ClasspathConfiguration( testClasspath, providerClasspath, testFrameworkClasspath, true, true );
         return new StartupConfiguration( "com.provider", classpathConfiguration, classLoaderConfiguration, false, false,
                                          false );
     }

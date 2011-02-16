@@ -32,7 +32,7 @@ import java.util.Properties;
 /**
  * Represents the classpaths for the BooterConfiguration.
  * <p/>
- * 
+ *
  * @author Jason van Zyl
  * @author Emmanuel Venisse
  * @author Kristian Rosenvold
@@ -41,9 +41,11 @@ import java.util.Properties;
 public class ClasspathConfiguration
 {
 
-    private final Classpath classpathUrls;
+    private final Classpath testFrameworkClasspath;
 
-    private final Classpath surefireClasspathUrls;
+    private final Classpath testClasspath;
+
+    private final Classpath providerClasspath;
 
     /**
      * Whether to enable assertions or not (can be affected by the fork arguments, and the ability to do so based on the
@@ -56,25 +58,24 @@ public class ClasspathConfiguration
 
     public ClasspathConfiguration( boolean enableAssertions, boolean childDelegation )
     {
-        this( new Classpath(), new Classpath(), enableAssertions, childDelegation );
+        this( new Classpath(), new Classpath(), new Classpath(), enableAssertions, childDelegation );
     }
 
-    /*
-    * Reads the config from the supplied stream. Closes the stream.
-    */
-    public ClasspathConfiguration( Classpath classPathUrls, Classpath surefireClassPathUrls, boolean enableAssertions,
-                                   boolean childDelegation )
+    public ClasspathConfiguration( Classpath testClasspath, Classpath providerClasspath,
+                                   Classpath testFrameworkClasspath, boolean enableAssertions, boolean childDelegation )
     {
+        this.testFrameworkClasspath = testFrameworkClasspath;
+        this.testClasspath = testClasspath;
+        this.providerClasspath = providerClasspath;
         this.enableAssertions = enableAssertions;
         this.childDelegation = childDelegation;
-        this.classpathUrls = classPathUrls;
-        this.surefireClasspathUrls = surefireClassPathUrls;
     }
 
     public void setForkProperties( Properties properties )
     {
-        classpathUrls.writeToForkProperties( properties, BooterConstants.CLASSPATH_URL );
-        surefireClasspathUrls.writeToForkProperties( properties, BooterConstants.SUREFIRE_CLASSPATHURL );
+        testClasspath.writeToForkProperties( properties, BooterConstants.CLASSPATH_URL );
+        providerClasspath.writeToForkProperties( properties, BooterConstants.SUREFIRE_CLASSPATHURL );
+        testFrameworkClasspath.writeToForkProperties( properties, BooterConstants.TEST_FRAMEWORK_CLASSPATHURL );
         properties.setProperty( BooterConstants.ENABLE_ASSERTIONS, String.valueOf( enableAssertions ) );
         properties.setProperty( BooterConstants.CHILD_DELEGATION, String.valueOf( childDelegation ) );
     }
@@ -105,80 +106,112 @@ public class ClasspathConfiguration
     public ClassLoader createTestClassLoader( boolean childDelegation )
         throws SurefireExecutionException
     {
-        return createClassLoaderSEE( classpathUrls, null, childDelegation );
+        ClassLoader testFrameWorkClassLoader = createTestFrameworkClassLoader( childDelegation );
+        return createClassLoader( testClasspath, testFrameWorkClassLoader, childDelegation, "Test" );
+    }
+
+    private ClassLoader createTestFrameworkClassLoader( boolean childDelegation )
+        throws SurefireExecutionException
+    {
+        return hasTestFrameworkClasspath() ? createClassLoader( testFrameworkClasspath, null, childDelegation,
+                                                                "TestFramework" ) : null;
     }
 
     public ClassLoader createTestClassLoader()
         throws SurefireExecutionException
     {
-        return createClassLoaderSEE( classpathUrls, null, this.childDelegation );
+        final ClassLoader testFrameworkClassLoader = createTestFrameworkClassLoader( this.childDelegation );
+        return createClassLoader( testClasspath, testFrameworkClassLoader, this.childDelegation, "Test" );
+    }
+
+    public ClassLoader createTestframeworkClassLoader()
+        throws SurefireExecutionException
+    {
+        return createClassLoader( testFrameworkClasspath, null, this.childDelegation, "Test" );
     }
 
     public ClassLoader createSurefireClassLoader( ClassLoader parent )
         throws SurefireExecutionException
     {
-        return createClassLoaderSEE( surefireClasspathUrls, parent, false );
+        boolean useTestClassLoaderAsParent =
+            parent.equals( ClassLoader.getSystemClassLoader() ) || !hasTestFrameworkClasspath();
+
+        ClassLoader parentToUse = useTestClassLoaderAsParent ? parent : parent.getParent();
+
+        return createClassLoader( providerClasspath, parentToUse, false, "Provider" );
     }
 
-    private ClassLoader createClassLoaderSEE( Classpath classPathUrls, ClassLoader parent, boolean childDelegation )
+    private ClassLoader createClassLoader( Classpath classPathUrls, ClassLoader parent, boolean childDelegation,
+                                           String description )
         throws SurefireExecutionException
     {
         try
         {
-            return createClassLoader( classPathUrls, parent, childDelegation );
+            List urls = classPathUrls.getAsUrlList();
+            IsolatedClassLoader classLoader = new IsolatedClassLoader( parent, childDelegation, description );
+            if ( assertionStatusMethod != null )
+            {
+                try
+                {
+                    Object[] args = new Object[]{ enableAssertions ? Boolean.TRUE : Boolean.FALSE };
+                    if ( parent != null )
+                    {
+                        assertionStatusMethod.invoke( parent, args );
+                    }
+                    assertionStatusMethod.invoke( classLoader, args );
+                }
+                catch ( IllegalAccessException e )
+                {
+                    throw new NestedRuntimeException( "Unable to access the assertion enablement method", e );
+                }
+                catch ( InvocationTargetException e )
+                {
+                    throw new NestedRuntimeException( "Unable to invoke the assertion enablement method", e );
+                }
+            }
+            for ( Iterator iter = urls.iterator(); iter.hasNext(); )
+            {
+                URL url = (URL) iter.next();
+                classLoader.addURL( url );
+            }
+            return classLoader;
         }
         catch ( MalformedURLException e )
         {
             throw new SurefireExecutionException( "When creating classloader", e );
         }
-
-    }
-
-    private ClassLoader createClassLoader( Classpath classPathUrls, ClassLoader parent, boolean childDelegation )
-        throws MalformedURLException
-    {
-        List urls = classPathUrls.getAsUrlList();
-        IsolatedClassLoader classLoader = new IsolatedClassLoader( parent, childDelegation );
-        if ( assertionStatusMethod != null )
-        {
-            try
-            {
-                Object[] args = new Object[]{ enableAssertions ? Boolean.TRUE : Boolean.FALSE };
-                if ( parent != null )
-                {
-                    assertionStatusMethod.invoke( parent, args );
-                }
-                assertionStatusMethod.invoke( classLoader, args );
-            }
-            catch ( IllegalAccessException e )
-            {
-                throw new NestedRuntimeException( "Unable to access the assertion enablement method", e );
-            }
-            catch ( InvocationTargetException e )
-            {
-                throw new NestedRuntimeException( "Unable to invoke the assertion enablement method", e );
-            }
-        }
-        for ( Iterator iter = urls.iterator(); iter.hasNext(); )
-        {
-            URL url = (URL) iter.next();
-            classLoader.addURL( url );
-        }
-        return classLoader;
     }
 
     public Classpath getTestClasspath()
     {
-        return classpathUrls;
+        return testClasspath;
     }
 
     public void addClasspathUrl( String path )
     {
-        classpathUrls.addClassPathElementUrl( path );
+        testClasspath.addClassPathElementUrl( path );
     }
 
     public void addSurefireClasspathUrl( String path )
     {
-        surefireClasspathUrls.addClassPathElementUrl( path );
+        providerClasspath.addClassPathElementUrl( path );
     }
+
+    private Classpath getTestFrameworkClasspath()
+    {
+        return testFrameworkClasspath;
+    }
+
+    /**
+     * Indicates if there is a test framework classpath present, which triggers
+     * the pitchfork classloader configuration.
+     *
+     * @return True if there is a test framework classpath available
+     */
+    private boolean hasTestFrameworkClasspath()
+    {
+        return testFrameworkClasspath.size() > 0;
+    }
+
+
 }

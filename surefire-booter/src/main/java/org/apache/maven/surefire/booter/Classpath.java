@@ -25,6 +25,7 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -36,6 +37,14 @@ import java.util.Properties;
  */
 public class Classpath
 {
+    public Classpath( List files )
+    {
+        for ( Iterator iter = files.iterator(); iter.hasNext(); )
+        {
+            addClassPathElementUrl( (String) iter.next() );
+        }
+    }
+
     static Classpath readFromForkProperties( PropertiesWrapper properties, String prefix )
     {
         List elements = properties.getStringList( prefix );
@@ -44,10 +53,13 @@ public class Classpath
 
     public static Classpath join( Classpath firstClasspath, Classpath secondClasspath )
     {
-        Classpath joinedClasspath = new Classpath();
-        joinedClasspath.addElementsOfClasspath( firstClasspath );
-        joinedClasspath.addElementsOfClasspath( secondClasspath );
-        return joinedClasspath;
+
+        List result = new ArrayList( firstClasspath != null ? firstClasspath.elements : new ArrayList() );
+        if ( secondClasspath != null )
+        {
+            result.addAll( secondClasspath.elements );
+        }
+        return new Classpath( result );
     }
 
     private final List elements = new ArrayList();
@@ -56,13 +68,12 @@ public class Classpath
     {
     }
 
-    private Classpath( Collection elements )
+    public Classpath( File file )
     {
-        this();
-        addElements( elements );
+        this( Collections.singletonList( file.getAbsolutePath() ) );
     }
 
-    public void addClassPathElementUrl( String path )
+    void addClassPathElementUrl( String path )
     {
         if ( path == null )
         {
@@ -126,5 +137,10 @@ public class Classpath
             sb.append( (String) i.next() ).append( File.pathSeparatorChar );
         }
         System.setProperty( propertyName, sb.toString() );
+    }
+
+    public int size()
+    {
+        return elements.size();
     }
 }

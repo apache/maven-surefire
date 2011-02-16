@@ -30,6 +30,9 @@ import java.util.Set;
 public class IsolatedClassLoader
     extends URLClassLoader
 {
+
+    private final String description;
+
     private final ClassLoader parent = ClassLoader.getSystemClassLoader();
 
     private final Set urls = new HashSet();
@@ -38,11 +41,13 @@ public class IsolatedClassLoader
 
     private static final URL[] EMPTY_URL_ARRAY = new URL[0];
 
-    public IsolatedClassLoader( ClassLoader parent, boolean childDelegation )
+    public IsolatedClassLoader( ClassLoader parent, boolean childDelegation, String description )
     {
         super( EMPTY_URL_ARRAY, parent );
 
         this.childDelegation = childDelegation;
+
+        this.description = description;
     }
 
     public void addURL( URL url )
@@ -94,5 +99,11 @@ public class IsolatedClassLoader
         }
 
         return c;
+    }
+
+
+    public String toString()
+    {
+        return description;
     }
 }
