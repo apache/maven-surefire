@@ -23,7 +23,6 @@ import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReportWriter;
 import org.apache.maven.surefire.report.Reporter;
 import org.apache.maven.surefire.report.SimpleReportEntry;
-import org.apache.maven.surefire.util.NestedRuntimeException;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,6 +30,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.maven.surefire.util.NestedRuntimeException;
 import org.junit.runner.Description;
 
 /**
@@ -102,7 +102,7 @@ public class TestSet
 
     private ReportEntry createReportEntry( Integer elapsed )
     {
-        boolean isJunit3 = testSetDescription.getClassName() == null;
+        boolean isJunit3 = testSetDescription.getTestClass() == null;
         String classNameToUse =
             isJunit3 ? testSetDescription.getChildren().get( 0 ).getClassName() : testSetDescription.getClassName();
         return new SimpleReportEntry( classNameToUse, classNameToUse, elapsed );

@@ -29,6 +29,7 @@ import java.util.Properties;
  * <p/>
  * Deals with deserialization of the booter wire-level protocol
  * <p/>
+ * Todo: Look at relationship between this class and BooterSerializer (BooterDeserializer?)
  *
  * @author Jason van Zyl
  * @author Emmanuel Venisse

@@ -36,7 +36,6 @@ public interface BooterConstants
     String TYPES_SUFIX = ".types";
     String CLASSPATH_URL = "classPathUrl.";
     String SUREFIRE_CLASSPATHURL = "surefireClassPathUrl.";
-    String TEST_FRAMEWORK_CLASSPATHURL = "testFwClassPathUrl.";
     String CHILD_DELEGATION = "childDelegation";
     String ENABLE_ASSERTIONS = "enableAssertions";
     String USESYSTEMCLASSLOADER = "useSystemClassLoader";
