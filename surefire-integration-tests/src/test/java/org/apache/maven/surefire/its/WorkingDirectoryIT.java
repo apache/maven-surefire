@@ -26,6 +26,7 @@ import java.util.Properties;
 
 import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
+import org.codehaus.plexus.util.FileUtils;
 
 /**
  * Test working directory configuration, SUREFIRE-416
@@ -77,7 +78,15 @@ public class WorkingDirectoryIT
         String userDirPath = p.getProperty( "user.dir" );
         assertNotNull( "user.dir was null in property file", userDirPath );
         File userDir = new File( userDirPath );
-        assertEquals( "wrong user.dir", childTestDir.getAbsolutePath(), userDir.getAbsolutePath() );
+        // test if not a symlink
+        if ( userDir.getAbsolutePath().equals( userDir.getCanonicalPath() ) )
+        {
+            assertEquals( "wrong user.dir", childTestDir.getAbsolutePath(), userDir.getAbsolutePath() );
+        }
+        else
+        {
+            assertEquals( "wrong user.dir", childTestDir.getCanonicalPath(), userDir.getCanonicalPath() );
+        }
     }
 
     public void testWorkingDirectoryNoFork()
