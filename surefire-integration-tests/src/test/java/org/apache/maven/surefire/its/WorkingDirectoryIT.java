@@ -79,16 +79,13 @@ public class WorkingDirectoryIT
         assertNotNull( "user.dir was null in property file", userDirPath );
         File userDir = new File( userDirPath );
         // test if not a symlink
-        String message = "canonicalFile " + childTestDir.getCanonicalPath() + SystemUtils.LINE_SEPARATOR  
-                        + " absolutePath " + childTestDir.getAbsolutePath() + SystemUtils.LINE_SEPARATOR
-                        + " path " + childTestDir.getPath() + SystemUtils.LINE_SEPARATOR;
         if ( childTestDir.getCanonicalFile().equals(childTestDir.getAbsoluteFile()) )
         {
-            assertEquals( "wrong user.dir ! symlink " + message, childTestDir.getAbsolutePath(), userDir.getAbsolutePath() );
+            assertEquals( "wrong user.dir ! symlink ", childTestDir.getAbsolutePath(), userDir.getAbsolutePath() );
         }
         else
         {
-            assertEquals( "wrong user.dir symlink " + message, childTestDir.getCanonicalPath(), userDir.getCanonicalPath() );
+            assertEquals( "wrong user.dir symlink ", childTestDir.getCanonicalPath(), userDir.getCanonicalPath() );
         }
     }
 
