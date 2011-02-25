@@ -25,6 +25,7 @@ import org.apache.maven.surefire.testset.TestSetFailedException;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -36,7 +37,8 @@ public class SurefireDirectoryScannerTest
     public void testLocateTestClasses()
         throws IOException, TestSetFailedException
     {
-        File baseDir = new File( new File( "." ).getCanonicalPath() );
+        // use target as people can configure ide to compile in an other place than maven
+        File baseDir = new File( new File( "target" ).getCanonicalPath() );
         List include = new ArrayList();
         include.add( "**/*ZT*A.java" );
         List exclude = new ArrayList();
@@ -45,6 +47,7 @@ public class SurefireDirectoryScannerTest
                                                                                         "filesystem" );
         String[] classNames = surefireDirectoryScanner.collectTests();
         assertNotNull( classNames );
+        System.out.println("classNames " + Arrays.asList( classNames ));
         assertEquals( 4, classNames.length );
     }
 }

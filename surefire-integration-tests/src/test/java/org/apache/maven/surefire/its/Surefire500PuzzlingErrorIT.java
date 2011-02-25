@@ -20,10 +20,6 @@ package org.apache.maven.surefire.its;
 
 
 import java.io.File;
-import java.util.List;
-
-import junit.framework.Assert;
-import org.apache.maven.it.VerificationException;
 
 /**
  * SUREFIRE-500 Asserts correct error handling for the "odd" surefire-500 (and 625) issues.

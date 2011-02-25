@@ -63,6 +63,8 @@ public class JUnit4Provider
     private final List<RunListener> customRunListeners;
 
     private final JUnit4TestChecker jUnit4TestChecker;
+    
+    private final String requestedTestMethod;
 
     private TestsToRun testsToRun;
 
@@ -74,6 +76,7 @@ public class JUnit4Provider
         customRunListeners = JUnit4RunListenerFactory.
             createCustomListeners( booterParameters.getProviderProperties().getProperty( "listener" ) );
         jUnit4TestChecker = new JUnit4TestChecker( testClassLoader );
+        requestedTestMethod = booterParameters.getTestRequest().getRequestedTestMethod();
 
     }
 
@@ -112,7 +115,7 @@ public class JUnit4Provider
 
         try
         {
-            JUnit4TestSet.execute( clazz, listeners );
+            JUnit4TestSet.execute( clazz, listeners, this.requestedTestMethod );
         }
         catch ( TestSetFailedException e )
         {

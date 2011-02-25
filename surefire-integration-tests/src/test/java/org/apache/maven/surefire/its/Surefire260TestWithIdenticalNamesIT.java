@@ -19,14 +19,13 @@ package org.apache.maven.surefire.its;
  */
 
 
+import java.io.File;
+import java.net.URI;
+
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import com.gargoylesoftware.htmlunit.html.HtmlDivision;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlSpan;
-
-import java.io.File;
-import java.net.URI;
 
 /**
  * Test Surefire-570 Multiple report directories

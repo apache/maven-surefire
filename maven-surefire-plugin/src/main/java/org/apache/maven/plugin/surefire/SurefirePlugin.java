@@ -19,6 +19,13 @@ package org.apache.maven.plugin.surefire;
  * under the License.
  */
 
+import java.io.File;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -34,13 +41,7 @@ import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.apache.maven.surefire.booter.SurefireExecutionException;
 import org.apache.maven.toolchain.ToolchainManager;
-
-import java.io.File;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import org.codehaus.plexus.util.StringUtils;
 
 /**
  * Run tests using Surefire.
@@ -179,7 +180,12 @@ public class SurefirePlugin
      * to run a single test called "foo/MyTest.java".<br/>
      * This parameter overrides the <code>includes/excludes</code> parameters, and the TestNG
      * <code>suiteXmlFiles</code> parameter.
-     *
+     * 
+     * since 2.7.3
+     * You can execute a limited number of method in the test with adding #myMethod or #my*ethod.
+     * Si type "-Dtest=MyTest#myMethod"
+     * <b>supported for junit 4.x and testNg</b>
+     * 
      * @parameter expression="${test}"
      */
     private String test;
@@ -794,8 +800,35 @@ public class SurefirePlugin
 
     public String getTest()
     {
+        if ( StringUtils.isBlank( test ) )
+        {
+            return null;
+        }
+        int index = test.indexOf( '#' );
+        if ( index >= 0 )
+        {
+            return test.substring( 0, index );
+        }
         return test;
     }
+    
+    /**
+     * @since 2.7.3
+     */
+    public String getTestMethod()
+    {
+        if ( StringUtils.isBlank( test ) )
+        {
+            return null;
+        }        
+        int index = this.test.indexOf( '#' );
+        if ( index >= 0 )
+        {
+            return this.test.substring( index + 1, this.test.length() );
+        }
+        return null;
+    }    
+    
 
     public void setTest( String test )
     {
@@ -1266,4 +1299,5 @@ public class SurefirePlugin
     protected void addPluginSpecificChecksumItems( ChecksumCalculator checksum )
     {
     }
+    
 }

@@ -34,6 +34,7 @@ public class BasicTest
     {
         Assert.assertTrue( "setUp was not called", setUpCalled );
     }
+  
 
     @AfterClass
     public static void oneTimeTearDown()

@@ -129,7 +129,7 @@ public class TestNGProvider
                                              new ArrayList( directoryScannerParameters.getExcludes() ),
                                              testRequest.getTestSourceDirectory().toString(),
                                              testArtifactInfo.getVersion(), providerProperties,
-                                             reporterConfiguration.getReportsDirectory() );
+                                             reporterConfiguration.getReportsDirectory(), testRequest.getRequestedTestMethod() );
     }
 
     private TestNGXmlTestSuite getXmlSuite()

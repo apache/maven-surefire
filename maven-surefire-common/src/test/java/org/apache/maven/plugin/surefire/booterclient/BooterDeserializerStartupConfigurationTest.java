@@ -53,6 +53,8 @@ public class BooterDeserializerStartupConfigurationTest
     private final String aTest = "aTest";
 
     private final String aUserRequestedTest = "aUserRequestedTest";
+    
+    private final String aUserRequestedTestMethod = "aUserRequestedTestMethod";
 
     public void testProvider()
         throws IOException
@@ -136,7 +138,7 @@ public class BooterDeserializerStartupConfigurationTest
         ReporterConfiguration reporterConfiguration =
             new ReporterConfiguration( new ArrayList(), cwd, Boolean.TRUE, null );
         TestRequest testSuiteDefinition =
-            new TestRequest( Arrays.asList( getSuiteXmlFileStrings() ), getTestSourceDirectory(), aUserRequestedTest );
+            new TestRequest( Arrays.asList( getSuiteXmlFileStrings() ), getTestSourceDirectory(), aUserRequestedTest, aUserRequestedTestMethod );
         return new ProviderConfiguration( directoryScannerParameters, true, reporterConfiguration,
                                           new TestArtifactInfo( "5.0", "ABC" ), testSuiteDefinition, new Properties(),
                                           aTest );

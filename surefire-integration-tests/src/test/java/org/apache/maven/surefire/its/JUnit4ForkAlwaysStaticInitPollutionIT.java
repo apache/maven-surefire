@@ -19,10 +19,6 @@ package org.apache.maven.surefire.its;
  */
 
 
-import org.apache.maven.it.Verifier;
-import org.apache.maven.it.util.ResourceExtractor;
-
-import java.io.File;
 
 /**
  * Test JUnit 4 tests marked with "Ignore" attribute

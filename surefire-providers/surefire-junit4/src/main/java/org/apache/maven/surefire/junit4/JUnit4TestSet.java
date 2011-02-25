@@ -19,7 +19,11 @@ package org.apache.maven.surefire.junit4;
  * under the License.
  */
 
+import java.lang.reflect.Method;
+
 import org.apache.maven.surefire.testset.TestSetFailedException;
+import org.apache.maven.surefire.util.internal.SelectorUtils;
+import org.apache.maven.surefire.util.internal.StringUtils;
 import org.junit.runner.Request;
 import org.junit.runner.Runner;
 import org.junit.runner.notification.RunNotifier;
@@ -27,11 +31,25 @@ import org.junit.runner.notification.RunNotifier;
 public class JUnit4TestSet
 {
 
-    public static void execute( Class testClass, RunNotifier fNotifier )
+    public static void execute( Class testClass, RunNotifier fNotifier, String testMethod )
         throws TestSetFailedException
     {
+        if ( !StringUtils.isBlank( testMethod ) )
+        {
+            Method[] methods = testClass.getMethods();
+            for (int i = 0,size = methods.length;i<size;i++)
+            {
+                if (SelectorUtils.match( testMethod, methods[i].getName() ) )
+                {
+                    Runner junitTestRunner = Request.method( testClass, methods[i].getName() ).getRunner();
+                    junitTestRunner.run( fNotifier );
+                }
+            }
+            return;
+        }
+        
         Runner junitTestRunner = Request.aClass( testClass ).getRunner();
-
+        
         junitTestRunner.run( fNotifier );
     }
 }

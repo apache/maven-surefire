@@ -193,15 +193,20 @@ public class IntegrationTestMojo
     /**
      * Specify this parameter to run individual tests by file name, overriding the <code>includes/excludes</code>
      * parameters.  Each pattern you specify here will be used to create an
-     * include pattern formatted like <code>**&#47;${test}.java</code>, so you can just type "-Dtest=MyTest"
+     * include pattern formatted like <code>**&#47;${test}.java</code>, so you can just type "-Dit.test=MyTest"
      * to run a single test called "foo/MyTest.java".<br/>
      * This parameter overrides the <code>includes/excludes</code> parameters, and the TestNG
      * <code>suiteXmlFiles</code> parameter.
+     * 
+     * since 2.7.3
+     * You can execute a limited number of method in the test with adding #myMethod or #my*ethod.
+     * Si type "-Dtest=MyTest#myMethod"
+     * <b>supported for junit 4.x and testNg</b>
      *
      * @parameter expression="${it.test}"
      */
     private String test;
-
+    
     /**
      * A list of &lt;include> elements specifying the tests (by pattern) that should be included in testing. When not
      * specified and when the <code>test</code> parameter is not specified, the default includes will be
@@ -866,6 +871,15 @@ public class IntegrationTestMojo
 
     public String getTest()
     {
+        if ( StringUtils.isBlank( test ) )
+        {
+            return null;
+        }
+        int index = test.indexOf( '#' );
+        if ( index >= 0 )
+        {
+            return test.substring( 0, index );
+        }
         return test;
     }
 
@@ -873,6 +887,23 @@ public class IntegrationTestMojo
     {
         this.test = test;
     }
+    
+    /**
+     * @since 2.7.3
+     */
+    public String getTestMethod()
+    {
+        if ( StringUtils.isBlank( test ) )
+        {
+            return null;
+        }        
+        int index = this.test.indexOf( '#' );
+        if ( index >= 0 )
+        {
+            return this.test.substring( index + 1, this.test.length() );
+        }
+        return null;
+    }    
 
     public List getIncludes()
     {
@@ -1356,4 +1387,5 @@ public class IntegrationTestMojo
         checksum.add(skipITs);
         checksum.add(summaryFile);
     }
+    
 }

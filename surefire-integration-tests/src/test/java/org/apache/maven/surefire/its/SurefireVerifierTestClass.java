@@ -227,7 +227,6 @@ public abstract class SurefireVerifierTestClass extends TestCase {
     }
 
     public void verifyTextInLog(String text) throws VerificationException
-
     {
         verifier.verifyTextInLog(text);
     }

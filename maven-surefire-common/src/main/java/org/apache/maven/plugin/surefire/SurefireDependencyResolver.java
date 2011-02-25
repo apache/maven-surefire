@@ -145,7 +145,7 @@ public class SurefireDependencyResolver
         }
 
         Artifact originatingArtifact = artifactFactory.createBuildArtifact( "dummy", "dummy", "1.0", "jar" );
-
+        
         return artifactResolver.resolveTransitively( Collections.singleton( providerArtifact ), originatingArtifact,
                                                      localRepository, remoteRepositories, artifactMetadataSource,
                                                      filter );

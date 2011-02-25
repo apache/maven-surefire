@@ -66,6 +66,7 @@ public class BooterDeserializer
         final String testArtifactClassifier = properties.getProperty( TESTARTIFACT_CLASSIFIER );
         final Object testForFork = properties.getTypeDecoded( FORKTESTSET );
         final String requestedTest = properties.getProperty( REQUESTEDTEST );
+        final String requestedTestMethod = properties.getProperty( REQUESTEDTESTMETHOD );
         final File sourceDirectory = properties.getFileProperty( SOURCE_DIRECTORY );
 
         final List reports = properties.getStringList( REPORT_PROPERTY_PREFIX );
@@ -81,7 +82,7 @@ public class BooterDeserializer
                                             properties.getBooleanObjectProperty( FAILIFNOTESTS ), runOrder );
 
         TestArtifactInfo testNg = new TestArtifactInfo( testNgVersion, testArtifactClassifier );
-        TestRequest testSuiteDefinition = new TestRequest( testSuiteXmlFiles, sourceDirectory, requestedTest );
+        TestRequest testSuiteDefinition = new TestRequest( testSuiteXmlFiles, sourceDirectory, requestedTest, requestedTestMethod );
 
         ReporterConfiguration reporterConfiguration = new ReporterConfiguration( reports, reportsDirectory,
                                                                                  properties.getBooleanObjectProperty(

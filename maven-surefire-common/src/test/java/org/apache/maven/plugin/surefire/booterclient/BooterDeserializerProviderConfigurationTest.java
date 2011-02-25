@@ -53,6 +53,8 @@ public class BooterDeserializerProviderConfigurationTest
     private final String aTest = "aTest";
 
     private final String aUserRequestedTest = "aUserRequestedTest";
+    
+    private final String aUserRequestedTestMethod = "aUserRequestedTestMethod";
 
     public static ClassLoaderConfiguration getForkConfiguration()
         throws IOException
@@ -200,7 +202,7 @@ public class BooterDeserializerProviderConfigurationTest
         ReporterConfiguration reporterConfiguration =
             new ReporterConfiguration( reports, cwd, Boolean.TRUE, null );
         TestRequest testSuiteDefinition =
-            new TestRequest( getSuiteXmlFileStrings(), getTestSourceDirectory(), aUserRequestedTest );
+            new TestRequest( getSuiteXmlFileStrings(), getTestSourceDirectory(), aUserRequestedTest, aUserRequestedTestMethod );
         return new ProviderConfiguration( directoryScannerParameters, true, reporterConfiguration,
                                           new TestArtifactInfo( "5.0", "ABC" ), testSuiteDefinition, new Properties(),
                                           aTest );

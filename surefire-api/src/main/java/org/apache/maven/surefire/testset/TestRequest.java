@@ -35,12 +35,26 @@ public class TestRequest
     private final File testSourceDirectory;
 
     private final String requestedTest;
+    
+    /**
+     * @since 2.7.3
+     */
+    private final String requestedTestMethod;
 
     public TestRequest( List suiteXmlFiles, File testSourceDirectory, String requestedTest )
+    {
+        this( suiteXmlFiles, testSourceDirectory, requestedTest, null );
+    }
+    
+    /**
+     * @since 2.7.3
+     */
+    public TestRequest( List suiteXmlFiles, File testSourceDirectory, String requestedTest, String requestedTestMethod )
     {
         this.suiteXmlFiles = createFiles( suiteXmlFiles );
         this.testSourceDirectory = testSourceDirectory;
         this.requestedTest = requestedTest;
+        this.requestedTestMethod = requestedTestMethod;
     }
 
     /**
@@ -69,6 +83,16 @@ public class TestRequest
     {
         return requestedTest;
     }
+    
+    /**
+     * A specific test request method issued with -Dtest=class#method from the command line.
+     * @return The string specified at the command line
+     * @since 2.7.3
+     */    
+    public String getRequestedTestMethod()
+    {
+        return requestedTestMethod;
+    }    
 
     private static List createFiles( List suiteXmlFiles )
     {

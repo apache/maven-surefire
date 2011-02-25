@@ -19,6 +19,13 @@ package org.apache.maven.surefire.testng;
  * under the License.
  */
 
+import java.io.File;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
 import org.apache.maven.artifact.versioning.VersionRange;
@@ -28,13 +35,8 @@ import org.apache.maven.surefire.testng.conf.TestNG4751Configurator;
 import org.apache.maven.surefire.testng.conf.TestNG52Configurator;
 import org.apache.maven.surefire.testng.conf.TestNGMapConfigurator;
 import org.apache.maven.surefire.testset.TestSetFailedException;
-
-import java.io.File;
-import java.lang.reflect.Constructor;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.maven.surefire.util.NestedRuntimeException;
+import org.apache.maven.surefire.util.internal.StringUtils;
 import org.testng.TestNG;
 
 /**
@@ -45,15 +47,22 @@ import org.testng.TestNG;
  */
 public class TestNGExecutor
 {
+    
+   
     private TestNGExecutor()
     {
+        // noop
     }
 
     public static void run( Class[] testClasses, String testSourceDirectory, Map options, ArtifactVersion version,
-                            Reporter reportManager, TestNgTestSuite suite, File reportsDirectory )
+                            Reporter reportManager, TestNgTestSuite suite, File reportsDirectory, final String methodNamePattern )
         throws TestSetFailedException
     {
         TestNG testng = new TestNG( true );
+        if (!StringUtils.isBlank( methodNamePattern ))
+        {
+            applyMethodNameFiltering( testng, methodNamePattern );
+        } 
         Configurator configurator = getConfigurator( version );
         configurator.configure( testng, options );
         postConfigure( testng, testSourceDirectory, reportManager, suite, reportsDirectory );
@@ -61,6 +70,46 @@ public class TestNGExecutor
         testng.run();
     }
 
+    private static void applyMethodNameFiltering(TestNG testng, String methodNamePattern)
+        throws TestSetFailedException
+    {
+        // the class is available in the testClassPath
+        String clazzName = "org.apache.maven.surefire.testng.utils.MethodSelector";
+        // looks to need a high value 
+        testng.addMethodSelector( clazzName , 10000 );
+        try
+        {
+            Class clazz = Class.forName( clazzName );
+
+            Method method = clazz.getMethod( "setMethodName", new Class[]{String.class} );
+            method.invoke( null, new Object[]{methodNamePattern} );
+        }
+        catch ( ClassNotFoundException e )
+        {
+            throw new TestSetFailedException(e.getMessage(), e);
+        }
+        catch ( SecurityException e )
+        {
+            throw new TestSetFailedException(e.getMessage(), e);
+        }
+        catch ( NoSuchMethodException e )
+        {
+            throw new TestSetFailedException(e.getMessage(), e);
+        }
+        catch ( IllegalArgumentException e )
+        {
+            throw new TestSetFailedException(e.getMessage(), e);
+        }
+        catch ( IllegalAccessException e )
+        {
+            throw new TestSetFailedException(e.getMessage(), e);
+        }
+        catch ( InvocationTargetException e )
+        {
+            throw new TestSetFailedException(e.getMessage(), e);
+        }        
+    }
+    
     public static void run( List suiteFiles, String testSourceDirectory, Map options, ArtifactVersion version,
                             Reporter reportManager, TestNgTestSuite suite, File reportsDirectory )
         throws TestSetFailedException
@@ -145,4 +194,5 @@ public class TestNGExecutor
             return new TestNGReporter( reportManager );
         }
     }
+    
 }

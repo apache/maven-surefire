@@ -93,6 +93,7 @@ public class BooterSerializer
             properties.setProperty( BooterConstants.SOURCE_DIRECTORY, testSuiteDefinition.getTestSourceDirectory() );
             properties.addList( testSuiteDefinition.getSuiteXmlFiles(), BooterConstants.TEST_SUITE_XML_FILES );
             properties.setProperty( BooterConstants.REQUESTEDTEST, testSuiteDefinition.getRequestedTest() );
+            properties.setProperty( BooterConstants.REQUESTEDTESTMETHOD, testSuiteDefinition.getRequestedTestMethod() );
         }
 
         DirectoryScannerParameters directoryScannerParameters = booterConfiguration.getDirScannerParams();

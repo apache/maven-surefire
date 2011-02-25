@@ -64,9 +64,11 @@ public class TestNGDirectoryTestSuite
     private SortedMap testSets;
 
     private final DirectoryScanner surefireDirectoryScanner;
+    
+    private String testMethodPattern;
 
     public TestNGDirectoryTestSuite( File basedir, ArrayList includes, ArrayList excludes, String testSourceDirectory,
-                                     String artifactVersion, Properties confOptions, File reportsDirectory )
+                                     String artifactVersion, Properties confOptions, File reportsDirectory, String testMethodPattern )
     {
 
         this.surefireDirectoryScanner = new DefaultDirectoryScanner( basedir, includes, excludes, "filesystem" );
@@ -76,6 +78,7 @@ public class TestNGDirectoryTestSuite
         this.testSourceDirectory = testSourceDirectory;
         this.reportsDirectory = reportsDirectory;
         this.version =  new DefaultArtifactVersion( artifactVersion );
+        this.testMethodPattern = testMethodPattern;
     }
 
     public void execute( TestsToRun testsToRun, ReporterFactory reporterManagerFactory )
@@ -97,7 +100,7 @@ public class TestNGDirectoryTestSuite
         startTestSuite( reporter, this );
 
         TestNGExecutor.run( new Class[]{ (Class) testsToRun.iterator().next() }, this.testSourceDirectory, this.options,
-                            this.version, reporter, this, reportsDirectory );
+                            this.version, reporter, this, reportsDirectory, testMethodPattern );
 
         finishTestSuite( reporter, this );
     }
@@ -144,7 +147,7 @@ public class TestNGDirectoryTestSuite
         Class[] testClasses = (Class[]) testNgTestClasses.toArray( new Class[testNgTestClasses.size()] );
 
         TestNGExecutor.run( testClasses, this.testSourceDirectory, this.options, this.version, reporterManager, this,
-                            testNgReportsDirectory );
+                            testNgReportsDirectory, testMethodPattern );
 
         if ( junitTestClasses.size() > 0 )
         {
@@ -160,7 +163,7 @@ public class TestNGDirectoryTestSuite
             junitOptions.put( "junit", Boolean.TRUE );
 
             TestNGExecutor.run( testClasses, this.testSourceDirectory, junitOptions, this.version, reporterManager,
-                                this, junitReportsDirectory );
+                                this, junitReportsDirectory, testMethodPattern );
         }
 
         finishTestSuite( reporterManager, this );
@@ -185,7 +188,7 @@ public class TestNGDirectoryTestSuite
         startTestSuite( reporter, this );
 
         TestNGExecutor.run( new Class[]{ testSet.getTestClass() }, this.testSourceDirectory, this.options, this.version,
-                            reporter, this, reportsDirectory );
+                            reporter, this, reportsDirectory, testMethodPattern );
 
         finishTestSuite( reporter, this );
     }

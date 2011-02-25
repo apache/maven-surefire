@@ -89,6 +89,8 @@ public interface SurefireExecutionParameters
     void setTestSourceDirectory( File testSourceDirectory );
 
     String getTest();
+    
+    String getTestMethod();
 
     void setTest( String test );
 

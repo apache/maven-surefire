@@ -18,15 +18,14 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.it.Verifier;
-import org.apache.maven.it.util.ResourceExtractor;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+
+import org.apache.maven.it.Verifier;
+import org.apache.maven.it.util.ResourceExtractor;
 
 /**
  * Test working directory configuration, SUREFIRE-416

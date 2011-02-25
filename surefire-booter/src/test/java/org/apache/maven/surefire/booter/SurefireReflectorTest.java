@@ -63,7 +63,7 @@ public class SurefireReflectorTest
 
         TestRequest testSuiteDefinition =
             new TestRequest( Arrays.asList( new File[]{ new File( "file1" ), new File( "file2" ) } ),
-                             new File( "TestSOurce" ), "aUserRequestedTest" );
+                             new File( "TestSOurce" ), "aUserRequestedTest", "aMethodRequested" );
         surefireReflector.setTestSuiteDefinition( foo, testSuiteDefinition );
         assertTrue( isCalled( foo ).booleanValue() );
     }

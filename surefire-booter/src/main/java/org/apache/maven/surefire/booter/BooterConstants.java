@@ -47,6 +47,7 @@ public interface BooterConstants
     String TESTARTIFACT_VERSION = "testFwJarVersion";
     String TESTARTIFACT_CLASSIFIER = "testFwJarClassifier";
     String REQUESTEDTEST = "requestedTest";
+    String REQUESTEDTESTMETHOD = "requestedTestMethod";
     String SOURCE_DIRECTORY = "testSuiteDefinitionTestSourceDirectory";
     String TEST_CLASSES_DIRECTORY = "testClassesDirectory";
     String RUN_ORDER = "runOrder";

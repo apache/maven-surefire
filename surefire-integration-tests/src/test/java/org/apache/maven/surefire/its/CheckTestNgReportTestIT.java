@@ -18,11 +18,9 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import junit.framework.Assert;
-import org.apache.maven.it.Verifier;
-import org.apache.maven.it.util.ResourceExtractor;
-
 import java.io.File;
+
+import junit.framework.Assert;
 
 /**
  * Test surefire-report on TestNG test

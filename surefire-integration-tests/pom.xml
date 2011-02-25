@@ -230,6 +230,10 @@
               <name>maven.repo.local</name>
               <value>${project.build.directory}/it-repo</value>
             </property>
+            <property>
+              <name>maven.test.tmpdir</name>
+              <value>${project.build.directory}</value>
+            </property>
           </systemProperties>
 
         </configuration>

@@ -143,10 +143,13 @@ public class SurefireReflector
         {
             return null;
         }
-        Class[] arguments = { List.class, File.class, String.class };
+        Class[] arguments = { List.class, File.class, String.class, String.class };
         Constructor constructor = ReflectionUtils.getConstructor( this.testRequest, arguments );
-        return ReflectionUtils.newInstance( constructor, new Object[]{ suiteDefinition.getSuiteXmlFiles(),
-            suiteDefinition.getTestSourceDirectory(), suiteDefinition.getRequestedTest() } );
+        return ReflectionUtils.newInstance( constructor, new Object[] {
+            suiteDefinition.getSuiteXmlFiles(),
+            suiteDefinition.getTestSourceDirectory(),
+            suiteDefinition.getRequestedTest(),
+            suiteDefinition.getRequestedTestMethod() } );
     }
 
 
