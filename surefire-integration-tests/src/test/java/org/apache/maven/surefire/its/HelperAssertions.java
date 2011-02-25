@@ -100,9 +100,9 @@ public class HelperAssertions
             File testDir = testDirs[i];
             File reportsDir = new File( testDir, "target/surefire-reports" );
             Assert.assertTrue( "Reports directory is missing: " + reportsDir.getAbsolutePath(), reportsDir.exists() );
-            reportsDirs.add( reportsDir);
+            reportsDirs.add( reportsDir );
         }
-        SurefireReportParser parser = new SurefireReportParser(reportsDirs, Locale.getDefault());
+        SurefireReportParser parser = new SurefireReportParser( reportsDirs, Locale.getDefault() );
         List reports;
         try
         {

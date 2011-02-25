@@ -35,7 +35,7 @@ public class Junit4IgnoreIT
     public void testJunit4Ignore()
         throws Exception
     {
-        executeTest( );
+        executeTest();
         verifyErrorFreeLog();
         assertTestSuiteResults( 1, 0, 0, 1 );
     }

@@ -47,7 +47,9 @@ import java.util.List;
  *
  * @author Kristian Rosenvold
  */
-public abstract class SurefireVerifierTestClass extends TestCase {
+public abstract class SurefireVerifierTestClass
+    extends TestCase
+{
     private final File testDir;
 
     private final List<String> cliOptions = new ArrayList<String>();
@@ -56,76 +58,94 @@ public abstract class SurefireVerifierTestClass extends TestCase {
 
     private final Verifier verifier;
 
-    private final String testNgVersion = System.getProperty("testng.version");
+    private final String testNgVersion = System.getProperty( "testng.version" );
 
-    private final String surefireVersion = System.getProperty("surefire.version");
+    private final String surefireVersion = System.getProperty( "surefire.version" );
 
-
-    protected SurefireVerifierTestClass(String testProject) {
-        try {
-            testDir = simpleExtractResources(getClass(), testProject);
+    protected SurefireVerifierTestClass( String testProject )
+    {
+        try
+        {
+            testDir = simpleExtractResources( getClass(), testProject );
             this.goals = getInitialGoals();
-            this.verifier = new Verifier(testDir.getAbsolutePath());
-        } catch (VerificationException e) {
-            throw new NestedRuntimeException(e);
-        } catch (IOException e) {
-            throw new NestedRuntimeException(e);
+            this.verifier = new Verifier( testDir.getAbsolutePath() );
+        }
+        catch ( VerificationException e )
+        {
+            throw new NestedRuntimeException( e );
+        }
+        catch ( IOException e )
+        {
+            throw new NestedRuntimeException( e );
         }
     }
 
-    private File simpleExtractResources(Class cl, String resourcePath) throws IOException {
+    private File simpleExtractResources( Class cl, String resourcePath )
+        throws IOException
+    {
         String tempDirPath = System.getProperty( "maven.test.tmpdir", System.getProperty( "java.io.tmpdir" ) );
-        File tempDir = new File(tempDirPath, this.getClass().getSimpleName());
+        File tempDir = new File( tempDirPath, this.getClass().getSimpleName() );
         System.out.println( "tempDir = " + tempDir );
 
         File testDir = new File( tempDir, resourcePath );
         FileUtils.deleteDirectory( testDir );
 
-        return ResourceExtractor.extractResourcePath(cl, resourcePath, tempDir, true);
+        return ResourceExtractor.extractResourcePath( cl, resourcePath, tempDir, true );
     }
 
-
-
-    protected void reset(){
+    protected void reset()
+    {
         goals.clear();
-        goals.addAll(  getInitialGoals() );
+        goals.addAll( getInitialGoals() );
         cliOptions.clear();
     }
 
-    private List<String> getInitialGoals() {
+    private List<String> getInitialGoals()
+    {
         List<String> goals1 = new ArrayList<String>();
-        goals1.add("-Dsurefire.version=" + surefireVersion);
+        goals1.add( "-Dsurefire.version=" + surefireVersion );
 
-        if (testNgVersion != null) {
-            goals1.add("-DtestNgVersion=" + testNgVersion);
+        if ( testNgVersion != null )
+        {
+            goals1.add( "-DtestNgVersion=" + testNgVersion );
 
-            ArtifactVersion v = new DefaultArtifactVersion(testNgVersion);
-            try {
-                if (VersionRange.createFromVersionSpec("(,5.12.1)").containsVersion(v)) {
-                    goals1.add("-DtestNgClassifier=jdk15");
+            ArtifactVersion v = new DefaultArtifactVersion( testNgVersion );
+            try
+            {
+                if ( VersionRange.createFromVersionSpec( "(,5.12.1)" ).containsVersion( v ) )
+                {
+                    goals1.add( "-DtestNgClassifier=jdk15" );
                 }
-            } catch (InvalidVersionSpecificationException e) {
-                throw new NestedRuntimeException(e.getMessage(), e);
+            }
+            catch ( InvalidVersionSpecificationException e )
+            {
+                throw new NestedRuntimeException( e.getMessage(), e );
             }
         }
 
         return goals1;
     }
 
-    protected List<String> getInitialGoals(String testNgVersion) {
+    protected List<String> getInitialGoals( String testNgVersion )
+    {
         List<String> goals = new ArrayList<String>();
-        goals.add("-Dsurefire.version=" + surefireVersion);
+        goals.add( "-Dsurefire.version=" + surefireVersion );
 
-        if (testNgVersion != null) {
-            goals.add("-DtestNgVersion=" + testNgVersion);
+        if ( testNgVersion != null )
+        {
+            goals.add( "-DtestNgVersion=" + testNgVersion );
 
-            ArtifactVersion v = new DefaultArtifactVersion(testNgVersion);
-            try {
-                if (VersionRange.createFromVersionSpec("(,5.12.1)").containsVersion(v)) {
-                    goals.add("-DtestNgClassifier=jdk15");
+            ArtifactVersion v = new DefaultArtifactVersion( testNgVersion );
+            try
+            {
+                if ( VersionRange.createFromVersionSpec( "(,5.12.1)" ).containsVersion( v ) )
+                {
+                    goals.add( "-DtestNgClassifier=jdk15" );
                 }
-            } catch (InvalidVersionSpecificationException e) {
-                throw new NestedRuntimeException(e.getMessage(), e);
+            }
+            catch ( InvalidVersionSpecificationException e )
+            {
+                throw new NestedRuntimeException( e.getMessage(), e );
             }
         }
 
@@ -138,137 +158,174 @@ public abstract class SurefireVerifierTestClass extends TestCase {
      * @param path The subdirectory under basedir
      * @return A file
      */
-    protected File getSubFile(String path) {
-        return new File(testDir, path);
+    protected File getSubFile( String path )
+    {
+        return new File( testDir, path );
     }
 
-    protected void assertPresent(File file) {
-        verifier.assertFilePresent(file.getAbsolutePath());
+    protected void assertPresent( File file )
+    {
+        verifier.assertFilePresent( file.getAbsolutePath() );
     }
 
-    protected void assertNotPresent(File file) {
-        verifier.assertFileNotPresent(file.getAbsolutePath());
+    protected void assertNotPresent( File file )
+    {
+        verifier.assertFileNotPresent( file.getAbsolutePath() );
     }
 
-    protected void showErrorStackTraces() {
-        cliOptions.add("-e");
+    protected void showErrorStackTraces()
+    {
+        cliOptions.add( "-e" );
     }
 
-    protected void debugLogging() {
-        cliOptions.add("-X");
+    protected void debugLogging()
+    {
+        cliOptions.add( "-X" );
     }
 
-
-    protected void failNever() {
-        cliOptions.add("-fn");
+    protected void failNever()
+    {
+        cliOptions.add( "-fn" );
     }
 
-    protected SurefireVerifierTestClass addGoal(String goal) {
-        goals.add(goal);
+    protected SurefireVerifierTestClass addGoal( String goal )
+    {
+        goals.add( goal );
         return this;
     }
 
-    protected Verifier executeTest() throws VerificationException {
-        return execute("test");
+    protected Verifier executeTest()
+        throws VerificationException
+    {
+        return execute( "test" );
     }
 
-    protected Verifier execute(String goal) throws VerificationException {
-        addGoal(goal);
-        verifier.setCliOptions(cliOptions);
-        try {
-            verifier.executeGoals(goals);
+    protected Verifier execute( String goal )
+        throws VerificationException
+    {
+        addGoal( goal );
+        verifier.setCliOptions( cliOptions );
+        try
+        {
+            verifier.executeGoals( goals );
             return verifier;
-        } finally {
+        }
+        finally
+        {
             verifier.resetStreams();
         }
     }
 
-    protected File getSurefireReportsFile(String fileName) {
-        File targetDir = getSubFile("target/surefire-reports");
-        return new File(targetDir, fileName);
-    }
-
-    protected File getSiteFile(String fileName) {
-        File targetDir = getSubFile("target/site");
-        return new File(targetDir, fileName);
-    }
-
-    protected void printSummary(boolean printsummary) {
-        addGoal("-DprintSummary=" + printsummary);
-    }
-
-    protected void redirectToFile(boolean redirect) {
-        addGoal("-Dredirect.to.file=" + redirect);
-    }
-
-    protected void forkOnce() {
-        forkMode("once");
-    }
-
-    protected void forkNever() {
-        forkMode("never");
-    }
-
-    protected void forkAlways() {
-        forkMode("always");
-    }
-
-    protected void forkMode(String forkMode) {
-        addGoal("-DforkMode=" + forkMode);
-    }
-
-    protected void activateProfile(String profile) {
-        addGoal("-P" + profile);
-    }
-
-
-    public void assertTestSuiteResults(int total, int errors, int failures, int skipped) throws MavenReportException {
-        HelperAssertions.assertTestSuiteResults(total, errors, failures, skipped, testDir);
-    }
-
-    public void verifyTextInLog(String text) throws VerificationException
+    protected File getSurefireReportsFile( String fileName )
     {
-        verifier.verifyTextInLog(text);
+        File targetDir = getSubFile( "target/surefire-reports" );
+        return new File( targetDir, fileName );
     }
 
-    protected void verifyErrorFreeLog() throws VerificationException {
+    protected File getSiteFile( String fileName )
+    {
+        File targetDir = getSubFile( "target/site" );
+        return new File( targetDir, fileName );
+    }
+
+    protected void printSummary( boolean printsummary )
+    {
+        addGoal( "-DprintSummary=" + printsummary );
+    }
+
+    protected void redirectToFile( boolean redirect )
+    {
+        addGoal( "-Dredirect.to.file=" + redirect );
+    }
+
+    protected void forkOnce()
+    {
+        forkMode( "once" );
+    }
+
+    protected void forkNever()
+    {
+        forkMode( "never" );
+    }
+
+    protected void forkAlways()
+    {
+        forkMode( "always" );
+    }
+
+    protected void forkMode( String forkMode )
+    {
+        addGoal( "-DforkMode=" + forkMode );
+    }
+
+    protected void activateProfile( String profile )
+    {
+        addGoal( "-P" + profile );
+    }
+
+    public void assertTestSuiteResults( int total, int errors, int failures, int skipped )
+        throws MavenReportException
+    {
+        HelperAssertions.assertTestSuiteResults( total, errors, failures, skipped, testDir );
+    }
+
+    public void verifyTextInLog( String text )
+        throws VerificationException
+    {
+        verifier.verifyTextInLog( text );
+    }
+
+    protected void verifyErrorFreeLog()
+        throws VerificationException
+    {
         verifier.verifyErrorFreeLog();
     }
 
-    protected Verifier getVerifier() {
+    protected Verifier getVerifier()
+    {
         return verifier;
     }
 
-    public File getTestDir() {
+    public File getTestDir()
+    {
         return testDir;
     }
 
-    protected boolean assertContainsText(File file, String text) throws VerificationException {
-        final List<String> list = getVerifier().loadFile(file, false);
-        for (String line : list) {
+    protected boolean assertContainsText( File file, String text )
+        throws VerificationException
+    {
+        final List<String> list = getVerifier().loadFile( file, false );
+        for ( String line : list )
+        {
 
-            if (line.contains(text)) {
+            if ( line.contains( text ) )
+            {
                 return true;
             }
         }
-        Assert.fail("Did not find expected message in log");
+        Assert.fail( "Did not find expected message in log" );
         return false; // doh
     }
 
-    protected boolean isMaven3X(){
-        return matchesVersionRange("[3.0,)");
+    protected boolean isMaven3X()
+    {
+        return matchesVersionRange( "[3.0,)" );
     }
 
-
-    private DefaultArtifactVersion getMavenVersion() {
-        try {
+    private DefaultArtifactVersion getMavenVersion()
+    {
+        try
+        {
             String v = verifier.getMavenVersion();
             // NOTE: If the version looks like "${...}" it has been configured from an undefined expression
-            if (v != null && v.length() > 0 && !v.startsWith("${")) {
-                return new DefaultArtifactVersion(v);
+            if ( v != null && v.length() > 0 && !v.startsWith( "${" ) )
+            {
+                return new DefaultArtifactVersion( v );
             }
-        } catch (VerificationException e) {
-            throw new NestedRuntimeException(e);
+        }
+        catch ( VerificationException e )
+        {
+            throw new NestedRuntimeException( e );
         }
 
         return null;
@@ -279,19 +336,26 @@ public abstract class SurefireVerifierTestClass extends TestCase {
      * by allowing tests to adjust to the current maven version, or else simply avoid
      * executing altogether if the wrong version is present.
      */
-    private boolean matchesVersionRange(String versionRangeStr) {
+    private boolean matchesVersionRange( String versionRangeStr )
+    {
         VersionRange versionRange;
-        try {
-            versionRange = VersionRange.createFromVersionSpec(versionRangeStr);
-        } catch (InvalidVersionSpecificationException e) {
-            throw (RuntimeException) new IllegalArgumentException("Invalid version range: " + versionRangeStr).initCause(e);
+        try
+        {
+            versionRange = VersionRange.createFromVersionSpec( versionRangeStr );
+        }
+        catch ( InvalidVersionSpecificationException e )
+        {
+            throw (RuntimeException) new IllegalArgumentException( "Invalid version range: " + versionRangeStr ).initCause( e );
         }
 
         ArtifactVersion version = getMavenVersion();
-        if (version != null) {
-            return versionRange.containsVersion(version);
-        } else {
-            throw new IllegalStateException("Cannot determine maven version");
+        if ( version != null )
+        {
+            return versionRange.containsVersion( version );
+        }
+        else
+        {
+            throw new IllegalStateException( "Cannot determine maven version" );
         }
     }
 
@@ -301,5 +365,3 @@ public abstract class SurefireVerifierTestClass extends TestCase {
     }
 
 }
-
-

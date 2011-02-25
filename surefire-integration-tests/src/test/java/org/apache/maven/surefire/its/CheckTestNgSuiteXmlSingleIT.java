@@ -38,7 +38,7 @@ public class CheckTestNgSuiteXmlSingleIT
     public void testTestNGSuite()
         throws Exception
     {
-        addGoal( "-Dtest=TestNGTestTwo"  );
+        addGoal( "-Dtest=TestNGTestTwo" );
         executeTest();
         verifyErrorFreeLog();
 

@@ -54,14 +54,15 @@ public class Surefire260TestWithIdenticalNamesIT
         final URI uri = siteFile.toURI();
 
         final WebClient webClient = new WebClient();
-        webClient.setJavaScriptEnabled(true);
-        final HtmlPage page = webClient.getPage(uri.toURL());
+        webClient.setJavaScriptEnabled( true );
+        final HtmlPage page = webClient.getPage( uri.toURL() );
 
-        final HtmlAnchor a = (HtmlAnchor) page.getByXPath("//a[contains(@href, 'surefire260_TestB_testDup')]").get(0);
-        final HtmlDivision content = (HtmlDivision) page.getElementById("surefire260_TestB_testDuperror");
-        assertTrue(content.getAttribute("style").contains("none"));
+        final HtmlAnchor a =
+            (HtmlAnchor) page.getByXPath( "//a[contains(@href, 'surefire260_TestB_testDup')]" ).get( 0 );
+        final HtmlDivision content = (HtmlDivision) page.getElementById( "surefire260_TestB_testDuperror" );
+        assertTrue( content.getAttribute( "style" ).contains( "none" ) );
         a.click();
-        assertFalse(content.getAttribute("style").contains("none"));
+        assertFalse( content.getAttribute( "style" ).contains( "none" ) );
         webClient.closeAllWindows();
     }
 }

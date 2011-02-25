@@ -37,7 +37,7 @@ public class JUnit4ForkAlwaysStaticInitPollutionIT
     public void testJunit4Ignore()
         throws Exception
     {
-        this.executeTest(  );
+        this.executeTest();
         verifyErrorFreeLog();
         assertTestSuiteResults( 2, 0, 0, 0 );
     }

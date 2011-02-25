@@ -48,8 +48,8 @@ public class Surefire141PluggableProvidersIT
         verifier.setCliOptions( new ArrayList( Arrays.asList( opts ) ) );
         this.executeGoal( verifier, "install" );
 
-        verifier.verifyTextInLog("Using configured provider org.apache.maven.surefire.testprovider.TestProvider");
-        verifier.verifyTextInLog("Using configured provider org.apache.maven.surefire.junit.JUnit3Provider");
+        verifier.verifyTextInLog( "Using configured provider org.apache.maven.surefire.testprovider.TestProvider" );
+        verifier.verifyTextInLog( "Using configured provider org.apache.maven.surefire.junit.JUnit3Provider" );
 
         verifier.verifyErrorFreeLog();
     }

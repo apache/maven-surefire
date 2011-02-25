@@ -29,31 +29,32 @@ import java.io.File;
  * @author <a href="mailto:matthew.gilliard@gmail.com">Matthew Gilliard</a>
  */
 public class JUnit4RunListenerIT
-		extends SurefireVerifierTestClass {
+    extends SurefireVerifierTestClass
+{
     public JUnit4RunListenerIT()
     {
         super( "/junit4-runlistener" );
     }
 
     public void testJUnit4RunListener()
-			throws Exception {
+        throws Exception
+    {
         addGoal( "-Dprovider=surefire-junit4" );
         addGoal( "-DjunitVersion=4.4" );
         executeTest();
-		verifyErrorFreeLog();
+        verifyErrorFreeLog();
         assertResults();
-	}
+    }
 
     private void assertResults()
         throws MavenReportException
     {
         assertTestSuiteResults( 1, 0, 0, 0 );
-        final File targetDir = getSubFile( "target");
+        final File targetDir = getSubFile( "target" );
 
-        assertFileExists(new File(targetDir, "runlistener-output-1.txt"));
-        assertFileExists(new File(targetDir, "runlistener-output-2.txt"));
+        assertFileExists( new File( targetDir, "runlistener-output-1.txt" ) );
+        assertFileExists( new File( targetDir, "runlistener-output-2.txt" ) );
     }
-
 
     public void testRunlistenerJunitCoreProvider()
         throws Exception
@@ -65,8 +66,9 @@ public class JUnit4RunListenerIT
         assertResults();
     }
 
-    private void assertFileExists(final File file) {
-        assertTrue("File doesn't exist: " + file.getAbsolutePath(), file.exists());
+    private void assertFileExists( final File file )
+    {
+        assertTrue( "File doesn't exist: " + file.getAbsolutePath(), file.exists() );
     }
 
 }
