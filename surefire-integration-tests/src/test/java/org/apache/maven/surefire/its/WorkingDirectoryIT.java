@@ -24,7 +24,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.SystemUtils;
 import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
 
@@ -79,13 +79,16 @@ public class WorkingDirectoryIT
         assertNotNull( "user.dir was null in property file", userDirPath );
         File userDir = new File( userDirPath );
         // test if not a symlink
+        String message = "canonicalFile " + userDir.getCanonicalPath() + SystemUtils.LINE_SEPARATOR  
+                        + " absolutePath " + userDir.getAbsolutePath() + SystemUtils.LINE_SEPARATOR
+                        + " path " + userDir.getPath() + SystemUtils.LINE_SEPARATOR;
         if ( userDir.getCanonicalFile().equals(userDir.getAbsoluteFile()) )
         {
-            assertEquals( "wrong user.dir ! symlink", childTestDir.getAbsolutePath(), userDir.getAbsolutePath() );
+            assertEquals( "wrong user.dir ! symlink " + message, childTestDir.getAbsolutePath(), userDir.getAbsolutePath() );
         }
         else
         {
-            assertEquals( "wrong user.dir symlink", childTestDir.getCanonicalPath(), userDir.getCanonicalPath() );
+            assertEquals( "wrong user.dir symlink " + message, childTestDir.getCanonicalPath(), userDir.getCanonicalPath() );
         }
     }
 
