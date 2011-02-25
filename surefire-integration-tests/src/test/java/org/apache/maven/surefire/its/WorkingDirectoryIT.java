@@ -24,9 +24,9 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
-import org.codehaus.plexus.util.FileUtils;
 
 /**
  * Test working directory configuration, SUREFIRE-416
@@ -79,13 +79,13 @@ public class WorkingDirectoryIT
         assertNotNull( "user.dir was null in property file", userDirPath );
         File userDir = new File( userDirPath );
         // test if not a symlink
-        if ( userDir.getAbsolutePath().equals( userDir.getCanonicalPath() ) )
+        if ( ! FileUtils.isSymlink( userDir) )
         {
-            assertEquals( "wrong user.dir", childTestDir.getAbsolutePath(), userDir.getAbsolutePath() );
+            assertEquals( "wrong user.dir ! symlink", childTestDir.getAbsolutePath(), userDir.getAbsolutePath() );
         }
         else
         {
-            assertEquals( "wrong user.dir", childTestDir.getCanonicalPath(), userDir.getCanonicalPath() );
+            assertEquals( "wrong user.dir symlink", childTestDir.getCanonicalPath(), userDir.getCanonicalPath() );
         }
     }
 
