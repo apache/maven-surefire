@@ -80,7 +80,8 @@ public class SurefireReportParserTest
         }
     }
 
-    private File getTestDir( String path ) throws UnsupportedEncodingException
+    private File getTestDir( String path )
+        throws UnsupportedEncodingException
     {
         URL resource = getClass().getResource( path );
         // URLDecoder.decode necessary for JDK 1.5+, where spaces are escaped to %20

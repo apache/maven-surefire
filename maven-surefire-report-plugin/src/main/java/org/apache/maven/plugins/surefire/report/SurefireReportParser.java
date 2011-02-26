@@ -68,7 +68,7 @@ public class SurefireReportParser
         List xmlReportFileList = new ArrayList();
         for ( int i = 0; i < reportsDirectories.size(); i++ )
         {
-            File reportsDirectory = (File) reportsDirectories.get(i);
+            File reportsDirectory = (File) reportsDirectories.get( i );
             if ( !reportsDirectory.exists() )
             {
                 continue;
