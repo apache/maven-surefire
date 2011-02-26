@@ -2,8 +2,9 @@
   Running a Single Test
   ------
   Allan Ramirez
+  Olivier Lamy
   ------
-  July 2006
+ 2011-02-26
   ------
   
 ~~ Licensed to the Apache Software Foundation (ASF) under one
@@ -48,4 +49,22 @@ mvn -Dit.test=ITCi*le verify
 
 +---+
 mvn -Dit.test=ITSquare,ITCi*le verify
++---+
+
+Running a set of methods in a Single Test Class
+
+  With version 2.7.3, you can run only n tests in a single Test Class.
+  
+  << NOTE : it's supported for junit 4.x and TestNG. >>
+  
+  You must use the following syntax
+  
++---+
+mvn -Dit.test=TestCircle#mytest verify
++---+
+
+  You can use patterns too
+  
++---+
+mvn -Dit.test=TestCircle#*test* verify
 +---+
