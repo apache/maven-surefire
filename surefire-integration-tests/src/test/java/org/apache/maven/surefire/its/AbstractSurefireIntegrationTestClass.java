@@ -84,7 +84,7 @@ public abstract class AbstractSurefireIntegrationTestClass
     }
 
     @SuppressWarnings( { "unchecked" } )
-    protected void executeGoals( Verifier verifier, List goals )
+    protected void executeGoals( Verifier verifier, List<String> goals )
         throws VerificationException
     {
         if ( !verifier.getCliOptions().contains( "-s" ) )

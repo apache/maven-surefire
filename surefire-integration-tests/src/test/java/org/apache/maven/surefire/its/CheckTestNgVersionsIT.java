@@ -153,7 +153,7 @@ public class CheckTestNgVersionsIT
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/testng-simple" );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        List arguments = this.getInitialGoals( version );
+        List<String> arguments = this.getInitialGoals( version );
         arguments.add( "test" );
 
         executeGoals( verifier, arguments );

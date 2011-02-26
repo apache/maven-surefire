@@ -65,8 +65,8 @@ public class ResultCountingIT
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
         String[] opts = { "-fn" };
-        verifier.setCliOptions( new ArrayList( Arrays.asList( opts ) ) );
-        List goals = getGoals( forkMode );
+        verifier.setCliOptions( new ArrayList<String>( Arrays.asList( opts ) ) );
+        List<String> goals = getGoals( forkMode );
         this.executeGoals( verifier, goals );
 
         verifier.resetStreams();
@@ -76,9 +76,9 @@ public class ResultCountingIT
         verifier.verifyTextInLog( "Tests run: 36, Failures: 4, Errors: 23, Skipped: 2" );
     }
 
-    private List getGoals( String forkMode )
+    private List<String> getGoals( String forkMode )
     {
-        List goals = this.getInitialGoals();
+        List<String> goals = this.getInitialGoals();
         goals.add( "test" );
         goals.add( "-DforkMode=" + forkMode );
         return goals;

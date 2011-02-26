@@ -40,7 +40,7 @@ public class CheckTestFailIfNoTestsIT
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/default-configuration-noTests" );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        List goals = this.getInitialGoals();
+        List<String> goals = this.getInitialGoals();
         goals.add( "test" );
         goals.add( "-DfailIfNoTests" );
 

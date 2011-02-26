@@ -58,57 +58,57 @@ public class RunOrderIT
         throws Exception
     {
         int startHour = Calendar.getInstance().get( Calendar.HOUR_OF_DAY );
-        final List actual = executeWithRunOrder( "hourly" );
+        final List<String> actual = executeWithRunOrder( "hourly" );
         int endHour = Calendar.getInstance().get( Calendar.HOUR_OF_DAY );
         if ( startHour != endHour )
         {
             return; // Race condition, cannot test when hour changed mid-run
         }
 
-        List expected = ( ( startHour % 2 ) == 0 ) ? getAlphabetical() : getReverseAlphabetical();
+        List<String> expected = ( ( startHour % 2 ) == 0 ) ? getAlphabetical() : getReverseAlphabetical();
         if ( !contains( actual, expected ) )
         {
             throw new VerificationException( "Response does not contain expected item" );
         }
     }
 
-    private boolean contains( List items, List expected )
+    private boolean contains( List<String> items, List<String> expected )
     {
-        Iterator expectedIterator = expected.iterator();
+        Iterator<String> expectedIterator = expected.iterator();
         String next = (String) expectedIterator.next();
-        Iterator content = items.iterator();
+        Iterator<String> content = items.iterator();
         while ( content.hasNext() )
         {
-            String line = (String) content.next();
+            String line = content.next();
             if ( line.startsWith( next ) )
             {
                 if ( !expectedIterator.hasNext() )
                 {
                     return true;
                 }
-                next = (String) expectedIterator.next();
+                next = expectedIterator.next();
             }
         }
         return content.hasNext();
     }
 
-    private void checkOrder( String alphabetical, List expected )
+    private void checkOrder( String alphabetical, List<String> expected )
         throws VerificationException, MavenReportException, IOException
     {
-        final List list = executeWithRunOrder( alphabetical );
+        final List<String> list = executeWithRunOrder( alphabetical );
         if ( !contains( list, expected ) )
         {
             throw new VerificationException( "Response does not contain expected item" );
         }
     }
 
-    private List executeWithRunOrder( String runOrder )
+    private List<String> executeWithRunOrder( String runOrder )
         throws IOException, VerificationException, MavenReportException
     {
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/runOrder" );
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
 
-        List goals = getInitialGoals();
+        List<String> goals = getInitialGoals();
         goals.add( "-DrunOrder=" + runOrder );
         goals.add( "test" );
         this.executeGoals( verifier, goals );
@@ -118,12 +118,12 @@ public class RunOrderIT
         return verifier.loadFile( verifier.getBasedir(), verifier.getLogFileName(), false );
     }
 
-    private List getAlphabetical()
+    private List<String> getAlphabetical()
     {
         return Arrays.asList( new String[]{ "TA", "TB", "TC" } );
     }
 
-    private List getReverseAlphabetical()
+    private List<String> getReverseAlphabetical()
     {
         return Arrays.asList( new String[]{ "TC", "TB", "TA" } );
     }

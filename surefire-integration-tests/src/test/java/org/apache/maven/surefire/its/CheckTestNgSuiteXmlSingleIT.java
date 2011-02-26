@@ -22,6 +22,8 @@ package org.apache.maven.surefire.its;
 import java.io.File;
 import java.util.List;
 
+import org.apache.maven.plugins.surefire.report.ReportTestSuite;
+
 /**
  * Use -Dtest to run a single TestNG test, overriding the suite XML parameter.
  *
@@ -42,7 +44,7 @@ public class CheckTestNgSuiteXmlSingleIT
         executeTest();
         verifyErrorFreeLog();
 
-        List reports = HelperAssertions.extractReports( ( new File[]{ getTestDir() } ) );
+        List<ReportTestSuite> reports = HelperAssertions.extractReports( ( new File[]{ getTestDir() } ) );
         IntegrationTestSuiteResults results = HelperAssertions.parseReportList( reports );
         HelperAssertions.assertTestSuiteResults( 1, 0, 0, 0, results );
     }

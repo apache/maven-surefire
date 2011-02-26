@@ -60,7 +60,7 @@ public class HelperAssertions
     protected static IntegrationTestSuiteResults parseTestResults( File[] testDirs )
         throws MavenReportException
     {
-        List reports = extractReports( testDirs );
+        List<ReportTestSuite> reports = extractReports( testDirs );
         IntegrationTestSuiteResults results = parseReportList( reports );
         return results;
     }
@@ -68,7 +68,7 @@ public class HelperAssertions
     /**
      * Converts a list of ReportTestSuites into an IntegrationTestSuiteResults object, suitable for summary assertions
      */
-    protected static IntegrationTestSuiteResults parseReportList( List reports )
+    protected static IntegrationTestSuiteResults parseReportList( List<ReportTestSuite> reports )
     {
         Assert.assertTrue( "No reports!", reports.size() > 0 );
         int total = 0, errors = 0, failures = 0, skipped = 0;
@@ -84,7 +84,7 @@ public class HelperAssertions
         return results;
     }
 
-    protected static List extractReports( File testDir )
+    protected static List<ReportTestSuite> extractReports( File testDir )
     {
         return extractReports( new File[]{ testDir } );
     }
@@ -92,9 +92,9 @@ public class HelperAssertions
     /**
      * Extracts a list of ReportTestSuites from the specified testDirs
      */
-    protected static List extractReports( File[] testDirs )
+    protected static List<ReportTestSuite> extractReports( File[] testDirs )
     {
-        List reportsDirs = new ArrayList();
+        List<File> reportsDirs = new ArrayList<File>();
         for ( int i = 0; i < testDirs.length; i++ )
         {
             File testDir = testDirs[i];
@@ -103,7 +103,7 @@ public class HelperAssertions
             reportsDirs.add( reportsDir );
         }
         SurefireReportParser parser = new SurefireReportParser( reportsDirs, Locale.getDefault() );
-        List reports;
+        List<ReportTestSuite> reports;
         try
         {
             reports = parser.parseXMLReportFiles();

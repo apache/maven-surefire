@@ -80,7 +80,7 @@ public abstract class SurefireVerifierTestClass
         }
     }
 
-    private File simpleExtractResources( Class cl, String resourcePath )
+    private File simpleExtractResources( Class<?> cl, String resourcePath )
         throws IOException
     {
         String tempDirPath = System.getProperty( "maven.test.tmpdir", System.getProperty( "java.io.tmpdir" ) );

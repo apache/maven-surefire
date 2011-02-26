@@ -45,7 +45,7 @@ public class Surefire141PluggableProvidersIT
         testDir = ResourceExtractor.simpleExtractResources( getClass(), "/surefire-141-pluggableproviders/test" );
         verifier = new Verifier( testDir.getAbsolutePath() );
         String[] opts = { "-e" };
-        verifier.setCliOptions( new ArrayList( Arrays.asList( opts ) ) );
+        verifier.setCliOptions( new ArrayList<String>( Arrays.asList( opts ) ) );
         this.executeGoal( verifier, "install" );
 
         verifier.verifyTextInLog( "Using configured provider org.apache.maven.surefire.testprovider.TestProvider" );

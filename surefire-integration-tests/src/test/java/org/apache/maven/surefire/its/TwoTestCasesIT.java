@@ -60,8 +60,8 @@ public class TwoTestCasesIT
         this.executeGoal( verifier, "test" );
         verifier.verifyErrorFreeLog();
         verifier.resetStreams();
-        List reports = HelperAssertions.extractReports( ( new File[]{ testDir } ) );
-        Set classNames = extractClassNames( reports );
+        List<ReportTestSuite> reports = HelperAssertions.extractReports( ( new File[]{ testDir } ) );
+        Set<String> classNames = extractClassNames( reports );
         assertContains( classNames, "junit.twoTestCaseSuite.BasicTest" );
         assertContains( classNames, "junit.twoTestCaseSuite.TestTwo" );
         assertEquals( "wrong number of classes", 2, classNames.size() );
@@ -69,7 +69,7 @@ public class TwoTestCasesIT
         HelperAssertions.assertTestSuiteResults( 2, 0, 0, 0, results );
     }
 
-    private void assertContains( Set set, String expected )
+    private void assertContains( Set<String> set, String expected )
     {
         if ( set.contains( expected ) )
         {
@@ -78,13 +78,11 @@ public class TwoTestCasesIT
         fail( "Set didn't contain " + expected );
     }
 
-    private Set extractClassNames( List reports )
+    private Set<String> extractClassNames( List<ReportTestSuite> reports )
     {
-        ReportTestSuite suite;
-        HashSet classNames = new HashSet();
-        for ( int i = 0; i < reports.size(); i++ )
+        HashSet<String> classNames = new HashSet<String>();
+        for ( ReportTestSuite suite : reports )
         {
-            suite = (ReportTestSuite) reports.get( i );
             classNames.add( suite.getFullClassName() );
         }
         return classNames;
@@ -100,8 +98,8 @@ public class TwoTestCasesIT
         verifier.verifyErrorFreeLog();
         verifier.resetStreams();
 
-        List reports = HelperAssertions.extractReports( ( new File[]{ testDir } ) );
-        Set classNames = extractClassNames( reports );
+        List<ReportTestSuite> reports = HelperAssertions.extractReports( ( new File[]{ testDir } ) );
+        Set<String> classNames = extractClassNames( reports );
         assertContains( classNames, "twoTestCaseSuite.BasicTest" );
         assertContains( classNames, "twoTestCaseSuite.Junit4TestTwo" );
         assertEquals( "wrong number of classes", 2, classNames.size() );
@@ -119,8 +117,8 @@ public class TwoTestCasesIT
         verifier.verifyErrorFreeLog();
         verifier.resetStreams();
 
-        List reports = HelperAssertions.extractReports( ( new File[]{ testDir } ) );
-        Set classNames = extractClassNames( reports );
+        List<ReportTestSuite> reports = HelperAssertions.extractReports( ( new File[]{ testDir } ) );
+        Set<String> classNames = extractClassNames( reports );
         assertContains( classNames, "testng.two.TestNGTestTwo" );
         assertContains( classNames, "testng.two.TestNGSuiteTest" );
         assertEquals( "wrong number of classes", 2, classNames.size() );

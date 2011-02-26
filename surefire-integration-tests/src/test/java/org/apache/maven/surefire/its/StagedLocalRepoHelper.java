@@ -117,9 +117,9 @@ public final class StagedLocalRepoHelper
             settings.addActiveProfile( profile.getId() );
             settings.setLocalRepository( stagedLocalRepo.getAbsolutePath() );
 
-            for ( Iterator it = settings.getProfiles().iterator(); it.hasNext(); )
+            for ( Iterator<Profile> it = settings.getProfiles().iterator(); it.hasNext(); )
             {
-                profile = (Profile) it.next();
+                profile = it.next();
                 disableUpdates( profile.getRepositories() );
                 disableUpdates( profile.getPluginRepositories() );
             }
@@ -134,13 +134,13 @@ public final class StagedLocalRepoHelper
         }
     }
 
-    private static void disableUpdates( List repositories )
+    private static void disableUpdates( List<Repository> repositories )
     {
         if ( repositories != null )
         {
-            for ( Iterator it = repositories.iterator(); it.hasNext(); )
+            for ( Iterator<Repository> it = repositories.iterator(); it.hasNext(); )
             {
-                Repository repo = (Repository) it.next();
+                Repository repo = it.next();
                 repo.setReleases( disableUpdates( repo.getReleases() ) );
                 repo.setSnapshots( disableUpdates( repo.getSnapshots() ) );
             }

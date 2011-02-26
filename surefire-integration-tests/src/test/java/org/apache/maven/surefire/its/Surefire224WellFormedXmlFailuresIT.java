@@ -47,12 +47,11 @@ public class Surefire224WellFormedXmlFailuresIT
         assertTestSuiteResults( 4, 0, 4, 0 );
 
         ReportTestSuite suite = (ReportTestSuite) HelperAssertions.extractReports( ( new File[]{ getTestDir() } ) ).get( 0 );
-        List testCases = suite.getTestCases();
+        List<ReportTestCase> testCases = suite.getTestCases();
         assertEquals( "Wrong number of test case objects", 4, testCases.size() );
-        ReportTestCase current, testQuote = null, testLower = null, testGreater = null, testU0000 = null;
-        for ( int i = 0; i < testCases.size(); i++ )
+        ReportTestCase testQuote = null, testLower = null, testGreater = null, testU0000 = null;
+        for ( ReportTestCase current : testCases )
         {
-            current = (ReportTestCase) testCases.get( i );
             if ( "testQuote".equals( current.getName() ) )
             {
                 testQuote = current;

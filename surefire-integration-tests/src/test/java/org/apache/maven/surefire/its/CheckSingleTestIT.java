@@ -41,7 +41,7 @@ public class CheckSingleTestIT
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/default-configuration" );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        List goals = this.getInitialGoals();
+        List<String> goals = this.getInitialGoals();
         goals.add( "test" );
         goals.add( "-Dtest=BasicTest" );
         executeGoals( verifier, goals );
@@ -57,7 +57,7 @@ public class CheckSingleTestIT
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/default-configuration" );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        List goals = this.getInitialGoals();
+        List<String> goals = this.getInitialGoals();
         goals.add( "test" );
         goals.add( "-Dtest=BasicTest.java" );
         executeGoals( verifier, goals );
@@ -73,7 +73,7 @@ public class CheckSingleTestIT
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/default-configuration" );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        List goals = this.getInitialGoals();
+        List<String> goals = this.getInitialGoals();
         goals.add( "test" );
         goals.add( "-Dtest=DoesNotExist" );
 
@@ -102,7 +102,7 @@ public class CheckSingleTestIT
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/default-configuration" );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        List goals = this.getInitialGoals();
+        List<String> goals = this.getInitialGoals();
         goals.add( "test" );
         goals.add( "-Dtest=DoesNotExist" );
         goals.add( "-DfailIfNoTests=false" );

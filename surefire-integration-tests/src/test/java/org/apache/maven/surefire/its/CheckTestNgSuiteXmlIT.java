@@ -40,7 +40,7 @@ public class CheckTestNgSuiteXmlIT
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/testng-suite-xml" );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        List goals = getInitialGoals();
+        List<String> goals = getInitialGoals();
         goals.add( "test" );
         executeGoals( verifier, goals );
         verifier.verifyErrorFreeLog();
@@ -55,7 +55,7 @@ public class CheckTestNgSuiteXmlIT
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/testng-suite-xml" );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        List goals = getInitialGoals();
+        List<String> goals = getInitialGoals();
         goals.addAll( Arrays.asList( new String[]{ "test", "-DforkMode=always" } ) );
         executeGoals( verifier, goals );
         verifier.verifyErrorFreeLog();

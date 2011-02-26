@@ -79,7 +79,7 @@ public class CheckTestFailIfNoTestsForkModeIT
             ResourceExtractor.simpleExtractResources( getClass(), "/default-configuration-classWithNoTests" );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        List goals = this.getInitialGoals();
+        List<String> goals = this.getInitialGoals();
         goals.add( "test" );
         goals.add( "-DforkMode=" + forkMode );
         goals.add( "-DfailIfNoTests=" + failIfNoTests );

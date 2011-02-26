@@ -110,7 +110,7 @@ public class ForkModeIT
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/fork-mode" );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        List goals = this.getInitialGoals();
+        List<String> goals = this.getInitialGoals();
         goals.add( "test" );
         goals.add( "-DforkMode=" + forkMode );
         executeGoals( verifier, goals );

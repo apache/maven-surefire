@@ -39,7 +39,7 @@ public class AggregateReportIT
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/aggregate-report" );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        List goals = this.getInitialGoals();
+        List<String> goals = this.getInitialGoals();
         goals.add( "org.apache.maven.plugins:maven-surefire-report-plugin:" + getSurefireVersion() + ":report" );
         executeGoals( verifier, goals );
         //DGF even though the build will succeed, the log will contain errors (from the failure)

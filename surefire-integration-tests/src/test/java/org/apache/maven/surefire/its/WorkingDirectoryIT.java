@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.commons.lang.SystemUtils;
 import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
 
