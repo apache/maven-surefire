@@ -191,7 +191,7 @@ public class ForkStarter
             throw new SurefireBooterForkException( "Error creating properties files for forking", e );
         }
 
-        final Classpath bootClasspathConfiguration = forkConfiguration.getBootClasspath();
+        final Classpath bootClasspathConfiguration =  forkConfiguration.getBootClasspath();
         final Classpath additionlClassPathUrls = startupConfiguration.useSystemClassLoader()
             ? startupConfiguration.getClasspathConfiguration().getTestClasspath()
             : null;
@@ -199,7 +199,8 @@ public class ForkStarter
         Classpath bootClasspath = Classpath.join( bootClasspathConfiguration, additionlClassPathUrls );
 
         Commandline cli = forkConfiguration.createCommandLine( bootClasspath.getClassPath(),
-                                                               startupConfiguration.getClassLoaderConfiguration() );
+                                                               startupConfiguration.getClassLoaderConfiguration(),
+                                                               startupConfiguration.isShadefire() );
 
         cli.createArg().setFile( surefireProperties );
 

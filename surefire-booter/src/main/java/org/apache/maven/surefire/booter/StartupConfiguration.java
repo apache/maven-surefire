@@ -89,4 +89,8 @@ public class StartupConfiguration
     {
         return classLoaderConfiguration;
     }
+
+    public boolean isShadefire(){
+        return providerClassName.startsWith( "org.apache.maven.surefire.shadefire");
+    }
 }

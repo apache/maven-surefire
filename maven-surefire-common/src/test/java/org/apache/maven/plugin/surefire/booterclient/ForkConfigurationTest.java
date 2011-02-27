@@ -40,7 +40,8 @@ public class ForkConfigurationTest
         File cpElement = getTempClasspathFile();
         config.setJvmExecutable( "java" );
 
-        Commandline cli = config.createCommandLine( Collections.singletonList( cpElement.getAbsolutePath() ), true );
+        Commandline cli = config.createCommandLine( Collections.singletonList( cpElement.getAbsolutePath() ), true,
+                                                    false );
 
         String line = StringUtils.join( cli.getCommandline(), " " );
         assertTrue( line.indexOf( "-jar" ) > -1 );
@@ -56,7 +57,8 @@ public class ForkConfigurationTest
         forkConfiguration.setArgLine( "abc\ndef" );
 
         final Commandline commandLine =
-            forkConfiguration.createCommandLine( Collections.singletonList( cpElement.getAbsolutePath() ), false );
+            forkConfiguration.createCommandLine( Collections.singletonList( cpElement.getAbsolutePath() ), false,
+                                                 false );
         assertTrue( commandLine.toString().contains( "abc def" ) );
     }
 

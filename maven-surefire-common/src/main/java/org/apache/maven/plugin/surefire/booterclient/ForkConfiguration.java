@@ -23,6 +23,7 @@ import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
 import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.ForkedBooter;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
+import org.apache.maven.surefire.util.Relocator;
 import org.apache.maven.surefire.util.UrlUtils;
 import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.cli.Commandline;
@@ -159,17 +160,19 @@ public class ForkConfiguration
     /**
      * @param classPath              cla the classpath arguments
      * @param classpathConfiguration the classpath configuration
+     * @param shadefire true if running shadefire
      * @return A commandline
      * @throws org.apache.maven.surefire.booter.SurefireBooterForkException
      *          when unable to perform the fork
      */
-    public Commandline createCommandLine( List classPath, ClassLoaderConfiguration classpathConfiguration )
+    public Commandline createCommandLine( List classPath, ClassLoaderConfiguration classpathConfiguration,
+                                          boolean shadefire )
         throws SurefireBooterForkException
     {
-        return createCommandLine( classPath, classpathConfiguration.isManifestOnlyJarRequestedAndUsable() );
+        return createCommandLine( classPath, classpathConfiguration.isManifestOnlyJarRequestedAndUsable(), shadefire );
     }
 
-    public Commandline createCommandLine( List classPath, boolean useJar )
+    public Commandline createCommandLine( List classPath, boolean useJar, boolean shadefire )
         throws SurefireBooterForkException
     {
         Commandline cli = new Commandline();
@@ -222,7 +225,9 @@ public class ForkConfiguration
 
             cli.createArg().setValue( StringUtils.join( classPath.iterator(), File.pathSeparator ) );
 
-            cli.createArg().setValue( ForkedBooter.class.getName() );
+            final String forkedBooter = ForkedBooter.class.getName();
+
+            cli.createArg().setValue( shadefire ? new Relocator( ).relocate( forkedBooter ) : forkedBooter);
         }
 
         cli.setWorkingDirectory( workingDirectory.getAbsolutePath() );

@@ -54,6 +54,7 @@ import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.util.NestedRuntimeException;
+import org.apache.maven.surefire.util.Relocator;
 import org.apache.maven.toolchain.Toolchain;
 import org.codehaus.plexus.util.StringUtils;
 
@@ -99,46 +100,44 @@ public abstract class AbstractSurefireMojo
         if ( verifyParameters() && !hasExecutedBefore() )
         {
             logReportsDirectory();
-        	executeAfterPreconditionsChecked();
+            executeAfterPreconditionsChecked();
         }
     }
 
     protected boolean verifyParameters()
         throws MojoFailureException
-	{
-	    if ( isSkipExecution() )
-	    {
-	        getLog().info( "Tests are skipped." );
-	        return false;
-	    }
-	
-	    if ( !getTestClassesDirectory().exists() )
-	    {
-	        if ( Boolean.TRUE.equals(getFailIfNoTests()) )
-	        {
-	            throw new MojoFailureException( "No tests to run!" );
-	        }
-	        getLog().info( "No tests to run." );
-	    }
-	    else
-	    {
-	        ensureWorkingDirectoryExists();
-	        ensureParallelRunningCompatibility();
-	        warnIfUselessUseSystemClassLoaderParameter();
-	    }
-	
-	    return true;
-	}
-    
+    {
+        if ( isSkipExecution() )
+        {
+            getLog().info( "Tests are skipped." );
+            return false;
+        }
+
+        if ( !getTestClassesDirectory().exists() )
+        {
+            if ( Boolean.TRUE.equals( getFailIfNoTests() ) )
+            {
+                throw new MojoFailureException( "No tests to run!" );
+            }
+            getLog().info( "No tests to run." );
+        }
+        else
+        {
+            ensureWorkingDirectoryExists();
+            ensureParallelRunningCompatibility();
+            warnIfUselessUseSystemClassLoaderParameter();
+        }
+
+        return true;
+    }
+
     protected abstract boolean isSkipExecution();
-    
+
     protected abstract void executeAfterPreconditionsChecked()
         throws MojoExecutionException, MojoFailureException;
 
     private Artifact surefireArtifact;
 
-
-    private ProviderList wellKnownProviders;
 
     protected List initialize()
         throws MojoFailureException
@@ -150,10 +149,11 @@ public abstract class AbstractSurefireMojo
         try
         {
             final Artifact junitDepArtifact = getJunitDepArtifact();
-            wellKnownProviders = new ProviderList( new ProviderInfo[]{ new TestNgProviderInfo( getTestNgArtifact() ),
-                new JUnitCoreProviderInfo( getJunitArtifact(), junitDepArtifact ),
-                new JUnit4ProviderInfo( getJunitArtifact(), junitDepArtifact ), new JUnit3ProviderInfo() },
-                                                   new DynamicProviderInfo( null ) );
+            ProviderList wellKnownProviders = new ProviderList(
+                new ProviderInfo[]{ new TestNgProviderInfo( getTestNgArtifact() ),
+                    new JUnitCoreProviderInfo( getJunitArtifact(), junitDepArtifact ),
+                    new JUnit4ProviderInfo( getJunitArtifact(), junitDepArtifact ), new JUnit3ProviderInfo() },
+                new DynamicProviderInfo( null ) );
 
             return wellKnownProviders.resolve( getLog() );
         }
@@ -265,44 +265,27 @@ public abstract class AbstractSurefireMojo
         return ForkConfiguration.FORK_NEVER.equals( getForkMode() );
     }
 
-    protected ProviderConfiguration createProviderConfiguration( ForkConfiguration forkConfiguration )
+    protected ProviderConfiguration createProviderConfiguration( ForkConfiguration forkConfiguration,
+                                                                 boolean shadefire )
         throws MojoExecutionException, MojoFailureException
     {
 
         List reports = getReporters( forkConfiguration.isForking() );
+        reports = shadefire ? new Relocator().relocateReports( reports ) : reports;
         Integer timeoutSet =
             getForkedProcessTimeoutInSeconds() > 0 ? Integer.valueOf( getForkedProcessTimeoutInSeconds() ) : null;
         ReporterConfiguration reporterConfiguration =
             new ReporterConfiguration( reports, getReportsDirectory(), Boolean.valueOf( isTrimStackTrace() ),
                                        timeoutSet );
 
-        surefireArtifact = (Artifact) getPluginArtifactMap().get( "org.apache.maven.surefire:surefire-booter" );
-        if ( surefireArtifact == null )
-        {
-            throw new MojoExecutionException( "Unable to locate surefire-booter in the list of plugin artifacts" );
-        }
-
-        surefireArtifact.isSnapshot(); // MNG-2961: before Maven 2.0.8, fixes getBaseVersion to be -SNAPSHOT if needed
-
         Artifact testNgArtifact;
         try
         {
-            addArtifact( forkConfiguration.getBootClasspath(), surefireArtifact );
-
             testNgArtifact = getTestNgArtifact();
-        }
-        catch ( ArtifactNotFoundException e )
-        {
-            throw new MojoExecutionException(
-                "Unable to locate required surefire provider dependency: " + e.getMessage(), e );
         }
         catch ( InvalidVersionSpecificationException e )
         {
             throw new MojoExecutionException( "Error determining the TestNG version requested: " + e.getMessage(), e );
-        }
-        catch ( ArtifactResolutionException e )
-        {
-            throw new MojoExecutionException( "Error to resolving surefire provider dependency: " + e.getMessage(), e );
         }
 
         DirectoryScannerParameters directoryScannerParameters = null;
@@ -377,19 +360,9 @@ public abstract class AbstractSurefireMojo
         final ClasspathConfiguration classpathConfiguration =
             new ClasspathConfiguration( isEnableAssertions(), isChildDelegation() );
 
-        surefireArtifact = (Artifact) getPluginArtifactMap().get( "org.apache.maven.surefire:surefire-booter" );
-        if ( surefireArtifact == null )
-        {
-            throw new MojoExecutionException( "Unable to locate surefire-booter in the list of plugin artifacts" );
-        }
-
-        surefireArtifact.isSnapshot(); // MNG-2961: before Maven 2.0.8, fixes getBaseVersion to be -SNAPSHOT if needed
-
         String providerName;
         try
         {
-            addArtifact( forkConfiguration.getBootClasspath(), surefireArtifact );
-
             provider.addProviderProperties();
             provider.addProviderArtifactToSurefireClasspath( classpathConfiguration );
             providerName = provider.getProviderName();
@@ -426,12 +399,13 @@ public abstract class AbstractSurefireMojo
             throw new MojoExecutionException( "Unable to generate test classpath: " + e, e );
         }
 
-        addClasspathElementsToClasspathConfiguration(classpathElements, classpathConfiguration);
+        addClasspathElementsToClasspathConfiguration( classpathElements, classpathConfiguration );
         return new StartupConfiguration( providerName, classpathConfiguration, classLoaderConfiguration,
                                          forkConfiguration.isForking(), false, isRedirectTestOutputToFile() );
     }
 
-    private void addClasspathElementsToClasspathConfiguration(List classpathElements, ClasspathConfiguration classpathConfiguration)
+    private void addClasspathElementsToClasspathConfiguration( List classpathElements,
+                                                               ClasspathConfiguration classpathConfiguration )
     {
         getLog().debug( "Test classpath:" );
         for ( Iterator i = classpathElements.iterator(); i.hasNext(); )
@@ -439,7 +413,7 @@ public abstract class AbstractSurefireMojo
             String classpathElement = (String) i.next();
             if ( classpathElement == null )
             {
-                getLog().warn("The test classpath contains a null element.");
+                getLog().warn( "The test classpath contains a null element." );
             }
             else
             {
@@ -537,8 +511,8 @@ public abstract class AbstractSurefireMojo
             if ( !range.containsVersion( new DefaultArtifactVersion( artifact.getVersion() ) ) )
             {
                 throw new MojoFailureException(
-                    "TestNG support requires version 4.7 or above. You have declared version " +
-                        artifact.getVersion() );
+                    "TestNG support requires version 4.7 or above. You have declared version "
+                        + artifact.getVersion() );
             }
         }
         return artifact;
@@ -561,7 +535,8 @@ public abstract class AbstractSurefireMojo
     {
         StartupConfiguration startupConfiguration =
             createStartupConfiguration( forkConfiguration, provider, classLoaderConfiguration );
-        ProviderConfiguration providerConfiguration = createProviderConfiguration( forkConfiguration );
+        ProviderConfiguration providerConfiguration =
+            createProviderConfiguration( forkConfiguration, startupConfiguration.isShadefire() );
         return new ForkStarter( providerConfiguration, startupConfiguration, getReportsDirectory(), forkConfiguration,
                                 getForkedProcessTimeoutInSeconds(), isPrintSummary() );
     }
@@ -572,7 +547,18 @@ public abstract class AbstractSurefireMojo
         //noinspection ResultOfMethodCallIgnored
         tmpDir.mkdirs();
 
-        final Classpath bootClasspathConfiguration = new Classpath();
+        Artifact shadeFire = (Artifact) getPluginArtifactMap().get( "org.apache.maven.surefire:surefire-shadefire" );
+
+        surefireArtifact = (Artifact) getPluginArtifactMap().get( "org.apache.maven.surefire:surefire-booter" );
+        if ( surefireArtifact == null )
+        {
+            throw new RuntimeException( "Unable to locate surefire-booter in the list of plugin artifacts" );
+        }
+
+        surefireArtifact.isSnapshot(); // MNG-2961: before Maven 2.0.8, fixes getBaseVersion to be -SNAPSHOT if needed
+
+        final Classpath bootClasspathConfiguration =
+            getArtifactClasspath( shadeFire != null ? shadeFire : surefireArtifact );
 
         ForkConfiguration fork = new ForkConfiguration( bootClasspathConfiguration, getForkMode(), tmpDir );
 
@@ -852,7 +838,6 @@ public abstract class AbstractSurefireMojo
 
 
     private ArtifactResolutionResult resolveArtifact( Artifact filteredArtifact, Artifact providerArtifact )
-        throws ArtifactResolutionException, ArtifactNotFoundException
     {
         ArtifactFilter filter = null;
         if ( filteredArtifact != null )
@@ -863,26 +848,38 @@ public abstract class AbstractSurefireMojo
 
         Artifact originatingArtifact = getArtifactFactory().createBuildArtifact( "dummy", "dummy", "1.0", "jar" );
 
-        return getArtifactResolver().resolveTransitively( Collections.singleton( providerArtifact ),
-                                                          originatingArtifact, getLocalRepository(),
-                                                          getRemoteRepositories(), getMetadataSource(), filter );
+        try
+        {
+            return getArtifactResolver().resolveTransitively( Collections.singleton( providerArtifact ),
+                                                              originatingArtifact, getLocalRepository(),
+                                                              getRemoteRepositories(), getMetadataSource(), filter );
+        }
+        catch ( ArtifactResolutionException e )
+        {
+            throw new NestedRuntimeException( e );
+        }
+        catch ( ArtifactNotFoundException e )
+        {
+            throw new NestedRuntimeException( e );
+        }
     }
 
-    private void addArtifact( Classpath bootClasspath, Artifact surefireArtifact )
-        throws ArtifactNotFoundException, ArtifactResolutionException
+    private Classpath getArtifactClasspath( Artifact surefireArtifact )
     {
         ArtifactResolutionResult result = resolveArtifact( null, surefireArtifact );
 
+        List items = new ArrayList();
         for ( Iterator i = result.getArtifacts().iterator(); i.hasNext(); )
         {
             Artifact artifact = (Artifact) i.next();
 
             getLog().debug(
-                "Adding to " + getPluginName() + " booter test classpath: " + artifact.getFile().getAbsolutePath() +
-                    " Scope: " + artifact.getScope() );
+                "Adding to " + getPluginName() + " booter test classpath: " + artifact.getFile().getAbsolutePath()
+                    + " Scope: " + artifact.getScope() );
 
-            bootClasspath.addClassPathElementUrl( artifact.getFile().getAbsolutePath() );
+            items.add( artifact.getFile().getAbsolutePath() );
         }
+        return new Classpath( items );
     }
 
     protected void processSystemProperties( boolean setInSystem )
@@ -956,8 +953,8 @@ public abstract class AbstractSurefireMojo
         }
         catch ( Exception e )
         {
-            String msg = "Build uses Maven 2.0.x, cannot propagate system properties" +
-                " from command line to tests (cf. SUREFIRE-121)";
+            String msg = "Build uses Maven 2.0.x, cannot propagate system properties"
+                + " from command line to tests (cf. SUREFIRE-121)";
             if ( getLog().isDebugEnabled() )
             {
                 getLog().warn( msg, e );
@@ -1011,7 +1008,6 @@ public abstract class AbstractSurefireMojo
         }
         return reports;
     }
-
 
     /**
      * Returns the reporter that will write to the console

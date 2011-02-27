@@ -87,6 +87,7 @@
   </contributors>
 
   <modules>
+    <module>surefire-shadefire</module>
     <module>surefire-api</module>
     <module>surefire-booter</module>
     <module>surefire-providers</module>
@@ -109,6 +110,7 @@
   
   <properties>
     <mavenVersion>2.0.9</mavenVersion>
+    <shadedVersion>2.7.2</shadedVersion>
   </properties>
 
   <dependencyManagement>
@@ -233,7 +235,7 @@
       <plugins>
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
-          <version>2.7.2</version>
+          <version>${shadedVersion}</version>
           <configuration>
             <!-- NOTE: Be sure to isolate the Surefire version under test from the version running the tests! -->
             <useSystemClassLoader>false</useSystemClassLoader>

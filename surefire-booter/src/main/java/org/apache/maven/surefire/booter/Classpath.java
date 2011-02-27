@@ -56,7 +56,7 @@ public class Classpath
     {
     }
 
-    private Classpath( Collection elements )
+    public Classpath( List elements )
     {
         this();
         addElements( elements );
