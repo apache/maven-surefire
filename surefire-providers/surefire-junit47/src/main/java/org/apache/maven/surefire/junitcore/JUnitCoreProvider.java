@@ -21,6 +21,7 @@ package org.apache.maven.surefire.junitcore;
 
 import org.apache.maven.surefire.common.junit4.JUnit4RunListenerFactory;
 import org.apache.maven.surefire.common.junit4.JUnit4TestChecker;
+import org.apache.maven.surefire.providerapi.AbstractProvider;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
 import org.apache.maven.surefire.report.Reporter;
@@ -32,19 +33,19 @@ import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.DirectoryScanner;
 import org.apache.maven.surefire.util.ScannerFilter;
 import org.apache.maven.surefire.util.TestsToRun;
-import org.junit.runner.notification.RunListener;
 
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.junit.runner.notification.RunListener;
+
 /**
  * @author Kristian Rosenvold
  */
 @SuppressWarnings( { "UnusedDeclaration" } )
-public class JUnitCoreProvider
-    implements SurefireProvider
+public class JUnitCoreProvider extends AbstractProvider
 {
     private final ReporterFactory reporterFactory;
 

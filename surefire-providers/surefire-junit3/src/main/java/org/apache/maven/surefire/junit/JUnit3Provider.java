@@ -21,8 +21,8 @@ package org.apache.maven.surefire.junit;
 
 import org.apache.maven.surefire.common.junit3.JUnit3Reflector;
 import org.apache.maven.surefire.common.junit3.JUnit3TestChecker;
+import org.apache.maven.surefire.providerapi.AbstractProvider;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
-import org.apache.maven.surefire.providerapi.SurefireProvider;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.Reporter;
 import org.apache.maven.surefire.report.ReporterException;
@@ -39,8 +39,7 @@ import java.util.Iterator;
  * @author Kristian Rosenvold
  * @noinspection UnusedDeclaration
  */
-public class JUnit3Provider
-    implements SurefireProvider
+public class JUnit3Provider extends AbstractProvider
 {
     private final ReporterFactory reporterFactory;
 

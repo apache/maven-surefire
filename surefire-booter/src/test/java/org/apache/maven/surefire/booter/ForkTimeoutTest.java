@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.testprovider;
+package org.apache.maven.surefire.booter;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -20,42 +20,57 @@ package org.apache.maven.surefire.testprovider;
  */
 
 import org.apache.maven.surefire.providerapi.AbstractProvider;
-import org.apache.maven.surefire.providerapi.ProviderParameters;
+import org.apache.maven.surefire.providerapi.SurefireProvider;
+import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterException;
-import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
 import java.util.Iterator;
 
+import junit.framework.TestCase;
+
 /**
  * @author Kristian Rosenvold
  */
-public class TestProvider  extends AbstractProvider
+public class ForkTimeoutTest
+    extends TestCase
 {
-    private final ReporterFactory reporterManagerFactory;
-    private final ClassLoader testClassLoader;
-
-    public TestProvider( ProviderParameters booterParameters )
+    public void testClose()
+        throws Exception
     {
-        this.reporterManagerFactory = booterParameters.getReporterFactory();
-        this.testClassLoader = booterParameters.getTestClassLoader();
+        final Integer forkTimeout1 = new Integer( 100 );
+        SurefireProvider surefireProvider = new TestProvider();
+        ReporterConfiguration reporterConfiguration = new ReporterConfiguration( null, null, null, forkTimeout1 );
+        new ForkTimeout( 100, reporterConfiguration, surefireProvider );
+        try
+        {
+            Thread.sleep( 1500 );
+        }
+        catch ( InterruptedException ignore )
+        {
+
+        }
     }
 
-
-    public Boolean isRunnable()
+    public class TestProvider
+        extends AbstractProvider
     {
-        return Boolean.TRUE;
+
+        public TestProvider()
+        {
+        }
+
+        public Iterator getSuites()
+        {
+            return null;
+        }
+
+        public RunResult invoke( Object forkTestSet )
+            throws TestSetFailedException, ReporterException
+        {
+            return new RunResult( 1, 0, 0, 2 );
+        }
     }
 
-    public Iterator getSuites()
-    {
-        return null;
-    }
-
-    public RunResult invoke( Object forkTestSet )
-        throws TestSetFailedException, ReporterException
-    {
-        return new RunResult( 1,0,0,2 );
-    }
 }

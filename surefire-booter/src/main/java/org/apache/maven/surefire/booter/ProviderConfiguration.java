@@ -148,5 +148,13 @@ public class ProviderConfiguration
         return (String) forkTestSet;
     }
 
+    public boolean isSurefireForkReturnCode( int returnCode )
+    {
+        return TESTS_SUCCEEDED_EXIT_CODE == returnCode ||
+               NO_TESTS_EXIT_CODE == returnCode ||
+            TESTS_FAILED_EXIT_CODE == returnCode;
+
+    }
+
 
 }

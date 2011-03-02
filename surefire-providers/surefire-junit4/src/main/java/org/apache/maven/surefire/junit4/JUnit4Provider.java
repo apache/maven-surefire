@@ -23,8 +23,8 @@ import org.apache.maven.surefire.Surefire;
 import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
 import org.apache.maven.surefire.common.junit4.JUnit4RunListenerFactory;
 import org.apache.maven.surefire.common.junit4.JUnit4TestChecker;
+import org.apache.maven.surefire.providerapi.AbstractProvider;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
-import org.apache.maven.surefire.providerapi.SurefireProvider;
 import org.apache.maven.surefire.report.PojoStackTraceWriter;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.Reporter;
@@ -36,20 +36,20 @@ import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.DefaultDirectoryScanner;
 import org.apache.maven.surefire.util.DirectoryScanner;
 import org.apache.maven.surefire.util.TestsToRun;
-import org.junit.runner.notification.RunListener;
-import org.junit.runner.notification.RunNotifier;
 
 import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
+
+import org.junit.runner.notification.RunListener;
+import org.junit.runner.notification.RunNotifier;
 
 
 /**
  * @author Kristian Rosenvold
  */
 @SuppressWarnings( { "UnusedDeclaration" } )
-public class JUnit4Provider
-    implements SurefireProvider
+public class JUnit4Provider extends AbstractProvider
 {
 
     private static ResourceBundle bundle = ResourceBundle.getBundle( Surefire.SUREFIRE_BUNDLE_NAME );

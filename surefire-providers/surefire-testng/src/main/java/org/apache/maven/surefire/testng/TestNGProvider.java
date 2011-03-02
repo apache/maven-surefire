@@ -19,8 +19,8 @@ package org.apache.maven.surefire.testng;
  * under the License.
  */
 
+import org.apache.maven.surefire.providerapi.AbstractProvider;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
-import org.apache.maven.surefire.providerapi.SurefireProvider;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterFactory;
@@ -43,8 +43,7 @@ import java.util.Properties;
  * @author Kristian Rosenvold
  * @noinspection UnusedDeclaration
  */
-public class TestNGProvider
-    implements SurefireProvider
+public class TestNGProvider extends AbstractProvider
 {
     private final Properties providerProperties;
 

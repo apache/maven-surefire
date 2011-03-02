@@ -27,7 +27,6 @@ import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Timer;
 
 /**
  * Creates ReporterManager instances for the providers.
@@ -64,27 +63,12 @@ public class ReporterManagerFactory
 
     private final SystemStreamCapturer systemStreamCapturer = new SystemStreamCapturer();
 
-    private final SurefireTimeoutMonitor timeoutTask;
-
-    private final Timer timer;
-
     public ReporterManagerFactory( ClassLoader surefireClassLoader, ReporterConfiguration reporterConfiguration )
     {
         this.reportDefinitions = reporterConfiguration.getReports();
         this.surefireClassLoader = surefireClassLoader;
         this.reporterConfiguration = reporterConfiguration;
         this.reports = instantiateReportsNewStyle( reportDefinitions, reporterConfiguration, surefireClassLoader );
-        if ( reporterConfiguration.getForkTimeout() != null )
-        {
-            timeoutTask = new SurefireTimeoutMonitor( reporterConfiguration );
-            timer = new Timer( "Surefire fork timeout timer" );
-        }
-        else
-        {
-            timeoutTask = null;
-            timer = null;
-        }
-
     }
 
     public RunStatistics getGlobalRunStatistics()
@@ -94,7 +78,6 @@ public class ReporterManagerFactory
 
     public Reporter createReporter()
     {
-        startTimer();
         reports = instantiateReportsNewStyle( reportDefinitions, reporterConfiguration, surefireClassLoader );
         return setupReporter( reports );
     }
@@ -124,7 +107,6 @@ public class ReporterManagerFactory
     public RunResult close()
     {
         warnIfNoTests();
-        cancelTimerIfActive();
         synchronized ( lock )
         {
             if ( first != null )
@@ -190,21 +172,4 @@ public class ReporterManagerFactory
             new MulticastingReporter( reports ).writeMessage( "There are no tests to run." );
         }
     }
-
-    private void startTimer()
-    {
-        if ( timer != null )
-        {
-            timer.schedule( timeoutTask, reporterConfiguration.getForkTimeout().intValue() * 1000 );
-        }
-    }
-
-    private void cancelTimerIfActive()
-    {
-        if ( timer != null )
-        {
-            timer.cancel();
-        }
-    }
-
 }

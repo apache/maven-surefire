@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.booter;
+package org.apache.maven.surefire.providerapi;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,24 +19,24 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import org.apache.maven.surefire.util.NestedCheckedException;
-
 /**
- * Encapsulates exceptions thrown during Surefire forking.
+ * A provider base class that all providers should extend to shield themselves from interface changes
  *
- * @version $Id$
+ * @author Kristian Rosenvold
  */
-public class SurefireBooterForkException
-    extends NestedCheckedException
+public abstract class AbstractProvider
+    implements SurefireProvider
 {
+    private final Thread creatingThread = Thread.currentThread();
 
-    public SurefireBooterForkException( String message, Throwable cause )
+    public void cancel()
     {
-        super( message, cause );
-    }
-
-    public SurefireBooterForkException( String msg )
-    {
-        super( msg );
+        synchronized ( creatingThread )
+        {
+            if ( creatingThread.isAlive() )
+            {
+                creatingThread.interrupt();
+            }
+        }
     }
 }

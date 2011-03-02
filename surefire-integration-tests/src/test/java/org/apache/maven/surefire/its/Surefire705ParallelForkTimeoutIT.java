@@ -23,15 +23,15 @@ import org.apache.maven.it.VerificationException;
 /**
  * Test
  *
- * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
+ * @author Kristian Rosenvold
  */
-public class TimeoutForkedTestIT
+public class Surefire705ParallelForkTimeoutIT
     extends SurefireVerifierTestClass
 {
 
-    public TimeoutForkedTestIT()
+    public Surefire705ParallelForkTimeoutIT()
     {
-        super( "/timeout-forked" );
+        super( "/fork-timeout" );
     }
 
     public void testTimeoutForked()
@@ -39,8 +39,9 @@ public class TimeoutForkedTestIT
     {
         try
         {
-            addGoal( "-DsleepLength=10000" );
-            addGoal( "-DforkTimeout=1" );
+            addGoal( "-Djunit.version=4.8.1" );
+            addGoal( "-Djunit.parallel=classes" );
+            addGoal( "-DtimeOut=1" );
             executeTest();
             verifyErrorFreeLog();
             fail( "Build didn't fail, but it should have" );
@@ -48,8 +49,7 @@ public class TimeoutForkedTestIT
         catch ( VerificationException ignore )
         {
         }
-        // SUREFIRE-468 test that had to be reverted due to SUREFIRE-705
-       //assertFalse( getSurefireReportsFile( "TEST-timeoutForked.BasicTest.xml" ).exists() );
-        // assertFalse( getSurefireReportsFile( "timeoutForked.BasicTest.txt" ).exists() );
+    //    assertFalse( getSurefireReportsFile( "TEST-timeoutForked.BasicTest.xml" ).exists() );
+    //    assertFalse( getSurefireReportsFile( "timeoutForked.BasicTest.txt" ).exists() );
     }
 }

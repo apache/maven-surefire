@@ -36,6 +36,12 @@ import org.apache.maven.surefire.booter.SurefireStarter;
 import org.apache.maven.surefire.booter.SystemPropertyManager;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
 import org.apache.maven.surefire.suite.RunResult;
+import org.codehaus.plexus.util.IOUtil;
+import org.codehaus.plexus.util.cli.CommandLineException;
+import org.codehaus.plexus.util.cli.CommandLineTimeOutException;
+import org.codehaus.plexus.util.cli.CommandLineUtils;
+import org.codehaus.plexus.util.cli.Commandline;
+import org.codehaus.plexus.util.cli.StreamConsumer;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -43,13 +49,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Properties;
-
-import org.codehaus.plexus.util.IOUtil;
-import org.codehaus.plexus.util.cli.CommandLineException;
-import org.codehaus.plexus.util.cli.CommandLineTimeOutException;
-import org.codehaus.plexus.util.cli.CommandLineUtils;
-import org.codehaus.plexus.util.cli.Commandline;
-import org.codehaus.plexus.util.cli.StreamConsumer;
 
 
 /**
@@ -191,7 +190,7 @@ public class ForkStarter
             throw new SurefireBooterForkException( "Error creating properties files for forking", e );
         }
 
-        final Classpath bootClasspathConfiguration =  forkConfiguration.getBootClasspath();
+        final Classpath bootClasspathConfiguration = forkConfiguration.getBootClasspath();
         final Classpath additionlClassPathUrls = startupConfiguration.useSystemClassLoader()
             ? startupConfiguration.getClasspathConfiguration().getTestClasspath()
             : null;
@@ -229,7 +228,8 @@ public class ForkStarter
 
         try
         {
-            returnCode = CommandLineUtils.executeCommandLine( cli, out, err, forkedProcessTimeoutInSeconds > 0 ? forkedProcessTimeoutInSeconds + 1 : 0 );
+            returnCode = CommandLineUtils.executeCommandLine( cli, out, err, forkedProcessTimeoutInSeconds > 0 ?
+                forkedProcessTimeoutInSeconds: 0 );
         }
         catch ( CommandLineTimeOutException e )
         {
@@ -239,6 +239,13 @@ public class ForkStarter
         {
             throw new SurefireBooterForkException( "Error while executing forked tests.", e.getCause() );
         }
+
+       /*if ( !providerConfiguration.isSurefireForkReturnCode( returnCode ) )
+        {
+            throw new SurefireBooterForkException( "Uncontrolled error while forking surefire."
+                                                       + "You need to inspect log files (with reportFormat=plain and redirectTestOutputToFile=true )"
+                                                       + " to see stacktrace" );
+        }  */
 
         if ( startupConfiguration.isRedirectTestOutputToFile() )
         {
@@ -278,6 +285,7 @@ public class ForkStarter
 
         return returnCode;
     }
+
 
     private ForkingStreamConsumer getForkingStreamConsumer( boolean showHeading, boolean showFooter,
                                                             boolean redirectTestOutputToFile, boolean mustBeThreadSafe,

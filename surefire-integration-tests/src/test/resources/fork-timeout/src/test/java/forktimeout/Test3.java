@@ -1,5 +1,4 @@
-package org.apache.maven.surefire.booter;
-
+package forktimeout;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -19,24 +18,15 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import org.apache.maven.surefire.util.NestedCheckedException;
 
-/**
- * Encapsulates exceptions thrown during Surefire forking.
- *
- * @version $Id$
- */
-public class SurefireBooterForkException
-    extends NestedCheckedException
+import org.junit.Test;
+
+public class Test3 extends BaseForkTimeout
 {
 
-    public SurefireBooterForkException( String message, Throwable cause )
-    {
-        super( message, cause );
+    @Test
+    public void test690_3() {
+        dumpStuff( "test690_3" );
     }
 
-    public SurefireBooterForkException( String msg )
-    {
-        super( msg );
-    }
 }

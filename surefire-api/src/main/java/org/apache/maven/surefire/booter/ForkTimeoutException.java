@@ -22,21 +22,8 @@ package org.apache.maven.surefire.booter;
 import org.apache.maven.surefire.util.NestedCheckedException;
 
 /**
- * Encapsulates exceptions thrown during Surefire forking.
- *
- * @version $Id$
+ * @author Kristian Rosenvold
  */
-public class SurefireBooterForkException
-    extends NestedCheckedException
+public class ForkTimeoutException extends NestedCheckedException
 {
-
-    public SurefireBooterForkException( String message, Throwable cause )
-    {
-        super( message, cause );
-    }
-
-    public SurefireBooterForkException( String msg )
-    {
-        super( msg );
-    }
 }

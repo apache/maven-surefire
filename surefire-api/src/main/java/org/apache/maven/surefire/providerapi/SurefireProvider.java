@@ -66,4 +66,22 @@ public interface SurefireProvider
 
     RunResult invoke( Object forkTestSet )
         throws TestSetFailedException, ReporterException;
+
+    /**
+     * Makes an attempt at cancelling the current run, giving the provider a chance to notify
+     * reporting that the remaining tests have been cancelled due to timeout.
+     *
+     * If the provider thinks it can terminate properly it is the responsibility of
+     * the invoke method to return a RunResult with a booter code of failure.
+     *
+     * It is up to the provider to find out how to implement this method properly.
+     * A provider may also choose to not do anything at all in this method,
+     * which means surefire will kill the forked process soon afterwards anyway.
+     *
+     * Will be called on a different thread than the one calling invoke.
+     */
+    // Todo: Need to think a lot closer about how/if this works and if there is a use case for it.
+    // Killing a process is slightly non-deterministic
+    // And it
+    void cancel();
 }
