@@ -19,17 +19,9 @@ package org.apache.maven.plugin.surefire.booterclient;
  * under the License.
  */
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Properties;
-
-import junit.framework.TestCase;
-
 import org.apache.maven.surefire.booter.BooterDeserializer;
 import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
+import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.ClasspathConfiguration;
 import org.apache.maven.surefire.booter.PropertiesWrapper;
 import org.apache.maven.surefire.booter.ProviderConfiguration;
@@ -39,6 +31,15 @@ import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestRequest;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Properties;
+
+import junit.framework.TestCase;
 
 /**
  * Performs roundtrip testing of serialization/deserialization of The StartupConfiguration
@@ -99,12 +100,9 @@ public class BooterDeserializerStartupConfigurationTest
 
     private ClasspathConfiguration createClasspathConfiguration()
     {
-        ClasspathConfiguration classpathConfiguration = new ClasspathConfiguration( true, true );
-        classpathConfiguration.addClasspathUrl( "CP1" );
-        classpathConfiguration.addClasspathUrl( "CP2" );
-        classpathConfiguration.addSurefireClasspathUrl( "SP1" );
-        classpathConfiguration.addSurefireClasspathUrl( "SP2" );
-        return classpathConfiguration;
+        Classpath testClassPath = new Classpath( Arrays.asList( new String[]{"CP1" , "CP2" } ) );
+        Classpath providerClasspath = new Classpath( Arrays.asList( new String[]{"SP1" , "SP2" } ) );
+        return new ClasspathConfiguration( testClassPath, providerClasspath, true, true );
     }
 
     public static ClassLoaderConfiguration getSystemClassLoaderConfiguration()

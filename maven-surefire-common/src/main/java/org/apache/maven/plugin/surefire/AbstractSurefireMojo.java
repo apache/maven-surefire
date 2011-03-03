@@ -357,58 +357,45 @@ public abstract class AbstractSurefireMojo
                                                                ClassLoaderConfiguration classLoaderConfiguration )
         throws MojoExecutionException, MojoFailureException
     {
-        final ClasspathConfiguration classpathConfiguration =
-            new ClasspathConfiguration( isEnableAssertions(), isChildDelegation() );
 
-        String providerName;
         try
         {
             provider.addProviderProperties();
-            provider.addProviderArtifactToSurefireClasspath( classpathConfiguration );
-            providerName = provider.getProviderName();
-        }
-        catch ( ArtifactNotFoundException e )
-        {
-            throw new MojoExecutionException(
-                "Unable to locate required surefire provider dependency: " + e.getMessage(), e );
-        }
-        catch ( ArtifactResolutionException e )
-        {
-            throw new MojoExecutionException( "Error to resolving surefire provider dependency: " + e.getMessage(), e );
-        }
+            String providerName = provider.getProviderName();
+            final Classpath providerClasspath = provider.getProviderClasspath();
+            final Classpath testClasspath = generateTestClasspath();
 
-        List classpathElements;
-        try
-        {
-            classpathElements = generateTestClasspath();
+            logClasspath(  testClasspath, "test classpath" );
+            logClasspath(  testClasspath, "provider classpath" );
+             final ClasspathConfiguration classpathConfiguration =new ClasspathConfiguration( testClasspath, providerClasspath,
+                                        isEnableAssertions(), isChildDelegation() );
+
+            return new StartupConfiguration( providerName, classpathConfiguration, classLoaderConfiguration,
+                                             forkConfiguration.isForking(), false, isRedirectTestOutputToFile() );
         }
         catch ( DependencyResolutionRequiredException e )
         {
-            throw new MojoExecutionException( "Unable to generate test classpath: " + e, e );
+            throw new MojoExecutionException( "Unable to generate classpath: " + e, e );
         }
         catch ( ArtifactResolutionException e )
         {
-            throw new MojoExecutionException( "Unable to generate test classpath: " + e, e );
+            throw new MojoExecutionException( "Unable to generate classpath: " + e, e );
         }
         catch ( ArtifactNotFoundException e )
         {
-            throw new MojoExecutionException( "Unable to generate test classpath: " + e, e );
+            throw new MojoExecutionException( "Unable to generate classpath: " + e, e );
         }
         catch ( InvalidVersionSpecificationException e )
         {
-            throw new MojoExecutionException( "Unable to generate test classpath: " + e, e );
+            throw new MojoExecutionException( "Unable to generate classpath: " + e, e );
         }
 
-        addClasspathElementsToClasspathConfiguration( classpathElements, classpathConfiguration );
-        return new StartupConfiguration( providerName, classpathConfiguration, classLoaderConfiguration,
-                                         forkConfiguration.isForking(), false, isRedirectTestOutputToFile() );
     }
 
-    private void addClasspathElementsToClasspathConfiguration( List classpathElements,
-                                                               ClasspathConfiguration classpathConfiguration )
+    public void logClasspath( Classpath classpath, String descriptor )
     {
-        getLog().debug( "Test classpath:" );
-        for ( Iterator i = classpathElements.iterator(); i.hasNext(); )
+        getLog().debug( descriptor + " classpath:" );
+        for ( Iterator i = classpath.getClassPath().iterator(); i.hasNext(); )
         {
             String classpathElement = (String) i.next();
             if ( classpathElement == null )
@@ -418,10 +405,10 @@ public abstract class AbstractSurefireMojo
             else
             {
                 getLog().debug( "  " + classpathElement );
-                classpathConfiguration.addClasspathUrl( classpathElement );
             }
         }
     }
+
 
     private boolean isSpecificTestSpecified()
     {
@@ -727,13 +714,14 @@ public abstract class AbstractSurefireMojo
      *          when dependency resolution fails
      * @throws org.apache.maven.plugin.MojoExecutionException
      *          upon other problems
-     * @throws InvalidVersionSpecificationException 
-     * @throws MojoFailureException 
-     * @throws ArtifactNotFoundException 
-     * @throws ArtifactResolutionException 
+     * @throws InvalidVersionSpecificationException when it happens
+     * @throws MojoFailureException when it happens
+     * @throws ArtifactNotFoundException when it happens
+     * @throws ArtifactResolutionException when it happens
      */
-    public List generateTestClasspath()
-        throws DependencyResolutionRequiredException, MojoExecutionException, MojoFailureException, InvalidVersionSpecificationException, ArtifactResolutionException, ArtifactNotFoundException
+    public Classpath generateTestClasspath()
+        throws DependencyResolutionRequiredException, MojoExecutionException, InvalidVersionSpecificationException,
+        MojoFailureException, ArtifactResolutionException, ArtifactNotFoundException
     {
         List classpath = new ArrayList( 2 + getProject().getArtifacts().size() );
 
@@ -774,11 +762,14 @@ public abstract class AbstractSurefireMojo
             for ( Iterator iter = getAdditionalClasspathElements().iterator(); iter.hasNext(); )
             {
                 String classpathElement = (String) iter.next();
-                classpath.add( classpathElement );
+                if (classpathElement != null){
+                    classpath.add( classpathElement );
+                }
             }
         }
         
         // adding TestNG MethodSelector to the classpath
+        // Todo: move
         if ( getTestNgArtifact() != null )
         {
             Artifact testNgUtils = getTestNgUtilsArtifact();
@@ -787,7 +778,7 @@ public abstract class AbstractSurefireMojo
 
         }
 
-        return classpath;
+        return new Classpath(classpath);
     }
     
     protected Artifact getTestNgUtilsArtifact()
@@ -1099,13 +1090,13 @@ public abstract class AbstractSurefireMojo
             convertTestNGParameters();
         }
 
-        public void addProviderArtifactToSurefireClasspath( ClasspathConfiguration bootclasspath )
+        public Classpath getProviderClasspath()
             throws ArtifactResolutionException, ArtifactNotFoundException
         {
             Artifact surefireArtifact =
                 (Artifact) getPluginArtifactMap().get( "org.apache.maven.surefire:surefire-booter" );
-            dependencyResolver.addProviderToClasspath( bootclasspath, "surefire-testng",
-                                                       surefireArtifact.getBaseVersion(), testNgArtifact );
+            return dependencyResolver.getProviderClasspath( "surefire-testng", surefireArtifact.getBaseVersion(),
+                                                            testNgArtifact );
         }
     }
 
@@ -1126,13 +1117,13 @@ public abstract class AbstractSurefireMojo
         {
         }
 
-        public void addProviderArtifactToSurefireClasspath( ClasspathConfiguration classpathConfiguration )
+        public Classpath getProviderClasspath()
             throws ArtifactResolutionException, ArtifactNotFoundException
         {
             // add the JUnit provider as default - it doesn't require JUnit to be present,
             // since it supports POJO tests.
-            dependencyResolver.addProviderToClasspath( classpathConfiguration, "surefire-junit3",
-                                                       surefireArtifact.getBaseVersion(), null );
+            return dependencyResolver.getProviderClasspath( "surefire-junit3", surefireArtifact.getBaseVersion(),
+                                                            null );
 
         }
 
@@ -1165,11 +1156,11 @@ public abstract class AbstractSurefireMojo
         {
         }
 
-        public void addProviderArtifactToSurefireClasspath( ClasspathConfiguration classpathConfiguration )
+        public Classpath getProviderClasspath()
             throws ArtifactResolutionException, ArtifactNotFoundException
         {
-            dependencyResolver.addProviderToClasspath( classpathConfiguration, "surefire-junit4",
-                                                       surefireArtifact.getBaseVersion(), null );
+            return dependencyResolver.getProviderClasspath( "surefire-junit4", surefireArtifact.getBaseVersion(),
+                                                            null );
 
         }
 
@@ -1209,11 +1200,11 @@ public abstract class AbstractSurefireMojo
             convertJunitCoreParameters();
         }
 
-        public void addProviderArtifactToSurefireClasspath( ClasspathConfiguration classpathConfiguration )
+        public Classpath getProviderClasspath()
             throws ArtifactResolutionException, ArtifactNotFoundException
         {
-            dependencyResolver.addProviderToClasspath( classpathConfiguration, "surefire-junit47",
-                                                       surefireArtifact.getBaseVersion(), null );
+            return dependencyResolver.getProviderClasspath( "surefire-junit47", surefireArtifact.getBaseVersion(),
+                                                            null );
         }
 
     }
@@ -1250,12 +1241,13 @@ public abstract class AbstractSurefireMojo
             convertTestNGParameters();
         }
 
-        public void addProviderArtifactToSurefireClasspath( ClasspathConfiguration classpathConfiguration )
+
+        public Classpath getProviderClasspath()
             throws ArtifactResolutionException, ArtifactNotFoundException
         {
             final Map pluginArtifactMap = getPluginArtifactMap();
             Artifact plugin = (Artifact) pluginArtifactMap.get( "org.apache.maven.plugins:maven-surefire-plugin" );
-            dependencyResolver.addProviderToClasspath( classpathConfiguration, pluginArtifactMap, plugin );
+            return dependencyResolver.addProviderToClasspath( pluginArtifactMap, plugin );
         }
 
     }

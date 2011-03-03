@@ -35,8 +35,8 @@ import org.apache.maven.artifact.versioning.OverConstrainedVersionException;
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.surefire.booter.Classpath;
-import org.apache.maven.surefire.booter.ClasspathConfiguration;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -151,14 +151,14 @@ public class SurefireDependencyResolver
                                                      filter );
     }
 
-    public void addProviderToClasspath( ClasspathConfiguration classpathConfiguration, String provider, String version,
-                                        Artifact filteredArtifact )
+    public Classpath getProviderClasspath( String provider, String version, Artifact filteredArtifact )
         throws ArtifactNotFoundException, ArtifactResolutionException
     {
         Artifact providerArtifact = artifactFactory.createDependencyArtifact( "org.apache.maven.surefire", provider,
                                                                               VersionRange.createFromVersion( version ),
                                                                               "jar", null, Artifact.SCOPE_TEST );
         ArtifactResolutionResult result = resolveArtifact( filteredArtifact, providerArtifact );
+        List files = new ArrayList();
 
         for ( Iterator i = result.getArtifacts().iterator(); i.hasNext(); )
         {
@@ -168,30 +168,15 @@ public class SurefireDependencyResolver
                 "Adding to " + pluginName + " test classpath: " + artifact.getFile().getAbsolutePath() + " Scope: "
                     + artifact.getScope() );
 
-            classpathConfiguration.addSurefireClasspathUrl( artifact.getFile().getAbsolutePath() );
+            files.add( artifact.getFile().getAbsolutePath() );
         }
+        return new Classpath( files );
     }
 
-    public void addResolvedArtifactToClasspath( Classpath bootClasspath, Artifact surefireArtifact )
-        throws ArtifactNotFoundException, ArtifactResolutionException
-    {
-        ArtifactResolutionResult result = resolveArtifact( null, surefireArtifact );
-
-        for ( Iterator i = result.getArtifacts().iterator(); i.hasNext(); )
-        {
-            Artifact artifact = (Artifact) i.next();
-
-            log.debug( "Adding to " + pluginName + " booter test classpath: " + artifact.getFile().getAbsolutePath()
-                           + " Scope: " + artifact.getScope() );
-
-            bootClasspath.addClassPathElementUrl( artifact.getFile().getAbsolutePath() );
-        }
-    }
-
-    public void addProviderToClasspath( ClasspathConfiguration classpathConfiguration, Map pluginArtifactMap,
-                                        Artifact surefireArtifact )
+    public Classpath addProviderToClasspath( Map pluginArtifactMap, Artifact surefireArtifact )
         throws ArtifactResolutionException, ArtifactNotFoundException
     {
+        List files = new ArrayList();
         if ( surefireArtifact != null )
         {
             final ArtifactResolutionResult artifactResolutionResult = resolveArtifact( null, surefireArtifact );
@@ -200,7 +185,7 @@ public class SurefireDependencyResolver
                 Artifact artifact = (Artifact) iterator.next();
                 if ( !artifactResolutionResult.getArtifacts().contains( artifact ) )
                 {
-                    classpathConfiguration.addClasspathUrl( artifact.getFile().getPath() );
+                    files.add( artifact.getFile().getAbsolutePath() );
                 }
             }
         }
@@ -210,8 +195,25 @@ public class SurefireDependencyResolver
             for ( Iterator iterator = pluginArtifactMap.values().iterator(); iterator.hasNext(); )
             {
                 Artifact artifact = (Artifact) iterator.next();
-                classpathConfiguration.addClasspathUrl( artifact.getFile().getPath() );
+                files.add( artifact.getFile().getPath() );
             }
         }
+        return new Classpath( files );
     }
+
+    public Classpath getResolvedArtifactClasspath( Artifact surefireArtifact )
+        throws ArtifactNotFoundException, ArtifactResolutionException
+    {
+        ArtifactResolutionResult result = resolveArtifact( null, surefireArtifact );
+        List classpath = new ArrayList();
+
+        for ( Iterator i = result.getArtifacts().iterator(); i.hasNext(); )
+        {
+            Artifact artifact = (Artifact) i.next();
+
+            classpath.add( artifact.getFile().getAbsolutePath() );
+        }
+        return new Classpath( classpath);
+    }
+
 }

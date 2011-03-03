@@ -24,11 +24,12 @@ import org.apache.maven.surefire.util.UrlUtils;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
 /**
- * An ordered set of classpath elements
+ * An ordered list of classpath elements with set behaviour
  *
  * @author Kristian Rosenvold
  */
@@ -85,7 +86,7 @@ public class Classpath
 
     public List getClassPath()
     {
-        return new ArrayList( elements );
+        return Collections.unmodifiableList( elements );
     }
 
     public List getAsUrlList()

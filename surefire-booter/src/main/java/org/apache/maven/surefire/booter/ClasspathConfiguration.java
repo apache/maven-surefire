@@ -65,6 +65,7 @@ public class ClasspathConfiguration
         this( new Classpath(), new Classpath(), enableAssertions, childDelegation );
     }
 
+
     ClasspathConfiguration( PropertiesWrapper properties )
     {
         this( properties.getClasspath( CLASSPATH ),
@@ -72,19 +73,19 @@ public class ClasspathConfiguration
               properties.getBooleanProperty( ENABLE_ASSERTIONS ), properties.getBooleanProperty( CHILD_DELEGATION ) );
     }
 
-    private ClasspathConfiguration( Classpath classPathUrls, Classpath surefireClassPathUrls, boolean enableAssertions,
+    public ClasspathConfiguration( Classpath testClasspath, Classpath surefireClassPathUrls, boolean enableAssertions,
                                     boolean childDelegation )
     {
         this.enableAssertions = enableAssertions;
         this.childDelegation = childDelegation;
-        this.classpathUrls = classPathUrls;
+        this.classpathUrls = testClasspath;
         this.surefireClasspathUrls = surefireClassPathUrls;
     }
 
     public void setForkProperties( PropertiesWrapper properties )
     {
         properties.setClasspath( CLASSPATH, classpathUrls );
-        properties.setClasspath( SUREFIRE_CLASSPATH, classpathUrls );
+        properties.setClasspath( SUREFIRE_CLASSPATH, surefireClasspathUrls );
         properties.setProperty( ENABLE_ASSERTIONS, String.valueOf( enableAssertions ) );
         properties.setProperty( CHILD_DELEGATION, String.valueOf( childDelegation ) );
     }
