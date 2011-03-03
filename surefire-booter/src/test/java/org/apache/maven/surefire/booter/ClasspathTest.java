@@ -21,7 +21,6 @@ package org.apache.maven.surefire.booter;
 
 import java.io.File;
 import java.util.List;
-import java.util.Properties;
 
 import junit.framework.TestCase;
 
@@ -73,17 +72,6 @@ public class ClasspathTest
         assertTrue( asUrlList.get( 1 ).toString().endsWith( DUMMY_URL_2 ) );
     }
 
-    public void testSetForkProperties()
-        throws Exception
-    {
-        Properties properties = new Properties();
-        createClasspathWithTwoElements().writeToForkProperties( properties, "test" );
-        assertEquals( DUMMY_URL_1, properties.get( "test0" ) );
-        assertEquals( DUMMY_URL_2, properties.get( "test1" ) );
-    }
-
-
-
     public void testShouldJoinTwoNullClasspaths()
     {
         Classpath joinedClasspath = Classpath.join( null, null );
@@ -111,21 +99,7 @@ public class ClasspathTest
         Classpath joinedClasspath = Classpath.join( firstClasspath, secondClasspath );
         assertClasspathConsistsOfElements( joinedClasspath, new String[] { DUMMY_URL_1 } );
     }
-    
-    public void testShouldReadEmptyClasspathFromForkProperties() {
-        PropertiesWrapper properties = new PropertiesWrapper( new Properties() );
-        Classpath classpath = Classpath.readFromForkProperties( properties, "test" );
-        assertEmptyClasspath(classpath);
-    }
-    
-    public void testShouldReadClasspathWithToElementsFromForkProperties() {
-        PropertiesWrapper properties = new PropertiesWrapper( new Properties() );
-        properties.setProperty( "test0", DUMMY_URL_1 );
-        properties.setProperty( "test1", DUMMY_URL_2 );
-        Classpath classpath = Classpath.readFromForkProperties( properties, "test" );
-        assertClasspathConsistsOfElements( classpath, new String[] { DUMMY_URL_1, DUMMY_URL_2 } );
-    }
-    
+
     public void testShouldNotBeAbleToRemoveElement()
         throws Exception
     {

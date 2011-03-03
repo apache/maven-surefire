@@ -27,7 +27,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Properties;
 
 /**
  * Represents the classpaths for the BooterConfiguration.
@@ -40,6 +39,13 @@ import java.util.Properties;
  */
 public class ClasspathConfiguration
 {
+    private static final String CHILD_DELEGATION = "childDelegation";
+
+    private static final String ENABLE_ASSERTIONS = "enableAssertions";
+
+    private static final String CLASSPATH = "classPathUrl.";
+
+    private static final String SUREFIRE_CLASSPATH = "surefireClassPathUrl.";
 
     private final Classpath classpathUrls;
 
@@ -59,11 +65,15 @@ public class ClasspathConfiguration
         this( new Classpath(), new Classpath(), enableAssertions, childDelegation );
     }
 
-    /*
-    * Reads the config from the supplied stream. Closes the stream.
-    */
-    public ClasspathConfiguration( Classpath classPathUrls, Classpath surefireClassPathUrls, boolean enableAssertions,
-                                   boolean childDelegation )
+    ClasspathConfiguration( PropertiesWrapper properties )
+    {
+        this( properties.getClasspath( CLASSPATH ),
+              properties.getClasspath( SUREFIRE_CLASSPATH ),
+              properties.getBooleanProperty( ENABLE_ASSERTIONS ), properties.getBooleanProperty( CHILD_DELEGATION ) );
+    }
+
+    private ClasspathConfiguration( Classpath classPathUrls, Classpath surefireClassPathUrls, boolean enableAssertions,
+                                    boolean childDelegation )
     {
         this.enableAssertions = enableAssertions;
         this.childDelegation = childDelegation;
@@ -71,12 +81,12 @@ public class ClasspathConfiguration
         this.surefireClasspathUrls = surefireClassPathUrls;
     }
 
-    public void setForkProperties( Properties properties )
+    public void setForkProperties( PropertiesWrapper properties )
     {
-        classpathUrls.writeToForkProperties( properties, BooterConstants.CLASSPATH_URL );
-        surefireClasspathUrls.writeToForkProperties( properties, BooterConstants.SUREFIRE_CLASSPATHURL );
-        properties.setProperty( BooterConstants.ENABLE_ASSERTIONS, String.valueOf( enableAssertions ) );
-        properties.setProperty( BooterConstants.CHILD_DELEGATION, String.valueOf( childDelegation ) );
+        properties.setClasspath( CLASSPATH, classpathUrls );
+        properties.setClasspath( SUREFIRE_CLASSPATH, classpathUrls );
+        properties.setProperty( ENABLE_ASSERTIONS, String.valueOf( enableAssertions ) );
+        properties.setProperty( CHILD_DELEGATION, String.valueOf( childDelegation ) );
     }
 
     private static Method assertionStatusMethod;

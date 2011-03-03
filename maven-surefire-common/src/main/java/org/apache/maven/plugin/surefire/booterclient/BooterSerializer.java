@@ -77,7 +77,7 @@ public class BooterSerializer
             new Object[]{ BooterConstants.DIRSCANNER_OPTIONS, booterConfiguration.getDirScannerParamsArray() } );
         addPropertiesForTypeHolder( params, properties.getProperties(), BooterConstants.DIRSCANNER_PROPERTY_PREFIX );
 
-        providerConfiguration.getClasspathConfiguration().setForkProperties( properties.getProperties() );
+        providerConfiguration.getClasspathConfiguration().setForkProperties( properties);
 
         TestArtifactInfo testNg = booterConfiguration.getTestArtifact();
         if ( testNg != null )

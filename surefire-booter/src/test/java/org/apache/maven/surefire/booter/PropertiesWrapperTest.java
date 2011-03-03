@@ -51,4 +51,61 @@ public class PropertiesWrapperTest
         assertEquals( "String2", test.get( 1 ) );
 
     }
+
+    private static final String DUMMY_PREFIX = "dummyPrefix";
+
+    private static final String FIRST_ELEMENT = "foo0";
+
+    private static final String SECOND_ELEMENT = "foo1";
+
+    private final Properties properties = new Properties();
+
+
+    private final PropertiesWrapper mapper = new PropertiesWrapper( properties );
+    private final Classpath classpathWithTwoElements = createClasspathWithTwoElements();
+
+    public void testReadFromProperties()
+        throws Exception
+    {
+        properties.put( DUMMY_PREFIX + "0", FIRST_ELEMENT );
+        properties.put( DUMMY_PREFIX + "1", SECOND_ELEMENT );
+        Classpath recreatedClasspath = readClasspathFromProperties();
+        assertEquals( classpathWithTwoElements, recreatedClasspath );
+    }
+
+    public void testReadFromPropertiesWithEmptyProperties()
+        throws Exception
+    {
+        Classpath recreatedClasspath = readClasspathFromProperties();
+        assertTrue( recreatedClasspath.getClassPath().isEmpty() );
+    }
+
+    public void testWriteToProperties()
+        throws Exception
+    {
+        mapper.setClasspath( DUMMY_PREFIX,  classpathWithTwoElements);
+        assertEquals( FIRST_ELEMENT, mapper.getProperty( DUMMY_PREFIX + "0" ) );
+        assertEquals( SECOND_ELEMENT, mapper.getProperty( DUMMY_PREFIX + "1" ) );
+    }
+
+    public void testRoundtrip()
+        throws Exception
+    {
+        mapper.setClasspath( DUMMY_PREFIX,  classpathWithTwoElements);
+        Classpath recreatedClasspath = readClasspathFromProperties();
+        assertEquals( classpathWithTwoElements, recreatedClasspath );
+    }
+
+    private Classpath createClasspathWithTwoElements()
+    {
+        Classpath classpath = new Classpath();
+        classpath.addClassPathElementUrl( FIRST_ELEMENT );
+        classpath.addClassPathElementUrl( SECOND_ELEMENT );
+        return classpath;
+    }
+
+    private Classpath readClasspathFromProperties()
+    {
+        return mapper.getClasspath( DUMMY_PREFIX);
+    }
 }

@@ -96,20 +96,14 @@ public class BooterDeserializer
     public StartupConfiguration getProviderConfiguration()
         throws IOException
     {
-        boolean enableAssertions = properties.getBooleanProperty( ENABLE_ASSERTIONS );
-        boolean childDelegation = properties.getBooleanProperty( CHILD_DELEGATION );
         boolean useSystemClassLoader = properties.getBooleanProperty( USESYSTEMCLASSLOADER );
         boolean useManifestOnlyJar = properties.getBooleanProperty( USEMANIFESTONLYJAR );
         String providerConfiguration = properties.getProperty( PROVIDER_CONFIGURATION );
 
-        Classpath classpath = Classpath.readFromForkProperties( properties, CLASSPATH_URL );
-        Classpath sureFireClasspath = Classpath.readFromForkProperties( properties, SUREFIRE_CLASSPATHURL );
-
         ClassLoaderConfiguration classLoaderConfiguration =
             new ClassLoaderConfiguration( useSystemClassLoader, useManifestOnlyJar );
 
-        ClasspathConfiguration classpathConfiguration =
-            new ClasspathConfiguration( classpath, sureFireClasspath, enableAssertions, childDelegation );
+        ClasspathConfiguration classpathConfiguration = new ClasspathConfiguration( properties );
 
         return StartupConfiguration.inForkedVm( providerConfiguration, classpathConfiguration,
                                                 classLoaderConfiguration );

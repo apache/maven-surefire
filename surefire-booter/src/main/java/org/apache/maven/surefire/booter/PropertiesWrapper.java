@@ -234,6 +234,22 @@ public class PropertiesWrapper
         }
     }
 
+    Classpath getClasspath( String prefix  )
+    {
+        List elements = getStringList( prefix );
+        return new Classpath( elements );
+    }
+
+    public void setClasspath( String prefix, Classpath classpath )
+    {
+        List classpathElements = classpath.getClassPath();
+        for ( int i = 0; i < classpathElements.size(); ++i )
+        {
+            String element = (String) classpathElements.get( i );
+            setProperty( prefix + i, element );
+        }
+    }
+
     public void setProperty( String key, Integer integer )
     {
         if ( integer != null )

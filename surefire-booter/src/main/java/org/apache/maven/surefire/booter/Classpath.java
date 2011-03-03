@@ -24,10 +24,8 @@ import org.apache.maven.surefire.util.UrlUtils;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Properties;
 
 /**
  * An ordered set of classpath elements
@@ -36,12 +34,6 @@ import java.util.Properties;
  */
 public class Classpath
 {
-    static Classpath readFromForkProperties( PropertiesWrapper properties, String prefix )
-    {
-        List elements = properties.getStringList( prefix );
-        return new Classpath( elements );
-    }
-
     public static Classpath join( Classpath firstClasspath, Classpath secondClasspath )
     {
         Classpath joinedClasspath = new Classpath();
@@ -74,7 +66,7 @@ public class Classpath
         }
     }
 
-    private void addElements( Collection additionalElements )
+    private void addElements( List additionalElements )
     {
         for ( Iterator it = additionalElements.iterator(); it.hasNext(); )
         {
@@ -109,15 +101,6 @@ public class Classpath
         return urls;
     }
 
-    void writeToForkProperties( Properties properties, String prefix )
-    {
-        for ( int i = 0; i < elements.size(); ++i )
-        {
-            String element = (String) elements.get( i );
-            properties.setProperty( prefix + i, element );
-        }
-    }
-
     public void writeToSystemProperty( String propertyName )
     {
         StringBuffer sb = new StringBuffer();
@@ -126,5 +109,27 @@ public class Classpath
             sb.append( (String) i.next() ).append( File.pathSeparatorChar );
         }
         System.setProperty( propertyName, sb.toString() );
+    }
+
+    public boolean equals( Object o )
+    {
+        if ( this == o )
+        {
+            return true;
+        }
+        if ( o == null || getClass() != o.getClass() )
+        {
+            return false;
+        }
+
+        Classpath classpath = (Classpath) o;
+
+        return !( elements != null ? !elements.equals( classpath.elements ) : classpath.elements != null );
+
+    }
+
+    public int hashCode()
+    {
+        return elements != null ? elements.hashCode() : 0;
     }
 }

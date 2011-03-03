@@ -34,10 +34,6 @@ public interface BooterConstants
     String REPORT_PROPERTY_PREFIX = "report.";
     String PARAMS_SUFIX = ".params";
     String TYPES_SUFIX = ".types";
-    String CLASSPATH_URL = "classPathUrl.";
-    String SUREFIRE_CLASSPATHURL = "surefireClassPathUrl.";
-    String CHILD_DELEGATION = "childDelegation";
-    String ENABLE_ASSERTIONS = "enableAssertions";
     String USESYSTEMCLASSLOADER = "useSystemClassLoader";
     String USEMANIFESTONLYJAR = "useManifestOnlyJar";
     String FAILIFNOTESTS = "failIfNoTests";

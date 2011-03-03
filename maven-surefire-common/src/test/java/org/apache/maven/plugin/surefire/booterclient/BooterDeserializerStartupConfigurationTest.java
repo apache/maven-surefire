@@ -24,15 +24,14 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Properties;
 
 import junit.framework.TestCase;
 
-import org.apache.maven.surefire.booter.BooterConstants;
 import org.apache.maven.surefire.booter.BooterDeserializer;
 import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
 import org.apache.maven.surefire.booter.ClasspathConfiguration;
+import org.apache.maven.surefire.booter.PropertiesWrapper;
 import org.apache.maven.surefire.booter.ProviderConfiguration;
 import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.SystemPropertyManager;
@@ -49,12 +48,9 @@ import org.apache.maven.surefire.testset.TestRequest;
 public class BooterDeserializerStartupConfigurationTest
     extends TestCase
 {
+    private final ClasspathConfiguration classpathConfiguration = createClasspathConfiguration();
 
     private final String aTest = "aTest";
-
-    private final String aUserRequestedTest = "aUserRequestedTest";
-    
-    private final String aUserRequestedTestMethod = "aUserRequestedTestMethod";
 
     public void testProvider()
         throws IOException
@@ -65,18 +61,25 @@ public class BooterDeserializerStartupConfigurationTest
     public void testClassPathConfiguration()
         throws IOException
     {
-        final ClasspathConfiguration classpathConfiguration =
+        ClasspathConfiguration reloadedClasspathConfiguration =
             getReloadedStartupConfiguration().getClasspathConfiguration();
-        Properties props = new Properties();
-        classpathConfiguration.setForkProperties( props );
-        List testClassPathUrls = classpathConfiguration.getTestClasspath().getClassPath();
-        assertEquals( "true", props.get( BooterConstants.ENABLE_ASSERTIONS ) );
-        assertEquals( "true", props.get( BooterConstants.CHILD_DELEGATION ) );
-        assertEquals( 2, testClassPathUrls.size() );
-        assertEquals( "CP1", testClassPathUrls.get( 0 ) );
-        assertEquals( "CP2", testClassPathUrls.get( 1 ) );
-        assertEquals( "SP1", props.get( BooterConstants.SUREFIRE_CLASSPATHURL + "0" ) );
-        assertEquals( "SP2", props.get( BooterConstants.SUREFIRE_CLASSPATHURL + "1" ) );
+        assertEquals( classpathConfiguration, reloadedClasspathConfiguration );
+    }
+
+    private void assertEquals( ClasspathConfiguration expectedConfiguration, ClasspathConfiguration actualConfiguration )
+    {
+        assertEquals( expectedConfiguration.getTestClasspath().getClassPath(),
+                      actualConfiguration.getTestClasspath().getClassPath() );
+        Properties propertiesForExpectedConfiguration = getPropertiesForClasspathConfiguration( expectedConfiguration );
+        Properties propertiesForActualConfiguration = getPropertiesForClasspathConfiguration( actualConfiguration );
+        assertEquals( propertiesForExpectedConfiguration, propertiesForActualConfiguration );
+    }
+
+    private Properties getPropertiesForClasspathConfiguration( ClasspathConfiguration configuration )
+    {
+        Properties properties = new Properties();
+        configuration.setForkProperties( new PropertiesWrapper( properties ));
+        return properties;
     }
 
     public void testClassLoaderConfiguration()
@@ -94,6 +97,15 @@ public class BooterDeserializerStartupConfigurationTest
         assertEquals( current, saveAndReload( testStartupConfiguration ).isManifestOnlyJarRequestedAndUsable() );
     }
 
+    private ClasspathConfiguration createClasspathConfiguration()
+    {
+        ClasspathConfiguration classpathConfiguration = new ClasspathConfiguration( true, true );
+        classpathConfiguration.addClasspathUrl( "CP1" );
+        classpathConfiguration.addClasspathUrl( "CP2" );
+        classpathConfiguration.addSurefireClasspathUrl( "SP1" );
+        classpathConfiguration.addSurefireClasspathUrl( "SP2" );
+        return classpathConfiguration;
+    }
 
     public static ClassLoaderConfiguration getSystemClassLoaderConfiguration()
         throws IOException
@@ -137,8 +149,11 @@ public class BooterDeserializerStartupConfigurationTest
             new DirectoryScannerParameters( cwd, new ArrayList(), new ArrayList(), Boolean.TRUE, "hourly" );
         ReporterConfiguration reporterConfiguration =
             new ReporterConfiguration( new ArrayList(), cwd, Boolean.TRUE, null );
+        String aUserRequestedTest = "aUserRequestedTest";
+        String aUserRequestedTestMethod = "aUserRequestedTestMethod";
         TestRequest testSuiteDefinition =
-            new TestRequest( Arrays.asList( getSuiteXmlFileStrings() ), getTestSourceDirectory(), aUserRequestedTest, aUserRequestedTestMethod );
+            new TestRequest( Arrays.asList( getSuiteXmlFileStrings() ), getTestSourceDirectory(), aUserRequestedTest,
+                             aUserRequestedTestMethod );
         return new ProviderConfiguration( directoryScannerParameters, true, reporterConfiguration,
                                           new TestArtifactInfo( "5.0", "ABC" ), testSuiteDefinition, new Properties(),
                                           aTest );
@@ -146,11 +161,6 @@ public class BooterDeserializerStartupConfigurationTest
 
     private StartupConfiguration getTestStartupConfiguration( ClassLoaderConfiguration classLoaderConfiguration )
     {
-        ClasspathConfiguration classpathConfiguration = new ClasspathConfiguration( true, true );
-        classpathConfiguration.addClasspathUrl( "CP1" );
-        classpathConfiguration.addClasspathUrl( "CP2" );
-        classpathConfiguration.addSurefireClasspathUrl( "SP1" );
-        classpathConfiguration.addSurefireClasspathUrl( "SP2" );
         return new StartupConfiguration( "com.provider", classpathConfiguration, classLoaderConfiguration, false, false,
                                          false );
     }
