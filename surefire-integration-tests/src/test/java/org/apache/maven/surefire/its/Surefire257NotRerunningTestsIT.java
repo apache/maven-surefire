@@ -35,9 +35,8 @@ public class Surefire257NotRerunningTestsIT
     public void testShouldNotRerun()
         throws Exception
     {
-
-        addGoal( "package" );
-        execute( "site" );
+        addGoal("org.apache.maven.plugins:maven-surefire-report-plugin:" + getSurefireVersion() + ":report"  );
+        execute( "org.apache.maven.plugins:maven-surefire-report-plugin:" + getSurefireVersion() + ":report" );
         verifyTextInLog( "Skipping execution of surefire because it has already been run for this configuration" );
     }
 }
