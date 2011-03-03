@@ -19,7 +19,10 @@ package org.apache.maven.plugins.surefire.report;
  * under the License.
  */
 
+import org.apache.maven.doxia.markup.HtmlMarkup;
 import org.apache.maven.doxia.sink.Sink;
+import org.apache.maven.doxia.sink.SinkEventAttributeSet;
+import org.apache.maven.doxia.sink.SinkEventAttributes;
 import org.apache.maven.reporting.MavenReportException;
 
 import java.text.NumberFormat;
@@ -64,29 +67,15 @@ public class SurefireReportGenerator
         sink.text( bundle.getString( "report.surefire.header" ) );
         sink.title_();
 
-        StringBuffer str = new StringBuffer();
-        str.append( "<script type=\"text/javascript\">\n" );
-        str.append( "function toggleDisplay(elementId) {\n" );
-        str.append( " var elm = document.getElementById(elementId + 'error');\n" );
-        str.append( " if (elm && typeof elm.style != \"undefined\") {\n" );
-        str.append( " if (elm.style.display == \"none\") {\n" );
-        str.append( " elm.style.display = \"\";\n" );
-        str.append( " document.getElementById(elementId + 'off').style.display = \"none\";\n" );
-        str.append( " document.getElementById(elementId + 'on').style.display = \"inline\";\n" );
-        str.append( " }" );
-        str.append( " else if (elm.style.display == \"\") {" );
-        str.append( " elm.style.display = \"none\";\n" );
-        str.append( " document.getElementById(elementId + 'off').style.display = \"inline\";\n" );
-        str.append( " document.getElementById(elementId + 'on').style.display = \"none\";\n" );
-        str.append( " } \n" );
-        str.append( " } \n" );
-        str.append( " }\n" );
-        str.append( "</script>" );
-        sink.rawText( str.toString() );
-
         sink.head_();
 
         sink.body();
+
+        SinkEventAttributeSet atts = new SinkEventAttributeSet();
+        atts.addAttribute( SinkEventAttributes.TYPE, "text/javascript" );
+        sink.unknown( "script", new Object[]{new Integer( HtmlMarkup.TAG_TYPE_START )}, atts );
+        sink.unknown( "cdata", new Object[]{new Integer( HtmlMarkup.CDATA_TYPE ), javascriptToggleDisplayCode() }, null );
+        sink.unknown( "script", new Object[]{new Integer( HtmlMarkup.TAG_TYPE_END )}, null );
 
         sink.section1();
         sink.sectionTitle1();
@@ -174,7 +163,7 @@ public class SurefireReportGenerator
         sink.lineBreak();
 
         sink.paragraph();
-        sink.rawText( bundle.getString( "report.surefire.text.note1" ) );
+        sink.text( bundle.getString( "report.surefire.text.note1" ) );
         sink.paragraph_();
 
         sinkLineBreak( sink );
@@ -251,7 +240,7 @@ public class SurefireReportGenerator
         sink.lineBreak();
 
         sink.paragraph();
-        sink.rawText( bundle.getString( "report.surefire.text.note2" ) );
+        sink.text( bundle.getString( "report.surefire.text.note2" ) );
         sink.paragraph_();
 
         packIter = suitePackages.keySet().iterator();
@@ -425,17 +414,31 @@ public class SurefireReportGenerator
 
                             sinkLink( sink, testCase.getName(), "#" + testCase.getFullName() );
 
-                            sink.rawText( "  <div class=\"detailToggle\" style=\"display:inline\">" );
+                            SinkEventAttributeSet atts = new SinkEventAttributeSet();
+                            atts.addAttribute( SinkEventAttributes.CLASS, "detailToggle" );
+                            atts.addAttribute( SinkEventAttributes.STYLE, "display:inline" );
+                            sink.unknown( "div", new Object[]{new Integer( HtmlMarkup.TAG_TYPE_START )}, atts );
 
                             sink.link( "javascript:toggleDisplay('" + toHtmlId( testCase.getFullName() ) + "');" );
 
-                            sink.rawText( "<span style=\"display: inline;\" " + "id=\"" + toHtmlId( testCase.getFullName() )
-                                + "off\">+</span><span id=\"" + toHtmlId( testCase.getFullName() ) + "on\" "
-                                + "style=\"display: none;\">-</span> " );
+                            atts = new SinkEventAttributeSet();
+                            atts.addAttribute( SinkEventAttributes.STYLE, "display:inline;" );
+                            atts.addAttribute( SinkEventAttributes.ID, toHtmlId( testCase.getFullName() ) + "off" );
+                            sink.unknown( "span", new Object[]{new Integer( HtmlMarkup.TAG_TYPE_START )}, atts );
+                            sink.text( " + " );
+                            sink.unknown( "span", new Object[]{new Integer( HtmlMarkup.TAG_TYPE_END )}, null );
+
+                            atts = new SinkEventAttributeSet();
+                            atts.addAttribute( SinkEventAttributes.STYLE, "display:none;" );
+                            atts.addAttribute( SinkEventAttributes.ID, toHtmlId( testCase.getFullName() ) + "on" );
+                            sink.unknown( "span", new Object[]{new Integer( HtmlMarkup.TAG_TYPE_START )}, atts );
+                            sink.text( " - " );
+                            sink.unknown( "span", new Object[]{new Integer( HtmlMarkup.TAG_TYPE_END )}, null );
+
                             sink.text( "[ Detail ]" );
                             sink.link_();
 
-                            sink.rawText( "</div>" );
+                            sink.unknown( "div", new Object[]{new Integer( HtmlMarkup.TAG_TYPE_END )}, null );
 
                             sink.tableCell_();
                         }
@@ -465,12 +468,14 @@ public class SurefireReportGenerator
                                 sinkCell( sink, "" );
 
                                 sink.tableCell();
-                                sink.rawText(
-                                    "  <div id=\"" + toHtmlId( testCase.getFullName() ) + "error\" style=\"display:none;\">" );
+                                SinkEventAttributeSet atts = new SinkEventAttributeSet();
+                                atts.addAttribute( SinkEventAttributes.ID, toHtmlId( testCase.getFullName() ) + "error" );
+                                atts.addAttribute( SinkEventAttributes.STYLE, "display:none;" );
+                                sink.unknown( "div", new Object[]{new Integer( HtmlMarkup.TAG_TYPE_START )}, atts );
 
                                 Iterator it = detail.iterator();
 
-                                sink.verbatim( true );
+                                sink.verbatim( null );
                                 while ( it.hasNext() )
                                 {
                                     sink.text( it.next().toString() );
@@ -478,7 +483,7 @@ public class SurefireReportGenerator
                                 }
                                 sink.verbatim_();
 
-                                sink.rawText( "</div>" );
+                                sink.unknown( "div", new Object[]{new Integer( HtmlMarkup.TAG_TYPE_END )}, null );
                                 sink.tableCell_();
 
                                 sinkCell( sink, "" );
@@ -587,7 +592,9 @@ public class SurefireReportGenerator
                     sinkCell( sink, "" );
 
                     sink.tableCell();
-                    sink.rawText( "  <div id=\"" + tCase.getName() + "error\" >" );
+                    SinkEventAttributeSet atts = new SinkEventAttributeSet();
+                    atts.addAttribute( SinkEventAttributes.ID, tCase.getName() + "error" );
+                    sink.unknown( "div", new Object[]{new Integer( HtmlMarkup.TAG_TYPE_START )}, atts );
 
                     if ( xrefLocation != null )
                     {
@@ -603,7 +610,7 @@ public class SurefireReportGenerator
                     {
                         sink.link_();
                     }
-                    sink.rawText( "</div>" );
+                    sink.unknown( "div", new Object[]{new Integer( HtmlMarkup.TAG_TYPE_END )}, null );
 
                     sink.tableCell_();
 
@@ -725,5 +732,32 @@ public class SurefireReportGenerator
     {
         sink.anchor( anchor );
         sink.anchor_();
+    }
+
+    private static String javascriptToggleDisplayCode()
+    {
+        final StringBuffer str = new StringBuffer( 64 );
+
+        // the javascript code is emitted within a commented CDATA section
+        // so we have to start with a newline and comment the CDATA closing in the end
+        str.append( "\n" );
+        str.append( "function toggleDisplay(elementId) {\n" );
+        str.append( " var elm = document.getElementById(elementId + 'error');\n" );
+        str.append( " if (elm && typeof elm.style != \"undefined\") {\n" );
+        str.append( " if (elm.style.display == \"none\") {\n" );
+        str.append( " elm.style.display = \"\";\n" );
+        str.append( " document.getElementById(elementId + 'off').style.display = \"none\";\n" );
+        str.append( " document.getElementById(elementId + 'on').style.display = \"inline\";\n" );
+        str.append( " }" );
+        str.append( " else if (elm.style.display == \"\") {" );
+        str.append( " elm.style.display = \"none\";\n" );
+        str.append( " document.getElementById(elementId + 'off').style.display = \"inline\";\n" );
+        str.append( " document.getElementById(elementId + 'on').style.display = \"none\";\n" );
+        str.append( " } \n" );
+        str.append( " } \n" );
+        str.append( " }\n" );
+        str.append( "//" );
+
+        return str.toString();
     }
 }
