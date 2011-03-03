@@ -43,7 +43,8 @@ import java.util.Properties;
  * @author Kristian Rosenvold
  * @noinspection UnusedDeclaration
  */
-public class TestNGProvider extends AbstractProvider
+public class TestNGProvider
+    extends AbstractProvider
 {
     private final Properties providerProperties;
 
@@ -128,7 +129,8 @@ public class TestNGProvider extends AbstractProvider
                                              new ArrayList( directoryScannerParameters.getExcludes() ),
                                              testRequest.getTestSourceDirectory().toString(),
                                              testArtifactInfo.getVersion(), providerProperties,
-                                             reporterConfiguration.getReportsDirectory(), testRequest.getRequestedTestMethod() );
+                                             reporterConfiguration.getReportsDirectory(),
+                                             testRequest.getRequestedTestMethod() );
     }
 
     private TestNGXmlTestSuite getXmlSuite()
@@ -145,6 +147,11 @@ public class TestNGProvider extends AbstractProvider
         {
             try
             {
+                // Added to free the streams when scanning the classpath.
+                // It is essentially wrong that the capture of stdout is embedded within the reporter manager,
+                // which will change for 2.8.1+
+                reporterFactory.close();
+
                 return getXmlSuite().locateTestSets( testClassLoader ).keySet().iterator();
             }
             catch ( TestSetFailedException e )
@@ -155,6 +162,11 @@ public class TestNGProvider extends AbstractProvider
         else
         {
             testsToRun = scanClassPath();
+            // Added to free the streams when scanning the classpath.
+            // It is essentially wrong that the capture of stdout is embedded within the reporter manager,
+            // which will change for 2.8.1+
+            reporterFactory.close();
+
             return testsToRun.iterator();
         }
     }

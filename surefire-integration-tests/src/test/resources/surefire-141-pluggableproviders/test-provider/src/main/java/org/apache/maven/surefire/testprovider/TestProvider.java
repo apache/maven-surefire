@@ -50,6 +50,7 @@ public class TestProvider  extends AbstractProvider
 
     public Iterator getSuites()
     {
+
         return null;
     }
 

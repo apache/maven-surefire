@@ -198,6 +198,7 @@ public class ConcurrentReporterManagerTest
         Computer computer = new Computer();
 
         jUnitCore.run( computer, classes );
+        reporterManagerFactory.close();
         return reporterManagerFactory.getGlobalRunStatistics();
     }
 

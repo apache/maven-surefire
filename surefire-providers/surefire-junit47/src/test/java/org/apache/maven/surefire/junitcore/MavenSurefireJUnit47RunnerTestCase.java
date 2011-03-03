@@ -151,6 +151,8 @@ public class MavenSurefireJUnit47RunnerTestCase
 
         Assert.assertEquals( "The exception thrown by the failing TestCase", RuntimeException.class,
                              result.getFailures().get( 0 ).getException().getClass() );
+
+        reporterManagerFactory.close();
     }
 
     private ReporterConfiguration getReporterConfiguration()

@@ -115,6 +115,10 @@ public class JUnit3Provider extends AbstractProvider
     public Iterator getSuites()
     {
         testsToRun = scanClassPath();
+        // Added to free the streams when scanning the classpath.
+        // It is essentially wrong that the capture of stdout is embedded within the reporter manager,
+        // which will change for 2.8.1+
+        reporterFactory.close();
         return testsToRun.iterator();
     }
 
