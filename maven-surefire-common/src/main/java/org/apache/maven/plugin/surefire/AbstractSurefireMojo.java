@@ -553,6 +553,8 @@ public abstract class AbstractSurefireMojo
 
         processSystemProperties( !fork.isForking() );
 
+        verifyLegalSystemProperties();
+
         if ( getLog().isDebugEnabled() )
         {
             showMap( getInternalSystemProperties(), "system property" );
@@ -611,6 +613,22 @@ public abstract class AbstractSurefireMojo
             }
         }
         return fork;
+    }
+
+    private void verifyLegalSystemProperties()
+    {
+        final Properties properties = getInternalSystemProperties();
+        Iterator iter = properties.keySet().iterator();
+
+        while ( iter.hasNext() )
+        {
+            String key = (String) iter.next();
+
+            if ("java.library.path".equals( key ))
+            {
+               getLog().warn( "java.library.path cannot be set as system property, use <argLine>-Djava.library.path=...<argLine> instead");
+            }
+        }
     }
 
 
