@@ -52,8 +52,6 @@ public class TestNGProvider
 
     private final ReporterConfiguration reporterConfiguration;
 
-    private final ReporterFactory reporterFactory;
-
     private final ClassLoader testClassLoader;
 
     private final DirectoryScannerParameters directoryScannerParameters;
@@ -62,13 +60,15 @@ public class TestNGProvider
 
     private final TestRequest testRequest;
 
+    private final ProviderParameters providerParameters;
+
     private TestsToRun testsToRun;
 
     private final File basedir;
 
     public TestNGProvider( ProviderParameters booterParameters )
     {
-        this.reporterFactory = booterParameters.getReporterFactory();
+        this.providerParameters = booterParameters;
         this.testClassLoader = booterParameters.getTestClassLoader();
         this.directoryScannerParameters = booterParameters.getDirectoryScannerParameters();
         this.providerProperties = booterParameters.getProviderProperties();
@@ -87,6 +87,8 @@ public class TestNGProvider
     public RunResult invoke( Object forkTestSet )
         throws TestSetFailedException, ReporterException
     {
+
+        final ReporterFactory reporterFactory = providerParameters.getReporterFactory();
 
         if ( isTestNGXmlTestSuite( testRequest ) )
         {
@@ -117,8 +119,8 @@ public class TestNGProvider
 
     boolean isTestNGXmlTestSuite( TestRequest testSuiteDefinition )
     {
-        return testSuiteDefinition.getSuiteXmlFiles() != null && testSuiteDefinition.getSuiteXmlFiles().size() > 0
-            && testSuiteDefinition.getRequestedTest() == null;
+        return testSuiteDefinition.getSuiteXmlFiles() != null && testSuiteDefinition.getSuiteXmlFiles().size() > 0 &&
+            testSuiteDefinition.getRequestedTest() == null;
 
     }
 
@@ -147,11 +149,6 @@ public class TestNGProvider
         {
             try
             {
-                // Added to free the streams when scanning the classpath.
-                // It is essentially wrong that the capture of stdout is embedded within the reporter manager,
-                // which will change for 2.8.1+
-                reporterFactory.close();
-
                 return getXmlSuite().locateTestSets( testClassLoader ).keySet().iterator();
             }
             catch ( TestSetFailedException e )
@@ -162,11 +159,6 @@ public class TestNGProvider
         else
         {
             testsToRun = scanClassPath();
-            // Added to free the streams when scanning the classpath.
-            // It is essentially wrong that the capture of stdout is embedded within the reporter manager,
-            // which will change for 2.8.1+
-            reporterFactory.close();
-
             return testsToRun.iterator();
         }
     }

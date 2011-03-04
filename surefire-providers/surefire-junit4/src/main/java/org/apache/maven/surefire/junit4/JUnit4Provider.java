@@ -36,13 +36,12 @@ import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.DefaultDirectoryScanner;
 import org.apache.maven.surefire.util.DirectoryScanner;
 import org.apache.maven.surefire.util.TestsToRun;
+import org.junit.runner.notification.RunListener;
+import org.junit.runner.notification.RunNotifier;
 
 import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
-
-import org.junit.runner.notification.RunListener;
-import org.junit.runner.notification.RunNotifier;
 
 
 /**
@@ -53,8 +52,6 @@ public class JUnit4Provider extends AbstractProvider
 {
 
     private static ResourceBundle bundle = ResourceBundle.getBundle( Surefire.SUREFIRE_BUNDLE_NAME );
-
-    private final ReporterFactory reporterFactory;
 
     private final ClassLoader testClassLoader;
 
@@ -68,9 +65,11 @@ public class JUnit4Provider extends AbstractProvider
 
     private TestsToRun testsToRun;
 
+    private final ProviderParameters providerParameters;
+
     public JUnit4Provider( ProviderParameters booterParameters )
     {
-        this.reporterFactory = booterParameters.getReporterFactory();
+        this.providerParameters = booterParameters;
         this.testClassLoader = booterParameters.getTestClassLoader();
         this.directoryScanner = booterParameters.getDirectoryScanner();
         customRunListeners = JUnit4RunListenerFactory.
@@ -90,6 +89,8 @@ public class JUnit4Provider extends AbstractProvider
         }
 
         upgradeCheck();
+
+        final ReporterFactory reporterFactory = providerParameters.getReporterFactory();
 
         Reporter reporter = reporterFactory.createReporter();
         JUnit4RunListener jUnit4TestSetReporter = new JUnit4RunListener( reporter );
@@ -159,11 +160,6 @@ public class JUnit4Provider extends AbstractProvider
     public Iterator getSuites()
     {
         testsToRun = scanClassPath();
-        // Added to free the streams when scanning the classpath.
-        // It is essentially wrong that the capture of stdout is embedded within the reporter manager,
-        // which will change for 2.8.1+
-        reporterFactory.close();
-
         return testsToRun.iterator();
     }
 

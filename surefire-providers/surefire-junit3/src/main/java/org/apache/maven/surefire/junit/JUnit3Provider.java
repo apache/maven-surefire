@@ -39,10 +39,9 @@ import java.util.Iterator;
  * @author Kristian Rosenvold
  * @noinspection UnusedDeclaration
  */
-public class JUnit3Provider extends AbstractProvider
+public class JUnit3Provider
+    extends AbstractProvider
 {
-    private final ReporterFactory reporterFactory;
-
     private final ClassLoader testClassLoader;
 
     private final DirectoryScanner directoryScanner;
@@ -53,11 +52,13 @@ public class JUnit3Provider extends AbstractProvider
 
     private final JUnit3Reflector reflector;
 
+    private final ProviderParameters providerParameters;
+
     private TestsToRun testsToRun;
 
     public JUnit3Provider( ProviderParameters booterParameters )
     {
-        this.reporterFactory = booterParameters.getReporterFactory();
+        this.providerParameters = booterParameters;
         this.testClassLoader = booterParameters.getTestClassLoader();
         this.directoryScanner = booterParameters.getDirectoryScanner();
         this.reflector = new JUnit3Reflector( testClassLoader );
@@ -72,6 +73,8 @@ public class JUnit3Provider extends AbstractProvider
         {
             testsToRun = forkTestSet == null ? scanClassPath() : TestsToRun.fromClass( (Class) forkTestSet );
         }
+
+        ReporterFactory reporterFactory = providerParameters.getReporterFactory();
 
         Reporter reporter = reporterFactory.createReporter();
 
@@ -115,10 +118,6 @@ public class JUnit3Provider extends AbstractProvider
     public Iterator getSuites()
     {
         testsToRun = scanClassPath();
-        // Added to free the streams when scanning the classpath.
-        // It is essentially wrong that the capture of stdout is embedded within the reporter manager,
-        // which will change for 2.8.1+
-        reporterFactory.close();
         return testsToRun.iterator();
     }
 

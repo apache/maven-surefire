@@ -23,7 +23,6 @@ import org.apache.maven.surefire.common.junit4.JUnit4RunListenerFactory;
 import org.apache.maven.surefire.common.junit4.JUnit4TestChecker;
 import org.apache.maven.surefire.providerapi.AbstractProvider;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
-import org.apache.maven.surefire.providerapi.SurefireProvider;
 import org.apache.maven.surefire.report.Reporter;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterException;
@@ -33,22 +32,20 @@ import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.DirectoryScanner;
 import org.apache.maven.surefire.util.ScannerFilter;
 import org.apache.maven.surefire.util.TestsToRun;
+import org.junit.runner.notification.RunListener;
 
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.junit.runner.notification.RunListener;
-
 /**
  * @author Kristian Rosenvold
  */
 @SuppressWarnings( { "UnusedDeclaration" } )
-public class JUnitCoreProvider extends AbstractProvider
+public class JUnitCoreProvider
+    extends AbstractProvider
 {
-    private final ReporterFactory reporterFactory;
-
     private final ClassLoader testClassLoader;
 
     private final DirectoryScanner directoryScanner;
@@ -59,18 +56,20 @@ public class JUnitCoreProvider extends AbstractProvider
 
     private final List<RunListener> customRunListeners;
 
+    private final ProviderParameters providerParameters;
+
     private TestsToRun testsToRun;
 
     private final ReporterConfiguration reporterConfiguration;
 
     public JUnitCoreProvider( ProviderParameters booterParameters )
     {
-        this.reporterFactory = booterParameters.getReporterFactory();
+        this.providerParameters = booterParameters;
         reporterConfiguration = booterParameters.getReporterConfiguration();
         this.testClassLoader = booterParameters.getTestClassLoader();
         this.directoryScanner = booterParameters.getDirectoryScanner();
         this.jUnitCoreParameters = new JUnitCoreParameters( booterParameters.getProviderProperties() );
-        this.scannerFilter = new JUnit4TestChecker(testClassLoader);
+        this.scannerFilter = new JUnit4TestChecker( testClassLoader );
         customRunListeners = JUnit4RunListenerFactory.
             createCustomListeners( booterParameters.getProviderProperties().getProperty( "listener" ) );
 
@@ -84,11 +83,6 @@ public class JUnitCoreProvider extends AbstractProvider
     public Iterator getSuites()
     {
         testsToRun = scanClassPath();
-        // Added to free the streams when scanning the classpath.
-        // It is essentially wrong that the capture of stdout is embedded within the reporter manager,
-        // which will change for 2.8.1+
-        reporterFactory.close();
-
         return testsToRun.iterator();
     }
 
@@ -96,6 +90,8 @@ public class JUnitCoreProvider extends AbstractProvider
         throws TestSetFailedException, ReporterException
     {
         final String message = "Concurrency config is " + jUnitCoreParameters.toString();
+        final ReporterFactory reporterFactory = providerParameters.getReporterFactory();
+
         reporterFactory.createReporter().writeMessage( message );
 
         if ( testsToRun == null )
@@ -105,10 +101,10 @@ public class JUnitCoreProvider extends AbstractProvider
         final Map<String, TestSet> testSetMap = new ConcurrentHashMap<String, TestSet>();
 
         Reporter listener =
-            ConcurrentReporterManager.createInstance( testSetMap, this.reporterFactory, this.reporterConfiguration,
-                                                           jUnitCoreParameters.isParallelClasses(),
-                                                           jUnitCoreParameters.isParallelBoth() );
-        RunListener jUnit4RunListener = new JUnitCoreRunListener( listener, testSetMap);
+            ConcurrentReporterManager.createInstance( testSetMap, reporterFactory, this.reporterConfiguration,
+                                                      jUnitCoreParameters.isParallelClasses(),
+                                                      jUnitCoreParameters.isParallelBoth() );
+        RunListener jUnit4RunListener = new JUnitCoreRunListener( listener, testSetMap );
         customRunListeners.add( 0, jUnit4RunListener );
 
         JUnitCoreWrapper.execute( testsToRun, jUnitCoreParameters, customRunListeners );
