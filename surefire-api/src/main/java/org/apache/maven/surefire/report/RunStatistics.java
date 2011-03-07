@@ -89,8 +89,13 @@ public class RunStatistics
         void addSource( String source, StackTraceWriter stackTraceWriter )
         {
             String message = getMessageOfThrowable( stackTraceWriter );
-            String extendedSource = StringUtils.isBlank( message ) ? source : source + ": " + message;
+            String extendedSource = StringUtils.isBlank( message ) ? source : source + ": " + trimToSingleLine(message);
             addSource( extendedSource );
+        }
+
+        private String trimToSingleLine(String str){
+            int i = str.indexOf( "\n" );
+            return i >= 0 ? str.substring( 0, i ) : str;
         }
 
         Collection getListOfSources()
