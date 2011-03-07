@@ -21,7 +21,7 @@ package org.apache.maven.surefire.testng.utils;
 
 import java.util.List;
 
-import org.apache.maven.surefire.util.internal.SelectorUtils;
+import org.codehaus.plexus.util.SelectorUtils;
 import org.testng.IMethodSelector;
 import org.testng.IMethodSelectorContext;
 import org.testng.ITestNGMethod;
@@ -31,6 +31,7 @@ import org.testng.ITestNGMethod;
  * @author Olivier Lamy
  * @since 2.7.3
  *
+ * @noinspection UnusedDeclaration
  */
 public class MethodSelector implements IMethodSelector 
 {
