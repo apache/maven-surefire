@@ -19,6 +19,8 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
+import org.apache.maven.surefire.util.NestedRuntimeException;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -70,19 +72,26 @@ public class SystemPropertyManager
         p.setAsSystemProperties();
     }
 
-    public static File writePropertiesFile( Properties properties, File tempDirectory, String name,
-                                            boolean isDebug )
+    public static File writePropertiesFile( Properties properties, File tempDirectory, String name, boolean isDebug )
         throws IOException
     {
-        File file = File.createTempFile( name, "tmp", tempDirectory );
-        if ( !isDebug )
+        try
         {
-            file.deleteOnExit();
+            File file = File.createTempFile( name, "tmp", tempDirectory );
+            if ( !isDebug )
+            {
+                file.deleteOnExit();
+            }
+
+            writePropertiesFile( file, name, properties );
+
+            return file;
         }
-
-        writePropertiesFile( file, name, properties );
-
-        return file;
+        catch ( IOException e )
+        {
+            throw new NestedRuntimeException(
+                "Unable to create temp file in " + tempDirectory + ", exists=" + tempDirectory.exists(), e );
+        }
     }
 
     public static void writePropertiesFile( File file, String name, Properties properties )
