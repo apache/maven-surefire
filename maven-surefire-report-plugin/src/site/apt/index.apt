@@ -40,6 +40,9 @@ Maven Surefire Report Plugin
   not run the tests, it only builds the reports. It is provided as a work 
   around for {{{http://jira.codehaus.org/browse/SUREFIRE-257}SUREFIRE-257}}
 
+  <Note:> As of version 2.8 this plugin requires Maven Site Plugin 2.1 or higher to work properly. Version 2.7.2 and
+  older are still compatible with newer surefire versions, so mixing is possible.
+
   []
 
 * Usage
