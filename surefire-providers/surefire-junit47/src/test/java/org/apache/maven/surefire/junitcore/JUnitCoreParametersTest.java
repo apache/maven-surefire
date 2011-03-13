@@ -19,6 +19,7 @@
 package org.apache.maven.surefire.junitcore;
 
 
+import junit.framework.TestCase;
 import org.junit.Test;
 
 import java.util.Properties;
@@ -29,9 +30,8 @@ import static org.junit.Assert.*;
  * @author Kristian Rosenvold, kristian.rosenvold@gmail com
  */
 
-public class JUnitCoreParametersTest
+public class JUnitCoreParametersTest extends TestCase
 {
-    @Test
     public void testIsParallelMethod()
         throws Exception
     {
@@ -40,7 +40,6 @@ public class JUnitCoreParametersTest
         assertFalse( getTestSetBoth().isParallelMethod() );
     }
 
-    @Test
     public void testIsParallelClasses()
         throws Exception
     {
@@ -49,7 +48,6 @@ public class JUnitCoreParametersTest
         assertFalse( getTestSetBoth().isParallelClasses() );
     }
 
-    @Test
     public void testIsParallelBoth()
         throws Exception
     {
@@ -58,7 +56,6 @@ public class JUnitCoreParametersTest
         assertTrue( getTestSetBoth().isParallelBoth() );
     }
 
-    @Test
     public void testIsPerCoreThreadCount()
         throws Exception
     {
@@ -67,7 +64,6 @@ public class JUnitCoreParametersTest
         assertTrue( getTestSetBoth().isPerCoreThreadCount() );
     }
 
-    @Test
     public void testGetThreadCount()
         throws Exception
     {
@@ -76,7 +72,6 @@ public class JUnitCoreParametersTest
         assertTrue( getTestSetBoth().isPerCoreThreadCount() );
     }
 
-    @Test
     public void testIsUseUnlimitedThreads()
         throws Exception
     {
@@ -85,7 +80,6 @@ public class JUnitCoreParametersTest
         assertFalse( getTestSetBoth().isUseUnlimitedThreads() );
     }
 
-    @Test
     public void testIsNoThreading()
         throws Exception
     {
@@ -94,7 +88,6 @@ public class JUnitCoreParametersTest
         assertFalse( getTestSetBoth().isNoThreading() );
     }
 
-    @Test
     public void testIsAnyParallelitySelected()
         throws Exception
     {
@@ -104,7 +97,6 @@ public class JUnitCoreParametersTest
     }
 
 
-    @Test
     public void testToString()
         throws Exception
     {

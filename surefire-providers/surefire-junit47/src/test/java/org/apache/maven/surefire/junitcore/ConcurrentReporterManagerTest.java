@@ -51,74 +51,63 @@ import static org.junit.Assert.assertNotNull;
  * @author Kristian Rosenvold
  */
 
-public class ConcurrentReporterManagerTest
+public class ConcurrentReporterManagerTest extends TestCase
 {
     // Tests are in order of increasing complexity
-    @Test
     public void testNoErrorsCounting()
         throws Exception
     {
         runClasses( 3, 0, 0, DummyAllOk.class );
     }
 
-    @Test
     public void testNoErrorsCounting2()
         throws Exception
     {
         runClasses( 2, 0, 0, Dummy3.class );
     }
 
-    @Test
     public void testOneIgnoreCounting()
         throws Exception
     {
         runClasses( 3, 1, 0, DummyWithOneIgnore.class );
     }
 
-    @Test
     public void testOneFailureCounting()
         throws Exception
     {
         runClasses( 3, 0, 1, DummyWithFailure.class );
     }
 
-    @Test
     public void testWithErrorsCountingDemultiplexed()
         throws Exception
     {
         runClasses( 6, 1, 1, DummyWithOneIgnore.class, DummyWithFailure.class );
     }
 
-
-    @Test
     public void testJunitResultCountingDemultiplexed()
         throws Exception
     {
         runClasses( 8, 1, 1, DummyWithOneIgnore.class, DummyWithFailure.class, Dummy3.class );
     }
 
-    @Test
     public void testJunitResultCountingJUnit3Demultiplexed()
         throws Exception
     {
         runClasses( 3, 0, 0, Junit3Tc1.class, Junit3Tc2.class );
     }
 
-    @Test
     public void testJunitResultCountingJUnit3OddTest()
         throws Exception
     {
         runClasses( 2, 0, 0, Junit3OddTest1.class );
     }
 
-    @Test
     public void testJunit3WithNestedSuite()
         throws TestSetFailedException
     {
         runClasses( 4, 0, 0, Junit3WithNestedSuite.class );
     }
 
-    @Test
     public void testJunit3NestedSuite()
         throws Exception
     {
@@ -126,7 +115,6 @@ public class ConcurrentReporterManagerTest
     }
 
 
-    @Test
     public void testSimpleOutput()
         throws Exception
     {
@@ -144,7 +132,6 @@ public class ConcurrentReporterManagerTest
         System.setOut( orgOur );
     }
 
-    @Test
     public void testOutputOrdering()
         throws Exception
     {

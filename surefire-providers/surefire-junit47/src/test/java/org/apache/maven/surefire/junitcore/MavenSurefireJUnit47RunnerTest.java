@@ -16,6 +16,7 @@
  */
 package org.apache.maven.surefire.junitcore;
 
+import junit.framework.TestCase;
 import org.apache.maven.surefire.report.Reporter;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterFactory;
@@ -87,7 +88,7 @@ import org.junit.runner.notification.RunListener;
  * @author <a href="mailto:aslak@redhat.com">Aslak Knutsen</a>
  * @version $Revision: $
  */
-public class MavenSurefireJUnit47RunnerTestCase
+public class MavenSurefireJUnit47RunnerTest extends TestCase
 {
 
     /*
@@ -114,8 +115,7 @@ public class MavenSurefireJUnit47RunnerTestCase
     *
     */
     @SuppressWarnings( { "unchecked", "ThrowableResultOfMethodCallIgnored" } )
-    @Test
-    public void surefireShouldBeAbleToReportRunStatusEvenWithFailingTests()
+    public void testSurefireShouldBeAbleToReportRunStatusEvenWithFailingTests()
         throws Exception
     {
         ReporterConfiguration reporterConfiguration = ConcurrentReporterManagerTest.getTestReporterConfiguration();

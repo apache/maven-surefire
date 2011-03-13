@@ -1,5 +1,6 @@
 package org.apache.maven.surefire.junitcore;
 
+import junit.framework.TestCase;
 import org.apache.maven.surefire.report.MulticastingReporter;
 import org.junit.Assume;
 import org.junit.Test;
@@ -16,9 +17,8 @@ import static junit.framework.Assert.assertEquals;
 /**
  * @author Kristian Rosenvold
  */
-public class JUnitCoreRunListenerTest
+public class JUnitCoreRunListenerTest  extends TestCase
 {
-    @Test
     public void testTestRunStarted()
         throws Exception
     {
@@ -30,8 +30,8 @@ public class JUnitCoreRunListenerTest
         core.removeListener(  jUnit4TestSetReporter );
         assertEquals(2, result.getRunCount());
     }
-    @Test
-    public void failedAssumption()
+
+    public void testFailedAssumption()
         throws Exception
     {
         RunListener jUnit4TestSetReporter = new JUnitCoreRunListener( new MulticastingReporter( Collections.emptyList() ),

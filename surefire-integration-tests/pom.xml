@@ -18,7 +18,8 @@
   ~ under the License.
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -105,7 +106,8 @@
 
   <profiles>
     <profile>
-      <id>parallel</id>  <!-- Experimental profile to try out parallel building of surefire itself -->
+      <id>parallel</id>
+      <!-- Experimental profile to try out parallel building of surefire itself -->
       <build>
         <pluginManagement>
           <plugins>
@@ -131,7 +133,8 @@
         </dependency>
       </dependencies>
       <properties>
-        <surefire.build.version>${project.version}</surefire.build.version> <!-- Until we release 2.7.3 -->
+        <surefire.build.version>${project.version}</surefire.build.version>
+        <!-- Until we release 2.7.3 -->
       </properties>
     </profile>
 
@@ -209,7 +212,7 @@
       </plugin>
       <plugin>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <version>${surefire.build.version}</version>
+        <version>${project.version}</version>
         <configuration>
           <!-- Pass current surefire version to the main suite so that it -->
           <!-- can forward to all integration test projects. SUREFIRE-513 -->
@@ -270,11 +273,11 @@
         </executions>
       </plugin>
       <plugin>
-         <artifactId>maven-deploy-plugin</artifactId>
-         <configuration>
-           <skip>true</skip>
-         </configuration>
-       </plugin>
+        <artifactId>maven-deploy-plugin</artifactId>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 
@@ -283,6 +286,6 @@
     <it.settings.showPasswords>false</it.settings.showPasswords>
     <testng.version>5.7</testng.version>
     <surefire.threadcount>2</surefire.threadcount>
-    <surefire.build.version>2.7.2</surefire.build.version>
+    <surefire.build.version>2.8</surefire.build.version>
   </properties>
 </project>
