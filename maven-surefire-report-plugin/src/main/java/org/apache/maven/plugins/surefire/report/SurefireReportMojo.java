@@ -138,12 +138,12 @@ public class SurefireReportMojo
     {
         final List reportsDirectoryList = new ArrayList();
 
+        if ( reportsDirectories != null )
+        {
+            reportsDirectoryList.addAll( Arrays.asList( reportsDirectories ) );
+        }
         if ( reportsDirectory != null )
         {
-            if ( reportsDirectories != null )
-            {
-                reportsDirectoryList.addAll( Arrays.asList( reportsDirectories ) );
-            }
             reportsDirectoryList.add( reportsDirectory );
         }
         if ( aggregate )

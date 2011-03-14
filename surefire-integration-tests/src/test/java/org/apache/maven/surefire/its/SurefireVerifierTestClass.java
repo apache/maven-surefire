@@ -228,6 +228,12 @@ public abstract class SurefireVerifierTestClass
         return new File( targetDir, fileName );
     }
 
+    protected File getSiteFile( String moduleName, String fileName )
+    {
+        File targetDir = getSubFile(moduleName + "/target/site" );
+        return new File( targetDir, fileName );
+    }
+
     protected void printSummary( boolean printsummary )
     {
         addGoal( "-DprintSummary=" + printsummary );

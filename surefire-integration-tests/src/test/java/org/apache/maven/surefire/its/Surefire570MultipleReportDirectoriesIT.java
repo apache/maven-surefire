@@ -35,7 +35,7 @@ public class Surefire570MultipleReportDirectoriesIT
         super( "/surefire-570-multipleReportDirectories" );
     }
 
-    public void testForkPerTestNoSetup()
+    public void testReportWithAggregate()
         throws Exception
     {
 
@@ -49,6 +49,22 @@ public class Surefire570MultipleReportDirectoriesIT
         File siteFile = getSiteFile( "surefire-report.html" );
         assertContainsText( siteFile, "MyModule1ClassTest" );
         assertContainsText( siteFile, "MyModule2ClassTest" );
-        assertContainsText( siteFile, "MyDummyClassTest" );
+        assertContainsText( siteFile, "MyDummyClassM1Test" );
     }
+
+    public void testReportWithoutAggregate()
+        throws Exception
+    {
+
+        failNever();
+        executeTest(); // Hmm. This shouldn't be necessary but is another bug
+
+        reset();
+
+        execute( "surefire-report:report" );
+        File siteFile = getSiteFile( "module1", "surefire-report.html" );
+        assertContainsText( siteFile, "MyModule1ClassTest" );
+        assertContainsText( siteFile, "MyDummyClassM1Test" );
+    }
+
 }
