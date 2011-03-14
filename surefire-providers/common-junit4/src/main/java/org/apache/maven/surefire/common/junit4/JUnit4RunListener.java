@@ -19,8 +19,8 @@ package org.apache.maven.surefire.common.junit4;
  * under the License.
  */
 
+import org.apache.maven.surefire.report.ProviderReporter;
 import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.report.Reporter;
 import org.apache.maven.surefire.report.SimpleReportEntry;
 import org.junit.runner.Description;
 import org.junit.runner.notification.Failure;
@@ -37,7 +37,7 @@ public class JUnit4RunListener
                                                                + "[^\\\\(\\\\)]+" //non-parens
                                                                + ")\\)" + "$" ); // then a close-paren (end group match)
 
-    protected final Reporter reporter;
+    protected final ProviderReporter reporter;
 
     /**
      * This flag is set after a failure has occurred so that a <code>testSucceeded</code> event is not fired.
@@ -50,7 +50,7 @@ public class JUnit4RunListener
      *
      * @param reporter the reporter to log testing events to
      */
-    public JUnit4RunListener( Reporter reporter )
+    public JUnit4RunListener( ProviderReporter reporter )
     {
         this.reporter = reporter;
     }

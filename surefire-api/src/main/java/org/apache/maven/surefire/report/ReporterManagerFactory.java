@@ -76,14 +76,14 @@ public class ReporterManagerFactory
         return globalRunStatistics;
     }
 
-    public Reporter createReporter()
+    public ProviderReporter createReporter()
     {
         reports = instantiateReportsNewStyle( reportDefinitions, reporterConfiguration, surefireClassLoader );
         return setupReporter( reports );
     }
 
 
-    private Reporter setupReporter( List reports )
+    private ProviderReporter setupReporter( List reports )
     {
         // Note, if we ever start making >1 reporter Managers, we have to aggregate run statistics
         // i.e. we cannot use a single "globalRunStatistics"

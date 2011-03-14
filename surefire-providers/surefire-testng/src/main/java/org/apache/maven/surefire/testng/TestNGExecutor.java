@@ -29,7 +29,7 @@ import java.util.Map;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
 import org.apache.maven.artifact.versioning.VersionRange;
-import org.apache.maven.surefire.report.Reporter;
+import org.apache.maven.surefire.report.ProviderReporter;
 import org.apache.maven.surefire.testng.conf.Configurator;
 import org.apache.maven.surefire.testng.conf.TestNG4751Configurator;
 import org.apache.maven.surefire.testng.conf.TestNG52Configurator;
@@ -55,7 +55,7 @@ public class TestNGExecutor
     }
 
     public static void run( Class[] testClasses, String testSourceDirectory, Map options, ArtifactVersion version,
-                            Reporter reportManager, TestNgTestSuite suite, File reportsDirectory, final String methodNamePattern )
+                            ProviderReporter reportManager, TestNgTestSuite suite, File reportsDirectory, final String methodNamePattern )
         throws TestSetFailedException
     {
         TestNG testng = new TestNG( true );
@@ -111,7 +111,7 @@ public class TestNGExecutor
     }
     
     public static void run( List suiteFiles, String testSourceDirectory, Map options, ArtifactVersion version,
-                            Reporter reportManager, TestNgTestSuite suite, File reportsDirectory )
+                            ProviderReporter reportManager, TestNgTestSuite suite, File reportsDirectory )
         throws TestSetFailedException
     {
         TestNG testng = new TestNG( true );
@@ -152,7 +152,7 @@ public class TestNGExecutor
     }
 
 
-    private static void postConfigure( TestNG testNG, String sourcePath, Reporter reportManager, TestNgTestSuite suite,
+    private static void postConfigure( TestNG testNG, String sourcePath, ProviderReporter reportManager, TestNgTestSuite suite,
                                        File reportsDirectory )
         throws TestSetFailedException
     {
@@ -173,7 +173,7 @@ public class TestNGExecutor
 
     // If we have access to IResultListener, return a ConfigurationAwareTestNGReporter
     // But don't cause NoClassDefFoundErrors if it isn't available; just return a regular TestNGReporter instead
-    private static TestNGReporter createTestNGReporter( Reporter reportManager, TestNgTestSuite suite )
+    private static TestNGReporter createTestNGReporter( ProviderReporter reportManager, TestNgTestSuite suite )
     {
         try
         {
@@ -181,7 +181,7 @@ public class TestNGExecutor
             Class c = Class.forName( "org.apache.maven.surefire.testng.ConfigurationAwareTestNGReporter" );
             try
             {
-                Constructor ctor = c.getConstructor( new Class[]{ Reporter.class, TestNgTestSuite.class } );
+                Constructor ctor = c.getConstructor( new Class[]{ ProviderReporter.class, TestNgTestSuite.class } );
                 return (TestNGReporter) ctor.newInstance( new Object[]{ reportManager, suite } );
             }
             catch ( Exception e )

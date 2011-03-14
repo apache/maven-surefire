@@ -20,7 +20,7 @@ package org.apache.maven.surefire.testng;
  */
 
 import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.report.Reporter;
+import org.apache.maven.surefire.report.ProviderReporter;
 import org.apache.maven.surefire.report.ReporterException;
 
 /**
@@ -57,12 +57,12 @@ import org.apache.maven.surefire.report.ReporterException;
  * @noinspection deprecation
  */
 class SynchronizedReporterManager
-    implements Reporter
+    implements ProviderReporter
 {
 
-    private final Reporter target;
+    private final ProviderReporter target;
 
-    public SynchronizedReporterManager( Reporter target )
+    public SynchronizedReporterManager( ProviderReporter target )
     {
         this.target = target;
     }
@@ -104,11 +104,6 @@ class SynchronizedReporterManager
         target.testSkipped( report );
     }
 
-    public synchronized void reset()
-    {
-        target.reset();
-    }
-
     public synchronized void writeMessage( String message )
     {
         target.writeMessage( message );
@@ -123,16 +118,6 @@ class SynchronizedReporterManager
     public synchronized void testFailed( ReportEntry reportEntry )
     {
         target.testFailed( reportEntry );
-    }
-
-    public synchronized void writeDetailMessage( String message )
-    {
-        target.writeDetailMessage( message );
-    }
-
-    public synchronized void writeFooter( String footer )
-    {
-        target.writeFooter( footer );
     }
 
     public synchronized void testAssumptionFailure( ReportEntry report )

@@ -19,8 +19,8 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
+import org.apache.maven.surefire.report.Reporter;
 import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.report.ReportWriter;
 
 /**
  * Represents the test-state of a single test method that is run.
@@ -85,7 +85,7 @@ class TestMethod
     }
 
 
-    public void replay( ReportWriter reporter )
+    public void replay( Reporter reporter )
         throws Exception
     {
 

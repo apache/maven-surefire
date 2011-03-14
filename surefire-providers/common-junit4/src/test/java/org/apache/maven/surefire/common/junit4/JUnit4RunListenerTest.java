@@ -19,14 +19,13 @@ package org.apache.maven.surefire.common.junit4;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.MulticastingReporter;
+import org.apache.maven.surefire.junit4.MockReporter;
+
 import org.junit.Test;
 import org.junit.runner.Request;
 import org.junit.runner.Runner;
 import org.junit.runner.notification.RunListener;
 import org.junit.runner.notification.RunNotifier;
-
-import java.util.Collections;
 
 /**
  * @author Kristian Rosenvold
@@ -38,7 +37,7 @@ public class JUnit4RunListenerTest
         throws Exception
     {
         RunListener jUnit4TestSetReporter =
-            new JUnit4RunListener( new MulticastingReporter( Collections.emptyList() ) );
+            new JUnit4RunListener( new MockReporter( ) );
         Runner junitTestRunner = Request.classes( "abc", STest1.class, STest2.class ).getRunner();
         RunNotifier runNotifier = new RunNotifier();
         runNotifier.addListener( jUnit4TestSetReporter );

@@ -28,7 +28,7 @@ import java.util.Locale;
  * @version $Id$
  */
 public abstract class AbstractReporter
-    implements Reporter, ReportWriter
+    implements Reporter
 {
     int completedCount;
 

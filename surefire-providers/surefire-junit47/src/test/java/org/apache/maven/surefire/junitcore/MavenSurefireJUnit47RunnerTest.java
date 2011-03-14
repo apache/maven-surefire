@@ -17,7 +17,7 @@
 package org.apache.maven.surefire.junitcore;
 
 import junit.framework.TestCase;
-import org.apache.maven.surefire.report.Reporter;
+import org.apache.maven.surefire.report.ProviderReporter;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.ReporterManagerFactory;
@@ -124,7 +124,7 @@ public class MavenSurefireJUnit47RunnerTest extends TestCase
             new ReporterManagerFactory( this.getClass().getClassLoader(), reporterConfiguration );
 
         final HashMap<String, TestSet> classMethodCounts = new HashMap<String, TestSet>();
-        Reporter reporter = ConcurrentReporterManager.createInstance( classMethodCounts, reporterManagerFactory,
+        ProviderReporter reporter = ConcurrentReporterManager.createInstance( classMethodCounts, reporterManagerFactory,
                                                                       getReporterConfiguration(), false, false );
 
         RunListener concurrentReportingRunListener = new JUnitCoreRunListener( reporter, classMethodCounts );

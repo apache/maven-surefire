@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.junitcore;
+package org.apache.maven.surefire.junit4;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,8 +19,8 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
+import org.apache.maven.surefire.report.ProviderReporter;
 import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.report.Reporter;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterException;
 
@@ -28,8 +28,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/** Internal use only */
 public class MockReporter
-    implements Reporter
+    implements ProviderReporter
 {
     private final List<String> events = new ArrayList<String>();
 
@@ -118,10 +119,6 @@ public class MockReporter
     {
         events.add( TEST_SKIPPED );
         testIgnored.incrementAndGet();
-    }
-
-    public void reset()
-    {
     }
 
     public void writeMessage( String message )

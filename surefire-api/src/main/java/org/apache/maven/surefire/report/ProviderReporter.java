@@ -20,19 +20,19 @@ package org.apache.maven.surefire.report;
  */
 
 /**
- * Persists reports somewhere
+ * Used by providers to report results.
+ * Using this interface integrates the providers together into a common reporting infrastructure.
  * <p/>
  * An instance of a reporter is not guaranteed to be thread-safe and concurrent test frameworks
  * must request an instance of a reporter per-thread from the ReporterFactory.
  */
-public interface ReportWriter
+public interface ProviderReporter
 {
     /**
      * Indicates the start of a given test-set
      *
      * @param report the report entry describing the testset
-     * @throws org.apache.maven.surefire.report.ReporterException
-     *          When reporting fails
+     * @throws ReporterException When reporting fails
      */
     void testSetStarting( ReportEntry report )
         throws ReporterException;
@@ -41,8 +41,7 @@ public interface ReportWriter
      * Indicates end of a given test-set
      *
      * @param report the report entry describing the testset
-     * @throws org.apache.maven.surefire.report.ReporterException
-     *          When reporting fails
+     * @throws ReporterException When reporting fails
      */
     void testSetCompleted( ReportEntry report )
         throws ReporterException;
@@ -62,6 +61,15 @@ public interface ReportWriter
      * @param report The report entry to log for
      */
     void testSucceeded( ReportEntry report );
+
+    /**
+     * Event fired when a test assumption failure was encountered.
+     * An assumption failure indicates that the test is not relevant
+     *
+     * @param report The report entry to log for
+     */
+    void testAssumptionFailure( ReportEntry report );
+
 
     /**
      * Event fired when a test ended with an error (non anticipated problem)
@@ -86,6 +94,7 @@ public interface ReportWriter
      * @param report The report entry to log for
      * @param stdOut standard output from the test case
      * @param stdErr error output from the test case
+     * @deprecated remove when building with 2.7.2
      */
     void testError( ReportEntry report, String stdOut, String stdErr );
 
@@ -95,6 +104,7 @@ public interface ReportWriter
      * @param report The report entry to log for
      * @param stdOut standard output from the test case
      * @param stdErr error output from the test case
+     * @deprecated remove when building with 2.7.2
      */
     void testFailed( ReportEntry report, String stdOut, String stdErr );
 
@@ -104,22 +114,8 @@ public interface ReportWriter
      * which is controlled by reportFormat.
      *
      * @param message The message to write.
+     * @deprecated remove when building with 2.7.2
      */
     void writeMessage( String message );
 
-    /**
-     * Writes a detailed message that will not necessarily be displayed in all channels.
-     * This is controlled by reportFormat attribute on the plugin.
-     *
-     * @param message The message to write
-     */
-    void writeDetailMessage( String message );
-
-    /**
-     * Restores the instance of the reporter, making the instance re-usable for a subsequent run in the
-     * same thread.
-     */
-    void reset();
-
-    void writeFooter( String footer );
 }

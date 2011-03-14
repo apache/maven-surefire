@@ -23,7 +23,7 @@ import org.apache.maven.surefire.common.junit4.JUnit4RunListenerFactory;
 import org.apache.maven.surefire.common.junit4.JUnit4TestChecker;
 import org.apache.maven.surefire.providerapi.AbstractProvider;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
-import org.apache.maven.surefire.report.Reporter;
+import org.apache.maven.surefire.report.ProviderReporter;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterFactory;
@@ -100,7 +100,7 @@ public class JUnitCoreProvider
         }
         final Map<String, TestSet> testSetMap = new ConcurrentHashMap<String, TestSet>();
 
-        Reporter listener =
+        ProviderReporter listener =
             ConcurrentReporterManager.createInstance( testSetMap, reporterFactory, this.reporterConfiguration,
                                                       jUnitCoreParameters.isParallelClasses(),
                                                       jUnitCoreParameters.isParallelBoth() );

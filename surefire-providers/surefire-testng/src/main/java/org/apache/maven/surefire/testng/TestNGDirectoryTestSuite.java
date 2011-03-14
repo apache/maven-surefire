@@ -22,8 +22,8 @@ package org.apache.maven.surefire.testng;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.surefire.NonAbstractClassFilter;
+import org.apache.maven.surefire.report.ProviderReporter;
 import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.report.Reporter;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.ReporterManagerFactory;
@@ -96,7 +96,7 @@ public class TestNGDirectoryTestSuite
             return;
         }
 
-        Reporter reporter = reporterManagerFactory.createReporter();
+        ProviderReporter reporter = reporterManagerFactory.createReporter();
         startTestSuite( reporter, this );
 
         TestNGExecutor.run( new Class[]{ (Class) testsToRun.iterator().next() }, this.testSourceDirectory, this.options,
@@ -141,7 +141,7 @@ public class TestNGDirectoryTestSuite
             junitReportsDirectory = new File( reportsDirectory, "testng-junit-results" );
         }
 
-        Reporter reporterManager = new SynchronizedReporterManager( reporterFactory.createReporter() );
+        ProviderReporter reporterManager = new SynchronizedReporterManager( reporterFactory.createReporter() );
         startTestSuite( reporterManager, this );
 
         Class[] testClasses = (Class[]) testNgTestClasses.toArray( new Class[testNgTestClasses.size()] );
@@ -184,7 +184,7 @@ public class TestNGDirectoryTestSuite
             throw new TestSetFailedException( "Unable to find test set '" + testSetName + "' in suite" );
         }
 
-        Reporter reporter = reporterManagerFactory.createReporter();
+        ProviderReporter reporter = reporterManagerFactory.createReporter();
         startTestSuite( reporter, this );
 
         TestNGExecutor.run( new Class[]{ testSet.getTestClass() }, this.testSourceDirectory, this.options, this.version,
@@ -193,7 +193,7 @@ public class TestNGDirectoryTestSuite
         finishTestSuite( reporter, this );
     }
 
-    public static void startTestSuite( Reporter reporter, Object suite )
+    public static void startTestSuite( ProviderReporter reporter, Object suite )
     {
         ReportEntry report = new SimpleReportEntry( suite.getClass().getName(), getSuiteName( suite ) );
 
@@ -207,7 +207,7 @@ public class TestNGDirectoryTestSuite
         }
     }
 
-    public static void finishTestSuite( Reporter reporterManager, Object suite )
+    public static void finishTestSuite( ProviderReporter reporterManager, Object suite )
         throws ReporterException
     {
         ReportEntry report = new SimpleReportEntry( suite.getClass().getName(), getSuiteName( suite ) );

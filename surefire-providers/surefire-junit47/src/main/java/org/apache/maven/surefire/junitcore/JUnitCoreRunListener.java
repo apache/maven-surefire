@@ -20,7 +20,7 @@ package org.apache.maven.surefire.junitcore;
  */
 
 import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
-import org.apache.maven.surefire.report.Reporter;
+import org.apache.maven.surefire.report.ProviderReporter;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -37,7 +37,7 @@ public class JUnitCoreRunListener
      * @param reporter          the report manager to log testing events to
      * @param classMethodCounts A map of methods
      */
-    public JUnitCoreRunListener( Reporter reporter, Map<String, TestSet> classMethodCounts )
+    public JUnitCoreRunListener( ProviderReporter reporter, Map<String, TestSet> classMethodCounts )
     {
         super( reporter );
         this.classMethodCounts = classMethodCounts;

@@ -24,7 +24,7 @@ import junit.framework.Assert;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import org.apache.maven.surefire.report.ConsoleReporter;
-import org.apache.maven.surefire.report.Reporter;
+import org.apache.maven.surefire.report.ProviderReporter;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.ReporterManagerFactory;
@@ -157,7 +157,7 @@ public class ConcurrentReporterManagerTest extends TestCase
     {
         ReporterFactory reporterFactory = createReporterFactory();
         HashMap<String, TestSet> classMethodCounts = new HashMap<String, TestSet>();
-        Reporter reporter =
+        ProviderReporter reporter =
             new ClassesParallelRunListener( classMethodCounts, reporterFactory, getReporterConfiguration() );
         JUnitCoreRunListener runListener = new JUnitCoreRunListener( reporter, classMethodCounts );
         RunStatistics result = runClasses( reporterFactory, runListener, classes );

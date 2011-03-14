@@ -34,7 +34,7 @@ public interface ReporterFactory
      *
      * @return A reporter instance
      */
-    Reporter createReporter();
+    ProviderReporter createReporter();
 
     RunResult close();
 }

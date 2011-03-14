@@ -37,7 +37,7 @@ import java.util.List;
  * <p/>
  */
 public class ReporterManager
-    implements Reporter, RunReporter, ReportWriter
+    implements ProviderReporter, RunReporter, Reporter
 {
     private final RunStatistics runStatisticsForThis;
 

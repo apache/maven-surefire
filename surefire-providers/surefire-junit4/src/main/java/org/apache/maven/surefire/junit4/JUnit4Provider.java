@@ -26,8 +26,8 @@ import org.apache.maven.surefire.common.junit4.JUnit4TestChecker;
 import org.apache.maven.surefire.providerapi.AbstractProvider;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.report.PojoStackTraceWriter;
+import org.apache.maven.surefire.report.ProviderReporter;
 import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.report.Reporter;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.SimpleReportEntry;
@@ -92,7 +92,7 @@ public class JUnit4Provider extends AbstractProvider
 
         final ReporterFactory reporterFactory = providerParameters.getReporterFactory();
 
-        Reporter reporter = reporterFactory.createReporter();
+        ProviderReporter reporter = reporterFactory.createReporter();
         JUnit4RunListener jUnit4TestSetReporter = new JUnit4RunListener( reporter );
         RunNotifier runNotifer = getRunNotifer( jUnit4TestSetReporter, customRunListeners );
 
@@ -107,7 +107,7 @@ public class JUnit4Provider extends AbstractProvider
 
     }
 
-    private void executeTestSet( Class clazz, Reporter reporter, ClassLoader classLoader, RunNotifier listeners )
+    private void executeTestSet( Class clazz, ProviderReporter reporter, ClassLoader classLoader, RunNotifier listeners )
         throws ReporterException, TestSetFailedException
     {
         final ReportEntry report = new SimpleReportEntry( this.getClass().getName(), clazz.getName() );
