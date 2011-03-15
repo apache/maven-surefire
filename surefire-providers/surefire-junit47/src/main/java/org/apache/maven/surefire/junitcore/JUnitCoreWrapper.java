@@ -21,12 +21,13 @@ package org.apache.maven.surefire.junitcore;
 
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.TestsToRun;
-import org.junit.runner.Computer;
-import org.junit.runner.JUnitCore;
-import org.junit.runner.notification.RunListener;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+
+import org.junit.runner.Computer;
+import org.junit.runner.JUnitCore;
+import org.junit.runner.notification.RunListener;
 
 /**
  * Encapsulates access to JUnitCore
@@ -52,11 +53,11 @@ class JUnitCoreWrapper
         }
         finally
         {
+            closeIfConfigurable( computer );
             for ( RunListener runListener : listeners )
             {
                 junitCore.removeListener( runListener );
             }
-            closeIfConfigurable( computer );
         }
     }
 
@@ -95,10 +96,10 @@ class JUnitCoreWrapper
         }
         else
         {
-            return new ConfigurableParallelComputer( jUnitCoreParameters.isParallelClasses(),
-                                                     jUnitCoreParameters.isParallelMethod(),
-                                                     jUnitCoreParameters.getThreadCount(),
-                                                     jUnitCoreParameters.isPerCoreThreadCount() );
+            return new ConfigurableParallelComputer(
+                jUnitCoreParameters.isParallelClasses() | jUnitCoreParameters.isParallelBoth(),
+                jUnitCoreParameters.isParallelMethod() | jUnitCoreParameters.isParallelBoth(),
+                jUnitCoreParameters.getThreadCount(), jUnitCoreParameters.isPerCoreThreadCount() );
         }
     }
 }
