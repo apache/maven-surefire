@@ -147,6 +147,12 @@ public class CheckTestNgVersionsIT
         runTestNgTest( "5.14.2" );
     }
 
+    public void test60()
+        throws Exception
+    {
+        runTestNgTest( "6.0" );
+    }
+
     public void runTestNgTest( String version )
         throws Exception
     {
