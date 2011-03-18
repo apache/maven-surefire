@@ -20,7 +20,8 @@ package org.apache.maven.surefire.its;
 
 import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
-import org.apache.maven.plugins.surefire.report.ReportTestSuite;
+import org.apache.maven.surefire.its.misc.HelperAssertions;
+import org.apache.maven.surefire.its.misc.ReportTestSuite;
 
 import java.io.File;
 import java.util.HashSet;

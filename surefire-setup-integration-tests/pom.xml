@@ -30,11 +30,50 @@
   </parent>
 
   <groupId>org.apache.maven.surefire</groupId>
-  <artifactId>surefire-integration-tests</artifactId>
+  <artifactId>surefire-setup-integration-tests</artifactId>
 
-  <name>Maven Surefire Integration Tests</name>
+  <name>Maven Surefire Integration Test Setup</name>
 
   <dependencies>
+    <dependency>
+      <artifactId>maven-surefire-report-plugin</artifactId>
+      <groupId>org.apache.maven.plugins</groupId>
+      <version>${project.version}</version>
+      <type>maven-plugin</type>
+    </dependency>
+    <dependency>
+      <artifactId>maven-surefire-plugin</artifactId>
+      <groupId>org.apache.maven.plugins</groupId>
+      <version>${project.version}</version>
+      <type>maven-plugin</type>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.surefire</groupId>
+      <artifactId>surefire-testng</artifactId>
+      <version>${project.version}</version>
+      <exclusions>
+        <!-- SC don't want our surefire getting confulsed and trying to use the testng runner -->
+        <exclusion>
+          <groupId>org.testng</groupId>
+          <artifactId>testng</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.surefire</groupId>
+      <artifactId>surefire-junit3</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.surefire</groupId>
+      <artifactId>surefire-junit4</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.surefire</groupId>
+      <artifactId>surefire-junit47</artifactId>
+      <version>${project.version}</version>
+    </dependency>
     <dependency>
       <groupId>org.apache.maven.shared</groupId>
       <artifactId>maven-verifier</artifactId>
@@ -46,11 +85,11 @@
       <version>2.0.6</version>
       <scope>test</scope>
     </dependency>
-    <!-- dependency>
+    <dependency>
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-utils</artifactId>
       <scope>test</scope>
-    </dependency -->
+    </dependency>
     <dependency>
       <groupId>net.sourceforge.htmlunit</groupId>
       <artifactId>htmlunit</artifactId>
@@ -62,49 +101,27 @@
       <artifactId>commons-io</artifactId>
       <version>2.0.1</version>
     </dependency>
-    <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-artifact</artifactId>
-    </dependency>
-
   </dependencies>
 
-  <profiles>
-    <profile>
-      <id>parallel</id>
-      <!-- Experimental profile to try out parallel building of surefire itself -->
-      <build>
-        <pluginManagement>
-          <plugins>
-            <plugin>
-              <artifactId>maven-failsafe-plugin</artifactId>
-              <version>${surefire.build.version}</version>
-              <configuration>
-                <parallel>classes</parallel>
-                <threadCount>${surefire.threadcount}</threadCount>
-              </configuration>
-            </plugin>
-          </plugins>
-        </pluginManagement>
-
-      </build>
-      <dependencies>
-        <dependency>
-          <groupId>junit</groupId>
-          <artifactId>junit</artifactId>
-          <version>4.8.2</version>
-          <scope>test</scope>
-        </dependency>
-      </dependencies>
-      <properties>
-        <surefire.build.version>${project.version}</surefire.build.version>
-        <!-- Until we release 2.7.3 -->
-      </properties>
-    </profile>
-
-  </profiles>
-  <build>
+ <build>
     <plugins>
+      <plugin>
+        <artifactId>maven-help-plugin</artifactId>
+        <version>2.1</version>
+        <executions>
+          <execution>
+            <id>settings.xml</id>
+            <phase>generate-test-resources</phase>
+            <goals>
+              <goal>effective-settings</goal>
+            </goals>
+            <configuration>
+              <output>${project.build.directory}/private/settings.xml</output>
+              <showPasswords>${it.settings.showPasswords}</showPasswords>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
@@ -113,15 +130,23 @@
         </configuration>
       </plugin>
       <plugin>
-        <artifactId>maven-surefire-plugin</artifactId>
+        <artifactId>maven-invoker-plugin</artifactId>
+        <version>1.5</version>
         <configuration>
-          <skip>true</skip>
+          <localRepositoryPath>$${project.build.directory}/it-repo</localRepositoryPath>
         </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>install</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
-        <artifactId>maven-failsafe-plugin</artifactId>
-        <version>${surefire.build.version}</version>
+        <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
+          <test>SetUpForIntegrationTest</test>
           <!-- Pass current surefire version to the main suite so that it -->
           <!-- can forward to all integration test projects. SUREFIRE-513 -->
           <systemProperties>
@@ -139,27 +164,15 @@
             </property>
             <property>
               <name>maven.settings.file</name>
-              <value>${project.basedir}/../surefire-setup-integration-tests/target/private/it-settings.xml</value>
+              <value>${project.build.directory}/private/settings.xml</value>
             </property>
             <property>
-              <name>maven.repo.local</name>
-              <value>${project.basedir}/../surefire-setup-integration-tests/target/it-repo</value>
-            </property>
-            <property>
-              <name>maven.test.tmpdir</name>
-              <value>${project.build.directory}</value>
+              <name>maven.staged.local.repo</name>
+              <value>${project.build.directory}/it-repo</value>
             </property>
           </systemProperties>
 
         </configuration>
-        <executions>
-          <execution>
-            <goals>
-              <goal>integration-test</goal>
-              <goal>verify</goal>
-            </goals>
-          </execution>
-        </executions>
       </plugin>
       <plugin>
         <artifactId>maven-enforcer-plugin</artifactId>

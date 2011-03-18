@@ -22,7 +22,7 @@ package org.apache.maven.surefire.its;
 import org.apache.maven.it.VerificationException;
 import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
-import org.apache.maven.reporting.MavenReportException;
+import org.apache.maven.surefire.its.misc.HelperAssertions;
 
 import java.io.File;
 import java.io.IOException;
@@ -73,7 +73,7 @@ public class CheckTestFailIfNoTestsForkModeIT
     }
 
     private void doTest( String forkMode, boolean failIfNoTests )
-        throws IOException, VerificationException, MavenReportException
+        throws IOException, VerificationException
     {
         File testDir =
             ResourceExtractor.simpleExtractResources( getClass(), "/default-configuration-classWithNoTests" );

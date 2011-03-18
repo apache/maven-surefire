@@ -26,6 +26,7 @@ import java.util.Properties;
 
 import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
+import org.apache.maven.surefire.its.misc.HelperAssertions;
 
 /**
  * Test working directory configuration, SUREFIRE-416

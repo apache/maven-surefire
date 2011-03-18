@@ -21,7 +21,7 @@ package org.apache.maven.surefire.its;
 import org.apache.maven.it.VerificationException;
 import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
-import org.apache.maven.reporting.MavenReportException;
+import org.apache.maven.surefire.its.misc.HelperAssertions;
 
 import java.io.File;
 import java.io.IOException;
@@ -93,7 +93,7 @@ public class RunOrderIT
     }
 
     private void checkOrder( String alphabetical, List<String> expected )
-        throws VerificationException, MavenReportException, IOException
+        throws VerificationException, IOException
     {
         final List<String> list = executeWithRunOrder( alphabetical );
         if ( !contains( list, expected ) )
@@ -103,7 +103,7 @@ public class RunOrderIT
     }
 
     private List<String> executeWithRunOrder( String runOrder )
-        throws IOException, VerificationException, MavenReportException
+        throws IOException, VerificationException
     {
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/runOrder" );
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );

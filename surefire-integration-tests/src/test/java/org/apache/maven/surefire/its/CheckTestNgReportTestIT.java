@@ -18,6 +18,8 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
+import org.apache.maven.surefire.its.misc.HelperAssertions;
+
 import java.io.File;
 
 import junit.framework.Assert;

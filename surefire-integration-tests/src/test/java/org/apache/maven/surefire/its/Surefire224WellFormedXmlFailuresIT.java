@@ -19,11 +19,12 @@ package org.apache.maven.surefire.its;
  */
 
 
+import org.apache.maven.surefire.its.misc.HelperAssertions;
+import org.apache.maven.surefire.its.misc.ReportTestCase;
+import org.apache.maven.surefire.its.misc.ReportTestSuite;
+
 import java.io.File;
 import java.util.List;
-
-import org.apache.maven.plugins.surefire.report.ReportTestCase;
-import org.apache.maven.plugins.surefire.report.ReportTestSuite;
 
 /**
  * Test Surefire-224 (XML test reports are not well-formed when failure message contains quotes)

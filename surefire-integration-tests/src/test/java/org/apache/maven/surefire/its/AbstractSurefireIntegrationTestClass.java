@@ -26,7 +26,6 @@ import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.it.VerificationException;
 import org.apache.maven.it.Verifier;
-import org.apache.maven.surefire.util.NestedRuntimeException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -68,7 +67,7 @@ public abstract class AbstractSurefireIntegrationTestClass
             }
             catch ( InvalidVersionSpecificationException e )
             {
-                throw new NestedRuntimeException( e.getMessage(), e );
+                throw new RuntimeException( e.getMessage(), e );
             }
         }
 

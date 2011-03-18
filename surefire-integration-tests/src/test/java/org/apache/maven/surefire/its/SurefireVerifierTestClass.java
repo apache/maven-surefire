@@ -29,8 +29,7 @@ import org.apache.maven.it.VerificationException;
 import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.FileUtils;
 import org.apache.maven.it.util.ResourceExtractor;
-import org.apache.maven.reporting.MavenReportException;
-import org.apache.maven.surefire.util.NestedRuntimeException;
+import org.apache.maven.surefire.its.misc.HelperAssertions;
 
 import java.io.File;
 import java.io.IOException;
@@ -72,11 +71,11 @@ public abstract class SurefireVerifierTestClass
         }
         catch ( VerificationException e )
         {
-            throw new NestedRuntimeException( e );
+            throw new RuntimeException( e );
         }
         catch ( IOException e )
         {
-            throw new NestedRuntimeException( e );
+            throw new RuntimeException( e );
         }
     }
 
@@ -119,7 +118,7 @@ public abstract class SurefireVerifierTestClass
             }
             catch ( InvalidVersionSpecificationException e )
             {
-                throw new NestedRuntimeException( e.getMessage(), e );
+                throw new RuntimeException( e.getMessage(), e );
             }
         }
 
@@ -145,7 +144,7 @@ public abstract class SurefireVerifierTestClass
             }
             catch ( InvalidVersionSpecificationException e )
             {
-                throw new NestedRuntimeException( e.getMessage(), e );
+                throw new RuntimeException( e.getMessage(), e );
             }
         }
 
@@ -270,7 +269,6 @@ public abstract class SurefireVerifierTestClass
     }
 
     public void assertTestSuiteResults( int total, int errors, int failures, int skipped )
-        throws MavenReportException
     {
         HelperAssertions.assertTestSuiteResults( total, errors, failures, skipped, testDir );
     }
@@ -331,7 +329,7 @@ public abstract class SurefireVerifierTestClass
         }
         catch ( VerificationException e )
         {
-            throw new NestedRuntimeException( e );
+            throw new RuntimeException( e );
         }
 
         return null;

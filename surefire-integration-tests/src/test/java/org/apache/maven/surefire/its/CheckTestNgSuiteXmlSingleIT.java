@@ -19,10 +19,11 @@ package org.apache.maven.surefire.its;
  */
 
 
+import org.apache.maven.surefire.its.misc.HelperAssertions;
+import org.apache.maven.surefire.its.misc.ReportTestSuite;
+
 import java.io.File;
 import java.util.List;
-
-import org.apache.maven.plugins.surefire.report.ReportTestSuite;
 
 /**
  * Use -Dtest to run a single TestNG test, overriding the suite XML parameter.

@@ -19,7 +19,6 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.reporting.MavenReportException;
 
 import java.io.File;
 
@@ -47,7 +46,6 @@ public class JUnit4RunListenerIT
     }
 
     private void assertResults()
-        throws MavenReportException
     {
         assertTestSuiteResults( 1, 0, 0, 0 );
         final File targetDir = getSubFile( "target" );

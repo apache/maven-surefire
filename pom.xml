@@ -95,6 +95,7 @@
     <module>maven-surefire-plugin</module>
     <module>maven-failsafe-plugin</module>
     <module>maven-surefire-report-plugin</module>
+    <module>surefire-setup-integration-tests</module>
     <module>surefire-integration-tests</module>
   </modules>
 

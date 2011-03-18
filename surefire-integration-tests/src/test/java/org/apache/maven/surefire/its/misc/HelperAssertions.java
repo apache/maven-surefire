@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.its;
+package org.apache.maven.surefire.its.misc;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -18,9 +18,7 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.plugins.surefire.report.ReportTestSuite;
-import org.apache.maven.plugins.surefire.report.SurefireReportParser;
-import org.apache.maven.reporting.MavenReportException;
+import org.apache.maven.surefire.its.IntegrationTestSuiteResults;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -28,21 +26,20 @@ import java.util.List;
 import java.util.Locale;
 
 import junit.framework.Assert;
-import org.apache.maven.surefire.util.NestedRuntimeException;
 
+@SuppressWarnings( { "JavaDoc" } )
 public class HelperAssertions
 {
     /**
      * assert that the reports in the specified testDir have the right summary statistics
      */
     public static void assertTestSuiteResults( int total, int errors, int failures, int skipped, File testDir )
-        throws MavenReportException
     {
         IntegrationTestSuiteResults suite = parseTestResults( new File[]{ testDir } );
         assertTestSuiteResults( total, errors, failures, skipped, suite );
     }
 
-    protected static void assertTestSuiteResults( int total, int errors, int failures, int skipped,
+    public static void assertTestSuiteResults( int total, int errors, int failures, int skipped,
                                                   IntegrationTestSuiteResults actualSuite )
     {
         Assert.assertEquals( "wrong number of tests", total, actualSuite.getTotal() );
@@ -51,24 +48,21 @@ public class HelperAssertions
         Assert.assertEquals( "wrong number of skipped", skipped, actualSuite.getSkipped() );
     }
 
-    protected static IntegrationTestSuiteResults parseTestResults( File testDir )
-        throws MavenReportException
+    public static IntegrationTestSuiteResults parseTestResults( File testDir )
     {
         return parseTestResults( new File[]{ testDir } );
     }
 
-    protected static IntegrationTestSuiteResults parseTestResults( File[] testDirs )
-        throws MavenReportException
+    public static IntegrationTestSuiteResults parseTestResults( File[] testDirs )
     {
         List<ReportTestSuite> reports = extractReports( testDirs );
-        IntegrationTestSuiteResults results = parseReportList( reports );
-        return results;
+        return parseReportList( reports );
     }
 
     /**
      * Converts a list of ReportTestSuites into an IntegrationTestSuiteResults object, suitable for summary assertions
      */
-    protected static IntegrationTestSuiteResults parseReportList( List<ReportTestSuite> reports )
+    public static IntegrationTestSuiteResults parseReportList( List<ReportTestSuite> reports )
     {
         Assert.assertTrue( "No reports!", reports.size() > 0 );
         int total = 0, errors = 0, failures = 0, skipped = 0;
@@ -80,19 +74,10 @@ public class HelperAssertions
             failures += suite.getNumberOfFailures();
             skipped += suite.getNumberOfSkipped();
         }
-        IntegrationTestSuiteResults results = new IntegrationTestSuiteResults( total, errors, failures, skipped );
-        return results;
+        return new IntegrationTestSuiteResults( total, errors, failures, skipped );
     }
 
-    protected static List<ReportTestSuite> extractReports( File testDir )
-    {
-        return extractReports( new File[]{ testDir } );
-    }
-
-    /**
-     * Extracts a list of ReportTestSuites from the specified testDirs
-     */
-    protected static List<ReportTestSuite> extractReports( File[] testDirs )
+    public static List<ReportTestSuite> extractReports( File[] testDirs )
     {
         List<File> reportsDirs = new ArrayList<File>();
         for ( int i = 0; i < testDirs.length; i++ )
@@ -110,7 +95,7 @@ public class HelperAssertions
         }
         catch ( Exception e )
         {
-            throw new NestedRuntimeException( "Couldn't parse XML reports", e );
+            throw new RuntimeException( "Couldn't parse XML reports", e );
         }
         return reports;
     }

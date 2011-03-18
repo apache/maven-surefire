@@ -21,7 +21,7 @@ package org.apache.maven.surefire.its;
 import org.apache.maven.it.VerificationException;
 import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
-import org.apache.maven.reporting.MavenReportException;
+import org.apache.maven.surefire.its.misc.HelperAssertions;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -105,7 +105,7 @@ public class ForkModeIT
     }
 
     private String[] doTest( String forkMode )
-        throws IOException, VerificationException, MavenReportException
+        throws IOException, VerificationException
     {
         File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/fork-mode" );
 
