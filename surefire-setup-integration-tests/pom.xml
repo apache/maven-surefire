@@ -133,7 +133,7 @@
         <artifactId>maven-invoker-plugin</artifactId>
         <version>1.5</version>
         <configuration>
-          <localRepositoryPath>$${project.build.directory}/it-repo</localRepositoryPath>
+          <localRepositoryPath>${project.build.directory}/it-repo</localRepositoryPath>
         </configuration>
         <executions>
           <execution>
