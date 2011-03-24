@@ -23,7 +23,7 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * A reporting front-end for providers.
+ * Reports data for a single test set.
  * <p/>
  * Synchronization/Threading note:
  * <p/>
@@ -36,8 +36,8 @@ import java.util.List;
  * preferably removing singleton state approach out of the reporting interface.
  * <p/>
  */
-public class ReporterManager
-    implements ProviderReporter, RunReporter, Reporter
+public class TestSetRunListener
+    implements RunListener, RunReporter, Reporter
 {
     private final RunStatistics runStatisticsForThis;
 
@@ -45,8 +45,8 @@ public class ReporterManager
 
     private final SystemStreamCapturer consoleCapturer;
 
-    public ReporterManager( List reports, RunStatistics runStatisticsForThis,
-                            SystemStreamCapturer systemStreamCapturer )
+    public TestSetRunListener( List reports, RunStatistics runStatisticsForThis,
+                               SystemStreamCapturer systemStreamCapturer )
     {
         this.consoleCapturer = systemStreamCapturer;
         multicastingReporter = new MulticastingReporter( reports );

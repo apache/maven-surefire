@@ -23,7 +23,7 @@ import org.apache.maven.surefire.common.junit3.JUnit3Reflector;
 import org.apache.maven.surefire.common.junit3.JUnit3TestChecker;
 import org.apache.maven.surefire.providerapi.AbstractProvider;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
-import org.apache.maven.surefire.report.ProviderReporter;
+import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterFactory;
@@ -76,7 +76,7 @@ public class JUnit3Provider
 
         ReporterFactory reporterFactory = providerParameters.getReporterFactory();
 
-        ProviderReporter reporter = reporterFactory.createReporter();
+        RunListener reporter = reporterFactory.createReporter();
 
         for ( Iterator iter = testsToRun.iterator(); iter.hasNext(); )
         {
@@ -97,7 +97,7 @@ public class JUnit3Provider
 
     }
 
-    private void executeTestSet( SurefireTestSet testSet, ProviderReporter reporter, ClassLoader classLoader )
+    private void executeTestSet( SurefireTestSet testSet, RunListener reporter, ClassLoader classLoader )
         throws ReporterException, TestSetFailedException
     {
 

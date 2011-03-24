@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.junit;
+package org.apache.maven.surefire.report;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,15 +19,15 @@ package org.apache.maven.surefire.junit;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.RunListener;
-import org.apache.maven.surefire.testset.TestSetFailedException;
-
-public interface SurefireTestSet
+/**
+ * Allows providers to write console messages on the running maven process.
+ *
+ * This output is associated with the entire test run and not a specific
+ * test, which means it just goes straight to the console immediately.
+ *
+ s* <p/>
+ */
+public interface DirectConsoleReporter
 {
-    void execute( RunListener reportManager, ClassLoader loader )
-        throws TestSetFailedException;
-
-    String getName();
-
-    Class getTestClass();
+    public void writeMessage( String message );
 }

@@ -17,7 +17,7 @@
 package org.apache.maven.surefire.junitcore;
 
 import junit.framework.TestCase;
-import org.apache.maven.surefire.report.ProviderReporter;
+import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.ReporterManagerFactory;
@@ -33,7 +33,6 @@ import org.junit.runner.Computer;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
-import org.junit.runner.notification.RunListener;
 
 /**
  * TestCase that expose "No tests were executed!" on Test failure using Maven Surefire 2.6-SNAPSHOT
@@ -124,10 +123,10 @@ public class MavenSurefireJUnit47RunnerTest extends TestCase
             new ReporterManagerFactory( this.getClass().getClassLoader(), reporterConfiguration );
 
         final HashMap<String, TestSet> classMethodCounts = new HashMap<String, TestSet>();
-        ProviderReporter reporter = ConcurrentReporterManager.createInstance( classMethodCounts, reporterManagerFactory,
+        RunListener reporter = ConcurrentReporterManager.createInstance( classMethodCounts, reporterManagerFactory,
                                                                       getReporterConfiguration(), false, false );
 
-        RunListener concurrentReportingRunListener = new JUnitCoreRunListener( reporter, classMethodCounts );
+        org.junit.runner.notification.RunListener concurrentReportingRunListener = new JUnitCoreRunListener( reporter, classMethodCounts );
         Computer computer = new Computer();
 
         JUnitCore junitCore = new JUnitCore();

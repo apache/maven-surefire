@@ -19,7 +19,7 @@ package org.apache.maven.surefire.junit4;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.ProviderReporter;
+import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterException;
@@ -30,7 +30,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /** Internal use only */
 public class MockReporter
-    implements ProviderReporter
+    implements RunListener
 {
     private final List<String> events = new ArrayList<String>();
 
@@ -103,26 +103,10 @@ public class MockReporter
 
     }
 
-    public void testError( ReportEntry report, String stdOut, String stdErr )
-    {
-        events.add( TEST_ERROR );
-        testError.incrementAndGet();
-    }
-
-    public void testFailed( ReportEntry report, String stdOut, String stdErr )
-    {
-        events.add( TEST_FAILED );
-        testFailed.incrementAndGet();
-    }
-
     public void testSkipped( ReportEntry report )
     {
         events.add( TEST_SKIPPED );
         testIgnored.incrementAndGet();
-    }
-
-    public void writeMessage( String message )
-    {
     }
 
     public void writeFooter( String footer )

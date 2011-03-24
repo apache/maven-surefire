@@ -24,7 +24,7 @@ import junit.framework.Assert;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import org.apache.maven.surefire.report.ConsoleReporter;
-import org.apache.maven.surefire.report.ProviderReporter;
+import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.ReporterManagerFactory;
@@ -34,7 +34,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.Computer;
 import org.junit.runner.JUnitCore;
-import org.junit.runner.notification.RunListener;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -157,7 +156,7 @@ public class ConcurrentReporterManagerTest extends TestCase
     {
         ReporterFactory reporterFactory = createReporterFactory();
         HashMap<String, TestSet> classMethodCounts = new HashMap<String, TestSet>();
-        ProviderReporter reporter =
+        RunListener reporter =
             new ClassesParallelRunListener( classMethodCounts, reporterFactory, getReporterConfiguration() );
         JUnitCoreRunListener runListener = new JUnitCoreRunListener( reporter, classMethodCounts );
         RunStatistics result = runClasses( reporterFactory, runListener, classes );
@@ -177,7 +176,7 @@ public class ConcurrentReporterManagerTest extends TestCase
     {
         HashMap<String, TestSet> classMethodCounts = new HashMap<String, TestSet>();
         final ReporterFactory reporterManagerFactory = createReporterFactory();
-        RunListener demultiplexingRunListener = createRunListener( reporterManagerFactory, classMethodCounts );
+        org.junit.runner.notification.RunListener demultiplexingRunListener = createRunListener( reporterManagerFactory, classMethodCounts );
 
         JUnitCore jUnitCore = new JUnitCore();
 
@@ -189,7 +188,7 @@ public class ConcurrentReporterManagerTest extends TestCase
         return reporterManagerFactory.getGlobalRunStatistics();
     }
 
-    private RunStatistics runClasses( ReporterFactory reporterManagerFactory, RunListener demultiplexingRunListener,
+    private RunStatistics runClasses( ReporterFactory reporterManagerFactory, org.junit.runner.notification.RunListener demultiplexingRunListener,
                                       Class... classes )
         throws TestSetFailedException
     {
@@ -203,7 +202,7 @@ public class ConcurrentReporterManagerTest extends TestCase
         return reporterManagerFactory.getGlobalRunStatistics();
     }
 
-    private RunListener createRunListener( ReporterFactory reporterFactory, Map<String, TestSet> testSetMap )
+    private org.junit.runner.notification.RunListener createRunListener( ReporterFactory reporterFactory, Map<String, TestSet> testSetMap )
         throws TestSetFailedException
     {
         return new JUnitCoreRunListener(

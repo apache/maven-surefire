@@ -19,7 +19,7 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.ProviderReporter;
+import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterException;
@@ -33,13 +33,13 @@ import java.util.Map;
  * @author Kristian Rosenvold
  */
 public abstract class ConcurrentReporterManager
-    implements ProviderReporter
+    implements RunListener
 {
     private final Map<String, TestSet> classMethodCounts;
 
     private final ReporterConfiguration reporterConfiguration;
 
-    private final ThreadLocal<ProviderReporter> reporterManagerThreadLocal = new ThreadLocal<ProviderReporter>();
+    private final ThreadLocal<RunListener> reporterManagerThreadLocal = new ThreadLocal<RunListener>();
 
     private final boolean reportImmediately;
 
@@ -142,21 +142,6 @@ public abstract class ConcurrentReporterManager
 
     protected abstract void checkIfTestSetCanBeReported( TestSet testSetForTest );
 
-    public void writeMessage( String message )
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    public void testFailed( ReportEntry report, String stdOut, String stdErr )
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    public void testError( ReportEntry failure, String out, String err )
-    {
-        throw new UnsupportedOperationException();
-    }
-
     TestMethod getTestMethod()
     {
         return TestMethod.getThreadTestMethod();
@@ -172,9 +157,9 @@ public abstract class ConcurrentReporterManager
         return classMethodCounts.get( description.getSourceName() );
     }
 
-    ProviderReporter getReporterManager()
+    RunListener getReporterManager()
     {
-        ProviderReporter reporterManager = reporterManagerThreadLocal.get();
+        RunListener reporterManager = reporterManagerThreadLocal.get();
         if ( reporterManager == null )
         {
             reporterManager = reporterFactory.createReporter();

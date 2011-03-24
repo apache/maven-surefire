@@ -19,7 +19,7 @@ package org.apache.maven.surefire.junit;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.ProviderReporter;
+import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.SimpleReportEntry;
 
@@ -43,7 +43,7 @@ public class TestListenerInvocationHandler
 
     private final Set failedTestsSet = new HashSet();
 
-    private ProviderReporter reporter;
+    private RunListener reporter;
 
     private static final Class[] EMPTY_CLASS_ARRAY = new Class[]{ };
 
@@ -103,7 +103,7 @@ public class TestListenerInvocationHandler
         }
     }
 
-    public TestListenerInvocationHandler( ProviderReporter reporter )
+    public TestListenerInvocationHandler( RunListener reporter )
     {
         if ( reporter == null )
         {

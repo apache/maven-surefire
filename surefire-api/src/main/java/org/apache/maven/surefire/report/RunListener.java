@@ -26,7 +26,7 @@ package org.apache.maven.surefire.report;
  * An instance of a reporter is not guaranteed to be thread-safe and concurrent test frameworks
  * must request an instance of a reporter per-thread from the ReporterFactory.
  */
-public interface ProviderReporter
+public interface RunListener
 {
     /**
      * Indicates the start of a given test-set
@@ -87,35 +87,4 @@ public interface ProviderReporter
 
 
     void testSkipped( ReportEntry report );
-
-    /**
-     * Event fired when a test ended with an error (non anticipated problem)
-     *
-     * @param report The report entry to log for
-     * @param stdOut standard output from the test case
-     * @param stdErr error output from the test case
-     * @deprecated remove when building with 2.7.2
-     */
-    void testError( ReportEntry report, String stdOut, String stdErr );
-
-    /**
-     * Event fired when a test ended with a failure (anticipated problem)
-     *
-     * @param report The report entry to log for
-     * @param stdOut standard output from the test case
-     * @param stdErr error output from the test case
-     * @deprecated remove when building with 2.7.2
-     */
-    void testFailed( ReportEntry report, String stdOut, String stdErr );
-
-    /**
-     * Writes a message that will be displayed in all free-text format reporters.
-     * These messages will be output regardless, as opposed to #writeDetailMessage,
-     * which is controlled by reportFormat.
-     *
-     * @param message The message to write.
-     * @deprecated remove when building with 2.7.2
-     */
-    void writeMessage( String message );
-
 }

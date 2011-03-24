@@ -76,19 +76,19 @@ public class ReporterManagerFactory
         return globalRunStatistics;
     }
 
-    public ProviderReporter createReporter()
+    public RunListener createReporter()
     {
         reports = instantiateReportsNewStyle( reportDefinitions, reporterConfiguration, surefireClassLoader );
         return setupReporter( reports );
     }
 
 
-    private ProviderReporter setupReporter( List reports )
+    private RunListener setupReporter( List reports )
     {
         // Note, if we ever start making >1 reporter Managers, we have to aggregate run statistics
         // i.e. we cannot use a single "globalRunStatistics"
-        final ReporterManager reporterManager =
-            new ReporterManager( reports, globalRunStatistics, systemStreamCapturer );
+        final TestSetRunListener reporterManager =
+            new TestSetRunListener( reports, globalRunStatistics, systemStreamCapturer );
         if ( first == null )
         {
             synchronized ( lock )
@@ -163,6 +163,10 @@ public class ReporterManagerFactory
             }
         }
 
+    }
+
+    public DirectConsoleReporter createConsoleReporter() {
+        return new DefaultDirectConsoleReporter(reporterConfiguration.getOriginalSystemOut());
     }
 
     private void warnIfNoTests()

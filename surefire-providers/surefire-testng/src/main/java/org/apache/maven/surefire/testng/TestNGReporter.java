@@ -23,7 +23,7 @@ import org.apache.maven.surefire.Surefire;
 import org.apache.maven.surefire.report.CategorizedReportEntry;
 import org.apache.maven.surefire.report.PojoStackTraceWriter;
 import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.report.ProviderReporter;
+import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.SimpleReportEntry;
 
 import java.util.ResourceBundle;
@@ -38,7 +38,7 @@ import org.testng.TestNG;
 /**
  * Listens for and provides and adaptor layer so that
  * TestNG tests can report their status to the current
- * {@link org.apache.maven.surefire.report.ProviderReporter}.
+ * {@link org.apache.maven.surefire.report.RunListener}.
  *
  * @author jkuhnert
  * @noinspection ThrowableResultOfMethodCallIgnored
@@ -51,7 +51,7 @@ public class TestNGReporter
     /**
      * core Surefire reporting
      */
-    private final ProviderReporter reporter;
+    private final RunListener reporter;
 
     /**
      * Constructs a new instance that will listen to
@@ -63,7 +63,7 @@ public class TestNGReporter
      *
      * @param reportManager Instance to report suite status to
      */
-    public TestNGReporter( ProviderReporter reportManager )
+    public TestNGReporter( RunListener reportManager )
     {
         this.reporter = reportManager;
 

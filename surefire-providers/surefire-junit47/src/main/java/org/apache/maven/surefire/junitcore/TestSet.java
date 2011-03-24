@@ -19,7 +19,7 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.ProviderReporter;
+import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.Reporter;
 import org.apache.maven.surefire.report.SimpleReportEntry;
@@ -61,7 +61,7 @@ public class TestSet
         this.testSetDescription = testSetDescription;
     }
 
-    public void replay( ProviderReporter target )
+    public void replay( RunListener target )
     {
         if ( !played.compareAndSet( false, true ) )
         {
@@ -118,7 +118,7 @@ public class TestSet
         testMethods.add( testMethod );
     }
 
-    public void incrementFinishedTests( ProviderReporter reporterManager, boolean reportImmediately )
+    public void incrementFinishedTests( RunListener reporterManager, boolean reportImmediately )
     {
         numberOfCompletedChildren.incrementAndGet();
         if ( allScheduled.get() && isAllTestsDone() && reportImmediately )
@@ -127,7 +127,7 @@ public class TestSet
         }
     }
 
-    public void setAllScheduled( ProviderReporter reporterManager )
+    public void setAllScheduled( RunListener reporterManager )
     {
         allScheduled.set( true );
         if ( isAllTestsDone() )

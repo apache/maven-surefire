@@ -26,7 +26,7 @@ import org.apache.maven.surefire.common.junit4.JUnit4TestChecker;
 import org.apache.maven.surefire.providerapi.AbstractProvider;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.report.PojoStackTraceWriter;
-import org.apache.maven.surefire.report.ProviderReporter;
+import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterFactory;
@@ -36,7 +36,7 @@ import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.DefaultDirectoryScanner;
 import org.apache.maven.surefire.util.DirectoryScanner;
 import org.apache.maven.surefire.util.TestsToRun;
-import org.junit.runner.notification.RunListener;
+
 import org.junit.runner.notification.RunNotifier;
 
 import java.util.Iterator;
@@ -57,7 +57,7 @@ public class JUnit4Provider extends AbstractProvider
 
     private final DirectoryScanner directoryScanner;
 
-    private final List<RunListener> customRunListeners;
+    private final List<org.junit.runner.notification.RunListener> customRunListeners;
 
     private final JUnit4TestChecker jUnit4TestChecker;
     
@@ -92,7 +92,7 @@ public class JUnit4Provider extends AbstractProvider
 
         final ReporterFactory reporterFactory = providerParameters.getReporterFactory();
 
-        ProviderReporter reporter = reporterFactory.createReporter();
+        RunListener reporter = reporterFactory.createReporter();
         JUnit4RunListener jUnit4TestSetReporter = new JUnit4RunListener( reporter );
         RunNotifier runNotifer = getRunNotifer( jUnit4TestSetReporter, customRunListeners );
 
@@ -107,7 +107,7 @@ public class JUnit4Provider extends AbstractProvider
 
     }
 
-    private void executeTestSet( Class clazz, ProviderReporter reporter, ClassLoader classLoader, RunNotifier listeners )
+    private void executeTestSet( Class clazz, RunListener reporter, ClassLoader classLoader, RunNotifier listeners )
         throws ReporterException, TestSetFailedException
     {
         final ReportEntry report = new SimpleReportEntry( this.getClass().getName(), clazz.getName() );
@@ -134,11 +134,11 @@ public class JUnit4Provider extends AbstractProvider
         }
     }
 
-    private RunNotifier getRunNotifer( RunListener main, List<RunListener> others )
+    private RunNotifier getRunNotifer( org.junit.runner.notification.RunListener main, List<org.junit.runner.notification.RunListener> others )
     {
         RunNotifier fNotifier = new RunNotifier();
         fNotifier.addListener( main );
-        for ( RunListener listener : others )
+        for ( org.junit.runner.notification.RunListener listener : others )
         {
             fNotifier.addListener( listener );
         }
@@ -147,11 +147,11 @@ public class JUnit4Provider extends AbstractProvider
 
     // I am not entierly sure as to why we do this explicit freeing, it's one of those
     // pieces of code that just seem to linger on in here ;)
-    private void closeRunNotifer( RunListener main, List<RunListener> others )
+    private void closeRunNotifer( org.junit.runner.notification.RunListener main, List<org.junit.runner.notification.RunListener> others )
     {
         RunNotifier fNotifier = new RunNotifier();
         fNotifier.removeListener( main );
-        for ( RunListener listener : others )
+        for ( org.junit.runner.notification.RunListener listener : others )
         {
             fNotifier.removeListener( listener );
         }

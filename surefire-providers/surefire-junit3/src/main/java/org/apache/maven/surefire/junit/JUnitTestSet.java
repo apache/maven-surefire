@@ -20,7 +20,7 @@ package org.apache.maven.surefire.junit;
  */
 
 import org.apache.maven.surefire.common.junit3.JUnit3Reflector;
-import org.apache.maven.surefire.report.ProviderReporter;
+import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
 import java.lang.reflect.InvocationTargetException;
@@ -72,7 +72,7 @@ public final class JUnitTestSet
     }
 
 
-    public void execute( ProviderReporter reporter, ClassLoader loader )
+    public void execute( RunListener reporter, ClassLoader loader )
         throws TestSetFailedException
     {
         Class testClass = getTestClass();
