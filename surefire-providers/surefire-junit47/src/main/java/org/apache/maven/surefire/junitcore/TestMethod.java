@@ -19,8 +19,10 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.Reporter;
+import org.apache.maven.surefire.report.ConsoleOutputReceiver;
+import org.apache.maven.surefire.report.ConsoleOutputReceiverForCurrentThread;
 import org.apache.maven.surefire.report.ReportEntry;
+import org.apache.maven.surefire.report.Reporter;
 
 /**
  * Represents the test-state of a single test method that is run.
@@ -29,6 +31,7 @@ import org.apache.maven.surefire.report.ReportEntry;
  * without any actual parallel access
  */
 class TestMethod
+    implements ConsoleOutputReceiver
 {
     private final ReportEntry description;
 
@@ -123,11 +126,14 @@ class TestMethod
     public void attachToThread()
     {
         TEST_METHOD.set( this );
+        ConsoleOutputReceiverForCurrentThread.set( this );
+
     }
 
     public static void detachFromCurrentThread()
     {
         TEST_METHOD.remove();
+        ConsoleOutputReceiverForCurrentThread.remove();
     }
 
     public static TestMethod getThreadTestMethod()
@@ -144,6 +150,10 @@ class TestMethod
         return output;
     }
 
+    public void writeTestOutput( byte[] buf, int off, int len, boolean stdout )
+    {
+        getLogicalStream().write( stdout, buf, off, len );
+    }
 
     private String getStdout()
     {

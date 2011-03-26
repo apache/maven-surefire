@@ -59,16 +59,20 @@ public class ReporterManagerFactory
 
     private final Object lock = new Object();
 
-    private List reports;
-
-    private final SystemStreamCapturer systemStreamCapturer = new SystemStreamCapturer();
+    private final ConsoleOutputCapture consoleOutputCapture;
 
     public ReporterManagerFactory( ClassLoader surefireClassLoader, ReporterConfiguration reporterConfiguration )
     {
         this.reportDefinitions = reporterConfiguration.getReports();
         this.surefireClassLoader = surefireClassLoader;
         this.reporterConfiguration = reporterConfiguration;
-        this.reports = instantiateReportsNewStyle( reportDefinitions, reporterConfiguration, surefireClassLoader );
+        SystemConsoleOutputReceiver systemConsoleOutputReceiver =
+            new SystemConsoleOutputReceiver( reporterConfiguration.getOriginalSystemOut(),
+                                             reporterConfiguration.getOriginalSystemErr() );
+        // todo: Fix parallel (must keep quiet on default stream?)
+        final DefaultConsoleOutputReceiver target =
+            new DefaultConsoleOutputReceiver( systemConsoleOutputReceiver, true );
+        this.consoleOutputCapture = new ConsoleOutputCapture( target );
     }
 
     public RunStatistics getGlobalRunStatistics()
@@ -78,8 +82,8 @@ public class ReporterManagerFactory
 
     public RunListener createReporter()
     {
-        reports = instantiateReportsNewStyle( reportDefinitions, reporterConfiguration, surefireClassLoader );
-        return setupReporter( reports );
+        return setupReporter(
+            instantiateReportsNewStyle( reportDefinitions, reporterConfiguration, surefireClassLoader ) );
     }
 
 
@@ -87,8 +91,7 @@ public class ReporterManagerFactory
     {
         // Note, if we ever start making >1 reporter Managers, we have to aggregate run statistics
         // i.e. we cannot use a single "globalRunStatistics"
-        final TestSetRunListener reporterManager =
-            new TestSetRunListener( reports, globalRunStatistics, systemStreamCapturer );
+        final TestSetRunListener reporterManager = new TestSetRunListener( reports, globalRunStatistics );
         if ( first == null )
         {
             synchronized ( lock )
@@ -106,6 +109,7 @@ public class ReporterManagerFactory
 
     public RunResult close()
     {
+        consoleOutputCapture.restoreStreams();
         warnIfNoTests();
         synchronized ( lock )
         {
@@ -165,15 +169,18 @@ public class ReporterManagerFactory
 
     }
 
-    public DirectConsoleReporter createConsoleReporter() {
-        return new DefaultDirectConsoleReporter(reporterConfiguration.getOriginalSystemOut());
+    public DirectConsoleReporter createConsoleReporter()
+    {
+        return new DefaultDirectConsoleReporter( reporterConfiguration.getOriginalSystemOut() );
     }
 
     private void warnIfNoTests()
     {
         if ( getGlobalRunStatistics().getRunResult().getCompletedCount() == 0 )
         {
-            new MulticastingReporter( reports ).writeMessage( "There are no tests to run." );
+            final List target =
+                instantiateReportsNewStyle( reportDefinitions, reporterConfiguration, surefireClassLoader );
+            new MulticastingReporter( target ).writeMessage( "There are no tests to run." );
         }
     }
 }

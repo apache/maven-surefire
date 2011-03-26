@@ -50,8 +50,7 @@ public abstract class ConcurrentReporterManager
     private final ReporterFactory reporterFactory;
 
     ConcurrentReporterManager( ReporterFactory reporterFactory, boolean reportImmediately,
-                                      ReporterConfiguration reporterConfiguration,
-                                      Map<String, TestSet> classMethodCounts )
+                               ReporterConfiguration reporterConfiguration, Map<String, TestSet> classMethodCounts )
         throws TestSetFailedException
     {
         this.reportImmediately = reportImmediately;
@@ -117,7 +116,9 @@ public abstract class ConcurrentReporterManager
     public void testStarting( ReportEntry description )
     {
         TestSet testSet = getTestSet( description );
-        testSet.createTestMethod( description ).attachToThread();
+        final TestMethod testMethod = testSet.createTestMethod( description );
+        testMethod.attachToThread();
+
         checkIfTestSetCanBeReported( testSet );
         testSet.attachToThread();
     }

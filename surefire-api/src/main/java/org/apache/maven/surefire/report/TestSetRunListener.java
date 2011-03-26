@@ -19,6 +19,10 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
+import org.apache.maven.surefire.util.internal.ByteBuffer;
+
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -37,18 +41,19 @@ import java.util.List;
  * <p/>
  */
 public class TestSetRunListener
-    implements RunListener, RunReporter, Reporter
+    implements RunListener, RunReporter, Reporter, ConsoleOutputReceiver
 {
     private final RunStatistics runStatisticsForThis;
 
     private final MulticastingReporter multicastingReporter;
 
-    private final SystemStreamCapturer consoleCapturer;
+    private final List testStdOut = Collections.synchronizedList( new ArrayList() );
 
-    public TestSetRunListener( List reports, RunStatistics runStatisticsForThis,
-                               SystemStreamCapturer systemStreamCapturer )
+    private final List testStdErr = Collections.synchronizedList( new ArrayList() );
+
+
+    public TestSetRunListener( List reports, RunStatistics runStatisticsForThis )
     {
-        this.consoleCapturer = systemStreamCapturer;
         multicastingReporter = new MulticastingReporter( reports );
         this.runStatisticsForThis = runStatisticsForThis;
     }
@@ -56,6 +61,20 @@ public class TestSetRunListener
     public void writeMessage( String message )
     {
         multicastingReporter.writeMessage( message );
+    }
+
+    public void writeTestOutput( byte[] buf, int off, int len, boolean stdout )
+    {
+        ByteBuffer byteBuffer = new ByteBuffer( buf, off, len );
+        if ( stdout )
+        {
+            testStdOut.add( byteBuffer );
+        }
+        else
+        {
+            testStdErr.add( byteBuffer );
+        }
+        multicastingReporter.writeMessage( new String( buf, off, len ) );
     }
 
     public void writeDetailMessage( String message )
@@ -98,7 +117,6 @@ public class TestSetRunListener
         }
         multicastingReporter.writeFooter( runStatisticsForThis.getSummary() );
         multicastingReporter.writeFooter( "" );
-        consoleCapturer.restoreStreams();
     }
 
     public void writeFooter( String footer )
@@ -130,14 +148,14 @@ public class TestSetRunListener
 
     public void testSucceeded( ReportEntry report )
     {
-        consoleCapturer.clearCapturedContent();
+        clearCapturedContent();
         runStatisticsForThis.incrementCompletedCount();
         multicastingReporter.testSucceeded( report );
     }
 
     public void testError( ReportEntry reportEntry )
     {
-        testError( reportEntry, consoleCapturer.getStdOutLog(), consoleCapturer.getStdErrLog() );
+        testError( reportEntry, getAsString( testStdOut ), getAsString( testStdErr ) );
     }
 
     public void testError( ReportEntry reportEntry, String stdOutLog, String stdErrLog )
@@ -146,12 +164,12 @@ public class TestSetRunListener
         runStatisticsForThis.incrementErrorsCount();
         runStatisticsForThis.incrementCompletedCount();
         runStatisticsForThis.addErrorSource( reportEntry.getName(), reportEntry.getStackTraceWriter() );
-        consoleCapturer.clearCapturedContent();
+        clearCapturedContent();
     }
 
     public void testFailed( ReportEntry reportEntry )
     {
-        testFailed( reportEntry, consoleCapturer.getStdOutLog(), consoleCapturer.getStdErrLog() );
+        testFailed( reportEntry, getAsString( testStdOut ), getAsString( testStdErr ) );
     }
 
     public void testFailed( ReportEntry reportEntry, String stdOutLog, String stdErrLog )
@@ -160,7 +178,7 @@ public class TestSetRunListener
         runStatisticsForThis.incrementFailureCount();
         runStatisticsForThis.incrementCompletedCount();
         runStatisticsForThis.addFailureSource( reportEntry.getName(), reportEntry.getStackTraceWriter() );
-        consoleCapturer.clearCapturedContent();
+        clearCapturedContent();
     }
 
     // ----------------------------------------------------------------------
@@ -169,7 +187,7 @@ public class TestSetRunListener
 
     public void testSkipped( ReportEntry report )
     {
-        consoleCapturer.clearCapturedContent();
+        clearCapturedContent();
         runStatisticsForThis.incrementSkippedCount();
         runStatisticsForThis.incrementCompletedCount();
         multicastingReporter.testSkipped( report );
@@ -184,5 +202,23 @@ public class TestSetRunListener
     {
         multicastingReporter.reset();
     }
+
+    public String getAsString( List byteBufferList )
+    {
+        StringBuffer stringBuffer = new StringBuffer();
+        for ( Iterator iter = byteBufferList.iterator(); iter.hasNext(); )
+        {
+            ByteBuffer byteBuffer = (ByteBuffer) iter.next();
+            stringBuffer.append( byteBuffer.toString() );
+        }
+        return stringBuffer.toString();
+    }
+
+    public void clearCapturedContent()
+    {
+        testStdErr.clear();
+        testStdOut.clear();
+    }
+
 
 }

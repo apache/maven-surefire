@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.util;
+package org.apache.maven.surefire.report;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,43 +19,21 @@ package org.apache.maven.surefire.util;
  * under the License.
  */
 
-import java.io.PrintStream;
-
 /**
- * @author <a href="mailto:jason@maven.org">Jason van Zyl</a>
- * @version $Id$
+ * A receiver of stdout/sterr output from running tests. This receiver knows how to associate
+ * the output with a given testset.
  */
-public class TeeStream
-    extends PrintStream
+public interface ConsoleOutputReceiver
 {
-    private final PrintStream tee;
 
-    public TeeStream( PrintStream out1, PrintStream out2 )
-    {
-        super( out1 );
+    /**
+     * Forwards process output from the running test-case into the reporting system
+     *
+     * @param buf    the buffer to write
+     * @param off    offset
+     * @param len    len
+     * @param stdout Indicates if this is stdout
+     */
+    void writeTestOutput( byte[] buf, int off, int len, boolean stdout );
 
-        this.tee = out2;
-    }
-
-    public void write( byte[] buf, int off, int len )
-    {
-        super.write( buf, off, len );
-
-        tee.write( buf, off, len );
-    }
-
-    public void close()
-    {
-        super.close();
-
-        tee.close();
-    }
-
-    public void flush()
-    {
-        super.flush();
-
-        tee.flush();
-    }
 }
-
