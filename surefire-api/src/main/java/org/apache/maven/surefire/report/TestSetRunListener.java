@@ -43,7 +43,7 @@ import java.util.List;
 public class TestSetRunListener
     implements RunListener, RunReporter, Reporter, ConsoleOutputReceiver
 {
-    private final RunStatistics runStatisticsForThis;
+    private final RunStatistics globalStats;
 
     private final MulticastingReporter multicastingReporter;
 
@@ -52,10 +52,10 @@ public class TestSetRunListener
     private final List testStdErr = Collections.synchronizedList( new ArrayList() );
 
 
-    public TestSetRunListener( List reports, RunStatistics runStatisticsForThis )
+    public TestSetRunListener( List reports, RunStatistics globalStats )
     {
         multicastingReporter = new MulticastingReporter( reports );
-        this.runStatisticsForThis = runStatisticsForThis;
+        this.globalStats = globalStats;
     }
 
     public void writeMessage( String message )
@@ -97,25 +97,25 @@ public class TestSetRunListener
         multicastingReporter.writeFooter( "" );
         multicastingReporter.writeFooter( "Results :" );
         multicastingReporter.writeFooter( "" );
-        if ( runStatisticsForThis.hadFailures() )
+        if ( globalStats.hadFailures() )
         {
             multicastingReporter.writeFooter( "Failed tests: " );
-            for ( Iterator iterator = this.runStatisticsForThis.getFailureSources().iterator(); iterator.hasNext(); )
+            for ( Iterator iterator = this.globalStats.getFailureSources().iterator(); iterator.hasNext(); )
             {
                 multicastingReporter.writeFooter( "  " + iterator.next() );
             }
             multicastingReporter.writeFooter( "" );
         }
-        if ( runStatisticsForThis.hadErrors() )
+        if ( globalStats.hadErrors() )
         {
             writeFooter( "Tests in error: " );
-            for ( Iterator iterator = this.runStatisticsForThis.getErrorSources().iterator(); iterator.hasNext(); )
+            for ( Iterator iterator = this.globalStats.getErrorSources().iterator(); iterator.hasNext(); )
             {
                 multicastingReporter.writeFooter( "  " + iterator.next() );
             }
             multicastingReporter.writeFooter( "" );
         }
-        multicastingReporter.writeFooter( runStatisticsForThis.getSummary() );
+        multicastingReporter.writeFooter( globalStats.getSummary() );
         multicastingReporter.writeFooter( "" );
     }
 
@@ -149,7 +149,7 @@ public class TestSetRunListener
     public void testSucceeded( ReportEntry report )
     {
         clearCapturedContent();
-        runStatisticsForThis.incrementCompletedCount();
+        globalStats.incrementCompletedCount();
         multicastingReporter.testSucceeded( report );
     }
 
@@ -161,9 +161,9 @@ public class TestSetRunListener
     public void testError( ReportEntry reportEntry, String stdOutLog, String stdErrLog )
     {
         multicastingReporter.testError( reportEntry, stdOutLog, stdErrLog );
-        runStatisticsForThis.incrementErrorsCount();
-        runStatisticsForThis.incrementCompletedCount();
-        runStatisticsForThis.addErrorSource( reportEntry.getName(), reportEntry.getStackTraceWriter() );
+        globalStats.incrementErrorsCount();
+        globalStats.incrementCompletedCount();
+        globalStats.addErrorSource( reportEntry.getName(), reportEntry.getStackTraceWriter() );
         clearCapturedContent();
     }
 
@@ -175,9 +175,9 @@ public class TestSetRunListener
     public void testFailed( ReportEntry reportEntry, String stdOutLog, String stdErrLog )
     {
         multicastingReporter.testFailed( reportEntry, stdOutLog, stdErrLog );
-        runStatisticsForThis.incrementFailureCount();
-        runStatisticsForThis.incrementCompletedCount();
-        runStatisticsForThis.addFailureSource( reportEntry.getName(), reportEntry.getStackTraceWriter() );
+        globalStats.incrementFailureCount();
+        globalStats.incrementCompletedCount();
+        globalStats.addFailureSource( reportEntry.getName(), reportEntry.getStackTraceWriter() );
         clearCapturedContent();
     }
 
@@ -188,8 +188,8 @@ public class TestSetRunListener
     public void testSkipped( ReportEntry report )
     {
         clearCapturedContent();
-        runStatisticsForThis.incrementSkippedCount();
-        runStatisticsForThis.incrementCompletedCount();
+        globalStats.incrementSkippedCount();
+        globalStats.incrementCompletedCount();
         multicastingReporter.testSkipped( report );
     }
 

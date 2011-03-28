@@ -19,7 +19,6 @@ package org.apache.maven.surefire.testng;
  * under the License.
  */
 
-import org.apache.maven.surefire.Surefire;
 import org.apache.maven.surefire.report.CategorizedReportEntry;
 import org.apache.maven.surefire.report.PojoStackTraceWriter;
 import org.apache.maven.surefire.report.ReportEntry;
@@ -46,7 +45,9 @@ import org.testng.TestNG;
 public class TestNGReporter
     implements ITestListener, ISuiteListener
 {
-    private final ResourceBundle bundle = ResourceBundle.getBundle( Surefire.SUREFIRE_BUNDLE_NAME );
+    public static final String SUREFIRE_BUNDLE_NAME = "org.apache.maven.surefire.surefire";
+
+    private final ResourceBundle bundle = ResourceBundle.getBundle( SUREFIRE_BUNDLE_NAME );
 
     /**
      * core Surefire reporting

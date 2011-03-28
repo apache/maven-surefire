@@ -19,10 +19,11 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.Reporter;
-
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.maven.surefire.report.ConsoleOutputReceiver;
+import org.apache.maven.surefire.report.Reporter;
+import org.apache.maven.surefire.util.internal.ByteBuffer;
 
 /**
  * A stream-like object that preserves ordering between stdout/stderr
@@ -34,13 +35,16 @@ public class LogicalStream
     class Entry
     {
         final boolean stdout;
-
-        final String value;
+        final byte[] b;
+        final int off;
+        final int len;
 
         Entry( boolean stdout, byte[] b, int off, int len )
         {
             this.stdout = stdout;
-            value = new String( b, off, len ).intern();
+            this.b = ByteBuffer.copy( b, off, len);
+            this.off = 0;
+            this.len = len;
         }
 
         public boolean isStdout()
@@ -50,24 +54,31 @@ public class LogicalStream
 
         public void writeTo( StringBuilder stringBuilder )
         {
-            stringBuilder.append( value );
+            final String str = new String( b, off, len );
+            stringBuilder.append( str );
         }
 
 
         public void writeDetails( Reporter reporter )
         {
-            reporter.writeDetailMessage( value );
+            final String str = new String( b, off, len );
+            reporter.writeDetailMessage( str );
+        }
+
+        public void writeDetails( ConsoleOutputReceiver outputReceiver)
+        {
+            outputReceiver.writeTestOutput( b, off, len , stdout );
         }
 
         @Override
         public String toString()
         {
-            return value;
+            return new String( b, off, len );
         }
 
         public boolean isBlankLine()
         {
-            return "\n".equals( value );
+            return "\n".equals( toString() );
         }
     }
 
@@ -87,6 +98,15 @@ public class LogicalStream
             entry.writeDetails( reporter );
         }
     }
+
+    public void writeDetails( ConsoleOutputReceiver outputReceiver )
+    {
+        for ( Entry entry : output )
+        {
+            entry.writeDetails( outputReceiver );
+        }
+    }
+
 
     public String getOutput( boolean stdOut )
     {
