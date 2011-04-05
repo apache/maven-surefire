@@ -46,7 +46,6 @@ public class MethodSelector
 
     public boolean includeMethod( IMethodSelectorContext context, ITestNGMethod testngMethod, boolean isTestMethod )
     {
-
         if ( testngMethod.isBeforeClassConfiguration() || testngMethod.isBeforeGroupsConfiguration()
             || testngMethod.isBeforeMethodConfiguration() || testngMethod.isBeforeSuiteConfiguration()
             || testngMethod.isBeforeTestConfiguration() )
