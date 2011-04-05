@@ -19,36 +19,51 @@ package org.apache.maven.surefire.testng.utils;
  * under the License.
  */
 
-import java.util.List;
-
 import org.codehaus.plexus.util.SelectorUtils;
 import org.testng.IMethodSelector;
 import org.testng.IMethodSelectorContext;
 import org.testng.ITestNGMethod;
 
+import java.util.List;
+
 /**
  * For internal use only
- * @author Olivier Lamy
- * @since 2.7.3
  *
+ * @author Olivier Lamy
  * @noinspection UnusedDeclaration
+ * @since 2.7.3
  */
-public class MethodSelector implements IMethodSelector 
+public class MethodSelector
+    implements IMethodSelector
 {
-    
+
     private static String METHOD_NAME = null;
-    
+
     public void setTestMethods( List arg0 )
     {
         // noop                    
     }
-    
+
     public boolean includeMethod( IMethodSelectorContext context, ITestNGMethod testngMethod, boolean isTestMethod )
     {
+
+        if ( testngMethod.isBeforeClassConfiguration() || testngMethod.isBeforeGroupsConfiguration()
+            || testngMethod.isBeforeMethodConfiguration() || testngMethod.isBeforeSuiteConfiguration()
+            || testngMethod.isBeforeTestConfiguration() )
+        {
+            return true;
+        }
+        if ( testngMethod.isAfterClassConfiguration() || testngMethod.isAfterGroupsConfiguration()
+            || testngMethod.isAfterMethodConfiguration() || testngMethod.isAfterSuiteConfiguration()
+            || testngMethod.isAfterTestConfiguration() )
+        {
+            return true;
+        }
+
         return SelectorUtils.match( METHOD_NAME, testngMethod.getMethodName() );
     }
-    
-    public static void setMethodName(String methodName)
+
+    public static void setMethodName( String methodName )
     {
         METHOD_NAME = methodName;
     }
