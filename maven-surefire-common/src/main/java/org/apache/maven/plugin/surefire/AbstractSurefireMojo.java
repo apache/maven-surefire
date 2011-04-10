@@ -1044,23 +1044,40 @@ public abstract class AbstractSurefireMojo
     protected void ensureWorkingDirectoryExists()
         throws MojoFailureException
     {
-        File workingDirectory = getWorkingDirectory();
-        if ( workingDirectory == null )
+        assertWorkingDirectoryNotNull();
+        createWorkingDirectoryIfItNotExists();
+        assertWorkingDirectoryIsDirectory();
+    }
+
+    private void assertWorkingDirectoryNotNull()
+        throws MojoFailureException
+    {
+        if ( getWorkingDirectory() == null )
         {
             throw new MojoFailureException( "The property workingDirectory is null." );
         }
+    }
 
+    private void assertWorkingDirectoryIsDirectory()
+        throws MojoFailureException
+    {
+        File workingDirectory = getWorkingDirectory();
+        if ( !workingDirectory.isDirectory() )
+        {
+            throw new MojoFailureException( "workingDirectory " + workingDirectory + " exists and is not a directory" );
+        }
+    }
+
+    private void createWorkingDirectoryIfItNotExists()
+        throws MojoFailureException
+    {
+        File workingDirectory = getWorkingDirectory();
         if ( !workingDirectory.exists() )
         {
             if ( !workingDirectory.mkdirs() )
             {
                 throw new MojoFailureException( "Cannot create workingDirectory " + workingDirectory );
             }
-        }
-
-        if ( !workingDirectory.isDirectory() )
-        {
-            throw new MojoFailureException( "workingDirectory " + workingDirectory + " exists and is not a directory" );
         }
     }
 
