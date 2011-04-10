@@ -1044,12 +1044,12 @@ public abstract class AbstractSurefireMojo
     protected void ensureWorkingDirectoryExists()
         throws MojoFailureException
     {
-        assertWorkingDirectoryNotNull();
+        assertWorkingDirectoryIsNotNull();
         createWorkingDirectoryIfItNotExists();
         assertWorkingDirectoryIsDirectory();
     }
 
-    private void assertWorkingDirectoryNotNull()
+    private void assertWorkingDirectoryIsNotNull()
         throws MojoFailureException
     {
         if ( getWorkingDirectory() == null )
