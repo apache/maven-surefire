@@ -19,6 +19,17 @@ package org.apache.maven.plugin.surefire;
  * under the License.
  */
 
+import java.io.File;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
@@ -57,18 +68,6 @@ import org.apache.maven.surefire.util.NestedRuntimeException;
 import org.apache.maven.surefire.util.Relocator;
 import org.apache.maven.toolchain.Toolchain;
 import org.codehaus.plexus.util.StringUtils;
-
-import java.io.File;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
 
 /**
  * Abstract base class for running tests using Surefire.
@@ -293,7 +292,8 @@ public abstract class AbstractSurefireMojo
         TestArtifactInfo testNg =
             isTestNg ? new TestArtifactInfo( testNgArtifact.getVersion(), testNgArtifact.getClassifier() ) : null;
         List testXml = getSuiteXmlFiles() != null ? Arrays.asList( getSuiteXmlFiles() ) : null;
-        TestRequest testSuiteDefinition = new TestRequest( testXml, getTestSourceDirectory(), getTest(), getTestMethod() );
+        TestRequest testSuiteDefinition =
+            new TestRequest( testXml, getTestSourceDirectory(), getTest(), getTestMethod() );
         final boolean failIfNoTests;
 
         if ( isValidSuiteXmlFileConfig() && getTest() == null )
@@ -365,10 +365,11 @@ public abstract class AbstractSurefireMojo
             final Classpath providerClasspath = provider.getProviderClasspath();
             final Classpath testClasspath = generateTestClasspath();
 
-            logClasspath(  testClasspath, "test classpath" );
-            logClasspath(  testClasspath, "provider classpath" );
-             final ClasspathConfiguration classpathConfiguration =new ClasspathConfiguration( testClasspath, providerClasspath,
-                                        isEnableAssertions(), isChildDelegation() );
+            logClasspath( testClasspath, "test classpath" );
+            logClasspath( testClasspath, "provider classpath" );
+            final ClasspathConfiguration classpathConfiguration =
+                new ClasspathConfiguration( testClasspath, providerClasspath, isEnableAssertions(),
+                                            isChildDelegation() );
 
             return new StartupConfiguration( providerName, classpathConfiguration, classLoaderConfiguration,
                                              forkConfiguration.isForking(), false, isRedirectTestOutputToFile() );
@@ -624,9 +625,10 @@ public abstract class AbstractSurefireMojo
         {
             String key = (String) iter.next();
 
-            if ("java.library.path".equals( key ))
+            if ( "java.library.path".equals( key ) )
             {
-               getLog().warn( "java.library.path cannot be set as system property, use <argLine>-Djava.library.path=...<argLine> instead");
+                getLog().warn(
+                    "java.library.path cannot be set as system property, use <argLine>-Djava.library.path=...<argLine> instead" );
             }
         }
     }
@@ -729,12 +731,13 @@ public abstract class AbstractSurefireMojo
      *
      * @return List containing the classpath elements
      * @throws org.apache.maven.artifact.DependencyResolutionRequiredException
-     *          when dependency resolution fails
+     *                                     when dependency resolution fails
      * @throws org.apache.maven.plugin.MojoExecutionException
-     *          upon other problems
-     * @throws InvalidVersionSpecificationException when it happens
-     * @throws MojoFailureException when it happens
-     * @throws ArtifactNotFoundException when it happens
+     *                                     upon other problems
+     * @throws InvalidVersionSpecificationException
+     *                                     when it happens
+     * @throws MojoFailureException        when it happens
+     * @throws ArtifactNotFoundException   when it happens
      * @throws ArtifactResolutionException when it happens
      */
     public Classpath generateTestClasspath()
@@ -780,12 +783,13 @@ public abstract class AbstractSurefireMojo
             for ( Iterator iter = getAdditionalClasspathElements().iterator(); iter.hasNext(); )
             {
                 String classpathElement = (String) iter.next();
-                if (classpathElement != null){
+                if ( classpathElement != null )
+                {
                     classpath.add( classpathElement );
                 }
             }
         }
-        
+
         // adding TestNG MethodSelector to the classpath
         // Todo: move
         if ( getTestNgArtifact() != null )
@@ -796,13 +800,14 @@ public abstract class AbstractSurefireMojo
 
         }
 
-        return new Classpath(classpath);
+        return new Classpath( classpath );
     }
-    
+
     protected Artifact getTestNgUtilsArtifact()
         throws ArtifactResolutionException, ArtifactNotFoundException
     {
-        Artifact surefireArtifact = (Artifact) getPluginArtifactMap().get( "org.apache.maven.surefire:surefire-booter" );
+        Artifact surefireArtifact =
+            (Artifact) getPluginArtifactMap().get( "org.apache.maven.surefire:surefire-booter" );
         String surefireVersion = surefireArtifact.getBaseVersion();
         Artifact testNgUtils =
             getArtifactFactory().createArtifact( "org.apache.maven.surefire", "surefire-testng-utils", surefireVersion,
@@ -811,7 +816,7 @@ public abstract class AbstractSurefireMojo
         getArtifactResolver().resolve( testNgUtils, getRemoteRepositories(), getLocalRepository() );
         return testNgUtils;
     }
-    
+
     /**
      * Return a new set containing only the artifacts accepted by the given filter.
      *
@@ -1051,6 +1056,11 @@ public abstract class AbstractSurefireMojo
     protected void ensureWorkingDirectoryExists()
         throws MojoFailureException
     {
+        if ( getWorkingDirectory() == null )
+        {
+            throw new MojoFailureException( "workingDirectory cannot be null" );
+        }
+
         if ( !getWorkingDirectory().exists() )
         {
             if ( !getWorkingDirectory().mkdirs() )
