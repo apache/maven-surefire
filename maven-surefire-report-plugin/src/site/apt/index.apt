@@ -33,10 +33,10 @@ Maven Surefire Report Plugin
 
   Surefire Report Plugin only has one goal (the other is a workaround):
 
-  * {{{report-mojo.html}surefire-report:report}} Generates the test
+  * {{{./report-mojo.html}surefire-report:report}} Generates the test
   results report into HTML format.
 
-  * {{{report-only-mojo.html}surefire-report:report-only}} This goal does 
+  * {{{./report-only-mojo.html}surefire-report:report-only}} This goal does 
   not run the tests, it only builds the reports. It is provided as a work 
   around for {{{http://jira.codehaus.org/browse/SUREFIRE-257}SUREFIRE-257}}
 
@@ -47,34 +47,34 @@ Maven Surefire Report Plugin
 
 * Usage
 
-  General instructions on how to use the Surefire Report Plugin can be found on the {{{usage.html}usage page}}. Some more
+  General instructions on how to use the Surefire Report Plugin can be found on the {{{./usage.html}usage page}}. Some more
   specific use cases are described in the examples given below. Last but not least, users occasionally contribute
   additional examples, tips or errata to the
   {{{http://docs.codehaus.org/display/MAVENUSER/Surefire+Report+Plugin}plugin's wiki page}}.
 
-  In case you still have questions regarding the plugin's usage, please have a look at the {{{faq.html}FAQ}} and feel
-  free to contact the {{{mail-lists.html}user mailing list}}. The posts to the mailing list are archived and could
+  In case you still have questions regarding the plugin's usage, please have a look at the {{{./faq.html}FAQ}} and feel
+  free to contact the {{{./mail-lists.html}user mailing list}}. The posts to the mailing list are archived and could
   already contain the answer to your question as part of an older thread. Hence, it is also worth browsing/searching
-  the {{{mail-lists.html}mail archive}}.
+  the {{{./mail-lists.html}mail archive}}.
 
   If you feel like the plugin is missing a feature or has a defect, you can fill a feature request or bug report in our
-  {{{issue-tracking.html}issue tracker}}. When creating a new issue, please provide a comprehensive description of your
+  {{{./issue-tracking.html}issue tracker}}. When creating a new issue, please provide a comprehensive description of your
   concern. Especially for fixing bugs it is crucial that the developers can reproduce your problem. For this reason,
   entire debug logs, POMs or most preferably little demo projects attached to the issue are very much appreciated.
   Of course, patches are welcome, too. Contributors can check out the project from our
-  {{{source-repository.html}source repository}} and will find supplementary information in the
+  {{{./source-repository.html}source repository}} and will find supplementary information in the
   {{{http://maven.apache.org/guides/development/guide-helping.html}guide to helping with Maven}}.
 
 * Examples
 
   The following examples show how to use the Surefire Report Plugin in more advanced usecases:
 
-  * {{{examples/show-failures.html}Showing Failure Tests}}
+  * {{{./examples/show-failures.html}Showing Failure Tests}}
 
-  * {{{examples/changing-report-name.html}Changing Report Name}}
+  * {{{./examples/changing-report-name.html}Changing Report Name}}
 
-  * {{{examples/report-custom-location.html}Configuring the Output Location of the Report}}
+  * {{{./examples/report-custom-location.html}Configuring the Output Location of the Report}}
 
-  * {{{examples/cross-referencing.html}Source Code Cross Reference}}
+  * {{{./examples/cross-referencing.html}Source Code Cross Reference}}
 
   []

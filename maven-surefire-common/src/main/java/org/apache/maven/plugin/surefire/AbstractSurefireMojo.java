@@ -19,6 +19,17 @@ package org.apache.maven.plugin.surefire;
  * under the License.
  */
 
+import java.io.File;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
@@ -57,18 +68,6 @@ import org.apache.maven.surefire.util.NestedRuntimeException;
 import org.apache.maven.surefire.util.Relocator;
 import org.apache.maven.toolchain.Toolchain;
 import org.codehaus.plexus.util.StringUtils;
-
-import java.io.File;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
 
 /**
  * Abstract base class for running tests using Surefire.
@@ -366,7 +365,8 @@ public abstract class AbstractSurefireMojo
             logClasspath( testClasspath, "test classpath" );
             logClasspath( testClasspath, "provider classpath" );
             final ClasspathConfiguration classpathConfiguration =
-                new ClasspathConfiguration( testClasspath, providerClasspath, isEnableAssertions(), isChildDelegation() );
+                new ClasspathConfiguration( testClasspath, providerClasspath, isEnableAssertions(),
+                                            isChildDelegation() );
 
             return new StartupConfiguration( providerName, classpathConfiguration, classLoaderConfiguration,
                                              forkConfiguration.isForking(), false, isRedirectTestOutputToFile() );
@@ -622,7 +622,8 @@ public abstract class AbstractSurefireMojo
 
             if ( "java.library.path".equals( key ) )
             {
-                getLog().warn( "java.library.path cannot be set as system property, use <argLine>-Djava.library.path=...<argLine> instead" );
+                getLog().warn(
+                    "java.library.path cannot be set as system property, use <argLine>-Djava.library.path=...<argLine> instead" );
             }
         }
     }
@@ -722,11 +723,14 @@ public abstract class AbstractSurefireMojo
      * Generate the test classpath.
      * 
      * @return List containing the classpath elements
-     * @throws org.apache.maven.artifact.DependencyResolutionRequiredException when dependency resolution fails
-     * @throws org.apache.maven.plugin.MojoExecutionException upon other problems
-     * @throws InvalidVersionSpecificationException when it happens
-     * @throws MojoFailureException when it happens
-     * @throws ArtifactNotFoundException when it happens
+     * @throws org.apache.maven.artifact.DependencyResolutionRequiredException
+     *                                     when dependency resolution fails
+     * @throws org.apache.maven.plugin.MojoExecutionException
+     *                                     upon other problems
+     * @throws InvalidVersionSpecificationException
+     *                                     when it happens
+     * @throws MojoFailureException        when it happens
+     * @throws ArtifactNotFoundException   when it happens
      * @throws ArtifactResolutionException when it happens
      */
     public Classpath generateTestClasspath()
@@ -795,7 +799,8 @@ public abstract class AbstractSurefireMojo
     protected Artifact getTestNgUtilsArtifact()
         throws ArtifactResolutionException, ArtifactNotFoundException
     {
-        Artifact surefireArtifact = (Artifact) getPluginArtifactMap().get( "org.apache.maven.surefire:surefire-booter" );
+        Artifact surefireArtifact =
+            (Artifact) getPluginArtifactMap().get( "org.apache.maven.surefire:surefire-booter" );
         String surefireVersion = surefireArtifact.getBaseVersion();
         Artifact testNgUtils =
             getArtifactFactory().createArtifact( "org.apache.maven.surefire", "surefire-testng-utils", surefireVersion,
