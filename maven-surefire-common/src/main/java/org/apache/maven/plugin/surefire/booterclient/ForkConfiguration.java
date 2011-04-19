@@ -19,15 +19,6 @@ package org.apache.maven.plugin.surefire.booterclient;
  * under the License.
  */
 
-import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
-import org.apache.maven.surefire.booter.Classpath;
-import org.apache.maven.surefire.booter.ForkedBooter;
-import org.apache.maven.surefire.booter.SurefireBooterForkException;
-import org.apache.maven.surefire.util.Relocator;
-import org.apache.maven.surefire.util.UrlUtils;
-import org.codehaus.plexus.util.StringUtils;
-import org.codehaus.plexus.util.cli.Commandline;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -39,6 +30,14 @@ import java.util.Properties;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
+import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
+import org.apache.maven.surefire.booter.Classpath;
+import org.apache.maven.surefire.booter.ForkedBooter;
+import org.apache.maven.surefire.booter.SurefireBooterForkException;
+import org.apache.maven.surefire.util.Relocator;
+import org.apache.maven.surefire.util.UrlUtils;
+import org.codehaus.plexus.util.StringUtils;
+import org.codehaus.plexus.util.cli.Commandline;
 
 /**
  * Configuration for forking tests.
@@ -160,7 +159,7 @@ public class ForkConfiguration
     /**
      * @param classPath              cla the classpath arguments
      * @param classpathConfiguration the classpath configuration
-     * @param shadefire true if running shadefire
+     * @param shadefire              true if running shadefire
      * @return A commandline
      * @throws org.apache.maven.surefire.booter.SurefireBooterForkException
      *          when unable to perform the fork
@@ -221,13 +220,11 @@ public class ForkConfiguration
         }
         else
         {
-            cli.createArg().setValue( "-classpath" );
-
-            cli.createArg().setValue( StringUtils.join( classPath.iterator(), File.pathSeparator ) );
+            cli.addEnvironment( "CLASSPATH", StringUtils.join( classPath.iterator(), File.pathSeparator ) );
 
             final String forkedBooter = ForkedBooter.class.getName();
 
-            cli.createArg().setValue( shadefire ? new Relocator( ).relocate( forkedBooter ) : forkedBooter);
+            cli.createArg().setValue( shadefire ? new Relocator().relocate( forkedBooter ) : forkedBooter );
         }
 
         cli.setWorkingDirectory( workingDirectory.getAbsolutePath() );
