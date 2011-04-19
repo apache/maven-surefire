@@ -19,11 +19,15 @@ package org.apache.maven.surefire.common.junit4;
  * under the License.
  */
 
+import java.util.concurrent.CountDownLatch;
 import org.apache.maven.surefire.junit4.MockReporter;
 
+import junit.framework.Assert;
 import org.junit.Test;
+import org.junit.runner.Description;
 import org.junit.runner.Request;
 import org.junit.runner.Runner;
+import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunListener;
 import org.junit.runner.notification.RunNotifier;
 
@@ -42,6 +46,42 @@ public class JUnit4RunListenerTest
         RunNotifier runNotifier = new RunNotifier();
         runNotifier.addListener( jUnit4TestSetReporter );
         junitTestRunner.run( runNotifier );
+    }
+
+    @Test
+    public void testParallelInvocations()
+        throws Exception
+    {
+        final MockReporter reporter = new MockReporter();
+        final RunListener jUnit4TestSetReporter = new JUnit4RunListener( reporter );
+        final CountDownLatch countDownLatch = new CountDownLatch( 1 );
+        final Description testSomething = Description.createTestDescription( STest1.class, "testSomething" );
+        final Description testSomething2 = Description.createTestDescription( STest2.class, "testSomething2" );
+
+        jUnit4TestSetReporter.testStarted( testSomething );
+
+        new Thread(new Runnable(){
+            public void run()
+            {
+                try
+                {
+                    jUnit4TestSetReporter.testStarted(  testSomething2 );
+                    jUnit4TestSetReporter.testFailure( new Failure( testSomething2, new AssertionError( "Fud" ) ));
+                    jUnit4TestSetReporter.testFinished( testSomething2 );
+                    countDownLatch.countDown();
+                }
+                catch ( Exception e )
+                {
+                    throw new RuntimeException( e );
+                }
+            }
+        }).start();
+
+        countDownLatch.await();
+        jUnit4TestSetReporter.testFinished( testSomething );
+
+        Assert.assertEquals( "Failing tests", 1, reporter.getTestFailed() );
+        Assert.assertEquals( "Succeeded tests", 1, reporter.getTestSucceeded() );
     }
 
 

@@ -19,14 +19,13 @@ package org.apache.maven.surefire.junit4;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.RunListener;
-import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.report.ReporterConfiguration;
-import org.apache.maven.surefire.report.ReporterException;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.apache.maven.surefire.report.ReportEntry;
+import org.apache.maven.surefire.report.ReporterConfiguration;
+import org.apache.maven.surefire.report.ReporterException;
+import org.apache.maven.surefire.report.RunListener;
 
 /** Internal use only */
 public class MockReporter
@@ -143,10 +142,12 @@ public class MockReporter
 
     public void testError( ReportEntry report )
     {
+        testError.incrementAndGet();
     }
 
     public void testFailed( ReportEntry report )
     {
+        testFailed.incrementAndGet();
     }
 
     public void testAssumptionFailure( ReportEntry report )
