@@ -96,3 +96,32 @@ Inclusions and Exclusions of Tests
   [...]
 </project>
 +---+
+
+* Regular expression support
+
+  An include/exclude pattern can be an ant-style path expression, but
+  regular expressions are also supported through this syntax:
+
++---+
+<project>
+  [...]
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>${project.version}</version>
+        <configuration>
+          <includes>
+            <include>%regex[.*[Cat|Dog].*Test.*]</include>
+          </includes>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+  [...]
+</project>
++---+
+
+  Note the syntax %regex[expr], where expr is the actual expression and the rest is just wrapping. Also
+  note that regex matches are done over .class files and not .java files.
