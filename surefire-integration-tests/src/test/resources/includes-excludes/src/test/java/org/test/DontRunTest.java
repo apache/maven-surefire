@@ -1,3 +1,5 @@
+package org.test;
+
 import junit.framework.TestCase;
 
 public class DontRunTest extends TestCase

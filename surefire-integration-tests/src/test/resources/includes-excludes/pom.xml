@@ -23,10 +23,10 @@ under the License.
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.apache.maven.plugins.surefire</groupId>
-  <artifactId>maven-it-it0050</artifactId>
+  <artifactId>maven-it-includes-excludes</artifactId>
   <version>1.0-SNAPSHOT</version>
 
-  <name>Maven Integration Test :: it0050</name> 
+  <name>Maven Integration Test :: includes-excludes</name>
   <description>Test surefire inclusion/exclusions</description>
 
   <dependencies>
@@ -39,20 +39,71 @@ under the License.
   </dependencies>
 
   <build>
-    <plugins>
-      <plugin>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>${surefire.version}</version>
-        <configuration>
-          <excludes>
-            <exclude>DontRunTest.*</exclude>
-          </excludes>
-          <includes>
-            <include>NotIncludedByDefault.java</include>
-            <include>*Test.java</include>
-          </includes>
-        </configuration>
-      </plugin>
-    </plugins>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>${surefire.version}</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
   </build>
+  <profiles>
+    <profile>
+      <id>simple</id>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <excludes>
+                <exclude>**/DontRunTest.*</exclude>
+              </excludes>
+              <includes>
+                <include>**/NotIncludedByDefault.java</include>
+                <include>**/*Test.java</include>
+              </includes>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>regex</id>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <excludes>
+                <exclude>**/DontRunTest.*</exclude>
+              </excludes>
+              <includes>
+                <include>%regex[.*Test.*|.*Not.*]</include>
+              </includes>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>path</id>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <excludes>
+                <exclude>**/DontRunTest.java</exclude>
+              </excludes>
+              <includes>
+                <include>*/test/*</include>
+              </includes>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+  </profiles>
 </project>

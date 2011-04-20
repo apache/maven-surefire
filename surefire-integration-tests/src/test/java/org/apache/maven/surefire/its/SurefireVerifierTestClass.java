@@ -19,8 +19,10 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import junit.framework.Assert;
-import junit.framework.TestCase;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
@@ -31,10 +33,8 @@ import org.apache.maven.it.util.FileUtils;
 import org.apache.maven.it.util.ResourceExtractor;
 import org.apache.maven.surefire.its.misc.HelperAssertions;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import junit.framework.Assert;
+import junit.framework.TestCase;
 
 /**
  * Contains commonly used featurtes for most tests, encapsulating
@@ -224,6 +224,12 @@ public abstract class SurefireVerifierTestClass
     protected File getSiteFile( String fileName )
     {
         File targetDir = getSubFile( "target/site" );
+        return new File( targetDir, fileName );
+    }
+
+    protected File getTargetFile( String fileName )
+    {
+        File targetDir = getSubFile( "target" );
         return new File( targetDir, fileName );
     }
 

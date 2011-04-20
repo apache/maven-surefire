@@ -18,11 +18,7 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.it.Verifier;
-import org.apache.maven.it.util.ResourceExtractor;
-import org.apache.maven.surefire.its.misc.HelperAssertions;
-
-import java.io.File;
+import org.apache.maven.it.VerificationException;
 
 /**
  * Test include/exclude patterns.
@@ -31,8 +27,14 @@ import java.io.File;
  * @version $Id$
  */
 public class IncludesExcludesIT
-    extends AbstractSurefireIntegrationTestClass
+    extends SurefireVerifierTestClass
 {
+
+
+    public IncludesExcludesIT()
+    {
+        super( "/includes-excludes" );
+    }
 
     /**
      * Test surefire inclusions/exclusions
@@ -40,16 +42,30 @@ public class IncludesExcludesIT
     public void testIncludesExcludes()
         throws Exception
     {
-        File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/includes-excludes" );
+        testWithProfile( "-Psimple" );
+    }
 
-        Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        executeGoal( verifier, "test" );
-        verifier.assertFilePresent( "target/testTouchFile.txt" );
-        verifier.assertFilePresent( "target/defaultTestTouchFile.txt" );
-        verifier.verifyErrorFreeLog();
-        verifier.resetStreams();
+    public void testRegexIncludesExcludes()
+        throws Exception
+    {
+        testWithProfile( "-Pregex" );
+    }
 
-        HelperAssertions.assertTestSuiteResults( 2, 0, 0, 0, testDir );
+    public void testPathBasedIncludesExcludes()
+        throws Exception
+    {
+        testWithProfile( "-Ppath" );
+    }
+
+    private void testWithProfile( String profile )
+        throws VerificationException
+    {
+        addGoal( profile );
+        execute( "test" );
+        assertPresent( getTargetFile( "testTouchFile.txt" ) );
+        assertPresent( getTargetFile( "defaultTestTouchFile.txt" ) );
+        verifyErrorFreeLog();
+        assertTestSuiteResults( 2, 0, 0, 0 );
     }
 
 }
