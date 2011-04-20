@@ -19,6 +19,11 @@ package org.apache.maven.plugin.surefire.booterclient;
  * under the License.
  */
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+import java.util.Properties;
 import org.apache.maven.surefire.booter.BooterConstants;
 import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
 import org.apache.maven.surefire.booter.PropertiesWrapper;
@@ -31,13 +36,6 @@ import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.util.NestedRuntimeException;
 import org.codehaus.plexus.util.StringUtils;
-
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
 
 /**
  * Knows how to serialize and deserialize the booter configuration.
@@ -72,11 +70,6 @@ public class BooterSerializer
                            Object testSet )
         throws IOException
     {
-        List params = new ArrayList();
-        params.add(
-            new Object[]{ BooterConstants.DIRSCANNER_OPTIONS, booterConfiguration.getDirScannerParamsArray() } );
-        addPropertiesForTypeHolder( params, properties.getProperties(), BooterConstants.DIRSCANNER_PROPERTY_PREFIX );
-
         providerConfiguration.getClasspathConfiguration().setForkProperties( properties);
 
         TestArtifactInfo testNg = booterConfiguration.getTestArtifact();

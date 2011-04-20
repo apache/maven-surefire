@@ -29,8 +29,6 @@ public interface BooterConstants
 {
     String INCLUDES_PROPERTY_PREFIX = "includes";
     String EXCLUDES_PROPERTY_PREFIX = "excludes";
-    String DIRSCANNER_PROPERTY_PREFIX = "dirscanner.";
-    String DIRSCANNER_OPTIONS = "directoryScannerOptions";
     String REPORT_PROPERTY_PREFIX = "report.";
     String PARAMS_SUFIX = ".params";
     String TYPES_SUFIX = ".types";

@@ -19,14 +19,13 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
+import java.io.File;
+import java.util.List;
+import java.util.Properties;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestRequest;
-
-import java.io.File;
-import java.util.List;
-import java.util.Properties;
 
 /**
  * Represents the surefire configuration that passes all the way into the provider
@@ -97,16 +96,6 @@ public class ProviderConfiguration
     public DirectoryScannerParameters getDirScannerParams()
     {
         return dirScannerParams;
-    }
-
-    public Object[] getDirScannerParamsArray()
-    {
-        if ( dirScannerParams == null )
-        {
-            return null;
-        }
-        return new Object[]{ dirScannerParams.getTestClassesDirectory(), dirScannerParams.getIncludes(),
-            dirScannerParams.getExcludes() };
     }
 
     public List getIncludes()
