@@ -257,7 +257,7 @@ mvn verify
             <configuration>
               <outputName>failsafe-report</outputName>
               <reportsDirectories>
-                <reportsDirectory>${project.build.directory}/failsafe-reports</reportsDirectory>
+                <reportsDirectory>\${project.build.directory}/failsafe-reports</reportsDirectory>
               </reportsDirectories>
             </configuration>
         </reportSet>
