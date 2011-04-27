@@ -19,25 +19,25 @@ package org.apache.maven.surefire.junit;
  * under the License.
  */
 
+import java.util.Iterator;
 import org.apache.maven.surefire.common.junit3.JUnit3Reflector;
 import org.apache.maven.surefire.common.junit3.JUnit3TestChecker;
 import org.apache.maven.surefire.providerapi.AbstractProvider;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
-import org.apache.maven.surefire.report.RunListener;
+import org.apache.maven.surefire.report.ConsoleOutputCapture;
+import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterFactory;
+import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.SimpleReportEntry;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.DirectoryScanner;
 import org.apache.maven.surefire.util.TestsToRun;
 
-import java.util.Iterator;
-
 /**
  * @author Kristian Rosenvold
- * @noinspection UnusedDeclaration
  */
 public class JUnit3Provider
     extends AbstractProvider
@@ -75,8 +75,8 @@ public class JUnit3Provider
         }
 
         ReporterFactory reporterFactory = providerParameters.getReporterFactory();
-
-        RunListener reporter = reporterFactory.createReporter();
+        final RunListener reporter = reporterFactory.createReporter();
+        ConsoleOutputCapture.startCapture( (ConsoleOutputReceiver) reporter );
 
         for ( Iterator iter = testsToRun.iterator(); iter.hasNext(); )
         {

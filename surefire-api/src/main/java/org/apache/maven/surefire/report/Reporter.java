@@ -107,6 +107,8 @@ public interface Reporter
      */
     void writeMessage( String message );
 
+    void writeMessage( byte[] b, int off, int len );
+
     /**
      * Writes a detailed message that will not necessarily be displayed in all channels.
      * This is controlled by reportFormat attribute on the plugin.
@@ -120,6 +122,4 @@ public interface Reporter
      * same thread.
      */
     void reset();
-
-    void writeFooter( String footer );
 }

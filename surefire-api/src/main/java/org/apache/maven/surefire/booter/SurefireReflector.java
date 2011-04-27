@@ -19,21 +19,24 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
+import java.io.File;
+import java.io.PrintStream;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.util.List;
+import java.util.Properties;
+import org.apache.maven.plugin.surefire.report.ReporterManagerFactory;
+import org.apache.maven.surefire.forking.ForkConfigurationInfo;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.report.ReporterConfiguration;
+import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.util.ReflectionUtils;
 import org.apache.maven.surefire.util.SurefireReflectionException;
-
-import java.io.File;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.util.List;
-import java.util.Properties;
 
 /**
  * Does reflection based invocation of the surefire methods.
@@ -44,7 +47,7 @@ import java.util.Properties;
  */
 public class SurefireReflector
 {
-    private final ClassLoader classLoader;
+    private final ClassLoader surefireClassLoader;
 
     private final Class reporterConfiguration;
 
@@ -70,9 +73,13 @@ public class SurefireReflector
 
     private final Class booterParameters;
 
+    private final Class reporterFactory;
+
+    private final Class forkConfigurationInfo;
+
     public SurefireReflector( ClassLoader surefireClassLoader )
     {
-        this.classLoader = surefireClassLoader;
+        this.surefireClassLoader = surefireClassLoader;
         try
         {
             reporterConfiguration = surefireClassLoader.loadClass( ReporterConfiguration.class.getName() );
@@ -86,6 +93,8 @@ public class SurefireReflector
             testClassLoaderAware = surefireClassLoader.loadClass( SurefireClassLoadersAware.class.getName() );
             reporterConfigurationAware = surefireClassLoader.loadClass( ReporterConfigurationAware.class.getName() );
             providerPropertiesAware = surefireClassLoader.loadClass( ProviderPropertiesAware.class.getName() );
+            forkConfigurationInfo = surefireClassLoader.loadClass( ForkConfigurationInfo.class.getName() );
+            reporterFactory = surefireClassLoader.loadClass( ReporterFactory.class.getName() );
             runResult = surefireClassLoader.loadClass( RunResult.class.getName() );
             booterParameters = surefireClassLoader.loadClass( ProviderParameters.class.getName() );
         }
@@ -145,10 +154,8 @@ public class SurefireReflector
         }
         Class[] arguments = { List.class, File.class, String.class, String.class };
         Constructor constructor = ReflectionUtils.getConstructor( this.testRequest, arguments );
-        return ReflectionUtils.newInstance( constructor, new Object[] {
-            suiteDefinition.getSuiteXmlFiles(),
-            suiteDefinition.getTestSourceDirectory(),
-            suiteDefinition.getRequestedTest(),
+        return ReflectionUtils.newInstance( constructor, new Object[]{ suiteDefinition.getSuiteXmlFiles(),
+            suiteDefinition.getTestSourceDirectory(), suiteDefinition.getRequestedTest(),
             suiteDefinition.getRequestedTestMethod() } );
     }
 
@@ -181,24 +188,58 @@ public class SurefireReflector
             testArtifactInfo.getClassifier() } );
     }
 
+    Object createForkConfigurationInfo( ForkConfigurationInfo forkConfigurationInfo )
+    {
+        if ( forkConfigurationInfo == null )
+        {
+            return null;
+        }
+
+        final Class[] arguments = { String.class, Boolean.class };
+        Constructor constructor = ReflectionUtils.getConstructor( this.forkConfigurationInfo, arguments );
+        return ReflectionUtils.newInstance( constructor, new Object[]{ forkConfigurationInfo.getForkMode(),
+            forkConfigurationInfo.getInFork() } );
+    }
+
+
     Object createReporterConfiguration( ReporterConfiguration reporterConfiguration )
     {
         Constructor constructor = ReflectionUtils.getConstructor( this.reporterConfiguration,
-                                                                  new Class[]{ List.class, File.class, Boolean.class,
-                                                                      Integer.class } );
-        return ReflectionUtils.newInstance( constructor, new Object[]{ reporterConfiguration.getReports(),
-            reporterConfiguration.getReportsDirectory(), reporterConfiguration.isTrimStackTrace(),
-            reporterConfiguration.getForkTimeout() } );
+                                                                  new Class[]{ File.class, Boolean.class, String.class,
+                                                                      String.class, String.class, String.class } );
+        return ReflectionUtils.newInstance( constructor, new Object[]{ reporterConfiguration.getReportsDirectory(),
+            reporterConfiguration.isTrimStackTrace(), reporterConfiguration.getConsoleReporter(),
+            reporterConfiguration.getFileReporter(), reporterConfiguration.getXmlReporter(),
+            reporterConfiguration.getConsoleOutputFileReporterName() } );
     }
 
-    public Object createBooterConfiguration()
+    public Object createForkingReporterFactory( Boolean trimStackTrace, PrintStream originalSystemOut )
     {
-        return ReflectionUtils.instantiate( classLoader, BaseProviderFactory.class.getName() );
+        Class[] args = new Class[]{ Boolean.class, PrintStream.class };
+        Object[] values = new Object[]{ trimStackTrace, originalSystemOut };
+        return ReflectionUtils.instantiateObject( ForkingReporterFactory.class.getName(), args, values,
+                                                  surefireClassLoader );
+    }
+
+    public Object createReportingReporterFactory( ReporterConfiguration reporterConfiguration )
+    {
+        Class[] args = new Class[]{ ClassLoader.class, this.reporterConfiguration, List.class };
+        Object report = createReporterConfiguration( reporterConfiguration );
+        Object[] params = new Object[]{ this.surefireClassLoader, report, reporterConfiguration.getReports() };
+        return ReflectionUtils.instantiateObject( ReporterManagerFactory.class.getName(), args, params,
+                                                  surefireClassLoader );
+
+    }
+
+    public Object createBooterConfiguration( ClassLoader surefireClassLoader, Object factoryInstance )
+    {
+        return ReflectionUtils.instantiateOneArg( surefireClassLoader, BaseProviderFactory.class.getName(),
+                                                  reporterFactory, factoryInstance );
     }
 
     public Object instantiateProvider( String providerClassName, Object booterParameters )
     {
-        return ReflectionUtils.instantiateOneArg( classLoader, providerClassName, this.booterParameters,
+        return ReflectionUtils.instantiateOneArg( surefireClassLoader, providerClassName, this.booterParameters,
                                                   booterParameters );
     }
 
@@ -214,6 +255,17 @@ public class SurefireReflector
     {
         final Object param = createDirectoryScannerParameters( dirScannerParams );
         ReflectionUtils.invokeSetter( o, "setDirectoryScannerParameters", this.directoryScannerParameters, param );
+    }
+
+
+    public void setForkConfigurationInfo( Object o, ForkConfigurationInfo forkConfigurationInfo )
+    {
+        if ( forkConfigurationInfo == null )
+        {
+            throw new IllegalArgumentException( "ForkConfiguration cannot be null" );
+        }
+        final Object forkConfig = createForkConfigurationInfo( forkConfigurationInfo );
+        ReflectionUtils.invokeSetter( o, "setForkConfigurationInfo", this.forkConfigurationInfo, forkConfig );
     }
 
     public void setTestSuiteDefinitionAware( Object o, TestRequest testSuiteDefinition2 )

@@ -19,11 +19,10 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
-import org.apache.maven.surefire.util.internal.StringUtils;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import org.apache.maven.surefire.util.internal.StringUtils;
 
 /**
  * @author Kristian Rosenvold
@@ -56,12 +55,12 @@ public class RunStatistics
     // Todo remove when building with 2.7.2
     public void addFailureSource( String failureSource )
     {
-    	failureSources.addSource( failureSource );
+        failureSources.addSource( failureSource );
     }
 
-    public void addFailureSource( String failureSource, StackTraceWriter stackTraceWriter  )
+    public void addFailureSource( String failureSource, StackTraceWriter stackTraceWriter )
     {
-    	failureSources.addSource( failureSource, stackTraceWriter );
+        failureSources.addSource( failureSource, stackTraceWriter );
     }
 
     public Collection getErrorSources()
@@ -74,6 +73,7 @@ public class RunStatistics
         return failureSources.getListOfSources();
     }
 
+
     private static class Sources
     {
         private final Collection listOfSources = new ArrayList();
@@ -82,18 +82,20 @@ public class RunStatistics
         {
             synchronized ( listOfSources )
             {
-                listOfSources.add( source );  		
+                listOfSources.add( source );
             }
         }
 
         void addSource( String source, StackTraceWriter stackTraceWriter )
         {
             String message = getMessageOfThrowable( stackTraceWriter );
-            String extendedSource = StringUtils.isBlank( message ) ? source : source + ": " + trimToSingleLine(message);
+            String extendedSource =
+                StringUtils.isBlank( message ) ? source : source + ": " + trimToSingleLine( message );
             addSource( extendedSource );
         }
 
-        private String trimToSingleLine(String str){
+        private String trimToSingleLine( String str )
+        {
             int i = str.indexOf( "\n" );
             return i >= 0 ? str.substring( 0, i ) : str;
         }

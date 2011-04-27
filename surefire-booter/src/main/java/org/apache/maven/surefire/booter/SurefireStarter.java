@@ -19,17 +19,13 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
+import java.io.IOException;
+import java.io.PrintStream;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
-import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.NestedRuntimeException;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.util.Properties;
 
 /**
  * Invokes surefire with the correct classloader setup.
@@ -46,50 +42,91 @@ import java.util.Properties;
  */
 public class SurefireStarter
 {
-    private static final int NO_TESTS = 254;
-
     private final ProviderConfiguration providerConfiguration;
 
     private final StartupConfiguration startupConfiguration;
 
-    private final String SUREFIRE_TEST_CLASSPATH = "surefire.test.class.path";
+    private final static String SUREFIRE_TEST_CLASSPATH = "surefire.test.class.path";
 
-    public SurefireStarter( StartupConfiguration startupConfiguration, ProviderConfiguration providerConfiguration )
+    private final boolean inFork;
+
+    public SurefireStarter( StartupConfiguration startupConfiguration, ProviderConfiguration providerConfiguration,
+                            boolean inFork )
     {
         this.providerConfiguration = providerConfiguration;
         this.startupConfiguration = startupConfiguration;
+        this.inFork = inFork;
     }
 
-    public int runSuitesInProcess( Object testSet, File surefirePropertiesFile, Properties p )
+    public RunResult runSuitesInProcessWhenForked( Object testSet )
         throws SurefireExecutionException, IOException
     {
         writeSurefireTestClasspathProperty();
         final ClasspathConfiguration classpathConfiguration = startupConfiguration.getClasspathConfiguration();
 
+        // todo: Find out....
+        // Why is the classloader structure created differently when a testSet is specified ?
+        // Smells like a legacy bug. Need to check issue tracker.
         ClassLoader testsClassLoader = classpathConfiguration.createTestClassLoaderConditionallySystem(
             startupConfiguration.useSystemClassLoader() );
 
         ClassLoader surefireClassLoader = classpathConfiguration.createSurefireClassLoader( testsClassLoader );
 
-        final RunResult runResult = invokeProvider( testSet, testsClassLoader, surefireClassLoader );
-        updateResultsProperties( runResult, p );
-        SystemPropertyManager.writePropertiesFile( surefirePropertiesFile, "surefire", p );
-        return processRunCount( runResult );
+        SurefireReflector surefireReflector = new SurefireReflector( surefireClassLoader );
+
+        final Object forkingReporterFactory = createForkingReporterFactory( surefireReflector );
+
+        return invokeProvider( testSet, testsClassLoader, surefireClassLoader, forkingReporterFactory );
     }
 
-    public int runSuitesInProcess()
+    private Object createForkingReporterFactory( SurefireReflector surefireReflector )
+    {
+        return surefireReflector.createForkingReporterFactory(
+            this.providerConfiguration.getReporterConfiguration().isTrimStackTrace(),
+            this.providerConfiguration.getReporterConfiguration().getOriginalSystemOut() );
+    }
+
+    // todo: Fix duplication in this method and runSuitesInProcess
+    // This should be fixed "at a higher level", because this whole way
+    // of organizing the code stinks.
+
+    public RunResult runSuitesInProcessWhenForked()
+        throws SurefireExecutionException
+    {
+        ClassLoader testsClassLoader = createInProcessTestClassLoader();
+
+        ClassLoader surefireClassLoader = createSurefireClassloader( testsClassLoader );
+
+        SurefireReflector surefireReflector = new SurefireReflector( surefireClassLoader );
+
+        final Object factory = createForkingReporterFactory( surefireReflector );
+
+        return invokeProvider( null, testsClassLoader, surefireClassLoader, factory );
+    }
+
+    public RunResult runSuitesInProcess()
         throws SurefireExecutionException
     {
         // The test classloader must be constructed first to avoid issues with commons-logging until we properly
         // separate the TestNG classloader
         ClassLoader testsClassLoader = createInProcessTestClassLoader();
 
+        ClassLoader surefireClassLoader = createSurefireClassloader( testsClassLoader );
+
+        SurefireReflector surefireReflector = new SurefireReflector( surefireClassLoader );
+
+        final Object factory =
+            surefireReflector.createReportingReporterFactory( this.providerConfiguration.getReporterConfiguration() );
+
+        return invokeProvider( null, testsClassLoader, surefireClassLoader, factory );
+    }
+
+    private ClassLoader createSurefireClassloader( ClassLoader testsClassLoader )
+        throws SurefireExecutionException
+    {
         final ClasspathConfiguration classpathConfiguration = startupConfiguration.getClasspathConfiguration();
 
-        ClassLoader surefireClassLoader = classpathConfiguration.createSurefireClassLoader( testsClassLoader );
-
-        final RunResult runResult = invokeProvider( null, testsClassLoader, surefireClassLoader );
-        return processRunCount( runResult);
+        return classpathConfiguration.createSurefireClassLoader( testsClassLoader );
     }
 
     private ClassLoader createInProcessTestClassLoader()
@@ -118,32 +155,18 @@ public class SurefireStarter
         classpathConfiguration.getTestClasspath().writeToSystemProperty( SUREFIRE_TEST_CLASSPATH );
     }
 
-    private static final String RESULTS_ERRORS = "errors";
-
-    private static final String RESULTS_COMPLETED_COUNT = "completedCount";
-
-    private static final String RESULTS_FAILURES = "failures";
-
-    private static final String RESULTS_SKIPPED = "skipped";
-
-
-    private void updateResultsProperties( RunResult runResult, Properties results )
-    {
-        results.setProperty( RESULTS_ERRORS, String.valueOf( runResult.getErrors() ) );
-        results.setProperty( RESULTS_COMPLETED_COUNT, String.valueOf( runResult.getCompletedCount() ) );
-        results.setProperty( RESULTS_FAILURES, String.valueOf( runResult.getFailures() ) );
-        results.setProperty( RESULTS_SKIPPED, String.valueOf( runResult.getSkipped() ) );
-    }
-
-    private RunResult invokeProvider( Object testSet, ClassLoader testsClassLoader, ClassLoader surefireClassLoader )
+    private RunResult invokeProvider( Object testSet, ClassLoader testsClassLoader, ClassLoader surefireClassLoader,
+                                      Object factory )
     {
         final PrintStream orgSystemOut = System.out;
         final PrintStream orgSystemErr = System.err;
         // Note that System.out/System.err are also read in the "ReporterConfiguration" instatiation
         // in createProvider below. These are the same values as here.
+
         ProviderFactory providerFactory =
-            new ProviderFactory( startupConfiguration, providerConfiguration, surefireClassLoader, testsClassLoader );
-        final SurefireProvider provider = providerFactory.createProvider( );
+            new ProviderFactory( startupConfiguration, providerConfiguration, surefireClassLoader, testsClassLoader,
+                                 providerConfiguration.getForkConfigurationInfo( inFork ), factory );
+        final SurefireProvider provider = providerFactory.createProvider();
 
         try
         {
@@ -162,24 +185,5 @@ public class SurefireStarter
             System.setOut( orgSystemOut );
             System.setErr( orgSystemErr );
         }
-    }
-
-    /**
-     * Returns the process return code based on the RunResult
-     *
-     * @param runCount The run result
-     * @return The process result code
-     * @throws SurefireExecutionException When an exception is found
-     */
-    private int processRunCount( RunResult runCount )
-        throws SurefireExecutionException
-    {
-
-        if ( runCount.getCompletedCount() == 0 && providerConfiguration.isFailIfNoTests().booleanValue() )
-        {
-            return NO_TESTS;
-        }
-
-        return runCount.getBooterCode();
     }
 }

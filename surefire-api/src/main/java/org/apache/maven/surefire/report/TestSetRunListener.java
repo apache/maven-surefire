@@ -19,31 +19,23 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
-import org.apache.maven.surefire.util.internal.ByteBuffer;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import org.apache.maven.surefire.util.internal.ByteBuffer;
 
 /**
  * Reports data for a single test set.
  * <p/>
- * Synchronization/Threading note:
- * <p/>
- * This design is really only good for single-threaded test execution. With the use of the additional
- * SynchronizedReporterManager you can get a buggy version that sort-of supports multithreading.
- * <p/>
- * The underlying providers are singletons and keep state per ReporterManager instance
- * <p/>
- * The solution to this problem involves making a clearer separation between test-result collection and reporting,
- * preferably removing singleton state approach out of the reporting interface.
- * <p/>
  */
 public class TestSetRunListener
-    implements RunListener, RunReporter, Reporter, ConsoleOutputReceiver
+    implements RunListener, Reporter, ConsoleOutputReceiver,
+    DirectConsoleReporter     // todo: Does this have to be a reporter ?
 {
-    private final RunStatistics globalStats;
+    private final TestSetStatistics testSetStatistics;
+
+    private final RunStatistics globalStatistics;
 
     private final MulticastingReporter multicastingReporter;
 
@@ -52,15 +44,46 @@ public class TestSetRunListener
     private final List testStdErr = Collections.synchronizedList( new ArrayList() );
 
 
-    public TestSetRunListener( List reports, RunStatistics globalStats )
+    public TestSetRunListener( AbstractConsoleReporter consoleReporter, AbstractFileReporter fileReporter,
+                               XMLReporter xmlReporter, Reporter reporter, RunStatistics globalStats )
     {
-        multicastingReporter = new MulticastingReporter( reports );
-        this.globalStats = globalStats;
+
+        ArrayList reportes = new ArrayList();
+        if ( consoleReporter != null )
+        {
+            reportes.add( consoleReporter );
+        }
+        if ( fileReporter != null )
+        {
+            reportes.add( fileReporter );
+        }
+        if ( xmlReporter != null )
+        {
+            reportes.add( xmlReporter );
+        }
+        if ( reporter != null )
+        {
+            reportes.add( reporter );
+        }
+        multicastingReporter = new MulticastingReporter( reportes );
+        this.testSetStatistics = new TestSetStatistics();
+        this.globalStatistics = globalStats;
     }
 
     public void writeMessage( String message )
     {
         multicastingReporter.writeMessage( message );
+    }
+
+
+    public void writeMessage( byte[] b, int off, int len )
+    {
+        multicastingReporter.writeMessage( b, off, len );
+    }
+
+    public void writeDetailMessage( String message )
+    {
+        multicastingReporter.writeDetailMessage( message );
     }
 
     public void writeTestOutput( byte[] buf, int off, int len, boolean stdout )
@@ -74,67 +97,26 @@ public class TestSetRunListener
         {
             testStdErr.add( byteBuffer );
         }
-        multicastingReporter.writeMessage( new String( buf, off, len ) );
+        multicastingReporter.writeMessage( buf, off, len );
     }
-
-    public void writeDetailMessage( String message )
-    {
-        multicastingReporter.writeDetailMessage( message );
-    }
-
-    // ----------------------------------------------------------------------
-    // Run
-    // ----------------------------------------------------------------------
-
-    public void runStarting()
-    {
-        multicastingReporter.runStarting();
-    }
-
-    public void runCompleted()
-    {
-        multicastingReporter.runCompleted();
-        multicastingReporter.writeFooter( "" );
-        multicastingReporter.writeFooter( "Results :" );
-        multicastingReporter.writeFooter( "" );
-        if ( globalStats.hadFailures() )
-        {
-            multicastingReporter.writeFooter( "Failed tests: " );
-            for ( Iterator iterator = this.globalStats.getFailureSources().iterator(); iterator.hasNext(); )
-            {
-                multicastingReporter.writeFooter( "  " + iterator.next() );
-            }
-            multicastingReporter.writeFooter( "" );
-        }
-        if ( globalStats.hadErrors() )
-        {
-            writeFooter( "Tests in error: " );
-            for ( Iterator iterator = this.globalStats.getErrorSources().iterator(); iterator.hasNext(); )
-            {
-                multicastingReporter.writeFooter( "  " + iterator.next() );
-            }
-            multicastingReporter.writeFooter( "" );
-        }
-        multicastingReporter.writeFooter( globalStats.getSummary() );
-        multicastingReporter.writeFooter( "" );
-    }
-
-    public void writeFooter( String footer )
-    {
-        multicastingReporter.writeFooter( footer );
-    }
-
 
     public void testSetStarting( ReportEntry report )
-        throws ReporterException
     {
         multicastingReporter.testSetStarting( report );
+    }
+
+    public void clearCapture()
+    {
+        testStdErr.clear();
+        testStdOut.clear();
     }
 
     public void testSetCompleted( ReportEntry report )
     {
         multicastingReporter.testSetCompleted( report );
         multicastingReporter.reset();
+        globalStatistics.add( testSetStatistics );
+        testSetStatistics.reset();
     }
 
     // ----------------------------------------------------------------------
@@ -148,37 +130,45 @@ public class TestSetRunListener
 
     public void testSucceeded( ReportEntry report )
     {
-        clearCapturedContent();
-        globalStats.incrementCompletedCount();
+        testSetStatistics.incrementCompletedCount();
         multicastingReporter.testSucceeded( report );
+        clearCapture();
     }
 
     public void testError( ReportEntry reportEntry )
     {
-        testError( reportEntry, getAsString( testStdOut ), getAsString( testStdErr ) );
+        multicastingReporter.testError( reportEntry, getAsString( testStdOut ), getAsString( testStdErr ) );
+        testSetStatistics.incrementErrorsCount();
+        testSetStatistics.incrementCompletedCount();
+        globalStatistics.addErrorSource( reportEntry.getName(), reportEntry.getStackTraceWriter() );
+        clearCapture();
     }
 
     public void testError( ReportEntry reportEntry, String stdOutLog, String stdErrLog )
     {
         multicastingReporter.testError( reportEntry, stdOutLog, stdErrLog );
-        globalStats.incrementErrorsCount();
-        globalStats.incrementCompletedCount();
-        globalStats.addErrorSource( reportEntry.getName(), reportEntry.getStackTraceWriter() );
-        clearCapturedContent();
+        testSetStatistics.incrementErrorsCount();
+        testSetStatistics.incrementCompletedCount();
+        globalStatistics.addErrorSource( reportEntry.getName(), reportEntry.getStackTraceWriter() );
+        clearCapture();
     }
 
     public void testFailed( ReportEntry reportEntry )
     {
-        testFailed( reportEntry, getAsString( testStdOut ), getAsString( testStdErr ) );
+        multicastingReporter.testFailed( reportEntry, getAsString( testStdOut ), getAsString( testStdErr ) );
+        testSetStatistics.incrementFailureCount();
+        testSetStatistics.incrementCompletedCount();
+        globalStatistics.addFailureSource( reportEntry.getName(), reportEntry.getStackTraceWriter() );
+        clearCapture();
     }
 
     public void testFailed( ReportEntry reportEntry, String stdOutLog, String stdErrLog )
     {
         multicastingReporter.testFailed( reportEntry, stdOutLog, stdErrLog );
-        globalStats.incrementFailureCount();
-        globalStats.incrementCompletedCount();
-        globalStats.addFailureSource( reportEntry.getName(), reportEntry.getStackTraceWriter() );
-        clearCapturedContent();
+        testSetStatistics.incrementFailureCount();
+        testSetStatistics.incrementCompletedCount();
+        globalStatistics.addFailureSource( reportEntry.getName(), reportEntry.getStackTraceWriter() );
+        clearCapture();
     }
 
     // ----------------------------------------------------------------------
@@ -187,9 +177,9 @@ public class TestSetRunListener
 
     public void testSkipped( ReportEntry report )
     {
-        clearCapturedContent();
-        globalStats.incrementSkippedCount();
-        globalStats.incrementCompletedCount();
+        clearCapture();
+        testSetStatistics.incrementSkippedCount();
+        testSetStatistics.incrementCompletedCount();
         multicastingReporter.testSkipped( report );
     }
 
@@ -213,12 +203,4 @@ public class TestSetRunListener
         }
         return stringBuffer.toString();
     }
-
-    public void clearCapturedContent()
-    {
-        testStdErr.clear();
-        testStdOut.clear();
-    }
-
-
 }

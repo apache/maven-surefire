@@ -42,7 +42,7 @@ public abstract class AbstractFileReporter
 
         this.reportsDirectory = reporterConfiguration.getReportsDirectory();
 
-        this.deleteOnStarting = reporterConfiguration.isForkWithTimeout();
+        this.deleteOnStarting = false;
     }
 
 

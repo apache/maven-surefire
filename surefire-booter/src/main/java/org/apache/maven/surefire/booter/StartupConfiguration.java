@@ -38,24 +38,27 @@ public class StartupConfiguration
 
     private final boolean redirectTestOutputToFile;
 
+    private final String forkMode;
+
 
     public StartupConfiguration( String providerClassName, ClasspathConfiguration classpathConfiguration,
-                                 ClassLoaderConfiguration classLoaderConfiguration, boolean forkRequested,
-                                 boolean inForkedVm, boolean redirectTestOutputToFile )
+                                 ClassLoaderConfiguration classLoaderConfiguration, String forkMode, boolean inForkedVm,
+                                 boolean redirectTestOutputToFile )
     {
         this.providerClassName = providerClassName;
         this.classpathConfiguration = classpathConfiguration;
         this.classLoaderConfiguration = classLoaderConfiguration;
-        isForkRequested = forkRequested;
+        this.forkMode = forkMode;
+        isForkRequested = !"never".equals( forkMode );
         isInForkedVm = inForkedVm;
         this.redirectTestOutputToFile = redirectTestOutputToFile;
     }
 
     public static StartupConfiguration inForkedVm( String providerClassName,
                                                    ClasspathConfiguration classpathConfiguration,
-                                                   ClassLoaderConfiguration classLoaderConfiguration )
+                                                   ClassLoaderConfiguration classLoaderConfiguration, String forkMode )
     {
-        return new StartupConfiguration( providerClassName, classpathConfiguration, classLoaderConfiguration, false,
+        return new StartupConfiguration( providerClassName, classpathConfiguration, classLoaderConfiguration, forkMode,
                                          true, false );
     }
 
@@ -90,7 +93,8 @@ public class StartupConfiguration
         return classLoaderConfiguration;
     }
 
-    public boolean isShadefire(){
-        return providerClassName.startsWith( "org.apache.maven.surefire.shadefire");
+    public boolean isShadefire()
+    {
+        return providerClassName.startsWith( "org.apache.maven.surefire.shadefire" );
     }
 }

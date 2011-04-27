@@ -20,7 +20,7 @@ package org.apache.maven.surefire.its;
 
 
 /**
- * SUREFIRE-621 Asserts that console output always goes somewhere ;)
+ * Asserts that console output always goes somewhere ;)
  *
  * @author Kristian Rosenvold
  */

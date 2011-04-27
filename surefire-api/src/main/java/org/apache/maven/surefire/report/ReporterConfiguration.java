@@ -21,23 +21,36 @@ package org.apache.maven.surefire.report;
 
 import java.io.File;
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Timer;
+import java.util.Properties;
 
 /**
+ * The configuration of the reporter. Most of this stuff is not relevant for the providers
+ * and should be moved out of the api.
+ * <p/>
+ * TODO: Split this class in 2, or more. Extract classnames of reporters to somewhere else.
+ * This class seems to be the focal point of all the bad code smells left in reporting ;)
+ *
  * @author Kristian Rosenvold
  */
 public class ReporterConfiguration
 {
-    private final List reports;
-
     private final File reportsDirectory;
 
     private final PrintStream originalSystemOut;
 
     private final PrintStream originalSystemErr;
 
-    private final Integer forkTimeout;
+    private final Properties testVmSystemProperties;
+
+    private final String consoleReporter;
+
+    private final String fileReporter;
+
+    private final String xmlReporter;
+
+    private final String consoleOutputFileReporterName;
 
     /**
      * A non-null Boolean value
@@ -46,13 +59,17 @@ public class ReporterConfiguration
 
     private volatile boolean timedOut = false;
 
-
-    public ReporterConfiguration( List reports, File reportsDirectory, Boolean trimStackTrace, Integer forkWithTimeout )
+    public ReporterConfiguration( File reportsDirectory, Boolean trimStackTrace, String consoleReporter,
+                                  String fileReporter, String xmlReporter, String consoleOutputFileReporterName )
     {
-        this.reports = reports;
         this.reportsDirectory = reportsDirectory;
+        this.consoleReporter = consoleReporter;
+        this.fileReporter = fileReporter;
+        this.xmlReporter = xmlReporter;
         this.trimStackTrace = trimStackTrace;
-        this.forkTimeout = forkWithTimeout;
+        this.consoleOutputFileReporterName = consoleOutputFileReporterName;
+
+        testVmSystemProperties = new Properties();
         /*
         * While this may seem slightly odd, when this object is constructted no user code has been run
         * (including classloading), and we can be guaranteed that no-one has modified System.out/System.err.
@@ -60,13 +77,11 @@ public class ReporterConfiguration
          */
         this.originalSystemOut = System.out;
         this.originalSystemErr = System.err;
-
     }
 
-    // todo: remove once we build with 2.7.2
-    public ReporterConfiguration( List reports, File reportsDirectory, Boolean trimStackTrace )
+    public ReporterConfiguration( File reportsDirectory, Boolean trimStackTrace )
     {
-        this( reports, reportsDirectory, trimStackTrace, null );
+        this( reportsDirectory, trimStackTrace, null, null, null, null );
     }
 
     /**
@@ -97,6 +112,23 @@ public class ReporterConfiguration
      */
     public List getReports()
     {
+        ArrayList reports = new ArrayList();
+        if ( consoleReporter != null )
+        {
+            reports.add( consoleReporter );
+        }
+        if ( fileReporter != null )
+        {
+            reports.add( fileReporter );
+        }
+        if ( xmlReporter != null )
+        {
+            reports.add( xmlReporter );
+        }
+        if ( consoleOutputFileReporterName != null )
+        {
+            reports.add( consoleOutputFileReporterName );
+        }
         return reports;
     }
 
@@ -111,31 +143,9 @@ public class ReporterConfiguration
         return originalSystemOut;
     }
 
-    /**
-     * The original system err belonging to the (possibly forked) surefire process.
-     * Note that users of Reporter/ReporterFactory should normally not be using this.
-     *
-     * @return A printstream.
-     */
-    public PrintStream getOriginalSystemErr()
+    public Properties getTestVmSystemProperties()
     {
-        return originalSystemErr;
-    }
-
-    /**
-     * Indicates that the test is running timed out, meaning this process could be abruptly killed.
-     * This will normally tell the reporter to delete result files upon startup.
-     *
-     * @return true if test run can be killed by timeout
-     */
-    public boolean isForkWithTimeout()
-    {
-        return getForkTimeout() != null;
-    }
-
-    public Integer getForkTimeout()
-    {
-        return forkTimeout;
+        return testVmSystemProperties;
     }
 
     public void setTimedOut( boolean timedOut )
@@ -146,5 +156,25 @@ public class ReporterConfiguration
     public boolean isTimedOut()
     {
         return this.timedOut;
+    }
+
+    public String getConsoleReporter()
+    {
+        return consoleReporter;
+    }
+
+    public String getFileReporter()
+    {
+        return fileReporter;
+    }
+
+    public String getXmlReporter()
+    {
+        return xmlReporter;
+    }
+
+    public String getConsoleOutputFileReporterName()
+    {
+        return consoleOutputFileReporterName;
     }
 }

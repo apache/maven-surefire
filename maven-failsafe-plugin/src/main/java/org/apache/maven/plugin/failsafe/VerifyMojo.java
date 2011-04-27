@@ -181,7 +181,7 @@ public class VerifyMojo
                     summary = new FailsafeSummary();
                 }
                 else
-                {                    
+                {
                     summary = readSummary( encoding, summaryFile );
                 }
                 if ( summaryFiles != null )
@@ -207,7 +207,7 @@ public class VerifyMojo
     }
 
     private FailsafeSummary readSummary( String encoding, File summaryFile )
-            throws IOException, XmlPullParserException
+        throws IOException, XmlPullParserException
     {
         FileInputStream fileInputStream = null;
         BufferedInputStream bufferedInputStream = null;

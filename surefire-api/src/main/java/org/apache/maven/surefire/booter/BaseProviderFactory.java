@@ -19,17 +19,16 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
+import java.util.Properties;
+import org.apache.maven.surefire.forking.ForkConfigurationInfo;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterFactory;
-import org.apache.maven.surefire.report.ReporterManagerFactory;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.util.DefaultDirectoryScanner;
 import org.apache.maven.surefire.util.DirectoryScanner;
-
-import java.util.Properties;
 
 /**
  * @author Kristian Rosenvold
@@ -52,6 +51,14 @@ public class BaseProviderFactory
 
     private TestArtifactInfo testArtifactInfo;
 
+    private ForkConfigurationInfo forkConfigurationInfo;
+
+    private final ReporterFactory reporterFactory;
+
+    public BaseProviderFactory( ReporterFactory reporterFactory )
+    {
+        this.reporterFactory = reporterFactory;
+    }
 
     public DirectoryScanner getDirectoryScanner()
     {
@@ -62,18 +69,12 @@ public class BaseProviderFactory
         return new DefaultDirectoryScanner( directoryScannerParameters.getTestClassesDirectory(),
                                             directoryScannerParameters.getIncludes(),
                                             directoryScannerParameters.getExcludes(),
-                                            directoryScannerParameters.getRunOrder());
+                                            directoryScannerParameters.getRunOrder() );
     }
 
     public ReporterFactory getReporterFactory()
     {
-        ReporterFactory reporterManagerFactory =
-            new ReporterManagerFactory( surefireClassLoader, reporterConfiguration );
-        if ( providerProperties != null )
-        {
-            reporterManagerFactory.getGlobalRunStatistics().initResultsFromProperties( providerProperties );
-        }
-        return reporterManagerFactory;
+        return reporterFactory;
     }
 
     public void setDirectoryScannerParameters( DirectoryScannerParameters directoryScannerParameters )
@@ -135,5 +136,16 @@ public class BaseProviderFactory
     public void setTestArtifactInfo( TestArtifactInfo testArtifactInfo )
     {
         this.testArtifactInfo = testArtifactInfo;
+    }
+
+    public void setForkConfigurationInfo( ForkConfigurationInfo forkConfigurationInfo )
+    {
+        this.forkConfigurationInfo = forkConfigurationInfo;
+    }
+
+
+    public ForkConfigurationInfo getForkConfiguration()
+    {
+        return forkConfigurationInfo;
     }
 }

@@ -19,53 +19,41 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.RunListener;
+import java.util.Map;
+import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterConfiguration;
-import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterFactory;
+import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.testset.TestSetFailedException;
-
-import java.io.IOException;
-import java.util.Map;
 
 /**
  * @author Kristian Rosenvold
  */
 public abstract class ConcurrentReporterManager
-    implements RunListener
+    implements RunListener, ConsoleOutputReceiver
 {
     private final Map<String, TestSet> classMethodCounts;
-
-    private final ReporterConfiguration reporterConfiguration;
+    // private final ReporterConfiguration reporterConfiguration;
 
     private final ThreadLocal<RunListener> reporterManagerThreadLocal = new ThreadLocal<RunListener>();
 
     private final boolean reportImmediately;
 
-    private final ConcurrentPrintStream out = new ConcurrentPrintStream( true );
-
-    private final ConcurrentPrintStream err = new ConcurrentPrintStream( false );
-
     private final ReporterFactory reporterFactory;
 
     ConcurrentReporterManager( ReporterFactory reporterFactory, boolean reportImmediately,
-                               ReporterConfiguration reporterConfiguration, Map<String, TestSet> classMethodCounts )
+                               Map<String, TestSet> classMethodCounts )
         throws TestSetFailedException
     {
         this.reportImmediately = reportImmediately;
         this.reporterFactory = reporterFactory;
-        this.reporterConfiguration = reporterConfiguration;
         this.classMethodCounts = classMethodCounts;
 
         // We must create the first reporterManager here, even though we will never use it.
         // There is some room for improvement here
+        // todo: Find out if needed for 2.8.1
         this.reporterFactory.createReporter();
-        // Important: We must capture System.out/System.err AFTER the  reportManager captures stdout/stderr
-        // because we know how to demultiplex correctly. The redirection in reporterManager is basically
-        // ignored/unused because we use ConcurrentPrintStream.
-        System.setOut( out );
-        System.setErr( err );
     }
 
     public void testSetStarting( ReportEntry description )
@@ -73,20 +61,11 @@ public abstract class ConcurrentReporterManager
     }
 
     public void testSetCompleted( ReportEntry result )
-        throws ReporterException
     {
+        final RunListener reporterManager = getReporterManager();
         for ( TestSet testSet : classMethodCounts.values() )
         {
-            testSet.replay( getReporterManager() );
-        }
-        try
-        {
-            out.writeTo( reporterConfiguration.getOriginalSystemOut() );
-            err.writeTo( reporterConfiguration.getOriginalSystemErr() );
-        }
-        catch ( IOException e )
-        {
-            throw new ReporterException( "When writing reports", e );
+            testSet.replay( reporterManager );
         }
     }
 
@@ -181,6 +160,22 @@ public abstract class ConcurrentReporterManager
         }
         return new MethodsParallelRunListener( classMethodCounts, reporterManagerFactory, reporterConfiguration,
                                                !parallelBoth );
+    }
+
+
+    public void writeTestOutput( byte[] buf, int off, int len, boolean stdout )
+    {
+        TestMethod threadTestMethod = TestMethod.getThreadTestMethod();
+        if ( threadTestMethod != null )
+        {
+            final LogicalStream logicalStream = threadTestMethod.getLogicalStream();
+            logicalStream.write( stdout, buf, off, len );
+        }
+        else
+        {
+            // No test running, just dump the message "somewhere"
+            reporterFactory.createConsoleReporter().writeMessage( new String( buf, off, len ) );
+        }
     }
 
 }

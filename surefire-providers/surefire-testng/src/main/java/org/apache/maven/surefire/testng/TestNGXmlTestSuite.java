@@ -19,13 +19,6 @@ package org.apache.maven.surefire.testng;
  * under the License.
  */
 
-import org.apache.maven.artifact.versioning.ArtifactVersion;
-import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
-import org.apache.maven.surefire.report.RunListener;
-import org.apache.maven.surefire.report.ReporterException;
-import org.apache.maven.surefire.report.ReporterManagerFactory;
-import org.apache.maven.surefire.testset.TestSetFailedException;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,6 +26,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import org.apache.maven.artifact.versioning.ArtifactVersion;
+import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
+import org.apache.maven.surefire.report.ConsoleOutputCapture;
+import org.apache.maven.surefire.report.ConsoleOutputReceiver;
+import org.apache.maven.surefire.report.ReporterException;
+import org.apache.maven.surefire.report.ReporterFactory;
+import org.apache.maven.surefire.report.RunListener;
+import org.apache.maven.surefire.testset.TestSetFailedException;
 
 /**
  * Handles suite xml file definitions for TestNG.
@@ -76,21 +77,24 @@ public class TestNGXmlTestSuite
         this.reportsDirectory = reportsDirectory;
     }
 
-    public void execute( ReporterManagerFactory reporterManagerFactory )
+    public void execute( ReporterFactory reporterManagerFactory )
         throws ReporterException, TestSetFailedException
     {
         if ( testSets == null )
         {
             throw new IllegalStateException( "You must call locateTestSets before calling execute" );
         }
-        RunListener reporter = new SynchronizedReporterManager( reporterManagerFactory.createReporter() );
+//        RunListener reporter = new SynchronizedReporterManager( reporterManagerFactory.createReporter() );
+        RunListener reporter = reporterManagerFactory.createReporter();
+        ConsoleOutputCapture.startCapture( (ConsoleOutputReceiver) reporter );
+
         TestNGDirectoryTestSuite.startTestSuite( reporter, this );
-        TestNGExecutor.run( this.suiteFilePaths, this.testSourceDirectory, this.options, this.version, reporter,
-                            this, reportsDirectory );
+        TestNGExecutor.run( this.suiteFilePaths, this.testSourceDirectory, this.options, this.version, reporter, this,
+                            reportsDirectory );
         TestNGDirectoryTestSuite.finishTestSuite( reporter, this );
     }
 
-    public void execute( String testSetName, ReporterManagerFactory reporterManagerFactory, ClassLoader classLoader )
+    public void execute( String testSetName, ReporterFactory reporterManagerFactory, ClassLoader classLoader )
         throws TestSetFailedException
     {
         throw new TestSetFailedException( "Cannot run individual test when suite files are specified" );

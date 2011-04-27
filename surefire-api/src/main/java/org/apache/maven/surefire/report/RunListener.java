@@ -34,8 +34,7 @@ public interface RunListener
      * @param report the report entry describing the testset
      * @throws ReporterException When reporting fails
      */
-    void testSetStarting( ReportEntry report )
-        throws ReporterException;
+    void testSetStarting( ReportEntry report );
 
     /**
      * Indicates end of a given test-set
@@ -43,10 +42,7 @@ public interface RunListener
      * @param report the report entry describing the testset
      * @throws ReporterException When reporting fails
      */
-    void testSetCompleted( ReportEntry report )
-        throws ReporterException;
-
-    // Tests
+    void testSetCompleted( ReportEntry report );
 
     /**
      * Event fired when a test is about to start
@@ -85,6 +81,10 @@ public interface RunListener
      */
     void testFailed( ReportEntry report );
 
-
+    /**
+     * Event fired when a test is skipped
+     *
+     * @param report The report entry to log for
+     */
     void testSkipped( ReportEntry report );
 }

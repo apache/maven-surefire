@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Properties;
+import org.apache.maven.surefire.suite.RunResult;
 
 /**
  * The part of the booter that is unique to a forked vm.
@@ -51,6 +52,7 @@ public class ForkedBooter
     {
         try
         {
+            long start = System.currentTimeMillis();
             if ( args.length > 1 )
             {
                 SystemPropertyManager.setSystemProperties( new File( args[1] ) );
@@ -62,16 +64,16 @@ public class ForkedBooter
             ProviderConfiguration booterConfiguration = booterDeserializer.deserialize();
             final StartupConfiguration providerConfiguration = booterDeserializer.getProviderConfiguration();
 
-            SurefireStarter starter = new SurefireStarter( providerConfiguration, booterConfiguration );
+
+            SurefireStarter starter = new SurefireStarter( providerConfiguration, booterConfiguration, true );
 
             Object forkedTestSet = booterConfiguration.getTestForFork();
-            Properties p = booterConfiguration.getProviderProperties();
-            final int result = forkedTestSet != null
-                ? starter.runSuitesInProcess( forkedTestSet, surefirePropertiesFile, p )
-                : starter.runSuitesInProcess();
+            final RunResult result = forkedTestSet != null
+                ? starter.runSuitesInProcessWhenForked(forkedTestSet )
+                : starter.runSuitesInProcessWhenForked();
 
             // noinspection CallToSystemExit
-            System.exit( result );
+            System.exit( result.getBooterCode() );
         }
         catch ( Throwable t )
         {

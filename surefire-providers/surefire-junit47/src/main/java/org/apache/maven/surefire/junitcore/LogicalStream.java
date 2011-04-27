@@ -35,14 +35,17 @@ public class LogicalStream
     class Entry
     {
         final boolean stdout;
+
         final byte[] b;
+
         final int off;
+
         final int len;
 
         Entry( boolean stdout, byte[] b, int off, int len )
         {
             this.stdout = stdout;
-            this.b = ByteBuffer.copy( b, off, len);
+            this.b = ByteBuffer.copy( b, off, len );
             this.off = 0;
             this.len = len;
         }
@@ -65,9 +68,9 @@ public class LogicalStream
             reporter.writeDetailMessage( str );
         }
 
-        public void writeDetails( ConsoleOutputReceiver outputReceiver)
+        public void writeDetails( ConsoleOutputReceiver outputReceiver )
         {
-            outputReceiver.writeTestOutput( b, off, len , stdout );
+            outputReceiver.writeTestOutput( b, off, len, stdout );
         }
 
         @Override

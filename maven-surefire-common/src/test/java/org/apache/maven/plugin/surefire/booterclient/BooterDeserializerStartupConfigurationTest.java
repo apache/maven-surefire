@@ -19,6 +19,12 @@ package org.apache.maven.plugin.surefire.booterclient;
  * under the License.
  */
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Properties;
 import org.apache.maven.surefire.booter.BooterDeserializer;
 import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
 import org.apache.maven.surefire.booter.Classpath;
@@ -31,13 +37,6 @@ import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestRequest;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Properties;
 
 import junit.framework.TestCase;
 
@@ -67,7 +66,8 @@ public class BooterDeserializerStartupConfigurationTest
         assertEquals( classpathConfiguration, reloadedClasspathConfiguration );
     }
 
-    private void assertEquals( ClasspathConfiguration expectedConfiguration, ClasspathConfiguration actualConfiguration )
+    private void assertEquals( ClasspathConfiguration expectedConfiguration,
+                               ClasspathConfiguration actualConfiguration )
     {
         assertEquals( expectedConfiguration.getTestClasspath().getClassPath(),
                       actualConfiguration.getTestClasspath().getClassPath() );
@@ -79,7 +79,7 @@ public class BooterDeserializerStartupConfigurationTest
     private Properties getPropertiesForClasspathConfiguration( ClasspathConfiguration configuration )
     {
         Properties properties = new Properties();
-        configuration.setForkProperties( new PropertiesWrapper( properties ));
+        configuration.setForkProperties( new PropertiesWrapper( properties ) );
         return properties;
     }
 
@@ -100,8 +100,8 @@ public class BooterDeserializerStartupConfigurationTest
 
     private ClasspathConfiguration createClasspathConfiguration()
     {
-        Classpath testClassPath = new Classpath( Arrays.asList( new String[]{"CP1" , "CP2" } ) );
-        Classpath providerClasspath = new Classpath( Arrays.asList( new String[]{"SP1" , "SP2" } ) );
+        Classpath testClassPath = new Classpath( Arrays.asList( new String[]{ "CP1", "CP2" } ) );
+        Classpath providerClasspath = new Classpath( Arrays.asList( new String[]{ "SP1", "SP2" } ) );
         return new ClasspathConfiguration( testClassPath, providerClasspath, true, true );
     }
 
@@ -131,7 +131,7 @@ public class BooterDeserializerStartupConfigurationTest
         final ForkConfiguration forkConfiguration = ForkConfigurationTest.getForkConfiguration();
         Properties props = new Properties();
         BooterSerializer booterSerializer = new BooterSerializer( forkConfiguration, props );
-        booterSerializer.serialize( getProviderConfiguration(), startupConfiguration, aTest );
+        booterSerializer.serialize( getProviderConfiguration(), startupConfiguration, aTest, "never" );
         final File propsTest =
             SystemPropertyManager.writePropertiesFile( props, forkConfiguration.getTempDirectory(), "propsTest", true );
         BooterDeserializer booterDeserializer = new BooterDeserializer( new FileInputStream( propsTest ) );
@@ -145,8 +145,7 @@ public class BooterDeserializerStartupConfigurationTest
         File cwd = new File( "." );
         DirectoryScannerParameters directoryScannerParameters =
             new DirectoryScannerParameters( cwd, new ArrayList(), new ArrayList(), Boolean.TRUE, "hourly" );
-        ReporterConfiguration reporterConfiguration =
-            new ReporterConfiguration( new ArrayList(), cwd, Boolean.TRUE, null );
+        ReporterConfiguration reporterConfiguration = new ReporterConfiguration( cwd, Boolean.TRUE );
         String aUserRequestedTest = "aUserRequestedTest";
         String aUserRequestedTestMethod = "aUserRequestedTestMethod";
         TestRequest testSuiteDefinition =
@@ -154,13 +153,13 @@ public class BooterDeserializerStartupConfigurationTest
                              aUserRequestedTestMethod );
         return new ProviderConfiguration( directoryScannerParameters, true, reporterConfiguration,
                                           new TestArtifactInfo( "5.0", "ABC" ), testSuiteDefinition, new Properties(),
-                                          aTest );
+                                          aTest, "never" );
     }
 
     private StartupConfiguration getTestStartupConfiguration( ClassLoaderConfiguration classLoaderConfiguration )
     {
-        return new StartupConfiguration( "com.provider", classpathConfiguration, classLoaderConfiguration, false, false,
-                                         false );
+        return new StartupConfiguration( "com.provider", classpathConfiguration, classLoaderConfiguration, "never",
+                                         false, false );
     }
 
     private File getTestSourceDirectory()

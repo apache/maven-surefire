@@ -23,6 +23,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import org.apache.maven.surefire.util.internal.ByteBuffer;
 
 /**
  * Text based reporter.
@@ -72,11 +73,20 @@ public abstract class AbstractTextReporter
     {
         if ( writer != null )
         {
-            writer.println( message );
+            writer.print( message );
 
             writer.flush();
         }
     }
+
+    public void writeMessage( byte[] b, int off, int len )
+    {
+        if ( writer != null )
+        {
+            writer.write( ByteBuffer.toChar( b, off, len ) );
+        }
+    }
+
 
     public void writeDetailMessage( String message )
     {
@@ -113,6 +123,20 @@ public abstract class AbstractTextReporter
     public void testFailed( ReportEntry report, String stdOut, String stdErr )
     {
         super.testFailed( report, stdOut, stdErr );
+
+        testResults.add( getOutput( report, "FAILURE" ) );
+    }
+
+    public void testError( ReportEntry report )
+    {
+        super.testError( report );
+
+        testResults.add( getOutput( report, "ERROR" ) );
+    }
+
+    public void testFailed( ReportEntry report )
+    {
+        super.testFailed( report );
 
         testResults.add( getOutput( report, "FAILURE" ) );
     }
@@ -164,6 +188,8 @@ public abstract class AbstractTextReporter
         {
             buf.append( " <<< FAILURE!" );
         }
+
+        buf.append( "\n" );
 
         return buf.toString();
     }

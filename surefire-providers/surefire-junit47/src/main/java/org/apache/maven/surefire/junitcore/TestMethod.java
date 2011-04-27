@@ -22,7 +22,7 @@ package org.apache.maven.surefire.junitcore;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.ConsoleOutputReceiverForCurrentThread;
 import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.report.Reporter;
+import org.apache.maven.surefire.report.RunListener;
 
 /**
  * Represents the test-state of a single test method that is run.
@@ -88,7 +88,7 @@ class TestMethod
     }
 
 
-    public void replay( Reporter reporter )
+    public void replay( RunListener reporter )
         throws Exception
     {
 
@@ -101,16 +101,16 @@ class TestMethod
         reporter.testStarting( createReportEntry() );
         if ( output != null )
         {
-            output.writeDetails( reporter );
+            output.writeDetails( ( (ConsoleOutputReceiver) reporter ) );
         }
 
         if ( testFailure != null )
         {
-            reporter.testFailed( testFailure, getStdout(), getStdErr() );
+            reporter.testFailed( testFailure );
         }
         else if ( testError != null )
         {
-            reporter.testError( testError, getStdout(), getStdErr() );
+            reporter.testError( testError );
         }
         else
         {

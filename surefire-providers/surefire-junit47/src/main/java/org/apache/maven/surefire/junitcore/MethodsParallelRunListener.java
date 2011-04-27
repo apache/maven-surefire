@@ -19,11 +19,10 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
+import java.util.Map;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.testset.TestSetFailedException;
-
-import java.util.Map;
 
 /**
  * @author Kristian Rosenvold
@@ -39,7 +38,7 @@ public class MethodsParallelRunListener
                                        ReporterConfiguration reporterConfiguration, boolean reportImmediately )
         throws TestSetFailedException
     {
-        super( reporterFactory, reportImmediately, reporterConfiguration, classMethodCounts );
+        super( reporterFactory, reportImmediately, classMethodCounts );
     }
 
     @Override

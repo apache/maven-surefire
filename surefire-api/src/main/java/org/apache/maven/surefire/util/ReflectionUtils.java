@@ -218,6 +218,13 @@ public class ReflectionUtils
         }
     }
 
+    public static Object instantiateObject( String className, Class[] types, Object[] params, ClassLoader classLoader )
+    {
+        Class clazz = loadClass( classLoader, className );
+        final Constructor constructor = getConstructor( clazz, types );
+        return newInstance( constructor, params );
+    }
+
     public static Class tryLoadClass( ClassLoader classLoader, String className )
     {
         try

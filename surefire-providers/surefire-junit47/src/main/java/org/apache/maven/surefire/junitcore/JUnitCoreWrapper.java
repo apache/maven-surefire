@@ -19,14 +19,14 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.TestsToRun;
 
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-
 import org.junit.runner.Computer;
 import org.junit.runner.JUnitCore;
+import org.junit.runner.Result;
 import org.junit.runner.notification.RunListener;
 
 /**
@@ -49,7 +49,17 @@ class JUnitCoreWrapper
         }
         try
         {
-            junitCore.run( computer, testsToRun.getLocatedClasses() );
+            final Result run = junitCore.run( computer, testsToRun.getLocatedClasses() );
+
+            if ( run.getFailureCount() > 0 )
+            {
+                // There is something interesting going on here;
+                // the "run" result can contain other exceptions that did not occur as
+                // part of the test run, for instance if something bad happened in the
+                // RunListener. But it also contains regular problems from the test-run.
+                // I am not entirely sure of what to do with this; it might even be
+                // that these errors are the correct errors to report back to the client.
+            }
         }
         finally
         {

@@ -22,6 +22,7 @@ package org.apache.maven.plugin.surefire;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.surefire.booter.ProviderConfiguration;
+import org.apache.maven.surefire.suite.RunResult;
 
 /**
  * Helper class for surefire plugins
@@ -37,6 +38,56 @@ public final class SurefireHelper
         throw new IllegalAccessError( "Utility class" );
     }
 
+    // Todo: Fix the duplication, probably by making failsafe relate to a "RunResult" too.
+
+    public static void reportExecution( SurefireReportParameters reportParameters, RunResult result, Log log )
+        throws MojoFailureException
+    {
+
+        String msg;
+
+//        System.out.println( "");
+//        System.out.println( result.getTestSetSummary() );
+
+        if ( result.getCompletedCount() == 0 )
+        {
+            if ( ( reportParameters.getFailIfNoTests() == null )
+                || !reportParameters.getFailIfNoTests().booleanValue() )
+            {
+                return;
+            }
+            // TODO: i18n
+            throw new MojoFailureException(
+                "No tests were executed!  (Set -DfailIfNoTests=false to ignore this error.)" );
+        }
+
+        if ( result.isErrrorFree() )
+        {
+            return;
+        }
+
+        if ( result.isFailureOrTimeout() )
+        {
+            msg = "There was a timeout or other error in the fork";
+        }
+        else
+        {
+            // TODO: i18n
+            msg = "There are test failures.\n\nPlease refer to " + reportParameters.getReportsDirectory()
+                + " for the individual test results.";
+
+        }
+
+        if ( reportParameters.isTestFailureIgnore() )
+        {
+            log.error( msg );
+        }
+        else
+        {
+            throw new MojoFailureException( msg );
+        }
+    }
+
     public static void reportExecution( SurefireReportParameters reportParameters, int result, Log log )
         throws MojoFailureException
     {
@@ -49,7 +100,8 @@ public final class SurefireHelper
 
         if ( result == ProviderConfiguration.NO_TESTS_EXIT_CODE )
         {
-            if ( ( reportParameters.getFailIfNoTests() == null ) || !reportParameters.getFailIfNoTests().booleanValue() )
+            if ( ( reportParameters.getFailIfNoTests() == null )
+                || !reportParameters.getFailIfNoTests().booleanValue() )
             {
                 return;
             }
@@ -74,4 +126,5 @@ public final class SurefireHelper
             throw new MojoFailureException( msg );
         }
     }
+
 }

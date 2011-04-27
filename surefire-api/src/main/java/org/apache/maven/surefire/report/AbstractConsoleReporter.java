@@ -31,7 +31,6 @@ import java.io.PrintWriter;
  */
 public abstract class AbstractConsoleReporter
     extends AbstractTextReporter
-    implements RunReporter
 {
     private static final String TEST_SET_STARTING_PREFIX = "Running ";
 
@@ -45,7 +44,6 @@ public abstract class AbstractConsoleReporter
 
     AbstractConsoleReporter( String format, ReporterConfiguration reporterConfiguration )
     {
-        // TODO: use logger
         super(
             new PrintWriter( new OutputStreamWriter( new BufferedOutputStream( ORIGINAL_SYSTEM_OUT, BUFFER_SIZE ) ) ),
             format, reporterConfiguration );
@@ -57,20 +55,6 @@ public abstract class AbstractConsoleReporter
         super.testSetStarting( report );
 
         writeMessage( getTestSetStartingMessage( report ) );
-    }
-
-    public void runStarting()
-    {
-        writeHeading( "" );
-        writeHeading( "-------------------------------------------------------" );
-        writeHeading( " T E S T S" );
-        writeHeading( "-------------------------------------------------------" );
-    }
-
-    void writeHeading( String message )
-    {
-        writer.println( message );
-        writer.flush();
     }
 
     /**
@@ -92,6 +76,8 @@ public abstract class AbstractConsoleReporter
             message.append( report.getGroup() );
             message.append( TEST_SET_STARTING_GROUP_SUFIX );
         }
+
+        message.append( "\n" );
         return message.toString();
     }
 

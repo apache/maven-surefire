@@ -19,6 +19,8 @@ package org.apache.maven.surefire.providerapi;
  * under the License.
  */
 
+import java.util.Properties;
+import org.apache.maven.surefire.forking.ForkConfigurationInfo;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
@@ -26,14 +28,12 @@ import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.util.DirectoryScanner;
 
-import java.util.Properties;
-
 /**
  * Injected into the providers upon provider construction. Allows the provider to request services and data it needs.
- *
+ * <p/>
  * NOTE: This class is part of the proposed public api for surefire providers from 2.7 and up. It may
  * still be subject to changes, even for minor revisions.
- *
+ * <p/>
  * The api covers this interface and all the types reachable from it. And nothing else.
  *
  * @author Kristian Rosenvold
@@ -97,4 +97,11 @@ public interface ProviderParameters
      * @return The artifactinfo, or null if autodetect was not used.
      */
     TestArtifactInfo getTestArtifactInfo();
+
+    /**
+     * Information about the current fork settings.
+     *
+     * @return A forkConfigurationInfo, never null
+     */
+    ForkConfigurationInfo getForkConfiguration();
 }

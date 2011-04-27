@@ -20,20 +20,19 @@ nse agreements.  See the NOTICE file
  * under the License.
  */
 
-import org.apache.maven.surefire.report.ReporterConfiguration;
-import org.apache.maven.surefire.testset.DirectoryScannerParameters;
-import org.apache.maven.surefire.testset.TestArtifactInfo;
-import org.apache.maven.surefire.testset.TestRequest;
-
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Properties;
+import org.apache.maven.surefire.report.ReporterConfiguration;
+import org.apache.maven.surefire.testset.DirectoryScannerParameters;
+import org.apache.maven.surefire.testset.TestArtifactInfo;
+import org.apache.maven.surefire.testset.TestRequest;
+import org.apache.maven.surefire.util.NestedRuntimeException;
 
 import junit.framework.TestCase;
-import org.apache.maven.surefire.util.NestedRuntimeException;
 
 /**
  * @author Kristian Rosenvold
@@ -91,7 +90,7 @@ public class SurefireReflectorTest
 
     private ReporterConfiguration getReporterConfiguration()
     {
-        return new ReporterConfiguration( new ArrayList(), new File( "CDE" ), Boolean.TRUE, null );
+        return new ReporterConfiguration( new File( "CDE" ), Boolean.TRUE );
     }
 
     public void testTestClassLoaderAware()

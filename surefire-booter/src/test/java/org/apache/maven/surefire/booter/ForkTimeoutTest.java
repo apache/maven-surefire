@@ -19,14 +19,13 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
+import java.util.Iterator;
 import org.apache.maven.surefire.providerapi.AbstractProvider;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
-
-import java.util.Iterator;
 
 import junit.framework.TestCase;
 
@@ -41,7 +40,7 @@ public class ForkTimeoutTest
     {
         final Integer forkTimeout1 = new Integer( 100 );
         SurefireProvider surefireProvider = new TestProvider();
-        ReporterConfiguration reporterConfiguration = new ReporterConfiguration( null, null, null, forkTimeout1 );
+        ReporterConfiguration reporterConfiguration = new ReporterConfiguration( null, null );
         new ForkTimeout( 100, reporterConfiguration, surefireProvider );
         try
         {

@@ -16,17 +16,16 @@
  */
 package org.apache.maven.surefire.junitcore;
 
-import junit.framework.TestCase;
-import org.apache.maven.surefire.report.RunListener;
+import java.io.File;
+import java.util.Arrays;
+import java.util.HashMap;
+import org.apache.maven.plugin.surefire.report.ReporterManagerFactory;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterFactory;
-import org.apache.maven.surefire.report.ReporterManagerFactory;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
+import org.apache.maven.surefire.report.RunListener;
 
 import junit.framework.Assert;
+import junit.framework.TestCase;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.Computer;
@@ -87,7 +86,8 @@ import org.junit.runner.notification.Failure;
  * @author <a href="mailto:aslak@redhat.com">Aslak Knutsen</a>
  * @version $Revision: $
  */
-public class MavenSurefireJUnit47RunnerTest extends TestCase
+public class MavenSurefireJUnit47RunnerTest
+    extends TestCase
 {
 
     /*
@@ -120,13 +120,14 @@ public class MavenSurefireJUnit47RunnerTest extends TestCase
         ReporterConfiguration reporterConfiguration = ConcurrentReporterManagerTest.getTestReporterConfiguration();
 
         ReporterFactory reporterManagerFactory =
-            new ReporterManagerFactory( this.getClass().getClassLoader(), reporterConfiguration );
+            new ReporterManagerFactory( this.getClass().getClassLoader(), reporterConfiguration, Arrays.asList() );
 
         final HashMap<String, TestSet> classMethodCounts = new HashMap<String, TestSet>();
         RunListener reporter = ConcurrentReporterManager.createInstance( classMethodCounts, reporterManagerFactory,
-                                                                      getReporterConfiguration(), false, false );
+                                                                         getReporterConfiguration(), false, false );
 
-        org.junit.runner.notification.RunListener concurrentReportingRunListener = new JUnitCoreRunListener( reporter, classMethodCounts );
+        org.junit.runner.notification.RunListener concurrentReportingRunListener =
+            new JUnitCoreRunListener( reporter, classMethodCounts );
         Computer computer = new Computer();
 
         JUnitCore junitCore = new JUnitCore();
@@ -156,7 +157,7 @@ public class MavenSurefireJUnit47RunnerTest extends TestCase
 
     private ReporterConfiguration getReporterConfiguration()
     {
-        return new ReporterConfiguration( new ArrayList(), new File( "." ), true, null );
+        return new ReporterConfiguration( new File( "." ), true );
     }
 
     /**

@@ -18,11 +18,10 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
+import java.io.File;
 import org.apache.maven.it.VerificationException;
 import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
-
-import java.io.File;
 
 /**
  * Test for checking that the output from a forked suite is properly captured even if the suite encounters a severe error.
@@ -47,6 +46,6 @@ public class CheckTestNgExecuteErrorIT
         } // expected 
 
         verifier.resetStreams();
-        assertTrue( new File( testDir, "target/surefire-reports/TestSuite-output.txt" ).length() > 0 );
+        verifier.verifyTextInLog( "at org.apache.maven.surefire.testng.TestNGExecutor.run" );
     }
 }

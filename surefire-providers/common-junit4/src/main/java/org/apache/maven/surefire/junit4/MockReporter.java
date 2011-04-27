@@ -24,18 +24,15 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterConfiguration;
-import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.RunListener;
 
-/** Internal use only */
+/**
+ * Internal use only
+ */
 public class MockReporter
     implements RunListener
 {
     private final List<String> events = new ArrayList<String>();
-
-    public static final String RUN_STARTED = "RUN_STARTED";
-
-    public static final String RUN_COMPLETED = "RUN_COMPLETED";
 
     public static final String SET_STARTED = "SET_STARTED";
 
@@ -68,24 +65,12 @@ public class MockReporter
 
     }
 
-    public void runStarting()
-    {
-        events.add( RUN_STARTED );
-    }
-
-    public void runCompleted()
-    {
-        events.add( RUN_COMPLETED );
-    }
-
     public void testSetStarting( ReportEntry report )
-        throws ReporterException
     {
         events.add( SET_STARTED );
     }
 
     public void testSetCompleted( ReportEntry report )
-        throws ReporterException
     {
         events.add( SET_COMPLETED );
     }
@@ -151,6 +136,10 @@ public class MockReporter
     }
 
     public void testAssumptionFailure( ReportEntry report )
+    {
+    }
+
+    public void writeTestOutput( String output, boolean stdout )
     {
     }
 }

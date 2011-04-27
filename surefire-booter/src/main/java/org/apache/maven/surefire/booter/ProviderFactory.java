@@ -19,16 +19,15 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import org.apache.maven.surefire.providerapi.SurefireProvider;
-
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import org.apache.maven.surefire.forking.ForkConfigurationInfo;
+import org.apache.maven.surefire.providerapi.SurefireProvider;
 
 /**
  * Creates the surefire provider.
  * <p/>
- * Todo: This class does a little bit too little ;)
  *
  * @author Kristian Rosenvold
  */
@@ -44,15 +43,22 @@ public class ProviderFactory
 
     private final SurefireReflector surefireReflector;
 
+    private final ForkConfigurationInfo forkConfigurationInfo;
+
+    private final Object reporterManagerFactory;
+
 
     public ProviderFactory( StartupConfiguration startupConfiguration, ProviderConfiguration providerConfiguration,
-                            ClassLoader surefireClassLoader, ClassLoader testsClassLoader )
+                            ClassLoader surefireClassLoader, ClassLoader testsClassLoader,
+                            ForkConfigurationInfo forkMode, Object reporterManagerFactory )
     {
         this.providerConfiguration = providerConfiguration;
         this.surefireClassLoader = surefireClassLoader;
         this.startupConfiguration = startupConfiguration;
         this.surefireReflector = new SurefireReflector( surefireClassLoader );
         this.testsClassLoader = testsClassLoader;
+        this.forkConfigurationInfo = forkMode;
+        this.reporterManagerFactory = reporterManagerFactory;
     }
 
     public SurefireProvider createProvider()
@@ -61,13 +67,15 @@ public class ProviderFactory
         Thread.currentThread().setContextClassLoader( surefireClassLoader );
 
         StartupConfiguration starterConfiguration = startupConfiguration;
-        final Object o = surefireReflector.createBooterConfiguration();
+
+        final Object o = surefireReflector.createBooterConfiguration( surefireClassLoader, reporterManagerFactory );
         surefireReflector.setTestSuiteDefinitionAware( o, providerConfiguration.getTestSuiteDefinition() );
         surefireReflector.setProviderPropertiesAware( o, providerConfiguration.getProviderProperties() );
         surefireReflector.setReporterConfigurationAware( o, providerConfiguration.getReporterConfiguration() );
         surefireReflector.setTestClassLoaderAware( o, surefireClassLoader, testsClassLoader );
         surefireReflector.setTestArtifactInfoAware( o, providerConfiguration.getTestArtifact() );
         surefireReflector.setIfDirScannerAware( o, providerConfiguration.getDirScannerParams() );
+        surefireReflector.setForkConfigurationInfo( o, this.forkConfigurationInfo );
 
         Object provider = surefireReflector.instantiateProvider( starterConfiguration.getProviderClassName(), o );
         Thread.currentThread().setContextClassLoader( context );
@@ -109,5 +117,4 @@ public class ProviderFactory
             }
         }
     }
-
 }

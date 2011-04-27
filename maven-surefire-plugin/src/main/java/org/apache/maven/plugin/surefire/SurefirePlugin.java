@@ -25,7 +25,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -40,6 +39,7 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.apache.maven.surefire.booter.SurefireExecutionException;
+import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.toolchain.ToolchainManager;
 import org.codehaus.plexus.util.StringUtils;
 
@@ -180,12 +180,12 @@ public class SurefirePlugin
      * to run a single test called "foo/MyTest.java".<br/>
      * This parameter overrides the <code>includes/excludes</code> parameters, and the TestNG
      * <code>suiteXmlFiles</code> parameter.
-     * 
+     * <p/>
      * since 2.7.3
      * You can execute a limited number of method in the test with adding #myMethod or #my*ethod.
      * Si type "-Dtest=MyTest#myMethod"
      * <b>supported for junit 4.x and testNg</b>
-     * 
+     *
      * @parameter expression="${test}"
      */
     private String test;
@@ -296,7 +296,7 @@ public class SurefirePlugin
     private boolean useFile;
 
     /**
-     * When forking, set this to "true" to redirect the unit test standard output to a file (found in
+     * Set this to "true" to redirect the unit test standard output to a file (found in
      * reportsDirectory/testName-output.txt).
      *
      * @parameter expression="${maven.test.redirectTestOutputToFile}" default-value="false"
@@ -604,7 +604,7 @@ public class SurefirePlugin
         final List providers = initialize();
         Exception exception = null;
         ForkConfiguration forkConfiguration = null;
-        int result = 0;
+        RunResult result = null;
         for ( Iterator iter = providers.iterator(); iter.hasNext(); )
         {
             ProviderInfo provider = (ProviderInfo) iter.next();
@@ -626,6 +626,10 @@ public class SurefirePlugin
             }
         }
 
+        if ( result.isFailureOrTimeout() )
+        {
+            throw new MojoExecutionException( "Failure or timeout" );
+        }
         if ( exception != null )
         {
             throw new MojoExecutionException( exception.getMessage(), exception );
@@ -637,16 +641,18 @@ public class SurefirePlugin
             System.setProperties( getOriginalSystemProperties() );
         }
 
-        writeSummary(result);
+        writeSummary( result );
     }
 
-	private void writeSummary(int result) throws MojoFailureException {
-		SurefireHelper.reportExecution( this, result, getLog() );
-	}
+    private void writeSummary( RunResult result )
+        throws MojoFailureException
+    {
+        SurefireHelper.reportExecution( this, result, getLog() );
+    }
 
     protected boolean isSkipExecution()
     {
-    	return isSkip() || isSkipTests() || isSkipExec();
+        return isSkip() || isSkipTests() || isSkipExec();
     }
 
     protected String getPluginName()
@@ -811,7 +817,7 @@ public class SurefirePlugin
         }
         return test;
     }
-    
+
     /**
      * @since 2.7.3
      */
@@ -820,15 +826,15 @@ public class SurefirePlugin
         if ( StringUtils.isBlank( test ) )
         {
             return null;
-        }        
+        }
         int index = this.test.indexOf( '#' );
         if ( index >= 0 )
         {
             return this.test.substring( index + 1, this.test.length() );
         }
         return null;
-    }    
-    
+    }
+
 
     public void setTest( String test )
     {
@@ -1299,5 +1305,5 @@ public class SurefirePlugin
     protected void addPluginSpecificChecksumItems( ChecksumCalculator checksum )
     {
     }
-    
+
 }

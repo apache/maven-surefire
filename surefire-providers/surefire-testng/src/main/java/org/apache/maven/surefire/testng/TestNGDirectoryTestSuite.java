@@ -19,20 +19,6 @@ package org.apache.maven.surefire.testng;
  * under the License.
  */
 
-import org.apache.maven.artifact.versioning.ArtifactVersion;
-import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
-import org.apache.maven.surefire.NonAbstractClassFilter;
-import org.apache.maven.surefire.report.RunListener;
-import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.report.ReporterException;
-import org.apache.maven.surefire.report.ReporterFactory;
-import org.apache.maven.surefire.report.ReporterManagerFactory;
-import org.apache.maven.surefire.report.SimpleReportEntry;
-import org.apache.maven.surefire.testset.TestSetFailedException;
-import org.apache.maven.surefire.util.DefaultDirectoryScanner;
-import org.apache.maven.surefire.util.DirectoryScanner;
-import org.apache.maven.surefire.util.TestsToRun;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -43,6 +29,20 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import org.apache.maven.artifact.versioning.ArtifactVersion;
+import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
+import org.apache.maven.surefire.NonAbstractClassFilter;
+import org.apache.maven.surefire.report.ConsoleOutputCapture;
+import org.apache.maven.surefire.report.ConsoleOutputReceiver;
+import org.apache.maven.surefire.report.ReportEntry;
+import org.apache.maven.surefire.report.ReporterException;
+import org.apache.maven.surefire.report.ReporterFactory;
+import org.apache.maven.surefire.report.RunListener;
+import org.apache.maven.surefire.report.SimpleReportEntry;
+import org.apache.maven.surefire.testset.TestSetFailedException;
+import org.apache.maven.surefire.util.DefaultDirectoryScanner;
+import org.apache.maven.surefire.util.DirectoryScanner;
+import org.apache.maven.surefire.util.TestsToRun;
 
 /**
  * Test suite for TestNG based on a directory of Java test classes. Can also execute JUnit tests.
@@ -64,11 +64,12 @@ public class TestNGDirectoryTestSuite
     private SortedMap testSets;
 
     private final DirectoryScanner surefireDirectoryScanner;
-    
+
     private String testMethodPattern;
 
     public TestNGDirectoryTestSuite( File basedir, ArrayList includes, ArrayList excludes, String testSourceDirectory,
-                                     String artifactVersion, Properties confOptions, File reportsDirectory, String testMethodPattern )
+                                     String artifactVersion, Properties confOptions, File reportsDirectory,
+                                     String testMethodPattern )
     {
 
         this.surefireDirectoryScanner = new DefaultDirectoryScanner( basedir, includes, excludes, "filesystem" );
@@ -77,7 +78,7 @@ public class TestNGDirectoryTestSuite
 
         this.testSourceDirectory = testSourceDirectory;
         this.reportsDirectory = reportsDirectory;
-        this.version =  new DefaultArtifactVersion( artifactVersion );
+        this.version = new DefaultArtifactVersion( artifactVersion );
         this.testMethodPattern = testMethodPattern;
     }
 
@@ -97,6 +98,8 @@ public class TestNGDirectoryTestSuite
         }
 
         RunListener reporter = reporterManagerFactory.createReporter();
+        ConsoleOutputCapture.startCapture( (ConsoleOutputReceiver) reporter );
+
         startTestSuite( reporter, this );
 
         TestNGExecutor.run( new Class[]{ (Class) testsToRun.iterator().next() }, this.testSourceDirectory, this.options,
@@ -141,7 +144,9 @@ public class TestNGDirectoryTestSuite
             junitReportsDirectory = new File( reportsDirectory, "testng-junit-results" );
         }
 
-        RunListener reporterManager = new SynchronizedReporterManager( reporterFactory.createReporter() );
+//        RunListener reporterManager = new SynchronizedReporterManager( reporterFactory.createReporter() );
+        RunListener reporterManager = reporterFactory.createReporter();
+        ConsoleOutputCapture.startCapture( (ConsoleOutputReceiver) reporterManager );
         startTestSuite( reporterManager, this );
 
         Class[] testClasses = (Class[]) testNgTestClasses.toArray( new Class[testNgTestClasses.size()] );
@@ -170,7 +175,7 @@ public class TestNGDirectoryTestSuite
     }
 
     // single class test
-    public void execute( String testSetName, ReporterManagerFactory reporterManagerFactory, ClassLoader classLoader )
+    public void execute( String testSetName, ReporterFactory reporterManagerFactory, ClassLoader classLoader )
         throws ReporterException, TestSetFailedException
     {
         if ( testSets == null )
@@ -185,6 +190,8 @@ public class TestNGDirectoryTestSuite
         }
 
         RunListener reporter = reporterManagerFactory.createReporter();
+        ConsoleOutputCapture.startCapture( (ConsoleOutputReceiver) reporter );
+
         startTestSuite( reporter, this );
 
         TestNGExecutor.run( new Class[]{ testSet.getTestClass() }, this.testSourceDirectory, this.options, this.version,

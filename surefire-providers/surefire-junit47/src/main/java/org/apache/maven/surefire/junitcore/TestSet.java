@@ -19,18 +19,17 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.RunListener;
-import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.report.Reporter;
-import org.apache.maven.surefire.report.SimpleReportEntry;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-
+import org.apache.maven.surefire.report.ConsoleOutputReceiver;
+import org.apache.maven.surefire.report.ReportEntry;
+import org.apache.maven.surefire.report.RunListener;
+import org.apache.maven.surefire.report.SimpleReportEntry;
 import org.apache.maven.surefire.util.NestedRuntimeException;
+
 import org.junit.runner.Description;
 
 /**
@@ -81,8 +80,10 @@ public class TestSet
 
             for ( TestMethod testMethod : testMethods )
             {
-                testMethod.replay( (Reporter) target );
+                testMethod.replay( target );
+                testMethod.getLogicalStream().writeDetails( (ConsoleOutputReceiver) target );
             }
+
             report = createReportEntry( elapsed );
 
             target.testSetCompleted( report );

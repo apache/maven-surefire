@@ -19,6 +19,17 @@ package org.apache.maven.plugin.failsafe;
  * under the License.
  */
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -38,21 +49,10 @@ import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.apache.maven.surefire.booter.SurefireExecutionException;
 import org.apache.maven.surefire.failsafe.model.FailsafeSummary;
 import org.apache.maven.surefire.failsafe.model.io.xpp3.FailsafeSummaryXpp3Writer;
+import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.toolchain.ToolchainManager;
 import org.codehaus.plexus.util.ReaderFactory;
 import org.codehaus.plexus.util.StringUtils;
-
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
 
 /**
  * Run integration tests using Surefire.
@@ -197,7 +197,7 @@ public class IntegrationTestMojo
      * to run a single test called "foo/MyTest.java".<br/>
      * This parameter overrides the <code>includes/excludes</code> parameters, and the TestNG
      * <code>suiteXmlFiles</code> parameter.
-     * 
+     * <p/>
      * since 2.7.3
      * You can execute a limited number of method in the test with adding #myMethod or #my*ethod.
      * Si type "-Dtest=MyTest#myMethod"
@@ -206,7 +206,7 @@ public class IntegrationTestMojo
      * @parameter expression="${it.test}"
      */
     private String test;
-    
+
     /**
      * A list of &lt;include> elements specifying the tests (by pattern) that should be included in testing. When not
      * specified and when the <code>test</code> parameter is not specified, the default includes will be
@@ -328,7 +328,7 @@ public class IntegrationTestMojo
     private boolean useFile;
 
     /**
-     * When forking, set this to "true" to redirect the unit test standard output to a file (found in
+     * Set this to "true" to redirect the unit test standard output to a file (found in
      * reportsDirectory/testName-output.txt).
      *
      * @parameter expression="${maven.test.redirectTestOutputToFile}" default-value="false"
@@ -653,7 +653,8 @@ public class IntegrationTestMojo
             ForkStarter forkStarter = createForkStarter( provider, forkConfiguration, classLoaderConfiguration );
             try
             {
-                result.setResult( forkStarter.run() );
+                final RunResult runResult = forkStarter.run();
+                result.setResult( runResult.getForkedProcessCode() );
             }
             catch ( SurefireBooterForkException e )
             {
@@ -684,24 +685,24 @@ public class IntegrationTestMojo
             System.setProperties( getOriginalSystemProperties() );
         }
 
-        writeSummary(result);
+        writeSummary( result );
     }
 
-	private void writeSummary(FailsafeSummary summary)
-			throws MojoExecutionException {
-		File summaryFile = getSummaryFile();
+    private void writeSummary( FailsafeSummary summary )
+        throws MojoExecutionException
+    {
+        File summaryFile = getSummaryFile();
         if ( !summaryFile.getParentFile().isDirectory() )
         {
-        	summaryFile.getParentFile().mkdirs();
+            summaryFile.getParentFile().mkdirs();
         }
-		try
+        try
         {
             String encoding;
             if ( StringUtils.isEmpty( this.encoding ) )
             {
-                getLog().warn(
-                    "File encoding has not been set, using platform encoding " + ReaderFactory.FILE_ENCODING
-                        + ", i.e. build is platform dependent!" );
+                getLog().warn( "File encoding has not been set, using platform encoding " + ReaderFactory.FILE_ENCODING
+                                   + ", i.e. build is platform dependent!" );
                 encoding = ReaderFactory.FILE_ENCODING;
             }
             else
@@ -722,11 +723,11 @@ public class IntegrationTestMojo
         {
             throw new MojoExecutionException( e.getMessage(), e );
         }
-	}
+    }
 
     protected boolean isSkipExecution()
     {
-    	return isSkip() || isSkipTests() || isSkipITs() || isSkipExec();
+        return isSkip() || isSkipTests() || isSkipITs() || isSkipExec();
     }
 
     protected String getPluginName()
@@ -887,7 +888,7 @@ public class IntegrationTestMojo
     {
         this.test = test;
     }
-    
+
     /**
      * @since 2.7.3
      */
@@ -896,14 +897,14 @@ public class IntegrationTestMojo
         if ( StringUtils.isBlank( test ) )
         {
             return null;
-        }        
+        }
         int index = this.test.indexOf( '#' );
         if ( index >= 0 )
         {
             return this.test.substring( index + 1, this.test.length() );
         }
         return null;
-    }    
+    }
 
     public List getIncludes()
     {
@@ -1384,8 +1385,8 @@ public class IntegrationTestMojo
 
     protected void addPluginSpecificChecksumItems( ChecksumCalculator checksum )
     {
-        checksum.add(skipITs);
-        checksum.add(summaryFile);
+        checksum.add( skipITs );
+        checksum.add( summaryFile );
     }
-    
+
 }

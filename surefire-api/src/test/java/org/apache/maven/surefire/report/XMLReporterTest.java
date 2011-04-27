@@ -19,9 +19,10 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
+import org.codehaus.plexus.util.xml.Xpp3Dom;
+
 import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
-import org.codehaus.plexus.util.xml.Xpp3Dom;
 
 public class XMLReporterTest
     extends TestCase
@@ -37,9 +38,10 @@ public class XMLReporterTest
         throws Exception
     {
         super.setUp();
-        reporter = new XMLReporter( ForkingConsoleReporterTest.getTestReporterConfiguration() );
+        reporter = new XMLReporter( new ReporterConfiguration( null, Boolean.TRUE ) );
         message = "junit.framework.AssertionFailedError";
-        reportEntry = new SimpleReportEntry( this.getClass().getName(), "XMLReporterTest", new PojoStackTraceWriter( "", "", new AssertionFailedError() ) );
+        reportEntry = new SimpleReportEntry( this.getClass().getName(), "XMLReporterTest",
+                                             new PojoStackTraceWriter( "", "", new AssertionFailedError() ) );
     }
 
     /*

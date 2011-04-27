@@ -19,17 +19,20 @@ package org.apache.maven.surefire.junit4;
  * under the License.
  */
 
-import org.apache.maven.surefire.Surefire;
+import java.util.Iterator;
+import java.util.List;
 import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
 import org.apache.maven.surefire.common.junit4.JUnit4RunListenerFactory;
 import org.apache.maven.surefire.common.junit4.JUnit4TestChecker;
 import org.apache.maven.surefire.providerapi.AbstractProvider;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
+import org.apache.maven.surefire.report.ConsoleOutputCapture;
+import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.PojoStackTraceWriter;
-import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterFactory;
+import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.SimpleReportEntry;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
@@ -39,20 +42,12 @@ import org.apache.maven.surefire.util.TestsToRun;
 
 import org.junit.runner.notification.RunNotifier;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.ResourceBundle;
-
-
 /**
  * @author Kristian Rosenvold
  */
-@SuppressWarnings( { "UnusedDeclaration" } )
-public class JUnit4Provider extends AbstractProvider
+public class JUnit4Provider
+    extends AbstractProvider
 {
-
-    private static ResourceBundle bundle = ResourceBundle.getBundle( Surefire.SUREFIRE_BUNDLE_NAME );
-
     private final ClassLoader testClassLoader;
 
     private final DirectoryScanner directoryScanner;
@@ -60,7 +55,7 @@ public class JUnit4Provider extends AbstractProvider
     private final List<org.junit.runner.notification.RunListener> customRunListeners;
 
     private final JUnit4TestChecker jUnit4TestChecker;
-    
+
     private final String requestedTestMethod;
 
     private TestsToRun testsToRun;
@@ -79,10 +74,10 @@ public class JUnit4Provider extends AbstractProvider
 
     }
 
-    @SuppressWarnings( { "UnnecessaryUnboxing" } )
     public RunResult invoke( Object forkTestSet )
         throws TestSetFailedException, ReporterException
     {
+        long start = System.currentTimeMillis();
         if ( testsToRun == null )
         {
             testsToRun = forkTestSet == null ? scanClassPath() : TestsToRun.fromClass( (Class) forkTestSet );
@@ -92,22 +87,32 @@ public class JUnit4Provider extends AbstractProvider
 
         final ReporterFactory reporterFactory = providerParameters.getReporterFactory();
 
-        RunListener reporter = reporterFactory.createReporter();
-        JUnit4RunListener jUnit4TestSetReporter = new JUnit4RunListener( reporter );
+        final RunListener reporter = reporterFactory.createReporter();
+        //final AsynchRunListener asynchRunListener = new AsynchRunListener( reporter , "JUnitProvider");
+        final RunListener asynchRunListener = reporter;
+
+        ConsoleOutputCapture.startCapture( (ConsoleOutputReceiver) asynchRunListener );
+
+        JUnit4RunListener jUnit4TestSetReporter = new JUnit4RunListener( asynchRunListener );
+
         RunNotifier runNotifer = getRunNotifer( jUnit4TestSetReporter, customRunListeners );
 
         for ( Class clazz : testsToRun.getLocatedClasses() )
         {
-            executeTestSet( clazz, reporter, testClassLoader, runNotifer );
+            executeTestSet( clazz, reporter, runNotifer );
         }
 
         closeRunNotifer( jUnit4TestSetReporter, customRunListeners );
 
-        return reporterFactory.close();
+        ConsoleOutputReceiver consoleOutputReceiver = (ConsoleOutputReceiver) reporter;
+        final String s = "Done after " + ( System.currentTimeMillis() - start );
+        consoleOutputReceiver.writeTestOutput( s.getBytes(), 0, s.getBytes().length, true );
 
+        //asynchRunListener.close();
+        return reporterFactory.close();
     }
 
-    private void executeTestSet( Class clazz, RunListener reporter, ClassLoader classLoader, RunNotifier listeners )
+    private void executeTestSet( Class clazz, RunListener reporter, RunNotifier listeners )
         throws ReporterException, TestSetFailedException
     {
         final ReportEntry report = new SimpleReportEntry( this.getClass().getName(), clazz.getName() );
@@ -134,7 +139,8 @@ public class JUnit4Provider extends AbstractProvider
         }
     }
 
-    private RunNotifier getRunNotifer( org.junit.runner.notification.RunListener main, List<org.junit.runner.notification.RunListener> others )
+    private RunNotifier getRunNotifer( org.junit.runner.notification.RunListener main,
+                                       List<org.junit.runner.notification.RunListener> others )
     {
         RunNotifier fNotifier = new RunNotifier();
         fNotifier.addListener( main );
@@ -147,7 +153,8 @@ public class JUnit4Provider extends AbstractProvider
 
     // I am not entierly sure as to why we do this explicit freeing, it's one of those
     // pieces of code that just seem to linger on in here ;)
-    private void closeRunNotifer( org.junit.runner.notification.RunListener main, List<org.junit.runner.notification.RunListener> others )
+    private void closeRunNotifer( org.junit.runner.notification.RunListener main,
+                                  List<org.junit.runner.notification.RunListener> others )
     {
         RunNotifier fNotifier = new RunNotifier();
         fNotifier.removeListener( main );
@@ -192,10 +199,5 @@ public class JUnit4Provider extends AbstractProvider
     {
         final String property = System.getProperty( "surefire.junit4.upgradecheck" );
         return property != null;
-    }
-
-    public Boolean isRunnable()
-    {
-        return Boolean.TRUE;
     }
 }

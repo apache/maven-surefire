@@ -26,8 +26,6 @@ import org.apache.maven.surefire.suite.RunResult;
  */
 public interface ReporterFactory
 {
-    RunStatistics getGlobalRunStatistics();
-
     /**
      * Creates a reporter. The reporter is a singleton that is expected to be
      * used in the provider.
@@ -39,10 +37,17 @@ public interface ReporterFactory
     /**
      * Creates a ConsoleReporter, that allows providers to write messages to the running maven console.
      * This output is not associated with any thread/test and appears immediately.
+     *
      * @return a ConsoleReporter
      */
     DirectConsoleReporter createConsoleReporter();
 
-
+    /**
+     * Closes the factory, freeing resources allocated in the factory.
+     *
+     * @return The run result
+     */
     RunResult close();
+
+    RunStatistics getGlobalRunStatistics();
 }

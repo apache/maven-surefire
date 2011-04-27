@@ -19,6 +19,13 @@ package org.apache.maven.plugin.surefire.booterclient;
  * under the License.
  */
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
 import org.apache.maven.surefire.booter.BooterDeserializer;
 import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
 import org.apache.maven.surefire.booter.ClasspathConfiguration;
@@ -29,14 +36,6 @@ import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestRequest;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
 
 import junit.framework.Assert;
 import junit.framework.TestCase;
@@ -53,7 +52,7 @@ public class BooterDeserializerProviderConfigurationTest
     private final String aTest = "aTest";
 
     private final String aUserRequestedTest = "aUserRequestedTest";
-    
+
     private final String aUserRequestedTestMethod = "aUserRequestedTestMethod";
 
     public static ClassLoaderConfiguration getForkConfiguration()
@@ -77,7 +76,7 @@ public class BooterDeserializerProviderConfigurationTest
 
         ClassLoaderConfiguration forkConfiguration = getForkConfiguration();
         final StartupConfiguration testStartupConfiguration = getTestStartupConfiguration( forkConfiguration );
-        ProviderConfiguration providerConfiguration = getReloadedProviderConfiguration( new ArrayList() );
+        ProviderConfiguration providerConfiguration = getReloadedProviderConfiguration();
         ProviderConfiguration read = saveAndReload( providerConfiguration, testStartupConfiguration );
 
         Assert.assertEquals( aDir, read.getBaseDir() );
@@ -93,34 +92,20 @@ public class BooterDeserializerProviderConfigurationTest
     {
         DirectoryScannerParameters directoryScannerParameters = getDirectoryScannerParameters();
         ClassLoaderConfiguration forkConfiguration = getForkConfiguration();
-        List reports = new ArrayList();
-        final String first = "abc";
-        final String second = "cde";
-        final String third = "efg";
-        reports.add( first );
-        reports.add( second );
-        reports.add( third );
 
-        ProviderConfiguration providerConfiguration =
-            getTestProviderConfiguration( directoryScannerParameters, reports );
-
-        final ReporterConfiguration reporterConfiguration = providerConfiguration.getReporterConfiguration();
-        reporterConfiguration.getReports().add( first );
-        reporterConfiguration.getReports().add( second );
-        reporterConfiguration.getReports().add( third );
+        ProviderConfiguration providerConfiguration = getTestProviderConfiguration( directoryScannerParameters );
 
         final StartupConfiguration testProviderConfiguration = getTestStartupConfiguration( forkConfiguration );
         ProviderConfiguration reloaded = saveAndReload( providerConfiguration, testProviderConfiguration );
 
-        Assert.assertEquals( first, reloaded.getReporterConfiguration().getReports().get( 0 ) );
-        Assert.assertEquals( second, reloaded.getReporterConfiguration().getReports().get( 1 ) );
-        Assert.assertEquals( third, reloaded.getReporterConfiguration().getReports().get( 2 ) );
+        assertTrue( reloaded.getReporterConfiguration().isTrimStackTrace().booleanValue() );
+        assertNotNull( reloaded.getReporterConfiguration().getReportsDirectory() );
     }
 
     public void testTestArtifact()
         throws IOException
     {
-        ProviderConfiguration reloaded = getReloadedProviderConfiguration( new ArrayList() );
+        ProviderConfiguration reloaded = getReloadedProviderConfiguration();
 
         Assert.assertEquals( "5.0", reloaded.getTestArtifact().getVersion() );
         Assert.assertEquals( "ABC", reloaded.getTestArtifact().getClassifier() );
@@ -129,7 +114,7 @@ public class BooterDeserializerProviderConfigurationTest
     public void testTestRequest()
         throws IOException
     {
-        ProviderConfiguration reloaded = getReloadedProviderConfiguration( new ArrayList() );
+        ProviderConfiguration reloaded = getReloadedProviderConfiguration();
 
         TestRequest testSuiteDefinition = reloaded.getTestSuiteDefinition();
         List suiteXmlFiles = testSuiteDefinition.getSuiteXmlFiles();
@@ -143,7 +128,7 @@ public class BooterDeserializerProviderConfigurationTest
     public void testTestForFork()
         throws IOException
     {
-        final ProviderConfiguration reloaded = getReloadedProviderConfiguration( new ArrayList() );
+        final ProviderConfiguration reloaded = getReloadedProviderConfiguration();
         Assert.assertEquals( aTest, reloaded.getTestForForkString() );
 
     }
@@ -151,17 +136,17 @@ public class BooterDeserializerProviderConfigurationTest
     public void testFailIfNoTests()
         throws IOException
     {
-        ProviderConfiguration reloaded = getReloadedProviderConfiguration( new ArrayList() );
+        ProviderConfiguration reloaded = getReloadedProviderConfiguration();
         assertTrue( reloaded.isFailIfNoTests().booleanValue() );
 
     }
 
-    private ProviderConfiguration getReloadedProviderConfiguration( ArrayList reports )
+    private ProviderConfiguration getReloadedProviderConfiguration()
         throws IOException
     {
         DirectoryScannerParameters directoryScannerParameters = getDirectoryScannerParameters();
         ClassLoaderConfiguration forkConfiguration = getForkConfiguration();
-        ProviderConfiguration booterConfiguration = getTestProviderConfiguration( directoryScannerParameters, reports );
+        ProviderConfiguration booterConfiguration = getTestProviderConfiguration( directoryScannerParameters );
         final StartupConfiguration testProviderConfiguration = getTestStartupConfiguration( forkConfiguration );
         return saveAndReload( booterConfiguration, testProviderConfiguration );
     }
@@ -186,34 +171,34 @@ public class BooterDeserializerProviderConfigurationTest
         final ForkConfiguration forkConfiguration = ForkConfigurationTest.getForkConfiguration();
         Properties props = new Properties();
         BooterSerializer booterSerializer = new BooterSerializer( forkConfiguration, props );
-        booterSerializer.serialize( booterConfiguration, testProviderConfiguration, aTest );
+        booterSerializer.serialize( booterConfiguration, testProviderConfiguration, aTest, "never" );
         final File propsTest =
             SystemPropertyManager.writePropertiesFile( props, forkConfiguration.getTempDirectory(), "propsTest", true );
         BooterDeserializer booterDeserializer = new BooterDeserializer( new FileInputStream( propsTest ) );
         return booterDeserializer.deserialize();
     }
 
-    private ProviderConfiguration getTestProviderConfiguration( DirectoryScannerParameters directoryScannerParameters,
-                                                                List reports )
+    private ProviderConfiguration getTestProviderConfiguration( DirectoryScannerParameters directoryScannerParameters )
         throws IOException
     {
 
         File cwd = new File( "." );
         ReporterConfiguration reporterConfiguration =
-            new ReporterConfiguration( reports, cwd, Boolean.TRUE, null );
+            new ReporterConfiguration( cwd, Boolean.TRUE, "abc", "cde", "efg", "hij" );
         TestRequest testSuiteDefinition =
-            new TestRequest( getSuiteXmlFileStrings(), getTestSourceDirectory(), aUserRequestedTest, aUserRequestedTestMethod );
+            new TestRequest( getSuiteXmlFileStrings(), getTestSourceDirectory(), aUserRequestedTest,
+                             aUserRequestedTestMethod );
         return new ProviderConfiguration( directoryScannerParameters, true, reporterConfiguration,
                                           new TestArtifactInfo( "5.0", "ABC" ), testSuiteDefinition, new Properties(),
-                                          aTest );
+                                          aTest, "never" );
     }
 
     private StartupConfiguration getTestStartupConfiguration( ClassLoaderConfiguration classLoaderConfiguration )
     {
         ClasspathConfiguration classpathConfiguration = new ClasspathConfiguration( true, true );
 
-        return new StartupConfiguration( "com.provider", classpathConfiguration, classLoaderConfiguration, false, false,
-                                         false );
+        return new StartupConfiguration( "com.provider", classpathConfiguration, classLoaderConfiguration, "never",
+                                         false, false );
     }
 
     private File getTestSourceDirectory()

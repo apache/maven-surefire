@@ -75,14 +75,6 @@ public abstract class AbstractReporter
         writeMessage( footer );
     }
 
-    public void runStarting()
-    {
-    }
-
-    public void runCompleted()
-    {
-    }
-
     public void testSetStarting( ReportEntry report )
         throws ReporterException
     {
@@ -211,17 +203,18 @@ public abstract class AbstractReporter
         return clientSpecifiedElapsed != null ? clientSpecifiedElapsed.intValue() : endTime - startTime;
     }
 
-    // @deprecated dont use.  TODO remove for 2.7.2
     public void testError( ReportEntry report )
     {
+        ++errors;
+        endTest();
     }
 
-    // @deprecated dont use.  TODO remove for 2.7.2
     public void testFailed( ReportEntry report )
     {
+        ++failures;
+        endTest();
     }
 
-    // @deprecated dont use.  TODO remove for 2.7.2
     public void testAssumptionFailure( ReportEntry report )
     {
     }

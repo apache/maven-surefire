@@ -39,7 +39,7 @@ import junit.framework.TestCase;
 /**
  * Contains commonly used featurtes for most tests, encapsulating
  * common use cases.
- *
+ * <p/>
  * Also includes thread-safe access to the extracted resource
  * files, which AbstractSurefireIntegrationTestClass does not.
  * Thread safe only for running in "classes" mode.
@@ -84,8 +84,6 @@ public abstract class SurefireVerifierTestClass
     {
         String tempDirPath = System.getProperty( "maven.test.tmpdir", System.getProperty( "java.io.tmpdir" ) );
         File tempDir = new File( tempDirPath, this.getClass().getSimpleName() );
-        System.out.println( "tempDir = " + tempDir );
-
         File testDir = new File( tempDir, resourcePath );
         FileUtils.deleteDirectory( testDir );
 
@@ -199,6 +197,12 @@ public abstract class SurefireVerifierTestClass
         return execute( "test" );
     }
 
+    protected Verifier executeVerify()
+        throws VerificationException
+    {
+        return execute( "verify" );
+    }
+
     protected Verifier execute( String goal )
         throws VerificationException
     {
@@ -235,7 +239,7 @@ public abstract class SurefireVerifierTestClass
 
     protected File getSiteFile( String moduleName, String fileName )
     {
-        File targetDir = getSubFile(moduleName + "/target/site" );
+        File targetDir = getSubFile( moduleName + "/target/site" );
         return new File( targetDir, fileName );
     }
 
@@ -355,7 +359,8 @@ public abstract class SurefireVerifierTestClass
         }
         catch ( InvalidVersionSpecificationException e )
         {
-            throw (RuntimeException) new IllegalArgumentException( "Invalid version range: " + versionRangeStr ).initCause( e );
+            throw (RuntimeException) new IllegalArgumentException(
+                "Invalid version range: " + versionRangeStr ).initCause( e );
         }
 
         ArtifactVersion version = getMavenVersion();

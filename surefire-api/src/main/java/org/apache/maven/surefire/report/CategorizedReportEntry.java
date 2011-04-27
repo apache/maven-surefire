@@ -36,11 +36,11 @@ public class CategorizedReportEntry
 
     public CategorizedReportEntry( String source, String name, String group, String message )
     {
-        this( source, name, group, message, null, null );
+        this( source, name, group, null, null );
     }
 
-    private CategorizedReportEntry( String source, String name, String group, String message,
-                                   StackTraceWriter stackTraceWriter, Integer elapsed )
+    public CategorizedReportEntry( String source, String name, String group, StackTraceWriter stackTraceWriter,
+                                   Integer elapsed )
     {
         super( source, name, stackTraceWriter, elapsed );
         this.group = group;

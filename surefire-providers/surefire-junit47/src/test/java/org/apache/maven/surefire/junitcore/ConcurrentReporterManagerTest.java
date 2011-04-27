@@ -20,37 +20,33 @@
 package org.apache.maven.surefire.junitcore;
 
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.PrintStream;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import org.apache.maven.plugin.surefire.report.ReporterManagerFactory;
+import org.apache.maven.surefire.report.ReporterConfiguration;
+import org.apache.maven.surefire.report.ReporterFactory;
+import org.apache.maven.surefire.report.RunListener;
+import org.apache.maven.surefire.report.RunStatistics;
+import org.apache.maven.surefire.testset.TestSetFailedException;
+
 import junit.framework.Assert;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-import org.apache.maven.surefire.report.ConsoleReporter;
-import org.apache.maven.surefire.report.RunListener;
-import org.apache.maven.surefire.report.ReporterConfiguration;
-import org.apache.maven.surefire.report.ReporterFactory;
-import org.apache.maven.surefire.report.ReporterManagerFactory;
-import org.apache.maven.surefire.report.RunStatistics;
-import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.Computer;
 import org.junit.runner.JUnitCore;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-
-import static junit.framework.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
 /*
  * @author Kristian Rosenvold
  */
 
-public class ConcurrentReporterManagerTest extends TestCase
+public class ConcurrentReporterManagerTest
+    extends TestCase
 {
     // Tests are in order of increasing complexity
     public void testNoErrorsCounting()
@@ -176,7 +172,8 @@ public class ConcurrentReporterManagerTest extends TestCase
     {
         HashMap<String, TestSet> classMethodCounts = new HashMap<String, TestSet>();
         final ReporterFactory reporterManagerFactory = createReporterFactory();
-        org.junit.runner.notification.RunListener demultiplexingRunListener = createRunListener( reporterManagerFactory, classMethodCounts );
+        org.junit.runner.notification.RunListener demultiplexingRunListener =
+            createRunListener( reporterManagerFactory, classMethodCounts );
 
         JUnitCore jUnitCore = new JUnitCore();
 
@@ -188,7 +185,8 @@ public class ConcurrentReporterManagerTest extends TestCase
         return reporterManagerFactory.getGlobalRunStatistics();
     }
 
-    private RunStatistics runClasses( ReporterFactory reporterManagerFactory, org.junit.runner.notification.RunListener demultiplexingRunListener,
+    private RunStatistics runClasses( ReporterFactory reporterManagerFactory,
+                                      org.junit.runner.notification.RunListener demultiplexingRunListener,
                                       Class... classes )
         throws TestSetFailedException
     {
@@ -202,7 +200,8 @@ public class ConcurrentReporterManagerTest extends TestCase
         return reporterManagerFactory.getGlobalRunStatistics();
     }
 
-    private org.junit.runner.notification.RunListener createRunListener( ReporterFactory reporterFactory, Map<String, TestSet> testSetMap )
+    private org.junit.runner.notification.RunListener createRunListener( ReporterFactory reporterFactory,
+                                                                         Map<String, TestSet> testSetMap )
         throws TestSetFailedException
     {
         return new JUnitCoreRunListener(
@@ -211,7 +210,7 @@ public class ConcurrentReporterManagerTest extends TestCase
 
     public ReporterConfiguration getReporterConfiguration()
     {
-        return new ReporterConfiguration( new ArrayList(), new File( "." ), true, null );
+        return new ReporterConfiguration( new File( "." ), true );
     }
 
 
@@ -403,13 +402,12 @@ public class ConcurrentReporterManagerTest extends TestCase
     private ReporterFactory createReporterFactory()
     {
         ReporterConfiguration reporterConfiguration = getTestReporterConfiguration();
-        return new ReporterManagerFactory( this.getClass().getClassLoader(), reporterConfiguration );
+        return new ReporterManagerFactory( this.getClass().getClassLoader(), reporterConfiguration, Arrays.asList() );
     }
 
     public static ReporterConfiguration getTestReporterConfiguration()
     {
-        return new ReporterConfiguration( Arrays.asList( ConsoleReporter.class.getName() ), null, Boolean.TRUE,
-                                          null );
+        return new ReporterConfiguration( null, Boolean.TRUE );
     }
 
 

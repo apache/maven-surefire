@@ -55,17 +55,16 @@ import org.apache.maven.surefire.booter.ProviderConfiguration;
 import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.report.BriefConsoleReporter;
 import org.apache.maven.surefire.report.BriefFileReporter;
+import org.apache.maven.surefire.report.ConsoleOutputFileReporter;
 import org.apache.maven.surefire.report.ConsoleReporter;
 import org.apache.maven.surefire.report.DetailedConsoleReporter;
 import org.apache.maven.surefire.report.FileReporter;
-import org.apache.maven.surefire.report.ForkingConsoleReporter;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.XMLReporter;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.util.NestedRuntimeException;
-import org.apache.maven.surefire.util.Relocator;
 import org.apache.maven.toolchain.Toolchain;
 import org.codehaus.plexus.util.StringUtils;
 
@@ -264,18 +263,18 @@ public abstract class AbstractSurefireMojo
         return ForkConfiguration.FORK_NEVER.equals( getForkMode() );
     }
 
-    protected ProviderConfiguration createProviderConfiguration( ForkConfiguration forkConfiguration,
-                                                                 boolean shadefire )
+    protected ProviderConfiguration createProviderConfiguration( ForkConfiguration forkConfiguration )
         throws MojoExecutionException, MojoFailureException
     {
-
-        List reports = getReporters( forkConfiguration.isForking() );
-        reports = shadefire ? new Relocator().relocateReports( reports ) : reports;
+        final String consoleReporter = getConsoleReporter();
+        final String fileReporter = getFileReporter();
+        final String xmlReporterName = getXmlReporterName();
+        final String consoleOutputFileReporterName = getConsoleOutputFileReporterName();
         Integer timeoutSet =
             getForkedProcessTimeoutInSeconds() > 0 ? Integer.valueOf( getForkedProcessTimeoutInSeconds() ) : null;
         ReporterConfiguration reporterConfiguration =
-            new ReporterConfiguration( reports, getReportsDirectory(), Boolean.valueOf( isTrimStackTrace() ),
-                                       timeoutSet );
+            new ReporterConfiguration( getReportsDirectory(), Boolean.valueOf( isTrimStackTrace() ), consoleReporter,
+                                       fileReporter, xmlReporterName, consoleOutputFileReporterName );
 
         Artifact testNgArtifact;
         try
@@ -328,7 +327,7 @@ public abstract class AbstractSurefireMojo
 
         ProviderConfiguration providerConfiguration1 =
             new ProviderConfiguration( directoryScannerParameters, failIfNoTests, reporterConfiguration, testNg,
-                                       testSuiteDefinition, providerProperties, null );
+                                       testSuiteDefinition, providerProperties, null, forkConfiguration.getForkMode() );
 
         Toolchain tc = getToolchain();
 
@@ -372,7 +371,7 @@ public abstract class AbstractSurefireMojo
                                             isChildDelegation() );
 
             return new StartupConfiguration( providerName, classpathConfiguration, classLoaderConfiguration,
-                                             forkConfiguration.isForking(), false, isRedirectTestOutputToFile() );
+                                             forkConfiguration.getForkMode(), false, isRedirectTestOutputToFile() );
         }
         catch ( DependencyResolutionRequiredException e )
         {
@@ -523,10 +522,9 @@ public abstract class AbstractSurefireMojo
     {
         StartupConfiguration startupConfiguration =
             createStartupConfiguration( forkConfiguration, provider, classLoaderConfiguration );
-        ProviderConfiguration providerConfiguration =
-            createProviderConfiguration( forkConfiguration, startupConfiguration.isShadefire() );
-        return new ForkStarter( providerConfiguration, startupConfiguration, getReportsDirectory(), forkConfiguration,
-                                getForkedProcessTimeoutInSeconds(), isPrintSummary() );
+        ProviderConfiguration providerConfiguration = createProviderConfiguration( forkConfiguration );
+        return new ForkStarter( providerConfiguration, startupConfiguration, forkConfiguration,
+                                getForkedProcessTimeoutInSeconds() );
     }
 
     protected ForkConfiguration getForkConfiguration()
@@ -985,62 +983,45 @@ public abstract class AbstractSurefireMojo
         return props;
     }
 
-    /**
-     * <p/>
-     * Adds Reporters that will generate reports with different formatting.
-     * <p/>
-     * The Reporter that will be added will be based on the value of the parameter useFile, reportFormat, and
-     * printSummary.
-     *
-     * @param forking forking
-     * @return a list of reporters
-     */
-    private List getReporters( boolean forking )
+    private String getXmlReporterName()
     {
-        List reports = new ArrayList();
-        final String consoleReporter = getConsoleReporter( forking );
-        if ( consoleReporter != null )
+        if ( !isDisableXmlReport() )
         {
-            reports.add( consoleReporter );
+            return XMLReporter.class.getName();
         }
+        return null;
+    }
 
+    private String getFileReporter()
+    {
         if ( isUseFile() )
         {
             if ( BRIEF_REPORT_FORMAT.equals( getReportFormat() ) )
             {
-                reports.add( BriefFileReporter.class.getName() );
+                return BriefFileReporter.class.getName();
             }
             else if ( PLAIN_REPORT_FORMAT.equals( getReportFormat() ) )
             {
-                reports.add( FileReporter.class.getName() );
+                return FileReporter.class.getName();
             }
         }
-
-        if ( !isDisableXmlReport() )
-        {
-            reports.add( XMLReporter.class.getName() );
-        }
-        return reports;
+        return null;
     }
 
     /**
      * Returns the reporter that will write to the console
      *
-     * @param forking forking
      * @return a console reporter of null if no console reporting
      */
-    private String getConsoleReporter( boolean forking )
+    private String getConsoleReporter()
     {
+        if (isRedirectTestOutputToFile())
+        {
+            return null;
+        }
         if ( isUseFile() )
         {
-            if ( forking )
-            {
-                return ForkingConsoleReporter.class.getName();
-            }
-            else
-            {
-                return isPrintSummary() ? ConsoleReporter.class.getName() : null;
-            }
+            return isPrintSummary() ? ConsoleReporter.class.getName() : null;
         }
         else if ( BRIEF_REPORT_FORMAT.equals( getReportFormat() ) )
         {
@@ -1052,6 +1033,16 @@ public abstract class AbstractSurefireMojo
         }
         return null;
     }
+
+    private String getConsoleOutputFileReporterName()
+    {
+        if ( isRedirectTestOutputToFile() )
+        {
+            return ConsoleOutputFileReporter.class.getName();
+        }
+        return null;
+    }
+
 
     protected void ensureWorkingDirectoryExists()
         throws MojoFailureException

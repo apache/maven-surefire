@@ -19,12 +19,15 @@ package org.apache.maven.surefire.testng;
  * under the License.
  */
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Properties;
 import org.apache.maven.surefire.providerapi.AbstractProvider;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterFactory;
-import org.apache.maven.surefire.report.ReporterManagerFactory;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
@@ -33,11 +36,6 @@ import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.DirectoryScanner;
 import org.apache.maven.surefire.util.NestedRuntimeException;
 import org.apache.maven.surefire.util.TestsToRun;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Properties;
 
 /**
  * @author Kristian Rosenvold
@@ -96,12 +94,12 @@ public class TestNGProvider
             testNGXmlTestSuite.locateTestSets( testClassLoader );
             if ( forkTestSet != null && testRequest == null )
             {
-                testNGXmlTestSuite.execute( (String) forkTestSet, (ReporterManagerFactory) reporterFactory,
+                testNGXmlTestSuite.execute( (String) forkTestSet, reporterFactory,
                                             testClassLoader );
             }
             else
             {
-                testNGXmlTestSuite.execute( (ReporterManagerFactory) reporterFactory );
+                testNGXmlTestSuite.execute( reporterFactory );
             }
         }
         else

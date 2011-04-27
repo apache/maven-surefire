@@ -19,7 +19,6 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -28,153 +27,110 @@ import java.util.List;
  * @author Kristian Rosenvold
  */
 public class MulticastingReporter
-    implements RunReporter, Reporter
+    implements Reporter
 {
-    private final List target;
+    private final Reporter[] target;
+    private final int size;
 
     public MulticastingReporter( List target )
     {
-        this.target = target;
+        size = target.size();
+        this.target = (Reporter[]) target.toArray( new Reporter[target.size()] );
     }
 
     public void testSetStarting( ReportEntry report )
-        throws ReporterException
     {
-        for ( Iterator it = target.iterator(); it.hasNext(); )
-        {
-            ( (Reporter) it.next() ).testSetStarting( report );
+        for (int i = 0; i < size; i++){
+            target[i].testSetStarting( report );
         }
     }
 
     public void testSetCompleted( ReportEntry report )
     {
-        for ( Iterator it = target.iterator(); it.hasNext(); )
-        {
-            try
-            {
-                ( (Reporter) it.next() ).testSetCompleted( report );
-            }
-            catch ( ReporterException e )
-            {
-                // Added in commit r331325 in ReporterManager. This smells fishy. What's this about ?
-            }
-
-        }
-    }
-
-
-    public void runStarting()
-    {
-        for ( Iterator it = target.iterator(); it.hasNext(); )
-        {
-            Object next = it.next();
-            if ( next instanceof RunReporter )
-            {
-                ( (RunReporter) next ).runStarting();
-            }
-        }
-    }
-
-    public void runCompleted()
-    {
-        for ( Iterator it = target.iterator(); it.hasNext(); )
-        {
-            Object next = it.next();
-            if ( next instanceof RunReporter )
-            {
-                ( (RunReporter) next ).runCompleted();
-            }
+        for (int i = 0; i < size; i++){
+            target[i].testSetCompleted( report );
         }
     }
 
 
     public void testStarting( ReportEntry report )
     {
-        for ( Iterator it = target.iterator(); it.hasNext(); )
-        {
-            ( (Reporter) it.next() ).testStarting( report );
+        for (int i = 0; i < size; i++){
+            target[i].testStarting( report );
         }
     }
 
     public void testSucceeded( ReportEntry report )
     {
-        for ( Iterator it = target.iterator(); it.hasNext(); )
-        {
-            ( (Reporter) it.next() ).testSucceeded( report );
+        for (int i = 0; i < size; i++){
+            target[i].testSucceeded( report );
         }
     }
 
     public void testError( ReportEntry report, String stdOut, String stdErr )
     {
-        for ( Iterator it = target.iterator(); it.hasNext(); )
-        {
-            ( (Reporter) it.next() ).testError( report, stdOut, stdErr );
+        for (int i = 0; i < size; i++){
+            target[i].testError( report, stdOut, stdErr );
         }
     }
 
     public void testFailed( ReportEntry report, String stdOut, String stdErr )
     {
-        for ( Iterator it = target.iterator(); it.hasNext(); )
-        {
-            ( (Reporter) it.next() ).testFailed( report, stdOut, stdErr );
+        for (int i = 0; i < size; i++){
+            target[i].testFailed( report, stdOut, stdErr );
         }
     }
 
     public void testSkipped( ReportEntry report )
     {
-        for ( Iterator it = target.iterator(); it.hasNext(); )
-        {
-            ( (Reporter) it.next() ).testSkipped( report );
+        for (int i = 0; i < size; i++){
+            target[i].testSkipped( report );
         }
     }
 
     public void writeDetailMessage( String message )
     {
-        for ( Iterator it = target.iterator(); it.hasNext(); )
-        {
-            Reporter reporter = ( (Reporter) it.next() );
-            reporter.writeDetailMessage( message );
+        for (int i = 0; i < size; i++){
+            target[i].writeDetailMessage( message );
         }
     }
 
     public void writeMessage( String message )
     {
-        for ( Iterator it = target.iterator(); it.hasNext(); )
-        {
-            ( (Reporter) it.next() ).writeMessage( message );
+        for (int i = 0; i < size; i++){
+            target[i].writeMessage( message );
         }
     }
 
-    public void writeFooter( String footer )
+    public void writeMessage( byte[] b, int off, int len )
     {
-        for ( Iterator it = target.iterator(); it.hasNext(); )
-        {
-            ( (Reporter) it.next() ).writeFooter( footer );
+        for (int i = 0; i < size; i++){
+            target[i].writeMessage( b, off, len );
         }
     }
 
     public void reset()
     {
-        for ( Iterator it = target.iterator(); it.hasNext(); )
-        {
-            ( (Reporter) it.next() ).reset();
+        for (int i = 0; i < size; i++){
+            target[i].reset();
         }
     }
 
     public void testError( ReportEntry report )
     {
-        for ( Iterator it = target.iterator(); it.hasNext(); )
-        {
-            ( (Reporter) it.next() ).testError( report );
+        for (int i = 0; i < size; i++){
+            target[i].testError( report );
         }
     }
 
     public void testFailed( ReportEntry report )
     {
-        for ( Iterator it = target.iterator(); it.hasNext(); )
-        {
-            ( (Reporter) it.next() ).testFailed( report );
+        for (int i = 0; i < size; i++){
+            target[i].testFailed( report );
         }
     }
 
+
+    public void close(){
+    }
 }

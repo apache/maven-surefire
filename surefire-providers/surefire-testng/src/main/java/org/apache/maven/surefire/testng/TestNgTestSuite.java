@@ -19,11 +19,10 @@ package org.apache.maven.surefire.testng;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.ReporterException;
-import org.apache.maven.surefire.report.ReporterManagerFactory;
-import org.apache.maven.surefire.testset.TestSetFailedException;
-
 import java.util.Map;
+import org.apache.maven.surefire.report.ReporterException;
+import org.apache.maven.surefire.report.ReporterFactory;
+import org.apache.maven.surefire.testset.TestSetFailedException;
 
 /**
  * A complete test suite that contains one or more test sets.
@@ -33,7 +32,7 @@ import java.util.Map;
 public interface TestNgTestSuite
 {
 
-    void execute( String testSetName, ReporterManagerFactory reporterManagerFactory, ClassLoader classLoader )
+    void execute( String testSetName, ReporterFactory reporterManagerFactory, ClassLoader classLoader )
         throws ReporterException, TestSetFailedException;
 
     Map locateTestSets( ClassLoader classLoader )

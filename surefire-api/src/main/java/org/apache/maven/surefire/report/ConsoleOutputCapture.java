@@ -22,6 +22,7 @@ package org.apache.maven.surefire.report;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import org.apache.maven.surefire.util.internal.ByteBuffer;
 
 /**
  * Deals with system.out/err.
@@ -29,25 +30,14 @@ import java.io.PrintStream;
  */
 public class ConsoleOutputCapture
 {
-
-    private static final PrintStream oldOut = System.out;
-
-    private static final PrintStream oldErr = System.err;
-
-    public ConsoleOutputCapture( ConsoleOutputReceiver target )
+    public static void startCapture( ConsoleOutputReceiver target )
     {
         System.setOut( new ForwardingPrintStream( true, target ) );
 
         System.setErr( new ForwardingPrintStream( false, target ) );
     }
 
-    public void restoreStreams()
-    {
-        System.setOut( oldOut );
-        System.setErr( oldErr );
-    }
-
-    static class ForwardingPrintStream
+    private static class ForwardingPrintStream
         extends PrintStream
     {
         private final boolean isStdout;
@@ -70,6 +60,15 @@ public class ConsoleOutputCapture
             throws IOException
         {
             target.writeTestOutput( b, 0, b.length, isStdout );
+        }
+
+        static final byte[] newline = new byte[]{ (byte) '\n' };
+
+        public void println( String s )
+        {
+            final byte[] bytes = s.getBytes();
+            final byte[] join = ByteBuffer.join( bytes, 0, bytes.length, newline, 0, 1 );
+            target.writeTestOutput( join, 0, join.length, isStdout );
         }
 
         public void close()

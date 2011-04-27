@@ -19,6 +19,8 @@ package org.apache.maven.surefire.suite;
  * under the License.
  */
 
+import java.util.StringTokenizer;
+
 /**
  * Represents a test-run-result; this may be from a single test run or an aggregated result.
  *
@@ -34,16 +36,36 @@ public class RunResult
 
     private final int skipped;
 
+    private final boolean failure;
+
+    private final boolean timeout;
+
     private static final int SUCCESS = 0;
 
     public static final int FAILURE = 255;
 
+    public static final int NO_TESTS = 254;
+
+
+    public static final RunResult Failure = new RunResult( 0, 0, 0, 0, true, false );
+
+    public static final RunResult Success = new RunResult( 0, 0, 0, 0 );
+
+    public static final RunResult Timeout = new RunResult( 0, 0, 0, 0, false, true );
+
     public RunResult( int completedCount, int errors, int failures, int skipped )
+    {
+        this( completedCount, errors, failures, skipped, false, false );
+    }
+
+    public RunResult( int completedCount, int errors, int failures, int skipped, boolean failure, boolean timeout )
     {
         this.completedCount = completedCount;
         this.errors = errors;
         this.failures = failures;
         this.skipped = skipped;
+        this.failure = failure;
+        this.timeout = timeout;
     }
 
     public int getCompletedCount()
@@ -68,7 +90,60 @@ public class RunResult
 
     public int getBooterCode()
     {
-        return getFailures() == 0 && getErrors() == 0 ? SUCCESS : FAILURE;
+        return isErrrorFree() ? SUCCESS : FAILURE;
     }
 
+    public int getForkedProcessCode()
+    {
+        return completedCount == 0 ? NO_TESTS : isErrrorFree() ? SUCCESS : FAILURE;
+    }
+
+    public boolean isErrrorFree()
+    {
+        return getFailures() == 0 && getErrors() == 0;
+    }
+
+    public String getAsString()
+    {
+        return getCompletedCount() + "," + getErrors() + "," + getFailures() + "," + getSkipped() + "," + isFailure()
+            + "," + isTimeout();
+    }
+
+    public static RunResult fromString( String string )
+    {
+        StringTokenizer strTok = new StringTokenizer( string, "," );
+        int completed = Integer.parseInt( strTok.nextToken() );
+        int errors = Integer.parseInt( strTok.nextToken() );
+        int failures = Integer.parseInt( strTok.nextToken() );
+        int skipped = Integer.parseInt( strTok.nextToken() );
+        boolean isFailure = Boolean.parseBoolean( strTok.nextToken() );
+        boolean isTimeout = Boolean.parseBoolean( strTok.nextToken() );
+        return new RunResult( completed, errors, failures, skipped, isFailure, isTimeout );
+    }
+
+    public boolean isFailureOrTimeout()
+    {
+        return this.timeout || this.failure;
+    }
+
+    public boolean isFailure()
+    {
+        return failure;
+    }
+
+    public boolean isTimeout()
+    {
+        return timeout;
+    }
+
+    public RunResult aggregate( RunResult other )
+    {
+        boolean failure = isFailure() || other.isFailure();
+        boolean timeout = isTimeout() || other.isTimeout();
+        int completed = getCompletedCount() + other.getCompletedCount();
+        int fail = getFailures() + other.getFailures();
+        int ign = getSkipped() + other.getSkipped();
+        int err = getErrors() + other.getErrors();
+        return new RunResult( completed, err, fail, ign, failure, timeout );
+    }
 }

@@ -29,7 +29,6 @@ public interface BooterConstants
 {
     String INCLUDES_PROPERTY_PREFIX = "includes";
     String EXCLUDES_PROPERTY_PREFIX = "excludes";
-    String REPORT_PROPERTY_PREFIX = "report.";
     String PARAMS_SUFIX = ".params";
     String TYPES_SUFIX = ".types";
     String USESYSTEMCLASSLOADER = "useSystemClassLoader";
@@ -38,6 +37,7 @@ public interface BooterConstants
     String ISTRIMSTACKTRACE = "isTrimStackTrace";
     String REPORTSDIRECTORY = "reportsDirectory";
     String FORKTIMEOUT = "forkTimeout";
+    String FORKMODE = "forkMode";
     String TESTARTIFACT_VERSION = "testFwJarVersion";
     String TESTARTIFACT_CLASSIFIER = "testFwJarClassifier";
     String REQUESTEDTEST = "requestedTest";

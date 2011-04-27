@@ -19,11 +19,6 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
-import org.apache.maven.surefire.util.PrettyPrintXMLWriter;
-import org.codehaus.plexus.util.IOUtil;
-import org.codehaus.plexus.util.xml.Xpp3Dom;
-import org.codehaus.plexus.util.xml.Xpp3DomWriter;
-
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -38,6 +33,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
+import org.codehaus.plexus.util.IOUtil;
+import org.codehaus.plexus.util.xml.Xpp3Dom;
+import org.codehaus.plexus.util.xml.Xpp3DomWriter;
 
 /**
  * XML format reporter.
@@ -62,11 +60,15 @@ public class XMLReporter
 
         this.reportsDirectory = reporterConfiguration.getReportsDirectory();
 
-        this.deleteOnStarting = reporterConfiguration.isForkWithTimeout();
+        this.deleteOnStarting = false;
     }
 
 
     public void writeMessage( String message )
+    {
+    }
+
+    public void writeMessage( byte[] b, int off, int len )
     {
     }
 

@@ -34,6 +34,7 @@ import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
 import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.ForkedBooter;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
+import org.apache.maven.surefire.forking.ForkConfigurationInfo;
 import org.apache.maven.surefire.util.Relocator;
 import org.apache.maven.surefire.util.UrlUtils;
 import org.codehaus.plexus.util.StringUtils;
@@ -144,6 +145,12 @@ public class ForkConfiguration
     public void setTempDirectory( File tempDirectory )
     {
         this.tempDirectory = tempDirectory;
+    }
+
+
+    public ForkConfigurationInfo getForkConfigurationInfo( Boolean isInFork )
+    {
+        return new ForkConfigurationInfo( forkMode, isInFork );
     }
 
     public String getForkMode()
