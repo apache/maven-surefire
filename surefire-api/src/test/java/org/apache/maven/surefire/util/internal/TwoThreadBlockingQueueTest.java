@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
-import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import junit.framework.TestCase;
@@ -125,23 +124,6 @@ public class TwoThreadBlockingQueueTest
         }
         long elapsed = System.currentTimeMillis() - start;
         //System.out.println( "LinkedBlockingQueue insert " + num + " elements in  = " + elapsed );
-        System.gc();
-    }
-
-    public void testLDBQPut()
-        throws Exception
-    {
-        LinkedBlockingDeque twoThreadBlockingQueue = new LinkedBlockingDeque();
-
-        String[] items = generate( num );
-        long start = System.currentTimeMillis();
-        for ( int i = 0; i < num; i++ )
-        {
-            twoThreadBlockingQueue.put( items[i] );
-        }
-        long elapsed = System.currentTimeMillis() - start;
-        //System.out.println( "LinkedBlockingDeque insert " + num + " elements in  = " + elapsed );
-
         System.gc();
     }
 
