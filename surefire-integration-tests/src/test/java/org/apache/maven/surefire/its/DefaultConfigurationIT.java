@@ -31,18 +31,19 @@ import java.io.File;
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
 public class DefaultConfigurationIT
-    extends AbstractSurefireIntegrationTestClass
+    extends SurefireVerifierTestClass
 {
+
+    public DefaultConfigurationIT() {
+        super("/default-configuration");
+    }
+
     public void testDefaultConfiguration()
         throws Exception
     {
-        File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/default-configuration" );
+        executeTest( );
+        verifyErrorFreeLog();
 
-        Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        this.executeGoal( verifier, "test" );
-        verifier.verifyErrorFreeLog();
-        verifier.resetStreams();
-
-        HelperAssertions.assertTestSuiteResults( 1, 0, 0, 0, testDir );
+        assertTestSuiteResults( 1, 0, 0, 0 );
     }
 }
