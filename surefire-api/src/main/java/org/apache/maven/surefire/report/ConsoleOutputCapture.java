@@ -19,10 +19,11 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
+import org.apache.maven.surefire.util.internal.ByteBuffer;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-import org.apache.maven.surefire.util.internal.ByteBuffer;
 
 /**
  * Deals with system.out/err.
@@ -60,6 +61,20 @@ public class ConsoleOutputCapture
             throws IOException
         {
             target.writeTestOutput( b, 0, b.length, isStdout );
+        }
+
+        public void write( int b )
+        {
+            byte[] buf = new byte[1];
+            buf[0] = (byte) b;
+            try
+            {
+                write( buf );
+            }
+            catch ( IOException e )
+            {
+                setError();
+            }
         }
 
         static final byte[] newline = new byte[]{ (byte) '\n' };

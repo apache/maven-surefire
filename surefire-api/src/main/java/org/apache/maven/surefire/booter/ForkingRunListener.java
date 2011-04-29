@@ -173,7 +173,7 @@ public class ForkingRunListener
     public void writeTestOutput( byte[] buf, int off, int len, boolean stdout )
     {
         byte[] header = stdout ? stdOutHeader : stdErrHeader;
-        byte[] content = new byte[buf.length * 2];
+        byte[] content = new byte[buf.length * 6 + 1]; // Unicode escapes can be up to 6 times length of regular char. Yuck.
         int i = StringUtils.escapeJavaStyleString( content, 0, buf, off, len );
         content[i++] = (byte) '\n';
 
@@ -217,7 +217,7 @@ public class ForkingRunListener
     public void writeMessage( String message )
     {
         byte[] buf = message.getBytes();
-        ByteBuffer byteBuffer = new ByteBuffer( buf.length * 2 );
+        ByteBuffer byteBuffer = new ByteBuffer( buf.length * 6);
         byteBuffer.append( BOOTERCODE_CONSOLE );
         byteBuffer.comma();
         byteBuffer.append( testSetChannelId );
