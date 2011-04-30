@@ -23,7 +23,6 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import org.apache.maven.surefire.util.internal.ByteBuffer;
 
 /**
  * Text based reporter.
@@ -78,15 +77,6 @@ public abstract class AbstractTextReporter
             writer.flush();
         }
     }
-
-    public void writeMessage( byte[] b, int off, int len )
-    {
-        if ( writer != null )
-        {
-            writer.write( ByteBuffer.toChar( b, off, len ) );
-        }
-    }
-
 
     public void writeDetailMessage( String message )
     {

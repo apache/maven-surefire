@@ -104,10 +104,6 @@ public class JUnit4Provider
 
         closeRunNotifer( jUnit4TestSetReporter, customRunListeners );
 
-        ConsoleOutputReceiver consoleOutputReceiver = (ConsoleOutputReceiver) reporter;
-        final String s = "Done after " + ( System.currentTimeMillis() - start );
-        consoleOutputReceiver.writeTestOutput( s.getBytes(), 0, s.getBytes().length, true );
-
         //asynchRunListener.close();
         return reporterFactory.close();
     }

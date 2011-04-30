@@ -55,6 +55,7 @@ import org.apache.maven.surefire.booter.ProviderConfiguration;
 import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.report.BriefConsoleReporter;
 import org.apache.maven.surefire.report.BriefFileReporter;
+import org.apache.maven.surefire.report.ConsoleOutputDirectReporter;
 import org.apache.maven.surefire.report.ConsoleOutputFileReporter;
 import org.apache.maven.surefire.report.ConsoleReporter;
 import org.apache.maven.surefire.report.DetailedConsoleReporter;
@@ -266,10 +267,10 @@ public abstract class AbstractSurefireMojo
     protected ProviderConfiguration createProviderConfiguration( ForkConfiguration forkConfiguration )
         throws MojoExecutionException, MojoFailureException
     {
-        final String consoleReporter = getConsoleReporter();
+        final String consoleReporter = getConsoleResultSummaryReporter();
         final String fileReporter = getFileReporter();
         final String xmlReporterName = getXmlReporterName();
-        final String consoleOutputFileReporterName = getConsoleOutputFileReporterName();
+        final String consoleOutputFileReporterName = getConsoleOutputReporterName();
         Integer timeoutSet =
             getForkedProcessTimeoutInSeconds() > 0 ? Integer.valueOf( getForkedProcessTimeoutInSeconds() ) : null;
         ReporterConfiguration reporterConfiguration =
@@ -1013,12 +1014,8 @@ public abstract class AbstractSurefireMojo
      *
      * @return a console reporter of null if no console reporting
      */
-    private String getConsoleReporter()
+    private String getConsoleResultSummaryReporter()
     {
-        if (isRedirectTestOutputToFile())
-        {
-            return null;
-        }
         if ( isUseFile() )
         {
             return isPrintSummary() ? ConsoleReporter.class.getName() : null;
@@ -1034,13 +1031,16 @@ public abstract class AbstractSurefireMojo
         return null;
     }
 
-    private String getConsoleOutputFileReporterName()
+    private String getConsoleOutputReporterName()
     {
         if ( isRedirectTestOutputToFile() )
         {
             return ConsoleOutputFileReporter.class.getName();
         }
-        return null;
+        else
+        {
+            return ConsoleOutputDirectReporter.class.getName();
+        }
     }
 
 
