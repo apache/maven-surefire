@@ -198,18 +198,6 @@ public abstract class AbstractReporter
         return clientSpecifiedElapsed != null ? clientSpecifiedElapsed.intValue() : endTime - startTime;
     }
 
-    public void testError( ReportEntry report )
-    {
-        ++errors;
-        endTest();
-    }
-
-    public void testFailed( ReportEntry report )
-    {
-        ++failures;
-        endTest();
-    }
-
     void deleteIfExisting( File reportFile )
     {
         if ( reportFile.exists() )

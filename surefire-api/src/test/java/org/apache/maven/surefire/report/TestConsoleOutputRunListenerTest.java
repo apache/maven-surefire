@@ -20,7 +20,6 @@ package org.apache.maven.surefire.report;
  */
 
 import java.io.File;
-import java.util.ArrayList;
 import org.apache.maven.plugin.surefire.report.ReporterManagerFactory;
 import org.apache.maven.surefire.booter.StartupReportConfiguration;
 
@@ -52,7 +51,7 @@ public class TestConsoleOutputRunListenerTest
     private ReporterFactory createReporterFactory()
     {
         ReporterConfiguration reporterConfiguration = getTestReporterConfiguration();
-        return new ReporterManagerFactory( this.getClass().getClassLoader(), reporterConfiguration, new ArrayList(),
+        return new ReporterManagerFactory( this.getClass().getClassLoader(), reporterConfiguration,
                                            StartupReportConfiguration.defaultValue() );
     }
 

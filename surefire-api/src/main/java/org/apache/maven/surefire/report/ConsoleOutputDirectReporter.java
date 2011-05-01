@@ -55,14 +55,6 @@ public class ConsoleOutputDirectReporter
     {
     }
 
-    public void testError( ReportEntry report )
-    {
-    }
-
-    public void testFailed( ReportEntry report )
-    {
-    }
-
     public void testSkipped( ReportEntry report )
     {
     }

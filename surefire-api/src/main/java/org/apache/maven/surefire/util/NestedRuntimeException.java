@@ -106,7 +106,6 @@ public class NestedRuntimeException
      * <p>Note that this will only check one level of nesting.
      * Use <code>getRootCause()</code> to retrieve the innermost cause.
      *
-     * @see #getRootCause()
      */
     public Throwable getCause()
     {
@@ -167,26 +166,6 @@ public class NestedRuntimeException
         {
             pw.println( this );
             getCause().printStackTrace( pw );
-        }
-    }
-
-    /**
-     * Retrieve the innermost cause of this exception, if any.
-     * <p>Currently just traverses NestedRuntimeException causes. Will use
-     * the JDK 1.4 exception cause mechanism once Spring requires JDK 1.4.
-     *
-     * @return the innermost exception, or <code>null</code> if none
-     */
-    public Throwable getRootCause()
-    {
-        Throwable cause = getCause();
-        if ( cause instanceof NestedRuntimeException )
-        {
-            return ( (NestedRuntimeException) cause ).getRootCause();
-        }
-        else
-        {
-            return cause;
         }
     }
 

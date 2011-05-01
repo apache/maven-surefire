@@ -63,20 +63,6 @@ public interface Reporter
      */
     void testSucceeded( ReportEntry report );
 
-    /**
-     * Event fired when a test ended with an error (non anticipated problem)
-     *
-     * @param report The report entry to log for
-     */
-    void testError( ReportEntry report );
-
-    /**
-     * Event fired when a test ended with a failure (anticipated problem)
-     *
-     * @param report The report entry to log for
-     */
-    void testFailed( ReportEntry report );
-
 
     void testSkipped( ReportEntry report );
 

@@ -47,11 +47,6 @@ public abstract class AbstractConsoleReporter
         super( getPrintWriter(), trimStackTrace, format);
     }
 
-    AbstractConsoleReporter( String format, ReporterConfiguration reporterConfiguration )
-    {
-        super( getPrintWriter(), reporterConfiguration.isTrimStackTrace().booleanValue(), format);
-    }
-
     private static PrintWriter getPrintWriter()
     {
         return new PrintWriter( new OutputStreamWriter( new BufferedOutputStream( ORIGINAL_SYSTEM_OUT, BUFFER_SIZE ) ) );

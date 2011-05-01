@@ -44,13 +44,4 @@ public class ForkConfigurationInfo
         return isInFork;
     }
 
-    public boolean isInFork()
-    {
-        return isInFork.booleanValue();
-    }
-
-    public boolean isForking()
-    {
-        return !"never".equals( forkMode );
-    }
 }

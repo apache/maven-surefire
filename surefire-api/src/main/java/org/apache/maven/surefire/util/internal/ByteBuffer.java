@@ -19,8 +19,6 @@ package org.apache.maven.surefire.util.internal;
  * under the License.
  */
 
-import java.io.PrintStream;
-
 /**
  * @author Kristian Rosenvold
  */
@@ -72,6 +70,7 @@ public class ByteBuffer
 
     /**
      * Convert the integer to an unsigned number.
+     * @param i the value
      */
     private void toHex( int i )
     {
@@ -109,16 +108,6 @@ public class ByteBuffer
         return new String( data, 0, position );
     }
 
-    public void append( ByteBuffer other )
-    {
-        byte[] src = other.getData();
-        final int length = src.length;
-        for ( int i = 0; i < length; i++ )
-        {
-            data[position++] = src[i];
-        }
-    }
-
     public static byte[] copy( byte[] src1, int off1, int len1 )
     {
         byte[] combined = new byte[len1];
@@ -153,19 +142,4 @@ public class ByteBuffer
         return combined;
     }
 
-    public void print( PrintStream printStream )
-    {
-        printStream.write( data, 0, position );
-    }
-
-    public static char[] toChar( byte[] b, int off, int len )
-    {
-        char[] result = new char[len];
-        int pos = 0;
-        for ( int i = off; i < off + len; i++ )
-        {
-            result[pos++] = (char) b[i];
-        }
-        return result;
-    }
 }

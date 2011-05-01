@@ -20,7 +20,6 @@ package org.apache.maven.surefire.providerapi;
  */
 
 import java.util.Properties;
-import org.apache.maven.surefire.forking.ForkConfigurationInfo;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
@@ -98,10 +97,4 @@ public interface ProviderParameters
      */
     TestArtifactInfo getTestArtifactInfo();
 
-    /**
-     * Information about the current fork settings.
-     *
-     * @return A forkConfigurationInfo, never null
-     */
-    ForkConfigurationInfo getForkConfiguration();
 }

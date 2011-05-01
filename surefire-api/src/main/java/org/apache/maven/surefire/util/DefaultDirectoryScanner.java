@@ -164,16 +164,6 @@ public class DefaultDirectoryScanner
         return incs;
     }
 
-    public List getIncludes()
-    {
-        return includes;
-    }
-
-    public List getExcludes()
-    {
-        return excludes;
-    }
-
     public List getClassesSkippedByValidation()
     {
         return classesSkippedByValidation;

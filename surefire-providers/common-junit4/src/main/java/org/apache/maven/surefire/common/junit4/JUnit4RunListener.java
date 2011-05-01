@@ -19,14 +19,14 @@ package org.apache.maven.surefire.common.junit4;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.RunListener;
-import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.report.SimpleReportEntry;
-import org.junit.runner.Description;
-import org.junit.runner.notification.Failure;
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.maven.surefire.report.ReportEntry;
+import org.apache.maven.surefire.report.RunListener;
+import org.apache.maven.surefire.report.SimpleReportEntry;
+
+import org.junit.runner.Description;
+import org.junit.runner.notification.Failure;
 
 public class JUnit4RunListener
     extends org.junit.runner.notification.RunListener
@@ -76,7 +76,7 @@ public class JUnit4RunListener
         throws Exception
     {
         reporter.testStarting( createReportEntry( description ) );
-        failureFlag.remove( );
+        failureFlag.remove();
     }
 
     /**
@@ -103,6 +103,7 @@ public class JUnit4RunListener
         failureFlag.set( Boolean.TRUE );
     }
 
+    @SuppressWarnings( { "UnusedDeclaration" } )
     public void testAssumptionFailure( Failure failure )
     {
         this.reporter.testAssumptionFailure( createReportEntry( failure.getDescription() ) );

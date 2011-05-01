@@ -115,9 +115,7 @@ public class ForkStarter
     {
         final ReporterManagerFactory testSetReporterFactory =
             new ReporterManagerFactory( Thread.currentThread().getContextClassLoader(),
-                                        providerConfiguration.getReporterConfiguration(),
-                                        providerConfiguration.getReporterConfiguration().getReports(),
-                                        startupReportConfiguration );
+                                        providerConfiguration.getReporterConfiguration(), startupReportConfiguration );
         try
         {
             return fork( null, providerConfiguration.getProviderProperties(), testSetReporterFactory );
@@ -153,9 +151,7 @@ public class ForkStarter
 
         final ReporterManagerFactory testSetReporterFactory =
             new ReporterManagerFactory( Thread.currentThread().getContextClassLoader(),
-                                        providerConfiguration.getReporterConfiguration(),
-                                        providerConfiguration.getReporterConfiguration().getReports(),
-                                        startupReportConfiguration );
+                                        providerConfiguration.getReporterConfiguration(), startupReportConfiguration );
         try
         {
             while ( suites.hasNext() )

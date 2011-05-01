@@ -174,50 +174,6 @@ public class ReflectionUtils
 
     }
 
-    public static Object instantiateObject( String className, Object[] params, ClassLoader classLoader )
-    {
-        try
-        {
-            Class clazz = loadClass( classLoader, className );
-
-            Object object;
-            if ( params != null )
-            {
-                Class[] paramTypes = new Class[params.length];
-
-                for ( int j = 0; j < params.length; j++ )
-                {
-                    if ( params[j] == null )
-                    {
-                        paramTypes[j] = String.class;
-                    }
-                    else
-                    {
-                        paramTypes[j] = params[j].getClass();
-                    }
-                }
-
-                Constructor constructor = getConstructor( clazz, paramTypes );
-
-                object = newInstance( constructor, params );
-            }
-            else
-            {
-                object = clazz.newInstance();
-            }
-            return object;
-
-        }
-        catch ( IllegalAccessException e )
-        {
-            throw new SurefireReflectionException( e );
-        }
-        catch ( InstantiationException e )
-        {
-            throw new SurefireReflectionException( e );
-        }
-    }
-
     public static Object instantiateObject( String className, Class[] types, Object[] params, ClassLoader classLoader )
     {
         Class clazz = loadClass( classLoader, className );

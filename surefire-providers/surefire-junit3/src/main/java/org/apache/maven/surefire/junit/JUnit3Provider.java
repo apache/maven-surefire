@@ -120,9 +120,4 @@ public class JUnit3Provider
         testsToRun = scanClassPath();
         return testsToRun.iterator();
     }
-
-    public Boolean isRunnable()
-    {
-        return Boolean.TRUE;
-    }
 }

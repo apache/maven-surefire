@@ -64,7 +64,7 @@ public class ReporterManagerFactory
     private final StartupReportConfiguration reportConfiguration;
 
     public ReporterManagerFactory( ClassLoader surefireClassLoader, ReporterConfiguration reporterConfiguration,
-                                   List reportDefinitions, StartupReportConfiguration reportConfiguration )
+                                   StartupReportConfiguration reportConfiguration )
     {
         this.reporterConfiguration = reporterConfiguration;
         this.surefireClassLoader = surefireClassLoader;

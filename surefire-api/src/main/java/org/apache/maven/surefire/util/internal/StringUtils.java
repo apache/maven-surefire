@@ -106,43 +106,6 @@ public class StringUtils
         return list;
     }
 
-    // Replacing
-    //--------------------------------------------------------------------------
-
-    /**
-     * <p>Replace all occurrences of a String within another String.</p>
-     * <p/>
-     * <p>A <code>null</code> reference passed to this method is a no-op.</p>
-     *
-     * @param text text to search and replace in
-     * @param repl String to search for
-     * @param with String to replace with
-     * @return the text with any replacements processed
-     */
-    public static String replace( String text, String repl, String with )
-    {
-        int max = -1;
-        if ( ( text == null ) || ( repl == null ) || ( with == null ) || ( repl.length() == 0 ) )
-        {
-            return text;
-        }
-
-        StringBuffer buf = new StringBuffer( text.length() );
-        int start = 0, end;
-        while ( ( end = text.indexOf( repl, start ) ) != -1 )
-        {
-            buf.append( text.substring( start, end ) ).append( with );
-            start = end + repl.length();
-
-            if ( --max == 0 )
-            {
-                break;
-            }
-        }
-        buf.append( text.substring( start ) );
-        return buf.toString();
-    }
-
 
     /**
      * <p>Checks if a (trimmed) String is <code>null</code> or blank.</p>

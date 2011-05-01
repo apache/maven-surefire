@@ -20,7 +20,6 @@ package org.apache.maven.plugin.surefire.booterclient;
  */
 
 import java.io.File;
-import java.util.ArrayList;
 import org.apache.maven.plugin.surefire.report.ReporterManagerFactory;
 import org.apache.maven.surefire.booter.StartupReportConfiguration;
 import org.apache.maven.surefire.report.DefaultConsoleReporter;
@@ -37,8 +36,7 @@ public class TestSetMockReporterFactory
     public TestSetMockReporterFactory()
     {
         super( Thread.currentThread().getContextClassLoader(),
-               new ReporterConfiguration( new File( "." ), Boolean.TRUE ), new ArrayList(),
-               StartupReportConfiguration.defaultValue() );
+               new ReporterConfiguration( new File( "." ), Boolean.TRUE ), StartupReportConfiguration.defaultValue() );
     }
 
     public DirectConsoleReporter createConsoleReporter()

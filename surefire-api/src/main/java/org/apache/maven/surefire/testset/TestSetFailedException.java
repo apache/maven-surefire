@@ -29,12 +29,6 @@ import org.apache.maven.surefire.util.NestedCheckedException;
 public class TestSetFailedException
     extends NestedCheckedException
 {
-    /**
-     * Create a <code>TestFailedException</code> with no detail message.
-     */
-    public TestSetFailedException()
-    {
-    }
 
     /**
      * Create a <code>TestFailedException</code> with a detail message.

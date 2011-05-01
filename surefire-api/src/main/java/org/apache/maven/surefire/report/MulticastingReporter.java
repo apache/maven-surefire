@@ -116,21 +116,4 @@ public class MulticastingReporter
         }
     }
 
-    public void testError( ReportEntry report )
-    {
-        for (int i = 0; i < size; i++){
-            target[i].testError( report );
-        }
-    }
-
-    public void testFailed( ReportEntry report )
-    {
-        for (int i = 0; i < size; i++){
-            target[i].testFailed( report );
-        }
-    }
-
-
-    public void close(){
-    }
 }

@@ -142,8 +142,4 @@ public class BaseProviderFactory
     }
 
 
-    public ForkConfigurationInfo getForkConfiguration()
-    {
-        return forkConfigurationInfo;
-    }
 }

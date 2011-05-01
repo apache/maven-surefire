@@ -31,6 +31,6 @@ public class BriefConsoleReporter
 {
     public BriefConsoleReporter( ReporterConfiguration reporterConfiguration )
     {
-        super( BRIEF, reporterConfiguration );
+        super( reporterConfiguration.isTrimStackTrace().booleanValue(), BRIEF );
     }
 }

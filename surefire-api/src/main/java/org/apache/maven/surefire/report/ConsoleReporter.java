@@ -30,7 +30,7 @@ public class ConsoleReporter
 {
     public ConsoleReporter( ReporterConfiguration reporterConfiguration )
     {
-        super( SUMMARY, reporterConfiguration );
+        super( reporterConfiguration.isTrimStackTrace().booleanValue(), SUMMARY);
     }
 
 }

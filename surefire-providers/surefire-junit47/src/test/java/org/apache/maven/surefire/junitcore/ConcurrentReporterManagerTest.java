@@ -23,7 +23,6 @@ package org.apache.maven.surefire.junitcore;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.maven.plugin.surefire.report.ReporterManagerFactory;
@@ -403,7 +402,7 @@ public class ConcurrentReporterManagerTest
     private ReporterFactory createReporterFactory()
     {
         ReporterConfiguration reporterConfiguration = getTestReporterConfiguration();
-        return new ReporterManagerFactory( this.getClass().getClassLoader(), reporterConfiguration, Arrays.asList(),
+        return new ReporterManagerFactory( this.getClass().getClassLoader(), reporterConfiguration,
                                            StartupReportConfiguration.defaultNoXml() );
     }
 

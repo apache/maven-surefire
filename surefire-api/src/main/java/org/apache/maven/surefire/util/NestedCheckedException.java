@@ -78,14 +78,6 @@ public class NestedCheckedException
     private Throwable cause;
 
     /**
-     * Construct a <code>NestedCheckedException</code> with no message or exception
-     */
-    public NestedCheckedException()
-    {
-        super();
-    }
-
-    /**
      * Construct a <code>NestedCheckedException</code> with the specified detail message.
      *
      * @param msg the detail message
@@ -172,42 +164,4 @@ public class NestedCheckedException
             getCause().printStackTrace( pw );
         }
     }
-
-    /**
-     * Check whether this exception contains an exception of the given class:
-     * either it is of the given class itself or it contains a nested cause
-     * of the given class.
-     * <p>Currently just traverses NestedCheckedException causes. Will use
-     * the JDK 1.4 exception cause mechanism once Spring requires JDK 1.4.
-     *
-     * @param exClass the exception class to look for
-     * @return true if it is contained
-     */
-    public boolean contains( Class exClass )
-    {
-        if ( exClass == null )
-        {
-            return false;
-        }
-        Throwable ex = this;
-        while ( ex != null )
-        {
-            if ( exClass.isInstance( ex ) )
-            {
-                return true;
-            }
-            if ( ex instanceof NestedCheckedException )
-            {
-                // Cast is necessary on JDK 1.3, where Throwable does not
-                // provide a "getCause" method itself.
-                ex = ex.getCause();
-            }
-            else
-            {
-                ex = null;
-            }
-        }
-        return false;
-    }
-
 }

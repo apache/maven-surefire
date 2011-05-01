@@ -46,11 +46,6 @@ public class RunResult
 
     public static final int NO_TESTS = 254;
 
-
-    public static final RunResult Failure = new RunResult( 0, 0, 0, 0, true, false );
-
-    public static final RunResult Success = new RunResult( 0, 0, 0, 0 );
-
     public static final RunResult Timeout = new RunResult( 0, 0, 0, 0, false, true );
 
     public RunResult( int completedCount, int errors, int failures, int skipped )

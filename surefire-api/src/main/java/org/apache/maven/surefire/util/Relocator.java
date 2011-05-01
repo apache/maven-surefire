@@ -19,10 +19,6 @@ package org.apache.maven.surefire.util;
  * under the License.
  */
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
 /**
  * Relocates class names when running with relocated provider
  *
@@ -43,16 +39,6 @@ public class Relocator
     public Relocator()
     {
         relocation = "shadefire";
-    }
-
-    public List relocateReports( List original )
-    {
-        List result = new ArrayList();
-        for ( Iterator iter = original.iterator(); iter.hasNext(); )
-        {
-            result.add( relocate( (String) iter.next() ) );
-        }
-        return result;
     }
 
     private String getRelocation()

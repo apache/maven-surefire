@@ -113,11 +113,6 @@ public class ForkingRunListener
         target.print( toString( BOOTERCODE_TEST_ASSUMPTIONFAILURE, report, testSetChannelId ) );
     }
 
-    public void testAssumptionFailure( Integer channel, ReportEntry report )
-    {
-        target.print( toString( BOOTERCODE_TEST_ASSUMPTIONFAILURE, report, channel ) );
-    }
-
     public void testError( ReportEntry report )
     {
         target.print( toString( BOOTERCODE_TEST_ERROR, report, testSetChannelId ) );
@@ -132,19 +127,6 @@ public class ForkingRunListener
     public void testSkipped( ReportEntry report )
     {
         target.print( toString( BOOTERCODE_TEST_SKIPPED, report, testSetChannelId ) );
-    }
-
-    public void writeTestOutputA( byte[] buf, int off, int len, boolean stdout )
-    {
-        ByteBuffer byteBuffer = new ByteBuffer( buf.length + 20 );
-        byteBuffer.append( stdout ? BOOTERCODE_STDOUT : BOOTERCODE_STDERR );
-        byteBuffer.comma();
-        byteBuffer.append( testSetChannelId );
-        byteBuffer.comma();
-        final int i = StringUtils.escapeJavaStyleString( byteBuffer.getData(), byteBuffer.getlength(), buf, off, len );
-        byteBuffer.advance( i );
-        byteBuffer.append( '\n' );
-        target.write( byteBuffer.getData(), 0, byteBuffer.getlength() );
     }
 
     public synchronized void sendProps()

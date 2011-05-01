@@ -114,20 +114,6 @@ public abstract class AbstractTextReporter
         testResults.add( getOutput( report, "FAILURE" ) );
     }
 
-    public void testError( ReportEntry report )
-    {
-        super.testError( report );
-
-        testResults.add( getOutput( report, "ERROR" ) );
-    }
-
-    public void testFailed( ReportEntry report )
-    {
-        super.testFailed( report );
-
-        testResults.add( getOutput( report, "FAILURE" ) );
-    }
-
     public void testSetStarting( ReportEntry report )
         throws ReporterException
     {

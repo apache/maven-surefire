@@ -41,21 +41,9 @@ public class RunStatistics
     private final Sources failureSources = new Sources();
 
 
-    // Todo remove when building with 2.7.2
-    public void addErrorSource( String errorSource )
-    {
-        errorSources.addSource( errorSource );
-    }
-
     public void addErrorSource( String errorSource, StackTraceWriter stackTraceWriter )
     {
         errorSources.addSource( errorSource, stackTraceWriter );
-    }
-
-    // Todo remove when building with 2.7.2
-    public void addFailureSource( String failureSource )
-    {
-        failureSources.addSource( failureSource );
     }
 
     public void addFailureSource( String failureSource, StackTraceWriter stackTraceWriter )
