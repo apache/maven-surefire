@@ -77,12 +77,15 @@ public class SurefireReflector
 
     private final Class forkConfigurationInfo;
 
+    private final Class startupReportConfiguration;
+
     public SurefireReflector( ClassLoader surefireClassLoader )
     {
         this.surefireClassLoader = surefireClassLoader;
         try
         {
             reporterConfiguration = surefireClassLoader.loadClass( ReporterConfiguration.class.getName() );
+            startupReportConfiguration = surefireClassLoader.loadClass( StartupReportConfiguration.class.getName() );
             testRequest = surefireClassLoader.loadClass( TestRequest.class.getName() );
             testArtifactInfo = surefireClassLoader.loadClass( TestArtifactInfo.class.getName() );
             testArtifactInfoAware = surefireClassLoader.loadClass( TestArtifactInfoAware.class.getName() );
@@ -208,9 +211,23 @@ public class SurefireReflector
                                                                   new Class[]{ File.class, Boolean.class, String.class,
                                                                       String.class, String.class, String.class } );
         return ReflectionUtils.newInstance( constructor, new Object[]{ reporterConfiguration.getReportsDirectory(),
-            reporterConfiguration.isTrimStackTrace(), reporterConfiguration.getConsoleReporter(),
-            reporterConfiguration.getFileReporter(), reporterConfiguration.getXmlReporter(),
-            reporterConfiguration.getConsoleOutputFileReporterName() } );
+            reporterConfiguration.isTrimStackTrace(), null, null, null, null } );
+    }
+
+    Object createStartupReportConfiguration( StartupReportConfiguration reporterConfiguration )
+    {
+        Constructor constructor = ReflectionUtils.getConstructor( this.startupReportConfiguration,
+                                                                  new Class[]{ boolean.class, boolean.class,
+                                                                      String.class, boolean.class, boolean.class,
+                                                                      File.class } );
+        //noinspection BooleanConstructorCall
+        final Object[] params =
+            { new Boolean( reporterConfiguration.isUseFile() ), new Boolean( reporterConfiguration.isPrintSummary() ),
+                reporterConfiguration.getReportFormat(),
+                new Boolean( reporterConfiguration.isRedirectTestOutputToFile() ),
+                new Boolean( reporterConfiguration.isDisableXmlReport() ),
+                reporterConfiguration.getReportsDirectory() };
+        return ReflectionUtils.newInstance( constructor, params );
     }
 
     public Object createForkingReporterFactory( Boolean trimStackTrace, PrintStream originalSystemOut )
@@ -221,11 +238,14 @@ public class SurefireReflector
                                                   surefireClassLoader );
     }
 
-    public Object createReportingReporterFactory( ReporterConfiguration reporterConfiguration )
+    public Object createReportingReporterFactory( ReporterConfiguration reporterConfiguration,
+                                                  StartupReportConfiguration startupReportConfiguration )
     {
-        Class[] args = new Class[]{ ClassLoader.class, this.reporterConfiguration, List.class };
+        Class[] args =
+            new Class[]{ ClassLoader.class, this.reporterConfiguration, List.class, this.startupReportConfiguration };
         Object report = createReporterConfiguration( reporterConfiguration );
-        Object[] params = new Object[]{ this.surefireClassLoader, report, reporterConfiguration.getReports() };
+        Object src = createStartupReportConfiguration( startupReportConfiguration );
+        Object[] params = new Object[]{ this.surefireClassLoader, report, reporterConfiguration.getReports(), src };
         return ReflectionUtils.instantiateObject( ReporterManagerFactory.class.getName(), args, params,
                                                   surefireClassLoader );
 

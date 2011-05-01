@@ -30,6 +30,7 @@ import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.ProviderConfiguration;
 import org.apache.maven.surefire.booter.ProviderFactory;
 import org.apache.maven.surefire.booter.StartupConfiguration;
+import org.apache.maven.surefire.booter.StartupReportConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.apache.maven.surefire.booter.SurefireExecutionException;
 import org.apache.maven.surefire.booter.SurefireReflector;
@@ -70,13 +71,17 @@ public class ForkStarter
 
     private final ForkConfiguration forkConfiguration;
 
+    private final StartupReportConfiguration startupReportConfiguration;
+
     public ForkStarter( ProviderConfiguration providerConfiguration, StartupConfiguration startupConfiguration,
-                        ForkConfiguration forkConfiguration, int forkedProcessTimeoutInSeconds )
+                        ForkConfiguration forkConfiguration, int forkedProcessTimeoutInSeconds,
+                        StartupReportConfiguration startupReportConfiguration )
     {
         this.forkConfiguration = forkConfiguration;
         this.providerConfiguration = providerConfiguration;
         this.forkedProcessTimeoutInSeconds = forkedProcessTimeoutInSeconds;
         this.startupConfiguration = startupConfiguration;
+        this.startupReportConfiguration = startupReportConfiguration;
     }
 
     public RunResult run()
@@ -87,7 +92,7 @@ public class ForkStarter
         final String requestedForkMode = forkConfiguration.getForkMode();
         if ( ForkConfiguration.FORK_NEVER.equals( requestedForkMode ) )
         {
-            SurefireStarter surefireStarter = new SurefireStarter( startupConfiguration, providerConfiguration, false );
+            SurefireStarter surefireStarter = new SurefireStarter( startupConfiguration, providerConfiguration, false, this.startupReportConfiguration );
             result = surefireStarter.runSuitesInProcess();
         }
         else if ( ForkConfiguration.FORK_ONCE.equals( requestedForkMode ) )
@@ -111,7 +116,8 @@ public class ForkStarter
         final ReporterManagerFactory testSetReporterFactory =
             new ReporterManagerFactory( Thread.currentThread().getContextClassLoader(),
                                         providerConfiguration.getReporterConfiguration(),
-                                        providerConfiguration.getReporterConfiguration().getReports() );
+                                        providerConfiguration.getReporterConfiguration().getReports(),
+                                        startupReportConfiguration );
         try
         {
             return fork( null, providerConfiguration.getProviderProperties(), testSetReporterFactory );
@@ -148,7 +154,8 @@ public class ForkStarter
         final ReporterManagerFactory testSetReporterFactory =
             new ReporterManagerFactory( Thread.currentThread().getContextClassLoader(),
                                         providerConfiguration.getReporterConfiguration(),
-                                        providerConfiguration.getReporterConfiguration().getReports() );
+                                        providerConfiguration.getReporterConfiguration().getReports(),
+                                        startupReportConfiguration );
         try
         {
             while ( suites.hasNext() )
@@ -171,7 +178,7 @@ public class ForkStarter
     {
         SurefireReflector surefireReflector = new SurefireReflector( surefireClassLoader );
         Object reporterFactory =
-            surefireReflector.createReportingReporterFactory( this.providerConfiguration.getReporterConfiguration() );
+            surefireReflector.createReportingReporterFactory( this.providerConfiguration.getReporterConfiguration(), startupReportConfiguration );
 
         final ProviderFactory providerFactory =
             new ProviderFactory( startupConfiguration, providerConfiguration, surefireClassLoader, testsClassLoader,

@@ -22,7 +22,6 @@ package org.apache.maven.surefire.booter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.util.Properties;
 import org.apache.maven.surefire.suite.RunResult;
 
 /**
@@ -65,7 +64,7 @@ public class ForkedBooter
             final StartupConfiguration providerConfiguration = booterDeserializer.getProviderConfiguration();
 
 
-            SurefireStarter starter = new SurefireStarter( providerConfiguration, booterConfiguration, true );
+            SurefireStarter starter = new SurefireStarter( providerConfiguration, booterConfiguration, true, null );
 
             Object forkedTestSet = booterConfiguration.getTestForFork();
             final RunResult result = forkedTestSet != null

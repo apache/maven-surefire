@@ -50,12 +50,15 @@ public class SurefireStarter
 
     private final boolean inFork;
 
+    private final StartupReportConfiguration startupReportConfiguration;
+
     public SurefireStarter( StartupConfiguration startupConfiguration, ProviderConfiguration providerConfiguration,
-                            boolean inFork )
+                            boolean inFork, StartupReportConfiguration startupReportConfiguration )
     {
         this.providerConfiguration = providerConfiguration;
         this.startupConfiguration = startupConfiguration;
         this.inFork = inFork;
+        this.startupReportConfiguration = startupReportConfiguration;
     }
 
     public RunResult runSuitesInProcessWhenForked( Object testSet )
@@ -116,7 +119,7 @@ public class SurefireStarter
         SurefireReflector surefireReflector = new SurefireReflector( surefireClassLoader );
 
         final Object factory =
-            surefireReflector.createReportingReporterFactory( this.providerConfiguration.getReporterConfiguration() );
+            surefireReflector.createReportingReporterFactory( this.providerConfiguration.getReporterConfiguration(), startupReportConfiguration );
 
         return invokeProvider( null, testsClassLoader, surefireClassLoader, factory );
     }

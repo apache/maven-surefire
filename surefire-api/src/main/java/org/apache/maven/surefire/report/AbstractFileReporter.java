@@ -36,15 +36,17 @@ public abstract class AbstractFileReporter
 
     private final boolean deleteOnStarting;
 
-    AbstractFileReporter( ReporterConfiguration reporterConfiguration, String format )
+    protected AbstractFileReporter( boolean trimStackTrace, String format, File reportsDirectory )
     {
-        super( reporterConfiguration, format );
-
-        this.reportsDirectory = reporterConfiguration.getReportsDirectory();
-
+        super( trimStackTrace, format );
+        this.reportsDirectory = reportsDirectory;
         this.deleteOnStarting = false;
     }
 
+    AbstractFileReporter( ReporterConfiguration reporterConfiguration, String format )
+    {
+        this( reporterConfiguration.isTrimStackTrace().booleanValue(), format, reporterConfiguration.getReportsDirectory());
+    }
 
     public void testSetStarting( ReportEntry report )
         throws ReporterException
@@ -97,10 +99,5 @@ public abstract class AbstractFileReporter
         writer.close();
 
         writer = null;
-
-        if ( isTimedOut() )
-        {
-            deleteIfExisting( getReportFile( report ) );
-        }
     }
 }

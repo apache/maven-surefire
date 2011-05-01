@@ -52,22 +52,19 @@ public abstract class AbstractReporter
 
     private final boolean trimStackTrace;
 
-    private final ReporterConfiguration reporterConfiguration;
-
     // ----------------------------------------------------------------------
     // Report interface
     // ----------------------------------------------------------------------
 
 
-    AbstractReporter( ReporterConfiguration reporterConfiguration )
+    protected AbstractReporter( boolean trimStackTrace )
     {
-        this.reporterConfiguration = reporterConfiguration;
-        this.trimStackTrace = reporterConfiguration.isTrimStackTrace().booleanValue();
+        this.trimStackTrace = trimStackTrace;
     }
 
-    boolean isTimedOut()
+    AbstractReporter( ReporterConfiguration reporterConfiguration )
     {
-        return reporterConfiguration.isTimedOut();
+        this(reporterConfiguration.isTrimStackTrace().booleanValue());
     }
 
     public void writeFooter( String footer )

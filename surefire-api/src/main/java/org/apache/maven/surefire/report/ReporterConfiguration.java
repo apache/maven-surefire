@@ -40,8 +40,6 @@ public class ReporterConfiguration
 
     private final PrintStream originalSystemOut;
 
-    private final PrintStream originalSystemErr;
-
     private final Properties testVmSystemProperties;
 
     private final String consoleReporter;
@@ -56,8 +54,6 @@ public class ReporterConfiguration
      * A non-null Boolean value
      */
     private final Boolean trimStackTrace;
-
-    private volatile boolean timedOut = false;
 
     public ReporterConfiguration( File reportsDirectory, Boolean trimStackTrace, String consoleReporter,
                                   String fileReporter, String xmlReporter, String consoleOutputFileReporterName )
@@ -76,7 +72,6 @@ public class ReporterConfiguration
         * As soon as we start loading user code, all h*ll breaks loose in this respect.
          */
         this.originalSystemOut = System.out;
-        this.originalSystemErr = System.err;
     }
 
     public ReporterConfiguration( File reportsDirectory, Boolean trimStackTrace )
@@ -146,35 +141,5 @@ public class ReporterConfiguration
     public Properties getTestVmSystemProperties()
     {
         return testVmSystemProperties;
-    }
-
-    public void setTimedOut( boolean timedOut )
-    {
-        this.timedOut = timedOut;
-    }
-
-    public boolean isTimedOut()
-    {
-        return this.timedOut;
-    }
-
-    public String getConsoleReporter()
-    {
-        return consoleReporter;
-    }
-
-    public String getFileReporter()
-    {
-        return fileReporter;
-    }
-
-    public String getXmlReporter()
-    {
-        return xmlReporter;
-    }
-
-    public String getConsoleOutputFileReporterName()
-    {
-        return consoleOutputFileReporterName;
     }
 }

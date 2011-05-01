@@ -46,11 +46,22 @@ public abstract class AbstractTextReporter
 
     private List testResults;
 
+
+    protected AbstractTextReporter( boolean trimStackTrace, String format )
+    {
+        super( trimStackTrace );
+        this.format = format;
+    }
+
+    protected AbstractTextReporter( PrintWriter writer, boolean trimStackTrace, String format )
+    {
+        this( trimStackTrace, format);
+        this.writer = writer;
+    }
+
     protected AbstractTextReporter( ReporterConfiguration reporterConfiguration, String format )
     {
-        super( reporterConfiguration );
-
-        this.format = format;
+        this( reporterConfiguration.isTrimStackTrace().booleanValue(), format);
     }
 
 

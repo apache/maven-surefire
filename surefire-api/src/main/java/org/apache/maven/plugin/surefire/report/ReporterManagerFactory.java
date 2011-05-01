@@ -23,6 +23,7 @@ import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import org.apache.maven.surefire.booter.StartupReportConfiguration;
 import org.apache.maven.surefire.report.AbstractConsoleReporter;
 import org.apache.maven.surefire.report.AbstractFileReporter;
 import org.apache.maven.surefire.report.DefaultDirectConsoleReporter;
@@ -44,12 +45,13 @@ import org.apache.maven.surefire.util.SurefireReflectionException;
  * <p/>
  * Keeps a centralized count of test run results.
  *
+ * TODO: Move out of API module
+ *
  * @author Kristian Rosenvold
  */
 public class ReporterManagerFactory
     implements ReporterFactory
 {
-    private List reportDefinitions;
 
     private ClassLoader surefireClassLoader;
 
@@ -59,12 +61,14 @@ public class ReporterManagerFactory
 
     private final MulticastingReporter multicastingReporter;
 
+    private final StartupReportConfiguration reportConfiguration;
+
     public ReporterManagerFactory( ClassLoader surefireClassLoader, ReporterConfiguration reporterConfiguration,
-                                   List reportDefinitions )
+                                   List reportDefinitions, StartupReportConfiguration reportConfiguration )
     {
         this.reporterConfiguration = reporterConfiguration;
-        this.reportDefinitions = reportDefinitions;
         this.surefireClassLoader = surefireClassLoader;
+        this.reportConfiguration = reportConfiguration;
         multicastingReporter = new MulticastingReporter( instantiateReports() );
         runStarting();
     }
@@ -77,27 +81,27 @@ public class ReporterManagerFactory
 
     private AbstractConsoleReporter instantiateConsoleReporter()
     {
-        return (AbstractConsoleReporter) instantiateReport( reporterConfiguration.getConsoleReporter() );
+        return (AbstractConsoleReporter) instantiateReport( reportConfiguration.getConsoleReporter() );
     }
 
     private AbstractFileReporter instantiateFileReporter()
     {
-        return (AbstractFileReporter) instantiateReport( reporterConfiguration.getFileReporter() );
+        return (AbstractFileReporter) instantiateReport( reportConfiguration.getFileReporter() );
     }
 
     private XMLReporter instantiateXmlReporter()
     {
-        return (XMLReporter) instantiateReport( reporterConfiguration.getXmlReporter() );
+        return (XMLReporter) instantiateReport( reportConfiguration.getXmlReporterName() );
     }
 
     private Reporter instantiateConsoleOutputFileReporter()
     {
-        return instantiateReport( reporterConfiguration.getConsoleOutputFileReporterName() );
+        return instantiateReport( reportConfiguration.getConsoleOutputFileReporterName() );
     }
 
     private List instantiateReports()
     {
-        return instantiateReportsNewStyle( reportDefinitions, reporterConfiguration, surefireClassLoader );
+        return instantiateReportsNewStyle( reportConfiguration.getReports(), reporterConfiguration, surefireClassLoader );
     }
 
     public RunResult close()

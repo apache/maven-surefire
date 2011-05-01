@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.maven.plugin.surefire.report.ReporterManagerFactory;
+import org.apache.maven.surefire.booter.StartupReportConfiguration;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.RunListener;
@@ -402,12 +403,13 @@ public class ConcurrentReporterManagerTest
     private ReporterFactory createReporterFactory()
     {
         ReporterConfiguration reporterConfiguration = getTestReporterConfiguration();
-        return new ReporterManagerFactory( this.getClass().getClassLoader(), reporterConfiguration, Arrays.asList() );
+        return new ReporterManagerFactory( this.getClass().getClassLoader(), reporterConfiguration, Arrays.asList(),
+                                           StartupReportConfiguration.defaultNoXml() );
     }
 
     public static ReporterConfiguration getTestReporterConfiguration()
     {
-        return new ReporterConfiguration( null, Boolean.TRUE );
+        return new ReporterConfiguration( new File( "." ), Boolean.TRUE );
     }
 
 

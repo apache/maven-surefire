@@ -42,11 +42,19 @@ public abstract class AbstractConsoleReporter
 
     private static final PrintStream ORIGINAL_SYSTEM_OUT = System.out;
 
+    public AbstractConsoleReporter( boolean trimStackTrace, String format )
+    {
+        super( getPrintWriter(), trimStackTrace, format);
+    }
+
     AbstractConsoleReporter( String format, ReporterConfiguration reporterConfiguration )
     {
-        super(
-            new PrintWriter( new OutputStreamWriter( new BufferedOutputStream( ORIGINAL_SYSTEM_OUT, BUFFER_SIZE ) ) ),
-            format, reporterConfiguration );
+        super( getPrintWriter(), reporterConfiguration.isTrimStackTrace().booleanValue(), format);
+    }
+
+    private static PrintWriter getPrintWriter()
+    {
+        return new PrintWriter( new OutputStreamWriter( new BufferedOutputStream( ORIGINAL_SYSTEM_OUT, BUFFER_SIZE ) ) );
     }
 
     public void testSetStarting( ReportEntry report )

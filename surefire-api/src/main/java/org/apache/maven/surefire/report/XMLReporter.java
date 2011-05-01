@@ -54,13 +54,17 @@ public class XMLReporter
 
     private final List results = Collections.synchronizedList( new ArrayList() );
 
+
+    public XMLReporter( boolean trimStackTrace, File reportsDirectory )
+    {
+        super( trimStackTrace );
+        this.reportsDirectory = reportsDirectory;
+        this.deleteOnStarting = false;
+    }
+
     public XMLReporter( ReporterConfiguration reporterConfiguration )
     {
-        super( reporterConfiguration );
-
-        this.reportsDirectory = reporterConfiguration.getReportsDirectory();
-
-        this.deleteOnStarting = false;
+        this( reporterConfiguration.isTrimStackTrace().booleanValue(), reporterConfiguration.getReportsDirectory() );
     }
 
 
@@ -94,10 +98,6 @@ public class XMLReporter
     {
         super.testSetCompleted( report );
 
-        if ( isTimedOut() )
-        {
-            return;
-        }
         long runTime = System.currentTimeMillis() - testSetStartTime;
 
         Xpp3Dom testSuite = createTestSuiteElement( report, runTime );
@@ -122,6 +122,7 @@ public class XMLReporter
 
         File reportDir = reportFile.getParentFile();
 
+        //noinspection ResultOfMethodCallIgnored
         reportDir.mkdirs();
 
         PrintWriter writer = null;
@@ -242,6 +243,7 @@ public class XMLReporter
         Throwable t = null;
         if ( report.getStackTraceWriter() != null )
         {
+            //noinspection ThrowableResultOfMethodCallIgnored
             t = report.getStackTraceWriter().getThrowable();
         }
 
@@ -296,7 +298,7 @@ public class XMLReporter
     /**
      * Adds system properties to the XML report.
      *
-     * @param testSuite
+     * @param testSuite The test suite to report to
      */
     private void showProperties( Xpp3Dom testSuite )
     {

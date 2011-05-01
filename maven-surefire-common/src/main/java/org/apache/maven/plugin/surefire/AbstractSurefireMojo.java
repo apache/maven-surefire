@@ -53,6 +53,7 @@ import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.ClasspathConfiguration;
 import org.apache.maven.surefire.booter.ProviderConfiguration;
 import org.apache.maven.surefire.booter.StartupConfiguration;
+import org.apache.maven.surefire.booter.StartupReportConfiguration;
 import org.apache.maven.surefire.report.BriefConsoleReporter;
 import org.apache.maven.surefire.report.BriefFileReporter;
 import org.apache.maven.surefire.report.ConsoleOutputDirectReporter;
@@ -80,9 +81,9 @@ public abstract class AbstractSurefireMojo
     implements SurefireExecutionParameters
 {
 
-    private static final String BRIEF_REPORT_FORMAT = "brief";
+    private static final String BRIEF_REPORT_FORMAT = StartupReportConfiguration.BRIEF_REPORT_FORMAT;
 
-    private static final String PLAIN_REPORT_FORMAT = "plain";
+    private static final String PLAIN_REPORT_FORMAT = StartupReportConfiguration.PLAIN_REPORT_FORMAT;
 
     // common field getters/setters
 
@@ -372,7 +373,8 @@ public abstract class AbstractSurefireMojo
                                             isChildDelegation() );
 
             return new StartupConfiguration( providerName, classpathConfiguration, classLoaderConfiguration,
-                                             forkConfiguration.getForkMode(), false, isRedirectTestOutputToFile() );
+                                             forkConfiguration.getForkMode(), false, isRedirectTestOutputToFile()
+                                             );
         }
         catch ( DependencyResolutionRequiredException e )
         {
@@ -391,6 +393,13 @@ public abstract class AbstractSurefireMojo
             throw new MojoExecutionException( "Unable to generate classpath: " + e, e );
         }
 
+    }
+
+    private StartupReportConfiguration getStartupReportConfiguration()
+    {
+        return new StartupReportConfiguration( isUseFile(), isPrintSummary(), getReportFormat(),
+                                               isRedirectTestOutputToFile(), isDisableXmlReport(),
+                                               getReportsDirectory() );
     }
 
     public void logClasspath( Classpath classpath, String descriptor )
@@ -523,9 +532,10 @@ public abstract class AbstractSurefireMojo
     {
         StartupConfiguration startupConfiguration =
             createStartupConfiguration( forkConfiguration, provider, classLoaderConfiguration );
+        StartupReportConfiguration startupReportConfiguration = getStartupReportConfiguration();
         ProviderConfiguration providerConfiguration = createProviderConfiguration( forkConfiguration );
         return new ForkStarter( providerConfiguration, startupConfiguration, forkConfiguration,
-                                getForkedProcessTimeoutInSeconds() );
+                                getForkedProcessTimeoutInSeconds(), startupReportConfiguration );
     }
 
     protected ForkConfiguration getForkConfiguration()
@@ -1020,7 +1030,7 @@ public abstract class AbstractSurefireMojo
         {
             return isPrintSummary() ? ConsoleReporter.class.getName() : null;
         }
-        else if ( BRIEF_REPORT_FORMAT.equals( getReportFormat() ) )
+        else if ( isRedirectTestOutputToFile() || BRIEF_REPORT_FORMAT.equals( getReportFormat() ) )
         {
             return BriefConsoleReporter.class.getName();
         }
@@ -1028,6 +1038,10 @@ public abstract class AbstractSurefireMojo
         {
             return DetailedConsoleReporter.class.getName();
         }
+/*        if (isRedirectTestOutputToFile())
+        {
+            return null;
+        }*/
         return null;
     }
 

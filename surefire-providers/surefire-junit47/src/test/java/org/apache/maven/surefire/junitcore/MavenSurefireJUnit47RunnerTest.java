@@ -20,6 +20,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
 import org.apache.maven.plugin.surefire.report.ReporterManagerFactory;
+import org.apache.maven.surefire.booter.StartupReportConfiguration;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.RunListener;
@@ -120,7 +121,8 @@ public class MavenSurefireJUnit47RunnerTest
         ReporterConfiguration reporterConfiguration = ConcurrentReporterManagerTest.getTestReporterConfiguration();
 
         ReporterFactory reporterManagerFactory =
-            new ReporterManagerFactory( this.getClass().getClassLoader(), reporterConfiguration, Arrays.asList() );
+            new ReporterManagerFactory( this.getClass().getClassLoader(), reporterConfiguration, Arrays.asList(),
+                                        StartupReportConfiguration.defaultNoXml() );
 
         final HashMap<String, TestSet> classMethodCounts = new HashMap<String, TestSet>();
         RunListener reporter = ConcurrentReporterManager.createInstance( classMethodCounts, reporterManagerFactory,
