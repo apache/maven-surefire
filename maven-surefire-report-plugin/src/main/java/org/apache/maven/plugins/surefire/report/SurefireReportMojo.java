@@ -51,6 +51,7 @@ public class SurefireReportMojo
      * Location where generated html will be created.
      *
      * @parameter expression="${project.reporting.outputDirectory}"
+     * @noinspection UnusedDeclaration
      */
     private File outputDirectory;
 
@@ -58,6 +59,7 @@ public class SurefireReportMojo
      * Doxia Site Renderer
      *
      * @component
+     * @noinspection UnusedDeclaration
      */
     private Renderer siteRenderer;
 
@@ -66,6 +68,7 @@ public class SurefireReportMojo
      *
      * @parameter expression="${project}"
      * @required @readonly
+     * @noinspection UnusedDeclaration
      */
     private MavenProject project;
 
@@ -74,6 +77,7 @@ public class SurefireReportMojo
      *
      * @parameter expression="${showSuccess}" default-value="true"
      * @required
+     * @noinspection UnusedDeclaration
      */
     private boolean showSuccess;
 
@@ -81,6 +85,7 @@ public class SurefireReportMojo
      * Directories containing the XML Report files that will be parsed and rendered to HTML format.
      *
      * @parameter
+     * @noinspection UnusedDeclaration
      */
     private File[] reportsDirectories;
 
@@ -89,6 +94,7 @@ public class SurefireReportMojo
      *
      * @parameter
      * @deprecated
+     * @noinspection UnusedDeclaration
      */
     private File reportsDirectory;
 
@@ -98,6 +104,7 @@ public class SurefireReportMojo
      *
      * @parameter expression="${reactorProjects}"
      * @readonly
+     * @noinspection MismatchedQueryAndUpdateOfCollection, UnusedDeclaration
      */
     private List reactorProjects;
 
@@ -106,6 +113,7 @@ public class SurefireReportMojo
      *
      * @parameter expression="${outputName}" default-value="surefire-report"
      * @required
+     * @noinspection UnusedDeclaration
      */
     private String outputName;
 
@@ -113,6 +121,7 @@ public class SurefireReportMojo
      * Location of the Xrefs to link.
      *
      * @parameter default-value="${project.reporting.outputDirectory}/xref-test"
+     * @noinspection UnusedDeclaration
      */
     private File xrefLocation;
 
@@ -120,6 +129,7 @@ public class SurefireReportMojo
      * Whether to link the XRef if found.
      *
      * @parameter expression="${linkXRef}" default-value="true"
+     * @noinspection UnusedDeclaration
      */
     private boolean linkXRef;
 
@@ -127,6 +137,7 @@ public class SurefireReportMojo
      * Whether to build an aggregated report at the root, or build individual reports.
      *
      * @parameter expression="${aggregate}" default-value="false"
+     * @noinspection UnusedDeclaration
      */
     private boolean aggregate;
 
@@ -142,8 +153,10 @@ public class SurefireReportMojo
         {
             reportsDirectoryList.addAll( Arrays.asList( reportsDirectories ) );
         }
+        //noinspection deprecation
         if ( reportsDirectory != null )
         {
+            //noinspection deprecation
             reportsDirectoryList.add( reportsDirectory );
         }
         if ( aggregate )

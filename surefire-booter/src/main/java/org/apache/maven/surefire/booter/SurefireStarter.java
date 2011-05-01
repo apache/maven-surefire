@@ -84,9 +84,9 @@ public class SurefireStarter
 
     private Object createForkingReporterFactory( SurefireReflector surefireReflector )
     {
-        return surefireReflector.createForkingReporterFactory(
-            this.providerConfiguration.getReporterConfiguration().isTrimStackTrace(),
-            this.providerConfiguration.getReporterConfiguration().getOriginalSystemOut() );
+        final Boolean trimStackTrace = this.providerConfiguration.getReporterConfiguration().isTrimStackTrace();
+        final PrintStream originalSystemOut = this.providerConfiguration.getReporterConfiguration().getOriginalSystemOut();
+        return surefireReflector.createForkingReporterFactory( trimStackTrace, originalSystemOut );
     }
 
     // todo: Fix duplication in this method and runSuitesInProcess
@@ -119,7 +119,7 @@ public class SurefireStarter
         SurefireReflector surefireReflector = new SurefireReflector( surefireClassLoader );
 
         final Object factory =
-            surefireReflector.createReportingReporterFactory( this.providerConfiguration.getReporterConfiguration(), startupReportConfiguration );
+            surefireReflector.createReportingReporterFactory( startupReportConfiguration );
 
         return invokeProvider( null, testsClassLoader, surefireClassLoader, factory );
     }

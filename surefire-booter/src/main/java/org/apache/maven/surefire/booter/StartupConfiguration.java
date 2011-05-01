@@ -36,20 +36,15 @@ public class StartupConfiguration
 
     private final boolean isInForkedVm;
 
-    private final boolean redirectTestOutputToFile;
-
 
     public StartupConfiguration( String providerClassName, ClasspathConfiguration classpathConfiguration,
-                                 ClassLoaderConfiguration classLoaderConfiguration, String forkMode, boolean inForkedVm,
-                                 boolean redirectTestOutputToFile )
+                                 ClassLoaderConfiguration classLoaderConfiguration, String forkMode, boolean inForkedVm )
     {
         this.providerClassName = providerClassName;
         this.classpathConfiguration = classpathConfiguration;
         this.classLoaderConfiguration = classLoaderConfiguration;
-        String forkMode1 = forkMode;
         isForkRequested = !"never".equals( forkMode );
         isInForkedVm = inForkedVm;
-        this.redirectTestOutputToFile = redirectTestOutputToFile;
     }
 
     public static StartupConfiguration inForkedVm( String providerClassName,
@@ -57,7 +52,7 @@ public class StartupConfiguration
                                                    ClassLoaderConfiguration classLoaderConfiguration, String forkMode )
     {
         return new StartupConfiguration( providerClassName, classpathConfiguration, classLoaderConfiguration, forkMode,
-                                         true, false );
+                                         true );
     }
 
     public ClasspathConfiguration getClasspathConfiguration()

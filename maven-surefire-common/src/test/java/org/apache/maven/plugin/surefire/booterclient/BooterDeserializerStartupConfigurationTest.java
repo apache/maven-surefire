@@ -159,7 +159,7 @@ public class BooterDeserializerStartupConfigurationTest
     private StartupConfiguration getTestStartupConfiguration( ClassLoaderConfiguration classLoaderConfiguration )
     {
         return new StartupConfiguration( "com.provider", classpathConfiguration, classLoaderConfiguration, "never",
-                                         false, false );
+                                         false );
     }
 
     private File getTestSourceDirectory()

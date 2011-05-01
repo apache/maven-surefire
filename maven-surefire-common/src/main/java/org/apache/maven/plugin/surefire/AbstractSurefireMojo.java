@@ -54,15 +54,7 @@ import org.apache.maven.surefire.booter.ClasspathConfiguration;
 import org.apache.maven.surefire.booter.ProviderConfiguration;
 import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.StartupReportConfiguration;
-import org.apache.maven.surefire.report.BriefConsoleReporter;
-import org.apache.maven.surefire.report.BriefFileReporter;
-import org.apache.maven.surefire.report.ConsoleOutputDirectReporter;
-import org.apache.maven.surefire.report.ConsoleOutputFileReporter;
-import org.apache.maven.surefire.report.ConsoleReporter;
-import org.apache.maven.surefire.report.DetailedConsoleReporter;
-import org.apache.maven.surefire.report.FileReporter;
 import org.apache.maven.surefire.report.ReporterConfiguration;
-import org.apache.maven.surefire.report.XMLReporter;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestRequest;
@@ -80,10 +72,6 @@ public abstract class AbstractSurefireMojo
     extends AbstractMojo
     implements SurefireExecutionParameters
 {
-
-    private static final String BRIEF_REPORT_FORMAT = StartupReportConfiguration.BRIEF_REPORT_FORMAT;
-
-    private static final String PLAIN_REPORT_FORMAT = StartupReportConfiguration.PLAIN_REPORT_FORMAT;
 
     // common field getters/setters
 
@@ -268,15 +256,8 @@ public abstract class AbstractSurefireMojo
     protected ProviderConfiguration createProviderConfiguration( ForkConfiguration forkConfiguration )
         throws MojoExecutionException, MojoFailureException
     {
-        final String consoleReporter = getConsoleResultSummaryReporter();
-        final String fileReporter = getFileReporter();
-        final String xmlReporterName = getXmlReporterName();
-        final String consoleOutputFileReporterName = getConsoleOutputReporterName();
-        Integer timeoutSet =
-            getForkedProcessTimeoutInSeconds() > 0 ? Integer.valueOf( getForkedProcessTimeoutInSeconds() ) : null;
         ReporterConfiguration reporterConfiguration =
-            new ReporterConfiguration( getReportsDirectory(), Boolean.valueOf( isTrimStackTrace() ), consoleReporter,
-                                       fileReporter, xmlReporterName, consoleOutputFileReporterName );
+            new ReporterConfiguration( getReportsDirectory(), Boolean.valueOf( isTrimStackTrace() ) );
 
         Artifact testNgArtifact;
         try
@@ -373,8 +354,7 @@ public abstract class AbstractSurefireMojo
                                             isChildDelegation() );
 
             return new StartupConfiguration( providerName, classpathConfiguration, classLoaderConfiguration,
-                                             forkConfiguration.getForkMode(), false, isRedirectTestOutputToFile()
-                                             );
+                                             forkConfiguration.getForkMode(), false );
         }
         catch ( DependencyResolutionRequiredException e )
         {
@@ -399,7 +379,7 @@ public abstract class AbstractSurefireMojo
     {
         return new StartupReportConfiguration( isUseFile(), isPrintSummary(), getReportFormat(),
                                                isRedirectTestOutputToFile(), isDisableXmlReport(),
-                                               getReportsDirectory() );
+                                               getReportsDirectory(), isTrimStackTrace() );
     }
 
     public void logClasspath( Classpath classpath, String descriptor )
@@ -992,69 +972,6 @@ public abstract class AbstractSurefireMojo
             props = new Properties();
         }
         return props;
-    }
-
-    private String getXmlReporterName()
-    {
-        if ( !isDisableXmlReport() )
-        {
-            return XMLReporter.class.getName();
-        }
-        return null;
-    }
-
-    private String getFileReporter()
-    {
-        if ( isUseFile() )
-        {
-            if ( BRIEF_REPORT_FORMAT.equals( getReportFormat() ) )
-            {
-                return BriefFileReporter.class.getName();
-            }
-            else if ( PLAIN_REPORT_FORMAT.equals( getReportFormat() ) )
-            {
-                return FileReporter.class.getName();
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Returns the reporter that will write to the console
-     *
-     * @return a console reporter of null if no console reporting
-     */
-    private String getConsoleResultSummaryReporter()
-    {
-        if ( isUseFile() )
-        {
-            return isPrintSummary() ? ConsoleReporter.class.getName() : null;
-        }
-        else if ( isRedirectTestOutputToFile() || BRIEF_REPORT_FORMAT.equals( getReportFormat() ) )
-        {
-            return BriefConsoleReporter.class.getName();
-        }
-        else if ( PLAIN_REPORT_FORMAT.equals( getReportFormat() ) )
-        {
-            return DetailedConsoleReporter.class.getName();
-        }
-/*        if (isRedirectTestOutputToFile())
-        {
-            return null;
-        }*/
-        return null;
-    }
-
-    private String getConsoleOutputReporterName()
-    {
-        if ( isRedirectTestOutputToFile() )
-        {
-            return ConsoleOutputFileReporter.class.getName();
-        }
-        else
-        {
-            return ConsoleOutputDirectReporter.class.getName();
-        }
     }
 
 

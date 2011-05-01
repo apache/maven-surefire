@@ -182,7 +182,7 @@ public class BooterDeserializerProviderConfigurationTest
 
         File cwd = new File( "." );
         ReporterConfiguration reporterConfiguration =
-            new ReporterConfiguration( cwd, Boolean.TRUE, "abc", "cde", "efg", "hij" );
+            new ReporterConfiguration( cwd, Boolean.TRUE );
         String aUserRequestedTestMethod = "aUserRequestedTestMethod";
         TestRequest testSuiteDefinition =
             new TestRequest( getSuiteXmlFileStrings(), getTestSourceDirectory(), aUserRequestedTest,
@@ -197,7 +197,7 @@ public class BooterDeserializerProviderConfigurationTest
         ClasspathConfiguration classpathConfiguration = new ClasspathConfiguration( true, true );
 
         return new StartupConfiguration( "com.provider", classpathConfiguration, classLoaderConfiguration, "never",
-                                         false, false );
+                                         false );
     }
 
     private File getTestSourceDirectory()

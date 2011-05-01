@@ -120,8 +120,7 @@ public class MavenSurefireJUnit47RunnerTest
         ReporterConfiguration reporterConfiguration = ConcurrentReporterManagerTest.getTestReporterConfiguration();
 
         ReporterFactory reporterManagerFactory =
-            new ReporterManagerFactory( this.getClass().getClassLoader(), reporterConfiguration,
-                                        StartupReportConfiguration.defaultNoXml() );
+            new ReporterManagerFactory( this.getClass().getClassLoader(), StartupReportConfiguration.defaultNoXml() );
 
         final HashMap<String, TestSet> classMethodCounts = new HashMap<String, TestSet>();
         RunListener reporter = ConcurrentReporterManager.createInstance( classMethodCounts, reporterManagerFactory,

@@ -40,8 +40,6 @@ public class ThreadedStreamConsumer
 
     private final Pumper pumper;
 
-    private final long start = System.currentTimeMillis();
-
     static class Pumper
         implements Runnable
     {

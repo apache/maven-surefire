@@ -22,6 +22,7 @@ package org.apache.maven.surefire.booter;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import org.apache.maven.surefire.report.BriefConsoleReporter;
 import org.apache.maven.surefire.report.BriefFileReporter;
 import org.apache.maven.surefire.report.ConsoleOutputDirectReporter;
@@ -52,6 +53,9 @@ public class StartupReportConfiguration
 
     private final File reportsDirectory;
 
+    private final boolean trimStackTrace;
+
+    private final Properties testVmSystemProperties = new Properties(  );
 
     public static final String BRIEF_REPORT_FORMAT = "brief";
 
@@ -59,7 +63,7 @@ public class StartupReportConfiguration
 
     public StartupReportConfiguration( boolean useFile, boolean printSummary, String reportFormat,
                                        boolean redirectTestOutputToFile, boolean disableXmlReport,
-                                       File reportsDirectory )
+                                       File reportsDirectory, boolean trimStackTrace )
     {
         this.useFile = useFile;
         this.printSummary = printSummary;
@@ -67,18 +71,19 @@ public class StartupReportConfiguration
         this.redirectTestOutputToFile = redirectTestOutputToFile;
         this.disableXmlReport = disableXmlReport;
         this.reportsDirectory = reportsDirectory;
+        this.trimStackTrace = trimStackTrace;
     }
 
     public static StartupReportConfiguration defaultValue()
     {
         File target = new File( "./target" );
-        return new StartupReportConfiguration( true, true, "PLAIN", false, false, target );
+        return new StartupReportConfiguration( true, true, "PLAIN", false, false, target, false );
     }
 
     public static StartupReportConfiguration defaultNoXml()
     {
         File target = new File( "./target" );
-        return new StartupReportConfiguration( true, true, "PLAIN", false, true, target );
+        return new StartupReportConfiguration( true, true, "PLAIN", false, true, target, false );
     }
 
     public boolean isUseFile()
@@ -199,5 +204,14 @@ public class StartupReportConfiguration
         }
     }
 
+    public Properties getTestVmSystemProperties()
+    {
+        return testVmSystemProperties;
+    }
 
+
+    public boolean isTrimStackTrace()
+    {
+        return trimStackTrace;
+    }
 }

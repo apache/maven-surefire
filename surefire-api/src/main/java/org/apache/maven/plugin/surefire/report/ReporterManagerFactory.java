@@ -63,14 +63,18 @@ public class ReporterManagerFactory
 
     private final StartupReportConfiguration reportConfiguration;
 
-    public ReporterManagerFactory( ClassLoader surefireClassLoader, ReporterConfiguration reporterConfiguration,
-                                   StartupReportConfiguration reportConfiguration )
+    public ReporterManagerFactory( ClassLoader surefireClassLoader, StartupReportConfiguration reportConfiguration )
     {
-        this.reporterConfiguration = reporterConfiguration;
-        this.surefireClassLoader = surefireClassLoader;
         this.reportConfiguration = reportConfiguration;
+        this.reporterConfiguration = getReporterConfiguration(  );
+        this.surefireClassLoader = surefireClassLoader;
         multicastingReporter = new MulticastingReporter( instantiateReports() );
         runStarting();
+    }
+
+    private ReporterConfiguration getReporterConfiguration( )
+    {
+        return new ReporterConfiguration( reportConfiguration.getReportsDirectory(), new Boolean( reportConfiguration.isTrimStackTrace() ));
     }
 
     public RunListener createReporter()

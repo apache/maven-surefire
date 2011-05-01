@@ -18,10 +18,11 @@ package org.apache.maven.surefire.junit4;
  * under the License.
  */
 
-import junit.framework.TestCase;
-import junit.framework.TestResult;
 import org.apache.maven.surefire.common.junit4.JUnit4TestChecker;
 import org.apache.maven.surefire.testset.TestSetFailedException;
+
+import junit.framework.TestCase;
+import junit.framework.TestResult;
 import org.junit.Test;
 import org.junit.internal.runners.InitializationError;
 import org.junit.runner.Description;
@@ -153,6 +154,7 @@ public class JUnit4TestCheckerTest
     }
 
 
+    @SuppressWarnings( { "UnusedDeclaration" } )
     public static class NotValidTest
     {
         public void testSomething()

@@ -114,8 +114,7 @@ public class ForkStarter
         throws SurefireBooterForkException
     {
         final ReporterManagerFactory testSetReporterFactory =
-            new ReporterManagerFactory( Thread.currentThread().getContextClassLoader(),
-                                        providerConfiguration.getReporterConfiguration(), startupReportConfiguration );
+            new ReporterManagerFactory( Thread.currentThread().getContextClassLoader(), startupReportConfiguration );
         try
         {
             return fork( null, providerConfiguration.getProviderProperties(), testSetReporterFactory );
@@ -150,8 +149,7 @@ public class ForkStarter
         Properties properties = new Properties();
 
         final ReporterManagerFactory testSetReporterFactory =
-            new ReporterManagerFactory( Thread.currentThread().getContextClassLoader(),
-                                        providerConfiguration.getReporterConfiguration(), startupReportConfiguration );
+            new ReporterManagerFactory( Thread.currentThread().getContextClassLoader(), startupReportConfiguration );
         try
         {
             while ( suites.hasNext() )
@@ -174,7 +172,7 @@ public class ForkStarter
     {
         SurefireReflector surefireReflector = new SurefireReflector( surefireClassLoader );
         Object reporterFactory =
-            surefireReflector.createReportingReporterFactory( this.providerConfiguration.getReporterConfiguration(), startupReportConfiguration );
+            surefireReflector.createReportingReporterFactory( startupReportConfiguration );
 
         final ProviderFactory providerFactory =
             new ProviderFactory( startupConfiguration, providerConfiguration, surefireClassLoader, testsClassLoader,
@@ -227,7 +225,7 @@ public class ForkStarter
         }
 
         ForkClient out = new ForkClient( testSetReporterFactory,
-                                         providerConfiguration.getReporterConfiguration().getTestVmSystemProperties() );
+                                         startupReportConfiguration.getTestVmSystemProperties() );
         ThreadedStreamConsumer threadedStreamConsumer2 = new ThreadedStreamConsumer( out );
 
         if ( forkConfiguration.isDebug() )

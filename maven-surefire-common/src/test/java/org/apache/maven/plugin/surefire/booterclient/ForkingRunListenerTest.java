@@ -339,11 +339,6 @@ public class ForkingRunListenerTest
             return (ReportEntry) reporter.getData().get( 0 );
         }
 
-        public String getFirstStringData()
-        {
-            return (String) reporter.getData().get( 0 );
-        }
-
         private void assertExpected( String actionCode, ReportEntry expected )
             throws IOException, ReporterException
         {

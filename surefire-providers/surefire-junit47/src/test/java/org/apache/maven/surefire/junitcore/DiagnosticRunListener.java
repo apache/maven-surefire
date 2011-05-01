@@ -19,12 +19,12 @@
 
 package org.apache.maven.surefire.junitcore;
 
-import org.junit.runner.notification.RunListener;
-import org.junit.runner.notification.Failure;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.junit.runner.Description;
 import org.junit.runner.Result;
-
-import java.util.concurrent.atomic.AtomicInteger;
+import org.junit.runner.notification.Failure;
+import org.junit.runner.notification.RunListener;
 /*
  * @author Kristian Rosenvold, kristianAzeniorD0Tno
  */
@@ -38,26 +38,6 @@ public class DiagnosticRunListener extends RunListener {
     private final boolean printToConsole;
     private final RunListener target;
 
-
-    public AtomicInteger getNumTestStarted() {
-        return numTestStarted;
-    }
-
-    public AtomicInteger getNumTestFailed() {
-        return numTestFailed;
-    }
-
-    public AtomicInteger getNumTestAssumptionsFailed() {
-        return numTestAssumptionsFailed;
-    }
-
-    public AtomicInteger getNumTestFinished() {
-        return numTestFinished;
-    }
-
-    public AtomicInteger getNumTestIgnored() {
-        return numTestIgnored;
-    }
 
     private void print(String event, Description description) {
         if (printToConsole) System.out.println(Thread.currentThread().toString() +  ", event = " + event + ", " + description);

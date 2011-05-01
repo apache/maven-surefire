@@ -51,13 +51,12 @@ public class TestConsoleOutputRunListenerTest
     private ReporterFactory createReporterFactory()
     {
         ReporterConfiguration reporterConfiguration = getTestReporterConfiguration();
-        return new ReporterManagerFactory( this.getClass().getClassLoader(), reporterConfiguration,
-                                           StartupReportConfiguration.defaultValue() );
+        return new ReporterManagerFactory( this.getClass().getClassLoader(), StartupReportConfiguration.defaultValue() );
     }
 
     public static ReporterConfiguration getTestReporterConfiguration()
     {
-        return new ReporterConfiguration( new File( "." ), Boolean.TRUE, ConsoleReporter.class.getName(), null, null, null );
+        return new ReporterConfiguration( new File( "." ), Boolean.TRUE );
     }
 
 }

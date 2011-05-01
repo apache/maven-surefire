@@ -29,8 +29,6 @@ public interface BooterConstants
 {
     String INCLUDES_PROPERTY_PREFIX = "includes";
     String EXCLUDES_PROPERTY_PREFIX = "excludes";
-    String PARAMS_SUFIX = ".params";
-    String TYPES_SUFIX = ".types";
     String USESYSTEMCLASSLOADER = "useSystemClassLoader";
     String USEMANIFESTONLYJAR = "useManifestOnlyJar";
     String FAILIFNOTESTS = "failIfNoTests";

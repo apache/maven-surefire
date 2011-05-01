@@ -25,7 +25,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.DirectConsoleReporter;
 import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.RunListener;
 
 /**
@@ -66,15 +65,8 @@ public class MockReporter
 
     private final AtomicInteger testFailed = new AtomicInteger();
 
-    private final AtomicInteger testError = new AtomicInteger();
-
     public MockReporter()
     {
-    }
-
-    public MockReporter( ReporterConfiguration reporterConfiguration )
-    {
-
     }
 
     public void testSetStarting( ReportEntry report )
@@ -145,26 +137,6 @@ public class MockReporter
         return (ReportEntry) data.get( 0 );
     }
 
-    public String getFirstStringData()
-    {
-        return (String) data.get( 0 );
-    }
-
-    public int getTestSucceeded()
-    {
-        return testSucceeded.get();
-    }
-
-    public int getTestIgnored()
-    {
-        return testIgnored.get();
-    }
-
-    public int getTestFailed()
-    {
-        return testFailed.get();
-    }
-
 
     public void testAssumptionFailure( ReportEntry report )
     {
@@ -172,11 +144,6 @@ public class MockReporter
         data.add( report );
         testIgnored.incrementAndGet();
 
-    }
-
-    public void writeTestOutput( String output, boolean stdout )
-    {
-        //To change body of implemented methods use File | Settings | File Templates.
     }
 
     public void writeMessage( String message )

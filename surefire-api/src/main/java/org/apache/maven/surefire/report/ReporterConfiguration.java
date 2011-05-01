@@ -21,15 +21,11 @@ package org.apache.maven.surefire.report;
 
 import java.io.File;
 import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
 
 /**
  * The configuration of the reporter. Most of this stuff is not relevant for the providers
  * and should be moved out of the api.
  * <p/>
- * TODO: Split this class in 2, or more. Extract classnames of reporters to somewhere else.
  * This class seems to be the focal point of all the bad code smells left in reporting ;)
  *
  * @author Kristian Rosenvold
@@ -40,43 +36,22 @@ public class ReporterConfiguration
 
     private final PrintStream originalSystemOut;
 
-    private final Properties testVmSystemProperties;
-
-    private final String consoleReporter;
-
-    private final String fileReporter;
-
-    private final String xmlReporter;
-
-    private final String consoleOutputFileReporterName;
-
     /**
      * A non-null Boolean value
      */
     private final Boolean trimStackTrace;
 
-    public ReporterConfiguration( File reportsDirectory, Boolean trimStackTrace, String consoleReporter,
-                                  String fileReporter, String xmlReporter, String consoleOutputFileReporterName )
+    public ReporterConfiguration( File reportsDirectory, Boolean trimStackTrace )
     {
         this.reportsDirectory = reportsDirectory;
-        this.consoleReporter = consoleReporter;
-        this.fileReporter = fileReporter;
-        this.xmlReporter = xmlReporter;
         this.trimStackTrace = trimStackTrace;
-        this.consoleOutputFileReporterName = consoleOutputFileReporterName;
 
-        testVmSystemProperties = new Properties();
         /*
-        * While this may seem slightly odd, when this object is constructted no user code has been run
+        * While this may seem slightly odd, when this object is constructed no user code has been run
         * (including classloading), and we can be guaranteed that no-one has modified System.out/System.err.
         * As soon as we start loading user code, all h*ll breaks loose in this respect.
          */
         this.originalSystemOut = System.out;
-    }
-
-    public ReporterConfiguration( File reportsDirectory, Boolean trimStackTrace )
-    {
-        this( reportsDirectory, trimStackTrace, null, null, null, null );
     }
 
     /**
@@ -100,34 +75,6 @@ public class ReporterConfiguration
     }
 
     /**
-     * A list of classnames representing runnable reports for this test-run.
-     *
-     * @return A list of strings, each string is a classname of a class
-     *         implementing the org.apache.maven.surefire.report.Reporter interface
-     */
-    public List getReports()
-    {
-        ArrayList reports = new ArrayList();
-        if ( consoleReporter != null )
-        {
-            reports.add( consoleReporter );
-        }
-        if ( fileReporter != null )
-        {
-            reports.add( fileReporter );
-        }
-        if ( xmlReporter != null )
-        {
-            reports.add( xmlReporter );
-        }
-        if ( consoleOutputFileReporterName != null )
-        {
-            reports.add( consoleOutputFileReporterName );
-        }
-        return reports;
-    }
-
-    /**
      * The original system out belonging to the (possibly forked) surefire process.
      * Note that users of Reporter/ReporterFactory should normally not be using this.
      *
@@ -136,10 +83,5 @@ public class ReporterConfiguration
     public PrintStream getOriginalSystemOut()
     {
         return originalSystemOut;
-    }
-
-    public Properties getTestVmSystemProperties()
-    {
-        return testVmSystemProperties;
     }
 }

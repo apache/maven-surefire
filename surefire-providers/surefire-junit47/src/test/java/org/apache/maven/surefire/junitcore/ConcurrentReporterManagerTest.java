@@ -402,8 +402,7 @@ public class ConcurrentReporterManagerTest
     private ReporterFactory createReporterFactory()
     {
         ReporterConfiguration reporterConfiguration = getTestReporterConfiguration();
-        return new ReporterManagerFactory( this.getClass().getClassLoader(), reporterConfiguration,
-                                           StartupReportConfiguration.defaultNoXml() );
+        return new ReporterManagerFactory( this.getClass().getClassLoader(), StartupReportConfiguration.defaultNoXml() );
     }
 
     public static ReporterConfiguration getTestReporterConfiguration()

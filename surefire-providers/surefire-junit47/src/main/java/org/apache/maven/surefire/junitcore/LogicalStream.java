@@ -22,7 +22,6 @@ package org.apache.maven.surefire.junitcore;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
-import org.apache.maven.surefire.report.Reporter;
 import org.apache.maven.surefire.util.internal.ByteBuffer;
 
 /**
@@ -50,23 +49,6 @@ public class LogicalStream
             this.len = len;
         }
 
-        public boolean isStdout()
-        {
-            return stdout;
-        }
-
-        public void writeTo( StringBuilder stringBuilder )
-        {
-            final String str = new String( b, off, len );
-            stringBuilder.append( str );
-        }
-
-
-        public void writeDetails( Reporter reporter )
-        {
-            final String str = new String( b, off, len );
-            reporter.writeDetailMessage( str );
-        }
 
         public void writeDetails( ConsoleOutputReceiver outputReceiver )
         {
@@ -103,16 +85,4 @@ public class LogicalStream
     }
 
 
-    public String getOutput( boolean stdOut )
-    {
-        StringBuilder stringBuilder = new StringBuilder();
-        for ( Entry entry : output )
-        {
-            if ( stdOut == entry.isStdout() )
-            {
-                entry.writeTo( stringBuilder );
-            }
-        }
-        return stringBuilder.toString();
-    }
 }

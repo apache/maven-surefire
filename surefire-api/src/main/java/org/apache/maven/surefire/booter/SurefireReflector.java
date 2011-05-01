@@ -208,10 +208,9 @@ public class SurefireReflector
     Object createReporterConfiguration( ReporterConfiguration reporterConfiguration )
     {
         Constructor constructor = ReflectionUtils.getConstructor( this.reporterConfiguration,
-                                                                  new Class[]{ File.class, Boolean.class, String.class,
-                                                                      String.class, String.class, String.class } );
+                                                                  new Class[]{ File.class, Boolean.class } );
         return ReflectionUtils.newInstance( constructor, new Object[]{ reporterConfiguration.getReportsDirectory(),
-            reporterConfiguration.isTrimStackTrace(), null, null, null, null } );
+            reporterConfiguration.isTrimStackTrace()} );
     }
 
     Object createStartupReportConfiguration( StartupReportConfiguration reporterConfiguration )
@@ -219,14 +218,15 @@ public class SurefireReflector
         Constructor constructor = ReflectionUtils.getConstructor( this.startupReportConfiguration,
                                                                   new Class[]{ boolean.class, boolean.class,
                                                                       String.class, boolean.class, boolean.class,
-                                                                      File.class } );
+                                                                      File.class, boolean.class } );
         //noinspection BooleanConstructorCall
         final Object[] params =
             { new Boolean( reporterConfiguration.isUseFile() ), new Boolean( reporterConfiguration.isPrintSummary() ),
                 reporterConfiguration.getReportFormat(),
                 new Boolean( reporterConfiguration.isRedirectTestOutputToFile() ),
                 new Boolean( reporterConfiguration.isDisableXmlReport() ),
-                reporterConfiguration.getReportsDirectory() };
+                reporterConfiguration.getReportsDirectory(),
+                new Boolean( reporterConfiguration.isTrimStackTrace())};
         return ReflectionUtils.newInstance( constructor, params );
     }
 
@@ -238,14 +238,12 @@ public class SurefireReflector
                                                   surefireClassLoader );
     }
 
-    public Object createReportingReporterFactory( ReporterConfiguration reporterConfiguration,
-                                                  StartupReportConfiguration startupReportConfiguration )
+    public Object createReportingReporterFactory( StartupReportConfiguration startupReportConfiguration )
     {
         Class[] args =
-            new Class[]{ ClassLoader.class, this.reporterConfiguration, this.startupReportConfiguration };
-        Object report = createReporterConfiguration( reporterConfiguration );
+            new Class[]{ ClassLoader.class, this.startupReportConfiguration };
         Object src = createStartupReportConfiguration( startupReportConfiguration );
-        Object[] params = new Object[]{ this.surefireClassLoader, report,  src };
+        Object[] params = new Object[]{ this.surefireClassLoader, src };
         return ReflectionUtils.instantiateObject( ReporterManagerFactory.class.getName(), args, params,
                                                   surefireClassLoader );
 
