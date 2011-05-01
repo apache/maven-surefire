@@ -19,16 +19,15 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import org.apache.maven.surefire.util.NestedRuntimeException;
-import org.apache.maven.surefire.util.ReflectionUtils;
-import org.apache.maven.surefire.util.internal.StringUtils;
-
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+import org.apache.maven.surefire.util.NestedRuntimeException;
+import org.apache.maven.surefire.util.ReflectionUtils;
+import org.apache.maven.surefire.util.internal.StringUtils;
 
 /**
  * @author Kristian Rosenvold
@@ -77,12 +76,6 @@ public class PropertiesWrapper
         return Boolean.valueOf( properties.getProperty( propertyName ) );
     }
 
-    public Integer getIntegerObjectProperty( String propertyName )
-    {
-        String property = properties.getProperty( propertyName );
-        return property != null ? Integer.valueOf( property ) : null;
-    }
-
     public File getFileProperty( String key )
     {
         final String property = getProperty( key );
@@ -91,19 +84,6 @@ public class PropertiesWrapper
             return null;
         }
         return (File) getParamValue( property, File.class.getName() );
-    }
-
-    public List getListOfTypedObjects( String propertyPrefix )
-    {
-        String type;
-        String value;
-        List result = new ArrayList();
-        for ( int i = 0; ( type = getProperty( propertyPrefix + i + BooterConstants.TYPES_SUFIX ) ) != null; i++ )
-        {
-            value = getProperty( propertyPrefix + i + BooterConstants.PARAMS_SUFIX );
-            result.add( getParamValue( value, type ) );
-        }
-        return result;
     }
 
     public List getStringList( String propertyPrefix )
@@ -247,14 +227,6 @@ public class PropertiesWrapper
         {
             String element = (String) classpathElements.get( i );
             setProperty( prefix + i, element );
-        }
-    }
-
-    public void setProperty( String key, Integer integer )
-    {
-        if ( integer != null )
-        {
-            setProperty( key, integer.toString() );
         }
     }
 

@@ -155,13 +155,4 @@ class TestMethod
         getLogicalStream().write( stdout, buf, off, len );
     }
 
-    private String getStdout()
-    {
-        return output != null ? output.getOutput( true ) : "";
-    }
-
-    private String getStdErr()
-    {
-        return output != null ? output.getOutput( false ) : "";
-    }
 }

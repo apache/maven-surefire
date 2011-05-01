@@ -28,6 +28,4 @@ public interface SurefireTestSet
         throws TestSetFailedException;
 
     String getName();
-
-    Class getTestClass();
 }

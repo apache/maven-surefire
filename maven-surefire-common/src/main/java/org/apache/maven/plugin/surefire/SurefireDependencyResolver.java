@@ -19,6 +19,11 @@ package org.apache.maven.plugin.surefire;
  * under the License.
  */
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
@@ -35,14 +40,6 @@ import org.apache.maven.artifact.versioning.OverConstrainedVersionException;
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.surefire.booter.Classpath;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Does dependency resolution and artifact handling for the surefire plugin.
@@ -107,30 +104,6 @@ public class SurefireDependencyResolver
         {
             throw new RuntimeException( "Bug in plugin. Please report with stacktrace" );
         }
-    }
-
-    /**
-     * Return a new set containing only the artifacts accepted by the given filter.
-     *
-     * @param artifacts The unfiltered artifacts
-     * @param filter    The filter to apply
-     * @return The filtered result
-     * @noinspection UnusedDeclaration
-     */
-    public Set filterArtifacts( Set artifacts, ArtifactFilter filter )
-    {
-        Set filteredArtifacts = new LinkedHashSet();
-
-        for ( Iterator iter = artifacts.iterator(); iter.hasNext(); )
-        {
-            Artifact artifact = (Artifact) iter.next();
-            if ( !filter.include( artifact ) )
-            {
-                filteredArtifacts.add( artifact );
-            }
-        }
-
-        return filteredArtifacts;
     }
 
 
@@ -199,21 +172,6 @@ public class SurefireDependencyResolver
             }
         }
         return new Classpath( files );
-    }
-
-    public Classpath getResolvedArtifactClasspath( Artifact surefireArtifact )
-        throws ArtifactNotFoundException, ArtifactResolutionException
-    {
-        ArtifactResolutionResult result = resolveArtifact( null, surefireArtifact );
-        List classpath = new ArrayList();
-
-        for ( Iterator i = result.getArtifacts().iterator(); i.hasNext(); )
-        {
-            Artifact artifact = (Artifact) i.next();
-
-            classpath.add( artifact.getFile().getAbsolutePath() );
-        }
-        return new Classpath( classpath);
     }
 
 }

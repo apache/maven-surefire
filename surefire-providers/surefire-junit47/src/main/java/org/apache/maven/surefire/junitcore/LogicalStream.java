@@ -94,14 +94,6 @@ public class LogicalStream
         }
     }
 
-    public void writeDetails( Reporter reporter )
-    {
-        for ( Entry entry : output )
-        {
-            entry.writeDetails( reporter );
-        }
-    }
-
     public void writeDetails( ConsoleOutputReceiver outputReceiver )
     {
         for ( Entry entry : output )

@@ -59,20 +59,6 @@ public abstract class AbstractTextReporter
         this.writer = writer;
     }
 
-    protected AbstractTextReporter( ReporterConfiguration reporterConfiguration, String format )
-    {
-        this( reporterConfiguration.isTrimStackTrace().booleanValue(), format);
-    }
-
-
-    protected AbstractTextReporter( PrintWriter writer, String format, ReporterConfiguration reporterConfiguration )
-    {
-        super( reporterConfiguration );
-
-        this.writer = writer;
-
-        this.format = format;
-    }
 
     public void setWriter( PrintWriter writer )
     {
@@ -219,17 +205,6 @@ public abstract class AbstractTextReporter
         buf.append( getStackTrace( report ) );
 
         return buf.toString();
-    }
-
-    /**
-     * Check if the String passed as argument is a "test set completed" message.
-     *
-     * @param message the message to check
-     * @return true if it is a "test set completed" message
-     */
-    public static boolean isTestSetCompletedMessage( String message )
-    {
-        return message.startsWith( TEST_SET_COMPLETED_PREFIX );
     }
 
     public void reset()

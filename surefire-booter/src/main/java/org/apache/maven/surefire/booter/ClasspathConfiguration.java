@@ -19,14 +19,13 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import org.apache.maven.surefire.util.NestedRuntimeException;
-
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
+import org.apache.maven.surefire.util.NestedRuntimeException;
 
 /**
  * Represents the classpaths for the BooterConfiguration.
@@ -183,13 +182,4 @@ public class ClasspathConfiguration
         return classpathUrls;
     }
 
-    public void addClasspathUrl( String path )
-    {
-        classpathUrls.addClassPathElementUrl( path );
-    }
-
-    public void addSurefireClasspathUrl( String path )
-    {
-        surefireClasspathUrls.addClassPathElementUrl( path );
-    }
 }

@@ -36,7 +36,6 @@ public interface BooterConstants
     String FAILIFNOTESTS = "failIfNoTests";
     String ISTRIMSTACKTRACE = "isTrimStackTrace";
     String REPORTSDIRECTORY = "reportsDirectory";
-    String FORKTIMEOUT = "forkTimeout";
     String FORKMODE = "forkMode";
     String TESTARTIFACT_VERSION = "testFwJarVersion";
     String TESTARTIFACT_CLASSIFIER = "testFwJarClassifier";

@@ -203,11 +203,6 @@ public class AsynchRunListener
             consoleOutputReceiver.writeTestOutput( buf, off, len, stdout );
         }
 
-        public boolean canJoin( Runnable other )
-        {
-            return other instanceof JoinableTestOutput && ( (JoinableTestOutput) other ).stdout == this.stdout;
-        }
-
         public JoinableTestOutput append( JoinableTestOutput other )
         {
             byte[] combined = ByteBuffer.join( buf, this.off, this.len, other.buf, other.off, other.len );

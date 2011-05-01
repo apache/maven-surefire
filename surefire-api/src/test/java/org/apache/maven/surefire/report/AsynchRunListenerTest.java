@@ -33,7 +33,6 @@ public class AsynchRunListenerTest
     {
         byte[] buf;
 
-        int off;
 
         int len;
 
@@ -42,7 +41,6 @@ public class AsynchRunListenerTest
         public void writeTestOutput( byte[] buf, int off, int len, boolean stdout )
         {
             this.buf = buf;
-            this.off = off;
             this.len = len;
             this.stdout = stdout;
         }

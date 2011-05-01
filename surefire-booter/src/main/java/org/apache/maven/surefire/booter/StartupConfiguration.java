@@ -38,8 +38,6 @@ public class StartupConfiguration
 
     private final boolean redirectTestOutputToFile;
 
-    private final String forkMode;
-
 
     public StartupConfiguration( String providerClassName, ClasspathConfiguration classpathConfiguration,
                                  ClassLoaderConfiguration classLoaderConfiguration, String forkMode, boolean inForkedVm,
@@ -48,7 +46,7 @@ public class StartupConfiguration
         this.providerClassName = providerClassName;
         this.classpathConfiguration = classpathConfiguration;
         this.classLoaderConfiguration = classLoaderConfiguration;
-        this.forkMode = forkMode;
+        String forkMode1 = forkMode;
         isForkRequested = !"never".equals( forkMode );
         isInForkedVm = inForkedVm;
         this.redirectTestOutputToFile = redirectTestOutputToFile;
@@ -76,11 +74,6 @@ public class StartupConfiguration
     public boolean isManifestOnlyJarRequestedAndUsable()
     {
         return classLoaderConfiguration.isManifestOnlyJarRequestedAndUsable();
-    }
-
-    public boolean isRedirectTestOutputToFile()
-    {
-        return redirectTestOutputToFile;
     }
 
     public String getProviderClassName()

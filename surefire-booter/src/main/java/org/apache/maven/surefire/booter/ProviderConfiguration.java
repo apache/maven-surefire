@@ -147,17 +147,5 @@ public class ProviderConfiguration
         return (String) forkTestSet;
     }
 
-    public String getForkMode()
-    {
-        return forkMode;
-    }
-
-    public boolean isSurefireForkReturnCode( int returnCode )
-    {
-        return TESTS_SUCCEEDED_EXIT_CODE == returnCode || NO_TESTS_EXIT_CODE == returnCode
-            || TESTS_FAILED_EXIT_CODE == returnCode;
-
-    }
-
 
 }

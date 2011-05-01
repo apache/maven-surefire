@@ -45,8 +45,6 @@ public class BaseProviderFactory
 
     private ClassLoader testClassLoader;
 
-    private ClassLoader surefireClassLoader;
-
     private TestRequest testRequest;
 
     private TestArtifactInfo testArtifactInfo;
@@ -89,7 +87,6 @@ public class BaseProviderFactory
 
     public void setClassLoaders( ClassLoader surefireClassLoader, ClassLoader testClassLoader )
     {
-        this.surefireClassLoader = surefireClassLoader;
         this.testClassLoader = testClassLoader;
     }
 
@@ -138,6 +135,7 @@ public class BaseProviderFactory
         this.testArtifactInfo = testArtifactInfo;
     }
 
+    /** @noinspection UnusedDeclaration*/
     public void setForkConfigurationInfo( ForkConfigurationInfo forkConfigurationInfo )
     {
         this.forkConfigurationInfo = forkConfigurationInfo;

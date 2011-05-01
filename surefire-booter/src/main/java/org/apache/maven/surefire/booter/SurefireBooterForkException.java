@@ -35,8 +35,4 @@ public class SurefireBooterForkException
         super( message, cause );
     }
 
-    public SurefireBooterForkException( String msg )
-    {
-        super( msg );
-    }
 }

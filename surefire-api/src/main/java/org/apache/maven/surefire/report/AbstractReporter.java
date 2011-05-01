@@ -62,16 +62,6 @@ public abstract class AbstractReporter
         this.trimStackTrace = trimStackTrace;
     }
 
-    AbstractReporter( ReporterConfiguration reporterConfiguration )
-    {
-        this(reporterConfiguration.isTrimStackTrace().booleanValue());
-    }
-
-    public void writeFooter( String footer )
-    {
-        writeMessage( footer );
-    }
-
 
     public void writeMessage( byte[] b, int off, int len )
     {
@@ -218,10 +208,6 @@ public abstract class AbstractReporter
     {
         ++failures;
         endTest();
-    }
-
-    public void testAssumptionFailure( ReportEntry report )
-    {
     }
 
     void deleteIfExisting( File reportFile )

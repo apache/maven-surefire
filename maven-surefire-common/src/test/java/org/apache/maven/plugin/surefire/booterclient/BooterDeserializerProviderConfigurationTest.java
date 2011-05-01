@@ -53,8 +53,6 @@ public class BooterDeserializerProviderConfigurationTest
 
     private final String aUserRequestedTest = "aUserRequestedTest";
 
-    private final String aUserRequestedTestMethod = "aUserRequestedTestMethod";
-
     public static ClassLoaderConfiguration getForkConfiguration()
         throws IOException
     {
@@ -185,6 +183,7 @@ public class BooterDeserializerProviderConfigurationTest
         File cwd = new File( "." );
         ReporterConfiguration reporterConfiguration =
             new ReporterConfiguration( cwd, Boolean.TRUE, "abc", "cde", "efg", "hij" );
+        String aUserRequestedTestMethod = "aUserRequestedTestMethod";
         TestRequest testSuiteDefinition =
             new TestRequest( getSuiteXmlFileStrings(), getTestSourceDirectory(), aUserRequestedTest,
                              aUserRequestedTestMethod );
