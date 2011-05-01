@@ -22,7 +22,6 @@ package org.apache.maven.surefire.booter;
 import java.io.File;
 import java.util.List;
 import java.util.Properties;
-import org.apache.maven.surefire.forking.ForkConfigurationInfo;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
@@ -63,12 +62,9 @@ public class ProviderConfiguration
 
     private final Object forkTestSet;
 
-    private final String forkMode;
-
     public ProviderConfiguration( DirectoryScannerParameters directoryScannerParameters, boolean failIfNoTests,
                                   ReporterConfiguration reporterConfiguration, TestArtifactInfo testArtifact,
-                                  TestRequest testSuiteDefinition, Properties providerProperties, Object forkTestSet,
-                                  String forkMode )
+                                  TestRequest testSuiteDefinition, Properties providerProperties, Object forkTestSet )
     {
         this.providerProperties = providerProperties;
         this.reporterConfiguration = reporterConfiguration;
@@ -77,7 +73,6 @@ public class ProviderConfiguration
         this.dirScannerParams = directoryScannerParameters;
         this.failIfNoTests = failIfNoTests;
         this.forkTestSet = forkTestSet;
-        this.forkMode = forkMode;
     }
 
 
@@ -131,11 +126,6 @@ public class ProviderConfiguration
     public Object getTestForFork()
     {
         return forkTestSet;
-    }
-
-    public ForkConfigurationInfo getForkConfigurationInfo( boolean isInFork )
-    {
-        return new ForkConfigurationInfo( forkMode, isInFork ? Boolean.TRUE : Boolean.FALSE );
     }
 
     public String getTestForForkString()

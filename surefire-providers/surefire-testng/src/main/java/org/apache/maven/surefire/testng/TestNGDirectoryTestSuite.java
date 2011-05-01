@@ -65,7 +65,7 @@ public class TestNGDirectoryTestSuite
 
     private final DirectoryScanner surefireDirectoryScanner;
 
-    private String testMethodPattern;
+    private final String testMethodPattern;
 
     public TestNGDirectoryTestSuite( File basedir, ArrayList includes, ArrayList excludes, String testSourceDirectory,
                                      String artifactVersion, Properties confOptions, File reportsDirectory,
@@ -171,11 +171,12 @@ public class TestNGDirectoryTestSuite
                                 this, junitReportsDirectory, testMethodPattern );
         }
 
+
         finishTestSuite( reporterManager, this );
     }
 
     // single class test
-    public void execute( String testSetName, ReporterFactory reporterManagerFactory, ClassLoader classLoader )
+    public void execute( String testSetName, ReporterFactory reporterManagerFactory )
         throws ReporterException, TestSetFailedException
     {
         if ( testSets == null )

@@ -23,7 +23,8 @@ public class BasicTest
         TestSuite suite = new TestSuite();
         Test test = new BasicTest( "testSetUp", "dummy" );
         suite.addTest( test );
-        TestSetup setup = new TestSetup( suite )
+
+        return new TestSetup( suite )
         {
 
             protected void setUp()
@@ -37,8 +38,6 @@ public class BasicTest
             }
 
         };
-
-        return setup;
     }
 
     protected void setUp()

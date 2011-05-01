@@ -20,12 +20,11 @@ package org.apache.maven.surefire.booter;
  */
 
 
+import java.util.Properties;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestRequest;
-
-import java.util.Properties;
 
 /**
 * @author Kristian Rosenvold
@@ -59,15 +58,11 @@ public class Foo
     }
 
 
+    /** @noinspection UnusedDeclaration
+     * @return true if it has been callsed */
     public Boolean isCalled()
     {
         return Boolean.valueOf( called);
-    }
-
-    public void setTestSuiteDefinition( TestRequest testSuiteDefinition )
-    {
-        this.testSuiteDefinition = testSuiteDefinition;
-        this.called = true;
     }
 
     public void setProviderProperties( Properties providerProperties )

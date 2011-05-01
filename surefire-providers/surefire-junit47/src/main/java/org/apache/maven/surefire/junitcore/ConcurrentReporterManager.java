@@ -22,7 +22,6 @@ package org.apache.maven.surefire.junitcore;
 import java.util.Map;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.testset.TestSetFailedException;
@@ -149,17 +148,14 @@ public abstract class ConcurrentReporterManager
     }
 
     public static ConcurrentReporterManager createInstance( Map<String, TestSet> classMethodCounts,
-                                                            ReporterFactory reporterManagerFactory,
-                                                            ReporterConfiguration reporterConfiguration,
-                                                            boolean parallelClasses, boolean parallelBoth )
+                                                            ReporterFactory reporterManagerFactory, boolean parallelClasses, boolean parallelBoth )
         throws TestSetFailedException
     {
         if ( parallelClasses )
         {
-            return new ClassesParallelRunListener( classMethodCounts, reporterManagerFactory, reporterConfiguration );
+            return new ClassesParallelRunListener( classMethodCounts, reporterManagerFactory );
         }
-        return new MethodsParallelRunListener( classMethodCounts, reporterManagerFactory, reporterConfiguration,
-                                               !parallelBoth );
+        return new MethodsParallelRunListener( classMethodCounts, reporterManagerFactory, !parallelBoth );
     }
 
 

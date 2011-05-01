@@ -94,7 +94,7 @@ public class TestNGXmlTestSuite
         TestNGDirectoryTestSuite.finishTestSuite( reporter, this );
     }
 
-    public void execute( String testSetName, ReporterFactory reporterManagerFactory, ClassLoader classLoader )
+    public void execute( String testSetName, ReporterFactory reporterManagerFactory )
         throws TestSetFailedException
     {
         throw new TestSetFailedException( "Cannot run individual test when suite files are specified" );

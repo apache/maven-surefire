@@ -81,11 +81,6 @@ public class TestSetRunListener
         multicastingReporter.writeMessage( b, off, len );
     }
 
-    public void writeDetailMessage( String message )
-    {
-        multicastingReporter.writeDetailMessage( message );
-    }
-
     public void writeTestOutput( byte[] buf, int off, int len, boolean stdout )
     {
         ByteBuffer byteBuffer = new ByteBuffer( buf, off, len );

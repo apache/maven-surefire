@@ -19,13 +19,12 @@ package org.apache.maven.surefire.common.junit3;
  * under the License.
  */
 
-import org.apache.maven.surefire.util.NestedRuntimeException;
-import org.apache.maven.surefire.util.ReflectionUtils;
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import org.apache.maven.surefire.util.NestedRuntimeException;
+import org.apache.maven.surefire.util.ReflectionUtils;
 
 public final class JUnit3Reflector
 {
@@ -117,8 +116,7 @@ public final class JUnit3Reflector
 
 
     public Object constructTestObject( Class testClass )
-        throws IllegalAccessException, InvocationTargetException, NoSuchMethodException, InstantiationException,
-        ClassNotFoundException
+        throws IllegalAccessException, InvocationTargetException, NoSuchMethodException, InstantiationException
     {
         Object testObject = createInstanceFromSuiteMethod( testClass );
 

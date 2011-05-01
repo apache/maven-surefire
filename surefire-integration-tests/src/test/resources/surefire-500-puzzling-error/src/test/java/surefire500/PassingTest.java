@@ -7,22 +7,26 @@ import static org.junit.Assert.assertTrue;
 public class PassingTest {
 	
 	@Test
-	public void testOne() throws Exception {
+	public void testOne()
+    {
 		assertTrue(true);
 	}
 	
 	@Test
-	public void testTwo() throws Exception {
+	public void testTwo()
+    {
 		assertTrue(true);
 	}
 	
 	@Test
-	public void testThree() throws Exception {
+	public void testThree()
+    {
 		assertTrue(true);
 	}
 	
 	@Test
-	public void testFour() throws Exception {
+	public void testFour()
+    {
 		assertTrue(true);
 	}
 

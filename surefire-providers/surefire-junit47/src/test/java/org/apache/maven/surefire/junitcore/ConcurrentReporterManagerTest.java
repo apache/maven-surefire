@@ -153,7 +153,7 @@ public class ConcurrentReporterManagerTest
         ReporterFactory reporterFactory = createReporterFactory();
         HashMap<String, TestSet> classMethodCounts = new HashMap<String, TestSet>();
         RunListener reporter =
-            new ClassesParallelRunListener( classMethodCounts, reporterFactory, getReporterConfiguration() );
+            new ClassesParallelRunListener( classMethodCounts, reporterFactory );
         JUnitCoreRunListener runListener = new JUnitCoreRunListener( reporter, classMethodCounts );
         RunStatistics result = runClasses( reporterFactory, runListener, classes );
         assertReporter( result, success, ignored, failure, "classes" );
@@ -161,7 +161,7 @@ public class ConcurrentReporterManagerTest
 
         reporterFactory = createReporterFactory();
         reporter =
-            new MethodsParallelRunListener( classMethodCounts, reporterFactory, getReporterConfiguration(), true );
+            new MethodsParallelRunListener( classMethodCounts, reporterFactory, true );
         runListener = new JUnitCoreRunListener( reporter, classMethodCounts );
         result = runClasses( reporterFactory, runListener, classes );
         assertReporter( result, success, ignored, failure, "methods" );
@@ -205,12 +205,7 @@ public class ConcurrentReporterManagerTest
         throws TestSetFailedException
     {
         return new JUnitCoreRunListener(
-            new ClassesParallelRunListener( testSetMap, reporterFactory, getReporterConfiguration() ), testSetMap );
-    }
-
-    public ReporterConfiguration getReporterConfiguration()
-    {
-        return new ReporterConfiguration( new File( "." ), true );
+            new ClassesParallelRunListener( testSetMap, reporterFactory ), testSetMap );
     }
 
 

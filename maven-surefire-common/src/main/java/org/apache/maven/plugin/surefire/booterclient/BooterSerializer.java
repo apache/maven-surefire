@@ -49,7 +49,7 @@ import org.apache.maven.surefire.testset.TestRequest;
  * @author Kristian Rosenvold
  * @version $Id$
  */
-public class BooterSerializer
+class BooterSerializer
 {
     private final ForkConfiguration forkConfiguration;
 

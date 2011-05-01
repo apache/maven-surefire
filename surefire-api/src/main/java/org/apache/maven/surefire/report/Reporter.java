@@ -96,14 +96,6 @@ public interface Reporter
     void writeMessage( byte[] b, int off, int len );
 
     /**
-     * Writes a detailed message that will not necessarily be displayed in all channels.
-     * This is controlled by reportFormat attribute on the plugin.
-     *
-     * @param message The message to write
-     */
-    void writeDetailMessage( String message );
-
-    /**
      * Restores the instance of the reporter, making the instance re-usable for a subsequent run in the
      * same thread.
      */

@@ -23,7 +23,8 @@ public class AbstractConcreteBasicTest // not really abstract!
         TestSuite suite = new TestSuite();
         Test test = new AbstractConcreteBasicTest( "testSetUp", "dummy" );
         suite.addTest( test );
-        TestSetup setup = new TestSetup( suite )
+
+        return new TestSetup( suite )
         {
 
             protected void setUp()
@@ -37,8 +38,6 @@ public class AbstractConcreteBasicTest // not really abstract!
             }
 
         };
-
-        return setup;
     }
 
     protected void setUp()

@@ -53,9 +53,9 @@ public class ReporterManagerFactory
     implements ReporterFactory
 {
 
-    private ClassLoader surefireClassLoader;
+    private final ClassLoader surefireClassLoader;
 
-    private ReporterConfiguration reporterConfiguration;
+    private final ReporterConfiguration reporterConfiguration;
 
     private final RunStatistics globalStats = new RunStatistics();
 

@@ -64,7 +64,7 @@ public class ForkedBooter
             final StartupConfiguration providerConfiguration = booterDeserializer.getProviderConfiguration();
 
 
-            SurefireStarter starter = new SurefireStarter( providerConfiguration, booterConfiguration, true, null );
+            SurefireStarter starter = new SurefireStarter( providerConfiguration, booterConfiguration, null );
 
             Object forkedTestSet = booterConfiguration.getTestForFork();
             final RunResult result = forkedTestSet != null

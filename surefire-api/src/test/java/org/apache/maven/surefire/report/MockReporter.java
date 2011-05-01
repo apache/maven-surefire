@@ -67,11 +67,6 @@ public class MockReporter
     {
     }
 
-    public MockReporter( ReporterConfiguration reporterConfiguration )
-    {
-
-    }
-
     public void testSetStarting( ReportEntry report )
     {
         events.add( SET_STARTING );
@@ -120,16 +115,6 @@ public class MockReporter
     }
 
 
-    public List getEvents()
-    {
-        return events;
-    }
-
-    public List getData()
-    {
-        return data;
-    }
-
     public String getFirstEvent()
     {
         return (String) events.get( 0 );
@@ -169,7 +154,7 @@ public class MockReporter
 
     }
 
-    public void writeTestOutput( String output, boolean stdout )
+    public void writeTestOutput()
     {
         //To change body of implemented methods use File | Settings | File Templates.
     }

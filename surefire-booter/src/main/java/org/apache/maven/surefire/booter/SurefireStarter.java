@@ -19,7 +19,6 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import java.io.IOException;
 import java.io.PrintStream;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
 import org.apache.maven.surefire.report.ReporterException;
@@ -48,21 +47,18 @@ public class SurefireStarter
 
     private final static String SUREFIRE_TEST_CLASSPATH = "surefire.test.class.path";
 
-    private final boolean inFork;
-
     private final StartupReportConfiguration startupReportConfiguration;
 
     public SurefireStarter( StartupConfiguration startupConfiguration, ProviderConfiguration providerConfiguration,
-                            boolean inFork, StartupReportConfiguration startupReportConfiguration )
+                            StartupReportConfiguration startupReportConfiguration )
     {
         this.providerConfiguration = providerConfiguration;
         this.startupConfiguration = startupConfiguration;
-        this.inFork = inFork;
         this.startupReportConfiguration = startupReportConfiguration;
     }
 
     public RunResult runSuitesInProcessWhenForked( Object testSet )
-        throws SurefireExecutionException, IOException
+        throws SurefireExecutionException
     {
         writeSurefireTestClasspathProperty();
         final ClasspathConfiguration classpathConfiguration = startupConfiguration.getClasspathConfiguration();
@@ -168,7 +164,7 @@ public class SurefireStarter
 
         ProviderFactory providerFactory =
             new ProviderFactory( startupConfiguration, providerConfiguration, surefireClassLoader, testsClassLoader,
-                                 providerConfiguration.getForkConfigurationInfo( inFork ), factory );
+                                 factory );
         final SurefireProvider provider = providerFactory.createProvider();
 
         try

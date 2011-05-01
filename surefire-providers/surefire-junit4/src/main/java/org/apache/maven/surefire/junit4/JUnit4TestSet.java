@@ -28,7 +28,7 @@ import org.junit.runner.Request;
 import org.junit.runner.Runner;
 import org.junit.runner.notification.RunNotifier;
 
-public class JUnit4TestSet
+class JUnit4TestSet
 {
 
     public static void execute( Class testClass, RunNotifier fNotifier, String testMethod )

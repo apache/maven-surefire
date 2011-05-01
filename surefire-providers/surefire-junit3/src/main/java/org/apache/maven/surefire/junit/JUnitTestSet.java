@@ -19,13 +19,12 @@ package org.apache.maven.surefire.junit;
  * under the License.
  */
 
-import org.apache.maven.surefire.common.junit3.JUnit3Reflector;
-import org.apache.maven.surefire.report.RunListener;
-import org.apache.maven.surefire.testset.TestSetFailedException;
-
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import org.apache.maven.surefire.common.junit3.JUnit3Reflector;
+import org.apache.maven.surefire.report.RunListener;
+import org.apache.maven.surefire.testset.TestSetFailedException;
 
 public final class JUnitTestSet
     implements SurefireTestSet
@@ -112,10 +111,6 @@ public final class JUnitTestSet
         {
             throw new TestSetFailedException( testClass.getName(), e.getTargetException() );
         }
-        catch ( ClassNotFoundException e )
-        {
-            throw new TestSetFailedException( "JUnit classes not available", e );
-        }
         catch ( NoSuchMethodException e )
         {
             throw new TestSetFailedException( "Class is not a JUnit TestCase", e );
@@ -127,7 +122,7 @@ public final class JUnitTestSet
         return testClass.getName();
     }
 
-    public Class getTestClass()
+    Class getTestClass()
     {
         return testClass;
     }

@@ -7,7 +7,7 @@ public class BasicTest
     extends TestCase
 {
 
-    private int number;
+    private final int number;
 
     public BasicTest( String name , int number)
     {

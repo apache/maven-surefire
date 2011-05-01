@@ -80,7 +80,7 @@ public class TestNGReporter
         String rawString = bundle.getString( "testStarting" );
         String group = groupString( result.getMethod().getGroups(), result.getTestClass().getName() );
         ReportEntry report =
-            new CategorizedReportEntry( getSource( result ), getUserFriendlyTestName( result ), group, rawString );
+            new CategorizedReportEntry( getSource( result ), getUserFriendlyTestName( result ), group );
         reporter.testStarting( report );
     }
 

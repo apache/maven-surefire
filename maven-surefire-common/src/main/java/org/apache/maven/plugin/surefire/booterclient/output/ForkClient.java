@@ -62,11 +62,6 @@ public class ForkClient
         this.testVmSystemProperties = testVmSystemProperties;
     }
 
-    public Properties getTestVmSystemProperties()
-    {
-        return testVmSystemProperties;
-    }
-
     public void consumeLine( String s )
     {
         try

@@ -9,17 +9,20 @@ import static org.junit.Assert.fail;
 public class ExplodingTest {
 
 	static {
-		if (true) {
+        //noinspection ConstantIfStatement
+        if (true) {
 			throw new java.lang.NoClassDefFoundError("whoops!"); 
 		}
 	}
 	
 	@Test
-	public void testPass() throws Exception {
+	public void testPass()
+    {
 		assertTrue(true);
 	}
 	
-	public void testFail() throws Exception {
+	public void testFail()
+    {
 		fail("fail");
 	}
 }

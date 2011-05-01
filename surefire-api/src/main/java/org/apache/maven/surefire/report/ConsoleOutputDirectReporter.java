@@ -76,10 +76,6 @@ public class ConsoleOutputDirectReporter
         reportsDirectory.write( b, off, len );
     }
 
-    public void writeDetailMessage( String message )
-    {
-    }
-
     public void reset()
     {
     }

@@ -39,9 +39,9 @@ import java.util.List;
 public abstract class AbstractSurefireIntegrationTestClass
     extends TestCase
 {
-    private String surefireVersion = System.getProperty( "surefire.version" );
+    private final String surefireVersion = System.getProperty( "surefire.version" );
 
-    private String testNgVersion = System.getProperty( "testng.version" );
+    private final String testNgVersion = System.getProperty( "testng.version" );
 
     protected List<String> getInitialGoals()
     {

@@ -32,11 +32,11 @@ import java.util.List;
 public abstract class AbstractTextReporter
     extends AbstractReporter
 {
-    protected static final String BRIEF = "brief";
+    static final String BRIEF = "brief";
 
-    protected static final String PLAIN = "plain";
+    static final String PLAIN = "plain";
 
-    protected static final String SUMMARY = "summary";
+    static final String SUMMARY = "summary";
 
     protected PrintWriter writer;
 
@@ -73,11 +73,6 @@ public abstract class AbstractTextReporter
 
             writer.flush();
         }
-    }
-
-    public void writeDetailMessage( String message )
-    {
-        writeMessage( message );
     }
 
     public void testSucceeded( ReportEntry report )

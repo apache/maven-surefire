@@ -19,16 +19,17 @@ package org.apache.maven.surefire.common.junit3;
  * under the License.
  */
 
+import org.apache.maven.surefire.testset.TestSetFailedException;
+
 import junit.framework.TestCase;
 import junit.framework.TestResult;
-import org.apache.maven.surefire.testset.TestSetFailedException;
 
 /**
  * @author Kristian Rosenvold
  */
 public class JUnit3TestCheckerTest
     extends TestCase {
-    JUnit3TestChecker jUnit3TestChecker = new JUnit3TestChecker( this.getClass().getClassLoader() );
+    private final JUnit3TestChecker jUnit3TestChecker = new JUnit3TestChecker( this.getClass().getClassLoader() );
 
     public void testValidJunit4Annotated()
         throws TestSetFailedException

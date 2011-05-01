@@ -92,7 +92,7 @@ public class ForkStarter
         final String requestedForkMode = forkConfiguration.getForkMode();
         if ( ForkConfiguration.FORK_NEVER.equals( requestedForkMode ) )
         {
-            SurefireStarter surefireStarter = new SurefireStarter( startupConfiguration, providerConfiguration, false, this.startupReportConfiguration );
+            SurefireStarter surefireStarter = new SurefireStarter( startupConfiguration, providerConfiguration, this.startupReportConfiguration );
             result = surefireStarter.runSuitesInProcess();
         }
         else if ( ForkConfiguration.FORK_ONCE.equals( requestedForkMode ) )
@@ -176,7 +176,7 @@ public class ForkStarter
 
         final ProviderFactory providerFactory =
             new ProviderFactory( startupConfiguration, providerConfiguration, surefireClassLoader, testsClassLoader,
-                                 forkConfiguration.getForkConfigurationInfo( Boolean.FALSE ), reporterFactory );
+                                 reporterFactory );
         SurefireProvider surefireProvider = providerFactory.createProvider();
         return surefireProvider.getSuites();
     }

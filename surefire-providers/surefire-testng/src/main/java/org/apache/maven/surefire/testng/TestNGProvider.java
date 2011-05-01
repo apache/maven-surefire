@@ -94,8 +94,7 @@ public class TestNGProvider
             testNGXmlTestSuite.locateTestSets( testClassLoader );
             if ( forkTestSet != null && testRequest == null )
             {
-                testNGXmlTestSuite.execute( (String) forkTestSet, reporterFactory,
-                                            testClassLoader );
+                testNGXmlTestSuite.execute( (String) forkTestSet, reporterFactory );
             }
             else
             {

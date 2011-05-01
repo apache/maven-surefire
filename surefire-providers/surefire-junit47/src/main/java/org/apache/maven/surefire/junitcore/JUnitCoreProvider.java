@@ -101,8 +101,7 @@ public class JUnitCoreProvider
         final Map<String, TestSet> testSetMap = new ConcurrentHashMap<String, TestSet>();
 
         RunListener listener =
-            ConcurrentReporterManager.createInstance( testSetMap, reporterFactory, this.reporterConfiguration,
-                                                      jUnitCoreParameters.isParallelClasses(),
+            ConcurrentReporterManager.createInstance( testSetMap, reporterFactory, jUnitCoreParameters.isParallelClasses(),
                                                       jUnitCoreParameters.isParallelBoth() );
 
         ConsoleOutputCapture.startCapture((ConsoleOutputReceiver) listener);

@@ -48,11 +48,11 @@ public abstract class TestConsoleOutputRunListener
 
     protected abstract RunListener getTestSetRunListener( ReportEntry reportEntry );
 
-    protected abstract void clearTestSetRunListener( ReportEntry reportEntry );
+    protected abstract void clearTestSetRunListener();
 
     protected abstract RunListener getTestMethodRunListener( ReportEntry report );
 
-    protected abstract void clearTestMethodRunListener( ReportEntry reportEntry );
+    protected abstract void clearTestMethodRunListener();
 
     protected abstract ConsoleOutputReceiver getConsoleOutputReceiver();
 
@@ -77,7 +77,7 @@ public abstract class TestConsoleOutputRunListener
         throws ReporterException
     {
         getTestSetRunListener( report ).testSetCompleted( report );
-        clearTestSetRunListener( report );
+        clearTestSetRunListener();
     }
 
     public void testStarting( ReportEntry report )
@@ -88,31 +88,31 @@ public abstract class TestConsoleOutputRunListener
     public void testSucceeded( ReportEntry report )
     {
         getTestMethodRunListener( report ).testSucceeded( report );
-        clearTestMethodRunListener( report );
+        clearTestMethodRunListener();
     }
 
     public void testAssumptionFailure( ReportEntry report )
     {
         getTestMethodRunListener( report ).testAssumptionFailure( report );
-        clearTestMethodRunListener( report );
+        clearTestMethodRunListener();
     }
 
     public void testError( ReportEntry report )
     {
         getTestMethodRunListener( report ).testError( report );
-        clearTestMethodRunListener( report );
+        clearTestMethodRunListener();
     }
 
     public void testFailed( ReportEntry report )
     {
         getTestMethodRunListener( report ).testFailed( report );
-        clearTestMethodRunListener( report );
+        clearTestMethodRunListener();
     }
 
     public void testSkipped( ReportEntry report )
     {
         getTestMethodRunListener( report ).testSkipped( report );
-        clearTestMethodRunListener( report );
+        clearTestMethodRunListener();
     }
 
     public static class OneThreadPerClassConsoleOutputRunListener
@@ -130,12 +130,12 @@ public abstract class TestConsoleOutputRunListener
             return getTestMethodRunListener( reportEntry );
         }
 
-        protected void clearTestSetRunListener( ReportEntry reportEntry )
+        protected void clearTestSetRunListener()
         {
             currentTestMethodListener.remove();
         }
 
-        protected void clearTestMethodRunListener( ReportEntry reportEntry )
+        protected void clearTestMethodRunListener()
         {
             // Dont clear, we do this in testset.
         }
@@ -186,7 +186,7 @@ public abstract class TestConsoleOutputRunListener
             return result;
         }
 
-        protected void clearTestSetRunListener( ReportEntry reportEntry )
+        protected void clearTestSetRunListener()
         {
             currentTestSetListener.remove();
         }
@@ -204,7 +204,7 @@ public abstract class TestConsoleOutputRunListener
             return runListener;
         }
 
-        protected void clearTestMethodRunListener( ReportEntry reportEntry )
+        protected void clearTestMethodRunListener()
         {
             currentTestMethodListener.remove();
         }

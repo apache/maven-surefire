@@ -27,7 +27,6 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Properties;
 import org.apache.maven.plugin.surefire.report.ReporterManagerFactory;
-import org.apache.maven.surefire.forking.ForkConfigurationInfo;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterFactory;
@@ -75,8 +74,6 @@ public class SurefireReflector
 
     private final Class reporterFactory;
 
-    private final Class forkConfigurationInfo;
-
     private final Class startupReportConfiguration;
 
     public SurefireReflector( ClassLoader surefireClassLoader )
@@ -96,7 +93,6 @@ public class SurefireReflector
             testClassLoaderAware = surefireClassLoader.loadClass( SurefireClassLoadersAware.class.getName() );
             reporterConfigurationAware = surefireClassLoader.loadClass( ReporterConfigurationAware.class.getName() );
             providerPropertiesAware = surefireClassLoader.loadClass( ProviderPropertiesAware.class.getName() );
-            forkConfigurationInfo = surefireClassLoader.loadClass( ForkConfigurationInfo.class.getName() );
             reporterFactory = surefireClassLoader.loadClass( ReporterFactory.class.getName() );
             runResult = surefireClassLoader.loadClass( RunResult.class.getName() );
             booterParameters = surefireClassLoader.loadClass( ProviderParameters.class.getName() );
@@ -191,19 +187,6 @@ public class SurefireReflector
             testArtifactInfo.getClassifier() } );
     }
 
-    Object createForkConfigurationInfo( ForkConfigurationInfo forkConfigurationInfo )
-    {
-        if ( forkConfigurationInfo == null )
-        {
-            return null;
-        }
-
-        final Class[] arguments = { String.class, Boolean.class };
-        Constructor constructor = ReflectionUtils.getConstructor( this.forkConfigurationInfo, arguments );
-        return ReflectionUtils.newInstance( constructor, new Object[]{ forkConfigurationInfo.getForkMode(),
-            forkConfigurationInfo.getInFork() } );
-    }
-
 
     Object createReporterConfiguration( ReporterConfiguration reporterConfiguration )
     {
@@ -275,16 +258,6 @@ public class SurefireReflector
         ReflectionUtils.invokeSetter( o, "setDirectoryScannerParameters", this.directoryScannerParameters, param );
     }
 
-
-    public void setForkConfigurationInfo( Object o, ForkConfigurationInfo forkConfigurationInfo )
-    {
-        if ( forkConfigurationInfo == null )
-        {
-            throw new IllegalArgumentException( "ForkConfiguration cannot be null" );
-        }
-        final Object forkConfig = createForkConfigurationInfo( forkConfigurationInfo );
-        ReflectionUtils.invokeSetter( o, "setForkConfigurationInfo", this.forkConfigurationInfo, forkConfig );
-    }
 
     public void setTestSuiteDefinitionAware( Object o, TestRequest testSuiteDefinition2 )
     {

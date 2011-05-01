@@ -19,12 +19,6 @@
 
 package org.apache.maven.surefire.util.testdata;
 
-/**
- * Created by IntelliJ IDEA.
- * User: kristian
- * Date: Jun 21, 2009
- * Time: 8:12:27 PM
- * To change this template use File | Settings | File Templates.
- */
+
 public class DataZT3A {
 }

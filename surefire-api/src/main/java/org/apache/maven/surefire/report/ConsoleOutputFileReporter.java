@@ -50,6 +50,7 @@ public class ConsoleOutputFileReporter
 
     /**
      * Create a consumer that will write to a {@link java.io.File} for each test
+     * @param reporterConfiguration The configuration
      */
 
     public ConsoleOutputFileReporter( ReporterConfiguration reporterConfiguration )
@@ -124,24 +125,7 @@ public class ConsoleOutputFileReporter
 
     public void writeMessage( byte[] b, int off, int len )
     {
-        consumeOutputLine( new String( b, off, len ) );
-    }
-
-    public void writeDetailMessage( String message )
-    {
-    }
-
-    public void reset()
-    {
-    }
-
-
-    /**
-     * Write the output to the current test file
-     * <p/>
-     */
-    private void consumeOutputLine( String line )
-    {
+        String line = new String( b, off, len );
         if ( printWriter == null )
         {
             outputBuffer.append( line );
@@ -156,4 +140,7 @@ public class ConsoleOutputFileReporter
         printWriter.write( line );
     }
 
+    public void reset()
+    {
+    }
 }

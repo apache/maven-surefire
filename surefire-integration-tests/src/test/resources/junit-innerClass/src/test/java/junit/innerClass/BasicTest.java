@@ -10,6 +10,6 @@ public class BasicTest
     }
     
     public class Foo {
-        public Foo(String x, String y) {};
+        public Foo(String x, String y) {}
     }
 }

@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.RunListener;
 
 /**
@@ -42,10 +41,6 @@ public class MockReporter
 
     public static final String TEST_COMPLETED = "TEST_COMPLETED";
 
-    public static final String TEST_FAILED = "TEST_FAILED";
-
-    public static final String TEST_ERROR = "TEST_ERROR";
-
     public static final String TEST_SKIPPED = "TEST_SKIPPED";
 
     private final AtomicInteger testSucceeded = new AtomicInteger();
@@ -58,11 +53,6 @@ public class MockReporter
 
     public MockReporter()
     {
-    }
-
-    public MockReporter( ReporterConfiguration reporterConfiguration )
-    {
-
     }
 
     public void testSetStarting( ReportEntry report )
@@ -93,36 +83,14 @@ public class MockReporter
         testIgnored.incrementAndGet();
     }
 
-    public void writeFooter( String footer )
-    {
-    }
-
-    public void writeDetailMessage( String message )
-    {
-    }
-
-    public List<String> getEvents()
-    {
-        return events;
-    }
-
     public int getTestSucceeded()
     {
         return testSucceeded.get();
     }
 
-    public int getTestIgnored()
-    {
-        return testIgnored.get();
-    }
-
     public int getTestFailed()
     {
         return testFailed.get();
-    }
-
-    public void writeConsoleMessage( String message )
-    {
     }
 
     public void testError( ReportEntry report )
@@ -139,7 +107,4 @@ public class MockReporter
     {
     }
 
-    public void writeTestOutput( String output, boolean stdout )
-    {
-    }
 }

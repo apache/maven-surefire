@@ -31,7 +31,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionResult;
@@ -92,7 +91,7 @@ public abstract class AbstractSurefireMojo
         }
     }
 
-    protected boolean verifyParameters()
+    boolean verifyParameters()
         throws MojoFailureException
     {
         if ( isSkipExecution() )
@@ -158,7 +157,7 @@ public abstract class AbstractSurefireMojo
     }
 
 
-    protected final Toolchain getToolchain()
+    final Toolchain getToolchain()
     {
         Toolchain tc = null;
 
@@ -248,12 +247,12 @@ public abstract class AbstractSurefireMojo
         return dependencyResolver.isWithinVersionSpec( artifact, "[4.0,)" );
     }
 
-    protected boolean isForkModeNever()
+    boolean isForkModeNever()
     {
         return ForkConfiguration.FORK_NEVER.equals( getForkMode() );
     }
 
-    protected ProviderConfiguration createProviderConfiguration( ForkConfiguration forkConfiguration )
+    protected ProviderConfiguration createProviderConfiguration()
         throws MojoExecutionException, MojoFailureException
     {
         ReporterConfiguration reporterConfiguration =
@@ -310,7 +309,7 @@ public abstract class AbstractSurefireMojo
 
         ProviderConfiguration providerConfiguration1 =
             new ProviderConfiguration( directoryScannerParameters, failIfNoTests, reporterConfiguration, testNg,
-                                       testSuiteDefinition, providerProperties, null, forkConfiguration.getForkMode() );
+                                       testSuiteDefinition, providerProperties, null );
 
         Toolchain tc = getToolchain();
 
@@ -334,7 +333,7 @@ public abstract class AbstractSurefireMojo
         return providerConfiguration1;
     }
 
-    protected StartupConfiguration createStartupConfiguration( ForkConfiguration forkConfiguration,
+    StartupConfiguration createStartupConfiguration( ForkConfiguration forkConfiguration,
                                                                ProviderInfo provider,
                                                                ClassLoaderConfiguration classLoaderConfiguration )
         throws MojoExecutionException, MojoFailureException
@@ -355,10 +354,6 @@ public abstract class AbstractSurefireMojo
 
             return new StartupConfiguration( providerName, classpathConfiguration, classLoaderConfiguration,
                                              forkConfiguration.getForkMode(), false );
-        }
-        catch ( DependencyResolutionRequiredException e )
-        {
-            throw new MojoExecutionException( "Unable to generate classpath: " + e, e );
         }
         catch ( ArtifactResolutionException e )
         {
@@ -382,7 +377,7 @@ public abstract class AbstractSurefireMojo
                                                getReportsDirectory(), isTrimStackTrace() );
     }
 
-    public void logClasspath( Classpath classpath, String descriptor )
+    void logClasspath( Classpath classpath, String descriptor )
     {
         getLog().debug( descriptor + " classpath:" );
         for ( Iterator i = classpath.getClassPath().iterator(); i.hasNext(); )
@@ -513,7 +508,7 @@ public abstract class AbstractSurefireMojo
         StartupConfiguration startupConfiguration =
             createStartupConfiguration( forkConfiguration, provider, classLoaderConfiguration );
         StartupReportConfiguration startupReportConfiguration = getStartupReportConfiguration();
-        ProviderConfiguration providerConfiguration = createProviderConfiguration( forkConfiguration );
+        ProviderConfiguration providerConfiguration = createProviderConfiguration();
         return new ForkStarter( providerConfiguration, startupConfiguration, forkConfiguration,
                                 getForkedProcessTimeoutInSeconds(), startupReportConfiguration );
     }
@@ -719,18 +714,14 @@ public abstract class AbstractSurefireMojo
      * Generate the test classpath.
      *
      * @return List containing the classpath elements
-     * @throws org.apache.maven.artifact.DependencyResolutionRequiredException
-     *                                     when dependency resolution fails
-     * @throws org.apache.maven.plugin.MojoExecutionException
-     *                                     upon other problems
      * @throws InvalidVersionSpecificationException
      *                                     when it happens
      * @throws MojoFailureException        when it happens
      * @throws ArtifactNotFoundException   when it happens
      * @throws ArtifactResolutionException when it happens
      */
-    public Classpath generateTestClasspath()
-        throws DependencyResolutionRequiredException, MojoExecutionException, InvalidVersionSpecificationException,
+    Classpath generateTestClasspath()
+        throws InvalidVersionSpecificationException,
         MojoFailureException, ArtifactResolutionException, ArtifactNotFoundException
     {
         List classpath = new ArrayList( 2 + getProject().getArtifacts().size() );
@@ -792,7 +783,7 @@ public abstract class AbstractSurefireMojo
         return new Classpath( classpath );
     }
 
-    protected Artifact getTestNgUtilsArtifact()
+    Artifact getTestNgUtilsArtifact()
         throws ArtifactResolutionException, ArtifactNotFoundException
     {
         Artifact surefireArtifact =
@@ -885,7 +876,7 @@ public abstract class AbstractSurefireMojo
         return new Classpath( items );
     }
 
-    protected void processSystemProperties( boolean setInSystem )
+    void processSystemProperties( boolean setInSystem )
     {
         copyPropertiesToInternalSystemProperties( getSystemProperties() );
 
@@ -975,7 +966,7 @@ public abstract class AbstractSurefireMojo
     }
 
 
-    protected void ensureWorkingDirectoryExists()
+    void ensureWorkingDirectoryExists()
         throws MojoFailureException
     {
         if ( getWorkingDirectory() == null )
@@ -998,7 +989,7 @@ public abstract class AbstractSurefireMojo
         }
     }
 
-    protected void ensureParallelRunningCompatibility()
+    void ensureParallelRunningCompatibility()
         throws MojoFailureException
     {
         if ( isMavenParallel() && isForkModeNever() )
@@ -1007,7 +998,7 @@ public abstract class AbstractSurefireMojo
         }
     }
 
-    protected void warnIfUselessUseSystemClassLoaderParameter()
+    void warnIfUselessUseSystemClassLoaderParameter()
     {
         if ( isUseSystemClassLoader() && isForkModeNever() )
         {

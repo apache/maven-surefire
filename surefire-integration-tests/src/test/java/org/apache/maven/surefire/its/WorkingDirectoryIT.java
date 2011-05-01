@@ -41,8 +41,6 @@ public class WorkingDirectoryIT
 
     private File childTestDir;
 
-    private File targetDir;
-
     private File outFile;
 
     public void setUp()
@@ -50,8 +48,9 @@ public class WorkingDirectoryIT
     {
         testDir = ResourceExtractor.simpleExtractResources( getClass(), "/working-directory" );
         childTestDir = new File( testDir, "child" );
-        targetDir = new File( childTestDir, "target" );
+        File targetDir = new File( childTestDir, "target" );
         outFile = new File( targetDir, "out.txt" );
+        //noinspection ResultOfMethodCallIgnored
         outFile.delete();
     }
 

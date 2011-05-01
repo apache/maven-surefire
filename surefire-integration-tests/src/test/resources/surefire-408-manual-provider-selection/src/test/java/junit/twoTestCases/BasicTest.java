@@ -12,7 +12,7 @@ public class BasicTest
 
     private static boolean tearDownCalled = false;
 
-    public BasicTest( String name, String extraName )
+    public BasicTest( String name )
     {
         super( name );
     }
@@ -20,9 +20,10 @@ public class BasicTest
     public static Test suite()
     {
         TestSuite suite = new TestSuite();
-        Test test = new BasicTest( "testSetUp", "dummy" );
+        Test test = new BasicTest( "testSetUp" );
         suite.addTest( test );
-        TestSetup setup = new TestSetup( suite )
+
+        return new TestSetup( suite )
         {
 
             protected void setUp()
@@ -36,8 +37,6 @@ public class BasicTest
             }
 
         };
-
-        return setup;
     }
 
     protected void setUp()

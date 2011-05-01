@@ -118,7 +118,7 @@ public class PojoStackTraceWriterTest
     
     class MockThrowable extends Throwable {
         private static final long serialVersionUID = 1L;
-        private String stackTrace;
+        private final String stackTrace;
         
         public MockThrowable(String stackTrace) {
             this.stackTrace = stackTrace;

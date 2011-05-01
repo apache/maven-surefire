@@ -36,7 +36,7 @@ public abstract class AbstractFileReporter
 
     private final boolean deleteOnStarting;
 
-    protected AbstractFileReporter( boolean trimStackTrace, String format, File reportsDirectory )
+    AbstractFileReporter( boolean trimStackTrace, String format, File reportsDirectory )
     {
         super( trimStackTrace, format );
         this.reportsDirectory = reportsDirectory;

@@ -56,9 +56,7 @@ public class BooterDeserializer
     }
 
     public ProviderConfiguration deserialize()
-        throws IOException
     {
-
         final File reportsDirectory = new File( properties.getProperty( REPORTSDIRECTORY ) );
         final String testNgVersion = properties.getProperty( TESTARTIFACT_VERSION );
         final String testArtifactClassifier = properties.getProperty( TESTARTIFACT_CLASSIFIER );
@@ -85,14 +83,12 @@ public class BooterDeserializer
         ReporterConfiguration reporterConfiguration =
             new ReporterConfiguration( reportsDirectory, properties.getBooleanObjectProperty( ISTRIMSTACKTRACE ) );
 
-        String forkMode = properties.getProperty( FORKMODE );
         return new ProviderConfiguration( dirScannerParams, properties.getBooleanProperty( FAILIFNOTESTS ),
                                           reporterConfiguration, testNg, testSuiteDefinition,
-                                          properties.getProperties(), testForFork, forkMode );
+                                          properties.getProperties(), testForFork );
     }
 
     public StartupConfiguration getProviderConfiguration()
-        throws IOException
     {
         boolean useSystemClassLoader = properties.getBooleanProperty( USESYSTEMCLASSLOADER );
         boolean useManifestOnlyJar = properties.getBooleanProperty( USEMANIFESTONLYJAR );

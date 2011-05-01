@@ -42,7 +42,7 @@ public abstract class AbstractConsoleReporter
 
     private static final PrintStream ORIGINAL_SYSTEM_OUT = System.out;
 
-    public AbstractConsoleReporter( boolean trimStackTrace, String format )
+    AbstractConsoleReporter( boolean trimStackTrace, String format )
     {
         super( getPrintWriter(), trimStackTrace, format);
     }
@@ -67,7 +67,7 @@ public abstract class AbstractConsoleReporter
      * @param report report whose test set is starting
      * @return the message
      */
-    public static String getTestSetStartingMessage( ReportEntry report )
+    static String getTestSetStartingMessage( ReportEntry report )
     {
         StringBuffer message = new StringBuffer();
         message.append( TEST_SET_STARTING_PREFIX );
@@ -82,52 +82,6 @@ public abstract class AbstractConsoleReporter
 
         message.append( "\n" );
         return message.toString();
-    }
-
-    /**
-     * Parses a Surefire test set starting message into a {@link ReportEntry} object.
-     * Only name and group will be set if applicable.
-     *
-     * @param message The test starting message
-     * @return the parsed {@link ReportEntry}
-     */
-    public static ReportEntry parseTestSetStartingMessage( String message )
-    {
-        String name;
-        String group = null;
-        int i = message.indexOf( TEST_SET_STARTING_GROUP_PREFIX );
-        int j;
-        if ( i >= 0 )
-        {
-            j = message.indexOf( TEST_SET_STARTING_GROUP_SUFIX );
-            if ( j <= 0 )
-            {
-                throw new RuntimeException( "Message provided can not be parsed" );
-            }
-            group = message.substring( i + TEST_SET_STARTING_GROUP_PREFIX.length(), j );
-        }
-        else
-        {
-            i = message.length();
-            if ( i <= 0 )
-            {
-                throw new RuntimeException( "Message provided can not be parsed" );
-            }
-        }
-        name = message.substring( TEST_SET_STARTING_PREFIX.length(), i );
-        return CategorizedReportEntry.nameGroup( name, group );
-    }
-
-    /**
-     * Check if the String passed as argument is a "test starting" message.
-     * If so it can be passed to {@link #parseTestSetStartingMessage(String)}
-     *
-     * @param message the message to check
-     * @return true if it is a "test starting" message
-     */
-    public static boolean isTestSetStartingMessage( String message )
-    {
-        return message.startsWith( TEST_SET_STARTING_PREFIX );
     }
 
 }

@@ -88,13 +88,6 @@ public class MulticastingReporter
         }
     }
 
-    public void writeDetailMessage( String message )
-    {
-        for (int i = 0; i < size; i++){
-            target[i].writeDetailMessage( message );
-        }
-    }
-
     public void writeMessage( String message )
     {
         for (int i = 0; i < size; i++){

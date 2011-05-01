@@ -7,7 +7,7 @@ import org.testng.annotations.Test;
 
 public class TestNGSuiteTest {
 
-    private boolean beforeMethod = false;
+    private final boolean beforeMethod = false;
     
     @BeforeMethod
     public void beforeMethod() {

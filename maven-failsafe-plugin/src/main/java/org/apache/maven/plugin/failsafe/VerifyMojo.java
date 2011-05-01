@@ -124,6 +124,7 @@ public class VerifyMojo
      *
      * @parameter expression="${project.build.directory}/failsafe-reports/failsafe-summary.xml"
      * @required
+     * @noinspection UnusedDeclaration
      */
     private File summaryFile;
 
@@ -132,6 +133,7 @@ public class VerifyMojo
      *
      * @parameter
      * @since 2.6
+     * @noinspection UnusedDeclaration, MismatchedReadAndWriteOfArray
      */
     private File[] summaryFiles;
 
@@ -147,6 +149,7 @@ public class VerifyMojo
      * The character encoding scheme to be applied.
      *
      * @parameter expression="${encoding}" default-value="${project.reporting.outputEncoding}"
+     * @noinspection UnusedDeclaration
      */
     private String encoding;
 

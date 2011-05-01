@@ -20,7 +20,6 @@ package org.apache.maven.surefire.booter;
  */
 
 import java.util.Properties;
-import org.apache.maven.surefire.forking.ForkConfigurationInfo;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterFactory;
@@ -49,7 +48,6 @@ public class BaseProviderFactory
 
     private TestArtifactInfo testArtifactInfo;
 
-    private ForkConfigurationInfo forkConfigurationInfo;
 
     private final ReporterFactory reporterFactory;
 
@@ -134,12 +132,5 @@ public class BaseProviderFactory
     {
         this.testArtifactInfo = testArtifactInfo;
     }
-
-    /** @noinspection UnusedDeclaration*/
-    public void setForkConfigurationInfo( ForkConfigurationInfo forkConfigurationInfo )
-    {
-        this.forkConfigurationInfo = forkConfigurationInfo;
-    }
-
 
 }

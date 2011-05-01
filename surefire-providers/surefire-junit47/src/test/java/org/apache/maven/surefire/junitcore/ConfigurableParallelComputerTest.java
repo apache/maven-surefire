@@ -19,18 +19,16 @@
 
 package org.apache.maven.surefire.junitcore;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+
 import junit.framework.TestCase;
-import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.experimental.ParallelComputer;
 import org.junit.runner.Computer;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
 import org.junit.runner.notification.RunListener;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 /**
  * Simple test of ConfigurableParallelComputer.
@@ -198,8 +196,7 @@ public class ConfigurableParallelComputerTest
         {
             ( (ConfigurableParallelComputer) computer ).close();
         }
-        long rsult = System.currentTimeMillis() - start;
-        return rsult;
+        return System.currentTimeMillis() - start;
     }
 
     private long timedRun( int NUMTESTS, Result result, Class[] realClasses, JUnitCore jUnitCore, Computer computer )

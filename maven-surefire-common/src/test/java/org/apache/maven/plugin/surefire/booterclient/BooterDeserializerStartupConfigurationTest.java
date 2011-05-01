@@ -106,13 +106,11 @@ public class BooterDeserializerStartupConfigurationTest
     }
 
     public static ClassLoaderConfiguration getSystemClassLoaderConfiguration()
-        throws IOException
     {
         return new ClassLoaderConfiguration( true, false );
     }
 
     public static ClassLoaderConfiguration getManifestOnlyJarForkConfiguration()
-        throws IOException
     {
         return new ClassLoaderConfiguration( true, true );
     }
@@ -139,7 +137,6 @@ public class BooterDeserializerStartupConfigurationTest
     }
 
     private ProviderConfiguration getProviderConfiguration()
-        throws IOException
     {
 
         File cwd = new File( "." );
@@ -153,7 +150,7 @@ public class BooterDeserializerStartupConfigurationTest
                              aUserRequestedTestMethod );
         return new ProviderConfiguration( directoryScannerParameters, true, reporterConfiguration,
                                           new TestArtifactInfo( "5.0", "ABC" ), testSuiteDefinition, new Properties(),
-                                          aTest, "never" );
+                                          aTest );
     }
 
     private StartupConfiguration getTestStartupConfiguration( ClassLoaderConfiguration classLoaderConfiguration )

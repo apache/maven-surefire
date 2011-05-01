@@ -33,7 +33,4 @@ public class BriefFileReporter
         super( reporterConfiguration, BRIEF );
     }
 
-    public void writeDetailMessage( String message )
-    {
-    }
 }

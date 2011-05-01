@@ -53,8 +53,7 @@ public class BooterDeserializerProviderConfigurationTest
 
     private final String aUserRequestedTest = "aUserRequestedTest";
 
-    public static ClassLoaderConfiguration getForkConfiguration()
-        throws IOException
+    private static ClassLoaderConfiguration getForkConfiguration()
     {
         return new ClassLoaderConfiguration( true, false );
     }
@@ -177,7 +176,6 @@ public class BooterDeserializerProviderConfigurationTest
     }
 
     private ProviderConfiguration getTestProviderConfiguration( DirectoryScannerParameters directoryScannerParameters )
-        throws IOException
     {
 
         File cwd = new File( "." );
@@ -189,7 +187,7 @@ public class BooterDeserializerProviderConfigurationTest
                              aUserRequestedTestMethod );
         return new ProviderConfiguration( directoryScannerParameters, true, reporterConfiguration,
                                           new TestArtifactInfo( "5.0", "ABC" ), testSuiteDefinition, new Properties(),
-                                          aTest, "never" );
+                                          aTest );
     }
 
     private StartupConfiguration getTestStartupConfiguration( ClassLoaderConfiguration classLoaderConfiguration )

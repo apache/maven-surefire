@@ -89,7 +89,6 @@ class TestMethod
 
 
     public void replay( RunListener reporter )
-        throws Exception
     {
 
         if ( ignored != null )

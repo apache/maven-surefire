@@ -34,7 +34,7 @@ public class CategorizedReportEntry
         this.group = group;
     }
 
-    public CategorizedReportEntry( String source, String name, String group, String message )
+    public CategorizedReportEntry( String source, String name, String group )
     {
         this( source, name, group, null, null );
     }
@@ -44,11 +44,6 @@ public class CategorizedReportEntry
     {
         super( source, name, stackTraceWriter, elapsed );
         this.group = group;
-    }
-
-    public static ReportEntry nameGroup( String name, String group )
-    {
-        return new CategorizedReportEntry( name, group );
     }
 
     public String getGroup()

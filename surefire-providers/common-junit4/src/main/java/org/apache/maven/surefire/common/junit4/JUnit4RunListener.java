@@ -42,7 +42,7 @@ public class JUnit4RunListener
      * This flag is set after a failure has occurred so that a <code>testSucceeded</code> event is not fired.
      * This is necessary because JUnit4 always fires a <code>testRunFinished</code> event-- even if there was a failure.
      */
-    private ThreadLocal failureFlag = new InheritableThreadLocal();
+    private final ThreadLocal<Boolean> failureFlag = new InheritableThreadLocal<Boolean>();
 
     /**
      * Constructor.
@@ -119,7 +119,7 @@ public class JUnit4RunListener
     public void testFinished( Description description )
         throws Exception
     {
-        Boolean failure = (Boolean) failureFlag.get();
+        Boolean failure = failureFlag.get();
         if ( failure == null )
         {
             reporter.testSucceeded( createReportEntry( description ) );
@@ -132,7 +132,7 @@ public class JUnit4RunListener
     }
 
 
-    protected String extractClassName( Description description )
+    String extractClassName( Description description )
     {
         String displayName = description.getDisplayName();
         Matcher m = PARENS.matcher( displayName );

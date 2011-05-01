@@ -23,7 +23,8 @@ public class TestSurefire2
         TestSuite suite = new TestSuite();
         Test test = new TestSurefire2( "testSetUp", "dummy" );
         suite.addTest( test );
-        TestSetup setup = new TestSetup( suite )
+
+        return new TestSetup( suite )
         {
 
             protected void setUp()
@@ -37,8 +38,6 @@ public class TestSurefire2
             }
 
         };
-
-        return setup;
     }
 
     protected void setUp()

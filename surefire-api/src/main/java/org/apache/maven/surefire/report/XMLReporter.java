@@ -76,10 +76,6 @@ public class XMLReporter
     {
     }
 
-    public void writeDetailMessage( String message )
-    {
-    }
-
 
     public void testSetStarting( ReportEntry report )
         throws ReporterException

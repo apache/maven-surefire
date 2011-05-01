@@ -14,7 +14,6 @@ public class FileWritingRunListener2
 
     @Override
     public void testStarted( Description description )
-        throws Exception
     {
         FileHelper.writeFile( "runlistener-output-2.txt", "This written by RunListener#testStarted()" );
     }

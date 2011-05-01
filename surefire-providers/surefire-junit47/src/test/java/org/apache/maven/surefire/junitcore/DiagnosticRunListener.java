@@ -54,14 +54,6 @@ public class DiagnosticRunListener extends RunListener {
         this.target = target;
     }
 
-    public DiagnosticRunListener(boolean printToConsole) {
-        this( printToConsole, null);
-    }
-
-    public DiagnosticRunListener() {
-        this(true);
-    }
-
     @Override
     public void testRunStarted(Description description) throws Exception {
         print("testRunStarted", description);

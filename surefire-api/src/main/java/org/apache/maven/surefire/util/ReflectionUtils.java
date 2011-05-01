@@ -143,11 +143,11 @@ public class ReflectionUtils
         }
     }
 
-    public static Object invokeSetter( Object o, String name, Class value1clazz, Object value )
+    public static void invokeSetter( Object o, String name, Class value1clazz, Object value )
 
     {
         final Method setter = getMethod( o, name, new Class[]{ value1clazz } );
-        return invokeSetter( o, setter, value );
+        invokeSetter( o, setter, value );
     }
 
     public static Object invokeSetter( Object target, Method method, Object value )

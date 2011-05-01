@@ -19,18 +19,16 @@ package org.apache.maven.surefire.its.misc;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.misc.TestSuiteXmlParser;
-import org.codehaus.plexus.util.DirectoryScanner;
-import org.codehaus.plexus.util.StringUtils;
-
-import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
+import org.codehaus.plexus.util.DirectoryScanner;
+import org.codehaus.plexus.util.StringUtils;
+
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.xml.sax.SAXException;
 
@@ -39,9 +37,8 @@ import org.xml.sax.SAXException;
  */
 public class SurefireReportParser
 {
-    private NumberFormat numberFormat = NumberFormat.getInstance();
 
-    private List reportsDirectories;
+    private final List reportsDirectories;
 
     private final List testSuites = new ArrayList();
 
@@ -49,7 +46,6 @@ public class SurefireReportParser
     {
         this.reportsDirectories = reportsDirectoriesFiles;
 
-        setLocale( locale );
     }
 
     public List parseXMLReportFiles()
@@ -99,11 +95,6 @@ public class SurefireReportParser
         }
 
         return testSuites;
-    }
-
-    public final void setLocale( Locale locale )
-    {
-        numberFormat = NumberFormat.getInstance( locale );
     }
 
     private String[] getIncludedFiles( File directory, String includes, String excludes )

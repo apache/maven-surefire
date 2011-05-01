@@ -33,13 +33,9 @@ import java.util.Iterator;
  */
 public class TestProvider  extends AbstractProvider
 {
-    private final ReporterFactory reporterManagerFactory;
-    private final ClassLoader testClassLoader;
 
     public TestProvider( ProviderParameters booterParameters )
     {
-        this.reporterManagerFactory = booterParameters.getReporterFactory();
-        this.testClassLoader = booterParameters.getTestClassLoader();
     }
 
 

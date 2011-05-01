@@ -39,7 +39,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class JUnit4TestCheckerTest
 {
-    JUnit4TestChecker jUnit4TestChecker = new JUnit4TestChecker( this.getClass().getClassLoader() );
+    private final JUnit4TestChecker jUnit4TestChecker = new JUnit4TestChecker( this.getClass().getClassLoader() );
 
     @Test
     public void validJunit4Annotated()

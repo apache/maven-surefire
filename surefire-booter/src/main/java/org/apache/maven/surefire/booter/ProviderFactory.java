@@ -22,7 +22,6 @@ package org.apache.maven.surefire.booter;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import org.apache.maven.surefire.forking.ForkConfigurationInfo;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
 
 /**
@@ -43,21 +42,17 @@ public class ProviderFactory
 
     private final SurefireReflector surefireReflector;
 
-    private final ForkConfigurationInfo forkConfigurationInfo;
-
     private final Object reporterManagerFactory;
 
 
     public ProviderFactory( StartupConfiguration startupConfiguration, ProviderConfiguration providerConfiguration,
-                            ClassLoader surefireClassLoader, ClassLoader testsClassLoader,
-                            ForkConfigurationInfo forkMode, Object reporterManagerFactory )
+                            ClassLoader surefireClassLoader, ClassLoader testsClassLoader, Object reporterManagerFactory )
     {
         this.providerConfiguration = providerConfiguration;
         this.surefireClassLoader = surefireClassLoader;
         this.startupConfiguration = startupConfiguration;
         this.surefireReflector = new SurefireReflector( surefireClassLoader );
         this.testsClassLoader = testsClassLoader;
-        this.forkConfigurationInfo = forkMode;
         this.reporterManagerFactory = reporterManagerFactory;
     }
 
@@ -75,7 +70,6 @@ public class ProviderFactory
         surefireReflector.setTestClassLoaderAware( o, surefireClassLoader, testsClassLoader );
         surefireReflector.setTestArtifactInfoAware( o, providerConfiguration.getTestArtifact() );
         surefireReflector.setIfDirScannerAware( o, providerConfiguration.getDirScannerParams() );
-        surefireReflector.setForkConfigurationInfo( o, this.forkConfigurationInfo );
 
         Object provider = surefireReflector.instantiateProvider( starterConfiguration.getProviderClassName(), o );
         Thread.currentThread().setContextClassLoader( context );

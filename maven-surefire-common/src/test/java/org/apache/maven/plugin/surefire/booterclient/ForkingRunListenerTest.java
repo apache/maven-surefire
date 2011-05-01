@@ -199,12 +199,12 @@ public class ForkingRunListenerTest
         RunListener forkingReporter = createForkingRunListener( defaultChannel );
 
         TestSetMockReporterFactory providerReporterFactory = new TestSetMockReporterFactory();
-        ForkClient forkStreamClient = new ForkClient( providerReporterFactory, new Properties() );
+        final Properties testVmSystemProperties = new Properties();
+        ForkClient forkStreamClient = new ForkClient( providerReporterFactory, testVmSystemProperties );
 
         forkStreamClient.consumeMultiLineContent( content.toString( "utf-8" ) );
 
-        Properties props = forkStreamClient.getTestVmSystemProperties();
-        assert ( props.size() > 1 );
+        assertTrue ( testVmSystemProperties.size() > 1 );
     }
 
     public void testMultipleEntries()
@@ -313,7 +313,7 @@ public class ForkingRunListenerTest
         private MockReporter reporter;
 
         public RunListener run()
-            throws ReporterException, IOException
+            throws ReporterException
         {
             reset();
             return createForkingRunListener( defaultChannel );
@@ -351,6 +351,7 @@ public class ForkingRunListenerTest
             assertEquals( expected.getGroup(), firstData.getGroup() );
             if ( expected.getStackTraceWriter() != null )
             {
+                //noinspection ThrowableResultOfMethodCallIgnored
                 assertEquals( expected.getStackTraceWriter().getThrowable().getLocalizedMessage(),
                               firstData.getStackTraceWriter().getThrowable().getLocalizedMessage() );
                 assertEquals( expected.getStackTraceWriter().writeTraceToString(),

@@ -129,7 +129,7 @@ public class ForkingRunListener
         target.print( toString( BOOTERCODE_TEST_SKIPPED, report, testSetChannelId ) );
     }
 
-    public synchronized void sendProps()
+    synchronized void sendProps()
     {
         Properties systemProperties = System.getProperties();
 
@@ -191,7 +191,7 @@ public class ForkingRunListener
         return header;
     }
 
-    final static char[] digits =
+    private final static char[] digits =
         { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l',
             'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' };
 

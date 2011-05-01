@@ -124,7 +124,7 @@ public class MavenSurefireJUnit47RunnerTest
 
         final HashMap<String, TestSet> classMethodCounts = new HashMap<String, TestSet>();
         RunListener reporter = ConcurrentReporterManager.createInstance( classMethodCounts, reporterManagerFactory,
-                                                                         getReporterConfiguration(), false, false );
+                                                                         false, false );
 
         org.junit.runner.notification.RunListener concurrentReportingRunListener =
             new JUnitCoreRunListener( reporter, classMethodCounts );

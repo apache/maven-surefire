@@ -32,7 +32,7 @@ import org.apache.maven.surefire.testset.TestSetFailedException;
 public interface TestNgTestSuite
 {
 
-    void execute( String testSetName, ReporterFactory reporterManagerFactory, ClassLoader classLoader )
+    void execute( String testSetName, ReporterFactory reporterManagerFactory )
         throws ReporterException, TestSetFailedException;
 
     Map locateTestSets( ClassLoader classLoader )
