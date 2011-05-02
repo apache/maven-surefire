@@ -19,6 +19,8 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
+import java.io.File;
+
 /**
  * Brief format file reporter.
  *
@@ -28,9 +30,9 @@ package org.apache.maven.surefire.report;
 public class BriefFileReporter
     extends AbstractFileReporter
 {
-    public BriefFileReporter( ReporterConfiguration reporterConfiguration )
-    {
-        super( reporterConfiguration, BRIEF );
-    }
 
+    public BriefFileReporter( boolean trimStackTrace, File reportsDirectory )
+    {
+        super( trimStackTrace, BRIEF, reportsDirectory );
+    }
 }

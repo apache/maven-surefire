@@ -62,11 +62,6 @@ public class XMLReporter
         this.deleteOnStarting = false;
     }
 
-    public XMLReporter( ReporterConfiguration reporterConfiguration )
-    {
-        this( reporterConfiguration.isTrimStackTrace().booleanValue(), reporterConfiguration.getReportsDirectory() );
-    }
-
 
     public void writeMessage( String message )
     {

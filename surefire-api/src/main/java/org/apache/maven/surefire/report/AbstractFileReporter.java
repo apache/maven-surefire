@@ -43,11 +43,6 @@ public abstract class AbstractFileReporter
         this.deleteOnStarting = false;
     }
 
-    AbstractFileReporter( ReporterConfiguration reporterConfiguration, String format )
-    {
-        this( reporterConfiguration.isTrimStackTrace().booleanValue(), format, reporterConfiguration.getReportsDirectory());
-    }
-
     public void testSetStarting( ReportEntry report )
         throws ReporterException
     {

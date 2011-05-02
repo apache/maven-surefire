@@ -19,6 +19,8 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
+import java.io.File;
+
 /**
  * Text file reporter.
  *
@@ -28,8 +30,9 @@ package org.apache.maven.surefire.report;
 public class FileReporter
     extends AbstractFileReporter
 {
-    public FileReporter( ReporterConfiguration reporterConfiguration )
+
+    public FileReporter( boolean trimStackTrace, File reportsDirectory )
     {
-        super( reporterConfiguration, PLAIN );
+        super( trimStackTrace, PLAIN, reportsDirectory );
     }
 }

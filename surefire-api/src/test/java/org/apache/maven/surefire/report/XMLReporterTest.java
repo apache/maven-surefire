@@ -19,6 +19,7 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
+import java.io.File;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 
 import junit.framework.AssertionFailedError;
@@ -38,7 +39,7 @@ public class XMLReporterTest
         throws Exception
     {
         super.setUp();
-        reporter = new XMLReporter( new ReporterConfiguration( null, Boolean.TRUE ) );
+        reporter = new XMLReporter( true, new File( "." ));
         message = "junit.framework.AssertionFailedError";
         reportEntry = new SimpleReportEntry( this.getClass().getName(), "XMLReporterTest",
                                              new PojoStackTraceWriter( "", "", new AssertionFailedError() ) );

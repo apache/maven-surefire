@@ -19,7 +19,6 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
-import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -37,8 +36,6 @@ import org.apache.maven.surefire.report.RunStatistics;
 import org.apache.maven.surefire.report.TestSetRunListener;
 import org.apache.maven.surefire.report.XMLReporter;
 import org.apache.maven.surefire.suite.RunResult;
-import org.apache.maven.surefire.util.ReflectionUtils;
-import org.apache.maven.surefire.util.SurefireReflectionException;
 
 /**
  * Provides RunListener implementations to the providers.
@@ -85,90 +82,43 @@ public class ReporterManagerFactory
 
     private AbstractConsoleReporter instantiateConsoleReporter()
     {
-        return (AbstractConsoleReporter) instantiateReport( reportConfiguration.getConsoleReporter() );
+        return reportConfiguration.instantiateConsoleReporter();
     }
 
     private AbstractFileReporter instantiateFileReporter()
     {
-        return (AbstractFileReporter) instantiateReport( reportConfiguration.getFileReporter() );
+        return reportConfiguration.instantiateFileReporter();
     }
 
     private XMLReporter instantiateXmlReporter()
     {
-        return (XMLReporter) instantiateReport( reportConfiguration.getXmlReporterName() );
+        return reportConfiguration.instantiateXmlReporter();
     }
 
     private Reporter instantiateConsoleOutputFileReporter()
     {
-        return instantiateReport( reportConfiguration.getConsoleOutputFileReporterName() );
+        return reportConfiguration.instantiateConsoleOutputFileReporterName(
+            reporterConfiguration.getOriginalSystemOut() );
     }
 
     private List instantiateReports()
     {
-        return instantiateReportsNewStyle( reportConfiguration.getReports(), reporterConfiguration, surefireClassLoader );
+        List result = new ArrayList( );
+        addIfNotNull( result, instantiateConsoleReporter() );
+        addIfNotNull( result, instantiateFileReporter() );
+        addIfNotNull( result, instantiateXmlReporter() );
+        addIfNotNull( result, instantiateConsoleOutputFileReporter() );
+        return result;
+    }
+
+    private void addIfNotNull( List result, Reporter reporter){
+        if (reporter != null) result.add(  reporter );
     }
 
     public RunResult close()
     {
         runCompleted();
         return globalStats.getRunResult();
-    }
-
-    private List instantiateReportsNewStyle( List reportDefinitions, ReporterConfiguration reporterConfiguration,
-                                             ClassLoader classLoader )
-    {
-        List reports = new ArrayList();
-
-        for ( Iterator i = reportDefinitions.iterator(); i.hasNext(); )
-        {
-
-            String className = (String) i.next();
-
-            Reporter report = instantiateReportNewStyle( className, reporterConfiguration, classLoader );
-
-            reports.add( report );
-        }
-
-        return reports;
-    }
-
-    public Reporter instantiateReport( String reportName )
-    {
-        if ( reportName == null )
-        {
-            return null;
-        }
-        return instantiateReportNewStyle( reportName, reporterConfiguration, surefireClassLoader );
-    }
-
-    private static Reporter instantiateReportNewStyle( String className, ReporterConfiguration params,
-                                                       ClassLoader classLoader )
-    {
-        Class clazz = ReflectionUtils.loadClass( classLoader, className );
-
-        if ( params != null )
-        {
-            Class[] paramTypes = new Class[1];
-            paramTypes[0] = ReflectionUtils.loadClass( classLoader, ReporterConfiguration.class.getName() );
-            Constructor constructor = ReflectionUtils.getConstructor( clazz, paramTypes );
-            return (Reporter) ReflectionUtils.newInstance( constructor, new Object[]{ params } );
-        }
-        else
-        {
-            try
-            {
-                return (Reporter) clazz.newInstance();
-            }
-            catch ( IllegalAccessException e )
-            {
-                throw new SurefireReflectionException( e );
-            }
-            catch ( InstantiationException e )
-            {
-                throw new SurefireReflectionException( e );
-            }
-        }
-
     }
 
     public DirectConsoleReporter createConsoleReporter()

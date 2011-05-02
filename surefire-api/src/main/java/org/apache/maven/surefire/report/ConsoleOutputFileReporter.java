@@ -48,14 +48,9 @@ public class ConsoleOutputFileReporter
 
     private volatile PrintWriter printWriter;
 
-    /**
-     * Create a consumer that will write to a {@link java.io.File} for each test
-     * @param reporterConfiguration The configuration
-     */
-
-    public ConsoleOutputFileReporter( ReporterConfiguration reporterConfiguration )
+    public ConsoleOutputFileReporter( File reportsDirectory )
     {
-        this.reportsDirectory = reporterConfiguration.getReportsDirectory();
+        this.reportsDirectory = reportsDirectory;
     }
 
     public void testSetStarting( ReportEntry reportEntry )

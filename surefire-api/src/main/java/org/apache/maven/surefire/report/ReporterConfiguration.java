@@ -23,10 +23,9 @@ import java.io.File;
 import java.io.PrintStream;
 
 /**
- * The configuration of the reporter. Most of this stuff is not relevant for the providers
- * and should be moved out of the api.
+ * Bits and pieces of reporting configuration that seem to be necessary on the provider side.
  * <p/>
- * This class seems to be the focal point of all the bad code smells left in reporting ;)
+ * Todo: Consider moving these fields elsewhere, this concept does not smell too good
  *
  * @author Kristian Rosenvold
  */

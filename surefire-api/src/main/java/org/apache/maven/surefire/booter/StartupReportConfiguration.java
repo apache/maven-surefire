@@ -20,9 +20,12 @@ package org.apache.maven.surefire.booter;
  */
 
 import java.io.File;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import org.apache.maven.surefire.report.AbstractConsoleReporter;
+import org.apache.maven.surefire.report.AbstractFileReporter;
 import org.apache.maven.surefire.report.BriefConsoleReporter;
 import org.apache.maven.surefire.report.BriefFileReporter;
 import org.apache.maven.surefire.report.ConsoleOutputDirectReporter;
@@ -30,6 +33,7 @@ import org.apache.maven.surefire.report.ConsoleOutputFileReporter;
 import org.apache.maven.surefire.report.ConsoleReporter;
 import org.apache.maven.surefire.report.DetailedConsoleReporter;
 import org.apache.maven.surefire.report.FileReporter;
+import org.apache.maven.surefire.report.Reporter;
 import org.apache.maven.surefire.report.XMLReporter;
 
 /**
@@ -125,6 +129,15 @@ public class StartupReportConfiguration
         return null;
     }
 
+    public XMLReporter instantiateXmlReporter()
+    {
+        if ( !isDisableXmlReport() )
+        {
+            return new XMLReporter(trimStackTrace, reportsDirectory);
+        }
+        return null;
+    }
+
     public String getFileReporter()
     {
         if ( isUseFile() )
@@ -140,6 +153,23 @@ public class StartupReportConfiguration
         }
         return null;
     }
+
+    public AbstractFileReporter instantiateFileReporter()
+    {
+        if ( isUseFile() )
+        {
+            if ( BRIEF_REPORT_FORMAT.equals( getReportFormat() ) )
+            {
+                return new BriefFileReporter(trimStackTrace, reportsDirectory);
+            }
+            else if ( PLAIN_REPORT_FORMAT.equals( getReportFormat() ) )
+            {
+                return new FileReporter(trimStackTrace, reportsDirectory);
+            }
+        }
+        return null;
+    }
+
 
     /**
      * Returns the reporter that will write to the console
@@ -160,10 +190,23 @@ public class StartupReportConfiguration
         {
             return DetailedConsoleReporter.class.getName();
         }
-/*        if (isRedirectTestOutputToFile())
+        return null;
+    }
+
+    public AbstractConsoleReporter instantiateConsoleReporter()
+    {
+        if ( isUseFile() )
         {
-            return null;
-        }*/
+            return isPrintSummary() ? new ConsoleReporter(trimStackTrace) : null;
+        }
+        else if ( isRedirectTestOutputToFile() || BRIEF_REPORT_FORMAT.equals( getReportFormat() ) )
+        {
+            return new BriefConsoleReporter(trimStackTrace);
+        }
+        else if ( PLAIN_REPORT_FORMAT.equals( getReportFormat() ) )
+        {
+            return new DetailedConsoleReporter(trimStackTrace );
+        }
         return null;
     }
 
@@ -176,6 +219,18 @@ public class StartupReportConfiguration
         else
         {
             return ConsoleOutputDirectReporter.class.getName();
+        }
+    }
+
+    public Reporter instantiateConsoleOutputFileReporterName(PrintStream originalSystemOut)
+    {
+        if ( isRedirectTestOutputToFile() )
+        {
+            return new ConsoleOutputFileReporter(reportsDirectory);
+        }
+        else
+        {
+            return new ConsoleOutputDirectReporter(originalSystemOut);
         }
     }
 

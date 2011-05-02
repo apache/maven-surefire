@@ -34,9 +34,9 @@ public class ConsoleOutputDirectReporter
 {
     private final PrintStream reportsDirectory;
 
-    public ConsoleOutputDirectReporter( ReporterConfiguration reporterConfiguration )
+    public ConsoleOutputDirectReporter( PrintStream reportsDirectory )
     {
-        this.reportsDirectory = reporterConfiguration.getOriginalSystemOut();
+        this.reportsDirectory = reportsDirectory;
     }
 
     public void testSetStarting( ReportEntry reportEntry )
