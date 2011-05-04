@@ -19,10 +19,14 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
+import java.util.Iterator;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
+import org.apache.maven.surefire.report.ReporterException;
+import org.apache.maven.surefire.suite.RunResult;
+import org.apache.maven.surefire.testset.TestSetFailedException;
+import org.apache.maven.surefire.util.ReflectionUtils;
+
 
 /**
  * Creates the surefire provider.
@@ -44,9 +48,12 @@ public class ProviderFactory
 
     private final Object reporterManagerFactory;
 
+    private static final Class[] invokeParamaters = new Class[]{ Object.class };
+
 
     public ProviderFactory( StartupConfiguration startupConfiguration, ProviderConfiguration providerConfiguration,
-                            ClassLoader surefireClassLoader, ClassLoader testsClassLoader, Object reporterManagerFactory )
+                            ClassLoader surefireClassLoader, ClassLoader testsClassLoader,
+                            Object reporterManagerFactory )
     {
         this.providerConfiguration = providerConfiguration;
         this.surefireClassLoader = surefireClassLoader;
@@ -74,41 +81,42 @@ public class ProviderFactory
         Object provider = surefireReflector.instantiateProvider( starterConfiguration.getProviderClassName(), o );
         Thread.currentThread().setContextClassLoader( context );
 
-        return createClassLoaderProxy( provider );
+        return new ProviderProxy( provider );
     }
 
-    private SurefireProvider createClassLoaderProxy( Object target )
-    {
-        return (SurefireProvider) Proxy.newProxyInstance( this.getClass().getClassLoader(),
-                                                          new Class[]{ SurefireProvider.class },
-                                                          new ClassLoaderProxy( target ) );
-    }
 
-    private class ClassLoaderProxy
-        implements InvocationHandler
+    private class ProviderProxy
+        implements SurefireProvider
     {
-        private final Object target;
+        private final Object providerInOtherClassLoader;
 
-        public ClassLoaderProxy( Object delegate )
+
+        private ProviderProxy( Object providerInOtherClassLoader )
         {
-            this.target = delegate;
+            this.providerInOtherClassLoader = providerInOtherClassLoader;
         }
 
-        public Object invoke( Object proxy, Method method, Object[] args )
-            throws Throwable
+        public Iterator getSuites()
         {
-            ClassLoader original = java.lang.Thread.currentThread().getContextClassLoader();
-            Thread.currentThread().setContextClassLoader( testsClassLoader );
-            try
-            {
-                Method delegateMethod = target.getClass().getMethod( method.getName(), method.getParameterTypes() );
-                final Object result = delegateMethod.invoke( target, args );
-                return surefireReflector.convertIfRunResult( result );
-            }
-            finally
-            {
-                Thread.currentThread().setContextClassLoader( original );
-            }
+            return (Iterator) ReflectionUtils.invokeGetter( providerInOtherClassLoader, "getSuites" );
+        }
+
+        public RunResult invoke( Object forkTestSet )
+            throws TestSetFailedException, ReporterException
+        {
+            final Method invoke =
+                ReflectionUtils.getMethod( providerInOtherClassLoader.getClass(), "invoke", invokeParamaters );
+
+            final Object result = ReflectionUtils.invokeMethodWithArray( providerInOtherClassLoader, invoke,
+                                                                         new Object[]{ forkTestSet } );
+            return (RunResult) surefireReflector.convertIfRunResult( result );
+        }
+
+        public void cancel()
+        {
+            final Method invoke =
+                ReflectionUtils.getMethod( providerInOtherClassLoader.getClass(), "cancel", new Class[]{ } );
+            ReflectionUtils.invokeMethodWithArray( providerInOtherClassLoader, invoke, null );
         }
     }
 }
