@@ -19,16 +19,18 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import java.io.PrintStream;
-import java.util.Enumeration;
-import java.util.Properties;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.DirectConsoleReporter;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.StackTraceWriter;
 import org.apache.maven.surefire.util.internal.ByteBuffer;
+import org.apache.maven.surefire.util.internal.StreamUtils;
 import org.apache.maven.surefire.util.internal.StringUtils;
+
+import java.io.PrintStream;
+import java.util.Enumeration;
+import java.util.Properties;
 
 /**
  * Encodes the full output of the test run to the stdout stream
@@ -147,7 +149,7 @@ public class ForkingRunListener
                 {
                     value = "null";
                 }
-                target.print( toPropertyString( key, value ) );
+                toPropertyString( key, value );
             }
         }
     }
@@ -155,7 +157,8 @@ public class ForkingRunListener
     public void writeTestOutput( byte[] buf, int off, int len, boolean stdout )
     {
         byte[] header = stdout ? stdOutHeader : stdErrHeader;
-        byte[] content = new byte[buf.length * 6 + 1]; // Unicode escapes can be up to 6 times length of regular char. Yuck.
+        byte[] content =
+            new byte[buf.length * 6 + 1]; // Unicode escapes can be up to 6 times length of regular char. Yuck.
         int i = StringUtils.escapeJavaStyleString( content, 0, buf, off, len );
         content[i++] = (byte) '\n';
 
@@ -199,7 +202,7 @@ public class ForkingRunListener
     public void writeMessage( String message )
     {
         byte[] buf = message.getBytes();
-        ByteBuffer byteBuffer = new ByteBuffer( buf.length * 6);
+        ByteBuffer byteBuffer = new ByteBuffer( buf.length * 6 );
         byteBuffer.append( BOOTERCODE_CONSOLE );
         byteBuffer.comma();
         byteBuffer.append( testSetChannelId );
@@ -212,16 +215,16 @@ public class ForkingRunListener
         target.flush();
     }
 
-    private String toPropertyString( String key, String value )
+    private void toPropertyString( String key, String value )
     {
-        StringBuffer stringBuffer = new StringBuffer();
-        append( stringBuffer, BOOTERCODE_SYSPROPS ).comma( stringBuffer );
-        append( stringBuffer, Integer.toHexString( testSetChannelId.intValue() ) ).comma( stringBuffer );
-        StringUtils.escapeJavaStyleString( stringBuffer, key );
-        append( stringBuffer, "," );
-        StringUtils.escapeJavaStyleString( stringBuffer, value );
-        stringBuffer.append( "\n" );
-        return stringBuffer.toString();
+        target.write( BOOTERCODE_SYSPROPS );
+        target.write( ',' );
+        StreamUtils.toHex( target, testSetChannelId );
+        target.write( ',' );
+        StringUtils.escapeJavaStyleString( target, key );
+        target.write( ',' );
+        StringUtils.escapeJavaStyleString( target, value );
+        target.write( '\n' );
     }
 
     private String toString( byte operationCode, ReportEntry reportEntry, Integer testSetChannelId )

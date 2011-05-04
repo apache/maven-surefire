@@ -20,6 +20,7 @@ package org.apache.maven.surefire.util.internal;
  */
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.StringTokenizer;
@@ -520,6 +521,100 @@ public class StringUtils
         }
     }
 
+    public static void escapeJavaStyleString( PrintStream out, byte[] str, int off, int len )
+    {
+        if ( out == null )
+        {
+            throw new IllegalArgumentException( "The Writer must not be null" );
+        }
+        final int inputLength = str.length;
+        if ( str == null || inputLength == 0 )
+        {
+            return;
+        }
+        int outputPos = 0;
+        int end = off + len;
+        for ( int i = off; i < end; i++ )
+        {
+            char ch = (char) str[i];
+
+            // handle unicode
+            if ( ch > 0xfff )
+            {
+                outputPos = writeOut( out, outputPos, "\\u" + hex( ch ) );
+            }
+            else if ( ch > 0xff )
+            {
+                outputPos = writeOut( out, outputPos, "\\u0" + hex( ch ) );
+            }
+            else if ( ch > 0x7f || ch == ',' )
+            {    // Kr - this line modified from commons
+                outputPos = writeOut( out, outputPos, "\\u00" + hex( ch ) );
+            }
+            else if ( ch < 32 )
+            {
+                switch ( ch )
+                {
+                    case '\b':
+                        out.append( '\\' );
+                        out.append( 'b' );
+                        break;
+                    case '\n':
+                        out.append( '\\' );
+                        out.append( 'n' );
+                        break;
+                    case '\t':
+                        out.append( '\\' );
+                        out.append( 't' );
+                        break;
+                    case '\f':
+                        out.append( '\\' );
+                        out.append( 'f' );
+                        break;
+                    case '\r':
+                        out.append( '\\' );
+                        out.append( 'r' );
+                        break;
+                    default:
+                        if ( ch > 0xf )
+                        {
+                            outputPos = writeOut( out, outputPos, "\\u00" + hex( ch ) );
+                        }
+                        else
+                        {
+                            outputPos = writeOut( out, outputPos, "\\u000" + hex( ch ) );
+                        }
+                        break;
+                }
+            }
+            else
+            {
+                switch ( ch )
+                {
+                    case '\'':
+                        out.append( '\\' );
+                        out.append( '\'' );
+                        break;
+                    case '"':
+                        out.append( '\\' );
+                        out.append( '"' );
+                        break;
+                    case '\\':
+                        out.append( '\\' );
+                        out.append( '\\' );
+                        break;
+                    case '/':
+                        out.append( '\\' );
+                        out.append( '/' );
+                        break;
+                    default:
+                        out.append( ch );
+                        break;
+                }
+            }
+        }
+    }
+
     public static int escapeJavaStyleString( byte[] out, int outoff, byte[] str, int off, int len )
     {
         if ( out == null )
@@ -625,6 +720,16 @@ public class StringUtils
         return outputPos;
     }
 
+    private static int writeOut( PrintStream out, int outputPos, final String msg )
+    {
+        byte[] bytes = msg.getBytes();
+        for ( int cnt = 0; cnt < bytes.length; cnt++ )
+        {
+            out.write( bytes[cnt] );
+        }
+        return outputPos;
+    }
+
 
     private static int writeOut( byte[] out, int outputPos, final String msg )
     {
@@ -649,6 +754,25 @@ public class StringUtils
      * @return the escaped string
      */
     public static void escapeJavaStyleString( StringBuffer target, String str )
+    {
+        if ( str == null )
+        {
+            return;
+        }
+        try
+        {
+            StringWriter writer = new StringWriter( str.length() * 2 );
+            escapeJavaStyleString( writer, str, true );
+            target.append( writer.toString() ); // todo: be bit smarter
+        }
+        catch ( IOException ioe )
+        {
+            // this should never ever happen while writing to a StringWriter
+            ioe.printStackTrace();
+        }
+    }
+
+    public static void escapeJavaStyleString( PrintStream target, String str )
     {
         if ( str == null )
         {
