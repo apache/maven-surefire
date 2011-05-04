@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -38,15 +37,10 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.surefire.AbstractSurefireMojo;
-import org.apache.maven.plugin.surefire.ProviderInfo;
+import org.apache.maven.plugin.surefire.Summary;
 import org.apache.maven.plugin.surefire.booterclient.ChecksumCalculator;
-import org.apache.maven.plugin.surefire.booterclient.ForkConfiguration;
-import org.apache.maven.plugin.surefire.booterclient.ForkStarter;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
 import org.apache.maven.surefire.booter.ProviderConfiguration;
-import org.apache.maven.surefire.booter.SurefireBooterForkException;
-import org.apache.maven.surefire.booter.SurefireExecutionException;
 import org.apache.maven.surefire.failsafe.model.FailsafeSummary;
 import org.apache.maven.surefire.failsafe.model.io.xpp3.FailsafeSummaryXpp3Writer;
 import org.apache.maven.surefire.suite.RunResult;
@@ -80,8 +74,8 @@ public class IntegrationTestMojo
     private boolean skipTests;
 
     /**
-     * Set this to "true" to skip running integration tests, but still compile them. Its use is NOT RECOMMENDED, but quite
-     * convenient on occasion.
+     * Set this to "true" to skip running integration tests, but still compile them. Its use is NOT RECOMMENDED, but
+     * quite convenient on occasion.
      *
      * @parameter expression="${skipITs}"
      * @since 2.4.3-alpha-2
@@ -98,9 +92,9 @@ public class IntegrationTestMojo
     private boolean skipExec;
 
     /**
-     * Set this to "true" to bypass unit tests entirely. Its use is NOT RECOMMENDED, especially if you
-     * enable it using the "maven.test.skip" property, because maven.test.skip disables both running the
-     * tests and compiling the tests.  Consider using the <code>skipTests parameter</code> instead.
+     * Set this to "true" to bypass unit tests entirely. Its use is NOT RECOMMENDED, especially if you enable it using
+     * the "maven.test.skip" property, because maven.test.skip disables both running the tests and compiling the tests.
+     * Consider using the <code>skipTests parameter</code> instead.
      *
      * @parameter default-value="false" expression="${maven.test.skip}"
      */
@@ -115,16 +109,16 @@ public class IntegrationTestMojo
     private File basedir;
 
     /**
-     * The directory containing generated test classes of the project being tested.
-     * This will be included at the beginning of the test classpath.
+     * The directory containing generated test classes of the project being tested. This will be included at the
+     * beginning of the test classpath.
      *
      * @parameter default-value="${project.build.testOutputDirectory}"
      */
     private File testClassesDirectory;
 
     /**
-     * The directory containing generated classes of the project being tested.
-     * This will be included after the test classes in the test classpath.
+     * The directory containing generated classes of the project being tested. This will be included after the test
+     * classes in the test classpath.
      *
      * @parameter default-value="${project.build.outputDirectory}"
      */
@@ -139,9 +133,8 @@ public class IntegrationTestMojo
     private MavenProject project;
 
     /**
-     * List of dependencies to exclude from the test classpath.
-     * Each dependency string must follow the format <i>groupId:artifactId</i>.
-     * For example: <i>org.acme:project-a</i>
+     * List of dependencies to exclude from the test classpath. Each dependency string must follow the format
+     * <i>groupId:artifactId</i>. For example: <i>org.acme:project-a</i>
      *
      * @parameter
      * @since 2.6
@@ -149,9 +142,8 @@ public class IntegrationTestMojo
     private List classpathDependencyExcludes;
 
     /**
-     * A dependency scope to exclude from the test classpath.
-     * The scope should be one of the scopes defined by org.apache.maven.artifact.Artifact.
-     * This includes the following:
+     * A dependency scope to exclude from the test classpath. The scope should be one of the scopes defined by
+     * org.apache.maven.artifact.Artifact. This includes the following:
      * <p/>
      * <ul>
      * <li><i>compile</i> - system, provided, compile
@@ -192,16 +184,14 @@ public class IntegrationTestMojo
 
     /**
      * Specify this parameter to run individual tests by file name, overriding the <code>includes/excludes</code>
-     * parameters.  Each pattern you specify here will be used to create an
-     * include pattern formatted like <code>**&#47;${test}.java</code>, so you can just type "-Dit.test=MyTest"
-     * to run a single test called "foo/MyTest.java".<br/>
-     * This parameter overrides the <code>includes/excludes</code> parameters, and the TestNG
-     * <code>suiteXmlFiles</code> parameter.
+     * parameters. Each pattern you specify here will be used to create an include pattern formatted like
+     * <code>**&#47;${test}.java</code>, so you can just type "-Dit.test=MyTest" to run a single test called
+     * "foo/MyTest.java".<br/>
+     * This parameter overrides the <code>includes/excludes</code> parameters, and the TestNG <code>suiteXmlFiles</code>
+     * parameter.
      * <p/>
-     * since 2.7.3
-     * You can execute a limited number of method in the test with adding #myMethod or #my*ethod.
-     * Si type "-Dtest=MyTest#myMethod"
-     * <b>supported for junit 4.x and testNg</b>
+     * since 2.7.3 You can execute a limited number of method in the test with adding #myMethod or #my*ethod. Si type
+     * "-Dtest=MyTest#myMethod" <b>supported for junit 4.x and testNg</b>
      *
      * @parameter expression="${it.test}"
      */
@@ -209,8 +199,7 @@ public class IntegrationTestMojo
 
     /**
      * A list of &lt;include> elements specifying the tests (by pattern) that should be included in testing. When not
-     * specified and when the <code>test</code> parameter is not specified, the default includes will be
-     * <code><br/>
+     * specified and when the <code>test</code> parameter is not specified, the default includes will be <code><br/>
      * &lt;includes><br/>
      * &nbsp;&lt;include>**&#47;IT*.java&lt;/include><br/>
      * &nbsp;&lt;include>**&#47;*IT.java&lt;/include><br/>
@@ -218,8 +207,8 @@ public class IntegrationTestMojo
      * &lt;/includes><br/>
      * </code>
      * <p/>
-     * Each include item may also contain a comma-separated sublist of items, which will be treated as multiple &nbsp;&lt;include>
-     * entries.<br/>
+     * Each include item may also contain a comma-separated sublist of items, which will be treated as multiple
+     * &nbsp;&lt;include> entries.<br/>
      * <p/>
      * This parameter is ignored if the TestNG <code>suiteXmlFiles</code> parameter is specified.
      *
@@ -229,17 +218,15 @@ public class IntegrationTestMojo
 
     /**
      * A list of &lt;exclude> elements specifying the tests (by pattern) that should be excluded in testing. When not
-     * specified and when the <code>test</code> parameter is not specified, the default excludes will be
-     * <code><br/>
+     * specified and when the <code>test</code> parameter is not specified, the default excludes will be <code><br/>
      * &lt;excludes><br/>
      * &nbsp;&lt;exclude>**&#47;*$*&lt;/exclude><br/>
      * &lt;/excludes><br/>
-     * </code>
-     * (which excludes all inner classes).<br>
+     * </code> (which excludes all inner classes).<br>
      * This parameter is ignored if the TestNG <code>suiteXmlFiles</code> parameter is specified.
      * <p/>
-     * Each exclude item may also contain a comma-separated sublist of items, which will be treated as multiple &nbsp;&lt;exclude>
-     * entries.<br/>
+     * Each exclude item may also contain a comma-separated sublist of items, which will be treated as multiple
+     * &nbsp;&lt;exclude> entries.<br/>
      *
      * @parameter
      */
@@ -272,8 +259,8 @@ public class IntegrationTestMojo
     private Map systemPropertyVariables;
 
     /**
-     * List of properties for configuring all TestNG related configurations. This is the new
-     * preferred method of configuring TestNG.
+     * List of properties for configuring all TestNG related configurations. This is the new preferred method of
+     * configuring TestNG.
      *
      * @parameter
      * @since 2.4
@@ -372,10 +359,9 @@ public class IntegrationTestMojo
     private String argLine;
 
     /**
-     * Attach a debugger to the forked JVM.  If set to "true", the process will suspend and
-     * wait for a debugger to attach on port 5005.  If set to some other string, that
-     * string will be appended to the argLine, allowing you to configure arbitrary
-     * debuggability options (without overwriting the other options specified through the <code>argLine</code>
+     * Attach a debugger to the forked JVM. If set to "true", the process will suspend and wait for a debugger to attach
+     * on port 5005. If set to some other string, that string will be appended to the argLine, allowing you to configure
+     * arbitrary debuggability options (without overwriting the other options specified through the <code>argLine</code>
      * parameter).
      *
      * @parameter expression="${maven.failsafe.debug}"
@@ -384,8 +370,8 @@ public class IntegrationTestMojo
     private String debugForkedProcess;
 
     /**
-     * Kill the forked test process after a certain number of seconds.  If set to 0,
-     * wait forever for the process, never timing out.
+     * Kill the forked test process after a certain number of seconds. If set to 0, wait forever for the process, never
+     * timing out.
      *
      * @parameter expression="${failsafe.timeout}"
      * @since 2.4
@@ -410,8 +396,9 @@ public class IntegrationTestMojo
 
     /**
      * When false it makes tests run using the standard classloader delegation instead of the default Maven isolated
-     * classloader. Only used when forking (forkMode is not "none").<br/> Setting it to false helps with some problems
-     * caused by conflicts between xml parsers in the classpath and the Java 5 provider parser.
+     * classloader. Only used when forking (forkMode is not "none").<br/>
+     * Setting it to false helps with some problems caused by conflicts between xml parsers in the classpath and the
+     * Java 5 provider parser.
      *
      * @parameter expression="${childDelegation}" default-value="false"
      * @since 2.1
@@ -419,8 +406,8 @@ public class IntegrationTestMojo
     private boolean childDelegation;
 
     /**
-     * (TestNG only) Groups for this test. Only classes/methods/etc decorated with one of the groups specified here will be included
-     * in test run, if specified.<br/>
+     * (TestNG only) Groups for this test. Only classes/methods/etc decorated with one of the groups specified here will
+     * be included in test run, if specified.<br/>
      * This parameter is ignored if the <code>suiteXmlFiles</code> parameter is specified.
      *
      * @parameter expression="${groups}"
@@ -429,8 +416,8 @@ public class IntegrationTestMojo
     private String groups;
 
     /**
-     * (TestNG only) Excluded groups. Any methods/classes/etc with one of the groups specified in this list will specifically not be
-     * run.<br/>
+     * (TestNG only) Excluded groups. Any methods/classes/etc with one of the groups specified in this list will
+     * specifically not be run.<br/>
      * This parameter is ignored if the <code>suiteXmlFiles</code> parameter is specified.
      *
      * @parameter expression="${excludedGroups}"
@@ -439,10 +426,11 @@ public class IntegrationTestMojo
     private String excludedGroups;
 
     /**
-     * (TestNG only) List of &lt;suiteXmlFile> elements specifying TestNG suite xml file locations. Note that <code>suiteXmlFiles</code> is incompatible
-     * with several other parameters of this plugin, like <code>includes/excludes</code>.<br/>
-     * This parameter is ignored if the <code>test</code> parameter is specified (allowing you to run a single
-     * test instead of an entire suite).
+     * (TestNG only) List of &lt;suiteXmlFile> elements specifying TestNG suite xml file locations. Note that
+     * <code>suiteXmlFiles</code> is incompatible with several other parameters of this plugin, like
+     * <code>includes/excludes</code>.<br/>
+     * This parameter is ignored if the <code>test</code> parameter is specified (allowing you to run a single test
+     * instead of an entire suite).
      *
      * @parameter
      * @since 2.2
@@ -466,8 +454,8 @@ public class IntegrationTestMojo
     private String testNGArtifactName;
 
     /**
-     * (TestNG/JUnit 4.7 provider only) The attribute thread-count allows you to specify how many threads should be allocated for this execution. Only
-     * makes sense to use in conjunction with the <code>parallel</code> parameter.
+     * (TestNG/JUnit 4.7 provider only) The attribute thread-count allows you to specify how many threads should be
+     * allocated for this execution. Only makes sense to use in conjunction with the <code>parallel</code> parameter.
      *
      * @parameter expression="${threadCount}"
      * @since 2.2
@@ -483,8 +471,9 @@ public class IntegrationTestMojo
     private boolean perCoreThreadCount;
 
     /**
-     * (JUnit 4.7 provider) Indicates that the thread pool will be unlimited. The <code>parallel</code> parameter and the actual number of classes/methods
-     * will decide. Setting this to "true" effectively disables <code>perCoreThreadCount</code> and <code>threadCount</code>. Defaults to "false".
+     * (JUnit 4.7 provider) Indicates that the thread pool will be unlimited. The <code>parallel</code> parameter and
+     * the actual number of classes/methods will decide. Setting this to "true" effectively disables
+     * <code>perCoreThreadCount</code> and <code>threadCount</code>. Defaults to "false".
      *
      * @parameter expression="${useUnlimitedThreads}" default-value="false"
      * @since 2.5
@@ -492,11 +481,12 @@ public class IntegrationTestMojo
     private boolean useUnlimitedThreads;
 
     /**
-     * (TestNG only) When you use the <code>parallel</code> attribute, TestNG will try to run all your test methods in separate threads, except for
-     * methods that depend on each other, which will be run in the same thread in order to respect their order of
-     * execution.
+     * (TestNG only) When you use the <code>parallel</code> attribute, TestNG will try to run all your test methods in
+     * separate threads, except for methods that depend on each other, which will be run in the same thread in order to
+     * respect their order of execution.
      * <p/>
-     * (JUnit 4.7 provider) Supports values "classes"/"methods"/"both" to run in separate threads, as controlled by <code>threadCount</code>.
+     * (JUnit 4.7 provider) Supports values "classes"/"methods"/"both" to run in separate threads, as controlled by
+     * <code>threadCount</code>.
      *
      * @parameter expression="${parallel}"
      * @todo test how this works with forking, and console/file output parallelism
@@ -567,13 +557,12 @@ public class IntegrationTestMojo
     private boolean useSystemClassLoader;
 
     /**
-     * By default, Surefire forks your tests using a manifest-only JAR; set this parameter
-     * to "false" to force it to launch your tests with a plain old Java classpath.
-     * (See http://maven.apache.org/plugins/maven-surefire-plugin/examples/class-loading.html
-     * for a more detailed explanation of manifest-only JARs and their benefits.)
+     * By default, Surefire forks your tests using a manifest-only JAR; set this parameter to "false" to force it to
+     * launch your tests with a plain old Java classpath. (See
+     * http://maven.apache.org/plugins/maven-surefire-plugin/examples/class-loading.html for a more detailed explanation
+     * of manifest-only JARs and their benefits.)
      * <p/>
-     * Beware, setting this to "false" may cause your tests to
-     * fail on Windows if your classpath is too long.
+     * Beware, setting this to "false" may cause your tests to fail on Windows if your classpath is too long.
      *
      * @parameter expression="${failsafe.useManifestOnlyJar}" default-value="true"
      * @since 2.4.3
@@ -620,11 +609,12 @@ public class IntegrationTestMojo
     private Boolean parallelMavenExecution;
 
     /**
-     * Defines the order the tests will be run in. Supported values are "alphabetical", "reversealphabetical",
-     * "random", "hourly" (alphabetical on even hours, reverse alphabetical on odd hours) and "filesystem".<p/>
+     * Defines the order the tests will be run in. Supported values are "alphabetical", "reversealphabetical", "random",
+     * "hourly" (alphabetical on even hours, reverse alphabetical on odd hours) and "filesystem".
      * <p/>
-     * Odd/Even for hourly is determined at the time the of scanning the classpath, meaning it could change during
-     * a multi-module build.
+     * <p/>
+     * Odd/Even for hourly is determined at the time the of scanning the classpath, meaning it could change during a
+     * multi-module build.
      *
      * @parameter default-value="filesystem"
      * @since 2.7
@@ -636,56 +626,30 @@ public class IntegrationTestMojo
      */
     private ToolchainManager toolchainManager;
 
-
-    public void executeAfterPreconditionsChecked()
+    protected void handleSummary( Summary summary )
         throws MojoExecutionException, MojoFailureException
     {
-        final List providers = initialize();
-        String exceptionMessage = null;
-        FailsafeSummary result = new FailsafeSummary();
+        FailsafeSummary failsafeSummary = createFailsafeSummaryFromSummary( summary );
+        writeSummary( failsafeSummary );
+    }
 
-        ForkConfiguration forkConfiguration = null;
-        for ( Iterator iter = providers.iterator(); iter.hasNext(); )
+    private FailsafeSummary createFailsafeSummaryFromSummary( Summary summary )
+    {
+        FailsafeSummary failsafeSummary = new FailsafeSummary();
+        if ( summary.isErrorFree() )
         {
-            ProviderInfo provider = (ProviderInfo) iter.next();
-            forkConfiguration = getForkConfiguration();
-            ClassLoaderConfiguration classLoaderConfiguration = getClassLoaderConfiguration( forkConfiguration );
-            ForkStarter forkStarter = createForkStarter( provider, forkConfiguration, classLoaderConfiguration );
-            try
+            RunResult result = summary.getResultOfLastSuccessfulRun();
+            if ( result != null )
             {
-                final RunResult runResult = forkStarter.run();
-                result.setResult( runResult.getForkedProcessCode() );
-            }
-            catch ( SurefireBooterForkException e )
-            {
-                if ( exceptionMessage == null )
-                {
-                    exceptionMessage = e.getMessage();
-                }
-            }
-            catch ( SurefireExecutionException e )
-            {
-                if ( exceptionMessage == null )
-                {
-                    exceptionMessage = e.getMessage();
-                }
+                failsafeSummary.setResult( result.getForkedProcessCode() );
             }
         }
-
-        if ( exceptionMessage != null )
+        else
         {
-            // Fail no matter what as long as any provider failed
-            result.setResult( ProviderConfiguration.TESTS_FAILED_EXIT_CODE );
-            result.setException( exceptionMessage );
+            failsafeSummary.setResult( ProviderConfiguration.TESTS_FAILED_EXIT_CODE );
+            failsafeSummary.setException( summary.getFirstException().getMessage() );
         }
-
-        if ( getOriginalSystemProperties() != null && forkConfiguration != null && !forkConfiguration.isForking() )
-        {
-            // restore system properties, only makes sense when not forking..
-            System.setProperties( getOriginalSystemProperties() );
-        }
-
-        writeSummary( result );
+        return failsafeSummary;
     }
 
     private void writeSummary( FailsafeSummary summary )
@@ -698,21 +662,9 @@ public class IntegrationTestMojo
         }
         try
         {
-            String encoding;
-            if ( StringUtils.isEmpty( this.encoding ) )
-            {
-                getLog().warn( "File encoding has not been set, using platform encoding " + ReaderFactory.FILE_ENCODING
-                                   + ", i.e. build is platform dependent!" );
-                encoding = ReaderFactory.FILE_ENCODING;
-            }
-            else
-            {
-                encoding = this.encoding;
-            }
-
             FileOutputStream fileOutputStream = new FileOutputStream( summaryFile );
             BufferedOutputStream bufferedOutputStream = new BufferedOutputStream( fileOutputStream );
-            Writer writer = new OutputStreamWriter( bufferedOutputStream, encoding );
+            Writer writer = new OutputStreamWriter( bufferedOutputStream, getEncodingOrDefault() );
             FailsafeSummaryXpp3Writer xpp3Writer = new FailsafeSummaryXpp3Writer();
             xpp3Writer.write( writer, summary );
             writer.close();
@@ -722,6 +674,20 @@ public class IntegrationTestMojo
         catch ( IOException e )
         {
             throw new MojoExecutionException( e.getMessage(), e );
+        }
+    }
+
+    private String getEncodingOrDefault()
+    {
+        if ( StringUtils.isEmpty( encoding ) )
+        {
+            getLog().warn( "File encoding has not been set, using platform encoding " + ReaderFactory.FILE_ENCODING
+                               + ", i.e. build is platform dependent!" );
+            return ReaderFactory.FILE_ENCODING;
+        }
+        else
+        {
+            return encoding;
         }
     }
 

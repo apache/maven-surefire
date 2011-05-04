@@ -53,7 +53,10 @@ import org.apache.maven.surefire.booter.ClasspathConfiguration;
 import org.apache.maven.surefire.booter.ProviderConfiguration;
 import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.StartupReportConfiguration;
+import org.apache.maven.surefire.booter.SurefireBooterForkException;
+import org.apache.maven.surefire.booter.SurefireExecutionException;
 import org.apache.maven.surefire.report.ReporterConfiguration;
+import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestRequest;
@@ -120,19 +123,27 @@ public abstract class AbstractSurefireMojo
 
     protected abstract boolean isSkipExecution();
 
-    protected abstract void executeAfterPreconditionsChecked()
-        throws MojoExecutionException, MojoFailureException;
+    protected void executeAfterPreconditionsChecked()
+        throws MojoExecutionException, MojoFailureException
+    {
+        createDependencyResolver();
+        Summary summary = executeAllProviders();
+        restoreOriginalSystemPropertiesWhenNotForking( summary );
+        handleSummary( summary );
+    }
 
     private Artifact surefireArtifact;
 
-
-    protected List initialize()
-        throws MojoFailureException
+    private void createDependencyResolver()
     {
         dependencyResolver =
             new SurefireDependencyResolver( getArtifactResolver(), getArtifactFactory(), getLog(), getLocalRepository(),
                                             getRemoteRepositories(), getMetadataSource(), getPluginName() );
+    }
 
+    protected List createProviders()
+        throws MojoFailureException
+    {
         try
         {
             final Artifact junitDepArtifact = getJunitDepArtifact();
@@ -147,6 +158,52 @@ public abstract class AbstractSurefireMojo
         catch ( InvalidVersionSpecificationException e )
         {
             throw new NestedRuntimeException( e );
+        }
+    }
+
+    private Summary executeAllProviders()
+        throws MojoExecutionException, MojoFailureException
+    {
+        List providers = createProviders();
+        Summary summary = new Summary();
+        for ( Iterator iter = providers.iterator(); iter.hasNext(); )
+        {
+            ProviderInfo provider = (ProviderInfo) iter.next();
+            executeProvider( provider, summary );
+        }
+        return summary;
+    }
+
+    private void executeProvider( ProviderInfo provider, Summary summary )
+        throws MojoExecutionException, MojoFailureException
+    {
+        ForkConfiguration forkConfiguration = getForkConfiguration();
+        summary.reportForkConfiguration( forkConfiguration );
+        ClassLoaderConfiguration classLoaderConfiguration = getClassLoaderConfiguration( forkConfiguration );
+        ForkStarter forkStarter = createForkStarter( provider, forkConfiguration, classLoaderConfiguration );
+        try
+        {
+            RunResult result = forkStarter.run();
+            summary.registerRunResult( result );
+        }
+        catch ( SurefireBooterForkException e )
+        {
+            summary.registerException( e );
+        }
+        catch ( SurefireExecutionException e )
+        {
+            summary.registerException( e );
+        }
+    }
+
+    protected abstract void handleSummary( Summary summary )
+        throws MojoExecutionException, MojoFailureException;
+
+    protected void restoreOriginalSystemPropertiesWhenNotForking( Summary summary )
+    {
+        if ( ( getOriginalSystemProperties() != null ) && ( summary.isForking() ) )
+        {
+            System.setProperties( getOriginalSystemProperties() );
         }
     }
 
@@ -333,9 +390,8 @@ public abstract class AbstractSurefireMojo
         return providerConfiguration1;
     }
 
-    StartupConfiguration createStartupConfiguration( ForkConfiguration forkConfiguration,
-                                                               ProviderInfo provider,
-                                                               ClassLoaderConfiguration classLoaderConfiguration )
+    StartupConfiguration createStartupConfiguration( ForkConfiguration forkConfiguration, ProviderInfo provider,
+                                                     ClassLoaderConfiguration classLoaderConfiguration )
         throws MojoExecutionException, MojoFailureException
     {
 
@@ -721,8 +777,8 @@ public abstract class AbstractSurefireMojo
      * @throws ArtifactResolutionException when it happens
      */
     Classpath generateTestClasspath()
-        throws InvalidVersionSpecificationException,
-        MojoFailureException, ArtifactResolutionException, ArtifactNotFoundException
+        throws InvalidVersionSpecificationException, MojoFailureException, ArtifactResolutionException,
+        ArtifactNotFoundException
     {
         List classpath = new ArrayList( 2 + getProject().getArtifacts().size() );
 
