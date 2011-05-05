@@ -117,10 +117,8 @@ public class MavenSurefireJUnit47RunnerTest
     public void testSurefireShouldBeAbleToReportRunStatusEvenWithFailingTests()
         throws Exception
     {
-        ReporterConfiguration reporterConfiguration = ConcurrentReporterManagerTest.getTestReporterConfiguration();
-
         ReporterFactory reporterManagerFactory =
-            new ReporterManagerFactory( this.getClass().getClassLoader(), StartupReportConfiguration.defaultNoXml() );
+            new ReporterManagerFactory( StartupReportConfiguration.defaultNoXml() );
 
         final HashMap<String, TestSet> classMethodCounts = new HashMap<String, TestSet>();
         RunListener reporter = ConcurrentReporterManager.createInstance( classMethodCounts, reporterManagerFactory,

@@ -34,7 +34,6 @@ import org.apache.maven.surefire.booter.StartupReportConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.apache.maven.surefire.booter.SurefireExecutionException;
 import org.apache.maven.surefire.booter.SurefireReflector;
-import org.apache.maven.surefire.booter.SurefireStarter;
 import org.apache.maven.surefire.booter.SystemPropertyManager;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
 import org.apache.maven.surefire.report.ReporterFactory;
@@ -90,12 +89,7 @@ public class ForkStarter
         final RunResult result;
 
         final String requestedForkMode = forkConfiguration.getForkMode();
-        if ( ForkConfiguration.FORK_NEVER.equals( requestedForkMode ) )
-        {
-            SurefireStarter surefireStarter = new SurefireStarter( startupConfiguration, providerConfiguration, this.startupReportConfiguration );
-            result = surefireStarter.runSuitesInProcess();
-        }
-        else if ( ForkConfiguration.FORK_ONCE.equals( requestedForkMode ) )
+        if ( ForkConfiguration.FORK_ONCE.equals( requestedForkMode ) )
         {
             result = runSuitesForkOnce();
         }
@@ -114,7 +108,7 @@ public class ForkStarter
         throws SurefireBooterForkException
     {
         final ReporterManagerFactory testSetReporterFactory =
-            new ReporterManagerFactory( Thread.currentThread().getContextClassLoader(), startupReportConfiguration );
+            new ReporterManagerFactory( startupReportConfiguration );
         try
         {
             return fork( null, providerConfiguration.getProviderProperties(), testSetReporterFactory );
@@ -149,7 +143,7 @@ public class ForkStarter
         Properties properties = new Properties();
 
         final ReporterManagerFactory testSetReporterFactory =
-            new ReporterManagerFactory( Thread.currentThread().getContextClassLoader(), startupReportConfiguration );
+            new ReporterManagerFactory( startupReportConfiguration );
         try
         {
             while ( suites.hasNext() )

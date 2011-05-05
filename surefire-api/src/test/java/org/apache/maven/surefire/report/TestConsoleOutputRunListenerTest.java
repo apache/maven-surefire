@@ -50,8 +50,7 @@ public class TestConsoleOutputRunListenerTest
 
     private ReporterFactory createReporterFactory()
     {
-        ReporterConfiguration reporterConfiguration = getTestReporterConfiguration();
-        return new ReporterManagerFactory( this.getClass().getClassLoader(), StartupReportConfiguration.defaultValue() );
+        return new ReporterManagerFactory( StartupReportConfiguration.defaultValue() );
     }
 
     public static ReporterConfiguration getTestReporterConfiguration()

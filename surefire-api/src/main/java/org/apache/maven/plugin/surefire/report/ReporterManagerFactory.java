@@ -42,15 +42,11 @@ import org.apache.maven.surefire.suite.RunResult;
  * <p/>
  * Keeps a centralized count of test run results.
  *
- * TODO: Move out of API module
- *
  * @author Kristian Rosenvold
  */
 public class ReporterManagerFactory
     implements ReporterFactory
 {
-
-    private final ClassLoader surefireClassLoader;
 
     private final ReporterConfiguration reporterConfiguration;
 
@@ -60,17 +56,17 @@ public class ReporterManagerFactory
 
     private final StartupReportConfiguration reportConfiguration;
 
-    public ReporterManagerFactory( ClassLoader surefireClassLoader, StartupReportConfiguration reportConfiguration )
+    public ReporterManagerFactory( StartupReportConfiguration reportConfiguration )
     {
         this.reportConfiguration = reportConfiguration;
         this.reporterConfiguration = getReporterConfiguration(  );
-        this.surefireClassLoader = surefireClassLoader;
         multicastingReporter = new MulticastingReporter( instantiateReports() );
         runStarting();
     }
 
     private ReporterConfiguration getReporterConfiguration( )
     {
+        //noinspection BooleanConstructorCall
         return new ReporterConfiguration( reportConfiguration.getReportsDirectory(), new Boolean( reportConfiguration.isTrimStackTrace() ));
     }
 

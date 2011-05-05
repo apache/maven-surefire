@@ -33,7 +33,7 @@ public class TestSetMockReporterFactory
 {
     public TestSetMockReporterFactory()
     {
-        super( Thread.currentThread().getContextClassLoader(), StartupReportConfiguration.defaultValue() );
+        super( StartupReportConfiguration.defaultValue() );
     }
 
     public DirectConsoleReporter createConsoleReporter()

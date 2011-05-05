@@ -55,6 +55,7 @@ import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.StartupReportConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.apache.maven.surefire.booter.SurefireExecutionException;
+import org.apache.maven.surefire.booter.SurefireStarter;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
@@ -180,10 +181,20 @@ public abstract class AbstractSurefireMojo
         ForkConfiguration forkConfiguration = getForkConfiguration();
         summary.reportForkConfiguration( forkConfiguration );
         ClassLoaderConfiguration classLoaderConfiguration = getClassLoaderConfiguration( forkConfiguration );
-        ForkStarter forkStarter = createForkStarter( provider, forkConfiguration, classLoaderConfiguration );
         try
         {
-            RunResult result = forkStarter.run();
+            final RunResult result;
+            if ( ForkConfiguration.FORK_NEVER.equals( forkConfiguration.getForkMode() ) )
+            {
+                SurefireStarter surefireStarter =
+                    createInprocessStarter( provider, forkConfiguration, classLoaderConfiguration );
+                result = surefireStarter.runSuitesInProcess();
+            }
+            else
+            {
+                ForkStarter forkStarter = createForkStarter( provider, forkConfiguration, classLoaderConfiguration );
+                result = forkStarter.run();
+            }
             summary.registerRunResult( result );
         }
         catch ( SurefireBooterForkException e )
@@ -567,6 +578,19 @@ public abstract class AbstractSurefireMojo
         ProviderConfiguration providerConfiguration = createProviderConfiguration();
         return new ForkStarter( providerConfiguration, startupConfiguration, forkConfiguration,
                                 getForkedProcessTimeoutInSeconds(), startupReportConfiguration );
+    }
+
+    protected SurefireStarter createInprocessStarter( ProviderInfo provider, ForkConfiguration forkConfiguration,
+                                                       ClassLoaderConfiguration classLoaderConfiguration )
+        throws MojoExecutionException, MojoFailureException
+    {
+        StartupConfiguration startupConfiguration =
+            createStartupConfiguration( forkConfiguration, provider, classLoaderConfiguration );
+        StartupReportConfiguration startupReportConfiguration = getStartupReportConfiguration();
+        ProviderConfiguration providerConfiguration = createProviderConfiguration();
+         return
+            new SurefireStarter( startupConfiguration, providerConfiguration, startupReportConfiguration );
+
     }
 
     protected ForkConfiguration getForkConfiguration()

@@ -224,9 +224,9 @@ public class SurefireReflector
     public Object createReportingReporterFactory( StartupReportConfiguration startupReportConfiguration )
     {
         Class[] args =
-            new Class[]{ ClassLoader.class, this.startupReportConfiguration };
+            new Class[]{ this.startupReportConfiguration };
         Object src = createStartupReportConfiguration( startupReportConfiguration );
-        Object[] params = new Object[]{ this.surefireClassLoader, src };
+        Object[] params = new Object[]{ src };
         return ReflectionUtils.instantiateObject( ReporterManagerFactory.class.getName(), args, params,
                                                   surefireClassLoader );
 
