@@ -28,6 +28,14 @@
 
 When working with surefire, it is necessary to understand a few things:
 
+Multi-Module project
+  The plugin is built as part of a multi-module plugin. The generated
+  'project information' will suggest that you check out (e.g.) 
+  http://svn.apache.org/repos/asf/maven/surefire/trunk/maven-surefire-plugin.
+  In fact, you need to check out (e.g.)
+  http://svn.apache.org/repos/asf/maven/surefire/trunk and
+  build from there.
+
 JDK Versions
   The surefire booter is capable of booting all the way back to jdk1.3. Specifically
   this means surefire-api, surefire-booter, common-junit3 and surefire-junit3 are
