@@ -26,7 +26,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Properties;
-import org.apache.maven.plugin.surefire.report.ReporterManagerFactory;
+import org.apache.maven.plugin.surefire.report.FileReporterFactory;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterFactory;
@@ -227,7 +227,7 @@ public class SurefireReflector
             new Class[]{ this.startupReportConfiguration };
         Object src = createStartupReportConfiguration( startupReportConfiguration );
         Object[] params = new Object[]{ src };
-        return ReflectionUtils.instantiateObject( ReporterManagerFactory.class.getName(), args, params,
+        return ReflectionUtils.instantiateObject( FileReporterFactory.class.getName(), args, params,
                                                   surefireClassLoader );
 
     }

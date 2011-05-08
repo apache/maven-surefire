@@ -20,7 +20,7 @@ package org.apache.maven.surefire.booter;
  */
 
 import java.io.PrintStream;
-import org.apache.maven.surefire.report.DirectConsoleReporter;
+import org.apache.maven.surefire.report.ConsoleLogger;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.RunStatistics;
@@ -67,7 +67,7 @@ public class ForkingReporterFactory
         return new RunStatistics();
     }
 
-    public DirectConsoleReporter createConsoleReporter()
+    public ConsoleLogger createConsoleLogger()
     {
         return new ForkingRunListener( originalSystemOut, ROOT_CHANNEl.intValue(), isTrimstackTrace.booleanValue() );
     }

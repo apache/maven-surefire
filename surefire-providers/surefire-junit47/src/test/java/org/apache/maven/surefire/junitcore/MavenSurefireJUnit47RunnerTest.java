@@ -18,7 +18,7 @@ package org.apache.maven.surefire.junitcore;
 
 import java.io.File;
 import java.util.HashMap;
-import org.apache.maven.plugin.surefire.report.ReporterManagerFactory;
+import org.apache.maven.plugin.surefire.report.FileReporterFactory;
 import org.apache.maven.surefire.booter.StartupReportConfiguration;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterFactory;
@@ -118,7 +118,7 @@ public class MavenSurefireJUnit47RunnerTest
         throws Exception
     {
         ReporterFactory reporterManagerFactory =
-            new ReporterManagerFactory( StartupReportConfiguration.defaultNoXml() );
+            new FileReporterFactory( StartupReportConfiguration.defaultNoXml() );
 
         final HashMap<String, TestSet> classMethodCounts = new HashMap<String, TestSet>();
         RunListener reporter = ConcurrentReporterManager.createInstance( classMethodCounts, reporterManagerFactory,

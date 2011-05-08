@@ -19,24 +19,24 @@ package org.apache.maven.plugin.surefire.booterclient;
  * under the License.
  */
 
-import org.apache.maven.plugin.surefire.report.ReporterManagerFactory;
+import org.apache.maven.plugin.surefire.report.FileReporterFactory;
 import org.apache.maven.surefire.booter.StartupReportConfiguration;
 import org.apache.maven.surefire.report.DefaultConsoleReporter;
-import org.apache.maven.surefire.report.DirectConsoleReporter;
+import org.apache.maven.surefire.report.ConsoleLogger;
 import org.apache.maven.surefire.report.RunListener;
 
 /**
  * @author Kristian Rosenvold
  */
 public class TestSetMockReporterFactory
-    extends ReporterManagerFactory
+    extends FileReporterFactory
 {
     public TestSetMockReporterFactory()
     {
         super( StartupReportConfiguration.defaultValue() );
     }
 
-    public DirectConsoleReporter createConsoleReporter()
+    public ConsoleLogger createConsoleLogger()
     {
         return new DefaultConsoleReporter( System.out );
     }

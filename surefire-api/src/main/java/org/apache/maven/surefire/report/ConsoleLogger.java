@@ -21,13 +21,13 @@ package org.apache.maven.surefire.report;
 
 /**
  * Allows providers to write console messages on the running maven process.
- *
+ * <p/>
  * This output is associated with the entire test run and not a specific
- * test, which means it just goes straight to the console immediately.
- *
- s* <p/>
+ * test, which means it just goes "straight" to the console "immediately".
+ * <p/>
+ * s* <p/>
  */
-public interface DirectConsoleReporter
+public interface ConsoleLogger
 {
-    public void writeMessage( String message );
+    public void info( String message );
 }

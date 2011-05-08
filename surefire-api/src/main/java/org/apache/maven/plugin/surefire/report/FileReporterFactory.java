@@ -26,7 +26,7 @@ import org.apache.maven.surefire.booter.StartupReportConfiguration;
 import org.apache.maven.surefire.report.AbstractConsoleReporter;
 import org.apache.maven.surefire.report.AbstractFileReporter;
 import org.apache.maven.surefire.report.DefaultDirectConsoleReporter;
-import org.apache.maven.surefire.report.DirectConsoleReporter;
+import org.apache.maven.surefire.report.ConsoleLogger;
 import org.apache.maven.surefire.report.MulticastingReporter;
 import org.apache.maven.surefire.report.Reporter;
 import org.apache.maven.surefire.report.ReporterConfiguration;
@@ -44,7 +44,7 @@ import org.apache.maven.surefire.suite.RunResult;
  *
  * @author Kristian Rosenvold
  */
-public class ReporterManagerFactory
+public class FileReporterFactory
     implements ReporterFactory
 {
 
@@ -56,7 +56,7 @@ public class ReporterManagerFactory
 
     private final StartupReportConfiguration reportConfiguration;
 
-    public ReporterManagerFactory( StartupReportConfiguration reportConfiguration )
+    public FileReporterFactory( StartupReportConfiguration reportConfiguration )
     {
         this.reportConfiguration = reportConfiguration;
         this.reporterConfiguration = getReporterConfiguration(  );
@@ -117,46 +117,46 @@ public class ReporterManagerFactory
         return globalStats.getRunResult();
     }
 
-    public DirectConsoleReporter createConsoleReporter()
+    public ConsoleLogger createConsoleLogger()
     {
         return new DefaultDirectConsoleReporter( reporterConfiguration.getOriginalSystemOut() );
     }
 
     public void runStarting()
     {
-        final DirectConsoleReporter consoleReporter = createConsoleReporter();
-        consoleReporter.writeMessage( "" );
-        consoleReporter.writeMessage( "-------------------------------------------------------" );
-        consoleReporter.writeMessage( " T E S T S" );
-        consoleReporter.writeMessage( "-------------------------------------------------------" );
+        final ConsoleLogger consoleReporter = createConsoleLogger();
+        consoleReporter.info( "" );
+        consoleReporter.info( "-------------------------------------------------------" );
+        consoleReporter.info( " T E S T S" );
+        consoleReporter.info( "-------------------------------------------------------" );
     }
 
     private void runCompleted()
     {
-        final DirectConsoleReporter consoleReporter = createConsoleReporter();
-        consoleReporter.writeMessage( "" );
-        consoleReporter.writeMessage( "Results :" );
-        consoleReporter.writeMessage( "" );
+        final ConsoleLogger consoleReporter = createConsoleLogger();
+        consoleReporter.info( "" );
+        consoleReporter.info( "Results :" );
+        consoleReporter.info( "" );
         if ( globalStats.hadFailures() )
         {
             multicastingReporter.writeMessage( "Failed tests: " );
             for ( Iterator iterator = this.globalStats.getFailureSources().iterator(); iterator.hasNext(); )
             {
-                consoleReporter.writeMessage( "  " + iterator.next() );
+                consoleReporter.info( "  " + iterator.next() );
             }
-            consoleReporter.writeMessage( "" );
+            consoleReporter.info( "" );
         }
         if ( globalStats.hadErrors() )
         {
-            consoleReporter.writeMessage( "Tests in error: " );
+            consoleReporter.info( "Tests in error: " );
             for ( Iterator iterator = this.globalStats.getErrorSources().iterator(); iterator.hasNext(); )
             {
-                consoleReporter.writeMessage( "  " + iterator.next() );
+                consoleReporter.info( "  " + iterator.next() );
             }
-            consoleReporter.writeMessage( "" );
+            consoleReporter.info( "" );
         }
-        consoleReporter.writeMessage( globalStats.getSummary() );
-        consoleReporter.writeMessage( "" );
+        consoleReporter.info( globalStats.getSummary() );
+        consoleReporter.info( "" );
     }
 
     public RunStatistics getGlobalRunStatistics()

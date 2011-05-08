@@ -25,7 +25,7 @@ import java.io.File;
 import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Map;
-import org.apache.maven.plugin.surefire.report.ReporterManagerFactory;
+import org.apache.maven.plugin.surefire.report.FileReporterFactory;
 import org.apache.maven.surefire.booter.StartupReportConfiguration;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterFactory;
@@ -396,7 +396,7 @@ public class ConcurrentReporterManagerTest
 
     private ReporterFactory createReporterFactory()
     {
-        return new ReporterManagerFactory( StartupReportConfiguration.defaultNoXml() );
+        return new FileReporterFactory( StartupReportConfiguration.defaultNoXml() );
     }
 
     public static ReporterConfiguration getTestReporterConfiguration()

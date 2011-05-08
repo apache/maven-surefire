@@ -25,7 +25,7 @@ import java.util.Iterator;
 import java.util.Properties;
 import org.apache.maven.plugin.surefire.booterclient.output.ForkClient;
 import org.apache.maven.plugin.surefire.booterclient.output.ThreadedStreamConsumer;
-import org.apache.maven.plugin.surefire.report.ReporterManagerFactory;
+import org.apache.maven.plugin.surefire.report.FileReporterFactory;
 import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.ProviderConfiguration;
 import org.apache.maven.surefire.booter.ProviderFactory;
@@ -107,8 +107,8 @@ public class ForkStarter
     private RunResult runSuitesForkOnce()
         throws SurefireBooterForkException
     {
-        final ReporterManagerFactory testSetReporterFactory =
-            new ReporterManagerFactory( startupReportConfiguration );
+        final FileReporterFactory testSetReporterFactory =
+            new FileReporterFactory( startupReportConfiguration );
         try
         {
             return fork( null, providerConfiguration.getProviderProperties(), testSetReporterFactory );
@@ -142,8 +142,8 @@ public class ForkStarter
 
         Properties properties = new Properties();
 
-        final ReporterManagerFactory testSetReporterFactory =
-            new ReporterManagerFactory( startupReportConfiguration );
+        final FileReporterFactory testSetReporterFactory =
+            new FileReporterFactory( startupReportConfiguration );
         try
         {
             while ( suites.hasNext() )

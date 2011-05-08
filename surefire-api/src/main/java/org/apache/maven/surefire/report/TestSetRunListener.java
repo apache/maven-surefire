@@ -31,7 +31,7 @@ import org.apache.maven.surefire.util.internal.ByteBuffer;
  */
 public class TestSetRunListener
     implements RunListener, Reporter, ConsoleOutputReceiver,
-    DirectConsoleReporter     // todo: Does this have to be a reporter ?
+    ConsoleLogger     // todo: Does this have to be a reporter ?
 {
     private final TestSetStatistics testSetStatistics;
 
@@ -70,11 +70,15 @@ public class TestSetRunListener
         this.globalStatistics = globalStats;
     }
 
-    public void writeMessage( String message )
+    public void info( String message )
     {
         multicastingReporter.writeMessage( message );
     }
 
+    public void writeMessage( String message )
+    {
+        info(  message );
+    }
 
     public void writeMessage( byte[] b, int off, int len )
     {

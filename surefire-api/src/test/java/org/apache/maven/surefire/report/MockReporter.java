@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Internal use only
  */
 public class MockReporter
-    implements RunListener, DirectConsoleReporter
+    implements RunListener, ConsoleLogger
 {
     private final List events = new ArrayList();
 
@@ -159,7 +159,7 @@ public class MockReporter
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public void writeMessage( String message )
+    public void info( String message )
     {
         events.add( CONSOLE_OUTPUT );
         data.add( message );

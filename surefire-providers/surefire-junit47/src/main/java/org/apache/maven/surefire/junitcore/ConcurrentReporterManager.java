@@ -170,7 +170,7 @@ public abstract class ConcurrentReporterManager
         else
         {
             // No test running, just dump the message "somewhere"
-            reporterFactory.createConsoleReporter().writeMessage( new String( buf, off, len ) );
+            reporterFactory.createConsoleLogger().info( new String( buf, off, len ) );
         }
     }
 

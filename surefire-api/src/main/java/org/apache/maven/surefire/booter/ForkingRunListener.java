@@ -19,8 +19,11 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
+import java.io.PrintStream;
+import java.util.Enumeration;
+import java.util.Properties;
+import org.apache.maven.surefire.report.ConsoleLogger;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
-import org.apache.maven.surefire.report.DirectConsoleReporter;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.StackTraceWriter;
@@ -28,17 +31,13 @@ import org.apache.maven.surefire.util.internal.ByteBuffer;
 import org.apache.maven.surefire.util.internal.StreamUtils;
 import org.apache.maven.surefire.util.internal.StringUtils;
 
-import java.io.PrintStream;
-import java.util.Enumeration;
-import java.util.Properties;
-
 /**
  * Encodes the full output of the test run to the stdout stream
  *
  * @author Kristian Rosenvold
  */
 public class ForkingRunListener
-    implements RunListener, DirectConsoleReporter, ConsoleOutputReceiver
+    implements RunListener, ConsoleLogger, ConsoleOutputReceiver
 {
     public static final byte BOOTERCODE_TESTSET_STARTING = (byte) '1';
 
@@ -199,7 +198,7 @@ public class ForkingRunListener
             'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' };
 
 
-    public void writeMessage( String message )
+    public void info( String message )
     {
         byte[] buf = message.getBytes();
         ByteBuffer byteBuffer = new ByteBuffer( buf.length * 6 );

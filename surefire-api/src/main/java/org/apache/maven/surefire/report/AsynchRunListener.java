@@ -29,7 +29,7 @@ import org.apache.maven.surefire.util.internal.ByteBuffer;
  * <p/>
  */
 public class AsynchRunListener
-    implements RunListener, ConsoleOutputReceiver, DirectConsoleReporter
+    implements RunListener, ConsoleOutputReceiver, ConsoleLogger
 {
     private final LinkedBlockingQueue blockingQueue = new LinkedBlockingQueue();
 
@@ -216,13 +216,13 @@ public class AsynchRunListener
         blockingQueue.add( new JoinableTestOutput( buf, off, len, stdout, consoleOutputReceiver ) );
     }
 
-    public void writeMessage( final String message )
+    public void info( final String message )
     {
         blockingQueue.add( new Runnable()
         {
             public void run()
             {
-                ( (DirectConsoleReporter) consoleOutputReceiver ).writeMessage( message );
+                ( (ConsoleLogger) consoleOutputReceiver ).info( message );
             }
         } );
     }

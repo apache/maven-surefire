@@ -35,12 +35,12 @@ public interface ReporterFactory
     RunListener createReporter();
 
     /**
-     * Creates a ConsoleReporter, that allows providers to write messages to the running maven console.
+     * Creates a ConsoleLogger, that allows providers to write messages to the running maven console.
      * This output is not associated with any thread/test and appears immediately.
      *
      * @return a ConsoleReporter
      */
-    DirectConsoleReporter createConsoleReporter();
+    ConsoleLogger createConsoleLogger();
 
     /**
      * Closes the factory, freeing resources allocated in the factory.

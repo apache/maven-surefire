@@ -31,7 +31,7 @@ import java.util.StringTokenizer;
 import org.apache.maven.surefire.booter.ForkingRunListener;
 import org.apache.maven.surefire.report.CategorizedReportEntry;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
-import org.apache.maven.surefire.report.DirectConsoleReporter;
+import org.apache.maven.surefire.report.ConsoleLogger;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterFactory;
@@ -138,7 +138,7 @@ public class ForkClient
                     ( (ConsoleOutputReceiver) reporter ).writeTestOutput( bytes, 0, len, false );
                     break;
                 case ForkingRunListener.BOOTERCODE_CONSOLE:
-                    ( (DirectConsoleReporter) reporter ).writeMessage( createConsoleMessage( remaining ) );
+                    ( (ConsoleLogger) reporter ).info( createConsoleMessage( remaining ) );
                     break;
                 default:
                     System.out.println( ">" + s );

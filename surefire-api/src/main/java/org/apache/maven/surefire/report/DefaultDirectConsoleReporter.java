@@ -6,7 +6,7 @@ import java.io.PrintStream;
  * @author <a href="mailto:kristian@zenior.no">Kristian Rosenvold</a>
  */
 public class DefaultDirectConsoleReporter
-    implements DirectConsoleReporter
+    implements ConsoleLogger
 {
     private final PrintStream systemOut;
 
@@ -14,7 +14,7 @@ public class DefaultDirectConsoleReporter
         this.systemOut = systemOut;
     }
 
-    public void writeMessage(String message) {
+    public void info( String message ) {
         systemOut.println(message);
     }
 }

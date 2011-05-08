@@ -29,7 +29,6 @@ import org.apache.maven.surefire.providerapi.AbstractProvider;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.report.ConsoleOutputCapture;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
-import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.RunListener;
@@ -60,12 +59,9 @@ public class JUnitCoreProvider
 
     private TestsToRun testsToRun;
 
-    private final ReporterConfiguration reporterConfiguration;
-
     public JUnitCoreProvider( ProviderParameters booterParameters )
     {
         this.providerParameters = booterParameters;
-        reporterConfiguration = booterParameters.getReporterConfiguration();
         this.testClassLoader = booterParameters.getTestClassLoader();
         this.directoryScanner = booterParameters.getDirectoryScanner();
         this.jUnitCoreParameters = new JUnitCoreParameters( booterParameters.getProviderProperties() );
@@ -92,7 +88,7 @@ public class JUnitCoreProvider
         final String message = "Concurrency config is " + jUnitCoreParameters.toString() + "\n";
         final ReporterFactory reporterFactory = providerParameters.getReporterFactory();
 
-        reporterFactory.createConsoleReporter().writeMessage( message );
+        reporterFactory.createConsoleLogger().info( message );
 
         if ( testsToRun == null )
         {

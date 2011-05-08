@@ -28,7 +28,7 @@ import org.apache.maven.plugin.surefire.booterclient.output.ForkClient;
 import org.apache.maven.surefire.booter.ForkingRunListener;
 import org.apache.maven.surefire.report.CategorizedReportEntry;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
-import org.apache.maven.surefire.report.DirectConsoleReporter;
+import org.apache.maven.surefire.report.ConsoleLogger;
 import org.apache.maven.surefire.report.PojoStackTraceWriter;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterException;
@@ -175,8 +175,8 @@ public class ForkingRunListenerTest
         throws ReporterException, IOException
     {
         final StandardTestRun standardTestRun = new StandardTestRun();
-        DirectConsoleReporter directConsoleReporter = (DirectConsoleReporter) standardTestRun.run();
-        directConsoleReporter.writeMessage( "HeyYou" );
+        ConsoleLogger directConsoleReporter = (ConsoleLogger) standardTestRun.run();
+        directConsoleReporter.info( "HeyYou" );
         standardTestRun.assertExpected( MockReporter.CONSOLE_OUTPUT, "HeyYou" );
     }
 

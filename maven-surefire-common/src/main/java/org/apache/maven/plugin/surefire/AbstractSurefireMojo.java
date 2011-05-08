@@ -87,7 +87,6 @@ public abstract class AbstractSurefireMojo
     public void execute()
         throws MojoExecutionException, MojoFailureException
     {
-
         if ( verifyParameters() && !hasExecutedBefore() )
         {
             logReportsDirectory();

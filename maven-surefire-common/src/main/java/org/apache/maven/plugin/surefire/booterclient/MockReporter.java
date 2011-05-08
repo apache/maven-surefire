@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
-import org.apache.maven.surefire.report.DirectConsoleReporter;
+import org.apache.maven.surefire.report.ConsoleLogger;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.RunListener;
 
@@ -31,7 +31,7 @@ import org.apache.maven.surefire.report.RunListener;
  * Internal use only
  */
 public class MockReporter
-    implements RunListener, DirectConsoleReporter, ConsoleOutputReceiver
+    implements RunListener, ConsoleLogger, ConsoleOutputReceiver
 {
     private final List events = new ArrayList();
 
@@ -146,7 +146,7 @@ public class MockReporter
 
     }
 
-    public void writeMessage( String message )
+    public void info( String message )
     {
         events.add( CONSOLE_OUTPUT );
         data.add( message );
