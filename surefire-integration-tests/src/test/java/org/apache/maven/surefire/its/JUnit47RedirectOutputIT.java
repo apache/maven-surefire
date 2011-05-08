@@ -63,6 +63,7 @@ public class JUnit47RedirectOutputIT
         String report2 = StringUtils.trimToNull( FileUtils.readFileToString(
             getSurefireReportsFile( "junit47ConsoleOutput.Test2-output.txt" ) ) );
         assertNotNull(report2);
+        assertFalse( getSurefireReportsFile("junit47ConsoleOutput.Test3-output.txt").exists());
     }
 
 }

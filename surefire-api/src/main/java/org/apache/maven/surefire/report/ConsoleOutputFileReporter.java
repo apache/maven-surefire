@@ -46,7 +46,6 @@ public class ConsoleOutputFileReporter
 
     private final StringBuffer outputBuffer = new StringBuffer();
 
-    private volatile PrintWriter printWriter;
 
     public ConsoleOutputFileReporter( File reportsDirectory )
     {
@@ -55,10 +54,12 @@ public class ConsoleOutputFileReporter
 
     public void testSetStarting( ReportEntry reportEntry )
     {
-        if ( printWriter != null )
-        {
-            throw new IllegalStateException( "testSetStarting called twice" );
-        }
+    }
+
+    public void testSetCompleted( ReportEntry report )
+        throws ReporterException
+    {
+        PrintWriter printWriter;
 
         if ( !reportsDirectory.exists() )
         {
@@ -66,32 +67,22 @@ public class ConsoleOutputFileReporter
             reportsDirectory.mkdirs();
         }
 
-        File file = new File( reportsDirectory, reportEntry.getName() + "-output.txt" );
         try
         {
-            this.printWriter = new PrintWriter( new BufferedWriter( new FileWriter( file ) ) );
+            if ( outputBuffer.length() > 0 )
+            {
+                File file = new File( reportsDirectory, report.getName() + "-output.txt" );
+                printWriter = new PrintWriter( new BufferedWriter( new FileWriter( file ) ) );
+                printWriter.write( outputBuffer.toString() );
+                printWriter.write( LINE_SEPARATOR );
+                outputBuffer.setLength( 0 );
+                printWriter.close();
+            }
         }
         catch ( IOException e )
         {
             throw new NestedRuntimeException( e );
         }
-    }
-
-    public void testSetCompleted( ReportEntry report )
-        throws ReporterException
-    {
-        if ( printWriter == null )
-        {
-            throw new IllegalStateException( "testSetCompleted called before testSetStarting" );
-        }
-        if ( outputBuffer.length() > 0 )
-        {
-            printWriter.write( outputBuffer.toString() );
-            printWriter.write( LINE_SEPARATOR );
-            outputBuffer.setLength( 0 );
-        }
-        printWriter.close();
-        this.printWriter = null;
     }
 
     public void testStarting( ReportEntry report )
@@ -121,18 +112,7 @@ public class ConsoleOutputFileReporter
     public void writeMessage( byte[] b, int off, int len )
     {
         String line = new String( b, off, len );
-        if ( printWriter == null )
-        {
-            outputBuffer.append( line );
-            return;
-        }
-
-        if ( outputBuffer.length() > 0 )
-        {
-            printWriter.write( outputBuffer.toString() );
-            outputBuffer.setLength( 0 );
-        }
-        printWriter.write( line );
+        outputBuffer.append( line );
     }
 
     public void reset()
