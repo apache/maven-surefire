@@ -28,7 +28,6 @@ import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.StackTraceWriter;
 import org.apache.maven.surefire.util.internal.ByteBuffer;
-import org.apache.maven.surefire.util.internal.StreamUtils;
 import org.apache.maven.surefire.util.internal.StringUtils;
 
 /**
@@ -148,7 +147,7 @@ public class ForkingRunListener
                 {
                     value = "null";
                 }
-                toPropertyString( key, value );
+                target.print( toPropertyString( key, value ));
             }
         }
     }
@@ -161,7 +160,7 @@ public class ForkingRunListener
         int i = StringUtils.escapeJavaStyleString( content, 0, buf, off, len );
         content[i++] = (byte) '\n';
 
-        synchronized ( target )
+        synchronized ( target ) // Questionable synchronization
         {
             target.write( header, 0, header.length );
             target.write( content, 0, i );
@@ -214,16 +213,16 @@ public class ForkingRunListener
         target.flush();
     }
 
-    private void toPropertyString( String key, String value )
+    private String toPropertyString( String key, String value )
     {
-        target.write( BOOTERCODE_SYSPROPS );
-        target.write( ',' );
-        StreamUtils.toHex( target, testSetChannelId );
-        target.write( ',' );
-        StringUtils.escapeJavaStyleString( target, key );
-        target.write( ',' );
-        StringUtils.escapeJavaStyleString( target, value );
-        target.write( '\n' );
+        StringBuffer stringBuffer = new StringBuffer();
+        append( stringBuffer, BOOTERCODE_SYSPROPS ).comma( stringBuffer );
+        append( stringBuffer, Integer.toHexString( testSetChannelId.intValue() ) ).comma( stringBuffer );
+        StringUtils.escapeJavaStyleString( stringBuffer, key );
+        append( stringBuffer, "," );
+        StringUtils.escapeJavaStyleString( stringBuffer, value );
+        stringBuffer.append( "\n" );
+        return stringBuffer.toString();
     }
 
     private String toString( byte operationCode, ReportEntry reportEntry, Integer testSetChannelId )
