@@ -66,7 +66,6 @@ public class ForkClient
     {
         try
         {
-            //System.out.println("Recv:" + s.substring( 0, s.length() ));
             if ( s.length() == 0 )
             {
                 return;
@@ -75,7 +74,7 @@ public class ForkClient
             int commma = s.indexOf( ",", 3 );
             if ( commma < 0 )
             {
-                System.out.println( ">" + s );
+                System.out.println( s );
                 return;
             }
             final Integer channelNumber = new Integer( Integer.parseInt( s.substring( 2, commma ), 16 ) );
@@ -141,12 +140,12 @@ public class ForkClient
                     ( (ConsoleLogger) reporter ).info( createConsoleMessage( remaining ) );
                     break;
                 default:
-                    System.out.println( ">" + s );
+                    System.out.println( s );
             }
         }
         catch ( NumberFormatException e )
         {
-            System.out.println( ">" + s );
+            System.out.println( s );
         }
         catch ( ReporterException e )
         {
