@@ -31,7 +31,19 @@ import org.apache.maven.surefire.util.internal.ByteBuffer;
 import org.apache.maven.surefire.util.internal.StringUtils;
 
 /**
- * Encodes the full output of the test run to the stdout stream
+ * Encodes the full output of the test run to the stdout stream.
+ * <p/>
+ * This class and the ForkClient contain the full definition of the
+ * "wire-level" protocol used by the forked process. The protocol
+ * is *not* part of any public api and may change without further
+ * notice.
+ * <p/>
+ * This class is threadsafe.
+ * <p/>
+ * The synchronization in the underlying PrintStream (target instance)
+ * is used to preserve thread safety of the ouput stream. To perform
+ * multiple writes/prints for a single request, they must
+ * synchronize on "target" variable in this class.
  *
  * @author Kristian Rosenvold
  */
@@ -129,7 +141,7 @@ public class ForkingRunListener
         target.print( toString( BOOTERCODE_TEST_SKIPPED, report, testSetChannelId ) );
     }
 
-    synchronized void sendProps()
+    void sendProps()
     {
         Properties systemProperties = System.getProperties();
 
@@ -147,7 +159,7 @@ public class ForkingRunListener
                 {
                     value = "null";
                 }
-                target.print( toPropertyString( key, value ));
+                target.print( toPropertyString( key, value ) );
             }
         }
     }
@@ -160,7 +172,7 @@ public class ForkingRunListener
         int i = StringUtils.escapeJavaStyleString( content, 0, buf, off, len );
         content[i++] = (byte) '\n';
 
-        synchronized ( target ) // Questionable synchronization
+        synchronized ( target ) // See notes about synhronization/thread safety in class javadoc
         {
             target.write( header, 0, header.length );
             target.write( content, 0, i );
