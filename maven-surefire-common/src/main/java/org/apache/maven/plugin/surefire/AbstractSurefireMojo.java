@@ -20,16 +20,20 @@ package org.apache.maven.plugin.surefire;
  */
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
@@ -148,9 +152,9 @@ public abstract class AbstractSurefireMojo
         {
             final Artifact junitDepArtifact = getJunitDepArtifact();
             ProviderList wellKnownProviders = new ProviderList(
-                new ProviderInfo[]{ new TestNgProviderInfo( getTestNgArtifact() ),
+                new ProviderInfo[]{new TestNgProviderInfo( getTestNgArtifact() ),
                     new JUnitCoreProviderInfo( getJunitArtifact(), junitDepArtifact ),
-                    new JUnit4ProviderInfo( getJunitArtifact(), junitDepArtifact ), new JUnit3ProviderInfo() },
+                    new JUnit4ProviderInfo( getJunitArtifact(), junitDepArtifact ), new JUnit3ProviderInfo()},
                 new DynamicProviderInfo( null ) );
 
             return wellKnownProviders.resolve( getLog() );
@@ -491,7 +495,7 @@ public abstract class AbstractSurefireMojo
             // Have to wrap in an ArrayList as surefire expects an ArrayList instead of a List for some reason
             if ( excludes == null || excludes.size() == 0 )
             {
-                excludes = new ArrayList( Arrays.asList( new String[]{ "**/*$*" } ) );
+                excludes = new ArrayList( Arrays.asList( new String[]{"**/*$*"} ) );
             }
         }
         return excludes;
@@ -549,8 +553,8 @@ public abstract class AbstractSurefireMojo
             if ( !range.containsVersion( new DefaultArtifactVersion( artifact.getVersion() ) ) )
             {
                 throw new MojoFailureException(
-                    "TestNG support requires version 4.7 or above. You have declared version "
-                        + artifact.getVersion() );
+                    "TestNG support requires version 4.7 or above. You have declared version " +
+                        artifact.getVersion() );
             }
         }
         return artifact;
@@ -580,15 +584,14 @@ public abstract class AbstractSurefireMojo
     }
 
     protected SurefireStarter createInprocessStarter( ProviderInfo provider, ForkConfiguration forkConfiguration,
-                                                       ClassLoaderConfiguration classLoaderConfiguration )
+                                                      ClassLoaderConfiguration classLoaderConfiguration )
         throws MojoExecutionException, MojoFailureException
     {
         StartupConfiguration startupConfiguration =
             createStartupConfiguration( forkConfiguration, provider, classLoaderConfiguration );
         StartupReportConfiguration startupReportConfiguration = getStartupReportConfiguration();
         ProviderConfiguration providerConfiguration = createProviderConfiguration();
-         return
-            new SurefireStarter( startupConfiguration, providerConfiguration, startupReportConfiguration );
+        return new SurefireStarter( startupConfiguration, providerConfiguration, startupReportConfiguration );
 
     }
 
@@ -727,6 +730,7 @@ public abstract class AbstractSurefireMojo
         checksum.add( getLocalRepository() );
         checksum.add( getSystemProperties() );
         checksum.add( getSystemPropertyVariables() );
+        checksum.add( getSystemPropertiesFile() );
         checksum.add( getProperties() );
         checksum.add( isPrintSummary() );
         checksum.add( getReportFormat() );
@@ -782,8 +786,7 @@ public abstract class AbstractSurefireMojo
 
     protected ClassLoaderConfiguration getClassLoaderConfiguration( ForkConfiguration fork )
     {
-        return fork.isForking()
-            ? new ClassLoaderConfiguration( isUseSystemClassLoader(), isUseManifestOnlyJar() )
+        return fork.isForking() ? new ClassLoaderConfiguration( isUseSystemClassLoader(), isUseManifestOnlyJar() )
             : new ClassLoaderConfiguration( false, false );
     }
 
@@ -947,8 +950,8 @@ public abstract class AbstractSurefireMojo
             Artifact artifact = (Artifact) i.next();
 
             getLog().debug(
-                "Adding to " + getPluginName() + " booter test classpath: " + artifact.getFile().getAbsolutePath()
-                    + " Scope: " + artifact.getScope() );
+                "Adding to " + getPluginName() + " booter test classpath: " + artifact.getFile().getAbsolutePath() +
+                    " Scope: " + artifact.getScope() );
 
             items.add( artifact.getFile().getAbsolutePath() );
         }
@@ -958,6 +961,39 @@ public abstract class AbstractSurefireMojo
     void processSystemProperties( boolean setInSystem )
     {
         copyPropertiesToInternalSystemProperties( getSystemProperties() );
+
+        if ( this.getSystemPropertiesFile() != null )
+        {
+            Properties props = new Properties();
+            try
+            {
+                FileInputStream fis = new FileInputStream( getSystemPropertiesFile() );
+                props.load( fis );
+                fis.close();
+            }
+            catch ( IOException e )
+            {
+                String msg =
+                    "The system property file '" + getSystemPropertiesFile().getAbsolutePath() + "' can't be read.";
+                if ( getLog().isDebugEnabled() )
+                {
+                    getLog().warn( msg, e );
+                }
+                else
+                {
+                    getLog().warn( msg );
+                }
+            }
+
+            Enumeration keys = props.propertyNames();
+            //loop through all properties
+            while ( keys.hasMoreElements() )
+            {
+                String key = (String) keys.nextElement();
+                String value = props.getProperty( key );
+                getInternalSystemProperties().setProperty( key, value );
+            }
+        }
 
         if ( this.getSystemPropertyVariables() != null )
         {
@@ -1026,8 +1062,8 @@ public abstract class AbstractSurefireMojo
         }
         catch ( Exception e )
         {
-            String msg = "Build uses Maven 2.0.x, cannot propagate system properties"
-                + " from command line to tests (cf. SUREFIRE-121)";
+            String msg = "Build uses Maven 2.0.x, cannot propagate system properties" +
+                " from command line to tests (cf. SUREFIRE-121)";
             if ( getLog().isDebugEnabled() )
             {
                 getLog().warn( msg, e );

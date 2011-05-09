@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -257,6 +258,14 @@ public class IntegrationTestMojo
      * @since 2.5
      */
     private Map systemPropertyVariables;
+
+    /**
+     * List of System properties, loaded from a file, to pass to the JUnit tests.
+     *
+     * @parameter
+     * @since 2.8.2
+     */
+    private File systemPropertiesFile;
 
     /**
      * List of properties for configuring all TestNG related configurations. This is the new preferred method of
@@ -681,8 +690,8 @@ public class IntegrationTestMojo
     {
         if ( StringUtils.isEmpty( encoding ) )
         {
-            getLog().warn( "File encoding has not been set, using platform encoding " + ReaderFactory.FILE_ENCODING
-                               + ", i.e. build is platform dependent!" );
+            getLog().warn( "File encoding has not been set, using platform encoding " + ReaderFactory.FILE_ENCODING +
+                               ", i.e. build is platform dependent!" );
             return ReaderFactory.FILE_ENCODING;
         }
         else
@@ -703,7 +712,7 @@ public class IntegrationTestMojo
 
     protected String[] getDefaultIncludes()
     {
-        return new String[]{ "**/IT*.java", "**/*IT.java", "**/*ITCase.java" };
+        return new String[]{"**/IT*.java", "**/*IT.java", "**/*ITCase.java"};
     }
 
     public boolean isSkipTests()
@@ -920,6 +929,16 @@ public class IntegrationTestMojo
     public void setSystemPropertyVariables( Map systemPropertyVariables )
     {
         this.systemPropertyVariables = systemPropertyVariables;
+    }
+
+    public File getSystemPropertiesFile()
+    {
+        return systemPropertiesFile;
+    }
+
+    public void setSystemPropertiesFile( File systemPropertiesFile )
+    {
+        this.systemPropertiesFile = systemPropertiesFile;
     }
 
     public Properties getProperties()

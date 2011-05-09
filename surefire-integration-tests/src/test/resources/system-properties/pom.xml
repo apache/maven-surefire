@@ -70,7 +70,9 @@
             <blankProperty> </blankProperty>
             <!--  this is a work around for SUREFIRE-121 -->
             <setOnArgLineWorkAround>${setOnArgLineWorkAround}</setOnArgLineWorkAround>
+            <overriddenPropertyFomFile>value2</overriddenPropertyFomFile>
           </systemPropertyVariables>
+          <systemPropertiesFile>${project.basedir}/src/test/config/propsfile.properties</systemPropertiesFile>
           <argLine>-DsetOnArgLine=bar</argLine>
         </configuration>
       </plugin>

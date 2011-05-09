@@ -39,7 +39,7 @@ public class SystemPropertiesTestIT
         addGoal( "-DsetOnArgLineWorkAround=baz" );
         executeTest();
         verifyErrorFreeLog();
-        assertTestSuiteResults( 7, 0, 0, 0 );
+        assertTestSuiteResults( 8, 0, 0, 0 );
     }
 
     public void testSystemPropertiesNoFork()
@@ -53,6 +53,6 @@ public class SystemPropertiesTestIT
         executeTest();
         verifyErrorFreeLog();
 
-        assertTestSuiteResults( 7, 0, 0, 0 );
+        assertTestSuiteResults( 8, 0, 0, 0 );
     }
 }

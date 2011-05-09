@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -234,6 +235,14 @@ public class SurefirePlugin
      * @since 2.5
      */
     private Map systemPropertyVariables;
+
+    /**
+     * List of System properties, loaded from a file, to pass to the JUnit tests.
+     *
+     * @parameter
+     * @since 2.8.2
+     */
+    private File systemPropertiesFile;
 
     /**
      * List of properties for configuring all TestNG related configurations. This is the new preferred method of
@@ -634,7 +643,7 @@ public class SurefirePlugin
 
     protected String[] getDefaultIncludes()
     {
-        return new String[]{ "**/Test*.java", "**/*Test.java", "**/*TestCase.java" };
+        return new String[]{"**/Test*.java", "**/*Test.java", "**/*TestCase.java"};
     }
 
     // now for the implementation of the field accessors
@@ -865,6 +874,16 @@ public class SurefirePlugin
     public void setSystemPropertyVariables( Map systemPropertyVariables )
     {
         this.systemPropertyVariables = systemPropertyVariables;
+    }
+
+    public File getSystemPropertiesFile()
+    {
+        return systemPropertiesFile;
+    }
+
+    public void setSystemPropertiesFile( File systemPropertiesFile )
+    {
+        this.systemPropertiesFile = systemPropertiesFile;
     }
 
     public Properties getProperties()

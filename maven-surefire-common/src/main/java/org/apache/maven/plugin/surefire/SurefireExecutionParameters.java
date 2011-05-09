@@ -19,6 +19,11 @@ package org.apache.maven.plugin.surefire;
  * under the License.
  */
 
+import java.io.File;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -26,11 +31,6 @@ import org.apache.maven.artifact.resolver.ArtifactResolver;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.toolchain.ToolchainManager;
-
-import java.io.File;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
 
 /**
  * The parameters required to execute surefire.
@@ -89,7 +89,7 @@ public interface SurefireExecutionParameters
     void setTestSourceDirectory( File testSourceDirectory );
 
     String getTest();
-    
+
     String getTestMethod();
 
     void setTest( String test );
@@ -113,6 +113,10 @@ public interface SurefireExecutionParameters
     Map getSystemPropertyVariables();
 
     void setSystemPropertyVariables( Map systemPropertyVariables );
+
+    File getSystemPropertiesFile();
+
+    void setSystemPropertiesFile( File systemPropertiesFile );
 
     Properties getProperties();
 
