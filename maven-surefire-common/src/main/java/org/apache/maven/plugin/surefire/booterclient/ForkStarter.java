@@ -27,6 +27,7 @@ import org.apache.maven.plugin.surefire.booterclient.output.ForkClient;
 import org.apache.maven.plugin.surefire.booterclient.output.ThreadedStreamConsumer;
 import org.apache.maven.plugin.surefire.report.FileReporterFactory;
 import org.apache.maven.surefire.booter.Classpath;
+import org.apache.maven.surefire.booter.ClasspathConfiguration;
 import org.apache.maven.surefire.booter.ProviderConfiguration;
 import org.apache.maven.surefire.booter.ProviderFactory;
 import org.apache.maven.surefire.booter.StartupConfiguration;
@@ -89,92 +90,47 @@ public class ForkStarter
         final RunResult result;
 
         final String requestedForkMode = forkConfiguration.getForkMode();
-        if ( ForkConfiguration.FORK_ONCE.equals( requestedForkMode ) )
+        final FileReporterFactory fileReporterFactory = new FileReporterFactory( startupReportConfiguration );
+        try
         {
-            result = runSuitesForkOnce();
+            if ( ForkConfiguration.FORK_ONCE.equals( requestedForkMode ) )
+            {
+                result = fork( null, providerConfiguration.getProviderProperties(), fileReporterFactory );
+            }
+            else if ( ForkConfiguration.FORK_ALWAYS.equals( requestedForkMode ) )
+            {
+                result = runSuitesForkPerTestSet( fileReporterFactory );
+            }
+            else
+            {
+                throw new SurefireExecutionException( "Unknown forkmode: " + requestedForkMode, null );
+            }
         }
-        else if ( ForkConfiguration.FORK_ALWAYS.equals( requestedForkMode ) )
+        finally
         {
-            result = runSuitesForkPerTestSet();
-        }
-        else
-        {
-            throw new SurefireExecutionException( "Unknown forkmode: " + requestedForkMode, null );
+            fileReporterFactory.close();
         }
         return result;
     }
 
-    private RunResult runSuitesForkOnce()
-        throws SurefireBooterForkException
-    {
-        final FileReporterFactory testSetReporterFactory =
-            new FileReporterFactory( startupReportConfiguration );
-        try
-        {
-            return fork( null, providerConfiguration.getProviderProperties(), testSetReporterFactory );
-        }
-        finally
-        {
-            testSetReporterFactory.close();
-        }
-    }
-
-    private RunResult runSuitesForkPerTestSet()
+    private RunResult runSuitesForkPerTestSet( FileReporterFactory fileReporterFactory )
         throws SurefireBooterForkException
     {
         RunResult globalResult = new RunResult( 0, 0, 0, 0 );
 
-        ClassLoader testsClassLoader;
-        ClassLoader surefireClassLoader;
-        try
-        {
-            testsClassLoader = startupConfiguration.getClasspathConfiguration().createTestClassLoader( false );
-            // TODO: assertions = true shouldn't be required if we had proper separation (see TestNG)
-            surefireClassLoader =
-                startupConfiguration.getClasspathConfiguration().createSurefireClassLoader( testsClassLoader );
-        }
-        catch ( SurefireExecutionException e )
-        {
-            throw new SurefireBooterForkException( "Unable to create classloader to find test suites", e );
-        }
-
-        final Iterator suites = getSuitesIterator( testsClassLoader, surefireClassLoader );
+        final Iterator suites = getSuitesIterator();
 
         Properties properties = new Properties();
 
-        final FileReporterFactory testSetReporterFactory =
-            new FileReporterFactory( startupReportConfiguration );
-        try
+        while ( suites.hasNext() )
         {
-            while ( suites.hasNext() )
-            {
-                Object testSet = suites.next();
-                RunResult runResult = fork( testSet, properties, testSetReporterFactory );
-
-                globalResult = globalResult.aggregate( runResult );
-            }
-            // At this place, show aggregated results ?
-            return globalResult;
+            Object testSet = suites.next();
+            RunResult runResult = fork( testSet, properties, fileReporterFactory );
+            globalResult = globalResult.aggregate( runResult );
         }
-        finally
-        {
-            testSetReporterFactory.close();
-        }
+
+        return globalResult;
     }
-
-    private Iterator getSuitesIterator( ClassLoader testsClassLoader, ClassLoader surefireClassLoader )
-    {
-        SurefireReflector surefireReflector = new SurefireReflector( surefireClassLoader );
-        Object reporterFactory =
-            surefireReflector.createReportingReporterFactory( startupReportConfiguration );
-
-        final ProviderFactory providerFactory =
-            new ProviderFactory( startupConfiguration, providerConfiguration, surefireClassLoader, testsClassLoader,
-                                 reporterFactory );
-        SurefireProvider surefireProvider = providerFactory.createProvider();
-        return surefireProvider.getSuites();
-    }
-
 
     private RunResult fork( Object testSet, Properties properties, ReporterFactory testSetReporterFactory )
         throws SurefireBooterForkException
@@ -218,8 +174,8 @@ public class ForkStarter
             cli.createArg().setFile( systemProperties );
         }
 
-        ForkClient out = new ForkClient( testSetReporterFactory,
-                                         startupReportConfiguration.getTestVmSystemProperties() );
+        ForkClient out =
+            new ForkClient( testSetReporterFactory, startupReportConfiguration.getTestVmSystemProperties() );
         ThreadedStreamConsumer threadedStreamConsumer2 = new ThreadedStreamConsumer( out );
 
         if ( forkConfiguration.isDebug() )
@@ -252,4 +208,29 @@ public class ForkStarter
 
         return runResult;
     }
+
+    private Iterator getSuitesIterator()
+        throws SurefireBooterForkException
+    {
+        try
+        {
+            final ClasspathConfiguration classpathConfiguration = startupConfiguration.getClasspathConfiguration();
+            ClassLoader testsClassLoader = classpathConfiguration.createTestClassLoader( false );
+            ClassLoader surefireClassLoader = classpathConfiguration.createSurefireClassLoader( testsClassLoader );
+
+            SurefireReflector surefireReflector = new SurefireReflector( surefireClassLoader );
+            Object reporterFactory = surefireReflector.createReportingReporterFactory( startupReportConfiguration );
+
+            final ProviderFactory providerFactory =
+                new ProviderFactory( startupConfiguration, providerConfiguration, surefireClassLoader, testsClassLoader,
+                                     reporterFactory );
+            SurefireProvider surefireProvider = providerFactory.createProvider();
+            return surefireProvider.getSuites();
+        }
+        catch ( SurefireExecutionException e )
+        {
+            throw new SurefireBooterForkException( "Unable to create classloader to find test suites", e );
+        }
+    }
+
 }
