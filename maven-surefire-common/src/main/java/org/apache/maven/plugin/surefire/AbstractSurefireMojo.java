@@ -382,25 +382,6 @@ public abstract class AbstractSurefireMojo
             new ProviderConfiguration( directoryScannerParameters, failIfNoTests, reporterConfiguration, testNg,
                                        testSuiteDefinition, providerProperties, null );
 
-        Toolchain tc = getToolchain();
-
-        if ( tc != null )
-        {
-            getLog().info( "Toolchain in " + getPluginName() + "-plugin: " + tc );
-            if ( isForkModeNever() )
-            {
-                setForkMode( ForkConfiguration.FORK_ONCE );
-            }
-            if ( getJvm() != null )
-            {
-                getLog().warn( "Toolchains are ignored, 'executable' parameter is set to " + getJvm() );
-            }
-            else
-            {
-                setJvm( tc.findTool( "java" ) ); //NOI18N
-            }
-        }
-
         return providerConfiguration1;
     }
 
@@ -627,6 +608,25 @@ public abstract class AbstractSurefireMojo
             showMap( getInternalSystemProperties(), "system property" );
         }
 
+        Toolchain tc = getToolchain();
+
+        if ( tc != null )
+        {
+            getLog().info( "Toolchain in " + getPluginName() + "-plugin: " + tc );
+            if ( isForkModeNever() )
+            {
+                setForkMode( ForkConfiguration.FORK_ONCE );
+            }
+            if ( getJvm() != null )
+            {
+                getLog().warn( "Toolchains are ignored, 'executable' parameter is set to " + getJvm() );
+            }
+            else
+            {
+                setJvm( tc.findTool( "java" ) ); //NOI18N
+            }
+        }
+
         if ( fork.isForking() )
         {
             setUseSystemClassLoader( isUseSystemClassLoader() );
@@ -641,7 +641,8 @@ public abstract class AbstractSurefireMojo
 
             fork.setDebugLine( getDebugForkedProcess() );
 
-            if ( getJvm() == null || "".equals( getJvm() ) )
+
+            if ( (getJvm() == null || "".equals( getJvm() )))
             {
                 // use the same JVM as the one used to run Maven (the "java.home" one)
                 setJvm( System.getProperty( "java.home" ) + File.separator + "bin" + File.separator + "java" );
