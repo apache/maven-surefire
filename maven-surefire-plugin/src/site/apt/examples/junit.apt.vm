@@ -159,5 +159,27 @@ else
 [...]
 +---+
 
+* Using a security manager (JUnit3 only)
+
+   As long as forkMode!=never and you use JUnit3, you can run your tests with a java security manager active.
+   The classname of the security manager must be sent as a system property variable to the JUnit3 provider.
+
+   JUnit4 uses mechanisms internally that are not compatible with the tested security managers and is not supported
+   by surefire.
+
++---+
+[...]
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>${surefire.version}</version>
+        <configuration>
+          <systemPropertyVariables>
+            <surefire.security.manager>java.lang.SecurityManager</surefire.security.manager>
+          </systemPropertyVariables>
+        </configuration>
+      </plugin>
+[...]
++---+
 
   For more information on JUnit, see the {{{http://www.junit.org}JUnit web site}}.

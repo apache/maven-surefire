@@ -81,7 +81,8 @@ public class SurefireStarter
     private Object createForkingReporterFactory( SurefireReflector surefireReflector )
     {
         final Boolean trimStackTrace = this.providerConfiguration.getReporterConfiguration().isTrimStackTrace();
-        final PrintStream originalSystemOut = this.providerConfiguration.getReporterConfiguration().getOriginalSystemOut();
+        final PrintStream originalSystemOut =
+            this.providerConfiguration.getReporterConfiguration().getOriginalSystemOut();
         return surefireReflector.createForkingReporterFactory( trimStackTrace, originalSystemOut );
     }
 
@@ -114,8 +115,7 @@ public class SurefireStarter
 
         SurefireReflector surefireReflector = new SurefireReflector( surefireClassLoader );
 
-        final Object factory =
-            surefireReflector.createReportingReporterFactory( startupReportConfiguration );
+        final Object factory = surefireReflector.createReportingReporterFactory( startupReportConfiguration );
 
         return invokeProvider( null, testsClassLoader, surefireClassLoader, factory );
     }
@@ -181,8 +181,11 @@ public class SurefireStarter
         }
         finally
         {
-            System.setOut( orgSystemOut );
-            System.setErr( orgSystemErr );
+            if ( System.getSecurityManager() == null )
+            {
+                System.setOut( orgSystemOut );
+                System.setErr( orgSystemErr );
+            }
         }
     }
 }

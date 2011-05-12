@@ -34,6 +34,7 @@ import org.apache.maven.surefire.report.SimpleReportEntry;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.DirectoryScanner;
+import org.apache.maven.surefire.util.ReflectionUtils;
 import org.apache.maven.surefire.util.TestsToRun;
 
 /**
@@ -77,6 +78,14 @@ public class JUnit3Provider
         ReporterFactory reporterFactory = providerParameters.getReporterFactory();
         final RunListener reporter = reporterFactory.createReporter();
         ConsoleOutputCapture.startCapture( (ConsoleOutputReceiver) reporter );
+
+        final String smClassName = System.getProperty( "surefire.security.manager" );
+        if ( smClassName != null )
+        {
+            SecurityManager securityManager =
+                (SecurityManager) ReflectionUtils.instantiate( this.getClass().getClassLoader(), smClassName );
+            System.setSecurityManager( securityManager );
+        }
 
         for ( Iterator iter = testsToRun.iterator(); iter.hasNext(); )
         {
