@@ -172,7 +172,7 @@ else
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>${surefire.version}</version>
+        <version>${project.version}</version>
         <configuration>
           <systemPropertyVariables>
             <surefire.security.manager>java.lang.SecurityManager</surefire.security.manager>
@@ -181,5 +181,26 @@ else
       </plugin>
 [...]
 +---+
+
+* Using a security manager (All providers)
+
+    Alternatively you can define a policy file that allows all providers to run with surefire
+    and send them using the argLine parameter and two system properties;
+
++---+
+[...]
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>${project.version}</version>
+        <configuration>
+          <argLine>-Djava.security.manager -Djava.security.policy=${basedir}/src/test/resources/java.policy</argLine>
+        </configuration>
+      </plugin>
+[...]
++---+
+
+  The disadvantage of this solution is that the policy changes will affect the tests too, which make the
+  security environment less realistic.
 
   For more information on JUnit, see the {{{http://www.junit.org}JUnit web site}}.
