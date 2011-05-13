@@ -1,0 +1,52 @@
+<project name="MyProject" xmlns:ivy="antlib:org.apache.ivy.ant" default="dist" basedir=".">
+    <description>
+        simple example build file
+    </description>
+  <!-- set global properties for this build -->
+  <property name="src" location="src/test"/>
+  <property name="build" location="build"/>
+  <property name="dist"  location="dist"/>
+
+
+    <target name="resolve" description="--> retrieve dependencies with ivy">
+        <ivy:retrieve />
+    </target>
+
+  <target name="init">
+    <!-- Create the time stamp -->
+    <tstamp/>
+    <!-- Create the build directory structure used by compile -->
+    <mkdir dir="${build}"/>
+  </target>
+
+  <target name="compile" depends="init, resolve"
+        description="compile the source " >
+    <javac srcdir="${src}" destdir="${build}" includeantruntime="true" classpath="lib/junit-4.8.1.jar" />
+  </target>
+
+  <target name="dist" depends="compile"
+        description="generate the distribution" >
+    <!-- Create the distribution directory -->
+    <mkdir dir="${dist}/lib"/>
+
+    <!-- Put everything in ${build} into the MyProject-${DSTAMP}.jar file -->
+    <jar jarfile="${dist}/lib/MyProject-${DSTAMP}.jar" basedir="${build}"/>
+  </target>
+
+  <target name="test" depends="compile">
+    <junit>
+      <classpath path="build:lib/junit-4.8.1.jar"/>
+      <formatter type="brief" usefile="true" />
+      <formatter type="xml" usefile="true" />
+      <test name="antignore.BasicTest" />
+    </junit>
+</target>
+
+  <target name="clean"
+        description="clean up" >
+    <!-- Delete the ${build} and ${dist} directory trees -->
+    <delete dir="${build}"/>
+    <delete dir="${dist}"/>
+  </target>
+
+</project>

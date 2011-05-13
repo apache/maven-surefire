@@ -22,6 +22,8 @@ package org.apache.maven.surefire.junit;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+
+import junit.framework.TestSuite;
 import org.apache.maven.surefire.common.junit3.JUnit3Reflector;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.testset.TestSetFailedException;
