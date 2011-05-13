@@ -27,6 +27,7 @@ import org.apache.maven.surefire.common.junit4.JUnit4RunListenerFactory;
 import org.apache.maven.surefire.common.junit4.JUnit4TestChecker;
 import org.apache.maven.surefire.providerapi.AbstractProvider;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
+import org.apache.maven.surefire.report.ConsoleLogger;
 import org.apache.maven.surefire.report.ConsoleOutputCapture;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.ReporterException;
@@ -59,15 +60,16 @@ public class JUnitCoreProvider
 
     private TestsToRun testsToRun;
 
-    public JUnitCoreProvider( ProviderParameters booterParameters )
+
+    public JUnitCoreProvider( ProviderParameters providerParameters )
     {
-        this.providerParameters = booterParameters;
-        this.testClassLoader = booterParameters.getTestClassLoader();
-        this.directoryScanner = booterParameters.getDirectoryScanner();
-        this.jUnitCoreParameters = new JUnitCoreParameters( booterParameters.getProviderProperties() );
+        this.providerParameters = providerParameters;
+        this.testClassLoader = providerParameters.getTestClassLoader();
+        this.directoryScanner = providerParameters.getDirectoryScanner();
+        this.jUnitCoreParameters = new JUnitCoreParameters( providerParameters.getProviderProperties() );
         this.scannerFilter = new JUnit4TestChecker( testClassLoader );
         customRunListeners = JUnit4RunListenerFactory.
-            createCustomListeners( booterParameters.getProviderProperties().getProperty( "listener" ) );
+            createCustomListeners( providerParameters.getProviderProperties().getProperty( "listener" ) );
 
     }
 
@@ -88,7 +90,8 @@ public class JUnitCoreProvider
         final String message = "Concurrency config is " + jUnitCoreParameters.toString() + "\n";
         final ReporterFactory reporterFactory = providerParameters.getReporterFactory();
 
-        reporterFactory.createConsoleLogger().info( message );
+        final ConsoleLogger consoleLogger = providerParameters.getConsoleLogger();
+        consoleLogger.info( message );
 
         if ( testsToRun == null )
         {
@@ -96,11 +99,12 @@ public class JUnitCoreProvider
         }
         final Map<String, TestSet> testSetMap = new ConcurrentHashMap<String, TestSet>();
 
-        RunListener listener =
-            ConcurrentReporterManager.createInstance( testSetMap, reporterFactory, jUnitCoreParameters.isParallelClasses(),
-                                                      jUnitCoreParameters.isParallelBoth() );
+        RunListener listener = ConcurrentReporterManager.createInstance( testSetMap, reporterFactory,
+                                                                         jUnitCoreParameters.isParallelClasses(),
+                                                                         jUnitCoreParameters.isParallelBoth(),
+                                                                         consoleLogger );
 
-        ConsoleOutputCapture.startCapture((ConsoleOutputReceiver) listener);
+        ConsoleOutputCapture.startCapture( (ConsoleOutputReceiver) listener );
 
         org.junit.runner.notification.RunListener jUnit4RunListener = new JUnitCoreRunListener( listener, testSetMap );
         customRunListeners.add( 0, jUnit4RunListener );

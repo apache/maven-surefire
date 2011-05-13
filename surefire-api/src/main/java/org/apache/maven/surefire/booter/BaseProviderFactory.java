@@ -20,7 +20,10 @@ package org.apache.maven.surefire.booter;
  */
 
 import java.util.Properties;
+import org.apache.maven.plugin.surefire.report.FileReporterFactory;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
+import org.apache.maven.surefire.report.ConsoleLogger;
+import org.apache.maven.surefire.report.DefaultDirectConsoleReporter;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
@@ -47,6 +50,8 @@ public class BaseProviderFactory
     private TestRequest testRequest;
 
     private TestArtifactInfo testArtifactInfo;
+
+    private static final Integer ROOT_CHANNEl = new Integer( 0 );
 
 
     private final ReporterFactory reporterFactory;
@@ -86,6 +91,17 @@ public class BaseProviderFactory
     public void setClassLoaders( ClassLoader surefireClassLoader, ClassLoader testClassLoader )
     {
         this.testClassLoader = testClassLoader;
+    }
+
+    public ConsoleLogger getConsoleLogger()
+    {
+        // Maybe a somewhat odd way to determine if we're forking
+        if ( getReporterFactory() instanceof FileReporterFactory )
+        {
+            return new DefaultDirectConsoleReporter( reporterConfiguration.getOriginalSystemOut() );
+        }
+        return new ForkingRunListener( reporterConfiguration.getOriginalSystemOut(), ROOT_CHANNEl.intValue(),
+                                       reporterConfiguration.isTrimStackTrace().booleanValue() );
     }
 
     public void setTestRequest( TestRequest testRequest )

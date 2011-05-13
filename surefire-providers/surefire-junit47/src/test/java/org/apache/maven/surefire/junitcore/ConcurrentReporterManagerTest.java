@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.apache.maven.plugin.surefire.report.FileReporterFactory;
 import org.apache.maven.surefire.booter.StartupReportConfiguration;
+import org.apache.maven.surefire.report.DefaultConsoleReporter;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.RunListener;
@@ -152,16 +153,16 @@ public class ConcurrentReporterManagerTest
     {
         ReporterFactory reporterFactory = createReporterFactory();
         HashMap<String, TestSet> classMethodCounts = new HashMap<String, TestSet>();
+        final DefaultConsoleReporter defaultConsoleReporter = new DefaultConsoleReporter( System.out );
         RunListener reporter =
-            new ClassesParallelRunListener( classMethodCounts, reporterFactory );
+            new ClassesParallelRunListener( classMethodCounts, reporterFactory, defaultConsoleReporter );
         JUnitCoreRunListener runListener = new JUnitCoreRunListener( reporter, classMethodCounts );
         RunStatistics result = runClasses( reporterFactory, runListener, classes );
         assertReporter( result, success, ignored, failure, "classes" );
         classMethodCounts.clear();
 
         reporterFactory = createReporterFactory();
-        reporter =
-            new MethodsParallelRunListener( classMethodCounts, reporterFactory, true );
+        reporter = new MethodsParallelRunListener( classMethodCounts, reporterFactory, true, defaultConsoleReporter );
         runListener = new JUnitCoreRunListener( reporter, classMethodCounts );
         result = runClasses( reporterFactory, runListener, classes );
         assertReporter( result, success, ignored, failure, "methods" );
@@ -205,7 +206,8 @@ public class ConcurrentReporterManagerTest
         throws TestSetFailedException
     {
         return new JUnitCoreRunListener(
-            new ClassesParallelRunListener( testSetMap, reporterFactory ), testSetMap );
+            new ClassesParallelRunListener( testSetMap, reporterFactory, new DefaultConsoleReporter( System.out ) ),
+            testSetMap );
     }
 
 

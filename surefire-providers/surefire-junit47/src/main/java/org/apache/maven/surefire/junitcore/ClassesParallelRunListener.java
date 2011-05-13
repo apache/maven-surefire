@@ -20,6 +20,7 @@ package org.apache.maven.surefire.junitcore;
  */
 
 import java.util.Map;
+import org.apache.maven.surefire.report.ConsoleLogger;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
@@ -29,10 +30,11 @@ import org.apache.maven.surefire.testset.TestSetFailedException;
 public class ClassesParallelRunListener
     extends ConcurrentReporterManager
 {
-    public ClassesParallelRunListener( Map<String, TestSet> classMethodCounts, ReporterFactory reporterFactory )
+    public ClassesParallelRunListener( Map<String, TestSet> classMethodCounts, ReporterFactory reporterFactory,
+                                       ConsoleLogger consoleLogger )
         throws TestSetFailedException
     {
-        super( reporterFactory, false, classMethodCounts );
+        super( reporterFactory, consoleLogger, false, classMethodCounts );
     }
 
     @Override
@@ -41,7 +43,7 @@ public class ClassesParallelRunListener
         TestSet currentlyAttached = TestSet.getThreadTestSet();
         if ( currentlyAttached != null && currentlyAttached != testSetForTest )
         {
-            currentlyAttached.setAllScheduled( getReporterManager() );
+            currentlyAttached.setAllScheduled( getRunListener() );
         }
     }
 }

@@ -25,8 +25,8 @@ import java.util.List;
 import org.apache.maven.surefire.booter.StartupReportConfiguration;
 import org.apache.maven.surefire.report.AbstractConsoleReporter;
 import org.apache.maven.surefire.report.AbstractFileReporter;
-import org.apache.maven.surefire.report.DefaultDirectConsoleReporter;
 import org.apache.maven.surefire.report.ConsoleLogger;
+import org.apache.maven.surefire.report.DefaultDirectConsoleReporter;
 import org.apache.maven.surefire.report.MulticastingReporter;
 import org.apache.maven.surefire.report.Reporter;
 import org.apache.maven.surefire.report.ReporterConfiguration;
@@ -59,15 +59,16 @@ public class FileReporterFactory
     public FileReporterFactory( StartupReportConfiguration reportConfiguration )
     {
         this.reportConfiguration = reportConfiguration;
-        this.reporterConfiguration = getReporterConfiguration(  );
+        this.reporterConfiguration = getReporterConfiguration();
         multicastingReporter = new MulticastingReporter( instantiateReports() );
         runStarting();
     }
 
-    private ReporterConfiguration getReporterConfiguration( )
+    private ReporterConfiguration getReporterConfiguration()
     {
         //noinspection BooleanConstructorCall
-        return new ReporterConfiguration( reportConfiguration.getReportsDirectory(), new Boolean( reportConfiguration.isTrimStackTrace() ));
+        return new ReporterConfiguration( reportConfiguration.getReportsDirectory(),
+                                          new Boolean( reportConfiguration.isTrimStackTrace() ) );
     }
 
     public RunListener createReporter()
@@ -99,7 +100,7 @@ public class FileReporterFactory
 
     private List instantiateReports()
     {
-        List result = new ArrayList( );
+        List result = new ArrayList();
         addIfNotNull( result, instantiateConsoleReporter() );
         addIfNotNull( result, instantiateFileReporter() );
         addIfNotNull( result, instantiateXmlReporter() );
@@ -107,8 +108,12 @@ public class FileReporterFactory
         return result;
     }
 
-    private void addIfNotNull( List result, Reporter reporter){
-        if (reporter != null) result.add(  reporter );
+    private void addIfNotNull( List result, Reporter reporter )
+    {
+        if ( reporter != null )
+        {
+            result.add( reporter );
+        }
     }
 
     public RunResult close()
@@ -117,7 +122,7 @@ public class FileReporterFactory
         return globalStats.getRunResult();
     }
 
-    public ConsoleLogger createConsoleLogger()
+    private ConsoleLogger createConsoleLogger()
     {
         return new DefaultDirectConsoleReporter( reporterConfiguration.getOriginalSystemOut() );
     }
@@ -133,30 +138,30 @@ public class FileReporterFactory
 
     private void runCompleted()
     {
-        final ConsoleLogger consoleReporter = createConsoleLogger();
-        consoleReporter.info( "" );
-        consoleReporter.info( "Results :" );
-        consoleReporter.info( "" );
+        final ConsoleLogger logger = createConsoleLogger();
+        logger.info( "" );
+        logger.info( "Results :" );
+        logger.info( "" );
         if ( globalStats.hadFailures() )
         {
             multicastingReporter.writeMessage( "Failed tests: " );
             for ( Iterator iterator = this.globalStats.getFailureSources().iterator(); iterator.hasNext(); )
             {
-                consoleReporter.info( "  " + iterator.next() );
+                logger.info( "  " + iterator.next() );
             }
-            consoleReporter.info( "" );
+            logger.info( "" );
         }
         if ( globalStats.hadErrors() )
         {
-            consoleReporter.info( "Tests in error: " );
+            logger.info( "Tests in error: " );
             for ( Iterator iterator = this.globalStats.getErrorSources().iterator(); iterator.hasNext(); )
             {
-                consoleReporter.info( "  " + iterator.next() );
+                logger.info( "  " + iterator.next() );
             }
-            consoleReporter.info( "" );
+            logger.info( "" );
         }
-        consoleReporter.info( globalStats.getSummary() );
-        consoleReporter.info( "" );
+        logger.info( globalStats.getSummary() );
+        logger.info( "" );
     }
 
     public RunStatistics getGlobalRunStatistics()

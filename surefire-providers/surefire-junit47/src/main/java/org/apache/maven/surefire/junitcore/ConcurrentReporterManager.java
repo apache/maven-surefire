@@ -20,6 +20,7 @@ package org.apache.maven.surefire.junitcore;
  */
 
 import java.util.Map;
+import org.apache.maven.surefire.report.ConsoleLogger;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterFactory;
@@ -41,18 +42,16 @@ public abstract class ConcurrentReporterManager
 
     private final ReporterFactory reporterFactory;
 
-    ConcurrentReporterManager( ReporterFactory reporterFactory, boolean reportImmediately,
+    private final ConsoleLogger consoleLogger;
+
+    ConcurrentReporterManager( ReporterFactory reporterFactory, ConsoleLogger consoleLogger, boolean reportImmediately,
                                Map<String, TestSet> classMethodCounts )
         throws TestSetFailedException
     {
         this.reportImmediately = reportImmediately;
         this.reporterFactory = reporterFactory;
         this.classMethodCounts = classMethodCounts;
-
-        // We must create the first reporterManager here, even though we will never use it.
-        // There is some room for improvement here
-        // todo: Find out if needed for 2.8.1
-        this.reporterFactory.createReporter();
+        this.consoleLogger = consoleLogger;
     }
 
     public void testSetStarting( ReportEntry description )
@@ -61,7 +60,7 @@ public abstract class ConcurrentReporterManager
 
     public void testSetCompleted( ReportEntry result )
     {
-        final RunListener reporterManager = getReporterManager();
+        final RunListener reporterManager = getRunListener();
         for ( TestSet testSet : classMethodCounts.values() )
         {
             testSet.replay( reporterManager );
@@ -83,7 +82,7 @@ public abstract class ConcurrentReporterManager
         TestSet testSet = getTestSet( description );
         TestMethod testMethod = getTestSet( description ).createTestMethod( description );
         testMethod.testIgnored( description );
-        testSet.incrementFinishedTests( getReporterManager(), reportImmediately );
+        testSet.incrementFinishedTests( getRunListener(), reportImmediately );
     }
 
     public void testAssumptionFailure( ReportEntry failure )
@@ -104,7 +103,7 @@ public abstract class ConcurrentReporterManager
     public void testSucceeded( ReportEntry report )
     {
         getTestMethod().testFinished();
-        TestSet.getThreadTestSet().incrementFinishedTests( getReporterManager(), reportImmediately );
+        TestSet.getThreadTestSet().incrementFinishedTests( getRunListener(), reportImmediately );
         detachTestMethodFromThread();
     }
 
@@ -136,26 +135,29 @@ public abstract class ConcurrentReporterManager
         return classMethodCounts.get( description.getSourceName() );
     }
 
-    RunListener getReporterManager()
+    RunListener getRunListener()
     {
-        RunListener reporterManager = reporterManagerThreadLocal.get();
-        if ( reporterManager == null )
+        RunListener runListener = reporterManagerThreadLocal.get();
+        if ( runListener == null )
         {
-            reporterManager = reporterFactory.createReporter();
-            reporterManagerThreadLocal.set( reporterManager );
+            runListener = reporterFactory.createReporter();
+            reporterManagerThreadLocal.set( runListener );
         }
-        return reporterManager;
+        return runListener;
     }
 
     public static ConcurrentReporterManager createInstance( Map<String, TestSet> classMethodCounts,
-                                                            ReporterFactory reporterManagerFactory, boolean parallelClasses, boolean parallelBoth )
+                                                            ReporterFactory reporterManagerFactory,
+                                                            boolean parallelClasses, boolean parallelBoth,
+                                                            ConsoleLogger consoleLogger )
         throws TestSetFailedException
     {
         if ( parallelClasses )
         {
-            return new ClassesParallelRunListener( classMethodCounts, reporterManagerFactory );
+            return new ClassesParallelRunListener( classMethodCounts, reporterManagerFactory, consoleLogger );
         }
-        return new MethodsParallelRunListener( classMethodCounts, reporterManagerFactory, !parallelBoth );
+        return new MethodsParallelRunListener( classMethodCounts, reporterManagerFactory, !parallelBoth,
+                                               consoleLogger );
     }
 
 
@@ -169,8 +171,8 @@ public abstract class ConcurrentReporterManager
         }
         else
         {
-            // No test running, just dump the message "somewhere"
-            reporterFactory.createConsoleLogger().info( new String( buf, off, len ) );
+            // Not able to assocaite output with any thread. Just dump to console
+            consoleLogger.info( new String( buf, off, len ) );
         }
     }
 
