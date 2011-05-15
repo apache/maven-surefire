@@ -108,6 +108,10 @@
     <system>jira</system>
     <url>http://jira.codehaus.org/browse/SUREFIRE</url>
   </issueManagement>
+  <ciManagement>
+    <system>Jenkins</system>
+    <url>https://builds.apache.org/hudson/job/maven-surefire/</url>
+  </ciManagement>
   
   <properties>
     <mavenVersion>2.0.9</mavenVersion>
