@@ -19,11 +19,10 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
-import org.apache.maven.surefire.util.internal.ByteBuffer;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import org.apache.maven.surefire.util.internal.ByteBuffer;
 
 /**
  * Deals with system.out/err.
@@ -81,6 +80,9 @@ public class ConsoleOutputCapture
 
         public void println( String s )
         {
+            if (s == null){
+                s = "null"; // Shamelessy taken from super.print
+            }
             final byte[] bytes = s.getBytes();
             final byte[] join = ByteBuffer.join( bytes, 0, bytes.length, newline, 0, 1 );
             target.writeTestOutput( join, 0, join.length, isStdout );
