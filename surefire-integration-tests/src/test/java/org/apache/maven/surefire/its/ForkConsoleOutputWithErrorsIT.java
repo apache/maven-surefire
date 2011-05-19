@@ -1,5 +1,4 @@
-package forkConsoleOutput;
-
+package org.apache.maven.surefire.its;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -19,16 +18,32 @@ package forkConsoleOutput;
  * under the License.
  */
 
-import org.junit.Test;
 
-public class Test2
+import java.io.File;
+
+/**
+ * Asserts proper behaviour of console output when forking
+ * SUREFIRE-639
+ * SUREFIRE-651
+ *
+ * @author Kristian Rosenvold
+ */
+public class ForkConsoleOutputWithErrorsIT
+    extends SurefireVerifierTestClass
 {
-    @Test
-    public void test6281() {
-        System.out.println("sout: I am talking to you");
-        System.out.println("sout: Will Fail soon");
-        System.err.println("serr: And you too");
-        System.err.println("serr: Will Fail now");
-        throw new  RuntimeException("FailHere");
+
+    public ForkConsoleOutputWithErrorsIT()
+    {
+        super( "/fork-consoleOutputWithErrors" );
+    }
+
+    public void testXmlFileContainsConsoleOutput()
+        throws Exception
+    {
+        failNever();
+        execute( "test" );
+        final File surefireReportsFile = getSurefireReportsFile( "TEST-forkConsoleOutput.Test2.xml" );
+        assertContainsText(  surefireReportsFile, "sout: Will Fail soon" );
+        assertContainsText(  surefireReportsFile, "serr: Will Fail now" );
     }
 }
