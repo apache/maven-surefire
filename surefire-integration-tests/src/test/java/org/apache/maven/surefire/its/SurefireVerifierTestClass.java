@@ -22,7 +22,11 @@ package org.apache.maven.surefire.its;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.StringTokenizer;
+
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
@@ -56,6 +60,8 @@ public abstract class SurefireVerifierTestClass
     private final List<String> goals;
 
     private final Verifier verifier;
+
+    private final Map<String, String> envvars = new HashMap<String, String>(  );
 
     private final String testNgVersion = System.getProperty( "testng.version" );
 
@@ -95,6 +101,11 @@ public abstract class SurefireVerifierTestClass
         goals.clear();
         goals.addAll( getInitialGoals() );
         cliOptions.clear();
+    }
+
+
+    protected void addEnvVar(String key, String value){
+        envvars.put(  key, value );
     }
 
     private List<String> getInitialGoals()
@@ -210,7 +221,7 @@ public abstract class SurefireVerifierTestClass
         verifier.setCliOptions( cliOptions );
         try
         {
-            verifier.executeGoals( goals );
+            verifier.executeGoals( goals, envvars );
             return verifier;
         }
         finally
@@ -379,4 +390,8 @@ public abstract class SurefireVerifierTestClass
         return surefireVersion;
     }
 
+    protected String getSurefireReportGoal()
+    {
+        return "org.apache.maven.plugins:maven-surefire-report-plugin:" + getSurefireVersion() +  ":report";
+    }
 }

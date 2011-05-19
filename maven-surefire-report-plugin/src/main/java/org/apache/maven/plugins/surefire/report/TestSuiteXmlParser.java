@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.StringTokenizer;
 
@@ -47,7 +48,7 @@ public class TestSuiteXmlParser
     private ReportTestSuite defaultSuite;
     private ReportTestSuite currentSuite;
     private Map classesToSuites;
-    private final NumberFormat numberFormat = NumberFormat.getInstance();
+    private final NumberFormat numberFormat = NumberFormat.getInstance( Locale.ENGLISH);
 
     /**
      * @noinspection StringBufferField

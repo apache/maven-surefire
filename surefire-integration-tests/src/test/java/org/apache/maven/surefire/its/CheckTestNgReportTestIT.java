@@ -18,9 +18,8 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.misc.HelperAssertions;
-
 import java.io.File;
+import org.apache.maven.surefire.its.misc.HelperAssertions;
 
 import junit.framework.Assert;
 
@@ -41,7 +40,7 @@ public class CheckTestNgReportTestIT
     public void testTestNgReport()
         throws Exception
     {
-        execute( "org.apache.maven.plugins:maven-surefire-report-plugin:" + getSurefireVersion() + ":report" );
+        execute( getSurefireReportGoal() );
         verifyErrorFreeLog();
 
         HelperAssertions.assertTestSuiteResults( 1, 0, 0, 0, getTestDir() );

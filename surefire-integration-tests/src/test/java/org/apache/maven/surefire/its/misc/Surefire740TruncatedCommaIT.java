@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.its;
+package org.apache.maven.surefire.its.misc;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -18,25 +18,36 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
+
+import java.io.File;
+import org.apache.maven.surefire.its.SurefireVerifierTestClass;
+
 /**
- * Test Surefire-257 Verifies that surefire does not re-run tests in site build
+ * Test Surefire-740 Truncated comma with non us locale
  *
  * @author Kristian Rosenvold
  */
-public class Surefire257NotRerunningTestsIT
+public class Surefire740TruncatedCommaIT
     extends SurefireVerifierTestClass
 {
 
-    public Surefire257NotRerunningTestsIT()
+    public Surefire740TruncatedCommaIT()
     {
-        super( "/surefire-257-rerunningTests" );
+        super( "/surefire-740-comma-truncated" );
     }
 
-    public void testShouldNotRerun()
+    public void testRussianLocaleReport()
         throws Exception
     {
-        addGoal( getSurefireReportGoal() );
+        addEnvVar( "MAVEN_OPTS", "-Duser.language=ru -Duser.country=RU" );
+        failNever();
         execute( getSurefireReportGoal() );
-        verifyTextInLog( "Skipping execution of surefire because it has already been run for this configuration" );
+
+
+        File siteFile = getSiteFile( "surefire-report.html" );
+        System.out.println( "siteFile.getAbsolutePath() = " + siteFile.getAbsolutePath() );
+        assertTrue( "Expecting file", siteFile.exists());
+        assertContainsText( siteFile, "027" ); // Avoid asserting with the "," or "." ;)
     }
+
 }
