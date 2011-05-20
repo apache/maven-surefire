@@ -91,28 +91,28 @@ public class ForkClient
             switch ( operationId )
             {
                 case ForkingRunListener.BOOTERCODE_TESTSET_STARTING:
-                    reporter.testSetStarting( createReportEntry( new StringTokenizer( remaining, "," ) ) );
+                    reporter.testSetStarting( createReportEntry( remaining ) );
                     break;
                 case ForkingRunListener.BOOTERCODE_TESTSET_COMPLETED:
-                    reporter.testSetCompleted( createReportEntry( new StringTokenizer( remaining, "," ) ) );
+                    reporter.testSetCompleted( createReportEntry( remaining ) );
                     break;
                 case ForkingRunListener.BOOTERCODE_TEST_STARTING:
-                    reporter.testStarting( createReportEntry( new StringTokenizer( remaining, "," ) ) );
+                    reporter.testStarting( createReportEntry( remaining) );
                     break;
                 case ForkingRunListener.BOOTERCODE_TEST_SUCCEEDED:
-                    reporter.testSucceeded( createReportEntry( new StringTokenizer( remaining, "," ) ) );
+                    reporter.testSucceeded( createReportEntry( remaining ) );
                     break;
                 case ForkingRunListener.BOOTERCODE_TEST_FAILED:
-                    reporter.testFailed( createReportEntry( new StringTokenizer( remaining, "," ) ) );
+                    reporter.testFailed( createReportEntry( remaining ) );
                     break;
                 case ForkingRunListener.BOOTERCODE_TEST_SKIPPED:
-                    reporter.testSkipped( createReportEntry( new StringTokenizer( remaining, "," ) ) );
+                    reporter.testSkipped( createReportEntry( remaining ) );
                     break;
                 case ForkingRunListener.BOOTERCODE_TEST_ERROR:
-                    reporter.testError( createReportEntry( new StringTokenizer( remaining, "," ) ) );
+                    reporter.testError( createReportEntry( remaining ) );
                     break;
                 case ForkingRunListener.BOOTERCODE_TEST_ASSUMPTIONFAILURE:
-                    reporter.testAssumptionFailure( createReportEntry( new StringTokenizer( remaining, "," ) ) );
+                    reporter.testAssumptionFailure( createReportEntry( remaining ) );
                     break;
                 case ForkingRunListener.BOOTERCODE_SYSPROPS:
                     int keyEnd = remaining.indexOf( "," );
@@ -169,8 +169,9 @@ public class ForkClient
         return unescape( remaining );
     }
 
-    private ReportEntry createReportEntry( StringTokenizer tokens )
+    private ReportEntry createReportEntry( String untokenized)
     {
+        StringTokenizer tokens = new StringTokenizer(untokenized, ",");
         try
         {
             String source = tokens.nextToken();
@@ -187,7 +188,7 @@ public class ForkClient
         }
         catch ( RuntimeException e )
         {
-            throw new RuntimeException( tokens.toString(), e );
+            throw new RuntimeException( untokenized, e );
         }
     }
 
@@ -195,7 +196,7 @@ public class ForkClient
     {
         StackTraceWriter stackTraceWriter;
         String stackTraceMessage = nullableCsv( tokens.nextToken() );
-        String stackTrace = nullableCsv( tokens.nextToken() );
+        String stackTrace = tokens.hasMoreTokens() ? nullableCsv( tokens.nextToken() ) : null;
         stackTraceWriter =
             stackTrace != null ? new DeserializedStacktraceWriter( stackTraceMessage, stackTrace ) : null;
         return stackTraceWriter;

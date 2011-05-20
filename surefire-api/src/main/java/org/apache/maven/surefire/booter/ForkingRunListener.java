@@ -221,8 +221,11 @@ public class ForkingRunListener
             StringUtils.escapeJavaStyleString( byteBuffer.getData(), byteBuffer.getlength(), buf, 0, buf.length );
         byteBuffer.advance( i );
         byteBuffer.append( '\n' );
-        target.write( byteBuffer.getData(), 0, byteBuffer.getlength() );
-        target.flush();
+        synchronized ( target )
+        {
+            target.write( byteBuffer.getData(), 0, byteBuffer.getlength() );
+            target.flush();
+        }
     }
 
     private String toPropertyString( String key, String value )
@@ -319,7 +322,6 @@ public class ForkingRunListener
         }
         else
         {
-            comma( stringBuffer );
             comma( stringBuffer );
         }
     }
