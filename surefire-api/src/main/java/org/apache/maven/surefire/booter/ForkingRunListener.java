@@ -245,10 +245,9 @@ public class ForkingRunListener
         StringBuffer stringBuffer = new StringBuffer();
         append( stringBuffer, operationCode ).comma( stringBuffer );
         append( stringBuffer, Integer.toHexString( testSetChannelId.intValue() ) ).comma( stringBuffer );
-        append( stringBuffer, reportEntry.getSourceName() ).comma( stringBuffer );
-        append( stringBuffer, reportEntry.getName() ).comma( stringBuffer );
-        nullableEncoding( stringBuffer, reportEntry.getGroup() );
-        comma( stringBuffer );
+        nullableEncoding( stringBuffer, reportEntry.getSourceName() ).comma( stringBuffer );
+        nullableEncoding( stringBuffer, reportEntry.getName() ).comma( stringBuffer );
+        nullableEncoding( stringBuffer, reportEntry.getGroup() ).comma( stringBuffer );
         nullableEncoding( stringBuffer, reportEntry.getElapsed() );
         encode( stringBuffer, reportEntry.getStackTraceWriter() );
         stringBuffer.append( "\n" );
@@ -290,7 +289,7 @@ public class ForkingRunListener
     }
 
 
-    private void nullableEncoding( StringBuffer stringBuffer, String source )
+    private ForkingRunListener nullableEncoding( StringBuffer stringBuffer, String source )
     {
         if ( source == null || source.length() == 0)
         {
@@ -300,6 +299,7 @@ public class ForkingRunListener
         {
             StringUtils.escapeJavaStyleString( stringBuffer, source );
         }
+        return this;
     }
 
     private void encode( StringBuffer stringBuffer, StackTraceWriter stackTraceWriter )
