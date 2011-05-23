@@ -250,7 +250,6 @@ public class ForkingRunListener
         nullableEncoding( stringBuffer, reportEntry.getGroup() );
         comma( stringBuffer );
         nullableEncoding( stringBuffer, reportEntry.getElapsed() );
-        comma( stringBuffer );
         encode( stringBuffer, reportEntry.getStackTraceWriter() );
         stringBuffer.append( "\n" );
         return stringBuffer.toString();
@@ -293,7 +292,7 @@ public class ForkingRunListener
 
     private void nullableEncoding( StringBuffer stringBuffer, String source )
     {
-        if ( source == null )
+        if ( source == null || source.length() == 0)
         {
             stringBuffer.append( "null" );
         }
@@ -307,6 +306,7 @@ public class ForkingRunListener
     {
         if ( stackTraceWriter != null )
         {
+            comma( stringBuffer );
             //noinspection ThrowableResultOfMethodCallIgnored
             final Throwable throwable = stackTraceWriter.getThrowable();
             if ( throwable != null )
@@ -319,10 +319,6 @@ public class ForkingRunListener
             nullableEncoding( stringBuffer, trimStackTraces
                 ? stackTraceWriter.writeTrimmedTraceToString()
                 : stackTraceWriter.writeTraceToString() );
-        }
-        else
-        {
-            comma( stringBuffer );
         }
     }
 }

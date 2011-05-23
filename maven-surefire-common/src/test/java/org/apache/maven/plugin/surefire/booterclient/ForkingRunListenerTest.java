@@ -24,6 +24,8 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.List;
 import java.util.Properties;
+import java.util.StringTokenizer;
+
 import org.apache.maven.plugin.surefire.booterclient.output.ForkClient;
 import org.apache.maven.surefire.booter.ForkingRunListener;
 import org.apache.maven.surefire.report.CategorizedReportEntry;
@@ -108,6 +110,17 @@ public class ForkingRunListenerTest
         standardTestRun.assertExpected( MockReporter.TEST_STARTING, expected );
     }
 
+    public void testStringTokenizer(){
+        String test ="5,11,com.abc.TestClass,testMethod,null,22,,,";
+        StringTokenizer tok = new StringTokenizer( test, "," );
+        assertEquals( "5", tok.nextToken());
+        assertEquals( "11", tok.nextToken());
+        assertEquals( "com.abc.TestClass", tok.nextToken());
+        assertEquals( "testMethod", tok.nextToken());
+        assertEquals( "null", tok.nextToken());
+        assertEquals( "22", tok.nextToken());
+        assertFalse(  tok.hasMoreTokens() );
+    }
     public void testSucceded()
         throws ReporterException, IOException
     {
