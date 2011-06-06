@@ -43,6 +43,9 @@ public class JUnit4RunListenerIT
         executeTest();
         verifyErrorFreeLog();
         assertResults();
+        verifyTextInLog( "testRunStarted null" );
+        verifyTextInLog( "testFinished simpleTest" );
+        verifyTextInLog( "testRunFinished org.junit.runner.Result" );
     }
 
     private void assertResults()
@@ -62,6 +65,9 @@ public class JUnit4RunListenerIT
         executeTest();
         verifyErrorFreeLog();
         assertResults();
+        verifyTextInLog( "testRunStarted null" );
+        verifyTextInLog( "testFinished simpleTest" );
+        verifyTextInLog( "testRunFinished org.junit.runner.Result" );
     }
 
     private void assertFileExists( final File file )

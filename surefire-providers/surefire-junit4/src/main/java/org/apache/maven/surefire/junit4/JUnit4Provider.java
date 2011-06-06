@@ -40,6 +40,7 @@ import org.apache.maven.surefire.util.DefaultDirectoryScanner;
 import org.apache.maven.surefire.util.DirectoryScanner;
 import org.apache.maven.surefire.util.TestsToRun;
 
+import org.junit.runner.Result;
 import org.junit.runner.notification.RunNotifier;
 
 /**
@@ -77,7 +78,6 @@ public class JUnit4Provider
     public RunResult invoke( Object forkTestSet )
         throws TestSetFailedException, ReporterException
     {
-        long start = System.currentTimeMillis();
         if ( testsToRun == null )
         {
             testsToRun = forkTestSet == null ? scanClassPath() : TestsToRun.fromClass( (Class) forkTestSet );
@@ -88,23 +88,26 @@ public class JUnit4Provider
         final ReporterFactory reporterFactory = providerParameters.getReporterFactory();
 
         final RunListener reporter = reporterFactory.createReporter();
-        //final AsynchRunListener asynchRunListener = new AsynchRunListener( reporter , "JUnitProvider");
-        final RunListener asynchRunListener = reporter;
 
-        ConsoleOutputCapture.startCapture( (ConsoleOutputReceiver) asynchRunListener );
 
-        JUnit4RunListener jUnit4TestSetReporter = new JUnit4RunListener( asynchRunListener );
+        ConsoleOutputCapture.startCapture( (ConsoleOutputReceiver) reporter );
 
-        RunNotifier runNotifer = getRunNotifer( jUnit4TestSetReporter, customRunListeners );
+        JUnit4RunListener jUnit4TestSetReporter = new JUnit4RunListener( reporter );
+
+        Result result = new Result();
+        RunNotifier runNotifer = getRunNotifer( jUnit4TestSetReporter, result, customRunListeners );
+
+        runNotifer.fireTestRunStarted( null );
 
         for ( Class clazz : testsToRun.getLocatedClasses() )
         {
             executeTestSet( clazz, reporter, runNotifer );
         }
 
+        runNotifer.fireTestRunFinished( result );
+
         closeRunNotifer( jUnit4TestSetReporter, customRunListeners );
 
-        //asynchRunListener.close();
         return reporterFactory.close();
     }
 
@@ -135,11 +138,11 @@ public class JUnit4Provider
         }
     }
 
-    private RunNotifier getRunNotifer( org.junit.runner.notification.RunListener main,
-                                       List<org.junit.runner.notification.RunListener> others )
+    private RunNotifier getRunNotifer( org.junit.runner.notification.RunListener main, Result result, List<org.junit.runner.notification.RunListener> others )
     {
         RunNotifier fNotifier = new RunNotifier();
         fNotifier.addListener( main );
+        fNotifier.addListener(  result.createListener() );
         for ( org.junit.runner.notification.RunListener listener : others )
         {
             fNotifier.addListener( listener );

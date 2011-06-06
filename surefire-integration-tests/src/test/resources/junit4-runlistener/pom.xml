@@ -60,7 +60,7 @@
           <properties>
             <property>
               <name>listener</name>
-              <value>runListener.FileWritingRunListener1,runListener.FileWritingRunListener2</value>
+              <value>runListener.FileWritingRunListener1,runListener.FileWritingRunListener2,runListener.EchoingRunListener</value>
             </property>
           </properties>
         </configuration>
