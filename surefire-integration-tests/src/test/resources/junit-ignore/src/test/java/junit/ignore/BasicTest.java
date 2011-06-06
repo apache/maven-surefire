@@ -1,11 +1,10 @@
-package junit44.ignore;
-import static org.hamcrest.core.Is.*;
-import static org.hamcrest.core.IsNull.*;
+package junit.ignore;
 import org.junit.Assert;
-import org.junit.Test;
 import org.junit.Ignore;
+import org.junit.Test;
 
 
+@Ignore("ignore this test")
 public class BasicTest
 {
 

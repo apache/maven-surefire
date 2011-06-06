@@ -24,15 +24,20 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.apache.maven.plugins.surefire</groupId>
-  <artifactId>junit44-ignore</artifactId>
+  <artifactId>junit-ignore</artifactId>
   <version>1.0-SNAPSHOT</version>
   <name>Test of @Ignore annotation</name>
+
+  <properties>
+    <junit.version>4.4</junit.version>
+    <surefire.parallel></surefire.parallel>
+  </properties>
 
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.4</version>
+      <version>${junit.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -50,9 +55,11 @@
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>${surefire.version}</version>
+        <configuration>
+          <parallel>${surefire.parallel}</parallel>
+          <threadCount>3</threadCount>
+        </configuration>
       </plugin>
-      
     </plugins>
   </build>
-
 </project>

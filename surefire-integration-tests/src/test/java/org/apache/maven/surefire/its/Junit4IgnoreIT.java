@@ -29,7 +29,7 @@ public class Junit4IgnoreIT
 {
     public Junit4IgnoreIT()
     {
-        super( "/junit44-ignore");
+        super( "/junit-ignore");
     }
 
     public void testJunit4Ignore()
@@ -37,6 +37,18 @@ public class Junit4IgnoreIT
     {
         executeTest();
         verifyErrorFreeLog();
-        assertTestSuiteResults( 1, 0, 0, 1 );
+        assertTestSuiteResults( 3, 0, 0, 3 );
     }
+
+    public void testJunit47ParallelIgnore()
+        throws Exception
+    {
+
+        addGoal( "-Djunit.version=4.8.1" );
+        addGoal( "-Dsurefire.parallel=classes" );
+        executeTest();
+        verifyErrorFreeLog();
+        assertTestSuiteResults( 3, 0, 0, 3 );
+    }
+
 }

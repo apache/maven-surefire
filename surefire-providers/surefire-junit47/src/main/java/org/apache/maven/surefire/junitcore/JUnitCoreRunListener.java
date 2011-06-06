@@ -19,11 +19,10 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
-import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
-import org.apache.maven.surefire.report.RunListener;
-
 import java.util.ArrayList;
 import java.util.Map;
+import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
+import org.apache.maven.surefire.report.RunListener;
 
 import org.junit.runner.Description;
 import org.junit.runner.Result;
@@ -70,7 +69,7 @@ public class JUnitCoreRunListener
         Class<?> itemTestClass = null;
         for ( Description item : children )
         {
-            if ( item.isTest() )
+            if ( item.isTest() && item.getMethodName() != null )
             {
                 testSet.incrementTestMethodCount();
                 if ( itemTestClass == null )
@@ -81,6 +80,10 @@ public class JUnitCoreRunListener
             else if ( item.getChildren().size() > 0 )
             {
                 fillTestCountMap( item );
+            }
+            else
+            {
+                classMethodCounts.put( item.getClassName(), testSet );
             }
         }
         if ( itemTestClass != null )
