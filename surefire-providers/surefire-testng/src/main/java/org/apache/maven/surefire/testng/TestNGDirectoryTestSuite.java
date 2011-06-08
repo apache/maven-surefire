@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.SortedMap;
 import java.util.TreeMap;
+
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.surefire.NonAbstractClassFilter;
@@ -96,6 +97,8 @@ public class TestNGDirectoryTestSuite
             executeMulti( testsToRun, reporterManagerFactory );
             return;
         }
+
+        this.options.put( "suitename", testsToRun.getLocatedClasses()[0].getName() );
 
         RunListener reporter = reporterManagerFactory.createReporter();
         ConsoleOutputCapture.startCapture( (ConsoleOutputReceiver) reporter );

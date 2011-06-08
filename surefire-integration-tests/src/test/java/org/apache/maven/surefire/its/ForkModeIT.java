@@ -107,7 +107,7 @@ public class ForkModeIT
     private String[] doTest( String forkMode )
         throws IOException, VerificationException
     {
-        File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/fork-mode" );
+        File testDir = ResourceExtractor.simpleExtractResources( getClass(), getProject() );
 
         Verifier verifier = new Verifier( testDir.getAbsolutePath() );
         List<String> goals = this.getInitialGoals();
@@ -128,6 +128,11 @@ public class ForkModeIT
             pids[i - 1] = pid;
         }
         return pids;
+    }
+
+    protected String getProject()
+    {
+        return "/fork-mode";
     }
 
     private String slurpFile( File textFile )
