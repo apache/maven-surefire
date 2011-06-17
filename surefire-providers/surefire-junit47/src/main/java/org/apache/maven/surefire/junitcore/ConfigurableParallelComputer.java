@@ -22,11 +22,9 @@ package org.apache.maven.surefire.junitcore;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 import org.apache.maven.surefire.util.NestedRuntimeException;
 import org.junit.runner.Computer;
@@ -151,72 +149,4 @@ public class ConfigurableParallelComputer
             + fixedPool + '}';
     }
 
-    private class SynchronousRunner
-        implements RunnerScheduler
-    {
-        public void schedule( final Runnable childStatement )
-        {
-            childStatement.run();
-        }
-
-        public void finished()
-        {
-        }
-    }
-
-    public class AsynchronousRunner
-        implements RunnerScheduler
-    {
-        private final List<Future<Object>> futures = Collections.synchronizedList( new ArrayList<Future<Object>>() );
-
-        private final ExecutorService fService;
-
-        public AsynchronousRunner( ExecutorService fService )
-        {
-            this.fService = fService;
-        }
-
-        public void schedule( final Runnable childStatement )
-        {
-            final Callable<Object> objectCallable = new Callable<Object>()
-            {
-                public Object call()
-                    throws Exception
-                {
-                    childStatement.run();
-                    return null;
-                }
-            };
-            futures.add( fService.submit( objectCallable ) );
-        }
-
-
-        public void finished()
-        {
-            try
-            {
-                waitForCompletion();
-            }
-            catch ( ExecutionException e )
-            {
-                throw new NestedRuntimeException( e );
-            }
-        }
-
-        public void waitForCompletion()
-            throws ExecutionException
-        {
-            for ( Future<Object> each : futures )
-            {
-                try
-                {
-                    each.get();
-                }
-                catch ( InterruptedException e )
-                {
-                    throw new NestedRuntimeException( e );
-                }
-            }
-        }
-    }
 }
