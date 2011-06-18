@@ -34,6 +34,14 @@
     <shadedVersion>2.8</shadedVersion>
   </properties>
 
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
   <dependencies>
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
@@ -62,6 +70,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
+        <version>1.4</version>
         <executions>
           <execution>
             <phase>package</phase>
@@ -101,6 +110,7 @@
       </plugin>
       <plugin>
          <artifactId>maven-deploy-plugin</artifactId>
+         <version>2.6</version>
          <configuration>
             <skip>true</skip>
          </configuration>
