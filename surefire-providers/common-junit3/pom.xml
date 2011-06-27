@@ -29,7 +29,7 @@
 
   <artifactId>common-junit3</artifactId>
 
-  <name>Shared JUnit3 provider code</name>
+  <name>Shared JUnit3 Provider Code</name>
 
   <dependencies>
     <dependency>

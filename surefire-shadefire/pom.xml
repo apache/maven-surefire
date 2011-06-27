@@ -24,7 +24,7 @@
   <artifactId>surefire-shadefire</artifactId>
   <version>2.10-SNAPSHOT</version>
 
-  <name>surefire-shadefire</name>
+  <name>ShadeFire JUnit3 Provider</name>
   <description>A super-shaded junit3 provider that is used by surefire to build itself,
     that basically has ALL classes relocated to facilitate no API-conflict whatsover with ourself.
     The only remaining point of conflict is around the booter properties file format
