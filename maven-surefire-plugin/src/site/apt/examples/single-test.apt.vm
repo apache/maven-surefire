@@ -4,7 +4,7 @@
   Allan Ramirez
   Olivier Lamy
   ------
- 2011-02-24
+ 2011-02-26
   ------
   
  ~~ Licensed to the Apache Software Foundation (ASF) under one
@@ -29,6 +29,7 @@
 
 Running a Single Test
 
+#{if}(${project.artifactId}=="maven-surefire-plugin")
   During development, you may run a single test class repeatedly. To run this
   through Maven, set the <<<test>>> property to a specific test case.
 
@@ -37,18 +38,40 @@ mvn -Dtest=TestCircle test
 +---+
 
   The value for the <<<test>>> parameter is the name of the test class (without the extension; we'll strip off the extension if you accidentally provide one).
+#{else}
+  During development, you may run a single test class repeatedly. To run this
+  through Maven, set the <<<it.test>>> property to a specific test case.
+
++---+
+mvn -Dit.test=ITCircle verify
++---+
+
+  The value for the <<<it.test>>> parameter is the name of the test class (without the extension; we'll strip off the extension if you accidentally provide one).
+#{end}
 
   You may also use patterns to run a number of tests:
 
+#{if}(${project.artifactId}=="maven-surefire-plugin")
 +---+
 mvn -Dtest=TestCi*le test
 +---+
+#{else}
++---+
+mvn -Dit.test=ITCi*le verify
++---+
+#{end}
 
   And you may use multiple names/patterns, separated by commas:
 
+#{if}(${project.artifactId}=="maven-surefire-plugin")
 +---+
 mvn -Dtest=TestSquare,TestCi*le test
 +---+
+#{else}
++---+
+mvn -Dit.test=ITSquare,ITCi*le verify
++---+
+#{end}
 
 Running a set of methods in a Single Test Class
 
@@ -58,12 +81,24 @@ Running a set of methods in a Single Test Class
   
   You must use the following syntax
   
+#{if}(${project.artifactId}=="maven-surefire-plugin")
 +---+
 mvn -Dtest=TestCircle#mytest test
 +---+
+#{else}
++---+
+mvn -Dit.test=ITCircle#mytest verify
++---+
+#{end}
 
   You can use patterns too
   
+#{if}(${project.artifactId}=="maven-surefire-plugin")
 +---+
-mvn -Dtest=TestCircle#*test* test
-+---+    
+mvn -Dtest=TestCircle#test* test
++---+
+#{else}
++---+
+mvn -Dit.test=ITCircle#test* verify
++---+
+#{end}
