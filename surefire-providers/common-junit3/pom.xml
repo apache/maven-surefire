@@ -28,6 +28,7 @@
   </parent>
 
   <artifactId>common-junit3</artifactId>
+
   <name>Shared JUnit3 provider code</name>
 
   <dependencies>
@@ -38,4 +39,5 @@
       <scope>provided</scope>
     </dependency>
   </dependencies>
+
 </project>

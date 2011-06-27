@@ -28,15 +28,11 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <artifactId>maven-failsafe-plugin</artifactId>
   <groupId>org.apache.maven.plugins</groupId>
+  <artifactId>maven-failsafe-plugin</artifactId>
   <packaging>maven-plugin</packaging>
 
   <name>Maven Failsafe Plugin</name>
-
-  <prerequisites>
-    <maven>2.0.9</maven>
-  </prerequisites>
 
   <mailingLists>
     <!-- duplication from maven-plugins pom - temporary until they inherit properly -->
@@ -111,6 +107,10 @@
       </otherArchives>
     </mailingList>
   </mailingLists>
+
+  <prerequisites>
+    <maven>2.0.9</maven>
+  </prerequisites>
 
   <distributionManagement>
     <site>

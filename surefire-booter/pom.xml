@@ -28,6 +28,7 @@
   </parent>
 
   <artifactId>surefire-booter</artifactId>
+
   <name>SureFire Booter</name>
 
   <dependencies>

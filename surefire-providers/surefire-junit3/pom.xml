@@ -31,7 +31,21 @@
 
   <name>SureFire JUnit Runner</name>
 
-    <build>
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>3.8.1</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.surefire</groupId>
+      <artifactId>common-junit3</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+  </dependencies>
+
+  <build>
     <resources>
       <resource>
         <directory>src/main/resources/META-INF</directory>
@@ -61,17 +75,5 @@
 
      </plugins>
     </build>
-  <dependencies>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>3.8.1</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven.surefire</groupId>
-      <artifactId>common-junit3</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-  </dependencies>
+
 </project>

@@ -20,20 +20,15 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-
   <groupId>org.apache.maven.surefire</groupId>
-  <version>2.10-SNAPSHOT</version>
   <artifactId>surefire-shadefire</artifactId>
+  <version>2.10-SNAPSHOT</version>
+
+  <name>surefire-shadefire</name>
   <description>A super-shaded junit3 provider that is used by surefire to build itself,
     that basically has ALL classes relocated to facilitate no API-conflict whatsover with ourself.
     The only remaining point of conflict is around the booter properties file format
   </description>
-  <name>surefire-shadefire</name>
-
-  <properties>
-    <shadedVersion>2.8</shadedVersion>
-  </properties>
-
   <licenses>
     <license>
       <name>The Apache Software License, Version 2.0</name>
@@ -41,6 +36,10 @@
       <distribution>repo</distribution>
     </license>
   </licenses>
+
+  <properties>
+    <shadedVersion>2.8</shadedVersion>
+  </properties>
 
   <dependencies>
     <dependency>
@@ -117,4 +116,5 @@
        </plugin>
     </plugins>
   </build>
+
 </project>

@@ -28,15 +28,18 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <artifactId>maven-surefire-plugin</artifactId>
   <groupId>org.apache.maven.plugins</groupId>
+  <artifactId>maven-surefire-plugin</artifactId>
   <packaging>maven-plugin</packaging>
 
   <name>Maven Surefire Plugin</name>
 
-  <prerequisites>
-    <maven>2.0.9</maven>
-  </prerequisites>
+  <contributors>
+    <contributor>
+      <name>Joakim Erdfelt</name>
+      <email>joakim@erdfelt.com</email>
+    </contributor>
+  </contributors>
 
   <mailingLists>
     <!-- duplication from maven-plugins pom - temporary until they inherit properly -->
@@ -112,12 +115,9 @@
     </mailingList>
   </mailingLists>
 
-  <contributors>
-    <contributor>
-      <name>Joakim Erdfelt</name>
-      <email>joakim@erdfelt.com</email>
-    </contributor>
-  </contributors>
+  <prerequisites>
+    <maven>2.0.9</maven>
+  </prerequisites>
 
   <distributionManagement>
     <site>

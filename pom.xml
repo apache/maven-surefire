@@ -37,6 +37,20 @@
   <url>http://maven.apache.org/surefire</url>
   <inceptionYear>2004</inceptionYear>
 
+  <contributors>
+    <contributor>
+      <name>Jesse Kuhnert</name>
+    </contributor>
+    <contributor>
+      <name>Vincent Siveton</name>
+      <email>vincent.siveton@gmail.com</email>
+      <organization>ASF</organization>
+      <roles>
+        <role>Java Developer</role>
+      </roles>
+    </contributor>
+  </contributors>
+
   <mailingLists>
     <mailingList>
       <name>Surefire User List</name>
@@ -72,20 +86,6 @@
     </mailingList>
   </mailingLists>
 
-  <contributors>
-    <contributor>
-      <name>Jesse Kuhnert</name>
-    </contributor>
-    <contributor>
-      <name>Vincent Siveton</name>
-      <email>vincent.siveton@gmail.com</email>
-      <organization>ASF</organization>
-      <roles>
-        <role>Java Developer</role>
-      </roles>
-    </contributor>
-  </contributors>
-
   <modules>
     <module>surefire-shadefire</module>
     <module>surefire-api</module>
@@ -112,7 +112,7 @@
     <system>Jenkins</system>
     <url>https://builds.apache.org/hudson/job/maven-surefire/</url>
   </ciManagement>
-  
+
   <properties>
     <mavenVersion>2.0.9</mavenVersion>
     <shadedVersion>2.8</shadedVersion>
