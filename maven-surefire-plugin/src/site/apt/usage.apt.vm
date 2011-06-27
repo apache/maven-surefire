@@ -3,8 +3,9 @@
   ------
   Brett Porter
   Allan Ramirez
+  Stephen Connolly
   ------
-  2010-01-09
+  2011-06-27
   ------
   
 ~~ Licensed to the Apache Software Foundation (ASF) under one
@@ -28,6 +29,27 @@
 ~~ http://maven.apache.org/doxia/references/apt-format.html
 
 Usage
+
+  Best practice is to define the version of the Surefire plugin that you want to use in either your <<<pom.xml>>>
+  or a parent <<<pom.xml>>>
+
++---+
+<project>
+  [...]
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>${project.groupId}</groupId>
+          <artifactId>${project.artifactId}</artifactId>
+          <version>${project.version}</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+  [...]
+</project>
++---+
 
   The Surefire Plugin can be invoked by calling the <<<test>>> phase of the
   build lifecycle.
@@ -53,7 +75,7 @@ mvn test
 
   Note that any normal Surefire integration works identically no matter which
   providers are in use - so you can still produce a Cobertura report and a
-  Surefire report on your project web site for your TestNG tests,
+  Surefire results report on your project web site for your TestNG tests,
   for example.
 
   The POJO provider above allows you to write tests that do not depend on

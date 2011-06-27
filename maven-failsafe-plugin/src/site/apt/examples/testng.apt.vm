@@ -3,7 +3,7 @@
  ------
  Brett Porter <brett@apache.org>
  ------
- 2 May 2006
+ 2010-01-09
  ------
  
 ~~ Licensed to the Apache Software Foundation (ASF) under one
@@ -82,22 +82,6 @@ Using TestNG
         <suiteXmlFile>testng.xml</suiteXmlFile>
       </suiteXmlFiles>
     </configuration>
-    <executions>
-      <execution>
-        <id>integration-test</id>
-        <phase>integration-test</phase>
-        <goals>
-          <goal>integration-test</goal>
-        </goals>
-      </execution>
-      <execution>
-        <id>verify</id>
-        <phase>verify</phase>
-        <goals>
-          <goal>verify</goal>
-        </goals>
-      </execution>
-    </executions>
   </plugin>
 [...]
 +---+

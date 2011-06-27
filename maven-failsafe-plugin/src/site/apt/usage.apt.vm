@@ -5,7 +5,7 @@
   Brett Porter
   Allan Ramirez
   ------
-  May 2009
+  2011-06-27
   ------
   
 ~~ Licensed to the Apache Software Foundation (ASF) under one
@@ -27,12 +27,11 @@
 
 ~~ NOTE: For help with the syntax of this file, see:
 ~~ http://maven.apache.org/doxia/references/apt-format.html
-  
 
 Usage
 
   To use the Failsafe Plugin, you need to add the following configuration to
-  your pom.xml
+  your <<<pom.xml>>>
 
 +---+
 <project>
@@ -88,7 +87,7 @@ mvn verify
 
   Note that any normal Surefire integration works identically no matter which
   providers are in use - so you can still produce a Cobertura report and a
-  Surefire results report on your project web site for your TestNG tests,
+  Failsafe results report on your project web site for your TestNG tests,
   for example.
 
   The POJO provider above allows you to write tests that do not depend on
