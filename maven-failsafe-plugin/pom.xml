@@ -119,6 +119,11 @@
     </site>
   </distributionManagement>
 
+  <properties>
+    <thisPlugin>Failsafe</thisPlugin>
+    <thatPlugin>Surefire</thatPlugin>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>org.apache.maven</groupId>

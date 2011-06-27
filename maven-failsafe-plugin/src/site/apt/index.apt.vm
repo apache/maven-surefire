@@ -30,9 +30,9 @@
 
 Maven Failsafe Plugin
 
-  The Failsafe Plugin is designed to run integration tests while the Surefire Plugins is designed to run unit. The name 
-  (failsafe) was chosen both because it is a synonym of surefire and because it implies that when it fails, it does so 
-  in a safe way.
+  The Failsafe Plugin is designed to run integration tests while the Surefire Plugins is designed to run unit tests.
+  The name (failsafe) was chosen both because it is a synonym of surefire and because it implies that when it fails, it
+  does so in a safe way.
 
   The Maven lifecycle has four phases for running integration tests:
 
@@ -70,7 +70,7 @@ mvn verify
 
   []
 
-  By default, these files are generated at <<<$\{basedir\}/target/failsafe-reports>>>.
+  By default, these files are generated at <<<$\{basedir\}/target/${thisPlugin.toLowerCase()}-reports>>>.
 
   For an HTML format of the report, please see the
   {{{http://maven.apache.org/plugins/maven-surefire-report-plugin/}Maven Surefire Report Plugin}}.

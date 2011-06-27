@@ -30,9 +30,11 @@ Inclusions and Exclusions of Tests
 
 * Inclusions
 
-  By default, the Failsafe Plugin will automatically include all test classes
+  By default, the ${thisPlugin} Plugin will automatically include all test classes
   with the following wildcard patterns:
 
+#{if}(${project.artifactId}=="maven-surefire-plugin")
+#{else}
    * <"**/IT*.java"> - includes all of its subdirectories and all java
    filenames that start with "IT".
 
@@ -42,10 +44,12 @@ Inclusions and Exclusions of Tests
    * <"**/*ITCase.java"> - includes all of its subdirectories and all java
    filenames that end with "ITCase".
 
+#{end}
+
    []
 
   If the test classes does not go with the naming convention, then configure
-  Failsafe Plugin and specify the tests you want to include.
+  ${thisPlugin} Plugin and specify the tests you want to include.
 
 +---+
 <project>
@@ -61,22 +65,6 @@ Inclusions and Exclusions of Tests
             <include>Sample.java</include>
           </includes>
         </configuration>
-        <executions>
-          <execution>
-            <id>integration-test</id>
-            <phase>integration-test</phase>
-            <goals>
-              <goal>integration-test</goal>
-            </goals>
-          </execution>
-          <execution>
-            <id>verify</id>
-            <phase>verify</phase>
-            <goals>
-              <goal>verify</goal>
-            </goals>
-          </execution>
-        </executions>
       </plugin>
     </plugins>
   </build>
@@ -106,20 +94,6 @@ Inclusions and Exclusions of Tests
             <exclude>**/SquareIT.java</exclude>
           </excludes>
         </configuration>
-        <executions>
-          <execution>
-            <id>integration-test</id>
-            <goals>
-              <goal>integration-test</goal>
-            </goals>
-          </execution>
-          <execution>
-            <id>verify</id>
-            <goals>
-              <goal>verify</goal>
-            </goals>
-          </execution>
-        </executions>
       </plugin>
     </plugins>
   </build>

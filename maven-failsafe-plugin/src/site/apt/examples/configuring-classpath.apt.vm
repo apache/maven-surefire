@@ -28,19 +28,26 @@
   
 The Default Classpath
 
-  The failsafe plugin builds the test classpath in the following order:
+  The ${thisPlugin} plugin builds the test classpath in the following order:
 
+#{if}(${project.artifactId}=="maven-surefire-plugin")
   [[1]] The {{{../test-mojo.html#testClassesDirectory}test-classes}} directory
 
   [[2]] The {{{../test-mojo.html#classesDirectory}classes}} directory
 
+#{else}
+  [[1]] The {{{../integration-test-mojo.html#testClassesDirectory}test-classes}} directory
+
+  [[2]] The {{{../integration-test-mojo.html#classesDirectory}classes}} directory
+
+#{end}
   [[3]] The project dependencies
 
   [[4]] Additional classpath elements
 
 Additional Classpath Elements
 
-  If you need to put more stuff in your classpath when Surefire executes (e.g some funky resources or a container specific JAR),
+  If you need to put more stuff in your classpath when ${thisPlugin} executes (e.g some funky resources or a container specific JAR),
   we normally recommend you add it to your classpath as a dependency.  Consider deploying shared jars to a private remote repository for your
   organization.
   
@@ -64,20 +71,6 @@ Additional Classpath Elements
             <additionalClasspathElement>path/to/additional/jar</additionalClasspathElement>
           </additionalClasspathElements>
         </configuration>
-        <executions>
-          <execution>
-            <id>integration-test</id>
-            <goals>
-              <goal>integration-test</goal>
-            </goals>
-          </execution>
-          <execution>
-            <id>verify</id>
-            <goals>
-              <goal>verify</goal>
-            </goals>
-          </execution>
-        </executions>
       </plugin>
     </plugins>
   </build>
@@ -105,20 +98,6 @@ Removing Dependency Classpath Elements
             <classpathDependencyExcludes>org.apache.commons:commons-email</classpathDependencyExcludes>
           </classpathDependencyExcludes>
         </configuration>
-        <executions>
-          <execution>
-            <id>integration-test</id>
-            <goals>
-              <goal>integration-test</goal>
-            </goals>
-          </execution>
-          <execution>
-            <id>verify</id>
-            <goals>
-              <goal>verify</goal>
-            </goals>
-          </execution>
-        </executions>
       </plugin>
     </plugins>
   </build>
@@ -148,20 +127,6 @@ Removing Dependency Classpath Elements
         <configuration>
           <classpathDependencyScopeExclude>runtime</classpathDependencyScopeExclude>
         </configuration>
-        <executions>
-          <execution>
-            <id>integration-test</id>
-            <goals>
-              <goal>integration-test</goal>
-            </goals>
-          </execution>
-          <execution>
-            <id>verify</id>
-            <goals>
-              <goal>verify</goal>
-            </goals>
-          </execution>
-        </executions>
       </plugin>
     </plugins>
   </build>

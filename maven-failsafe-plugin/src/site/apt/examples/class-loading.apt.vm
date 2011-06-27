@@ -27,16 +27,16 @@
 ~~ http://maven.apache.org/doxia/references/apt-format.html
   
 
-Classloading and Forking in Maven Surefire/Failsafe
+Classloading and Forking in Maven Surefire
 
- This page discusses classloading and forking under Maven Surefire/Failsafe, with an eye
- towards troubleshooting problems.
+ This page discusses classloading and forking under Maven Surefire which is a shared component used by both
+ the Surefire and Failsafe Maven plugins, with an eye towards troubleshooting problems.
 
 * Executive Summary
 
  If you're having problems, you'll probably want to tinker with these three settings: <<<forkMode>>>, <<<useSystemClassLoader>>>, and <<<useManifestOnlyJar>>>.
 
-* What problem does Surefire solve?
+* What problem does the Maven Surefire project solve?
 
  Initially, the problem seems simple enough. Just launch Java with a classpath, like this:
  
@@ -49,7 +49,7 @@ java -classpath foo.jar:bar.jar MyApp
  on different versions of Windows; in some versions only a few hundred characters are allowed, in others
  a few thousand, but the limit can be pretty severe in either case.
 
- * Update for Surefire 2.8.2
+ * Update for Maven Surefire 2.8.2
 
 It turns out setting the CLASSPATH as an environment variable may remove most of the
 practical length limitations, as documented in http://jira.codehaus.org/browse/SUREFIRE-727. This means
@@ -119,7 +119,7 @@ java -classpath booter.jar MyApp
  classpath the default, though we do provide it as an option (mostly as a last
  resort).
  
-* What does Surefire do?
+* What does Maven Surefire do?
 
  Surefire provides a mechanism for using multiple strategies.  The main parameter that
  determines this is called <<<useSystemClassLoader>>>.  If <<<useSystemClassLoader>>> is
@@ -155,20 +155,6 @@ java -classpath booter.jar MyApp
         <configuration>
           <useSystemClassLoader>false</useSystemClassLoader>
         </configuration>
-        <executions>
-          <execution>
-            <id>integration-test</id>
-            <goals>
-              <goal>integration-test</goal>
-            </goals>
-          </execution>
-          <execution>
-            <id>verify</id>
-            <goals>
-              <goal>verify</goal>
-            </goals>
-          </execution>
-        </executions>
       </plugin>
     </plugins>
   </build>
@@ -186,4 +172,4 @@ java -classpath booter.jar MyApp
 
  * If you're using the defaults, <<<useSystemClassLoader=true>>> and <<<useManifestOnlyJar=false>>>.  In that case, look at the generated manifest-only Surefire booter JAR.  Open it up (it's just a zip) and read its manifest.
 
- * Run mvn with -Dmaven.failsafe.debug, and attach to the running process with a debugger.
+ * Run mvn with -Dmaven.${thisPlugin.toLowerCase()}.debug, and attach to the running process with a debugger.

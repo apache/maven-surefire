@@ -58,14 +58,16 @@ Skipping Tests
 mvn install -DskipTests
 +---+
 
- Since <<<skipTests>>> is also followed by the Surefire Plugin, this will have the effect
+#{if}(${project.artifactId}=="maven-failsafe-plugin")
+ Since <<<skipTests>>> is also followed by the ${thatPlugin} Plugin, this will have the effect
  of not running any tests.  If, instead, you want to skip only the integration tests
- being run by the Failsafe Plugin, you would use the <<<skipITs>>> property
- 
+ being run by the ${thisPlugin} Plugin, you would use the <<<skipITs>>> property
+
 +---+
 mvn install -DskipITs
 +---+
 
+#{end}
  If you absolutely must, you can also use the <<<maven.test.skip>>> property to skip compiling the tests.
  <<<maven.test.skip>>> is honored by Surefire, Failsafe and the Compiler Plugin.
 
@@ -79,12 +81,14 @@ Skipping by default
    command line, you need to go via a properties section in the pom:
 
 +---+
-<properties>
-   <skipTests>true</skipTests>
-</properties>
-
-<build>
-   <plugins>
+<project>
+  [...]
+  <properties>
+    <skipTests>true</skipTests>
+  </properties>
+  [...]
+  <build>
+    <plugins>
       <plugin>
         <groupId>${project.groupId}</groupId>
         <artifactId>${project.artifactId}</artifactId>
@@ -92,9 +96,11 @@ Skipping by default
         <configuration>
           <skipTests>${skipTests}</skipTests>
         </configuration>
-  </plugin>
-</plugins>
-</build>
+      </plugin>
+    </plugins>
+  </build>
+  [...]
+</project>
 +---+
 
    This will allow you to run with tests disabled by default and to run them with this command:
