@@ -1,9 +1,10 @@
   ------
   Introduction
   ------
+  Stephen Connolly
   Allan Ramirez
   ------
-  July 2006
+  2011-06-27
   ------
   
 ~~ Licensed to the Apache Software Foundation (ASF) under one
@@ -25,39 +26,87 @@
 
 ~~ NOTE: For help with the syntax of this file, see:
 ~~ http://maven.apache.org/doxia/references/apt-format.html
+  
 
+Maven ${thisPlugin} Plugin
 
-Maven Surefire Plugin
-
+#{if}(${project.artifactId}=="maven-surefire-plugin")
   The Surefire Plugin is used during the <<<test>>> phase of the build
   lifecycle to execute the unit tests of an application. It generates reports
   in 2 different file formats:
+#{else}
+  The Failsafe Plugin is designed to run integration tests while the Surefire Plugins is designed to run unit tests.
+  The name (failsafe) was chosen both because it is a synonym of surefire and because it implies that when it fails, it
+  does so in a safe way.
 
+  The Maven lifecycle has four phases for running integration tests:
+
+  * <<<pre-integration-test>>> for setting up the integration test environment.
+
+  * <<<integration-test>>> for running the integration tests.
+
+  * <<<post-integration-test>>> for tearing down the integration test environment.
+
+  * <<<verify>>> for checking the results of the integration tests.
+
+  []
+
+  If you use the Surefire Plugin for running tests, then when you have a test failure, the build will stop at the
+  <<<integration-test>>> phase and your integration test environment will not have been torn down correctly.
+
+  The Failsafe Plugin is used during the <<<integration-test>>> and <<<verify>>> phases of the build
+  lifecycle to execute the integration tests of an application. The Failsafe Plugin will not fail the build during
+  the <<<integration-test>>> phase thus enabling the <<<post-integration-test>>> phase to execute.
+
+  NOTE: when running integration tests, you should invoke maven with the (shorter to type too)
+
++---+
+mvn verify
++---+
+
+  rather than trying to invoke the <<<integration-test>>> phase directly, as otherwise the <<<post-integration-test>>>
+  phase will not be executed.
+
+  The Failsafe Plugin generates reports in 2 different file formats:
+
+#{end}
   * Plain text files (*.txt)
 
   * XML files (*.xml)
 
   []
 
-  By default, these files are generated at <<<$\{basedir\}/target/surefire-reports>>>.
+  By default, these files are generated at <<<$\{basedir\}/target/${thisPlugin.toLowerCase()}-reports>>>.
 
   For an HTML format of the report, please see the
   {{{http://maven.apache.org/plugins/maven-surefire-report-plugin/}Maven Surefire Report Plugin}}.
 
 * Goals Overview
 
+#{if}(${project.artifactId}=="maven-surefire-plugin")
   The Surefire Plugin has only 1 goal:
 
   * {{{./test-mojo.html}surefire:test}} runs the unit tests of an application.
 
   []
 
+#{else}
+#{end}
+  The Failsafe Plugin has only 2 goals:
+
+  * {{{./integration-test-mojo.html}failsafe:integration-test}} runs the integration tests of an application.
+
+  * {{{./verify-mojo.html}failsafe:verify}} verifies that the integration tests of an application passed.
+
+  []
+
 * Usage
 
-  General instructions on how to use the Surefire Plugin can be found on the {{{./usage.html}usage page}}. Some more
-  specific use cases are described in the examples given below. Last but not least, users occasionally contribute
-  additional examples, tips or errata to the
-  {{{http://docs.codehaus.org/display/MAVENUSER/Surefire+Plugin}plugin's wiki page}}.
+  General instructions on how to use the ${thisPlugin} Plugin can be found on the {{{./usage.html}usage page}}. Some more
+  specific use cases are described in the examples given below.
+  #{if}(${project.artifactId}=="maven-surefire-plugin") Last but not least, users occasionally contribute
+  additional examples, tips or errata to the 
+  {{{http://docs.codehaus.org/display/MAVENUSER/Surefire+Plugin}plugin's wiki page}}.#{end}
 
   In case you still have questions regarding the plugin's usage, please have a look at the {{{./faq.html}FAQ}} and feel
   free to contact the {{{./mail-lists.html}user mailing list}}. The posts to the mailing list are archived and could
@@ -74,7 +123,7 @@ Maven Surefire Plugin
 
 * Examples
 
-  The following examples show how to use the Surefire Plugin in more advanced use-cases:
+  The following examples show how to use the ${thisPlugin} Plugin in more advanced use-cases:
 
   * {{{./examples/testng.html}Using TestNG}}
 
@@ -96,5 +145,6 @@ Maven Surefire Plugin
 
   * {{{./examples/configuring-classpath.html}Configuring the Classpath}}
 
-
   * {{{./examples/providers.html}Selecting providers}}
+    
+  []

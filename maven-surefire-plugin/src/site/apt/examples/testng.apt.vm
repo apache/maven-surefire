@@ -59,9 +59,15 @@ Using TestNG
 
   <<Note:>> if you are using JDK 1.4 Javadoc annotations for your TestNG tests, replace the classifier <<<jdk15>>> with <<<jdk14>>> above.
 
+#{if}(${project.artifactId}=="maven-surefire-plugin")
   This is the only step that is required to get started - you can now create tests in your test source directory
   (eg, <<<src/test/java>>>. As long as they are named using the defaults such as <<<*Test.java>>> they will be run
-  by Surefire as TestNG tests.
+  by ${thisPlugin} as TestNG tests.
+#{else}
+  This is the only step that is required to get started - you can now create tests in your test source directory
+  (eg, <<<src/test/java>>>. As long as they are named using the defaults such as <<<*IT.java>>> they will be run
+  by ${thisPlugin} as TestNG tests.
+#{end}
 
   If you'd like to use a different naming scheme, you can change the <<<includes>>> parameter, as discussed in the
   {{{./inclusion-exclusion.html}Inclusions and Exclusions of Tests}} example.
@@ -69,7 +75,7 @@ Using TestNG
 * Using Suite XML Files
 
   Another alternative is to use TestNG suite XML files. This allows flexible configuration of the tests to be run.
-  These files are created in the normal way, and then added to the Surefire Plugin configuration:
+  These files are created in the normal way, and then added to the ${thisPlugin} Plugin configuration:
 
 +---+
     [...]
@@ -108,11 +114,11 @@ Using TestNG
     [...]
 +---+
 
-  For more information about setting system properties in Surefire tests, see {{{./system-properties.html}System Properties}}.
+  For more information about setting system properties in ${thisPlugin} tests, see {{{./system-properties.html}System Properties}}.
 
 * Using Groups
 
-  TestNG allows you to group your tests. You can then execute one or more specific groups. To do this with Surefire,
+  TestNG allows you to group your tests. You can then execute one or more specific groups. To do this with ${thisPlugin},
   use the <<<groups>>> parameter, for example:
 
 +---+

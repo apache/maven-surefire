@@ -4,7 +4,7 @@
   Stephen Connolly
   Allan Ramirez
   ------
-  May 2009
+  2011-06-27
   ------
   
 ~~ Licensed to the Apache Software Foundation (ASF) under one
@@ -28,8 +28,13 @@
 ~~ http://maven.apache.org/doxia/references/apt-format.html
   
 
-Maven Failsafe Plugin
+Maven ${thisPlugin} Plugin
 
+#{if}(${project.artifactId}=="maven-surefire-plugin")
+  The Surefire Plugin is used during the <<<test>>> phase of the build
+  lifecycle to execute the unit tests of an application. It generates reports
+  in 2 different file formats:
+#{else}
   The Failsafe Plugin is designed to run integration tests while the Surefire Plugins is designed to run unit tests.
   The name (failsafe) was chosen both because it is a synonym of surefire and because it implies that when it fails, it
   does so in a safe way.
@@ -64,6 +69,7 @@ mvn verify
 
   The Failsafe Plugin generates reports in 2 different file formats:
 
+#{end}
   * Plain text files (*.txt)
 
   * XML files (*.xml)
@@ -77,6 +83,15 @@ mvn verify
 
 * Goals Overview
 
+#{if}(${project.artifactId}=="maven-surefire-plugin")
+  The Surefire Plugin has only 1 goal:
+
+  * {{{./test-mojo.html}surefire:test}} runs the unit tests of an application.
+
+  []
+
+#{else}
+#{end}
   The Failsafe Plugin has only 2 goals:
 
   * {{{./integration-test-mojo.html}failsafe:integration-test}} runs the integration tests of an application.
@@ -87,8 +102,11 @@ mvn verify
 
 * Usage
 
-  General instructions on how to use the Failsafe Plugin can be found on the {{{./usage.html}usage page}}. Some more
+  General instructions on how to use the ${thisPlugin} Plugin can be found on the {{{./usage.html}usage page}}. Some more
   specific use cases are described in the examples given below.
+  #{if}(${project.artifactId}=="maven-surefire-plugin") Last but not least, users occasionally contribute
+  additional examples, tips or errata to the
+  {{{http://docs.codehaus.org/display/MAVENUSER/Surefire+Plugin}plugin's wiki page}}.#{end}
 
   In case you still have questions regarding the plugin's usage, please have a look at the {{{./faq.html}FAQ}} and feel
   free to contact the {{{./mail-lists.html}user mailing list}}. The posts to the mailing list are archived and could
@@ -105,9 +123,13 @@ mvn verify
 
 * Examples
 
-  The following examples show how to use the Failsafe Plugin in more advanced use-cases:
+  The following examples show how to use the ${thisPlugin} Plugin in more advanced use-cases:
 
   * {{{./examples/testng.html}Using TestNG}}
+
+  * {{{./examples/junit.html}Using JUnit}}
+
+  * {{{./examples/pojo-test.html}Using POJO Tests}}
 
   * {{{./examples/skipping-test.html}Skipping Tests}}
 
@@ -120,7 +142,9 @@ mvn verify
   * {{{./examples/debugging.html}Debugging Tests}}
 
   * {{{./examples/system-properties.html}Using System Properties}}
-  
+
   * {{{./examples/configuring-classpath.html}Configuring the Classpath}}
-  
+
+  * {{{./examples/providers.html}Selecting providers}}
+
   []

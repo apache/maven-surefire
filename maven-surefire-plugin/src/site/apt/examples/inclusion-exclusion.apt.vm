@@ -24,15 +24,16 @@
  ~~ under the License.
 
  ~~ NOTE: For help with the syntax of this file, see:
- ~~ http://maven.apache.org/doxia/references/apt-format.html  
+ ~~ http://maven.apache.org/doxia/references/apt-format.html
 
 Inclusions and Exclusions of Tests
 
 * Inclusions
 
-  By default, the Surefire Plugin will automatically include all test classes
+  By default, the ${thisPlugin} Plugin will automatically include all test classes
   with the following wildcard patterns:
 
+#{if}(${project.artifactId}=="maven-surefire-plugin")
    * <"**/Test*.java"> - includes all of its subdirectories and all java
    filenames that start with "Test".
 
@@ -42,10 +43,22 @@ Inclusions and Exclusions of Tests
    * <"**/*TestCase.java"> - includes all of its subdirectories and all java
    filenames that end with "TestCase".
 
+#{else}
+   * <"**/IT*.java"> - includes all of its subdirectories and all java
+   filenames that start with "IT".
+
+   * <"**/*IT.java"> - includes all of its subdirectories and all java
+   filenames that end with "IT".
+
+   * <"**/*ITCase.java"> - includes all of its subdirectories and all java
+   filenames that end with "ITCase".
+
+#{end}
+
    []
 
   If the test classes does not go with the naming convention, then configure
-  Surefire Plugin and specify the tests you want to include.
+  ${thisPlugin} Plugin and specify the tests you want to include.
 
 +---+
 <project>
@@ -75,6 +88,7 @@ Inclusions and Exclusions of Tests
   Exclusions can be done by configuring the <<excludes>> property of the
   plugin.
 
+#{if}(${project.artifactId}=="maven-surefire-plugin")
 +---+
 <project>
   [...]
@@ -96,6 +110,29 @@ Inclusions and Exclusions of Tests
   [...]
 </project>
 +---+
+#{else}
++---+
+<project>
+  [...]
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>${project.artifactId}</artifactId>
+        <version>${project.version}</version>
+        <configuration>
+          <excludes>
+            <exclude>**/CircleIT.java</exclude>
+            <exclude>**/SquareIT.java</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+  [...]
+</project>
++---+
+#{end}
 
 * Regular expression support
 

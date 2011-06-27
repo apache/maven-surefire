@@ -24,23 +24,30 @@
  ~~ under the License.
 
  ~~ NOTE: For help with the syntax of this file, see:
- ~~ http://maven.apache.org/doxia/references/apt-format.html  
+ ~~ http://maven.apache.org/doxia/references/apt-format.html
 
 The Default Classpath
 
   The surefire plugin builds the test classpath in the following order:
 
+#{if}(${project.artifactId}=="maven-surefire-plugin")
   [[1]] The {{{../test-mojo.html#testClassesDirectory}test-classes}} directory
-  
+
   [[2]] The {{{../test-mojo.html#classesDirectory}classes}} directory
-  
+
+#{else}
+  [[1]] The {{{../integration-test-mojo.html#testClassesDirectory}test-classes}} directory
+
+  [[2]] The {{{../integration-test-mojo.html#classesDirectory}classes}} directory
+
+#{end}
   [[3]] The project dependencies
-  
+
   [[4]] Additional classpath elements
 
 Additional Classpath Elements
 
-  If you need to put more stuff in your classpath when Surefire executes (e.g some funky resources or a container specific JAR),
+  If you need to put more stuff in your classpath when ${thisPlugin} executes (e.g some funky resources or a container specific JAR),
   we normally recommend you add it to your classpath as a dependency.  Consider deploying shared jars to a private remote repository for your
   organization.
 
@@ -74,7 +81,7 @@ Additional Classpath Elements
 Removing Dependency Classpath Elements
 
   Dependencies can be removed from the test classpath using the parameters <<<classpathDependencyExcludes>>> and
-  <<<classpathDependencyScopeExclude>>>.  A list of specific dependencies can be removed from the 
+  <<<classpathDependencyScopeExclude>>>.  A list of specific dependencies can be removed from the
   classpath by specifying the groupId:artifactId to be removed.
 
 +---+
@@ -98,14 +105,14 @@ Removing Dependency Classpath Elements
 </project>
 +---+
 
-  Dependencies under a certain scope can be removed from the classpath using 
-  <<<classpathDependencyScopeExclude>>>.  The valid values for the dependency scope 
+  Dependencies under a certain scope can be removed from the classpath using
+  <<<classpathDependencyScopeExclude>>>.  The valid values for the dependency scope
   exclude are defined by <<<org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter>>>.
-  
+
   * <<compile>> - system, provided, compile
-  
+
   * <<runtime>> - compile, runtime
-  
+
   * <<test>> - system, provided, compile, runtime, test
 
 +---+

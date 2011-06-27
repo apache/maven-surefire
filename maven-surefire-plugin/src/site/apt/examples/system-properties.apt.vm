@@ -29,7 +29,7 @@
 
 Using System Properties
 
-  There are two ways to add a list of system properties to Surefire:
+  There are two ways to add a list of system properties to ${thisPlugin}:
 
 * systemPropertyVariables
 

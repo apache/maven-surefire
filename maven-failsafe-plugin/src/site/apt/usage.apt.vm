@@ -1,9 +1,9 @@
   ------
   Usage
   ------
-  Stephen Connolly
   Brett Porter
   Allan Ramirez
+  Stephen Connolly
   ------
   2011-06-27
   ------
@@ -30,6 +30,29 @@
 
 Usage
 
+#{if}(${project.artifactId}=="maven-surefire-plugin")
+  Best practice is to define the version of the Surefire plugin that you want to use in either your <<<pom.xml>>>
+  or a parent <<<pom.xml>>>
+
++---+
+<project>
+  [...]
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>${project.groupId}</groupId>
+          <artifactId>${project.artifactId}</artifactId>
+          <version>${project.version}</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+  [...]
+</project>
++---+
+
+#{else}
   To use the ${thisPlugin} Plugin, you need to add the following configuration to
   your <<<pom.xml>>>
 
@@ -57,12 +80,23 @@ Usage
 </project>
 +---+
 
-  Then ${thisPlugin} Plugin can be invoked by calling the <<<verify>>> phase of the
+#{end}
+#{if}(${project.artifactId}=="maven-surefire-plugin")
+  The ${thisPlugin} Plugin can be invoked by calling the <<<test>>> phase of the
+  build lifecycle.
+
++---+
+mvn test
++---+
+
+#{else}
+  The ${thisPlugin} Plugin can be invoked by calling the <<<verify>>> phase of the
   build lifecycle.
 
 +---+
 mvn verify
 +---+
+#{end}
 
 * Using different testing providers
 
@@ -79,9 +113,9 @@ mvn verify
   for TestNG). Since this is required to compile the test classes anyway, no
   additional configuration is required.
 
-  Note that any normal ${thatPlugin} integration works identically no matter which
+  Note that any normal Surefire integration works identically no matter which
   providers are in use - so you can still produce a Cobertura report and a
-  ${thisPlugin} results report on your project web site for your TestNG tests,
+  Surefire results report on your project web site for your TestNG tests,
   for example.
 
   The POJO provider above allows you to write tests that do not depend on
@@ -89,11 +123,12 @@ mvn verify
   public in the class, but the API dependency is not required. To perform
   assertions, the JDK 1.4 <<<assert>>> keyword can be used, or you can use
   <<<org.apache.maven.surefire.assertion.Assert>>>.
+  See {{{./examples/pojo-test.html} using POJO tests}} for more information.
 
-  All of the providers support the ${thatPlugin} Plugin parameter configurations.
+  All of the providers support the Surefire Plugin parameter configurations.
   However, there are additional options available if you are running TestNG
   tests (including if you are using TestNG to execute your JUnit tests, which
-  occurs by default if both are present in ${thatPlugin}).
+  occurs by default if both are present in Surefire).
 
   See {{{./examples/testng.html} Using TestNG}} for more information.
 

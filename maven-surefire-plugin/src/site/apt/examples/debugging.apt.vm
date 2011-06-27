@@ -32,12 +32,18 @@ Debugging Tests
 
 Forked Tests
 
-  By default, Maven runs your tests in a separate ("forked") process.  You can use the <<<maven.surefire.debug>>> property
+  By default, Maven runs your tests in a separate ("forked") process.  You can use the <<<maven.${thisPlugin.toLowerCase()}.debug>>> property
   to debug your forked tests remotely, like this:
 
+#{if}(${project.artfactId}=="maven-surefire-plugin")
 +---+
-mvn -Dmaven.surefire.debug test
+mvn -Dmaven.${thisPlugin.toLowerCase()}.debug test
 +---+
+#{else}
++---+
+mvn -Dmaven.${thisPlugin.toLowerCase()}.debug verify
++---+
+#{end}
 
   The tests will automatically pause and await a remote debugger on port 5005.  You can then attach to the running tests
   using Eclipse.  You can setup a "Remote Java Application" launch configuration via the menu
@@ -46,23 +52,41 @@ mvn -Dmaven.surefire.debug test
   If you need to configure a different port, you may pass a more detailed value.  For example, the command below will use port 8000
   instead of port 5005.
 
+#{if}(${project.artfactId}=="maven-surefire-plugin")
 +---+
 mvn -Dmaven.surefire.debug="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000 -Xnoagent -Djava.compiler=NONE" test
 +---+
+#{else}
++---+
+mvn -Dmaven.surefire.debug="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000 -Xnoagent -Djava.compiler=NONE" verify
++---+
+#{end}
 
 Non-forked Tests
 
   You can force Maven not to fork tests by configuring the <<<forkMode>>> configuration parameter.
 
+#{if}(${project.artfactId}=="maven-surefire-plugin")
 +---+
 mvn -DforkMode=never test
 +---+
+#{else}
++---+
+mvn -DforkMode=never verify
++---+
+#{end}
 
   Then all you need to do is debug Maven itself.  Since Maven 2.0.8, Maven has shipped with a "mvnDebug" shell script that you can
   use to launch Maven with convenient debugging options:
 
+#{if}(${project.artfactId}=="maven-surefire-plugin")
 +---+
 mvnDebug -DforkMode=never test
 +---+
+#{else}
++---+
+mvnDebug -DforkMode=never verify
++---+
+#{end}
 
   Then you can attach Eclipse to Maven itself, which may be easier/more convenient than debugging the forked executable.
