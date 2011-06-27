@@ -62,8 +62,8 @@ Using TestNG
 +---+
 [...]
   <plugin>
-    <groupId>org.apache.maven.plugins</groupId>
-    <artifactId>maven-failsafe-plugin</artifactId>
+    <groupId>${project.groupId}</groupId>
+    <artifactId>${project.artifactId}</artifactId>
     <version>${project.version}</version>
     <configuration>
       <suiteXmlFiles>
@@ -100,8 +100,8 @@ Using TestNG
 +---+
 [...]
   <plugin>
-    <groupId>org.apache.maven.plugins</groupId>
-    <artifactId>maven-failsafe-plugin</artifactId>
+    <groupId>${project.groupId}</groupId>
+    <artifactId>${project.artifactId}</artifactId>
     <version>${project.version}</version>
     <configuration>
       <systemProperties>
@@ -125,8 +125,8 @@ Using TestNG
 +---+
 [...]
   <plugin>
-    <groupId>org.apache.maven.plugins</groupId>
-    <artifactId>maven-failsafe-plugin</artifactId>
+    <groupId>${project.groupId}</groupId>
+    <artifactId>${project.artifactId}</artifactId>
     <version>${project.version}</version>
     <configuration>
       <groups>functest,perftest</groups>
@@ -146,8 +146,8 @@ Using TestNG
 +---+
 [...]
   <plugin>
-    <groupId>org.apache.maven.plugins</groupId>
-    <artifactId>maven-failsafe-plugin</artifactId>
+    <groupId>${project.groupId}</groupId>
+    <artifactId>${project.artifactId}</artifactId>
     <version>${project.version}</version>
     <configuration>
       <parallel>methods</parallel>
@@ -170,8 +170,8 @@ Using TestNG
 +---+
 [...]
   <plugin>
-    <groupId>org.apache.maven.plugins</groupId>
-    <artifactId>maven-failsafe-plugin</artifactId>
+    <groupId>${project.groupId}</groupId>
+    <artifactId>${project.artifactId}</artifactId>
     <version>${project.version}</version>
     <configuration>
       <properties>

@@ -40,8 +40,8 @@ Usage
   <build>
     <plugins>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-failsafe-plugin</artifactId>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>${project.artifactId}</artifactId>
         <version>${project.version}</version>
         <executions>
           <execution>
@@ -104,7 +104,7 @@ mvn verify
 
   See {{{./examples/testng.html} Using TestNG}} for more information.
 
-* Using jetty and maven-failsafe-plugin
+* Using jetty and ${project.artifactId}
 
   You need to bind one of <<<jetty:run>>>, <<<jetty:run-exploded>>> or <<<jetty:run-war>>>
   to the <<<pre-integration-test>>> phase with <<<deamon>>> set to true, bind
@@ -120,8 +120,8 @@ mvn verify
     <plugins>
       [...]
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-failsafe-plugin</artifactId>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>${project.artifactId}</artifactId>
         <version>${project.version}</version>
         <executions>
           <execution>
@@ -245,7 +245,7 @@ mvn verify
   <reporting>
     <plugins>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
+        <groupId>${project.groupId}</groupId>
         <artifactId>maven-surefire-report-plugin</artifactId>
         <version>${project.version}</version>
         <reportSets>
@@ -280,8 +280,8 @@ mvn verify
   <reporting>
     <plugins>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-failsafe-plugin</artifactId>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>${project.artifactId}</artifactId>
         <version>${project.version}</version>
         <executions>
           <execution>
