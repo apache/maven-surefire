@@ -25,19 +25,31 @@
 
 ~~ NOTE: For help with the syntax of this file, see:
 ~~ http://maven.apache.org/doxia/references/apt-format.html
- 
 
 Using TestNG
 
 * Configuring TestNG
 
-  To get started with TestNG, include the following dependency in your project:
+  To get started with TestNG, include the following dependency in your project (replacing the version with the one you wish to use):
 
 +---+
 [...]
   <dependency>
     <groupId>org.testng</groupId>
     <artifactId>testng</artifactId>
+      <version>5.12.1</version>
+      <scope>test</scope>
+    </dependency>
+  [...]
++---+
+
+  If you are using an older version of TestNG (\<= 5.11), the dependency would instead look like this:
+
++---+
+  [...]
+    <dependency>
+      <groupId>org.testng</groupId>
+      <artifactId>testng</artifactId>
     <version>5.8</version>
     <scope>test</scope>
     <classifier>jdk15</classifier>
@@ -45,10 +57,10 @@ Using TestNG
 [...]
 +---+
 
-  <<Note:>> if you are using JDK 1.4 Javadoc annotations for your TestNG tests, replace jdk15 with jdk14 above.
+  <<Note:>> if you are using JDK 1.4 Javadoc annotations for your TestNG tests, replace the classifier <<<jdk15>>> with <<<jdk14>>> above.
 
   This is the only step that is required to get started - you can now create tests in your test source directory
-  (eg, <<<src/test/java>>>, and as long as they are named using the defaults such as *IT.java they will be run
+  (eg, <<<src/test/java>>>. As long as they are named using the defaults such as <<<*IT.java>>> they will be run
   by Failsafe as TestNG tests.
 
   If you'd like to use a different naming scheme, you can change the <<<includes>>> parameter, as discussed in the
@@ -57,7 +69,7 @@ Using TestNG
 * Using Suite XML Files
 
   Another alternative is to use TestNG suite XML files. This allows flexible configuration of the tests to be run.
-  These files are created as normal, and then added to the Failsafe Plugin configuration:
+  These files are created in the normal way, and then added to the Failsafe Plugin configuration:
 
 +---+
 [...]
@@ -104,12 +116,9 @@ Using TestNG
     <artifactId>${project.artifactId}</artifactId>
     <version>${project.version}</version>
     <configuration>
-      <systemProperties>
-        <property>
-          <name>browser</name>
-          <value>firefox</value>
-        </property>
-      </systemProperties>
+          <systemPropertyVariables>
+            <propertyName>firefox</propertyName>
+          </systemPropertyVariables>
     </configuration>
   </plugin>
 [...]
@@ -119,7 +128,7 @@ Using TestNG
 
 * Using Groups
 
-  TestNG allows you to group your tests. You can then execute a specific group or groups. To do this with Failsafe,
+  TestNG allows you to group your tests. You can then execute one or more specific groups. To do this with Failsafe,
   use the <<<groups>>> parameter, for example:
 
 +---+
@@ -194,5 +203,3 @@ Using TestNG
 +---+
 
   For more information on TestNG, see the {{{http://www.testng.org}TestNG web site}}.
-
-

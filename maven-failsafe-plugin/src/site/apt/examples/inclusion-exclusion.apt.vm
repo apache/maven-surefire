@@ -3,7 +3,7 @@
   ------
   Allan Ramirez
   ------
-  July 2006
+  2010-01-09
   ------
   
 ~~ Licensed to the Apache Software Foundation (ASF) under one
@@ -25,7 +25,6 @@
 
 ~~ NOTE: For help with the syntax of this file, see:
 ~~ http://maven.apache.org/doxia/references/apt-format.html
-  
 
 Inclusions and Exclusions of Tests
 
@@ -34,13 +33,13 @@ Inclusions and Exclusions of Tests
   By default, the Failsafe Plugin will automatically include all test classes
   with the following wildcard patterns:
 
-   * <"**/IT*.java"> - includes all of its subdirectory and all java
+   * <"**/IT*.java"> - includes all of its subdirectories and all java
    filenames that start with "IT".
 
-   * <"**/*IT.java"> - includes all of its subdirectory and all java
+   * <"**/*IT.java"> - includes all of its subdirectories and all java
    filenames that end with "IT".
 
-   * <"**/*ITCase.java"> - includes all of its subdirectory and all java
+   * <"**/*ITCase.java"> - includes all of its subdirectories and all java
    filenames that end with "ITCase".
 
    []
@@ -140,7 +139,7 @@ Inclusions and Exclusions of Tests
     <plugins>
       <plugin>
         <groupId>${project.groupId}</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
+        <artifactId>${project.artifactId}</artifactId>
         <version>${project.version}</version>
         <configuration>
           <includes>

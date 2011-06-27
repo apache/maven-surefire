@@ -2,8 +2,9 @@
   Using System Properties
   ------
   Allan Ramirez
+  Dan Tran
   ------
-  July 2006
+  2010-01-09
   ------
   
 ~~ Licensed to the Apache Software Foundation (ASF) under one
@@ -25,16 +26,15 @@
 
 ~~ NOTE: For help with the syntax of this file, see:
 ~~ http://maven.apache.org/doxia/references/apt-format.html
-  
 
 Using System Properties
 
   There are two ways to add a list of system properties to Failsafe:
 
-* systemPropertyVariable
+* systemPropertyVariables
 
-  This configuration is the replacement of the deprecated <systemProperies>.  It can accept any value
-  from Maven's properties that can be converted <<to String value>>
+  This configuration is the replacement of the deprecated <<<systemProperties>>>.  It can accept any value
+  from Maven's properties that can be converted <<to String value>>.
 
 +---+
 <project>
@@ -101,10 +101,10 @@ Using System Properties
 </project>
 +---+
 
-  Take note that <<String valued>> properties can only be passed as system
+  Take note that only <<String valued>> properties can be passed as system
   properties. Any attempt to pass any other Maven variable type (i.e. <<<List>>>
   or a <<<URL>>> variable) will cause the variable expression to be passed
-  literally (unevaluated). So having an example below:
+  literally (unevaluated). So having the example below:
 
 +---+
 <project>
@@ -146,3 +146,14 @@ Using System Properties
 
   will literally pass <<$\{project.build.outputDirectory\}>> because the value
   of that expression is a <<<File>>>, not a <<<String>>>.
+
+  To inherit the "systemProperties" collection from the parent configuration,
+  you will need to specify combine.children="append" on the systemProperties node in the child pom:
+
++---+
+  <systemProperties combine.children="append">
+      <property>
+         [...]
+      </property>
+   </systemProperties>
++---+

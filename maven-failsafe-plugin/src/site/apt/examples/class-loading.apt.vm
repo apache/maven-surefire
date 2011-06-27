@@ -3,7 +3,7 @@
   ------
   Dan Fabulich
   ------
-  May 2008
+  2010-01-09
   ------
   
 ~~ Licensed to the Apache Software Foundation (ASF) under one
@@ -34,7 +34,7 @@ Classloading and Forking in Maven Surefire/Failsafe
 
 * Executive Summary
 
- If you're having problems, you'll probably want to tinker with these three settings: forkMode, useSystemClassLoader, and useManifestOnlyJar.
+ If you're having problems, you'll probably want to tinker with these three settings: <<<forkMode>>>, <<<useSystemClassLoader>>>, and <<<useManifestOnlyJar>>>.
 
 * What problem does Surefire solve?
 
@@ -57,7 +57,7 @@ most of the length-related problems in this article may be outdated.
 
 * How do people solve this problem in general?
 
- There are two "tricks" you can use to workaround this problem; both of them are can cause other problems in some cases.
+ There are two "tricks" you can use to workaround this problem; both of them can cause other problems in some cases.
 
  1. <<Isolated Classloader>>: One workaround is to use an isolated classloader.
  Instead of launching MyApp directly, we can launch some other app (a "booter")
@@ -68,18 +68,18 @@ most of the length-related problems in this article may be outdated.
  
  The problem with using an isolated classloader is that your classpath isn't
  <really> correct, and some apps can detect this and object. For example, the
- system property "java.class.path" won't include your jars; if your app notices
+ system property <<<java.class.path>>> won't include your jars; if your app notices
  this, it could cause a problem.
  
  There's another similar problem with using an isolated classloader: any class
- may call the static method ClassLoader.getSystemClassLoader() and attempt to
+ may call the static method <<<ClassLoader.getSystemClassLoader()>>> and attempt to
  load classes out of that classloader, instead of using the default classloader.
- Classes often do this if they need to create classloaders of their own....
+ Classes often do this if they need to create classloaders of their own.
  Unfortunately, Java-based web application servers like Jetty, Tomcat, BEA
  WebLogic and IBM WebSphere are very likely to try to escape the confines of an
  isolated classloader.
  
- 2. <<Manifest-Only Jar>>: Another workaround is to use a "manifest-only jar." In
+ 2. <<Manifest-Only JAR>>: Another workaround is to use a "manifest-only jar." In
  this case, you create a temporary jar that's almost completely empty, except for
  a META-INF/MANIFEST.MF file. Java manifests can contain attributes that the Java
  VM will honor as directives; for example, you can have a "Class-Path" attribute,
@@ -94,10 +94,10 @@ java -classpath booter.jar MyApp
  thread context classloader and the default classloader are all the same; there's
  no possibility of "escaping" the classloader. But this is still a weird
  simulation of a "normal" classpath, and it's still possible for apps to notice
- this. Again, java.class.path may not be what you'd expect ("why does it contain
+ this. Again, <<<java.class.path>>> may not be what you'd expect ("why does it contain
  only one jar?"). Additionally, it's possible to query the system classloader to
  get the list of jars back out of it; your app may be confused if it finds only
- our booter.jar there!
+ our <<<booter.jar>>> there!
 
 * Advantages/Disadvantages of each solution
 
@@ -122,26 +122,26 @@ java -classpath booter.jar MyApp
 * What does Surefire do?
 
  Surefire provides a mechanism for using multiple strategies.  The main parameter that
- determines this is called "useSystemClassLoader".  If useSystemClassLoader is
- true, then we use a manifest-only jar; otherwise, we use an isolated
+ determines this is called <<<useSystemClassLoader>>>.  If <<<useSystemClassLoader>>> is
+ <<<true>>>, then we use a manifest-only JAR; otherwise, we use an isolated
  classloader.  If you want to use a basic plain old Java classpath, you can set
- useManifestOnlyJar=false which only has an effect when useSystemClassLoader=true.
+ <<<useManifestOnlyJar=false>>> which only has an effect when <<<useSystemClassLoader=true>>>.
  
- (The default value for useSystemClassLoader changed between Surefire 2.3 and
+ The default value for <<<useSystemClassLoader>>> changed between Surefire 2.3 and
  Surefire 2.4, which was a pretty significant change.  In Surefire 2.3,
- useSystemClassLoader was false by default, and we used an isolated classloader. 
- In Surefire 2.4, useSystemClassLoader is true by default.  No value works for
+ <<<useSystemClassLoader>>> was <<<false>>> by default, and we used an isolated classloader.
+ In Surefire 2.4, <<<useSystemClassLoader>>> is <<<true>>> by default.  No value works for
  everyone, but we think this default is an improvement; a bunch of
- hard-to-diagnose bugs get better when we useSystemClassLoader=true.)
+ hard-to-diagnose bugs get better when we <<<useSystemClassLoader=true>>>.
  
- Unfortunately, if useSystemClassLoader is set incorrectly for your app, you're going to
+ Unfortunately, if <<<useSystemClassLoader>>> is set incorrectly for your app, you're going to
  have a problem on your hands that can be quite difficult to diagnose.  You might
  even be forced to read a long doc page like this one.  ;-)
  
- If you're having problems loading classes, try setting useSystemClassLoader=false
+ If you're having problems loading classes, try setting <<<useSystemClassLoader=false>>>
  to see if that helps.  You can do that with the POM snippet below, or by setting
- "-Dsurefire.useSystemClassLoader=false".  If that doesn't work, try setting
- useSystemClassLoader back to true and setting useManifestOnlyJar to false.
+ <<<-Dsurefire.useSystemClassLoader=false>>>.  If that doesn't work, try setting
+ <<<useSystemClassLoader>>> back to <<<true>>> and setting <<<useManifestOnlyJar>>> to <<<false>>>.
  
 +---+
 <project>
@@ -182,8 +182,8 @@ java -classpath booter.jar MyApp
 
  * Run mvn with --debug (aka -X) to get more detailed output
 
- * Check your forkMode.  If forkMode=never, it's impossible to use the system classloader or a plain old Java classpath; we have to use an isolated classloader.
+ * Check your <<<forkMode>>>.  If <<<forkMode=never>>>, it's impossible to use the system classloader or a plain old Java classpath; we have to use an isolated classloader.
 
- * If you're using the defaults, useSystemClassLoader=true and useManifestOnlyJar=false.  In that case, look at the generated manifest-only surefire booter jar.  Open it up (it's just a zip) and read its manifest.
+ * If you're using the defaults, <<<useSystemClassLoader=true>>> and <<<useManifestOnlyJar=false>>>.  In that case, look at the generated manifest-only Surefire booter JAR.  Open it up (it's just a zip) and read its manifest.
 
  * Run mvn with -Dmaven.failsafe.debug, and attach to the running process with a debugger.
