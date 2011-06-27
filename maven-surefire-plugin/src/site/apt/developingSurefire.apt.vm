@@ -31,7 +31,7 @@ When working with surefire, it is necessary to understand a few things:
 Multi-Module project
   The plugin is built as part of a multi-module plugin. The generated
   'project information' will suggest that you check out (e.g.) 
-  http://svn.apache.org/repos/asf/maven/surefire/trunk/maven-surefire-plugin.
+  http://svn.apache.org/repos/asf/maven/surefire/trunk/${project.artifactId}.
   In fact, you need to check out (e.g.)
   http://svn.apache.org/repos/asf/maven/surefire/trunk and
   build from there.

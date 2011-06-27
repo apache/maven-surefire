@@ -53,8 +53,8 @@ Inclusions and Exclusions of Tests
   <build>
     <plugins>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>${project.artifactId}</artifactId>
         <version>${project.version}</version>
         <configuration>
           <includes>
@@ -81,8 +81,8 @@ Inclusions and Exclusions of Tests
   <build>
     <plugins>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>${project.artifactId}</artifactId>
         <version>${project.version}</version>
         <configuration>
           <excludes>
@@ -108,8 +108,8 @@ Inclusions and Exclusions of Tests
   <build>
     <plugins>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>${project.artifactId}</artifactId>
         <version>${project.version}</version>
         <configuration>
           <includes>

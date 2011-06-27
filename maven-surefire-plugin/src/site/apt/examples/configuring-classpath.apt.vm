@@ -55,8 +55,8 @@ Additional Classpath Elements
   <build>
     <plugins>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>${project.artifactId}</artifactId>
         <version>${project.version}</version>
         <configuration>
           <additionalClasspathElements>
@@ -83,8 +83,8 @@ Removing Dependency Classpath Elements
   <build>
     <plugins>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>${project.artifactId}</artifactId>
         <version>${project.version}</version>
         <configuration>
           <classpathDependencyExcludes>
@@ -114,8 +114,8 @@ Removing Dependency Classpath Elements
   <build>
     <plugins>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>${project.artifactId}</artifactId>
         <version>${project.version}</version>
         <configuration>
           <classpathDependencyScopeExclude>runtime</classpathDependencyScopeExclude>
