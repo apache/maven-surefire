@@ -26,6 +26,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+
+import junit.framework.Assert;
+import junit.framework.TestCase;
+
 import org.apache.maven.surefire.booter.BooterDeserializer;
 import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
 import org.apache.maven.surefire.booter.ClasspathConfiguration;
@@ -36,9 +40,7 @@ import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestRequest;
-
-import junit.framework.Assert;
-import junit.framework.TestCase;
+import org.apache.maven.surefire.util.RunOrder;
 
 /**
  * Performs roundtrip testing of serialization/deserialization of the ProviderConfiguration
@@ -158,7 +160,7 @@ public class BooterDeserializerProviderConfigurationTest
         excludes.add( "xx1" );
         excludes.add( "xx2" );
 
-        return new DirectoryScannerParameters( aDir, includes, excludes, Boolean.TRUE, null );
+        return new DirectoryScannerParameters( aDir, includes, excludes, Boolean.TRUE, RunOrder.FILESYSTEM );
     }
 
     private ProviderConfiguration saveAndReload( ProviderConfiguration booterConfiguration,

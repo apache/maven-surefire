@@ -1,4 +1,5 @@
 package org.apache.maven.surefire.its;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -25,107 +26,129 @@ import org.apache.maven.surefire.its.misc.HelperAssertions;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Iterator;
 import java.util.List;
 
 /**
  * Verifies the runOrder setting and its effect
- *
+ * 
  * @author Kristian Rosenvold
  */
 public class RunOrderIT
     extends AbstractSurefireIntegrationTestClass
 {
+    private static final String[] TESTS_IN_ALPHABETICAL_ORDER = { "TA", "TB", "TC" };
+
+    private static final String[] TESTS_IN_REVERSE_ALPHABETICAL_ORDER = { "TC", "TB", "TA" };
+
     // testing random is left as an exercise to the reader. Patches welcome
+
+    private File testDir;
+
+    private Verifier verifier;
+
+    public void setUp()
+        throws IOException, VerificationException
+    {
+        testDir = ResourceExtractor.simpleExtractResources( getClass(), "/runOrder" );
+        verifier = new Verifier( testDir.getAbsolutePath() );
+    }
+
+    public void tearDown()
+        throws Exception
+    {
+        verifier.resetStreams();
+    }
 
     public void testAlphabetical()
         throws Exception
     {
-        checkOrder( "alphabetical", getAlphabetical() );
+        executeWithRunOrder( "alphabetical" );
+        assertTestnamesAppearInSpecificOrder( TESTS_IN_ALPHABETICAL_ORDER );
     }
-
 
     public void testReverseAlphabetical()
         throws Exception
     {
-        checkOrder( "reversealphabetical", getReverseAlphabetical() );
+        executeWithRunOrder( "reversealphabetical" );
+        assertTestnamesAppearInSpecificOrder( TESTS_IN_REVERSE_ALPHABETICAL_ORDER );
     }
-
 
     public void testHourly()
         throws Exception
     {
         int startHour = Calendar.getInstance().get( Calendar.HOUR_OF_DAY );
-        final List<String> actual = executeWithRunOrder( "hourly" );
+        executeWithRunOrder( "hourly" );
         int endHour = Calendar.getInstance().get( Calendar.HOUR_OF_DAY );
         if ( startHour != endHour )
         {
             return; // Race condition, cannot test when hour changed mid-run
         }
 
-        List<String> expected = ( ( startHour % 2 ) == 0 ) ? getAlphabetical() : getReverseAlphabetical();
-        if ( !contains( actual, expected ) )
-        {
-            throw new VerificationException( "Response does not contain expected item" );
-        }
+        String[] testnames =
+            ( ( startHour % 2 ) == 0 ) ? TESTS_IN_ALPHABETICAL_ORDER : TESTS_IN_REVERSE_ALPHABETICAL_ORDER;
+        assertTestnamesAppearInSpecificOrder( testnames );
     }
 
-    private boolean contains( List<String> items, List<String> expected )
+    public void testNonExistingRunOrder()
+        throws Exception
     {
-        Iterator<String> expectedIterator = expected.iterator();
-        String next = (String) expectedIterator.next();
-        Iterator<String> content = items.iterator();
-        while ( content.hasNext() )
+        try
         {
-            String line = content.next();
-            if ( line.startsWith( next ) )
-            {
-                if ( !expectedIterator.hasNext() )
-                {
-                    return true;
-                }
-                next = expectedIterator.next();
-            }
+            executeTestsWithRunOrder( "nonExistingRunOrder" );
         }
-        return content.hasNext();
+        catch ( VerificationException e )
+        {
+        }
+        verifier.verifyTextInLog( "There's no RunOrder with the name nonExistingRunOrder." );
     }
 
-    private void checkOrder( String alphabetical, List<String> expected )
-        throws VerificationException, IOException
-    {
-        final List<String> list = executeWithRunOrder( alphabetical );
-        if ( !contains( list, expected ) )
-        {
-            throw new VerificationException( "Response does not contain expected item" );
-        }
-    }
-
-    private List<String> executeWithRunOrder( String runOrder )
+    private void executeWithRunOrder( String runOrder )
         throws IOException, VerificationException
     {
-        File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/runOrder" );
-        Verifier verifier = new Verifier( testDir.getAbsolutePath() );
+        executeTestsWithRunOrder( runOrder );
+        verifier.verifyErrorFreeLog();
+        HelperAssertions.assertTestSuiteResults( 3, 0, 0, 0, testDir );
+    }
 
+    private void executeTestsWithRunOrder( String runOrder )
+        throws VerificationException
+    {
         List<String> goals = getInitialGoals();
         goals.add( "-DrunOrder=" + runOrder );
         goals.add( "test" );
-        this.executeGoals( verifier, goals );
-        verifier.verifyErrorFreeLog();
-        verifier.resetStreams();
-        HelperAssertions.assertTestSuiteResults( 3, 0, 0, 0, testDir );
+        executeGoals( verifier, goals );
+    }
+
+    private void assertTestnamesAppearInSpecificOrder( String[] testnames )
+        throws VerificationException
+    {
+        if ( !testnamesAppearInSpecificOrder( testnames ) )
+        {
+            throw new VerificationException( "Response does not contain expected item" );
+        }
+    }
+
+    private boolean testnamesAppearInSpecificOrder( String[] testnames ) throws VerificationException
+    {
+        int i = 0;
+        for ( String line : getLog() )
+        {
+            if ( line.startsWith( testnames[i] ) )
+            {
+                if ( i == testnames.length - 1 )
+                {
+                    return true;
+                }
+                ++i;
+            }
+        }
+        return false;
+    }
+
+    private List<String> getLog()
+        throws VerificationException
+    {
         return verifier.loadFile( verifier.getBasedir(), verifier.getLogFileName(), false );
     }
-
-    private List<String> getAlphabetical()
-    {
-        return Arrays.asList( new String[]{ "TA", "TB", "TC" } );
-    }
-
-    private List<String> getReverseAlphabetical()
-    {
-        return Arrays.asList( new String[]{ "TC", "TB", "TA" } );
-    }
-
 }

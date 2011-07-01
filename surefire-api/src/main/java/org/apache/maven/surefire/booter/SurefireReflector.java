@@ -26,6 +26,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Properties;
+
 import org.apache.maven.plugin.surefire.report.FileReporterFactory;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.report.ReporterConfiguration;
@@ -35,6 +36,7 @@ import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.util.ReflectionUtils;
+import org.apache.maven.surefire.util.RunOrder;
 import org.apache.maven.surefire.util.SurefireReflectionException;
 
 /**
@@ -165,6 +167,7 @@ public class SurefireReflector
         {
             return null;
         }
+        //Can't use the constructor with the RunOrder parameter. Using it causes some integration tests to fail.
         Class[] arguments = { File.class, List.class, List.class, Boolean.class, String.class };
         Constructor constructor = ReflectionUtils.getConstructor( this.directoryScannerParameters, arguments );
         return ReflectionUtils.newInstance( constructor,
@@ -172,7 +175,7 @@ public class SurefireReflector
                                                 directoryScannerParameters.getIncludes(),
                                                 directoryScannerParameters.getExcludes(),
                                                 directoryScannerParameters.isFailIfNoTests(),
-                                                directoryScannerParameters.getRunOrder() } );
+                                                directoryScannerParameters.getRunOrder().name() } );
     }
 
     Object createTestArtifactInfo( TestArtifactInfo testArtifactInfo )

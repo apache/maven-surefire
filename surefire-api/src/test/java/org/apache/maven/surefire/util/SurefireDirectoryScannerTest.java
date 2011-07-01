@@ -44,7 +44,7 @@ public class SurefireDirectoryScannerTest
         List exclude = new ArrayList();
 
         DefaultDirectoryScanner surefireDirectoryScanner = new DefaultDirectoryScanner( baseDir, include, exclude,
-                                                                                        "filesystem" );
+                                                                                        RunOrder.FILESYSTEM );
         String[] classNames = surefireDirectoryScanner.collectTests();
         assertNotNull( classNames );
         System.out.println("classNames " + Arrays.asList( classNames ));

@@ -28,7 +28,7 @@ import java.util.List;
 
 /**
  * Scans directories looking for tests.
- *
+ * 
  * @author Karl M. Davis
  * @author Kristian Rosenvold
  */
@@ -54,16 +54,15 @@ public class DefaultDirectoryScanner
 
     private final Comparator sortOrder;
 
-    private final String runOrder;
+    private final RunOrder runOrder;
 
-
-    public DefaultDirectoryScanner( File basedir, List includes, List excludes, String runOrder )
+    public DefaultDirectoryScanner( File basedir, List includes, List excludes, RunOrder runOrder )
     {
         this.basedir = basedir;
         this.includes = includes;
         this.excludes = excludes;
         this.runOrder = runOrder;
-        this.sortOrder = getSortOrderComparator( runOrder );
+        this.sortOrder = getSortOrderComparator();
     }
 
     public TestsToRun locateTestClasses( ClassLoader classLoader, ScannerFilter scannerFilter )
@@ -86,14 +85,7 @@ public class DefaultDirectoryScanner
                 classesSkippedByValidation.add( testClass );
             }
         }
-        if ( "random".equals( runOrder ) )
-        {
-            Collections.shuffle( result );
-        }
-        else if ( sortOrder != null )
-        {
-            Collections.sort( result, sortOrder );
-        }
+        orderTestClasses( result );
         return new TestsToRun( result );
     }
 
@@ -110,7 +102,6 @@ public class DefaultDirectoryScanner
         }
         return testClass;
     }
-
 
     String[] collectTests()
     {
@@ -153,10 +144,10 @@ public class DefaultDirectoryScanner
             String inc = (String) list.get( i );
             if ( inc.endsWith( JAVA_SOURCE_FILE_EXTENSION ) )
             {
-                inc = new StringBuffer(
-                    inc.length() - JAVA_SOURCE_FILE_EXTENSION.length() + JAVA_CLASS_FILE_EXTENSION.length() ).append(
-                    inc.substring( 0, inc.lastIndexOf( JAVA_SOURCE_FILE_EXTENSION ) ) ).append(
-                    JAVA_CLASS_FILE_EXTENSION ).toString();
+                inc =
+                    new StringBuffer( inc.length() - JAVA_SOURCE_FILE_EXTENSION.length()
+                        + JAVA_CLASS_FILE_EXTENSION.length() ).append( inc.substring( 0,
+                                                                                      inc.lastIndexOf( JAVA_SOURCE_FILE_EXTENSION ) ) ).append( JAVA_CLASS_FILE_EXTENSION ).toString();
             }
             incs[i] = inc;
 
@@ -169,25 +160,37 @@ public class DefaultDirectoryScanner
         return classesSkippedByValidation;
     }
 
-    private Comparator getSortOrderComparator( String runOrder )
+    private void orderTestClasses( List testClasses )
     {
-        if ( "alphabetical".equals( runOrder ) )
+        if ( RunOrder.RANDOM.equals( runOrder ) )
+        {
+            Collections.shuffle( testClasses );
+        }
+        else if ( sortOrder != null )
+        {
+            Collections.sort( testClasses, sortOrder );
+        }
+    }
+
+    private Comparator getSortOrderComparator()
+    {
+        if ( RunOrder.ALPHABETICAL.equals( runOrder ) )
         {
             return getAlphabeticalComparator();
         }
-
-        else if ( "reversealphabetical".equals( runOrder ) )
+        else if ( RunOrder.REVERSE_ALPHABETICAL.equals( runOrder ) )
         {
             return getReverseAlphabeticalComparator();
         }
-        else if ( "hourly".equals( runOrder ) )
+        else if ( RunOrder.HOURLY.equals( runOrder ) )
         {
             final int hour = Calendar.getInstance().get( Calendar.HOUR_OF_DAY );
-            return ( ( hour % 2 ) == 0 )
-                ? getAlphabeticalComparator()
-                : getReverseAlphabeticalComparator();
+            return ( ( hour % 2 ) == 0 ) ? getAlphabeticalComparator() : getReverseAlphabeticalComparator();
         }
-        return null;
+        else
+        {
+            return null;
+        }
     }
 
     private Comparator getReverseAlphabeticalComparator()

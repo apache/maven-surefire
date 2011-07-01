@@ -66,6 +66,7 @@ import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.util.NestedRuntimeException;
+import org.apache.maven.surefire.util.RunOrder;
 import org.apache.maven.toolchain.Toolchain;
 import org.codehaus.plexus.util.StringUtils;
 
@@ -369,7 +370,7 @@ public abstract class AbstractSurefireMojo
             List excludes = getExcludeList();
             directoryScannerParameters = new DirectoryScannerParameters( getTestClassesDirectory(), includes, excludes,
                                                                          Boolean.valueOf( failIfNoTests ),
-                                                                         getRunOrder() );
+                                                                         getRunOrderObject() );
         }
 
         Properties providerProperties = getProperties();
@@ -1120,6 +1121,11 @@ public abstract class AbstractSurefireMojo
         {
             getLog().warn( "useSystemClassloader setting has no effect when not forking" );
         }
+    }
+    
+    private RunOrder getRunOrderObject() {
+        RunOrder runOrder = RunOrder.valueOf( getRunOrder() );
+        return runOrder == null ? RunOrder.FILESYSTEM : runOrder;
     }
 
     class TestNgProviderInfo

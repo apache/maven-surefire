@@ -43,6 +43,7 @@ import org.apache.maven.surefire.report.SimpleReportEntry;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.DefaultDirectoryScanner;
 import org.apache.maven.surefire.util.DirectoryScanner;
+import org.apache.maven.surefire.util.RunOrder;
 import org.apache.maven.surefire.util.TestsToRun;
 
 /**
@@ -73,7 +74,7 @@ public class TestNGDirectoryTestSuite
                                      String testMethodPattern )
     {
 
-        this.surefireDirectoryScanner = new DefaultDirectoryScanner( basedir, includes, excludes, "filesystem" );
+        this.surefireDirectoryScanner = new DefaultDirectoryScanner( basedir, includes, excludes, RunOrder.FILESYSTEM );
 
         this.options = confOptions;
 

@@ -94,7 +94,7 @@ class BooterSerializer
             properties.addList( directoryScannerParameters.getExcludes(), BooterConstants.EXCLUDES_PROPERTY_PREFIX );
             properties.setProperty( BooterConstants.TEST_CLASSES_DIRECTORY,
                                     directoryScannerParameters.getTestClassesDirectory() );
-            properties.setProperty( BooterConstants.RUN_ORDER, directoryScannerParameters.getRunOrder() );
+            properties.setProperty( BooterConstants.RUN_ORDER, directoryScannerParameters.getRunOrder().name() );
         }
 
         ReporterConfiguration reporterConfiguration = booterConfiguration.getReporterConfiguration();
