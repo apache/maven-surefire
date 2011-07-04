@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+
 import org.apache.maven.surefire.util.NestedRuntimeException;
 
 /**
@@ -39,13 +40,13 @@ import org.apache.maven.surefire.util.NestedRuntimeException;
 public class ConsoleOutputFileReporter
     implements Reporter
 {
-
     private static final String LINE_SEPARATOR = System.getProperty( "line.separator" );
 
     private final File reportsDirectory;
 
-    private final StringBuffer outputBuffer = new StringBuffer();
+    private PrintWriter printWriter = null;
 
+    private String reportEntryName;
 
     public ConsoleOutputFileReporter( File reportsDirectory )
     {
@@ -54,36 +55,43 @@ public class ConsoleOutputFileReporter
 
     public void testSetStarting( ReportEntry reportEntry )
     {
+        this.reportEntryName = reportEntry.getName();
     }
 
     public void testSetCompleted( ReportEntry report )
         throws ReporterException
     {
-        PrintWriter printWriter;
-
-        if ( !reportsDirectory.exists() )
+        if ( printWriter != null )
         {
-            //noinspection ResultOfMethodCallIgnored
-            reportsDirectory.mkdirs();
+            printWriter.close();
+            printWriter = null;
         }
+    }
 
+    public void writeMessage( byte[] b, int off, int len )
+    {
         try
         {
-            if ( outputBuffer.length() > 0 )
+            if ( printWriter == null )
             {
-                File file = new File( reportsDirectory, report.getName() + "-output.txt" );
+                if ( !reportsDirectory.exists() )
+                {
+                    //noinspection ResultOfMethodCallIgnored
+                    reportsDirectory.mkdirs();
+                }
+                File file = new File( reportsDirectory, reportEntryName + "-output.txt" );
                 printWriter = new PrintWriter( new BufferedWriter( new FileWriter( file ) ) );
-                printWriter.write( outputBuffer.toString() );
-                printWriter.write( LINE_SEPARATOR );
-                outputBuffer.setLength( 0 );
-                printWriter.close();
             }
+            printWriter.write( new String( b, off, len ) );
+            printWriter.write( LINE_SEPARATOR );
+
         }
         catch ( IOException e )
         {
             throw new NestedRuntimeException( e );
         }
     }
+
 
     public void testStarting( ReportEntry report )
     {
@@ -109,11 +117,6 @@ public class ConsoleOutputFileReporter
     {
     }
 
-    public void writeMessage( byte[] b, int off, int len )
-    {
-        String line = new String( b, off, len );
-        outputBuffer.append( line );
-    }
 
     public void reset()
     {
