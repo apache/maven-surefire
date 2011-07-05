@@ -204,7 +204,7 @@ public class SurefireReflector
         Constructor constructor = ReflectionUtils.getConstructor( this.startupReportConfiguration,
                                                                   new Class[]{ boolean.class, boolean.class,
                                                                       String.class, boolean.class, boolean.class,
-                                                                      File.class, boolean.class } );
+                                                                      File.class, boolean.class, String.class } );
         //noinspection BooleanConstructorCall
         final Object[] params =
             { new Boolean( reporterConfiguration.isUseFile() ), new Boolean( reporterConfiguration.isPrintSummary() ),
@@ -212,7 +212,8 @@ public class SurefireReflector
                 new Boolean( reporterConfiguration.isRedirectTestOutputToFile() ),
                 new Boolean( reporterConfiguration.isDisableXmlReport() ),
                 reporterConfiguration.getReportsDirectory(),
-                new Boolean( reporterConfiguration.isTrimStackTrace())};
+                new Boolean( reporterConfiguration.isTrimStackTrace()),
+                reporterConfiguration.getReportNameSuffix()};
         return ReflectionUtils.newInstance( constructor, params );
     }
 

@@ -48,9 +48,19 @@ public class ConsoleOutputFileReporter
 
     private String reportEntryName;
 
+    private ReportEntry report;
+
+    private final String reportNameSuffix;
+
     public ConsoleOutputFileReporter( File reportsDirectory )
     {
+        this( reportsDirectory, null );
+    }
+
+    public ConsoleOutputFileReporter( File reportsDirectory, String reportNameSuffix )
+    {
         this.reportsDirectory = reportsDirectory;
+        this.reportNameSuffix = reportNameSuffix;
     }
 
     public void testSetStarting( ReportEntry reportEntry )
@@ -79,7 +89,7 @@ public class ConsoleOutputFileReporter
                     //noinspection ResultOfMethodCallIgnored
                     reportsDirectory.mkdirs();
                 }
-                File file = new File( reportsDirectory, reportEntryName + "-output.txt" );
+                File file = AbstractFileReporter.getReportFile( reportsDirectory, reportEntryName, reportNameSuffix, "-output.txt" );
                 printWriter = new PrintWriter( new BufferedWriter( new FileWriter( file ) ) );
             }
             printWriter.write( new String( b, off, len ) );

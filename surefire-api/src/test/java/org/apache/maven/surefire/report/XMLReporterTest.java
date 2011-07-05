@@ -70,4 +70,37 @@ public class XMLReporterTest
         assertEquals( message, child.getAttribute( "type" ) );
     }
 
+    /*
+     * Test method for 'org.codehaus.surefire.report.XMLReporter.testSetCompleted(ReportEntry report)'
+     */
+    public void testFileNameWithoutSuffix()
+    {
+        File reportDir = new File( "." );
+        String testName = "org.apache.maven.surefire.report.XMLReporterTest";
+        reportEntry = new SimpleReportEntry( this.getClass().getName(), testName );
+        reporter = new XMLReporter( true, reportDir, null );
+        reporter.testSetCompleted( reportEntry );
+
+        File expectedReportFile = new File( reportDir, "TEST-" + testName + ".xml" );
+        assertTrue("Report file (" + expectedReportFile.getAbsolutePath() + ") doesn't exist",  expectedReportFile.exists() );
+        expectedReportFile.delete();
+    }
+
+    /*
+     * Test method for 'org.codehaus.surefire.report.XMLReporter.testSetCompleted(ReportEntry report)'
+     */
+    public void testFileNameWithSuffix()
+    {
+        File reportDir = new File( "." );
+        String testName = "org.apache.maven.surefire.report.XMLReporterTest";
+        String suffixText = "sampleSuffixText";
+        reportEntry = new SimpleReportEntry( this.getClass().getName(), testName );
+        reporter = new XMLReporter( true, reportDir, suffixText );
+        reporter.testSetCompleted( reportEntry );
+
+        File expectedReportFile = new File( reportDir, "TEST-" + testName + "-" + suffixText + ".xml" );
+        assertTrue("Report file (" + expectedReportFile.getAbsolutePath() + ") doesn't exist",  expectedReportFile.exists() );
+        expectedReportFile.delete();
+    }
+
 }

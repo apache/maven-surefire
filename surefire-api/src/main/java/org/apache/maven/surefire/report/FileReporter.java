@@ -35,4 +35,9 @@ public class FileReporter
     {
         super( trimStackTrace, PLAIN, reportsDirectory );
     }
+    
+    public FileReporter( boolean trimStackTrace, File reportsDirectory, String reportNamePrefix )
+    {
+        super( trimStackTrace, PLAIN, reportsDirectory, reportNamePrefix);
+    }
 }

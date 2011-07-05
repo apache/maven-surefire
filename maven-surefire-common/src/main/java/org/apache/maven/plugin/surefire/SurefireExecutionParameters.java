@@ -138,6 +138,10 @@ public interface SurefireExecutionParameters
 
     void setReportFormat( String reportFormat );
 
+    String getReportNameSuffix();
+
+    void setReportNameSuffix( String reportNameSuffix );
+
     boolean isUseFile();
 
     void setUseFile( boolean useFile );

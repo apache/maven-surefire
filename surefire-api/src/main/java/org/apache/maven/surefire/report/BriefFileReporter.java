@@ -35,4 +35,9 @@ public class BriefFileReporter
     {
         super( trimStackTrace, BRIEF, reportsDirectory );
     }
+    
+    public BriefFileReporter( boolean trimStackTrace, File reportsDirectory, String reportNameSuffix )
+    {
+        super( trimStackTrace, BRIEF, reportsDirectory, reportNameSuffix );
+    }
 }

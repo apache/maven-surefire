@@ -52,14 +52,22 @@ public class XMLReporter
 
     private final boolean deleteOnStarting;
 
+    private final String reportNameSuffix;
+
     private final List results = Collections.synchronizedList( new ArrayList() );
 
 
     public XMLReporter( boolean trimStackTrace, File reportsDirectory )
     {
+        this( trimStackTrace, reportsDirectory, null );
+    }
+
+    public XMLReporter( boolean trimStackTrace, File reportsDirectory, String reportNameSuffix )
+    {
         super( trimStackTrace );
         this.reportsDirectory = reportsDirectory;
         this.deleteOnStarting = false;
+        this.reportNameSuffix = reportNameSuffix;
     }
 
 
@@ -144,7 +152,18 @@ public class XMLReporter
 
     private File getReportFile( ReportEntry report )
     {
-        return new File( reportsDirectory, "TEST-" + report.getName() + ".xml" );
+        File reportFile;
+
+        if ( reportNameSuffix != null && reportNameSuffix.length() > 0)
+        {
+            reportFile = new File( reportsDirectory, "TEST-" + report.getName() + "-" + reportNameSuffix + ".xml" );
+        }
+        else
+        {
+            reportFile = new File( reportsDirectory, "TEST-" + report.getName() + ".xml" );
+        }
+
+        return reportFile;
     }
 
     private String getReportName( ReportEntry report )
@@ -183,7 +202,14 @@ public class XMLReporter
         }
         if ( report.getSourceName() != null )
         {
-            testCase.setAttribute( "classname", report.getSourceName() );
+            if ( reportNameSuffix != null && reportNameSuffix.length() > 0)
+            {
+                testCase.setAttribute( "classname", report.getSourceName() + "(" + reportNameSuffix + ")" );
+            }
+            else
+            {
+                testCase.setAttribute( "classname", report.getSourceName() );
+            }
         }
         testCase.setAttribute( "time", elapsedTimeAsString( runTime ) );
         return testCase;
@@ -192,7 +218,15 @@ public class XMLReporter
     private Xpp3Dom createTestSuiteElement( ReportEntry report, long runTime )
     {
         Xpp3Dom testCase = new Xpp3Dom( "testsuite" );
-        testCase.setAttribute( "name", getReportName( report ) );
+
+        if ( reportNameSuffix != null && reportNameSuffix.length() > 0)
+        {
+            testCase.setAttribute( "name", getReportName( report ) + "(" + reportNameSuffix + ")" );
+        }
+        else
+        {
+            testCase.setAttribute( "name", getReportName( report ) );
+        }
         if ( report.getGroup() != null )
         {
             testCase.setAttribute( "group", report.getGroup() );

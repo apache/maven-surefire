@@ -51,6 +51,8 @@ public class StartupReportConfiguration
 
     private final String reportFormat;
 
+    private final String reportNameSuffix;
+
     private final boolean redirectTestOutputToFile;
 
     private final boolean disableXmlReport;
@@ -69,6 +71,15 @@ public class StartupReportConfiguration
                                        boolean redirectTestOutputToFile, boolean disableXmlReport,
                                        File reportsDirectory, boolean trimStackTrace )
     {
+        this( useFile, printSummary, reportFormat, redirectTestOutputToFile, 
+                disableXmlReport, reportsDirectory, trimStackTrace, null );
+    }
+
+    public StartupReportConfiguration( boolean useFile, boolean printSummary, String reportFormat,
+                                       boolean redirectTestOutputToFile, boolean disableXmlReport,
+                                       File reportsDirectory, boolean trimStackTrace,
+                                       String reportNameSuffix )
+    {
         this.useFile = useFile;
         this.printSummary = printSummary;
         this.reportFormat = reportFormat;
@@ -76,6 +87,7 @@ public class StartupReportConfiguration
         this.disableXmlReport = disableXmlReport;
         this.reportsDirectory = reportsDirectory;
         this.trimStackTrace = trimStackTrace;
+        this.reportNameSuffix = reportNameSuffix;
     }
 
     public static StartupReportConfiguration defaultValue()
@@ -103,6 +115,11 @@ public class StartupReportConfiguration
     public String getReportFormat()
     {
         return reportFormat;
+    }
+
+    public String getReportNameSuffix()
+    {
+        return reportNameSuffix;
     }
 
     public boolean isRedirectTestOutputToFile()
@@ -133,7 +150,7 @@ public class StartupReportConfiguration
     {
         if ( !isDisableXmlReport() )
         {
-            return new XMLReporter(trimStackTrace, reportsDirectory);
+            return new XMLReporter(trimStackTrace, reportsDirectory, reportNameSuffix);
         }
         return null;
     }
@@ -160,11 +177,11 @@ public class StartupReportConfiguration
         {
             if ( BRIEF_REPORT_FORMAT.equals( getReportFormat() ) )
             {
-                return new BriefFileReporter(trimStackTrace, reportsDirectory);
+                return new BriefFileReporter(trimStackTrace, reportsDirectory, getReportNameSuffix());
             }
             else if ( PLAIN_REPORT_FORMAT.equals( getReportFormat() ) )
             {
-                return new FileReporter(trimStackTrace, reportsDirectory);
+                return new FileReporter(trimStackTrace, reportsDirectory, getReportNameSuffix());
             }
         }
         return null;
@@ -226,7 +243,7 @@ public class StartupReportConfiguration
     {
         if ( isRedirectTestOutputToFile() )
         {
-            return new ConsoleOutputFileReporter(reportsDirectory);
+            return new ConsoleOutputFileReporter(reportsDirectory, getReportNameSuffix());
         }
         else
         {

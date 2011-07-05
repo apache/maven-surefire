@@ -426,7 +426,7 @@ public abstract class AbstractSurefireMojo
     {
         return new StartupReportConfiguration( isUseFile(), isPrintSummary(), getReportFormat(),
                                                isRedirectTestOutputToFile(), isDisableXmlReport(),
-                                               getReportsDirectory(), isTrimStackTrace() );
+                                               getReportsDirectory(), isTrimStackTrace(), getReportNameSuffix() );
     }
 
     void logClasspath( Classpath classpath, String descriptor )
@@ -736,6 +736,7 @@ public abstract class AbstractSurefireMojo
         checksum.add( getProperties() );
         checksum.add( isPrintSummary() );
         checksum.add( getReportFormat() );
+        checksum.add( getReportNameSuffix() );
         checksum.add( isUseFile() );
         checksum.add( isRedirectTestOutputToFile() );
         checksum.add( getForkMode() );

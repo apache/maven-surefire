@@ -36,11 +36,19 @@ public abstract class AbstractFileReporter
 
     private final boolean deleteOnStarting;
 
+    private final String reportNameSuffix;
+
     AbstractFileReporter( boolean trimStackTrace, String format, File reportsDirectory )
+    {
+        this( trimStackTrace, format, reportsDirectory, null );
+    }
+    
+    AbstractFileReporter( boolean trimStackTrace, String format, File reportsDirectory, String reportNameSuffix )
     {
         super( trimStackTrace, format );
         this.reportsDirectory = reportsDirectory;
         this.deleteOnStarting = false;
+        this.reportNameSuffix = reportNameSuffix;
     }
 
     public void testSetStarting( ReportEntry report )
@@ -48,7 +56,7 @@ public abstract class AbstractFileReporter
     {
         super.testSetStarting( report );
 
-        File reportFile = getReportFile( report );
+        File reportFile = getReportFile( reportsDirectory, report.getName(), reportNameSuffix, ".txt" );
 
         File reportDir = reportFile.getParentFile();
 
@@ -79,9 +87,20 @@ public abstract class AbstractFileReporter
         }
     }
 
-    private File getReportFile( ReportEntry report )
+    public static File getReportFile( File reportsDirectory, String reportEntryName, 
+            String reportNameSuffix, String fileExtension )
     {
-        return new File( reportsDirectory, report.getName() + ".txt" );
+        File reportFile;
+
+        if ( reportNameSuffix != null && reportNameSuffix.length() > 0)
+        {
+            reportFile = new File( reportsDirectory, reportEntryName + "-" + reportNameSuffix + fileExtension );
+        }
+        else
+        {
+            reportFile = new File( reportsDirectory, reportEntryName + fileExtension );
+        }
+        return reportFile;
     }
 
     public void testSetCompleted( ReportEntry report )

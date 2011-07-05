@@ -317,6 +317,16 @@ public class IntegrationTestMojo
     private String reportFormat;
 
     /**
+     * Add custom text into report filename: TEST-testClassName-reportNameSuffix.xml,
+     * testClassName-reportNameSuffix.txt and testClassName-reportNameSuffix-output.txt.
+     * File TEST-testClassName-reportNameSuffix.xml has changed attributes 'testsuite'--'name'
+     * and 'testcase'--'classname' - reportNameSuffix is added to the attribute value.
+     *
+     * @parameter expression="${surefire.reportNameSuffix}" default-value=""
+     */
+    private String reportNameSuffix;
+
+    /**
      * Option to generate a file test report or just output the test report to the console.
      *
      * @parameter expression="${failsafe.useFile}" default-value="true"
@@ -999,6 +1009,16 @@ public class IntegrationTestMojo
     public void setReportFormat( String reportFormat )
     {
         this.reportFormat = reportFormat;
+    }
+
+    public String getReportNameSuffix()
+    {
+        return reportNameSuffix;
+    }
+
+    public void setReportNameSuffix( String reportNameSuffix )
+    {
+        this.reportNameSuffix = reportNameSuffix;
     }
 
     public boolean isUseFile()
