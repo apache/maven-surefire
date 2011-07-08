@@ -35,7 +35,7 @@ Forked Tests
   By default, Maven runs your tests in a separate ("forked") process.  You can use the <<<maven.${thisPlugin.toLowerCase()}.debug>>> property
   to debug your forked tests remotely, like this:
 
-#{if}(${project.artfactId}=="maven-surefire-plugin")
+#{if}(${project.artifactId}=="maven-surefire-plugin")
 +---+
 mvn -Dmaven.${thisPlugin.toLowerCase()}.debug test
 +---+
@@ -52,7 +52,7 @@ mvn -Dmaven.${thisPlugin.toLowerCase()}.debug verify
   If you need to configure a different port, you may pass a more detailed value.  For example, the command below will use port 8000
   instead of port 5005.
 
-#{if}(${project.artfactId}=="maven-surefire-plugin")
+#{if}(${project.artifactId}=="maven-surefire-plugin")
 +---+
 mvn -Dmaven.surefire.debug="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000 -Xnoagent -Djava.compiler=NONE" test
 +---+
@@ -66,7 +66,7 @@ Non-forked Tests
 
   You can force Maven not to fork tests by configuring the <<<forkMode>>> configuration parameter.
 
-#{if}(${project.artfactId}=="maven-surefire-plugin")
+#{if}(${project.artifactId}=="maven-surefire-plugin")
 +---+
 mvn -DforkMode=never test
 +---+
@@ -79,7 +79,7 @@ mvn -DforkMode=never verify
   Then all you need to do is debug Maven itself.  Since Maven 2.0.8, Maven has shipped with a "mvnDebug" shell script that you can
   use to launch Maven with convenient debugging options:
 
-#{if}(${project.artfactId}=="maven-surefire-plugin")
+#{if}(${project.artifactId}=="maven-surefire-plugin")
 +---+
 mvnDebug -DforkMode=never test
 +---+
