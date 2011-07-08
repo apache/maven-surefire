@@ -25,6 +25,20 @@ under the License.
       xsi:schemaLocation="http://maven.apache.org/FML/1.0.1 http://maven.apache.org/xsd/fml-1.0.1.xsd"
       id="FAQ" title="Frequently Asked Questions">
   <part id="General">
+    <faq id="surefire-v-failsafe">
+      <question>What is the difference between maven-failsafe-plugin and maven-surefire-plugin?</question>
+      <answer>
+        <p>
+          <a href="http://maven.apache.org/plugins/maven-surefire-plugin">maven-surefire-plugin</a>
+          is designed for
+          running unit tests and if any of the tests fail then it will fail the build immediately.
+        </p>
+        <p>
+          maven-failsafe-plugin is designed for running integration tests, and decouples failing the build if there
+          are test failures from actually running the tests.
+        </p>
+      </answer>
+    </faq>
     <faq id="reuse-test-code">
       <question>How can I reuse my test code in other modules?</question>
       <answer>
