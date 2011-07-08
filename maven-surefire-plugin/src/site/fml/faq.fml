@@ -30,11 +30,11 @@ under the License.
       <answer>
         <p>
           <a href="http://maven.apache.org/plugins/maven-surefire-plugin">maven-surefire-plugin</a>
-          is designed for
-          running unit tests and if any of the tests fail then it will fail the build immediately.
+          is designed for running unit tests and if any of the tests fail then it will fail the build immediately.
         </p>
         <p>
-          maven-failsafe-plugin is designed for running integration tests, and decouples failing the build if there
+          <a href="http://maven.apache.org/plugins/maven-failsafe-plugin">maven-failsafe-plugin</a>
+          is designed for running integration tests, and decouples failing the build if there
           are test failures from actually running the tests.
         </p>
       </answer>
