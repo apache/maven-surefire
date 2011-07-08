@@ -19,23 +19,31 @@
   ~ under the License.
   -->
 
-<project xmlns="http://maven.apache.org/DECORATION/1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/DECORATION/1.0.0 http://maven.apache.org/xsd/decoration-1.0.0.xsd">
+<project xmlns="http://maven.apache.org/DECORATION/1.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/DECORATION/1.0.0 http://maven.apache.org/xsd/decoration-1.0.0.xsd">
   <body>
     <menu name="Overview">
       <item name="Introduction" href="index.html"/>
       <item name="Goals" href="plugin-info.html"/>
       <item name="Usage" href="usage.html"/>
+      <item name="API" href="api.html"/>
       <item name="FAQ" href="faq.html"/>
     </menu>
     <menu name="Examples">
       <item name="Using TestNG" href="examples/testng.html"/>
+      <item name="Using JUnit" href="examples/junit.html"/>
       <item name="Skipping Tests" href="examples/skipping-test.html"/>
       <item name="Inclusions and Exclusions of Tests" href="examples/inclusion-exclusion.html"/>
       <item name="Running a Single Test" href="examples/single-test.html"/>
       <item name="Class Loading Issues" href="examples/class-loading.html"/>
       <item name="Debugging Tests" href="examples/debugging.html"/>
       <item name="System Properties" href="examples/system-properties.html"/>
-      <item name="Additional Classpath Elements" href="examples/additional-classpath.html"/>
+      <item name="Configuring the Classpath" href="examples/configuring-classpath.html"/>
+      <item name="Selecting providers" href="examples/providers.html"/>
+    </menu>
+    <menu name="Developer Center">
+      <item name="Developing" href="developing.html"/>
     </menu>
   </body>
 </project>

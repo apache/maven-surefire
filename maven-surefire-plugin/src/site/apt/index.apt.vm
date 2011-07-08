@@ -105,7 +105,7 @@ mvn verify
   General instructions on how to use the ${thisPlugin} Plugin can be found on the {{{./usage.html}usage page}}. Some more
   specific use cases are described in the examples given below.
   #{if}(${project.artifactId}=="maven-surefire-plugin") Last but not least, users occasionally contribute
-  additional examples, tips or errata to the 
+  additional examples, tips or errata to the
   {{{http://docs.codehaus.org/display/MAVENUSER/Surefire+Plugin}plugin's wiki page}}.#{end}
 
   In case you still have questions regarding the plugin's usage, please have a look at the {{{./faq.html}FAQ}} and feel
@@ -146,5 +146,5 @@ mvn verify
   * {{{./examples/configuring-classpath.html}Configuring the Classpath}}
 
   * {{{./examples/providers.html}Selecting providers}}
-    
+
   []
