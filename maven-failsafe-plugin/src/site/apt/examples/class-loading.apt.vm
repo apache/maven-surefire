@@ -125,23 +125,23 @@ java -classpath booter.jar MyApp
  <<<true>>>, then we use a manifest-only JAR; otherwise, we use an isolated
  classloader.  If you want to use a basic plain old Java classpath, you can set
  <<<useManifestOnlyJar=false>>> which only has an effect when <<<useSystemClassLoader=true>>>.
-
+ 
  The default value for <<<useSystemClassLoader>>> changed between Surefire 2.3 and
  Surefire 2.4, which was a pretty significant change.  In Surefire 2.3,
  <<<useSystemClassLoader>>> was <<<false>>> by default, and we used an isolated classloader.
  In Surefire 2.4, <<<useSystemClassLoader>>> is <<<true>>> by default.  No value works for
  everyone, but we think this default is an improvement; a bunch of
  hard-to-diagnose bugs get better when we <<<useSystemClassLoader=true>>>.
-
+ 
  Unfortunately, if <<<useSystemClassLoader>>> is set incorrectly for your app, you're going to
  have a problem on your hands that can be quite difficult to diagnose.  You might
  even be forced to read a long doc page like this one.  ;-)
-
+ 
  If you're having problems loading classes, try setting <<<useSystemClassLoader=false>>>
  to see if that helps.  You can do that with the POM snippet below, or by setting
  <<<-Dsurefire.useSystemClassLoader=false>>>.  If that doesn't work, try setting
  <<<useSystemClassLoader>>> back to <<<true>>> and setting <<<useManifestOnlyJar>>> to <<<false>>>.
-
+ 
 +---+
 <project>
   [...]
