@@ -281,14 +281,8 @@ mvn verify
           <reportSet>
             <id>integration-tests</id>
             <reports>
-              <report>report-only</report>
+              <report>failsafe-report-only</report>
             </reports>
-            <configuration>
-              <outputName>failsafe-report</outputName>
-              <reportsDirectories>
-                <reportsDirectory>\${project.build.directory}/failsafe-reports</reportsDirectory>
-              </reportsDirectories>
-            </configuration>
         </reportSet>
       </plugin>
     </plugins>

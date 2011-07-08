@@ -19,39 +19,30 @@ package org.apache.maven.plugins.surefire.report;
  * under the License.
  */
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-import java.util.ResourceBundle;
-
-import org.apache.maven.doxia.siterenderer.Renderer;
-import org.apache.maven.model.ReportPlugin;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.reporting.AbstractMavenReport;
-import org.apache.maven.reporting.MavenReportException;
-import org.codehaus.plexus.util.PathTool;
-import org.codehaus.plexus.util.StringUtils;
+
+import java.io.File;
 
 
 /**
- * Creates a nicely formatted Surefire Test Report in html format.
+ * Creates a nicely formatted Failsafe Test Report in html format.
+ * This goal does not run the tests, it only builds the reports.
+ * See <a href="http://jira.codehaus.org/browse/SUREFIRE-257">http://jira.codehaus.org/browse/SUREFIRE-257</a>
  *
- * @author <a href="mailto:jruiz@exist.com">Johnny R. Ruiz III</a>
+ * @author Stephen Connolly
  * @version $Id$
- * @goal report
- * @execute phase="test" lifecycle="surefire"
+ * @goal failsafe-report-only
+ * @execute phase="validate" lifecycle="surefire"
+ * @since 2.10
  */
-public class SurefireReportMojo
+public class FailsafeReportMojo
     extends AbstractSurefireReportMojo
 {
 
     /**
      * The filename to use for the report.
      *
-     * @parameter expression="${outputName}" default-value="surefire-report"
+     * @parameter expression="${outputName}" default-value="failsafe-report"
      * @required
      * @noinspection UnusedDeclaration
      */
@@ -60,7 +51,7 @@ public class SurefireReportMojo
     protected File getSurefireReportsDirectory( MavenProject subProject )
     {
         String buildDir = subProject.getBuild().getDirectory();
-        return new File( buildDir + "/surefire-reports" );
+        return new File( buildDir + "/failsafe-reports" );
     }
 
     public String getOutputName()
