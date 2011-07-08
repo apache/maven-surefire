@@ -1,0 +1,195 @@
+ ------
+ Using TestNG
+ ------
+ Brett Porter <brett@apache.org>
+ ------
+ 2010-01-09
+ ------
+ 
+ ~~ Licensed to the Apache Software Foundation (ASF) under one
+ ~~ or more contributor license agreements.  See the NOTICE file
+ ~~ distributed with this work for additional information
+ ~~ regarding copyright ownership.  The ASF licenses this file
+ ~~ to you under the Apache License, Version 2.0 (the
+ ~~ "License"); you may not use this file except in compliance
+ ~~ with the License.  You may obtain a copy of the License at
+ ~~
+ ~~   http://www.apache.org/licenses/LICENSE-2.0
+ ~~
+ ~~ Unless required by applicable law or agreed to in writing,
+ ~~ software distributed under the License is distributed on an
+ ~~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ ~~ KIND, either express or implied.  See the License for the
+ ~~ specific language governing permissions and limitations
+ ~~ under the License.
+
+ ~~ NOTE: For help with the syntax of this file, see:
+ ~~ http://maven.apache.org/doxia/references/apt-format.html
+
+Using TestNG
+
+* Configuring TestNG
+
+  To get started with TestNG, include the following dependency in your project (replacing the version with the one you wish to use):
+
++---+
+  [...]
+    <dependency>
+      <groupId>org.testng</groupId>
+      <artifactId>testng</artifactId>
+      <version>5.12.1</version>
+      <scope>test</scope>
+    </dependency>
+  [...]
++---+
+
+  If you are using an older version of TestNG (\<= 5.11), the dependency would instead look like this:
+
++---+
+  [...]
+    <dependency>
+      <groupId>org.testng</groupId>
+      <artifactId>testng</artifactId>
+      <version>5.8</version>
+      <scope>test</scope>
+      <classifier>jdk15</classifier>
+    </dependency>
+  [...]
++---+
+
+  <<Note:>> if you are using JDK 1.4 Javadoc annotations for your TestNG tests, replace the classifier <<<jdk15>>> with <<<jdk14>>> above.
+
+#{if}(${project.artifactId}=="maven-surefire-plugin")
+  This is the only step that is required to get started - you can now create tests in your test source directory
+  (eg, <<<src/test/java>>>. As long as they are named using the defaults such as <<<*Test.java>>> they will be run
+  by ${thisPlugin} as TestNG tests.
+#{else}
+  This is the only step that is required to get started - you can now create tests in your test source directory
+  (eg, <<<src/test/java>>>. As long as they are named using the defaults such as <<<*IT.java>>> they will be run
+  by ${thisPlugin} as TestNG tests.
+#{end}
+
+  If you'd like to use a different naming scheme, you can change the <<<includes>>> parameter, as discussed in the
+  {{{./inclusion-exclusion.html}Inclusions and Exclusions of Tests}} example.
+
+* Using Suite XML Files
+
+  Another alternative is to use TestNG suite XML files. This allows flexible configuration of the tests to be run.
+  These files are created in the normal way, and then added to the ${thisPlugin} Plugin configuration:
+
++---+
+    [...]
+      <plugin>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>${project.artifactId}</artifactId>
+        <version>${project.version}</version>
+        <configuration>
+          <suiteXmlFiles>
+            <suiteXmlFile>testng.xml</suiteXmlFile>
+          </suiteXmlFiles>
+        </configuration>
+      </plugin>
+    [...]
++---+
+
+  This configuration will override the includes and excludes patterns and run all tests in the suite files.
+
+* Specifying Test Parameters
+
+  Your TestNG test can accept parameters with the @Parameters annotation.  You can also pass parameters from Maven
+  into your TestNG test, by specifying them as system properties, like this:
+
++---+
+    [...]
+      <plugin>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>${project.artifactId}</artifactId>
+        <version>${project.version}</version>
+        <configuration>
+          <systemPropertyVariables>
+            <propertyName>firefox</propertyName>
+          </systemPropertyVariables>
+        </configuration>
+      </plugin>
+    [...]
++---+
+
+  For more information about setting system properties in ${thisPlugin} tests, see {{{./system-properties.html}System Properties}}.
+
+* Using Groups
+
+  TestNG allows you to group your tests. You can then execute one or more specific groups. To do this with ${thisPlugin},
+  use the <<<groups>>> parameter, for example:
+
++---+
+    [...]
+      <plugin>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>${project.artifactId}</artifactId>
+        <version>${project.version}</version>
+        <configuration>
+          <groups>functest,perftest</groups>
+        </configuration>
+      </plugin>
+    [...]
++---+
+
+  Likewise, the <<<excludedGroups>>> parameter can be used to run all but a certain set of groups.
+
+* Running tests in parallel
+
+  TestNG allows you to run your tests in parallel, including JUnit tests. To do this, you must set the
+  <<<parallel>>> parameter, and may change the <<<threadCount>>> parameter if the default of 5 is not sufficient.
+  For example:
+
++---+
+    [...]
+      <plugin>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>${project.artifactId}</artifactId>
+        <version>${project.version}</version>
+        <configuration>
+          <parallel>methods</parallel>
+          <threadCount>10</threadCount>
+        </configuration>
+      </plugin>
+    [...]
++---+
+
+  This is particularly useful for slow tests that can have high concurrency, or to quickly and roughly assess the independance
+  and thread safety of your tests and code.
+
+* Using custom listeners and reporters
+
+  TestNG provides support for attaching custom listeners, reporters, annotation transformers and method interceptors to your tests.
+  By default, TestNG attaches a few basic listeners to generate HTML and XML reports.
+
+  You can configure multiple custom listeners like this:
+
++---+
+    [...]
+      <plugin>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>${project.artifactId}</artifactId>
+        <version>${project.version}</version>
+        <configuration>
+          <properties>
+            <property>
+              <name>usedefaultlisteners</name>
+              <value>false</value> <!-- disabling default listeners is optional -->
+            </property>
+            <property>
+              <name>listener</name>
+              <value>com.mycompany.MyResultListener,com.mycompany.MyAnnotationTransformer,com.mycompany.MyMethodInterceptor</value>
+            </property>
+            <property>
+              <name>reporter</name>
+              <value>listenReport.Reporter</value>
+            </property>
+          </properties>
+        </configuration>
+      </plugin>
+    [...]
++---+
+
+  For more information on TestNG, see the {{{http://www.testng.org}TestNG web site}}.
