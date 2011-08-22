@@ -19,20 +19,17 @@ package org.apache.maven.surefire.junit;
  * under the License.
  */
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
-
-import junit.framework.TestSuite;
 import org.apache.maven.surefire.common.junit3.JUnit3Reflector;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+
 public final class JUnitTestSet
     implements SurefireTestSet
 {
-    private final Method runMethod;
-
     private final Class testClass;
 
     private final JUnit3Reflector reflector;
@@ -61,15 +58,6 @@ public final class JUnitTestSet
 
         // The interface implemented by the dynamic proxy (TestListener), happens to be
         // the same as the param types of TestResult.addTestListener
-
-        if ( this.reflector.getTestInterface().isAssignableFrom( this.testClass ) )//testObject.getClass() ) )
-        {
-            runMethod = this.reflector.getTestInterfaceRunMethod();
-        }
-        else
-        {
-            runMethod = reflector.getRunMethod( this.testClass );
-        }
     }
 
 
@@ -81,6 +69,16 @@ public final class JUnitTestSet
         try
         {
             Object testObject = reflector.constructTestObject( testClass );
+            final Method runMethod;
+
+            if ( this.reflector.getTestInterface().isAssignableFrom( testObject.getClass() ) )
+            {
+                runMethod = this.reflector.getTestInterfaceRunMethod();
+            }
+            else
+            {
+                runMethod = reflector.getRunMethod( this.testClass );
+            }
 
             Object instanceOfTestResult = reflector.getTestResultClass().newInstance();
 
