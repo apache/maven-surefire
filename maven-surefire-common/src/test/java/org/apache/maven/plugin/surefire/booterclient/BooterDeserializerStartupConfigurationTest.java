@@ -50,8 +50,6 @@ public class BooterDeserializerStartupConfigurationTest
 {
     private final ClasspathConfiguration classpathConfiguration = createClasspathConfiguration();
 
-    private final String aTest = "aTest";
-
     public void testProvider()
         throws IOException
     {
@@ -129,6 +127,7 @@ public class BooterDeserializerStartupConfigurationTest
         final ForkConfiguration forkConfiguration = ForkConfigurationTest.getForkConfiguration();
         Properties props = new Properties();
         BooterSerializer booterSerializer = new BooterSerializer( forkConfiguration, props );
+        String aTest = "aTest";
         booterSerializer.serialize( getProviderConfiguration(), startupConfiguration, aTest, "never" );
         final File propsTest =
             SystemPropertyManager.writePropertiesFile( props, forkConfiguration.getTempDirectory(), "propsTest", true );
@@ -150,7 +149,7 @@ public class BooterDeserializerStartupConfigurationTest
                              aUserRequestedTestMethod );
         return new ProviderConfiguration( directoryScannerParameters, true, reporterConfiguration,
                                           new TestArtifactInfo( "5.0", "ABC" ), testSuiteDefinition, new Properties(),
-                                          aTest );
+                                          BooterDeserializerProviderConfigurationTest.aTestTyped );
     }
 
     private StartupConfiguration getTestStartupConfiguration( ClassLoaderConfiguration classLoaderConfiguration )

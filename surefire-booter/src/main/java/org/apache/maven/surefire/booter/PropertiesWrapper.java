@@ -19,14 +19,11 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import org.apache.maven.surefire.util.NestedRuntimeException;
-import org.apache.maven.surefire.util.ReflectionUtils;
 import org.apache.maven.surefire.util.internal.StringUtils;
 
 /**
@@ -83,7 +80,8 @@ public class PropertiesWrapper
         {
             return null;
         }
-        return (File) getParamValue( property, File.class.getName() );
+        TypeEncodedValue typeEncodedValue = new TypeEncodedValue( File.class.getName(), property );
+        return (File) typeEncodedValue.getDecodedValue();
     }
 
     public List getStringList( String propertyPrefix )
@@ -104,7 +102,7 @@ public class PropertiesWrapper
      * @param key The key for the propery
      * @return The object, of a supported type
      */
-    public Object getTypeDecoded( String key )
+    public TypeEncodedValue getTypeEncodedValue( String key )
     {
         String typeEncoded = getProperty( key );
         if ( typeEncoded == null )
@@ -114,89 +112,9 @@ public class PropertiesWrapper
         int typeSep = typeEncoded.indexOf( "|" );
         String type = typeEncoded.substring( 0, typeSep );
         String value = typeEncoded.substring( typeSep + 1 );
-        return getParamValue( value, type );
+        return new TypeEncodedValue( type, value );
     }
 
-    private Object getParamValue( String param, String typeName )
-    {
-        if ( typeName.trim().length() == 0 )
-        {
-            return null;
-        }
-        else if ( typeName.equals( String.class.getName() ) )
-        {
-            return param;
-        }
-        else if ( typeName.equals( Class.class.getName() ) )
-        {
-            return ReflectionUtils.loadClass( Thread.currentThread().getContextClassLoader(), param );
-        }
-        else if ( typeName.equals( File.class.getName() ) )
-        {
-            return new File( param );
-        }
-        else if ( typeName.equals( File[].class.getName() ) )
-        {
-            List stringList = processStringList( param );
-            File[] fileList = new File[stringList.size()];
-            for ( int j = 0; j < stringList.size(); j++ )
-            {
-                fileList[j] = new File( (String) stringList.get( j ) );
-            }
-            return fileList;
-        }
-        else if ( typeName.equals( ArrayList.class.getName() ) )
-        {
-            return processStringList( param );
-        }
-        else if ( typeName.equals( Boolean.class.getName() ) )
-        {
-            return Boolean.valueOf( param );
-        }
-        else if ( typeName.equals( Integer.class.getName() ) )
-        {
-            return Integer.valueOf( param );
-        }
-        else if ( typeName.equals( Properties.class.getName() ) )
-        {
-            final Properties result = new Properties();
-            try
-            {
-                ByteArrayInputStream bais = new ByteArrayInputStream( param.getBytes( "8859_1" ) );
-                result.load( bais );
-            }
-            catch ( Exception e )
-            {
-                throw new NestedRuntimeException( "bug in property conversion", e );
-            }
-            return result;
-        }
-        else
-        {
-            // TODO: could attempt to construct with a String constructor if needed
-            throw new IllegalArgumentException( "Unknown parameter type: " + typeName );
-        }
-    }
-
-    private static List processStringList( String stringList )
-    {
-        String sl = stringList;
-
-        if ( sl.startsWith( "[" ) && sl.endsWith( "]" ) )
-        {
-            sl = sl.substring( 1, sl.length() - 1 );
-        }
-
-        List list = new ArrayList();
-
-        String[] stringArray = StringUtils.split( sl, "," );
-
-        for ( int i = 0; i < stringArray.length; i++ )
-        {
-            list.add( stringArray[i].trim() );
-        }
-        return list;
-    }
 
     public void setProperty( String key, File file )
     {
@@ -214,7 +132,7 @@ public class PropertiesWrapper
         }
     }
 
-    Classpath getClasspath( String prefix  )
+    Classpath getClasspath( String prefix )
     {
         List elements = getStringList( prefix );
         return new Classpath( elements );
@@ -246,7 +164,7 @@ public class PropertiesWrapper
             return;
         }
         int i = 0;
-        for (Iterator iterator = items.iterator(); iterator.hasNext();)
+        for ( Iterator iterator = items.iterator(); iterator.hasNext(); )
         {
             Object item = iterator.next();
             if ( item == null )
@@ -254,7 +172,7 @@ public class PropertiesWrapper
                 throw new NullPointerException( propertyPrefix + i + " has null value" );
             }
 
-            String[] stringArray = StringUtils.split(item.toString(), ",");
+            String[] stringArray = StringUtils.split( item.toString(), "," );
 
             for ( int j = 0; j < stringArray.length; j++ )
             {

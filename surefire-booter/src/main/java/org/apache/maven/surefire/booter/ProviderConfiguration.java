@@ -60,11 +60,12 @@ public class ProviderConfiguration
 
     private final boolean failIfNoTests;
 
-    private final Object forkTestSet;
+    private final TypeEncodedValue forkTestSet;
 
     public ProviderConfiguration( DirectoryScannerParameters directoryScannerParameters, boolean failIfNoTests,
                                   ReporterConfiguration reporterConfiguration, TestArtifactInfo testArtifact,
-                                  TestRequest testSuiteDefinition, Properties providerProperties, Object forkTestSet )
+                                  TestRequest testSuiteDefinition, Properties providerProperties,
+                                  TypeEncodedValue typeEncodedTestSet )
     {
         this.providerProperties = providerProperties;
         this.reporterConfiguration = reporterConfiguration;
@@ -72,7 +73,7 @@ public class ProviderConfiguration
         this.testSuiteDefinition = testSuiteDefinition;
         this.dirScannerParams = directoryScannerParameters;
         this.failIfNoTests = failIfNoTests;
-        this.forkTestSet = forkTestSet;
+        this.forkTestSet = typeEncodedTestSet;
     }
 
 
@@ -123,18 +124,9 @@ public class ProviderConfiguration
         return providerProperties;
     }
 
-    public Object getTestForFork()
+    public TypeEncodedValue getTestForFork()
     {
         return forkTestSet;
-    }
-
-    public String getTestForForkString()
-    {
-        if ( forkTestSet instanceof File )
-        {
-            return forkTestSet.toString();
-        }
-        return (String) forkTestSet;
     }
 
 

@@ -60,7 +60,7 @@ public class BooterDeserializer
         final File reportsDirectory = new File( properties.getProperty( REPORTSDIRECTORY ) );
         final String testNgVersion = properties.getProperty( TESTARTIFACT_VERSION );
         final String testArtifactClassifier = properties.getProperty( TESTARTIFACT_CLASSIFIER );
-        final Object testForFork = properties.getTypeDecoded( FORKTESTSET );
+        final TypeEncodedValue typeEncodedTestForFork = properties.getTypeEncodedValue( FORKTESTSET );
         final String requestedTest = properties.getProperty( REQUESTEDTEST );
         final String requestedTestMethod = properties.getProperty( REQUESTEDTESTMETHOD );
         final File sourceDirectory = properties.getFileProperty( SOURCE_DIRECTORY );
@@ -85,7 +85,7 @@ public class BooterDeserializer
 
         return new ProviderConfiguration( dirScannerParams, properties.getBooleanProperty( FAILIFNOTESTS ),
                                           reporterConfiguration, testNg, testSuiteDefinition,
-                                          properties.getProperties(), testForFork );
+                                          properties.getProperties(), typeEncodedTestForFork );
     }
 
     public StartupConfiguration getProviderConfiguration()

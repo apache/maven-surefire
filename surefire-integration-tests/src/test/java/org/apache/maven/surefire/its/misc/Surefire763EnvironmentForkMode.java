@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.its;
+package org.apache.maven.surefire.its.misc;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -19,26 +19,34 @@ package org.apache.maven.surefire.its;
  */
 
 
+import org.apache.maven.surefire.its.SurefireVerifierTestClass;
+
 /**
- * Test project using -Dtest=mtClass#myMethod*
+ * SUREFIRE-674 Asserts that the build fails when tests have errors
  *
- * @author <a href="mailto:olamy@apache.org">Olivier Lamy</a>
+ * @author Kristian Rosenvold
  */
-public class TestNgTestMethodPatternAfterIT
-    extends AsbtractTestMethodPattern
+public class Surefire763EnvironmentForkMode
+    extends SurefireVerifierTestClass
 {
-    public TestNgTestMethodPatternAfterIT()
+
+    public Surefire763EnvironmentForkMode()
     {
-        super( "/testng-method-pattern-after" );
+        super( "/environment-variables" );
     }
 
-    public void testMethodPattern()
+    public void okWhenUseSystemClassLoader()
         throws Exception
     {
+        addGoal( "-DuseSystemClassLoader=true" );
         executeTest();
-        verifyErrorFreeLog();
-        verifyTextInLog( "Called tearDown" );
-        assertTestSuiteResults( 2, 0, 0, 0 );
+    }
+
+    public void okeWhenDontUseSystemClassLoader()
+        throws Exception
+    {
+        addGoal( "-DuseSystemClassLoader=false" );
+        executeTest();
     }
 
 }

@@ -51,7 +51,6 @@ public class ForkedBooter
     {
         try
         {
-            long start = System.currentTimeMillis();
             if ( args.length > 1 )
             {
                 SystemPropertyManager.setSystemProperties( new File( args[1] ) );
@@ -63,12 +62,11 @@ public class ForkedBooter
             ProviderConfiguration booterConfiguration = booterDeserializer.deserialize();
             final StartupConfiguration providerConfiguration = booterDeserializer.getProviderConfiguration();
 
-
             SurefireStarter starter = new SurefireStarter( providerConfiguration, booterConfiguration, null );
 
-            Object forkedTestSet = booterConfiguration.getTestForFork();
+            TypeEncodedValue forkedTestSet = booterConfiguration.getTestForFork();
             final RunResult result = forkedTestSet != null
-                ? starter.runSuitesInProcessWhenForked(forkedTestSet )
+                ? starter.runSuitesInProcessWhenForked( forkedTestSet )
                 : starter.runSuitesInProcessWhenForked();
 
             // noinspection CallToSystemExit

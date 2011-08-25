@@ -25,6 +25,7 @@ import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.NestedRuntimeException;
+import org.apache.maven.surefire.util.ReflectionUtils;
 
 /**
  * Invokes surefire with the correct classloader setup.
@@ -57,7 +58,7 @@ public class SurefireStarter
         this.startupReportConfiguration = startupReportConfiguration;
     }
 
-    public RunResult runSuitesInProcessWhenForked( Object testSet )
+    public RunResult runSuitesInProcessWhenForked( TypeEncodedValue testSet )
         throws SurefireExecutionException
     {
         writeSurefireTestClasspathProperty();
@@ -75,7 +76,9 @@ public class SurefireStarter
 
         final Object forkingReporterFactory = createForkingReporterFactory( surefireReflector );
 
-        return invokeProvider( testSet, testsClassLoader, surefireClassLoader, forkingReporterFactory );
+        Object test = testSet.getDecodedValue();
+
+        return invokeProvider( test, testsClassLoader, surefireClassLoader, forkingReporterFactory );
     }
 
     private Object createForkingReporterFactory( SurefireReflector surefireReflector )
