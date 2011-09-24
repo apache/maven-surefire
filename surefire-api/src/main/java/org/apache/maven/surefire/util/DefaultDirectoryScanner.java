@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -137,11 +138,23 @@ public class DefaultDirectoryScanner
 
     private static String[] processIncludesExcludes( List list )
     {
-        String[] incs = new String[list.size()];
+        List newList = new ArrayList();
+        Iterator iter = list.iterator();
+        while (iter.hasNext())
+        {
+            String include = (String) iter.next();
+            String [] includes = include.split( "," );
+            for ( int i = 0; i < includes.length; ++i )
+            {
+                newList.add( includes[i] );
+            }
+        }
+
+        String[] incs = new String[newList.size()];
 
         for ( int i = 0; i < incs.length; i++ )
         {
-            String inc = (String) list.get( i );
+            String inc = (String) newList.get( i );
             if ( inc.endsWith( JAVA_SOURCE_FILE_EXTENSION ) )
             {
                 inc =
