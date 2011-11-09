@@ -19,14 +19,13 @@ package org.apache.maven.surefire.util;
  * under the License.
  */
 
-import org.apache.maven.surefire.testset.TestSetFailedException;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import org.apache.maven.surefire.testset.TestSetFailedException;
 
 /**
  * Contains all the tests that have been found according to specified include/exclude
@@ -84,4 +83,20 @@ public class TestsToRun
     {
         return locatedClasses.iterator();
     }
+
+    public String toString()
+    {
+        StringBuffer sb = new StringBuffer();
+        sb.append( "TestsToRun: [" );
+        Iterator it = iterator();
+        while ( it.hasNext() )
+        {
+            Class clazz = (Class) it.next();
+            sb.append( " " ).append( clazz.getName() );
+        }
+
+        sb.append( ']' );
+        return sb.toString();
+    }
+
 }

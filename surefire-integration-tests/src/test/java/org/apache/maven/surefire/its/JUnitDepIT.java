@@ -43,11 +43,12 @@ public class JUnitDepIT
         assertTestSuiteResults( 1, 0, 0, 0 );
         verifyTextInLog( "surefire-junit4" ); // Ahem. Will match on the 4.7 provider too
     }
+
     public void testJUnit44DepWithSneaky381()
         throws Exception
     {
         debugLogging();
-        activateProfile("provided381");
+        activateProfile( "provided381" );
         addGoal( "-Djunit-dep.version=4.4" );
         executeTest();
         verifyErrorFreeLog();
@@ -65,5 +66,14 @@ public class JUnitDepIT
         verifyTextInLog( "surefire-junit47" );
     }
 
-
+    public void testJUnit48Dep()
+        throws Exception
+    {
+        debugLogging();
+        addGoal( "-Djunit-dep.version=4.8" );
+        executeTest();
+        verifyErrorFreeLog();
+        assertTestSuiteResults( 1, 0, 0, 0 );
+        verifyTextInLog( "surefire-junit47" );
+    }
 }

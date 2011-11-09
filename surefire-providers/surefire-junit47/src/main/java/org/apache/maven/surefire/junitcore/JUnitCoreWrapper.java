@@ -26,7 +26,9 @@ import org.apache.maven.surefire.util.TestsToRun;
 
 import org.junit.runner.Computer;
 import org.junit.runner.JUnitCore;
+import org.junit.runner.Request;
 import org.junit.runner.Result;
+import org.junit.runner.manipulation.Filter;
 import org.junit.runner.notification.RunListener;
 
 /**
@@ -38,7 +40,7 @@ import org.junit.runner.notification.RunListener;
 class JUnitCoreWrapper
 {
     public static void execute( TestsToRun testsToRun, JUnitCoreParameters jUnitCoreParameters,
-                                List<RunListener> listeners )
+                                List<RunListener> listeners, Filter filter )
         throws TestSetFailedException
     {
         Computer computer = getComputer( jUnitCoreParameters );
@@ -47,9 +49,16 @@ class JUnitCoreWrapper
         {
             junitCore.addListener( runListener );
         }
+
+        Request req = Request.classes( computer, testsToRun.getLocatedClasses() );
+        if ( filter != null )
+        {
+            req = req.filterWith( filter );
+        }
+
         try
         {
-            final Result run = junitCore.run( computer, testsToRun.getLocatedClasses() );
+            final Result run = junitCore.run( req );
 
             if ( run.getFailureCount() > 0 )
             {

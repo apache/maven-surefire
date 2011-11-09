@@ -256,14 +256,7 @@ public abstract class AbstractSurefireMojo
         {
             getProperties().setProperty( "parallel", this.getParallel() );
         }
-        if ( this.getExcludedGroups() != null )
-        {
-            getProperties().setProperty( "excludegroups", this.getExcludedGroups() );
-        }
-        if ( this.getGroups() != null )
-        {
-            getProperties().setProperty( "groups", this.getGroups() );
-        }
+        convertGroupParameters();
 
         if ( this.getThreadCount() > 0 )
         {
@@ -279,6 +272,22 @@ public abstract class AbstractSurefireMojo
         }
 
 
+    }
+
+    private void convertGroupParameters()
+    {
+        if ( getProperties() == null ) // May be predefined from plugin paramaters
+        {
+            setProperties( new Properties() );
+        }
+        if ( this.getExcludedGroups() != null )
+        {
+            getProperties().setProperty( "excludedgroups", this.getExcludedGroups() );
+        }
+        if ( this.getGroups() != null )
+        {
+            getProperties().setProperty( "groups", this.getGroups() );
+        }
     }
 
     protected boolean isAnyConcurrencySelected()
@@ -379,11 +388,8 @@ public abstract class AbstractSurefireMojo
             providerProperties = new Properties();
         }
 
-        ProviderConfiguration providerConfiguration1 =
-            new ProviderConfiguration( directoryScannerParameters, failIfNoTests, reporterConfiguration, testNg,
-                                       testSuiteDefinition, providerProperties, null );
-
-        return providerConfiguration1;
+        return new ProviderConfiguration( directoryScannerParameters, failIfNoTests, reporterConfiguration, testNg,
+                                   testSuiteDefinition, providerProperties, null );
     }
 
     StartupConfiguration createStartupConfiguration( ForkConfiguration forkConfiguration, ProviderInfo provider,
@@ -1123,7 +1129,7 @@ public abstract class AbstractSurefireMojo
             getLog().warn( "useSystemClassloader setting has no effect when not forking" );
         }
     }
-    
+
     private RunOrder getRunOrderObject() {
         RunOrder runOrder = RunOrder.valueOf( getRunOrder() );
         return runOrder == null ? RunOrder.FILESYSTEM : runOrder;
@@ -1262,6 +1268,7 @@ public abstract class AbstractSurefireMojo
         public void addProviderProperties()
         {
             convertJunitCoreParameters();
+            convertGroupParameters();
         }
 
         public Classpath getProviderClasspath()

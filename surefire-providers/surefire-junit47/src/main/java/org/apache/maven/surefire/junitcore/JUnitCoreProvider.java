@@ -19,12 +19,15 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.apache.maven.surefire.common.junit4.JUnit4RunListenerFactory;
 import org.apache.maven.surefire.common.junit4.JUnit4TestChecker;
+import org.apache.maven.surefire.common.junit48.FilterFactory;
+import org.apache.maven.surefire.common.junit48.JUnit48Reflector;
 import org.apache.maven.surefire.providerapi.AbstractProvider;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.report.ConsoleLogger;
@@ -38,6 +41,9 @@ import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.DirectoryScanner;
 import org.apache.maven.surefire.util.ScannerFilter;
 import org.apache.maven.surefire.util.TestsToRun;
+
+import org.junit.runner.Description;
+import org.junit.runner.manipulation.Filter;
 
 /**
  * @author Kristian Rosenvold
@@ -60,6 +66,7 @@ public class JUnitCoreProvider
 
     private TestsToRun testsToRun;
 
+    private JUnit48Reflector jUnit48Reflector;
 
     public JUnitCoreProvider( ProviderParameters providerParameters )
     {
@@ -70,7 +77,7 @@ public class JUnitCoreProvider
         this.scannerFilter = new JUnit4TestChecker( testClassLoader );
         customRunListeners = JUnit4RunListenerFactory.
             createCustomListeners( providerParameters.getProviderProperties().getProperty( "listener" ) );
-
+        jUnit48Reflector = new JUnit48Reflector( testClassLoader );
     }
 
     public Boolean isRunnable()
@@ -93,9 +100,11 @@ public class JUnitCoreProvider
         final ConsoleLogger consoleLogger = providerParameters.getConsoleLogger();
         consoleLogger.info( message );
 
+        final Filter filter = jUnit48Reflector.isJUnit48Available() ? createJUnit48Filter() : null;
+
         if ( testsToRun == null )
         {
-            testsToRun = forkTestSet == null ? scanClassPath() : TestsToRun.fromClass( (Class) forkTestSet );
+            testsToRun = forkTestSet == null ? getSuitesAsList( filter ) : TestsToRun.fromClass( (Class) forkTestSet );
         }
         final Map<String, TestSet> testSetMap = new ConcurrentHashMap<String, TestSet>();
 
@@ -109,8 +118,32 @@ public class JUnitCoreProvider
         org.junit.runner.notification.RunListener jUnit4RunListener = new JUnitCoreRunListener( listener, testSetMap );
         customRunListeners.add( 0, jUnit4RunListener );
 
-        JUnitCoreWrapper.execute( testsToRun, jUnitCoreParameters, customRunListeners );
+        JUnitCoreWrapper.execute( testsToRun, jUnitCoreParameters, customRunListeners, filter );
         return reporterFactory.close();
+    }
+
+    @SuppressWarnings( "unchecked" )
+    private TestsToRun getSuitesAsList( Filter filter )
+    {
+        List<Class<?>> res = new ArrayList<Class<?>>( 500 );
+        TestsToRun max = scanClassPath();
+        Iterator<Class<?>> it = max.iterator();
+        while ( it.hasNext() )
+        {
+            Class<?> clazz = it.next();
+            boolean isCategoryAnnotatedClass = jUnit48Reflector.isCategoryAnnotationPresent( clazz);
+            Description d = Description.createSuiteDescription( clazz );
+            if ( !isCategoryAnnotatedClass || filter == null || filter.shouldRun( d ) )
+            {
+                res.add( clazz );
+            }
+        }
+        return new TestsToRun( res );
+    }
+
+    private Filter createJUnit48Filter()
+    {
+        return new FilterFactory( testClassLoader ).createGroupFilter( providerParameters.getProviderProperties() );
     }
 
     private TestsToRun scanClassPath()
