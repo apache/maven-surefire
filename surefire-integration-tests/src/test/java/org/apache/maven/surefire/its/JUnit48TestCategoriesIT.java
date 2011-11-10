@@ -19,6 +19,8 @@ package org.apache.maven.surefire.its;
  */
 
 
+import org.apache.maven.it.VerificationException;
+
 /**
  * Test project using "groups" support
  *
@@ -35,6 +37,19 @@ public class JUnit48TestCategoriesIT
     public void testCategoriesAB()
         throws Exception
     {
+        runAB();
+    }
+
+    public void testCategoriesABForkAlways()
+        throws Exception
+    {
+        forkAlways();
+        runAB();
+    }
+
+    private void runAB()
+        throws VerificationException
+    {
         executeTest();
         verifyErrorFreeLog();
         assertTestSuiteResults( 2, 0, 0, 0 );
@@ -45,6 +60,20 @@ public class JUnit48TestCategoriesIT
     }
 
     public void testCategoriesAC()
+        throws Exception
+    {
+        runAC();
+    }
+
+    public void testCategoriesACForkAlways()
+        throws Exception
+    {
+        forkAlways();
+        runAC();
+    }
+
+
+    private void runAC()
         throws Exception
     {
         addGoal( "-Dgroups=junit4.CategoryA,junit4.CategoryC" );
@@ -60,4 +89,5 @@ public class JUnit48TestCategoriesIT
         verifyTextInLog("mC: 1");
         verifyTextInLog("CatNone: 1");
     }
+
 }

@@ -99,7 +99,7 @@ public class ForkStarter
             }
             else if ( ForkConfiguration.FORK_ALWAYS.equals( requestedForkMode ) )
             {
-                result = runSuitesForkPerTestSet( fileReporterFactory );
+                result = runSuitesForkPerTestSet( fileReporterFactory, providerConfiguration.getProviderProperties() );
             }
             else
             {
@@ -113,14 +113,12 @@ public class ForkStarter
         return result;
     }
 
-    private RunResult runSuitesForkPerTestSet( FileReporterFactory fileReporterFactory )
+    private RunResult runSuitesForkPerTestSet( FileReporterFactory fileReporterFactory, Properties properties )
         throws SurefireBooterForkException
     {
         RunResult globalResult = new RunResult( 0, 0, 0, 0 );
 
         final Iterator suites = getSuitesIterator();
-
-        Properties properties = new Properties();
 
         while ( suites.hasNext() )
         {

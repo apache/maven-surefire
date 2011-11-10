@@ -87,7 +87,8 @@ public class JUnitCoreProvider
 
     public Iterator getSuites()
     {
-        testsToRun = scanClassPath();
+        final Filter filter = jUnit48Reflector.isJUnit48Available() ? createJUnit48Filter() : null;
+        testsToRun = getSuitesAsList( filter );
         return testsToRun.iterator();
     }
 
@@ -127,13 +128,17 @@ public class JUnitCoreProvider
     {
         List<Class<?>> res = new ArrayList<Class<?>>( 500 );
         TestsToRun max = scanClassPath();
+        if (filter == null){
+            return max;
+        }
+
         Iterator<Class<?>> it = max.iterator();
         while ( it.hasNext() )
         {
             Class<?> clazz = it.next();
             boolean isCategoryAnnotatedClass = jUnit48Reflector.isCategoryAnnotationPresent( clazz);
             Description d = Description.createSuiteDescription( clazz );
-            if ( !isCategoryAnnotatedClass || filter == null || filter.shouldRun( d ) )
+            if ( !isCategoryAnnotatedClass || filter.shouldRun( d ) )
             {
                 res.add( clazz );
             }
