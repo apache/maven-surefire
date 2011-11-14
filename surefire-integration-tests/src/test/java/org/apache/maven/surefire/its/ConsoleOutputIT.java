@@ -22,29 +22,27 @@ package org.apache.maven.surefire.its;
 import java.io.File;
 
 /**
- * Asserts proper behaviour of console output when forking
- * SUREFIRE-639
- * SUREFIRE-651
+ * Basic suite test using all known versions of JUnit 4.x
  *
  * @author Kristian Rosenvold
  */
-public class ForkConsoleOutputWithErrorsIT
+public class ConsoleOutputIT
     extends SurefireVerifierTestClass
 {
 
-    public ForkConsoleOutputWithErrorsIT()
+    public ConsoleOutputIT()
     {
-        super( "/fork-consoleOutputWithErrors" );
+        super( "/consoleOutput" );
     }
 
-    public void testXmlFileContainsConsoleOutput()
+    public void testProperNewlines()
         throws Exception
     {
-        failNever();
-        redirectToFile( true);
-        execute( "test" );
-        final File surefireReportsFile = getSurefireReportsFile( "TEST-forkConsoleOutput.Test2.xml" );
-        assertContainsText(  surefireReportsFile, "sout: Will Fail soon" );
-        assertContainsText(  surefireReportsFile, "serr: Will Fail now" );
+        redirectToFile(true);
+        addGoal("-DjunitVersion=4.7");
+        executeTest();
+        final File surefireReportsFile = getSurefireReportsFile( "consoleOutput.Test1-output.txt" );
+        assertContainsText(  surefireReportsFile, "SoutAgain" );
+
     }
 }

@@ -40,15 +40,11 @@ import org.apache.maven.surefire.util.NestedRuntimeException;
 public class ConsoleOutputFileReporter
     implements Reporter
 {
-    private static final String LINE_SEPARATOR = System.getProperty( "line.separator" );
-
     private final File reportsDirectory;
 
     private PrintWriter printWriter = null;
 
     private String reportEntryName;
-
-    private ReportEntry report;
 
     private final String reportNameSuffix;
 
@@ -93,8 +89,6 @@ public class ConsoleOutputFileReporter
                 printWriter = new PrintWriter( new BufferedWriter( new FileWriter( file ) ) );
             }
             printWriter.write( new String( b, off, len ) );
-            printWriter.write( LINE_SEPARATOR );
-
         }
         catch ( IOException e )
         {
@@ -126,7 +120,6 @@ public class ConsoleOutputFileReporter
     public void writeMessage( String message )
     {
     }
-
 
     public void reset()
     {

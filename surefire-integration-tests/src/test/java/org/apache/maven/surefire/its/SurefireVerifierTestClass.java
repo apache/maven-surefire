@@ -259,9 +259,14 @@ public abstract class SurefireVerifierTestClass
         addGoal( "-DprintSummary=" + printsummary );
     }
 
+    protected void redirectToFileReally(boolean redirect){
+        addGoal( "-Dmaven.test.redirectTestOutputToFile=" + redirect);
+    }
+
     protected void redirectToFile( boolean redirect )
     {
-        addGoal( "-Dredirect.to.file=" + redirect );
+        redirectToFileReally(redirect);
+        //addGoal( "-Dredirect.to.file=" + redirect );
     }
 
     protected void forkOnce()

@@ -1,4 +1,5 @@
-package org.apache.maven.surefire.its;
+package consoleOutput;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -18,33 +19,35 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
-import java.io.File;
-
-/**
- * Asserts proper behaviour of console output when forking
- * SUREFIRE-639
- * SUREFIRE-651
- *
- * @author Kristian Rosenvold
- */
-public class ForkConsoleOutputWithErrorsIT
-    extends SurefireVerifierTestClass
+public class Test1
 {
-
-    public ForkConsoleOutputWithErrorsIT()
-    {
-        super( "/fork-consoleOutputWithErrors" );
+    @Test
+    public void testSystemOut() {
+        
+        char c = 'C';
+        System.out.print("Sout");
+        System.out.print("Again");
+        System.out.print("\n");
+        System.out.print(c);
+        System.out.println("SoutLine");
+        System.out.println("A");
+        System.out.println("");
+        System.out.println("==END==");
+    }
+    @Test
+    public void testSystemErr() {
+        char e = 'E';
+        System.err.print("Serr");
+        System.err.print("\n");
+        System.err.print(e);
+        System.err.println("SerrLine");
+        System.err.println("A");
+        System.err.println("");
+        System.err.println("==END==");
     }
 
-    public void testXmlFileContainsConsoleOutput()
-        throws Exception
-    {
-        failNever();
-        redirectToFile( true);
-        execute( "test" );
-        final File surefireReportsFile = getSurefireReportsFile( "TEST-forkConsoleOutput.Test2.xml" );
-        assertContainsText(  surefireReportsFile, "sout: Will Fail soon" );
-        assertContainsText(  surefireReportsFile, "serr: Will Fail now" );
-    }
 }
