@@ -41,7 +41,6 @@ public class FilterFactory
 
     public Filter createGroupFilter( Properties providerProperties )
     {
-        providerProperties.list( System.err );
         String groups = providerProperties.getProperty( "groups" );
         String excludedGroups = providerProperties.getProperty( "excludedgroups" );
         List<Filter> included = commaSeparatedListToFilters( groups );

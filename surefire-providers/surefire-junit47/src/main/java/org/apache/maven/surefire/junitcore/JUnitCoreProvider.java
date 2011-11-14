@@ -19,6 +19,7 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -128,7 +129,8 @@ public class JUnitCoreProvider
     {
         List<Class<?>> res = new ArrayList<Class<?>>( 500 );
         TestsToRun max = scanClassPath();
-        if (filter == null){
+        if ( filter == null )
+        {
             return max;
         }
 
@@ -136,11 +138,24 @@ public class JUnitCoreProvider
         while ( it.hasNext() )
         {
             Class<?> clazz = it.next();
-            boolean isCategoryAnnotatedClass = jUnit48Reflector.isCategoryAnnotationPresent( clazz);
+            boolean isCategoryAnnotatedClass = jUnit48Reflector.isCategoryAnnotationPresent( clazz );
             Description d = Description.createSuiteDescription( clazz );
-            if ( !isCategoryAnnotatedClass || filter.shouldRun( d ) )
+            if ( filter.shouldRun( d ) )
             {
                 res.add( clazz );
+            }
+            else
+            {
+                for ( Method method : clazz.getMethods() )
+                {
+                    final Description testDescription =
+                        Description.createTestDescription( clazz, method.getName(), method.getAnnotations() );
+                    if ( filter.shouldRun( testDescription ) )
+                    {
+                        res.add( clazz );
+                        break;
+                    }
+                }
             }
         }
         return new TestsToRun( res );

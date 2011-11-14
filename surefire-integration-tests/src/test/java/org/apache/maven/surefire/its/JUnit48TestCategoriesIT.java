@@ -52,7 +52,7 @@ public class JUnit48TestCategoriesIT
     {
         executeTest();
         verifyErrorFreeLog();
-        assertTestSuiteResults( 2, 0, 0, 0 );
+        assertTestSuiteResults( 3, 0, 0, 0 );
         verifyTextInLog("catA: 1");
         verifyTextInLog("catB: 1");
         verifyTextInLog("catC: 0");
