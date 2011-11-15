@@ -212,7 +212,7 @@ public class ForkingRunListener
     public void info( String message )
     {
         byte[] buf = message.getBytes();
-        ByteBuffer byteBuffer = new ByteBuffer( buf.length * 6 );
+        ByteBuffer byteBuffer = new ByteBuffer( 7 + buf.length * 6 ); // 7 => Allow 3 digit testSetChannelId
         byteBuffer.append( BOOTERCODE_CONSOLE );
         byteBuffer.comma();
         byteBuffer.append( testSetChannelId );
