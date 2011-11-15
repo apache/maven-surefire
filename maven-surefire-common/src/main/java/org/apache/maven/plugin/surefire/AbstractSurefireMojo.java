@@ -1027,6 +1027,14 @@ public abstract class AbstractSurefireMojo
 
         copyPropertiesToInternalSystemProperties( getUserProperties() );
 
+        // Include execution context properties
+        // This feature allows test to get some of the information from the process 
+        // which executed them, see SUREFIRE-790
+        if ( isPropagateExecutionContext() )
+        {
+            copyPropertiesToInternalSystemProperties( getMavenExecutionProperties() );
+        }
+
         getInternalSystemProperties().setProperty( "basedir", getBasedir().getAbsolutePath() );
         getInternalSystemProperties().setProperty( "user.dir", getWorkingDirectory().getAbsolutePath() );
         getInternalSystemProperties().setProperty( "localRepository", getLocalRepository().getBasedir() );
@@ -1087,6 +1095,73 @@ public abstract class AbstractSurefireMojo
             props = new Properties();
         }
         return props;
+    }
+
+    private Properties getMavenExecutionProperties()
+    {
+        Properties props = new Properties();
+        try
+        {
+            // try calling MavenSession.getRequest() from Maven 3.0.0+
+            Method getRequest = getSession().getClass().getMethod( "getRequest", null );
+            Object request = getRequest.invoke( getSession(), null );
+
+            // try getting pom file, settings.xml file, offline flag and active profiles
+            Method isOffline = request.getClass().getMethod("isOffline", null);
+            Method getUserSettingsFile = request.getClass().getMethod("getUserSettingsFile", null);
+            Method getGlobalSettingsFile = request.getClass().getMethod("getGlobalSettingsFile", null);
+
+            File pomFile = getSession().getCurrentProject().getFile();
+            File userSettingsFile = (File) getUserSettingsFile.invoke(request, null);
+            File globalSettingsFile = (File) getGlobalSettingsFile.invoke(request, null);
+            Boolean offline = (Boolean) isOffline.invoke(request, null);
+            List activeProfiles = getSession().getCurrentProject().getActiveProfiles();
+
+            getLog().debug("Adding Maven Execution properties to Surefire execution.");
+
+            // FIXME allow prefix here via configuration
+            String namespace = getExecutionContextNamespace();
+            if ( offline != null)
+            {
+                storeExecutionContextProperty( props, namespace, "offline", offline.toString() );
+            } 
+            if ( pomFile != null)
+            {
+                storeExecutionContextProperty( props, namespace, "pom", pomFile.getAbsolutePath() );
+            }
+            if ( globalSettingsFile != null)
+            {
+                storeExecutionContextProperty( props, namespace, "global-settings", globalSettingsFile.getAbsolutePath() );
+            }
+            if ( userSettingsFile != null)
+            {
+                storeExecutionContextProperty( props, namespace, "user-settings", userSettingsFile.getAbsolutePath() );
+            }
+            if ( activeProfiles != null && activeProfiles.size() > 0)
+            {
+                storeExecutionContextProperty( props, namespace, "active-profiles", StringUtils.join(activeProfiles.iterator(), ",") );
+            }
+        }
+        catch ( Exception e)
+        {
+            String msg = "Build does uses Maven prior 3.0.0, cannot propagate Maven Execution properties" +
+                " from parent process (cf. SUREFIRE-790)";
+            if ( getLog().isDebugEnabled() )
+            {
+                getLog().warn( msg, e );
+            }
+            else
+            {
+                getLog().warn( msg );
+            }
+        }
+        return props;
+    }
+    
+    private void storeExecutionContextProperty(Properties properties, String namespace, String key, String value)
+    {
+        properties.put(namespace + "." + key, value);
+        getLog().debug("Added execution context property: " + key + "=" + value);
     }
 
 

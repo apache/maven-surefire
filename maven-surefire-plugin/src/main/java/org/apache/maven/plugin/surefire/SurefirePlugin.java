@@ -575,6 +575,23 @@ public class SurefirePlugin
     private MavenSession session;
 
     /**
+     * Propagate information about current Maven execution into the tests via a set of System properties.
+     * Following properties are available:
+     * "offline", "user-setttings", "global-settings", "active-profiles" and "pom"
+     *
+     * @parameter default-value="false"
+     */
+    private boolean propagateExecutionContext;
+
+    /**
+     * Define a namespace where Maven execution System properties are stored. Does not apply if if
+     * <b>propagateExecutionContext</b> is not set.
+     *
+     * @parameter default-value="maven.execution"
+     */
+    private String executionContextNamespace;
+
+    /**
      * (TestNG only) Define the factory class used to create all test instances.
      *
      * @parameter expression="${objectFactory}"
@@ -1313,6 +1330,26 @@ public class SurefirePlugin
 
     protected void addPluginSpecificChecksumItems( ChecksumCalculator checksum )
     {
+    }
+
+    public boolean isPropagateExecutionContext()
+    {
+        return propagateExecutionContext;
+    }
+
+    public void setPropagateExecutionContext( boolean propagateExecutionContext )
+    {
+        this.propagateExecutionContext = propagateExecutionContext;
+    }
+
+    public String getExecutionContextNamespace()
+    {
+        return executionContextNamespace;
+    }
+
+    public void setExecuctionContextNamespace( String executionContextNamespace )
+    {
+        this.executionContextNamespace = executionContextNamespace;
     }
 
 }

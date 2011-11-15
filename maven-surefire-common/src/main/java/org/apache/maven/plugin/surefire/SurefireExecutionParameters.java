@@ -283,5 +283,13 @@ public interface SurefireExecutionParameters
     void setRunOrder( String runOrder );
 
     String getRunOrder();
+    
+    boolean isPropagateExecutionContext();
+    
+    void setPropagateExecutionContext( boolean propagateExecutionContext );
+    
+    String getExecutionContextNamespace();
+    
+    void setExecuctionContextNamespace( String executionContextNamespace );
 
 }
