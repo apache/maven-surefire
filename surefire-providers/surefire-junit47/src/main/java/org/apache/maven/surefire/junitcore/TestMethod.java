@@ -69,6 +69,7 @@ class TestMethod
     public void testFailure( ReportEntry failure )
     {
         this.testFailure = failure;
+        setEndTime();
     }
 
     public void testError( ReportEntry failure )
