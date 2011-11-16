@@ -20,6 +20,8 @@ package org.apache.maven.surefire.its;
 
 import org.apache.maven.it.VerificationException;
 
+import junit.framework.Assert;
+
 /**
  * @author Kristian Rosenvold
  */
@@ -39,4 +41,19 @@ public class Surefire735ForkFailWithRedirectConsoleOutputIT
         executeTest();
         verifyTextInLog( "Invalid maximum heap size: -Xmxxxx712743m" );
     }
+
+    public void testVMStartFtestVMStartFailail()
+        throws Exception
+    {
+        try
+        {
+            executeTest();
+            Assert.fail( "The verifier should throw an exception" );
+        }
+        catch ( VerificationException ignore )
+        {
+        }
+
+    }
+
 }

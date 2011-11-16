@@ -40,7 +40,7 @@ public class RunResult
 
     private final boolean timeout;
 
-    private static final int SUCCESS = 0;
+    public static final int SUCCESS = 0;
 
     public static final int FAILURE = 255;
 
@@ -130,6 +130,7 @@ public class RunResult
     {
         return timeout;
     }
+
 
     public RunResult aggregate( RunResult other )
     {

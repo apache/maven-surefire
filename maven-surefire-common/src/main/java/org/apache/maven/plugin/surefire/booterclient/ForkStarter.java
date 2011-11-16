@@ -186,8 +186,12 @@ public class ForkStarter
         try
         {
             final int timeout = forkedProcessTimeoutInSeconds > 0 ? forkedProcessTimeoutInSeconds : 0;
-            CommandLineUtils.executeCommandLine( cli, threadedStreamConsumer2, threadedStreamConsumer2, timeout );
+            final int result =
+                CommandLineUtils.executeCommandLine( cli, threadedStreamConsumer2, threadedStreamConsumer2, timeout );
 
+            if (result != RunResult.SUCCESS && result != RunResult.FAILURE){
+                throw new SurefireBooterForkException("Error occured in starting fork, check output in log");
+            }
             threadedStreamConsumer2.close();
             out.close();
 
