@@ -85,7 +85,7 @@ public class RunStatistics
         private String trimToSingleLine( String str )
         {
             int i = str.indexOf( "\n" );
-            return i >= 0 ? str.substring( 0, i ) : str;
+            return i >= 0 ? str.substring( 0, i ) + "(..)" : str;
         }
 
         Collection getListOfSources()
