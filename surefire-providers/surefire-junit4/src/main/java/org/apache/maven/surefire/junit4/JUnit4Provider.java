@@ -38,6 +38,7 @@ import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.DefaultDirectoryScanner;
 import org.apache.maven.surefire.util.DirectoryScanner;
+import org.apache.maven.surefire.util.RunOrderCalculator;
 import org.apache.maven.surefire.util.TestsToRun;
 
 import org.junit.runner.Result;
@@ -63,11 +64,15 @@ public class JUnit4Provider
 
     private final ProviderParameters providerParameters;
 
+    private final RunOrderCalculator runOrderCalculator;
+
+
     public JUnit4Provider( ProviderParameters booterParameters )
     {
         this.providerParameters = booterParameters;
         this.testClassLoader = booterParameters.getTestClassLoader();
         this.directoryScanner = booterParameters.getDirectoryScanner();
+        this.runOrderCalculator = booterParameters.getRunOrderCalculator();
         customRunListeners = JUnit4RunListenerFactory.
             createCustomListeners( booterParameters.getProviderProperties().getProperty( "listener" ) );
         jUnit4TestChecker = new JUnit4TestChecker( testClassLoader );
@@ -171,7 +176,8 @@ public class JUnit4Provider
 
     private TestsToRun scanClassPath()
     {
-        return directoryScanner.locateTestClasses( testClassLoader, jUnit4TestChecker );
+        final TestsToRun scannedClasses = directoryScanner.locateTestClasses( testClassLoader, jUnit4TestChecker );
+        return runOrderCalculator.orderTestClasses(  scannedClasses );
     }
 
     private void upgradeCheck()

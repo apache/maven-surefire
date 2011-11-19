@@ -27,6 +27,7 @@ import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.util.DirectoryScanner;
+import org.apache.maven.surefire.util.RunOrderCalculator;
 
 /**
  * Injected into the providers upon provider construction. Allows the provider to request services and data it needs.
@@ -47,6 +48,12 @@ public interface ProviderParameters
      * @return The directory scanner
      */
     DirectoryScanner getDirectoryScanner();
+
+    /**
+     * Provides a service to calculate run order of tests. Applied after directory scanning.
+     * @return A RunOrderCalculator
+     */
+    RunOrderCalculator getRunOrderCalculator();
 
     /**
      * Provides features for creating reporting objects

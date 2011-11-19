@@ -43,8 +43,7 @@ public class SurefireDirectoryScannerTest
         include.add( "**/*ZT*A.java" );
         List exclude = new ArrayList();
 
-        DefaultDirectoryScanner surefireDirectoryScanner = new DefaultDirectoryScanner( baseDir, include, exclude,
-                                                                                        RunOrder.FILESYSTEM );
+        DefaultDirectoryScanner surefireDirectoryScanner = new DefaultDirectoryScanner( baseDir, include, exclude );
         String[] classNames = surefireDirectoryScanner.collectTests();
         assertNotNull( classNames );
         System.out.println("classNames " + Arrays.asList( classNames ));

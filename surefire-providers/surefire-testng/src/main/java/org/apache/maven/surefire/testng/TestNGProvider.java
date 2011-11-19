@@ -35,6 +35,7 @@ import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.DirectoryScanner;
 import org.apache.maven.surefire.util.NestedRuntimeException;
+import org.apache.maven.surefire.util.RunOrderCalculator;
 import org.apache.maven.surefire.util.TestsToRun;
 
 /**
@@ -64,11 +65,14 @@ public class TestNGProvider
 
     private final File basedir;
 
+    private final RunOrderCalculator runOrderCalculator;
+
     public TestNGProvider( ProviderParameters booterParameters )
     {
         this.providerParameters = booterParameters;
         this.testClassLoader = booterParameters.getTestClassLoader();
         this.directoryScannerParameters = booterParameters.getDirectoryScannerParameters();
+        this.runOrderCalculator = booterParameters.getRunOrderCalculator();
         this.providerProperties = booterParameters.getProviderProperties();
         this.testRequest = booterParameters.getTestRequest();
         basedir = directoryScannerParameters != null ? directoryScannerParameters.getTestClassesDirectory() : null;
@@ -162,7 +166,8 @@ public class TestNGProvider
 
     private TestsToRun scanClassPath()
     {
-        return directoryScanner.locateTestClasses( testClassLoader, null );
+        final TestsToRun scanned = directoryScanner.locateTestClasses( testClassLoader, null );
+        return runOrderCalculator.orderTestClasses(  scanned );
     }
 
 

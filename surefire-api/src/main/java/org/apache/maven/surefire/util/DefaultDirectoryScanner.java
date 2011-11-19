@@ -21,9 +21,6 @@ package org.apache.maven.surefire.util;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
@@ -53,17 +50,11 @@ public class DefaultDirectoryScanner
 
     private final List classesSkippedByValidation = new ArrayList();
 
-    private final Comparator sortOrder;
-
-    private final RunOrder runOrder;
-
-    public DefaultDirectoryScanner( File basedir, List includes, List excludes, RunOrder runOrder )
+    public DefaultDirectoryScanner( File basedir, List includes, List excludes )
     {
         this.basedir = basedir;
         this.includes = includes;
         this.excludes = excludes;
-        this.runOrder = runOrder;
-        this.sortOrder = getSortOrderComparator();
     }
 
     public TestsToRun locateTestClasses( ClassLoader classLoader, ScannerFilter scannerFilter )
@@ -86,7 +77,6 @@ public class DefaultDirectoryScanner
                 classesSkippedByValidation.add( testClass );
             }
         }
-        orderTestClasses( result );
         return new TestsToRun( result );
     }
 
@@ -171,61 +161,6 @@ public class DefaultDirectoryScanner
     public List getClassesSkippedByValidation()
     {
         return classesSkippedByValidation;
-    }
-
-    private void orderTestClasses( List testClasses )
-    {
-        if ( RunOrder.RANDOM.equals( runOrder ) )
-        {
-            Collections.shuffle( testClasses );
-        }
-        else if ( sortOrder != null )
-        {
-            Collections.sort( testClasses, sortOrder );
-        }
-    }
-
-    private Comparator getSortOrderComparator()
-    {
-        if ( RunOrder.ALPHABETICAL.equals( runOrder ) )
-        {
-            return getAlphabeticalComparator();
-        }
-        else if ( RunOrder.REVERSE_ALPHABETICAL.equals( runOrder ) )
-        {
-            return getReverseAlphabeticalComparator();
-        }
-        else if ( RunOrder.HOURLY.equals( runOrder ) )
-        {
-            final int hour = Calendar.getInstance().get( Calendar.HOUR_OF_DAY );
-            return ( ( hour % 2 ) == 0 ) ? getAlphabeticalComparator() : getReverseAlphabeticalComparator();
-        }
-        else
-        {
-            return null;
-        }
-    }
-
-    private Comparator getReverseAlphabeticalComparator()
-    {
-        return new Comparator()
-        {
-            public int compare( Object o1, Object o2 )
-            {
-                return ( (Class) o2 ).getName().compareTo( ( (Class) o1 ).getName() );
-            }
-        };
-    }
-
-    private Comparator getAlphabeticalComparator()
-    {
-        return new Comparator()
-        {
-            public int compare( Object o1, Object o2 )
-            {
-                return ( (Class) o1 ).getName().compareTo( ( (Class) o2 ).getName() );
-            }
-        };
     }
 
 }

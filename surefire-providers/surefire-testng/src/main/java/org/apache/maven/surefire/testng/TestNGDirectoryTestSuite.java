@@ -42,8 +42,10 @@ import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.SimpleReportEntry;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.DefaultDirectoryScanner;
+import org.apache.maven.surefire.util.DefaultRunOrderCalculator;
 import org.apache.maven.surefire.util.DirectoryScanner;
 import org.apache.maven.surefire.util.RunOrder;
+import org.apache.maven.surefire.util.RunOrderCalculator;
 import org.apache.maven.surefire.util.TestsToRun;
 
 /**
@@ -69,12 +71,15 @@ public class TestNGDirectoryTestSuite
 
     private final String testMethodPattern;
 
+    private final RunOrderCalculator runOrderCalculator;
+
     public TestNGDirectoryTestSuite( File basedir, ArrayList includes, ArrayList excludes, String testSourceDirectory,
                                      String artifactVersion, Properties confOptions, File reportsDirectory,
                                      String testMethodPattern )
     {
 
-        this.surefireDirectoryScanner = new DefaultDirectoryScanner( basedir, includes, excludes, RunOrder.FILESYSTEM );
+        this.surefireDirectoryScanner = new DefaultDirectoryScanner( basedir, includes, excludes );
+        this.runOrderCalculator = new DefaultRunOrderCalculator( RunOrder.FILESYSTEM );
 
         this.options = confOptions;
 
@@ -265,8 +270,10 @@ public class TestNGDirectoryTestSuite
         }
         testSets = new TreeMap();
 
-        final TestsToRun testsToRun =
+        final TestsToRun scanned =
             surefireDirectoryScanner.locateTestClasses( classLoader, new NonAbstractClassFilter() );
+
+        final TestsToRun testsToRun = runOrderCalculator.orderTestClasses(  scanned );
         Class[] locatedClasses = testsToRun.getLocatedClasses();
 
         for ( int i = 0; i < locatedClasses.length; i++ )

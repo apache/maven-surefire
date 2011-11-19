@@ -40,6 +40,7 @@ import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.DirectoryScanner;
+import org.apache.maven.surefire.util.RunOrderCalculator;
 import org.apache.maven.surefire.util.ScannerFilter;
 import org.apache.maven.surefire.util.TestsToRun;
 
@@ -65,15 +66,20 @@ public class JUnitCoreProvider
 
     private final ProviderParameters providerParameters;
 
+
+
     private TestsToRun testsToRun;
 
     private JUnit48Reflector jUnit48Reflector;
+
+    private RunOrderCalculator runOrderCalculator;
 
     public JUnitCoreProvider( ProviderParameters providerParameters )
     {
         this.providerParameters = providerParameters;
         this.testClassLoader = providerParameters.getTestClassLoader();
         this.directoryScanner = providerParameters.getDirectoryScanner();
+        this.runOrderCalculator = providerParameters.getRunOrderCalculator();
         this.jUnitCoreParameters = new JUnitCoreParameters( providerParameters.getProviderProperties() );
         this.scannerFilter = new JUnit4TestChecker( testClassLoader );
         customRunListeners = JUnit4RunListenerFactory.
@@ -168,6 +174,7 @@ public class JUnitCoreProvider
 
     private TestsToRun scanClassPath()
     {
-        return directoryScanner.locateTestClasses( testClassLoader, scannerFilter );
+        final TestsToRun scanned = directoryScanner.locateTestClasses( testClassLoader, scannerFilter );
+        return  runOrderCalculator.orderTestClasses(  scanned );
     }
 }

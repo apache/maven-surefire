@@ -30,7 +30,9 @@ import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.util.DefaultDirectoryScanner;
+import org.apache.maven.surefire.util.DefaultRunOrderCalculator;
 import org.apache.maven.surefire.util.DirectoryScanner;
+import org.apache.maven.surefire.util.RunOrderCalculator;
 
 /**
  * @author Kristian Rosenvold
@@ -39,6 +41,7 @@ public class BaseProviderFactory
     implements DirectoryScannerParametersAware, ReporterConfigurationAware, SurefireClassLoadersAware, TestRequestAware,
     ProviderPropertiesAware, ProviderParameters, TestArtifactInfoAware
 {
+
     private Properties providerProperties;
 
     private DirectoryScannerParameters directoryScannerParameters;
@@ -69,8 +72,16 @@ public class BaseProviderFactory
         }
         return new DefaultDirectoryScanner( directoryScannerParameters.getTestClassesDirectory(),
                                             directoryScannerParameters.getIncludes(),
-                                            directoryScannerParameters.getExcludes(),
-                                            directoryScannerParameters.getRunOrder() );
+                                            directoryScannerParameters.getExcludes() );
+    }
+
+    public RunOrderCalculator getRunOrderCalculator()
+    {
+        if ( directoryScannerParameters == null )
+        {
+            return null;
+        }
+        return new DefaultRunOrderCalculator( directoryScannerParameters.getRunOrder() );
     }
 
     public ReporterFactory getReporterFactory()

@@ -35,6 +35,7 @@ import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.DirectoryScanner;
 import org.apache.maven.surefire.util.ReflectionUtils;
+import org.apache.maven.surefire.util.RunOrderCalculator;
 import org.apache.maven.surefire.util.TestsToRun;
 
 /**
@@ -55,13 +56,16 @@ public class JUnit3Provider
 
     private final ProviderParameters providerParameters;
 
+    private final RunOrderCalculator runOrderCalculator;
+
     private TestsToRun testsToRun;
 
-    public JUnit3Provider( ProviderParameters booterParameters )
+  public JUnit3Provider( ProviderParameters booterParameters )
     {
         this.providerParameters = booterParameters;
         this.testClassLoader = booterParameters.getTestClassLoader();
         this.directoryScanner = booterParameters.getDirectoryScanner();
+        this.runOrderCalculator = booterParameters.getRunOrderCalculator();
         this.reflector = new JUnit3Reflector( testClassLoader );
         jUnit3TestChecker = new JUnit3TestChecker( testClassLoader );
         this.testChecker = new PojoAndJUnit3Checker( jUnit3TestChecker ); // Todo; use reflector
@@ -121,7 +125,8 @@ public class JUnit3Provider
 
     private TestsToRun scanClassPath()
     {
-        return directoryScanner.locateTestClasses( testClassLoader, testChecker );
+        final TestsToRun scanResult = directoryScanner.locateTestClasses( testClassLoader, testChecker );
+        return runOrderCalculator.orderTestClasses(  scanResult );
     }
 
     public Iterator getSuites()
