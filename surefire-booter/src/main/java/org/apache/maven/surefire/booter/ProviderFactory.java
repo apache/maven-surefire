@@ -63,14 +63,15 @@ public class ProviderFactory
         this.reporterManagerFactory = reporterManagerFactory;
     }
 
-    public SurefireProvider createProvider()
+    public SurefireProvider createProvider(boolean isInsideFork)
     {
         ClassLoader context = java.lang.Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader( surefireClassLoader );
 
         StartupConfiguration starterConfiguration = startupConfiguration;
 
-        final Object o = surefireReflector.createBooterConfiguration( surefireClassLoader, reporterManagerFactory );
+        final Object o = surefireReflector.createBooterConfiguration( surefireClassLoader, reporterManagerFactory,
+                                                                      isInsideFork );
         surefireReflector.setTestSuiteDefinitionAware( o, providerConfiguration.getTestSuiteDefinition() );
         surefireReflector.setProviderPropertiesAware( o, providerConfiguration.getProviderProperties() );
         surefireReflector.setReporterConfigurationAware( o, providerConfiguration.getReporterConfiguration() );

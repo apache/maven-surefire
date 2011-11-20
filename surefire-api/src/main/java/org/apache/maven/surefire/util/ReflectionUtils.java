@@ -142,7 +142,31 @@ public class ReflectionUtils
             throw new SurefireReflectionException( e );
         }
     }
+    public static Object instantiateTwoArgs( ClassLoader classLoader, String className, Class param1Class,
+                                            Object param1, Class param2Class, Object param2 )
+    {
 
+        try
+        {
+            Class aClass = loadClass( classLoader, className );
+            Constructor constructor = ReflectionUtils.getConstructor( aClass, new Class[]{ param1Class, param2Class } );
+            return constructor.newInstance( new Object[]{ param1, param2 } );
+        }
+        catch ( InvocationTargetException e )
+        {
+            throw new SurefireReflectionException( e );
+        }
+        catch ( InstantiationException e )
+        {
+            throw new SurefireReflectionException( e );
+        }
+        catch ( IllegalAccessException e )
+        {
+            throw new SurefireReflectionException( e );
+        }
+    }
+    
+    
     public static void invokeSetter( Object o, String name, Class value1clazz, Object value )
 
     {

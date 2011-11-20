@@ -33,7 +33,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
@@ -59,7 +58,6 @@ import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.StartupReportConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.apache.maven.surefire.booter.SurefireExecutionException;
-import org.apache.maven.surefire.booter.SurefireStarter;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
@@ -190,7 +188,7 @@ public abstract class AbstractSurefireMojo
             final RunResult result;
             if ( ForkConfiguration.FORK_NEVER.equals( forkConfiguration.getForkMode() ) )
             {
-                SurefireStarter surefireStarter =
+                InPluginVMSurefireStarter surefireStarter =
                     createInprocessStarter( provider, forkConfiguration, classLoaderConfiguration );
                 result = surefireStarter.runSuitesInProcess();
             }
@@ -571,7 +569,7 @@ public abstract class AbstractSurefireMojo
                                 getForkedProcessTimeoutInSeconds(), startupReportConfiguration );
     }
 
-    protected SurefireStarter createInprocessStarter( ProviderInfo provider, ForkConfiguration forkConfiguration,
+    protected InPluginVMSurefireStarter createInprocessStarter( ProviderInfo provider, ForkConfiguration forkConfiguration,
                                                       ClassLoaderConfiguration classLoaderConfiguration )
         throws MojoExecutionException, MojoFailureException
     {
@@ -579,7 +577,7 @@ public abstract class AbstractSurefireMojo
             createStartupConfiguration( forkConfiguration, provider, classLoaderConfiguration );
         StartupReportConfiguration startupReportConfiguration = getStartupReportConfiguration();
         ProviderConfiguration providerConfiguration = createProviderConfiguration();
-        return new SurefireStarter( startupConfiguration, providerConfiguration, startupReportConfiguration );
+        return new InPluginVMSurefireStarter( startupConfiguration, providerConfiguration, startupReportConfiguration );
 
     }
 

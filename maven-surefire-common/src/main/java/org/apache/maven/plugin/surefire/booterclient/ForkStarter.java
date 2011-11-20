@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Properties;
+import org.apache.maven.plugin.surefire.CommonReflector;
 import org.apache.maven.plugin.surefire.booterclient.output.ForkClient;
 import org.apache.maven.plugin.surefire.booterclient.output.ThreadedStreamConsumer;
 import org.apache.maven.plugin.surefire.report.FileReporterFactory;
@@ -34,7 +35,6 @@ import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.StartupReportConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.apache.maven.surefire.booter.SurefireExecutionException;
-import org.apache.maven.surefire.booter.SurefireReflector;
 import org.apache.maven.surefire.booter.SystemPropertyManager;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
 import org.apache.maven.surefire.report.ReporterFactory;
@@ -220,13 +220,13 @@ public class ForkStarter
             ClassLoader testsClassLoader = classpathConfiguration.createTestClassLoader( false );
             ClassLoader surefireClassLoader = classpathConfiguration.createSurefireClassLoader( testsClassLoader );
 
-            SurefireReflector surefireReflector = new SurefireReflector( surefireClassLoader );
-            Object reporterFactory = surefireReflector.createReportingReporterFactory( startupReportConfiguration );
+            CommonReflector commonReflector = new CommonReflector( surefireClassLoader );
+            Object reporterFactory = commonReflector.createReportingReporterFactory( startupReportConfiguration );
 
             final ProviderFactory providerFactory =
                 new ProviderFactory( startupConfiguration, providerConfiguration, surefireClassLoader, testsClassLoader,
                                      reporterFactory );
-            SurefireProvider surefireProvider = providerFactory.createProvider();
+            SurefireProvider surefireProvider = providerFactory.createProvider(false);
             return surefireProvider.getSuites();
         }
         catch ( SurefireExecutionException e )
@@ -234,5 +234,7 @@ public class ForkStarter
             throw new SurefireBooterForkException( "Unable to create classloader to find test suites", e );
         }
     }
+
+
 
 }

@@ -20,15 +20,10 @@ package org.apache.maven.surefire.booter;
  */
 
 import java.io.PrintStream;
-import org.apache.maven.surefire.providerapi.SurefireProvider;
-import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.suite.RunResult;
-import org.apache.maven.surefire.testset.TestSetFailedException;
-import org.apache.maven.surefire.util.NestedRuntimeException;
-import org.apache.maven.surefire.util.ReflectionUtils;
 
 /**
- * Invokes surefire with the correct classloader setup.
+ * Invokes surefire with the correct classloader setup. This class covers all startups in forked VM's.
  * <p/>
  * This part of the booter is always guaranteed to be in the
  * same vm as the tests will be run in.
@@ -46,22 +41,20 @@ public class SurefireStarter
 
     private final StartupConfiguration startupConfiguration;
 
-    private final static String SUREFIRE_TEST_CLASSPATH = "surefire.test.class.path";
-
-    private final StartupReportConfiguration startupReportConfiguration;
+    private final StarterCommon starterCommon;
 
     public SurefireStarter( StartupConfiguration startupConfiguration, ProviderConfiguration providerConfiguration,
                             StartupReportConfiguration startupReportConfiguration )
     {
         this.providerConfiguration = providerConfiguration;
         this.startupConfiguration = startupConfiguration;
-        this.startupReportConfiguration = startupReportConfiguration;
+        this.starterCommon = new StarterCommon( startupConfiguration, providerConfiguration );
     }
 
     public RunResult runSuitesInProcessWhenForked( TypeEncodedValue testSet )
         throws SurefireExecutionException
     {
-        writeSurefireTestClasspathProperty();
+        starterCommon.writeSurefireTestClasspathProperty();
         final ClasspathConfiguration classpathConfiguration = startupConfiguration.getClasspathConfiguration();
 
         // todo: Find out....
@@ -78,7 +71,7 @@ public class SurefireStarter
 
         Object test = testSet.getDecodedValue();
 
-        return invokeProvider( test, testsClassLoader, surefireClassLoader, forkingReporterFactory );
+        return starterCommon.invokeProvider( test, testsClassLoader, surefireClassLoader, forkingReporterFactory, true );
     }
 
     private Object createForkingReporterFactory( SurefireReflector surefireReflector )
@@ -96,99 +89,15 @@ public class SurefireStarter
     public RunResult runSuitesInProcessWhenForked()
         throws SurefireExecutionException
     {
-        ClassLoader testsClassLoader = createInProcessTestClassLoader();
+        ClassLoader testsClassLoader = starterCommon.createInProcessTestClassLoader();
 
-        ClassLoader surefireClassLoader = createSurefireClassloader( testsClassLoader );
+        ClassLoader surefireClassLoader = starterCommon.createSurefireClassloader( testsClassLoader );
 
         SurefireReflector surefireReflector = new SurefireReflector( surefireClassLoader );
 
         final Object factory = createForkingReporterFactory( surefireReflector );
 
-        return invokeProvider( null, testsClassLoader, surefireClassLoader, factory );
+        return starterCommon.invokeProvider( null, testsClassLoader, surefireClassLoader, factory, true );
     }
 
-    public RunResult runSuitesInProcess()
-        throws SurefireExecutionException
-    {
-        // The test classloader must be constructed first to avoid issues with commons-logging until we properly
-        // separate the TestNG classloader
-        ClassLoader testsClassLoader = createInProcessTestClassLoader();
-
-        ClassLoader surefireClassLoader = createSurefireClassloader( testsClassLoader );
-
-        SurefireReflector surefireReflector = new SurefireReflector( surefireClassLoader );
-
-        final Object factory = surefireReflector.createReportingReporterFactory( startupReportConfiguration );
-
-        return invokeProvider( null, testsClassLoader, surefireClassLoader, factory );
-    }
-
-    private ClassLoader createSurefireClassloader( ClassLoader testsClassLoader )
-        throws SurefireExecutionException
-    {
-        final ClasspathConfiguration classpathConfiguration = startupConfiguration.getClasspathConfiguration();
-
-        return classpathConfiguration.createSurefireClassLoader( testsClassLoader );
-    }
-
-    private ClassLoader createInProcessTestClassLoader()
-        throws SurefireExecutionException
-    {
-        writeSurefireTestClasspathProperty();
-        ClasspathConfiguration classpathConfiguration = startupConfiguration.getClasspathConfiguration();
-        if ( startupConfiguration.isManifestOnlyJarRequestedAndUsable() )
-        {
-            ClassLoader testsClassLoader = getClass().getClassLoader(); // ClassLoader.getSystemClassLoader()
-            // SUREFIRE-459, trick the app under test into thinking its classpath was conventional
-            // (instead of a single manifest-only jar)
-            System.setProperty( "surefire.real.class.path", System.getProperty( "java.class.path" ) );
-            classpathConfiguration.getTestClasspath().writeToSystemProperty( "java.class.path" );
-            return testsClassLoader;
-        }
-        else
-        {
-            return classpathConfiguration.createTestClassLoader();
-        }
-    }
-
-    private void writeSurefireTestClasspathProperty()
-    {
-        ClasspathConfiguration classpathConfiguration = startupConfiguration.getClasspathConfiguration();
-        classpathConfiguration.getTestClasspath().writeToSystemProperty( SUREFIRE_TEST_CLASSPATH );
-    }
-
-    private RunResult invokeProvider( Object testSet, ClassLoader testsClassLoader, ClassLoader surefireClassLoader,
-                                      Object factory )
-    {
-        final PrintStream orgSystemOut = System.out;
-        final PrintStream orgSystemErr = System.err;
-        // Note that System.out/System.err are also read in the "ReporterConfiguration" instatiation
-        // in createProvider below. These are the same values as here.
-
-        ProviderFactory providerFactory =
-            new ProviderFactory( startupConfiguration, providerConfiguration, surefireClassLoader, testsClassLoader,
-                                 factory );
-        final SurefireProvider provider = providerFactory.createProvider();
-
-        try
-        {
-            return provider.invoke( testSet );
-        }
-        catch ( TestSetFailedException e )
-        {
-            throw new NestedRuntimeException( e );
-        }
-        catch ( ReporterException e )
-        {
-            throw new NestedRuntimeException( e );
-        }
-        finally
-        {
-            if ( System.getSecurityManager() == null )
-            {
-                System.setOut( orgSystemOut );
-                System.setErr( orgSystemErr );
-            }
-        }
-    }
 }

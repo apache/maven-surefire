@@ -26,8 +26,6 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Properties;
-
-import org.apache.maven.plugin.surefire.report.FileReporterFactory;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterFactory;
@@ -36,7 +34,6 @@ import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.util.ReflectionUtils;
-import org.apache.maven.surefire.util.RunOrder;
 import org.apache.maven.surefire.util.SurefireReflectionException;
 
 /**
@@ -76,15 +73,12 @@ public class SurefireReflector
 
     private final Class reporterFactory;
 
-    private final Class startupReportConfiguration;
-
     public SurefireReflector( ClassLoader surefireClassLoader )
     {
         this.surefireClassLoader = surefireClassLoader;
         try
         {
             reporterConfiguration = surefireClassLoader.loadClass( ReporterConfiguration.class.getName() );
-            startupReportConfiguration = surefireClassLoader.loadClass( StartupReportConfiguration.class.getName() );
             testRequest = surefireClassLoader.loadClass( TestRequest.class.getName() );
             testArtifactInfo = surefireClassLoader.loadClass( TestArtifactInfo.class.getName() );
             testArtifactInfoAware = surefireClassLoader.loadClass( TestArtifactInfoAware.class.getName() );
@@ -199,24 +193,6 @@ public class SurefireReflector
             reporterConfiguration.isTrimStackTrace()} );
     }
 
-    Object createStartupReportConfiguration( StartupReportConfiguration reporterConfiguration )
-    {
-        Constructor constructor = ReflectionUtils.getConstructor( this.startupReportConfiguration,
-                                                                  new Class[]{ boolean.class, boolean.class,
-                                                                      String.class, boolean.class, boolean.class,
-                                                                      File.class, boolean.class, String.class } );
-        //noinspection BooleanConstructorCall
-        final Object[] params =
-            { new Boolean( reporterConfiguration.isUseFile() ), new Boolean( reporterConfiguration.isPrintSummary() ),
-                reporterConfiguration.getReportFormat(),
-                new Boolean( reporterConfiguration.isRedirectTestOutputToFile() ),
-                new Boolean( reporterConfiguration.isDisableXmlReport() ),
-                reporterConfiguration.getReportsDirectory(),
-                new Boolean( reporterConfiguration.isTrimStackTrace()),
-                reporterConfiguration.getReportNameSuffix()};
-        return ReflectionUtils.newInstance( constructor, params );
-    }
-
     public Object createForkingReporterFactory( Boolean trimStackTrace, PrintStream originalSystemOut )
     {
         Class[] args = new Class[]{ Boolean.class, PrintStream.class };
@@ -225,21 +201,12 @@ public class SurefireReflector
                                                   surefireClassLoader );
     }
 
-    public Object createReportingReporterFactory( StartupReportConfiguration startupReportConfiguration )
+    public Object createBooterConfiguration( ClassLoader surefireClassLoader, Object factoryInstance,
+                                             boolean insideFork )
     {
-        Class[] args =
-            new Class[]{ this.startupReportConfiguration };
-        Object src = createStartupReportConfiguration( startupReportConfiguration );
-        Object[] params = new Object[]{ src };
-        return ReflectionUtils.instantiateObject( FileReporterFactory.class.getName(), args, params,
-                                                  surefireClassLoader );
-
-    }
-
-    public Object createBooterConfiguration( ClassLoader surefireClassLoader, Object factoryInstance )
-    {
-        return ReflectionUtils.instantiateOneArg( surefireClassLoader, BaseProviderFactory.class.getName(),
-                                                  reporterFactory, factoryInstance );
+        return ReflectionUtils.instantiateTwoArgs( surefireClassLoader, BaseProviderFactory.class.getName(),
+                                                   reporterFactory, factoryInstance, Boolean.class,
+                                                   insideFork ? Boolean.TRUE : Boolean.FALSE );
     }
 
     public Object instantiateProvider( String providerClassName, Object booterParameters )
