@@ -43,8 +43,7 @@ public class SurefireStarter
 
     private final StarterCommon starterCommon;
 
-    public SurefireStarter( StartupConfiguration startupConfiguration, ProviderConfiguration providerConfiguration,
-                            StartupReportConfiguration startupReportConfiguration )
+    public SurefireStarter( StartupConfiguration startupConfiguration, ProviderConfiguration providerConfiguration )
     {
         this.providerConfiguration = providerConfiguration;
         this.startupConfiguration = startupConfiguration;

@@ -37,7 +37,7 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <it.settings.showPasswords>false</it.settings.showPasswords>
     <testng.version>5.7</testng.version>
-    <surefire.threadcount>2</surefire.threadcount>
+    <surefire.threadcount>1s</surefire.threadcount>
     <surefire.build.version>2.8</surefire.build.version>
   </properties>
 
@@ -190,8 +190,7 @@
         </dependency>
       </dependencies>
       <properties>
-        <surefire.build.version>${project.version}</surefire.build.version>
-        <!-- Until we release 2.7.3 -->
+        <surefire.build.version>2.8</surefire.build.version>
       </properties>
     </profile>
 

@@ -61,6 +61,15 @@ public class StarterCommon
         return classpathConfiguration.createSurefireClassLoader( testsClassLoader );
     }
 
+
+    public ClassLoader createSurefireInProcClassloader( ClassLoader testsClassLoader )
+        throws SurefireExecutionException
+    {
+        final ClasspathConfiguration classpathConfiguration = startupConfiguration.getClasspathConfiguration();
+
+        return classpathConfiguration.createInprocSurefireClassLoader( testsClassLoader );
+    }
+
     public ClassLoader createInProcessTestClassLoader()
         throws SurefireExecutionException
     {

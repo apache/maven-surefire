@@ -19,14 +19,14 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import org.apache.maven.surefire.util.UrlUtils;
-
 import java.io.File;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import org.apache.maven.surefire.util.UrlUtils;
 
 /**
  * An ordered list of classpath elements with set behaviour
@@ -35,6 +35,8 @@ import java.util.List;
  */
 public class Classpath
 {
+    private static final JdkReflector jdkReflector = new JdkReflector();
+
     public static Classpath join( Classpath firstClasspath, Classpath secondClasspath )
     {
         Classpath joinedClasspath = new Classpath();
@@ -43,10 +45,16 @@ public class Classpath
         return joinedClasspath;
     }
 
-    private final List elements = new ArrayList();
+    private final List elements;
 
     public Classpath()
     {
+        this.elements = new ArrayList();
+    }
+
+    public Classpath( Classpath other )
+    {
+        this.elements = new ArrayList( other.elements );
     }
 
     public Classpath( List elements )
@@ -128,6 +136,31 @@ public class Classpath
         return !( elements != null ? !elements.equals( classpath.elements ) : classpath.elements != null );
 
     }
+
+    public ClassLoader createClassLoader( ClassLoader parent, boolean childDelegation, boolean enableAssertions )
+        throws SurefireExecutionException
+    {
+        try
+        {
+            List urls = getAsUrlList();
+            IsolatedClassLoader classLoader = new IsolatedClassLoader( parent, childDelegation );
+            for ( Iterator iter = urls.iterator(); iter.hasNext(); )
+            {
+                URL url = (URL) iter.next();
+                classLoader.addURL( url );
+            }
+            if (parent != null){
+                jdkReflector.invokeAssertionStatusMethod( parent, enableAssertions );
+            }
+            jdkReflector.invokeAssertionStatusMethod( classLoader, enableAssertions );
+            return classLoader;
+        }
+        catch ( MalformedURLException e )
+        {
+            throw new SurefireExecutionException( "When creating classloader", e );
+        }
+    }
+
 
     public int hashCode()
     {

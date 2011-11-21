@@ -19,14 +19,6 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Iterator;
-import java.util.List;
-import org.apache.maven.surefire.util.NestedRuntimeException;
-
 /**
  * Represents the classpaths for the BooterConfiguration.
  * <p/>
@@ -50,6 +42,9 @@ public class ClasspathConfiguration
 
     private final Classpath surefireClasspathUrls;
 
+    /** The surefire classpath to use when invoking in-process with the plugin */
+    private final Classpath inprocClasspath;
+
     /**
      * Whether to enable assertions or not (can be affected by the fork arguments, and the ability to do so based on the
      * JVM).
@@ -59,24 +54,27 @@ public class ClasspathConfiguration
     // todo: @deprecated because the IsolatedClassLoader is really isolated - no parent.
     private final boolean childDelegation;
 
+    private final JdkReflector jdkReflector = new JdkReflector();
+
     public ClasspathConfiguration( boolean enableAssertions, boolean childDelegation )
     {
-        this( new Classpath(), new Classpath(), enableAssertions, childDelegation );
+        this( new Classpath(), new Classpath(),new Classpath(), enableAssertions, childDelegation );
     }
-
 
     ClasspathConfiguration( PropertiesWrapper properties )
     {
         this( properties.getClasspath( CLASSPATH ),
               properties.getClasspath( SUREFIRE_CLASSPATH ),
+              new Classpath(  ),
               properties.getBooleanProperty( ENABLE_ASSERTIONS ), properties.getBooleanProperty( CHILD_DELEGATION ) );
     }
 
-    public ClasspathConfiguration( Classpath testClasspath, Classpath surefireClassPathUrls, boolean enableAssertions,
+    public ClasspathConfiguration( Classpath testClasspath, Classpath surefireClassPathUrls, Classpath inprocClasspath, boolean enableAssertions,
                                     boolean childDelegation )
     {
         this.enableAssertions = enableAssertions;
         this.childDelegation = childDelegation;
+        this.inprocClasspath = inprocClasspath;
         this.classpathUrls = testClasspath;
         this.surefireClasspathUrls = surefireClassPathUrls;
     }
@@ -87,21 +85,6 @@ public class ClasspathConfiguration
         properties.setClasspath( SUREFIRE_CLASSPATH, surefireClasspathUrls );
         properties.setProperty( ENABLE_ASSERTIONS, String.valueOf( enableAssertions ) );
         properties.setProperty( CHILD_DELEGATION, String.valueOf( childDelegation ) );
-    }
-
-    private static Method assertionStatusMethod;
-
-    static
-    {
-        try
-        {
-            assertionStatusMethod =
-                ClassLoader.class.getMethod( "setDefaultAssertionStatus", new Class[]{ boolean.class } );
-        }
-        catch ( NoSuchMethodException e )
-        {
-            assertionStatusMethod = null;
-        }
     }
 
     public ClassLoader createTestClassLoaderConditionallySystem( boolean useSystemClassLoader )
@@ -115,66 +98,24 @@ public class ClasspathConfiguration
     public ClassLoader createTestClassLoader( boolean childDelegation )
         throws SurefireExecutionException
     {
-        return createClassLoaderSEE( classpathUrls, null, childDelegation );
+        return classpathUrls.createClassLoader( null, childDelegation, enableAssertions );
     }
 
     public ClassLoader createTestClassLoader()
         throws SurefireExecutionException
     {
-        return createClassLoaderSEE( classpathUrls, null, this.childDelegation );
+        return classpathUrls.createClassLoader( null, this.childDelegation, enableAssertions );
     }
 
     public ClassLoader createSurefireClassLoader( ClassLoader parent )
         throws SurefireExecutionException
     {
-        return createClassLoaderSEE( surefireClasspathUrls, parent, false );
+        return surefireClasspathUrls.createClassLoader( parent, false, enableAssertions );
     }
-
-    private ClassLoader createClassLoaderSEE( Classpath classPathUrls, ClassLoader parent, boolean childDelegation )
+    public ClassLoader createInprocSurefireClassLoader( ClassLoader parent )
         throws SurefireExecutionException
     {
-        try
-        {
-            return createClassLoader( classPathUrls, parent, childDelegation );
-        }
-        catch ( MalformedURLException e )
-        {
-            throw new SurefireExecutionException( "When creating classloader", e );
-        }
-
-    }
-
-    private ClassLoader createClassLoader( Classpath classPathUrls, ClassLoader parent, boolean childDelegation )
-        throws MalformedURLException
-    {
-        List urls = classPathUrls.getAsUrlList();
-        IsolatedClassLoader classLoader = new IsolatedClassLoader( parent, childDelegation );
-        if ( assertionStatusMethod != null )
-        {
-            try
-            {
-                Object[] args = new Object[]{ enableAssertions ? Boolean.TRUE : Boolean.FALSE };
-                if ( parent != null )
-                {
-                    assertionStatusMethod.invoke( parent, args );
-                }
-                assertionStatusMethod.invoke( classLoader, args );
-            }
-            catch ( IllegalAccessException e )
-            {
-                throw new NestedRuntimeException( "Unable to access the assertion enablement method", e );
-            }
-            catch ( InvocationTargetException e )
-            {
-                throw new NestedRuntimeException( "Unable to invoke the assertion enablement method", e );
-            }
-        }
-        for ( Iterator iter = urls.iterator(); iter.hasNext(); )
-        {
-            URL url = (URL) iter.next();
-            classLoader.addURL( url );
-        }
-        return classLoader;
+        return inprocClasspath.createClassLoader( parent, false, enableAssertions );
     }
 
     public Classpath getTestClasspath()

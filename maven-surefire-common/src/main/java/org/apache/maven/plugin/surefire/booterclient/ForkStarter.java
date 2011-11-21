@@ -218,7 +218,7 @@ public class ForkStarter
         {
             final ClasspathConfiguration classpathConfiguration = startupConfiguration.getClasspathConfiguration();
             ClassLoader testsClassLoader = classpathConfiguration.createTestClassLoader( false );
-            ClassLoader surefireClassLoader = classpathConfiguration.createSurefireClassLoader( testsClassLoader );
+            ClassLoader surefireClassLoader = classpathConfiguration.createInprocSurefireClassLoader( testsClassLoader );
 
             CommonReflector commonReflector = new CommonReflector( surefireClassLoader );
             Object reporterFactory = commonReflector.createReportingReporterFactory( startupReportConfiguration );

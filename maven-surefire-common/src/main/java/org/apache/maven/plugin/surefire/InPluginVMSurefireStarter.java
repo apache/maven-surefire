@@ -61,7 +61,7 @@ public class InPluginVMSurefireStarter
         // separate the TestNG classloader
         ClassLoader testsClassLoader = starterCommon.createInProcessTestClassLoader();
 
-        ClassLoader surefireClassLoader = starterCommon.createSurefireClassloader( testsClassLoader );
+        ClassLoader surefireClassLoader = starterCommon.createSurefireInProcClassloader( testsClassLoader );
 
         CommonReflector surefireReflector = new CommonReflector( surefireClassLoader );
 

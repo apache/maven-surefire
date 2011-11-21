@@ -399,13 +399,17 @@ public abstract class AbstractSurefireMojo
         {
             provider.addProviderProperties();
             String providerName = provider.getProviderName();
-            final Classpath providerClasspath = provider.getProviderClasspath();
+            Classpath providerClasspath = provider.getProviderClasspath();
+            Classpath inprocClassPath = new Classpath( providerClasspath );
+            Artifact surefireArtifact = getCommonArtifact();
+            inprocClassPath.addClassPathElementUrl( surefireArtifact.getFile().getAbsolutePath() );
+
             final Classpath testClasspath = generateTestClasspath();
 
             logClasspath( testClasspath, "test classpath" );
             logClasspath( providerClasspath, "provider classpath" );
             final ClasspathConfiguration classpathConfiguration =
-                new ClasspathConfiguration( testClasspath, providerClasspath, isEnableAssertions(),
+                new ClasspathConfiguration( testClasspath, providerClasspath, inprocClassPath, isEnableAssertions(),
                                             isChildDelegation() );
 
             return new StartupConfiguration( providerName, classpathConfiguration, classLoaderConfiguration,
@@ -424,6 +428,11 @@ public abstract class AbstractSurefireMojo
             throw new MojoExecutionException( "Unable to generate classpath: " + e, e );
         }
 
+    }
+
+    private Artifact getCommonArtifact()
+    {
+        return (Artifact) getPluginArtifactMap().get( "org.apache.maven.surefire:maven-surefire-common" );
     }
 
     private StartupReportConfiguration getStartupReportConfiguration()

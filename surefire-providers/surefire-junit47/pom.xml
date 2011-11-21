@@ -55,6 +55,12 @@
     </dependency>
     <dependency>
       <groupId>org.apache.maven.surefire</groupId>
+      <artifactId>maven-surefire-common</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.surefire</groupId>
       <artifactId>common-junit48</artifactId>
       <version>${project.version}</version>
     </dependency>

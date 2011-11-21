@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.PrintStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Properties;
@@ -33,6 +34,7 @@ import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestRequest;
+import org.apache.maven.surefire.util.NestedRuntimeException;
 import org.apache.maven.surefire.util.ReflectionUtils;
 import org.apache.maven.surefire.util.SurefireReflectionException;
 
@@ -73,6 +75,9 @@ public class SurefireReflector
 
     private final Class reporterFactory;
 
+    private final Method assertionStatusMethod;
+
+
     public SurefireReflector( ClassLoader surefireClassLoader )
     {
         this.surefireClassLoader = surefireClassLoader;
@@ -92,6 +97,8 @@ public class SurefireReflector
             reporterFactory = surefireClassLoader.loadClass( ReporterFactory.class.getName() );
             runResult = surefireClassLoader.loadClass( RunResult.class.getName() );
             booterParameters = surefireClassLoader.loadClass( ProviderParameters.class.getName() );
+            assertionStatusMethod = ReflectionUtils.tryGetMethod( ClassLoader.class, "setDefaultAssertionStatus",
+                                                                  new Class[]{ boolean.class } );
         }
         catch ( ClassNotFoundException e )
         {
@@ -187,10 +194,10 @@ public class SurefireReflector
 
     Object createReporterConfiguration( ReporterConfiguration reporterConfiguration )
     {
-        Constructor constructor = ReflectionUtils.getConstructor( this.reporterConfiguration,
-                                                                  new Class[]{ File.class, Boolean.class } );
+        Constructor constructor =
+            ReflectionUtils.getConstructor( this.reporterConfiguration, new Class[]{ File.class, Boolean.class } );
         return ReflectionUtils.newInstance( constructor, new Object[]{ reporterConfiguration.getReportsDirectory(),
-            reporterConfiguration.isTrimStackTrace()} );
+            reporterConfiguration.isTrimStackTrace() } );
     }
 
     public Object createForkingReporterFactory( Boolean trimStackTrace, PrintStream originalSystemOut )
@@ -305,4 +312,25 @@ public class SurefireReflector
     {
         return runResult.isAssignableFrom( o.getClass() );
     }
+
+    public void invokeAssertionStatusMethod( ClassLoader classLoader, boolean enableAssertions )
+    {
+        if ( assertionStatusMethod != null )
+        {
+            try
+            {
+                Object[] args = new Object[]{ enableAssertions ? Boolean.TRUE : Boolean.FALSE };
+                assertionStatusMethod.invoke( classLoader, args );
+            }
+            catch ( IllegalAccessException e )
+            {
+                throw new NestedRuntimeException( "Unable to access the assertion enablement method", e );
+            }
+            catch ( InvocationTargetException e )
+            {
+                throw new NestedRuntimeException( "Unable to invoke the assertion enablement method", e );
+            }
+        }
+    }
+
 }
