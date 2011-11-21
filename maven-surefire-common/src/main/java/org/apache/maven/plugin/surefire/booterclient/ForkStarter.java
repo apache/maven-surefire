@@ -189,7 +189,7 @@ public class ForkStarter
             final int result =
                 CommandLineUtils.executeCommandLine( cli, threadedStreamConsumer2, threadedStreamConsumer2, timeout );
 
-            if (result != RunResult.SUCCESS && result != RunResult.FAILURE){
+            if (result != RunResult.SUCCESS){
                 throw new SurefireBooterForkException("Error occured in starting fork, check output in log");
             }
             threadedStreamConsumer2.close();

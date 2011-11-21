@@ -42,9 +42,9 @@ public class RunResult
 
     public static final int SUCCESS = 0;
 
-    public static final int FAILURE = 255;
+    private static final int FAILURE = 255;
 
-    public static final int NO_TESTS = 254;
+    private static final int NO_TESTS = 254;
 
     public static final RunResult Timeout = new RunResult( 0, 0, 0, 0, false, true );
 
@@ -81,11 +81,6 @@ public class RunResult
     public int getSkipped()
     {
         return skipped;
-    }
-
-    public int getBooterCode()
-    {
-        return isErrrorFree() ? SUCCESS : FAILURE;
     }
 
     public int getForkedProcessCode()

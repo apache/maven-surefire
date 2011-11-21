@@ -70,7 +70,7 @@ public class ForkedBooter
                 : starter.runSuitesInProcessWhenForked();
 
             // noinspection CallToSystemExit
-            System.exit( result.getBooterCode() );
+            System.exit( 0 );
         }
         catch ( Throwable t )
         {
