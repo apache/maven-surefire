@@ -91,7 +91,6 @@ mvn verify
   []
 
 #{else}
-#{end}
   The Failsafe Plugin has only 2 goals:
 
   * {{{./integration-test-mojo.html}failsafe:integration-test}} runs the integration tests of an application.
@@ -99,6 +98,8 @@ mvn verify
   * {{{./verify-mojo.html}failsafe:verify}} verifies that the integration tests of an application passed.
 
   []
+
+#{end}
 
 * Usage
 
