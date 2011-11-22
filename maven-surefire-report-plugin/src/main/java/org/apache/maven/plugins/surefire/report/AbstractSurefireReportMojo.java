@@ -110,11 +110,38 @@ public abstract class AbstractSurefireReportMojo
     private boolean aggregate;
 
     /**
+     * Whether the report should be generated or not.
+     *
+     * @return {@code true} if and only if the report should be generated.
+     * @since 2.11
+     */
+    protected boolean isSkipped()
+    {
+        return false;
+    }
+
+    /**
+     * Whether the report should be generated when there are no test results.
+     *
+     * @return {@code true} if and only if the report should be generated when there are no result files at all.
+     * @since 2.11
+     */
+    protected boolean isGeneratedWhenNoResults()
+    {
+        return false;
+    }
+
+    /**
      * {@inheritDoc}
      */
     public void executeReport( Locale locale )
         throws MavenReportException
     {
+        if ( isSkipped() )
+        {
+            getLog().info( getOutputName() + " generation skipped." );
+            return;
+        }
         final List reportsDirectoryList = new ArrayList();
 
         if ( reportsDirectories != null )
@@ -172,6 +199,19 @@ public abstract class AbstractSurefireReportMojo
             {
 
                 reportsDirectoryList.add( getSurefireReportsDirectory( project ) );
+            }
+        }
+
+        if ( isGeneratedWhenNoResults() )
+        {
+            boolean atLeastOneDirectoryExists = false;
+            for ( Iterator i = reportsDirectoryList.iterator(); i.hasNext() && !atLeastOneDirectoryExists; )
+            {
+                atLeastOneDirectoryExists = SurefireReportParser.hasReportFiles( (File) i.next() );
+            }
+            if ( !atLeastOneDirectoryExists )
+            {
+                getLog().info( getOutputName() + " generation skipped as there are no report files to report." );
             }
         }
 

@@ -43,6 +43,10 @@ import org.xml.sax.SAXException;
  */
 public class SurefireReportParser
 {
+    private static final String INCLUDES = "*.xml";
+
+    private static final String EXCLUDES = "*.txt, testng-failed.xml, testng-failures.xml, testng-results.xml";
+
     private NumberFormat numberFormat = NumberFormat.getInstance();
 
     private List reportsDirectories;
@@ -74,8 +78,7 @@ public class SurefireReportParser
                 continue;
             }
             String[] xmlReportFiles =
-                getIncludedFiles( reportsDirectory, "*.xml",
-                                  "*.txt, testng-failed.xml, testng-failures.xml, testng-results.xml" );
+                getIncludedFiles( reportsDirectory, INCLUDES, EXCLUDES );
             for ( int j = 0; j < xmlReportFiles.length; j++ )
             {
                 File xmlReport = new File( reportsDirectory, xmlReportFiles[j] );
@@ -262,7 +265,19 @@ public class SurefireReportParser
         return failureDetailList;
     }
 
-    private String[] getIncludedFiles( File directory, String includes, String excludes )
+    /**
+     * Returns {@code true} if the specified directory contains at least one report file.
+     *
+     * @param directory the directory
+     * @return {@code true} if the specified directory contains at least one report file.
+     */
+    public static boolean hasReportFiles( File directory )
+    {
+        return directory != null && directory.isDirectory()
+            && getIncludedFiles( directory, INCLUDES, EXCLUDES ).length > 0;
+    }
+
+    private static String[] getIncludedFiles( File directory, String includes, String excludes )
     {
         DirectoryScanner scanner = new DirectoryScanner();
 

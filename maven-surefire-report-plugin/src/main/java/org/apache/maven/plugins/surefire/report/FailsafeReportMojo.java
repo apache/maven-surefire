@@ -48,6 +48,25 @@ public class FailsafeReportMojo
      */
     private String outputName;
 
+    /**
+     * If set to true the failsafe report will be generated even when there are no failsafe result files.
+     * Defaults to <code>false</code> to preserve legacy behaviour pre 2.10
+     *
+     * @parameter expression="${alwaysGenerateFailsafeReport}" default-value="false"
+     * @noinspection UnusedDeclaration
+     * @since 2.11
+     */
+    private boolean alwaysGenerateFailsafeReport;
+
+    /**
+     * If set to true the failsafe report generation will be skipped.
+     *
+     * @parameter expression="${skipFailsafeReport}" default-value="false"
+     * @noinspection UnusedDeclaration
+     * @since 2.11
+     */
+    private boolean skipFailsafeReport;
+
     protected File getSurefireReportsDirectory( MavenProject subProject )
     {
         String buildDir = subProject.getBuild().getDirectory();
@@ -59,4 +78,13 @@ public class FailsafeReportMojo
         return outputName;
     }
 
+    protected boolean isSkipped()
+    {
+        return skipFailsafeReport;
+    }
+
+    protected boolean isGeneratedWhenNoResults()
+    {
+        return alwaysGenerateFailsafeReport;
+    }
 }
