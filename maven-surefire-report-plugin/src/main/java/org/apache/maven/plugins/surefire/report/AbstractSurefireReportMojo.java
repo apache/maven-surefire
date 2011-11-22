@@ -139,9 +139,67 @@ public abstract class AbstractSurefireReportMojo
     {
         if ( isSkipped() )
         {
-            getLog().info( getOutputName() + " generation skipped." );
             return;
         }
+
+        final List reportsDirectoryList = getReportsDirectories();
+
+        if ( reportsDirectoryList == null )
+        {
+            return;
+        }
+
+        if ( isGeneratedWhenNoResults() )
+        {
+            boolean atLeastOneDirectoryExists = false;
+            for ( Iterator i = reportsDirectoryList.iterator(); i.hasNext() && !atLeastOneDirectoryExists; )
+            {
+                atLeastOneDirectoryExists = SurefireReportParser.hasReportFiles( (File) i.next() );
+            }
+            if ( !atLeastOneDirectoryExists )
+            {
+                return;
+            }
+        }
+
+        SurefireReportGenerator report =
+            new SurefireReportGenerator( reportsDirectoryList, locale, showSuccess, determineXrefLocation() );
+
+        report.doGenerateReport( getBundle( locale ), getSink() );
+    }
+
+    public boolean canGenerateReport()
+    {
+        if ( isSkipped() )
+        {
+            return false;
+        }
+
+        final List reportsDirectoryList = getReportsDirectories();
+
+        if ( reportsDirectoryList == null )
+        {
+            return false;
+        }
+
+        if ( isGeneratedWhenNoResults() )
+        {
+            boolean atLeastOneDirectoryExists = false;
+            for ( Iterator i = reportsDirectoryList.iterator(); i.hasNext() && !atLeastOneDirectoryExists; )
+            {
+                atLeastOneDirectoryExists = SurefireReportParser.hasReportFiles( (File) i.next() );
+            }
+            if ( !atLeastOneDirectoryExists )
+            {
+                return false;
+            }
+        }
+
+        return super.canGenerateReport();
+    }
+
+    private List getReportsDirectories()
+    {
         final List reportsDirectoryList = new ArrayList();
 
         if ( reportsDirectories != null )
@@ -158,7 +216,7 @@ public abstract class AbstractSurefireReportMojo
         {
             if ( !project.isExecutionRoot() )
             {
-                return;
+                return null;
             }
             if ( reportsDirectories == null )
             {
@@ -201,24 +259,7 @@ public abstract class AbstractSurefireReportMojo
                 reportsDirectoryList.add( getSurefireReportsDirectory( project ) );
             }
         }
-
-        if ( isGeneratedWhenNoResults() )
-        {
-            boolean atLeastOneDirectoryExists = false;
-            for ( Iterator i = reportsDirectoryList.iterator(); i.hasNext() && !atLeastOneDirectoryExists; )
-            {
-                atLeastOneDirectoryExists = SurefireReportParser.hasReportFiles( (File) i.next() );
-            }
-            if ( !atLeastOneDirectoryExists )
-            {
-                getLog().info( getOutputName() + " generation skipped as there are no report files to report." );
-            }
-        }
-
-        SurefireReportGenerator report =
-            new SurefireReportGenerator( reportsDirectoryList, locale, showSuccess, determineXrefLocation() );
-
-        report.doGenerateReport( getBundle( locale ), getSink() );
+        return reportsDirectoryList;
     }
 
     /**
