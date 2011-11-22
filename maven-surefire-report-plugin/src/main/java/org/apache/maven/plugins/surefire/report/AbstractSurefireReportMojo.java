@@ -149,7 +149,7 @@ public abstract class AbstractSurefireReportMojo
             return;
         }
 
-        if ( isGeneratedWhenNoResults() )
+        if ( !isGeneratedWhenNoResults() )
         {
             boolean atLeastOneDirectoryExists = false;
             for ( Iterator i = reportsDirectoryList.iterator(); i.hasNext() && !atLeastOneDirectoryExists; )
@@ -182,7 +182,7 @@ public abstract class AbstractSurefireReportMojo
             return false;
         }
 
-        if ( isGeneratedWhenNoResults() )
+        if ( !isGeneratedWhenNoResults() )
         {
             boolean atLeastOneDirectoryExists = false;
             for ( Iterator i = reportsDirectoryList.iterator(); i.hasNext() && !atLeastOneDirectoryExists; )
