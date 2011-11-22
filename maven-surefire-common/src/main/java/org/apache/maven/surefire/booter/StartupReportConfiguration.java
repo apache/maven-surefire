@@ -24,6 +24,7 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
 import org.apache.maven.surefire.report.AbstractConsoleReporter;
 import org.apache.maven.surefire.report.AbstractFileReporter;
 import org.apache.maven.surefire.report.BriefConsoleReporter;
@@ -39,7 +40,6 @@ import org.apache.maven.surefire.report.XMLReporter;
 /**
  * All the parameters used to construct reporters
  * <p/>
- * TODO: Move out of API module
  *
  * @author Kristian Rosenvold
  */
@@ -53,6 +53,10 @@ public class StartupReportConfiguration
 
     private final String reportNameSuffix;
 
+    private final String configurationHash;
+
+    private final boolean requiresRunHistory;
+
     private final boolean redirectTestOutputToFile;
 
     private final boolean disableXmlReport;
@@ -61,7 +65,7 @@ public class StartupReportConfiguration
 
     private final boolean trimStackTrace;
 
-    private final Properties testVmSystemProperties = new Properties(  );
+    private final Properties testVmSystemProperties = new Properties();
 
     public static final String BRIEF_REPORT_FORMAT = "brief";
 
@@ -69,16 +73,8 @@ public class StartupReportConfiguration
 
     public StartupReportConfiguration( boolean useFile, boolean printSummary, String reportFormat,
                                        boolean redirectTestOutputToFile, boolean disableXmlReport,
-                                       File reportsDirectory, boolean trimStackTrace )
-    {
-        this( useFile, printSummary, reportFormat, redirectTestOutputToFile, 
-                disableXmlReport, reportsDirectory, trimStackTrace, null );
-    }
-
-    public StartupReportConfiguration( boolean useFile, boolean printSummary, String reportFormat,
-                                       boolean redirectTestOutputToFile, boolean disableXmlReport,
-                                       File reportsDirectory, boolean trimStackTrace,
-                                       String reportNameSuffix )
+                                       File reportsDirectory, boolean trimStackTrace, String reportNameSuffix,
+                                       String configurationHash, boolean requiresRunHistory )
     {
         this.useFile = useFile;
         this.printSummary = printSummary;
@@ -88,18 +84,22 @@ public class StartupReportConfiguration
         this.reportsDirectory = reportsDirectory;
         this.trimStackTrace = trimStackTrace;
         this.reportNameSuffix = reportNameSuffix;
+        this.configurationHash = configurationHash;
+        this.requiresRunHistory = requiresRunHistory;
     }
 
     public static StartupReportConfiguration defaultValue()
     {
         File target = new File( "./target" );
-        return new StartupReportConfiguration( true, true, "PLAIN", false, false, target, false );
+        return new StartupReportConfiguration( true, true, "PLAIN", false, false, target, false, null, "TESTHASH",
+                                               false );
     }
 
     public static StartupReportConfiguration defaultNoXml()
     {
         File target = new File( "./target" );
-        return new StartupReportConfiguration( true, true, "PLAIN", false, true, target, false );
+        return new StartupReportConfiguration( true, true, "PLAIN", false, true, target, false, null, "TESTHASHxXML",
+                                               false );
     }
 
     public boolean isUseFile()
@@ -150,7 +150,7 @@ public class StartupReportConfiguration
     {
         if ( !isDisableXmlReport() )
         {
-            return new XMLReporter(trimStackTrace, reportsDirectory, reportNameSuffix);
+            return new XMLReporter( trimStackTrace, reportsDirectory, reportNameSuffix );
         }
         return null;
     }
@@ -177,11 +177,11 @@ public class StartupReportConfiguration
         {
             if ( BRIEF_REPORT_FORMAT.equals( getReportFormat() ) )
             {
-                return new BriefFileReporter(trimStackTrace, reportsDirectory, getReportNameSuffix());
+                return new BriefFileReporter( trimStackTrace, reportsDirectory, getReportNameSuffix() );
             }
             else if ( PLAIN_REPORT_FORMAT.equals( getReportFormat() ) )
             {
-                return new FileReporter(trimStackTrace, reportsDirectory, getReportNameSuffix());
+                return new FileReporter( trimStackTrace, reportsDirectory, getReportNameSuffix() );
             }
         }
         return null;
@@ -214,15 +214,15 @@ public class StartupReportConfiguration
     {
         if ( isUseFile() )
         {
-            return isPrintSummary() ? new ConsoleReporter(trimStackTrace) : null;
+            return isPrintSummary() ? new ConsoleReporter( trimStackTrace ) : null;
         }
         else if ( isRedirectTestOutputToFile() || BRIEF_REPORT_FORMAT.equals( getReportFormat() ) )
         {
-            return new BriefConsoleReporter(trimStackTrace);
+            return new BriefConsoleReporter( trimStackTrace );
         }
         else if ( PLAIN_REPORT_FORMAT.equals( getReportFormat() ) )
         {
-            return new DetailedConsoleReporter(trimStackTrace );
+            return new DetailedConsoleReporter( trimStackTrace );
         }
         return null;
     }
@@ -239,16 +239,31 @@ public class StartupReportConfiguration
         }
     }
 
-    public Reporter instantiateConsoleOutputFileReporterName(PrintStream originalSystemOut)
+    public Reporter instantiateConsoleOutputFileReporter( PrintStream originalSystemOut )
     {
         if ( isRedirectTestOutputToFile() )
         {
-            return new ConsoleOutputFileReporter(reportsDirectory, getReportNameSuffix());
+            return new ConsoleOutputFileReporter( reportsDirectory, getReportNameSuffix() );
         }
         else
         {
-            return new ConsoleOutputDirectReporter(originalSystemOut);
+            return new ConsoleOutputDirectReporter( originalSystemOut );
         }
+    }
+
+    public StatisticsReporter instantiateStatisticsReporter()
+    {
+        if ( requiresRunHistory )
+        {
+            final File target = getStatisticsFile();
+            return new StatisticsReporter( target );
+        }
+        return null;
+    }
+
+    public File getStatisticsFile()
+    {
+        return new File( reportsDirectory.getParentFile().getParentFile(), ".surefire-" + this.configurationHash );
     }
 
 
@@ -285,5 +300,15 @@ public class StartupReportConfiguration
     public boolean isTrimStackTrace()
     {
         return trimStackTrace;
+    }
+
+    public String getConfigurationHash()
+    {
+        return configurationHash;
+    }
+
+    public boolean isRequiresRunHistory()
+    {
+        return requiresRunHistory;
     }
 }

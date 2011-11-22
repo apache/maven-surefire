@@ -21,7 +21,6 @@ package org.apache.maven.surefire.testset;
 
 import java.io.File;
 import java.util.List;
-
 import org.apache.maven.surefire.util.RunOrder;
 
 /**
@@ -37,10 +36,10 @@ public class DirectoryScannerParameters
 
     private final Boolean failIfNoTests;
 
-    private final RunOrder runOrder;
+    private final RunOrder[] runOrder;
 
-    public DirectoryScannerParameters( File testClassesDirectory, List includes, List excludes, Boolean failIfNoTests,
-                                       RunOrder runOrder )
+    private DirectoryScannerParameters( File testClassesDirectory, List includes, List excludes, Boolean failIfNoTests,
+                                        RunOrder[] runOrder )
     {
         this.testClassesDirectory = testClassesDirectory;
         this.includes = includes;
@@ -52,12 +51,13 @@ public class DirectoryScannerParameters
     public DirectoryScannerParameters( File testClassesDirectory, List includes, List excludes, Boolean failIfNoTests,
                                        String runOrder )
     {
-        this( testClassesDirectory, includes, excludes, failIfNoTests, runOrder == null ? RunOrder.FILESYSTEM : RunOrder.valueOf( runOrder ) );
+        this( testClassesDirectory, includes, excludes, failIfNoTests,
+              runOrder == null ? RunOrder.DEFAULT : RunOrder.valueOfMulti( runOrder ) );
     }
 
     /**
      * Returns the directory of the compiled classes, normally ${project.build.testOutputDirectory}
-     * 
+     *
      * @return A directory that can be scanned for .class files
      */
     public File getTestClassesDirectory()
@@ -67,7 +67,7 @@ public class DirectoryScannerParameters
 
     /**
      * The includes pattern list, as specified on the plugin includes parameter.
-     * 
+     *
      * @return A list of patterns. May contain both source file designators and .class extensions.
      */
     public List getIncludes()
@@ -77,7 +77,7 @@ public class DirectoryScannerParameters
 
     /**
      * The excludes pattern list, as specified on the plugin includes parameter.
-     * 
+     *
      * @return A list of patterns. May contain both source file designators and .class extensions.
      */
     public List getExcludes()
@@ -87,7 +87,7 @@ public class DirectoryScannerParameters
 
     /**
      * Indicates if lack of runable tests should fail the entire build
-     * 
+     *
      * @return true if no tests should fail the build
      */
     public Boolean isFailIfNoTests()
@@ -95,7 +95,7 @@ public class DirectoryScannerParameters
         return failIfNoTests;
     }
 
-    public RunOrder getRunOrder()
+    public RunOrder[] getRunOrder()
     {
         return runOrder;
     }

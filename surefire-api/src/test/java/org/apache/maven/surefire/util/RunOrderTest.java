@@ -26,24 +26,37 @@ public class RunOrderTest
 {
     public void testShouldReturnRunOrderForLowerCaseName()
     {
-        assertEquals( RunOrder.HOURLY, RunOrder.valueOf( "hourly" ) );
+        assertEquals( RunOrder.HOURLY, RunOrder.valueOfMulti( "hourly" )[0] );
+    }
+
+    public void testMultiValue()
+    {
+        final RunOrder[] hourlies = RunOrder.valueOfMulti( "failedfirst,balanced" );
+        assertEquals( RunOrder.FAILEDFIRST, hourlies[0] );
+        assertEquals( RunOrder.BALANCED, hourlies[1] );
+    }
+
+    public void testAsString()
+    {
+        RunOrder[] orders = new RunOrder[]{ RunOrder.FAILEDFIRST, RunOrder.ALPHABETICAL };
+        assertEquals( "failedfirst,alphabetical", RunOrder.asString( orders ) );
     }
 
     public void testShouldReturnRunOrderForUpperCaseName()
     {
-        assertEquals( RunOrder.HOURLY, RunOrder.valueOf( "HOURLY" ) );
+        assertEquals( RunOrder.HOURLY, RunOrder.valueOfMulti( "HOURLY" )[0] );
     }
 
     public void testShouldReturnNullForNullName()
     {
-        assertNull( RunOrder.valueOf( null ) );
+        assertTrue( RunOrder.valueOfMulti( null ).length == 0 );
     }
 
     public void testShouldThrowExceptionForInvalidName()
     {
         try
         {
-            RunOrder.valueOf( "arbitraryName" );
+            RunOrder.valueOfMulti( "arbitraryName" );
             fail( "IllegalArgumentException not thrown." );
         }
         catch ( IllegalArgumentException expected )

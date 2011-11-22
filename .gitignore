@@ -9,4 +9,4 @@ build
 .project
 .settings
 .idea
-
+.surefire-*

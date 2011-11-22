@@ -25,10 +25,12 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import org.apache.maven.plugin.surefire.runorder.RunEntryStatisticsMap;
+import org.apache.maven.surefire.testset.RunOrderParameters;
 
 /**
- * Applies the final unorder of the tests
- * 
+ * Applies the final runorder of the tests
+ *
  * @author Kristian Rosenvold
  */
 public class DefaultRunOrderCalculator
@@ -36,26 +38,51 @@ public class DefaultRunOrderCalculator
 {
     private final Comparator sortOrder;
 
-    private final RunOrder runOrder;
+    private final RunOrder[] runOrder;
 
-    public DefaultRunOrderCalculator( RunOrder runOrder )
+    private final RunOrderParameters runOrderParameters;
+
+    private final int threadCount;
+
+    public DefaultRunOrderCalculator( RunOrderParameters runOrderParameters, int threadCount )
     {
-        this.runOrder = runOrder;
-        this.sortOrder = getSortOrderComparator();
+        this.runOrderParameters = runOrderParameters;
+        this.threadCount = threadCount;
+        this.runOrder = runOrderParameters.getRunOrder();
+        this.sortOrder = this.runOrder.length > 0 ? getSortOrderComparator( this.runOrder[0] ) : null;
     }
 
-  public TestsToRun orderTestClasses( TestsToRun scannedClasses ){
-    List result = new ArrayList(Arrays.asList(scannedClasses.getLocatedClasses()));
-    orderTestClasses(result);
-    return new TestsToRun( result );
+    public TestsToRun orderTestClasses( TestsToRun scannedClasses )
+    {
+        List result = new ArrayList( Arrays.asList( scannedClasses.getLocatedClasses() ) );
 
-  }
+        orderTestClasses( result, runOrder.length != 0 ? runOrder[0] : null );
+        return new TestsToRun( result );
+    }
 
-  private void orderTestClasses( List testClasses )
+    private void orderTestClasses( List testClasses, RunOrder runOrder )
     {
         if ( RunOrder.RANDOM.equals( runOrder ) )
         {
             Collections.shuffle( testClasses );
+        }
+        else if ( RunOrder.FAILEDFIRST.equals( runOrder ) )
+        {
+            RunEntryStatisticsMap runEntryStatisticsMap =
+                RunEntryStatisticsMap.fromFile( runOrderParameters.getRunStatisticsFile() );
+            final List prioritized = runEntryStatisticsMap.getPrioritizedTestsByFailureFirst( testClasses );
+            testClasses.clear();
+            testClasses.addAll( prioritized );
+
+        }
+        else if ( RunOrder.BALANCED.equals( runOrder ) )
+        {
+            RunEntryStatisticsMap runEntryStatisticsMap =
+                RunEntryStatisticsMap.fromFile( runOrderParameters.getRunStatisticsFile() );
+            final List prioritized = runEntryStatisticsMap.getPrioritizedTestsClassRunTime( testClasses, threadCount );
+            testClasses.clear();
+            testClasses.addAll( prioritized );
+
         }
         else if ( sortOrder != null )
         {
@@ -63,7 +90,7 @@ public class DefaultRunOrderCalculator
         }
     }
 
-    private Comparator getSortOrderComparator()
+    private Comparator getSortOrderComparator( RunOrder runOrder )
     {
         if ( RunOrder.ALPHABETICAL.equals( runOrder ) )
         {

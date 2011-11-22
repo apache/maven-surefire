@@ -28,9 +28,11 @@ import java.util.Arrays;
 import java.util.Properties;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
+import org.apache.maven.surefire.testset.RunOrderParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.util.NestedRuntimeException;
+import org.apache.maven.surefire.util.RunOrder;
 
 import junit.framework.TestCase;
 
@@ -50,6 +52,18 @@ public class SurefireReflectorTest
             new DirectoryScannerParameters( new File( "ABC" ), new ArrayList(), new ArrayList(), Boolean.FALSE,
                                             "hourly" );
         surefireReflector.setDirectoryScannerParameters( foo, directoryScannerParameters );
+        assertTrue( isCalled( foo ).booleanValue() );
+
+    }
+
+    public void testRunOrderParameters()
+        throws Exception
+    {
+        SurefireReflector surefireReflector = getReflector();
+        Object foo = getFoo();
+
+        RunOrderParameters runOrderParameters = new RunOrderParameters( RunOrder.DEFAULT, new File( "." ) );
+        surefireReflector.setRunOrderParameters( foo, runOrderParameters );
         assertTrue( isCalled( foo ).booleanValue() );
 
     }

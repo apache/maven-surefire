@@ -1,4 +1,4 @@
-package org.apache.maven.plugin.surefire.booterclient;
+package org.apache.maven.surefire.booter;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,30 +19,13 @@ package org.apache.maven.plugin.surefire.booterclient;
  * under the License.
  */
 
-import org.apache.maven.plugin.surefire.report.FileReporterFactory;
-import org.apache.maven.surefire.booter.StartupReportConfiguration;
-import org.apache.maven.surefire.report.DefaultConsoleReporter;
-import org.apache.maven.surefire.report.ConsoleLogger;
-import org.apache.maven.surefire.report.RunListener;
+import org.apache.maven.surefire.testset.RunOrderParameters;
 
 /**
  * @author Kristian Rosenvold
+ * @noinspection UnusedDeclaration
  */
-public class TestSetMockReporterFactory
-    extends FileReporterFactory
+interface RunOrderParametersAware
 {
-    public TestSetMockReporterFactory()
-    {
-        super( StartupReportConfiguration.defaultValue() );
-    }
-
-    public ConsoleLogger createConsoleLogger()
-    {
-        return new DefaultConsoleReporter( System.out );
-    }
-
-    public RunListener createReporter()
-    {
-        return new MockReporter();
-    }
+    void setRunOrderParameters( RunOrderParameters runOrderParameters );
 }

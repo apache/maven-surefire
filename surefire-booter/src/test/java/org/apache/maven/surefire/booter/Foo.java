@@ -23,15 +23,16 @@ package org.apache.maven.surefire.booter;
 import java.util.Properties;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
+import org.apache.maven.surefire.testset.RunOrderParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestRequest;
 
 /**
-* @author Kristian Rosenvold
-*/
+ * @author Kristian Rosenvold
+ */
 public class Foo
     implements DirectoryScannerParametersAware, TestRequestAware, ProviderPropertiesAware, ReporterConfigurationAware,
-    SurefireClassLoadersAware, TestArtifactInfoAware
+    SurefireClassLoadersAware, TestArtifactInfoAware, RunOrderParametersAware
 {
     DirectoryScannerParameters directoryScannerParameters;
 
@@ -49,6 +50,8 @@ public class Foo
 
     TestArtifactInfo testArtifactInfo;
 
+    RunOrderParameters runOrderParameters;
+
     boolean called = false;
 
     public void setDirectoryScannerParameters( DirectoryScannerParameters directoryScanner )
@@ -58,11 +61,13 @@ public class Foo
     }
 
 
-    /** @noinspection UnusedDeclaration
-     * @return true if it has been callsed */
+    /**
+     * @return true if it has been callsed
+     * @noinspection UnusedDeclaration
+     */
     public Boolean isCalled()
     {
-        return Boolean.valueOf( called);
+        return Boolean.valueOf( called );
     }
 
     public void setProviderProperties( Properties providerProperties )
@@ -93,6 +98,12 @@ public class Foo
     public void setTestArtifactInfo( TestArtifactInfo testArtifactInfo )
     {
         this.testArtifactInfo = testArtifactInfo;
+        this.called = true;
+    }
+
+    public void setRunOrderParameters( RunOrderParameters runOrderParameters )
+    {
+        this.runOrderParameters = runOrderParameters;
         this.called = true;
     }
 }

@@ -19,12 +19,12 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
 import org.apache.maven.surefire.booter.StartupReportConfiguration;
-import org.apache.maven.surefire.report.AbstractConsoleReporter;
-import org.apache.maven.surefire.report.AbstractFileReporter;
 import org.apache.maven.surefire.report.ConsoleLogger;
 import org.apache.maven.surefire.report.DefaultDirectConsoleReporter;
 import org.apache.maven.surefire.report.MulticastingReporter;
@@ -34,7 +34,6 @@ import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.RunStatistics;
 import org.apache.maven.surefire.report.TestSetRunListener;
-import org.apache.maven.surefire.report.XMLReporter;
 import org.apache.maven.surefire.suite.RunResult;
 
 /**
@@ -56,11 +55,14 @@ public class FileReporterFactory
 
     private final StartupReportConfiguration reportConfiguration;
 
+    private final StatisticsReporter statisticsReporter;
+
     public FileReporterFactory( StartupReportConfiguration reportConfiguration )
     {
         this.reportConfiguration = reportConfiguration;
         this.reporterConfiguration = getReporterConfiguration();
         multicastingReporter = new MulticastingReporter( instantiateReports() );
+        this.statisticsReporter = reportConfiguration.instantiateStatisticsReporter();
         runStarting();
     }
 
@@ -73,38 +75,23 @@ public class FileReporterFactory
 
     public RunListener createReporter()
     {
-        return new TestSetRunListener( instantiateConsoleReporter(), instantiateFileReporter(),
-                                       instantiateXmlReporter(), instantiateConsoleOutputFileReporter(), globalStats );
-    }
-
-    private AbstractConsoleReporter instantiateConsoleReporter()
-    {
-        return reportConfiguration.instantiateConsoleReporter();
-    }
-
-    private AbstractFileReporter instantiateFileReporter()
-    {
-        return reportConfiguration.instantiateFileReporter();
-    }
-
-    private XMLReporter instantiateXmlReporter()
-    {
-        return reportConfiguration.instantiateXmlReporter();
-    }
-
-    private Reporter instantiateConsoleOutputFileReporter()
-    {
-        return reportConfiguration.instantiateConsoleOutputFileReporterName(
-            reporterConfiguration.getOriginalSystemOut() );
+        final PrintStream sout = reporterConfiguration.getOriginalSystemOut();
+        return new TestSetRunListener( reportConfiguration.instantiateConsoleReporter(),
+                                       reportConfiguration.instantiateFileReporter(),
+                                       reportConfiguration.instantiateXmlReporter(),
+                                       reportConfiguration.instantiateConsoleOutputFileReporter( sout ),
+                                       statisticsReporter, globalStats );
     }
 
     private List instantiateReports()
     {
+        final PrintStream sout = reporterConfiguration.getOriginalSystemOut();
         List result = new ArrayList();
-        addIfNotNull( result, instantiateConsoleReporter() );
-        addIfNotNull( result, instantiateFileReporter() );
-        addIfNotNull( result, instantiateXmlReporter() );
-        addIfNotNull( result, instantiateConsoleOutputFileReporter() );
+        addIfNotNull( result, reportConfiguration.instantiateConsoleReporter() );
+        addIfNotNull( result, reportConfiguration.instantiateFileReporter() );
+        addIfNotNull( result, reportConfiguration.instantiateXmlReporter() );
+        addIfNotNull( result, reportConfiguration.instantiateConsoleOutputFileReporter( sout ) );
+        addIfNotNull( result, statisticsReporter );
         return result;
     }
 

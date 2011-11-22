@@ -19,9 +19,13 @@ package org.apache.maven.surefire.util;
  * under the License.
  */
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringTokenizer;
+
 /**
  * A RunOrder specifies the order in which the tests will be run.
- * 
+ *
  * @author Stefan Birkner
  */
 public class RunOrder
@@ -35,6 +39,32 @@ public class RunOrder
     public static final RunOrder RANDOM = new RunOrder( "random" );
 
     public static final RunOrder REVERSE_ALPHABETICAL = new RunOrder( "reversealphabetical" );
+
+    public static final RunOrder BALANCED = new RunOrder( "balanced" );
+
+    public static final RunOrder FAILEDFIRST = new RunOrder( "failedfirst" );
+
+    public static final RunOrder[] DEFAULT = new RunOrder[]{ FILESYSTEM };
+
+    /**
+     * Returns the specified RunOrder
+     *
+     * @param values The runorder string value
+     * @return An array of RunOrder objects, never null
+     */
+    public static RunOrder[] valueOfMulti( String values )
+    {
+        List result = new ArrayList();
+        if ( values != null )
+        {
+            StringTokenizer stringTokenizer = new StringTokenizer( values, "," );
+            while ( stringTokenizer.hasMoreTokens() )
+            {
+                result.add( valueOf( stringTokenizer.nextToken() ) );
+            }
+        }
+        return (RunOrder[]) result.toArray( new RunOrder[result.size()] );
+    }
 
     public static RunOrder valueOf( String name )
     {
@@ -79,7 +109,22 @@ public class RunOrder
 
     private static RunOrder[] values()
     {
-        return new RunOrder[] { ALPHABETICAL, FILESYSTEM, HOURLY, RANDOM, REVERSE_ALPHABETICAL };
+        return new RunOrder[]{ ALPHABETICAL, FILESYSTEM, HOURLY, RANDOM, REVERSE_ALPHABETICAL, BALANCED, FAILEDFIRST };
+    }
+
+    public static String asString( RunOrder[] runOrder )
+    {
+        StringBuffer stringBuffer = new StringBuffer();
+        for ( int i = 0; i < runOrder.length; i++ )
+        {
+            stringBuffer.append( runOrder[i].name );
+            if ( i < ( runOrder.length - 1 ) )
+            {
+                stringBuffer.append( "," );
+            }
+        }
+        return stringBuffer.toString();
+
     }
 
     private final String name;

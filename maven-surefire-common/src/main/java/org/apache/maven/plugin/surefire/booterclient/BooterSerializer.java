@@ -30,8 +30,10 @@ import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.SystemPropertyManager;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
+import org.apache.maven.surefire.testset.RunOrderParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestRequest;
+import org.apache.maven.surefire.util.RunOrder;
 
 /**
  * Knows how to serialize and deserialize the booter configuration.
@@ -94,7 +96,13 @@ class BooterSerializer
             properties.addList( directoryScannerParameters.getExcludes(), BooterConstants.EXCLUDES_PROPERTY_PREFIX );
             properties.setProperty( BooterConstants.TEST_CLASSES_DIRECTORY,
                                     directoryScannerParameters.getTestClassesDirectory() );
-            properties.setProperty( BooterConstants.RUN_ORDER, directoryScannerParameters.getRunOrder().name() );
+        }
+
+        final RunOrderParameters runOrderParameters = booterConfiguration.getRunOrderParameters();
+        if ( runOrderParameters != null )
+        {
+            properties.setProperty( BooterConstants.RUN_ORDER, RunOrder.asString( runOrderParameters.getRunOrder() ) );
+            properties.setProperty( BooterConstants.RUN_STATISTICS_FILE, runOrderParameters.getRunStatisticsFile() );
         }
 
         ReporterConfiguration reporterConfiguration = booterConfiguration.getReporterConfiguration();

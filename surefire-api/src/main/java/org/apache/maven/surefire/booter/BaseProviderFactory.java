@@ -26,6 +26,7 @@ import org.apache.maven.surefire.report.DefaultDirectConsoleReporter;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
+import org.apache.maven.surefire.testset.RunOrderParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.util.DefaultDirectoryScanner;
@@ -38,7 +39,7 @@ import org.apache.maven.surefire.util.RunOrderCalculator;
  */
 public class BaseProviderFactory
     implements DirectoryScannerParametersAware, ReporterConfigurationAware, SurefireClassLoadersAware, TestRequestAware,
-    ProviderPropertiesAware, ProviderParameters, TestArtifactInfoAware
+    ProviderPropertiesAware, ProviderParameters, TestArtifactInfoAware, RunOrderParametersAware
 {
 
     private Properties providerProperties;
@@ -46,6 +47,8 @@ public class BaseProviderFactory
     private DirectoryScannerParameters directoryScannerParameters;
 
     private ReporterConfiguration reporterConfiguration;
+
+    private RunOrderParameters runOrderParameters;
 
     private ClassLoader testClassLoader;
 
@@ -59,6 +62,7 @@ public class BaseProviderFactory
     private final ReporterFactory reporterFactory;
 
     private final boolean insideFork;
+
 
     public BaseProviderFactory( ReporterFactory reporterFactory, Boolean insideFork )
     {
@@ -77,13 +81,19 @@ public class BaseProviderFactory
                                             directoryScannerParameters.getExcludes() );
     }
 
+    private int getThreadCount()
+    {
+        final String threadcount = (String) providerProperties.get( "threadcount" );
+        return threadcount == null ? 1 : Integer.parseInt( threadcount );
+    }
+
     public RunOrderCalculator getRunOrderCalculator()
     {
         if ( directoryScannerParameters == null )
         {
             return null;
         }
-        return new DefaultRunOrderCalculator( directoryScannerParameters.getRunOrder() );
+        return new DefaultRunOrderCalculator( runOrderParameters, getThreadCount() );
     }
 
     public ReporterFactory getReporterFactory()
@@ -159,6 +169,11 @@ public class BaseProviderFactory
     public void setTestArtifactInfo( TestArtifactInfo testArtifactInfo )
     {
         this.testArtifactInfo = testArtifactInfo;
+    }
+
+    public void setRunOrderParameters( RunOrderParameters runOrderParameters )
+    {
+        this.runOrderParameters = runOrderParameters;
     }
 
 }

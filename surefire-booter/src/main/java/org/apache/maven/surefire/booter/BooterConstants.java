@@ -42,6 +42,7 @@ public interface BooterConstants
     String SOURCE_DIRECTORY = "testSuiteDefinitionTestSourceDirectory";
     String TEST_CLASSES_DIRECTORY = "testClassesDirectory";
     String RUN_ORDER = "runOrder";
+    String RUN_STATISTICS_FILE = "runStatisticsFile";
     String TEST_SUITE_XML_FILES = "testSuiteXmlFiles";
     String PROVIDER_CONFIGURATION = "providerConfiguration";
     String FORKTESTSET = "forkTestSet";

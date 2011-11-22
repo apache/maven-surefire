@@ -133,7 +133,7 @@ public class TestNGProvider
                                              testRequest.getTestSourceDirectory().toString(),
                                              testArtifactInfo.getVersion(), providerProperties,
                                              reporterConfiguration.getReportsDirectory(),
-                                             testRequest.getRequestedTestMethod() );
+                                             testRequest.getRequestedTestMethod(), runOrderCalculator );
     }
 
     private TestNGXmlTestSuite getXmlSuite()
@@ -167,7 +167,7 @@ public class TestNGProvider
     private TestsToRun scanClassPath()
     {
         final TestsToRun scanned = directoryScanner.locateTestClasses( testClassLoader, null );
-        return runOrderCalculator.orderTestClasses(  scanned );
+        return runOrderCalculator.orderTestClasses( scanned );
     }
 
 

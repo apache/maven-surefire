@@ -51,12 +51,11 @@ public class CommonReflector
 
     public Object createReportingReporterFactory( StartupReportConfiguration startupReportConfiguration )
     {
-        Class[] args =
-            new Class[]{ this.startupReportConfiguration };
+        Class[] args = new Class[]{ this.startupReportConfiguration };
         Object src = createStartupReportConfiguration( startupReportConfiguration );
         Object[] params = new Object[]{ src };
-        return ReflectionUtils.instantiateObject( FileReporterFactory.class.getName(), args,
-                                                  params, surefireClassLoader );
+        return ReflectionUtils.instantiateObject( FileReporterFactory.class.getName(), args, params,
+                                                  surefireClassLoader );
     }
 
 
@@ -65,16 +64,17 @@ public class CommonReflector
         Constructor constructor = ReflectionUtils.getConstructor( this.startupReportConfiguration,
                                                                   new Class[]{ boolean.class, boolean.class,
                                                                       String.class, boolean.class, boolean.class,
-                                                                      File.class, boolean.class, String.class } );
+                                                                      File.class, boolean.class, String.class,
+                                                                      String.class, boolean.class } );
         //noinspection BooleanConstructorCall
         final Object[] params =
             { new Boolean( reporterConfiguration.isUseFile() ), new Boolean( reporterConfiguration.isPrintSummary() ),
                 reporterConfiguration.getReportFormat(),
                 new Boolean( reporterConfiguration.isRedirectTestOutputToFile() ),
-                new Boolean( reporterConfiguration.isDisableXmlReport() ),
-                reporterConfiguration.getReportsDirectory(),
-                new Boolean( reporterConfiguration.isTrimStackTrace()),
-                reporterConfiguration.getReportNameSuffix()};
+                new Boolean( reporterConfiguration.isDisableXmlReport() ), reporterConfiguration.getReportsDirectory(),
+                new Boolean( reporterConfiguration.isTrimStackTrace() ), reporterConfiguration.getReportNameSuffix(),
+                reporterConfiguration.getConfigurationHash(),
+                Boolean.valueOf( reporterConfiguration.isRequiresRunHistory() ) };
         return ReflectionUtils.newInstance( constructor, params );
     }
 

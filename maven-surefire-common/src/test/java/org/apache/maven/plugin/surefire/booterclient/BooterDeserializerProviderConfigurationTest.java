@@ -35,6 +35,7 @@ import org.apache.maven.surefire.booter.SystemPropertyManager;
 import org.apache.maven.surefire.booter.TypeEncodedValue;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
+import org.apache.maven.surefire.testset.RunOrderParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.util.RunOrder;
@@ -160,7 +161,8 @@ public class BooterDeserializerProviderConfigurationTest
         excludes.add( "xx1" );
         excludes.add( "xx2" );
 
-        return new DirectoryScannerParameters( aDir, includes, excludes, Boolean.TRUE, RunOrder.FILESYSTEM );
+        return new DirectoryScannerParameters( aDir, includes, excludes, Boolean.TRUE,
+                                               RunOrder.asString( RunOrder.DEFAULT ) );
     }
 
     private ProviderConfiguration saveAndReload( ProviderConfiguration booterConfiguration,
@@ -187,7 +189,8 @@ public class BooterDeserializerProviderConfigurationTest
         TestRequest testSuiteDefinition =
             new TestRequest( getSuiteXmlFileStrings(), getTestSourceDirectory(), aUserRequestedTest,
                              aUserRequestedTestMethod );
-        return new ProviderConfiguration( directoryScannerParameters, true, reporterConfiguration,
+        RunOrderParameters runOrderParameters = new RunOrderParameters( RunOrder.DEFAULT, null );
+        return new ProviderConfiguration( directoryScannerParameters, runOrderParameters, true, reporterConfiguration,
                                           new TestArtifactInfo( "5.0", "ABC" ), testSuiteDefinition, new Properties(),
                                           aTestTyped );
     }

@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
 import org.apache.maven.surefire.util.internal.ByteBuffer;
 
 /**
@@ -45,7 +46,8 @@ public class TestSetRunListener
 
 
     public TestSetRunListener( AbstractConsoleReporter consoleReporter, AbstractFileReporter fileReporter,
-                               XMLReporter xmlReporter, Reporter reporter, RunStatistics globalStats )
+                               XMLReporter xmlReporter, Reporter reporter, StatisticsReporter statisticsReporter,
+                               RunStatistics globalStats )
     {
 
         ArrayList reportes = new ArrayList();
@@ -65,6 +67,10 @@ public class TestSetRunListener
         {
             reportes.add( reporter );
         }
+        if ( statisticsReporter != null )
+        {
+            reportes.add( statisticsReporter );
+        }
         multicastingReporter = new MulticastingReporter( reportes );
         this.testSetStatistics = new TestSetStatistics();
         this.globalStatistics = globalStats;
@@ -77,7 +83,7 @@ public class TestSetRunListener
 
     public void writeMessage( String message )
     {
-        info(  message );
+        info( message );
     }
 
     public void writeMessage( byte[] b, int off, int len )

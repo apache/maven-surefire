@@ -32,10 +32,12 @@ import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
+import org.apache.maven.surefire.testset.RunOrderParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.util.NestedRuntimeException;
 import org.apache.maven.surefire.util.ReflectionUtils;
+import org.apache.maven.surefire.util.RunOrder;
 import org.apache.maven.surefire.util.SurefireReflectionException;
 
 /**
@@ -58,6 +60,8 @@ public class SurefireReflector
     private final Class testArtifactInfoAware;
 
     private final Class directoryScannerParameters;
+
+    private final Class runOrderParameters;
 
     private final Class directoryScannerParametersAware;
 
@@ -88,6 +92,7 @@ public class SurefireReflector
             testArtifactInfo = surefireClassLoader.loadClass( TestArtifactInfo.class.getName() );
             testArtifactInfoAware = surefireClassLoader.loadClass( TestArtifactInfoAware.class.getName() );
             directoryScannerParameters = surefireClassLoader.loadClass( DirectoryScannerParameters.class.getName() );
+            runOrderParameters = surefireClassLoader.loadClass( RunOrderParameters.class.getName() );
             directoryScannerParametersAware =
                 surefireClassLoader.loadClass( DirectoryScannerParametersAware.class.getName() );
             testSuiteDefinitionAware = surefireClassLoader.loadClass( TestRequestAware.class.getName() );
@@ -176,7 +181,25 @@ public class SurefireReflector
                                                 directoryScannerParameters.getIncludes(),
                                                 directoryScannerParameters.getExcludes(),
                                                 directoryScannerParameters.isFailIfNoTests(),
-                                                directoryScannerParameters.getRunOrder().name() } );
+                                                RunOrder.asString( directoryScannerParameters.getRunOrder() ) } );
+    }
+
+
+    Object createRunOrderParameters( RunOrderParameters runOrderParameters )
+    {
+        if ( runOrderParameters == null )
+        {
+            return null;
+        }
+        //Can't use the constructor with the RunOrder parameter. Using it causes some integration tests to fail.
+        Class[] arguments = { String.class, String.class };
+        Constructor constructor = ReflectionUtils.getConstructor( this.runOrderParameters, arguments );
+        final File runStatisticsFile = runOrderParameters.getRunStatisticsFile();
+        return ReflectionUtils.newInstance( constructor,
+                                            new Object[]{ RunOrder.asString( runOrderParameters.getRunOrder() ),
+                                                runStatisticsFile != null
+                                                    ? runStatisticsFile.getAbsolutePath()
+                                                    : null } );
     }
 
     Object createTestArtifactInfo( TestArtifactInfo testArtifactInfo )
@@ -234,6 +257,12 @@ public class SurefireReflector
     {
         final Object param = createDirectoryScannerParameters( dirScannerParams );
         ReflectionUtils.invokeSetter( o, "setDirectoryScannerParameters", this.directoryScannerParameters, param );
+    }
+
+    public void setRunOrderParameters( Object o, RunOrderParameters runOrderParameters )
+    {
+        final Object param = createRunOrderParameters( runOrderParameters );
+        ReflectionUtils.invokeSetter( o, "setRunOrderParameters", this.runOrderParameters, param );
     }
 
 

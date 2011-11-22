@@ -37,7 +37,6 @@ import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.apache.maven.surefire.booter.SurefireExecutionException;
 import org.apache.maven.surefire.booter.SystemPropertyManager;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
-import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.RunStatistics;
 import org.apache.maven.surefire.suite.RunResult;
 import org.codehaus.plexus.util.cli.CommandLineException;
@@ -93,13 +92,17 @@ public class ForkStarter
         final FileReporterFactory fileReporterFactory = new FileReporterFactory( startupReportConfiguration );
         try
         {
+            final ForkClient forkClient =
+                new ForkClient( fileReporterFactory, startupReportConfiguration.getTestVmSystemProperties() );
+            final RunStatistics globalRunStatistics = fileReporterFactory.getGlobalRunStatistics();
             if ( ForkConfiguration.FORK_ONCE.equals( requestedForkMode ) )
             {
-                result = fork( null, providerConfiguration.getProviderProperties(), fileReporterFactory );
+                result = fork( null, providerConfiguration.getProviderProperties(), forkClient, globalRunStatistics );
             }
             else if ( ForkConfiguration.FORK_ALWAYS.equals( requestedForkMode ) )
             {
-                result = runSuitesForkPerTestSet( fileReporterFactory, providerConfiguration.getProviderProperties() );
+                result = runSuitesForkPerTestSet( providerConfiguration.getProviderProperties(), forkClient,
+                                                  globalRunStatistics );
             }
             else
             {
@@ -113,7 +116,8 @@ public class ForkStarter
         return result;
     }
 
-    private RunResult runSuitesForkPerTestSet( FileReporterFactory fileReporterFactory, Properties properties )
+    private RunResult runSuitesForkPerTestSet( Properties properties, ForkClient forkClient,
+                                               RunStatistics globalRunStatistics )
         throws SurefireBooterForkException
     {
         RunResult globalResult = new RunResult( 0, 0, 0, 0 );
@@ -123,14 +127,15 @@ public class ForkStarter
         while ( suites.hasNext() )
         {
             Object testSet = suites.next();
-            RunResult runResult = fork( testSet, properties, fileReporterFactory );
+            RunResult runResult = fork( testSet, properties, forkClient, globalRunStatistics );
             globalResult = globalResult.aggregate( runResult );
         }
 
         return globalResult;
     }
 
-    private RunResult fork( Object testSet, Properties properties, ReporterFactory testSetReporterFactory )
+    private RunResult fork( Object testSet, Properties properties, ForkClient forkClient,
+                            RunStatistics globalRunStatistics )
         throws SurefireBooterForkException
     {
         File surefireProperties;
@@ -172,9 +177,7 @@ public class ForkStarter
             cli.createArg().setFile( systemProperties );
         }
 
-        ForkClient out =
-            new ForkClient( testSetReporterFactory, startupReportConfiguration.getTestVmSystemProperties() );
-        ThreadedStreamConsumer threadedStreamConsumer2 = new ThreadedStreamConsumer( out );
+        ThreadedStreamConsumer threadedStreamConsumer2 = new ThreadedStreamConsumer( forkClient );
 
         if ( forkConfiguration.isDebug() )
         {
@@ -189,13 +192,12 @@ public class ForkStarter
             final int result =
                 CommandLineUtils.executeCommandLine( cli, threadedStreamConsumer2, threadedStreamConsumer2, timeout );
 
-            if (result != RunResult.SUCCESS){
-                throw new SurefireBooterForkException("Error occured in starting fork, check output in log");
+            if ( result != RunResult.SUCCESS )
+            {
+                throw new SurefireBooterForkException( "Error occured in starting fork, check output in log" );
             }
             threadedStreamConsumer2.close();
-            out.close();
-
-            final RunStatistics globalRunStatistics = testSetReporterFactory.getGlobalRunStatistics();
+            forkClient.close();
 
             runResult = globalRunStatistics.getRunResult();
         }
@@ -218,7 +220,8 @@ public class ForkStarter
         {
             final ClasspathConfiguration classpathConfiguration = startupConfiguration.getClasspathConfiguration();
             ClassLoader testsClassLoader = classpathConfiguration.createTestClassLoader( false );
-            ClassLoader surefireClassLoader = classpathConfiguration.createInprocSurefireClassLoader( testsClassLoader );
+            ClassLoader surefireClassLoader =
+                classpathConfiguration.createInprocSurefireClassLoader( testsClassLoader );
 
             CommonReflector commonReflector = new CommonReflector( surefireClassLoader );
             Object reporterFactory = commonReflector.createReportingReporterFactory( startupReportConfiguration );
@@ -226,7 +229,7 @@ public class ForkStarter
             final ProviderFactory providerFactory =
                 new ProviderFactory( startupConfiguration, providerConfiguration, surefireClassLoader, testsClassLoader,
                                      reporterFactory );
-            SurefireProvider surefireProvider = providerFactory.createProvider(false);
+            SurefireProvider surefireProvider = providerFactory.createProvider( false );
             return surefireProvider.getSuites();
         }
         catch ( SurefireExecutionException e )
@@ -234,7 +237,6 @@ public class ForkStarter
             throw new SurefireBooterForkException( "Unable to create classloader to find test suites", e );
         }
     }
-
 
 
 }

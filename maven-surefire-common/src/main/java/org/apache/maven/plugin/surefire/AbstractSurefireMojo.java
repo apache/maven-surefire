@@ -61,6 +61,7 @@ import org.apache.maven.surefire.booter.SurefireExecutionException;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
+import org.apache.maven.surefire.testset.RunOrderParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.util.NestedRuntimeException;
@@ -151,9 +152,9 @@ public abstract class AbstractSurefireMojo
         {
             final Artifact junitDepArtifact = getJunitDepArtifact();
             ProviderList wellKnownProviders = new ProviderList(
-                new ProviderInfo[]{new TestNgProviderInfo( getTestNgArtifact() ),
+                new ProviderInfo[]{ new TestNgProviderInfo( getTestNgArtifact() ),
                     new JUnitCoreProviderInfo( getJunitArtifact(), junitDepArtifact ),
-                    new JUnit4ProviderInfo( getJunitArtifact(), junitDepArtifact ), new JUnit3ProviderInfo()},
+                    new JUnit4ProviderInfo( getJunitArtifact(), junitDepArtifact ), new JUnit3ProviderInfo() },
                 new DynamicProviderInfo( null ) );
 
             return wellKnownProviders.resolve( getLog() );
@@ -331,7 +332,20 @@ public abstract class AbstractSurefireMojo
         return ForkConfiguration.FORK_NEVER.equals( getForkMode() );
     }
 
-    protected ProviderConfiguration createProviderConfiguration()
+    private java.util.List getRunOrders()
+    {
+        String runOrderString = getRunOrder();
+        RunOrder[] runOrder = runOrderString == null ? RunOrder.DEFAULT : RunOrder.valueOfMulti( runOrderString );
+        return Arrays.asList( runOrder );
+    }
+
+    private boolean requiresRunHistory()
+    {
+        final List runOrders = getRunOrders();
+        return runOrders.contains( RunOrder.BALANCED ) || runOrders.contains( RunOrder.FAILEDFIRST );
+    }
+
+    protected ProviderConfiguration createProviderConfiguration( String configurationHash )
         throws MojoExecutionException, MojoFailureException
     {
         ReporterConfiguration reporterConfiguration =
@@ -377,7 +391,7 @@ public abstract class AbstractSurefireMojo
             List excludes = getExcludeList();
             directoryScannerParameters = new DirectoryScannerParameters( getTestClassesDirectory(), includes, excludes,
                                                                          Boolean.valueOf( failIfNoTests ),
-                                                                         getRunOrderObject() );
+                                                                         getRunOrder() );
         }
 
         Properties providerProperties = getProperties();
@@ -386,9 +400,25 @@ public abstract class AbstractSurefireMojo
             providerProperties = new Properties();
         }
 
-        return new ProviderConfiguration( directoryScannerParameters, failIfNoTests, reporterConfiguration, testNg,
-                                   testSuiteDefinition, providerProperties, null );
+        RunOrderParameters runOrderParameters =
+            new RunOrderParameters( getRunOrder(), getStatisticsFileName( configurationHash ) );
+
+        return new ProviderConfiguration( directoryScannerParameters, runOrderParameters, failIfNoTests,
+                                          reporterConfiguration, testNg, testSuiteDefinition, providerProperties,
+                                          null );
     }
+
+    public File getStatisticsFile( String configurationHash )
+    {
+        return new File( getStatisticsFileName( configurationHash ) );
+    }
+
+    public String getStatisticsFileName( String configurationHash )
+    {
+        return getReportsDirectory().getParentFile().getParentFile() + File.separator + ".surefire-"
+            + configurationHash;
+    }
+
 
     StartupConfiguration createStartupConfiguration( ForkConfiguration forkConfiguration, ProviderInfo provider,
                                                      ClassLoaderConfiguration classLoaderConfiguration )
@@ -435,11 +465,12 @@ public abstract class AbstractSurefireMojo
         return (Artifact) getPluginArtifactMap().get( "org.apache.maven.surefire:maven-surefire-common" );
     }
 
-    private StartupReportConfiguration getStartupReportConfiguration()
+    private StartupReportConfiguration getStartupReportConfiguration( String configChecksum )
     {
         return new StartupReportConfiguration( isUseFile(), isPrintSummary(), getReportFormat(),
                                                isRedirectTestOutputToFile(), isDisableXmlReport(),
-                                               getReportsDirectory(), isTrimStackTrace(), getReportNameSuffix() );
+                                               getReportsDirectory(), isTrimStackTrace(), getReportNameSuffix(),
+                                               configChecksum, requiresRunHistory() );
     }
 
     void logClasspath( Classpath classpath, String descriptor )
@@ -490,7 +521,7 @@ public abstract class AbstractSurefireMojo
             // Have to wrap in an ArrayList as surefire expects an ArrayList instead of a List for some reason
             if ( excludes == null || excludes.size() == 0 )
             {
-                excludes = new ArrayList( Arrays.asList( new String[]{"**/*$*"} ) );
+                excludes = new ArrayList( Arrays.asList( new String[]{ "**/*$*" } ) );
             }
         }
         return excludes;
@@ -548,8 +579,8 @@ public abstract class AbstractSurefireMojo
             if ( !range.containsVersion( new DefaultArtifactVersion( artifact.getVersion() ) ) )
             {
                 throw new MojoFailureException(
-                    "TestNG support requires version 4.7 or above. You have declared version " +
-                        artifact.getVersion() );
+                    "TestNG support requires version 4.7 or above. You have declared version "
+                        + artifact.getVersion() );
             }
         }
         return artifact;
@@ -572,20 +603,23 @@ public abstract class AbstractSurefireMojo
     {
         StartupConfiguration startupConfiguration =
             createStartupConfiguration( forkConfiguration, provider, classLoaderConfiguration );
-        StartupReportConfiguration startupReportConfiguration = getStartupReportConfiguration();
-        ProviderConfiguration providerConfiguration = createProviderConfiguration();
+        String configChecksum = getConfigChecksum();
+        StartupReportConfiguration startupReportConfiguration = getStartupReportConfiguration( configChecksum );
+        ProviderConfiguration providerConfiguration = createProviderConfiguration( configChecksum );
         return new ForkStarter( providerConfiguration, startupConfiguration, forkConfiguration,
                                 getForkedProcessTimeoutInSeconds(), startupReportConfiguration );
     }
 
-    protected InPluginVMSurefireStarter createInprocessStarter( ProviderInfo provider, ForkConfiguration forkConfiguration,
-                                                      ClassLoaderConfiguration classLoaderConfiguration )
+    protected InPluginVMSurefireStarter createInprocessStarter( ProviderInfo provider,
+                                                                ForkConfiguration forkConfiguration,
+                                                                ClassLoaderConfiguration classLoaderConfiguration )
         throws MojoExecutionException, MojoFailureException
     {
         StartupConfiguration startupConfiguration =
             createStartupConfiguration( forkConfiguration, provider, classLoaderConfiguration );
-        StartupReportConfiguration startupReportConfiguration = getStartupReportConfiguration();
-        ProviderConfiguration providerConfiguration = createProviderConfiguration();
+        String configChecksum = getConfigChecksum();
+        StartupReportConfiguration startupReportConfiguration = getStartupReportConfiguration( configChecksum );
+        ProviderConfiguration providerConfiguration = createProviderConfiguration( configChecksum );
         return new InPluginVMSurefireStarter( startupConfiguration, providerConfiguration, startupReportConfiguration );
 
     }
@@ -655,8 +689,7 @@ public abstract class AbstractSurefireMojo
 
             fork.setDebugLine( getDebugForkedProcess() );
 
-
-            if ( (getJvm() == null || "".equals( getJvm() )))
+            if ( ( getJvm() == null || "".equals( getJvm() ) ) )
             {
                 // use the same JVM as the one used to run Maven (the "java.home" one)
                 setJvm( System.getProperty( "java.home" ) + File.separator + "bin" + File.separator + "java" );
@@ -802,7 +835,8 @@ public abstract class AbstractSurefireMojo
 
     protected ClassLoaderConfiguration getClassLoaderConfiguration( ForkConfiguration fork )
     {
-        return fork.isForking() ? new ClassLoaderConfiguration( isUseSystemClassLoader(), isUseManifestOnlyJar() )
+        return fork.isForking()
+            ? new ClassLoaderConfiguration( isUseSystemClassLoader(), isUseManifestOnlyJar() )
             : new ClassLoaderConfiguration( false, false );
     }
 
@@ -1078,8 +1112,8 @@ public abstract class AbstractSurefireMojo
         }
         catch ( Exception e )
         {
-            String msg = "Build uses Maven 2.0.x, cannot propagate system properties" +
-                " from command line to tests (cf. SUREFIRE-121)";
+            String msg = "Build uses Maven 2.0.x, cannot propagate system properties"
+                + " from command line to tests (cf. SUREFIRE-121)";
             if ( getLog().isDebugEnabled() )
             {
                 getLog().warn( msg, e );
@@ -1135,11 +1169,6 @@ public abstract class AbstractSurefireMojo
         {
             getLog().warn( "useSystemClassloader setting has no effect when not forking" );
         }
-    }
-
-    private RunOrder getRunOrderObject() {
-        RunOrder runOrder = RunOrder.valueOf( getRunOrder() );
-        return runOrder == null ? RunOrder.FILESYSTEM : runOrder;
     }
 
     class TestNgProviderInfo

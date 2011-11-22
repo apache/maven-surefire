@@ -19,6 +19,7 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
+import org.apache.maven.surefire.report.CategorizedReportEntry;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.ConsoleOutputReceiverForCurrentThread;
 import org.apache.maven.surefire.report.ReportEntry;
@@ -120,7 +121,9 @@ class TestMethod
 
     private ReportEntry createReportEntry()
     {
-        return this.description;
+        int elapsed = (int) ( endTime - startTime );
+        return new CategorizedReportEntry( description.getSourceName(), description.getName(), description.getGroup(),
+                                           description.getStackTraceWriter(), elapsed );
     }
 
     public void attachToThread()

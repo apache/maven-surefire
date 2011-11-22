@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.util.List;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
+import org.apache.maven.surefire.testset.RunOrderParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestRequest;
 
@@ -71,10 +72,13 @@ public class BooterDeserializer
         final List testSuiteXmlFiles = properties.getStringList( TEST_SUITE_XML_FILES );
         final File testClassesDirectory = properties.getFileProperty( TEST_CLASSES_DIRECTORY );
         final String runOrder = properties.getProperty( RUN_ORDER );
+        final String runStatisticsFile = properties.getProperty( RUN_STATISTICS_FILE );
 
         DirectoryScannerParameters dirScannerParams =
             new DirectoryScannerParameters( testClassesDirectory, includesList, excludesList,
                                             properties.getBooleanObjectProperty( FAILIFNOTESTS ), runOrder );
+
+        RunOrderParameters runOrderParameters = new RunOrderParameters( runOrder, runStatisticsFile );
 
         TestArtifactInfo testNg = new TestArtifactInfo( testNgVersion, testArtifactClassifier );
         TestRequest testSuiteDefinition =
@@ -83,9 +87,9 @@ public class BooterDeserializer
         ReporterConfiguration reporterConfiguration =
             new ReporterConfiguration( reportsDirectory, properties.getBooleanObjectProperty( ISTRIMSTACKTRACE ) );
 
-        return new ProviderConfiguration( dirScannerParams, properties.getBooleanProperty( FAILIFNOTESTS ),
-                                          reporterConfiguration, testNg, testSuiteDefinition,
-                                          properties.getProperties(), typeEncodedTestForFork );
+        return new ProviderConfiguration( dirScannerParams, runOrderParameters,
+                                          properties.getBooleanProperty( FAILIFNOTESTS ), reporterConfiguration, testNg,
+                                          testSuiteDefinition, properties.getProperties(), typeEncodedTestForFork );
     }
 
     public StartupConfiguration getProviderConfiguration()

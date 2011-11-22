@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -591,11 +590,21 @@ public class SurefirePlugin
 
     /**
      * Defines the order the tests will be run in. Supported values are "alphabetical", "reversealphabetical", "random",
-     * "hourly" (alphabetical on even hours, reverse alphabetical on odd hours) and "filesystem".
+     * "hourly" (alphabetical on even hours, reverse alphabetical on odd hours), "failedfirst", "balanced" and "filesystem".
      * <p/>
      * <p/>
      * Odd/Even for hourly is determined at the time the of scanning the classpath, meaning it could change during a
      * multi-module build.
+     * <p/>
+     * Failed first will run tests that failed on previous run first, as well as new tests.
+     * <p/>
+     * Balanced is only relevant with parallel=classes, and will try to optimize the run-order of the tests to
+     * make all tests complete at the same time, reducing the overall execution time.
+     * <p/>
+     * Note that the statistics are stored in a file named .surefire-XXXXXXXXX beside pom.xml, and should not
+     * be checked into version control. The "XXXXX" is the SHA1 checksum of the entire surefire configuration,
+     * so different configurations will have different statistics files, meaning if you change any config
+     * settings you will re-run once before new statistics data can be established.
      *
      * @parameter default-value="filesystem"
      * @since 2.7
@@ -653,7 +662,7 @@ public class SurefirePlugin
 
     protected String[] getDefaultIncludes()
     {
-        return new String[]{"**/Test*.java", "**/*Test.java", "**/*TestCase.java"};
+        return new String[]{ "**/Test*.java", "**/*Test.java", "**/*TestCase.java" };
     }
 
     // now for the implementation of the field accessors

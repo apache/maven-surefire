@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Properties;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
+import org.apache.maven.surefire.testset.RunOrderParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestRequest;
 
@@ -56,17 +57,21 @@ public class ProviderConfiguration
 
     private final TestRequest testSuiteDefinition;
 
+    private final RunOrderParameters runOrderParameters;
+
     private final Properties providerProperties;
 
     private final boolean failIfNoTests;
 
     private final TypeEncodedValue forkTestSet;
 
-    public ProviderConfiguration( DirectoryScannerParameters directoryScannerParameters, boolean failIfNoTests,
+    public ProviderConfiguration( DirectoryScannerParameters directoryScannerParameters,
+                                  RunOrderParameters runOrderParameters, boolean failIfNoTests,
                                   ReporterConfiguration reporterConfiguration, TestArtifactInfo testArtifact,
                                   TestRequest testSuiteDefinition, Properties providerProperties,
                                   TypeEncodedValue typeEncodedTestSet )
     {
+        this.runOrderParameters = runOrderParameters;
         this.providerProperties = providerProperties;
         this.reporterConfiguration = reporterConfiguration;
         this.testArtifact = testArtifact;
@@ -129,5 +134,8 @@ public class ProviderConfiguration
         return forkTestSet;
     }
 
-
+    public RunOrderParameters getRunOrderParameters()
+    {
+        return runOrderParameters;
+    }
 }

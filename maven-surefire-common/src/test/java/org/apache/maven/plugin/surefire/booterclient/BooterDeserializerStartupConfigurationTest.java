@@ -35,8 +35,10 @@ import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.SystemPropertyManager;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
+import org.apache.maven.surefire.testset.RunOrderParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestRequest;
+import org.apache.maven.surefire.util.RunOrder;
 
 import junit.framework.TestCase;
 
@@ -100,7 +102,7 @@ public class BooterDeserializerStartupConfigurationTest
     {
         Classpath testClassPath = new Classpath( Arrays.asList( new String[]{ "CP1", "CP2" } ) );
         Classpath providerClasspath = new Classpath( Arrays.asList( new String[]{ "SP1", "SP2" } ) );
-        return new ClasspathConfiguration( testClassPath, providerClasspath, new Classpath(  ), true, true );
+        return new ClasspathConfiguration( testClassPath, providerClasspath, new Classpath(), true, true );
     }
 
     public static ClassLoaderConfiguration getSystemClassLoaderConfiguration()
@@ -147,7 +149,9 @@ public class BooterDeserializerStartupConfigurationTest
         TestRequest testSuiteDefinition =
             new TestRequest( Arrays.asList( getSuiteXmlFileStrings() ), getTestSourceDirectory(), aUserRequestedTest,
                              aUserRequestedTestMethod );
-        return new ProviderConfiguration( directoryScannerParameters, true, reporterConfiguration,
+
+        RunOrderParameters runOrderParameters = new RunOrderParameters( RunOrder.DEFAULT, null );
+        return new ProviderConfiguration( directoryScannerParameters, runOrderParameters, true, reporterConfiguration,
                                           new TestArtifactInfo( "5.0", "ABC" ), testSuiteDefinition, new Properties(),
                                           BooterDeserializerProviderConfigurationTest.aTestTyped );
     }
