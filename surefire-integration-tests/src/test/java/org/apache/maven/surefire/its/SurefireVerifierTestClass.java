@@ -399,4 +399,15 @@ public abstract class SurefireVerifierTestClass
     {
         return "org.apache.maven.plugins:maven-surefire-report-plugin:" + getSurefireVersion() +  ":report";
     }
+
+    protected String getSurefireReportOnlyGoal()
+    {
+        return "org.apache.maven.plugins:maven-surefire-report-plugin:" + getSurefireVersion() + ":report-only";
+    }
+
+    protected String getFailsafeReportOnlyGoal()
+    {
+        return "org.apache.maven.plugins:maven-surefire-report-plugin:" + getSurefireVersion()
+            + ":failsafe-report-only";
+    }
 }
