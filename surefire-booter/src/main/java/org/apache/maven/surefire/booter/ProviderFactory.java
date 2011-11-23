@@ -19,12 +19,14 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
+import java.io.PrintStream;
 import java.lang.reflect.Method;
 import java.util.Iterator;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
+import org.apache.maven.surefire.util.NestedRuntimeException;
 import org.apache.maven.surefire.util.ReflectionUtils;
 
 
@@ -61,6 +63,43 @@ public class ProviderFactory
         this.surefireReflector = new SurefireReflector( surefireClassLoader );
         this.testsClassLoader = testsClassLoader;
         this.reporterManagerFactory = reporterManagerFactory;
+    }
+
+    public static RunResult invokeProvider( Object testSet, ClassLoader testsClassLoader,
+                                            ClassLoader surefireClassLoader, Object factory,
+                                            ProviderConfiguration providerConfiguration, boolean insideFork,
+                                            StartupConfiguration startupConfiguration1 )
+    {
+        final PrintStream orgSystemOut = System.out;
+        final PrintStream orgSystemErr = System.err;
+        // Note that System.out/System.err are also read in the "ReporterConfiguration" instatiation
+        // in createProvider below. These are the same values as here.
+
+        ProviderFactory providerFactory =
+            new ProviderFactory( startupConfiguration1, providerConfiguration, surefireClassLoader, testsClassLoader,
+                                 factory );
+        final SurefireProvider provider = providerFactory.createProvider( insideFork );
+
+        try
+        {
+            return provider.invoke( testSet );
+        }
+        catch ( TestSetFailedException e )
+        {
+            throw new NestedRuntimeException( e );
+        }
+        catch ( ReporterException e )
+        {
+            throw new NestedRuntimeException( e );
+        }
+        finally
+        {
+            if ( System.getSecurityManager() == null )
+            {
+                System.setOut( orgSystemOut );
+                System.setErr( orgSystemErr );
+            }
+        }
     }
 
     public SurefireProvider createProvider( boolean isInsideFork )

@@ -20,7 +20,7 @@ package org.apache.maven.plugin.surefire;
  */
 
 import org.apache.maven.surefire.booter.ProviderConfiguration;
-import org.apache.maven.surefire.booter.StarterCommon;
+import org.apache.maven.surefire.booter.ProviderFactory;
 import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.StartupReportConfiguration;
 import org.apache.maven.surefire.booter.SurefireExecutionException;
@@ -42,16 +42,19 @@ import org.apache.maven.surefire.suite.RunResult;
 public class InPluginVMSurefireStarter
 {
 
+    private final StartupConfiguration startupConfiguration;
+
     private final StartupReportConfiguration startupReportConfiguration;
 
-    private final StarterCommon starterCommon;
+    private final ProviderConfiguration providerConfiguration;
 
     public InPluginVMSurefireStarter( StartupConfiguration startupConfiguration,
                                       ProviderConfiguration providerConfiguration,
                                       StartupReportConfiguration startupReportConfiguration )
     {
+        this.startupConfiguration = startupConfiguration;
         this.startupReportConfiguration = startupReportConfiguration;
-        this.starterCommon = new StarterCommon( startupConfiguration, providerConfiguration );
+        this.providerConfiguration = providerConfiguration;
     }
 
     public RunResult runSuitesInProcess()
@@ -59,15 +62,18 @@ public class InPluginVMSurefireStarter
     {
         // The test classloader must be constructed first to avoid issues with commons-logging until we properly
         // separate the TestNG classloader
-        ClassLoader testsClassLoader = starterCommon.createInProcessTestClassLoader();
+        startupConfiguration.writeSurefireTestClasspathProperty();
+        ClassLoader testsClassLoader = startupConfiguration.getClasspathConfiguration().createTestClassLoader();
 
-        ClassLoader surefireClassLoader = starterCommon.createSurefireInProcClassloader( testsClassLoader );
+        ClassLoader surefireClassLoader =
+            startupConfiguration.getClasspathConfiguration().createInprocSurefireClassLoader( testsClassLoader );
 
         CommonReflector surefireReflector = new CommonReflector( surefireClassLoader );
 
         final Object factory = surefireReflector.createReportingReporterFactory( startupReportConfiguration );
 
-        return starterCommon.invokeProvider( null, testsClassLoader, surefireClassLoader, factory, false );
+        return ProviderFactory.invokeProvider( null, testsClassLoader, surefireClassLoader, factory,
+                                               providerConfiguration, false, startupConfiguration );
     }
 
 }

@@ -22,7 +22,7 @@ package org.apache.maven.surefire.booter;
 /**
  * Represents the classpaths for the BooterConfiguration.
  * <p/>
- * 
+ *
  * @author Jason van Zyl
  * @author Emmanuel Venisse
  * @author Kristian Rosenvold
@@ -42,7 +42,9 @@ public class ClasspathConfiguration
 
     private final Classpath surefireClasspathUrls;
 
-    /** The surefire classpath to use when invoking in-process with the plugin */
+    /**
+     * The surefire classpath to use when invoking in-process with the plugin
+     */
     private final Classpath inprocClasspath;
 
     /**
@@ -54,23 +56,19 @@ public class ClasspathConfiguration
     // todo: @deprecated because the IsolatedClassLoader is really isolated - no parent.
     private final boolean childDelegation;
 
-    private final JdkReflector jdkReflector = new JdkReflector();
-
     public ClasspathConfiguration( boolean enableAssertions, boolean childDelegation )
     {
-        this( new Classpath(), new Classpath(),new Classpath(), enableAssertions, childDelegation );
+        this( new Classpath(), new Classpath(), new Classpath(), enableAssertions, childDelegation );
     }
 
     ClasspathConfiguration( PropertiesWrapper properties )
     {
-        this( properties.getClasspath( CLASSPATH ),
-              properties.getClasspath( SUREFIRE_CLASSPATH ),
-              new Classpath(  ),
+        this( properties.getClasspath( CLASSPATH ), properties.getClasspath( SUREFIRE_CLASSPATH ), new Classpath(),
               properties.getBooleanProperty( ENABLE_ASSERTIONS ), properties.getBooleanProperty( CHILD_DELEGATION ) );
     }
 
-    public ClasspathConfiguration( Classpath testClasspath, Classpath surefireClassPathUrls, Classpath inprocClasspath, boolean enableAssertions,
-                                    boolean childDelegation )
+    public ClasspathConfiguration( Classpath testClasspath, Classpath surefireClassPathUrls, Classpath inprocClasspath,
+                                   boolean enableAssertions, boolean childDelegation )
     {
         this.enableAssertions = enableAssertions;
         this.childDelegation = childDelegation;
@@ -85,14 +83,6 @@ public class ClasspathConfiguration
         properties.setClasspath( SUREFIRE_CLASSPATH, surefireClasspathUrls );
         properties.setProperty( ENABLE_ASSERTIONS, String.valueOf( enableAssertions ) );
         properties.setProperty( CHILD_DELEGATION, String.valueOf( childDelegation ) );
-    }
-
-    public ClassLoader createTestClassLoaderConditionallySystem( boolean useSystemClassLoader )
-        throws SurefireExecutionException
-    {
-        return useSystemClassLoader
-            ? ClassLoader.getSystemClassLoader()
-            : createTestClassLoader( this.childDelegation );
     }
 
     public ClassLoader createTestClassLoader( boolean childDelegation )
@@ -112,6 +102,7 @@ public class ClasspathConfiguration
     {
         return surefireClasspathUrls.createClassLoader( parent, false, enableAssertions );
     }
+
     public ClassLoader createInprocSurefireClassLoader( ClassLoader parent )
         throws SurefireExecutionException
     {
@@ -123,4 +114,21 @@ public class ClasspathConfiguration
         return classpathUrls;
     }
 
+    public ClassLoader createForkingTestClassLoader( boolean manifestOnlyJarRequestedAndUsable )
+        throws SurefireExecutionException
+    {
+        if ( manifestOnlyJarRequestedAndUsable )
+        {
+            System.setProperty( "surefire.real.class.path", System.getProperty( "java.class.path" ) );
+            getTestClasspath().writeToSystemProperty( "java.class.path" );
+            // this.getClass.getClassLoader() is always loaded in system classloader if forking
+            // this.getClass().getClassLoader() is plugin classloder if in-process
+            // "this" must refer to a class within the booter module
+            return this.getClass().getClassLoader();   // SUREFIRE-459, trick the app under test into thinking its classpath was conventional;
+        }
+        else
+        {
+            return createTestClassLoader();
+        }
+    }
 }

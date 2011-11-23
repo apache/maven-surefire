@@ -160,10 +160,13 @@ public class ForkStarter
         }
 
         final Classpath bootClasspathConfiguration = forkConfiguration.getBootClasspath();
+
         final Classpath additionlClassPathUrls = startupConfiguration.useSystemClassLoader()
             ? startupConfiguration.getClasspathConfiguration().getTestClasspath()
             : null;
 
+        // Surefire-booter + all test classes if "useSystemClassloader"
+        // Surefire-booter if !useSystemClassLoader
         Classpath bootClasspath = Classpath.join( bootClasspathConfiguration, additionlClassPathUrls );
 
         Commandline cli = forkConfiguration.createCommandLine( bootClasspath.getClassPath(),
@@ -177,7 +180,7 @@ public class ForkStarter
             cli.createArg().setFile( systemProperties );
         }
 
-        ThreadedStreamConsumer threadedStreamConsumer2 = new ThreadedStreamConsumer( forkClient );
+        ThreadedStreamConsumer threadedStreamConsumer = new ThreadedStreamConsumer( forkClient );
 
         if ( forkConfiguration.isDebug() )
         {
@@ -190,13 +193,13 @@ public class ForkStarter
         {
             final int timeout = forkedProcessTimeoutInSeconds > 0 ? forkedProcessTimeoutInSeconds : 0;
             final int result =
-                CommandLineUtils.executeCommandLine( cli, threadedStreamConsumer2, threadedStreamConsumer2, timeout );
+                CommandLineUtils.executeCommandLine( cli, threadedStreamConsumer, threadedStreamConsumer, timeout );
 
             if ( result != RunResult.SUCCESS )
             {
                 throw new SurefireBooterForkException( "Error occured in starting fork, check output in log" );
             }
-            threadedStreamConsumer2.close();
+            threadedStreamConsumer.close();
             forkClient.close();
 
             runResult = globalRunStatistics.getRunResult();

@@ -36,9 +36,12 @@ public class StartupConfiguration
 
     private final boolean isInForkedVm;
 
+    private final static String SUREFIRE_TEST_CLASSPATH = "surefire.test.class.path";
+
 
     public StartupConfiguration( String providerClassName, ClasspathConfiguration classpathConfiguration,
-                                 ClassLoaderConfiguration classLoaderConfiguration, String forkMode, boolean inForkedVm )
+                                 ClassLoaderConfiguration classLoaderConfiguration, String forkMode,
+                                 boolean inForkedVm )
     {
         this.providerClassName = providerClassName;
         this.classpathConfiguration = classpathConfiguration;
@@ -85,4 +88,11 @@ public class StartupConfiguration
     {
         return providerClassName.startsWith( "org.apache.maven.surefire.shadefire" );
     }
+
+    public void writeSurefireTestClasspathProperty()
+    {
+        ClasspathConfiguration classpathConfiguration = getClasspathConfiguration();
+        classpathConfiguration.getTestClasspath().writeToSystemProperty( SUREFIRE_TEST_CLASSPATH );
+    }
+
 }

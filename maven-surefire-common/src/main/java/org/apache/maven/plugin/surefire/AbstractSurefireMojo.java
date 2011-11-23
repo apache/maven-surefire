@@ -136,7 +136,7 @@ public abstract class AbstractSurefireMojo
         handleSummary( summary );
     }
 
-    private Artifact surefireArtifact;
+    private Artifact surefireBooterArtifact;
 
     private void createDependencyResolver()
     {
@@ -632,16 +632,16 @@ public abstract class AbstractSurefireMojo
 
         Artifact shadeFire = (Artifact) getPluginArtifactMap().get( "org.apache.maven.surefire:surefire-shadefire" );
 
-        surefireArtifact = (Artifact) getPluginArtifactMap().get( "org.apache.maven.surefire:surefire-booter" );
-        if ( surefireArtifact == null )
+        surefireBooterArtifact = (Artifact) getPluginArtifactMap().get( "org.apache.maven.surefire:surefire-booter" );
+        if ( surefireBooterArtifact == null )
         {
             throw new RuntimeException( "Unable to locate surefire-booter in the list of plugin artifacts" );
         }
 
-        surefireArtifact.isSnapshot(); // MNG-2961: before Maven 2.0.8, fixes getBaseVersion to be -SNAPSHOT if needed
+        surefireBooterArtifact.isSnapshot(); // MNG-2961: before Maven 2.0.8, fixes getBaseVersion to be -SNAPSHOT if needed
 
         final Classpath bootClasspathConfiguration =
-            getArtifactClasspath( shadeFire != null ? shadeFire : surefireArtifact );
+            getArtifactClasspath( shadeFire != null ? shadeFire : surefireBooterArtifact );
 
         ForkConfiguration fork = new ForkConfiguration( bootClasspathConfiguration, getForkMode(), tmpDir );
 
@@ -1228,7 +1228,7 @@ public abstract class AbstractSurefireMojo
         {
             // add the JUnit provider as default - it doesn't require JUnit to be present,
             // since it supports POJO tests.
-            return dependencyResolver.getProviderClasspath( "surefire-junit3", surefireArtifact.getBaseVersion(),
+            return dependencyResolver.getProviderClasspath( "surefire-junit3", surefireBooterArtifact.getBaseVersion(),
                                                             null );
 
         }
@@ -1265,7 +1265,7 @@ public abstract class AbstractSurefireMojo
         public Classpath getProviderClasspath()
             throws ArtifactResolutionException, ArtifactNotFoundException
         {
-            return dependencyResolver.getProviderClasspath( "surefire-junit4", surefireArtifact.getBaseVersion(),
+            return dependencyResolver.getProviderClasspath( "surefire-junit4", surefireBooterArtifact.getBaseVersion(),
                                                             null );
 
         }
@@ -1310,7 +1310,7 @@ public abstract class AbstractSurefireMojo
         public Classpath getProviderClasspath()
             throws ArtifactResolutionException, ArtifactNotFoundException
         {
-            return dependencyResolver.getProviderClasspath( "surefire-junit47", surefireArtifact.getBaseVersion(),
+            return dependencyResolver.getProviderClasspath( "surefire-junit47", surefireBooterArtifact.getBaseVersion(),
                                                             null );
         }
 

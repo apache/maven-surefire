@@ -22,6 +22,7 @@ package org.apache.maven.surefire.booter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.io.PrintStream;
 import org.apache.maven.surefire.suite.RunResult;
 
 /**
@@ -29,7 +30,6 @@ import org.apache.maven.surefire.suite.RunResult;
  * <p/>
  * Deals with deserialization of the booter wire-level protocol
  * <p/>
- * Todo: Look at relationship between this class and BooterSerializer (BooterDeserializer?)
  *
  * @author Jason van Zyl
  * @author Emmanuel Venisse
@@ -59,15 +59,19 @@ public class ForkedBooter
             File surefirePropertiesFile = new File( args[0] );
             InputStream stream = surefirePropertiesFile.exists() ? new FileInputStream( surefirePropertiesFile ) : null;
             BooterDeserializer booterDeserializer = new BooterDeserializer( stream );
-            ProviderConfiguration booterConfiguration = booterDeserializer.deserialize();
-            final StartupConfiguration providerConfiguration = booterDeserializer.getProviderConfiguration();
+            ProviderConfiguration providerConfiguration = booterDeserializer.deserialize();
+            final StartupConfiguration startupConfiguration = booterDeserializer.getProviderConfiguration();
 
-            SurefireStarter starter = new SurefireStarter( providerConfiguration, booterConfiguration );
+            TypeEncodedValue forkedTestSet = providerConfiguration.getTestForFork();
 
-            TypeEncodedValue forkedTestSet = booterConfiguration.getTestForFork();
-            final RunResult result = forkedTestSet != null
-                ? starter.runSuitesInProcessWhenForked( forkedTestSet )
-                : starter.runSuitesInProcessWhenForked();
+            final ClasspathConfiguration classpathConfiguration = startupConfiguration.getClasspathConfiguration();
+            final ClassLoader testClassLoader = classpathConfiguration.createForkingTestClassLoader(
+                startupConfiguration.isManifestOnlyJarRequestedAndUsable() );
+
+            startupConfiguration.writeSurefireTestClasspathProperty();
+
+            Object testSet = forkedTestSet != null ? forkedTestSet.getDecodedValue() : null;
+            runSuitesInProcess( testSet, testClassLoader, startupConfiguration, providerConfiguration );
 
             // noinspection CallToSystemExit
             System.exit( 0 );
@@ -80,5 +84,29 @@ public class ForkedBooter
             // noinspection ProhibitedExceptionThrown,CallToSystemExit
             System.exit( 1 );
         }
+    }
+
+    public static RunResult runSuitesInProcess( Object testSet, ClassLoader testsClassLoader,
+                                                StartupConfiguration startupConfiguration,
+                                                ProviderConfiguration providerConfiguration )
+        throws SurefireExecutionException
+    {
+        final ClasspathConfiguration classpathConfiguration = startupConfiguration.getClasspathConfiguration();
+        ClassLoader surefireClassLoader = classpathConfiguration.createSurefireClassLoader( testsClassLoader );
+
+        SurefireReflector surefireReflector = new SurefireReflector( surefireClassLoader );
+
+        final Object factory = createForkingReporterFactory( surefireReflector, providerConfiguration );
+
+        return ProviderFactory.invokeProvider( testSet, testsClassLoader, surefireClassLoader, factory,
+                                               providerConfiguration, true, startupConfiguration );
+    }
+
+    private static Object createForkingReporterFactory( SurefireReflector surefireReflector,
+                                                        ProviderConfiguration providerConfiguration )
+    {
+        final Boolean trimStackTrace = providerConfiguration.getReporterConfiguration().isTrimStackTrace();
+        final PrintStream originalSystemOut = providerConfiguration.getReporterConfiguration().getOriginalSystemOut();
+        return surefireReflector.createForkingReporterFactory( trimStackTrace, originalSystemOut );
     }
 }
