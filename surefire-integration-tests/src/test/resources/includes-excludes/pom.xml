@@ -29,11 +29,17 @@ under the License.
   <name>Maven Integration Test :: includes-excludes</name>
   <description>Test surefire inclusion/exclusions</description>
 
+  <properties>
+    <junit.version>3.8.2</junit.version>
+  </properties>
+
+
+
   <dependencies>
     <dependency>
       <artifactId>junit</artifactId>
       <groupId>junit</groupId>
-      <version>3.8.2</version>
+      <version>${junit.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -104,6 +110,24 @@ under the License.
         </plugins>
       </build>
     </profile>
+      <profile>
+        <id>withXmlFile</id>
+        <build>
+          <plugins>
+            <plugin>
+              <artifactId>maven-surefire-plugin</artifactId>
+              <configuration>
+                  <excludes>
+                    <exclude>**/DontRunTest.java</exclude>
+                  </excludes>
+                <includes>
+                  <include>**/*.xml</include>
+                </includes>
+              </configuration>
+            </plugin>
+          </plugins>
+        </build>
+      </profile>
 
   </profiles>
 </project>
