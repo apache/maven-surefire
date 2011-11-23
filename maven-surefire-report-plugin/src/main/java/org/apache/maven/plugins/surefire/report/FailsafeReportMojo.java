@@ -19,9 +19,10 @@ package org.apache.maven.plugins.surefire.report;
  * under the License.
  */
 
-import org.apache.maven.project.MavenProject;
-
 import java.io.File;
+import java.util.Locale;
+import java.util.ResourceBundle;
+import org.apache.maven.project.MavenProject;
 
 
 /**
@@ -86,5 +87,31 @@ public class FailsafeReportMojo
     protected boolean isGeneratedWhenNoResults()
     {
         return alwaysGenerateFailsafeReport;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public String getName( Locale locale )
+    {
+        return getBundle( locale ).getString( "report.failsafe.name" );
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public String getDescription( Locale locale )
+    {
+        return getBundle( locale ).getString( "report.failsafe.description" );
+    }
+    
+
+    /*
+     * This is currently a copy of the getBundle() method of the AbstractSurefireReportMojo class,
+     * cause the failsafe report only different in two names for the bundles.
+     */
+    private ResourceBundle getBundle( Locale locale )
+    {
+        return ResourceBundle.getBundle( "surefire-report", locale, this.getClass().getClassLoader() );
     }
 }
