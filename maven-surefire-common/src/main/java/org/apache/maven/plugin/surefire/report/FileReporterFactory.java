@@ -155,4 +155,8 @@ public class FileReporterFactory
     {
         return globalStats;
     }
+
+    public static FileReporterFactory defaultNoXml(){
+        return new FileReporterFactory( StartupReportConfiguration.defaultNoXml() );
+    }
 }

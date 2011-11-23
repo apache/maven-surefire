@@ -74,7 +74,11 @@ public abstract class ConcurrentReporterManager
 
     public void testError( ReportEntry failure )
     {
-        getOrCreateTestMethod( failure ).testError( failure );
+        final TestMethod testMethod = getOrCreateTestMethod( failure );
+        if ( testMethod != null )
+        {
+            testMethod.testError( failure );
+        }
     }
 
     public void testSkipped( ReportEntry description )
@@ -115,7 +119,16 @@ public abstract class ConcurrentReporterManager
             return threadTestMethod;
         }
         TestSet testSet = getTestSet( description );
-        return testSet.createTestMethod( description );
+        if ( testSet == null )
+        {
+            consoleLogger.info( description.getName() );
+            consoleLogger.info( description.getStackTraceWriter().writeTraceToString() );
+            return null;
+        }
+        else
+        {
+            return testSet.createTestMethod( description );
+        }
     }
 
     protected abstract void checkIfTestSetCanBeReported( TestSet testSetForTest );
