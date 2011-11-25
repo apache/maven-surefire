@@ -45,8 +45,24 @@ under the License.
         <p>
           Visit this link for your reference,
           <a href="http://maven.apache.org/guides/mini/guide-attached-tests.html">
-            Attaching tests
+         |   Attaching tests
           </a>
+        </p>
+      </answer>
+    </faq>
+    <faq id="GWT">
+      <question>How can I run GWT tests ?</question>
+      <answer>
+        There is a specific gwt-maven-plugin at codehaus, but if you want to run
+        with surefire, you need the following settings:
+        <p>
+        Use the following configuration:<br/>
+        <code>
+        <![CDATA[ <useSystemClassLoader>true</useSystemClassLoader>]]><br/>
+        <![CDATA[ <useManifestOnlyJar>false</useManifestOnlyJar>]]><br/>
+        <![CDATA[ <forkMode>once</forkMode>]]><br/>
+        </code>
+        forkMode at least once, always if not enough
         </p>
       </answer>
     </faq>
