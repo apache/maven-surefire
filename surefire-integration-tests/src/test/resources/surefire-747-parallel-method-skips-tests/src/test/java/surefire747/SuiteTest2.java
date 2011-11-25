@@ -19,18 +19,53 @@ package surefire747;
  * under the License.
  */
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author Kristian Rosenvold
  */
-@RunWith(Suite.class)
-@Suite.SuiteClasses(
+public class SuiteTest2
 {
-	SuiteTest1.class,
-	SuiteTest2.class
-})
-public class TestSuite
-{
+	public SuiteTest2()
+	{
+		System.out.println("SuiteTest2.constructor");
+	}
+
+	@Before
+	public void setUp()
+	{
+		System.out.println("SuiteTest2.setUp");
+	}
+
+	@After
+	public void tearDown()
+	{
+		System.out.println("SuiteTest2.tearDown");
+	}
+
+	@Test
+	public void first() throws InterruptedException
+	{
+		System.out.println("begin SuiteTest2.first");
+		Thread.sleep(300);
+		System.out.println("end SuiteTest2.first");
+	}
+
+	@Test
+	public void second() throws InterruptedException
+	{
+		System.out.println("begin SuiteTest2.second");
+		Thread.sleep(300);
+		System.out.println("end SuiteTest2.second");
+	}
+
+	@Test
+	public void third() throws InterruptedException
+	{
+		System.out.println("begin SuiteTest2.third");
+		Thread.sleep(300);
+		System.out.println("end SuiteTest2.third");
+	}
 }

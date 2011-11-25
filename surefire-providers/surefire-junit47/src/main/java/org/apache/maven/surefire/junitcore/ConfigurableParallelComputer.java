@@ -30,6 +30,7 @@ import org.apache.maven.surefire.util.NestedRuntimeException;
 import org.junit.runner.Computer;
 import org.junit.runner.Runner;
 import org.junit.runners.ParentRunner;
+import org.junit.runners.Suite;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 import org.junit.runners.model.RunnerScheduler;
@@ -139,7 +140,13 @@ public class ConfigurableParallelComputer
         throws Throwable
     {
         Runner runner = super.getRunner( builder, testClass );
-        return fMethods ? parallelize( runner, getMethodInterceptor() ) : runner;
+        return fMethods && !isTestSuite(  testClass )? parallelize( runner, getMethodInterceptor() ) : runner;
+    }
+
+    private boolean isTestSuite( Class<?> testClass){
+        // Todo: Find out how/if this is enough
+        final Suite.SuiteClasses annotation = testClass.getAnnotation( Suite.SuiteClasses.class );
+        return (annotation != null);
     }
 
     @Override

@@ -14,6 +14,9 @@
       <version>4.8.1</version>
     </dependency>
   </dependencies>
+  <properties>
+    <parallel>methods</parallel>
+  </properties>
   <build>
      <plugins>
         <plugin>
@@ -29,7 +32,7 @@
            <artifactId>maven-surefire-plugin</artifactId>
            <version>${surefire.version}</version>
            <configuration>
-             <parallel>methods</parallel>
+             <parallel>${parallel}</parallel>
              <threadCount>10</threadCount>
              <includes>
                 <include>**/TestSuite.java</include>
