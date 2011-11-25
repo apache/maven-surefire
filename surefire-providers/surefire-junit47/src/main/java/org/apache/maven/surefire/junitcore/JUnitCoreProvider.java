@@ -43,6 +43,7 @@ import org.apache.maven.surefire.util.DirectoryScanner;
 import org.apache.maven.surefire.util.RunOrderCalculator;
 import org.apache.maven.surefire.util.ScannerFilter;
 import org.apache.maven.surefire.util.TestsToRun;
+import org.apache.maven.surefire.util.internal.StringUtils;
 
 import org.junit.runner.Description;
 import org.junit.runner.manipulation.Filter;
@@ -74,6 +75,8 @@ public class JUnitCoreProvider
 
     private RunOrderCalculator runOrderCalculator;
 
+    private String requestedTestMethod;
+
     public JUnitCoreProvider( ProviderParameters providerParameters )
     {
         this.providerParameters = providerParameters;
@@ -82,6 +85,8 @@ public class JUnitCoreProvider
         this.runOrderCalculator = providerParameters.getRunOrderCalculator();
         this.jUnitCoreParameters = new JUnitCoreParameters( providerParameters.getProviderProperties() );
         this.scannerFilter = new JUnit4TestChecker( testClassLoader );
+        this.requestedTestMethod = providerParameters.getTestRequest().getRequestedTestMethod();
+
         customRunListeners = JUnit4RunListenerFactory.
             createCustomListeners( providerParameters.getProviderProperties().getProperty( "listener" ) );
         jUnit48Reflector = new JUnit48Reflector( testClassLoader );
@@ -169,12 +174,20 @@ public class JUnitCoreProvider
 
     private Filter createJUnit48Filter()
     {
-        return new FilterFactory( testClassLoader ).createGroupFilter( providerParameters.getProviderProperties() );
+        final FilterFactory filterFactory = new FilterFactory( testClassLoader );
+        return isMethodFilterSpecified() ?
+            filterFactory.createMethodFilter( requestedTestMethod ) :
+            filterFactory.createGroupFilter( providerParameters.getProviderProperties() );
     }
 
     private TestsToRun scanClassPath()
     {
         final TestsToRun scanned = directoryScanner.locateTestClasses( testClassLoader, scannerFilter );
         return  runOrderCalculator.orderTestClasses(  scanned );
+    }
+
+    private boolean isMethodFilterSpecified()
+    {
+        return !StringUtils.isBlank( requestedTestMethod );
     }
 }

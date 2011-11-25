@@ -19,6 +19,7 @@ package org.apache.maven.surefire.junit4;
  * under the License.
  */
 
+import java.lang.reflect.Method;
 import java.util.Iterator;
 import java.util.List;
 import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
@@ -41,7 +42,11 @@ import org.apache.maven.surefire.util.DirectoryScanner;
 import org.apache.maven.surefire.util.RunOrderCalculator;
 import org.apache.maven.surefire.util.TestsToRun;
 
+import org.apache.maven.surefire.util.internal.StringUtils;
+import org.codehaus.plexus.util.SelectorUtils;
+import org.junit.runner.Request;
 import org.junit.runner.Result;
+import org.junit.runner.Runner;
 import org.junit.runner.notification.RunNotifier;
 
 /**
@@ -125,7 +130,7 @@ public class JUnit4Provider
 
         try
         {
-            JUnit4TestSet.execute( clazz, listeners, this.requestedTestMethod );
+            execute( clazz, listeners, this.requestedTestMethod );
         }
         catch ( TestSetFailedException e )
         {
@@ -204,5 +209,28 @@ public class JUnit4Provider
     {
         final String property = System.getProperty( "surefire.junit4.upgradecheck" );
         return property != null;
+    }
+
+
+    private static void execute( Class testClass, RunNotifier fNotifier, String testMethod )
+        throws TestSetFailedException
+    {
+        if ( !StringUtils.isBlank( testMethod ) )
+        {
+            Method[] methods = testClass.getMethods();
+            for (int i = 0,size = methods.length;i<size;i++)
+            {
+                if ( SelectorUtils.match( testMethod, methods[i].getName() ) )
+                {
+                    Runner junitTestRunner = Request.method( testClass, methods[i].getName() ).getRunner();
+                    junitTestRunner.run( fNotifier );
+                }
+            }
+            return;
+        }
+
+        Runner junitTestRunner = Request.aClass( testClass ).getRunner();
+
+        junitTestRunner.run( fNotifier );
     }
 }

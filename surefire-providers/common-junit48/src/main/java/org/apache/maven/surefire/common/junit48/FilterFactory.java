@@ -22,6 +22,7 @@ package org.apache.maven.surefire.common.junit48;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import org.codehaus.plexus.util.SelectorUtils;
 
 import org.junit.experimental.categories.Categories;
 import org.junit.runner.Description;
@@ -66,6 +67,49 @@ public class FilterFactory
         }
         return included;
     }
+
+    public Filter createMethodFilter( String requestedTestMethod )
+    {
+        return new MethodFilter( requestedTestMethod );
+    }
+
+    private static class MethodFilter
+        extends Filter
+    {
+        private final String requestedTestMethod;
+
+        public MethodFilter( String requestedTestMethod )
+        {
+            this.requestedTestMethod = requestedTestMethod;
+        }
+
+        @Override
+        public boolean shouldRun( Description description )
+        {
+            for ( Description o : description.getChildren() )
+            {
+                if (isDescriptionMatch( o )){
+                    return true;
+                }
+                
+            }
+            return isDescriptionMatch( description );
+        }
+
+        private boolean isDescriptionMatch( Description description )
+        {
+            return description.getMethodName() != null && SelectorUtils.match( requestedTestMethod,
+                                                                               description.getMethodName() );
+        }
+
+
+        @Override
+        public String describe()
+        {
+            return "By method"  + requestedTestMethod;
+        }
+    }
+
 
     private static class CombinedCategoryFilter
         extends Filter
