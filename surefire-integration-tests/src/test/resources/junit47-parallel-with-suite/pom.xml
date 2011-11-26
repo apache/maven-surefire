@@ -32,7 +32,6 @@
            <artifactId>maven-surefire-plugin</artifactId>
            <version>${surefire.version}</version>
            <configuration>
-             <parallel>${parallel}</parallel>
              <threadCount>10</threadCount>
              <includes>
                 <include>**/TestSuite.java</include>

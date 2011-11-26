@@ -112,7 +112,7 @@ public class TestSet
         numberOfTests.incrementAndGet();
     }
 
-    public void addTestMethod( TestMethod testMethod )
+    private void addTestMethod( TestMethod testMethod )
     {
         testMethods.add( testMethod );
     }

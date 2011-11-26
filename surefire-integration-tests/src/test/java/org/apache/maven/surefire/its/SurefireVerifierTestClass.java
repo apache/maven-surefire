@@ -25,8 +25,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
-
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
@@ -410,4 +408,10 @@ public abstract class SurefireVerifierTestClass
         return "org.apache.maven.plugins:maven-surefire-report-plugin:" + getSurefireVersion()
             + ":failsafe-report-only";
     }
+
+    protected void parallel( String parallel )
+    {
+        addGoal( "-Dparallel=" + parallel );
+    }
+
 }
