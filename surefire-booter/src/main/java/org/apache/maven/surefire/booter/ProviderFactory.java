@@ -22,6 +22,7 @@ package org.apache.maven.surefire.booter;
 import java.io.PrintStream;
 import java.lang.reflect.Method;
 import java.util.Iterator;
+
 import org.apache.maven.surefire.providerapi.SurefireProvider;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.suite.RunResult;
@@ -122,7 +123,7 @@ public class ProviderFactory
         Object provider = surefireReflector.instantiateProvider( starterConfiguration.getProviderClassName(), o );
         Thread.currentThread().setContextClassLoader( context );
 
-        return new ProviderProxy( provider );
+        return new ProviderProxy( provider, testsClassLoader );
     }
 
 
@@ -131,26 +132,53 @@ public class ProviderFactory
     {
         private final Object providerInOtherClassLoader;
 
+        private final ClassLoader testsClassLoader;
 
-        private ProviderProxy( Object providerInOtherClassLoader )
+
+        private ProviderProxy( Object providerInOtherClassLoader, ClassLoader testsClassLoader )
         {
             this.providerInOtherClassLoader = providerInOtherClassLoader;
+            this.testsClassLoader = testsClassLoader;
         }
 
         public Iterator getSuites()
         {
-            return (Iterator) ReflectionUtils.invokeGetter( providerInOtherClassLoader, "getSuites" );
+            ClassLoader current = swapClassLoader( testsClassLoader );
+            try
+            {
+                return (Iterator) ReflectionUtils.invokeGetter( providerInOtherClassLoader, "getSuites" );
+            }
+            finally
+            {
+                Thread.currentThread().setContextClassLoader( current );
+            }
         }
 
         public RunResult invoke( Object forkTestSet )
             throws TestSetFailedException, ReporterException
         {
-            final Method invoke =
-                ReflectionUtils.getMethod( providerInOtherClassLoader.getClass(), "invoke", invokeParamaters );
+            ClassLoader current = swapClassLoader( testsClassLoader );
+            try
+            {
+                final Method invoke =
+                    ReflectionUtils.getMethod( providerInOtherClassLoader.getClass(), "invoke", invokeParamaters );
 
-            final Object result = ReflectionUtils.invokeMethodWithArray( providerInOtherClassLoader, invoke,
-                                                                         new Object[]{ forkTestSet } );
-            return (RunResult) surefireReflector.convertIfRunResult( result );
+                final Object result = ReflectionUtils.invokeMethodWithArray( providerInOtherClassLoader, invoke,
+                                                                             new Object[]{ forkTestSet } );
+                return (RunResult) surefireReflector.convertIfRunResult( result );
+            }
+            finally
+            {
+                Thread.currentThread().setContextClassLoader( current );
+            }
+
+        }
+
+        private ClassLoader swapClassLoader( ClassLoader newClassLoader )
+        {
+            ClassLoader current = Thread.currentThread().getContextClassLoader();
+            Thread.currentThread().setContextClassLoader( newClassLoader );
+            return current;
         }
 
         public void cancel()
