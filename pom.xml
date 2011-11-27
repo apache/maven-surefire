@@ -248,6 +248,7 @@
         </plugin>
         <plugin>
           <artifactId>maven-release-plugin</artifactId>
+          <version>2.2.1</version>
           <configuration>
             <tagBase>https://svn.apache.org/repos/asf/maven/surefire/tags</tagBase>
           </configuration>
@@ -263,7 +264,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-shade-plugin</artifactId>
-          <version>1.4</version>
+          <version>1.5</version>
         </plugin>
       </plugins>
     </pluginManagement>
