@@ -287,6 +287,11 @@ public abstract class SurefireVerifierTestClass
         addGoal( "-DforkMode=" + forkMode );
     }
 
+    protected void failIfNoTests( boolean fail)
+    {
+        addGoal( "-DfailIfNoTests=" + fail );
+    }
+
     protected void activateProfile( String profile )
     {
         addGoal( "-P" + profile );
@@ -411,7 +416,13 @@ public abstract class SurefireVerifierTestClass
 
     protected void parallel( String parallel )
     {
-        addGoal( "-Dparallel=" + parallel );
+        addD( "parallel", parallel );
     }
+
+    protected void addD( String variable, String value )
+    {
+        addGoal( "-D" + variable + "=" + value);
+    }
+
 
 }
