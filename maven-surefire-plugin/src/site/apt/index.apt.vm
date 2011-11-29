@@ -70,9 +70,10 @@ mvn verify
   The Failsafe Plugin generates reports in 2 different file formats:
 
 #{end}
-  * Plain text files (*.txt)
 
-  * XML files (*.xml)
+  * Plain text files (<<<*.txt>>>)
+
+  * XML files (<<<*.xml>>>)
 
   []
 

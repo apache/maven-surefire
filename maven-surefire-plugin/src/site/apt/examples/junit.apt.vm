@@ -33,6 +33,7 @@ Using JUnit
   To get started with JUnit, you need to add the required version of JUnit to your project:
 
 +---+
+<dependencies>
   [...]
     <dependency>
       <groupId>junit</groupId>
@@ -41,6 +42,7 @@ Using JUnit
       <scope>test</scope>
     </dependency>
   [...]
+</dependencies>
 +---+
 
 
@@ -90,6 +92,7 @@ else
    You can also manually force a specific provider by adding it as a dependency to ${thisPlugin} itself:
 
 +---+
+<plugins>
 [...]
   <plugin>
     <groupId>${project.groupId}</groupId>
@@ -102,7 +105,9 @@ else
         <version>${project.version}</version>
       </dependency>
     </dependencies>
+  </plugin>
 [...]
+</plugins>
 +---+
 
   When using this technique there  is no check that the proper test-frameworks are present on your project's
@@ -115,6 +120,7 @@ else
   For example:
 
 +---+
+<plugins>
     [...]
       <plugin>
         <groupId>${project.groupId}</groupId>
@@ -126,6 +132,7 @@ else
         </configuration>
       </plugin>
     [...]
+</plugins>
 +---+
 
 
@@ -143,6 +150,7 @@ else
   You can configure multiple custom listeners like this:
 
 +---+
+<plugins>
 [...]
   <plugin>
     <groupId>${project.groupId}</groupId>
@@ -157,6 +165,7 @@ else
     </configuration>
   </plugin>
 [...]
+</plugins>
 +---+
 
 * Using a security manager (JUnit3 only)
@@ -168,6 +177,7 @@ else
    by surefire.
 
 +---+
+<plugins>
 [...]
       <plugin>
         <groupId>${project.groupId}</groupId>
@@ -180,6 +190,7 @@ else
         </configuration>
       </plugin>
 [...]
+</plugins>
 +---+
 
 * Using a security manager (All providers)
@@ -188,6 +199,7 @@ else
     and send them using the argLine parameter and two system properties;
 
 +---+
+<plugins>
 [...]
       <plugin>
         <groupId>${project.groupId}</groupId>
@@ -198,6 +210,7 @@ else
         </configuration>
       </plugin>
 [...]
+</plugins>
 +---+
 
   The disadvantage of this solution is that the policy changes will affect the tests too, which make the
