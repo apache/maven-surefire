@@ -424,8 +424,8 @@ public class IntegrationTestMojo
     private boolean childDelegation;
 
     /**
-     * (TestNG only) Groups for this test. Only classes/methods/etc decorated with one of the groups specified here will
-     * be included in test run, if specified.<br/>
+     * (TestNG/JUnit47 provider with JUnit4.8+ only) Groups for this test. Only classes/methods/etc decorated with one of the groups specified here will
+     * be included in test run, if specified.<br/>For JUnit, this parameter forces the use of the 4.7 provider<br/>
      * This parameter is ignored if the <code>suiteXmlFiles</code> parameter is specified.
      *
      * @parameter expression="${groups}"
@@ -434,8 +434,8 @@ public class IntegrationTestMojo
     private String groups;
 
     /**
-     * (TestNG only) Excluded groups. Any methods/classes/etc with one of the groups specified in this list will
-     * specifically not be run.<br/>
+     * (TestNG/JUnit47 provider with JUnit4.8+ only) Excluded groups. Any methods/classes/etc with one of the groups specified in this list will
+     * specifically not be run.<br/>For JUnit, this parameter forces the use of the 4.7 provider<br/>
      * This parameter is ignored if the <code>suiteXmlFiles</code> parameter is specified.
      *
      * @parameter expression="${excludedGroups}"
@@ -634,7 +634,7 @@ public class IntegrationTestMojo
      * Odd/Even for hourly is determined at the time the of scanning the classpath, meaning it could change during a
      * multi-module build.
      * <p/>
-     * Failed first will run tests that failed on previous run first, as well as new tests.
+     * Failed first will run tests that failed on previous run first, as well as new tests for this run.
      * <p/>
      * Balanced is only relevant with parallel=classes, and will try to optimize the run-order of the tests to
      * make all tests complete at the same time, reducing the overall execution time.

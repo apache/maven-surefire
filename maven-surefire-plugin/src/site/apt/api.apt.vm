@@ -58,3 +58,18 @@ Maven Surefire Provider API
 
   The javadoc on the intefaces mentioned in this article should otherwise be sufficient to write a provider.
   Providers are added as dependencies to the surefire/failsafe plugins.
+
+** API Changes for 2.11
+
+    Prior to 2.11, the provider would do
+
++---+
+    TestsToRun scanned = directoryScanner.locateTestClasses( testClassLoader, scannerFilter );
++---+
+
+    and the classes would arrive in sorted order. In 2.11, an additional step must be implemented by the provider;
+
++---+
+    TestsToRun scanned = directoryScanner.locateTestClasses( testClassLoader, scannerFilter );
+    return providerParameters.getRunOrderCalculator().orderTestClasses(  scanned );
++---+

@@ -294,6 +294,11 @@ public abstract class AbstractSurefireMojo
         return this.getParallel() != null && this.getParallel().trim().length() > 0;
     }
 
+    protected boolean isAnyGroupsSelected()
+    {
+        return this.getGroups() != null && this.getExcludedGroups() != null;
+    }
+
     /**
      * Converts old JUnit configuration parameters over to new properties based configuration
      * method. (if any are defined the old way)
@@ -1298,7 +1303,8 @@ public abstract class AbstractSurefireMojo
         public boolean isApplicable()
         {
             final boolean isJunitArtifact47 = isAnyJunit4( junitArtifact ) && isJunit47Compatible( junitArtifact );
-            return isAnyConcurrencySelected() && ( isJunitArtifact47 || is47CompatibleJunitDep() );
+            final boolean isAny47ProvidersForcers = isAnyConcurrencySelected() || isAnyGroupsSelected();
+            return isAny47ProvidersForcers && ( isJunitArtifact47 || is47CompatibleJunitDep() );
         }
 
         public void addProviderProperties()

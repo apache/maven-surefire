@@ -121,8 +121,7 @@ mvn verify
   The POJO provider above allows you to write tests that do not depend on
   JUnit. They behave in the same way, running all <<<test*>>> methods that are
   public in the class, but the API dependency is not required. To perform
-  assertions, the JDK 1.4 <<<assert>>> keyword can be used, or you can use
-  <<<org.apache.maven.surefire.assertion.Assert>>>.
+  assertions, the JDK 1.4 <<<assert>>> keyword can be used.
   See {{{./examples/pojo-test.html} using POJO tests}} for more information.
 
   All of the providers support the Surefire Plugin parameter configurations.
