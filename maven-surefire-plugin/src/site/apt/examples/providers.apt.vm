@@ -38,20 +38,22 @@ Selecting providers
   The following example shows how to force the junit 4.7 provider:
 
 +---+
+<plugins>
   [...]
-            <plugin>
-                <groupId>${project.groupId}</groupId>
-                <artifactId>${project.artifactId}</artifactId>
-                <version>${project.version}</version>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.apache.maven.surefire</groupId>
-                        <artifactId>surefire-junit47</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                </dependencies>
-            </plugin>
+  <plugin>
+    <groupId>${project.groupId}</groupId>
+    <artifactId>${project.artifactId}</artifactId>
+    <version>${project.version}</version>
+    <dependencies>
+      <dependency>
+        <groupId>org.apache.maven.surefire</groupId>
+        <artifactId>surefire-junit47</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+    </dependencies>
+  </plugin>
   [...]
+</plugins>
 +---+
 
   The providers supplied with surefire are surefire-junit3, surefire-junit4, surefire-junit47 and surefire-testng.

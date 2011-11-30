@@ -34,23 +34,23 @@ Inclusions and Exclusions of Tests
   with the following wildcard patterns:
 
 #{if}(${project.artifactId}=="maven-surefire-plugin")
-   * <"**/Test*.java"> - includes all of its subdirectories and all java
+   * <<<"**/Test*.java">>> - includes all of its subdirectories and all java
    filenames that start with "Test".
 
-   * <"**/*Test.java"> - includes all of its subdirectories and all java
+   * <<<"**/*Test.java">>> - includes all of its subdirectories and all java
    filenames that end with "Test".
 
-   * <"**/*TestCase.java"> - includes all of its subdirectories and all java
+   * <<<"**/*TestCase.java">>> - includes all of its subdirectories and all java
    filenames that end with "TestCase".
 
 #{else}
-   * <"**/IT*.java"> - includes all of its subdirectories and all java
+   * <<<"**/IT*.java">>> - includes all of its subdirectories and all java
    filenames that start with "IT".
 
-   * <"**/*IT.java"> - includes all of its subdirectories and all java
+   * <<<"**/*IT.java">>> - includes all of its subdirectories and all java
    filenames that end with "IT".
 
-   * <"**/*ITCase.java"> - includes all of its subdirectories and all java
+   * <<<"**/*ITCase.java">>> - includes all of its subdirectories and all java
    filenames that end with "ITCase".
 
 #{end}

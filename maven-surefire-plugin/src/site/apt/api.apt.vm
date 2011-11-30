@@ -42,14 +42,14 @@ Maven Surefire Provider API
 
   There are three things any provider must fulfill:
 
-  * A provider must implement the org.apache.maven.surefire.providerapi.SurefireProvider interface.
+  * A provider must implement the <<<org.apache.maven.surefire.providerapi.SurefireProvider>>> interface.
 
-  * A provider contains a META-INF/services file entry named org.apache.maven.surefire.providerapi.SurefireProvider
+  * A provider contains a <<<META-INF/services>>> file entry named <<<org.apache.maven.surefire.providerapi.SurefireProvider>>>
   ( as per {{{http://download.oracle.com/javase/6/docs/api/java/util/ServiceLoader.html}ServiceLoader}}). This file
   contains the name of the actual provider class.
 
   * The actual provider class contains a one-arg constructor that accepts an instance of
-  org.apache.maven.surefire.providerapi.ProviderParameters. This interface delivers all the surefire feature
+  <<<org.apache.maven.surefire.providerapi.ProviderParameters>>>. This interface delivers all the surefire feature
   to the provider implementation, please see the javadoc of this interface for options.
 
   There are 4 well-known providers within surefire that are also implemented this way, so
@@ -58,3 +58,18 @@ Maven Surefire Provider API
 
   The javadoc on the intefaces mentioned in this article should otherwise be sufficient to write a provider.
   Providers are added as dependencies to the surefire/failsafe plugins.
+
+** API Changes for 2.11
+
+    Prior to 2.11, the provider would do
+
++---+
+    TestsToRun scanned = directoryScanner.locateTestClasses( testClassLoader, scannerFilter );
++---+
+
+    and the classes would arrive in sorted order. In 2.11, an additional step must be implemented by the provider;
+
++---+
+    TestsToRun scanned = directoryScanner.locateTestClasses( testClassLoader, scannerFilter );
+    return providerParameters.getRunOrderCalculator().orderTestClasses(  scanned );
++---+

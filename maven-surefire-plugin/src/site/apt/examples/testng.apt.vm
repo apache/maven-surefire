@@ -33,28 +33,32 @@ Using TestNG
   To get started with TestNG, include the following dependency in your project (replacing the version with the one you wish to use):
 
 +---+
+<dependencies>
   [...]
     <dependency>
       <groupId>org.testng</groupId>
       <artifactId>testng</artifactId>
-      <version>5.12.1</version>
+      <version>6.3.1</version>
       <scope>test</scope>
     </dependency>
   [...]
+</dependencies>
 +---+
 
   If you are using an older version of TestNG (\<= 5.11), the dependency would instead look like this:
 
 +---+
+<dependencies>
   [...]
     <dependency>
       <groupId>org.testng</groupId>
       <artifactId>testng</artifactId>
-      <version>5.8</version>
+      <version>6.3.1</version>
       <scope>test</scope>
       <classifier>jdk15</classifier>
     </dependency>
   [...]
+</dependencies>
 +---+
 
   <<Note:>> if you are using JDK 1.4 Javadoc annotations for your TestNG tests, replace the classifier <<<jdk15>>> with <<<jdk14>>> above.
@@ -78,6 +82,7 @@ Using TestNG
   These files are created in the normal way, and then added to the ${thisPlugin} Plugin configuration:
 
 +---+
+<plugins>
     [...]
       <plugin>
         <groupId>${project.groupId}</groupId>
@@ -90,6 +95,7 @@ Using TestNG
         </configuration>
       </plugin>
     [...]
+</plugins>
 +---+
 
   This configuration will override the includes and excludes patterns and run all tests in the suite files.
@@ -100,6 +106,7 @@ Using TestNG
   into your TestNG test, by specifying them as system properties, like this:
 
 +---+
+<plugins>
     [...]
       <plugin>
         <groupId>${project.groupId}</groupId>
@@ -112,6 +119,7 @@ Using TestNG
         </configuration>
       </plugin>
     [...]
+</plugins>
 +---+
 
   For more information about setting system properties in ${thisPlugin} tests, see {{{./system-properties.html}System Properties}}.
@@ -122,6 +130,7 @@ Using TestNG
   use the <<<groups>>> parameter, for example:
 
 +---+
+<plugins>
     [...]
       <plugin>
         <groupId>${project.groupId}</groupId>
@@ -132,6 +141,7 @@ Using TestNG
         </configuration>
       </plugin>
     [...]
+</plugins>
 +---+
 
   Likewise, the <<<excludedGroups>>> parameter can be used to run all but a certain set of groups.
@@ -143,6 +153,7 @@ Using TestNG
   For example:
 
 +---+
+</plugins>
     [...]
       <plugin>
         <groupId>${project.groupId}</groupId>
@@ -154,6 +165,7 @@ Using TestNG
         </configuration>
       </plugin>
     [...]
+</plugins>
 +---+
 
   This is particularly useful for slow tests that can have high concurrency, or to quickly and roughly assess the independance
@@ -167,6 +179,7 @@ Using TestNG
   You can configure multiple custom listeners like this:
 
 +---+
+</plugins>
     [...]
       <plugin>
         <groupId>${project.groupId}</groupId>
@@ -190,6 +203,7 @@ Using TestNG
         </configuration>
       </plugin>
     [...]
+</plugins>
 +---+
 
   For more information on TestNG, see the {{{http://www.testng.org}TestNG web site}}.

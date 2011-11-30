@@ -32,32 +32,26 @@ import java.util.List;
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
 public class CheckTestFailIfNoTestsIT
-    extends AbstractSurefireIntegrationTestClass
+    extends SurefireVerifierTestClass
 {
+
+    public CheckTestFailIfNoTestsIT() {
+        super("/default-configuration-noTests");
+    }
+
     public void testFailIfNoTests()
         throws Exception
     {
-        File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/default-configuration-noTests" );
-
-        Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        List<String> goals = this.getInitialGoals();
-        goals.add( "test" );
-        goals.add( "-DfailIfNoTests" );
+        failIfNoTests(true);
 
         try
         {
-            executeGoals( verifier, goals );
-            verifier.resetStreams();
-            verifier.verifyErrorFreeLog();
+            executeTest();
+            verifyErrorFreeLog();
             fail( "Build didn't fail, but it should" );
         }
-        catch ( VerificationException e )
+        catch ( VerificationException ignore )
         {
-            // as expected
-        }
-        finally
-        {
-            verifier.resetStreams();
         }
 
     }
@@ -65,15 +59,22 @@ public class CheckTestFailIfNoTestsIT
     public void testDontFailIfNoTests()
         throws Exception
     {
-        File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/default-configuration-noTests" );
+        failIfNoTests(false);
+        executeTest();
+        verifyErrorFreeLog();
 
-        Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        this.executeGoal( verifier, "test" );
-        verifier.verifyErrorFreeLog();
-        verifier.resetStreams();
-
-        File reportsDir = new File( testDir, "target/surefire-reports" );
+        File reportsDir = getSurefireReportsFile("");
         assertFalse( "Unexpected reports directory", reportsDir.exists() );
+    }
+
+    public void test48CategoriesFailWhenNoTests()
+        throws Exception
+    {
+        failIfNoTests(false);
+        activateProfile("junit47");
+        addD("junit.version", "4.8.1");
+        executeTest();
+        verifyErrorFreeLog();
     }
 
 }

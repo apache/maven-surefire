@@ -113,12 +113,18 @@ public class JUnitCoreProvider
         final ConsoleLogger consoleLogger = providerParameters.getConsoleLogger();
         consoleLogger.info( message );
 
-        final Filter filter = jUnit48Reflector.isJUnit48Available() ? createJUnit48Filter() : null;
+        Filter filter = jUnit48Reflector.isJUnit48Available() ? createJUnit48Filter() : null;
 
         if ( testsToRun == null )
         {
             testsToRun = forkTestSet == null ? getSuitesAsList( filter ) : TestsToRun.fromClass( (Class) forkTestSet );
         }
+
+        if (testsToRun.size() == 0)
+        {
+            filter = null;
+        }
+
         final Map<String, TestSet> testSetMap = new ConcurrentHashMap<String, TestSet>();
 
         RunListener listener = ConcurrentReporterManager.createInstance( testSetMap, reporterFactory,
