@@ -42,6 +42,7 @@ import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.InitializationError;
 
 /**
+ * {@code
  * <dependency>
  * <groupId>junit</groupId>
  * <artifactId>junit</artifactId>
@@ -67,6 +68,7 @@ import org.junit.runners.model.InitializationError;
  * <version>2.8.1</version>
  * <scope>test</scope>
  * </dependency>
+ * }
  *
  * @author <a href="mailto:aslak@redhat.com">Aslak Knutsen</a>
  * @version $Revision: $
