@@ -424,5 +424,11 @@ public abstract class SurefireVerifierTestClass
         addGoal( "-D" + variable + "=" + value);
     }
 
+    public void setGroups(String groups){
+        addD( "groups", groups );
+    }
+    public void setExcludedGroups(String excludedGroups){
+        addD( "excludedGroups", excludedGroups );
+    }
 
 }
