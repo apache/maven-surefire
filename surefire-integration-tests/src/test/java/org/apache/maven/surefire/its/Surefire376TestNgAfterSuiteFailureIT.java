@@ -19,25 +19,33 @@ package org.apache.maven.surefire.its;
  */
 
 
+import org.apache.maven.it.VerificationException;
+
 /**
- * Test that TestNG's @Test(threadPoolSize = n, invocationCount=n) causes tests to be run in parallel.
- * 
- * @author <a href="mailto:spam.haikal@gmail.com">Haikal Saadh</a>
- * 
+ * Test Surefire-376 (TestNG @AfterSuite failures are ignored)
+ *
+ * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
-public class TestNgParallelWithAnnotations
-   extends SurefireVerifierTestClass
+public class Surefire376TestNgAfterSuiteFailureIT
+    extends SurefireVerifierTestClass
 {
-    public TestNgParallelWithAnnotations()
+
+    public Surefire376TestNgAfterSuiteFailureIT()
     {
-        super( "/testng-parallel-with-annotations" );
+        super( "/testng-afterSuiteFailure" );
     }
 
-    public void testTestNgGroupThreadParallel ()
+    public void testAfterSuiteFailure()
         throws Exception
     {
-        executeTest();
-        verifyErrorFreeLog();
-        assertTestSuiteResults( 3, 0, 0, 0 );
+        try
+        {
+            executeTest();
+            fail( "Should fail" );
+        }
+        catch ( VerificationException e )
+        {
+            assertTestSuiteResults( 2, 0, 1, 0 );
+        }
     }
 }

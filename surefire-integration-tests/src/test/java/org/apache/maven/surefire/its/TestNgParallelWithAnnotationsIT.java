@@ -20,23 +20,24 @@ package org.apache.maven.surefire.its;
 
 
 /**
- * Test Surefire-376 (TestNG @AfterSuite failures are ignored)
- *
- * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
+ * Test that TestNG's @Test(threadPoolSize = n, invocationCount=n) causes tests to be run in parallel.
+ * 
+ * @author <a href="mailto:spam.haikal@gmail.com">Haikal Saadh</a>
+ * 
  */
-public class Surefire376TestNgAfterSuiteFailure
-    extends SurefireVerifierTestClass
+public class TestNgParallelWithAnnotationsIT
+   extends SurefireVerifierTestClass
 {
-
-    public Surefire376TestNgAfterSuiteFailure()
+    public TestNgParallelWithAnnotationsIT()
     {
-        super( "/testng-afterSuiteFailure" );
+        super( "/testng-parallel-with-annotations" );
     }
 
-    public void testAfterSuiteFailure()
+    public void testTestNgGroupThreadParallel ()
         throws Exception
     {
         executeTest();
-        assertTestSuiteResults( 2, 0, 1, 0 );
+        verifyErrorFreeLog();
+        assertTestSuiteResults( 3, 0, 0, 0 );
     }
 }
