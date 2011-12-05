@@ -18,12 +18,10 @@ package org.apache.maven.surefire.its.misc;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.IntegrationTestSuiteResults;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
+import org.apache.maven.surefire.its.IntegrationTestSuiteResults;
 
 import junit.framework.Assert;
 
@@ -66,13 +64,12 @@ public class HelperAssertions
     {
         Assert.assertTrue( "No reports!", reports.size() > 0 );
         int total = 0, errors = 0, failures = 0, skipped = 0;
-        for ( int i = 0; i < reports.size(); i++ )
+        for ( ReportTestSuite report : reports )
         {
-            ReportTestSuite suite = (ReportTestSuite) reports.get( i );
-            total += suite.getNumberOfTests();
-            errors += suite.getNumberOfErrors();
-            failures += suite.getNumberOfFailures();
-            skipped += suite.getNumberOfSkipped();
+            total += report.getNumberOfTests();
+            errors += report.getNumberOfErrors();
+            failures += report.getNumberOfFailures();
+            skipped += report.getNumberOfSkipped();
         }
         return new IntegrationTestSuiteResults( total, errors, failures, skipped );
     }
@@ -80,14 +77,13 @@ public class HelperAssertions
     public static List<ReportTestSuite> extractReports( File[] testDirs )
     {
         List<File> reportsDirs = new ArrayList<File>();
-        for ( int i = 0; i < testDirs.length; i++ )
+        for ( File testDir : testDirs )
         {
-            File testDir = testDirs[i];
             File reportsDir = new File( testDir, "target/surefire-reports" );
             Assert.assertTrue( "Reports directory is missing: " + reportsDir.getAbsolutePath(), reportsDir.exists() );
             reportsDirs.add( reportsDir );
         }
-        SurefireReportParser parser = new SurefireReportParser( reportsDirs, Locale.getDefault() );
+        SurefireReportParser parser = new SurefireReportParser( reportsDirs );
         List<ReportTestSuite> reports;
         try
         {

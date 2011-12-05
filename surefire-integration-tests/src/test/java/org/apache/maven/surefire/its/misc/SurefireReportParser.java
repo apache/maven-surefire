@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Locale;
 import org.codehaus.plexus.util.DirectoryScanner;
 import org.codehaus.plexus.util.StringUtils;
 
@@ -38,45 +37,41 @@ import org.xml.sax.SAXException;
 public class SurefireReportParser
 {
 
-    private final List reportsDirectories;
+    private final List<File> reportsDirectories;
 
-    private final List testSuites = new ArrayList();
+    private final List<ReportTestSuite> testSuites = new ArrayList<ReportTestSuite>();
 
-    public SurefireReportParser( List reportsDirectoriesFiles, Locale locale )
+    public SurefireReportParser( List<File> reportsDirectoriesFiles )
     {
         this.reportsDirectories = reportsDirectoriesFiles;
 
     }
 
-    public List parseXMLReportFiles()
+    public List<ReportTestSuite> parseXMLReportFiles()
     {
-        List xmlReportFileList = new ArrayList();
-        for ( int i = 0; i < reportsDirectories.size(); i++ )
+        List<File> xmlReportFileList = new ArrayList<File>();
+        for ( File reportsDirectory : reportsDirectories )
         {
-            File reportsDirectory = (File) reportsDirectories.get( i );
             if ( !reportsDirectory.exists() )
             {
                 continue;
             }
-            String[] xmlReportFiles =
-                getIncludedFiles( reportsDirectory, "*.xml",
-                                  "*.txt, testng-failed.xml, testng-failures.xml, testng-results.xml" );
-            for ( int j = 0; j < xmlReportFiles.length; j++ )
+            String[] xmlReportFiles = getIncludedFiles( reportsDirectory, "*.xml",
+                                                        "*.txt, testng-failed.xml, testng-failures.xml, testng-results.xml" );
+            for ( String xmlReportFile : xmlReportFiles )
             {
-                File xmlReport = new File( reportsDirectory, xmlReportFiles[j] );
+                File xmlReport = new File( reportsDirectory, xmlReportFile );
                 xmlReportFileList.add( xmlReport );
             }
         }
         TestSuiteXmlParser parser = new TestSuiteXmlParser();
-        for ( int index = 0; index < xmlReportFileList.size(); index++ )
+        for ( File aXmlReportFileList : xmlReportFileList )
         {
-            Collection suites;
-
-            File currentReport = (File) xmlReportFileList.get( index );
+            Collection<ReportTestSuite> suites;
 
             try
             {
-                suites = parser.parse( currentReport.getAbsolutePath() );
+                suites = parser.parse( aXmlReportFileList.getAbsolutePath() );
             }
             catch ( ParserConfigurationException e )
             {
@@ -84,11 +79,11 @@ public class SurefireReportParser
             }
             catch ( SAXException e )
             {
-                throw new RuntimeException( "Error parsing JUnit XML report " + currentReport, e );
+                throw new RuntimeException( "Error parsing JUnit XML report " + aXmlReportFileList, e );
             }
             catch ( IOException e )
             {
-                throw new RuntimeException( "Error reading JUnit XML report " + currentReport, e );
+                throw new RuntimeException( "Error reading JUnit XML report " + aXmlReportFileList, e );
             }
 
             testSuites.addAll( suites );
