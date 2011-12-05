@@ -21,14 +21,11 @@ package org.apache.maven.surefire.junitcore;
 
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.maven.plugin.surefire.report.FileReporterFactory;
-import org.apache.maven.surefire.booter.StartupReportConfiguration;
 import org.apache.maven.surefire.report.DefaultConsoleReporter;
-import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.RunStatistics;
@@ -399,11 +396,6 @@ public class ConcurrentReporterManagerTest
     private ReporterFactory createReporterFactory()
     {
         return FileReporterFactory.defaultNoXml();
-    }
-
-    public static ReporterConfiguration getTestReporterConfiguration()
-    {
-        return new ReporterConfiguration( new File( "." ), Boolean.TRUE );
     }
 
 

@@ -414,11 +414,6 @@ public abstract class AbstractSurefireMojo
                                           null );
     }
 
-    public File getStatisticsFile( String configurationHash )
-    {
-        return new File( getStatisticsFileName( configurationHash ) );
-    }
-
     public String getStatisticsFileName( String configurationHash )
     {
         return getReportsDirectory().getParentFile().getParentFile() + File.separator + ".surefire-"

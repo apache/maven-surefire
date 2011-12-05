@@ -132,32 +132,6 @@ public abstract class SurefireVerifierTestClass
         return goals1;
     }
 
-    protected List<String> getInitialGoals( String testNgVersion )
-    {
-        List<String> goals = new ArrayList<String>();
-        goals.add( "-Dsurefire.version=" + surefireVersion );
-
-        if ( testNgVersion != null )
-        {
-            goals.add( "-DtestNgVersion=" + testNgVersion );
-
-            ArtifactVersion v = new DefaultArtifactVersion( testNgVersion );
-            try
-            {
-                if ( VersionRange.createFromVersionSpec( "(,5.12.1)" ).containsVersion( v ) )
-                {
-                    goals.add( "-DtestNgClassifier=jdk15" );
-                }
-            }
-            catch ( InvalidVersionSpecificationException e )
-            {
-                throw new RuntimeException( e.getMessage(), e );
-            }
-        }
-
-        return goals;
-    }
-
     /**
      * Returns a file, referenced from the extracted root (where pom.xml is located)
      *
@@ -338,11 +312,6 @@ public abstract class SurefireVerifierTestClass
         }
         Assert.fail( "Did not find expected message in log" );
         return false; // doh
-    }
-
-    protected boolean isMaven3X()
-    {
-        return matchesVersionRange( "[3.0,)" );
     }
 
     private DefaultArtifactVersion getMavenVersion()

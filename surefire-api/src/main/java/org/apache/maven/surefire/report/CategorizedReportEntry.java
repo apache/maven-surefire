@@ -28,12 +28,6 @@ public class CategorizedReportEntry
 {
     private final String group;
 
-    private CategorizedReportEntry( String name, String group )
-    {
-        super( name );
-        this.group = group;
-    }
-
     public CategorizedReportEntry( String source, String name, String group )
     {
         this( source, name, group, null, null );

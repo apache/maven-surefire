@@ -21,8 +21,6 @@ package org.apache.maven.plugin.surefire.booterclient;
 
 import org.apache.maven.plugin.surefire.report.FileReporterFactory;
 import org.apache.maven.surefire.booter.StartupReportConfiguration;
-import org.apache.maven.surefire.report.ConsoleLogger;
-import org.apache.maven.surefire.report.DefaultConsoleReporter;
 import org.apache.maven.surefire.report.RunListener;
 
 /**
@@ -34,11 +32,6 @@ public class TestSetMockReporterFactory
     public TestSetMockReporterFactory()
     {
         super( StartupReportConfiguration.defaultValue() );
-    }
-
-    public ConsoleLogger createConsoleLogger()
-    {
-        return new DefaultConsoleReporter( System.out );
     }
 
     public RunListener createReporter()
