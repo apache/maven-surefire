@@ -40,17 +40,17 @@ public class TypeEncodedValue
         this.value = value;
     }
 
-    public String getType()
-    {
-        return type;
-    }
-
     public boolean isTypeClass()
     {
         return Class.class.getName().equals( type );
     }
 
     public Object getDecodedValue()
+    {
+        return getDecodedValue( Thread.currentThread().getContextClassLoader() );
+    }
+
+    public Object getDecodedValue(ClassLoader classLoader)
     {
         if ( type.trim().length() == 0 )
         {
@@ -62,7 +62,7 @@ public class TypeEncodedValue
         }
         else if ( isTypeClass() )
         {
-            return ReflectionUtils.loadClass( Thread.currentThread().getContextClassLoader(), value );
+            return ReflectionUtils.loadClass( classLoader, value );
         }
         else if ( type.equals( File.class.getName() ) )
         {

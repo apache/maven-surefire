@@ -26,23 +26,23 @@ import org.apache.maven.surefire.its.SurefireVerifierTestClass;
  *
  * @author Kristian Rosenvold
  */
-public class Surefire763EnvironmentForkMode
+public class Surefire763EnvironmentForkModeIT
     extends SurefireVerifierTestClass
 {
 
-    public Surefire763EnvironmentForkMode()
+    public Surefire763EnvironmentForkModeIT()
     {
         super( "/environment-variables" );
     }
 
-    public void okWhenUseSystemClassLoader()
+    public void testWhenUseSystemClassLoader()
         throws Exception
     {
         addGoal( "-DuseSystemClassLoader=true" );
         executeTest();
     }
 
-    public void okeWhenDontUseSystemClassLoader()
+    public void testWhenDontUseSystemClassLoader()
         throws Exception
     {
         addGoal( "-DuseSystemClassLoader=false" );
