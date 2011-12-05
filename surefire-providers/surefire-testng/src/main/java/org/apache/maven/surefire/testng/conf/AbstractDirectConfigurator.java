@@ -26,6 +26,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.maven.surefire.booter.ProviderParameterNames;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.NestedRuntimeException;
 import org.testng.TestNG;
@@ -38,10 +39,10 @@ public abstract class AbstractDirectConfigurator
     AbstractDirectConfigurator()
     {
         Map options = new HashMap();
-        options.put( "groups", new Setter( "setGroups", String.class ) );
-        options.put( "excludedgroups", new Setter( "setExcludedGroups", String.class ) );
+        options.put( ProviderParameterNames.TESTNG_GROUPS_PROP, new Setter( "setGroups", String.class ) );
+        options.put( ProviderParameterNames.TESTNG_EXCLUDEDGROUPS_PROP, new Setter( "setExcludedGroups", String.class ) );
         options.put( "junit", new Setter( "setJUnit", Boolean.class ) );
-        options.put( "threadcount", new Setter( "setThreadCount", int.class ) );
+        options.put( ProviderParameterNames.THREADCOUNT_PROP, new Setter( "setThreadCount", int.class ) );
         options.put( "usedefaultlisteners", new Setter( "setUseDefaultListeners", boolean.class ) );
         this.setters = options;
     }

@@ -1,5 +1,4 @@
-package org.apache.maven.surefire.testng.conf;
-
+package org.apache.maven.surefire.booter;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -19,26 +18,14 @@ package org.apache.maven.surefire.testng.conf;
  * under the License.
  */
 
-import org.apache.maven.surefire.booter.ProviderParameterNames;
-
 /**
- * TestNG 4.7 and 5.1 configurator.
- * <p/>
- * Allowed options:
- * -groups
- * -excludedgroups
- * -junit (boolean)
- * -threadcount (int)
- * -parallel (boolean)
- * <p/>
- * 
- * @author <a href='mailto:the[dot]mindstorm[at]gmail[dot]com'>Alex Popescu</a>
+ * @author Kristian Rosenvold
  */
-public class TestNG4751Configurator
-    extends AbstractDirectConfigurator
+public class ProviderParameterNames
 {
-    public TestNG4751Configurator()
-    {
-        setters.put( ProviderParameterNames.PARALLEL_PROP, new Setter( "setParallel", boolean.class ) );
-    }
+    public static final String TESTNG_EXCLUDEDGROUPS_PROP = "excludegroups";
+    public static final String TESTNG_GROUPS_PROP = "groups";
+    public static final String THREADCOUNT_PROP = "threadcount";
+    public static final String PARALLEL_PROP = "parallel";
+
 }

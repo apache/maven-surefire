@@ -83,7 +83,7 @@ public class BaseProviderFactory
 
     private int getThreadCount()
     {
-        final String threadcount = (String) providerProperties.get( "threadcount" );
+        final String threadcount = (String) providerProperties.get( ProviderParameterNames.THREADCOUNT_PROP );
         return threadcount == null ? 1 : Integer.parseInt( threadcount );
     }
 

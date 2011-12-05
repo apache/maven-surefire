@@ -54,6 +54,7 @@ import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
 import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.ClasspathConfiguration;
 import org.apache.maven.surefire.booter.ProviderConfiguration;
+import org.apache.maven.surefire.booter.ProviderParameterNames;
 import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.StartupReportConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
@@ -253,13 +254,13 @@ public abstract class AbstractSurefireMojo
 
         if ( this.getParallel() != null )
         {
-            getProperties().setProperty( "parallel", this.getParallel() );
+            getProperties().setProperty( ProviderParameterNames.PARALLEL_PROP, this.getParallel() );
         }
         convertGroupParameters();
 
         if ( this.getThreadCount() > 0 )
         {
-            getProperties().setProperty( "threadcount", Integer.toString( this.getThreadCount() ) );
+            getProperties().setProperty( ProviderParameterNames.THREADCOUNT_PROP, Integer.toString( this.getThreadCount() ) );
         }
         if ( this.getObjectFactory() != null )
         {
@@ -281,11 +282,11 @@ public abstract class AbstractSurefireMojo
         }
         if ( this.getExcludedGroups() != null )
         {
-            getProperties().setProperty( "excludedgroups", this.getExcludedGroups() );
+            getProperties().setProperty( ProviderParameterNames.TESTNG_EXCLUDEDGROUPS_PROP, this.getExcludedGroups() );
         }
         if ( this.getGroups() != null )
         {
-            getProperties().setProperty( "groups", this.getGroups() );
+            getProperties().setProperty( ProviderParameterNames.TESTNG_GROUPS_PROP, this.getGroups() );
         }
     }
 
@@ -312,11 +313,11 @@ public abstract class AbstractSurefireMojo
 
         if ( this.getParallel() != null )
         {
-            getProperties().setProperty( "parallel", this.getParallel() );
+            getProperties().setProperty( ProviderParameterNames.PARALLEL_PROP, this.getParallel() );
         }
         if ( this.getThreadCount() > 0 )
         {
-            getProperties().setProperty( "threadCount", Integer.toString( this.getThreadCount() ) );
+            getProperties().setProperty( ProviderParameterNames.THREADCOUNT_PROP, Integer.toString( this.getThreadCount() ) );
         }
         getProperties().setProperty( "perCoreThreadCount", Boolean.toString( getPerCoreThreadCount() ) );
         getProperties().setProperty( "useUnlimitedThreads", Boolean.toString( getUseUnlimitedThreads() ) );

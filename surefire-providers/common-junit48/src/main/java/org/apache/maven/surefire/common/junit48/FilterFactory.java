@@ -22,6 +22,7 @@ package org.apache.maven.surefire.common.junit48;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import org.apache.maven.surefire.booter.ProviderParameterNames;
 import org.codehaus.plexus.util.SelectorUtils;
 
 import org.junit.experimental.categories.Categories;
@@ -42,8 +43,8 @@ public class FilterFactory
 
     public Filter createGroupFilter( Properties providerProperties )
     {
-        String groups = providerProperties.getProperty( "groups" );
-        String excludedGroups = providerProperties.getProperty( "excludedgroups" );
+        String groups = providerProperties.getProperty( ProviderParameterNames.TESTNG_GROUPS_PROP );
+        String excludedGroups = providerProperties.getProperty( ProviderParameterNames.TESTNG_EXCLUDEDGROUPS_PROP );
         List<Filter> included = commaSeparatedListToFilters( groups );
         List<Filter> excluded = commaSeparatedListToFilters( excludedGroups );
         return new CombinedCategoryFilter( included, excluded );

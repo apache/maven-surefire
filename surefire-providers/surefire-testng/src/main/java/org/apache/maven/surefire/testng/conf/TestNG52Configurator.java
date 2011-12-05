@@ -19,6 +19,8 @@ package org.apache.maven.surefire.testng.conf;
  * under the License.
  */
 
+import org.apache.maven.surefire.booter.ProviderParameterNames;
+
 /**
  * TestNG 5.2 configurator.
  * <p/>
@@ -37,6 +39,6 @@ public class TestNG52Configurator
 {
     public TestNG52Configurator()
     {
-        setters.put( "parallel", new Setter( "setParallel", String.class ) );
+        setters.put( ProviderParameterNames.PARALLEL_PROP, new Setter( "setParallel", String.class ) );
     }
 }

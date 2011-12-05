@@ -25,6 +25,7 @@ import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import org.apache.maven.plugin.surefire.report.FileReporterFactory;
 import org.apache.maven.surefire.booter.BaseProviderFactory;
+import org.apache.maven.surefire.booter.ProviderParameterNames;
 import org.apache.maven.surefire.report.ConsoleLogger;
 import org.apache.maven.surefire.report.DefaultConsoleReporter;
 import org.apache.maven.surefire.report.ReporterConfiguration;
@@ -83,7 +84,7 @@ public class Surefire746Test {
 
         providerParameters.setReporterConfiguration(new ReporterConfiguration(new File(""), false));
         Properties junitProps = new Properties();
-        junitProps.put("parallel", "none");
+        junitProps.put( ProviderParameterNames.PARALLEL_PROP, "none");
 
         JUnitCoreParameters jUnitCoreParameters = new JUnitCoreParameters(junitProps);
 

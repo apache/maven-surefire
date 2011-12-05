@@ -19,14 +19,15 @@ package org.apache.maven.surefire.testng.conf;
  * under the License.
  */
 
-import org.apache.maven.surefire.testset.TestSetFailedException;
-import org.testng.TestNG;
-
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import org.apache.maven.surefire.booter.ProviderParameterNames;
+import org.apache.maven.surefire.testset.TestSetFailedException;
+
+import org.testng.TestNG;
 
 /**
  * TestNG configurator for 5.3+ versions. TestNG exposes
@@ -77,7 +78,7 @@ public class TestNGMapConfigurator
             {
                 val = convert( val, Boolean.class );
             }
-            else if ( "threadcount".equals( key ) )
+            else if ( ProviderParameterNames.THREADCOUNT_PROP.equals( key ) )
             {
                 val = convert( val, String.class );
             }

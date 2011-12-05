@@ -20,6 +20,7 @@ package org.apache.maven.surefire.junitcore;
  */
 
 import java.util.Properties;
+import org.apache.maven.surefire.booter.ProviderParameterNames;
 
 /**
  * @author Kristian Rosenvold
@@ -34,11 +35,11 @@ class JUnitCoreParameters
 
     private final Boolean useUnlimitedThreads;
 
-    public static final String PARALLEL_KEY = "parallel";
+    public static final String PARALLEL_KEY = ProviderParameterNames.PARALLEL_PROP;
 
     public static final String PERCORETHREADCOUNT_KEY = "perCoreThreadCount";
 
-    public static final String THREADCOUNT_KEY = "threadCount";
+    public static final String THREADCOUNT_KEY = ProviderParameterNames.THREADCOUNT_PROP;
 
     public static final String USEUNLIMITEDTHREADS_KEY = "useUnlimitedThreads";
 
