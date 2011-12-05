@@ -20,6 +20,12 @@
   -->
 
 <project>
+  <skin>
+    <groupId>org.apache.maven.skins</groupId>
+    <artifactId>maven-fluido-skin</artifactId>
+    <version>1.0</version>
+  </skin>
+
   <body>
     <menu name="Overview">
       <item name="Introduction" href="index.html"/>

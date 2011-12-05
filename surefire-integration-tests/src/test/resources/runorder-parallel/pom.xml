@@ -35,7 +35,6 @@
            <version>${surefire.version}</version>
            <configuration>
              <forkMode>once</forkMode>
-             <parallel>classes</parallel>
              <runOrder>${runOrder}</runOrder>
              <threadCount>2</threadCount>
              <perCoreThreadCount>false</perCoreThreadCount>

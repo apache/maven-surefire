@@ -56,6 +56,8 @@ public class XMLReporter
 
     private final List results = Collections.synchronizedList( new ArrayList() );
 
+    private int elapsed = 0;
+
 
     public XMLReporter( boolean trimStackTrace, File reportsDirectory )
     {
@@ -97,7 +99,7 @@ public class XMLReporter
     {
         super.testSetCompleted( report );
 
-        long runTime = System.currentTimeMillis() - testSetStartTime;
+        long runTime = elapsed > 0 ? elapsed : (System.currentTimeMillis() - testSetStartTime);
 
         Xpp3Dom testSuite = createTestSuiteElement( report, runTime );
 
@@ -154,7 +156,7 @@ public class XMLReporter
     {
         File reportFile;
 
-        if ( reportNameSuffix != null && reportNameSuffix.length() > 0)
+        if ( reportNameSuffix != null && reportNameSuffix.length() > 0 )
         {
             reportFile = new File( reportsDirectory, "TEST-" + report.getName() + "-" + reportNameSuffix + ".xml" );
         }
@@ -194,6 +196,7 @@ public class XMLReporter
 
     private Xpp3Dom createTestElement( ReportEntry report, long runTime )
     {
+        elapsed += report.getElapsed().intValue();
         Xpp3Dom testCase = new Xpp3Dom( "testcase" );
         testCase.setAttribute( "name", getReportName( report ) );
         if ( report.getGroup() != null )
@@ -202,7 +205,7 @@ public class XMLReporter
         }
         if ( report.getSourceName() != null )
         {
-            if ( reportNameSuffix != null && reportNameSuffix.length() > 0)
+            if ( reportNameSuffix != null && reportNameSuffix.length() > 0 )
             {
                 testCase.setAttribute( "classname", report.getSourceName() + "(" + reportNameSuffix + ")" );
             }
@@ -219,7 +222,7 @@ public class XMLReporter
     {
         Xpp3Dom testCase = new Xpp3Dom( "testsuite" );
 
-        if ( reportNameSuffix != null && reportNameSuffix.length() > 0)
+        if ( reportNameSuffix != null && reportNameSuffix.length() > 0 )
         {
             testCase.setAttribute( "name", getReportName( report ) + "(" + reportNameSuffix + ")" );
         }
@@ -364,6 +367,7 @@ public class XMLReporter
     public void reset()
     {
         results.clear();
+        elapsed = 0;
         super.reset();
     }
 }

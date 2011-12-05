@@ -42,7 +42,8 @@ public class XMLReporterTest
         reporter = new XMLReporter( true, new File( "." ));
         message = "junit.framework.AssertionFailedError";
         reportEntry = new SimpleReportEntry( this.getClass().getName(), "XMLReporterTest",
-                                             new PojoStackTraceWriter( "", "", new AssertionFailedError() ) );
+                                             new PojoStackTraceWriter( "", "", new AssertionFailedError() ) ,
+                                             new Integer( 17 ) );
     }
 
     /*
@@ -77,7 +78,7 @@ public class XMLReporterTest
     {
         File reportDir = new File( "." );
         String testName = "org.apache.maven.surefire.report.XMLReporterTest";
-        reportEntry = new SimpleReportEntry( this.getClass().getName(), testName );
+        reportEntry = new SimpleReportEntry( this.getClass().getName(), testName, new Integer( 12) );
         reporter = new XMLReporter( true, reportDir, null );
         reporter.testSetCompleted( reportEntry );
 

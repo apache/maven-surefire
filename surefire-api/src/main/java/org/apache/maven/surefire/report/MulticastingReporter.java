@@ -30,7 +30,10 @@ public class MulticastingReporter
     implements Reporter
 {
     private final Reporter[] target;
+
     private final int size;
+
+    private volatile long lastStartAt;
 
     public MulticastingReporter( List target )
     {
@@ -40,14 +43,16 @@ public class MulticastingReporter
 
     public void testSetStarting( ReportEntry report )
     {
-        for (int i = 0; i < size; i++){
+        for ( int i = 0; i < size; i++ )
+        {
             target[i].testSetStarting( report );
         }
     }
 
     public void testSetCompleted( ReportEntry report )
     {
-        for (int i = 0; i < size; i++){
+        for ( int i = 0; i < size; i++ )
+        {
             target[i].testSetCompleted( report );
         }
     }
@@ -55,56 +60,80 @@ public class MulticastingReporter
 
     public void testStarting( ReportEntry report )
     {
-        for (int i = 0; i < size; i++){
+        lastStartAt = System.currentTimeMillis();
+        for ( int i = 0; i < size; i++ )
+        {
             target[i].testStarting( report );
         }
     }
 
     public void testSucceeded( ReportEntry report )
     {
-        for (int i = 0; i < size; i++){
-            target[i].testSucceeded( report );
+        ReportEntry wrapped = wrap( report );
+        for ( int i = 0; i < size; i++ )
+        {
+            target[i].testSucceeded( wrapped );
         }
     }
 
     public void testError( ReportEntry report, String stdOut, String stdErr )
     {
-        for (int i = 0; i < size; i++){
-            target[i].testError( report, stdOut, stdErr );
+        ReportEntry wrapped = wrap( report );
+        for ( int i = 0; i < size; i++ )
+        {
+            target[i].testError( wrapped, stdOut, stdErr );
         }
     }
 
     public void testFailed( ReportEntry report, String stdOut, String stdErr )
     {
-        for (int i = 0; i < size; i++){
-            target[i].testFailed( report, stdOut, stdErr );
+        ReportEntry wrapped = wrap( report );
+        for ( int i = 0; i < size; i++ )
+        {
+            target[i].testFailed( wrapped, stdOut, stdErr );
         }
     }
 
     public void testSkipped( ReportEntry report )
     {
-        for (int i = 0; i < size; i++){
-            target[i].testSkipped( report );
+        ReportEntry wrapped = wrap( report );
+        for ( int i = 0; i < size; i++ )
+        {
+            target[i].testSkipped( wrapped );
         }
+    }
+
+    private ReportEntry wrap( ReportEntry other )
+    {
+        if ( other.getElapsed() != null )
+        {
+            return other;
+        }
+        return new CategorizedReportEntry( other.getSourceName(), other.getName(), other.getGroup(),
+                                           other.getStackTraceWriter(), Integer.valueOf(
+            (int) (System.currentTimeMillis() - this.lastStartAt) ));
     }
 
     public void writeMessage( String message )
     {
-        for (int i = 0; i < size; i++){
+        for ( int i = 0; i < size; i++ )
+        {
             target[i].writeMessage( message );
         }
     }
 
     public void writeMessage( byte[] b, int off, int len )
     {
-        for (int i = 0; i < size; i++){
+        for ( int i = 0; i < size; i++ )
+        {
             target[i].writeMessage( b, off, len );
         }
     }
 
     public void reset()
     {
-        for (int i = 0; i < size; i++){
+        for ( int i = 0; i < size; i++ )
+        {
             target[i].reset();
         }
     }
