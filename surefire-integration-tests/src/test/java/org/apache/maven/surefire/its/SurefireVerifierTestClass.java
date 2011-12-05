@@ -419,6 +419,18 @@ public abstract class SurefireVerifierTestClass
         addD( "parallel", parallel );
     }
 
+
+    protected void parallelClasses()
+    {
+        parallel( "classes" );
+    }
+
+    protected void parallelMethods()
+    {
+        parallel( "methods" );
+    }
+
+
     protected void addD( String variable, String value )
     {
         addGoal( "-D" + variable + "=" + value);
