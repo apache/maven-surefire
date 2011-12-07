@@ -1,5 +1,7 @@
 package runorder.parallel;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -32,4 +34,21 @@ public class Test3 {
     System.out.println("Test3.sleep50 started @ " + System.currentTimeMillis());
     Test1.sleep(50);
   }
+
+    @BeforeClass
+    public static void setUpBeforeClass()
+        throws Exception
+    {
+        System.out.println( Thread.currentThread().getName() + " Test3 beforeClass sleep 175 " + System.currentTimeMillis() );
+        Thread.sleep( 175 );
+    }
+
+    @AfterClass
+    public static void tearDownAfterClass()
+        throws Exception
+    {
+        System.out.println( Thread.currentThread().getName() + " Test3 afterClass sleep 175 " + System.currentTimeMillis() );
+        Thread.sleep( 175 );
+    }
+
 }

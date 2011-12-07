@@ -28,6 +28,13 @@ import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
 /**
+ * Handles responses from concurrent junit
+ *
+ * Stuff to remember about JUnit threading:
+ * parallel=classes; beforeClass/afterClass, constructor and all tests method run on same thread
+ * parallel=methods; beforeClass/afterClass run on main thread, constructor + each test method run on same thread
+ * parallel=both; same as parallel=methods
+ *
  * @author Kristian Rosenvold
  */
 public abstract class ConcurrentReporterManager
