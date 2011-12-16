@@ -31,7 +31,7 @@ import java.util.List;
 /**
  * Test of the directory scanner.
  */
-public class SurefireDirectoryScannerTest
+public class DefaultDirectoryScannerTest
     extends TestCase
 {
     public void testLocateTestClasses()
