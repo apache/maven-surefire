@@ -129,3 +129,12 @@ Using System Properties
       </property>
    </systemProperties>
 +---+
+
+Special VM properties
+
+  Some system properties must be set on the command line of the forked VM, and cannot be set after the
+  VM has been started. These properties must be added to the argLine parameter of the surefire plugin.
+
++---+
+  <argLine>-Djava.endorsed.dirs=...</argLine>
++---+
