@@ -11,7 +11,7 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.8.1</version>
+      <version>4.10</version>
     </dependency>
   </dependencies>
 
@@ -34,7 +34,6 @@
            <artifactId>maven-surefire-plugin</artifactId>
            <version>${surefire.version}</version>
            <configuration>
-             <forkMode>once</forkMode>
              <runOrder>${runOrder}</runOrder>
              <threadCount>2</threadCount>
              <perCoreThreadCount>false</perCoreThreadCount>

@@ -260,7 +260,8 @@ public abstract class AbstractSurefireMojo
 
         if ( this.getThreadCount() > 0 )
         {
-            getProperties().setProperty( ProviderParameterNames.THREADCOUNT_PROP, Integer.toString( this.getThreadCount() ) );
+            getProperties().setProperty( ProviderParameterNames.THREADCOUNT_PROP,
+                                         Integer.toString( this.getThreadCount() ) );
         }
         if ( this.getObjectFactory() != null )
         {
@@ -317,7 +318,8 @@ public abstract class AbstractSurefireMojo
         }
         if ( this.getThreadCount() > 0 )
         {
-            getProperties().setProperty( ProviderParameterNames.THREADCOUNT_PROP, Integer.toString( this.getThreadCount() ) );
+            getProperties().setProperty( ProviderParameterNames.THREADCOUNT_PROP,
+                                         Integer.toString( this.getThreadCount() ) );
         }
         getProperties().setProperty( "perCoreThreadCount", Boolean.toString( getPerCoreThreadCount() ) );
         getProperties().setProperty( "useUnlimitedThreads", Boolean.toString( getUseUnlimitedThreads() ) );
@@ -726,6 +728,15 @@ public abstract class AbstractSurefireMojo
                 {
                     setEnableAssertions( false );
                 }
+            }
+
+            if ( fork.getForkMode().equals( ForkConfiguration.FORK_PERTHREAD ) )
+            {
+                fork.setThreadCount( getThreadCount() );
+            }
+            else
+            {
+                fork.setThreadCount( 1 );
             }
         }
         return fork;

@@ -319,8 +319,8 @@ public class SurefirePlugin
     private Boolean failIfNoTests;
 
     /**
-     * Option to specify the forking mode. Can be "never", "once" or "always". "none" and "pertest" are also accepted
-     * for backwards compatibility. "always" forks for each test-class.
+     * Option to specify the forking mode. Can be "never", "once", "always" or "perthread". "none" and "pertest" are also accepted
+     * for backwards compatibility. "always" forks for each test-class. "perthread" will create "threadCount" parallel forks.
      *
      * @parameter expression="${forkMode}" default-value="once"
      * @since 2.1
@@ -442,8 +442,9 @@ public class SurefirePlugin
     private String testNGArtifactName;
 
     /**
-     * (TestNG/JUnit 4.7 provider only) The attribute thread-count allows you to specify how many threads should be
-     * allocated for this execution. Only makes sense to use in conjunction with the <code>parallel</code> parameter.
+     * (forkMode=perthread or TestNG/JUnit 4.7 provider) The attribute thread-count allows you to specify how many threads should be
+     * allocated for this execution. Only makes sense to use in conjunction with the <code>parallel</code> parameter. (forkMode=perthread
+     * does not support/require the <code>parallel</code> parameter)
      *
      * @parameter expression="${threadCount}"
      * @since 2.2

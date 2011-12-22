@@ -19,19 +19,18 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Calendar;
+import java.util.List;
 import org.apache.maven.it.VerificationException;
 import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
 import org.apache.maven.surefire.its.misc.HelperAssertions;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Calendar;
-import java.util.List;
-
 /**
  * Verifies the runOrder setting and its effect
- * 
+ *
  * @author Kristian Rosenvold
  */
 public class RunOrderIT
@@ -45,7 +44,7 @@ public class RunOrderIT
 
     private File testDir;
 
-    private Verifier verifier;
+    protected Verifier verifier;
 
     public void setUp()
         throws IOException, VerificationException
@@ -111,10 +110,17 @@ public class RunOrderIT
         HelperAssertions.assertTestSuiteResults( 3, 0, 0, 0, testDir );
     }
 
-    private void executeTestsWithRunOrder( String runOrder )
+
+    protected String getForkMode()
+    {
+        return "once";
+    }
+
+    protected void executeTestsWithRunOrder( String runOrder )
         throws VerificationException
     {
         List<String> goals = getInitialGoals();
+        goals.add( "-DforkMode=" + getForkMode() );
         goals.add( "-DrunOrder=" + runOrder );
         goals.add( "test" );
         executeGoals( verifier, goals );
@@ -129,7 +135,8 @@ public class RunOrderIT
         }
     }
 
-    private boolean testnamesAppearInSpecificOrder( String[] testnames ) throws VerificationException
+    private boolean testnamesAppearInSpecificOrder( String[] testnames )
+        throws VerificationException
     {
         int i = 0;
         for ( String line : getLog() )
