@@ -19,20 +19,26 @@ package org.apache.maven.surefire.util.internal;
  * under the License.
  */
 
-import org.apache.maven.surefire.util.ReflectionUtils;
+
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
- * Creates blocking queues that work at different language levels.
  * @author Kristian Rosenvold
  */
-public class BlockingQueueFactory
+public class Java15BlockingQueue
+    implements BlockingQueue
 {
+    private final java.util.concurrent.BlockingQueue<String> blockingQueue = new LinkedBlockingQueue<String>();
 
-    public static BlockingQueue createBlockingQueue(){
-        return isJdk15() ? new Java15BlockingQueue() : (BlockingQueue) new Java13BlockingQueue();
+    public void add( String object )
+    {
+        blockingQueue.add( object );
     }
 
-    private static boolean isJdk15(){
-        return ReflectionUtils.tryGetMethod( String.class, "contains", new Class[]{CharSequence.class}) != null;
+    public String take()
+        throws InterruptedException
+    {
+        return blockingQueue.take();
     }
 }
+

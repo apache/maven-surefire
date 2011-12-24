@@ -25,8 +25,8 @@ package org.apache.maven.surefire.util.internal;
  */
 public interface BlockingQueue
 {
-    void add( Object object );
+    void add( String object );
 
-    Object take()
+    String take()
         throws InterruptedException;
 }

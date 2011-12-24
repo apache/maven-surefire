@@ -33,9 +33,9 @@ import org.apache.maven.surefire.report.RunListener;
 public class MockReporter
     implements RunListener, ConsoleLogger, ConsoleOutputReceiver
 {
-    private final List events = new ArrayList();
+    private final List<String> events = new ArrayList<String>();
 
-    private final List data = new ArrayList();
+    private final List<Object> data = new ArrayList<Object>();
 
     public static final String SET_STARTING = "SET_STARTED";
 
@@ -117,7 +117,7 @@ public class MockReporter
     }
 
 
-    public List getEvents()
+    public List<String> getEvents()
     {
         return events;
     }
@@ -129,7 +129,7 @@ public class MockReporter
 
     public String getFirstEvent()
     {
-        return (String) events.get( 0 );
+        return events.get( 0 );
     }
 
     public ReportEntry getFirstData()
@@ -150,7 +150,6 @@ public class MockReporter
     {
         events.add( CONSOLE_OUTPUT );
         data.add( message );
-        //To change body of implemented methods use File | Settings | File Templates.
     }
 
     public void writeTestOutput( byte[] buf, int off, int len, boolean stdout )

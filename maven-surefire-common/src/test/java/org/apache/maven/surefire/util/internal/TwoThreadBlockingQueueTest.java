@@ -25,6 +25,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import junit.framework.Assert;
 import junit.framework.TestCase;
 
 /**
@@ -84,7 +85,7 @@ public class TwoThreadBlockingQueueTest
                 {
                     taken = twoThreadBlockingQueue.take();
                     if (taken != TwoThreadBlockingQueue.poison) {
-                        assertEquals( "item" + num++, taken );
+                        Assert.assertEquals( "item" + num++, taken );
                     }
                 }
                 while ( taken != TwoThreadBlockingQueue.poison);

@@ -20,7 +20,7 @@ package org.apache.maven.plugin.surefire.booterclient.output;
  */
 
 import org.apache.maven.surefire.util.internal.BlockingQueue;
-import org.apache.maven.surefire.util.internal.BlockingQueueFactory;
+import org.apache.maven.surefire.util.internal.Java15BlockingQueue;
 import org.codehaus.plexus.util.cli.StreamConsumer;
 
 /**
@@ -32,7 +32,7 @@ public class ThreadedStreamConsumer
     implements StreamConsumer
 {
 
-    private final BlockingQueue items = BlockingQueueFactory.createBlockingQueue();
+    private final BlockingQueue items = new Java15BlockingQueue();
 
     private static final String poison = "Pioson";
 

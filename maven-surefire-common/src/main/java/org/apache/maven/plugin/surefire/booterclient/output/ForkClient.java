@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
+
 import org.apache.maven.surefire.booter.ForkingRunListener;
 import org.apache.maven.surefire.report.CategorizedReportEntry;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
@@ -52,7 +53,8 @@ public class ForkClient
 {
     private final ReporterFactory providerReporterFactory;
 
-    private final Map testSetReporters = Collections.synchronizedMap( new HashMap() );
+    private final Map<Integer, RunListener> testSetReporters =
+        Collections.synchronizedMap( new HashMap<Integer, RunListener>() );
 
     private final Properties testVmSystemProperties;
 
@@ -77,8 +79,8 @@ public class ForkClient
                 System.out.println( s );
                 return;
             }
-            final Integer channelNumber = new Integer( Integer.parseInt( s.substring( 2, commma ), 16 ) );
-            RunListener reporter = (RunListener) testSetReporters.get( channelNumber );
+            final Integer channelNumber = Integer.parseInt( s.substring( 2, commma ), 16 );
+            RunListener reporter = testSetReporters.get( channelNumber );
             if ( reporter == null )
             {
                 reporter = providerReporterFactory.createReporter();
@@ -97,7 +99,7 @@ public class ForkClient
                     reporter.testSetCompleted( createReportEntry( remaining ) );
                     break;
                 case ForkingRunListener.BOOTERCODE_TEST_STARTING:
-                    reporter.testStarting( createReportEntry( remaining) );
+                    reporter.testStarting( createReportEntry( remaining ) );
                     break;
                 case ForkingRunListener.BOOTERCODE_TEST_SUCCEEDED:
                     reporter.testSucceeded( createReportEntry( remaining ) );
@@ -169,9 +171,9 @@ public class ForkClient
         return unescape( remaining );
     }
 
-    private ReportEntry createReportEntry( String untokenized)
+    private ReportEntry createReportEntry( String untokenized )
     {
-        StringTokenizer tokens = new StringTokenizer(untokenized, ",");
+        StringTokenizer tokens = new StringTokenizer( untokenized, "," );
         try
         {
             String source = tokens.nextToken();
@@ -227,7 +229,7 @@ public class ForkClient
      */
     public RunListener getReporter( Integer channelNumber )
     {
-        return (RunListener) testSetReporters.get( channelNumber );
+        return testSetReporters.get( channelNumber );
     }
 
 

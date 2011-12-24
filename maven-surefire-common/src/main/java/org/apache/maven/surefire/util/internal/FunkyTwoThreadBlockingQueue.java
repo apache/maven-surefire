@@ -33,6 +33,7 @@ package org.apache.maven.surefire.util.internal;
  * ArrayList insert 5000000 elements in  = 18
  * LinkedList insert 5000000 elements in  = 334
  *
+ * Todo: Determine if this design actually works ;)
  * @author Kristian Rosenvold
  */
 public class FunkyTwoThreadBlockingQueue implements BlockingQueue
@@ -50,7 +51,7 @@ public class FunkyTwoThreadBlockingQueue implements BlockingQueue
     private volatile boolean memoryModelGuard;
 
 
-    public void put( Object object )
+    public void put( String object )
     {
         insertChunk.elements[insertPos] = object;
         if ( ++insertPos == chunkSize)
@@ -63,13 +64,13 @@ public class FunkyTwoThreadBlockingQueue implements BlockingQueue
         memoryModelGuard = true;
     }
 
-    public void add( Object object )
+    public void add( String object )
     {
         put(  object );
     }
 
 
-    public Object take()
+    public String take()
         throws InterruptedException
     {
         if ( takePos >= chunkSize )
@@ -79,7 +80,7 @@ public class FunkyTwoThreadBlockingQueue implements BlockingQueue
         }
 
         boolean fud = memoryModelGuard;
-        Object next = takeChunk.elements[takePos];
+        String next = takeChunk.elements[takePos];
         while ( next == null )
         {
             Thread.sleep( 1 );
@@ -92,7 +93,7 @@ public class FunkyTwoThreadBlockingQueue implements BlockingQueue
 
     final class Chunk
     {
-        final Object[] elements = new Object[chunkSize];
+        final String[] elements = new String[chunkSize];
 
         volatile Chunk next;
     }

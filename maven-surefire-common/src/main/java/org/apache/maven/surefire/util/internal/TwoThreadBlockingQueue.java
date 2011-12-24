@@ -46,9 +46,9 @@ public class TwoThreadBlockingQueue
     private volatile Element lastTaken;
     private volatile Element first;
 
-    public static final Object poison = new Object();
+    public static final String poison = "poison";
 
-    public void add( Object object )
+    public void add( String object )
     {
         Element next = new Element( object);
         if (lastInserted == null){
@@ -59,7 +59,7 @@ public class TwoThreadBlockingQueue
         }
     }
 
-    public Object take()
+    public String take()
         throws InterruptedException
     {
         if (lastTaken == null){
@@ -81,11 +81,11 @@ public class TwoThreadBlockingQueue
 
     private static class Element
     {
-        private final Object object;
+        private final String object;
 
         private volatile Element next;
 
-        Element( Object object )
+        Element( String object )
         {
             this.object = object;
         }
