@@ -21,7 +21,6 @@ package org.apache.maven.surefire.report;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -44,7 +43,7 @@ public abstract class AbstractTextReporter
 
     private final String format;
 
-    private List testResults;
+    private List<String> testResults;
 
 
     protected AbstractTextReporter( boolean trimStackTrace, String format )
@@ -114,7 +113,7 @@ public abstract class AbstractTextReporter
     {
         super.testSetStarting( report );
 
-        testResults = new ArrayList();
+        testResults = new ArrayList<String>();
     }
 
     public void testSetCompleted( ReportEntry report )
@@ -126,16 +125,16 @@ public abstract class AbstractTextReporter
 
         if ( format.equals( BRIEF ) || format.equals( PLAIN ) )
         {
-            for ( Iterator i = testResults.iterator(); i.hasNext(); )
+            for ( String testResult : testResults )
             {
-                writeMessage( (String) i.next() );
+                writeMessage( testResult );
             }
         }
     }
 
     protected String getTestSetSummary( ReportEntry report )
     {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
 
         buf.append( TEST_SET_COMPLETED_PREFIX );
         buf.append( completedCount );
@@ -147,7 +146,7 @@ public abstract class AbstractTextReporter
         buf.append( skipped );
         buf.append( ", Time elapsed: " );
         int elapsed = report.getElapsed() != null
-            ? report.getElapsed().intValue()
+            ? report.getElapsed()
             : (int) ( System.currentTimeMillis() - testSetStartTime );
         buf.append( elapsedTimeAsString( elapsed ) );
         buf.append( " sec" );
@@ -164,7 +163,7 @@ public abstract class AbstractTextReporter
 
     protected String getElapsedTimeSummary( ReportEntry report )
     {
-        StringBuffer reportContent = new StringBuffer();
+        StringBuilder reportContent = new StringBuilder();
         long runTime = getActualRunTime( report );
 
         reportContent.append( report.getName() );
@@ -177,7 +176,7 @@ public abstract class AbstractTextReporter
 
     protected String getOutput( ReportEntry report, String msg )
     {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
 
         buf.append( getElapsedTimeSummary( report ) );
 

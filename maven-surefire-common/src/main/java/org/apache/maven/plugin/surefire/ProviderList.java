@@ -26,7 +26,6 @@ import org.apache.maven.surefire.util.NestedRuntimeException;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -46,18 +45,15 @@ public class ProviderList
     }
 
 
-    public List resolve( Log log )
+    public List<ProviderInfo> resolve( Log log )
     {
-        List providersToRun = new ArrayList();
+        List<ProviderInfo> providersToRun = new ArrayList<ProviderInfo>();
 
-        Set manuallyConfiguredProviders = getManuallyConfiguredProviders();
+        Set<String> manuallyConfiguredProviders = getManuallyConfiguredProviders();
         if ( manuallyConfiguredProviders.size() > 0 )
         {
-            Iterator iter = manuallyConfiguredProviders.iterator();
-            String name;
-            while ( iter.hasNext() )
+            for ( String name : manuallyConfiguredProviders )
             {
-                name = (String) iter.next();
                 ProviderInfo wellKnown = findByName( name );
                 ProviderInfo providerToAdd = wellKnown != null ? wellKnown : dynamicProvider.instantiate( name );
                 log.info( "Using configured provider " + providerToAdd.getProviderName() );
@@ -69,21 +65,21 @@ public class ProviderList
         return autoDetectOneProvider();
     }
 
-    private List autoDetectOneProvider()
+    private List<ProviderInfo> autoDetectOneProvider()
     {
-        List providersToRun = new ArrayList();
-        for ( int i = 0; i < wellKnownProviders.length; i++ )
+        List<ProviderInfo> providersToRun = new ArrayList<ProviderInfo>();
+        for ( ProviderInfo wellKnownProvider : wellKnownProviders )
         {
-            if ( wellKnownProviders[i].isApplicable() )
+            if ( wellKnownProvider.isApplicable() )
             {
-                providersToRun.add( wellKnownProviders[i] );
+                providersToRun.add( wellKnownProvider );
                 return providersToRun;
             }
         }
         return providersToRun;
     }
 
-    private Set getManuallyConfiguredProviders()
+    private Set<String> getManuallyConfiguredProviders()
     {
         try
         {
@@ -101,9 +97,8 @@ public class ProviderList
 
     private ProviderInfo findByName( String providerClassName )
     {
-        for ( int i = 0; i < wellKnownProviders.length; i++ )
+        for ( ProviderInfo wellKnownProvider : wellKnownProviders )
         {
-            ProviderInfo wellKnownProvider = wellKnownProviders[i];
             if ( wellKnownProvider.getProviderName().equals( providerClassName ) )
             {
                 return wellKnownProvider;

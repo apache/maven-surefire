@@ -19,11 +19,6 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import java.io.File;
-import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
 import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
 import org.apache.maven.surefire.report.AbstractConsoleReporter;
 import org.apache.maven.surefire.report.AbstractFileReporter;
@@ -36,6 +31,10 @@ import org.apache.maven.surefire.report.DetailedConsoleReporter;
 import org.apache.maven.surefire.report.FileReporter;
 import org.apache.maven.surefire.report.Reporter;
 import org.apache.maven.surefire.report.XMLReporter;
+
+import java.io.File;
+import java.io.PrintStream;
+import java.util.Properties;
 
 /**
  * All the parameters used to construct reporters
@@ -137,36 +136,11 @@ public class StartupReportConfiguration
         return reportsDirectory;
     }
 
-    public String getXmlReporterName()
-    {
-        if ( !isDisableXmlReport() )
-        {
-            return XMLReporter.class.getName();
-        }
-        return null;
-    }
-
     public XMLReporter instantiateXmlReporter()
     {
         if ( !isDisableXmlReport() )
         {
             return new XMLReporter( trimStackTrace, reportsDirectory, reportNameSuffix );
-        }
-        return null;
-    }
-
-    public String getFileReporter()
-    {
-        if ( isUseFile() )
-        {
-            if ( BRIEF_REPORT_FORMAT.equals( getReportFormat() ) )
-            {
-                return BriefFileReporter.class.getName();
-            }
-            else if ( PLAIN_REPORT_FORMAT.equals( getReportFormat() ) )
-            {
-                return FileReporter.class.getName();
-            }
         }
         return null;
     }
@@ -188,28 +162,6 @@ public class StartupReportConfiguration
     }
 
 
-    /**
-     * Returns the reporter that will write to the console
-     *
-     * @return a console reporter of null if no console reporting
-     */
-    public String getConsoleReporter()
-    {
-        if ( isUseFile() )
-        {
-            return isPrintSummary() ? ConsoleReporter.class.getName() : null;
-        }
-        else if ( isRedirectTestOutputToFile() || BRIEF_REPORT_FORMAT.equals( getReportFormat() ) )
-        {
-            return BriefConsoleReporter.class.getName();
-        }
-        else if ( PLAIN_REPORT_FORMAT.equals( getReportFormat() ) )
-        {
-            return DetailedConsoleReporter.class.getName();
-        }
-        return null;
-    }
-
     public AbstractConsoleReporter instantiateConsoleReporter()
     {
         if ( isUseFile() )
@@ -225,18 +177,6 @@ public class StartupReportConfiguration
             return new DetailedConsoleReporter( trimStackTrace );
         }
         return null;
-    }
-
-    public String getConsoleOutputFileReporterName()
-    {
-        if ( isRedirectTestOutputToFile() )
-        {
-            return ConsoleOutputFileReporter.class.getName();
-        }
-        else
-        {
-            return ConsoleOutputDirectReporter.class.getName();
-        }
     }
 
     public Reporter instantiateConsoleOutputFileReporter( PrintStream originalSystemOut )
@@ -266,30 +206,6 @@ public class StartupReportConfiguration
         return new File( reportsDirectory.getParentFile().getParentFile(), ".surefire-" + this.configurationHash );
     }
 
-
-    /**
-     * A list of classnames representing runnable reports for this test-run.
-     *
-     * @return A list of strings, each string is a classname of a class
-     *         implementing the org.apache.maven.surefire.report.Reporter interface
-     */
-    public List getReports()
-    {
-        ArrayList reports = new ArrayList();
-        addIfNotNull( reports, getConsoleReporter() );
-        addIfNotNull( reports, getFileReporter() );
-        addIfNotNull( reports, getXmlReporterName() );
-        addIfNotNull( reports, getConsoleOutputFileReporterName() );
-        return reports;
-    }
-
-    private void addIfNotNull( ArrayList reports, String reporter )
-    {
-        if ( reporter != null )
-        {
-            reports.add( reporter );
-        }
-    }
 
     public Properties getTestVmSystemProperties()
     {

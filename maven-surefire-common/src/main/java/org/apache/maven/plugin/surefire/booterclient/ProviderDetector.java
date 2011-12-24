@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
@@ -36,14 +37,14 @@ import java.util.Set;
 public class ProviderDetector
 {
 
-    public static Set getServiceNames( Class clazz, ClassLoader classLoader )
+    public static Set<String> getServiceNames( Class clazz, ClassLoader classLoader )
         throws IOException
     {
         final String resourceName = "META-INF/services/" + clazz.getName();
 
         if ( classLoader == null )
         {
-            return new HashSet(  );
+            return Collections.emptySet();
         }
         final Enumeration urlEnumeration = classLoader.getResources( resourceName );
         return getNames( urlEnumeration );
@@ -58,10 +59,10 @@ public class ProviderDetector
      * @throws IOException When reading the streams fails
      * @return The set of service provider names
      */
-    private static Set getNames( final Enumeration urlEnumeration )
+    private static Set<String> getNames( final Enumeration urlEnumeration )
         throws IOException
     {
-        final Set names = new HashSet();
+        final Set<String> names = new HashSet<String>();
         nextUrl:
         while ( urlEnumeration.hasMoreElements() )
         {

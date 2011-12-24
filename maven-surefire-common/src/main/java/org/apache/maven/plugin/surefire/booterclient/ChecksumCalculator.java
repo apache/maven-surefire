@@ -28,7 +28,6 @@ import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -40,7 +39,7 @@ public class ChecksumCalculator
 {
     private static final String HEX = "0123456789ABCDEF";
 
-    private final List checksumItems = new ArrayList();
+    private final List<Object> checksumItems = new ArrayList<Object>();
 
     private void appendObject( Object item )
     {
@@ -54,7 +53,7 @@ public class ChecksumCalculator
 
     public void add( int value )
     {
-        checksumItems.add( new Integer( value ) );
+        checksumItems.add( value );
     }
 
     public void add( Map map )
@@ -84,11 +83,10 @@ public class ChecksumCalculator
     {
         if ( items != null )
         {
-            int size = items.size();
             Object item;
-            for ( int i = 0; i < size; i++ )
+            for ( Object item1 : items )
             {
-                item = items.get( i );
+                item = item1;
                 appendObject( item );
             }
         }
@@ -146,9 +144,9 @@ public class ChecksumCalculator
     {
         StringBuilder result = new StringBuilder();
         Object item;
-        for ( Iterator iter = checksumItems.iterator(); iter.hasNext(); )
+        for ( Object checksumItem : checksumItems )
         {
-            item = iter.next();
+            item = checksumItem;
             result.append( item != null ? item.toString() : "null" );
         }
         return result.toString();

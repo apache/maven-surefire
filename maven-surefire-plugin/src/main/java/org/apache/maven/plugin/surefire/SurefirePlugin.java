@@ -24,6 +24,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -149,7 +151,7 @@ public class SurefirePlugin
      * @parameter
      * @since 2.4
      */
-    private List additionalClasspathElements;
+    private List<String> additionalClasspathElements;
 
     /**
      * Base directory where all reports are written to.
@@ -233,7 +235,7 @@ public class SurefirePlugin
      * @parameter
      * @since 2.5
      */
-    private Map systemPropertyVariables;
+    private Map<String,String> systemPropertyVariables;
 
     /**
      * List of System properties, loaded from a file, to pass to the JUnit tests.
@@ -259,7 +261,7 @@ public class SurefirePlugin
      * @required
      * @readonly
      */
-    private Map pluginArtifactMap;
+    private Map<String,Artifact> pluginArtifactMap;
 
     /**
      * Map of project artifacts.
@@ -268,7 +270,7 @@ public class SurefirePlugin
      * @required
      * @readonly
      */
-    private Map projectArtifactMap;
+    private Map<String,Artifact> projectArtifactMap;
 
     /**
      * Option to print summary of test suites or just print the test cases that have errors.
@@ -371,7 +373,7 @@ public class SurefirePlugin
      * @parameter
      * @since 2.1.3
      */
-    private Map environmentVariables = new HashMap();
+    private Map<String,String> environmentVariables = new HashMap<String,String>();
 
     /**
      * Command line working directory.
@@ -1047,12 +1049,12 @@ public class SurefirePlugin
         this.forkedProcessTimeoutInSeconds = forkedProcessTimeoutInSeconds;
     }
 
-    public Map getEnvironmentVariables()
+    public Map<String,String> getEnvironmentVariables()
     {
         return environmentVariables;
     }
 
-    public void setEnvironmentVariables( Map environmentVariables )
+    public void setEnvironmentVariables( Map<String,String> environmentVariables )
     {
         this.environmentVariables = environmentVariables;
     }
@@ -1309,7 +1311,7 @@ public class SurefirePlugin
 
     public boolean isMavenParallel()
     {
-        return parallelMavenExecution != null && parallelMavenExecution.booleanValue();
+        return parallelMavenExecution != null && parallelMavenExecution;
     }
 
     public String getRunOrder()

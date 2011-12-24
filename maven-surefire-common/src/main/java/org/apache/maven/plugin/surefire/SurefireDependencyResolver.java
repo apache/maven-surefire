@@ -19,11 +19,6 @@ package org.apache.maven.plugin.surefire;
  * under the License.
  */
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
@@ -40,6 +35,11 @@ import org.apache.maven.artifact.versioning.OverConstrainedVersionException;
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.surefire.booter.Classpath;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Does dependency resolution and artifact handling for the surefire plugin.
@@ -131,11 +131,11 @@ public class SurefireDependencyResolver
                                                                               VersionRange.createFromVersion( version ),
                                                                               "jar", null, Artifact.SCOPE_TEST );
         ArtifactResolutionResult result = resolveArtifact( filteredArtifact, providerArtifact );
-        List files = new ArrayList();
+        List<String> files = new ArrayList<String>();
 
-        for ( Iterator i = result.getArtifacts().iterator(); i.hasNext(); )
+        for ( Object o : result.getArtifacts() )
         {
-            Artifact artifact = (Artifact) i.next();
+            Artifact artifact = (Artifact) o;
 
             log.debug(
                 "Adding to " + pluginName + " test classpath: " + artifact.getFile().getAbsolutePath() + " Scope: "
@@ -149,13 +149,13 @@ public class SurefireDependencyResolver
     public Classpath addProviderToClasspath( Map pluginArtifactMap, Artifact surefireArtifact )
         throws ArtifactResolutionException, ArtifactNotFoundException
     {
-        List files = new ArrayList();
+        List<String> files = new ArrayList<String>();
         if ( surefireArtifact != null )
         {
             final ArtifactResolutionResult artifactResolutionResult = resolveArtifact( null, surefireArtifact );
-            for ( Iterator iterator = pluginArtifactMap.values().iterator(); iterator.hasNext(); )
+            for ( Object o : pluginArtifactMap.values() )
             {
-                Artifact artifact = (Artifact) iterator.next();
+                Artifact artifact = (Artifact) o;
                 if ( !artifactResolutionResult.getArtifacts().contains( artifact ) )
                 {
                     files.add( artifact.getFile().getAbsolutePath() );
@@ -165,9 +165,9 @@ public class SurefireDependencyResolver
         else
         {
             // Bit of a brute force strategy if not found. Should probably be improved
-            for ( Iterator iterator = pluginArtifactMap.values().iterator(); iterator.hasNext(); )
+            for ( Object o : pluginArtifactMap.values() )
             {
-                Artifact artifact = (Artifact) iterator.next();
+                Artifact artifact = (Artifact) o;
                 files.add( artifact.getFile().getPath() );
             }
         }

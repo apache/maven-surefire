@@ -35,10 +35,10 @@ public class MulticastingReporter
 
     private volatile long lastStartAt;
 
-    public MulticastingReporter( List target )
+    public MulticastingReporter( List<Reporter> target )
     {
         size = target.size();
-        this.target = (Reporter[]) target.toArray( new Reporter[target.size()] );
+        this.target = target.toArray( new Reporter[target.size()] );
     }
 
     public void testSetStarting( ReportEntry report )
@@ -110,8 +110,8 @@ public class MulticastingReporter
             return other;
         }
         return new CategorizedReportEntry( other.getSourceName(), other.getName(), other.getGroup(),
-                                           other.getStackTraceWriter(), Integer.valueOf(
-            (int) (System.currentTimeMillis() - this.lastStartAt) ));
+                                           other.getStackTraceWriter(),
+                                           (int) ( System.currentTimeMillis() - this.lastStartAt ) );
     }
 
     public void writeMessage( String message )

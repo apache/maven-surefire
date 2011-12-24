@@ -29,6 +29,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -139,7 +141,7 @@ public class IntegrationTestMojo
      * @parameter
      * @since 2.6
      */
-    private List classpathDependencyExcludes;
+    private List<String> classpathDependencyExcludes;
 
     /**
      * A dependency scope to exclude from the test classpath. The scope should be one of the scopes defined by
@@ -164,7 +166,7 @@ public class IntegrationTestMojo
      * @parameter
      * @since 2.4
      */
-    private List additionalClasspathElements;
+    private List<String> additionalClasspathElements;
 
     /**
      * Base directory where all reports are written to.
@@ -214,7 +216,7 @@ public class IntegrationTestMojo
      *
      * @parameter
      */
-    private List includes;
+    private List<String> includes;
 
     /**
      * A list of &lt;exclude> elements specifying the tests (by pattern) that should be excluded in testing. When not
@@ -230,7 +232,7 @@ public class IntegrationTestMojo
      *
      * @parameter
      */
-    private List excludes;
+    private List<String> excludes;
 
     /**
      * ArtifactRepository of the localRepository. To obtain the directory of localRepository in unit tests use
@@ -256,7 +258,7 @@ public class IntegrationTestMojo
      * @parameter
      * @since 2.5
      */
-    private Map systemPropertyVariables;
+    private Map<String,String> systemPropertyVariables;
 
     /**
      * List of System properties, loaded from a file, to pass to the JUnit tests.
@@ -282,7 +284,7 @@ public class IntegrationTestMojo
      * @required
      * @readonly
      */
-    private Map pluginArtifactMap;
+    private Map<String,Artifact> pluginArtifactMap;
 
     /**
      * Map of project artifacts.
@@ -291,7 +293,7 @@ public class IntegrationTestMojo
      * @required
      * @readonly
      */
-    private Map projectArtifactMap;
+    private Map<String,Artifact> projectArtifactMap;
 
     /**
      * The summary file to write integration test results to.
@@ -402,7 +404,7 @@ public class IntegrationTestMojo
      * @parameter
      * @since 2.1.3
      */
-    private Map environmentVariables = new HashMap();
+    private Map<String,String> environmentVariables = new HashMap<String,String>();
 
     /**
      * Command line working directory.
@@ -901,22 +903,22 @@ public class IntegrationTestMojo
         return null;
     }
 
-    public List getIncludes()
+    public List<String> getIncludes()
     {
         return includes;
     }
 
-    public void setIncludes( List includes )
+    public void setIncludes( List<String> includes )
     {
         this.includes = includes;
     }
 
-    public List getExcludes()
+    public List<String> getExcludes()
     {
         return excludes;
     }
 
-    public void setExcludes( List excludes )
+    public void setExcludes( List<String> excludes )
     {
         this.excludes = excludes;
     }
@@ -1111,12 +1113,12 @@ public class IntegrationTestMojo
         this.forkedProcessTimeoutInSeconds = forkedProcessTimeoutInSeconds;
     }
 
-    public Map getEnvironmentVariables()
+    public Map<String,String> getEnvironmentVariables()
     {
         return environmentVariables;
     }
 
-    public void setEnvironmentVariables( Map environmentVariables )
+    public void setEnvironmentVariables( Map<String,String> environmentVariables )
     {
         this.environmentVariables = environmentVariables;
     }

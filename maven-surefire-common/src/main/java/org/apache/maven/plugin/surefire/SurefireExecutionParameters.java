@@ -94,13 +94,13 @@ public interface SurefireExecutionParameters
 
     void setTest( String test );
 
-    List getIncludes();
+    List<String> getIncludes();
 
-    void setIncludes( List includes );
+    void setIncludes( List<String> includes );
 
-    List getExcludes();
+    List<String> getExcludes();
 
-    void setExcludes( List excludes );
+    void setExcludes( List<String> excludes );
 
     ArtifactRepository getLocalRepository();
 
@@ -170,9 +170,9 @@ public interface SurefireExecutionParameters
 
     void setForkedProcessTimeoutInSeconds( int forkedProcessTimeoutInSeconds );
 
-    Map getEnvironmentVariables();
+    Map<String,String> getEnvironmentVariables();
 
-    void setEnvironmentVariables( Map environmentVariables );
+    void setEnvironmentVariables( Map<String,String> environmentVariables );
 
     File getWorkingDirectory();
 

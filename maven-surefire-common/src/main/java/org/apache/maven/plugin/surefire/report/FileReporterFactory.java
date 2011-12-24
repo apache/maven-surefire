@@ -19,10 +19,6 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
-import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
 import org.apache.maven.surefire.booter.StartupReportConfiguration;
 import org.apache.maven.surefire.report.ConsoleLogger;
@@ -35,6 +31,10 @@ import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.RunStatistics;
 import org.apache.maven.surefire.report.TestSetRunListener;
 import org.apache.maven.surefire.suite.RunResult;
+
+import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Provides RunListener implementations to the providers.
@@ -70,7 +70,7 @@ public class FileReporterFactory
     {
         //noinspection BooleanConstructorCall
         return new ReporterConfiguration( reportConfiguration.getReportsDirectory(),
-                                          new Boolean( reportConfiguration.isTrimStackTrace() ) );
+                                          reportConfiguration.isTrimStackTrace() );
     }
 
     public RunListener createReporter()
@@ -83,10 +83,10 @@ public class FileReporterFactory
                                        statisticsReporter, globalStats );
     }
 
-    private List instantiateReports()
+    private List<Reporter> instantiateReports()
     {
         final PrintStream sout = reporterConfiguration.getOriginalSystemOut();
-        List result = new ArrayList();
+        List<Reporter> result = new ArrayList<Reporter>();
         addIfNotNull( result, reportConfiguration.instantiateConsoleReporter() );
         addIfNotNull( result, reportConfiguration.instantiateFileReporter() );
         addIfNotNull( result, reportConfiguration.instantiateXmlReporter() );
@@ -95,7 +95,7 @@ public class FileReporterFactory
         return result;
     }
 
-    private void addIfNotNull( List result, Reporter reporter )
+    private void addIfNotNull( List<Reporter> result, Reporter reporter )
     {
         if ( reporter != null )
         {
@@ -132,18 +132,18 @@ public class FileReporterFactory
         if ( globalStats.hadFailures() )
         {
             multicastingReporter.writeMessage( "Failed tests: " );
-            for ( Iterator iterator = this.globalStats.getFailureSources().iterator(); iterator.hasNext(); )
+            for ( Object o : this.globalStats.getFailureSources() )
             {
-                logger.info( "  " + iterator.next() );
+                logger.info( "  " + o );
             }
             logger.info( "" );
         }
         if ( globalStats.hadErrors() )
         {
             logger.info( "Tests in error: " );
-            for ( Iterator iterator = this.globalStats.getErrorSources().iterator(); iterator.hasNext(); )
+            for ( Object o : this.globalStats.getErrorSources() )
             {
-                logger.info( "  " + iterator.next() );
+                logger.info( "  " + o );
             }
             logger.info( "" );
         }

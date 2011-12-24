@@ -19,12 +19,12 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
 import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
 import org.apache.maven.surefire.util.internal.ByteBuffer;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Reports data for a single test set.
@@ -40,9 +40,9 @@ public class TestSetRunListener
 
     private final MulticastingReporter multicastingReporter;
 
-    private final List testStdOut = Collections.synchronizedList( new ArrayList() );
+    private final List<ByteBuffer> testStdOut = Collections.synchronizedList( new ArrayList<ByteBuffer>() );
 
-    private final List testStdErr = Collections.synchronizedList( new ArrayList() );
+    private final List<ByteBuffer> testStdErr = Collections.synchronizedList( new ArrayList<ByteBuffer>() );
 
 
     public TestSetRunListener( AbstractConsoleReporter consoleReporter, AbstractFileReporter fileReporter,
@@ -50,28 +50,28 @@ public class TestSetRunListener
                                RunStatistics globalStats )
     {
 
-        ArrayList reportes = new ArrayList();
+        List<Reporter> reporters = new ArrayList<Reporter>();
         if ( consoleReporter != null )
         {
-            reportes.add( consoleReporter );
+            reporters.add( consoleReporter );
         }
         if ( fileReporter != null )
         {
-            reportes.add( fileReporter );
+            reporters.add( fileReporter );
         }
         if ( xmlReporter != null )
         {
-            reportes.add( xmlReporter );
+            reporters.add( xmlReporter );
         }
         if ( reporter != null )
         {
-            reportes.add( reporter );
+            reporters.add( reporter );
         }
         if ( statisticsReporter != null )
         {
-            reportes.add( statisticsReporter );
+            reporters.add( statisticsReporter );
         }
-        multicastingReporter = new MulticastingReporter( reportes );
+        multicastingReporter = new MulticastingReporter( reporters );
         this.testSetStatistics = new TestSetStatistics();
         this.globalStatistics = globalStats;
     }
@@ -198,12 +198,11 @@ public class TestSetRunListener
         multicastingReporter.reset();
     }
 
-    public String getAsString( List byteBufferList )
+    public String getAsString( List<ByteBuffer> byteBufferList )
     {
-        StringBuffer stringBuffer = new StringBuffer();
-        for ( Iterator iter = byteBufferList.iterator(); iter.hasNext(); )
+        StringBuilder stringBuffer = new StringBuilder();
+        for ( ByteBuffer byteBuffer : byteBufferList )
         {
-            ByteBuffer byteBuffer = (ByteBuffer) iter.next();
             stringBuffer.append( byteBuffer.toString() );
         }
         return stringBuffer.toString();

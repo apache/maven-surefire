@@ -146,7 +146,7 @@ public abstract class AbstractSurefireMojo
                                             getRemoteRepositories(), getMetadataSource(), getPluginName() );
     }
 
-    protected List createProviders()
+    protected List<ProviderInfo> createProviders()
         throws MojoFailureException
     {
         try
@@ -169,11 +169,10 @@ public abstract class AbstractSurefireMojo
     private Summary executeAllProviders()
         throws MojoExecutionException, MojoFailureException
     {
-        List providers = createProviders();
+        List<ProviderInfo> providers = createProviders();
         Summary summary = new Summary();
-        for ( Iterator iter = providers.iterator(); iter.hasNext(); )
+        for ( ProviderInfo provider : providers )
         {
-            ProviderInfo provider = (ProviderInfo) iter.next();
             executeProvider( provider, summary );
         }
         return summary;
@@ -357,7 +356,7 @@ public abstract class AbstractSurefireMojo
         throws MojoExecutionException, MojoFailureException
     {
         ReporterConfiguration reporterConfiguration =
-            new ReporterConfiguration( getReportsDirectory(), Boolean.valueOf( isTrimStackTrace() ) );
+            new ReporterConfiguration( getReportsDirectory(), isTrimStackTrace() );
 
         Artifact testNgArtifact;
         try
@@ -380,7 +379,7 @@ public abstract class AbstractSurefireMojo
 
         if ( isValidSuiteXmlFileConfig() && getTest() == null )
         {
-            failIfNoTests = getFailIfNoTests() != null && getFailIfNoTests().booleanValue();
+            failIfNoTests = getFailIfNoTests() != null && getFailIfNoTests();
             if ( !isTestNg )
             {
                 throw new MojoExecutionException( "suiteXmlFiles is configured, but there is no TestNG dependency" );
@@ -393,12 +392,12 @@ public abstract class AbstractSurefireMojo
                 setFailIfNoTests( Boolean.TRUE );
             }
 
-            failIfNoTests = getFailIfNoTests() != null && getFailIfNoTests().booleanValue();
+            failIfNoTests = getFailIfNoTests() != null && getFailIfNoTests();
 
             List includes = getIncludeList();
             List excludes = getExcludeList();
             directoryScannerParameters = new DirectoryScannerParameters( getTestClassesDirectory(), includes, excludes,
-                                                                         Boolean.valueOf( failIfNoTests ),
+                                                                         failIfNoTests,
                                                                          getRunOrder() );
         }
 
@@ -479,9 +478,9 @@ public abstract class AbstractSurefireMojo
     void logClasspath( Classpath classpath, String descriptor )
     {
         getLog().debug( descriptor + " classpath:" );
-        for ( Iterator i = classpath.getClassPath().iterator(); i.hasNext(); )
+        @SuppressWarnings( "unchecked" ) final List<String> classPath = classpath.getClassPath();
+        for ( String classpathElement : classPath )
         {
-            String classpathElement = (String) i.next();
             if ( classpathElement == null )
             {
                 getLog().warn( "The test classpath contains a null element." );
@@ -504,16 +503,16 @@ public abstract class AbstractSurefireMojo
         return getSuiteXmlFiles() != null && getSuiteXmlFiles().length > 0;
     }
 
-    private List getExcludeList()
+    private List<String> getExcludeList()
     {
-        List excludes;
+        List<String> excludes;
         if ( isSpecificTestSpecified() )
         {
             // Check to see if we are running a single test. The raw parameter will
             // come through if it has not been set.
             // FooTest -> **/FooTest.java
 
-            excludes = new ArrayList();
+            excludes = new ArrayList<String>();
         }
         else
         {
@@ -524,15 +523,15 @@ public abstract class AbstractSurefireMojo
             // Have to wrap in an ArrayList as surefire expects an ArrayList instead of a List for some reason
             if ( excludes == null || excludes.size() == 0 )
             {
-                excludes = new ArrayList( Arrays.asList( new String[]{ "**/*$*" } ) );
+                excludes = new ArrayList<String>( Arrays.asList( new String[]{ "**/*$*" } ) );
             }
         }
         return excludes;
     }
 
-    private List getIncludeList()
+    private List<String> getIncludeList()
     {
-        List includes;
+        List<String> includes;
         if ( isSpecificTestSpecified() )
         {
             // Check to see if we are running a single test. The raw parameter will
@@ -540,13 +539,12 @@ public abstract class AbstractSurefireMojo
 
             // FooTest -> **/FooTest.java
 
-            includes = new ArrayList();
+            includes = new ArrayList<String>();
 
             String[] testRegexes = StringUtils.split( getTest(), "," );
 
-            for ( int i = 0; i < testRegexes.length; i++ )
+            for ( String testRegex : testRegexes )
             {
-                String testRegex = testRegexes[i];
                 if ( testRegex.endsWith( ".java" ) )
                 {
                     testRegex = testRegex.substring( 0, testRegex.length() - 5 );
@@ -564,7 +562,7 @@ public abstract class AbstractSurefireMojo
             // Have to wrap in an ArrayList as surefire expects an ArrayList instead of a List for some reason
             if ( includes == null || includes.size() == 0 )
             {
-                includes = new ArrayList( Arrays.asList( getDefaultIncludes() ) );
+                includes = new ArrayList<String>( Arrays.asList( getDefaultIncludes() ) );
             }
         }
         return includes;
@@ -745,11 +743,10 @@ public abstract class AbstractSurefireMojo
     private void verifyLegalSystemProperties()
     {
         final Properties properties = getInternalSystemProperties();
-        Iterator iter = properties.keySet().iterator();
 
-        while ( iter.hasNext() )
+        for ( Object o : properties.keySet() )
         {
-            String key = (String) iter.next();
+            String key = (String) o;
 
             if ( "java.library.path".equals( key ) )
             {
@@ -834,7 +831,7 @@ public abstract class AbstractSurefireMojo
     {
         // A tribute to Linus Torvalds
         String configChecksum = getConfigChecksum();
-        Map pluginContext = getPluginContext();
+        @SuppressWarnings( "unchecked" ) Map<String,String> pluginContext = getPluginContext();
         if ( pluginContext.containsKey( configChecksum ) )
         {
             getLog().info( "Skipping execution of surefire because it has already been run for this configuration" );
@@ -868,13 +865,13 @@ public abstract class AbstractSurefireMojo
         throws InvalidVersionSpecificationException, MojoFailureException, ArtifactResolutionException,
         ArtifactNotFoundException
     {
-        List classpath = new ArrayList( 2 + getProject().getArtifacts().size() );
+        List<String> classpath = new ArrayList<String>( 2 + getProject().getArtifacts().size() );
 
         classpath.add( getTestClassesDirectory().getAbsolutePath() );
 
         classpath.add( getClassesDirectory().getAbsolutePath() );
 
-        Set classpathArtifacts = getProject().getArtifacts();
+        Set<Artifact> classpathArtifacts = getProject().getArtifacts();
 
         if ( getClasspathDependencyScopeExclude() != null && !getClasspathDependencyScopeExclude().equals( "" ) )
         {
@@ -888,9 +885,8 @@ public abstract class AbstractSurefireMojo
             classpathArtifacts = this.filterArtifacts( classpathArtifacts, dependencyFilter );
         }
 
-        for ( Iterator iter = classpathArtifacts.iterator(); iter.hasNext(); )
+        for ( Artifact artifact : classpathArtifacts )
         {
-            Artifact artifact = (Artifact) iter.next();
             if ( artifact.getArtifactHandler().isAddedToClasspath() )
             {
                 File file = artifact.getFile();
@@ -948,13 +944,12 @@ public abstract class AbstractSurefireMojo
      * @param filter    The filter to apply
      * @return The filtered result
      */
-    private Set filterArtifacts( Set artifacts, ArtifactFilter filter )
+    private Set<Artifact> filterArtifacts( Set<Artifact> artifacts, ArtifactFilter filter )
     {
-        Set filteredArtifacts = new LinkedHashSet();
+        Set<Artifact> filteredArtifacts = new LinkedHashSet<Artifact>();
 
-        for ( Iterator iter = artifacts.iterator(); iter.hasNext(); )
+        for ( Artifact artifact : artifacts )
         {
-            Artifact artifact = (Artifact) iter.next();
             if ( !filter.include( artifact ) )
             {
                 filteredArtifacts.add( artifact );
@@ -966,9 +961,9 @@ public abstract class AbstractSurefireMojo
 
     private void showMap( Map map, String setting )
     {
-        for ( Iterator i = map.keySet().iterator(); i.hasNext(); )
+        for ( Object o : map.keySet() )
         {
-            String key = (String) i.next();
+            String key = (String) o;
             String value = (String) map.get( key );
             getLog().debug( "Setting " + setting + " [" + key + "]=[" + value + "]" );
         }
@@ -1006,10 +1001,10 @@ public abstract class AbstractSurefireMojo
     {
         ArtifactResolutionResult result = resolveArtifact( null, surefireArtifact );
 
-        List items = new ArrayList();
-        for ( Iterator i = result.getArtifacts().iterator(); i.hasNext(); )
+        List<String> items = new ArrayList<String>();
+        for ( Object o : result.getArtifacts() )
         {
-            Artifact artifact = (Artifact) i.next();
+            Artifact artifact = (Artifact) o;
 
             getLog().debug(
                 "Adding to " + getPluginName() + " booter test classpath: " + artifact.getFile().getAbsolutePath() +
@@ -1059,9 +1054,9 @@ public abstract class AbstractSurefireMojo
 
         if ( this.getSystemPropertyVariables() != null )
         {
-            for ( Iterator i = getSystemPropertyVariables().keySet().iterator(); i.hasNext(); )
+            for ( Object o : getSystemPropertyVariables().keySet() )
             {
-                String key = (String) i.next();
+                String key = (String) o;
                 String value = (String) getSystemPropertyVariables().get( key );
                 //java Properties does not accept null value
                 if ( value != null )
@@ -1087,11 +1082,10 @@ public abstract class AbstractSurefireMojo
         if ( setInSystem )
         {
             // Add all system properties configured by the user
-            Iterator iter = getInternalSystemProperties().keySet().iterator();
 
-            while ( iter.hasNext() )
+            for ( Object o : getInternalSystemProperties().keySet() )
             {
-                String key = (String) iter.next();
+                String key = (String) o;
 
                 String value = getInternalSystemProperties().getProperty( key );
 
@@ -1104,9 +1098,9 @@ public abstract class AbstractSurefireMojo
     {
         if ( properties != null )
         {
-            for ( Iterator i = properties.keySet().iterator(); i.hasNext(); )
+            for ( Object o : properties.keySet() )
             {
-                String key = (String) i.next();
+                String key = (String) o;
                 String value = properties.getProperty( key );
                 getInternalSystemProperties().setProperty( key, value );
             }

@@ -52,7 +52,7 @@ public class Relocator
         {
             return className;
         }
-        if (className.indexOf( relocation) >= 0){
+        if ( className.contains( relocation ) ){
             return className;
         }
         String rest = className.substring( "org.apache.maven.surefire.".length() );

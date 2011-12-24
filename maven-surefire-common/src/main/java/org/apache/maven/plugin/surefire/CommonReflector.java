@@ -68,13 +68,11 @@ public class CommonReflector
                                                                       String.class, boolean.class } );
         //noinspection BooleanConstructorCall
         final Object[] params =
-            { new Boolean( reporterConfiguration.isUseFile() ), new Boolean( reporterConfiguration.isPrintSummary() ),
-                reporterConfiguration.getReportFormat(),
-                new Boolean( reporterConfiguration.isRedirectTestOutputToFile() ),
-                new Boolean( reporterConfiguration.isDisableXmlReport() ), reporterConfiguration.getReportsDirectory(),
-                new Boolean( reporterConfiguration.isTrimStackTrace() ), reporterConfiguration.getReportNameSuffix(),
-                reporterConfiguration.getConfigurationHash(),
-                Boolean.valueOf( reporterConfiguration.isRequiresRunHistory() ) };
+            { reporterConfiguration.isUseFile(), reporterConfiguration.isPrintSummary(),
+                reporterConfiguration.getReportFormat(), reporterConfiguration.isRedirectTestOutputToFile(),
+                reporterConfiguration.isDisableXmlReport(), reporterConfiguration.getReportsDirectory(),
+                reporterConfiguration.isTrimStackTrace(), reporterConfiguration.getReportNameSuffix(),
+                reporterConfiguration.getConfigurationHash(), reporterConfiguration.isRequiresRunHistory() };
         return ReflectionUtils.newInstance( constructor, params );
     }
 
