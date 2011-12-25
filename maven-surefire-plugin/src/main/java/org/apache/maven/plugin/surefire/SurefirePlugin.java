@@ -209,7 +209,7 @@ public class SurefirePlugin
      *
      * @parameter
      */
-    private List excludes;
+    private List<String> excludes;
 
     /**
      * ArtifactRepository of the localRepository. To obtain the directory of localRepository in unit tests use
@@ -777,12 +777,12 @@ public class SurefirePlugin
         this.classpathDependencyScopeExclude = classpathDependencyScopeExclude;
     }
 
-    public List getAdditionalClasspathElements()
+    public List<String> getAdditionalClasspathElements()
     {
         return additionalClasspathElements;
     }
 
-    public void setAdditionalClasspathElements( List additionalClasspathElements )
+    public void setAdditionalClasspathElements( List<String> additionalClasspathElements )
     {
         this.additionalClasspathElements = additionalClasspathElements;
     }
@@ -843,7 +843,7 @@ public class SurefirePlugin
         this.test = test;
     }
 
-    public List getIncludes()
+    public List<String> getIncludes()
     {
         return includes;
     }
@@ -853,12 +853,12 @@ public class SurefirePlugin
         this.includes = includes;
     }
 
-    public List getExcludes()
+    public List<String> getExcludes()
     {
         return excludes;
     }
 
-    public void setExcludes( List excludes )
+    public void setExcludes( List<String> excludes )
     {
         this.excludes = excludes;
     }
@@ -889,12 +889,12 @@ public class SurefirePlugin
         this.systemProperties = systemProperties;
     }
 
-    public Map getSystemPropertyVariables()
+    public Map<String,String> getSystemPropertyVariables()
     {
         return systemPropertyVariables;
     }
 
-    public void setSystemPropertyVariables( Map systemPropertyVariables )
+    public void setSystemPropertyVariables( Map<String,String> systemPropertyVariables )
     {
         this.systemPropertyVariables = systemPropertyVariables;
     }
@@ -919,22 +919,22 @@ public class SurefirePlugin
         this.properties = properties;
     }
 
-    public Map getPluginArtifactMap()
+    public Map<String,Artifact> getPluginArtifactMap()
     {
         return pluginArtifactMap;
     }
 
-    public void setPluginArtifactMap( Map pluginArtifactMap )
+    public void setPluginArtifactMap( Map<String,Artifact> pluginArtifactMap )
     {
         this.pluginArtifactMap = pluginArtifactMap;
     }
 
-    public Map getProjectArtifactMap()
+    public Map<String,Artifact> getProjectArtifactMap()
     {
         return projectArtifactMap;
     }
 
-    public void setProjectArtifactMap( Map projectArtifactMap )
+    public void setProjectArtifactMap( Map<String,Artifact> projectArtifactMap )
     {
         this.projectArtifactMap = projectArtifactMap;
     }

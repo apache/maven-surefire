@@ -60,7 +60,7 @@ import org.codehaus.plexus.util.StringUtils;
  * @goal integration-test
  * @phase integration-test
  * @threadSafe
- * @noinspection JavaDoc
+ * @noinspection JavaDoc, UnusedDeclaration
  */
 public class IntegrationTestMojo
     extends AbstractSurefireMojo
@@ -678,6 +678,7 @@ public class IntegrationTestMojo
         else
         {
             failsafeSummary.setResult( ProviderConfiguration.TESTS_FAILED_EXIT_CODE );
+            //noinspection ThrowableResultOfMethodCallIgnored
             failsafeSummary.setException( summary.getFirstException().getMessage() );
         }
         return failsafeSummary;
@@ -943,12 +944,12 @@ public class IntegrationTestMojo
         this.systemProperties = systemProperties;
     }
 
-    public Map getSystemPropertyVariables()
+    public Map<String,String> getSystemPropertyVariables()
     {
         return systemPropertyVariables;
     }
 
-    public void setSystemPropertyVariables( Map systemPropertyVariables )
+    public void setSystemPropertyVariables( Map<String,String> systemPropertyVariables )
     {
         this.systemPropertyVariables = systemPropertyVariables;
     }
@@ -973,12 +974,12 @@ public class IntegrationTestMojo
         this.properties = properties;
     }
 
-    public Map getPluginArtifactMap()
+    public Map<String,Artifact> getPluginArtifactMap()
     {
         return pluginArtifactMap;
     }
 
-    public void setPluginArtifactMap( Map pluginArtifactMap )
+    public void setPluginArtifactMap( Map<String,Artifact> pluginArtifactMap )
     {
         this.pluginArtifactMap = pluginArtifactMap;
     }
@@ -1387,7 +1388,7 @@ public class IntegrationTestMojo
 
     public boolean isMavenParallel()
     {
-        return parallelMavenExecution != null && parallelMavenExecution.booleanValue();
+        return parallelMavenExecution != null && parallelMavenExecution;
     }
 
     public String getRunOrder()

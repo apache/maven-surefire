@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -76,9 +77,9 @@ public interface SurefireExecutionParameters
 
     void setClasspathDependencyScopeExclude( String classpathDependencyScopeExclude );
 
-    List getAdditionalClasspathElements();
+    List<String> getAdditionalClasspathElements();
 
-    void setAdditionalClasspathElements( List additionalClasspathElements );
+    void setAdditionalClasspathElements( List<String> additionalClasspathElements );
 
     File getReportsDirectory();
 
@@ -110,9 +111,9 @@ public interface SurefireExecutionParameters
 
     void setSystemProperties( Properties systemProperties );
 
-    Map getSystemPropertyVariables();
+    Map<String,String> getSystemPropertyVariables();
 
-    void setSystemPropertyVariables( Map systemPropertyVariables );
+    void setSystemPropertyVariables( Map<String,String> systemPropertyVariables );
 
     File getSystemPropertiesFile();
 
@@ -122,13 +123,13 @@ public interface SurefireExecutionParameters
 
     void setProperties( Properties properties );
 
-    Map getPluginArtifactMap();
+    Map<String,Artifact> getPluginArtifactMap();
 
-    void setPluginArtifactMap( Map pluginArtifactMap );
+    void setPluginArtifactMap( Map<String,Artifact> pluginArtifactMap );
 
-    Map getProjectArtifactMap();
+    Map<String,Artifact> getProjectArtifactMap();
 
-    void setProjectArtifactMap( Map projectArtifactMap );
+    void setProjectArtifactMap( Map<String,Artifact> projectArtifactMap );
 
     boolean isPrintSummary();
 
