@@ -76,9 +76,3 @@ Source Code Cross Reference
   To disable the link to the source code, the <<linkXRef>> property should
   be set to <<false>>. Or another way is by not declaring the
   <<<maven-jxr-plugin>>> to the \<reporting\> section.
-
-  
-
-
-
-  
