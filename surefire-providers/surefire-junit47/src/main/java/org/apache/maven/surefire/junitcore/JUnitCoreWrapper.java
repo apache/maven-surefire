@@ -29,6 +29,7 @@ import org.junit.runner.JUnitCore;
 import org.junit.runner.Request;
 import org.junit.runner.Result;
 import org.junit.runner.manipulation.Filter;
+import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunListener;
 
 /**
@@ -68,6 +69,15 @@ class JUnitCoreWrapper
                 // RunListener. But it also contains regular problems from the test-run.
                 // I am not entirely sure of what to do with this; it might even be
                 // that these errors are the correct errors to report back to the client.
+
+                for ( Failure failure : run.getFailures() )
+                {
+                    if ( failure.getDescription().getDisplayName().equals( "Test mechanism" ) )
+                    {
+                        final Throwable exception = failure.getException();
+                        throw new TestSetFailedException( exception );
+                    }
+                }
             }
         }
         finally
