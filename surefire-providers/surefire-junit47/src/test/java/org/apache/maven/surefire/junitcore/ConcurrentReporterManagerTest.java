@@ -1,3 +1,5 @@
+package org.apache.maven.surefire.junitcore;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -16,9 +18,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
-package org.apache.maven.surefire.junitcore;
-
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -42,7 +41,6 @@ import org.junit.runner.JUnitCore;
 /*
  * @author Kristian Rosenvold
  */
-
 public class ConcurrentReporterManagerTest
     extends TestCase
 {
@@ -106,7 +104,6 @@ public class ConcurrentReporterManagerTest
     {
         runClasses( 2, 0, 0, Junit3OddTest1.class );
     }
-
 
     public void testSimpleOutput()
         throws Exception
@@ -213,7 +210,6 @@ public class ConcurrentReporterManagerTest
         @Test
         public void testNotMuch()
         {
-
         }
 
         @Ignore
@@ -230,11 +226,9 @@ public class ConcurrentReporterManagerTest
 
     public static class DummyWithFailure
     {
-
         @Test
         public void testBeforeFail()
         {
-
         }
 
         @Test
@@ -255,7 +249,6 @@ public class ConcurrentReporterManagerTest
         @Test
         public void testNotMuchA()
         {
-
         }
 
         @Test
@@ -328,7 +321,6 @@ public class ConcurrentReporterManagerTest
             System.out.println( "testStubJ3TC2A" );
         }
 
-
         public static junit.framework.Test suite()
         {
             TestSuite suite = new TestSuite();
@@ -341,8 +333,6 @@ public class ConcurrentReporterManagerTest
     public static class Junit3OddTest1
         extends TestCase
     {
-
-
         public static junit.framework.Test suite()
         {
             TestSuite suite = new TestSuite();
@@ -352,7 +342,6 @@ public class ConcurrentReporterManagerTest
 
             return suite;
         }
-
 
         public Junit3OddTest1( String name )
         {
@@ -368,8 +357,6 @@ public class ConcurrentReporterManagerTest
     public static class Junit3WithNestedSuite
         extends TestCase
     {
-
-
         public static junit.framework.Test suite()
         {
             TestSuite suite = new TestSuite();
@@ -379,7 +366,6 @@ public class ConcurrentReporterManagerTest
             suite.addTestSuite( Junit3Tc2.class );
             return suite;
         }
-
 
         public Junit3WithNestedSuite( String name )
         {

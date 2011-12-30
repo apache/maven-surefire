@@ -1,3 +1,5 @@
+package org.apache.maven.surefire.junitcore;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -16,8 +18,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
-package org.apache.maven.surefire.junitcore;
 
 import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
@@ -69,8 +69,9 @@ public class JUnitCoreTester
         final Result run = junitCore.run( computer, classes );
         junitCore.removeListener( runListener );
         reporterManagerFactory.close();
-        if (computer instanceof  ConfigurableParallelComputer){
-            ((ConfigurableParallelComputer)computer).close();
+        if ( computer instanceof ConfigurableParallelComputer )
+        {
+            ( (ConfigurableParallelComputer) computer ).close();
         }
         return run;
     }

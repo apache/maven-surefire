@@ -1,3 +1,5 @@
+package org.apache.maven.surefire.junitcore;
+
 /*
  * JBoss, Home of Professional Open Source
  * Copyright 2009, Red Hat Middleware LLC, and individual contributors
@@ -14,7 +16,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.maven.surefire.junitcore;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -74,64 +75,82 @@ import org.junit.runners.model.InitializationError;
  * @author <a href="mailto:aslak@redhat.com">Aslak Knutsen</a>
  * @version $Revision: $
  */
-public class Surefire746Test {
+public class Surefire746Test
+{
 
     @Test
-    public void surefireIsConfused_ByMultipleIgnore_OnClassLevel() throws Exception {
-        ReporterFactory reporterFactory = FileReporterFactory.defaultNoXml( );
-        BaseProviderFactory providerParameters = new BaseProviderFactory(reporterFactory, true);
+    public void surefireIsConfused_ByMultipleIgnore_OnClassLevel()
+        throws Exception
+    {
+        ReporterFactory reporterFactory = FileReporterFactory.defaultNoXml();
+        BaseProviderFactory providerParameters = new BaseProviderFactory( reporterFactory, true );
         ConsoleLogger consoleLogger = new DefaultConsoleReporter( System.out );
 
-        providerParameters.setReporterConfiguration(new ReporterConfiguration(new File(""), false));
+        providerParameters.setReporterConfiguration( new ReporterConfiguration( new File( "" ), false ) );
         Properties junitProps = new Properties();
-        junitProps.put( ProviderParameterNames.PARALLEL_PROP, "none");
+        junitProps.put( ProviderParameterNames.PARALLEL_PROP, "none" );
 
-        JUnitCoreParameters jUnitCoreParameters = new JUnitCoreParameters(junitProps);
+        JUnitCoreParameters jUnitCoreParameters = new JUnitCoreParameters( junitProps );
 
         final Map<String, TestSet> testSetMap = new ConcurrentHashMap<String, TestSet>();
 
-        RunListener listener = ConcurrentReporterManager.createInstance(testSetMap, reporterFactory, false, false, consoleLogger);
+        RunListener listener =
+            ConcurrentReporterManager.createInstance( testSetMap, reporterFactory, false, false, consoleLogger );
 
-        TestsToRun testsToRun = new TestsToRun(Arrays.asList( TestClassTest.class ));
+        TestsToRun testsToRun = new TestsToRun( Arrays.<Class<?>>asList( TestClassTest.class ) );
 
-        org.junit.runner.notification.RunListener jUnit4RunListener = new JUnitCoreRunListener(listener, testSetMap);
+        org.junit.runner.notification.RunListener jUnit4RunListener = new JUnitCoreRunListener( listener, testSetMap );
 
-        List<org.junit.runner.notification.RunListener> customRunListeners = new ArrayList<org.junit.runner.notification.RunListener>();
-        customRunListeners.add(0, jUnit4RunListener);
+        List<org.junit.runner.notification.RunListener> customRunListeners =
+            new ArrayList<org.junit.runner.notification.RunListener>();
+        customRunListeners.add( 0, jUnit4RunListener );
 
-        JUnitCoreWrapper.execute(testsToRun, jUnitCoreParameters, customRunListeners, null);
+        JUnitCoreWrapper.execute( testsToRun, jUnitCoreParameters, customRunListeners, null );
 
         RunResult result = reporterFactory.close();
 
-        Assert.assertEquals("JUnit should report correctly number of test ran(Finished)", 1, result.getCompletedCount());
+        Assert.assertEquals( "JUnit should report correctly number of test ran(Finished)", 1,
+                             result.getCompletedCount() );
 
     }
 
-    @RunWith(TestCaseRunner.class)
-    public static class TestClassTest {
+    @RunWith( TestCaseRunner.class )
+    public static class TestClassTest
+    {
         @Test
-        public void shouldNeverBeCalled() throws Exception {
-            Assert.assertTrue(true);
+        public void shouldNeverBeCalled()
+            throws Exception
+        {
+            Assert.assertTrue( true );
         }
     }
 
-    public static class TestCaseRunner extends BlockJUnit4ClassRunner {
-        public TestCaseRunner(Class<?> klass) throws InitializationError {
-            super(klass);
+    public static class TestCaseRunner
+        extends BlockJUnit4ClassRunner
+    {
+        public TestCaseRunner( Class<?> klass )
+            throws InitializationError
+        {
+            super( klass );
         }
 
         @Override
-        public void run(RunNotifier notifier) {
-            notifier.addListener(new TestRunListener());
-            super.run(notifier);
+        public void run( RunNotifier notifier )
+        {
+            notifier.addListener( new TestRunListener() );
+            super.run( notifier );
         }
 
     }
 
-    private static class TestRunListener extends org.junit.runner.notification.RunListener {
+    private static class TestRunListener
+        extends org.junit.runner.notification.RunListener
+    {
         @Override
-        public void testFinished(Description description) throws Exception {
-            throw new RuntimeException("This Exception will cause Surefire to receive a internal JUnit Description and fail");
+        public void testFinished( Description description )
+            throws Exception
+        {
+            throw new RuntimeException( "This Exception will cause Surefire to receive a internal JUnit Description and fail" );
         }
     }
 }

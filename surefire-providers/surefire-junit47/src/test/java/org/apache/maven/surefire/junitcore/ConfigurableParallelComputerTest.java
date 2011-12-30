@@ -1,3 +1,5 @@
+package org.apache.maven.surefire.junitcore;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -16,8 +18,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
-package org.apache.maven.surefire.junitcore;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -240,6 +240,7 @@ public class ConfigurableParallelComputerTest
         }
 
     }
+
     public static class Dummy
     {
         @Test
@@ -299,8 +300,6 @@ public class ConfigurableParallelComputerTest
         {
             sleepReallyEvenOnWindows( 2 * scaling );
         }
-
-
     }
 
     public static class FailingAssertions
@@ -334,13 +333,10 @@ public class ConfigurableParallelComputerTest
         {
         }
 
-
         @Test
         public void testWithException()
         {
             throw new RuntimeException( "We expect this" );
         }
-
-
     }
 }
