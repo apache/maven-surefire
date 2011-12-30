@@ -129,7 +129,7 @@ public class SurefirePlugin
      * @parameter
      * @since 2.6
      */
-    private List classpathDependencyExcludes;
+    private List<String> classpathDependencyExcludes;
 
     /**
      * A dependency scope to exclude from the test classpath. The scope can be one of the following scopes:
@@ -196,7 +196,7 @@ public class SurefirePlugin
      *
      * @parameter
      */
-    private List includes;
+    private List<String> includes;
 
     /**
      * A list of &lt;exclude> elements specifying the tests (by pattern) that should be excluded in testing. When not
@@ -512,7 +512,7 @@ public class SurefirePlugin
      * @parameter expression="${project.pluginArtifactRepositories}"
      * @since 2.2
      */
-    private List remoteRepositories;
+    private List<ArtifactRepository> remoteRepositories;
 
     /**
      * For retrieval of artifact's metadata.
@@ -757,12 +757,12 @@ public class SurefirePlugin
         this.project = project;
     }
 
-    public List getClasspathDependencyExcludes()
+    public List<String> getClasspathDependencyExcludes()
     {
         return classpathDependencyExcludes;
     }
 
-    public void setClasspathDependencyExcludes( List classpathDependencyExcludes )
+    public void setClasspathDependencyExcludes( List<String> classpathDependencyExcludes )
     {
         this.classpathDependencyExcludes = classpathDependencyExcludes;
     }
@@ -848,7 +848,7 @@ public class SurefirePlugin
         return includes;
     }
 
-    public void setIncludes( List includes )
+    public void setIncludes( List<String> includes )
     {
         this.includes = includes;
     }
@@ -1199,12 +1199,12 @@ public class SurefirePlugin
         this.artifactFactory = artifactFactory;
     }
 
-    public List getRemoteRepositories()
+    public List<ArtifactRepository> getRemoteRepositories()
     {
         return remoteRepositories;
     }
 
-    public void setRemoteRepositories( List remoteRepositories )
+    public void setRemoteRepositories( List<ArtifactRepository> remoteRepositories )
     {
         this.remoteRepositories = remoteRepositories;
     }
