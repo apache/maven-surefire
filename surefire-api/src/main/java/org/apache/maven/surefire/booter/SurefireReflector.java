@@ -41,7 +41,7 @@ import org.apache.maven.surefire.util.SurefireReflectionException;
 /**
  * Does reflection based invocation of the surefire methods.
  * <p/>
- * This is to avoid compilications with linkage issues
+ * This is to avoid complications with linkage issues
  *
  * @author Kristian Rosenvold
  */
