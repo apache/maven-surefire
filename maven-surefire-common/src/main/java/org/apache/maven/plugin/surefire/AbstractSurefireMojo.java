@@ -1204,7 +1204,7 @@ public abstract class AbstractSurefireMojo
             throws ArtifactResolutionException, ArtifactNotFoundException
         {
             Artifact surefireArtifact =
-                (Artifact) getPluginArtifactMap().get( "org.apache.maven.surefire:surefire-booter" );
+                getPluginArtifactMap().get( "org.apache.maven.surefire:surefire-booter" );
             return dependencyResolver.getProviderClasspath( "surefire-testng", surefireArtifact.getBaseVersion(),
                                                             testNgArtifact );
         }
