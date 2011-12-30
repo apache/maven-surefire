@@ -92,7 +92,7 @@ public class Surefire746Test {
 
         RunListener listener = ConcurrentReporterManager.createInstance(testSetMap, reporterFactory, false, false, consoleLogger);
 
-        TestsToRun testsToRun = new TestsToRun(Arrays.asList(new Class[]{TestClassTest.class}));
+        TestsToRun testsToRun = new TestsToRun(Arrays.asList( TestClassTest.class ));
 
         org.junit.runner.notification.RunListener jUnit4RunListener = new JUnitCoreRunListener(listener, testSetMap);
 

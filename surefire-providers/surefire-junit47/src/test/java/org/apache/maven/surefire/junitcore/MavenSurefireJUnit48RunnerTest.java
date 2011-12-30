@@ -16,20 +16,10 @@
  */
 package org.apache.maven.surefire.junitcore;
 
-import java.io.File;
-import java.util.HashMap;
-import org.apache.maven.plugin.surefire.report.FileReporterFactory;
-import org.apache.maven.surefire.report.DefaultConsoleReporter;
-import org.apache.maven.surefire.report.ReporterConfiguration;
-import org.apache.maven.surefire.report.ReporterFactory;
-import org.apache.maven.surefire.report.RunListener;
-
 import junit.framework.Assert;
 import junit.framework.TestCase;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.Computer;
-import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 
@@ -119,24 +109,7 @@ public class MavenSurefireJUnit48RunnerTest
     public void testSurefireShouldBeAbleToReportRunStatusEvenWithFailingTests()
         throws Exception
     {
-        ReporterFactory reporterManagerFactory = FileReporterFactory.defaultNoXml( );
-
-        final HashMap<String, TestSet> classMethodCounts = new HashMap<String, TestSet>();
-        RunListener reporter =
-            ConcurrentReporterManager.createInstance( classMethodCounts, reporterManagerFactory, false, false,
-                                                      new DefaultConsoleReporter( System.out ) );
-
-        org.junit.runner.notification.RunListener concurrentReportingRunListener =
-            new JUnitCoreRunListener( reporter, classMethodCounts );
-        Computer computer = new Computer();
-
-        JUnitCore junitCore = new JUnitCore();
-
-        junitCore.addListener( concurrentReportingRunListener );
-
-        Result result = junitCore.run( computer, FailingTestClassTestNot.class );
-
-        junitCore.removeListener( concurrentReportingRunListener );
+        Result result = new JUnitCoreTester().run( false, FailingTestClassTestNot.class );
 
         Assert.assertEquals( "JUnit should report correctly number of test ran(Finished)", 0, result.getRunCount() );
 
@@ -152,12 +125,6 @@ public class MavenSurefireJUnit48RunnerTest
         Assert.assertEquals( "The exception thrown by the failing TestCase", RuntimeException.class,
                              result.getFailures().get( 0 ).getException().getClass() );
 
-        reporterManagerFactory.close();
-    }
-
-    private ReporterConfiguration getReporterConfiguration()
-    {
-        return new ReporterConfiguration( new File( "." ), true );
     }
 
     /**

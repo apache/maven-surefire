@@ -76,7 +76,7 @@ public class LogicalStream
         }
     }
 
-    public void writeDetails( ConsoleOutputReceiver outputReceiver )
+    public synchronized void writeDetails( ConsoleOutputReceiver outputReceiver )
     {
         for ( Entry entry : output )
         {
