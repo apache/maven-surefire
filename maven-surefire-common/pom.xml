@@ -28,7 +28,6 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <groupId>org.apache.maven.surefire</groupId>
   <artifactId>maven-surefire-common</artifactId>
 
   <name>Maven Surefire Common</name>
