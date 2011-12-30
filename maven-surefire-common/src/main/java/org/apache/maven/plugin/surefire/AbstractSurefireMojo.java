@@ -463,7 +463,7 @@ public abstract class AbstractSurefireMojo
 
     private Artifact getCommonArtifact()
     {
-        return (Artifact) getPluginArtifactMap().get( "org.apache.maven.surefire:maven-surefire-common" );
+        return getPluginArtifactMap().get( "org.apache.maven.surefire:maven-surefire-common" );
     }
 
     private StartupReportConfiguration getStartupReportConfiguration( String configChecksum )
@@ -571,7 +571,7 @@ public abstract class AbstractSurefireMojo
         throws MojoFailureException, InvalidVersionSpecificationException
     {
         // TODO: this is pretty manual, but I'd rather not require the plugin > dependencies section right now
-        Artifact artifact = (Artifact) getProjectArtifactMap().get( getTestNGArtifactName() );
+        Artifact artifact = getProjectArtifactMap().get( getTestNGArtifactName() );
 
         if ( artifact != null )
         {
@@ -589,12 +589,12 @@ public abstract class AbstractSurefireMojo
 
     private Artifact getJunitArtifact()
     {
-        return (Artifact) getProjectArtifactMap().get( getJunitArtifactName() );
+        return getProjectArtifactMap().get( getJunitArtifactName() );
     }
 
     private Artifact getJunitDepArtifact()
     {
-        return (Artifact) getProjectArtifactMap().get( "junit:junit-dep" );
+        return getProjectArtifactMap().get( "junit:junit-dep" );
     }
 
     protected ForkStarter createForkStarter( ProviderInfo provider, ForkConfiguration forkConfiguration,
@@ -630,9 +630,9 @@ public abstract class AbstractSurefireMojo
         //noinspection ResultOfMethodCallIgnored
         tmpDir.mkdirs();
 
-        Artifact shadeFire = (Artifact) getPluginArtifactMap().get( "org.apache.maven.surefire:surefire-shadefire" );
+        Artifact shadeFire = getPluginArtifactMap().get( "org.apache.maven.surefire:surefire-shadefire" );
 
-        surefireBooterArtifact = (Artifact) getPluginArtifactMap().get( "org.apache.maven.surefire:surefire-booter" );
+        surefireBooterArtifact = getPluginArtifactMap().get( "org.apache.maven.surefire:surefire-booter" );
         if ( surefireBooterArtifact == null )
         {
             throw new RuntimeException( "Unable to locate surefire-booter in the list of plugin artifacts" );
