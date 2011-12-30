@@ -69,9 +69,9 @@ public interface SurefireExecutionParameters
 
     void setProject( MavenProject project );
 
-    List getClasspathDependencyExcludes();
+    List<String> getClasspathDependencyExcludes();
 
-    void setClasspathDependencyExcludes( List classpathDependencyExcludes );
+    void setClasspathDependencyExcludes( List<String> classpathDependencyExcludes );
 
     String getClasspathDependencyScopeExclude();
 
