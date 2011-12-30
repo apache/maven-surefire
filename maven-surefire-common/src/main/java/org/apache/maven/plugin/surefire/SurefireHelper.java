@@ -58,7 +58,7 @@ public final class SurefireHelper
                 "No tests were executed!  (Set -DfailIfNoTests=false to ignore this error.)" );
         }
 
-        if ( result.isErrrorFree() )
+        if ( result.isErrorFree() )
         {
             return;
         }

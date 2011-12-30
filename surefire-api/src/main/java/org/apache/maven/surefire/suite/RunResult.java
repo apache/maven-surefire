@@ -85,10 +85,10 @@ public class RunResult
 
     public int getForkedProcessCode()
     {
-        return completedCount == 0 ? NO_TESTS : isErrrorFree() ? SUCCESS : FAILURE;
+        return completedCount == 0 ? NO_TESTS : isErrorFree() ? SUCCESS : FAILURE;
     }
 
-    public boolean isErrrorFree()
+    public boolean isErrorFree()
     {
         return getFailures() == 0 && getErrors() == 0;
     }
