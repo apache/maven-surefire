@@ -1,4 +1,5 @@
 package org.apache.maven.surefire.its;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -29,8 +30,6 @@ import org.apache.maven.it.VerificationException;
 public class IncludesExcludesIT
     extends SurefireVerifierTestClass
 {
-
-
     public IncludesExcludesIT()
     {
         super( "/includes-excludes" );

@@ -1,4 +1,5 @@
 package org.apache.maven.surefire.its;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -17,7 +18,6 @@ package org.apache.maven.surefire.its;
  * specific language governing permissions and limitations
  * under the License.
  */
-
 
 import org.apache.maven.it.VerificationException;
 
@@ -53,10 +53,10 @@ public class JUnit48TestCategoriesIT
         executeTest();
         verifyErrorFreeLog();
         assertTestSuiteResults( 3, 0, 0, 0 );
-        verifyTextInLog("catA: 1");
-        verifyTextInLog("catB: 1");
-        verifyTextInLog("catC: 0");
-        verifyTextInLog("catNone: 0");
+        verifyTextInLog( "catA: 1" );
+        verifyTextInLog( "catB: 1" );
+        verifyTextInLog( "catC: 0" );
+        verifyTextInLog( "catNone: 0" );
     }
 
     public void testCategoriesAC()
@@ -80,14 +80,14 @@ public class JUnit48TestCategoriesIT
         executeTest();
         verifyErrorFreeLog();
         assertTestSuiteResults( 6, 0, 0, 0 );
-        verifyTextInLog("catA: 1");
-        verifyTextInLog("catB: 0");
-        verifyTextInLog("catC: 1");
-        verifyTextInLog("catNone: 0");
-        verifyTextInLog("mA: 1");
-        verifyTextInLog("mB: 1"); // This seems questionable !? The class is annotated with category C and method with B
-        verifyTextInLog("mC: 1");
-        verifyTextInLog("CatNone: 1");
+        verifyTextInLog( "catA: 1" );
+        verifyTextInLog( "catB: 0" );
+        verifyTextInLog( "catC: 1" );
+        verifyTextInLog( "catNone: 0" );
+        verifyTextInLog( "mA: 1" );
+        verifyTextInLog( "mB: 1" ); // This seems questionable !? The class is annotated with category C and method with B
+        verifyTextInLog( "mC: 1" );
+        verifyTextInLog( "CatNone: 1" );
     }
 
 }

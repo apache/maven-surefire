@@ -20,11 +20,8 @@ package org.apache.maven.surefire.its;
  */
 
 import org.apache.maven.it.VerificationException;
-import org.apache.maven.it.Verifier;
-import org.apache.maven.it.util.ResourceExtractor;
 
 import java.io.File;
-import java.util.List;
 
 /**
  * Test failIfNoTests
@@ -35,14 +32,15 @@ public class CheckTestFailIfNoTestsIT
     extends SurefireVerifierTestClass
 {
 
-    public CheckTestFailIfNoTestsIT() {
-        super("/default-configuration-noTests");
+    public CheckTestFailIfNoTestsIT()
+    {
+        super( "/default-configuration-noTests" );
     }
 
     public void testFailIfNoTests()
         throws Exception
     {
-        failIfNoTests(true);
+        failIfNoTests( true );
 
         try
         {
@@ -59,20 +57,20 @@ public class CheckTestFailIfNoTestsIT
     public void testDontFailIfNoTests()
         throws Exception
     {
-        failIfNoTests(false);
+        failIfNoTests( false );
         executeTest();
         verifyErrorFreeLog();
 
-        File reportsDir = getSurefireReportsFile("");
+        File reportsDir = getSurefireReportsFile( "" );
         assertFalse( "Unexpected reports directory", reportsDir.exists() );
     }
 
     public void test48CategoriesFailWhenNoTests()
         throws Exception
     {
-        failIfNoTests(false);
-        activateProfile("junit47");
-        addD("junit.version", "4.8.1");
+        failIfNoTests( false );
+        activateProfile( "junit47" );
+        addD( "junit.version", "4.8.1" );
         executeTest();
         verifyErrorFreeLog();
     }

@@ -19,7 +19,6 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-
 /**
  * Test project using -Dtest=mtClass#myMethod
  *
@@ -28,7 +27,7 @@ package org.apache.maven.surefire.its;
 public abstract class AsbtractTestMethodPattern
     extends SurefireVerifierTestClass
 {
-    public AsbtractTestMethodPattern(String projectResource)
+    public AsbtractTestMethodPattern( String projectResource )
     {
         super( projectResource );
     }

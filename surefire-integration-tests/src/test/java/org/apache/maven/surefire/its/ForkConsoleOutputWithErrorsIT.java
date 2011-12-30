@@ -1,4 +1,5 @@
 package org.apache.maven.surefire.its;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -17,7 +18,6 @@ package org.apache.maven.surefire.its;
  * specific language governing permissions and limitations
  * under the License.
  */
-
 
 import java.io.File;
 
@@ -41,10 +41,10 @@ public class ForkConsoleOutputWithErrorsIT
         throws Exception
     {
         failNever();
-        redirectToFile( true);
+        redirectToFile( true );
         execute( "test" );
         final File surefireReportsFile = getSurefireReportsFile( "TEST-forkConsoleOutput.Test2.xml" );
-        assertContainsText(  surefireReportsFile, "sout: Will Fail soon" );
-        assertContainsText(  surefireReportsFile, "serr: Will Fail now" );
+        assertContainsText( surefireReportsFile, "sout: Will Fail soon" );
+        assertContainsText( surefireReportsFile, "serr: Will Fail now" );
     }
 }

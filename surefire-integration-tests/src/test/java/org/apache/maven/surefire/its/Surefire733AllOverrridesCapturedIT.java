@@ -1,4 +1,5 @@
 package org.apache.maven.surefire.its;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -18,7 +19,6 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-
 import org.apache.maven.it.VerificationException;
 
 /**
@@ -32,7 +32,9 @@ public class Surefire733AllOverrridesCapturedIT
         super( "/surefire-733-allOverridesCaptured" );
     }
 
-    public void testLogOutput() throws VerificationException {
+    public void testLogOutput()
+        throws VerificationException
+    {
         executeTest();
         verifyTextInLog( "abc" );
     }

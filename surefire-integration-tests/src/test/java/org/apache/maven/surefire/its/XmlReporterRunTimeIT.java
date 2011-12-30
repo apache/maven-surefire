@@ -1,4 +1,5 @@
 package org.apache.maven.surefire.its;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -48,11 +49,11 @@ public class XmlReporterRunTimeIT
         {
             if ( "runorder.parallel.Test1".equals( report.getFullClassName() ) )
             {
-                assertTrue(  report.getTimeElapsed() >= 1.2f);
+                assertTrue( report.getTimeElapsed() >= 1.2f );
             }
             else if ( "runorder.parallel.Test2".equals( report.getFullClassName() ) )
             {
-                assertTrue(  report.getTimeElapsed() >= 0.9f);
+                assertTrue( report.getTimeElapsed() >= 0.9f );
             }
             else
             {

@@ -1,4 +1,5 @@
 package org.apache.maven.surefire.its;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -17,7 +18,6 @@ package org.apache.maven.surefire.its;
  * specific language governing permissions and limitations
  * under the License.
  */
-
 
 import java.io.File;
 
@@ -39,10 +39,9 @@ public class ConsoleOutputIT
         throws Exception
     {
         redirectToFile(true);
-        addGoal("-DjunitVersion=4.7");
+        addGoal( "-DjunitVersion=4.7" );
         executeTest();
         final File surefireReportsFile = getSurefireReportsFile( "consoleOutput.Test1-output.txt" );
-        assertContainsText(  surefireReportsFile, "SoutAgain" );
-
+        assertContainsText( surefireReportsFile, "SoutAgain" );
     }
 }

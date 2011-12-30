@@ -1,4 +1,5 @@
 package org.apache.maven.surefire.its;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -18,11 +19,9 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-
 /**
- * SUREFIRE-697 Asserts proper truncation of long exception messages
- * Some say testing this is a bit over the top.
- *
+ * SUREFIRE-697 Asserts proper truncation of long exception messages Some say testing this is a bit over the top.
+ * 
  * @author Kristian Rosenvold
  */
 public class Surefire697NiceSummaryIT
@@ -36,7 +35,7 @@ public class Surefire697NiceSummaryIT
     public void testBuildFailingWhenErrors()
         throws Exception
     {
-        failNever( );
+        failNever();
         executeTest();
         verifyTextInLog( "testShortMultiline(junit.surefire697.BasicTest): A very short multiline message" );
         // Could assert that "Here is line 2" is not present too.

@@ -1,4 +1,5 @@
 package org.apache.maven.surefire.its;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -17,7 +18,6 @@ package org.apache.maven.surefire.its;
  * specific language governing permissions and limitations
  * under the License.
  */
-
 
 /**
  * SUREFIRE-673 Asserts that a given mockito build works as it should (classloader problem in 2.7)

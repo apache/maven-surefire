@@ -1,4 +1,5 @@
 package org.apache.maven.surefire.its;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -118,7 +119,6 @@ public class WorkingDirectoryIT
     public void testWorkingDirectoryChildOnlyNoFork()
         throws Exception
     {
-
         Verifier verifier = new Verifier( childTestDir.getAbsolutePath() );
         List<String> goals = this.getInitialGoals();
         goals.add( "test" );

@@ -1,4 +1,5 @@
 package org.apache.maven.surefire.its;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -18,7 +19,6 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-
 /**
  * SUREFIRE-613 Asserts proper test counts when running in parallel
  *
@@ -27,7 +27,7 @@ package org.apache.maven.surefire.its;
 public class Surefire408ManualProviderSelectionIT
     extends SurefireVerifierTestClass
 {
-    public Surefire408ManualProviderSelectionIT(  )
+    public Surefire408ManualProviderSelectionIT()
     {
         super(  "/surefire-408-manual-provider-selection" );
     }

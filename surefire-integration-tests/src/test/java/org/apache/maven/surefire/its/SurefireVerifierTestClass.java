@@ -39,7 +39,7 @@ import junit.framework.Assert;
 import junit.framework.TestCase;
 
 /**
- * Contains commonly used featurtes for most tests, encapsulating
+ * Contains commonly used features for most tests, encapsulating
  * common use cases.
  * <p/>
  * Also includes thread-safe access to the extracted resource
@@ -59,7 +59,7 @@ public abstract class SurefireVerifierTestClass
 
     private final Verifier verifier;
 
-    private final Map<String, String> envvars = new HashMap<String, String>(  );
+    private final Map<String, String> envvars = new HashMap<String, String>();
 
     private final String testNgVersion = System.getProperty( "testng.version" );
 
@@ -102,8 +102,9 @@ public abstract class SurefireVerifierTestClass
     }
 
 
-    protected void addEnvVar(String key, String value){
-        envvars.put(  key, value );
+    protected void addEnvVar( String key, String value )
+    {
+        envvars.put( key, value );
     }
 
     private List<String> getInitialGoals()
@@ -231,13 +232,14 @@ public abstract class SurefireVerifierTestClass
         addGoal( "-DprintSummary=" + printsummary );
     }
 
-    protected void redirectToFileReally(boolean redirect){
-        addGoal( "-Dmaven.test.redirectTestOutputToFile=" + redirect);
+    protected void redirectToFileReally( boolean redirect )
+    {
+        addGoal( "-Dmaven.test.redirectTestOutputToFile=" + redirect );
     }
 
     protected void redirectToFile( boolean redirect )
     {
-        redirectToFileReally(redirect);
+        redirectToFileReally( redirect );
         //addGoal( "-Dredirect.to.file=" + redirect );
     }
 
@@ -261,7 +263,7 @@ public abstract class SurefireVerifierTestClass
         addGoal( "-DforkMode=" + forkMode );
     }
 
-    protected void failIfNoTests( boolean fail)
+    protected void failIfNoTests( boolean fail )
     {
         addGoal( "-DfailIfNoTests=" + fail );
     }
@@ -304,7 +306,6 @@ public abstract class SurefireVerifierTestClass
         final List<String> list = getVerifier().loadFile( file, false );
         for ( String line : list )
         {
-
             if ( line.contains( text ) )
             {
                 return true;
@@ -369,7 +370,7 @@ public abstract class SurefireVerifierTestClass
 
     protected String getSurefireReportGoal()
     {
-        return "org.apache.maven.plugins:maven-surefire-report-plugin:" + getSurefireVersion() +  ":report";
+        return "org.apache.maven.plugins:maven-surefire-report-plugin:" + getSurefireVersion() + ":report";
     }
 
     protected String getSurefireReportOnlyGoal()
@@ -402,13 +403,16 @@ public abstract class SurefireVerifierTestClass
 
     protected void addD( String variable, String value )
     {
-        addGoal( "-D" + variable + "=" + value);
+        addGoal( "-D" + variable + "=" + value );
     }
 
-    public void setGroups(String groups){
+    public void setGroups( String groups )
+    {
         addD( "groups", groups );
     }
-    public void setExcludedGroups(String excludedGroups){
+
+    public void setExcludedGroups( String excludedGroups )
+    {
         addD( "excludedGroups", excludedGroups );
     }
 
