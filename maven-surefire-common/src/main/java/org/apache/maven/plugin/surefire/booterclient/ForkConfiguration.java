@@ -170,14 +170,14 @@ public class ForkConfiguration
      * @throws org.apache.maven.surefire.booter.SurefireBooterForkException
      *          when unable to perform the fork
      */
-    public Commandline createCommandLine( List classPath, ClassLoaderConfiguration classpathConfiguration,
+    public Commandline createCommandLine( List<String> classPath, ClassLoaderConfiguration classpathConfiguration,
                                           boolean shadefire )
         throws SurefireBooterForkException
     {
         return createCommandLine( classPath, classpathConfiguration.isManifestOnlyJarRequestedAndUsable(), shadefire );
     }
 
-    public Commandline createCommandLine( List classPath, boolean useJar, boolean shadefire )
+    public Commandline createCommandLine( List<String> classPath, boolean useJar, boolean shadefire )
         throws SurefireBooterForkException
     {
         Commandline cli = new Commandline();
@@ -246,7 +246,7 @@ public class ForkConfiguration
      * @return The file pointint to the jar
      * @throws java.io.IOException When a file operation fails.
      */
-    public File createJar( List classPath )
+    public File createJar( List<String> classPath )
         throws IOException
     {
         File file = File.createTempFile( "surefirebooter", ".jar", tempDirectory );
@@ -265,9 +265,8 @@ public class ForkConfiguration
         // we can't use StringUtils.join here since we need to add a '/' to
         // the end of directory entries - otherwise the jvm will ignore them.
         String cp = "";
-        for ( Iterator it = classPath.iterator(); it.hasNext(); )
+        for ( String el : classPath )
         {
-            String el = (String) it.next();
             // NOTE: if File points to a directory, this entry MUST end in '/'.
             cp += UrlUtils.getURL( new File( el ) ).toExternalForm() + " ";
         }

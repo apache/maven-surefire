@@ -31,7 +31,7 @@ import org.apache.maven.surefire.util.SurefireReflectionException;
  */
 public class CommonReflector
 {
-    private final Class startupReportConfiguration;
+    private final Class<?> startupReportConfiguration;
 
     private final ClassLoader surefireClassLoader;
 
@@ -51,7 +51,7 @@ public class CommonReflector
 
     public Object createReportingReporterFactory( StartupReportConfiguration startupReportConfiguration )
     {
-        Class[] args = new Class[]{ this.startupReportConfiguration };
+        Class<?>[] args = new Class[]{ this.startupReportConfiguration };
         Object src = createStartupReportConfiguration( startupReportConfiguration );
         Object[] params = new Object[]{ src };
         return ReflectionUtils.instantiateObject( FileReporterFactory.class.getName(), args, params,
@@ -61,7 +61,7 @@ public class CommonReflector
 
     Object createStartupReportConfiguration( StartupReportConfiguration reporterConfiguration )
     {
-        Constructor constructor = ReflectionUtils.getConstructor( this.startupReportConfiguration,
+        Constructor<?> constructor = ReflectionUtils.getConstructor( this.startupReportConfiguration,
                                                                   new Class[]{ boolean.class, boolean.class,
                                                                       String.class, boolean.class, boolean.class,
                                                                       File.class, boolean.class, String.class,

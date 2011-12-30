@@ -58,14 +58,14 @@ public class SurefireDependencyResolver
 
     private final ArtifactRepository localRepository;
 
-    private final List remoteRepositories;
+    private final List<ArtifactRepository> remoteRepositories;
 
     private final ArtifactMetadataSource artifactMetadataSource;
 
     private final String pluginName;
 
     protected SurefireDependencyResolver( ArtifactResolver artifactResolver, ArtifactFactory artifactFactory, Log log,
-                                          ArtifactRepository localRepository, List remoteRepositories,
+                                          ArtifactRepository localRepository, List<ArtifactRepository> remoteRepositories,
                                           ArtifactMetadataSource artifactMetadataSource, String pluginName )
     {
         this.artifactResolver = artifactResolver;
@@ -146,16 +146,15 @@ public class SurefireDependencyResolver
         return new Classpath( files );
     }
 
-    public Classpath addProviderToClasspath( Map pluginArtifactMap, Artifact surefireArtifact )
+    public Classpath addProviderToClasspath( Map<String,Artifact> pluginArtifactMap, Artifact surefireArtifact )
         throws ArtifactResolutionException, ArtifactNotFoundException
     {
         List<String> files = new ArrayList<String>();
         if ( surefireArtifact != null )
         {
             final ArtifactResolutionResult artifactResolutionResult = resolveArtifact( null, surefireArtifact );
-            for ( Object o : pluginArtifactMap.values() )
+            for ( Artifact artifact : pluginArtifactMap.values() )
             {
-                Artifact artifact = (Artifact) o;
                 if ( !artifactResolutionResult.getArtifacts().contains( artifact ) )
                 {
                     files.add( artifact.getFile().getAbsolutePath() );
@@ -165,9 +164,8 @@ public class SurefireDependencyResolver
         else
         {
             // Bit of a brute force strategy if not found. Should probably be improved
-            for ( Object o : pluginArtifactMap.values() )
+            for ( Artifact artifact : pluginArtifactMap.values() )
             {
-                Artifact artifact = (Artifact) o;
                 files.add( artifact.getFile().getPath() );
             }
         }

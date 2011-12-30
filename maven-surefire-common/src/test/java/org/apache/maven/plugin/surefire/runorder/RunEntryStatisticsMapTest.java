@@ -39,8 +39,8 @@ public class RunEntryStatisticsMapTest
         throws IOException
     {
         final RunEntryStatisticsMap runEntryStatisticsMap = RunEntryStatisticsMap.fromReader( getStatisticsFile() );
-        final List list = Arrays.asList( new Class[]{ A.class, B.class, C.class } );
-        final List prioritizedTestsClassRunTime = runEntryStatisticsMap.getPrioritizedTestsClassRunTime( list, 2 );
+        final List<?> list = Arrays.asList( new Class[]{ A.class, B.class, C.class } );
+        final List<?> prioritizedTestsClassRunTime = runEntryStatisticsMap.getPrioritizedTestsClassRunTime( list, 2 );
         assertEquals( C.class, prioritizedTestsClassRunTime.get( 0 ) );
         assertEquals( B.class, prioritizedTestsClassRunTime.get( 1 ) );
         assertEquals( A.class, prioritizedTestsClassRunTime.get( 2 ) );
@@ -50,8 +50,8 @@ public class RunEntryStatisticsMapTest
         throws IOException
     {
         final RunEntryStatisticsMap runEntryStatisticsMap = RunEntryStatisticsMap.fromReader( getStatisticsFile() );
-        final List list = Arrays.asList( new Class[]{ A.class, B.class, C.class } );
-        final List prioritizedTestsClassRunTime = runEntryStatisticsMap.getPrioritizedTestsByFailureFirst( list);
+        final List<?> list = Arrays.asList( new Class[]{ A.class, B.class, C.class } );
+        final List<?> prioritizedTestsClassRunTime = runEntryStatisticsMap.getPrioritizedTestsByFailureFirst( list);
         assertEquals( A.class, prioritizedTestsClassRunTime.get( 0 ) );
         assertEquals( C.class, prioritizedTestsClassRunTime.get( 1 ) );
         assertEquals( B.class, prioritizedTestsClassRunTime.get( 2 ) );
@@ -92,18 +92,16 @@ public class RunEntryStatisticsMapTest
         newResults.serialize( data );
     }
 
+    class A
+    {
+    }
 
+    class B
+    {
+    }
 
-        class A
-        {
-        }
-
-        class B
-        {
-        }
-
-        class C
-        {
-        }
+    class C
+    {
+    }
 
 }

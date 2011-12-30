@@ -1,4 +1,5 @@
 package org.apache.maven.surefire.util.internal;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -18,9 +19,9 @@ package org.apache.maven.surefire.util.internal;
  * under the License.
  */
 
-
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -42,12 +43,12 @@ public class TwoThreadBlockingQueueTest
         BlockingQueue twoThreadBlockingQueue = new TwoThreadBlockingQueue();
 
         String[] items = generate( num );
-        long start = System.currentTimeMillis();
-        for ( int i = 0; i < num; i++ )
+        //long start = System.currentTimeMillis();
+        for ( String item : items )
         {
-            twoThreadBlockingQueue.add( items[i] );
+            twoThreadBlockingQueue.add( item );
         }
-        long elapsed = System.currentTimeMillis() - start;
+        //long elapsed = System.currentTimeMillis() - start;
         //System.out.println( "TwoThreadBlockingQueue insert " + num + " elements in  = " + elapsed );
         System.gc();
     }
@@ -58,12 +59,12 @@ public class TwoThreadBlockingQueueTest
         FunkyTwoThreadBlockingQueue twoThreadBlockingQueue = new FunkyTwoThreadBlockingQueue();
 
         String[] items = generate( num );
-        long start = System.currentTimeMillis();
-        for ( int i = 0; i < num; i++ )
+        //long start = System.currentTimeMillis();
+        for ( String item : items )
         {
-            twoThreadBlockingQueue.put( items[i] );
+            twoThreadBlockingQueue.put( item );
         }
-        long elapsed = System.currentTimeMillis() - start;
+        //long elapsed = System.currentTimeMillis() - start;
         //System.out.println( "FunkyTwoThreadBlockingQueue insert " + num + " elements in  = " + elapsed );
         System.gc();
     }
@@ -74,37 +75,38 @@ public class TwoThreadBlockingQueueTest
     {
         final FunkyTwoThreadBlockingQueue twoThreadBlockingQueue = new FunkyTwoThreadBlockingQueue();
 
-        Callable consumer = new Callable()
+        Callable<String> consumer = new Callable<String>()
         {
-            public Object call()
+            public String call()
                 throws Exception
             {
                 int num = 0;
-                Object taken;
+                String taken;
                 do
                 {
                     taken = twoThreadBlockingQueue.take();
-                    if (taken != TwoThreadBlockingQueue.poison) {
+                    if ( taken != TwoThreadBlockingQueue.poison )
+                    {
                         Assert.assertEquals( "item" + num++, taken );
                     }
                 }
-                while ( taken != TwoThreadBlockingQueue.poison);
+                while ( taken != TwoThreadBlockingQueue.poison );
                 return taken;
             }
         };
 
-        FutureTask futureTask = new FutureTask( consumer );
+        FutureTask<String> futureTask = new FutureTask<String>( consumer );
         Thread thread = new Thread( futureTask );
         thread.start();
 
         String[] items = generate( num );
-        long start = System.currentTimeMillis();
-        for ( int i = 0; i < num; i++ )
+        //long start = System.currentTimeMillis();
+        for ( String item : items )
         {
-            twoThreadBlockingQueue.put( items[i] );
+            twoThreadBlockingQueue.put( item );
         }
         twoThreadBlockingQueue.put( TwoThreadBlockingQueue.poison );
-        long elapsed = System.currentTimeMillis() - start;
+        //long elapsed = System.currentTimeMillis() - start;
 
         futureTask.get();
 
@@ -115,15 +117,15 @@ public class TwoThreadBlockingQueueTest
     public void testLBQPut()
         throws Exception
     {
-        LinkedBlockingQueue twoThreadBlockingQueue = new LinkedBlockingQueue();
+        LinkedBlockingQueue<String> twoThreadBlockingQueue = new LinkedBlockingQueue<String>();
 
         String[] items = generate( num );
-        long start = System.currentTimeMillis();
-        for ( int i = 0; i < num; i++ )
+        //long start = System.currentTimeMillis();
+        for ( String item : items )
         {
-            twoThreadBlockingQueue.put( items[i] );
+            twoThreadBlockingQueue.put( item );
         }
-        long elapsed = System.currentTimeMillis() - start;
+        //long elapsed = System.currentTimeMillis() - start;
         //System.out.println( "LinkedBlockingQueue insert " + num + " elements in  = " + elapsed );
         System.gc();
     }
@@ -131,15 +133,15 @@ public class TwoThreadBlockingQueueTest
     public void testArrayList()
         throws Exception
     {
-        ArrayList twoThreadBlockingQueue = new ArrayList( num);
+        List<String> twoThreadBlockingQueue = new ArrayList<String>( num );
 
         String[] items = generate( num );
-        long start = System.currentTimeMillis();
-        for ( int i = 0; i < num; i++ )
+        //long start = System.currentTimeMillis();
+        for ( String item : items )
         {
-            twoThreadBlockingQueue.add( items[i] );
+            twoThreadBlockingQueue.add( item );
         }
-        long elapsed = System.currentTimeMillis() - start;
+        //long elapsed = System.currentTimeMillis() - start;
         //System.out.println( "ArrayList insert " + num + " elements in  = " + elapsed );
         System.gc();
     }
@@ -147,24 +149,22 @@ public class TwoThreadBlockingQueueTest
     public void testLinkedList()
         throws Exception
     {
-        LinkedList twoThreadBlockingQueue = new LinkedList( );
+        LinkedList<String> twoThreadBlockingQueue = new LinkedList<String>();
 
         String[] items = generate( num );
-        long start = System.currentTimeMillis();
-        for ( int i = 0; i < num; i++ )
+        //long start = System.currentTimeMillis();
+        for ( String item : items )
         {
-            twoThreadBlockingQueue.add( items[i] );
+            twoThreadBlockingQueue.add( item );
         }
-        long elapsed = System.currentTimeMillis() - start;
+        //long elapsed = System.currentTimeMillis() - start;
         //System.out.println( "LinkedList insert " + num + " elements in  = " + elapsed );
         System.gc();
     }
 
-
     public void testTake()
         throws Exception
     {
-
     }
 
     String[] generate( int num )

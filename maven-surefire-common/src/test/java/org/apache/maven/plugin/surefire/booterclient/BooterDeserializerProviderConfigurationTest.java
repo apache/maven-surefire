@@ -67,8 +67,8 @@ public class BooterDeserializerProviderConfigurationTest
     {
 
         File aDir = new File( "." );
-        List includes = new ArrayList();
-        List excludes = new ArrayList();
+        List<String> includes = new ArrayList<String>();
+        List<String> excludes = new ArrayList<String>();
         includes.add( "abc" );
         includes.add( "cde" );
         excludes.add( "xx1" );
@@ -117,7 +117,7 @@ public class BooterDeserializerProviderConfigurationTest
         ProviderConfiguration reloaded = getReloadedProviderConfiguration();
 
         TestRequest testSuiteDefinition = reloaded.getTestSuiteDefinition();
-        List suiteXmlFiles = testSuiteDefinition.getSuiteXmlFiles();
+        List<?> suiteXmlFiles = testSuiteDefinition.getSuiteXmlFiles();
         File[] expected = getSuiteXmlFiles();
         Assert.assertEquals( expected[0], suiteXmlFiles.get( 0 ) );
         Assert.assertEquals( expected[1], suiteXmlFiles.get( 1 ) );
@@ -154,8 +154,8 @@ public class BooterDeserializerProviderConfigurationTest
     private DirectoryScannerParameters getDirectoryScannerParameters()
     {
         File aDir = new File( "." );
-        List includes = new ArrayList();
-        List excludes = new ArrayList();
+        List<String> includes = new ArrayList<String>();
+        List<String> excludes = new ArrayList<String>();
         includes.add( "abc" );
         includes.add( "cde" );
         excludes.add( "xx1" );
@@ -213,8 +213,8 @@ public class BooterDeserializerProviderConfigurationTest
         return new File[]{ new File( "A1" ), new File( "A2" ) };
     }
 
-    private List getSuiteXmlFileStrings()
+    private List<String> getSuiteXmlFileStrings()
     {
-        return Arrays.asList( new Object[]{ "A1", "A2" } );
+        return Arrays.asList( new String[]{ "A1", "A2" } );
     }
 }

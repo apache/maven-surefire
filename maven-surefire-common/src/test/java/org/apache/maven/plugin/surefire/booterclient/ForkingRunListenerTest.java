@@ -242,7 +242,7 @@ public class ForkingRunListenerTest
         forkStreamClient.consumeMultiLineContent( content.toString( "utf-8" ) );
 
         final MockReporter reporter = (MockReporter) forkStreamClient.getReporter( defaultChannel );
-        final List events = reporter.getEvents();
+        final List<String> events = reporter.getEvents();
         assertEquals( MockReporter.SET_STARTING, events.get( 0 ) );
         assertEquals( MockReporter.TEST_STARTING, events.get( 1 ) );
         assertEquals( MockReporter.TEST_SUCCEEDED, events.get( 2 ) );

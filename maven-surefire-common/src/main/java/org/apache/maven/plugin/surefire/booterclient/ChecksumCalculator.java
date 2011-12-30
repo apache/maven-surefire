@@ -31,7 +31,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-
 /**
  * @author Kristian Rosenvold
  */
@@ -56,7 +55,7 @@ public class ChecksumCalculator
         checksumItems.add( value );
     }
 
-    public void add( Map map )
+    public void add( Map<?,?> map )
     {
         if ( map != null )
         {
@@ -79,14 +78,12 @@ public class ChecksumCalculator
         appendObject( localRepository );
     }
 
-    public void add( List items )
+    public void add( List<?> items )
     {
         if ( items != null )
         {
-            Object item;
-            for ( Object item1 : items )
+            for ( Object item : items )
             {
-                item = item1;
                 appendObject( item );
             }
         }
@@ -101,10 +98,9 @@ public class ChecksumCalculator
     {
         if ( fileList != null )
         {
-            int size = fileList.length;
-            for ( int i = 0; i < size; i++ )
+            for ( File file : fileList )
             {
-                appendObject( fileList[i] );
+                appendObject( file );
             }
         }
         else
@@ -129,12 +125,9 @@ public class ChecksumCalculator
         {
             return null;
         }
-        int size = bytes.length;
-        final StringBuilder result = new StringBuilder( 2 * size );
-        byte b;
-        for ( int i = 0; i < size; i++ )
+        final StringBuilder result = new StringBuilder( 2 * bytes.length );
+        for ( byte b : bytes )
         {
-            b = bytes[i];
             result.append( HEX.charAt( ( b & 0xF0 ) >> 4 ) ).append( HEX.charAt( ( b & 0x0F ) ) );
         }
         return result.toString();
@@ -143,11 +136,9 @@ public class ChecksumCalculator
     private String getConfig()
     {
         StringBuilder result = new StringBuilder();
-        Object item;
         for ( Object checksumItem : checksumItems )
         {
-            item = checksumItem;
-            result.append( item != null ? item.toString() : "null" );
+            result.append( checksumItem != null ? checksumItem.toString() : "null" );
         }
         return result.toString();
     }

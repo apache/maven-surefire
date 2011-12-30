@@ -135,7 +135,7 @@ class BooterSerializer
         String valueToUse;
         if ( value instanceof Class )
         {
-            valueToUse = ( (Class) value ).getName();
+            valueToUse = ( (Class<?>) value ).getName();
         }
         else
         {

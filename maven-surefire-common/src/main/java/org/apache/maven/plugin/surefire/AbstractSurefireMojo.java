@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -339,7 +338,7 @@ public abstract class AbstractSurefireMojo
         return ForkConfiguration.FORK_NEVER.equals( getForkMode() );
     }
 
-    private java.util.List getRunOrders()
+    private List<RunOrder> getRunOrders()
     {
         String runOrderString = getRunOrder();
         RunOrder[] runOrder = runOrderString == null ? RunOrder.DEFAULT : RunOrder.valueOfMulti( runOrderString );
@@ -348,7 +347,7 @@ public abstract class AbstractSurefireMojo
 
     private boolean requiresRunHistory()
     {
-        final List runOrders = getRunOrders();
+        final List<RunOrder> runOrders = getRunOrders();
         return runOrders.contains( RunOrder.BALANCED ) || runOrders.contains( RunOrder.FAILEDFIRST );
     }
 
@@ -372,7 +371,7 @@ public abstract class AbstractSurefireMojo
         final boolean isTestNg = testNgArtifact != null;
         TestArtifactInfo testNg =
             isTestNg ? new TestArtifactInfo( testNgArtifact.getVersion(), testNgArtifact.getClassifier() ) : null;
-        List testXml = getSuiteXmlFiles() != null ? Arrays.asList( getSuiteXmlFiles() ) : null;
+        List<File> testXml = getSuiteXmlFiles() != null ? Arrays.asList( getSuiteXmlFiles() ) : null;
         TestRequest testSuiteDefinition =
             new TestRequest( testXml, getTestSourceDirectory(), getTest(), getTestMethod() );
         final boolean failIfNoTests;
@@ -394,8 +393,8 @@ public abstract class AbstractSurefireMojo
 
             failIfNoTests = getFailIfNoTests() != null && getFailIfNoTests();
 
-            List includes = getIncludeList();
-            List excludes = getExcludeList();
+            List<String> includes = getIncludeList();
+            List<String> excludes = getExcludeList();
             directoryScannerParameters = new DirectoryScannerParameters( getTestClassesDirectory(), includes, excludes,
                                                                          failIfNoTests,
                                                                          getRunOrder() );
@@ -721,7 +720,7 @@ public abstract class AbstractSurefireMojo
 
             if ( getArgLine() != null )
             {
-                List args = Arrays.asList( getArgLine().split( " " ) );
+                List<String> args = Arrays.asList( getArgLine().split( " " ) );
                 if ( args.contains( "-da" ) || args.contains( "-disableassertions" ) )
                 {
                     setEnableAssertions( false );
@@ -871,6 +870,7 @@ public abstract class AbstractSurefireMojo
 
         classpath.add( getClassesDirectory().getAbsolutePath() );
 
+        @SuppressWarnings( "unchecked" )
         Set<Artifact> classpathArtifacts = getProject().getArtifacts();
 
         if ( getClasspathDependencyScopeExclude() != null && !getClasspathDependencyScopeExclude().equals( "" ) )
@@ -900,9 +900,8 @@ public abstract class AbstractSurefireMojo
         // Add additional configured elements to the classpath
         if ( getAdditionalClasspathElements() != null )
         {
-            for ( Iterator iter = getAdditionalClasspathElements().iterator(); iter.hasNext(); )
+            for ( String classpathElement : getAdditionalClasspathElements() )
             {
-                String classpathElement = (String) iter.next();
                 if ( classpathElement != null )
                 {
                     classpath.add( classpathElement );
@@ -926,8 +925,7 @@ public abstract class AbstractSurefireMojo
     Artifact getTestNgUtilsArtifact()
         throws ArtifactResolutionException, ArtifactNotFoundException
     {
-        Artifact surefireArtifact =
-            (Artifact) getPluginArtifactMap().get( "org.apache.maven.surefire:surefire-booter" );
+        Artifact surefireArtifact = getPluginArtifactMap().get( "org.apache.maven.surefire:surefire-booter" );
         String surefireVersion = surefireArtifact.getBaseVersion();
         Artifact testNgUtils =
             getArtifactFactory().createArtifact( "org.apache.maven.surefire", "surefire-testng-utils", surefireVersion,
@@ -959,7 +957,7 @@ public abstract class AbstractSurefireMojo
         return filteredArtifacts;
     }
 
-    private void showMap( Map map, String setting )
+    private void showMap( Map<?,?> map, String setting )
     {
         for ( Object o : map.keySet() )
         {
@@ -1042,7 +1040,7 @@ public abstract class AbstractSurefireMojo
                 }
             }
 
-            Enumeration keys = props.propertyNames();
+            Enumeration<?> keys = props.propertyNames();
             //loop through all properties
             while ( keys.hasMoreElements() )
             {
@@ -1359,8 +1357,8 @@ public abstract class AbstractSurefireMojo
         public Classpath getProviderClasspath()
             throws ArtifactResolutionException, ArtifactNotFoundException
         {
-            final Map pluginArtifactMap = getPluginArtifactMap();
-            Artifact plugin = (Artifact) pluginArtifactMap.get( "org.apache.maven.plugins:maven-surefire-plugin" );
+            final Map<String,Artifact> pluginArtifactMap = getPluginArtifactMap();
+            Artifact plugin = pluginArtifactMap.get( "org.apache.maven.plugins:maven-surefire-plugin" );
             return dependencyResolver.addProviderToClasspath( pluginArtifactMap, plugin );
         }
 

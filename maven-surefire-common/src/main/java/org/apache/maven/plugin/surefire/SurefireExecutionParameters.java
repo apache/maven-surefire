@@ -231,9 +231,9 @@ public interface SurefireExecutionParameters
 
     void setArtifactFactory( ArtifactFactory artifactFactory );
 
-    List getRemoteRepositories();
+    List<ArtifactRepository> getRemoteRepositories();
 
-    void setRemoteRepositories( List remoteRepositories );
+    void setRemoteRepositories( List<ArtifactRepository> remoteRepositories );
 
     ArtifactMetadataSource getMetadataSource();
 

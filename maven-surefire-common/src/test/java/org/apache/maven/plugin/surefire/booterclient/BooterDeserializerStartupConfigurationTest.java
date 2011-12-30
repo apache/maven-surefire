@@ -142,7 +142,8 @@ public class BooterDeserializerStartupConfigurationTest
 
         File cwd = new File( "." );
         DirectoryScannerParameters directoryScannerParameters =
-            new DirectoryScannerParameters( cwd, new ArrayList(), new ArrayList(), Boolean.TRUE, "hourly" );
+            new DirectoryScannerParameters( cwd, new ArrayList<String>(), new ArrayList<String>(), Boolean.TRUE,
+                                            "hourly" );
         ReporterConfiguration reporterConfiguration = new ReporterConfiguration( cwd, Boolean.TRUE );
         String aUserRequestedTest = "aUserRequestedTest";
         String aUserRequestedTestMethod = "aUserRequestedTestMethod";
