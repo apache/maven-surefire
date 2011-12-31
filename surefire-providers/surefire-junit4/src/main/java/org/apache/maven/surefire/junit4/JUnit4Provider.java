@@ -90,7 +90,7 @@ public class JUnit4Provider
     {
         if ( testsToRun == null )
         {
-            testsToRun = forkTestSet == null ? scanClassPath() : TestsToRun.fromClass( (Class) forkTestSet );
+            testsToRun = forkTestSet == null ? scanClassPath() : TestsToRun.fromClass( (Class<?>) forkTestSet );
         }
 
         upgradeCheck();
@@ -109,7 +109,7 @@ public class JUnit4Provider
 
         runNotifer.fireTestRunStarted( null );
 
-        for ( Class clazz : testsToRun.getLocatedClasses() )
+        for ( Class<?> clazz : testsToRun.getLocatedClasses() )
         {
             executeTestSet( clazz, reporter, runNotifer );
         }
@@ -121,7 +121,7 @@ public class JUnit4Provider
         return reporterFactory.close();
     }
 
-    private void executeTestSet( Class clazz, RunListener reporter, RunNotifier listeners )
+    private void executeTestSet( Class<?> clazz, RunListener reporter, RunNotifier listeners )
         throws ReporterException, TestSetFailedException
     {
         final ReportEntry report = new SimpleReportEntry( this.getClass().getName(), clazz.getName() );
@@ -173,7 +173,7 @@ public class JUnit4Provider
         }
     }
 
-    public Iterator getSuites()
+    public Iterator<?> getSuites()
     {
         testsToRun = scanClassPath();
         return testsToRun.iterator();
@@ -185,6 +185,7 @@ public class JUnit4Provider
         return runOrderCalculator.orderTestClasses(  scannedClasses );
     }
 
+    @SuppressWarnings( "unchecked" )
     private void upgradeCheck()
         throws TestSetFailedException
     {
@@ -194,8 +195,7 @@ public class JUnit4Provider
             StringBuilder reason = new StringBuilder();
             reason.append( "Updated check failed\n" );
             reason.append( "There are tests that would be run with junit4 / surefire 2.6 but not with [2.7,):\n" );
-            //noinspection unchecked
-            for ( Class testClass : (List<Class>) ( (DefaultDirectoryScanner) directoryScanner ).getClassesSkippedByValidation() )
+            for ( Class<?> testClass : (List<Class<?>>) ( (DefaultDirectoryScanner) directoryScanner ).getClassesSkippedByValidation() )
             {
                 reason.append( "   " );
                 reason.append( testClass.getCanonicalName() );
@@ -212,7 +212,7 @@ public class JUnit4Provider
     }
 
 
-    private static void execute( Class testClass, RunNotifier fNotifier, String testMethod )
+    private static void execute( Class<?> testClass, RunNotifier fNotifier, String testMethod )
         throws TestSetFailedException
     {
         if ( !StringUtils.isBlank( testMethod ) )

@@ -31,11 +31,12 @@ import junit.framework.TestCase;
 public class JUnit4ProviderTest
     extends TestCase
 {
-    public void testCreateProvider(){
-        BaseProviderFactory providerParameters = new BaseProviderFactory(null, Boolean.TRUE);
+    public void testCreateProvider()
+    {
+        BaseProviderFactory providerParameters = new BaseProviderFactory( null, Boolean.TRUE );
         providerParameters.setProviderProperties( new Properties() );
         providerParameters.setClassLoaders( this.getClass().getClassLoader(), this.getClass().getClassLoader() );
-        providerParameters.setTestRequest(  new TestRequest( null, null, null ) );
-        assertNotNull(new JUnit4Provider( providerParameters ));
+        providerParameters.setTestRequest( new TestRequest( null, null, null ) );
+        assertNotNull( new JUnit4Provider( providerParameters ) );
     }
 }
