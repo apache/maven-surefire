@@ -20,11 +20,8 @@ package org.apache.maven.surefire.junitcore;
  */
 
 import junit.framework.TestCase;
-import org.junit.Test;
 
 import java.util.Properties;
-
-import static org.junit.Assert.*;
 
 /*
  * @author Kristian Rosenvold, kristian.rosenvold@gmail com

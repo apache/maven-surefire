@@ -142,7 +142,7 @@ public class ConcurrentReporterManagerTest
 //        assertEquals( 23, stringList.size() );
     }
 
-    private void runClasses( int success, int ignored, int failure, Class... classes )
+    private void runClasses( int success, int ignored, int failure, Class<?>... classes )
         throws TestSetFailedException
     {
         ReporterFactory reporterFactory = createReporterFactory();
@@ -162,7 +162,7 @@ public class ConcurrentReporterManagerTest
         assertReporter( result, success, ignored, failure, "methods" );
     }
 
-    private RunStatistics runClasses( Class... classes )
+    private RunStatistics runClasses( Class<?>... classes )
         throws TestSetFailedException
     {
         HashMap<String, TestSet> classMethodCounts = new HashMap<String, TestSet>();
@@ -182,7 +182,7 @@ public class ConcurrentReporterManagerTest
 
     private RunStatistics runClasses( ReporterFactory reporterManagerFactory,
                                       org.junit.runner.notification.RunListener demultiplexingRunListener,
-                                      Class... classes )
+                                      Class<?>... classes )
         throws TestSetFailedException
     {
 

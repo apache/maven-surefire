@@ -43,7 +43,7 @@ public class JUnitCoreTester
 
     public JUnitCoreTester()
     {
-        this(new Computer());
+        this( new Computer() );
     }
 
     public JUnitCoreTester( Computer computer )
