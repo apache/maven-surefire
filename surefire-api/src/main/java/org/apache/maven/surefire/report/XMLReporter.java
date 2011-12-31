@@ -38,10 +38,15 @@ import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.codehaus.plexus.util.xml.Xpp3DomWriter;
 
 /**
- * XML format reporter.
+ * XML format reporter writing to <code>TEST-<i>reportName</i>[-<i>suffix</i>].xml</code> file like written and read
+ * by Ant's <a href="http://ant.apache.org/manual/Tasks/junit.html"><code>&lt;junit&gt;</code></a> and
+ * <a href="http://ant.apache.org/manual/Tasks/junitreport.html"><code>&lt;junitreport&gt;</code></a> tasks,
+ * then supported by many tools like CI servers.
  *
  * @author <a href="mailto:jruiz@exist.com">Johnny R. Ruiz III</a>
  * @version $Id$
+ * @see <a href="http://wiki.apache.org/ant/Proposals/EnhancedTestReports">Ant's format enhancement proposal</a>
+ * (not yet implemented by Ant 1.8.2)
  */
 public class XMLReporter
     extends AbstractReporter
@@ -57,7 +62,6 @@ public class XMLReporter
     private final List results = Collections.synchronizedList( new ArrayList() );
 
     private int elapsed = 0;
-
 
     public XMLReporter( boolean trimStackTrace, File reportsDirectory )
     {
@@ -80,7 +84,6 @@ public class XMLReporter
     public void writeMessage( byte[] b, int off, int len )
     {
     }
-
 
     public void testSetStarting( ReportEntry report )
         throws ReporterException
