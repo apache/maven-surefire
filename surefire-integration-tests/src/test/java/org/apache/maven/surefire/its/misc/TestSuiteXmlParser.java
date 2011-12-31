@@ -195,7 +195,7 @@ public class TestSuiteXmlParser
         }
         else if ( "error".equals( qName ) )
         {
-            Map error = testCase.getFailure();
+            Map<String, Object> error = testCase.getFailure();
 
             error.put( "detail", parseCause( currentElement.toString() ) );
         }
@@ -226,17 +226,17 @@ public class TestSuiteXmlParser
         }
     }
 
-    private List parseCause( String detail )
+    private List<String> parseCause( String detail )
     {
         String fullName = testCase.getFullName();
         String name = fullName.substring( fullName.lastIndexOf( "." ) + 1 );
         return parseCause( detail, name );
     }
 
-    private List parseCause( String detail, String compareTo )
+    private List<String> parseCause( String detail, String compareTo )
     {
         StringTokenizer stringTokenizer = new StringTokenizer( detail, "\n" );
-        List parsedDetail = new ArrayList( stringTokenizer.countTokens() );
+        List<String> parsedDetail = new ArrayList<String>( stringTokenizer.countTokens() );
 
         while ( stringTokenizer.hasMoreTokens() )
         {
