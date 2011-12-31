@@ -26,28 +26,31 @@ import org.junit.Test;
 public class Test1
 {
     @Test
-    public void testSystemOut() {
-        
+    public void testSystemOut()
+    {
+
         char c = 'C';
-        System.out.print("Sout");
-        System.out.print("Again");
-        System.out.print("\n");
-        System.out.print(c);
-        System.out.println("SoutLine");
-        System.out.println("A");
-        System.out.println("");
-        System.out.println("==END==");
+        System.out.print( "Sout" );
+        System.out.print( "Again" );
+        System.out.print( "\n" );
+        System.out.print( c );
+        System.out.println( "SoutLine" );
+        System.out.println( "A" );
+        System.out.println( "" );
+        System.out.println( "==END==" );
     }
+
     @Test
-    public void testSystemErr() {
+    public void testSystemErr()
+    {
         char e = 'E';
-        System.err.print("Serr");
-        System.err.print("\n");
-        System.err.print(e);
-        System.err.println("SerrLine");
-        System.err.println("A");
-        System.err.println("");
-        System.err.println("==END==");
+        System.err.print( "Serr" );
+        System.err.print( "\n" );
+        System.err.print( e );
+        System.err.println( "SerrLine" );
+        System.err.println( "A" );
+        System.err.println( "" );
+        System.err.println( "==END==" );
     }
 
 }

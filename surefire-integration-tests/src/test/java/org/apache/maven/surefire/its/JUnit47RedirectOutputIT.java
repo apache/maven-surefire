@@ -29,7 +29,7 @@ public class JUnit47RedirectOutputIT
 {
     public JUnit47RedirectOutputIT()
     {
-        super("/junit47-redirect-output");
+        super( "/junit47-redirect-output" );
     }
 
     public void testPrintSummaryTrueWithRedirect()

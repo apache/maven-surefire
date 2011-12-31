@@ -29,7 +29,7 @@ public class Junit4IgnoreIT
 {
     public Junit4IgnoreIT()
     {
-        super( "/junit-ignore");
+        super( "/junit-ignore" );
     }
 
     public void testJunit4Ignore()

@@ -19,7 +19,7 @@ public class AbstractConcreteBasicTest // not really abstract!
 
     public static Test suite()
     {
-        System.out.println("suite");
+        System.out.println( "suite" );
         TestSuite suite = new TestSuite();
         Test test = new AbstractConcreteBasicTest( "testSetUp", "dummy" );
         suite.addTest( test );

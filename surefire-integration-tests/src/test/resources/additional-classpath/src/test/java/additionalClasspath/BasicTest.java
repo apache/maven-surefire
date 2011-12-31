@@ -6,8 +6,9 @@ public class BasicTest
     extends TestCase
 {
 
-    public void testExtraResource() {
-        assertNotNull(BasicTest.class.getResourceAsStream("/test.txt"));
+    public void testExtraResource()
+    {
+        assertNotNull( BasicTest.class.getResourceAsStream( "/test.txt" ) );
     }
 
 }

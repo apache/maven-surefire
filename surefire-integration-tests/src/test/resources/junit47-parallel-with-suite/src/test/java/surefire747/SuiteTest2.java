@@ -28,44 +28,47 @@ import org.junit.Test;
  */
 public class SuiteTest2
 {
-	public SuiteTest2()
-	{
-		System.out.println("SuiteTest2.constructor");
-	}
+    public SuiteTest2()
+    {
+        System.out.println( "SuiteTest2.constructor" );
+    }
 
-	@Before
-	public void setUp()
-	{
-		System.out.println("SuiteTest2.setUp");
-	}
+    @Before
+    public void setUp()
+    {
+        System.out.println( "SuiteTest2.setUp" );
+    }
 
-	@After
-	public void tearDown()
-	{
-		System.out.println("SuiteTest2.tearDown");
-	}
+    @After
+    public void tearDown()
+    {
+        System.out.println( "SuiteTest2.tearDown" );
+    }
 
-	@Test
-	public void first() throws InterruptedException
-	{
-		System.out.println("begin SuiteTest2.first");
-		Thread.sleep(300);
-		System.out.println("end SuiteTest2.first");
-	}
+    @Test
+    public void first()
+        throws InterruptedException
+    {
+        System.out.println( "begin SuiteTest2.first" );
+        Thread.sleep( 300 );
+        System.out.println( "end SuiteTest2.first" );
+    }
 
-	@Test
-	public void second() throws InterruptedException
-	{
-		System.out.println("begin SuiteTest2.second");
-		Thread.sleep(300);
-		System.out.println("end SuiteTest2.second");
-	}
+    @Test
+    public void second()
+        throws InterruptedException
+    {
+        System.out.println( "begin SuiteTest2.second" );
+        Thread.sleep( 300 );
+        System.out.println( "end SuiteTest2.second" );
+    }
 
-	@Test
-	public void third() throws InterruptedException
-	{
-		System.out.println("begin SuiteTest2.third");
-		Thread.sleep(300);
-		System.out.println("end SuiteTest2.third");
-	}
+    @Test
+    public void third()
+        throws InterruptedException
+    {
+        System.out.println( "begin SuiteTest2.third" );
+        Thread.sleep( 300 );
+        System.out.println( "end SuiteTest2.third" );
+    }
 }

@@ -5,24 +5,26 @@ import org.junit.Test;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+public class ExplodingTest
+{
 
-public class ExplodingTest {
+    static
+    {
+        // noinspection ConstantIfStatement
+        if ( true )
+        {
+            throw new java.lang.NoClassDefFoundError( "whoops!" );
+        }
+    }
 
-	static {
-        //noinspection ConstantIfStatement
-        if (true) {
-			throw new java.lang.NoClassDefFoundError("whoops!"); 
-		}
-	}
-	
-	@Test
-	public void testPass()
+    @Test
+    public void testPass()
     {
-		assertTrue(true);
-	}
-	
-	public void testFail()
+        assertTrue( true );
+    }
+
+    public void testFail()
     {
-		fail("fail");
-	}
+        fail( "fail" );
+    }
 }

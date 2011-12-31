@@ -1,10 +1,9 @@
 package antignore;
+
 import junit.framework.TestCase;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.Ignore;
-
-
 
 public class BasicTest
 {
@@ -12,11 +11,12 @@ public class BasicTest
     @Ignore
     public void testIgnorable()
     {
-        Assert.fail("you should have ignored me!");
+        Assert.fail( "you should have ignored me!" );
     }
 
     @Test
-    public void testSomethingElse(){
+    public void testSomethingElse()
+    {
 
     }
 
