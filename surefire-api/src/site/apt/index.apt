@@ -3,7 +3,7 @@
  -----
  Brett Porter
  -----
- 3 March 2007
+ 2007-03-03
  -----
 
 Surefire API
@@ -28,6 +28,6 @@ Surefire API
 
   JUnit 3.x: Groups are not supported.
 
-   See {{{providers/index.html}}} for more information on specific providers. |
+  See {{{../surefire-providers/index.html}Surefire Providers}} for more information on specific providers.
 
 ~~TODO: fix up URLs, move some to providers/javadoc.
