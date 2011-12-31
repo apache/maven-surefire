@@ -43,6 +43,28 @@ import org.codehaus.plexus.util.xml.Xpp3DomWriter;
  * <a href="http://ant.apache.org/manual/Tasks/junitreport.html"><code>&lt;junitreport&gt;</code></a> tasks,
  * then supported by many tools like CI servers.
  *
+ * <pre>&lt;?xml version="1.0" encoding="UTF-8"?>
+ *&lt;testsuite name="<i>suite name</i>" [group="<i>group</i>"] tests="<i>0</i>" failures="<i>0</i>" errors="<i>0</i>" skipped="<i>0</i>" time="<i>0,###.###</i>">
+ *  &lt;properties>
+ *    &lt;property name="<i>name</i>" value="<i>value</i>"/>
+ *    [...]
+ *  &lt;/properties>
+ *  &lt;testcase time="<i>0,###.###</i>" name="<i>test name</i> [classname="<i>class name</i>"] [group="<i>group</i>"]"/>
+ *  &lt;testcase time="<i>0,###.###</i>" name="<i>test name</i> [classname="<i>class name</i>"] [group="<i>group</i>"]">
+ *    &lt;<b>error</b> message="<i>message</i>" type="<i>exception class name</i>"><i>stacktrace</i>&lt;/error>
+ *    &lt;system-out><i>system out content (present only if not empty)</i>&lt;/system-out>
+ *    &lt;system-err><i>system err content (present only if not empty)</i>&lt;/system-err>
+ *  &lt;/testcase>
+ *  &lt;testcase time="<i>0,###.###</i>" name="<i>test name</i> [classname="<i>class name</i>"] [group="<i>group</i>"]">
+ *    &lt;<b>failure</b> message="<i>message</i>" type="<i>exception class name</i>"><i>stacktrace</i>&lt;/failure>
+ *    &lt;system-out><i>system out content (present only if not empty)</i>&lt;/system-out>
+ *    &lt;system-err><i>system err content (present only if not empty)</i>&lt;/system-err>
+ *  &lt;/testcase>
+ *  &lt;testcase time="<i>0,###.###</i>" name="<i>test name</i> [classname="<i>class name</i>"] [group="<i>group</i>"]">
+ *    &lt;<b>skipped</b>/>
+ *  &lt;/testcase>
+ *  [...]</pre>
+ * 
  * @author <a href="mailto:jruiz@exist.com">Johnny R. Ruiz III</a>
  * @version $Id$
  * @see <a href="http://wiki.apache.org/ant/Proposals/EnhancedTestReports">Ant's format enhancement proposal</a>
