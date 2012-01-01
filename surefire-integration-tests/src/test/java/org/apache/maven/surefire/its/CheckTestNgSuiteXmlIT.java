@@ -19,49 +19,32 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.it.Verifier;
-import org.apache.maven.it.util.ResourceExtractor;
-import org.apache.maven.surefire.its.misc.HelperAssertions;
-
-import java.io.File;
-import java.util.Arrays;
-import java.util.List;
-
 /**
  * Test simple TestNG suite XML file
  *
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
 public class CheckTestNgSuiteXmlIT
-    extends AbstractSurefireIntegrationTestClass
+    extends SurefireVerifierTestClass
 {
+
+    public CheckTestNgSuiteXmlIT()
+    {
+        super( "/testng-suite-xml" );
+    }
+
     public void testTestNgSuiteXml()
         throws Exception
     {
-        File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/testng-suite-xml" );
-
-        Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        List<String> goals = getInitialGoals();
-        goals.add( "test" );
-        executeGoals( verifier, goals );
-        verifier.verifyErrorFreeLog();
-        verifier.resetStreams();
-
-        HelperAssertions.assertTestSuiteResults( 1, 0, 0, 0, testDir );
+        executeTest();
+        verifyErrorFreeLog();
+        assertTestSuiteResults( 1, 0, 0, 0 );
     }
 
     public void testTestNgSuiteXmlForkModeAlways()
         throws Exception
     {
-        File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/testng-suite-xml" );
-
-        Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        List<String> goals = getInitialGoals();
-        goals.addAll( Arrays.asList( new String[]{ "test", "-DforkMode=always" } ) );
-        executeGoals( verifier, goals );
-        verifier.verifyErrorFreeLog();
-        verifier.resetStreams();
-
-        HelperAssertions.assertTestSuiteResults( 1, 0, 0, 0, testDir );
+        forkAlways();
+        testTestNgSuiteXml();
     }
 }
