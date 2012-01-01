@@ -43,7 +43,20 @@ Developer Center
 
   The surefire booter is capable of booting all the way back to jdk1.3. Specifically
   this means surefire-api, surefire-booter, common-junit3 and surefire-junit3 are
-  source/target 1.3. The plugin itself is 1.4 and several providers are 1.5.
+  source/target 1.3. The plugin and several providers are 1.5.
+
+* TestCases
+
+  All patches to surefire must contain test coverage, either as an integration test
+  or a unit test. All new fearures (changed/added plugin options) must be covered by
+  and end-to-end integration test.
+
+  There are
+  numerous other integration tests that all operate upon small sample projects in
+  surefire-integration-tests/src/test/resources
+
+  Example integration tests are Surefire141PluggableProvidersIT and the corresponding
+  surefire-integration-tests/src/test/resources/surefire-141-pluggableproviders.
 
 * Provider Isolation
 
