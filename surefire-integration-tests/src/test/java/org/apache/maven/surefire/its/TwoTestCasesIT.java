@@ -19,15 +19,14 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.it.Verifier;
-import org.apache.maven.it.util.ResourceExtractor;
-import org.apache.maven.surefire.its.misc.HelperAssertions;
-import org.apache.maven.surefire.its.misc.ReportTestSuite;
-
 import java.io.File;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.apache.maven.it.Verifier;
+import org.apache.maven.it.util.ResourceExtractor;
+import org.apache.maven.surefire.its.misc.HelperAssertions;
+import org.apache.maven.surefire.its.misc.ReportTestSuite;
 
 /**
  * Test running two test cases; confirms reporting works correctly

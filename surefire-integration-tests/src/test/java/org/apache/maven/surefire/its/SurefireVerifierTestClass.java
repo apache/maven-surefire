@@ -262,6 +262,10 @@ public abstract class SurefireVerifierTestClass
     {
         addGoal( "-DforkMode=" + forkMode );
     }
+    protected void runOrder( String runOrder )
+    {
+        addGoal( "-DrunOrder=" + runOrder);
+    }
 
     protected void failIfNoTests( boolean fail )
     {
@@ -314,6 +318,32 @@ public abstract class SurefireVerifierTestClass
         Assert.fail( "Did not find expected message in log" );
         return false; // doh
     }
+
+    protected boolean stringsAppearInSpecificOrderInLog( String[] strings )
+        throws VerificationException
+    {
+        int i = 0;
+        for ( String line : getLog() )
+        {
+            if ( line.startsWith( strings[i] ) )
+            {
+                if ( i == strings.length - 1 )
+                {
+                    return true;
+                }
+                ++i;
+            }
+        }
+        return false;
+    }
+
+    private List<String> getLog()
+        throws VerificationException
+    {
+        return verifier.loadFile( verifier.getBasedir(), verifier.getLogFileName(), false );
+    }
+
+
 
     private DefaultArtifactVersion getMavenVersion()
     {

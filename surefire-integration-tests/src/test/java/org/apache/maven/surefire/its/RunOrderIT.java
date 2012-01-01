@@ -19,14 +19,9 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Calendar;
-import java.util.List;
 import org.apache.maven.it.VerificationException;
-import org.apache.maven.it.Verifier;
-import org.apache.maven.it.util.ResourceExtractor;
-import org.apache.maven.surefire.its.misc.HelperAssertions;
 
 /**
  * Verifies the runOrder setting and its effect
@@ -34,7 +29,7 @@ import org.apache.maven.surefire.its.misc.HelperAssertions;
  * @author Kristian Rosenvold
  */
 public class RunOrderIT
-    extends AbstractSurefireIntegrationTestClass
+    extends SurefireVerifierTestClass
 {
     private static final String[] TESTS_IN_ALPHABETICAL_ORDER = { "TA", "TB", "TC" };
 
@@ -42,21 +37,9 @@ public class RunOrderIT
 
     // testing random is left as an exercise to the reader. Patches welcome
 
-    private File testDir;
-
-    protected Verifier verifier;
-
-    public void setUp()
-        throws IOException, VerificationException
+    public RunOrderIT()
     {
-        testDir = ResourceExtractor.simpleExtractResources( getClass(), "/runOrder" );
-        verifier = new Verifier( testDir.getAbsolutePath() );
-    }
-
-    public void tearDown()
-        throws Exception
-    {
-        verifier.resetStreams();
+        super( "/runOrder" );
     }
 
     public void testAlphabetical()
@@ -99,15 +82,15 @@ public class RunOrderIT
         catch ( VerificationException e )
         {
         }
-        verifier.verifyTextInLog( "There's no RunOrder with the name nonExistingRunOrder." );
+        verifyTextInLog( "There's no RunOrder with the name nonExistingRunOrder." );
     }
 
     private void executeWithRunOrder( String runOrder )
         throws IOException, VerificationException
     {
         executeTestsWithRunOrder( runOrder );
-        verifier.verifyErrorFreeLog();
-        HelperAssertions.assertTestSuiteResults( 3, 0, 0, 0, testDir );
+        verifyErrorFreeLog();
+        assertTestSuiteResults( 3, 0, 0, 0);
     }
 
 
@@ -119,43 +102,17 @@ public class RunOrderIT
     protected void executeTestsWithRunOrder( String runOrder )
         throws VerificationException
     {
-        List<String> goals = getInitialGoals();
-        goals.add( "-DforkMode=" + getForkMode() );
-        goals.add( "-DrunOrder=" + runOrder );
-        goals.add( "test" );
-        executeGoals( verifier, goals );
+        forkMode(  getForkMode() );
+        runOrder(  runOrder );
+        executeTest();
     }
 
     private void assertTestnamesAppearInSpecificOrder( String[] testnames )
         throws VerificationException
     {
-        if ( !testnamesAppearInSpecificOrder( testnames ) )
+        if ( !stringsAppearInSpecificOrderInLog( testnames ) )
         {
             throw new VerificationException( "Response does not contain expected item" );
         }
-    }
-
-    private boolean testnamesAppearInSpecificOrder( String[] testnames )
-        throws VerificationException
-    {
-        int i = 0;
-        for ( String line : getLog() )
-        {
-            if ( line.startsWith( testnames[i] ) )
-            {
-                if ( i == testnames.length - 1 )
-                {
-                    return true;
-                }
-                ++i;
-            }
-        }
-        return false;
-    }
-
-    private List<String> getLog()
-        throws VerificationException
-    {
-        return verifier.loadFile( verifier.getBasedir(), verifier.getLogFileName(), false );
     }
 }

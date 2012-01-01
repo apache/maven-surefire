@@ -19,31 +19,26 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.it.Verifier;
-import org.apache.maven.it.util.ResourceExtractor;
-import org.apache.maven.surefire.its.misc.HelperAssertions;
-
-import java.io.File;
-
 /**
  * Test support for POJO tests.
  *
  * @author Benjamin Bentmann
  */
 public class PojoSimpleIT
-    extends AbstractSurefireIntegrationTestClass
+    extends SurefireVerifierTestClass
 {
+
+
+    public PojoSimpleIT()
+    {
+        super( "/pojo-simple" );
+    }
 
     public void testit()
         throws Exception
     {
-        File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/pojo-simple" );
-
-        Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        executeGoal( verifier, "test" );
-        verifier.resetStreams();
-
-        HelperAssertions.assertTestSuiteResults( 2, 0, 1, 0, testDir );
+        executeTest();
+        assertTestSuiteResults(  2, 0, 1, 0);
     }
 
 }

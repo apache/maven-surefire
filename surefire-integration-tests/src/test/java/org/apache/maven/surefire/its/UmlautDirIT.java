@@ -19,14 +19,13 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
 import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.FileUtils;
 import org.apache.maven.it.util.ResourceExtractor;
 import org.apache.maven.surefire.its.misc.HelperAssertions;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
 
 /**
  * Test a directory with an umlaut
