@@ -19,12 +19,6 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.it.Verifier;
-import org.apache.maven.it.util.ResourceExtractor;
-import org.apache.maven.surefire.its.misc.HelperAssertions;
-
-import java.io.File;
-
 /**
  * Test files with "Abstract" in their name that aren't really abstract,
  * and abstract classes that don't say "Abstract" in their name
@@ -32,19 +26,20 @@ import java.io.File;
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
 public class AbstractTestCaseIT
-    extends AbstractSurefireIntegrationTestClass
+    extends SurefireVerifierTestClass
 {
+
+    public AbstractTestCaseIT()
+    {
+        super( "/default-configuration-abstract" );
+    }
+
     public void testAbstractTestCase()
         throws Exception
     {
-        File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/default-configuration-abstract" );
-
-        Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        this.executeGoal( verifier, "test" );
-        verifier.verifyErrorFreeLog();
-        verifier.resetStreams();
-
-        HelperAssertions.assertTestSuiteResults( 1, 0, 0, 0, testDir );
+        executeTest();
+        verifyErrorFreeLog();
+        assertTestSuiteResults( 1, 0, 0, 0 );
     }
 
 }
