@@ -19,10 +19,8 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.it.Verifier;
-import org.codehaus.plexus.util.FileUtils;
-
 import java.io.File;
+import org.codehaus.plexus.util.FileUtils;
 
 /**
  * Test charset provider (SUREFIRE-162)
@@ -41,7 +39,7 @@ public class Surefire162CharsetProviderIT
     public void testCharsetProvider()
         throws Exception
     {
-        Verifier verifier = getVerifier();
+        SurefireVerifier verifier = getDefaultVerifier();
         File jarFile = new File( verifier.getArtifactPath( "jcharset", "jcharset", "1.2.1", "jar" ) );
         jarFile.getParentFile().mkdirs();
         FileUtils.copyFile( getSubFile( "repo/jcharset/jcharset/1.2.1/jcharset-1.2.1.jar" ), jarFile );

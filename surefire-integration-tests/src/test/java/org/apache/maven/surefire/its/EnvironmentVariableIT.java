@@ -19,30 +19,25 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.it.Verifier;
-import org.apache.maven.it.util.ResourceExtractor;
-import org.apache.maven.surefire.its.misc.HelperAssertions;
-
-import java.io.File;
-
 /**
  * Test basic default configuration, runs the JUnit 3 test in the src/test directory.
  *
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
 public class EnvironmentVariableIT
-    extends AbstractSurefireIntegrationTestClass
+    extends SurefireVerifierTestClass
 {
+
+    public EnvironmentVariableIT()
+    {
+        super( "/junit44-environment" );
+    }
+
     public void testEnvironmentVariable()
         throws Exception
     {
-        File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/junit44-environment" );
-
-        Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        this.executeGoal( verifier, "test" );
-        verifier.verifyErrorFreeLog();
-        verifier.resetStreams();
-
-        HelperAssertions.assertTestSuiteResults( 1, 0, 0, 0, testDir );
+        executeTest();
+        verifyErrorFreeLog();
+        assertTestSuiteResults( 1, 0, 0, 0 );
     }
 }

@@ -30,10 +30,8 @@ import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.it.VerificationException;
-import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.FileUtils;
 import org.apache.maven.it.util.ResourceExtractor;
-import org.apache.maven.surefire.its.misc.HelperAssertions;
 
 import junit.framework.Assert;
 import junit.framework.TestCase;
@@ -57,7 +55,7 @@ public abstract class SurefireVerifierTestClass
 
     private final List<String> goals;
 
-    private final Verifier verifier;
+    private final SurefireVerifier defaultVerifier;
 
     private final Map<String, String> envvars = new HashMap<String, String>();
 
@@ -71,11 +69,7 @@ public abstract class SurefireVerifierTestClass
         {
             testDir = simpleExtractResources( getClass(), testProject );
             this.goals = getInitialGoals();
-            this.verifier = new Verifier( testDir.getAbsolutePath() );
-        }
-        catch ( VerificationException e )
-        {
-            throw new RuntimeException( e );
+            this.defaultVerifier = SurefireVerifier.fromDirectory(testDir );
         }
         catch ( IOException e )
         {
@@ -146,12 +140,12 @@ public abstract class SurefireVerifierTestClass
 
     protected void assertPresent( File file )
     {
-        verifier.assertFilePresent( file.getAbsolutePath() );
+        defaultVerifier.assertFilePresent( file.getAbsolutePath() );
     }
 
     protected void assertNotPresent( File file )
     {
-        verifier.assertFileNotPresent( file.getAbsolutePath() );
+        defaultVerifier.assertFileNotPresent( file.getAbsolutePath() );
     }
 
     protected void showErrorStackTraces()
@@ -175,31 +169,31 @@ public abstract class SurefireVerifierTestClass
         return this;
     }
 
-    protected Verifier executeTest()
+    protected SurefireVerifier executeTest()
         throws VerificationException
     {
         return execute( "test" );
     }
 
-    protected Verifier executeVerify()
+    protected SurefireVerifier executeVerify()
         throws VerificationException
     {
         return execute( "verify" );
     }
 
-    protected Verifier execute( String goal )
+    protected SurefireVerifier execute( String goal )
         throws VerificationException
     {
         addGoal( goal );
-        verifier.setCliOptions( cliOptions );
+        defaultVerifier.setCliOptions( cliOptions );
         try
         {
-            verifier.executeGoals( goals, envvars );
-            return verifier;
+            defaultVerifier.executeGoals( goals, envvars );
+            return defaultVerifier;
         }
         finally
         {
-            verifier.resetStreams();
+            defaultVerifier.resetStreams();
         }
     }
 
@@ -279,24 +273,24 @@ public abstract class SurefireVerifierTestClass
 
     public void assertTestSuiteResults( int total, int errors, int failures, int skipped )
     {
-        HelperAssertions.assertTestSuiteResults( total, errors, failures, skipped, testDir );
+        getDefaultVerifier().assertTestSuiteResults( total, errors, failures, skipped );
     }
 
     public void verifyTextInLog( String text )
         throws VerificationException
     {
-        verifier.verifyTextInLog( text );
+        defaultVerifier.verifyTextInLog( text );
     }
 
     protected void verifyErrorFreeLog()
-        throws VerificationException
+    throws VerificationException
     {
-        verifier.verifyErrorFreeLog();
+        defaultVerifier.verifyErrorFreeLog();
     }
 
-    protected Verifier getVerifier()
+    protected SurefireVerifier getDefaultVerifier()
     {
-        return verifier;
+        return defaultVerifier;
     }
 
     public File getTestDir()
@@ -307,7 +301,7 @@ public abstract class SurefireVerifierTestClass
     protected boolean assertContainsText( File file, String text )
         throws VerificationException
     {
-        final List<String> list = getVerifier().loadFile( file, false );
+        final List<String> list = getDefaultVerifier().loadFile( file, false );
         for ( String line : list )
         {
             if ( line.contains( text ) )
@@ -340,7 +334,7 @@ public abstract class SurefireVerifierTestClass
     private List<String> getLog()
         throws VerificationException
     {
-        return verifier.loadFile( verifier.getBasedir(), verifier.getLogFileName(), false );
+        return defaultVerifier.loadFile( defaultVerifier.getBasedir(), defaultVerifier.getLogFileName(), false );
     }
 
 
@@ -349,7 +343,7 @@ public abstract class SurefireVerifierTestClass
     {
         try
         {
-            String v = verifier.getMavenVersion();
+            String v = defaultVerifier.getMavenVersion();
             // NOTE: If the version looks like "${...}" it has been configured from an undefined expression
             if ( v != null && v.length() > 0 && !v.startsWith( "${" ) )
             {
