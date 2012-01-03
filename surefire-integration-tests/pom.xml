@@ -37,7 +37,8 @@
     <it.settings.showPasswords>false</it.settings.showPasswords>
     <testng.version>5.7</testng.version>
     <surefire.threadcount>1</surefire.threadcount>
-    <surefire.build.version>2.8</surefire.build.version>
+    <surefire.build.version>2.11</surefire.build.version>
+    <failIfNoTests>false</failIfNoTests>
   </properties>
 
   <dependencies>
@@ -182,7 +183,7 @@
         </dependency>
       </dependencies>
       <properties>
-        <surefire.build.version>2.8</surefire.build.version>
+        <surefire.build.version>2.11</surefire.build.version>
       </properties>
     </profile>
 
