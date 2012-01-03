@@ -19,47 +19,34 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.it.Verifier;
-import org.apache.maven.it.util.ResourceExtractor;
-import org.apache.maven.surefire.its.misc.HelperAssertions;
-
-import java.io.File;
-import java.util.List;
-
 /**
  * Test library using a conflicting version of plexus-utils
  *
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
 public class PlexusConflictIT
-    extends AbstractSurefireIntegrationTestClass
+    extends SurefireVerifierTestClass
 {
+
+    public PlexusConflictIT()
+    {
+        super( "/plexus-conflict" );
+    }
+
     public void testPlexusConflict()
         throws Exception
     {
-        File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/plexus-conflict" );
-
-        Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        this.executeGoal( verifier, "test" );
-        verifier.verifyErrorFreeLog();
-        verifier.resetStreams();
-
-        HelperAssertions.assertTestSuiteResults( 1, 0, 0, 0, testDir );
+        executeTest();
+        verifyErrorFreeLog();
+        assertTestSuiteResults( 1, 0, 0, 0 );
     }
 
     public void testPlexusConflictIsolatedClassLoader()
         throws Exception
     {
-        File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/plexus-conflict" );
-
-        Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        List<String> goals = this.getInitialGoals();
-        goals.add( "test" );
-        goals.add( "-Dsurefire.useSystemClassLoader=false" );
-        executeGoals( verifier, goals );
-        verifier.verifyErrorFreeLog();
-        verifier.resetStreams();
-
-        HelperAssertions.assertTestSuiteResults( 1, 0, 0, 0, testDir );
+        executeTest();
+        verifyErrorFreeLog();
+        addD( "surefire.useSystemClassLoader", "false" );
+        assertTestSuiteResults( 1, 0, 0, 0 );
     }
 }

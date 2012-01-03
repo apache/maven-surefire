@@ -19,11 +19,10 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
+import java.io.File;
 import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
 import org.apache.maven.surefire.its.misc.HelperAssertions;
-
-import java.io.File;
 
 /**
  * Test aggregator as a sibling to child modules; invokes modules as "../child"
@@ -31,7 +30,7 @@ import java.io.File;
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
 public class SiblingAggregatorIT
-    extends AbstractSurefireIntegrationTestClass
+    extends AbstractSurefireIntegrationTestClass  // Special
 {
 
     public void testSiblingAggregator()

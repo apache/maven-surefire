@@ -19,36 +19,25 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.it.Verifier;
-import org.apache.maven.it.util.ResourceExtractor;
-
-import java.io.File;
-import java.io.IOException;
-
 /**
  * Test when the configured working directory does not exist, SUREFIRE-607
  *
  * @author <a href="mailto:stephenc@apache.org">Stephen Connolly</a>
  */
 public class WorkingDirectoryMissingIT
-    extends AbstractSurefireIntegrationTestClass
+    extends SurefireVerifierTestClass
 {
-
-    private File testDir;
-
-    public void setUp()
-        throws IOException
+    public WorkingDirectoryMissingIT()
     {
-        testDir = ResourceExtractor.simpleExtractResources( getClass(), "/working-directory-missing" );
+        super( "/working-directory-missing" );
     }
+
 
     public void testWorkingDirectory()
         throws Exception
     {
-        Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        this.executeGoal( verifier, "test" );
-        verifier.verifyErrorFreeLog();
-        verifier.resetStreams();
+        executeTest();
+        verifyErrorFreeLog();
     }
 
 }
