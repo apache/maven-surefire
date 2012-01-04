@@ -38,7 +38,6 @@
     <testng.version>5.7</testng.version>
     <surefire.threadcount>1</surefire.threadcount>
     <surefire.build.version>2.11</surefire.build.version>
-    <failIfNoTests>false</failIfNoTests>
   </properties>
 
   <dependencies>
