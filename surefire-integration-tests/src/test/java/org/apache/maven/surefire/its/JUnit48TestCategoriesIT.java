@@ -19,75 +19,77 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
+import java.io.IOException;
 import org.apache.maven.it.VerificationException;
+import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass2;
 
 /**
  * Test project using "groups" support
  *
  * @author <a href="mailto:todd@apache.org">Todd Lipcon</a>
+ * @author <a href="mailto:krosenvold@apache.org">Kristian Rosenvold</a>
  */
 public class JUnit48TestCategoriesIT
-    extends SurefireVerifierTestClass
+    extends SurefireVerifierTestClass2
 {
-    public JUnit48TestCategoriesIT()
-    {
-        super( "/junit48-categories" );
-    }
-
     public void testCategoriesAB()
         throws Exception
     {
-        runAB();
+        runAB( unpacked());
     }
+
 
     public void testCategoriesABForkAlways()
         throws Exception
     {
-        forkAlways();
-        runAB();
+        runAB( unpacked().forkAlways() );
     }
 
-    private void runAB()
+    private void runAB( SurefireLauncher unpacked )
         throws VerificationException
     {
-        executeTest();
-        verifyErrorFreeLog();
-        assertTestSuiteResults( 3, 0, 0, 0 );
-        verifyTextInLog( "catA: 1" );
-        verifyTextInLog( "catB: 1" );
-        verifyTextInLog( "catC: 0" );
-        verifyTextInLog( "catNone: 0" );
+        unpacked.executeTest().verifyErrorFreeLog()
+            .assertTestSuiteResults( 3, 0, 0, 0 )
+            .verifyTextInLog( "catA: 1" )
+            .verifyTextInLog( "catB: 1" )
+            .verifyTextInLog( "catC: 0" )
+            .verifyTextInLog( "catNone: 0" );
     }
 
     public void testCategoriesAC()
         throws Exception
     {
-        runAC();
+        runAC( unpacked().forkAlways() );
     }
 
     public void testCategoriesACForkAlways()
         throws Exception
     {
-        forkAlways();
-        runAC();
+        runAC(unpacked().forkAlways());
     }
 
 
-    private void runAC()
+    private void runAC( SurefireLauncher surefireLauncher )
         throws Exception
     {
-        addGoal( "-Dgroups=junit4.CategoryA,junit4.CategoryC" );
-        executeTest();
-        verifyErrorFreeLog();
-        assertTestSuiteResults( 6, 0, 0, 0 );
-        verifyTextInLog( "catA: 1" );
-        verifyTextInLog( "catB: 0" );
-        verifyTextInLog( "catC: 1" );
-        verifyTextInLog( "catNone: 0" );
-        verifyTextInLog( "mA: 1" );
-        verifyTextInLog( "mB: 1" ); // This seems questionable !? The class is annotated with category C and method with B
-        verifyTextInLog( "mC: 1" );
-        verifyTextInLog( "CatNone: 1" );
+        surefireLauncher.groups( "junit4.CategoryA,junit4.CategoryC" ).executeTest()
+            .verifyErrorFreeLog()
+            .assertTestSuiteResults( 6, 0, 0, 0 )
+            .verifyTextInLog( "catA: 1" )
+            .verifyTextInLog( "catB: 0" )
+            .verifyTextInLog( "catC: 1" )
+            .verifyTextInLog( "catNone: 0" )
+            .verifyTextInLog( "mA: 1" )
+            .verifyTextInLog( "mB: 1" ) // This seems questionable !? The class is annotated with category C and method with B
+            .verifyTextInLog( "mC: 1" )
+            .verifyTextInLog( "CatNone: 1" );
+    }
+
+    private SurefireLauncher unpacked()
+        throws VerificationException, IOException
+    {
+        return unpack( "/junit48-categories");
     }
 
 }

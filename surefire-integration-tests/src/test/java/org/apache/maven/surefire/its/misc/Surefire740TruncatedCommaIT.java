@@ -20,7 +20,7 @@ package org.apache.maven.surefire.its.misc;
 
 
 import java.io.File;
-import org.apache.maven.surefire.its.SurefireVerifierTestClass;
+import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
 
 /**
  * Test Surefire-740 Truncated comma with non us locale

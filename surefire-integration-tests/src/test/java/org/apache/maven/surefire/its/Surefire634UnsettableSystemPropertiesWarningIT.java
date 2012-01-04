@@ -19,6 +19,8 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
+import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
+
 /**
  * SUREFIRE-634 Verifies error message on unsettable system properties
  *

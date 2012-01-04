@@ -19,34 +19,24 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import java.io.File;
-import org.apache.maven.it.Verifier;
-import org.apache.maven.it.util.ResourceExtractor;
-import org.apache.maven.surefire.its.misc.HelperAssertions;
+import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass2;
 
 /**
  * Test aggregator as a sibling to child modules; invokes modules as "../child"
  *
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
+ * @author <a href="mailto:krosenvold@apache.org">Kristian Rosenvold</a>
  */
 public class SiblingAggregatorIT
-    extends AbstractSurefireIntegrationTestClass  // Special
+    extends SurefireVerifierTestClass2
 {
 
     public void testSiblingAggregator()
         throws Exception
     {
-        File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/sibling-aggregator" );
-
-        File aggregatorDir = new File( testDir, "aggregator" );
-
-        Verifier verifier = new Verifier( aggregatorDir.getAbsolutePath() );
-        this.executeGoal( verifier, "test" );
-        verifier.verifyErrorFreeLog();
-        verifier.resetStreams();
-
-        File child2Dir = new File( testDir, "child2" );
-
-        HelperAssertions.assertTestSuiteResults( 1, 0, 0, 0, child2Dir );
+        final SurefireLauncher unpack = unpack( "sibling-aggregator" );
+        unpack.getSubProjectLauncher( "aggregator" ).executeTest().verifyErrorFreeLog();
+        unpack.getSubProjectValidator( "child2" ).assertTestSuiteResults( 1, 0, 0, 0 );
     }
 }

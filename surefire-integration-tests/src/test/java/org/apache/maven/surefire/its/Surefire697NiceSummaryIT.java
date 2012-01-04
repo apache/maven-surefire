@@ -19,6 +19,8 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
+import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
+
 /**
  * SUREFIRE-697 Asserts proper truncation of long exception messages Some say testing this is a bit over the top.
  * 

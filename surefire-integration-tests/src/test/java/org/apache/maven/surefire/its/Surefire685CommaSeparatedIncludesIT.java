@@ -19,6 +19,8 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
+import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
+
 /**
  * SUREFIRE-685 Asserts that only the specified tests are run with comma separated includes
  *

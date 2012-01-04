@@ -19,30 +19,20 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.it.Verifier;
-import org.apache.maven.it.util.ResourceExtractor;
-import org.apache.maven.surefire.its.misc.HelperAssertions;
-
-import java.io.File;
+import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass2;
 
 /**
  * Test additionalClasspathElements
  *
  * @author pgier
+ * @author <a href="mailto:krosenvold@apache.org">Kristian Rosenvold</a>
  */
 public class ClasspathScopeFilteringIT
-    extends AbstractSurefireIntegrationTestClass
+    extends SurefireVerifierTestClass2
 {
     public void testAdditionalClasspath()
         throws Exception
     {
-        File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/classpath-scope-filtering" );
-
-        Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        this.executeGoal( verifier, "test" );
-        verifier.verifyErrorFreeLog();
-        verifier.resetStreams();
-
-        HelperAssertions.assertTestSuiteResults( 1, 0, 0, 0, testDir );
+        unpack( "classpath-scope-filtering" ).executeTest().verifyErrorFreeLog().assertTestSuiteResults( 1, 0, 0, 0 );
     }
 }

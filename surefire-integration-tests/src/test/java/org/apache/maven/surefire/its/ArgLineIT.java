@@ -19,6 +19,8 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
+import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
+
 /**
  * Test passing an argLine parameter
  *

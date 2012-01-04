@@ -21,6 +21,7 @@ package org.apache.maven.surefire.its;
 
 import java.io.File;
 import org.apache.maven.it.VerificationException;
+import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
 
 /**
  * Test running a single test with -Dtest=BasicTest

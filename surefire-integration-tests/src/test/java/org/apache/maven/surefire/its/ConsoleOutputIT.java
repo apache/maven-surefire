@@ -20,6 +20,7 @@ package org.apache.maven.surefire.its;
  */
 
 import java.io.File;
+import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
 
 /**
  * Basic suite test using all known versions of JUnit 4.x

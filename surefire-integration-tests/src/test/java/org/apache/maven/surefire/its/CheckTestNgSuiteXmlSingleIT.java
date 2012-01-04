@@ -19,6 +19,7 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
+import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
 import org.apache.maven.surefire.its.misc.HelperAssertions;
 import org.apache.maven.surefire.its.misc.ReportTestSuite;
 

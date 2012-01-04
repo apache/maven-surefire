@@ -19,31 +19,21 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.it.Verifier;
-import org.apache.maven.it.util.ResourceExtractor;
-import org.apache.maven.surefire.its.misc.HelperAssertions;
-
-import java.io.File;
+import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass2;
 
 /**
  * Test TestNG groups, together with TestNG parallelism
  *
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
+ * @author <a href="mailto:krosenvold@apache.org">Kristian Rosenvold</a>
  */
 public class CheckTestNgGroupThreadParallelIT
-    extends AbstractSurefireIntegrationTestClass
+    extends SurefireVerifierTestClass2
 {
     public void testTestNgGroupThreadParallel()
         throws Exception
     {
-        File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/testng-group-thread-parallel" );
-
-        Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        this.executeGoal( verifier, "test" );
-        verifier.verifyErrorFreeLog();
-        verifier.resetStreams();
-
-        HelperAssertions.assertTestSuiteResults( 3, 0, 0, 0, testDir );
-
+        unpack( "testng-group-thread-parallel" ).executeTest().verifyErrorFreeLog().assertTestSuiteResults( 3, 0, 0,
+                                                                                                            0 );
     }
 }

@@ -20,6 +20,7 @@ package org.apache.maven.surefire.its;
  */
 
 import org.apache.maven.it.VerificationException;
+import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
 
 /**
  * Test for checking that the output from a forked suite is properly captured even if the suite encounters a severe error.

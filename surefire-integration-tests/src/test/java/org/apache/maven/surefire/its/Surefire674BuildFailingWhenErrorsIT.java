@@ -21,6 +21,7 @@ package org.apache.maven.surefire.its;
 
 import junit.framework.Assert;
 import org.apache.maven.it.VerificationException;
+import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
 
 /**
  * SUREFIRE-674 Asserts that the build fails when tests have errors

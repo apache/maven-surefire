@@ -19,39 +19,26 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.it.Verifier;
-import org.apache.maven.it.util.ResourceExtractor;
-import org.apache.maven.surefire.its.misc.HelperAssertions;
-
-import java.io.File;
+import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass2;
+import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 
 /**
  * Test simple TestNG listener and reporter
  *
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
+ * @author <a href="mailto:krosenvold@apache.org">Kristian Rosenvold</a>
  */
 public class CheckTestNgListenerReporterIT
-    extends AbstractSurefireIntegrationTestClass
+    extends SurefireVerifierTestClass2
 {
     public void testTestNgListenerReporter()
         throws Exception
     {
-        File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/testng-listener-reporter" );
-
-        Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        this.executeGoal( verifier, "test" );
-        verifier.verifyErrorFreeLog();
-        verifier.resetStreams();
-
-        HelperAssertions.assertTestSuiteResults( 1, 0, 0, 0, testDir );
-        File targetDir = new File( testDir, "target" );
-        assertFileExists( new File( targetDir, "resultlistener-output.txt" ) );
-        assertFileExists( new File( targetDir, "suitelistener-output.txt" ) );
-        assertFileExists( new File( targetDir, "reporter-output.txt" ) );
+        final SurefireLauncher verifierStarter = unpack( "testng-listener-reporter" );
+        verifierStarter.executeTest().verifyErrorFreeLog().assertTestSuiteResults( 1, 0, 0, 0 )
+            .getTargetFile( "resultlistener-output.txt" ).assertFileExists()
+            .getTargetFile( "suitelistener-output.txt" ).assertFileExists()
+            .getTargetFile( "reporter-output.txt" ).assertFileExists();
     }
 
-    private void assertFileExists( File file )
-    {
-        assertTrue( "File doesn't exist: " + file.getAbsolutePath(), file.exists() );
-    }
 }

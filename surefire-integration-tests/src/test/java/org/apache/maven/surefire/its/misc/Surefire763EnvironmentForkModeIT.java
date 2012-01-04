@@ -19,7 +19,7 @@ package org.apache.maven.surefire.its.misc;
  */
 
 
-import org.apache.maven.surefire.its.SurefireVerifierTestClass;
+import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
 
 /**
  * SUREFIRE-674 Asserts that the build fails when tests have errors

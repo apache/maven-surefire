@@ -22,6 +22,7 @@ package org.apache.maven.surefire.its;
 import java.io.IOException;
 import java.util.Calendar;
 import org.apache.maven.it.VerificationException;
+import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
 
 /**
  * Verifies the runOrder setting and its effect

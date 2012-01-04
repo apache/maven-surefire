@@ -19,6 +19,8 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
+import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
+
 /**
  * Test files with "Abstract" in their name that aren't really abstract,
  * and abstract classes that don't say "Abstract" in their name

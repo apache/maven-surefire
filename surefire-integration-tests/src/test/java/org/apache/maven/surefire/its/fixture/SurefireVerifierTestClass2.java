@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.its;
+package org.apache.maven.surefire.its.fixture;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,27 +19,27 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
+import java.io.IOException;
+import org.apache.maven.it.VerificationException;
+
+import junit.framework.TestCase;
 
 /**
- * Test useManifestOnlyJar option
+ * Contains commonly used features for most tests, encapsulating
+ * common use cases.
+ * <p/>
+ * Also includes thread-safe access to the extracted resource
+ * files, which AbstractSurefireIntegrationTestClass does not.
+ * Thread safe only for running in "classes" mode.
  *
- * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
+ * @author Kristian Rosenvold
  */
-public class PlainOldJavaClasspathIT
-    extends SurefireVerifierTestClass
+public abstract class SurefireVerifierTestClass2
+    extends TestCase
 {
-
-    public PlainOldJavaClasspathIT()
+    public SurefireLauncher unpack( String projectName )
+        throws VerificationException, IOException
     {
-        super( "/plain-old-java-classpath" );
-    }
-
-    public void testPlainOldJavaClasspath()
-        throws Exception
-    {
-        this.executeTest();
-        verifyErrorFreeLog();
-        assertTestSuiteResults( 1, 0, 0, 0 );
+        return new SurefireLauncher( this.getClass(), projectName );
     }
 }

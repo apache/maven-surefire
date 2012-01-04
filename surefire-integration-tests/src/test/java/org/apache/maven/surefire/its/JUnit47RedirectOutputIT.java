@@ -23,6 +23,7 @@ import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
 
 public class JUnit47RedirectOutputIT
     extends SurefireVerifierTestClass

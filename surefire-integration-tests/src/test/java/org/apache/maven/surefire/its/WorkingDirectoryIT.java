@@ -22,112 +22,104 @@ package org.apache.maven.surefire.its;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.List;
 import java.util.Properties;
-
-import org.apache.maven.it.Verifier;
-import org.apache.maven.it.util.ResourceExtractor;
-import org.apache.maven.surefire.its.misc.HelperAssertions;
+import org.apache.maven.it.VerificationException;
+import org.apache.maven.surefire.its.fixture.OutputValidator;
+import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass2;
+import org.apache.maven.surefire.its.fixture.TestFile;
 
 /**
  * Test working directory configuration, SUREFIRE-416
  *
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
+ * @author <a href="mailto:krosenvold@apache.org">Kristian Rosenvold</a>
  */
 public class WorkingDirectoryIT
-    extends AbstractSurefireIntegrationTestClass
+    extends SurefireVerifierTestClass2
 {
-
-    private File testDir;
-
-    private File childTestDir;
-
-    private File outFile;
-
-    public void setUp()
-        throws IOException
-    {
-        testDir = ResourceExtractor.simpleExtractResources( getClass(), "/working-directory" );
-        childTestDir = new File( testDir, "child" );
-        File targetDir = new File( childTestDir, "target" );
-        outFile = new File( targetDir, "out.txt" );
-        //noinspection ResultOfMethodCallIgnored
-        outFile.delete();
-    }
 
     public void testWorkingDirectory()
         throws Exception
     {
-        Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        this.executeGoal( verifier, "test" );
-        verifier.verifyErrorFreeLog();
-        verifier.resetStreams();
-
-        HelperAssertions.assertTestSuiteResults( 1, 0, 0, 0, childTestDir );
-        verifyOutputDirectory( childTestDir );
+        final SurefireLauncher unpack = getUnpacked();
+        final OutputValidator child = getPreparedChild( unpack );
+        unpack.executeTest().verifyErrorFreeLog();
+        child.assertTestSuiteResults( 1, 0, 0, 0 );
+        verifyOutputDirectory( child );
     }
 
-    public void verifyOutputDirectory( File childTestDir )
+    public void testWorkingDirectoryNoFork()
+        throws Exception
+    {
+        final SurefireLauncher unpack = getUnpacked();
+        final OutputValidator child = getPreparedChild( unpack );
+        unpack.forkNever().executeTest().verifyErrorFreeLog();
+        child.assertTestSuiteResults( 1, 0, 0, 0 );
+        verifyOutputDirectory( child );
+    }
+
+    public void testWorkingDirectoryChildOnly()
+        throws Exception
+    {
+        final SurefireLauncher unpack = getUnpacked();
+        final SurefireLauncher child = unpack.getSubProjectLauncher( "child" );
+        //child.getTargetFile( "out.txt" ).delete();
+        final OutputValidator outputValidator = child.executeTest().assertTestSuiteResults( 1, 0, 0, 0 );
+        verifyOutputDirectory( outputValidator );
+    }
+
+    public void testWorkingDirectoryChildOnlyNoFork()
+        throws Exception
+    {
+
+        final SurefireLauncher unpack = getUnpacked();
+        final SurefireLauncher child = unpack.getSubProjectLauncher( "child" );
+        //child.getTargetFile( "out.txt" ).delete();
+        final OutputValidator outputValidator = child.forkNever().executeTest().assertTestSuiteResults( 1, 0, 0, 0 );
+        verifyOutputDirectory( outputValidator );
+    }
+
+    private SurefireLauncher getUnpacked()
+        throws VerificationException, IOException
+    {
+        return unpack( "working-directory" );
+    }
+
+    private OutputValidator getPreparedChild( SurefireLauncher unpack )
+        throws VerificationException
+    {
+        final OutputValidator child = unpack.getSubProjectValidator( "child" );
+        getOutFile(child).delete();
+        return child;
+    }
+
+    
+    private TestFile getOutFile(OutputValidator child ){
+        return child.getTargetFile( "out.txt" );
+    }
+
+    public void verifyOutputDirectory( OutputValidator childTestDir )
         throws IOException
     {
+        final TestFile outFile = getOutFile( childTestDir );
         assertTrue( "out.txt doesn't exist: " + outFile.getAbsolutePath(), outFile.exists() );
         Properties p = new Properties();
-        FileInputStream is = new FileInputStream( outFile );
+        FileInputStream is = outFile.getFileInputStream();
         p.load( is );
         is.close();
         String userDirPath = p.getProperty( "user.dir" );
         assertNotNull( "user.dir was null in property file", userDirPath );
         File userDir = new File( userDirPath );
         // test if not a symlink
-        if ( childTestDir.getCanonicalFile().equals( childTestDir.getAbsoluteFile() ) )
+        if ( childTestDir.getBaseDir().equals( childTestDir.getBaseDir().getAbsoluteFile() ) )
         {
-            assertEquals( "wrong user.dir ! symlink ", childTestDir.getAbsolutePath(), userDir.getAbsolutePath() );
+            assertEquals( "wrong user.dir ! symlink ", childTestDir.getBaseDir().getAbsolutePath(), userDir.getAbsolutePath() );
         }
         else
         {
-            assertEquals( "wrong user.dir symlink ", childTestDir.getCanonicalPath(), userDir.getCanonicalPath() );
+            assertEquals( "wrong user.dir symlink ", childTestDir.getBaseDir().getCanonicalPath(), userDir.getCanonicalPath() );
         }
     }
 
-    public void testWorkingDirectoryNoFork()
-        throws Exception
-    {
-        Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        List<String> goals = this.getInitialGoals();
-        goals.add( "test" );
-        goals.add( "-DforkMode=never" );
-        executeGoals( verifier, goals );
-        verifier.verifyErrorFreeLog();
-        verifier.resetStreams();
-
-        HelperAssertions.assertTestSuiteResults( 1, 0, 0, 0, childTestDir );
-        verifyOutputDirectory( childTestDir );
-    }
-
-    public void testWorkingDirectoryChildOnly()
-        throws Exception
-    {
-        Verifier verifier = new Verifier( childTestDir.getAbsolutePath() );
-        this.executeGoal( verifier, "test" );
-        verifier.verifyErrorFreeLog();
-        verifier.resetStreams();
-
-        HelperAssertions.assertTestSuiteResults( 1, 0, 0, 0, childTestDir );
-        verifyOutputDirectory( childTestDir );
-    }
-
-    public void testWorkingDirectoryChildOnlyNoFork()
-        throws Exception
-    {
-        Verifier verifier = new Verifier( childTestDir.getAbsolutePath() );
-        List<String> goals = this.getInitialGoals();
-        goals.add( "test" );
-        goals.add( "-DforkMode=never" );
-        executeGoals( verifier, goals );
-        verifier.verifyErrorFreeLog();
-        verifier.resetStreams();
-
-        HelperAssertions.assertTestSuiteResults( 1, 0, 0, 0, childTestDir );
-        verifyOutputDirectory( childTestDir );
-    }
 }

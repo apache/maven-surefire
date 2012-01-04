@@ -20,6 +20,7 @@ package org.apache.maven.surefire.its;
  */
 
 import java.io.File;
+import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
 
 /**
  * SUREFIRE-500 Asserts correct error handling for the "odd" surefire-500 (and 625) issues.

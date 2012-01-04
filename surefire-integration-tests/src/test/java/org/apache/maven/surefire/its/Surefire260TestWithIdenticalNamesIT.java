@@ -22,6 +22,8 @@ package org.apache.maven.surefire.its;
 import java.io.File;
 import java.net.URI;
 
+import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
+
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import com.gargoylesoftware.htmlunit.html.HtmlDivision;

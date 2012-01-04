@@ -1,38 +1,20 @@
 package org.apache.maven.surefire.its;
 
-import java.io.File;
-import java.io.IOException;
-
-import org.apache.maven.it.VerificationException;
-import org.apache.maven.it.Verifier;
-import org.apache.maven.it.util.ResourceExtractor;
+import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass2;
 
 /**
  * Test when the configured working directory is an invalid property, SUREFIRE-715
+ *
+ * @author <a href="mailto:krosenvold@apache.org">Kristian Rosenvold</a>
  */
 public class WorkingDirectoryIsInvalidPropertyIT
-    extends AbstractSurefireIntegrationTestClass
+    extends SurefireVerifierTestClass2
 {
-    private File testDir;
-
-    public void setUp()
-        throws IOException
-    {
-        testDir = ResourceExtractor.simpleExtractResources( getClass(), "/working-directory-is-invalid-property" );
-    }
-
     public void testWorkingDirectory()
         throws Exception
     {
-        Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        try
-        {
-            executeGoal( verifier, "test" );
-        }
-        catch ( VerificationException e )
-        {
-        }
-        verifier.verifyTextInLog( "workingDirectory cannot be null" );
-        verifier.resetStreams();
+        unpack( "working-directory-is-invalid-property" )
+            .executeTestWithFailure()
+            .verifyTextInLog( "workingDirectory cannot be null" );
     }
 }

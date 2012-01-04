@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.its;
+package org.apache.maven.surefire.its.fixture;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -55,7 +55,7 @@ public abstract class SurefireVerifierTestClass
 
     private final List<String> goals;
 
-    private final SurefireVerifier defaultVerifier;
+    private final OutputValidator defaultVerifier;
 
     private final Map<String, String> envvars = new HashMap<String, String>();
 
@@ -69,7 +69,7 @@ public abstract class SurefireVerifierTestClass
         {
             testDir = simpleExtractResources( getClass(), testProject );
             this.goals = getInitialGoals();
-            this.defaultVerifier = SurefireVerifier.fromDirectory(testDir );
+            this.defaultVerifier = OutputValidator.fromDirectory( testDir );
         }
         catch ( IOException e )
         {
@@ -169,19 +169,28 @@ public abstract class SurefireVerifierTestClass
         return this;
     }
 
-    protected SurefireVerifier executeTest()
+    protected OutputValidator executeTest()
         throws VerificationException
     {
         return execute( "test" );
     }
 
-    protected SurefireVerifier executeVerify()
+    protected OutputValidator executeTestWithFailure()
+    {
+        try {
+            execute( "test" );
+        } catch (VerificationException ignore) {
+        }
+        return getDefaultVerifier();
+    }
+
+    protected OutputValidator executeVerify()
         throws VerificationException
     {
         return execute( "verify" );
     }
 
-    protected SurefireVerifier execute( String goal )
+    protected OutputValidator execute( String goal )
         throws VerificationException
     {
         addGoal( goal );
@@ -288,7 +297,7 @@ public abstract class SurefireVerifierTestClass
         defaultVerifier.verifyErrorFreeLog();
     }
 
-    protected SurefireVerifier getDefaultVerifier()
+    protected OutputValidator getDefaultVerifier()
     {
         return defaultVerifier;
     }

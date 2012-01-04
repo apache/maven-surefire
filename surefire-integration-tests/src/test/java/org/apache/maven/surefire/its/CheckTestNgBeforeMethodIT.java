@@ -19,8 +19,7 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import java.io.File;
-import org.apache.maven.it.util.ResourceExtractor;
+import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
 
 /**
  * Test @BeforeMethod annotation on TestNg suite

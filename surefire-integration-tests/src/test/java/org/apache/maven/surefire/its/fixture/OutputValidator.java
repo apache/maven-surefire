@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.its;
+package org.apache.maven.surefire.its.fixture;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -31,17 +31,17 @@ import org.apache.maven.surefire.its.misc.HelperAssertions;
  *
  * @author Kristian Rosenvold
  */
-public class SurefireVerifier
+public class OutputValidator
 {
-    private final Verifier verifier;
+    protected final Verifier verifier;
     
-    private final File baseDir;
+    protected final File baseDir;
 
-    public static SurefireVerifier fromDirectory(File testDir)
+    public static OutputValidator fromDirectory(File testDir)
     {
         try
         {
-            return new SurefireVerifier( new Verifier( testDir.getAbsolutePath()) , testDir);
+            return new OutputValidator( new Verifier( testDir.getAbsolutePath()) );
         }
         catch ( VerificationException e )
         {
@@ -50,10 +50,11 @@ public class SurefireVerifier
 
     }
 
-    public SurefireVerifier( Verifier verifier, File baseDir )
+    public OutputValidator( Verifier verifier )
     {
         this.verifier = verifier;
-        this.baseDir = baseDir;
+        this.baseDir = new File( verifier.getBasedir());
+
     }
 
     public void assertFilePresent( String file )
@@ -82,17 +83,19 @@ public class SurefireVerifier
         verifier.resetStreams();
     }
 
-    public void verifyTextInLog( String text )
+    public OutputValidator verifyTextInLog( String text )
         throws VerificationException
     {
         verifier.verifyTextInLog( text );
+        return this;
     }
 
 
-    public void verifyErrorFreeLog()
+    public OutputValidator verifyErrorFreeLog()
         throws VerificationException
     {
         verifier.verifyErrorFreeLog();
+        return this;
     }
 
     public List loadFile( String basedir, String filename, boolean hasCommand )
@@ -101,9 +104,10 @@ public class SurefireVerifier
         return verifier.loadFile( basedir, filename, hasCommand );
     }
 
-    public List loadFile( File file, boolean hasCommand )
+    public List<String> loadFile( File file, boolean hasCommand )
         throws VerificationException
     {
+        //noinspection unchecked
         return verifier.loadFile( file, hasCommand );
     }
 
@@ -118,6 +122,18 @@ public class SurefireVerifier
         return verifier.getBasedir();
     }
 
+    /**
+     * Returns a file, referenced from the extracted root (where pom.xml is located)
+     *
+     * @param path The subdirectory under basedir
+     * @return A file
+     */
+    protected File getSubFile( String path )
+    {
+        return new File( getBasedir(), path );
+    }
+    
+
     public String getMavenVersion()
         throws VerificationException
     {
@@ -131,12 +147,20 @@ public class SurefireVerifier
     }
 
     
-    public void assertTestSuiteResults( int total, int errors, int failures, int skipped )
+    public OutputValidator assertTestSuiteResults( int total, int errors, int failures, int skipped )
     {
         HelperAssertions.assertTestSuiteResults( total, errors, failures, skipped, baseDir );
+        return this;
     }
 
-    
-    
-    
+    public TestFile getTargetFile( String fileName )
+    {
+        File targetDir = getSubFile( "target" );
+        return new TestFile(new File( targetDir, fileName ), this);
+    }
+
+    public File getBaseDir()
+    {
+        return baseDir;
+    }
 }

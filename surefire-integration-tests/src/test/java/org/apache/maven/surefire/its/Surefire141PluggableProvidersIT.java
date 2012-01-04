@@ -19,12 +19,7 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.it.Verifier;
-import org.apache.maven.it.util.ResourceExtractor;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
+import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass2;
 
 /**
  * SUREFIRE-613 Asserts proper test counts when running in parallel
@@ -32,25 +27,16 @@ import java.util.Arrays;
  * @author Kristian Rosenvold
  */
 public class Surefire141PluggableProvidersIT
-    extends AbstractSurefireIntegrationTestClass
+    extends SurefireVerifierTestClass2
 {
-    public void testPaallelBuildResultCount()
+    public void testParallelBuildResultCount()
         throws Exception
     {
-        File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/surefire-141-pluggableproviders/test-provider" );
-        Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        this.executeGoal(  verifier, "install" );
-        verifier.resetStreams();
+        unpack( "surefire-141-pluggableproviders/test-provider" ).executeInstall();
 
-        testDir = ResourceExtractor.simpleExtractResources( getClass(), "/surefire-141-pluggableproviders/test" );
-        verifier = new Verifier( testDir.getAbsolutePath() );
-        String[] opts = { "-e" };
-        verifier.setCliOptions( new ArrayList<String>( Arrays.asList( opts ) ) );
-        this.executeGoal( verifier, "install" );
-
-        verifier.verifyTextInLog( "Using configured provider org.apache.maven.surefire.testprovider.TestProvider" );
-        verifier.verifyTextInLog( "Using configured provider org.apache.maven.surefire.junit.JUnit3Provider" );
-
-        verifier.verifyErrorFreeLog();
+        unpack( "surefire-141-pluggableproviders/test" ).setEOption().executeTest()
+        .verifyTextInLog( "Using configured provider org.apache.maven.surefire.testprovider.TestProvider" )
+        .verifyTextInLog( "Using configured provider org.apache.maven.surefire.junit.JUnit3Provider" )
+        .verifyErrorFreeLog();
     }
 }

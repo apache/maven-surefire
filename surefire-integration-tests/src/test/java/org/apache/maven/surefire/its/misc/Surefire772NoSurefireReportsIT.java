@@ -20,7 +20,7 @@ package org.apache.maven.surefire.its.misc;
 
 
 import org.apache.commons.io.FileUtils;
-import org.apache.maven.surefire.its.SurefireVerifierTestClass;
+import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
 
 import java.io.File;
 

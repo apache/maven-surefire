@@ -19,7 +19,8 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import junit.framework.TestCase;
+import java.util.ArrayList;
+import java.util.List;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
@@ -27,14 +28,14 @@ import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.it.VerificationException;
 import org.apache.maven.it.Verifier;
 
-import java.util.ArrayList;
-import java.util.List;
+import junit.framework.TestCase;
 
 /**
  * Base class of all integration test cases. Mainly used to pickup surefire version
  * from system property
  *
  * @author Dan T. Tran
+ *
  */
 public abstract class AbstractSurefireIntegrationTestClass
     extends TestCase

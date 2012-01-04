@@ -19,14 +19,10 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.it.VerificationException;
-import org.apache.maven.it.Verifier;
-import org.apache.maven.it.util.ResourceExtractor;
-import org.apache.maven.surefire.its.misc.HelperAssertions;
-
-import java.io.File;
 import java.io.IOException;
-import java.util.List;
+import org.apache.maven.it.VerificationException;
+import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass2;
 
 /**
  * Test failIfNoTests with various forkModes.
@@ -34,75 +30,62 @@ import java.util.List;
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
 public class CheckTestFailIfNoTestsForkModeIT
-    extends AbstractSurefireIntegrationTestClass
+    extends SurefireVerifierTestClass2
 {
     public void testFailIfNoTestsForkModeAlways()
         throws Exception
     {
-        doTest( "always", true );
+        doTest( unpack().forkAlways().failIfNoTests( true ) );
     }
+
 
     public void testFailIfNoTestsForkModeNever()
         throws Exception
     {
-        doTest( "never", true );
+        doTest( unpack().forkNever().failIfNoTests( true ) );
     }
 
     public void testFailIfNoTestsForkModeOnce()
         throws Exception
     {
-        doTest( "once", true );
+        doTest( unpack().forkOnce().failIfNoTests( true ) );
     }
 
     public void testDontFailIfNoTestsForkModeAlways()
         throws Exception
     {
-        doTest( "always", false );
+        doTest( unpack().forkAlways().failIfNoTests( false) );
     }
 
     public void testDontFailIfNoTestsForkModeNever()
         throws Exception
     {
-        doTest( "never", false );
+        doTest( unpack().forkNever().failIfNoTests( false) );
     }
 
     public void testDontFailIfNoTestsForkModeOnce()
         throws Exception
     {
-        doTest( "once", false );
+        doTest( unpack().forkOnce().failIfNoTests( false) );
     }
 
-    private void doTest( String forkMode, boolean failIfNoTests )
+    private void doTest( SurefireLauncher launcher )
         throws IOException, VerificationException
     {
-        File testDir =
-            ResourceExtractor.simpleExtractResources( getClass(), "/default-configuration-classWithNoTests" );
-
-        Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        List<String> goals = this.getInitialGoals();
-        goals.add( "test" );
-        goals.add( "-DforkMode=" + forkMode );
-        goals.add( "-DfailIfNoTests=" + failIfNoTests );
-        if ( failIfNoTests )
+        if ( launcher.isFailIfNoTests() )
         {
-            try
-            {
-                executeGoals( verifier, goals );
-                verifier.resetStreams();
-                verifier.verifyErrorFreeLog();
-                fail( "Build did not fail, but it should have" );
-            }
-            catch ( VerificationException e )
-            {
-                // this is what we expected
-            }
+             launcher.executeTestWithFailure();
         }
         else
         {
-            executeGoals( verifier, goals );
-            verifier.resetStreams();
-            verifier.verifyErrorFreeLog();
-            HelperAssertions.assertTestSuiteResults( 0, 0, 0, 0, testDir );
+            launcher.executeTest().verifyErrorFreeLog().assertTestSuiteResults( 0, 0, 0, 0 );
         }
     }
+
+    private SurefireLauncher unpack()
+        throws VerificationException, IOException
+    {
+        return unpack("default-configuration-classWithNoTests");
+    }
+
 }
