@@ -21,11 +21,11 @@ package org.apache.maven.surefire.its;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
+import org.apache.maven.it.VerificationException;
 import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.FileUtils;
-import org.apache.maven.it.util.ResourceExtractor;
-import org.apache.maven.surefire.its.misc.HelperAssertions;
+import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass2;
 
 /**
  * Test a directory with an umlaut
@@ -33,47 +33,28 @@ import org.apache.maven.surefire.its.misc.HelperAssertions;
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
 public class UmlautDirIT
-    extends AbstractSurefireIntegrationTestClass
+    extends SurefireVerifierTestClass2
 {
-    File testDir;
-
     public void testUmlaut()
         throws Exception
     {
-        Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        this.executeGoal( verifier, "test" );
-        verifier.verifyErrorFreeLog();
-        verifier.resetStreams();
-
-        HelperAssertions.assertTestSuiteResults( 1, 0, 0, 0, testDir );
+        specialUnpack().executeTest().verifyErrorFreeLog().assertTestSuiteResults( 1, 0, 0, 0 );
     }
 
     public void testUmlautIsolatedClassLoader()
         throws Exception
     {
-        Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        List<String> goals = this.getInitialGoals();
-        goals.add( "test" );
-        goals.add( "-DuseSystemClassLoader=false" );
-        executeGoals( verifier, goals );
-        verifier.verifyErrorFreeLog();
-        verifier.resetStreams();
-
-        HelperAssertions.assertTestSuiteResults( 1, 0, 0, 0, testDir );
+        specialUnpack().useSystemClassLoader(false).executeTest().assertTestSuiteResults( 1, 0, 0, 0 );
     }
 
-    public void setUp()
-        throws IOException
+    SurefireLauncher specialUnpack()
+        throws VerificationException, IOException
     {
-        String tempDirPath = System.getProperty( "maven.test.tmpdir", System.getProperty( "java.io.tmpdir" ) );
-        File tempDir = new File( tempDirPath );
-        File targetDir = new File( "target" ).getAbsoluteFile();
-        if ( targetDir.exists() && targetDir.isDirectory() )
-        {
-            tempDir = targetDir;
-        }
-        testDir = new File( tempDir, "/junit-pathWith\u00DCmlaut" );
-        FileUtils.deleteDirectory( testDir );
-        testDir = ResourceExtractor.extractResourcePath( getClass(), "/junit-pathWithUmlaut", testDir, true );
+        final File unpackLocation = unpack( "junit-pathWithUmlaut" ).getUnpackLocation();
+        File dest = new File( unpackLocation.getParentFile().getPath(),"/junit-pathWith\u00DCmlaut");
+        FileUtils.deleteDirectory( dest );
+        unpackLocation.renameTo( dest );
+        return new SurefireLauncher( new Verifier( dest.getAbsolutePath() ) );
     }
+    
 }

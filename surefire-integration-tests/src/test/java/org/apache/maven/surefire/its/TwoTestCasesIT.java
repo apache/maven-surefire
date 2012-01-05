@@ -23,8 +23,8 @@ import java.io.File;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.apache.maven.it.Verifier;
-import org.apache.maven.it.util.ResourceExtractor;
+import org.apache.maven.surefire.its.fixture.OutputValidator;
+import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass2;
 import org.apache.maven.surefire.its.misc.HelperAssertions;
 import org.apache.maven.surefire.its.misc.ReportTestSuite;
 
@@ -34,19 +34,12 @@ import org.apache.maven.surefire.its.misc.ReportTestSuite;
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
 public class TwoTestCasesIT
-    extends AbstractSurefireIntegrationTestClass
+    extends SurefireVerifierTestClass2
 {
     public void testTwoTestCases()
         throws Exception
     {
-        File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/junit-twoTestCases" );
-
-        Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        this.executeGoal( verifier, "test" );
-        verifier.verifyErrorFreeLog();
-        verifier.resetStreams();
-
-        HelperAssertions.assertTestSuiteResults( 2, 0, 0, 0, testDir );
+        unpack( "junit-twoTestCases" ).executeTest().verifyErrorFreeLog().assertTestSuiteResults( 2, 0, 0, 0 );
     }
 
     /**
@@ -55,13 +48,9 @@ public class TwoTestCasesIT
     public void testTwoTestCaseSuite()
         throws Exception
     {
-        File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/junit-twoTestCaseSuite" );
-
-        Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        this.executeGoal( verifier, "test" );
-        verifier.verifyErrorFreeLog();
-        verifier.resetStreams();
-        List<ReportTestSuite> reports = HelperAssertions.extractReports( ( new File[]{ testDir } ) );
+        final OutputValidator outputValidator = unpack( "junit-twoTestCaseSuite" ).executeTest();
+        outputValidator.verifyErrorFreeLog().assertTestSuiteResults( 2, 0, 0, 0 );
+        List<ReportTestSuite> reports = HelperAssertions.extractReports( ( new File[]{ outputValidator.getBaseDir() } ) );
         Set<String> classNames = extractClassNames( reports );
         assertContains( classNames, "junit.twoTestCaseSuite.BasicTest" );
         assertContains( classNames, "junit.twoTestCaseSuite.TestTwo" );
@@ -92,14 +81,10 @@ public class TwoTestCasesIT
     public void testJunit4Suite()
         throws Exception
     {
-        File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/junit4-twoTestCaseSuite" );
+        final OutputValidator outputValidator = unpack( "junit4-twoTestCaseSuite" ).executeTest();
+        outputValidator.verifyErrorFreeLog().assertTestSuiteResults( 2, 0, 0, 0 );
 
-        Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        this.executeGoal( verifier, "test" );
-        verifier.verifyErrorFreeLog();
-        verifier.resetStreams();
-
-        List<ReportTestSuite> reports = HelperAssertions.extractReports( ( new File[]{ testDir } ) );
+        List<ReportTestSuite> reports = HelperAssertions.extractReports( ( new File[]{ outputValidator.getBaseDir() } ) );
         Set<String> classNames = extractClassNames( reports );
         assertContains( classNames, "twoTestCaseSuite.BasicTest" );
         assertContains( classNames, "twoTestCaseSuite.Junit4TestTwo" );
@@ -111,14 +96,9 @@ public class TwoTestCasesIT
     public void testTestNGSuite()
         throws Exception
     {
-        File testDir = ResourceExtractor.simpleExtractResources( getClass(), "/testng-twoTestCaseSuite" );
-
-        Verifier verifier = new Verifier( testDir.getAbsolutePath() );
-        this.executeGoal( verifier, "test" );
-        verifier.verifyErrorFreeLog();
-        verifier.resetStreams();
-
-        List<ReportTestSuite> reports = HelperAssertions.extractReports( ( new File[]{ testDir } ) );
+        final OutputValidator outputValidator = unpack( "testng-twoTestCaseSuite" ).executeTest();
+        outputValidator.verifyErrorFreeLog().assertTestSuiteResults( 2, 0, 0, 0 );
+        List<ReportTestSuite> reports = HelperAssertions.extractReports( ( new File[]{ outputValidator.getBaseDir() } ) );
         Set<String> classNames = extractClassNames( reports );
         assertContains( classNames, "testng.two.TestNGTestTwo" );
         assertContains( classNames, "testng.two.TestNGSuiteTest" );

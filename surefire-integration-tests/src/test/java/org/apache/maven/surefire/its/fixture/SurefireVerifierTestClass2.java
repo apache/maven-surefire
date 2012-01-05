@@ -37,9 +37,9 @@ import junit.framework.TestCase;
 public abstract class SurefireVerifierTestClass2
     extends TestCase
 {
-    public SurefireLauncher unpack( String projectName )
+    public SurefireLauncher unpack( String sourceName )
         throws VerificationException, IOException
     {
-        return new SurefireLauncher( this.getClass(), projectName );
+        return new SurefireLauncher( this.getClass(), sourceName );
     }
 }

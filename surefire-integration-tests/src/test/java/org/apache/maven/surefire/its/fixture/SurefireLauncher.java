@@ -71,7 +71,7 @@ public class SurefireLauncher
 
     }
 
-    protected SurefireLauncher( Verifier verifier )
+    public SurefireLauncher( Verifier verifier )
     {
         this.verifier = verifier;
         this.surefireVerifier = new OutputValidator( verifier );
@@ -148,6 +148,36 @@ public class SurefireLauncher
 
         return goals1;
     }
+
+    // Todo remove duplication between this and getInitialGoals
+    public SurefireLauncher resetInitialGoals( String testNgVersion )
+    {
+        List<String> goals = new ArrayList<String>();
+        goals.add( "-Dsurefire.version=" + surefireVersion );
+
+        if ( testNgVersion != null )
+        {
+            goals.add( "-DtestNgVersion=" + testNgVersion );
+
+            ArtifactVersion v = new DefaultArtifactVersion( testNgVersion );
+            try
+            {
+                if ( VersionRange.createFromVersionSpec( "(,5.12.1)" ).containsVersion( v ) )
+                {
+                    goals.add( "-DtestNgClassifier=jdk15" );
+                }
+            }
+            catch ( InvalidVersionSpecificationException e )
+            {
+                throw new RuntimeException( e.getMessage(), e );
+            }
+        }
+
+        this.goals.clear();
+        this.goals.addAll(  goals );
+        return this;
+    }
+
 
     public void assertPresent( File file )
     {
@@ -265,6 +295,10 @@ public class SurefireLauncher
     {
         return forkMode( "always" );
     }
+    public SurefireLauncher forkPerTest()
+    {
+        return forkMode( "pertest" );
+    }
 
     public SurefireLauncher forkMode( String forkMode )
     {
@@ -279,6 +313,11 @@ public class SurefireLauncher
     {
         this.failIfNoTests = fail;
         return addGoal( "-DfailIfNoTests=" + fail );
+    }
+
+    public SurefireLauncher useSystemClassLoader( boolean useSystemClassLoader)
+    {
+        return addGoal( "-DuseSystemClassLoader=" + useSystemClassLoader );
     }
 
     public SurefireLauncher activateProfile( String profile )
@@ -439,5 +478,9 @@ public class SurefireLauncher
     public boolean isFailIfNoTests()
     {
         return failIfNoTests;
+    }
+    
+    public File getUnpackLocation(){
+        return new File(verifier.getBasedir());
     }
 }

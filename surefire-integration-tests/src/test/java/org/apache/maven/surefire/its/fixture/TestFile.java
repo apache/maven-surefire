@@ -19,9 +19,12 @@ package org.apache.maven.surefire.its.fixture;
  * under the License.
  */
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 
 import static junit.framework.Assert.assertTrue;
 
@@ -66,4 +69,18 @@ public class TestFile {
     {
         return new FileInputStream( file );
     }
+
+    public String slurpFile()
+        throws IOException
+    {
+        StringBuilder sb = new StringBuilder();
+        BufferedReader reader = new BufferedReader( new FileReader( file ) );
+        for ( String line = reader.readLine(); line != null; line = reader.readLine() )
+        {
+            sb.append( line );
+        }
+        reader.close();
+        return sb.toString();
+    }
+
 }

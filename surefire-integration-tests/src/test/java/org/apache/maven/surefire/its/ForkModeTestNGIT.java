@@ -29,6 +29,6 @@ public class ForkModeTestNGIT
 {
     protected String getProject()
     {
-        return "/fork-mode-testng";
+        return "fork-mode-testng";
     }
 }
