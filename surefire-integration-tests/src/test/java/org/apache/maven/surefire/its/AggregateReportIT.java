@@ -20,11 +20,9 @@ package org.apache.maven.surefire.its;
  */
 
 import java.io.File;
-import org.apache.maven.surefire.its.fixture.IntegrationTestSuiteResults;
-import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass2;
-import org.apache.maven.surefire.its.fixture.TestFile;
-import org.apache.maven.surefire.its.misc.HelperAssertions;
+
+import org.apache.maven.surefire.its.fixture.*;
+import org.apache.maven.surefire.its.fixture.HelperAssertions;
 
 /**
  * Test report aggregation
@@ -33,7 +31,7 @@ import org.apache.maven.surefire.its.misc.HelperAssertions;
  * @author <a href="mailto:krosenvold@apache.org">Kristian Rosenvold</a>
  */
 public class AggregateReportIT
-    extends SurefireVerifierTestClass2
+    extends SurefireIntegrationTestCase
 {
 
     public void testAggregateReport()
@@ -49,6 +47,6 @@ public class AggregateReportIT
         testDirs[0] = new File( outputValidator.getBaseDir(), "child1" );
         testDirs[1] = new File( outputValidator.getBaseDir(), "child2" );
         IntegrationTestSuiteResults suite = HelperAssertions.parseTestResults( testDirs );
-        HelperAssertions.assertTestSuiteResults( 2, 0, 1, 0, suite );
+        HelperAssertions.assertTestSuiteResults(2, 0, 1, 0, suite);
     }
 }

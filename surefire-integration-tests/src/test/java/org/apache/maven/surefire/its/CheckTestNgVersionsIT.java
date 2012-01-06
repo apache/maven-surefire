@@ -20,7 +20,7 @@ package org.apache.maven.surefire.its;
  */
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass2;
+import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
 
 /**
  * Basic suite test using all known versions of TestNG. Used for regression testing Surefire against old versions.
@@ -31,7 +31,7 @@ import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass2;
  * @author <a href="mailto:krosenvold@apache.org">Kristian Rosenvold</a>
  */
 public class CheckTestNgVersionsIT
-    extends SurefireVerifierTestClass2
+    extends SurefireIntegrationTestCase
 {
 
     public void test47()

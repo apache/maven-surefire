@@ -19,7 +19,7 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass2;
+import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
 
 /**
  * Test JUnit 4 tests marked with "Ignore" attribute
@@ -27,7 +27,7 @@ import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass2;
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
 public class JUnit4ForkAlwaysStaticInitPollutionIT
-    extends SurefireVerifierTestClass2
+    extends SurefireIntegrationTestCase
 {
     public void testJunit4Ignore()
     {

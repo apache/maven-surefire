@@ -20,7 +20,7 @@ package org.apache.maven.surefire.its;
  */
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass2;
+import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
 
 /**
  * Basic suite test using all known versions of JUnit 4.x
@@ -28,7 +28,7 @@ import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass2;
  * @author Kristian Rosenvold
  */
 public class ConsoleOutputIT
-    extends SurefireVerifierTestClass2
+    extends SurefireIntegrationTestCase
 {
     public void testProperNewlines()
     {

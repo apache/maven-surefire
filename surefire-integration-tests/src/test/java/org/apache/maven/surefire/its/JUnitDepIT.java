@@ -19,7 +19,8 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
+import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
 
 /**
  * Test project using JUnit4.4 -dep.  junit-dep includes only junit.* classes, and depends explicitly on hamcrest-core
@@ -27,55 +28,50 @@ import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
 public class JUnitDepIT
-    extends SurefireVerifierTestClass
+    extends SurefireIntegrationTestCase
 {
-    public JUnitDepIT()
+    public SurefireLauncher unpack()
     {
-        super( "/junit44-dep" );
+        return unpack( "/junit44-dep" );
     }
 
     public void testJUnit44Dep()
         throws Exception
     {
-        debugLogging();
-        addGoal( "-Djunit-dep.version=4.4" );
-        executeTest();
-
-        verifyErrorFreeLog();
-        assertTestSuiteResults( 1, 0, 0, 0 );
-        verifyTextInLog( "surefire-junit4" ); // Ahem. Will match on the 4.7 provider too
+        unpack().debugLogging().
+        addGoal( "-Djunit-dep.version=4.4" )
+        .executeTest()
+        .verifyErrorFree(1)
+        .verifyTextInLog("surefire-junit4"); // Ahem. Will match on the 4.7 provider too
     }
 
     public void testJUnit44DepWithSneaky381()
         throws Exception
     {
-        debugLogging();
-        activateProfile( "provided381" );
-        addGoal( "-Djunit-dep.version=4.4" );
-        executeTest();
-        verifyErrorFreeLog();
-        assertTestSuiteResults( 1, 0, 0, 0 );
+        unpack().debugLogging().
+        addGoal( "-Djunit-dep.version=4.4" )
+                .activateProfile("provided381")
+                .executeTest()
+                .verifyErrorFree(1);
     }
 
     public void testJUnit47Dep()
         throws Exception
     {
-        debugLogging();
-        addGoal( "-Djunit-dep.version=4.7" );
-        executeTest();
-        verifyErrorFreeLog();
-        assertTestSuiteResults( 1, 0, 0, 0 );
-        verifyTextInLog( "surefire-junit47" );
+        unpack().debugLogging().
+        addGoal( "-Djunit-dep.version=4.7" )
+                .executeTest()
+                .verifyErrorFree(1).
+        verifyTextInLog("surefire-junit47");
     }
 
     public void testJUnit48Dep()
         throws Exception
     {
-        debugLogging();
-        addGoal( "-Djunit-dep.version=4.8" );
-        executeTest();
-        verifyErrorFreeLog();
-        assertTestSuiteResults( 1, 0, 0, 0 );
-        verifyTextInLog( "surefire-junit47" );
+        unpack().debugLogging().
+        addGoal( "-Djunit-dep.version=4.8" )
+                .executeTest()
+                .verifyErrorFree(1).
+        verifyTextInLog("surefire-junit47");
     }
 }

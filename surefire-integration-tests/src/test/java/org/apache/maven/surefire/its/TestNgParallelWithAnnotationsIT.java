@@ -19,7 +19,7 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
+import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
 
 /**
  * Test that TestNG's @Test(threadPoolSize = n, invocationCount=n) causes tests to be run in parallel.
@@ -28,18 +28,10 @@ import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
  * 
  */
 public class TestNgParallelWithAnnotationsIT
-   extends SurefireVerifierTestClass
+   extends SurefireIntegrationTestCase
 {
-    public TestNgParallelWithAnnotationsIT()
-    {
-        super( "/testng-parallel-with-annotations" );
-    }
-
     public void testTestNgGroupThreadParallel()
-        throws Exception
     {
-        executeTest();
-        verifyErrorFreeLog();
-        assertTestSuiteResults( 3, 0, 0, 0 );
+        executeErrorFreeTest("/testng-parallel-with-annotations", 3);
     }
 }

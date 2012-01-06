@@ -25,6 +25,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.URI;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
@@ -88,7 +89,7 @@ public class TestFile
         try
         {
             StringBuilder sb = new StringBuilder();
-            BufferedReader reader = null;
+            BufferedReader reader;
             reader = new BufferedReader( new FileReader( file ) );
             for ( String line = reader.readLine(); line != null; line = reader.readLine() )
             {
@@ -133,4 +134,7 @@ public class TestFile
         Assert.fail( "Did not find expected message in log" );
     }
 
+    public URI toURI() {
+        return file.toURI();
+    }
 }

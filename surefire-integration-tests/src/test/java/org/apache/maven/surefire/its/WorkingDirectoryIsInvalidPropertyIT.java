@@ -1,6 +1,6 @@
 package org.apache.maven.surefire.its;
 
-import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass2;
+import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
 
 /**
  * Test when the configured working directory is an invalid property, SUREFIRE-715
@@ -8,7 +8,7 @@ import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass2;
  * @author <a href="mailto:krosenvold@apache.org">Kristian Rosenvold</a>
  */
 public class WorkingDirectoryIsInvalidPropertyIT
-    extends SurefireVerifierTestClass2
+    extends SurefireIntegrationTestCase
 {
     public void testWorkingDirectory()
         throws Exception

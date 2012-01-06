@@ -22,7 +22,7 @@ package org.apache.maven.surefire.its;
 import java.io.IOException;
 import org.apache.maven.it.VerificationException;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
-import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass2;
+import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
 
 /**
  * Test project using "groups" support
@@ -31,7 +31,7 @@ import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass2;
  * @author <a href="mailto:krosenvold@apache.org">Kristian Rosenvold</a>
  */
 public class JUnit48TestCategoriesIT
-    extends SurefireVerifierTestClass2
+    extends SurefireIntegrationTestCase
 {
     public void testCategoriesAB()
         throws Exception

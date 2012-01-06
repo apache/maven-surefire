@@ -19,7 +19,7 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass2;
+import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
 
 /**
  * Test TestNG running in the JDK 1.4 JavaDoc style
@@ -27,7 +27,7 @@ import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass2;
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
 public class CheckTestNgJdk14IT
-    extends SurefireVerifierTestClass2
+    extends SurefireIntegrationTestCase
 {
 
     public CheckTestNgJdk14IT()

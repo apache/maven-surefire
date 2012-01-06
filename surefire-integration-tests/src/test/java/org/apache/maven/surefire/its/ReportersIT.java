@@ -19,7 +19,8 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
+import org.apache.maven.surefire.its.fixture.OutputValidator;
+import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
 
 /**
  * Asserts proper behaviour of console output when forking
@@ -28,24 +29,17 @@ import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
  * @author Kristian Rosenvold
  */
 public class ReportersIT
-    extends SurefireVerifierTestClass
+    extends SurefireIntegrationTestCase
 {
-
-    public ReportersIT()
-    {
-        super( "/reporters" );
-    }
-
     public void testRedirectOutputTestNg()
-        throws Exception
     {
-        redirectToFile( true );
-        printSummary( true );
+        OutputValidator reporters = unpack("reporters").
+                redirectToFile(true)
+                .printSummary(true).executeTest();
 
-        execute( "test" );
-        assertPresent( getSurefireReportsFile( "TestSuite-output.txt" ) );
-        assertPresent( getSurefireReportsFile( "TEST-TestSuite.xml" ) );
-        assertPresent( getSurefireReportsFile( "TestSuite.txt" ) );
+        reporters.getSurefireReportsFile( "TestSuite-output.txt" ).assertFileExists();
+        reporters.getSurefireReportsFile( "TEST-TestSuite.xml" ).assertFileExists();
+        reporters.getSurefireReportsFile( "TestSuite.txt" ).assertFileExists();
     }
 }
 

@@ -20,7 +20,7 @@ package org.apache.maven.surefire.its;
  */
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass2;
+import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.TestFile;
 
 /**
@@ -31,7 +31,7 @@ import org.apache.maven.surefire.its.fixture.TestFile;
  * @author Kristian Rosenvold
  */
 public class ForkConsoleOutputWithErrorsIT
-    extends SurefireVerifierTestClass2
+    extends SurefireIntegrationTestCase
 {
     public void testXmlFileContainsConsoleOutput()
     {

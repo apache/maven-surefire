@@ -21,7 +21,7 @@ package org.apache.maven.surefire.its;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
-import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass2;
+import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
 
 /**
  * Test include/exclude patterns.
@@ -30,7 +30,7 @@ import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass2;
  * @version $Id$
  */
 public class IncludesExcludesIT
-    extends SurefireVerifierTestClass2
+    extends SurefireIntegrationTestCase
 {
     private SurefireLauncher unpack()
     {

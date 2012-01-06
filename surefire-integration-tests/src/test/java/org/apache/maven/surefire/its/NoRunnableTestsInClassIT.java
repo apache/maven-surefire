@@ -19,7 +19,7 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
+import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
 
 /**
  * SUREFIRE-621 Asserts proper test counts when running junit 3 tests in parallel
@@ -27,19 +27,11 @@ import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
  * @author Kristian Rosenvold
  */
 public class NoRunnableTestsInClassIT
-    extends SurefireVerifierTestClass
+    extends SurefireIntegrationTestCase
 {
-
-    public NoRunnableTestsInClassIT()
+   public void testJunit3ParallelBuildResultCount()
     {
-        super( "/norunnableTests" );
-    }
-
-    public void testJunit3ParallelBuildResultCount()
-        throws Exception
-    {
-        failNever();
-        execute( "test" );
-        verifyTextInLog( "No tests found in junit.norunnabletests.BasicTest" );
+        unpack("norunnableTests").failNever().executeTest().
+        verifyTextInLog("No tests found in junit.norunnabletests.BasicTest");
     }
 }

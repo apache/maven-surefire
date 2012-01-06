@@ -20,7 +20,7 @@ package org.apache.maven.surefire.its;
  */
 
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
-import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass2;
+import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
 
 /**
  * Test failIfNoTests with various forkModes.
@@ -29,13 +29,12 @@ import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass2;
  * @author <a href="mailto:krosenvold@apache.org">Kristian Rosenvold</a>
  */
 public class CheckTestFailIfNoTestsForkModeIT
-    extends SurefireVerifierTestClass2
+    extends SurefireIntegrationTestCase
 {
     public void testFailIfNoTestsForkModeAlways()
     {
         doTest( unpack().forkAlways().failIfNoTests( true ) );
     }
-
 
     public void testFailIfNoTestsForkModeNever()
     {

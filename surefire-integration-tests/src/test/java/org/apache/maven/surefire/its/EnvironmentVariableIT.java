@@ -19,7 +19,7 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass2;
+import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
 
 /**
  * Test basic default configuration, runs the JUnit 3 test in the src/test directory.
@@ -27,7 +27,7 @@ import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass2;
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
 public class EnvironmentVariableIT
-    extends SurefireVerifierTestClass2
+    extends SurefireIntegrationTestCase
 {
 
     public void testEnvironmentVariable()

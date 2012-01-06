@@ -19,11 +19,12 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
+import org.apache.maven.surefire.its.fixture.*;
+import org.apache.maven.surefire.its.fixture.HelperAssertions;
+import org.apache.maven.surefire.its.fixture.ReportTestSuite;
+
 import java.io.File;
 import java.util.List;
-import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
-import org.apache.maven.surefire.its.misc.HelperAssertions;
-import org.apache.maven.surefire.its.misc.ReportTestSuite;
 
 /**
  * Test reported runtime
@@ -31,21 +32,14 @@ import org.apache.maven.surefire.its.misc.ReportTestSuite;
  * @author Kristian Rosenvold
  */
 public class XmlReporterRunTimeIT
-    extends SurefireVerifierTestClass
+    extends SurefireIntegrationTestCase
 {
-
-    public XmlReporterRunTimeIT()
-    {
-        super( "/runorder-parallel" );
-    }
-
     public void testForkModeAlways()
         throws Exception
     {
-        parallelMethods( );
-        executeTest();
+        OutputValidator outputValidator = unpack("/runorder-parallel").parallelMethods().executeTest();
 
-        List<ReportTestSuite> reports = HelperAssertions.extractReports( ( new File[]{ getTestDir() } ) );
+        List<ReportTestSuite> reports = HelperAssertions.extractReports((new File[]{outputValidator.getBaseDir()}));
         for ( ReportTestSuite report : reports )
         {
             if ( "runorder.parallel.Test1".equals( report.getFullClassName() ) )

@@ -21,7 +21,7 @@ package org.apache.maven.surefire.its;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
-import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass2;
+import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
 
 /**
  * Asserts proper behaviour of console output when forking
@@ -31,7 +31,7 @@ import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass2;
  * @author Kristian Rosenvold
  */
 public class ForkConsoleOutputIT
-    extends SurefireVerifierTestClass2
+    extends SurefireIntegrationTestCase
 {
 
     private SurefireLauncher unpack()

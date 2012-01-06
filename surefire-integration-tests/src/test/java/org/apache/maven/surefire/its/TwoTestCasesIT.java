@@ -23,11 +23,10 @@ import java.io.File;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.apache.maven.surefire.its.fixture.IntegrationTestSuiteResults;
-import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass2;
-import org.apache.maven.surefire.its.misc.HelperAssertions;
-import org.apache.maven.surefire.its.misc.ReportTestSuite;
+
+import org.apache.maven.surefire.its.fixture.*;
+import org.apache.maven.surefire.its.fixture.HelperAssertions;
+import org.apache.maven.surefire.its.fixture.ReportTestSuite;
 
 /**
  * Test running two test cases; confirms reporting works correctly
@@ -35,7 +34,7 @@ import org.apache.maven.surefire.its.misc.ReportTestSuite;
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
 public class TwoTestCasesIT
-    extends SurefireVerifierTestClass2
+    extends SurefireIntegrationTestCase
 {
     public void testTwoTestCases()
         throws Exception
@@ -105,7 +104,7 @@ public class TwoTestCasesIT
         assertContains( classNames, "testng.two.TestNGSuiteTest" );
         assertEquals( "wrong number of classes", 2, classNames.size() );
         IntegrationTestSuiteResults results = HelperAssertions.parseReportList( reports );
-        HelperAssertions.assertTestSuiteResults( 2, 0, 0, 0, results );
+        HelperAssertions.assertTestSuiteResults(2, 0, 0, 0, results);
     }
 
 }

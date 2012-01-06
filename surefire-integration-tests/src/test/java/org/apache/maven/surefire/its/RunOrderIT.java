@@ -22,7 +22,9 @@ package org.apache.maven.surefire.its;
 import java.io.IOException;
 import java.util.Calendar;
 import org.apache.maven.it.VerificationException;
-import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
+import org.apache.maven.surefire.its.fixture.OutputValidator;
+import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
 
 /**
  * Verifies the runOrder setting and its effect
@@ -30,7 +32,7 @@ import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
  * @author Kristian Rosenvold
  */
 public class RunOrderIT
-    extends SurefireVerifierTestClass
+    extends SurefireIntegrationTestCase
 {
     private static final String[] TESTS_IN_ALPHABETICAL_ORDER = { "TA", "TB", "TC" };
 
@@ -38,30 +40,25 @@ public class RunOrderIT
 
     // testing random is left as an exercise to the reader. Patches welcome
 
-    public RunOrderIT()
-    {
-        super( "/runOrder" );
-    }
-
     public void testAlphabetical()
         throws Exception
     {
-        executeWithRunOrder( "alphabetical" );
-        assertTestnamesAppearInSpecificOrder( TESTS_IN_ALPHABETICAL_ORDER );
+        OutputValidator validator = executeWithRunOrder("alphabetical");
+        assertTestnamesAppearInSpecificOrder(validator, TESTS_IN_ALPHABETICAL_ORDER );
     }
 
     public void testReverseAlphabetical()
         throws Exception
     {
-        executeWithRunOrder( "reversealphabetical" );
-        assertTestnamesAppearInSpecificOrder( TESTS_IN_REVERSE_ALPHABETICAL_ORDER );
+        OutputValidator validator = executeWithRunOrder("reversealphabetical");
+        assertTestnamesAppearInSpecificOrder(validator, TESTS_IN_REVERSE_ALPHABETICAL_ORDER );
     }
 
     public void testHourly()
         throws Exception
     {
         int startHour = Calendar.getInstance().get( Calendar.HOUR_OF_DAY );
-        executeWithRunOrder( "hourly" );
+        OutputValidator validator = executeWithRunOrder("hourly");
         int endHour = Calendar.getInstance().get( Calendar.HOUR_OF_DAY );
         if ( startHour != endHour )
         {
@@ -70,28 +67,20 @@ public class RunOrderIT
 
         String[] testnames =
             ( ( startHour % 2 ) == 0 ) ? TESTS_IN_ALPHABETICAL_ORDER : TESTS_IN_REVERSE_ALPHABETICAL_ORDER;
-        assertTestnamesAppearInSpecificOrder( testnames );
+        assertTestnamesAppearInSpecificOrder(validator, testnames);
     }
 
     public void testNonExistingRunOrder()
         throws Exception
     {
-        try
-        {
-            executeTestsWithRunOrder( "nonExistingRunOrder" );
-        }
-        catch ( VerificationException e )
-        {
-        }
-        verifyTextInLog( "There's no RunOrder with the name nonExistingRunOrder." );
+        unpack().forkMode(getForkMode()).runOrder("nonExistingRunOrder").executeTestWithFailure()
+        .verifyTextInLog("There's no RunOrder with the name nonExistingRunOrder.");
     }
 
-    private void executeWithRunOrder( String runOrder )
+    private OutputValidator executeWithRunOrder(String runOrder)
         throws IOException, VerificationException
     {
-        executeTestsWithRunOrder( runOrder );
-        verifyErrorFreeLog();
-        assertTestSuiteResults( 3, 0, 0, 0);
+        return unpack().forkMode(getForkMode()).runOrder(runOrder).executeTest().verifyErrorFree(3);
     }
 
 
@@ -100,18 +89,14 @@ public class RunOrderIT
         return "once";
     }
 
-    protected void executeTestsWithRunOrder( String runOrder )
-        throws VerificationException
-    {
-        forkMode(  getForkMode() );
-        runOrder(  runOrder );
-        executeTest();
+    private SurefireLauncher unpack() {
+        return unpack("runOrder");
     }
 
-    private void assertTestnamesAppearInSpecificOrder( String[] testnames )
+    private void assertTestnamesAppearInSpecificOrder(OutputValidator validator, String[] testnames)
         throws VerificationException
     {
-        if ( !stringsAppearInSpecificOrderInLog( testnames ) )
+        if ( !validator.stringsAppearInSpecificOrderInLog(testnames) )
         {
             throw new VerificationException( "Response does not contain expected item" );
         }

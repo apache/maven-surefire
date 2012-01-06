@@ -19,7 +19,7 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
+import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
 
 /**
  * Basic suite test using all known versions of JUnit 4.x
@@ -27,22 +27,14 @@ import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
  * @author Kristian Rosenvold
  */
 public class Junit47concurrencyIT
-    extends SurefireVerifierTestClass
+    extends SurefireIntegrationTestCase
 {
-
-    public Junit47concurrencyIT()
-    {
-        super( "/concurrentjunit47" );
-    }
-
     public void test47()
         throws Exception
     {
         // todo: Align with others
-        addGoal( "-DjunitVersion=4.7" );
-        executeTest();
-        verifyErrorFreeLog();
-        assertTestSuiteResults( 1, 0, 0, 0 );
+        unpack("concurrentjunit47").addD("junitVersion", "4.7").setJUnitVersion("4.7").executeTest()
+                .verifyErrorFree(1);
 
     }
 }

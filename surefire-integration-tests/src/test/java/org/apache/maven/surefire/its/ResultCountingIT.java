@@ -19,9 +19,11 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import java.io.IOException;
 import org.apache.maven.it.VerificationException;
-import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
+import org.apache.maven.surefire.its.fixture.OutputValidator;
+import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+
+import java.io.IOException;
 
 /**
  * Verifies that the providers get the result summary at the bottom of the run correctly, in different forkmodes
@@ -30,15 +32,9 @@ import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
  * @author Kristian Rosenvold
  */
 public class ResultCountingIT
-    extends SurefireVerifierTestClass
+    extends SurefireIntegrationTestCase
 {
-
-    public ResultCountingIT()
-    {
-        super( "/result-counting" );
-    }
-
-    public void testCountingWithJunit481ForkNever()
+   public void testCountingWithJunit481ForkNever()
         throws Exception
     {
         assertForkMode( "never" );
@@ -59,10 +55,8 @@ public class ResultCountingIT
     private void assertForkMode( String forkMode )
         throws IOException, VerificationException
     {
-        failNever();
-        forkMode( forkMode );
-        executeTest();
-        assertTestSuiteResults( 36, 23, 4, 2 );
-        verifyTextInLog( "Tests run: 36, Failures: 4, Errors: 23, Skipped: 2" );
+        OutputValidator outputValidator = unpack("result-counting").failNever().forkMode(forkMode).executeTest();
+        outputValidator.assertTestSuiteResults(36, 23, 4, 2);
+        outputValidator.verifyTextInLog("Tests run: 36, Failures: 4, Errors: 23, Skipped: 2");
     }
 }

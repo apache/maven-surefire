@@ -19,12 +19,11 @@ package org.apache.maven.surefire.its.fixture;
  * under the License.
  */
 
-import java.io.File;
-import java.util.List;
-import java.util.Map;
 import org.apache.maven.it.VerificationException;
 import org.apache.maven.it.Verifier;
-import org.apache.maven.surefire.its.misc.HelperAssertions;
+
+import java.io.File;
+import java.util.List;
 
 /**
  * A specialized verifier that enforces a standard use case for surefire IT's
@@ -37,50 +36,11 @@ public class OutputValidator
     
     protected final File baseDir;
 
-    public static OutputValidator fromDirectory(File testDir)
-    {
-        try
-        {
-            return new OutputValidator( new Verifier( testDir.getAbsolutePath()) );
-        }
-        catch ( VerificationException e )
-        {
-            throw new RuntimeException( e );
-        }
-
-    }
-
     public OutputValidator( Verifier verifier )
     {
         this.verifier = verifier;
         this.baseDir = new File( verifier.getBasedir());
 
-    }
-
-    public void assertFilePresent( String file )
-    {
-        verifier.assertFilePresent( file );
-    }
-
-    public void assertFileNotPresent( String file )
-    {
-        verifier.assertFileNotPresent( file );
-    }
-
-    public void executeGoals( List goals, Map envVars )
-        throws VerificationException
-    {
-        verifier.executeGoals( goals, envVars );
-    }
-
-    public void setCliOptions( List cliOptions )
-    {
-        verifier.setCliOptions( cliOptions );
-    }
-
-    public void resetStreams()
-    {
-        verifier.resetStreams();
     }
 
     public OutputValidator verifyTextInLog( String text )
@@ -124,28 +84,18 @@ public class OutputValidator
         }
     }
 
-    public List loadFile( String basedir, String filename, boolean hasCommand )
-        throws VerificationException
-    {
-        return verifier.loadFile( basedir, filename, hasCommand );
-    }
-
     public List<String> loadFile( File file, boolean hasCommand )
     {
         //noinspection unchecked
         try
         {
+            //noinspection unchecked
             return verifier.loadFile( file, hasCommand );
         }
         catch ( VerificationException e )
         {
             throw new SurefireVerifierException( e );
         }
-    }
-
-    public String getLogFileName()
-    {
-        return verifier.getLogFileName();
     }
 
 
@@ -160,16 +110,9 @@ public class OutputValidator
      * @param path The subdirectory under basedir
      * @return A file
      */
-    protected File getSubFile( String path )
+    public File getSubFile( String path )
     {
         return new File( getBasedir(), path );
-    }
-    
-
-    public String getMavenVersion()
-        throws VerificationException
-    {
-        return verifier.getMavenVersion();
     }
 
 
@@ -210,4 +153,30 @@ public class OutputValidator
     {
         return baseDir;
     }
+
+    @SuppressWarnings("unchecked")
+    private List<String> getLog()
+        throws VerificationException
+    {
+        return verifier.loadFile( verifier.getBasedir(), verifier.getLogFileName(), false );
+    }
+
+    public boolean stringsAppearInSpecificOrderInLog( String[] strings )
+        throws VerificationException
+    {
+        int i = 0;
+        for ( String line : getLog() )
+        {
+            if ( line.startsWith( strings[i] ) )
+            {
+                if ( i == strings.length - 1 )
+                {
+                    return true;
+                }
+                ++i;
+            }
+        }
+        return false;
+    }
+
 }

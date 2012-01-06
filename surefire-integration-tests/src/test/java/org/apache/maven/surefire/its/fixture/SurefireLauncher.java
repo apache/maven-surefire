@@ -19,12 +19,6 @@ package org.apache.maven.surefire.its.fixture;
  * under the License.
  */
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
@@ -34,7 +28,12 @@ import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.FileUtils;
 import org.apache.maven.it.util.ResourceExtractor;
 
-import junit.framework.Assert;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Encapsulate all needed features to start a surefire run
@@ -98,7 +97,7 @@ public class SurefireLauncher
         return ResourceExtractor.extractResourcePath( cl, resourcePath, tempDir, true );
     }
 
-    protected void reset()
+    public void reset()
     {
         goals.clear();
         goals.addAll( getInitialGoals() );
@@ -118,9 +117,10 @@ public class SurefireLauncher
         return new OutputValidator( new Verifier( subFile.getAbsolutePath() ));
     }
 
-    protected void addEnvVar( String key, String value )
+    public SurefireLauncher addEnvVar(String key, String value)
     {
         envvars.put( key, value );
+        return this;
     }
 
     private List<String> getInitialGoals()
@@ -178,16 +178,6 @@ public class SurefireLauncher
         return this;
     }
 
-
-    public void assertPresent( File file )
-    {
-        verifier.assertFilePresent( file.getAbsolutePath() );
-    }
-
-    public void assertNotPresent( File file )
-    {
-        verifier.assertFileNotPresent( file.getAbsolutePath() );
-    }
 
     public SurefireLauncher assertNotPresent( String subFile )
     {
@@ -252,13 +242,23 @@ public class SurefireLauncher
         throw new RuntimeException( "Expecting build failure, got none!" );
     }
 
+    public OutputValidator executeVerifyWithFailure()
+    {
+        try {
+            executeVerify();
+        } catch (SurefireVerifierException ignore) {
+            return surefireVerifier;
+        }
+        throw new RuntimeException( "Expecting build failure, got none!" );
+    }
+
+
     protected OutputValidator executeVerify()
-        throws VerificationException
     {
         return execute( "verify" );
     }
 
-    private OutputValidator execute( String goal )
+    public OutputValidator execute( String goal )
     {
         addGoal( goal );
         return executeCurrentGoals();
@@ -344,114 +344,9 @@ public class SurefireLauncher
     }
 
 
-    protected boolean assertContainsText( File file, String text )
-        throws VerificationException
-    {
-        final List<String> list = surefireVerifier.loadFile( file, false );
-        for ( String line : list )
-        {
-            if ( line.contains( text ) )
-            {
-                return true;
-            }
-        }
-        Assert.fail( "Did not find expected message in log" );
-        return false; // doh
-    }
-
-    protected boolean stringsAppearInSpecificOrderInLog( String[] strings )
-        throws VerificationException
-    {
-        int i = 0;
-        for ( String line : getLog() )
-        {
-            if ( line.startsWith( strings[i] ) )
-            {
-                if ( i == strings.length - 1 )
-                {
-                    return true;
-                }
-                ++i;
-            }
-        }
-        return false;
-    }
-
-    private List<String> getLog()
-        throws VerificationException
-    {
-        return verifier.loadFile( verifier.getBasedir(), verifier.getLogFileName(), false );
-    }
-
-
-
-    private DefaultArtifactVersion getMavenArtifacteVersion()
-    {
-        try
-        {
-            String v = verifier.getMavenVersion();
-            // NOTE: If the version looks like "${...}" it has been configured from an undefined expression
-            if ( v != null && v.length() > 0 && !v.startsWith( "${" ) )
-            {
-                return new DefaultArtifactVersion( v );
-            }
-        }
-        catch ( VerificationException e )
-        {
-            throw new RuntimeException( e );
-        }
-
-        return null;
-    }
-
-    /**
-     * This allows fine-grained control over execution of individual test methods
-     * by allowing tests to adjust to the current maven version, or else simply avoid
-     * executing altogether if the wrong version is present.
-     */
-    private boolean matchesVersionRange( String versionRangeStr )
-    {
-        VersionRange versionRange;
-        try
-        {
-            versionRange = VersionRange.createFromVersionSpec( versionRangeStr );
-        }
-        catch ( InvalidVersionSpecificationException e )
-        {
-            throw (RuntimeException) new IllegalArgumentException(
-                "Invalid version range: " + versionRangeStr ).initCause( e );
-        }
-
-        ArtifactVersion version = getMavenArtifacteVersion();
-        if ( version != null )
-        {
-            return versionRange.containsVersion( version );
-        }
-        else
-        {
-            throw new IllegalStateException( "Cannot determine maven version" );
-        }
-    }
-
     protected String getSurefireVersion()
     {
         return surefireVersion;
-    }
-
-    protected String getSurefireReportGoal()
-    {
-        return "org.apache.maven.plugins:maven-surefire-report-plugin:" + getSurefireVersion() + ":report";
-    }
-
-    protected String getSurefireReportOnlyGoal()
-    {
-        return "org.apache.maven.plugins:maven-surefire-report-plugin:" + getSurefireVersion() + ":report-only";
-    }
-
-    protected String getFailsafeReportOnlyGoal()
-    {
-        return "org.apache.maven.plugins:maven-surefire-report-plugin:" + getSurefireVersion()
-            + ":failsafe-report-only";
     }
 
     public SurefireLauncher parallel( String parallel )
@@ -508,7 +403,6 @@ public class SurefireLauncher
     }
 
     public SurefireLauncher addFailsafeReportOnlyGoal()
-        throws VerificationException
     {
         goals.add( "org.apache.maven.plugins:maven-surefire-report-plugin:" + getSurefireVersion() + ":failsafe-report-only");
         return this;
@@ -527,15 +421,23 @@ public class SurefireLauncher
     }
 
     
-    public void deleteSiteDir()
-        throws IOException
+    public SurefireLauncher deleteSiteDir()
     {
-        FileUtils.deleteDirectory(  surefireVerifier.getSubFile( "site" ));
+        try {
+            FileUtils.deleteDirectory(  surefireVerifier.getSubFile( "site" ));
+        } catch (IOException e) {
+            throw new SurefireVerifierException(e);
+        }
+        return this;
     }
 
     public SurefireLauncher setTestToRun( String basicTest )
     {
         addD( "test", basicTest);
         return this;
+    }
+
+    public OutputValidator getSurefireVerifier() {
+        return surefireVerifier;
     }
 }

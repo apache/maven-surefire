@@ -23,10 +23,10 @@ import java.io.IOException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
-import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass2;
+import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
 
 public class JUnit47RedirectOutputIT
-    extends SurefireVerifierTestClass2
+    extends SurefireIntegrationTestCase
 {
     public void testPrintSummaryTrueWithRedirect()
         throws Exception

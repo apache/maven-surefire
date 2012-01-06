@@ -21,7 +21,7 @@ package org.apache.maven.surefire.its;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
-import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass2;
+import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
 
 /**
  * JUnit4 RunListener Integration Test.
@@ -29,7 +29,7 @@ import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass2;
  * @author <a href="mailto:matthew.gilliard@gmail.com">Matthew Gilliard</a>
  */
 public class JUnit4RunListenerIT
-    extends SurefireVerifierTestClass2
+    extends SurefireIntegrationTestCase
 {
     public JUnit4RunListenerIT()
     {

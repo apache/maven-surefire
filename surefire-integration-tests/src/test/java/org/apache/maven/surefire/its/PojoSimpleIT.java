@@ -19,7 +19,7 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
+import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
 
 /**
  * Test support for POJO tests.
@@ -27,20 +27,11 @@ import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
  * @author Benjamin Bentmann
  */
 public class PojoSimpleIT
-    extends SurefireVerifierTestClass
+    extends SurefireIntegrationTestCase
 {
-
-
-    public PojoSimpleIT()
-    {
-        super( "/pojo-simple" );
-    }
-
     public void testit()
-        throws Exception
     {
-        executeTest();
-        assertTestSuiteResults(  2, 0, 1, 0);
+        unpack("pojo-simple").executeTest().assertTestSuiteResults(2, 0, 1, 0);
     }
 
 }
