@@ -19,11 +19,8 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import java.io.File;
-import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
-import org.apache.maven.surefire.its.misc.HelperAssertions;
-
-import junit.framework.Assert;
+import org.apache.maven.surefire.its.fixture.OutputValidator;
+import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass2;
 
 /**
  * Test surefire-report on TestNG test
@@ -31,22 +28,13 @@ import junit.framework.Assert;
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
 public class CheckTestNgReportTestIT
-    extends SurefireVerifierTestClass
+    extends SurefireVerifierTestClass2
 {
-
-    public CheckTestNgReportTestIT()
-    {
-        super( "/testng-simple" );
-    }
-
     public void testTestNgReport()
         throws Exception
     {
-        execute( getSurefireReportGoal() );
-        verifyErrorFreeLog();
-
-        HelperAssertions.assertTestSuiteResults( 1, 0, 0, 0, getTestDir() );
-        File reportHtml = new File( getTestDir(), "target/site/surefire-report.html" );
-        Assert.assertTrue( "surefire-report is missing", reportHtml.exists() );
+        final OutputValidator outputValidator =
+            unpack( "/testng-simple" ).addSurefireReportGoal().executeCurrentGoals().verifyErrorFree( 1 );
+        outputValidator.getSiteFile( "surefire-report.html" ).assertFileExists();
     }
 }

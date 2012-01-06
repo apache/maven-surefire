@@ -19,7 +19,7 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
+import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass2;
 
 /**
  * Test basic default configuration, runs the JUnit 3 test in the src/test directory.
@@ -27,19 +27,10 @@ import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
 public class DefaultConfigurationIT
-    extends SurefireVerifierTestClass
+    extends SurefireVerifierTestClass2
 {
-    public DefaultConfigurationIT()
-    {
-        super( "/default-configuration" );
-    }
-
     public void testDefaultConfiguration()
-        throws Exception
     {
-        executeTest();
-        verifyErrorFreeLog();
-
-        assertTestSuiteResults( 1, 0, 0, 0 );
+        executeErrorFreeTest( "default-configuration" , 1 );
     }
 }

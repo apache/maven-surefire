@@ -19,8 +19,9 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import java.io.File;
-import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
+import org.apache.maven.surefire.its.fixture.OutputValidator;
+import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass2;
+import org.apache.maven.surefire.its.fixture.TestFile;
 
 /**
  * Asserts proper behaviour of console output when forking
@@ -30,22 +31,15 @@ import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
  * @author Kristian Rosenvold
  */
 public class ForkConsoleOutputWithErrorsIT
-    extends SurefireVerifierTestClass
+    extends SurefireVerifierTestClass2
 {
-
-    public ForkConsoleOutputWithErrorsIT()
-    {
-        super( "/fork-consoleOutputWithErrors" );
-    }
-
     public void testXmlFileContainsConsoleOutput()
-        throws Exception
     {
-        failNever();
-        redirectToFile( true );
-        execute( "test" );
-        final File surefireReportsFile = getSurefireReportsFile( "TEST-forkConsoleOutput.Test2.xml" );
-        assertContainsText( surefireReportsFile, "sout: Will Fail soon" );
-        assertContainsText( surefireReportsFile, "serr: Will Fail now" );
+        final OutputValidator outputValidator = unpack( "/fork-consoleOutputWithErrors" ).
+            failNever().redirectToFile( true ).executeTest();
+        final TestFile
+            surefireReportsFile = outputValidator.getSurefireReportsFile( "TEST-forkConsoleOutput.Test2.xml" );
+        surefireReportsFile.assertContainsText( "sout: Will Fail soon" );
+        surefireReportsFile.assertContainsText( "serr: Will Fail now" );
     }
 }

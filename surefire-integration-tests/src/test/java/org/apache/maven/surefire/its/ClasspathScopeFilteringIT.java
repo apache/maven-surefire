@@ -31,8 +31,7 @@ public class ClasspathScopeFilteringIT
     extends SurefireVerifierTestClass2
 {
     public void testAdditionalClasspath()
-        throws Exception
     {
-        unpack( "classpath-scope-filtering" ).executeTest().verifyErrorFreeLog().assertTestSuiteResults( 1, 0, 0, 0 );
+        unpack( "classpath-scope-filtering" ).executeTest().verifyErrorFree(1);
     }
 }

@@ -37,9 +37,23 @@ import junit.framework.TestCase;
 public abstract class SurefireVerifierTestClass2
     extends TestCase
 {
+    public OutputValidator executeErrorFreeTest( String sourceName, int total ){
+        return unpack( sourceName ).executeTest().verifyErrorFree( total );
+    }
+
     public SurefireLauncher unpack( String sourceName )
-        throws VerificationException, IOException
     {
-        return new SurefireLauncher( this.getClass(), sourceName );
+        try
+        {
+            return new SurefireLauncher( this.getClass(), sourceName );
+        }
+        catch ( VerificationException e )
+        {
+            throw new SurefireVerifierException( e );
+        }
+        catch ( IOException e )
+        {
+            throw new SurefireVerifierException( e );
+        }
     }
 }

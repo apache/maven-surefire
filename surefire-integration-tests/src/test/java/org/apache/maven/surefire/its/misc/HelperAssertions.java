@@ -21,7 +21,7 @@ package org.apache.maven.surefire.its.misc;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.maven.surefire.its.IntegrationTestSuiteResults;
+import org.apache.maven.surefire.its.fixture.IntegrationTestSuiteResults;
 
 import junit.framework.Assert;
 

@@ -189,6 +189,12 @@ public class SurefireLauncher
         verifier.assertFileNotPresent( file.getAbsolutePath() );
     }
 
+    public SurefireLauncher assertNotPresent( String subFile )
+    {
+        verifier.assertFileNotPresent( surefireVerifier.getSubFile( subFile ).getAbsolutePath());
+        return this;
+    }
+    
     public SurefireLauncher showErrorStackTraces()
     {
         cliOptions.add( "-e" );
@@ -207,6 +213,11 @@ public class SurefireLauncher
         return this;
 
     }
+
+    public SurefireLauncher skipClean(){
+        goals.add( "-Dclean.skip=true" );
+        return this;
+    }
     
     public SurefireLauncher groups(String groups){
         goals.add( "-Dgroups=" + groups );
@@ -221,7 +232,6 @@ public class SurefireLauncher
     }
 
     public OutputValidator executeTest()
-        throws VerificationException
     {
         return execute( "test" );
     }
@@ -236,7 +246,7 @@ public class SurefireLauncher
     {
         try {
             execute( "test" );
-        } catch (VerificationException ignore) {
+        } catch (SurefireVerifierException ignore) {
             return surefireVerifier;
         }
         throw new RuntimeException( "Expecting build failure, got none!" );
@@ -249,14 +259,22 @@ public class SurefireLauncher
     }
 
     private OutputValidator execute( String goal )
-        throws VerificationException
     {
         addGoal( goal );
+        return executeCurrentGoals();
+    }
+
+    public OutputValidator executeCurrentGoals()
+    {
         verifier.setCliOptions( cliOptions );
         try
         {
             verifier.executeGoals( goals, envvars );
             return surefireVerifier;
+        }
+        catch ( VerificationException e )
+        {
+            throw new SurefireVerifierException( e );
         }
         finally
         {
@@ -457,6 +475,11 @@ public class SurefireLauncher
     {
         return addGoal( "-D" + variable + "=" + value );
     }
+    
+    public SurefireLauncher setJUnitVersion(String version){
+        addD( "junit.version", version);
+        return this;
+    }
 
     public SurefireLauncher setGroups( String groups )
     {
@@ -482,5 +505,37 @@ public class SurefireLauncher
     
     public File getUnpackLocation(){
         return new File(verifier.getBasedir());
+    }
+
+    public SurefireLauncher addFailsafeReportOnlyGoal()
+        throws VerificationException
+    {
+        goals.add( "org.apache.maven.plugins:maven-surefire-report-plugin:" + getSurefireVersion() + ":failsafe-report-only");
+        return this;
+    }
+
+    public SurefireLauncher addSurefireReportGoal()
+    {
+        goals.add( "org.apache.maven.plugins:maven-surefire-report-plugin:" + getSurefireVersion() + ":report");
+        return this;
+    }
+
+    public SurefireLauncher addSurefireReportOnlyGoal()
+    {
+        goals.add( "org.apache.maven.plugins:maven-surefire-report-plugin:" + getSurefireVersion() + ":report-only");
+        return this;
+    }
+
+    
+    public void deleteSiteDir()
+        throws IOException
+    {
+        FileUtils.deleteDirectory(  surefireVerifier.getSubFile( "site" ));
+    }
+
+    public SurefireLauncher setTestToRun( String basicTest )
+    {
+        addD( "test", basicTest);
+        return this;
     }
 }

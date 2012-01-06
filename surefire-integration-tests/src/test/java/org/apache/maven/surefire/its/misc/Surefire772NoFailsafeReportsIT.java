@@ -19,10 +19,12 @@ package org.apache.maven.surefire.its.misc;
  */
 
 
-import org.apache.commons.io.FileUtils;
-import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
-
-import java.io.File;
+import java.io.IOException;
+import org.apache.maven.it.VerificationException;
+import org.apache.maven.surefire.its.fixture.OutputValidator;
+import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass2;
+import org.apache.maven.surefire.its.fixture.TestFile;
 
 /**
  * Test Surefire-740 Truncated comma with non us locale
@@ -30,93 +32,73 @@ import java.io.File;
  * @author Kristian Rosenvold
  */
 public class Surefire772NoFailsafeReportsIT
-    extends SurefireVerifierTestClass
+    extends SurefireVerifierTestClass2
 {
-
-    public Surefire772NoFailsafeReportsIT()
-    {
-        super( "/surefire-772-no-failsafe-reports" );
-    }
-
-    @Override
-    protected void setUp()
-        throws Exception
-    {
-        super.setUp();
-        FileUtils.deleteDirectory( getTargetFile( "site" ) );
-        addGoal( "-Dclean.skip=true" );
-    }
 
     public void testReportGeneration()
         throws Exception
     {
-        failNever();
-        addGoal( getFailsafeReportOnlyGoal() );
-        assertFalse( "Expecting not site directory", getTargetFile( "site" ).isDirectory() );
-        execute( getSurefireReportOnlyGoal() );
+        final OutputValidator site = unpack().addFailsafeReportOnlyGoal().addSurefireReportOnlyGoal().executeCurrentGoals();
 
-        File siteFile = getSiteFile( "surefire-report.html" );
-        System.out.println( "siteFile.getAbsolutePath() = " + siteFile.getAbsolutePath() );
-        assertTrue( "Expecting surefire report file", siteFile.isFile() );
-
-        siteFile = getSiteFile( "failsafe-report.html" );
-        System.out.println( "siteFile.getAbsolutePath() = " + siteFile.getAbsolutePath() );
-        assertFalse( "Expecting no failsafe report file", siteFile.isFile() );
+        assertSurefireReportPresent( site );
+        assertNoFailsefeReport( site );
     }
+
 
     public void testSkippedFailsafeReportGeneration()
         throws Exception
     {
-        failNever();
-        activateProfile( "skipFailsafe" );
-        addGoal( getFailsafeReportOnlyGoal() );
-        assertFalse( "Expecting not site directory", getTargetFile( "site" ).isDirectory() );
-        execute( getSurefireReportOnlyGoal() );
+        final OutputValidator validator =
+            unpack().activateProfile( "skipFailsafe" ).addFailsafeReportOnlyGoal().addSurefireReportOnlyGoal().executeCurrentGoals();
+        assertSurefireReportPresent( validator );
+        assertNoFailsefeReport( validator );
 
-        File siteFile = getSiteFile( "surefire-report.html" );
-        System.out.println( "siteFile.getAbsolutePath() = " + siteFile.getAbsolutePath() );
-        assertTrue( "Expecting surefire report file", siteFile.isFile() );
-
-        siteFile = getSiteFile( "failsafe-report.html" );
-        System.out.println( "siteFile.getAbsolutePath() = " + siteFile.getAbsolutePath() );
-        assertFalse( "Expecting no failsafe report file", siteFile.isFile() );
     }
 
     public void testForcedFailsafeReportGeneration()
         throws Exception
     {
-        failNever();
-        activateProfile( "forceFailsafe" );
-        addGoal( getFailsafeReportOnlyGoal() );
-        assertFalse( "Expecting not site directory", getTargetFile( "site" ).isDirectory() );
-        execute( getSurefireReportOnlyGoal() );
-
-        File siteFile = getSiteFile( "surefire-report.html" );
-        System.out.println( "siteFile.getAbsolutePath() = " + siteFile.getAbsolutePath() );
-        assertTrue( "Expecting surefire report file", siteFile.isFile() );
-
-        siteFile = getSiteFile( "failsafe-report.html" );
-        System.out.println( "siteFile.getAbsolutePath() = " + siteFile.getAbsolutePath() );
-        assertTrue( "Expecting failsafe report file", siteFile.isFile() );
+        final OutputValidator validator =
+            unpack().activateProfile( "forceFailsafe" ).addFailsafeReportOnlyGoal().addSurefireReportOnlyGoal().executeCurrentGoals();
+        assertSurefireReportPresent( validator );
+        assertFailsafeReport( validator );
     }
 
     public void testSkipForcedFailsafeReportGeneration()
         throws Exception
     {
-        failNever();
-        activateProfile( "forceFailsafe" );
-        activateProfile( "skipFailsafe" );
-        addGoal( getFailsafeReportOnlyGoal() );
-        assertFalse( "Expecting not site directory", getTargetFile( "site" ).isDirectory() );
-        execute( getSurefireReportOnlyGoal() );
+        final OutputValidator validator =
+            unpack().activateProfile( "forceFailsafe" ).activateProfile( "skipFailsafe" )
+                .addFailsafeReportOnlyGoal().addSurefireReportOnlyGoal().executeCurrentGoals();
 
-        File siteFile = getSiteFile( "surefire-report.html" );
-        System.out.println( "siteFile.getAbsolutePath() = " + siteFile.getAbsolutePath() );
-        assertTrue( "Expecting surefire report file", siteFile.isFile() );
+        assertSurefireReportPresent( validator );
+        assertNoFailsefeReport( validator );
+    }
 
-        siteFile = getSiteFile( "failsafe-report.html" );
-        System.out.println( "siteFile.getAbsolutePath() = " + siteFile.getAbsolutePath() );
+    private void assertNoFailsefeReport( OutputValidator site )
+    {
+        TestFile siteFile = site.getSiteFile( "failsafe-report.html" );
         assertFalse( "Expecting no failsafe report file", siteFile.isFile() );
     }
+    private void assertFailsafeReport( OutputValidator site )
+    {
+        TestFile siteFile = site.getSiteFile( "failsafe-report.html" );
+        assertTrue( "Expecting no failsafe report file", siteFile.isFile() );
+    }
+
+    private void assertSurefireReportPresent( OutputValidator site )
+    {
+        TestFile siteFile = site.getSiteFile( "surefire-report.html" );
+        assertTrue( "Expecting surefire report file", siteFile.isFile() );
+    }
+
+    private SurefireLauncher unpack()
+        throws VerificationException, IOException
+    {
+        final SurefireLauncher unpack = unpack( "surefire-772-no-failsafe-reports" );
+        unpack.deleteSiteDir();
+        return unpack.skipClean().failNever().assertNotPresent( "site" );
+    }
+
 
 }

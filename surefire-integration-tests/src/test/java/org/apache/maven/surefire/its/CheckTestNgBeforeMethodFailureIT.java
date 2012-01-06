@@ -19,35 +19,21 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.it.VerificationException;
-import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
+import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass2;
 
 /**
  * Test failures in @BeforeMethod annotation on TestNg suite
  *
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
+ * @author <a href="mailto:krosenvold@apache.org">Kristian Rosenvold</a>
  */
 public class CheckTestNgBeforeMethodFailureIT
-    extends SurefireVerifierTestClass
+    extends SurefireVerifierTestClass2
 {
-
-    public CheckTestNgBeforeMethodFailureIT()
-    {
-        super( "/testng-beforeMethodFailure" );
-    }
 
     public void testTestNgBeforeMethodFailure()
         throws Exception
     {
-        try
-        {
-            executeTest();
-            verifyErrorFreeLog();
-            fail( "Build didn't fail, but it should" );
-        }
-        catch ( VerificationException ignore )
-        {
-        }
-        assertTestSuiteResults( 2, 0, 1, 1 );
+        unpack( "/testng-beforeMethodFailure" ).executeTestWithFailure().assertTestSuiteResults( 2, 0, 1, 1 );
     }
 }

@@ -19,7 +19,7 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
+import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass2;
 
 /**
  * Test additionalClasspathElements
@@ -27,19 +27,11 @@ import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
  * @author pgier
  */
 public class ClasspathFilteringIT
-    extends SurefireVerifierTestClass
+    extends SurefireVerifierTestClass2
 {
-
-    public ClasspathFilteringIT()
-    {
-        super( "/classpath-filtering" );
-    }
-
     public void testAdditionalClasspath()
         throws Exception
     {
-        executeTest();
-        verifyErrorFreeLog();
-        assertTestSuiteResults( 1, 0, 0, 0 );
+        unpack( "classpath-filtering" ).executeTest().verifyErrorFree( 1 );
     }
 }

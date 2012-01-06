@@ -19,27 +19,19 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
+import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass2;
 
 /**
  * Test for checking the order of class path elements
  *
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
+ * @author <a href="mailto:krosenvold@apache.org">Kristian Rosenvold</a>
  */
 public class ClassPathOrderIT
-    extends SurefireVerifierTestClass
+    extends SurefireVerifierTestClass2
 {
-
-    public ClassPathOrderIT()
-    {
-        super( "/classpath-order" );
-    }
-
     public void testClassPathOrder()
-        throws Exception
     {
-        executeTest();
-        verifyErrorFreeLog();
-        assertTestSuiteResults( 2, 0, 0, 0 );
+        unpack( "/classpath-order" ).executeTest().verifyErrorFree( 2 );
     }
 }

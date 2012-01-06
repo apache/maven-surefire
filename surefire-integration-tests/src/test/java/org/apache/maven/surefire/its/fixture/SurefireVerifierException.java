@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.its;
+package org.apache.maven.surefire.its.fixture;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,26 +19,13 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
-
 /**
- * Test project using -Dtest=mtClass#myMethod
- *
- * @author <a href="mailto:olamy@apache.org">Olivier Lamy</a>
+ * @author Kristian Rosenvold
  */
-public abstract class AbstractTestSingleMethod
-    extends SurefireVerifierTestClass
+public class SurefireVerifierException extends RuntimeException
 {
-    public AbstractTestSingleMethod( String projectResource )
+    public SurefireVerifierException( Throwable cause )
     {
-        super( projectResource );
-    }
-
-    public void testSingleMethod()
-        throws Exception
-    {
-        executeTest();
-        verifyErrorFreeLog();
-        assertTestSuiteResults( 1, 0, 0, 0 );
+        super( cause );
     }
 }

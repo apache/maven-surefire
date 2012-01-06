@@ -19,7 +19,7 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
+import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass2;
 
 /**
  * Test basic default configuration, runs the JUnit 3 test in the src/test directory.
@@ -27,19 +27,12 @@ import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
 public class EnvironmentVariableIT
-    extends SurefireVerifierTestClass
+    extends SurefireVerifierTestClass2
 {
 
-    public EnvironmentVariableIT()
-    {
-        super( "/junit44-environment" );
-    }
-
     public void testEnvironmentVariable()
-        throws Exception
     {
-        executeTest();
-        verifyErrorFreeLog();
-        assertTestSuiteResults( 1, 0, 0, 0 );
+
+        executeErrorFreeTest( "junit44-environment", 1 );
     }
 }

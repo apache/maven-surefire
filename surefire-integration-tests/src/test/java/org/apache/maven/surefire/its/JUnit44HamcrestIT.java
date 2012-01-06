@@ -19,7 +19,7 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
+import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass2;
 
 /**
  * Test project using JUnit4.4 (including Hamcrest extensions)
@@ -27,18 +27,10 @@ import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
 public class JUnit44HamcrestIT
-    extends SurefireVerifierTestClass
+    extends SurefireVerifierTestClass2
 {
-    public JUnit44HamcrestIT()
-    {
-        super( "/junit44-hamcrest" );
-    }
-
     public void testJUnit44Hamcrest()
-        throws Exception
     {
-        executeTest();
-        verifyErrorFreeLog();
-        assertTestSuiteResults( 1, 0, 0, 0 );
+        executeErrorFreeTest( "junit44-hamcrest", 1 );
     }
 }

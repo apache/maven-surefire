@@ -19,7 +19,7 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
+import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass2;
 
 /**
  * Test TestNG running in the JDK 1.4 JavaDoc style
@@ -27,20 +27,18 @@ import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
 public class CheckTestNgJdk14IT
-    extends SurefireVerifierTestClass
+    extends SurefireVerifierTestClass2
 {
 
     public CheckTestNgJdk14IT()
     {
-        super( "/testng-jdk14" );
+        unpack( "/testng-jdk14" );
     }
 
     public void testTestNgJdk14()
         throws Exception
     {
-        executeTest();
-        verifyErrorFreeLog();
-        assertTestSuiteResults( 1, 0, 0, 0 );
+        unpack( "/testng-jdk14" ).executeTest().verifyErrorFree( 1 );
 
     }
 }

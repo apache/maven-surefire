@@ -19,8 +19,9 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import java.io.File;
-import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
+import org.apache.maven.surefire.its.fixture.OutputValidator;
+import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass2;
 
 /**
  * JUnit4 RunListener Integration Test.
@@ -28,51 +29,46 @@ import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
  * @author <a href="mailto:matthew.gilliard@gmail.com">Matthew Gilliard</a>
  */
 public class JUnit4RunListenerIT
-    extends SurefireVerifierTestClass
+    extends SurefireVerifierTestClass2
 {
     public JUnit4RunListenerIT()
     {
-        super( "/junit4-runlistener" );
+        unpack();
+    }
+
+    private SurefireLauncher unpack()
+    {
+        return unpack( "/junit4-runlistener" );
     }
 
     public void testJUnit4RunListener()
         throws Exception
     {
-        addGoal( "-Dprovider=surefire-junit4" );
-        addGoal( "-DjunitVersion=4.4" );
-        executeTest();
-        verifyErrorFreeLog();
-        assertResults();
-        verifyTextInLog( "testRunStarted null" );
-        verifyTextInLog( "testFinished simpleTest" );
-        verifyTextInLog( "testRunFinished org.junit.runner.Result" );
-    }
-
-    private void assertResults()
-    {
-        assertTestSuiteResults( 1, 0, 0, 0 );
-        final File targetDir = getSubFile( "target" );
-
-        assertFileExists( new File( targetDir, "runlistener-output-1.txt" ) );
-        assertFileExists( new File( targetDir, "runlistener-output-2.txt" ) );
+        final OutputValidator outputValidator = unpack().addGoal( "-Dprovider=surefire-junit4" ).setJUnitVersion(
+            "4.4" ).executeTest().verifyErrorFreeLog();
+        assertResults(outputValidator);
+        outputValidator.verifyTextInLog( "testRunStarted null" );
+        outputValidator.verifyTextInLog( "testFinished simpleTest" );
+        outputValidator.verifyTextInLog( "testRunFinished org.junit.runner.Result" );
     }
 
     public void testRunlistenerJunitCoreProvider()
         throws Exception
     {
-        addGoal( "-Dprovider=surefire-junit47" );
-        addGoal( "-DjunitVersion=4.8.1" );
-        executeTest();
-        verifyErrorFreeLog();
-        assertResults();
-        verifyTextInLog( "testRunStarted null" );
-        verifyTextInLog( "testFinished simpleTest" );
-        verifyTextInLog( "testRunFinished org.junit.runner.Result" );
+        final OutputValidator outputValidator = unpack().addGoal( "-Dprovider=surefire-junit47" ).setJUnitVersion(
+            "4.8.1" ).addGoal( "-DjunitVersion=4.8.1" ).executeTest().verifyErrorFreeLog();   // Todo: Fix junitVesion
+        assertResults(outputValidator);
+        outputValidator.verifyTextInLog( "testRunStarted null" );
+        outputValidator.verifyTextInLog( "testFinished simpleTest" );
+        outputValidator.verifyTextInLog( "testRunFinished org.junit.runner.Result" );
     }
 
-    private void assertFileExists( final File file )
+    private void assertResults( OutputValidator outputValidator )
     {
-        assertTrue( "File doesn't exist: " + file.getAbsolutePath(), file.exists() );
+        outputValidator.assertTestSuiteResults( 1, 0, 0, 0 );
+        outputValidator.getTargetFile( "runlistener-output-1.txt" ).assertFileExists();
+        outputValidator.getTargetFile( "runlistener-output-2.txt" ).assertFileExists();
     }
+
 
 }

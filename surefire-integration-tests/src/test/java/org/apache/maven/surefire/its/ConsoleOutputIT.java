@@ -19,8 +19,8 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import java.io.File;
-import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
+import org.apache.maven.surefire.its.fixture.OutputValidator;
+import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass2;
 
 /**
  * Basic suite test using all known versions of JUnit 4.x
@@ -28,21 +28,12 @@ import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
  * @author Kristian Rosenvold
  */
 public class ConsoleOutputIT
-    extends SurefireVerifierTestClass
+    extends SurefireVerifierTestClass2
 {
-
-    public ConsoleOutputIT()
-    {
-        super( "/consoleOutput" );
-    }
-
     public void testProperNewlines()
-        throws Exception
     {
-        redirectToFile(true);
-        addGoal( "-DjunitVersion=4.7" );
-        executeTest();
-        final File surefireReportsFile = getSurefireReportsFile( "consoleOutput.Test1-output.txt" );
-        assertContainsText( surefireReportsFile, "SoutAgain" );
+        final OutputValidator outputValidator =
+            unpack( "/consoleOutput" ).redirectToFile( true ).setJUnitVersion( "4.7" ).executeTest();
+        outputValidator.getSurefireReportsFile( "consoleOutput.Test1-output.txt" ).assertContainsText( "SoutAgain" );
     }
 }

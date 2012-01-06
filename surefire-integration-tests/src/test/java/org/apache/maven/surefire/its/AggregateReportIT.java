@@ -20,36 +20,34 @@ package org.apache.maven.surefire.its;
  */
 
 import java.io.File;
-import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
+import org.apache.maven.surefire.its.fixture.IntegrationTestSuiteResults;
+import org.apache.maven.surefire.its.fixture.OutputValidator;
+import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass2;
+import org.apache.maven.surefire.its.fixture.TestFile;
 import org.apache.maven.surefire.its.misc.HelperAssertions;
 
 /**
  * Test report aggregation
  *
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
+ * @author <a href="mailto:krosenvold@apache.org">Kristian Rosenvold</a>
  */
 public class AggregateReportIT
-    extends SurefireVerifierTestClass
+    extends SurefireVerifierTestClass2
 {
 
-    public AggregateReportIT()
-    {
-        super( "/aggregate-report" );
-    }
-
     public void testAggregateReport()
-        throws Exception
     {
-        execute( "org.apache.maven.plugins:maven-surefire-report-plugin:" + getSurefireVersion() + ":report" );
-
-        File surefireReportHtml = getSiteFile( "surefire-report.html" );
+        final OutputValidator outputValidator =
+            unpack( "/aggregate-report" ).addSurefireReportGoal().executeCurrentGoals();
+        TestFile surefireReportHtml = outputValidator.getSiteFile( "surefire-report.html" );
         assertTrue( "surefire report missing: " + surefireReportHtml.getAbsolutePath(), surefireReportHtml.exists() );
 
         // TODO HtmlUnit tests on the surefire report
 
         File[] testDirs = new File[2];
-        testDirs[0] = new File( getTestDir(), "child1" );
-        testDirs[1] = new File( getTestDir(), "child2" );
+        testDirs[0] = new File( outputValidator.getBaseDir(), "child1" );
+        testDirs[1] = new File( outputValidator.getBaseDir(), "child2" );
         IntegrationTestSuiteResults suite = HelperAssertions.parseTestResults( testDirs );
         HelperAssertions.assertTestSuiteResults( 2, 0, 1, 0, suite );
     }

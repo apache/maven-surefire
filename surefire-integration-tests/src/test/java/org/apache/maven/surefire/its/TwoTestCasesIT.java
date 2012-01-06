@@ -23,6 +23,7 @@ import java.io.File;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.apache.maven.surefire.its.fixture.IntegrationTestSuiteResults;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass2;
 import org.apache.maven.surefire.its.misc.HelperAssertions;

@@ -30,8 +30,7 @@ public class CheckTestNgPathWithSpacesIT
     extends SurefireVerifierTestClass2
 {
     public void testTestNgTestWithSpaces()
-        throws Exception
     {
-        unpack( "testng-path with spaces" ).executeTest().verifyErrorFreeLog().assertTestSuiteResults( 1, 0, 0, 0 );
+        unpack( "testng-path with spaces" ).executeTest().verifyErrorFree(1);
     }
 }

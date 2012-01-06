@@ -19,8 +19,6 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import java.io.IOException;
-import org.apache.maven.it.VerificationException;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass2;
@@ -35,7 +33,6 @@ public class ForkModeIT
     extends SurefireVerifierTestClass2
 {
     public void testForkModeAlways()
-        throws Exception
     {
 
         String[] pids = doTest( unpack( getProject() ).forkAlways());
@@ -43,21 +40,18 @@ public class ForkModeIT
     }
 
     public void testForkModePerTest()
-        throws Exception
     {
         String[] pids = doTest( unpack( getProject() ).forkPerTest());
         assertDifferentPids( pids );
     }
 
     public void testForkModeNever()
-        throws Exception
     {
         String[] pids = doTest(  unpack( getProject() ).forkNever() );
         assertSamePids( pids );
     }
 
     public void testForkModeNone()
-        throws Exception
     {
         String[] pids = doTest( unpack( getProject() ).forkMode( "none" ));
 
@@ -65,7 +59,6 @@ public class ForkModeIT
     }
 
     public void testForkModeOnce()
-        throws Exception
     {
         String[] pids = doTest( unpack( getProject() ).forkOnce());
         // DGF It would be nice to assert that "once" was different
@@ -100,7 +93,6 @@ public class ForkModeIT
     }
 
     private String[] doTest( SurefireLauncher forkMode )
-        throws IOException, VerificationException
     {
         final OutputValidator outputValidator = forkMode.executeTest();
         outputValidator.verifyErrorFreeLog().assertTestSuiteResults( 3, 0, 0, 0 );

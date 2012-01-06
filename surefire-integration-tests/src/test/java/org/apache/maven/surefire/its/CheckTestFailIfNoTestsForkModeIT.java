@@ -19,8 +19,6 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import java.io.IOException;
-import org.apache.maven.it.VerificationException;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass2;
 
@@ -28,49 +26,43 @@ import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass2;
  * Test failIfNoTests with various forkModes.
  *
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
+ * @author <a href="mailto:krosenvold@apache.org">Kristian Rosenvold</a>
  */
 public class CheckTestFailIfNoTestsForkModeIT
     extends SurefireVerifierTestClass2
 {
     public void testFailIfNoTestsForkModeAlways()
-        throws Exception
     {
         doTest( unpack().forkAlways().failIfNoTests( true ) );
     }
 
 
     public void testFailIfNoTestsForkModeNever()
-        throws Exception
     {
         doTest( unpack().forkNever().failIfNoTests( true ) );
     }
 
     public void testFailIfNoTestsForkModeOnce()
-        throws Exception
     {
         doTest( unpack().forkOnce().failIfNoTests( true ) );
     }
 
     public void testDontFailIfNoTestsForkModeAlways()
-        throws Exception
     {
         doTest( unpack().forkAlways().failIfNoTests( false) );
     }
 
     public void testDontFailIfNoTestsForkModeNever()
-        throws Exception
     {
         doTest( unpack().forkNever().failIfNoTests( false) );
     }
 
     public void testDontFailIfNoTestsForkModeOnce()
-        throws Exception
     {
         doTest( unpack().forkOnce().failIfNoTests( false) );
     }
 
     private void doTest( SurefireLauncher launcher )
-        throws IOException, VerificationException
     {
         if ( launcher.isFailIfNoTests() )
         {
@@ -83,7 +75,6 @@ public class CheckTestFailIfNoTestsForkModeIT
     }
 
     private SurefireLauncher unpack()
-        throws VerificationException, IOException
     {
         return unpack("default-configuration-classWithNoTests");
     }

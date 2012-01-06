@@ -31,9 +31,7 @@ public class CheckTestNgGroupThreadParallelIT
     extends SurefireVerifierTestClass2
 {
     public void testTestNgGroupThreadParallel()
-        throws Exception
     {
-        unpack( "testng-group-thread-parallel" ).executeTest().verifyErrorFreeLog().assertTestSuiteResults( 3, 0, 0,
-                                                                                                            0 );
+        unpack( "testng-group-thread-parallel" ).executeTest().verifyErrorFree(3);
     }
 }

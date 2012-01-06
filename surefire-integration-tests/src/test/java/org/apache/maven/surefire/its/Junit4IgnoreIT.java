@@ -19,7 +19,8 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
+import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass2;
 
 /**
  * Test JUnit 4 tests marked with "Ignore" attribute
@@ -27,30 +28,20 @@ import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
 public class Junit4IgnoreIT
-    extends SurefireVerifierTestClass
+    extends SurefireVerifierTestClass2
 {
-    public Junit4IgnoreIT()
-    {
-        super( "/junit-ignore" );
-    }
-
     public void testJunit4Ignore()
-        throws Exception
     {
-        executeTest();
-        verifyErrorFreeLog();
-        assertTestSuiteResults( 3, 0, 0, 3 );
+        unpack().executeTest().verifyErrorFreeLog().assertTestSuiteResults( 3, 0, 0, 3 );
     }
 
     public void testJunit47ParallelIgnore()
-        throws Exception
     {
-
-        addGoal( "-Djunit.version=4.8.1" );
-        addGoal( "-Dsurefire.parallel=classes" );
-        executeTest();
-        verifyErrorFreeLog();
-        assertTestSuiteResults( 3, 0, 0, 3 );
+        unpack().setJUnitVersion( "4.8.1" ).parallelClasses().executeTest().verifyErrorFreeLog().assertTestSuiteResults( 3, 0, 0, 3 );
     }
 
+    private SurefireLauncher unpack()
+    {
+        return unpack( "/junit-ignore" );
+    }
 }

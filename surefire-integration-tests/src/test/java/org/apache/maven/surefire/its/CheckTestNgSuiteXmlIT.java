@@ -19,7 +19,8 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
+import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass2;
 
 /**
  * Test simple TestNG suite XML file
@@ -27,26 +28,22 @@ import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
 public class CheckTestNgSuiteXmlIT
-    extends SurefireVerifierTestClass
+    extends SurefireVerifierTestClass2
 {
-
-    public CheckTestNgSuiteXmlIT()
-    {
-        super( "/testng-suite-xml" );
-    }
-
     public void testTestNgSuiteXml()
-        throws Exception
     {
-        executeTest();
-        verifyErrorFreeLog();
-        assertTestSuiteResults( 1, 0, 0, 0 );
+        unpack().executeTest().verifyErrorFree( 1) ;
     }
 
     public void testTestNgSuiteXmlForkModeAlways()
-        throws Exception
     {
-        forkAlways();
-        testTestNgSuiteXml();
+        unpack().forkAlways().executeTest().verifyErrorFree( 1) ;
     }
+
+    private SurefireLauncher unpack()
+    {
+       return unpack( "testng-suite-xml" );
+    }
+
+
 }

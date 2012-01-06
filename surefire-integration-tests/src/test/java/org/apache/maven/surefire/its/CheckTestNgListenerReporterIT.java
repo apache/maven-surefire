@@ -32,10 +32,9 @@ public class CheckTestNgListenerReporterIT
     extends SurefireVerifierTestClass2
 {
     public void testTestNgListenerReporter()
-        throws Exception
     {
         final SurefireLauncher verifierStarter = unpack( "testng-listener-reporter" );
-        verifierStarter.executeTest().verifyErrorFreeLog().assertTestSuiteResults( 1, 0, 0, 0 )
+        verifierStarter.executeTest().verifyErrorFree(1)
             .getTargetFile( "resultlistener-output.txt" ).assertFileExists()
             .getTargetFile( "suitelistener-output.txt" ).assertFileExists()
             .getTargetFile( "reporter-output.txt" ).assertFileExists();

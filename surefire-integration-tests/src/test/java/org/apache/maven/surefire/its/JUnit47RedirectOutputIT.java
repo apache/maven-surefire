@@ -20,51 +20,43 @@ package org.apache.maven.surefire.its;
  */
 
 import java.io.IOException;
-
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
+import org.apache.maven.surefire.its.fixture.OutputValidator;
+import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass2;
 
 public class JUnit47RedirectOutputIT
-    extends SurefireVerifierTestClass
+    extends SurefireVerifierTestClass2
 {
-    public JUnit47RedirectOutputIT()
-    {
-        super( "/junit47-redirect-output" );
-    }
-
     public void testPrintSummaryTrueWithRedirect()
         throws Exception
     {
-        redirectToFile( true );
-
-        addGoal( "clean" );
-        executeTest();
-        checkReports();
+        final OutputValidator clean = unpack().redirectToFile( true ).addGoal( "clean" ).executeTest();
+        checkReports(clean);
     }
 
 
     public void testClassesParallel()
         throws Exception
     {
-        redirectToFile( true );
-
-        addGoal( "clean" );
-        addGoal( "-Dparallel=classes" );
-        executeTest();
-        checkReports();
+        final OutputValidator clean = unpack().redirectToFile( true ).addGoal( "clean" ).parallelClasses().executeTest();
+        checkReports(clean);
     }
 
-    private void checkReports()
+    private void checkReports( OutputValidator validator )
         throws IOException
     {
-        String report = StringUtils.trimToNull(
-            FileUtils.readFileToString( getSurefireReportsFile( "junit47ConsoleOutput.Test1-output.txt" ) ) );
+        String report = StringUtils.trimToNull( validator.getSurefireReportsFile( "junit47ConsoleOutput.Test1-output.txt" ).readFileToString() ) ;
         assertNotNull( report );
-        String report2 =
-            StringUtils.trimToNull( FileUtils.readFileToString( getSurefireReportsFile( "junit47ConsoleOutput.Test2-output.txt" ) ) );
+        String report2 = StringUtils.trimToNull( validator.getSurefireReportsFile( "junit47ConsoleOutput.Test2-output.txt" ).readFileToString() );
         assertNotNull( report2 );
-        assertFalse( getSurefireReportsFile( "junit47ConsoleOutput.Test3-output.txt" ).exists() );
+        assertFalse( validator.getSurefireReportsFile( "junit47ConsoleOutput.Test3-output.txt" ).exists() );
+    }
+
+
+    private SurefireLauncher unpack()
+    {
+        return unpack( "/junit47-redirect-output" );
     }
 
 }

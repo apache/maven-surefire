@@ -19,17 +19,44 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
+import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass2;
+
 /**
  * Test project using -Dtest=mtClass#myMethod
  *
  * @author <a href="mailto:olamy@apache.org">Olivier Lamy</a>
  */
-public class JUnit44TestSingleMethodIT
-    extends AbstractTestSingleMethod
+public class TestMethodPatternIT
+    extends SurefireVerifierTestClass2
 {
-    public JUnit44TestSingleMethodIT()
+    public void runMethodPattern( String projectName )
     {
-        super( "/junit44-single-method" );
+        unpack( projectName ).executeTest().assertTestSuiteResults( 2, 0, 0, 0 );
+    }
+
+    public void testJUnit44()
+    {
+        runMethodPattern( "junit44-method-pattern" );
+    }
+
+    public void testJUnit48()
+    {
+        runMethodPattern( "junit48-method-pattern" );
+    }
+
+    public void testTestNgMethodBefore()
+    {
+        runMethodPattern( "testng-method-pattern-before" );
+    }
+
+    public void testTestNGMethodPattern()
+    {
+        runMethodPattern( "/testng-method-pattern" );
+    }
+
+    public void testMethodPatternAfter()
+    {
+        unpack( "testng-method-pattern-after" ).executeTest().verifyErrorFree( 2 ).verifyTextInLog( "Called tearDown" );
     }
 
 }

@@ -19,17 +19,44 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
+import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass2;
+
 /**
  * Test project using -Dtest=mtClass#myMethod
  *
  * @author <a href="mailto:olamy@apache.org">Olivier Lamy</a>
  */
-public class JUnit48TestSingleMethodIT
-    extends AbstractTestSingleMethod
+public class TestSingleMethodIT
+    extends SurefireVerifierTestClass2
 {
-    public JUnit48TestSingleMethodIT()
+    public void singleMethod(String projectName)
+        throws Exception
     {
-        super( "/junit48-single-method" );
+        unpack( projectName ).executeTest().verifyErrorFreeLog().assertTestSuiteResults( 1, 0, 0, 0 );
+    }
+
+    public void testJunit44()
+        throws Exception
+    {
+        singleMethod( "junit44-single-method");
+    }
+
+    public void testJunit48()
+        throws Exception
+    {
+        singleMethod( "junit48-single-method");
+    }
+
+    public void testTestNg()
+        throws Exception
+    {
+        singleMethod( "testng-single-method");
+    }
+
+    public void testTestNg5149()
+        throws Exception
+    {
+        singleMethod( "/testng-single-method-5-14-9");
     }
 
 }

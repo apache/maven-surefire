@@ -19,29 +19,22 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
+import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass2;
 
 /**
  * Test files with "Abstract" in their name that aren't really abstract,
  * and abstract classes that don't say "Abstract" in their name
  *
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
+ * @author <a href="mailto:krosenvold@apache.org">Kristian Rosenvold</a>
  */
 public class AbstractTestCaseIT
-    extends SurefireVerifierTestClass
+    extends SurefireVerifierTestClass2
 {
 
-    public AbstractTestCaseIT()
-    {
-        super( "/default-configuration-abstract" );
-    }
-
     public void testAbstractTestCase()
-        throws Exception
     {
-        executeTest();
-        verifyErrorFreeLog();
-        assertTestSuiteResults( 1, 0, 0, 0 );
+        unpack( "/default-configuration-abstract" ).executeTest().verifyErrorFree( 1);
     }
 
 }

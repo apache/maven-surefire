@@ -84,18 +84,44 @@ public class OutputValidator
     }
 
     public OutputValidator verifyTextInLog( String text )
-        throws VerificationException
     {
-        verifier.verifyTextInLog( text );
+        try
+        {
+            verifier.verifyTextInLog( text );
+        }
+        catch ( VerificationException e )
+        {
+            throw new SurefireVerifierException( e );
+        }
         return this;
     }
 
 
     public OutputValidator verifyErrorFreeLog()
-        throws VerificationException
     {
-        verifier.verifyErrorFreeLog();
+        try
+        {
+            verifier.verifyErrorFreeLog();
+        }
+        catch ( VerificationException e )
+        {
+            throw new SurefireVerifierException( e );
+        }
         return this;
+    }
+
+    public OutputValidator verifyErrorFree(int total)
+    {
+        try
+        {
+            verifier.verifyErrorFreeLog();
+            this.assertTestSuiteResults( total, 0, 0, 0 );
+            return this;
+        }
+        catch ( VerificationException e )
+        {
+            throw new SurefireVerifierException( e );
+        }
     }
 
     public List loadFile( String basedir, String filename, boolean hasCommand )
@@ -105,10 +131,16 @@ public class OutputValidator
     }
 
     public List<String> loadFile( File file, boolean hasCommand )
-        throws VerificationException
     {
         //noinspection unchecked
-        return verifier.loadFile( file, hasCommand );
+        try
+        {
+            return verifier.loadFile( file, hasCommand );
+        }
+        catch ( VerificationException e )
+        {
+            throw new SurefireVerifierException( e );
+        }
     }
 
     public String getLogFileName()
@@ -158,6 +190,21 @@ public class OutputValidator
         File targetDir = getSubFile( "target" );
         return new TestFile(new File( targetDir, fileName ), this);
     }
+
+
+    public TestFile getSurefireReportsFile( String fileName )
+    {
+        File targetDir = getSubFile( "target/surefire-reports" );
+        return new TestFile(new File( targetDir, fileName ), this);
+    }
+
+    public TestFile getSiteFile( String fileName )
+    {
+        File targetDir = getSubFile( "target/site" );
+        return new TestFile(new File( targetDir, fileName ), this);
+    }
+
+
 
     public File getBaseDir()
     {

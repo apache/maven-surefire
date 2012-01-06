@@ -19,61 +19,42 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.it.VerificationException;
-import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass;
-
-import java.io.File;
+import org.apache.maven.surefire.its.fixture.OutputValidator;
+import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+import org.apache.maven.surefire.its.fixture.SurefireVerifierTestClass2;
+import org.apache.maven.surefire.its.fixture.TestFile;
 
 /**
  * Test failIfNoTests
  *
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
+ * @author <a href="mailto:krosenvold@apache.org">Kristian Rosenvold</a>
  */
 public class CheckTestFailIfNoTestsIT
-    extends SurefireVerifierTestClass
+    extends SurefireVerifierTestClass2
 {
-
-    public CheckTestFailIfNoTestsIT()
+    private SurefireLauncher unpack()
     {
-        super( "/default-configuration-noTests" );
+        return unpack( "/default-configuration-noTests" );
     }
 
     public void testFailIfNoTests()
-        throws Exception
     {
-        failIfNoTests( true );
-
-        try
-        {
-            executeTest();
-            verifyErrorFreeLog();
-            fail( "Build didn't fail, but it should" );
-        }
-        catch ( VerificationException ignore )
-        {
-        }
-
+        unpack().failIfNoTests( true ).executeTestWithFailure();
     }
 
     public void testDontFailIfNoTests()
-        throws Exception
     {
-        failIfNoTests( false );
-        executeTest();
-        verifyErrorFreeLog();
-
-        File reportsDir = getSurefireReportsFile( "" );
+        final OutputValidator outputValidator = unpack().failIfNoTests( false ).executeTest();
+        outputValidator.verifyErrorFreeLog();
+        TestFile reportsDir = outputValidator.getSurefireReportsFile( "" );
         assertFalse( "Unexpected reports directory", reportsDir.exists() );
     }
 
     public void test48CategoriesFailWhenNoTests()
-        throws Exception
     {
-        failIfNoTests( false );
-        activateProfile( "junit47" );
-        addD( "junit.version", "4.8.1" );
-        executeTest();
-        verifyErrorFreeLog();
+        unpack().failIfNoTests( false ).activateProfile( "junit47" ).setJUnitVersion( "4.8.1" )
+            .executeTest().verifyErrorFreeLog();
     }
 
 }

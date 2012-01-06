@@ -25,19 +25,26 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.List;
+
+import org.apache.commons.io.FileUtils;
+
+import junit.framework.Assert;
 
 import static junit.framework.Assert.assertTrue;
 
 /**
  * @author Kristian Rosenvold
  */
-public class TestFile {
+public class TestFile
+{
 
     private final File file;
 
     private final OutputValidator surefireVerifier;
 
-    public TestFile( File file, OutputValidator surefireVerifier ) {
+    public TestFile( File file, OutputValidator surefireVerifier )
+    {
         this.file = file;
         this.surefireVerifier = surefireVerifier;
     }
@@ -45,6 +52,12 @@ public class TestFile {
     public OutputValidator assertFileExists()
     {
         assertTrue( "File doesn't exist: " + file.getAbsolutePath(), file.exists() );
+        return surefireVerifier;
+    }
+
+    public OutputValidator assertFileNotExists()
+    {
+        assertTrue( "File doesn't exist: " + file.getAbsolutePath(), !file.exists() );
         return surefireVerifier;
     }
 
@@ -71,16 +84,53 @@ public class TestFile {
     }
 
     public String slurpFile()
-        throws IOException
     {
-        StringBuilder sb = new StringBuilder();
-        BufferedReader reader = new BufferedReader( new FileReader( file ) );
-        for ( String line = reader.readLine(); line != null; line = reader.readLine() )
+        try
         {
-            sb.append( line );
+            StringBuilder sb = new StringBuilder();
+            BufferedReader reader = null;
+            reader = new BufferedReader( new FileReader( file ) );
+            for ( String line = reader.readLine(); line != null; line = reader.readLine() )
+            {
+                sb.append( line );
+            }
+            reader.close();
+            return sb.toString();
         }
-        reader.close();
-        return sb.toString();
+        catch ( IOException e )
+        {
+            throw new SurefireVerifierException( e );
+        }
+
+    }
+
+    public String readFileToString(){
+        try
+        {
+            return FileUtils.readFileToString(file);
+        }
+        catch ( IOException e )
+        {
+            throw new SurefireVerifierException( e );
+        }
+    }
+
+    public boolean isFile()
+    {
+        return file.isFile();
+    }
+
+    public void assertContainsText( String text )
+    {
+        final List<String> list = surefireVerifier.loadFile( file, false );
+        for ( String line : list )
+        {
+            if ( line.contains( text ) )
+            {
+                return;
+            }
+        }
+        Assert.fail( "Did not find expected message in log" );
     }
 
 }
