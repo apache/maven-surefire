@@ -21,11 +21,12 @@ package org.apache.maven.surefire.its.jiras;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.TestFile;
 
 /**
  * Asserts that console output always goes somewhere ;)
  *
- * @author Kristian Rosenvold
+ * @author Kristian Rosenvold       assertContainsText
  */
 public class Surefire628ConsoleOutputBeforeAndAfterClassIT
     extends SurefireIntegrationTestCase
@@ -34,14 +35,30 @@ public class Surefire628ConsoleOutputBeforeAndAfterClassIT
     public void testJunit3ParallelBuildResultCount()
     {
         OutputValidator validator = unpack("surefire-628-consoleoutputbeforeandafterclass")
-                .failNever().executeTest();
+                .failNever().parallelMethods().executeTest();
 
         validator.verifyTextInLog("628Test1");
         validator.verifyTextInLog("Before628Test1");
         validator.verifyTextInLog("After628Test1");
         validator.verifyTextInLog("628Test2");
-        validator.verifyTextInLog("Before628Test2");
-        validator.verifyTextInLog("After628Test2");
+        validator.verifyTextInLog("BeforeClass628Test2");
+        validator.verifyTextInLog("AfterClass628Test2");
     }
+
+
+
+    public void testProperBeforeAndAfterClassCapture()
+    {
+        OutputValidator validator = unpack("surefire-628-consoleoutputbeforeandafterclass")
+                .failNever().redirectToFile( true ).parallelClasses().executeTest();
+
+        final TestFile surefireReportsFile = validator.getSurefireReportsFile( "surefire628.Test2-output.txt" );
+
+        surefireReportsFile
+        .assertContainsText("628Test2")
+        .assertContainsText("BeforeClass628Test2")
+        .assertContainsText("AfterClass628Test2");
+    }
+
 
 }

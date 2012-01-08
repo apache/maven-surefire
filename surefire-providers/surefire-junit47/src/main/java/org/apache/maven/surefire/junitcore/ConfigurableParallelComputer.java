@@ -140,7 +140,8 @@ public class ConfigurableParallelComputer
         throws Throwable
     {
         Runner runner = super.getRunner( builder, testClass );
-        return fMethods && !isTestSuite(  testClass )? parallelize( runner, getMethodInterceptor() ) : runner;
+        ClassDemarcatingRunner classDemarcatingRunner = new ClassDemarcatingRunner(runner, testClass);
+        return fMethods && !isTestSuite(  testClass )? parallelize( classDemarcatingRunner, getMethodInterceptor() ) : classDemarcatingRunner;
     }
 
     private boolean isTestSuite( Class<?> testClass){

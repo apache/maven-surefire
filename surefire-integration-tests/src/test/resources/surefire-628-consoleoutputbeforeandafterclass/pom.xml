@@ -9,7 +9,7 @@
   <url>http://maven.apache.org</url>
   <properties>
     <junit.version>4.8.1</junit.version>
-    <junit.parallel>methods</junit.parallel>
+    <parallel>methods</parallel>
   </properties>
   <dependencies>
       <dependency>
@@ -34,7 +34,6 @@
            <version>${surefire.version}</version>
            <configuration>
              <forkMode>once</forkMode>
-             <parallel>${junit.parallel}</parallel>
              <threadCount>5</threadCount>
              <includes>
                 <include>**/Test*.java</include>

@@ -19,15 +19,9 @@ package surefire628;
  */
 
 
-import org.junit.Test;
-import org.junit.BeforeClass;
 import org.junit.AfterClass;
-
-
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assume.*;
+import org.junit.BeforeClass;
+import org.junit.Test;
 public class Test2
 {
     @Test
@@ -37,12 +31,12 @@ public class Test2
 
     @BeforeClass
     public static void testWithFailingAssumption2() {
-        System.out.println( "Before628Test2 on" + Thread.currentThread().getName());
+        System.out.println( "BeforeClass628Test2 on" + Thread.currentThread().getName());
     }
 
     @AfterClass
     public static void testWithFailingAssumption3() {
-        System.out.println( "After628Test2 on" + Thread.currentThread().getName());
+        System.out.println( "AfterClass628Test2 on" + Thread.currentThread().getName());
     }
 
 }

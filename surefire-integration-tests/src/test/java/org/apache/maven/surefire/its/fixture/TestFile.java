@@ -121,17 +121,18 @@ public class TestFile
         return file.isFile();
     }
 
-    public void assertContainsText( String text )
+    public TestFile assertContainsText( String text )
     {
         final List<String> list = surefireVerifier.loadFile( file, false );
         for ( String line : list )
         {
             if ( line.contains( text ) )
             {
-                return;
+                return this;
             }
         }
         Assert.fail( "Did not find expected message in log" );
+        return null;
     }
 
     public URI toURI() {

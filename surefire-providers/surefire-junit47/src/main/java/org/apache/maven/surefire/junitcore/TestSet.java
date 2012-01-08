@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.SimpleReportEntry;
@@ -53,6 +54,9 @@ public class TestSet
 
     private final AtomicBoolean played = new AtomicBoolean();
 
+    private volatile LogicalStream beforeClass;
+
+    private volatile LogicalStream afterClass;
 
     public TestSet( Description testSetDescription )
     {
@@ -77,6 +81,11 @@ public class TestSet
 
             target.testSetStarting( report );
 
+            if ( beforeClass != null )
+            {
+                beforeClass.writeDetails( ( (ConsoleOutputReceiver) target ) );
+            }
+
             for ( TestMethod testMethod : testMethods )
             {
                 testMethod.replay( target );
@@ -84,6 +93,10 @@ public class TestSet
 
             report = createReportEntry( elapsed );
 
+            if ( afterClass != null )
+            {
+                afterClass.writeDetails( ( (ConsoleOutputReceiver) target ) );
+            }
             target.testSetCompleted( report );
         }
         catch ( Exception e )
@@ -149,4 +162,26 @@ public class TestSet
     {
         return testSet.get();
     }
+
+    public LogicalStream getClassLevelLogicalStream()
+    {
+        if ( numberOfCompletedChildren.get() > 0 )
+        {
+            if ( afterClass == null )
+            {
+                afterClass = new LogicalStream();
+            }
+            return afterClass;
+        }
+        else
+        {
+            if ( beforeClass == null )
+            {
+                beforeClass = new LogicalStream();
+            }
+            return beforeClass;
+        }
+    }
+
+
 }

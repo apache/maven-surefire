@@ -29,7 +29,7 @@ import org.apache.maven.surefire.testset.TestSetFailedException;
 
 /**
  * Handles responses from concurrent junit
- *
+ * <p/>
  * Stuff to remember about JUnit threading:
  * parallel=classes; beforeClass/afterClass, constructor and all tests method run on same thread
  * parallel=methods; beforeClass/afterClass run on main thread, constructor + each test method run on same thread
@@ -41,7 +41,6 @@ public abstract class ConcurrentReporterManager
     implements RunListener, ConsoleOutputReceiver
 {
     private final Map<String, TestSet> classMethodCounts;
-    // private final ReporterConfiguration reporterConfiguration;
 
     private final ThreadLocal<RunListener> reporterManagerThreadLocal = new ThreadLocal<RunListener>();
 
@@ -152,7 +151,12 @@ public abstract class ConcurrentReporterManager
 
     TestSet getTestSet( ReportEntry description )
     {
-        return classMethodCounts.get( description.getSourceName() );
+        TestSet testSet = classMethodCounts.get( description.getSourceName() );
+        if ( testSet == null )
+        {
+            testSet = classMethodCounts.get( ClassDemarcatingRunner.getCurrentTestClass() );
+        }
+        return testSet;
     }
 
     RunListener getRunListener()
@@ -191,8 +195,17 @@ public abstract class ConcurrentReporterManager
         }
         else
         {
-            // Not able to assocaite output with any thread. Just dump to console
-            consoleLogger.info( new String( buf, off, len ) );
+            String currentTestClassName = ClassDemarcatingRunner.getCurrentTestClass();
+            TestSet testSet = currentTestClassName != null ? classMethodCounts.get( currentTestClassName ) : null;
+            if ( testSet != null )
+            {
+                testSet.getClassLevelLogicalStream().write( stdout, buf, off, len );
+            }
+            else
+            {
+                // Not able to assocaite output with any thread. Just dump to console
+                consoleLogger.info( new String( buf, off, len ) );
+            }
         }
     }
 
