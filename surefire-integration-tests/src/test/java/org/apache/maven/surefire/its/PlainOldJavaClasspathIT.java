@@ -31,6 +31,6 @@ public class PlainOldJavaClasspathIT
 {
     public void testPlainOldJavaClasspath()
     {
-        executeErrorFreeTest("plain-old-java-classpath", 1);
+        executeErrorFreeTest( "plain-old-java-classpath", 1 );
     }
 }

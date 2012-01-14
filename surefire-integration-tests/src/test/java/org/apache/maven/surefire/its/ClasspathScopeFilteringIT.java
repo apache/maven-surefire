@@ -32,6 +32,6 @@ public class ClasspathScopeFilteringIT
 {
     public void testAdditionalClasspath()
     {
-        unpack( "classpath-scope-filtering" ).executeTest().verifyErrorFree(1);
+        unpack( "classpath-scope-filtering" ).executeTest().verifyErrorFree( 1 );
     }
 }

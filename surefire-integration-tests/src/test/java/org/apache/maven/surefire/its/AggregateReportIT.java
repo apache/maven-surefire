@@ -47,6 +47,6 @@ public class AggregateReportIT
         testDirs[0] = new File( outputValidator.getBaseDir(), "child1" );
         testDirs[1] = new File( outputValidator.getBaseDir(), "child2" );
         IntegrationTestSuiteResults suite = HelperAssertions.parseTestResults( testDirs );
-        HelperAssertions.assertTestSuiteResults(2, 0, 1, 0, suite);
+        HelperAssertions.assertTestSuiteResults( 2, 0, 1, 0, suite );
     }
 }

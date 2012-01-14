@@ -32,15 +32,16 @@ public class PlexusConflictIT
 {
     public void testPlexusConflict()
     {
-        unpack().executeTest().verifyErrorFree(1);
+        unpack().executeTest().verifyErrorFree( 1 );
     }
 
     public void testPlexusConflictIsolatedClassLoader()
     {
-        unpack().addD( "surefire.useSystemClassLoader", "false" ).executeTest().verifyErrorFree(1);
+        unpack().addD( "surefire.useSystemClassLoader", "false" ).executeTest().verifyErrorFree( 1 );
     }
 
-    private SurefireLauncher unpack() {
-        return unpack("/plexus-conflict");
+    private SurefireLauncher unpack()
+    {
+        return unpack( "/plexus-conflict" );
     }
 }

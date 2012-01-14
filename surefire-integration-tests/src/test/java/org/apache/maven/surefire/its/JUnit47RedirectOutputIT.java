@@ -32,21 +32,21 @@ public class JUnit47RedirectOutputIT
         throws Exception
     {
         final OutputValidator clean = unpack().redirectToFile( true ).addGoal( "clean" ).executeTest();
-        checkReports(clean);
+        checkReports( clean );
     }
-
 
     public void testClassesParallel()
         throws Exception
     {
-        final OutputValidator clean = unpack().redirectToFile( true ).addGoal( "clean" ).parallelClasses().executeTest();
-        checkReports(clean);
+        final OutputValidator clean =
+            unpack().redirectToFile( true ).addGoal( "clean" ).parallelClasses().executeTest();
+        checkReports( clean );
     }
 
     private void checkReports( OutputValidator validator )
         throws IOException
     {
-        String report = StringUtils.trimToNull( validator.getSurefireReportsFile( "junit47ConsoleOutput.Test1-output.txt" ).readFileToString() ) ;
+        String report = StringUtils.trimToNull( validator.getSurefireReportsFile( "junit47ConsoleOutput.Test1-output.txt" ).readFileToString() );
         assertNotNull( report );
         String report2 = StringUtils.trimToNull( validator.getSurefireReportsFile( "junit47ConsoleOutput.Test2-output.txt" ).readFileToString() );
         assertNotNull( report2 );

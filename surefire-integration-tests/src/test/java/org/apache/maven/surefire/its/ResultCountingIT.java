@@ -55,8 +55,8 @@ public class ResultCountingIT
     private void assertForkMode( String forkMode )
         throws IOException, VerificationException
     {
-        OutputValidator outputValidator = unpack("result-counting").failNever().forkMode(forkMode).executeTest();
-        outputValidator.assertTestSuiteResults(36, 23, 4, 2);
-        outputValidator.verifyTextInLog("Tests run: 36, Failures: 4, Errors: 23, Skipped: 2");
+        OutputValidator outputValidator = unpack( "result-counting" ).failNever().forkMode( forkMode ).executeTest();
+        outputValidator.assertTestSuiteResults( 36, 23, 4, 2 );
+        outputValidator.verifyTextInLog( "Tests run: 36, Failures: 4, Errors: 23, Skipped: 2" );
     }
 }

@@ -38,25 +38,25 @@ public class TestSingleMethodIT
     public void testJunit44()
         throws Exception
     {
-        singleMethod( "junit44-single-method");
+        singleMethod( "junit44-single-method" );
     }
 
     public void testJunit48()
         throws Exception
     {
-        singleMethod( "junit48-single-method");
+        singleMethod( "junit48-single-method" );
     }
 
     public void testTestNg()
         throws Exception
     {
-        singleMethod( "testng-single-method");
+        singleMethod( "testng-single-method" );
     }
 
     public void testTestNg5149()
         throws Exception
     {
-        singleMethod( "/testng-single-method-5-14-9");
+        singleMethod( "/testng-single-method-5-14-9" );
     }
 
 }

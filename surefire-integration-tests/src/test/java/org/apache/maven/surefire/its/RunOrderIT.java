@@ -43,22 +43,22 @@ public class RunOrderIT
     public void testAlphabetical()
         throws Exception
     {
-        OutputValidator validator = executeWithRunOrder("alphabetical");
-        assertTestnamesAppearInSpecificOrder(validator, TESTS_IN_ALPHABETICAL_ORDER );
+        OutputValidator validator = executeWithRunOrder( "alphabetical" );
+        assertTestnamesAppearInSpecificOrder( validator, TESTS_IN_ALPHABETICAL_ORDER );
     }
 
     public void testReverseAlphabetical()
         throws Exception
     {
-        OutputValidator validator = executeWithRunOrder("reversealphabetical");
-        assertTestnamesAppearInSpecificOrder(validator, TESTS_IN_REVERSE_ALPHABETICAL_ORDER );
+        OutputValidator validator = executeWithRunOrder( "reversealphabetical" );
+        assertTestnamesAppearInSpecificOrder( validator, TESTS_IN_REVERSE_ALPHABETICAL_ORDER );
     }
 
     public void testHourly()
         throws Exception
     {
         int startHour = Calendar.getInstance().get( Calendar.HOUR_OF_DAY );
-        OutputValidator validator = executeWithRunOrder("hourly");
+        OutputValidator validator = executeWithRunOrder( "hourly" );
         int endHour = Calendar.getInstance().get( Calendar.HOUR_OF_DAY );
         if ( startHour != endHour )
         {
@@ -67,36 +67,36 @@ public class RunOrderIT
 
         String[] testnames =
             ( ( startHour % 2 ) == 0 ) ? TESTS_IN_ALPHABETICAL_ORDER : TESTS_IN_REVERSE_ALPHABETICAL_ORDER;
-        assertTestnamesAppearInSpecificOrder(validator, testnames);
+        assertTestnamesAppearInSpecificOrder( validator, testnames );
     }
 
     public void testNonExistingRunOrder()
         throws Exception
     {
-        unpack().forkMode(getForkMode()).runOrder("nonExistingRunOrder").executeTestWithFailure()
-        .verifyTextInLog("There's no RunOrder with the name nonExistingRunOrder.");
+        unpack().forkMode( getForkMode() ).runOrder( "nonExistingRunOrder" ).executeTestWithFailure()
+        .verifyTextInLog( "There's no RunOrder with the name nonExistingRunOrder." );
     }
 
-    private OutputValidator executeWithRunOrder(String runOrder)
+    private OutputValidator executeWithRunOrder( String runOrder )
         throws IOException, VerificationException
     {
-        return unpack().forkMode(getForkMode()).runOrder(runOrder).executeTest().verifyErrorFree(3);
+        return unpack().forkMode( getForkMode() ).runOrder( runOrder ).executeTest().verifyErrorFree( 3 );
     }
-
 
     protected String getForkMode()
     {
         return "once";
     }
 
-    private SurefireLauncher unpack() {
-        return unpack("runOrder");
+    private SurefireLauncher unpack()
+    {
+        return unpack( "runOrder" );
     }
 
-    private void assertTestnamesAppearInSpecificOrder(OutputValidator validator, String[] testnames)
+    private void assertTestnamesAppearInSpecificOrder( OutputValidator validator, String[] testnames )
         throws VerificationException
     {
-        if ( !validator.stringsAppearInSpecificOrderInLog(testnames) )
+        if ( !validator.stringsAppearInSpecificOrderInLog( testnames ) )
         {
             throw new VerificationException( "Response does not contain expected item" );
         }

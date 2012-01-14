@@ -31,6 +31,6 @@ public class CheckTestNgPathWithSpacesIT
 {
     public void testTestNgTestWithSpaces()
     {
-        unpack( "testng-path with spaces" ).executeTest().verifyErrorFree(1);
+        unpack( "testng-path with spaces" ).executeTest().verifyErrorFree( 1 );
     }
 }

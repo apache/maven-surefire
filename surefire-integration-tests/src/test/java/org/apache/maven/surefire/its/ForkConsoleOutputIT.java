@@ -53,13 +53,13 @@ public class ForkConsoleOutputIT
 
     public void testPrintSummaryFalseWithRedirect()
     {
-        final OutputValidator outputValidator = unpack().redirectToFile( true ).printSummary( false).debugLogging().showErrorStackTraces().executeTest();
+        final OutputValidator outputValidator = unpack().redirectToFile( true ).printSummary( false ).debugLogging().showErrorStackTraces().executeTest();
         outputValidator.getSurefireReportsFile( "forkConsoleOutput.Test1-output.txt" ).assertFileExists();
     }
 
     public void testPrintSummaryFalseWithoutRedirect()
     {
-        final OutputValidator outputValidator = unpack().redirectToFile( false ).printSummary( false).executeTest();
+        final OutputValidator outputValidator = unpack().redirectToFile( false ).printSummary( false ).executeTest();
         outputValidator.getSurefireReportsFile( "forkConsoleOutput.Test1-output.txt" ).assertFileNotExists();
     }
 

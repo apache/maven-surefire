@@ -32,6 +32,6 @@ public class TestNgParallelWithAnnotationsIT
 {
     public void testTestNgGroupThreadParallel()
     {
-        executeErrorFreeTest("/testng-parallel-with-annotations", 3);
+        executeErrorFreeTest( "/testng-parallel-with-annotations", 3);
     }
 }

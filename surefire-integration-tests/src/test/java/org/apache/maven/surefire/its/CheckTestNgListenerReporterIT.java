@@ -34,7 +34,7 @@ public class CheckTestNgListenerReporterIT
     public void testTestNgListenerReporter()
     {
         final SurefireLauncher verifierStarter = unpack( "testng-listener-reporter" );
-        verifierStarter.executeTest().verifyErrorFree(1)
+        verifierStarter.executeTest().verifyErrorFree( 1 )
             .getTargetFile( "resultlistener-output.txt" ).assertFileExists()
             .getTargetFile( "suitelistener-output.txt" ).assertFileExists()
             .getTargetFile( "reporter-output.txt" ).assertFileExists();

@@ -36,7 +36,7 @@ public class JUnit48TestCategoriesIT
     public void testCategoriesAB()
         throws Exception
     {
-        runAB( unpacked());
+        runAB( unpacked() );
     }
 
 
@@ -66,7 +66,7 @@ public class JUnit48TestCategoriesIT
     public void testCategoriesACForkAlways()
         throws Exception
     {
-        runAC(unpacked().forkAlways());
+        runAC( unpacked().forkAlways() );
     }
 
 
@@ -89,7 +89,7 @@ public class JUnit48TestCategoriesIT
     private SurefireLauncher unpacked()
         throws VerificationException, IOException
     {
-        return unpack( "/junit48-categories");
+        return unpack( "/junit48-categories" );
     }
 
 }

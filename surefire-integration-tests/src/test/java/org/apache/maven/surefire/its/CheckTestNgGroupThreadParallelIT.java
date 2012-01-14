@@ -32,6 +32,6 @@ public class CheckTestNgGroupThreadParallelIT
 {
     public void testTestNgGroupThreadParallel()
     {
-        unpack( "testng-group-thread-parallel" ).executeTest().verifyErrorFree(3);
+        unpack( "testng-group-thread-parallel" ).executeTest().verifyErrorFree( 3 );
     }
 }

@@ -44,14 +44,14 @@ public class UmlautDirIT
     public void testUmlautIsolatedClassLoader()
         throws Exception
     {
-        specialUnpack().useSystemClassLoader(false).executeTest().assertTestSuiteResults( 1, 0, 0, 0 );
+        specialUnpack().useSystemClassLoader( false ).executeTest().assertTestSuiteResults( 1, 0, 0, 0 );
     }
 
     SurefireLauncher specialUnpack()
         throws VerificationException, IOException
     {
         final File unpackLocation = unpack( "junit-pathWithUmlaut" ).getUnpackLocation();
-        File dest = new File( unpackLocation.getParentFile().getPath(),"/junit-pathWith\u00DCmlaut");
+        File dest = new File( unpackLocation.getParentFile().getPath(), "/junit-pathWith\u00DCmlaut" );
         FileUtils.deleteDirectory( dest );
         unpackLocation.renameTo( dest );
         return new SurefireLauncher( new Verifier( dest.getAbsolutePath() ) );

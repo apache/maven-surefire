@@ -34,33 +34,31 @@ public class ForkModeIT
 {
     public void testForkModeAlways()
     {
-
-        String[] pids = doTest( unpack( getProject() ).forkAlways());
+        String[] pids = doTest( unpack( getProject() ).forkAlways() );
         assertDifferentPids( pids );
     }
 
     public void testForkModePerTest()
     {
-        String[] pids = doTest( unpack( getProject() ).forkPerTest());
+        String[] pids = doTest( unpack( getProject() ).forkPerTest() );
         assertDifferentPids( pids );
     }
 
     public void testForkModeNever()
     {
-        String[] pids = doTest(  unpack( getProject() ).forkNever() );
+        String[] pids = doTest( unpack( getProject() ).forkNever() );
         assertSamePids( pids );
     }
 
     public void testForkModeNone()
     {
-        String[] pids = doTest( unpack( getProject() ).forkMode( "none" ));
-
+        String[] pids = doTest( unpack( getProject() ).forkMode( "none" ) );
         assertSamePids( pids );
     }
 
     public void testForkModeOnce()
     {
-        String[] pids = doTest( unpack( getProject() ).forkOnce());
+        String[] pids = doTest( unpack( getProject() ).forkOnce() );
         // DGF It would be nice to assert that "once" was different
         // from "never" ... but there's no way to check the PID of
         // Maven itself.  No matter, "once" is tested by setting

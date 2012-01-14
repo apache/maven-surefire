@@ -33,9 +33,9 @@ public class ReportersIT
 {
     public void testRedirectOutputTestNg()
     {
-        OutputValidator reporters = unpack("reporters").
-                redirectToFile(true)
-                .printSummary(true).executeTest();
+        OutputValidator reporters = unpack( "reporters" )
+                .redirectToFile( true )
+                .printSummary( true ).executeTest();
 
         reporters.getSurefireReportsFile( "TestSuite-output.txt" ).assertFileExists();
         reporters.getSurefireReportsFile( "TEST-TestSuite.xml" ).assertFileExists();

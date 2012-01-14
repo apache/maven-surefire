@@ -95,10 +95,9 @@ public class Junit4VersionsIT
         runJUnitTest( "4.7" );
     }
 
-
     public void runJUnitTest( String version )
         throws Exception
     {
-        unpack().setJUnitVersion( version ).executeTest().verifyErrorFree(  1 );
+        unpack().setJUnitVersion( version ).executeTest().verifyErrorFree( 1 );
     }
 }

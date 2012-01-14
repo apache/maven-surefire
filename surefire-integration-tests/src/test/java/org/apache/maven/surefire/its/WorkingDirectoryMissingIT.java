@@ -32,7 +32,7 @@ public class WorkingDirectoryMissingIT
     public void testWorkingDirectory()
     {
 
-        unpack("working-directory-missing").executeTest().verifyErrorFreeLog();
+        unpack( "working-directory-missing" ).executeTest().verifyErrorFreeLog();
     }
 
 }

@@ -32,12 +32,12 @@ public class CheckTestNgSuiteXmlIT
 {
     public void testTestNgSuiteXml()
     {
-        unpack().executeTest().verifyErrorFree( 1) ;
+        unpack().executeTest().verifyErrorFree( 1 );
     }
 
     public void testTestNgSuiteXmlForkModeAlways()
     {
-        unpack().forkAlways().executeTest().verifyErrorFree( 1) ;
+        unpack().forkAlways().executeTest().verifyErrorFree( 1 );
     }
 
     private SurefireLauncher unpack()

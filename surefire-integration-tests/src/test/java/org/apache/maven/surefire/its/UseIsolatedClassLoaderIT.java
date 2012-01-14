@@ -31,6 +31,6 @@ public class UseIsolatedClassLoaderIT
 {
     public void testUseSystemClassLoader()
     {
-        executeErrorFreeTest("/isolated-classloader", 1);
+        executeErrorFreeTest( "/isolated-classloader", 1 );
     }
 }

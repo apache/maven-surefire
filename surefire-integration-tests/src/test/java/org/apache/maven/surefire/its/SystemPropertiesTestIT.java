@@ -36,7 +36,7 @@ public class SystemPropertiesTestIT
         unpack().addGoal( "-DsetOnMavenCommandLine=baz" )
         .addGoal( "-DsetOnArgLineWorkAround=baz" )
         .executeTest()
-        .verifyErrorFree(8);
+        .verifyErrorFree( 8 );
     }
 
     public void testSystemPropertiesNoFork()
@@ -47,11 +47,11 @@ public class SystemPropertiesTestIT
         // DGF fake the argLine, since we're not forking
         .addGoal( "-DsetOnArgLine=bar" )
         .executeTest()
-        .verifyErrorFree(8);
+        .verifyErrorFree( 8 );
     }
 
     public SurefireLauncher unpack()
     {
-        return unpack("/system-properties");
+        return unpack( "/system-properties" );
     }
 }

@@ -33,13 +33,14 @@ public class TestNgGroupsIT
 {
     public void testTestNgGroupThreadParallel()
     {
-        unpack().setExcludedGroups( "notincluded" ).executeTest().verifyErrorFree(1);
+        unpack().setExcludedGroups( "notincluded" ).executeTest().verifyErrorFree( 1 );
     }
 
     public void testGroups()
     {
-        unpack().setGroups("functional" ).executeTest().verifyErrorFree(2);
+        unpack().setGroups( "functional" ).executeTest().verifyErrorFree( 2 );
     }
+
     public SurefireLauncher unpack()
     {
         return unpack( "/testng-groups" );

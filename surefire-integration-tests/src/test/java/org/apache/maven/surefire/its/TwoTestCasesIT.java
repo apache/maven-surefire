@@ -50,7 +50,7 @@ public class TwoTestCasesIT
     {
         final OutputValidator outputValidator = unpack( "junit-twoTestCaseSuite" ).executeTest();
         outputValidator.verifyErrorFreeLog().assertTestSuiteResults( 2, 0, 0, 0 );
-        List<ReportTestSuite> reports = HelperAssertions.extractReports( ( new File[]{ outputValidator.getBaseDir() } ) );
+        List<ReportTestSuite> reports = HelperAssertions.extractReports( new File[]{ outputValidator.getBaseDir() } );
         Set<String> classNames = extractClassNames( reports );
         assertContains( classNames, "junit.twoTestCaseSuite.BasicTest" );
         assertContains( classNames, "junit.twoTestCaseSuite.TestTwo" );
@@ -98,13 +98,13 @@ public class TwoTestCasesIT
     {
         final OutputValidator outputValidator = unpack( "testng-twoTestCaseSuite" ).executeTest();
         outputValidator.verifyErrorFreeLog().assertTestSuiteResults( 2, 0, 0, 0 );
-        List<ReportTestSuite> reports = HelperAssertions.extractReports( ( new File[]{ outputValidator.getBaseDir() } ) );
+        List<ReportTestSuite> reports = HelperAssertions.extractReports( new File[]{ outputValidator.getBaseDir() } );
         Set<String> classNames = extractClassNames( reports );
         assertContains( classNames, "testng.two.TestNGTestTwo" );
         assertContains( classNames, "testng.two.TestNGSuiteTest" );
         assertEquals( "wrong number of classes", 2, classNames.size() );
         IntegrationTestSuiteResults results = HelperAssertions.parseReportList( reports );
-        HelperAssertions.assertTestSuiteResults(2, 0, 0, 0, results);
+        HelperAssertions.assertTestSuiteResults( 2, 0, 0, 0, results );
     }
 
 }

@@ -34,7 +34,7 @@ public class AbstractTestCaseIT
 
     public void testAbstractTestCase()
     {
-        unpack( "/default-configuration-abstract" ).executeTest().verifyErrorFree( 1);
+        unpack( "/default-configuration-abstract" ).executeTest().verifyErrorFree( 1 );
     }
 
 }

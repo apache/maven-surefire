@@ -31,7 +31,6 @@ public class PojoSimpleIT
 {
     public void testit()
     {
-        unpack("pojo-simple").executeTest().assertTestSuiteResults(2, 0, 1, 0);
+        unpack( "pojo-simple" ).executeTest().assertTestSuiteResults( 2, 0, 1, 0 );
     }
-
 }

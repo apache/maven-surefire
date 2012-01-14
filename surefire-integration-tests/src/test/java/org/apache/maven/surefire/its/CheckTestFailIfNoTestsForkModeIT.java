@@ -75,7 +75,7 @@ public class CheckTestFailIfNoTestsForkModeIT
 
     private SurefireLauncher unpack()
     {
-        return unpack("default-configuration-classWithNoTests");
+        return unpack( "default-configuration-classWithNoTests" );
     }
 
 }

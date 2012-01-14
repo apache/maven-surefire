@@ -35,12 +35,12 @@ public class CheckSingleTestIT
 {
     public void testSingleTest()
     {
-        unpack().setTestToRun("BasicTest" ).executeTest().verifyErrorFree( 1 );
+        unpack().setTestToRun( "BasicTest" ).executeTest().verifyErrorFree( 1 );
     }
 
     public void testSingleTestDotJava()
     {
-        unpack().setTestToRun("BasicTest.java" ).executeTest().verifyErrorFree( 1 );
+        unpack().setTestToRun( "BasicTest.java" ).executeTest().verifyErrorFree( 1 );
     }
 
     public void testSingleTestNonExistent()
@@ -52,7 +52,8 @@ public class CheckSingleTestIT
 
     public void testSingleTestNonExistentOverride()
     {
-        final OutputValidator output = unpack().setTestToRun( "DoesNotExist" ).failIfNoTests(false).executeTest().verifyErrorFreeLog();
+        final OutputValidator output =
+            unpack().setTestToRun( "DoesNotExist" ).failIfNoTests( false ).executeTest().verifyErrorFreeLog();
         TestFile reportsDir = output.getTargetFile( "surefire-reports" );
         assertFalse( "Unexpected reports directory", reportsDir.exists() );
     }

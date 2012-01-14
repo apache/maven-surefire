@@ -37,9 +37,9 @@ public class XmlReporterRunTimeIT
     public void testForkModeAlways()
         throws Exception
     {
-        OutputValidator outputValidator = unpack("/runorder-parallel").parallelMethods().executeTest();
+        OutputValidator outputValidator = unpack( "/runorder-parallel" ).parallelMethods().executeTest();
 
-        List<ReportTestSuite> reports = HelperAssertions.extractReports((new File[]{outputValidator.getBaseDir()}));
+        List<ReportTestSuite> reports = HelperAssertions.extractReports( new File[]{ outputValidator.getBaseDir() } );
         for ( ReportTestSuite report : reports )
         {
             if ( "runorder.parallel.Test1".equals( report.getFullClassName() ) )

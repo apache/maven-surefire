@@ -90,12 +90,13 @@ public class WorkingDirectoryIT
         throws VerificationException
     {
         final OutputValidator child = unpack.getSubProjectValidator( "child" );
-        getOutFile(child).delete();
+        getOutFile( child ).delete();
         return child;
     }
 
     
-    private TestFile getOutFile(OutputValidator child ){
+    private TestFile getOutFile( OutputValidator child )
+    {
         return child.getTargetFile( "out.txt" );
     }
 
