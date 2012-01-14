@@ -1,4 +1,5 @@
 package org.apache.maven.surefire.its.jiras;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -18,7 +19,6 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
-
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.TestFile;
@@ -33,14 +33,14 @@ public class Surefire740TruncatedCommaIT
 {
     public void testRussianLocaleReport()
     {
-        OutputValidator validator = unpack("/surefire-740-comma-truncated")
-                .addEnvVar("MAVEN_OPTS", "-Duser.language=ru -Duser.country=RU")
+        OutputValidator validator = unpack( "/surefire-740-comma-truncated" )
+                .addEnvVar( "MAVEN_OPTS", "-Duser.language=ru -Duser.country=RU" )
                 .failNever().addSurefireReportGoal().executeCurrentGoals();
 
-        TestFile siteFile = validator.getSiteFile("surefire-report.html");
+        TestFile siteFile = validator.getSiteFile( "surefire-report.html" );
         System.out.println( "siteFile.getAbsolutePath() = " + siteFile.getAbsolutePath() );
-        assertTrue( "Expecting file", siteFile.exists());
-        siteFile.assertContainsText("027"); // Avoid asserting with the "," or "." ;)
+        assertTrue( "Expecting file", siteFile.exists() );
+        siteFile.assertContainsText( "027" ); // Avoid asserting with the "," or "." ;)
     }
 
 }

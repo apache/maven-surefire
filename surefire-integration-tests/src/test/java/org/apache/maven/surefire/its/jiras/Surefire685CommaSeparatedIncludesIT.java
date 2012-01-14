@@ -31,6 +31,6 @@ public class Surefire685CommaSeparatedIncludesIT
 {
     public void testBuildFailingWhenErrors()
     {
-        executeErrorFreeTest("/surefire-685-commaseparatedIncludes", 2);
+        executeErrorFreeTest( "/surefire-685-commaseparatedIncludes", 2 );
     }
 }

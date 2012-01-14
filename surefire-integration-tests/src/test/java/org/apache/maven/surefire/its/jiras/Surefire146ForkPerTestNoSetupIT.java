@@ -31,6 +31,6 @@ public class Surefire146ForkPerTestNoSetupIT
 {
     public void testForkPerTestNoSetup()
     {
-        executeErrorFreeTest("surefire-146-forkPerTestNoSetup", 1);
+        executeErrorFreeTest( "surefire-146-forkPerTestNoSetup", 1 );
     }
 }

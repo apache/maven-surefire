@@ -31,6 +31,6 @@ public class Surefire42NotExtendingTestCaseIT
 {
     public void testInnerClass()
     {
-        executeErrorFreeTest("junit-notExtendingTestCase", 1);
+        executeErrorFreeTest( "junit-notExtendingTestCase", 1 );
     }
 }

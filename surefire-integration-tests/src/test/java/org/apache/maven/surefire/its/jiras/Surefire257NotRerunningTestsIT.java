@@ -32,7 +32,7 @@ public class Surefire257NotRerunningTestsIT
     public void testShouldNotRerun()
         throws Exception
     {
-        unpack("/surefire-257-rerunningTests").addSurefireReportGoal().addSurefireReportGoal().executeCurrentGoals()
-        .verifyTextInLog("Skipping execution of surefire because it has already been run for this configuration");
+        unpack( "/surefire-257-rerunningTests" ).addSurefireReportGoal().addSurefireReportGoal().executeCurrentGoals()
+            .verifyTextInLog( "Skipping execution of surefire because it has already been run for this configuration" );
     }
 }

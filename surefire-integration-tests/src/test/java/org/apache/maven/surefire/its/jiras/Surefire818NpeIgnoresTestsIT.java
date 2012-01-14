@@ -23,7 +23,7 @@ import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
 
 /**
  * SUREFIRE-818
- *
+ * 
  * @author Kristian Rosenvold
  */
 public class Surefire818NpeIgnoresTestsIT
@@ -31,6 +31,6 @@ public class Surefire818NpeIgnoresTestsIT
 {
     public void testBuildFailingWhenErrors()
     {
-        unpack("surefire-818-ignored-tests-on-npe").executeTestWithFailure().assertTestSuiteResults(  2 ,0 , 1, 0 );
+        unpack( "surefire-818-ignored-tests-on-npe" ).executeTestWithFailure().assertTestSuiteResults( 2, 0, 1, 0 );
     }
 }

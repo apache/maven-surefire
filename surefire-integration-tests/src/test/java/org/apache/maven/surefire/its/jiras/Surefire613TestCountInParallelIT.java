@@ -32,12 +32,12 @@ public class Surefire613TestCountInParallelIT
 {
     public void testPaallelBuildResultCount()
     {
-        OutputValidator validator = unpack("/surefire-613-testCount-in-parallel").failNever().executeTest();
+        OutputValidator validator = unpack( "/surefire-613-testCount-in-parallel" ).failNever().executeTest();
 
-        validator.verifyTextInLog("testAllok to stdout");
-        validator.verifyTextInLog("testAllok to stderr");
-        validator.verifyTextInLog("testWithException1 to stdout");
-        validator.verifyTextInLog("testWithException1 to stderr");
-        validator.assertTestSuiteResults(30, 8, 4, 17);
+        validator.verifyTextInLog( "testAllok to stdout" );
+        validator.verifyTextInLog( "testAllok to stderr" );
+        validator.verifyTextInLog( "testWithException1 to stdout" );
+        validator.verifyTextInLog( "testWithException1 to stderr" );
+        validator.assertTestSuiteResults( 30, 8, 4, 17 );
     }
 }

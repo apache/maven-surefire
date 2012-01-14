@@ -29,7 +29,6 @@ public class Surefire733AllOverrridesCapturedIT
 {
     public void testLogOutput()
     {
-        unpack( "surefire-733-allOverridesCaptured" ).executeTest()
-        .verifyTextInLog("abc");
+        unpack( "surefire-733-allOverridesCaptured" ).executeTest().verifyTextInLog( "abc" );
     }
 }

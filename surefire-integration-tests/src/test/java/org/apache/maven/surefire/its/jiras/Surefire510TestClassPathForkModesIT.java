@@ -45,6 +45,6 @@ public class Surefire510TestClassPathForkModesIT
 
     public SurefireLauncher unpack()
     {
-        return unpack("/surefire-510-testClassPath");
+        return unpack( "/surefire-510-testClassPath" );
     }
 }

@@ -31,12 +31,12 @@ public class Surefire747MethodParallelWithSuiteCountIT
 
     public void testMethodsParallelWithSuite()
     {
-        unpack().executeTest().verifyErrorFree(6);
+        unpack().executeTest().verifyErrorFree( 6 );
     }
 
     public void testClassesParallelWithSuite()
     {
-        unpack().parallelClasses().executeTest().verifyErrorFree(6);
+        unpack().parallelClasses().executeTest().verifyErrorFree( 6 );
     }
 
     public SurefireLauncher unpack()

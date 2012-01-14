@@ -1,4 +1,5 @@
 package org.apache.maven.surefire.its.jiras;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -17,7 +18,6 @@ package org.apache.maven.surefire.its.jiras;
  * specific language governing permissions and limitations
  * under the License.
  */
-
 
 import java.io.IOException;
 import org.apache.maven.it.VerificationException;
@@ -38,12 +38,12 @@ public class Surefire772NoFailsafeReportsIT
     public void testReportGeneration()
         throws Exception
     {
-        final OutputValidator site = unpack().addFailsafeReportOnlyGoal().addSurefireReportOnlyGoal().executeCurrentGoals();
+        final OutputValidator site =
+            unpack().addFailsafeReportOnlyGoal().addSurefireReportOnlyGoal().executeCurrentGoals();
 
         assertSurefireReportPresent( site );
         assertNoFailsefeReport( site );
     }
-
 
     public void testSkippedFailsafeReportGeneration()
         throws Exception
@@ -68,8 +68,7 @@ public class Surefire772NoFailsafeReportsIT
         throws Exception
     {
         final OutputValidator validator =
-            unpack().activateProfile( "forceFailsafe" ).activateProfile( "skipFailsafe" )
-                .addFailsafeReportOnlyGoal().addSurefireReportOnlyGoal().executeCurrentGoals();
+            unpack().activateProfile( "forceFailsafe" ).activateProfile( "skipFailsafe" ).addFailsafeReportOnlyGoal().addSurefireReportOnlyGoal().executeCurrentGoals();
 
         assertSurefireReportPresent( validator );
         assertNoFailsefeReport( validator );
@@ -80,6 +79,7 @@ public class Surefire772NoFailsafeReportsIT
         TestFile siteFile = site.getSiteFile( "failsafe-report.html" );
         assertFalse( "Expecting no failsafe report file", siteFile.isFile() );
     }
+
     private void assertFailsafeReport( OutputValidator site )
     {
         TestFile siteFile = site.getSiteFile( "failsafe-report.html" );
@@ -99,6 +99,5 @@ public class Surefire772NoFailsafeReportsIT
         unpack.deleteSiteDir();
         return unpack.skipClean().failNever().assertNotPresent( "site" );
     }
-
 
 }

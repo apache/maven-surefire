@@ -31,7 +31,7 @@ public class Surefire697NiceSummaryIT
 {
     public void testBuildFailingWhenErrors()
     {
-        unpack( "/surefire-697-niceSummary" ).failNever().executeTest().
-        verifyTextInLog("testShortMultiline(junit.surefire697.BasicTest): A very short multiline message");
+        unpack( "/surefire-697-niceSummary" ).failNever().executeTest()
+            .verifyTextInLog( "testShortMultiline(junit.surefire697.BasicTest): A very short multiline message" );
     }
 }

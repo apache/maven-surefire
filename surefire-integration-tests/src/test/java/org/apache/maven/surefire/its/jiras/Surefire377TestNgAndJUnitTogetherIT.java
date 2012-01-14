@@ -31,6 +31,6 @@ public class Surefire377TestNgAndJUnitTogetherIT
 {
     public void testTestNgAndJUnitTogether()
     {
-        executeErrorFreeTest("/testng-junit-together", 2);
+        executeErrorFreeTest( "/testng-junit-together", 2 );
     }
 }

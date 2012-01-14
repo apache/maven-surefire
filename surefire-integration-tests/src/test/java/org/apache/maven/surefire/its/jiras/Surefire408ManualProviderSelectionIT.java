@@ -31,8 +31,8 @@ public class Surefire408ManualProviderSelectionIT
 {
     public void testPaallelBuildResultCount()
     {
-        unpack("/surefire-408-manual-provider-selection").showErrorStackTraces()
-        .executeTest()
-        .verifyTextInLog("Using configured provider org.apache.maven.surefire.junit.JUnit3Provider");
+        unpack( "/surefire-408-manual-provider-selection" ).showErrorStackTraces()
+            .executeTest()
+            .verifyTextInLog( "Using configured provider org.apache.maven.surefire.junit.JUnit3Provider" );
     }
 }

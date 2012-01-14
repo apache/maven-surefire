@@ -37,7 +37,7 @@ public class Surefire224WellFormedXmlFailuresIT
 {
     public void testWellFormedXmlFailures()
     {
-        OutputValidator outputValidator = unpack("/surefire-224-wellFormedXmlFailures").executeTest();
+        OutputValidator outputValidator = unpack( "/surefire-224-wellFormedXmlFailures" ).executeTest();
 
         outputValidator.assertTestSuiteResults( 4, 0, 4, 0 );
 

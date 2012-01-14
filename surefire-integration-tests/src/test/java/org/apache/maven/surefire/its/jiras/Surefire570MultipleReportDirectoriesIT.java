@@ -39,12 +39,12 @@ public class Surefire570MultipleReportDirectoriesIT
 
         SurefireLauncher surefireLauncher = unpack().failNever();
         surefireLauncher.executeTest();
-        surefireLauncher.addGoal("-Daggregate=true");
-        OutputValidator validator = surefireLauncher.execute("surefire-report:report");
-        TestFile siteFile = validator.getSiteFile("surefire-report.html");
-        siteFile.assertContainsText("MyModule1ClassTest");
-        siteFile.assertContainsText("MyModule2ClassTest");
-        siteFile.assertContainsText("MyDummyClassM1Test");
+        surefireLauncher.addGoal( "-Daggregate=true" );
+        OutputValidator validator = surefireLauncher.execute( "surefire-report:report" );
+        TestFile siteFile = validator.getSiteFile( "surefire-report.html" );
+        siteFile.assertContainsText( "MyModule1ClassTest" );
+        siteFile.assertContainsText( "MyModule2ClassTest" );
+        siteFile.assertContainsText( "MyDummyClassM1Test" );
     }
 
     public void testReportWithoutAggregate()
@@ -53,16 +53,16 @@ public class Surefire570MultipleReportDirectoriesIT
         SurefireLauncher surefireLauncher = unpack().failNever();
         surefireLauncher.executeTest();
         surefireLauncher.reset();
-        surefireLauncher.execute("surefire-report:report");
-        OutputValidator module1 = surefireLauncher.getSubProjectValidator("module1");
-        TestFile siteFile = module1.getSiteFile("surefire-report.html");
-        siteFile.assertContainsText("MyModule1ClassTest");
-        siteFile.assertContainsText("MyDummyClassM1Test");
+        surefireLauncher.execute( "surefire-report:report" );
+        OutputValidator module1 = surefireLauncher.getSubProjectValidator( "module1" );
+        TestFile siteFile = module1.getSiteFile( "surefire-report.html" );
+        siteFile.assertContainsText( "MyModule1ClassTest" );
+        siteFile.assertContainsText( "MyDummyClassM1Test" );
     }
 
     public SurefireLauncher unpack()
     {
-        return unpack("/surefire-570-multipleReportDirectories");
+        return unpack( "/surefire-570-multipleReportDirectories" );
     }
 
 }

@@ -33,8 +33,8 @@ public class Surefire500PuzzlingErrorIT
 {
     public void testBuildFailingWhenErrors()
     {
-        OutputValidator outputValidator = unpack("/surefire-500-puzzling-error").failNever().executeTest();
-        TestFile surefireReportsFile = outputValidator.getSurefireReportsFile("surefire500.ExplodingTest.txt");
-        surefireReportsFile.assertContainsText("java.lang.NoClassDefFoundError: whoops!");
+        OutputValidator outputValidator = unpack( "/surefire-500-puzzling-error" ).failNever().executeTest();
+        TestFile surefireReportsFile = outputValidator.getSurefireReportsFile( "surefire500.ExplodingTest.txt" );
+        surefireReportsFile.assertContainsText( "java.lang.NoClassDefFoundError: whoops!" );
     }
 }

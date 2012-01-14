@@ -32,7 +32,7 @@ public class Surefire735ForkFailWithRedirectConsoleOutputIT
     public void testVMStartFail()
         throws Exception
     {
-        unpack().failNever().executeTest().verifyTextInLog("Invalid maximum heap size: -Xmxxxx712743m");
+        unpack().failNever().executeTest().verifyTextInLog( "Invalid maximum heap size: -Xmxxxx712743m" );
     }
 
     public void testVMStartFtestVMStartFailail()

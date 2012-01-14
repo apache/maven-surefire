@@ -37,13 +37,13 @@ public class Surefire162CharsetProviderIT
     public void testCharsetProvider()
         throws Exception
     {
-        SurefireLauncher unpack = unpack("/surefire-162-charsetProvider");
+        SurefireLauncher unpack = unpack( "/surefire-162-charsetProvider" );
         OutputValidator verifier = unpack.getSurefireVerifier();
         File jarFile = new File( verifier.getArtifactPath( "jcharset", "jcharset", "1.2.1", "jar" ) );
         jarFile.getParentFile().mkdirs();
-        FileUtils.copyFile( verifier.getSubFile("repo/jcharset/jcharset/1.2.1/jcharset-1.2.1.jar"), jarFile );
-        FileUtils.copyFile(verifier.getSubFile("repo/jcharset/jcharset/1.2.1/jcharset-1.2.1.pom"),
-                new File(verifier.getArtifactPath("jcharset", "jcharset", "1.2.1", "pom")));
-        unpack.executeTest().verifyErrorFree(1);
+        FileUtils.copyFile( verifier.getSubFile( "repo/jcharset/jcharset/1.2.1/jcharset-1.2.1.jar" ), jarFile );
+        FileUtils.copyFile( verifier.getSubFile( "repo/jcharset/jcharset/1.2.1/jcharset-1.2.1.pom" ),
+                            new File( verifier.getArtifactPath( "jcharset", "jcharset", "1.2.1", "pom" ) ) );
+        unpack.executeTest().verifyErrorFree( 1 );
     }
 }

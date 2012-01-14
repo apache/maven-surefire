@@ -32,8 +32,7 @@ public class Surefire34SecurityManagerIT
 {
     public void testSecurityManager()
     {
-        SurefireLauncher surefireLauncher = unpack("/surefire-34-securityManager").failNever();
-        surefireLauncher.executeTest().
-        assertTestSuiteResults(2, 1, 0, 0);
+        SurefireLauncher surefireLauncher = unpack( "/surefire-34-securityManager" ).failNever();
+        surefireLauncher.executeTest().assertTestSuiteResults( 2, 1, 0, 0 );
     }
 }

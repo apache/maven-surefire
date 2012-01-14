@@ -31,6 +31,6 @@ public class Surefire44InnerClassTestIT
 {
     public void testInnerClass()
     {
-        executeErrorFreeTest("/junit-innerClass", 1);
+        executeErrorFreeTest( "/junit-innerClass", 1 );
     }
 }

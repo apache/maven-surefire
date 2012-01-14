@@ -31,7 +31,7 @@ public class Surefire674BuildFailingWhenFailsafeErrorsIT
 {
     public void testBuildFailingWhenErrors()
     {
-        unpack("/failsafe-buildfail").executeVerifyWithFailure().
-                verifyTextInLog("BUILD FAILURE");
+        unpack( "/failsafe-buildfail" ).executeVerifyWithFailure()
+                .verifyTextInLog( "BUILD FAILURE" );
     }
 }

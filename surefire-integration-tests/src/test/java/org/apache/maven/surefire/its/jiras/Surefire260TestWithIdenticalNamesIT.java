@@ -20,7 +20,6 @@ package org.apache.maven.surefire.its.jiras;
  */
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URI;
 
 import org.apache.maven.surefire.its.fixture.*;
@@ -39,14 +38,15 @@ public class Surefire260TestWithIdenticalNamesIT
     extends SurefireIntegrationTestCase
 {
 
-    public void testWithIdenticalNames() throws IOException {
-
-        SurefireLauncher surefireLauncher = unpack("surefire-260-testWithIdenticalNames").failNever();
+    public void testWithIdenticalNames()
+        throws IOException
+    {
+        SurefireLauncher surefireLauncher = unpack( "surefire-260-testWithIdenticalNames" ).failNever();
         surefireLauncher.executeTest();
         surefireLauncher.reset();
         OutputValidator validator = surefireLauncher.addSurefireReportGoal().executeCurrentGoals();
 
-        TestFile siteFile = validator.getSiteFile("surefire-report.html");
+        TestFile siteFile = validator.getSiteFile( "surefire-report.html" );
         final URI uri = siteFile.toURI();
 
         final WebClient webClient = new WebClient();
