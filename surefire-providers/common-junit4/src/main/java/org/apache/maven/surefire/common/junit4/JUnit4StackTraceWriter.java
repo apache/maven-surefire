@@ -19,7 +19,9 @@ package org.apache.maven.surefire.common.junit4;
  * under the License.
  */
 
+import org.apache.maven.surefire.report.PojoStackTraceWriter;
 import org.apache.maven.surefire.report.StackTraceWriter;
+
 import org.junit.runner.notification.Failure;
 
 /**
@@ -61,7 +63,14 @@ public class JUnit4StackTraceWriter
      */
     public String writeTrimmedTraceToString()
     {
-        return junitFailure.getTrace();
+        try
+        {
+            return junitFailure.getTrace();
+        }
+        catch ( Throwable t )
+        {
+            return new PojoStackTraceWriter( "", "", t ).writeTrimmedTraceToString();
+        }
     }
 
     /**

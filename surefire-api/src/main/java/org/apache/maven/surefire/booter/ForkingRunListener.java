@@ -291,7 +291,7 @@ public class ForkingRunListener
 
     private ForkingRunListener nullableEncoding( StringBuffer stringBuffer, String source )
     {
-        if ( source == null || source.length() == 0)
+        if ( source == null || source.length() == 0 )
         {
             stringBuffer.append( "null" );
         }
@@ -311,7 +311,7 @@ public class ForkingRunListener
             final Throwable throwable = stackTraceWriter.getThrowable();
             if ( throwable != null )
             {
-                String message = throwable.getLocalizedMessage();
+                String message = safeGetLocalizedMessage( throwable );
                 nullableEncoding( stringBuffer, message );
             }
             comma( stringBuffer );
@@ -319,6 +319,18 @@ public class ForkingRunListener
             nullableEncoding( stringBuffer, trimStackTraces
                 ? stackTraceWriter.writeTrimmedTraceToString()
                 : stackTraceWriter.writeTraceToString() );
+        }
+    }
+
+    private String safeGetLocalizedMessage( Throwable throwable )
+    {
+        try
+        {
+            return throwable.getLocalizedMessage();
+        }
+        catch ( Throwable t )
+        {
+            return t.getLocalizedMessage();
         }
     }
 }
