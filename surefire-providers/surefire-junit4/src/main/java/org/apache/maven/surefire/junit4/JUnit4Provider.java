@@ -116,6 +116,8 @@ public class JUnit4Provider
 
         runNotifer.fireTestRunFinished( result );
 
+        JUnit4RunListener.rethrowAnyTestMechanismFailures( result );
+
         closeRunNotifer( jUnit4TestSetReporter, customRunListeners );
 
         return reporterFactory.close();

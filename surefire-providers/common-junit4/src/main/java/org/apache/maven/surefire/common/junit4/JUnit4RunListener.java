@@ -24,17 +24,21 @@ import java.util.regex.Pattern;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.SimpleReportEntry;
+import org.apache.maven.surefire.testset.TestSetFailedException;
 
 import org.junit.runner.Description;
+import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 
 public class JUnit4RunListener
     extends org.junit.runner.notification.RunListener
 {
     private static final Pattern PARENS = Pattern.compile( "^" + "[^\\(\\)]+" //non-parens
-                                                               + "\\((" // then an open-paren (start matching a group)
+                                                               + "\\(("
+                                                               // then an open-paren (start matching a group)
                                                                + "[^\\\\(\\\\)]+" //non-parens
-                                                               + ")\\)" + "$" ); // then a close-paren (end group match)
+                                                               + ")\\)" + "$" );
+        // then a close-paren (end group match)
 
     protected final RunListener reporter;
 
@@ -88,9 +92,9 @@ public class JUnit4RunListener
     public void testFailure( Failure failure )
         throws Exception
     {
-        ReportEntry report =
-            new SimpleReportEntry( extractClassName( failure.getDescription() ), failure.getTestHeader(),
-                                   new JUnit4StackTraceWriter( failure ) );
+        ReportEntry report = new SimpleReportEntry( extractClassName( failure.getDescription() ),
+                                                    failure.getTestHeader(),
+                                                    new JUnit4StackTraceWriter( failure ) );
 
         if ( failure.getException() instanceof AssertionError )
         {
@@ -128,7 +132,8 @@ public class JUnit4RunListener
 
     private SimpleReportEntry createReportEntry( Description description )
     {
-        return new SimpleReportEntry( extractClassName( description ), description.getDisplayName() );
+        return new SimpleReportEntry( extractClassName( description ),
+                                      description.getDisplayName() );
     }
 
 
@@ -141,5 +146,27 @@ public class JUnit4RunListener
             return displayName;
         }
         return m.group( 1 );
+    }
+
+
+    public static void rethrowAnyTestMechanismFailures( Result run )
+        throws TestSetFailedException
+    {
+        if ( run.getFailureCount() > 0 )
+        {
+            for ( Failure failure : run.getFailures() )
+            {
+                if ( isFailureInsideJUnitItself( failure ) )
+                {
+                    final Throwable exception = failure.getException();
+                    throw new TestSetFailedException( exception );
+                }
+            }
+        }
+    }
+
+    private static boolean isFailureInsideJUnitItself( Failure failure )
+    {
+        return failure.getDescription().getDisplayName().equals( "Test mechanism" );
     }
 }

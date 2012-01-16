@@ -21,6 +21,7 @@ package org.apache.maven.surefire.junitcore;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.TestsToRun;
 
@@ -29,7 +30,6 @@ import org.junit.runner.JUnitCore;
 import org.junit.runner.Request;
 import org.junit.runner.Result;
 import org.junit.runner.manipulation.Filter;
-import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunListener;
 
 /**
@@ -60,18 +60,7 @@ class JUnitCoreWrapper
         try
         {
             final Result run = junitCore.run( req );
-
-            if ( run.getFailureCount() > 0 )
-            {
-                for ( Failure failure : run.getFailures() )
-                {
-                    if ( isFailureInsideJUnitItself( failure ) )
-                    {
-                        final Throwable exception = failure.getException();
-                        throw new TestSetFailedException( exception );
-                    }
-                }
-            }
+            JUnit4RunListener.rethrowAnyTestMechanismFailures( run );
         }
         finally
         {
@@ -81,11 +70,6 @@ class JUnitCoreWrapper
                 junitCore.removeListener( runListener );
             }
         }
-    }
-
-    private static boolean isFailureInsideJUnitItself( Failure failure )
-    {
-        return failure.getDescription().getDisplayName().equals( "Test mechanism" );
     }
 
     private static void closeIfConfigurable( Computer computer )
