@@ -168,12 +168,13 @@ public class SurefireReflector
             return null;
         }
         //Can't use the constructor with the RunOrder parameter. Using it causes some integration tests to fail.
-        Class[] arguments = { File.class, List.class, List.class, Boolean.class, String.class };
+        Class[] arguments = { File.class, List.class, List.class, List.class, Boolean.class, String.class };
         Constructor constructor = ReflectionUtils.getConstructor( this.directoryScannerParameters, arguments );
         return ReflectionUtils.newInstance( constructor,
                                             new Object[]{ directoryScannerParameters.getTestClassesDirectory(),
                                                 directoryScannerParameters.getIncludes(),
                                                 directoryScannerParameters.getExcludes(),
+                                                directoryScannerParameters.getSpecificTests(),
                                                 directoryScannerParameters.isFailIfNoTests(),
                                                 RunOrder.asString( directoryScannerParameters.getRunOrder() ) } );
     }

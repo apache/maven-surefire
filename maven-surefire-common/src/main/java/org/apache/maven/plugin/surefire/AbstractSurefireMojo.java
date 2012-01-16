@@ -386,18 +386,34 @@ public abstract class AbstractSurefireMojo
         }
         else
         {
-            if ( isSpecificTestSpecified() && getFailIfNoTests() == null )
+            if ( isSpecificTestSpecified() )
             {
-                setFailIfNoTests( Boolean.TRUE );
-            }
+                if ( getFailIfNoSpecifiedTests() != null )
+                {
+                    failIfNoTests = getFailIfNoSpecifiedTests().booleanValue();
+                }
+                else if ( getFailIfNoTests() != null )
+                {
+                    failIfNoTests = getFailIfNoTests().booleanValue();
+                }
+                else
+                {
+                    failIfNoTests = true;
+                }
 
-            failIfNoTests = getFailIfNoTests() != null && getFailIfNoTests();
+                setFailIfNoTests( Boolean.valueOf( failIfNoTests ) );
+            }
+            else
+            {
+                failIfNoTests = getFailIfNoTests() != null && getFailIfNoTests().booleanValue();
+            }
 
             List<String> includes = getIncludeList();
             List<String> excludes = getExcludeList();
-            directoryScannerParameters = new DirectoryScannerParameters( getTestClassesDirectory(), includes, excludes,
-                                                                         failIfNoTests,
-                                                                         getRunOrder() );
+            List<String> specificTests = getSpecificTests();
+            directoryScannerParameters =
+                new DirectoryScannerParameters( getTestClassesDirectory(), includes, excludes, specificTests,
+                                                failIfNoTests, getRunOrder() );
         }
 
         Properties providerProperties = getProperties();
@@ -530,41 +546,41 @@ public abstract class AbstractSurefireMojo
 
     private List<String> getIncludeList()
     {
-        List<String> includes;
-        if ( isSpecificTestSpecified() )
+        List<String> includes = this.getIncludes();
+
+        // defaults here, qdox doesn't like the end javadoc value
+        // Have to wrap in an ArrayList as surefire expects an ArrayList instead of a List for some reason
+        if ( includes == null || includes.size() == 0 )
         {
-            // Check to see if we are running a single test. The raw parameter will
-            // come through if it has not been set.
-
-            // FooTest -> **/FooTest.java
-
-            includes = new ArrayList<String>();
-
-            String[] testRegexes = StringUtils.split( getTest(), "," );
-
-            for ( String testRegex : testRegexes )
-            {
-                if ( testRegex.endsWith( ".java" ) )
-                {
-                    testRegex = testRegex.substring( 0, testRegex.length() - 5 );
-                }
-                // Allow paths delimited by '.' or '/'
-                testRegex = testRegex.replace( '.', '/' );
-                includes.add( "**/" + testRegex + ".java" );
-            }
+            includes = new ArrayList<String>( Arrays.asList( getDefaultIncludes() ) );
         }
-        else
-        {
-            includes = this.getIncludes();
 
-            // defaults here, qdox doesn't like the end javadoc value
-            // Have to wrap in an ArrayList as surefire expects an ArrayList instead of a List for some reason
-            if ( includes == null || includes.size() == 0 )
-            {
-                includes = new ArrayList<String>( Arrays.asList( getDefaultIncludes() ) );
-            }
-        }
         return includes;
+    }
+
+    private List<String> getSpecificTests()
+    {
+        if ( !isSpecificTestSpecified() )
+        {
+            return Collections.emptyList();
+        }
+
+        List<String> specificTests = new ArrayList<String>();
+        String[] testRegexes = StringUtils.split( getTest(), "," );
+
+        for ( int i = 0; i < testRegexes.length; i++ )
+        {
+            String testRegex = testRegexes[i];
+            if ( testRegex.endsWith( ".java" ) )
+            {
+                testRegex = testRegex.substring( 0, testRegex.length() - 5 );
+            }
+            // Allow paths delimited by '.' or '/'
+            testRegex = testRegex.replace( '.', '/' );
+            specificTests.add( "**/" + testRegex + ".java" );
+        }
+
+        return specificTests;
     }
 
     private Artifact getTestNgArtifact()

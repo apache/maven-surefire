@@ -68,6 +68,8 @@ public class BooterDeserializer
 
         final List excludesList = properties.getStringList( EXCLUDES_PROPERTY_PREFIX );
         final List includesList = properties.getStringList( INCLUDES_PROPERTY_PREFIX );
+        final List specificTestsList = properties.getStringList( SPECIFIC_TEST_PROPERTY_PREFIX );
+        System.out.println( "DESER: Got specific tests: " + specificTestsList );
 
         final List testSuiteXmlFiles = properties.getStringList( TEST_SUITE_XML_FILES );
         final File testClassesDirectory = properties.getFileProperty( TEST_CLASSES_DIRECTORY );
@@ -75,7 +77,7 @@ public class BooterDeserializer
         final String runStatisticsFile = properties.getProperty( RUN_STATISTICS_FILE );
 
         DirectoryScannerParameters dirScannerParams =
-            new DirectoryScannerParameters( testClassesDirectory, includesList, excludesList,
+            new DirectoryScannerParameters( testClassesDirectory, includesList, excludesList, specificTestsList,
                                             properties.getBooleanObjectProperty( FAILIFNOTESTS ), runOrder );
 
         RunOrderParameters runOrderParameters = new RunOrderParameters( runOrder, runStatisticsFile );

@@ -352,6 +352,15 @@ public class IntegrationTestMojo
     private Boolean failIfNoTests;
 
     /**
+     * Set this to "true" to cause a failure if the none of the tests specified in -Dtest=... are run. Defaults to
+     * "true".
+     * 
+     * @parameter expression="${it.failIfNoSpecifiedTests}"
+     * @since 2.12
+     */
+    private Boolean failIfNoSpecifiedTests;
+
+    /**
      * Option to specify the forking mode. Can be "never", "once", "always" or "perthread". "none" and "pertest" are also accepted
      * for backwards compatibility. "always" forks for each test-class. "perthread" will create "threadCount" parallel forks.
      *
@@ -1405,6 +1414,16 @@ public class IntegrationTestMojo
     {
         checksum.add( skipITs );
         checksum.add( summaryFile );
+    }
+
+    public Boolean getFailIfNoSpecifiedTests()
+    {
+        return failIfNoSpecifiedTests;
+    }
+
+    public void setFailIfNoSpecifiedTests( Boolean failIfNoSpecifiedTests )
+    {
+        this.failIfNoSpecifiedTests = failIfNoSpecifiedTests;
     }
 
 }

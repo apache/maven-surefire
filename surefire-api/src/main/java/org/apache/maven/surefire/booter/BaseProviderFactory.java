@@ -78,7 +78,8 @@ public class BaseProviderFactory
         }
         return new DefaultDirectoryScanner( directoryScannerParameters.getTestClassesDirectory(),
                                             directoryScannerParameters.getIncludes(),
-                                            directoryScannerParameters.getExcludes() );
+                                            directoryScannerParameters.getExcludes(),
+                                            directoryScannerParameters.getSpecificTests() );
     }
 
     private int getThreadCount()

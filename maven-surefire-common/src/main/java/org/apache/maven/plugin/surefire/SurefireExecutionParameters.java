@@ -275,6 +275,10 @@ public interface SurefireExecutionParameters
 
     void setToolchainManager( ToolchainManager toolchainManager );
 
+    Boolean getFailIfNoSpecifiedTests();
+
+    void setFailIfNoSpecifiedTests( Boolean failIfNoSpecifiedTests );
+
     Boolean getFailIfNoTests();
 
     void setFailIfNoTests( Boolean failIfNoTests );

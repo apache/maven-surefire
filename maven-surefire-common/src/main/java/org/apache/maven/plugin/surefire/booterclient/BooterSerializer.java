@@ -94,6 +94,9 @@ class BooterSerializer
                                     String.valueOf( directoryScannerParameters.isFailIfNoTests() ) );
             properties.addList( directoryScannerParameters.getIncludes(), BooterConstants.INCLUDES_PROPERTY_PREFIX );
             properties.addList( directoryScannerParameters.getExcludes(), BooterConstants.EXCLUDES_PROPERTY_PREFIX );
+            properties.addList( directoryScannerParameters.getSpecificTests(),
+                                BooterConstants.SPECIFIC_TEST_PROPERTY_PREFIX );
+
             properties.setProperty( BooterConstants.TEST_CLASSES_DIRECTORY,
                                     directoryScannerParameters.getTestClassesDirectory() );
         }

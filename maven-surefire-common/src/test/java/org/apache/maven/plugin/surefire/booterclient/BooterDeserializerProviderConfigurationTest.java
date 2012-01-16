@@ -24,6 +24,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 import org.apache.maven.surefire.booter.BooterDeserializer;
@@ -90,7 +91,7 @@ public class BooterDeserializerProviderConfigurationTest
     public void testReporterConfiguration()
         throws IOException
     {
-        DirectoryScannerParameters directoryScannerParameters = getDirectoryScannerParameters();
+        DirectoryScannerParameters directoryScannerParameters = getDirectoryScannerParametersWithoutSpecificTests();
         ClassLoaderConfiguration forkConfiguration = getForkConfiguration();
 
         ProviderConfiguration providerConfiguration = getTestProviderConfiguration( directoryScannerParameters );
@@ -144,14 +145,14 @@ public class BooterDeserializerProviderConfigurationTest
     private ProviderConfiguration getReloadedProviderConfiguration()
         throws IOException
     {
-        DirectoryScannerParameters directoryScannerParameters = getDirectoryScannerParameters();
+        DirectoryScannerParameters directoryScannerParameters = getDirectoryScannerParametersWithoutSpecificTests();
         ClassLoaderConfiguration forkConfiguration = getForkConfiguration();
         ProviderConfiguration booterConfiguration = getTestProviderConfiguration( directoryScannerParameters );
         final StartupConfiguration testProviderConfiguration = getTestStartupConfiguration( forkConfiguration );
         return saveAndReload( booterConfiguration, testProviderConfiguration );
     }
 
-    private DirectoryScannerParameters getDirectoryScannerParameters()
+    private DirectoryScannerParameters getDirectoryScannerParametersWithoutSpecificTests()
     {
         File aDir = new File( "." );
         List<String> includes = new ArrayList<String>();
@@ -161,7 +162,7 @@ public class BooterDeserializerProviderConfigurationTest
         excludes.add( "xx1" );
         excludes.add( "xx2" );
 
-        return new DirectoryScannerParameters( aDir, includes, excludes, Boolean.TRUE,
+        return new DirectoryScannerParameters( aDir, includes, excludes, Collections.emptyList(), Boolean.TRUE,
                                                RunOrder.asString( RunOrder.DEFAULT ) );
     }
 

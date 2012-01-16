@@ -130,6 +130,7 @@ public class TestNGProvider
     {
         return new TestNGDirectoryTestSuite( basedir, new ArrayList( directoryScannerParameters.getIncludes() ),
                                              new ArrayList( directoryScannerParameters.getExcludes() ),
+                                             new ArrayList( directoryScannerParameters.getSpecificTests() ),
                                              testRequest.getTestSourceDirectory().toString(),
                                              testArtifactInfo.getVersion(), providerProperties,
                                              reporterConfiguration.getReportsDirectory(),

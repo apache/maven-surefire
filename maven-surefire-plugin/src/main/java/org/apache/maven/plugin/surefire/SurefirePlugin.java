@@ -321,6 +321,15 @@ public class SurefirePlugin
     private Boolean failIfNoTests;
 
     /**
+     * Set this to "true" to cause a failure if the none of the tests specified in -Dtest=... are run. Defaults to
+     * "true".
+     * 
+     * @parameter expression="${surefire.failIfNoSpecifiedTests}"
+     * @since 2.12
+     */
+    private Boolean failIfNoSpecifiedTests;
+
+    /**
      * Option to specify the forking mode. Can be "never", "once", "always" or "perthread". "none" and "pertest" are also accepted
      * for backwards compatibility. "always" forks for each test-class. "perthread" will create "threadCount" parallel forks.
      *
@@ -987,6 +996,16 @@ public class SurefirePlugin
     public void setRedirectTestOutputToFile( boolean redirectTestOutputToFile )
     {
         this.redirectTestOutputToFile = redirectTestOutputToFile;
+    }
+
+    public Boolean getFailIfNoSpecifiedTests()
+    {
+        return failIfNoSpecifiedTests;
+    }
+
+    public void setFailIfNoSpecifiedTests( Boolean failIfNoSpecifiedTests )
+    {
+        this.failIfNoSpecifiedTests = failIfNoSpecifiedTests;
     }
 
     public Boolean getFailIfNoTests()
