@@ -145,7 +145,7 @@ else
 
 * Using custom listeners and reporters
 
-  JUnit4/4.7 provider provides support for attaching custom RunListeners to uour tests.
+  JUnit4/4.7 provider provides support for attaching custom RunListeners to your tests.
 
   You can configure multiple custom listeners like this:
 
@@ -216,4 +216,44 @@ else
   The disadvantage of this solution is that the policy changes will affect the tests too, which make the
   security environment less realistic.
 
+* Using JUnit Categories
+
+    JUnit 4.8 introduced the notion of Categories. You can use JUnit categories by using the <<<groups>>> parameter. As long as 
+    the JUnit version in the project is 4.8 or higher, the presence of the "groups" parameter will automatically make surefire select 
+    the junit47 provider, which supports groups.
+
++---+
+<plugins>
+[...]
+    <plugin>
+      <artifactId>maven-surefire-plugin</artifactId>
+      <version>2.11</version>
+      <configuration>
+        <groups>com.mycompany.SlowTests</groups>
+      </configuration>
+    </plugin>
+[...]
+</plugins>
++---+
+
+  This will execute only those tests annotated with the <<<@Categories(com.mycompany.SlowTests.class)>>> annotation:
+
++---+
+    public class AppTest {
+      @Test
+      @Category(com.mycompany.SlowTests.class)
+      public void testSlow() {
+        System.out.println("slow");
+      }
+
+      @Test
+      @Category(com.cmycompany.FastTests.class)
+      public void testSlow() {
+        System.out.println("fast");
+      }
+    }
++---+
+
+  The @Category annotation can also be applied at class-level.
+	
   For more information on JUnit, see the {{{http://www.junit.org}JUnit web site}}.
