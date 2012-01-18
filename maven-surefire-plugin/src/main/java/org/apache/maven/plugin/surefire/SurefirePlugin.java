@@ -33,6 +33,7 @@ import org.apache.maven.artifact.resolver.ArtifactResolver;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.apache.maven.plugin.surefire.booterclient.ChecksumCalculator;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.surefire.suite.RunResult;
@@ -56,9 +57,19 @@ public class SurefirePlugin
 {
 
     /**
+     * Information about this plugin, mainly used to lookup this plugin's configuration from the currently executing
+     * project.
+     * 
+     * @parameter default-value="${plugin}"
+     * @readonly
+     * @since 2.12
+     */
+    private PluginDescriptor pluginDescriptor;
+
+    /**
      * Set this to "true" to skip running tests, but still compile them. Its use is NOT RECOMMENDED, but quite
      * convenient on occasion.
-     *
+     * 
      * @parameter default-value="false" expression="${skipTests}"
      * @since 2.4
      */
@@ -1345,6 +1356,11 @@ public class SurefirePlugin
 
     protected void addPluginSpecificChecksumItems( ChecksumCalculator checksum )
     {
+    }
+
+    public PluginDescriptor getPluginDescriptor()
+    {
+        return pluginDescriptor;
     }
 
 }

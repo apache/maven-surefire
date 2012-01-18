@@ -30,6 +30,7 @@ import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.ArtifactResolver;
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.toolchain.ToolchainManager;
 
@@ -122,6 +123,8 @@ public interface SurefireExecutionParameters
     Properties getProperties();
 
     void setProperties( Properties properties );
+
+    PluginDescriptor getPluginDescriptor();
 
     Map<String,Artifact> getPluginArtifactMap();
 

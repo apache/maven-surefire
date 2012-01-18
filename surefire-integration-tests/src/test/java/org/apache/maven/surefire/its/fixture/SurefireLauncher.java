@@ -333,6 +333,12 @@ public class SurefireLauncher
         return addGoal( "-DfailIfNoTests=" + fail );
     }
 
+    public SurefireLauncher failIfNoSpecifiedTests( boolean fail )
+    {
+        this.failIfNoTests = fail;
+        return addGoal( "-Dsurefire.failIfNoSpecifiedTests=" + fail );
+    }
+
     public SurefireLauncher useSystemClassLoader( boolean useSystemClassLoader)
     {
         return addGoal( "-DuseSystemClassLoader=" + useSystemClassLoader );

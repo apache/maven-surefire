@@ -42,12 +42,14 @@ import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
 import org.apache.maven.artifact.versioning.VersionRange;
+import org.apache.maven.model.Plugin;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.surefire.booterclient.ChecksumCalculator;
 import org.apache.maven.plugin.surefire.booterclient.ForkConfiguration;
 import org.apache.maven.plugin.surefire.booterclient.ForkStarter;
+import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.artifact.filter.PatternIncludesArtifactFilter;
 import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
 import org.apache.maven.surefire.booter.Classpath;
@@ -546,7 +548,15 @@ public abstract class AbstractSurefireMojo
 
     private List<String> getIncludeList()
     {
-        List<String> includes = this.getIncludes();
+        List<String> includes;
+        if ( isSpecificTestSpecified() && !isMultipleExecutionBlocksDetected() )
+        {
+            includes = getSpecificTests();
+        }
+        else
+        {
+            includes = this.getIncludes();
+        }
 
         // defaults here, qdox doesn't like the end javadoc value
         // Have to wrap in an ArrayList as surefire expects an ArrayList instead of a List for some reason
@@ -555,7 +565,28 @@ public abstract class AbstractSurefireMojo
             includes = new ArrayList<String>( Arrays.asList( getDefaultIncludes() ) );
         }
 
+        System.out.println( "Test includes:\n\n" + includes + "\n\n" );
+
         return includes;
+    }
+
+    private boolean isMultipleExecutionBlocksDetected()
+    {
+        MavenProject project = getProject();
+        if ( project != null )
+        {
+            String key = getPluginDescriptor().getPluginLookupKey();
+            Plugin plugin = (Plugin) project.getBuild().getPluginsAsMap().get( key );
+
+            if ( plugin != null )
+            {
+                @SuppressWarnings( "rawtypes" )
+                List executions = plugin.getExecutions();
+                return executions != null && executions.size() > 1;
+            }
+        }
+
+        return false;
     }
 
     private List<String> getSpecificTests()

@@ -38,6 +38,7 @@ import org.apache.maven.artifact.resolver.ArtifactResolver;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.apache.maven.plugin.surefire.AbstractSurefireMojo;
 import org.apache.maven.plugin.surefire.Summary;
 import org.apache.maven.plugin.surefire.booterclient.ChecksumCalculator;
@@ -65,6 +66,16 @@ import org.codehaus.plexus.util.StringUtils;
 public class IntegrationTestMojo
     extends AbstractSurefireMojo
 {
+
+    /**
+     * Information about this plugin, mainly used to lookup this plugin's configuration from the currently executing
+     * project.
+     * 
+     * @parameter default-value="${plugin}"
+     * @readonly
+     * @since 2.12
+     */
+    private PluginDescriptor pluginDescriptor;
 
     /**
      * Set this to "true" to skip running tests, but still compile them. Its use is NOT RECOMMENDED, but quite
@@ -1424,6 +1435,11 @@ public class IntegrationTestMojo
     public void setFailIfNoSpecifiedTests( Boolean failIfNoSpecifiedTests )
     {
         this.failIfNoSpecifiedTests = failIfNoSpecifiedTests;
+    }
+
+    public PluginDescriptor getPluginDescriptor()
+    {
+        return pluginDescriptor;
     }
 
 }
