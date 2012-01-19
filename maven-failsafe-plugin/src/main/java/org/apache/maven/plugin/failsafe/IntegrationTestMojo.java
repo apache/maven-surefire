@@ -43,6 +43,7 @@ import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.ArtifactResolver;
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.descriptor.PluginDescriptor;
@@ -75,6 +76,8 @@ import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 public class IntegrationTestMojo
     extends AbstractSurefireMojo
 {
+
+    private static final String FAILSAFE_IN_PROGRESS_CONTEXT_KEY = "failsafe-in-progress";
 
     /**
      * Information about this plugin, mainly used to lookup this plugin's configuration from the currently executing
@@ -713,6 +716,7 @@ public class IntegrationTestMojo
         return failsafeSummary;
     }
 
+    @SuppressWarnings( "unchecked" )
     private void writeSummary( FailsafeSummary summary )
         throws MojoExecutionException
     {
@@ -727,7 +731,8 @@ public class IntegrationTestMojo
         try
         {
             FailsafeSummary mergedSummary = summary;
-            if ( summaryFile.exists() )
+            Object token = getPluginContext().get( FAILSAFE_IN_PROGRESS_CONTEXT_KEY );
+            if ( summaryFile.exists() && token != null )
             {
                 fin = new FileInputStream( summaryFile );
 
@@ -759,6 +764,8 @@ public class IntegrationTestMojo
             close( fin );
             close( fout );
         }
+
+        getPluginContext().put( FAILSAFE_IN_PROGRESS_CONTEXT_KEY, FAILSAFE_IN_PROGRESS_CONTEXT_KEY );
     }
 
     private String getEncodingOrDefault()

@@ -253,7 +253,7 @@ public class SurefireLauncher
     }
 
 
-    protected OutputValidator executeVerify()
+    public OutputValidator executeVerify()
     {
         return execute( "verify" );
     }

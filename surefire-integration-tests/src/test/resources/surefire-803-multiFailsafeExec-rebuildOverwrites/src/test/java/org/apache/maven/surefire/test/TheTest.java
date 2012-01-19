@@ -12,10 +12,12 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
-public class TokenSurefireTest
+public class TheTest
 {
     @Test
-    public void succeed()
+    public void checkSuccessCLIParam()
     {
+        assertThat( Boolean.getBoolean( "success" ), equalTo( true ) );
     }
+
 }

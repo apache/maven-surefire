@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.apache.maven.plugins.surefire</groupId>
-  <artifactId>surefire-803-multiFailsafeExec-failureInFirst</artifactId>
+  <artifactId>surefire-803-multiFailsafeExec-rebuildOverwrites</artifactId>
   <version>1.0-SNAPSHOT</version>
   <packaging>jar</packaging>
 
@@ -38,38 +38,19 @@
         <version>${surefire.version}</version>
         <executions>
           <execution>
-            <id>failing</id>
+            <id>its</id>
             <goals>
               <goal>integration-test</goal>
-            </goals>
-            <configuration>
-              <includes>
-                <include>**/FailingTest.java</include>
-              </includes>
-              <excludes>
-                <exclude>**/SucceedingTest.java</exclude>
-              </excludes>
-            </configuration>
-          </execution>
-          <execution>
-            <id>succeed</id>
-            <goals>
-              <goal>integration-test</goal>
-            </goals>
-            <configuration>
-              <includes>
-                <include>**/SucceedingTest.java</include>
-              </includes>
-              <excludes>
-                <exclude>**/FailingTest.java</exclude>
-              </excludes>
-            </configuration>
-          </execution>
-          <execution>
-            <id>verify</id>
-            <goals>
               <goal>verify</goal>
             </goals>
+            <configuration>
+              <includes>
+                <include>**/TheTest.java</include>
+              </includes>
+              <systemPropertyVariables>
+                <success>${success}</success>
+              </systemPropertyVariables>
+            </configuration>
           </execution>
         </executions>
       </plugin>

@@ -84,6 +84,20 @@ public class OutputValidator
         }
     }
 
+    public OutputValidator verifyErrorFreeIntegrationTests( int total )
+    {
+        try
+        {
+            verifier.verifyErrorFreeLog();
+            this.assertIntegrationTestSuiteResults( total, 0, 0, 0 );
+            return this;
+        }
+        catch ( VerificationException e )
+        {
+            throw new SurefireVerifierException( e );
+        }
+    }
+
     public List<String> loadFile( File file, boolean hasCommand )
     {
         //noinspection unchecked
