@@ -55,12 +55,22 @@ under the License.
           <version>2.4.3+</version>
           <required>false</required>
           <type>String</type>
-          <description>The exception that caused surefire to bomb out</description>
+          <description>[DEPRECATED] The (original) exception that caused surefire to bomb out</description>
+        </field>
+        <field>
+          <name>exceptions</name>
+          <version>2.12+</version>
+          <required>false</required>
+          <association>
+            <type>String</type>
+            <multiplicity>*</multiplicity>
+          </association>
+          <description>The exception(s) that caused surefire to bomb out</description>
         </field>
       </fields>
       <codeSegments>
         <codeSegment>
-          <version>2.6.0</version>
+          <version>2.6.0+</version>
           <code><![CDATA[
     /**
      * Merges the summary result with this summary result.
@@ -107,9 +117,22 @@ under the License.
             default:
                 break;
         }
+        
         if ( this.exception == null )
         {
             this.exception = summary.exception;
+        }
+        
+        if ( summary.exceptions != null )
+        {
+            if ( this.exceptions == null )
+            {
+                this.exceptions = summary.exceptions;
+            }
+            else
+            {
+                this.exceptions.addAll( summary.exceptions );
+            }
         }
     }
           ]]></code>

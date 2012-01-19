@@ -19,12 +19,19 @@ package org.apache.maven.plugin.failsafe;
  * under the License.
  */
 
+import static org.codehaus.plexus.util.IOUtil.*;
+
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,11 +52,13 @@ import org.apache.maven.plugin.surefire.booterclient.ChecksumCalculator;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.surefire.booter.ProviderConfiguration;
 import org.apache.maven.surefire.failsafe.model.FailsafeSummary;
+import org.apache.maven.surefire.failsafe.model.io.xpp3.FailsafeSummaryXpp3Reader;
 import org.apache.maven.surefire.failsafe.model.io.xpp3.FailsafeSummaryXpp3Writer;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.toolchain.ToolchainManager;
 import org.codehaus.plexus.util.ReaderFactory;
 import org.codehaus.plexus.util.StringUtils;
+import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 
 /**
  * Run integration tests using Surefire.
@@ -712,20 +721,43 @@ public class IntegrationTestMojo
         {
             summaryFile.getParentFile().mkdirs();
         }
+
+        FileOutputStream fout = null;
+        FileInputStream fin = null;
         try
         {
-            FileOutputStream fileOutputStream = new FileOutputStream( summaryFile );
-            BufferedOutputStream bufferedOutputStream = new BufferedOutputStream( fileOutputStream );
+            FailsafeSummary mergedSummary = summary;
+            if ( summaryFile.exists() )
+            {
+                fin = new FileInputStream( summaryFile );
+
+                mergedSummary =
+                    new FailsafeSummaryXpp3Reader().read( new InputStreamReader( new BufferedInputStream( fin ),
+                                                                                 getEncodingOrDefault() ) );
+                
+                mergedSummary.merge( summary );
+            }
+
+            fout = new FileOutputStream( summaryFile );
+            BufferedOutputStream bufferedOutputStream = new BufferedOutputStream( fout );
             Writer writer = new OutputStreamWriter( bufferedOutputStream, getEncodingOrDefault() );
             FailsafeSummaryXpp3Writer xpp3Writer = new FailsafeSummaryXpp3Writer();
-            xpp3Writer.write( writer, summary );
+            xpp3Writer.write( writer, mergedSummary );
             writer.close();
             bufferedOutputStream.close();
-            fileOutputStream.close();
         }
         catch ( IOException e )
         {
             throw new MojoExecutionException( e.getMessage(), e );
+        }
+        catch ( XmlPullParserException e )
+        {
+            throw new MojoExecutionException( e.getMessage(), e );
+        }
+        finally
+        {
+            close( fin );
+            close( fout );
         }
     }
 

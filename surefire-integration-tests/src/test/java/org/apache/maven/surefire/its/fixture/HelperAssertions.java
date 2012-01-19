@@ -36,6 +36,15 @@ public class HelperAssertions
         assertTestSuiteResults( total, errors, failures, skipped, suite );
     }
 
+    /**
+     * assert that the reports in the specified testDir have the right summary statistics
+     */
+    public static void assertIntegrationTestSuiteResults( int total, int errors, int failures, int skipped, File testDir )
+    {
+        IntegrationTestSuiteResults suite = parseIntegrationTestResults( new File[] { testDir } );
+        assertTestSuiteResults( total, errors, failures, skipped, suite );
+    }
+
     public static void assertTestSuiteResults( int total, int errors, int failures, int skipped,
                                                   IntegrationTestSuiteResults actualSuite )
     {
@@ -53,6 +62,12 @@ public class HelperAssertions
     public static IntegrationTestSuiteResults parseTestResults( File[] testDirs )
     {
         List<ReportTestSuite> reports = extractReports( testDirs );
+        return parseReportList( reports );
+    }
+
+    public static IntegrationTestSuiteResults parseIntegrationTestResults( File[] testDirs )
+    {
+        List<ReportTestSuite> reports = extractITReports( testDirs );
         return parseReportList( reports );
     }
 
@@ -79,6 +94,28 @@ public class HelperAssertions
         for ( File testDir : testDirs )
         {
             File reportsDir = new File( testDir, "target/surefire-reports" );
+            Assert.assertTrue( "Reports directory is missing: " + reportsDir.getAbsolutePath(), reportsDir.exists() );
+            reportsDirs.add( reportsDir );
+        }
+        SurefireReportParser parser = new SurefireReportParser( reportsDirs );
+        List<ReportTestSuite> reports;
+        try
+        {
+            reports = parser.parseXMLReportFiles();
+        }
+        catch ( Exception e )
+        {
+            throw new RuntimeException( "Couldn't parse XML reports", e );
+        }
+        return reports;
+    }
+
+    public static List<ReportTestSuite> extractITReports( File[] testDirs )
+    {
+        List<File> reportsDirs = new ArrayList<File>();
+        for ( File testDir : testDirs )
+        {
+            File reportsDir = new File( testDir, "target/failsafe-reports" );
             Assert.assertTrue( "Reports directory is missing: " + reportsDir.getAbsolutePath(), reportsDir.exists() );
             reportsDirs.add( reportsDir );
         }

@@ -128,6 +128,12 @@ public class OutputValidator
         return this;
     }
 
+    public OutputValidator assertIntegrationTestSuiteResults( int total, int errors, int failures, int skipped )
+    {
+        HelperAssertions.assertIntegrationTestSuiteResults( total, errors, failures, skipped, baseDir );
+        return this;
+    }
+
     public TestFile getTargetFile( String fileName )
     {
         File targetDir = getSubFile( "target" );
