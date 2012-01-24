@@ -20,12 +20,19 @@ package org.apache.maven.surefire.common.junit48;
  */
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import org.apache.maven.surefire.booter.ProviderParameterNames;
+import org.apache.maven.surefire.group.match.AndGroupMatcher;
+import org.apache.maven.surefire.group.match.GroupMatcher;
+import org.apache.maven.surefire.group.match.InverseGroupMatcher;
+import org.apache.maven.surefire.group.match.OrGroupMatcher;
+import org.apache.maven.surefire.group.parse.GroupMatcherParser;
+import org.apache.maven.surefire.group.parse.ParseException;
 import org.codehaus.plexus.util.SelectorUtils;
 
-import org.junit.experimental.categories.Categories;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.Description;
 import org.junit.runner.manipulation.Filter;
 
@@ -45,14 +52,14 @@ public class FilterFactory
     {
         String groups = providerProperties.getProperty( ProviderParameterNames.TESTNG_GROUPS_PROP );
         String excludedGroups = providerProperties.getProperty( ProviderParameterNames.TESTNG_EXCLUDEDGROUPS_PROP );
-        List<Filter> included = commaSeparatedListToFilters( groups );
-        List<Filter> excluded = commaSeparatedListToFilters( excludedGroups );
-        return new CombinedCategoryFilter( included, excluded );
+        GroupMatcher included = commaSeparatedListToFilters( groups );
+        GroupMatcher excluded = commaSeparatedListToFilters( excludedGroups );
+        return new GroupMatcherCategoryFilter( included, excluded );
     }
 
-    private List<Filter> commaSeparatedListToFilters( String str )
+    private GroupMatcher commaSeparatedListToFilters( String str )
     {
-        List<Filter> included = new ArrayList<Filter>();
+        List<GroupMatcher> included = new ArrayList<GroupMatcher>();
         if ( str != null )
         {
             for ( String group : str.split( "," ) )
@@ -62,11 +69,25 @@ public class FilterFactory
                 {
                     continue;
                 }
-                Class<?> categoryType = classloadCategory( group );
-                included.add( Categories.CategoryFilter.include( categoryType ) );
+
+                try
+                {
+                    GroupMatcher matcher = new GroupMatcherParser( group ).parse();
+                    included.add( matcher );
+                }
+                catch ( ParseException e )
+                {
+                    // TODO Auto-generated catch block
+                    throw new IllegalArgumentException( "Invalid group expression: '" + group + "'. Reason: "
+                        + e.getMessage(), e );
+                }
+
+                // Class<?> categoryType = classloadCategory( group );
+                // included.add( Categories.CategoryFilter.include( categoryType ) );
             }
         }
-        return included;
+
+        return included.isEmpty() ? null : new OrGroupMatcher( included );
     }
 
     public Filter createMethodFilter( String requestedTestMethod )
@@ -111,7 +132,70 @@ public class FilterFactory
         }
     }
 
+    private static class GroupMatcherCategoryFilter
+        extends Filter
+    {
 
+        private AndGroupMatcher matcher;
+
+        public GroupMatcherCategoryFilter( GroupMatcher included, GroupMatcher excluded )
+        {
+            GroupMatcher invertedExclude = excluded == null ? null : new InverseGroupMatcher( excluded );
+            if ( included != null || invertedExclude != null )
+            {
+                matcher = new AndGroupMatcher();
+                if ( included != null )
+                {
+                    matcher.addMatcher( included );
+                }
+
+                if ( invertedExclude != null )
+                {
+                    matcher.addMatcher( invertedExclude );
+                }
+            }
+        }
+
+        @Override
+        public boolean shouldRun( Description description )
+        {
+            if ( matcher == null )
+            {
+                return true;
+            }
+
+            Category cat = description.getAnnotation( Category.class );
+            if ( cat == null )
+            {
+                cat = description.getTestClass().getAnnotation( Category.class );
+            }
+
+            System.out.println( "\n\nMatcher: " + matcher );
+
+            if ( cat == null )
+            {
+                System.out.println( "\tChecking: " + description.getClassName() + "#" + description.getMethodName()
+                    + " with no category annotations... Enabled? " + ( matcher.enabled( (String) null ) ) );
+                return matcher.enabled( (String) null );
+            }
+
+            System.out.println( "\tChecking: " + description.getClassName() + "#" + description.getMethodName()
+                + " with category annotations:\n\t" + Arrays.toString( cat.value() ) + "\nEnabled? "
+                + ( matcher.enabled( cat.value() ) ) );
+
+            return matcher.enabled( cat.value() );
+        }
+
+        @Override
+        public String describe()
+        {
+            return matcher == null ? "ANY" : matcher.toString();
+        }
+
+    }
+
+
+    @SuppressWarnings( "unused" )
     private static class CombinedCategoryFilter
         extends Filter
     {

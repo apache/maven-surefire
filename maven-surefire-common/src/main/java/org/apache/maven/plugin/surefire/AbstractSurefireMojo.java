@@ -565,8 +565,6 @@ public abstract class AbstractSurefireMojo
             includes = new ArrayList<String>( Arrays.asList( getDefaultIncludes() ) );
         }
 
-        System.out.println( "Test includes:\n\n" + includes + "\n\n" );
-
         return includes;
     }
 

@@ -47,8 +47,11 @@
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-utils</artifactId>
     </dependency>
-
- </dependencies>
+    <dependency>
+      <groupId>org.apache.maven.surefire</groupId>
+      <artifactId>maven-surefire-common</artifactId>
+    </dependency>
+  </dependencies>
 
   <build>
     <plugins>
@@ -77,6 +80,14 @@
             </configuration>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <excludes>
+            <exclude>**/fixture/**</exclude>
+          </excludes>
+        </configuration>
       </plugin>
     </plugins>
   </build>

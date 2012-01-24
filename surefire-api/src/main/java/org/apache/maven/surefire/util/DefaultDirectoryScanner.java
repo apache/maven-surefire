@@ -67,7 +67,6 @@ public class DefaultDirectoryScanner
         String[] testClassNames = collectTests();
         List result = new ArrayList();
 
-        System.out.println( "Got specific tests: " + specificTests );
         String[] specific = specificTests == null ? new String[0] : processIncludesExcludes( specificTests );
         SpecificTestClassFilter specificTestFilter = new SpecificTestClassFilter( specific );
 
@@ -79,7 +78,6 @@ public class DefaultDirectoryScanner
 
             if ( !specificTestFilter.accept( testClass ) )
             {
-                System.out.println( "Skip: " + testClass.getName() );
                 // FIXME: Log this somehow!
                 continue;
             }
@@ -94,7 +92,6 @@ public class DefaultDirectoryScanner
             }
         }
 
-        System.out.println( "Running: " + result );
         return new TestsToRun( result );
     }
 

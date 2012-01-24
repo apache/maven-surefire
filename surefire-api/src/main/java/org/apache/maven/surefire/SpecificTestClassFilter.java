@@ -38,7 +38,6 @@ public class SpecificTestClassFilter
         if ( names != null && !names.isEmpty() )
         {
             String className = testClass.getName().replace( '.', FS ) + JAVA_CLASS_FILE_EXTENSION;
-            System.out.println( "Checking classname: '" + className + "' against patterns:\n\n" + names + "\n\n" );
 
             boolean found = false;
             for ( Iterator it = names.iterator(); it.hasNext(); )
@@ -60,7 +59,6 @@ public class SpecificTestClassFilter
             }
         }
 
-        System.out.println( "Accepted? " + result );
         return result;
     }
 
