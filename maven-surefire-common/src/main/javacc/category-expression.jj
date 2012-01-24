@@ -134,10 +134,11 @@ GroupMatcher rhs=null;
 Op op=null;
 }
 {
-  (not())?
+  (not()
   {
     inverted=true;
   }
+  )?
   <LPAREN>
   lhs=expr()
   (
@@ -170,7 +171,6 @@ Token val=null;
     GroupMatcher m = new SingleGroupMatcher( val.image );
     return inverted ? new InverseGroupMatcher( m ) : m;
   }
-  (<CLS>)?
 }
 
 Op op() :

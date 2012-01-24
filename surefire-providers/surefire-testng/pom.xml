@@ -48,6 +48,10 @@
       <version>3.8.2</version>
       <scope>provided</scope>
     </dependency>
+    <dependency>
+      <groupId>org.apache.maven.surefire</groupId>
+      <artifactId>maven-surefire-common</artifactId>
+    </dependency>
   </dependencies>
 
   <build>

@@ -9,6 +9,11 @@ public class SingleGroupMatcher
 
     private Class<?> enabledClass;
 
+    public SingleGroupMatcher( String enabled )
+    {
+        this.enabled = enabled.endsWith( ".class" ) ? enabled.substring( 0, enabled.length() - 6 ) : enabled;
+    }
+
     @Override
     public int hashCode()
     {
@@ -42,11 +47,6 @@ public class SingleGroupMatcher
     public String toString()
     {
         return "*" + enabled;
-    }
-
-    public SingleGroupMatcher( String disabled )
-    {
-        this.enabled = disabled;
     }
 
     public boolean enabled( Class<?>... cats )
