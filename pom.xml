@@ -115,7 +115,7 @@
 
   <properties>
     <mavenVersion>2.0.9</mavenVersion>
-    <shadedVersion>2.8</shadedVersion>
+    <shadedVersion>2.11</shadedVersion>
   </properties>
 
   <dependencyManagement>
@@ -202,7 +202,7 @@
       <dependency>
         <groupId>org.codehaus.plexus</groupId>
         <artifactId>plexus-utils</artifactId>
-        <version>2.1</version>
+        <version>3.0</version>
       </dependency>
       <dependency>
         <groupId>jmock</groupId>

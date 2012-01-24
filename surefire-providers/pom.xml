@@ -55,6 +55,7 @@
     <plugins>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
+        <version>${shadedVersion}</version>
         <dependencies>
           <dependency>
             <groupId>org.apache.maven.surefire</groupId>
