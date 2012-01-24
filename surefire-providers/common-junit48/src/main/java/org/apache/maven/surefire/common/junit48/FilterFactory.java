@@ -59,8 +59,15 @@ public class FilterFactory
         GroupMatcher included = commaSeparatedListToFilters( groups );
         GroupMatcher excluded = commaSeparatedListToFilters( excludedGroups );
 
-        included.loadGroupClasses( testClassLoader );
-        excluded.loadGroupClasses( testClassLoader );
+        if ( included != null && testClassLoader != null )
+        {
+            included.loadGroupClasses( testClassLoader );
+        }
+
+        if ( excluded != null && testClassLoader != null )
+        {
+            excluded.loadGroupClasses( testClassLoader );
+        }
 
         return new GroupMatcherCategoryFilter( included, excluded );
     }
