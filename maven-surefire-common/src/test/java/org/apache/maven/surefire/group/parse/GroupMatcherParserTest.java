@@ -50,6 +50,17 @@ public class GroupMatcherParserTest
         assertTrue( matcher.enabled( GroupMatcherParser.class, SingleGroupMatcher.class ) );
     }
 
+    public void testBareCommaSeparatedORedPair()
+        throws ParseException
+    {
+        GroupMatcher matcher =
+            new GroupMatcherParser( GroupMatcherParser.class.getName() + ", " + SingleGroupMatcher.class.getName() ).parse();
+
+        assertTrue( "Wrong matcher type: " + matcher.getClass().getName(), matcher instanceof OrGroupMatcher );
+        assertTrue( matcher.enabled( GroupMatcherParser.class ) );
+        assertTrue( matcher.enabled( GroupMatcherParser.class, SingleGroupMatcher.class ) );
+    }
+
     public void testParseGroupedANDedPair()
         throws ParseException
     {
@@ -110,7 +121,6 @@ public class GroupMatcherParserTest
         throws ParseException
     {
         GroupMatcher matcher = new GroupMatcherParser( SingleGroupMatcher.class.getSimpleName() ).parse();
-        System.out.println( matcher );
         assertTrue( "Wrong matcher type: " + matcher.getClass().getName(), matcher instanceof SingleGroupMatcher );
         assertTrue( matcher.enabled( SingleGroupMatcher.class ) );
     }

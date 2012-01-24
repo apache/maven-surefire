@@ -78,6 +78,7 @@ TOKEN:
 | <OR:  (["O","o"] ["R", "r"]) >
 | <AMP2: "&&">
 | <PIPE2: "||">
+| <COMMA: ",">
 | <NOT:   "NOT">
 | <BANG:  "!">
 | <LPAREN: "(">
@@ -184,6 +185,8 @@ Op op() :
 | <AMP2> 
   {o=Op.AND;}
 | <PIPE2>
+  {o=Op.OR;}
+| <COMMA>
   {o=Op.OR;}
 )  
   {return o;}
