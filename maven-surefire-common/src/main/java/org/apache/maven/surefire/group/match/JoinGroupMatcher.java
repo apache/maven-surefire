@@ -19,4 +19,12 @@ public abstract class JoinGroupMatcher
         return matchers;
     }
 
+    public void loadGroupClasses( ClassLoader cloader )
+    {
+        for ( GroupMatcher matcher : matchers )
+        {
+            matcher.loadGroupClasses( cloader );
+        }
+    }
+
 }

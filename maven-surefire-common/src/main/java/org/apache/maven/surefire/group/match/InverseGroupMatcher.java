@@ -57,4 +57,9 @@ public class InverseGroupMatcher
         return true;
     }
 
+    public void loadGroupClasses( ClassLoader cloader )
+    {
+        matcher.loadGroupClasses( cloader );
+    }
+
 }

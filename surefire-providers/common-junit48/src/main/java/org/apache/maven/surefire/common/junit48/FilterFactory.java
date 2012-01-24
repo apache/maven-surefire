@@ -21,8 +21,13 @@ package org.apache.maven.surefire.common.junit48;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
+
 import org.apache.maven.surefire.booter.ProviderParameterNames;
 import org.apache.maven.surefire.group.match.AndGroupMatcher;
 import org.apache.maven.surefire.group.match.GroupMatcher;
@@ -31,7 +36,6 @@ import org.apache.maven.surefire.group.match.OrGroupMatcher;
 import org.apache.maven.surefire.group.parse.GroupMatcherParser;
 import org.apache.maven.surefire.group.parse.ParseException;
 import org.codehaus.plexus.util.SelectorUtils;
-
 import org.junit.experimental.categories.Category;
 import org.junit.runner.Description;
 import org.junit.runner.manipulation.Filter;
@@ -54,6 +58,10 @@ public class FilterFactory
         String excludedGroups = providerProperties.getProperty( ProviderParameterNames.TESTNG_EXCLUDEDGROUPS_PROP );
         GroupMatcher included = commaSeparatedListToFilters( groups );
         GroupMatcher excluded = commaSeparatedListToFilters( excludedGroups );
+
+        included.loadGroupClasses( testClassLoader );
+        excluded.loadGroupClasses( testClassLoader );
+
         return new GroupMatcherCategoryFilter( included, excluded );
     }
 
@@ -77,7 +85,6 @@ public class FilterFactory
                 }
                 catch ( ParseException e )
                 {
-                    // TODO Auto-generated catch block
                     throw new IllegalArgumentException( "Invalid group expression: '" + group + "'. Reason: "
                         + e.getMessage(), e );
                 }
@@ -138,6 +145,8 @@ public class FilterFactory
 
         private AndGroupMatcher matcher;
 
+        private Map<Description, Boolean> shouldRunAnswers = new HashMap<Description, Boolean>();
+
         public GroupMatcherCategoryFilter( GroupMatcher included, GroupMatcher excluded )
         {
             GroupMatcher invertedExclude = excluded == null ? null : new InverseGroupMatcher( excluded );
@@ -159,31 +168,77 @@ public class FilterFactory
         @Override
         public boolean shouldRun( Description description )
         {
+            return shouldRun( description,
+                              ( description.getMethodName() == null ? null
+                                              : Description.createSuiteDescription( description.getTestClass() ) ) );
+        }
+
+        private boolean shouldRun( Description description, Description parent )
+        {
+            Boolean result = shouldRunAnswers.get( description );
+            if ( result != null )
+            {
+                return result;
+            }
+
             if ( matcher == null )
             {
                 return true;
             }
 
+            // System.out.println( "\n\nMatcher: " + matcher );
+            // System.out.println( "Checking: " + description.getClassName()
+            // + ( parent == null ? "" : "#" + description.getMethodName() ) );
+
+            Set<Class<?>> cats = new HashSet<Class<?>>();
             Category cat = description.getAnnotation( Category.class );
-            if ( cat == null )
+            if ( cat != null )
             {
-                cat = description.getTestClass().getAnnotation( Category.class );
+                // System.out.println( "Adding categories: " + Arrays.toString( cat.value() ) );
+                cats.addAll( Arrays.asList( cat.value() ) );
             }
 
-            System.out.println( "\n\nMatcher: " + matcher );
-
-            if ( cat == null )
+            if ( parent != null )
             {
-                System.out.println( "\tChecking: " + description.getClassName() + "#" + description.getMethodName()
-                    + " with no category annotations... Enabled? " + ( matcher.enabled( (String) null ) ) );
-                return matcher.enabled( (String) null );
+                cat = parent.getAnnotation( Category.class );
+                if ( cat != null )
+                {
+                    // System.out.println( "Adding class-level categories: " + Arrays.toString( cat.value() ) );
+                    cats.addAll( Arrays.asList( cat.value() ) );
+                }
             }
 
-            System.out.println( "\tChecking: " + description.getClassName() + "#" + description.getMethodName()
-                + " with category annotations:\n\t" + Arrays.toString( cat.value() ) + "\nEnabled? "
-                + ( matcher.enabled( cat.value() ) ) );
+            // System.out.println( "Checking " + cats.size() + " categories..." );
+            //
+            // System.out.println( "Enabled? " + ( matcher.enabled( cats.toArray( new Class<?>[] {} ) ) ) + "\n\n" );
+            result = matcher.enabled( cats.toArray( new Class<?>[] {} ) );
 
-            return matcher.enabled( cat.value() );
+            if ( parent == null )
+            {
+                if ( cats.size() == 0 )
+                {
+                    // System.out.println( "Allow method-level filtering by PASSing class-level shouldRun() test..." );
+                    result = true;
+                }
+                else if ( !result )
+                {
+                    ArrayList<Description> children = description.getChildren();
+                    if ( children != null )
+                    {
+                        for ( Description child : children )
+                        {
+                            if ( shouldRun( child, description ) )
+                            {
+                                result = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            shouldRunAnswers.put( description, result );
+            return result == null ? false : result;
         }
 
         @Override
@@ -265,18 +320,6 @@ public class FilterFactory
                 sb.append( f.describe() );
             }
             return sb.toString();
-        }
-    }
-
-    private Class<?> classloadCategory( String category )
-    {
-        try
-        {
-            return testClassLoader.loadClass( category );
-        }
-        catch ( ClassNotFoundException e )
-        {
-            throw new RuntimeException( "Unable to load category: " + category, e );
         }
     }
 

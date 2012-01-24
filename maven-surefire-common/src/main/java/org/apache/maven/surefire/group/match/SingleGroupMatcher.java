@@ -7,6 +7,8 @@ public class SingleGroupMatcher
 
     private String enabled;
 
+    private Class<?> enabledClass;
+
     @Override
     public int hashCode()
     {
@@ -54,6 +56,11 @@ public class SingleGroupMatcher
             for ( Class<?> cls : cats )
             {
                 String name = cls.getName();
+                if ( enabledClass != null && enabledClass.getName().equals( name ) )
+                {
+                    return true;
+                }
+                
                 if ( name.endsWith( enabled ) )
                 {
                     return true;
@@ -86,6 +93,18 @@ public class SingleGroupMatcher
         }
 
         return false;
+    }
+
+    public void loadGroupClasses( ClassLoader cloader )
+    {
+        try
+        {
+            enabledClass = cloader.loadClass( enabled );
+        }
+        catch ( ClassNotFoundException e )
+        {
+            throw new RuntimeException( "Unable to load category: " + enabled, e );
+        }
     }
 
 }
