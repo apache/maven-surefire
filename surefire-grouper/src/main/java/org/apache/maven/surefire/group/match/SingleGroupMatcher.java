@@ -85,7 +85,7 @@ public class SingleGroupMatcher
                 continue;
             }
 
-            System.out.println( cat + ".endsWith(" + enabled + ")? " + ( cat.endsWith( enabled ) ) );
+            // System.out.println( cat + ".endsWith(" + enabled + ")? " + ( cat.endsWith( enabled ) ) );
             if ( cat.endsWith( enabled ) )
             {
                 return true;

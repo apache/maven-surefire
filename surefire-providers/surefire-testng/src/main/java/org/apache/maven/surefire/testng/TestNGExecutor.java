@@ -29,6 +29,7 @@ import java.util.Map;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
 import org.apache.maven.artifact.versioning.VersionRange;
+import org.apache.maven.surefire.booter.ProviderParameterNames;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.testng.conf.Configurator;
 import org.apache.maven.surefire.testng.conf.TestNG4751Configurator;
@@ -59,11 +60,15 @@ public class TestNGExecutor
         throws TestSetFailedException
     {
         TestNG testng = new TestNG( true );
+
+        applyGroupMatching( testng, options );
         if (!StringUtils.isBlank( methodNamePattern ))
         {
             applyMethodNameFiltering( testng, methodNamePattern );
-        } 
+        }
+
         Configurator configurator = getConfigurator( version );
+        System.out.println( "Configuring TestNG with: " + configurator );
         configurator.configure( testng, options );
         postConfigure( testng, testSourceDirectory, reportManager, suite, reportsDirectory );
         testng.setTestClasses( testClasses );
@@ -110,6 +115,55 @@ public class TestNGExecutor
         }        
     }
     
+    private static void applyGroupMatching( TestNG testng, Map options )
+        throws TestSetFailedException
+    {
+        String groups = (String) options.get( ProviderParameterNames.TESTNG_GROUPS_PROP );
+        String excludedGroups = (String) options.get( ProviderParameterNames.TESTNG_EXCLUDEDGROUPS_PROP );
+
+        if ( groups == null && excludedGroups == null )
+        {
+            return;
+        }
+
+        // the class is available in the testClassPath
+        String clazzName = "org.apache.maven.surefire.testng.utils.GroupMatcherMethodSelector";
+        // looks to need a high value
+        testng.addMethodSelector( clazzName, 9999 );
+        try
+        {
+            Class clazz = Class.forName( clazzName );
+
+            // HORRIBLE hack, but TNG doesn't allow us to setup a method selector instance directly.
+            Method method = clazz.getMethod( "setGroups", new Class[] { String.class, String.class } );
+            method.invoke( null, new Object[] { groups, excludedGroups } );
+        }
+        catch ( ClassNotFoundException e )
+        {
+            throw new TestSetFailedException( e.getMessage(), e );
+        }
+        catch ( SecurityException e )
+        {
+            throw new TestSetFailedException( e.getMessage(), e );
+        }
+        catch ( NoSuchMethodException e )
+        {
+            throw new TestSetFailedException( e.getMessage(), e );
+        }
+        catch ( IllegalArgumentException e )
+        {
+            throw new TestSetFailedException( e.getMessage(), e );
+        }
+        catch ( IllegalAccessException e )
+        {
+            throw new TestSetFailedException( e.getMessage(), e );
+        }
+        catch ( InvocationTargetException e )
+        {
+            throw new TestSetFailedException( e.getMessage(), e );
+        }
+    }
+
     public static void run( List suiteFiles, String testSourceDirectory, Map options, ArtifactVersion version,
                             RunListener reportManager, TestNgTestSuite suite, File reportsDirectory )
         throws TestSetFailedException

@@ -27,11 +27,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.maven.surefire.booter.ProviderParameterNames;
-import org.apache.maven.surefire.group.match.AndGroupMatcher;
-import org.apache.maven.surefire.group.match.GroupMatcher;
-import org.apache.maven.surefire.group.parse.GroupMatcherParser;
-import org.apache.maven.surefire.group.parse.ParseException;
-import org.apache.maven.surefire.testng.group.GroupMatcherMethodSelector;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.NestedRuntimeException;
 import org.testng.TestNG;
@@ -56,6 +51,7 @@ public abstract class AbstractDirectConfigurator
     public void configure( TestNG testng, Map options )
         throws TestSetFailedException
     {
+        System.out.println( "\n\n\n\nCONFIGURING TESTNG\n\n\n\n" );
         // kind of ugly, but listeners are configured differently
         final String listeners = (String) options.remove( "listener" );
         // DGF In 4.7, default listeners dump XML files in the surefire-reports directory,
@@ -83,52 +79,6 @@ public abstract class AbstractDirectConfigurator
         }
         // TODO: we should have the Profile so that we can decide if this is needed or not
         testng.setListenerClasses( loadListenerClasses( listeners ) );
-
-        loadGroupMatcher( testng, options );
-    }
-
-    private void loadGroupMatcher( TestNG testng, Map options )
-        throws TestSetFailedException
-    {
-        String includes = (String) options.get( ProviderParameterNames.TESTNG_GROUPS_PROP );
-        String excludes = (String) options.get( ProviderParameterNames.TESTNG_EXCLUDEDGROUPS_PROP );
-
-        try
-        {
-            GroupMatcher in = includes == null ? null : new GroupMatcherParser( includes ).parse();
-            GroupMatcher ex = excludes == null ? null : new GroupMatcherParser( excludes ).parse();
-
-            GroupMatcher matcher = null;
-            if ( in != null )
-            {
-                if ( ex != null )
-                {
-                    matcher = new AndGroupMatcher( new GroupMatcher[] { in, ex } );
-                }
-                else
-                {
-                    matcher = in;
-                }
-            }
-            else if ( ex != null )
-            {
-                matcher = ex;
-            }
-
-            if ( matcher != null )
-            {
-                // HORRIBLE hack, but TNG doesn't allow us to setup a method selector instance directly.
-                // Need some good way of setting the group-matching object / expression, and the test execution
-                // should always be in-process from this point on...
-                GroupMatcherMethodSelector.setGroupMatcher( matcher );
-                testng.addMethodSelector( GroupMatcherMethodSelector.class.getName(), 0 );
-            }
-        }
-        catch ( ParseException e )
-        {
-            throw new TestSetFailedException( "Cannot parse group includes/excludes expression(s):\nIncludes: "
-                + includes + "\nExcludes: " + excludes, e );
-        }
     }
 
     public static List loadListenerClasses( String listenerClasses )

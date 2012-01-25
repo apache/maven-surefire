@@ -958,26 +958,32 @@ public abstract class AbstractSurefireMojo
         // Todo: move
         if ( getTestNgArtifact() != null )
         {
-            Artifact testNgUtils = getTestNgUtilsArtifact();
-            String path = testNgUtils.getFile().getPath();
-            classpath.add( path );
-
+            addTestNgUtilsArtifacts( classpath );
         }
 
         return new Classpath( classpath );
     }
 
-    Artifact getTestNgUtilsArtifact()
+    void addTestNgUtilsArtifacts( List<String> classpath )
         throws ArtifactResolutionException, ArtifactNotFoundException
     {
         Artifact surefireArtifact = getPluginArtifactMap().get( "org.apache.maven.surefire:surefire-booter" );
         String surefireVersion = surefireArtifact.getBaseVersion();
-        Artifact testNgUtils =
-            getArtifactFactory().createArtifact( "org.apache.maven.surefire", "surefire-testng-utils", surefireVersion,
-                                                 "runtime", "jar" );
 
-        getArtifactResolver().resolve( testNgUtils, getRemoteRepositories(), getLocalRepository() );
-        return testNgUtils;
+        Artifact[] extraTestNgArtifacts =
+            {
+                getArtifactFactory().createArtifact( "org.apache.maven.surefire", "surefire-testng-utils",
+                                                     surefireVersion, "runtime", "jar" ),
+                getArtifactFactory().createArtifact( "org.apache.maven.surefire", "surefire-grouper", surefireVersion,
+                                                     "runtime", "jar" ) };
+
+        for ( Artifact artifact : extraTestNgArtifacts )
+        {
+            getArtifactResolver().resolve( artifact, getRemoteRepositories(), getLocalRepository() );
+
+            String path = artifact.getFile().getPath();
+            classpath.add( path );
+        }
     }
 
     /**
