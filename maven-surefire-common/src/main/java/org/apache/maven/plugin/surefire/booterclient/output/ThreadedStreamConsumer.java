@@ -19,8 +19,8 @@ package org.apache.maven.plugin.surefire.booterclient.output;
  * under the License.
  */
 
-import org.apache.maven.surefire.util.internal.BlockingQueue;
-import org.apache.maven.surefire.util.internal.Java15BlockingQueue;
+import org.apache.maven.plugin.surefire.util.internal.BlockingQueue;
+import org.apache.maven.plugin.surefire.util.internal.Java15BlockingQueue;
 import org.codehaus.plexus.util.cli.StreamConsumer;
 
 /**

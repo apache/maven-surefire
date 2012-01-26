@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.report;
+package org.apache.maven.plugin.surefire.report;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -18,6 +18,9 @@ package org.apache.maven.surefire.report;
  * specific language governing permissions and limitations
  * under the License.
  */
+
+import org.apache.maven.surefire.report.ReportEntry;
+import org.apache.maven.surefire.report.ReporterException;
 
 /**
  * Persists reports somewhere

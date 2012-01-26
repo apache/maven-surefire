@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.report;
+package org.apache.maven.plugin.surefire.report;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,20 +19,19 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
-import java.io.File;
-
 /**
- * Brief format file reporter.
+ * Brief format console reporter.
  *
  * @author <a href="mailto:jruiz@exist.com">Johnny R. Ruiz III</a>
  * @version $Id$
  */
-public class BriefFileReporter
-    extends AbstractFileReporter
+
+public class BriefConsoleReporter
+    extends AbstractConsoleReporter
 {
 
-    public BriefFileReporter( boolean trimStackTrace, File reportsDirectory, String reportNameSuffix )
+    public BriefConsoleReporter( boolean trimStackTrace )
     {
-        super( trimStackTrace, BRIEF, reportsDirectory, reportNameSuffix );
+        super( trimStackTrace, BRIEF );
     }
 }

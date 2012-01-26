@@ -19,8 +19,8 @@ package org.apache.maven.plugin.surefire.booterclient;
  * under the License.
  */
 
+import org.apache.maven.plugin.surefire.StartupReportConfiguration;
 import org.apache.maven.plugin.surefire.report.FileReporterFactory;
-import org.apache.maven.surefire.booter.StartupReportConfiguration;
 import org.apache.maven.surefire.report.RunListener;
 
 /**

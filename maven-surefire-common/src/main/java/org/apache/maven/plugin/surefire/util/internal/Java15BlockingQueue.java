@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.report;
+package org.apache.maven.plugin.surefire.util.internal;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,19 +19,26 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
+
+import java.util.concurrent.LinkedBlockingQueue;
+
 /**
- * Brief format console reporter.
- *
- * @author <a href="mailto:jruiz@exist.com">Johnny R. Ruiz III</a>
- * @version $Id$
+ * @author Kristian Rosenvold
  */
-
-public class BriefConsoleReporter
-    extends AbstractConsoleReporter
+public class Java15BlockingQueue
+    implements BlockingQueue
 {
+    private final java.util.concurrent.BlockingQueue<String> blockingQueue = new LinkedBlockingQueue<String>();
 
-    public BriefConsoleReporter( boolean trimStackTrace )
+    public void add( String object )
     {
-        super( trimStackTrace, BRIEF );
+        blockingQueue.add( object );
+    }
+
+    public String take()
+        throws InterruptedException
+    {
+        return blockingQueue.take();
     }
 }
+

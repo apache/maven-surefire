@@ -112,8 +112,8 @@
               </artifactSet>
               <relocations>
                 <relocation>
-                  <pattern>org.codehaus.plexus.util</pattern>
-                  <shadedPattern>org.apache.maven.plugin.surefire.report.plexus.util</shadedPattern>
+                  <pattern>org.codehaus.plexus.util.xml</pattern>
+                  <shadedPattern>org.apache.maven.plugin.surefire.report.plexus.util.xml</shadedPattern>
                 </relocation>
               </relocations>
             </configuration>

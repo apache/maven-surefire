@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.report;
+package org.apache.maven.plugin.surefire.report;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -22,6 +22,9 @@ package org.apache.maven.surefire.report;
 import java.io.File;
 import java.text.NumberFormat;
 import java.util.Locale;
+import org.apache.maven.surefire.report.ReportEntry;
+import org.apache.maven.surefire.report.ReporterException;
+import org.apache.maven.surefire.report.StackTraceWriter;
 
 /**
  * @author <a href="mailto:jason@maven.org">Jason van Zyl</a>

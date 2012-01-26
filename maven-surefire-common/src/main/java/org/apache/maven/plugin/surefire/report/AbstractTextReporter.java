@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.report;
+package org.apache.maven.plugin.surefire.report;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -22,6 +22,8 @@ package org.apache.maven.surefire.report;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.maven.surefire.report.ReportEntry;
+import org.apache.maven.surefire.report.ReporterException;
 
 /**
  * Text based reporter.

@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.report;
+package org.apache.maven.plugin.surefire.report;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -20,6 +20,8 @@ package org.apache.maven.surefire.report;
  */
 
 import java.util.List;
+import org.apache.maven.surefire.report.CategorizedReportEntry;
+import org.apache.maven.surefire.report.ReportEntry;
 
 /**
  * A reporter that broadcasts to other reporters

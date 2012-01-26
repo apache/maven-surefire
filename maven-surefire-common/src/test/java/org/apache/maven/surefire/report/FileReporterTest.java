@@ -20,6 +20,8 @@ package org.apache.maven.surefire.report;
  */
 
 import java.io.File;
+import org.apache.maven.plugin.surefire.report.FileReporter;
+
 import junit.framework.TestCase;
 
 public class FileReporterTest

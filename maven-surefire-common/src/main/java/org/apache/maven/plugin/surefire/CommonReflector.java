@@ -22,7 +22,6 @@ package org.apache.maven.plugin.surefire;
 import java.io.File;
 import java.lang.reflect.Constructor;
 import org.apache.maven.plugin.surefire.report.FileReporterFactory;
-import org.apache.maven.surefire.booter.StartupReportConfiguration;
 import org.apache.maven.surefire.util.ReflectionUtils;
 import org.apache.maven.surefire.util.SurefireReflectionException;
 

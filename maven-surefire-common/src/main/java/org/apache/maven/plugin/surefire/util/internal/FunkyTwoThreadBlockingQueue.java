@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.util.internal;
+package org.apache.maven.plugin.surefire.util.internal;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one

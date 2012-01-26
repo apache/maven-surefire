@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.booter;
+package org.apache.maven.plugin.surefire;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -22,18 +22,18 @@ package org.apache.maven.surefire.booter;
 import java.io.File;
 import java.io.PrintStream;
 import java.util.Properties;
+import org.apache.maven.plugin.surefire.report.AbstractConsoleReporter;
+import org.apache.maven.plugin.surefire.report.AbstractFileReporter;
+import org.apache.maven.plugin.surefire.report.BriefConsoleReporter;
+import org.apache.maven.plugin.surefire.report.BriefFileReporter;
+import org.apache.maven.plugin.surefire.report.ConsoleOutputDirectReporter;
+import org.apache.maven.plugin.surefire.report.ConsoleOutputFileReporter;
+import org.apache.maven.plugin.surefire.report.ConsoleReporter;
+import org.apache.maven.plugin.surefire.report.DetailedConsoleReporter;
+import org.apache.maven.plugin.surefire.report.FileReporter;
+import org.apache.maven.plugin.surefire.report.Reporter;
+import org.apache.maven.plugin.surefire.report.XMLReporter;
 import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
-import org.apache.maven.surefire.report.AbstractConsoleReporter;
-import org.apache.maven.surefire.report.AbstractFileReporter;
-import org.apache.maven.surefire.report.BriefConsoleReporter;
-import org.apache.maven.surefire.report.BriefFileReporter;
-import org.apache.maven.surefire.report.ConsoleOutputDirectReporter;
-import org.apache.maven.surefire.report.ConsoleOutputFileReporter;
-import org.apache.maven.surefire.report.ConsoleReporter;
-import org.apache.maven.surefire.report.DetailedConsoleReporter;
-import org.apache.maven.surefire.report.FileReporter;
-import org.apache.maven.surefire.report.Reporter;
-import org.apache.maven.surefire.report.XMLReporter2;
 
 /**
  * All the parameters used to construct reporters
@@ -135,11 +135,11 @@ public class StartupReportConfiguration
         return reportsDirectory;
     }
 
-    public XMLReporter2 instantiateXmlReporter()
+    public XMLReporter instantiateXmlReporter()
     {
         if ( !isDisableXmlReport() )
         {
-            return new XMLReporter2( trimStackTrace, reportsDirectory, reportNameSuffix );
+            return new XMLReporter( trimStackTrace, reportsDirectory, reportNameSuffix );
         }
         return null;
     }

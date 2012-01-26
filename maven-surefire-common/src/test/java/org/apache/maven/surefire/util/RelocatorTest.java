@@ -19,6 +19,8 @@ package org.apache.maven.surefire.util;
  * under the License.
  */
 
+import org.apache.maven.plugin.surefire.util.Relocator;
+
 import junit.framework.TestCase;
 
 /**

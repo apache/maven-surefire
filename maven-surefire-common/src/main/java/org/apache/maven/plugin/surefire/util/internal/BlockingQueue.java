@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.util.internal;
+package org.apache.maven.plugin.surefire.util.internal;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,26 +19,14 @@ package org.apache.maven.surefire.util.internal;
  * under the License.
  */
 
-
-import java.util.concurrent.LinkedBlockingQueue;
-
 /**
+ * A very simple blocking queue that might have stricter constraints than the standard jdk1.5 blockingqueues.
  * @author Kristian Rosenvold
  */
-public class Java15BlockingQueue
-    implements BlockingQueue
+public interface BlockingQueue
 {
-    private final java.util.concurrent.BlockingQueue<String> blockingQueue = new LinkedBlockingQueue<String>();
+    void add( String object );
 
-    public void add( String object )
-    {
-        blockingQueue.add( object );
-    }
-
-    public String take()
-        throws InterruptedException
-    {
-        return blockingQueue.take();
-    }
+    String take()
+        throws InterruptedException;
 }
-

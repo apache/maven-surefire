@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.report;
+package org.apache.maven.plugin.surefire.report;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -20,17 +20,17 @@ package org.apache.maven.surefire.report;
  */
 
 /**
- * Console reporter.
+ * Detailed console reporter.
  *
  * @author <a href="mailto:jruiz@exist.com">Johnny R. Ruiz III</a>
  * @version $Id$
  */
-public class ConsoleReporter
+public class DetailedConsoleReporter
     extends AbstractConsoleReporter
 {
 
-    public ConsoleReporter( boolean trimStackTrace )
+    public DetailedConsoleReporter( boolean trimStackTrace )
     {
-        super( trimStackTrace, SUMMARY );
+        super( trimStackTrace, PLAIN );
     }
 }

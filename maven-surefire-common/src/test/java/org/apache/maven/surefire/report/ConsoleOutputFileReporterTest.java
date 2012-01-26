@@ -20,6 +20,8 @@ package org.apache.maven.surefire.report;
  */
 
 import java.io.File;
+import org.apache.maven.plugin.surefire.report.ConsoleOutputFileReporter;
+
 import junit.framework.TestCase;
 
 public class ConsoleOutputFileReporterTest

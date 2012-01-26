@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.report;
+package org.apache.maven.plugin.surefire.report;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -33,6 +33,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
+import org.apache.maven.surefire.report.ReportEntry;
+import org.apache.maven.surefire.report.ReporterException;
 import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.codehaus.plexus.util.xml.Xpp3DomWriter;
@@ -70,7 +72,7 @@ import org.codehaus.plexus.util.xml.Xpp3DomWriter;
  * @see <a href="http://wiki.apache.org/ant/Proposals/EnhancedTestReports">Ant's format enhancement proposal</a>
  * (not yet implemented by Ant 1.8.2)
  */
-public class XMLReporter2
+public class XMLReporter
     extends AbstractReporter
 {
     private static final String LS = System.getProperty( "line.separator" );
@@ -85,12 +87,12 @@ public class XMLReporter2
 
     private int elapsed = 0;
 
-    public XMLReporter2( boolean trimStackTrace, File reportsDirectory )
+    public XMLReporter( boolean trimStackTrace, File reportsDirectory )
     {
         this( trimStackTrace, reportsDirectory, null );
     }
 
-    public XMLReporter2( boolean trimStackTrace, File reportsDirectory, String reportNameSuffix )
+    public XMLReporter( boolean trimStackTrace, File reportsDirectory, String reportNameSuffix )
     {
         super( trimStackTrace );
         this.reportsDirectory = reportsDirectory;

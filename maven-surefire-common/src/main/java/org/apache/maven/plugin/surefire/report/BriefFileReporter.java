@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.util.internal;
+package org.apache.maven.plugin.surefire.report;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,14 +19,20 @@ package org.apache.maven.surefire.util.internal;
  * under the License.
  */
 
-/**
- * A very simple blocking queue that might have stricter constraints than the standard jdk1.5 blockingqueues.
- * @author Kristian Rosenvold
- */
-public interface BlockingQueue
-{
-    void add( String object );
+import java.io.File;
 
-    String take()
-        throws InterruptedException;
+/**
+ * Brief format file reporter.
+ *
+ * @author <a href="mailto:jruiz@exist.com">Johnny R. Ruiz III</a>
+ * @version $Id$
+ */
+public class BriefFileReporter
+    extends AbstractFileReporter
+{
+
+    public BriefFileReporter( boolean trimStackTrace, File reportsDirectory, String reportNameSuffix )
+    {
+        super( trimStackTrace, BRIEF, reportsDirectory, reportNameSuffix );
+    }
 }

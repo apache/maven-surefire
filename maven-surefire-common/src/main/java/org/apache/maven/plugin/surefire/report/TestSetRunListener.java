@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.report;
+package org.apache.maven.plugin.surefire.report;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -20,6 +20,12 @@ package org.apache.maven.surefire.report;
  */
 
 import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
+import org.apache.maven.surefire.report.ConsoleLogger;
+import org.apache.maven.surefire.report.ConsoleOutputReceiver;
+import org.apache.maven.surefire.report.ReportEntry;
+import org.apache.maven.surefire.report.RunListener;
+import org.apache.maven.surefire.report.RunStatistics;
+import org.apache.maven.surefire.report.TestSetStatistics;
 import org.apache.maven.surefire.util.internal.ByteBuffer;
 
 import java.util.ArrayList;
@@ -46,7 +52,7 @@ public class TestSetRunListener
 
 
     public TestSetRunListener( AbstractConsoleReporter consoleReporter, AbstractFileReporter fileReporter,
-                               XMLReporter2 xmlReporter, Reporter reporter, StatisticsReporter statisticsReporter,
+                               XMLReporter xmlReporter, Reporter reporter, StatisticsReporter statisticsReporter,
                                RunStatistics globalStats )
     {
 

@@ -57,7 +57,6 @@ import org.apache.maven.surefire.booter.ClasspathConfiguration;
 import org.apache.maven.surefire.booter.ProviderConfiguration;
 import org.apache.maven.surefire.booter.ProviderParameterNames;
 import org.apache.maven.surefire.booter.StartupConfiguration;
-import org.apache.maven.surefire.booter.StartupReportConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.apache.maven.surefire.booter.SurefireExecutionException;
 import org.apache.maven.surefire.report.ReporterConfiguration;
