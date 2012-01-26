@@ -29,7 +29,7 @@ public class XMLReporterTest
     extends TestCase
 {
 
-    private XMLReporter reporter;
+    private XMLReporter2 reporter;
 
     private ReportEntry reportEntry;
 
@@ -39,7 +39,7 @@ public class XMLReporterTest
         throws Exception
     {
         super.setUp();
-        reporter = new XMLReporter( true, new File( "." ));
+        reporter = new XMLReporter2( true, new File( "." ));
         message = "junit.framework.AssertionFailedError";
         reportEntry = new SimpleReportEntry( this.getClass().getName(), "XMLReporterTest",
                                              new PojoStackTraceWriter( "", "", new AssertionFailedError() ) ,
@@ -64,7 +64,7 @@ public class XMLReporterTest
         assertResult( reporter, message );
     }
 
-    private void assertResult( XMLReporter reporter, String message )
+    private void assertResult( XMLReporter2 reporter, String message )
     {
         Xpp3Dom result = (Xpp3Dom) reporter.getResults().next();
         Xpp3Dom child = result.getChild( "error" );
@@ -79,7 +79,7 @@ public class XMLReporterTest
         File reportDir = new File( "." );
         String testName = "org.apache.maven.surefire.report.XMLReporterTest";
         reportEntry = new SimpleReportEntry( this.getClass().getName(), testName, new Integer( 12) );
-        reporter = new XMLReporter( true, reportDir, null );
+        reporter = new XMLReporter2( true, reportDir, null );
         reporter.testSetCompleted( reportEntry );
 
         File expectedReportFile = new File( reportDir, "TEST-" + testName + ".xml" );
@@ -96,7 +96,7 @@ public class XMLReporterTest
         String testName = "org.apache.maven.surefire.report.XMLReporterTest";
         String suffixText = "sampleSuffixText";
         reportEntry = new SimpleReportEntry( this.getClass().getName(), testName );
-        reporter = new XMLReporter( true, reportDir, suffixText );
+        reporter = new XMLReporter2( true, reportDir, suffixText );
         reporter.testSetCompleted( reportEntry );
 
         File expectedReportFile = new File( reportDir, "TEST-" + testName + "-" + suffixText + ".xml" );

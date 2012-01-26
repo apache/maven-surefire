@@ -46,7 +46,7 @@ public class TestSetRunListener
 
 
     public TestSetRunListener( AbstractConsoleReporter consoleReporter, AbstractFileReporter fileReporter,
-                               XMLReporter xmlReporter, Reporter reporter, StatisticsReporter statisticsReporter,
+                               XMLReporter2 xmlReporter, Reporter reporter, StatisticsReporter statisticsReporter,
                                RunStatistics globalStats )
     {
 

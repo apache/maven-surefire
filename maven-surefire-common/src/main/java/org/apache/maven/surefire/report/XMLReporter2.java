@@ -70,7 +70,7 @@ import org.codehaus.plexus.util.xml.Xpp3DomWriter;
  * @see <a href="http://wiki.apache.org/ant/Proposals/EnhancedTestReports">Ant's format enhancement proposal</a>
  * (not yet implemented by Ant 1.8.2)
  */
-public class XMLReporter
+public class XMLReporter2
     extends AbstractReporter
 {
     private static final String LS = System.getProperty( "line.separator" );
@@ -85,12 +85,12 @@ public class XMLReporter
 
     private int elapsed = 0;
 
-    public XMLReporter( boolean trimStackTrace, File reportsDirectory )
+    public XMLReporter2( boolean trimStackTrace, File reportsDirectory )
     {
         this( trimStackTrace, reportsDirectory, null );
     }
 
-    public XMLReporter( boolean trimStackTrace, File reportsDirectory, String reportNameSuffix )
+    public XMLReporter2( boolean trimStackTrace, File reportsDirectory, String reportNameSuffix )
     {
         super( trimStackTrace );
         this.reportsDirectory = reportsDirectory;

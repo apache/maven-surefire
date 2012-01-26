@@ -19,6 +19,9 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
+import java.io.File;
+import java.io.PrintStream;
+import java.util.Properties;
 import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
 import org.apache.maven.surefire.report.AbstractConsoleReporter;
 import org.apache.maven.surefire.report.AbstractFileReporter;
@@ -30,11 +33,7 @@ import org.apache.maven.surefire.report.ConsoleReporter;
 import org.apache.maven.surefire.report.DetailedConsoleReporter;
 import org.apache.maven.surefire.report.FileReporter;
 import org.apache.maven.surefire.report.Reporter;
-import org.apache.maven.surefire.report.XMLReporter;
-
-import java.io.File;
-import java.io.PrintStream;
-import java.util.Properties;
+import org.apache.maven.surefire.report.XMLReporter2;
 
 /**
  * All the parameters used to construct reporters
@@ -136,11 +135,11 @@ public class StartupReportConfiguration
         return reportsDirectory;
     }
 
-    public XMLReporter instantiateXmlReporter()
+    public XMLReporter2 instantiateXmlReporter()
     {
         if ( !isDisableXmlReport() )
         {
-            return new XMLReporter( trimStackTrace, reportsDirectory, reportNameSuffix );
+            return new XMLReporter2( trimStackTrace, reportsDirectory, reportNameSuffix );
         }
         return null;
     }

@@ -37,7 +37,6 @@
     <it.settings.showPasswords>false</it.settings.showPasswords>
     <testng.version>5.7</testng.version>
     <surefire.threadcount>1</surefire.threadcount>
-    <surefire.build.version>2.11</surefire.build.version>
   </properties>
 
   <dependencies>
@@ -85,7 +84,7 @@
       </plugin>
       <plugin>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <version>${surefire.build.version}</version>
+        <version>${shadedVersion}</version>
         <configuration>
           <!-- Pass current surefire version to the main suite so that it -->
           <!-- can forward to all integration test projects. SUREFIRE-513 -->
@@ -163,7 +162,7 @@
           <plugins>
             <plugin>
               <artifactId>maven-failsafe-plugin</artifactId>
-              <version>${surefire.build.version}</version>
+              <version>${shadedVersion}</version>
               <configuration>
                 <parallel>classes</parallel>
                 <threadCount>${surefire.threadcount}</threadCount>
@@ -181,9 +180,6 @@
           <scope>test</scope>
         </dependency>
       </dependencies>
-      <properties>
-        <surefire.build.version>2.11</surefire.build.version>
-      </properties>
     </profile>
 
   </profiles>
