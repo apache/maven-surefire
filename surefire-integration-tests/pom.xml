@@ -36,7 +36,7 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <it.settings.showPasswords>false</it.settings.showPasswords>
     <testng.version>5.7</testng.version>
-    <surefire.threadcount>1</surefire.threadcount>
+    <surefire.threadcount>3</surefire.threadcount>
   </properties>
 
   <dependencies>
@@ -168,6 +168,7 @@
               <configuration>
                 <parallel>classes</parallel>
                 <threadCount>${surefire.threadcount}</threadCount>
+                <perCoreThreadCount>false</perCoreThreadCount>
               </configuration>
             </plugin>
           </plugins>
