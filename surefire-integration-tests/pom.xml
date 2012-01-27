@@ -156,7 +156,9 @@
   <profiles>
     <profile>
       <id>parallel</id>
-      <!-- Experimental profile to try out parallel building of surefire itself -->
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
       <build>
         <pluginManagement>
           <plugins>
