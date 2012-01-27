@@ -47,7 +47,7 @@ public class TestSuiteXmlParser
 {
     private ReportTestSuite defaultSuite;
     private ReportTestSuite currentSuite;
-    private Map classesToSuites;
+    private Map<String,ReportTestSuite> classesToSuites;
     private final NumberFormat numberFormat = NumberFormat.getInstance( Locale.ENGLISH);
 
     /**
@@ -57,14 +57,14 @@ public class TestSuiteXmlParser
 
     private ReportTestCase testCase;
 
-    public Collection parse( String xmlPath )
+    public Collection<ReportTestSuite> parse( String xmlPath )
         throws ParserConfigurationException, SAXException, IOException
     {
         SAXParserFactory factory = SAXParserFactory.newInstance();
 
         SAXParser saxParser = factory.newSAXParser();
 
-        classesToSuites = new HashMap();
+        classesToSuites = new HashMap<String,ReportTestSuite>();
 
         saxParser.parse( new File( xmlPath ), this );
 
@@ -170,7 +170,8 @@ public class TestSuiteXmlParser
             }
             else if ( "skipped".equals( qName ) )
             {
-                testCase.addFailure( "skipped", "skipped" ); // TODO extract real reasons
+                final String message = attributes.getValue( "message" );
+                testCase.addFailure( message != null ? message : "skipped", "skipped" );
                 currentSuite.setNumberOfSkipped( 1 + currentSuite.getNumberOfSkipped() );
             }
         }
