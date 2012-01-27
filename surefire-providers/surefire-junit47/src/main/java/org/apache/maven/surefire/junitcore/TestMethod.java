@@ -123,7 +123,7 @@ class TestMethod
     {
         int elapsed = (int) ( endTime - startTime );
         return new CategorizedReportEntry( description.getSourceName(), description.getName(), description.getGroup(),
-                                           description.getStackTraceWriter(), elapsed );
+                                           description.getStackTraceWriter(), elapsed, description.getMessage() );
     }
 
     public void attachToThread()

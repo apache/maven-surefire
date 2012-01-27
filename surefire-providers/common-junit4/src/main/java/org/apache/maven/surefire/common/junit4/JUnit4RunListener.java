@@ -48,6 +48,8 @@ public class JUnit4RunListener
      */
     private final ThreadLocal<Boolean> failureFlag = new InheritableThreadLocal<Boolean>();
 
+    private final JUnit4Reflector jUnit4Reflector = new JUnit4Reflector();
+
     /**
      * Constructor.
      *
@@ -68,7 +70,10 @@ public class JUnit4RunListener
     public void testIgnored( Description description )
         throws Exception
     {
-        reporter.testSkipped( createReportEntry( description ) );
+        final String reason = jUnit4Reflector.getAnnotatedIgnoreValue( description );
+        final SimpleReportEntry report =
+            new SimpleReportEntry( extractClassName( description ), description.getDisplayName(), reason );
+        reporter.testSkipped( report );
     }
 
     /**

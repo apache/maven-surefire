@@ -1,5 +1,4 @@
 package org.apache.maven.surefire.report;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -20,30 +19,38 @@ package org.apache.maven.surefire.report;
  */
 
 /**
- * Ability to write a stack trace, filtered to omit locations inside Surefire and Maven.
- *
- * @author <a href="mailto:brett@apache.org">Brett Porter</a>
+ * Guards against misbehaving throwables
  */
-public interface StackTraceWriter
+public class SafeThrowable
 {
-    /**
-     * Write the throwable to a string, without trimming.
-     *
-     * @return the trace
-     */
-    String writeTraceToString();
+    private final Throwable target;
 
-    /**
-     * Write the throwable to a string, trimming extra locations.
-     *
-     * @return the trace
-     */
-    String writeTrimmedTraceToString();
+    public SafeThrowable( Throwable target )
+    {
+        this.target = target;
+    }
 
-    /**
-     * Retrieve the throwable for this writer.
-     *
-     * @return the throwable
-     */
-    SafeThrowable getThrowable();
+    public String getLocalizedMessage()
+    {
+        try
+        {
+            return target.getLocalizedMessage();
+        }
+        catch ( Throwable t )
+        {
+            return t.getLocalizedMessage();
+        }
+    }
+
+    public String getMessage()
+    {
+        try
+        {
+            return target.getMessage();
+        }
+        catch ( Throwable t )
+        {
+            return t.getMessage();
+        }
+    }
 }

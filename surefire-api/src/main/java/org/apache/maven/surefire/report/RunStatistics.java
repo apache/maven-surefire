@@ -102,7 +102,7 @@ public class RunStatistics
             return stackTraceWriter != null ? getMessageOfThrowable( stackTraceWriter.getThrowable() ) : "";
         }
 
-        private String getMessageOfThrowable( Throwable throwable )
+        private String getMessageOfThrowable( SafeThrowable throwable )
         {
             return throwable != null ? throwable.getLocalizedMessage() : "";
         }

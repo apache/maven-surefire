@@ -179,14 +179,15 @@ public class ForkClient
             String source = tokens.nextToken();
             String name = tokens.nextToken();
             String group = nullableCsv( tokens.nextToken() );
+            String message = nullableCsv( tokens.nextToken() );
             String elapsedStr = tokens.nextToken();
             Integer elapsed = "null".equals( elapsedStr ) ? null : Integer.decode( elapsedStr );
             final StackTraceWriter stackTraceWriter =
                 tokens.hasMoreTokens() ? deserializeStackStraceWriter( tokens ) : null;
 
             return group != null
-                ? new CategorizedReportEntry( source, name, group, stackTraceWriter, elapsed )
-                : new SimpleReportEntry( source, name, stackTraceWriter, elapsed );
+                ? new CategorizedReportEntry( source, name, group, stackTraceWriter, elapsed, message )
+                : new SimpleReportEntry( source, name, stackTraceWriter, elapsed, message );
         }
         catch ( RuntimeException e )
         {

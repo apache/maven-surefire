@@ -113,7 +113,8 @@ public class MulticastingReporter
         }
         return new CategorizedReportEntry( other.getSourceName(), other.getName(), other.getGroup(),
                                            other.getStackTraceWriter(),
-                                           (int) ( System.currentTimeMillis() - this.lastStartAt ) );
+                                           (int) ( System.currentTimeMillis() - this.lastStartAt ),
+                                           other.getMessage());
     }
 
     public void writeMessage( String message )

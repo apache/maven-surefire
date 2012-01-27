@@ -25,7 +25,7 @@ public class Test2
     {
     }
 
-    @Ignore
+    @Ignore("Ignorance is bliss2")
     @Test
     public void testWithIgnore2()
     {

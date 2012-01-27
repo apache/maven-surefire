@@ -26,6 +26,7 @@ import org.apache.maven.surefire.report.ConsoleLogger;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.RunListener;
+import org.apache.maven.surefire.report.SafeThrowable;
 import org.apache.maven.surefire.report.StackTraceWriter;
 import org.apache.maven.surefire.util.internal.ByteBuffer;
 import org.apache.maven.surefire.util.internal.StringUtils;
@@ -248,6 +249,7 @@ public class ForkingRunListener
         nullableEncoding( stringBuffer, reportEntry.getSourceName() ).comma( stringBuffer );
         nullableEncoding( stringBuffer, reportEntry.getName() ).comma( stringBuffer );
         nullableEncoding( stringBuffer, reportEntry.getGroup() ).comma( stringBuffer );
+        nullableEncoding( stringBuffer, reportEntry.getMessage() ).comma( stringBuffer );
         nullableEncoding( stringBuffer, reportEntry.getElapsed() );
         encode( stringBuffer, reportEntry.getStackTraceWriter() );
         stringBuffer.append( "\n" );
@@ -308,10 +310,10 @@ public class ForkingRunListener
         {
             comma( stringBuffer );
             //noinspection ThrowableResultOfMethodCallIgnored
-            final Throwable throwable = stackTraceWriter.getThrowable();
+            final SafeThrowable throwable = stackTraceWriter.getThrowable();
             if ( throwable != null )
             {
-                String message = safeGetLocalizedMessage( throwable );
+                String message = throwable.getLocalizedMessage();
                 nullableEncoding( stringBuffer, message );
             }
             comma( stringBuffer );
@@ -319,18 +321,6 @@ public class ForkingRunListener
             nullableEncoding( stringBuffer, trimStackTraces
                 ? stackTraceWriter.writeTrimmedTraceToString()
                 : stackTraceWriter.writeTraceToString() );
-        }
-    }
-
-    private String safeGetLocalizedMessage( Throwable throwable )
-    {
-        try
-        {
-            return throwable.getLocalizedMessage();
-        }
-        catch ( Throwable t )
-        {
-            return t.getLocalizedMessage();
         }
     }
 }

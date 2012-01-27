@@ -99,8 +99,8 @@ public class PojoStackTraceWriter
         return trace.toString();
     }
 
-    public Throwable getThrowable()
+    public SafeThrowable getThrowable()
     {
-        return t;
+        return new SafeThrowable( t);
     }
 }

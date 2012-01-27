@@ -35,6 +35,7 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterException;
+import org.apache.maven.surefire.report.SafeThrowable;
 import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.codehaus.plexus.util.xml.Xpp3DomWriter;
@@ -295,29 +296,27 @@ public class XMLReporter
 
         String stackTrace = getStackTrace( report );
 
-        Throwable t = null;
+        if ( report.getMessage() != null && report.getMessage().length() > 0)
+        {
+            element.setAttribute( "message", report.getMessage() );
+        }
+
         if ( report.getStackTraceWriter() != null )
         {
             //noinspection ThrowableResultOfMethodCallIgnored
-            t = report.getStackTraceWriter().getThrowable();
-        }
-
-        if ( t != null )
-        {
-
-            String message = t.getMessage();
-
-            if ( message != null )
+            SafeThrowable t = report.getStackTraceWriter().getThrowable();
+            if ( t != null )
             {
-                element.setAttribute( "message", message );
-
-                element.setAttribute( "type", ( stackTrace.indexOf( ":" ) > -1
-                    ? stackTrace.substring( 0, stackTrace.indexOf( ":" ) )
-                    : stackTrace ) );
-            }
-            else
-            {
-                element.setAttribute( "type", new StringTokenizer( stackTrace ).nextToken() );
+                if ( t.getMessage() != null )
+                {
+                    element.setAttribute( "type", ( stackTrace.indexOf( ":" ) > -1
+                        ? stackTrace.substring( 0, stackTrace.indexOf( ":" ) )
+                        : stackTrace ) );
+                }
+                else
+                {
+                    element.setAttribute( "type", new StringTokenizer( stackTrace ).nextToken() );
+                }
             }
         }
 
@@ -353,7 +352,11 @@ public class XMLReporter
     /**
      * Adds system properties to the XML report.
      *
+<<<<<<< HEAD
      * @param testSuite The test suite to report to
+=======
+     * @param testSuite the target dom suite
+>>>>>>> [SUREFIRE-537]
      */
     private void showProperties( Xpp3Dom testSuite )
     {
