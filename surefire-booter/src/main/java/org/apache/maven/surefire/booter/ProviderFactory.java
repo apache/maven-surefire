@@ -22,7 +22,6 @@ package org.apache.maven.surefire.booter;
 import java.io.PrintStream;
 import java.lang.reflect.Method;
 import java.util.Iterator;
-
 import org.apache.maven.surefire.providerapi.SurefireProvider;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.suite.RunResult;

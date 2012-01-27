@@ -21,6 +21,7 @@ package org.apache.maven.plugin.surefire.util.internal;
 
 /**
  * A very simple blocking queue that might have stricter constraints than the standard jdk1.5 blockingqueues.
+ *
  * @author Kristian Rosenvold
  */
 public interface BlockingQueue

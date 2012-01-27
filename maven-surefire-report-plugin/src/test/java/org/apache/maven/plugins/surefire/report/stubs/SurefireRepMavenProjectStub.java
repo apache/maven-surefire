@@ -19,12 +19,11 @@ package org.apache.maven.plugins.surefire.report.stubs;
  * under the License.
  */
 
+import java.util.List;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.ReportPlugin;
 import org.apache.maven.model.Reporting;
 import org.apache.maven.plugin.testing.stubs.MavenProjectStub;
-
-import java.util.List;
 
 /**
  * @author <a href="mailto:aramirez@apache.org">Allan Ramirez</a>
@@ -33,7 +32,9 @@ import java.util.List;
 public class SurefireRepMavenProjectStub
     extends MavenProjectStub
 {
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public List getReportPlugins()
     {
         Reporting reporting = new Reporting();

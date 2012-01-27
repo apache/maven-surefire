@@ -47,7 +47,8 @@ public class ConsoleOutputFileReporterTest
         reporter.testSetCompleted( reportEntry );
 
         File expectedReportFile = new File( reportDir, testName + "-output.txt" );
-        assertTrue("Report file (" + expectedReportFile.getAbsolutePath() + ") doesn't exist",  expectedReportFile.exists() );
+        assertTrue( "Report file (" + expectedReportFile.getAbsolutePath() + ") doesn't exist",
+                    expectedReportFile.exists() );
         expectedReportFile.delete();
     }
 
@@ -65,7 +66,8 @@ public class ConsoleOutputFileReporterTest
         reporter.testSetCompleted( reportEntry );
 
         File expectedReportFile = new File( reportDir, testName + "-" + suffixText + "-output.txt" );
-        assertTrue("Report file (" + expectedReportFile.getAbsolutePath() + ") doesn't exist",  expectedReportFile.exists() );
+        assertTrue( "Report file (" + expectedReportFile.getAbsolutePath() + ") doesn't exist",
+                    expectedReportFile.exists() );
         expectedReportFile.delete();
     }
 

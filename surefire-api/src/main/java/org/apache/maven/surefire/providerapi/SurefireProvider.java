@@ -19,20 +19,19 @@ package org.apache.maven.surefire.providerapi;
  * under the License.
  */
 
+import java.util.Iterator;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
-import java.util.Iterator;
-
 /**
  * Interface to be implemented by all Surefire providers.
- *
+ * <p/>
  * NOTE: This class is part of the proposed public api for surefire providers for 2.7. It may
  * still be subject to changes, even for minor revisions.
- *
+ * <p/>
  * The api covers this interface and all the types reachable from it. And nothing else.
- *
+ * <p/>
  * <p/>
  * Called in one of three ways:
  * Forkmode = never: getSuites is not called, invoke is called with null parameter
@@ -46,7 +45,7 @@ public interface SurefireProvider
 {
     /**
      * Determines the number of forks.
-     *
+     * <p/>
      * Called when forkmode is different from "never" or "always", allows the provider to define
      * how to behave for the fork.
      *
@@ -56,12 +55,15 @@ public interface SurefireProvider
 
     /**
      * Runs a forked test
+     *
      * @param forkTestSet An item from the iterator in #getSuites. Will be null for forkmode never or always.
      *                    When this is non-null, the forked process will run only that test
      *                    and probably not scan the classpath
      * @return A result of the invocation
-     * @throws org.apache.maven.surefire.report.ReporterException      When reporting fails
-     * @throws org.apache.maven.surefire.testset.TestSetFailedException  When testset fails
+     * @throws org.apache.maven.surefire.report.ReporterException
+     *          When reporting fails
+     * @throws org.apache.maven.surefire.testset.TestSetFailedException
+     *          When testset fails
      */
 
     RunResult invoke( Object forkTestSet )
@@ -70,14 +72,14 @@ public interface SurefireProvider
     /**
      * Makes an attempt at cancelling the current run, giving the provider a chance to notify
      * reporting that the remaining tests have been cancelled due to timeout.
-     *
+     * <p/>
      * If the provider thinks it can terminate properly it is the responsibility of
      * the invoke method to return a RunResult with a booter code of failure.
-     *
+     * <p/>
      * It is up to the provider to find out how to implement this method properly.
      * A provider may also choose to not do anything at all in this method,
      * which means surefire will kill the forked process soon afterwards anyway.
-     *
+     * <p/>
      * Will be called on a different thread than the one calling invoke.
      */
     // Todo: Need to think a lot closer about how/if this works and if there is a use case for it.

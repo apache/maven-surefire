@@ -22,8 +22,8 @@ package org.apache.maven.surefire.its;
 import java.io.IOException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 
 public class JUnit47RedirectOutputIT
     extends SurefireIntegrationTestCase
@@ -46,9 +46,11 @@ public class JUnit47RedirectOutputIT
     private void checkReports( OutputValidator validator )
         throws IOException
     {
-        String report = StringUtils.trimToNull( validator.getSurefireReportsFile( "junit47ConsoleOutput.Test1-output.txt" ).readFileToString() );
+        String report = StringUtils.trimToNull(
+            validator.getSurefireReportsFile( "junit47ConsoleOutput.Test1-output.txt" ).readFileToString() );
         assertNotNull( report );
-        String report2 = StringUtils.trimToNull( validator.getSurefireReportsFile( "junit47ConsoleOutput.Test2-output.txt" ).readFileToString() );
+        String report2 = StringUtils.trimToNull(
+            validator.getSurefireReportsFile( "junit47ConsoleOutput.Test2-output.txt" ).readFileToString() );
         assertNotNull( report2 );
         assertFalse( validator.getSurefireReportsFile( "junit47ConsoleOutput.Test3-output.txt" ).exists() );
     }

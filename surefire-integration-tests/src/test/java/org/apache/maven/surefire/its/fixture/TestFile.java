@@ -27,7 +27,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.net.URI;
 import java.util.List;
-
 import org.apache.commons.io.FileUtils;
 
 import junit.framework.Assert;
@@ -105,10 +104,11 @@ public class TestFile
 
     }
 
-    public String readFileToString(){
+    public String readFileToString()
+    {
         try
         {
-            return FileUtils.readFileToString(file);
+            return FileUtils.readFileToString( file );
         }
         catch ( IOException e )
         {
@@ -135,7 +135,8 @@ public class TestFile
         return null;
     }
 
-    public URI toURI() {
+    public URI toURI()
+    {
         return file.toURI();
     }
 }

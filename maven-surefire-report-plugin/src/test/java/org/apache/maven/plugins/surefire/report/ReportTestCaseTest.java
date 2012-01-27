@@ -30,7 +30,9 @@ public class ReportTestCaseTest
 {
     private ReportTestCase tCase;
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     protected void setUp()
         throws Exception
     {
@@ -39,7 +41,9 @@ public class ReportTestCaseTest
         tCase = new ReportTestCase();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     protected void tearDown()
         throws Exception
     {

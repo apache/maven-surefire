@@ -577,8 +577,7 @@ public abstract class AbstractSurefireMojo
 
             if ( plugin != null )
             {
-                @SuppressWarnings( "rawtypes" )
-                List executions = plugin.getExecutions();
+                @SuppressWarnings( "rawtypes" ) List executions = plugin.getExecutions();
                 return executions != null && executions.size() > 1;
             }
         }
@@ -874,7 +873,7 @@ public abstract class AbstractSurefireMojo
     {
         // A tribute to Linus Torvalds
         String configChecksum = getConfigChecksum();
-        @SuppressWarnings( "unchecked" ) Map<String,String> pluginContext = getPluginContext();
+        @SuppressWarnings( "unchecked" ) Map<String, String> pluginContext = getPluginContext();
         if ( pluginContext.containsKey( configChecksum ) )
         {
             getLog().info( "Skipping execution of surefire because it has already been run for this configuration" );
@@ -914,8 +913,7 @@ public abstract class AbstractSurefireMojo
 
         classpath.add( getClassesDirectory().getAbsolutePath() );
 
-        @SuppressWarnings( "unchecked" )
-        Set<Artifact> classpathArtifacts = getProject().getArtifacts();
+        @SuppressWarnings( "unchecked" ) Set<Artifact> classpathArtifacts = getProject().getArtifacts();
 
         if ( getClasspathDependencyScopeExclude() != null && !getClasspathDependencyScopeExclude().equals( "" ) )
         {
@@ -970,9 +968,8 @@ public abstract class AbstractSurefireMojo
         String surefireVersion = surefireArtifact.getBaseVersion();
 
         Artifact[] extraTestNgArtifacts =
-            {
-                getArtifactFactory().createArtifact( "org.apache.maven.surefire", "surefire-testng-utils",
-                                                     surefireVersion, "runtime", "jar" ),
+            { getArtifactFactory().createArtifact( "org.apache.maven.surefire", "surefire-testng-utils",
+                                                   surefireVersion, "runtime", "jar" ),
                 getArtifactFactory().createArtifact( "org.apache.maven.surefire", "surefire-grouper", surefireVersion,
                                                      "runtime", "jar" ) };
 
@@ -1007,7 +1004,7 @@ public abstract class AbstractSurefireMojo
         return filteredArtifacts;
     }
 
-    private void showMap( Map<?,?> map, String setting )
+    private void showMap( Map<?, ?> map, String setting )
     {
         for ( Object o : map.keySet() )
         {
@@ -1253,8 +1250,7 @@ public abstract class AbstractSurefireMojo
         public Classpath getProviderClasspath()
             throws ArtifactResolutionException, ArtifactNotFoundException
         {
-            Artifact surefireArtifact =
-                getPluginArtifactMap().get( "org.apache.maven.surefire:surefire-booter" );
+            Artifact surefireArtifact = getPluginArtifactMap().get( "org.apache.maven.surefire:surefire-booter" );
             return dependencyResolver.getProviderClasspath( "surefire-testng", surefireArtifact.getBaseVersion(),
                                                             testNgArtifact );
         }
@@ -1407,7 +1403,7 @@ public abstract class AbstractSurefireMojo
         public Classpath getProviderClasspath()
             throws ArtifactResolutionException, ArtifactNotFoundException
         {
-            final Map<String,Artifact> pluginArtifactMap = getPluginArtifactMap();
+            final Map<String, Artifact> pluginArtifactMap = getPluginArtifactMap();
             Artifact plugin = pluginArtifactMap.get( "org.apache.maven.plugins:maven-surefire-plugin" );
             return dependencyResolver.addProviderToClasspath( pluginArtifactMap, plugin );
         }

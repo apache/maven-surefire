@@ -32,11 +32,17 @@ public class DiagnosticRunListener
     extends RunListener
 {
     private final AtomicInteger numTestStarted = new AtomicInteger();
+
     private final AtomicInteger numTestFailed = new AtomicInteger();
+
     private final AtomicInteger numTestAssumptionsFailed = new AtomicInteger();
+
     private final AtomicInteger numTestFinished = new AtomicInteger();
+
     private final AtomicInteger numTestIgnored = new AtomicInteger();
+
     private final boolean printToConsole;
+
     private final RunListener target;
 
 

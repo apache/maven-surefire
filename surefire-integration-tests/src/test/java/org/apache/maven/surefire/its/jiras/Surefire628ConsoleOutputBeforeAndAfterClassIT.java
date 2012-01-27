@@ -34,8 +34,8 @@ public class Surefire628ConsoleOutputBeforeAndAfterClassIT
 
     public void testJunit3ParallelBuildResultCount()
     {
-        OutputValidator validator = unpack( "surefire-628-consoleoutputbeforeandafterclass" )
-                .failNever().parallelMethods().executeTest();
+        OutputValidator validator =
+            unpack( "surefire-628-consoleoutputbeforeandafterclass" ).failNever().parallelMethods().executeTest();
 
         validator.verifyTextInLog( "628Test1" );
         validator.verifyTextInLog( "Before628Test1" );
@@ -47,13 +47,13 @@ public class Surefire628ConsoleOutputBeforeAndAfterClassIT
 
     public void testProperBeforeAndAfterClassCapture()
     {
-        OutputValidator validator = unpack( "surefire-628-consoleoutputbeforeandafterclass" )
-                .failNever().redirectToFile( true ).parallelClasses().executeTest();
+        OutputValidator validator =
+            unpack( "surefire-628-consoleoutputbeforeandafterclass" ).failNever().redirectToFile(
+                true ).parallelClasses().executeTest();
 
         final TestFile surefireReportsFile = validator.getSurefireReportsFile( "surefire628.Test2-output.txt" );
 
-        surefireReportsFile.assertContainsText( "628Test2" )
-            .assertContainsText( "BeforeClass628Test2" )
-            .assertContainsText( "AfterClass628Test2" );
+        surefireReportsFile.assertContainsText( "628Test2" ).assertContainsText(
+            "BeforeClass628Test2" ).assertContainsText( "AfterClass628Test2" );
     }
 }

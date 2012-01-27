@@ -31,23 +31,23 @@ import org.apache.maven.surefire.util.NestedRuntimeException;
 import org.junit.runners.model.RunnerScheduler;
 
 /**
-* @author <a href="mailto:kristian@zenior.no">Kristian Rosenvold</a>
-*/
+ * @author <a href="mailto:kristian@zenior.no">Kristian Rosenvold</a>
+ */
 public class AsynchronousRunner
     implements RunnerScheduler
 {
-    private final List<Future<Object>> futures = Collections.synchronizedList(new ArrayList<Future<Object>>());
+    private final List<Future<Object>> futures = Collections.synchronizedList( new ArrayList<Future<Object>>() );
 
     private final ExecutorService fService;
 
-    public AsynchronousRunner(ExecutorService fService)
+    public AsynchronousRunner( ExecutorService fService )
     {
         this.fService = fService;
     }
 
     public void schedule( final Runnable childStatement )
     {
-        futures.add( fService.submit( Executors.callable(childStatement) ) );
+        futures.add( fService.submit( Executors.callable( childStatement ) ) );
     }
 
 

@@ -45,7 +45,7 @@ public final class JUnit4Reflector
 
     public String getAnnotatedIgnoreValue( Description description )
     {
-        final Ignore ignore = getAnnotatedIgnore(  description );
+        final Ignore ignore = getAnnotatedIgnore( description );
         return ignore != null ? ignore.value() : null;
     }
 

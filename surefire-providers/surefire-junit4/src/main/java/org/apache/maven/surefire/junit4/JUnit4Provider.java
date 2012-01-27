@@ -41,9 +41,9 @@ import org.apache.maven.surefire.util.DefaultDirectoryScanner;
 import org.apache.maven.surefire.util.DirectoryScanner;
 import org.apache.maven.surefire.util.RunOrderCalculator;
 import org.apache.maven.surefire.util.TestsToRun;
-
 import org.apache.maven.surefire.util.internal.StringUtils;
 import org.codehaus.plexus.util.SelectorUtils;
+
 import org.junit.runner.Request;
 import org.junit.runner.Result;
 import org.junit.runner.Runner;
@@ -99,7 +99,6 @@ public class JUnit4Provider
 
         final RunListener reporter = reporterFactory.createReporter();
 
-
         ConsoleOutputCapture.startCapture( (ConsoleOutputReceiver) reporter );
 
         JUnit4RunListener jUnit4TestSetReporter = new JUnit4RunListener( reporter );
@@ -150,11 +149,12 @@ public class JUnit4Provider
         }
     }
 
-    private RunNotifier getRunNotifer( org.junit.runner.notification.RunListener main, Result result, List<org.junit.runner.notification.RunListener> others )
+    private RunNotifier getRunNotifer( org.junit.runner.notification.RunListener main, Result result,
+                                       List<org.junit.runner.notification.RunListener> others )
     {
         RunNotifier fNotifier = new RunNotifier();
         fNotifier.addListener( main );
-        fNotifier.addListener(  result.createListener() );
+        fNotifier.addListener( result.createListener() );
         for ( org.junit.runner.notification.RunListener listener : others )
         {
             fNotifier.addListener( listener );
@@ -184,7 +184,7 @@ public class JUnit4Provider
     private TestsToRun scanClassPath()
     {
         final TestsToRun scannedClasses = directoryScanner.locateTestClasses( testClassLoader, jUnit4TestChecker );
-        return runOrderCalculator.orderTestClasses(  scannedClasses );
+        return runOrderCalculator.orderTestClasses( scannedClasses );
     }
 
     @SuppressWarnings( "unchecked" )
@@ -220,7 +220,7 @@ public class JUnit4Provider
         if ( !StringUtils.isBlank( testMethod ) )
         {
             Method[] methods = testClass.getMethods();
-            for (int i = 0,size = methods.length;i<size;i++)
+            for ( int i = 0, size = methods.length; i < size; i++ )
             {
                 if ( SelectorUtils.match( testMethod, methods[i].getName() ) )
                 {

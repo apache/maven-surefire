@@ -18,10 +18,10 @@ package org.apache.maven.surefire.its;
 * under the License.
 */
 
-import junit.framework.TestCase;
-
 import java.io.File;
 import java.io.IOException;
+
+import junit.framework.TestCase;
 
 /**
  * Created by IntelliJ IDEA.

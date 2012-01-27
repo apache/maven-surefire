@@ -20,8 +20,8 @@ package org.apache.maven.surefire.its.jiras;
  */
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.apache.maven.surefire.its.fixture.TestFile;
 
 /**
@@ -48,8 +48,8 @@ public class Surefire772NoSurefireReportsIT
 
     public void testSkippedSurefireReportGeneration()
     {
-        OutputValidator validator =
-            unpack().activateProfile( "skipSurefire" ).addFailsafeReportOnlyGoal().addSurefireReportOnlyGoal().executeCurrentGoals();
+        OutputValidator validator = unpack().activateProfile(
+            "skipSurefire" ).addFailsafeReportOnlyGoal().addSurefireReportOnlyGoal().executeCurrentGoals();
 
         TestFile siteFile = validator.getSiteFile( "surefire-report.html" );
         System.out.println( "siteFile.getAbsolutePath() = " + siteFile.getAbsolutePath() );
@@ -62,8 +62,8 @@ public class Surefire772NoSurefireReportsIT
 
     public void testOptionalSurefireReportGeneration()
     {
-        OutputValidator validator =
-            unpack().activateProfile( "optionalSurefire" ).addFailsafeReportOnlyGoal().addSurefireReportOnlyGoal().executeCurrentGoals();
+        OutputValidator validator = unpack().activateProfile(
+            "optionalSurefire" ).addFailsafeReportOnlyGoal().addSurefireReportOnlyGoal().executeCurrentGoals();
 
         TestFile siteFile = validator.getSiteFile( "surefire-report.html" );
         System.out.println( "siteFile.getAbsolutePath() = " + siteFile.getAbsolutePath() );
@@ -76,8 +76,8 @@ public class Surefire772NoSurefireReportsIT
 
     public void testSkipOptionalSurefireReportGeneration()
     {
-        OutputValidator validator =
-            unpack().activateProfile( "optionalSurefire" ).activateProfile( "skipSurefire" ).addFailsafeReportOnlyGoal().addSurefireReportOnlyGoal().executeCurrentGoals();
+        OutputValidator validator = unpack().activateProfile( "optionalSurefire" ).activateProfile(
+            "skipSurefire" ).addFailsafeReportOnlyGoal().addSurefireReportOnlyGoal().executeCurrentGoals();
 
         TestFile siteFile = validator.getSiteFile( "surefire-report.html" );
         System.out.println( "siteFile.getAbsolutePath() = " + siteFile.getAbsolutePath() );

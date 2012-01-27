@@ -23,7 +23,6 @@ import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
@@ -112,9 +111,9 @@ public interface SurefireExecutionParameters
 
     void setSystemProperties( Properties systemProperties );
 
-    Map<String,String> getSystemPropertyVariables();
+    Map<String, String> getSystemPropertyVariables();
 
-    void setSystemPropertyVariables( Map<String,String> systemPropertyVariables );
+    void setSystemPropertyVariables( Map<String, String> systemPropertyVariables );
 
     File getSystemPropertiesFile();
 
@@ -126,13 +125,13 @@ public interface SurefireExecutionParameters
 
     PluginDescriptor getPluginDescriptor();
 
-    Map<String,Artifact> getPluginArtifactMap();
+    Map<String, Artifact> getPluginArtifactMap();
 
-    void setPluginArtifactMap( Map<String,Artifact> pluginArtifactMap );
+    void setPluginArtifactMap( Map<String, Artifact> pluginArtifactMap );
 
-    Map<String,Artifact> getProjectArtifactMap();
+    Map<String, Artifact> getProjectArtifactMap();
 
-    void setProjectArtifactMap( Map<String,Artifact> projectArtifactMap );
+    void setProjectArtifactMap( Map<String, Artifact> projectArtifactMap );
 
     boolean isPrintSummary();
 
@@ -174,9 +173,9 @@ public interface SurefireExecutionParameters
 
     void setForkedProcessTimeoutInSeconds( int forkedProcessTimeoutInSeconds );
 
-    Map<String,String> getEnvironmentVariables();
+    Map<String, String> getEnvironmentVariables();
 
-    void setEnvironmentVariables( Map<String,String> environmentVariables );
+    void setEnvironmentVariables( Map<String, String> environmentVariables );
 
     File getWorkingDirectory();
 

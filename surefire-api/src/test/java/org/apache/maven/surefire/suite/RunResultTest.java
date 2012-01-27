@@ -36,15 +36,16 @@ public class RunResultTest
     public void testFromString()
         throws Exception
     {
-      RunResult original = new RunResult( 4,3,2,1, true,false);
+        RunResult original = new RunResult( 4, 3, 2, 1, true, false );
         final String asString = original.getAsString();
         final RunResult runResult = RunResult.fromString( asString );
         verifySame( original, runResult );
     }
+
     public void testFromString2()
         throws Exception
     {
-      RunResult original = new RunResult( 5,6,7,8, false,true );
+        RunResult original = new RunResult( 5, 6, 7, 8, false, true );
         final String asString = original.getAsString();
         final RunResult runResult = RunResult.fromString( asString );
         verifySame( original, runResult );
@@ -52,11 +53,11 @@ public class RunResultTest
 
     private void verifySame( RunResult original, RunResult runResult )
     {
-        assertEquals( original.getCompletedCount(), runResult.getCompletedCount());
+        assertEquals( original.getCompletedCount(), runResult.getCompletedCount() );
         assertEquals( original.getErrors(), runResult.getErrors() );
-        assertEquals( original.getFailures(), runResult.getFailures());
-        assertEquals( original.getSkipped(), runResult.getSkipped());
-        assertEquals( original.isFailure(), runResult.isFailure());
-        assertEquals( original.isTimeout(), runResult.isTimeout());
+        assertEquals( original.getFailures(), runResult.getFailures() );
+        assertEquals( original.getSkipped(), runResult.getSkipped() );
+        assertEquals( original.isFailure(), runResult.isFailure() );
+        assertEquals( original.isTimeout(), runResult.isTimeout() );
     }
 }

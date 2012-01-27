@@ -35,7 +35,7 @@ public class TestRequest
     private final File testSourceDirectory;
 
     private final String requestedTest;
-    
+
     /**
      * @since 2.7.3
      */
@@ -45,7 +45,7 @@ public class TestRequest
     {
         this( suiteXmlFiles, testSourceDirectory, requestedTest, null );
     }
-    
+
     /**
      * @since 2.7.3
      */
@@ -59,6 +59,7 @@ public class TestRequest
 
     /**
      * Represents suitexmlfiles that define the test-run request
+     *
      * @return A list of java.io.File objects.
      */
     public List getSuiteXmlFiles()
@@ -68,6 +69,7 @@ public class TestRequest
 
     /**
      * Test source directory, normally ${project.build.testSourceDirectory}
+     *
      * @return A file pointing to test sources
      */
     public File getTestSourceDirectory()
@@ -77,22 +79,24 @@ public class TestRequest
 
     /**
      * A specific test request issued with -Dtest= from the command line.
+     *
      * @return The string specified at the command line
      */
     public String getRequestedTest()
     {
         return requestedTest;
     }
-    
+
     /**
      * A specific test request method issued with -Dtest=class#method from the command line.
+     *
      * @return The string specified at the command line
      * @since 2.7.3
-     */    
+     */
     public String getRequestedTestMethod()
     {
         return requestedTestMethod;
-    }    
+    }
 
     private static List createFiles( List suiteXmlFiles )
     {

@@ -19,9 +19,8 @@ package org.apache.maven.surefire;
  * under the License.
  */
 
-import org.apache.maven.surefire.util.ScannerFilter;
-
 import java.lang.reflect.Modifier;
+import org.apache.maven.surefire.util.ScannerFilter;
 
 /**
  * @author Kristian Rosenvold

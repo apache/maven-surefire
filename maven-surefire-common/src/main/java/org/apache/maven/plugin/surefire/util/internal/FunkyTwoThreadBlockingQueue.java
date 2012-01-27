@@ -24,7 +24,7 @@ package org.apache.maven.plugin.surefire.util.internal;
  * and *one* consumer thread, and solely optimized for efficient inserts
  * by the producer, minimizing producer locking for hand-off to
  * a second consumer.
- *
+ * <p/>
  * TwoThreadBlockingQueue insert 5000000 elements in  = 52
  * FunkyTwoThreadBlockingQueue insert 5000000 elements in  = 42
  * TwoThreadBlockingQueue produced and taken 5000000 elements in  = 104
@@ -32,11 +32,13 @@ package org.apache.maven.plugin.surefire.util.internal;
  * LinkedBlockingDeque insert 5000000 elements in  = 113
  * ArrayList insert 5000000 elements in  = 18
  * LinkedList insert 5000000 elements in  = 334
- *
+ * <p/>
  * Todo: Determine if this design actually works ;)
+ *
  * @author Kristian Rosenvold
  */
-public class FunkyTwoThreadBlockingQueue implements BlockingQueue
+public class FunkyTwoThreadBlockingQueue
+    implements BlockingQueue
 {
     final int chunkSize = 100;
 
@@ -54,7 +56,7 @@ public class FunkyTwoThreadBlockingQueue implements BlockingQueue
     public void put( String object )
     {
         insertChunk.elements[insertPos] = object;
-        if ( ++insertPos == chunkSize)
+        if ( ++insertPos == chunkSize )
         {
             Chunk newChunk = new Chunk();
             insertChunk.next = newChunk;
@@ -66,7 +68,7 @@ public class FunkyTwoThreadBlockingQueue implements BlockingQueue
 
     public void add( String object )
     {
-        put(  object );
+        put( object );
     }
 
 

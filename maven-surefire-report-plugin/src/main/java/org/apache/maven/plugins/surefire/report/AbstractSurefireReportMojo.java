@@ -70,8 +70,8 @@ public abstract class AbstractSurefireReportMojo
      * (Deprecated, use reportsDirectories) This directory contains the XML Report files that will be parsed and rendered to HTML format.
      *
      * @parameter
-     * @deprecated
      * @noinspection UnusedDeclaration
+     * @deprecated
      */
     private File reportsDirectory;
 
@@ -262,6 +262,7 @@ public abstract class AbstractSurefireReportMojo
 
     /**
      * Gets the default surefire reports directory for the specified project.
+     *
      * @param subProject the project to query.
      * @return the default surefire reports directory for the specified project.
      */

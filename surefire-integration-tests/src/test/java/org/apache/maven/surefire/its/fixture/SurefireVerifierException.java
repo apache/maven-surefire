@@ -22,7 +22,8 @@ package org.apache.maven.surefire.its.fixture;
 /**
  * @author Kristian Rosenvold
  */
-public class SurefireVerifierException extends RuntimeException
+public class SurefireVerifierException
+    extends RuntimeException
 {
     public SurefireVerifierException( Throwable cause )
     {

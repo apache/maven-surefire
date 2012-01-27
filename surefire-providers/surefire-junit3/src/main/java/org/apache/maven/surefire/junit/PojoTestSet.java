@@ -19,17 +19,16 @@ package org.apache.maven.surefire.junit;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.PojoStackTraceWriter;
-import org.apache.maven.surefire.report.RunListener;
-import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.report.SimpleReportEntry;
-import org.apache.maven.surefire.testset.TestSetFailedException;
-
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.maven.surefire.report.PojoStackTraceWriter;
+import org.apache.maven.surefire.report.ReportEntry;
+import org.apache.maven.surefire.report.RunListener;
+import org.apache.maven.surefire.report.SimpleReportEntry;
+import org.apache.maven.surefire.testset.TestSetFailedException;
 
 public class PojoTestSet
     implements SurefireTestSet
@@ -42,9 +41,9 @@ public class PojoTestSet
     private final Object testObject;
 
     private List testMethods;
-    
+
     private Method setUpMethod;
-    
+
     private Method tearDownMethod;
 
     private final Class testClass;
@@ -216,14 +215,22 @@ public class PojoTestSet
         return getTestClass().getName() + "." + testMethodName;
     }
 
-    private void setUpFixture() throws Throwable
+    private void setUpFixture()
+        throws Throwable
     {
-    	if (setUpMethod != null) setUpMethod.invoke( testObject, new Object[0] );        
+        if ( setUpMethod != null )
+        {
+            setUpMethod.invoke( testObject, new Object[0] );
+        }
     }
 
-    private void tearDownFixture() throws Throwable
+    private void tearDownFixture()
+        throws Throwable
     {
-    	if (tearDownMethod != null) tearDownMethod.invoke( testObject, new Object[0] );        
+        if ( tearDownMethod != null )
+        {
+            tearDownMethod.invoke( testObject, new Object[0] );
+        }
     }
 
     private void discoverTestMethods()
@@ -254,13 +261,13 @@ public class PojoTestSet
                         }
                     }
                 }
-                else if (m.getName().equals("setUp") && m.getParameterTypes().length == 0)
+                else if ( m.getName().equals( "setUp" ) && m.getParameterTypes().length == 0 )
                 {
-                	setUpMethod = m;
+                    setUpMethod = m;
                 }
-                else if (m.getName().equals("tearDown") && m.getParameterTypes().length == 0)
+                else if ( m.getName().equals( "tearDown" ) && m.getParameterTypes().length == 0 )
                 {
-                	tearDownMethod = m;
+                    tearDownMethod = m;
                 }
             }
         }

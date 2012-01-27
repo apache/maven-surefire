@@ -19,15 +19,15 @@ package org.apache.maven.plugin.surefire.booterclient;
  * under the License.
  */
 
-import junit.framework.TestCase;
+import java.io.File;
+import java.io.IOException;
+import java.util.Collections;
 import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.cli.Commandline;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Collections;
+import junit.framework.TestCase;
 
 public class ForkConfigurationTest
     extends TestCase
@@ -40,8 +40,8 @@ public class ForkConfigurationTest
         File cpElement = getTempClasspathFile();
         config.setJvmExecutable( "java" );
 
-        Commandline cli = config.createCommandLine( Collections.singletonList( cpElement.getAbsolutePath() ), true,
-                                                    false );
+        Commandline cli =
+            config.createCommandLine( Collections.singletonList( cpElement.getAbsolutePath() ), true, false );
 
         String line = StringUtils.join( cli.getCommandline(), " " );
         assertTrue( line.indexOf( "-jar" ) > -1 );
@@ -73,7 +73,8 @@ public class ForkConfigurationTest
     public static ForkConfiguration getForkConfiguration()
         throws IOException
     {
-        ForkConfiguration forkConfiguration = new ForkConfiguration( new Classpath(), ForkConfiguration.FORK_ONCE, null );
+        ForkConfiguration forkConfiguration =
+            new ForkConfiguration( new Classpath(), ForkConfiguration.FORK_ONCE, null );
         forkConfiguration.setWorkingDirectory( new File( "." ).getCanonicalFile() );
         return forkConfiguration;
     }

@@ -13,8 +13,7 @@ public class WorkingDirectoryIsInvalidPropertyIT
     public void testWorkingDirectory()
         throws Exception
     {
-        unpack( "working-directory-is-invalid-property" )
-            .executeTestWithFailure()
-            .verifyTextInLog( "workingDirectory cannot be null" );
+        unpack( "working-directory-is-invalid-property" ).executeTestWithFailure().verifyTextInLog(
+            "workingDirectory cannot be null" );
     }
 }

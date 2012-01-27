@@ -24,14 +24,14 @@ package org.apache.maven.plugin.surefire.util.internal;
  * and *one* consumer thread, and solely optimized for efficient inserts
  * by the producer, minimizing producer locking for hand-off to
  * a second consumer.
- *
+ * <p/>
  * The producer can actually come in on different threads
  * (because lastInserted is volatile), but can/will lose
  * items if they arrive concurrently. Take only supports a single
  * client.
- *
+ * <p/>
  * This runs like crazy, but is not the most garbage friendly around.
- *
+ * <p/>
  * TwoThreadBlockingQueue insert 5000000 elements in  = 52ms
  * LinkedBlockingQueue insert 5000000 elements in  = 179ms
  * LikedBlockingDeque insert 5000000 elements in  = 114ms
@@ -43,17 +43,22 @@ public class TwoThreadBlockingQueue
     implements BlockingQueue
 {
     private volatile Element lastInserted;
+
     private volatile Element lastTaken;
+
     private volatile Element first;
 
     public static final String poison = "poison";
 
     public void add( String object )
     {
-        Element next = new Element( object);
-        if (lastInserted == null){
+        Element next = new Element( object );
+        if ( lastInserted == null )
+        {
             first = lastInserted = next;
-        } else {
+        }
+        else
+        {
             lastInserted.next = next;
             lastInserted = next;
         }
@@ -62,16 +67,21 @@ public class TwoThreadBlockingQueue
     public String take()
         throws InterruptedException
     {
-        if (lastTaken == null){
-            while (first == null){
-                Thread.sleep(1);
+        if ( lastTaken == null )
+        {
+            while ( first == null )
+            {
+                Thread.sleep( 1 );
             }
             lastTaken = first;
             first = null;
-        } else {
+        }
+        else
+        {
             Element next = lastTaken.next;
-            while (next == null){
-                Thread.sleep(1);
+            while ( next == null )
+            {
+                Thread.sleep( 1 );
                 next = lastTaken.next;
             }
             lastTaken = next;

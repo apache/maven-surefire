@@ -19,8 +19,8 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 
 /**
  * SUREFIRE-621 Asserts proper test counts when running junit 3 tests in parallel
@@ -34,13 +34,13 @@ public class Surefire510TestClassPathForkModesIT
     public void testForkAlways()
     {
         unpack().forkAlways().executeTest().
-        verifyTextInLog( "tcp is set" );
+            verifyTextInLog( "tcp is set" );
     }
 
     public void testForkOnce()
     {
         unpack().forkOnce().executeTest().
-        verifyTextInLog( "tcp is set" );
+            verifyTextInLog( "tcp is set" );
     }
 
     public SurefireLauncher unpack()

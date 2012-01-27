@@ -25,10 +25,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.maven.surefire.booter.ProviderParameterNames;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.NestedRuntimeException;
+
 import org.testng.TestNG;
 
 public abstract class AbstractDirectConfigurator
@@ -129,10 +129,10 @@ public abstract class AbstractDirectConfigurator
         public void invoke( Object target, Object value )
             throws Exception
         {
-            Method setter = target.getClass().getMethod( this.setterName, new Class[] { this.paramClass } );
+            Method setter = target.getClass().getMethod( this.setterName, new Class[]{ this.paramClass } );
             if ( setter != null )
             {
-                setter.invoke( target, new Object[] { convertValue( value ) } );
+                setter.invoke( target, new Object[]{ convertValue( value ) } );
             }
         }
 

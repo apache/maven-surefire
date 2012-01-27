@@ -37,7 +37,8 @@ import junit.framework.TestCase;
 public abstract class SurefireIntegrationTestCase
     extends TestCase
 {
-    public OutputValidator executeErrorFreeTest( String sourceName, int total ){
+    public OutputValidator executeErrorFreeTest( String sourceName, int total )
+    {
         return unpack( sourceName ).executeTest().verifyErrorFree( total );
     }
 

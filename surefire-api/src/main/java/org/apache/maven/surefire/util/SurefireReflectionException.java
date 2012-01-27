@@ -33,6 +33,7 @@ public class SurefireReflectionException
      * Create a <code>SurefireReflectionException</code> with the specified cause.  The
      * <code>getMessage</code> method of this exception object will return
      * <code>(cause == null ? "" : cause.toString())</code>.
+     *
      * @param cause The cause of this exception
      */
     public SurefireReflectionException( Throwable cause )

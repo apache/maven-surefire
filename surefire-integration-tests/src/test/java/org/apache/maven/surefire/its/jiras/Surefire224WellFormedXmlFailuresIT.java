@@ -19,13 +19,13 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.*;
-import org.apache.maven.surefire.its.fixture.HelperAssertions;
-import org.apache.maven.surefire.its.fixture.ReportTestCase;
-import org.apache.maven.surefire.its.fixture.ReportTestSuite;
-
 import java.io.File;
 import java.util.List;
+import org.apache.maven.surefire.its.fixture.HelperAssertions;
+import org.apache.maven.surefire.its.fixture.OutputValidator;
+import org.apache.maven.surefire.its.fixture.ReportTestCase;
+import org.apache.maven.surefire.its.fixture.ReportTestSuite;
+import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
 
 /**
  * Test Surefire-224 (XML test reports are not well-formed when failure message contains quotes)
@@ -41,7 +41,8 @@ public class Surefire224WellFormedXmlFailuresIT
 
         outputValidator.assertTestSuiteResults( 4, 0, 4, 0 );
 
-        ReportTestSuite suite = HelperAssertions.extractReports( ( new File[]{ outputValidator.getBaseDir() } ) ).get( 0 );
+        ReportTestSuite suite =
+            HelperAssertions.extractReports( ( new File[]{ outputValidator.getBaseDir() } ) ).get( 0 );
         List<ReportTestCase> testCases = suite.getTestCases();
         assertEquals( "Wrong number of test case objects", 4, testCases.size() );
         ReportTestCase testQuote = null, testLower = null, testGreater = null, testU0000 = null;

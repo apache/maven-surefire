@@ -70,7 +70,7 @@ public class ForkedBooter
 
             startupConfiguration.writeSurefireTestClasspathProperty();
 
-            Object testSet = forkedTestSet != null ? forkedTestSet.getDecodedValue(testClassLoader) : null;
+            Object testSet = forkedTestSet != null ? forkedTestSet.getDecodedValue( testClassLoader ) : null;
             runSuitesInProcess( testSet, testClassLoader, startupConfiguration, providerConfiguration );
 
             // noinspection CallToSystemExit

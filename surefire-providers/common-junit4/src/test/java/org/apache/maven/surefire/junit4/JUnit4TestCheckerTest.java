@@ -109,9 +109,10 @@ public class JUnit4TestCheckerTest
     }
 
     @Test
-    public void innerClassNotAutomaticallyTc(){
-        assertTrue( jUnit4TestChecker.accept( NestedTC.class));
-        assertFalse( jUnit4TestChecker.accept( NestedTC.Inner.class));
+    public void innerClassNotAutomaticallyTc()
+    {
+        assertTrue( jUnit4TestChecker.accept( NestedTC.class ) );
+        assertFalse( jUnit4TestChecker.accept( NestedTC.Inner.class ) );
     }
 
 
@@ -228,8 +229,11 @@ public class JUnit4TestCheckerTest
         }
     }
 
-    class NestedTC extends TestCase {
-        public class Inner {
+    class NestedTC
+        extends TestCase
+    {
+        public class Inner
+        {
 
         }
     }

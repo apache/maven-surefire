@@ -31,26 +31,31 @@ public class JUnit48ReflectorTest
     public void testIsJUnit48Available()
         throws Exception
     {
-        JUnit48Reflector  jUnit48Reflector = new JUnit48Reflector( this.getClass().getClassLoader() );
-        assertTrue(  jUnit48Reflector.isJUnit48Available() );
+        JUnit48Reflector jUnit48Reflector = new JUnit48Reflector( this.getClass().getClassLoader() );
+        assertTrue( jUnit48Reflector.isJUnit48Available() );
     }
 
     public void testCategoryAnnotation()
         throws Exception
     {
-        JUnit48Reflector  jUnit48Reflector = new JUnit48Reflector( this.getClass().getClassLoader() );
-        assertTrue(  jUnit48Reflector.isCategoryAnnotationPresent(Test1.class) );
-        assertFalse(  jUnit48Reflector.isCategoryAnnotationPresent(Test2.class) );
+        JUnit48Reflector jUnit48Reflector = new JUnit48Reflector( this.getClass().getClassLoader() );
+        assertTrue( jUnit48Reflector.isCategoryAnnotationPresent( Test1.class ) );
+        assertFalse( jUnit48Reflector.isCategoryAnnotationPresent( Test2.class ) );
     }
-    
-    interface Foo{
-        
+
+    interface Foo
+    {
+
     }
-    @Category(Foo.class)
-    private class Test1 {
-        
+
+    @Category( Foo.class )
+    private class Test1
+    {
+
     }
-    private class Test2 {
+
+    private class Test2
+    {
 
     }
 

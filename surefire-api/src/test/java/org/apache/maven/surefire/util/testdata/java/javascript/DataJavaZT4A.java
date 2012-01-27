@@ -25,5 +25,6 @@ package org.apache.maven.surefire.util.testdata.java.javascript;
  * Date: August 16, 2010
  * Time: 11:13:18 PM
  */
-public class DataJavaZT4A {
+public class DataJavaZT4A
+{
 }

@@ -59,7 +59,7 @@ public class SurefireReportParser
     {
     }
 
-    public SurefireReportParser( List<File> reportsDirectoriesFiles , Locale locale )
+    public SurefireReportParser( List<File> reportsDirectoriesFiles, Locale locale )
     {
         this.reportsDirectories = reportsDirectoriesFiles;
 
@@ -128,7 +128,7 @@ public class SurefireReportParser
 
     public Map getSummary( List suites )
     {
-        Map<String,String> totalSummary = new HashMap<String,String>();
+        Map<String, String> totalSummary = new HashMap<String, String>();
 
         ListIterator iter = suites.listIterator();
 
@@ -194,7 +194,7 @@ public class SurefireReportParser
     {
         ListIterator iter = testSuitesList.listIterator();
 
-        Map<String,List<ReportTestSuite>> suitePackage = new HashMap<String,List<ReportTestSuite>>();
+        Map<String, List<ReportTestSuite>> suitePackage = new HashMap<String, List<ReportTestSuite>>();
 
         while ( iter.hasNext() )
         {

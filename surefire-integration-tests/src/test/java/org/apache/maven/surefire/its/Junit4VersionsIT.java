@@ -19,8 +19,8 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 
 /**
  * Basic suite test using all known versions of JUnit 4.x

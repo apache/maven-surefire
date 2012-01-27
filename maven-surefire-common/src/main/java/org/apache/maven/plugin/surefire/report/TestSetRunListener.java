@@ -19,6 +19,9 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
 import org.apache.maven.surefire.report.ConsoleLogger;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
@@ -27,10 +30,6 @@ import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.RunStatistics;
 import org.apache.maven.surefire.report.TestSetStatistics;
 import org.apache.maven.surefire.util.internal.ByteBuffer;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * Reports data for a single test set.

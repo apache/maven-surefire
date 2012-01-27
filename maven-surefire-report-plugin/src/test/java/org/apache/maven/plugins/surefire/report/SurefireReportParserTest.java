@@ -19,9 +19,6 @@ package org.apache.maven.plugins.surefire.report;
  * under the License.
  */
 
-import junit.framework.TestCase;
-import org.apache.maven.reporting.MavenReportException;
-
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
@@ -32,6 +29,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import org.apache.maven.reporting.MavenReportException;
+
+import junit.framework.TestCase;
 
 /**
  * @version $Id$
@@ -41,7 +41,9 @@ public class SurefireReportParserTest
 {
     private SurefireReportParser report;
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     protected void setUp()
         throws Exception
     {
@@ -52,7 +54,9 @@ public class SurefireReportParserTest
         report.setLocale( Locale.ENGLISH );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     protected void tearDown()
         throws Exception
     {
@@ -148,11 +152,9 @@ public class SurefireReportParserTest
 
         NumberFormat numberFormat = report.getNumberFormat();
 
-        assertEquals( 2.0f, numberFormat.parse( testMap.get( "totalElapsedTime" ).toString() )
-            .floatValue(), 0.0f );
+        assertEquals( 2.0f, numberFormat.parse( testMap.get( "totalElapsedTime" ).toString() ).floatValue(), 0.0f );
 
-        assertEquals( 68.00f, numberFormat.parse( (String) testMap.get( "totalPercentage" ) )
-            .floatValue(), 0 );
+        assertEquals( 68.00f, numberFormat.parse( (String) testMap.get( "totalPercentage" ) ).floatValue(), 0 );
     }
 
     public void testGetSuitesGroupByPackage()
@@ -193,8 +195,7 @@ public class SurefireReportParserTest
     {
         NumberFormat numberFormat = report.getNumberFormat();
 
-        assertEquals( 70.00f, numberFormat.parse( report.computePercentage( 100, 20, 10, 0 ) )
-            .floatValue(), 0 );
+        assertEquals( 70.00f, numberFormat.parse( report.computePercentage( 100, 20, 10, 0 ) ).floatValue(), 0 );
     }
 
     public void testGetFailureDetails()

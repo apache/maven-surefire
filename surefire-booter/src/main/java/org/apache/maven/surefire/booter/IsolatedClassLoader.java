@@ -33,7 +33,7 @@ public class IsolatedClassLoader
     private final ClassLoader parent = ClassLoader.getSystemClassLoader();
 
     private final Set urls = new HashSet();
-    
+
     private final String roleName;
 
     private boolean childDelegation = true;

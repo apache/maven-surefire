@@ -25,6 +25,7 @@ package org.apache.maven.plugin.surefire.runorder;
 public class PrioritizedTest
 {
     private final Class clazz;
+
     private final Priority priority;
 
     public PrioritizedTest( Class clazz, Priority pri )

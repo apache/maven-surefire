@@ -38,7 +38,7 @@ public class JUnit4RunListener
                                                                // then an open-paren (start matching a group)
                                                                + "[^\\\\(\\\\)]+" //non-parens
                                                                + ")\\)" + "$" );
-        // then a close-paren (end group match)
+    // then a close-paren (end group match)
 
     protected final RunListener reporter;
 
@@ -97,9 +97,9 @@ public class JUnit4RunListener
     public void testFailure( Failure failure )
         throws Exception
     {
-        ReportEntry report = new SimpleReportEntry( extractClassName( failure.getDescription() ),
-                                                    failure.getTestHeader(),
-                                                    new JUnit4StackTraceWriter( failure ) );
+        ReportEntry report =
+            new SimpleReportEntry( extractClassName( failure.getDescription() ), failure.getTestHeader(),
+                                   new JUnit4StackTraceWriter( failure ) );
 
         if ( failure.getException() instanceof AssertionError )
         {
@@ -137,8 +137,7 @@ public class JUnit4RunListener
 
     private SimpleReportEntry createReportEntry( Description description )
     {
-        return new SimpleReportEntry( extractClassName( description ),
-                                      description.getDisplayName() );
+        return new SimpleReportEntry( extractClassName( description ), description.getDisplayName() );
     }
 
 

@@ -19,6 +19,12 @@ package org.apache.maven.surefire.its.fixture;
  * under the License.
  */
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
@@ -27,13 +33,6 @@ import org.apache.maven.it.VerificationException;
 import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.FileUtils;
 import org.apache.maven.it.util.ResourceExtractor;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Encapsulate all needed features to start a surefire run
@@ -79,16 +78,19 @@ public class SurefireLauncher
         cliOptions.clear();
     }
 
-    private static Verifier createVerifier(Class testClass, String resourceName)
+    private static Verifier createVerifier( Class testClass, String resourceName )
         throws IOException, VerificationException
     {
-        return new Verifier( simpleExtractResources(  testClass, resourceName).getAbsolutePath() );
+        return new Verifier( simpleExtractResources( testClass, resourceName ).getAbsolutePath() );
     }
 
     private static File simpleExtractResources( Class<?> cl, String resourcePath )
         throws IOException
     {
-        if (!resourcePath.startsWith( "/" ))  resourcePath = "/" + resourcePath;
+        if ( !resourcePath.startsWith( "/" ) )
+        {
+            resourcePath = "/" + resourcePath;
+        }
         String tempDirPath = System.getProperty( "maven.test.tmpdir", System.getProperty( "java.io.tmpdir" ) );
         File tempDir = new File( tempDirPath, cl.getSimpleName() );
         File testDir = new File( tempDir, resourcePath );
@@ -104,20 +106,21 @@ public class SurefireLauncher
         cliOptions.clear();
     }
 
-    public SurefireLauncher getSubProjectLauncher(String subProject)
+    public SurefireLauncher getSubProjectLauncher( String subProject )
         throws VerificationException
     {
         final File subFile = surefireVerifier.getSubFile( subProject );
-        return new SurefireLauncher( new Verifier( subFile.getAbsolutePath() ));
+        return new SurefireLauncher( new Verifier( subFile.getAbsolutePath() ) );
     }
+
     public OutputValidator getSubProjectValidator( String subProject )
         throws VerificationException
     {
         final File subFile = surefireVerifier.getSubFile( subProject );
-        return new OutputValidator( new Verifier( subFile.getAbsolutePath() ));
+        return new OutputValidator( new Verifier( subFile.getAbsolutePath() ) );
     }
 
-    public SurefireLauncher addEnvVar(String key, String value)
+    public SurefireLauncher addEnvVar( String key, String value )
     {
         envvars.put( key, value );
         return this;
@@ -174,17 +177,17 @@ public class SurefireLauncher
         }
 
         this.goals.clear();
-        this.goals.addAll(  goals );
+        this.goals.addAll( goals );
         return this;
     }
 
 
     public SurefireLauncher assertNotPresent( String subFile )
     {
-        verifier.assertFileNotPresent( surefireVerifier.getSubFile( subFile ).getAbsolutePath());
+        verifier.assertFileNotPresent( surefireVerifier.getSubFile( subFile ).getAbsolutePath() );
         return this;
     }
-    
+
     public SurefireLauncher showErrorStackTraces()
     {
         cliOptions.add( "-e" );
@@ -204,12 +207,14 @@ public class SurefireLauncher
 
     }
 
-    public SurefireLauncher skipClean(){
+    public SurefireLauncher skipClean()
+    {
         goals.add( "-Dclean.skip=true" );
         return this;
     }
-    
-    public SurefireLauncher groups(String groups){
+
+    public SurefireLauncher groups( String groups )
+    {
         goals.add( "-Dgroups=" + groups );
         return this;
     }
@@ -234,9 +239,12 @@ public class SurefireLauncher
 
     public OutputValidator executeTestWithFailure()
     {
-        try {
+        try
+        {
             execute( "test" );
-        } catch (SurefireVerifierException ignore) {
+        }
+        catch ( SurefireVerifierException ignore )
+        {
             return surefireVerifier;
         }
         throw new RuntimeException( "Expecting build failure, got none!" );
@@ -244,9 +252,12 @@ public class SurefireLauncher
 
     public OutputValidator executeVerifyWithFailure()
     {
-        try {
+        try
+        {
             executeVerify();
-        } catch (SurefireVerifierException ignore) {
+        }
+        catch ( SurefireVerifierException ignore )
+        {
             return surefireVerifier;
         }
         throw new RuntimeException( "Expecting build failure, got none!" );
@@ -313,6 +324,7 @@ public class SurefireLauncher
     {
         return forkMode( "always" );
     }
+
     public SurefireLauncher forkPerTest()
     {
         return forkMode( "pertest" );
@@ -322,9 +334,10 @@ public class SurefireLauncher
     {
         return addGoal( "-DforkMode=" + forkMode );
     }
+
     public SurefireLauncher runOrder( String runOrder )
     {
-        return addGoal( "-DrunOrder=" + runOrder);
+        return addGoal( "-DrunOrder=" + runOrder );
     }
 
     public SurefireLauncher failIfNoTests( boolean fail )
@@ -339,7 +352,7 @@ public class SurefireLauncher
         return addGoal( "-Dsurefire.failIfNoSpecifiedTests=" + fail );
     }
 
-    public SurefireLauncher useSystemClassLoader( boolean useSystemClassLoader)
+    public SurefireLauncher useSystemClassLoader( boolean useSystemClassLoader )
     {
         return addGoal( "-DuseSystemClassLoader=" + useSystemClassLoader );
     }
@@ -376,9 +389,10 @@ public class SurefireLauncher
     {
         return addGoal( "-D" + variable + "=" + value );
     }
-    
-    public SurefireLauncher setJUnitVersion(String version){
-        addD( "junit.version", version);
+
+    public SurefireLauncher setJUnitVersion( String version )
+    {
+        addD( "junit.version", version );
         return this;
     }
 
@@ -403,47 +417,53 @@ public class SurefireLauncher
     {
         return failIfNoTests;
     }
-    
-    public File getUnpackLocation(){
-        return new File(verifier.getBasedir());
+
+    public File getUnpackLocation()
+    {
+        return new File( verifier.getBasedir() );
     }
 
     public SurefireLauncher addFailsafeReportOnlyGoal()
     {
-        goals.add( "org.apache.maven.plugins:maven-surefire-report-plugin:" + getSurefireVersion() + ":failsafe-report-only");
+        goals.add(
+            "org.apache.maven.plugins:maven-surefire-report-plugin:" + getSurefireVersion() + ":failsafe-report-only" );
         return this;
     }
 
     public SurefireLauncher addSurefireReportGoal()
     {
-        goals.add( "org.apache.maven.plugins:maven-surefire-report-plugin:" + getSurefireVersion() + ":report");
+        goals.add( "org.apache.maven.plugins:maven-surefire-report-plugin:" + getSurefireVersion() + ":report" );
         return this;
     }
 
     public SurefireLauncher addSurefireReportOnlyGoal()
     {
-        goals.add( "org.apache.maven.plugins:maven-surefire-report-plugin:" + getSurefireVersion() + ":report-only");
+        goals.add( "org.apache.maven.plugins:maven-surefire-report-plugin:" + getSurefireVersion() + ":report-only" );
         return this;
     }
 
-    
+
     public SurefireLauncher deleteSiteDir()
     {
-        try {
-            FileUtils.deleteDirectory(  surefireVerifier.getSubFile( "site" ));
-        } catch (IOException e) {
-            throw new SurefireVerifierException(e);
+        try
+        {
+            FileUtils.deleteDirectory( surefireVerifier.getSubFile( "site" ) );
+        }
+        catch ( IOException e )
+        {
+            throw new SurefireVerifierException( e );
         }
         return this;
     }
 
     public SurefireLauncher setTestToRun( String basicTest )
     {
-        addD( "test", basicTest);
+        addD( "test", basicTest );
         return this;
     }
 
-    public OutputValidator getSurefireVerifier() {
+    public OutputValidator getSurefireVerifier()
+    {
         return surefireVerifier;
     }
 }

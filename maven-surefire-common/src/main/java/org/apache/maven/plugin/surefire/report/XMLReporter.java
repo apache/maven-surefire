@@ -45,9 +45,9 @@ import org.codehaus.plexus.util.xml.Xpp3DomWriter;
  * by Ant's <a href="http://ant.apache.org/manual/Tasks/junit.html"><code>&lt;junit&gt;</code></a> and
  * <a href="http://ant.apache.org/manual/Tasks/junitreport.html"><code>&lt;junitreport&gt;</code></a> tasks,
  * then supported by many tools like CI servers.
- *
+ * <p/>
  * <pre>&lt;?xml version="1.0" encoding="UTF-8"?>
- *&lt;testsuite name="<i>suite name</i>" [group="<i>group</i>"] tests="<i>0</i>" failures="<i>0</i>" errors="<i>0</i>" skipped="<i>0</i>" time="<i>0,###.###</i>">
+ * &lt;testsuite name="<i>suite name</i>" [group="<i>group</i>"] tests="<i>0</i>" failures="<i>0</i>" errors="<i>0</i>" skipped="<i>0</i>" time="<i>0,###.###</i>">
  *  &lt;properties>
  *    &lt;property name="<i>name</i>" value="<i>value</i>"/>
  *    [...]
@@ -67,11 +67,11 @@ import org.codehaus.plexus.util.xml.Xpp3DomWriter;
  *    &lt;<b>skipped</b>/>
  *  &lt;/testcase>
  *  [...]</pre>
- * 
+ *
  * @author <a href="mailto:jruiz@exist.com">Johnny R. Ruiz III</a>
  * @version $Id$
  * @see <a href="http://wiki.apache.org/ant/Proposals/EnhancedTestReports">Ant's format enhancement proposal</a>
- * (not yet implemented by Ant 1.8.2)
+ *      (not yet implemented by Ant 1.8.2)
  */
 public class XMLReporter
     extends AbstractReporter
@@ -127,7 +127,7 @@ public class XMLReporter
     {
         super.testSetCompleted( report );
 
-        long runTime = elapsed > 0 ? elapsed : (System.currentTimeMillis() - testSetStartTime);
+        long runTime = elapsed > 0 ? elapsed : ( System.currentTimeMillis() - testSetStartTime );
 
         Xpp3Dom testSuite = createTestSuiteElement( report, runTime );
 
@@ -296,7 +296,7 @@ public class XMLReporter
 
         String stackTrace = getStackTrace( report );
 
-        if ( report.getMessage() != null && report.getMessage().length() > 0)
+        if ( report.getMessage() != null && report.getMessage().length() > 0 )
         {
             element.setAttribute( "message", report.getMessage() );
         }
@@ -351,12 +351,13 @@ public class XMLReporter
 
     /**
      * Adds system properties to the XML report.
+     * <p/>
+     * <<<<<<< HEAD
      *
-<<<<<<< HEAD
      * @param testSuite The test suite to report to
-=======
+     *                  =======
      * @param testSuite the target dom suite
->>>>>>> [SUREFIRE-537]
+     *                  >>>>>>> [SUREFIRE-537]
      */
     private void showProperties( Xpp3Dom testSuite )
     {

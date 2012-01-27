@@ -81,7 +81,7 @@ public class JUnit4StackTraceWriter
      */
     public SafeThrowable getThrowable()
     {
-        return new SafeThrowable( junitFailure.getException());
+        return new SafeThrowable( junitFailure.getException() );
     }
 
 }

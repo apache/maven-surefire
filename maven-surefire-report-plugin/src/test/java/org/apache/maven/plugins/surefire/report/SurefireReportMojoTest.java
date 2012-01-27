@@ -26,7 +26,6 @@ import java.io.Writer;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.Locale;
-
 import org.apache.maven.doxia.site.decoration.DecorationModel;
 import org.apache.maven.doxia.siterenderer.RendererException;
 import org.apache.maven.doxia.siterenderer.SiteRenderingContext;
@@ -94,7 +93,8 @@ public class SurefireReportMojoTest
         assertTrue( idx >= 0 );
     }
 
-    private File getUnitBaseDir() throws UnsupportedEncodingException
+    private File getUnitBaseDir()
+        throws UnsupportedEncodingException
     {
         URL resource = getClass().getResource( "/unit" );
         // URLDecoder.decode necessary for JDK 1.5+, where spaces are escaped to %20
@@ -187,10 +187,10 @@ public class SurefireReportMojoTest
     /**
      * Renderer the sink from the report mojo.
      *
-     * @param mojo not null
+     * @param mojo       not null
      * @param outputHtml not null
      * @throws RendererException if any
-     * @throws IOException if any
+     * @throws IOException       if any
      */
     private void renderer( SurefireReportMojo mojo, File outputHtml )
         throws RendererException, IOException
@@ -206,8 +206,7 @@ public class SurefireReportMojoTest
             outputHtml.getParentFile().mkdirs();
             writer = WriterFactory.newXmlWriter( outputHtml );
 
-            mojo.getSiteRenderer().generateDocument( writer, (SiteRendererSink) mojo.getSink(),
-                                                           context );
+            mojo.getSiteRenderer().generateDocument( writer, (SiteRendererSink) mojo.getSink(), context );
         }
         finally
         {

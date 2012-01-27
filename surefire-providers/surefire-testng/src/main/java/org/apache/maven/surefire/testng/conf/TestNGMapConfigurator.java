@@ -24,9 +24,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-
 import org.apache.maven.surefire.booter.ProviderParameterNames;
 import org.apache.maven.surefire.testset.TestSetFailedException;
+
 import org.testng.TestNG;
 
 /**
@@ -39,7 +39,7 @@ import org.testng.TestNG;
  * <code>TestNGCommandLineArgs.REPORTERS_LIST</code> which is a <code>List&gt;ReporterConfig&lt;</code>.
  * <p/>
  * Test classes and/or suite files are not passed along as options parameters, but configured separately.
- * 
+ *
  * @author <a href='mailto:the[dot]mindstorm[at]gmail[dot]com'>Alex Popescu</a>
  */
 public class TestNGMapConfigurator
@@ -102,8 +102,8 @@ public class TestNGMapConfigurator
         try
         {
             Class reporterConfig = Class.forName( reporterConfigClassName );
-            Method deserialize = reporterConfig.getMethod( "deserialize", new Class[] { String.class } );
-            Object rc = deserialize.invoke( null, new Object[] { val } );
+            Method deserialize = reporterConfig.getMethod( "deserialize", new Class[]{ String.class } );
+            Object rc = deserialize.invoke( null, new Object[]{ val } );
             ArrayList reportersList = new ArrayList();
             reportersList.add( rc );
             return reportersList;

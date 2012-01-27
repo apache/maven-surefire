@@ -60,7 +60,7 @@ public class JUnit3Provider
 
     private TestsToRun testsToRun;
 
-  public JUnit3Provider( ProviderParameters booterParameters )
+    public JUnit3Provider( ProviderParameters booterParameters )
     {
         this.providerParameters = booterParameters;
         this.testClassLoader = booterParameters.getTestClassLoader();
@@ -126,7 +126,7 @@ public class JUnit3Provider
     private TestsToRun scanClassPath()
     {
         final TestsToRun scanResult = directoryScanner.locateTestClasses( testClassLoader, testChecker );
-        return runOrderCalculator.orderTestClasses(  scanResult );
+        return runOrderCalculator.orderTestClasses( scanResult );
     }
 
     public Iterator getSuites()

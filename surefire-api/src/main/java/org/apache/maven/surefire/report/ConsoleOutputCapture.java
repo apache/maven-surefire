@@ -80,7 +80,8 @@ public class ConsoleOutputCapture
 
         public void println( String s )
         {
-            if (s == null){
+            if ( s == null )
+            {
                 s = "null"; // Shamelessy taken from super.print
             }
             final byte[] bytes = s.getBytes();

@@ -19,8 +19,8 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 
 /**
  * Test system properties
@@ -33,21 +33,16 @@ public class SystemPropertiesTestIT
 
     public void testSystemProperties()
     {
-        unpack().addGoal( "-DsetOnMavenCommandLine=baz" )
-        .addGoal( "-DsetOnArgLineWorkAround=baz" )
-        .executeTest()
-        .verifyErrorFree( 8 );
+        unpack().addGoal( "-DsetOnMavenCommandLine=baz" ).addGoal(
+            "-DsetOnArgLineWorkAround=baz" ).executeTest().verifyErrorFree( 8 );
     }
 
     public void testSystemPropertiesNoFork()
     {
 
-        unpack().forkNever().addGoal( "-DsetOnMavenCommandLine=baz" )
-        .addGoal( "-DsetOnArgLineWorkAround=baz" )
-        // DGF fake the argLine, since we're not forking
-        .addGoal( "-DsetOnArgLine=bar" )
-        .executeTest()
-        .verifyErrorFree( 8 );
+        unpack().forkNever().addGoal( "-DsetOnMavenCommandLine=baz" ).addGoal( "-DsetOnArgLineWorkAround=baz" )
+            // DGF fake the argLine, since we're not forking
+            .addGoal( "-DsetOnArgLine=bar" ).executeTest().verifyErrorFree( 8 );
     }
 
     public SurefireLauncher unpack()

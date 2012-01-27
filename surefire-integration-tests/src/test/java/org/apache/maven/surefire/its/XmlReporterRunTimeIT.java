@@ -19,12 +19,12 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.*;
-import org.apache.maven.surefire.its.fixture.HelperAssertions;
-import org.apache.maven.surefire.its.fixture.ReportTestSuite;
-
 import java.io.File;
 import java.util.List;
+import org.apache.maven.surefire.its.fixture.HelperAssertions;
+import org.apache.maven.surefire.its.fixture.OutputValidator;
+import org.apache.maven.surefire.its.fixture.ReportTestSuite;
+import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
 
 /**
  * Test reported runtime

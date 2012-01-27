@@ -23,15 +23,14 @@ import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
 
 /**
  * Test that TestNG's @Test(threadPoolSize = n, invocationCount=n) causes tests to be run in parallel.
- * 
+ *
  * @author <a href="mailto:spam.haikal@gmail.com">Haikal Saadh</a>
- * 
  */
 public class TestNgParallelWithAnnotationsIT
-   extends SurefireIntegrationTestCase
+    extends SurefireIntegrationTestCase
 {
     public void testTestNgGroupThreadParallel()
     {
-        executeErrorFreeTest( "/testng-parallel-with-annotations", 3);
+        executeErrorFreeTest( "/testng-parallel-with-annotations", 3 );
     }
 }

@@ -25,8 +25,8 @@ import java.io.IOException;
 import java.util.Properties;
 import org.apache.maven.it.VerificationException;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.apache.maven.surefire.its.fixture.TestFile;
 
 /**
@@ -94,7 +94,7 @@ public class WorkingDirectoryIT
         return child;
     }
 
-    
+
     private TestFile getOutFile( OutputValidator child )
     {
         return child.getTargetFile( "out.txt" );
@@ -115,11 +115,13 @@ public class WorkingDirectoryIT
         // test if not a symlink
         if ( childTestDir.getBaseDir().equals( childTestDir.getBaseDir().getAbsoluteFile() ) )
         {
-            assertEquals( "wrong user.dir ! symlink ", childTestDir.getBaseDir().getAbsolutePath(), userDir.getAbsolutePath() );
+            assertEquals( "wrong user.dir ! symlink ", childTestDir.getBaseDir().getAbsolutePath(),
+                          userDir.getAbsolutePath() );
         }
         else
         {
-            assertEquals( "wrong user.dir symlink ", childTestDir.getBaseDir().getCanonicalPath(), userDir.getCanonicalPath() );
+            assertEquals( "wrong user.dir symlink ", childTestDir.getBaseDir().getCanonicalPath(),
+                          userDir.getCanonicalPath() );
         }
     }
 

@@ -46,12 +46,13 @@ public abstract class AbstractConsoleReporter
 
     AbstractConsoleReporter( boolean trimStackTrace, String format )
     {
-        super( getPrintWriter(), trimStackTrace, format);
+        super( getPrintWriter(), trimStackTrace, format );
     }
 
     private static PrintWriter getPrintWriter()
     {
-        return new PrintWriter( new OutputStreamWriter( new BufferedOutputStream( ORIGINAL_SYSTEM_OUT, BUFFER_SIZE ) ) );
+        return new PrintWriter(
+            new OutputStreamWriter( new BufferedOutputStream( ORIGINAL_SYSTEM_OUT, BUFFER_SIZE ) ) );
     }
 
     public void testSetStarting( ReportEntry report )

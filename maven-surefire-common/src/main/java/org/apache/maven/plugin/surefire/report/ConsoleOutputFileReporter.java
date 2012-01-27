@@ -24,7 +24,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.util.NestedRuntimeException;
@@ -87,7 +86,8 @@ public class ConsoleOutputFileReporter
                     //noinspection ResultOfMethodCallIgnored
                     reportsDirectory.mkdirs();
                 }
-                File file = AbstractFileReporter.getReportFile( reportsDirectory, reportEntryName, reportNameSuffix, "-output.txt" );
+                File file = AbstractFileReporter.getReportFile( reportsDirectory, reportEntryName, reportNameSuffix,
+                                                                "-output.txt" );
                 printWriter = new PrintWriter( new BufferedWriter( new FileWriter( file ) ) );
             }
             printWriter.write( new String( b, off, len ) );

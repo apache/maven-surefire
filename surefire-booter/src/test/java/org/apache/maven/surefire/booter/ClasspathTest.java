@@ -60,7 +60,7 @@ public class ClasspathTest
         Classpath classpath = new Classpath();
         classpath.addClassPathElementUrl( DUMMY_URL_1 );
         classpath.addClassPathElementUrl( DUMMY_URL_1 );
-        assertClasspathConsistsOfElements( classpath, new String[] { DUMMY_URL_1 } );
+        assertClasspathConsistsOfElements( classpath, new String[]{ DUMMY_URL_1 } );
     }
 
     public void testGetAsUrlList()
@@ -86,7 +86,7 @@ public class ClasspathTest
         Classpath secondClasspath = new Classpath();
         secondClasspath.addClassPathElementUrl( DUMMY_URL_2 );
         Classpath joinedClasspath = Classpath.join( firstClasspath, secondClasspath );
-        assertClasspathConsistsOfElements( joinedClasspath, new String[] { DUMMY_URL_1, DUMMY_URL_2 } );
+        assertClasspathConsistsOfElements( joinedClasspath, new String[]{ DUMMY_URL_1, DUMMY_URL_2 } );
     }
 
     public void testShouldNotHaveDuplicatesAfterJoiningTowClasspathsWithEqualElements()
@@ -97,16 +97,19 @@ public class ClasspathTest
         Classpath secondClasspath = new Classpath();
         secondClasspath.addClassPathElementUrl( DUMMY_URL_1 );
         Classpath joinedClasspath = Classpath.join( firstClasspath, secondClasspath );
-        assertClasspathConsistsOfElements( joinedClasspath, new String[] { DUMMY_URL_1 } );
+        assertClasspathConsistsOfElements( joinedClasspath, new String[]{ DUMMY_URL_1 } );
     }
 
     public void testShouldNotBeAbleToRemoveElement()
         throws Exception
     {
-        try {
-        Classpath classpath = createClasspathWithTwoElements();
-        classpath.getClassPath().remove( 0 );
-        } catch (java.lang.UnsupportedOperationException ignore){
+        try
+        {
+            Classpath classpath = createClasspathWithTwoElements();
+            classpath.getClassPath().remove( 0 );
+        }
+        catch ( java.lang.UnsupportedOperationException ignore )
+        {
 
         }
     }
@@ -142,9 +145,9 @@ public class ClasspathTest
         try
         {
             classpath.addClassPathElementUrl( null );
-            fail("IllegalArgumentException not thrown.");
+            fail( "IllegalArgumentException not thrown." );
         }
-        catch (IllegalArgumentException expected)
+        catch ( IllegalArgumentException expected )
         {
         }
     }
@@ -157,7 +160,7 @@ public class ClasspathTest
         {
             classpath.addClassPathElementUrl( null );
         }
-        catch (IllegalArgumentException ignored)
+        catch ( IllegalArgumentException ignored )
         {
         }
         assertEmptyClasspath( classpath );

@@ -101,7 +101,9 @@ public class ReportTestCase
         failure.put( "type", type );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public String toString()
     {
         return fullName;

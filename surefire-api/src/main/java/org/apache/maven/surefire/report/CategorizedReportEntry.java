@@ -33,13 +33,15 @@ public class CategorizedReportEntry
         this( source, name, group, null, null );
     }
 
-    public CategorizedReportEntry( String source, String name, String group, StackTraceWriter stackTraceWriter, Integer elapsed )
+    public CategorizedReportEntry( String source, String name, String group, StackTraceWriter stackTraceWriter,
+                                   Integer elapsed )
     {
         super( source, name, stackTraceWriter, elapsed );
         this.group = group;
     }
 
-    public CategorizedReportEntry( String source, String name, String group, StackTraceWriter stackTraceWriter, Integer elapsed, String message )
+    public CategorizedReportEntry( String source, String name, String group, StackTraceWriter stackTraceWriter,
+                                   Integer elapsed, String message )
     {
         super( source, name, stackTraceWriter, elapsed, message );
         this.group = group;

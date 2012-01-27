@@ -19,10 +19,9 @@ package org.apache.maven.plugins.surefire.report.stubs;
  * under the License.
  */
 
-import org.apache.maven.plugin.testing.stubs.MavenProjectStub;
-
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.maven.plugin.testing.stubs.MavenProjectStub;
 
 /**
  * @author <a href="mailto:aramirez@apache.org">Allan Ramirez</a>
@@ -31,7 +30,9 @@ import java.util.List;
 public class SurefireRepMavenProjectStub2
     extends MavenProjectStub
 {
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public List getReportPlugins()
     {
         return new ArrayList();

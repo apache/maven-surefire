@@ -44,7 +44,7 @@ public abstract class AbstractFileReporter
     {
         this( trimStackTrace, format, reportsDirectory, null );
     }
-    
+
     AbstractFileReporter( boolean trimStackTrace, String format, File reportsDirectory, String reportNameSuffix )
     {
         super( trimStackTrace, format );
@@ -89,12 +89,12 @@ public abstract class AbstractFileReporter
         }
     }
 
-    public static File getReportFile( File reportsDirectory, String reportEntryName, 
-            String reportNameSuffix, String fileExtension )
+    public static File getReportFile( File reportsDirectory, String reportEntryName, String reportNameSuffix,
+                                      String fileExtension )
     {
         File reportFile;
 
-        if ( reportNameSuffix != null && reportNameSuffix.length() > 0)
+        if ( reportNameSuffix != null && reportNameSuffix.length() > 0 )
         {
             reportFile = new File( reportsDirectory, reportEntryName + "-" + reportNameSuffix + fileExtension );
         }

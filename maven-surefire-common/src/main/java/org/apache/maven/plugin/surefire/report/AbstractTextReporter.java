@@ -56,7 +56,7 @@ public abstract class AbstractTextReporter
 
     protected AbstractTextReporter( PrintWriter writer, boolean trimStackTrace, String format )
     {
-        this( trimStackTrace, format);
+        this( trimStackTrace, format );
         this.writer = writer;
     }
 
@@ -147,9 +147,8 @@ public abstract class AbstractTextReporter
         buf.append( ", Skipped: " );
         buf.append( skipped );
         buf.append( ", Time elapsed: " );
-        int elapsed = report.getElapsed() != null
-            ? report.getElapsed()
-            : (int) ( System.currentTimeMillis() - testSetStartTime );
+        int elapsed =
+            report.getElapsed() != null ? report.getElapsed() : (int) ( System.currentTimeMillis() - testSetStartTime );
         buf.append( elapsedTimeAsString( elapsed ) );
         buf.append( " sec" );
 

@@ -19,9 +19,8 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
-import org.apache.maven.surefire.junit4.MockReporter;
-
 import java.util.HashMap;
+import org.apache.maven.surefire.junit4.MockReporter;
 
 import junit.framework.TestCase;
 import org.junit.Assume;

@@ -19,11 +19,11 @@ package org.apache.maven.surefire.common.junit4;
  * under the License.
  */
 
-import org.apache.maven.surefire.util.ReflectionUtils;
-import org.junit.runner.notification.RunListener;
-
 import java.util.LinkedList;
 import java.util.List;
+import org.apache.maven.surefire.util.ReflectionUtils;
+
+import org.junit.runner.notification.RunListener;
 
 /**
  * @author Kristian Rosenvold

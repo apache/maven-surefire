@@ -19,13 +19,12 @@ package org.apache.maven.surefire.common.junit4;
  * under the License.
  */
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import org.apache.maven.surefire.NonAbstractClassFilter;
 import org.apache.maven.surefire.common.junit3.JUnit3TestChecker;
 import org.apache.maven.surefire.util.ReflectionUtils;
 import org.apache.maven.surefire.util.ScannerFilter;
-
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
 
 /**
  * @author Kristian Rosenvold

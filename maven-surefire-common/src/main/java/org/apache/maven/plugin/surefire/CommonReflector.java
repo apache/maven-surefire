@@ -61,17 +61,16 @@ public class CommonReflector
     Object createStartupReportConfiguration( StartupReportConfiguration reporterConfiguration )
     {
         Constructor<?> constructor = ReflectionUtils.getConstructor( this.startupReportConfiguration,
-                                                                  new Class[]{ boolean.class, boolean.class,
-                                                                      String.class, boolean.class, boolean.class,
-                                                                      File.class, boolean.class, String.class,
-                                                                      String.class, boolean.class } );
+                                                                     new Class[]{ boolean.class, boolean.class,
+                                                                         String.class, boolean.class, boolean.class,
+                                                                         File.class, boolean.class, String.class,
+                                                                         String.class, boolean.class } );
         //noinspection BooleanConstructorCall
-        final Object[] params =
-            { reporterConfiguration.isUseFile(), reporterConfiguration.isPrintSummary(),
-                reporterConfiguration.getReportFormat(), reporterConfiguration.isRedirectTestOutputToFile(),
-                reporterConfiguration.isDisableXmlReport(), reporterConfiguration.getReportsDirectory(),
-                reporterConfiguration.isTrimStackTrace(), reporterConfiguration.getReportNameSuffix(),
-                reporterConfiguration.getConfigurationHash(), reporterConfiguration.isRequiresRunHistory() };
+        final Object[] params = { reporterConfiguration.isUseFile(), reporterConfiguration.isPrintSummary(),
+            reporterConfiguration.getReportFormat(), reporterConfiguration.isRedirectTestOutputToFile(),
+            reporterConfiguration.isDisableXmlReport(), reporterConfiguration.getReportsDirectory(),
+            reporterConfiguration.isTrimStackTrace(), reporterConfiguration.getReportNameSuffix(),
+            reporterConfiguration.getConfigurationHash(), reporterConfiguration.isRequiresRunHistory() };
         return ReflectionUtils.newInstance( constructor, params );
     }
 

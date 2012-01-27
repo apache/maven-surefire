@@ -19,16 +19,16 @@ package org.apache.maven.surefire.junit;
  * under the License.
  */
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import java.util.ArrayList;
+import java.util.List;
 import org.apache.maven.surefire.common.junit3.JUnit3Reflector;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
-import java.util.ArrayList;
-import java.util.List;
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 
 public class JUnitTestSetTest
     extends TestCase
@@ -48,72 +48,73 @@ public class JUnitTestSetTest
                       ( (ReportEntry) succeededTests.get( 0 ) ).getName() );
     }
 
-  public static final class AlwaysSucceeds
-      extends TestCase
-  {
-      public void testSuccess() {
-          assertTrue( true );
-      }
-  }
+    public static final class AlwaysSucceeds
+        extends TestCase
+    {
+        public void testSuccess()
+        {
+            assertTrue( true );
+        }
+    }
 
-  public static class SuccessListener
-      implements RunListener
-  {
+    public static class SuccessListener
+        implements RunListener
+    {
 
-      private List succeededTests = new ArrayList();
+        private List succeededTests = new ArrayList();
 
-      public void testSetStarting( ReportEntry report )
-      {
-      }
+        public void testSetStarting( ReportEntry report )
+        {
+        }
 
-      public void testSetCompleted( ReportEntry report )
-      {
-      }
+        public void testSetCompleted( ReportEntry report )
+        {
+        }
 
-      public void testStarting( ReportEntry report )
-      {
-      }
+        public void testStarting( ReportEntry report )
+        {
+        }
 
-      public void testSucceeded( ReportEntry report )
-      {
-          this.succeededTests.add( report );
-      }
+        public void testSucceeded( ReportEntry report )
+        {
+            this.succeededTests.add( report );
+        }
 
-      public void testAssumptionFailure( ReportEntry report )
-      {
-          throw new IllegalStateException();
-      }
+        public void testAssumptionFailure( ReportEntry report )
+        {
+            throw new IllegalStateException();
+        }
 
-      public void testError( ReportEntry report )
-      {
-          throw new IllegalStateException();
-      }
+        public void testError( ReportEntry report )
+        {
+            throw new IllegalStateException();
+        }
 
-      public void testFailed( ReportEntry report )
-      {
-          throw new IllegalStateException();
-      }
+        public void testFailed( ReportEntry report )
+        {
+            throw new IllegalStateException();
+        }
 
-      public void testSkipped( ReportEntry report )
-      {
-          throw new IllegalStateException();
-      }
+        public void testSkipped( ReportEntry report )
+        {
+            throw new IllegalStateException();
+        }
 
-      public List getSucceededTests()
-      {
-          return succeededTests;
-      }
+        public List getSucceededTests()
+        {
+            return succeededTests;
+        }
 
-  }
+    }
 
-  public static class Suite
-  {
+    public static class Suite
+    {
 
-      public static Test suite()
-      {
-          TestSuite suite = new TestSuite();
-          suite.addTestSuite( AlwaysSucceeds.class );
-          return suite;
-      }
-  }
+        public static Test suite()
+        {
+            TestSuite suite = new TestSuite();
+            suite.addTestSuite( AlwaysSucceeds.class );
+            return suite;
+        }
+    }
 }

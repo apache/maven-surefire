@@ -19,10 +19,10 @@ package org.apache.maven.plugins.surefire.report;
  * under the License.
  */
 
-import junit.framework.TestCase;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import junit.framework.TestCase;
 
 /**
  * @version $Id$
@@ -32,7 +32,9 @@ public class ReportTestSuiteTest
 {
     private ReportTestSuite tSuite;
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     protected void setUp()
         throws Exception
     {
@@ -41,7 +43,9 @@ public class ReportTestSuiteTest
         tSuite = new ReportTestSuite();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     protected void tearDown()
         throws Exception
     {

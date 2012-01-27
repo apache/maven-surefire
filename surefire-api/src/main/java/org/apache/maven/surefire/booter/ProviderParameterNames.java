@@ -24,8 +24,11 @@ package org.apache.maven.surefire.booter;
 public class ProviderParameterNames
 {
     public static final String TESTNG_EXCLUDEDGROUPS_PROP = "excludegroups";
+
     public static final String TESTNG_GROUPS_PROP = "groups";
+
     public static final String THREADCOUNT_PROP = "threadcount";
+
     public static final String PARALLEL_PROP = "parallel";
 
 }

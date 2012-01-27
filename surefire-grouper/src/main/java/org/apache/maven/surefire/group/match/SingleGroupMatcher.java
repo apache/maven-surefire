@@ -27,19 +27,29 @@ public class SingleGroupMatcher
     public boolean equals( Object obj )
     {
         if ( this == obj )
+        {
             return true;
+        }
         if ( obj == null )
+        {
             return false;
+        }
         if ( getClass() != obj.getClass() )
+        {
             return false;
+        }
         SingleGroupMatcher other = (SingleGroupMatcher) obj;
         if ( enabled == null )
         {
             if ( other.enabled != null )
+            {
                 return false;
+            }
         }
         else if ( !enabled.equals( other.enabled ) )
+        {
             return false;
+        }
         return true;
     }
 
@@ -60,7 +70,7 @@ public class SingleGroupMatcher
                 {
                     return true;
                 }
-                
+
                 if ( name.endsWith( enabled ) )
                 {
                     return true;

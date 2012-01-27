@@ -83,14 +83,22 @@ public class OrGroupMatcher
     public boolean equals( Object obj )
     {
         if ( this == obj )
+        {
             return true;
+        }
         if ( obj == null )
+        {
             return false;
+        }
         if ( getClass() != obj.getClass() )
+        {
             return false;
+        }
         AndGroupMatcher other = (AndGroupMatcher) obj;
         if ( !getMatchers().equals( other.getMatchers() ) )
+        {
             return false;
+        }
         return true;
     }
 }

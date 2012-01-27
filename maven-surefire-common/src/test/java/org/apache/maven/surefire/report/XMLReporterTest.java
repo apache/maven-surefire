@@ -40,10 +40,10 @@ public class XMLReporterTest
         throws Exception
     {
         super.setUp();
-        reporter = new XMLReporter( true, new File( "." ));
+        reporter = new XMLReporter( true, new File( "." ) );
         message = "junit.framework.AssertionFailedError";
         reportEntry = new SimpleReportEntry( this.getClass().getName(), "XMLReporterTest",
-                                             new PojoStackTraceWriter( "", "", new AssertionFailedError() ) ,
+                                             new PojoStackTraceWriter( "", "", new AssertionFailedError() ),
                                              new Integer( 17 ) );
     }
 
@@ -79,12 +79,13 @@ public class XMLReporterTest
     {
         File reportDir = new File( "." );
         String testName = "org.apache.maven.surefire.report.XMLReporterTest";
-        reportEntry = new SimpleReportEntry( this.getClass().getName(), testName, new Integer( 12) );
+        reportEntry = new SimpleReportEntry( this.getClass().getName(), testName, new Integer( 12 ) );
         reporter = new XMLReporter( true, reportDir, null );
         reporter.testSetCompleted( reportEntry );
 
         File expectedReportFile = new File( reportDir, "TEST-" + testName + ".xml" );
-        assertTrue("Report file (" + expectedReportFile.getAbsolutePath() + ") doesn't exist",  expectedReportFile.exists() );
+        assertTrue( "Report file (" + expectedReportFile.getAbsolutePath() + ") doesn't exist",
+                    expectedReportFile.exists() );
         expectedReportFile.delete();
     }
 
@@ -101,7 +102,8 @@ public class XMLReporterTest
         reporter.testSetCompleted( reportEntry );
 
         File expectedReportFile = new File( reportDir, "TEST-" + testName + "-" + suffixText + ".xml" );
-        assertTrue("Report file (" + expectedReportFile.getAbsolutePath() + ") doesn't exist",  expectedReportFile.exists() );
+        assertTrue( "Report file (" + expectedReportFile.getAbsolutePath() + ") doesn't exist",
+                    expectedReportFile.exists() );
         expectedReportFile.delete();
     }
 

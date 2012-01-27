@@ -24,7 +24,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Properties;
 import org.apache.maven.surefire.booter.BooterDeserializer;
 import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
@@ -143,8 +142,8 @@ public class BooterDeserializerStartupConfigurationTest
 
         File cwd = new File( "." );
         DirectoryScannerParameters directoryScannerParameters =
-            new DirectoryScannerParameters( cwd, new ArrayList<String>(), new ArrayList<String>(), new ArrayList<String>(),
-                                            Boolean.TRUE, "hourly" );
+            new DirectoryScannerParameters( cwd, new ArrayList<String>(), new ArrayList<String>(),
+                                            new ArrayList<String>(), Boolean.TRUE, "hourly" );
         ReporterConfiguration reporterConfiguration = new ReporterConfiguration( cwd, Boolean.TRUE );
         String aUserRequestedTest = "aUserRequestedTest";
         String aUserRequestedTestMethod = "aUserRequestedTestMethod";

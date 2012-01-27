@@ -41,19 +41,29 @@ public class InverseGroupMatcher
     public boolean equals( Object obj )
     {
         if ( this == obj )
+        {
             return true;
+        }
         if ( obj == null )
+        {
             return false;
+        }
         if ( getClass() != obj.getClass() )
+        {
             return false;
+        }
         InverseGroupMatcher other = (InverseGroupMatcher) obj;
         if ( matcher == null )
         {
             if ( other.matcher != null )
+            {
                 return false;
+            }
         }
         else if ( !matcher.equals( other.matcher ) )
+        {
             return false;
+        }
         return true;
     }
 

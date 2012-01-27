@@ -31,7 +31,7 @@ public class Surefire634UnsettableSystemPropertiesWarningIT
 {
     public void testJunit3ParallelBuildResultCount()
     {
-        unpack( "/surefire-634-systemPropertiesWarning" ).executeTest()
-            .verifyTextInLog( "java.library.path cannot be set as system property" );
+        unpack( "/surefire-634-systemPropertiesWarning" ).executeTest().verifyTextInLog(
+            "java.library.path cannot be set as system property" );
     }
 }

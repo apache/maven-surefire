@@ -8,27 +8,24 @@ public class AndGroupMatcherTest
 
     public void testDontMatchOneInGroup()
     {
-        AndGroupMatcher matcher =
-            new AndGroupMatcher( new SingleGroupMatcher( SingleGroupMatcher.class.getName() ),
-                                new SingleGroupMatcher( InverseGroupMatcher.class.getName() ) );
-        
+        AndGroupMatcher matcher = new AndGroupMatcher( new SingleGroupMatcher( SingleGroupMatcher.class.getName() ),
+                                                       new SingleGroupMatcher( InverseGroupMatcher.class.getName() ) );
+
         assertFalse( matcher.enabled( InverseGroupMatcher.class, AndGroupMatcher.class ) );
     }
 
     public void testMatchBothInGroup()
     {
-        AndGroupMatcher matcher =
-            new AndGroupMatcher( new SingleGroupMatcher( SingleGroupMatcher.class.getName() ),
-                                new SingleGroupMatcher( InverseGroupMatcher.class.getName() ) );
+        AndGroupMatcher matcher = new AndGroupMatcher( new SingleGroupMatcher( SingleGroupMatcher.class.getName() ),
+                                                       new SingleGroupMatcher( InverseGroupMatcher.class.getName() ) );
 
         assertTrue( matcher.enabled( InverseGroupMatcher.class, SingleGroupMatcher.class ) );
     }
 
     public void testDontMatchAnyInGroup()
     {
-        AndGroupMatcher matcher =
-            new AndGroupMatcher( new SingleGroupMatcher( SingleGroupMatcher.class.getName() ),
-                                new SingleGroupMatcher( InverseGroupMatcher.class.getName() ) );
+        AndGroupMatcher matcher = new AndGroupMatcher( new SingleGroupMatcher( SingleGroupMatcher.class.getName() ),
+                                                       new SingleGroupMatcher( InverseGroupMatcher.class.getName() ) );
 
         assertFalse( matcher.enabled( OrGroupMatcher.class, AndGroupMatcher.class ) );
     }

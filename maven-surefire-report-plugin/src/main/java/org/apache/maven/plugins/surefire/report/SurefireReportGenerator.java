@@ -47,7 +47,8 @@ public class SurefireReportGenerator
 
     private final String xrefLocation;
 
-    public SurefireReportGenerator( List<File> reportsDirectories, Locale locale, boolean showSuccess, String xrefLocation )
+    public SurefireReportGenerator( List<File> reportsDirectories, Locale locale, boolean showSuccess,
+                                    String xrefLocation )
     {
         report = new SurefireReportParser( reportsDirectories, locale );
 
@@ -327,8 +328,8 @@ public class SurefireReportGenerator
                     sinkCell( sink, Integer.toString( suite.getNumberOfSkipped() ) );
 
                     String percentage = report.computePercentage( suite.getNumberOfTests(), suite.getNumberOfErrors(),
-                                                                  suite.getNumberOfFailures(), suite
-                        .getNumberOfSkipped() );
+                                                                  suite.getNumberOfFailures(),
+                                                                  suite.getNumberOfSkipped() );
                     sinkCell( sink, percentage + "%" );
 
                     sinkCell( sink, numberFormat.format( suite.getTimeElapsed() ) );
@@ -503,9 +504,11 @@ public class SurefireReportGenerator
     }
 
 
-    private String toHtmlId(String id){
-        return id.replace(".", "_");
+    private String toHtmlId( String id )
+    {
+        return id.replace( ".", "_" );
     }
+
     private void constructFailureDetails( Sink sink, ResourceBundle bundle, List failureList )
     {
         Iterator failIter = failureList.iterator();
@@ -598,7 +601,7 @@ public class SurefireReportGenerator
                         String path = tCase.getFullClassName().replace( '.', '/' );
 
                         sink.link( xrefLocation + "/" + path + ".html#" +
-                            getErrorLineNumber( tCase.getFullName(), techMessage ) );
+                                       getErrorLineNumber( tCase.getFullName(), techMessage ) );
                     }
                     sink.text(
                         tCase.getFullClassName() + ":" + getErrorLineNumber( tCase.getFullName(), techMessage ) );

@@ -105,7 +105,6 @@ public class NestedRuntimeException
      * Return the nested cause, or <code>null</code> if none.
      * <p>Note that this will only check one level of nesting.
      * Use <code>getRootCause()</code> to retrieve the innermost cause.
-     *
      */
     public Throwable getCause()
     {

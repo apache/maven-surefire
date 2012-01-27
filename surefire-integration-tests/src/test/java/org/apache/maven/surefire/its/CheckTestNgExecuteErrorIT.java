@@ -33,7 +33,7 @@ public class CheckTestNgExecuteErrorIT
     public void testExecuteError()
         throws Exception
     {
-        unpack( "/testng-execute-error" ).executeTestWithFailure()
-            .verifyTextInLog( "at org.apache.maven.surefire.testng.TestNGExecutor.run" );
+        unpack( "/testng-execute-error" ).executeTestWithFailure().verifyTextInLog(
+            "at org.apache.maven.surefire.testng.TestNGExecutor.run" );
     }
 }

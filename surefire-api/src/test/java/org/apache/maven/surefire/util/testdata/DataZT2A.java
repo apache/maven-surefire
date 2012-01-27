@@ -20,5 +20,6 @@
 package org.apache.maven.surefire.util.testdata;
 
 
-public class DataZT2A {
+public class DataZT2A
+{
 }

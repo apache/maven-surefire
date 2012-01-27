@@ -9,10 +9,9 @@ public class Surefire803MultiFailsafeExecsIT
 
     public void testSecondExecutionRunsAfterFirstExecutionFails()
     {
-        unpack( "/surefire-803-multiFailsafeExec-failureInFirst" ).executeVerifyWithFailure().assertIntegrationTestSuiteResults( 4,
-                                                                                                                      0,
-                                                                                                                      2,
-                                                                                                                      0 );
+        unpack(
+            "/surefire-803-multiFailsafeExec-failureInFirst" ).executeVerifyWithFailure().assertIntegrationTestSuiteResults(
+            4, 0, 2, 0 );
     }
 
     public void testOneExecutionRunInTwoBuilds()
