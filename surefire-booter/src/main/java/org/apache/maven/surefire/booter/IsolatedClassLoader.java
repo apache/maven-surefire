@@ -34,15 +34,19 @@ public class IsolatedClassLoader
 
     private final Set urls = new HashSet();
 
+    private final String roleName;
+
     private boolean childDelegation = true;
 
     private static final URL[] EMPTY_URL_ARRAY = new URL[0];
 
-    public IsolatedClassLoader( ClassLoader parent, boolean childDelegation )
+    public IsolatedClassLoader( ClassLoader parent, boolean childDelegation, String roleName )
     {
         super( EMPTY_URL_ARRAY, parent );
 
         this.childDelegation = childDelegation;
+
+        this.roleName = roleName;
     }
 
     public void addURL( URL url )
@@ -94,5 +98,12 @@ public class IsolatedClassLoader
         }
 
         return c;
+    }
+
+    public String toString()
+    {
+        return "IsolatedClassLoader{" +
+            "roleName='" + roleName + '\'' +
+            '}';
     }
 }

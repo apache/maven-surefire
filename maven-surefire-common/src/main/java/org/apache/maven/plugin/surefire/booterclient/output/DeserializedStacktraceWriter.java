@@ -19,6 +19,7 @@ package org.apache.maven.plugin.surefire.booterclient.output;
  * under the License.
  */
 
+import org.apache.maven.surefire.report.SafeThrowable;
 import org.apache.maven.surefire.report.StackTraceWriter;
 
 /**
@@ -53,8 +54,8 @@ public class DeserializedStacktraceWriter
         return stackTrace;
     }
 
-    public Throwable getThrowable()
+    public SafeThrowable getThrowable()
     {
-        return new Throwable( message );
+        return new SafeThrowable( new Throwable( message ) );
     }
 }

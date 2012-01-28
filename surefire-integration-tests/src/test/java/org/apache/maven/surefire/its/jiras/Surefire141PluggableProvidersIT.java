@@ -34,9 +34,8 @@ public class Surefire141PluggableProvidersIT
     {
         unpack( "surefire-141-pluggableproviders/test-provider" ).executeInstall();
 
-        unpack( "surefire-141-pluggableproviders/test" ).setEOption().executeTest()
-        .verifyTextInLog( "Using configured provider org.apache.maven.surefire.testprovider.TestProvider" )
-        .verifyTextInLog( "Using configured provider org.apache.maven.surefire.junit.JUnit3Provider" )
-        .verifyErrorFreeLog();
+        unpack( "surefire-141-pluggableproviders/test" ).setEOption().executeTest().verifyTextInLog(
+            "Using configured provider org.apache.maven.surefire.testprovider.TestProvider" ).verifyTextInLog(
+            "Using configured provider org.apache.maven.surefire.junit.JUnit3Provider" ).verifyErrorFreeLog();
     }
 }

@@ -156,10 +156,12 @@ public class ReportTestSuite
         this.testCases = testCases;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public String toString()
     {
-        return fullClassName + " [" + getNumberOfTests() + "/" + getNumberOfFailures() + "/" + getNumberOfErrors()
-            + "/" + getNumberOfSkipped() + "]";
+        return fullClassName + " [" + getNumberOfTests() + "/" + getNumberOfFailures() + "/" + getNumberOfErrors() + "/"
+            + getNumberOfSkipped() + "]";
     }
 }

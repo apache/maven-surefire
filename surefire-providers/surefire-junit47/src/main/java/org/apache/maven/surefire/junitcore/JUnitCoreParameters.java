@@ -49,8 +49,7 @@ class JUnitCoreParameters
         this.parallel = properties.getProperty( PARALLEL_KEY, "none" ).toLowerCase();
         this.perCoreThreadCount = Boolean.valueOf( properties.getProperty( PERCORETHREADCOUNT_KEY, "true" ) );
         this.threadCount = Integer.valueOf( properties.getProperty( THREADCOUNT_KEY, "2" ) );
-        this.useUnlimitedThreads =
-            Boolean.valueOf( properties.getProperty( USEUNLIMITEDTHREADS_KEY, "false" ) );
+        this.useUnlimitedThreads = Boolean.valueOf( properties.getProperty( USEUNLIMITEDTHREADS_KEY, "false" ) );
     }
 
     public boolean isParallelMethod()

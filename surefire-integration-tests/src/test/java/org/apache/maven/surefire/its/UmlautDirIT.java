@@ -24,8 +24,8 @@ import java.io.IOException;
 import org.apache.maven.it.VerificationException;
 import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.FileUtils;
-import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 
 /**
  * Test a directory with an umlaut
@@ -56,5 +56,5 @@ public class UmlautDirIT
         unpackLocation.renameTo( dest );
         return new SurefireLauncher( new Verifier( dest.getAbsolutePath() ) );
     }
-    
+
 }

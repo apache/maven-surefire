@@ -28,7 +28,8 @@ import junit.framework.TestResult;
  * @author Kristian Rosenvold
  */
 public class JUnit3TestCheckerTest
-    extends TestCase {
+    extends TestCase
+{
     private final JUnit3TestChecker jUnit3TestChecker = new JUnit3TestChecker( this.getClass().getClassLoader() );
 
     public void testValidJunit4Annotated()
@@ -70,9 +71,10 @@ public class JUnit3TestCheckerTest
         assertTrue( jUnit3TestChecker.accept( CustomSuiteOnlyTest.class ) );
     }
 
-    public void testIinnerClassNotAutomaticallyTc(){
-        assertTrue( jUnit3TestChecker.accept( NestedTC.class));
-        assertFalse( jUnit3TestChecker.accept( NestedTC.Inner.class));
+    public void testIinnerClassNotAutomaticallyTc()
+    {
+        assertTrue( jUnit3TestChecker.accept( NestedTC.class ) );
+        assertFalse( jUnit3TestChecker.accept( NestedTC.Inner.class ) );
     }
 
 
@@ -117,15 +119,20 @@ public class JUnit3TestCheckerTest
 
     public static class NotValidTest
     {
-        /** @noinspection UnusedDeclaration*/
+        /**
+         * @noinspection UnusedDeclaration
+         */
         public void testSomething()
         {
         }
     }
 
-    public abstract static class BaseClassWithTest extends TestCase
+    public abstract static class BaseClassWithTest
+        extends TestCase
     {
-        /** @noinspection UnusedDeclaration*/
+        /**
+         * @noinspection UnusedDeclaration
+         */
         public void testWeAreAlsoATest()
         {
         }
@@ -136,8 +143,11 @@ public class JUnit3TestCheckerTest
     {
     }
 
-    class NestedTC extends TestCase {
-        public class Inner {
+    class NestedTC
+        extends TestCase
+    {
+        public class Inner
+        {
 
         }
     }

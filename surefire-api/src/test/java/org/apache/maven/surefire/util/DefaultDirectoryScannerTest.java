@@ -19,14 +19,14 @@ package org.apache.maven.surefire.util;
  * under the License.
  */
 
-import junit.framework.TestCase;
-import org.apache.maven.surefire.testset.TestSetFailedException;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.apache.maven.surefire.testset.TestSetFailedException;
+
+import junit.framework.TestCase;
 
 /**
  * Test of the directory scanner.
@@ -48,7 +48,7 @@ public class DefaultDirectoryScannerTest
 
         String[] classNames = surefireDirectoryScanner.collectTests();
         assertNotNull( classNames );
-        System.out.println("classNames " + Arrays.asList( classNames ));
+        System.out.println( "classNames " + Arrays.asList( classNames ) );
         assertEquals( 4, classNames.length );
     }
 }

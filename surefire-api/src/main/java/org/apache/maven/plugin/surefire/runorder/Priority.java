@@ -25,8 +25,11 @@ package org.apache.maven.plugin.surefire.runorder;
 public class Priority
 {
     private final String className;
+
     int priority;
+
     int totalRuntime = 0;
+
     int minSuccessRate = Integer.MAX_VALUE;
 
     public Priority( String className )
@@ -34,7 +37,8 @@ public class Priority
         this.className = className;
     }
 
-    public static Priority lowest(String className){
+    public static Priority lowest( String className )
+    {
         Priority priority1 = new Priority( className );
         priority1.setPriority( Integer.MAX_VALUE );
         priority1.minSuccessRate = 0;
@@ -44,7 +48,7 @@ public class Priority
     public void addItem( RunEntryStatistics itemStat )
     {
         totalRuntime += itemStat.getRunTime();
-        minSuccessRate = Math.min(  minSuccessRate, itemStat.getSuccessfulBuilds());
+        minSuccessRate = Math.min( minSuccessRate, itemStat.getSuccessfulBuilds() );
     }
 
     public int getTotalRuntime()

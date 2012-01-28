@@ -33,9 +33,16 @@ public class SimpleReportEntry
 
     private final Integer elapsed;
 
+    private final String message;
+
     public SimpleReportEntry( String source, String name )
     {
         this( source, name, null, null );
+    }
+
+    public SimpleReportEntry( String source, String name, String message )
+    {
+        this( source, name, null, null, message );
     }
 
     public SimpleReportEntry( String source, String name, StackTraceWriter stackTraceWriter )
@@ -52,12 +59,34 @@ public class SimpleReportEntry
     {
         this.name = name;
         this.stackTraceWriter = null;
+        this.message = null;
         this.elapsed = null;
         this.source = null;
     }
 
 
     public SimpleReportEntry( String source, String name, StackTraceWriter stackTraceWriter, Integer elapsed )
+    {
+        //noinspection ThrowableResultOfMethodCallIgnored
+        this( source, name, stackTraceWriter, elapsed, safeGetMessage( stackTraceWriter ) );
+    }
+
+    private static String safeGetMessage( StackTraceWriter stackTraceWriter )
+    {
+        try
+        {
+            return ( stackTraceWriter != null && stackTraceWriter.getThrowable() != null )
+                ? stackTraceWriter.getThrowable().getMessage()
+                : null;
+        }
+        catch ( Throwable t )
+        {
+            return t.getMessage();
+        }
+    }
+
+    public SimpleReportEntry( String source, String name, StackTraceWriter stackTraceWriter, Integer elapsed,
+                              String message )
     {
         if ( source == null )
         {
@@ -74,9 +103,10 @@ public class SimpleReportEntry
 
         this.stackTraceWriter = stackTraceWriter;
 
+        this.message = message;
+
         this.elapsed = elapsed;
     }
-
 
     public String getSourceName()
     {
@@ -106,9 +136,13 @@ public class SimpleReportEntry
     public String toString()
     {
         return "ReportEntry{" + "source='" + source + '\'' + ", name='" + name + '\'' + ", stackTraceWriter="
-            + stackTraceWriter + ", elapsed=" + elapsed + '}';
+            + stackTraceWriter + ", elapsed=" + elapsed + ",message=" + message + '}';
     }
 
+    public String getMessage()
+    {
+        return message;
+    }
 
     /**
      * @noinspection RedundantIfStatement

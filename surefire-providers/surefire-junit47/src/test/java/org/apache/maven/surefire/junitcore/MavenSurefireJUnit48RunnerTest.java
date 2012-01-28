@@ -27,7 +27,7 @@ import org.junit.runner.notification.Failure;
  * TestCase that expose "No tests were executed!" on Test failure using Maven Surefire 2.6-SNAPSHOT
  * and the JUnit 4.8 Runner.
  * {@code
- *  * <p/>
+ * * <p/>
  * -------------------------------------------------------
  * T E S T S
  * -------------------------------------------------------

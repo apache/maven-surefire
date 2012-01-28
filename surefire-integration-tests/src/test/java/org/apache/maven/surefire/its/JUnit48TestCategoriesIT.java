@@ -21,8 +21,8 @@ package org.apache.maven.surefire.its;
 
 import java.io.IOException;
 import org.apache.maven.it.VerificationException;
-import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 
 /**
  * Test project using "groups" support
@@ -49,12 +49,8 @@ public class JUnit48TestCategoriesIT
     private void runAB( SurefireLauncher unpacked )
         throws VerificationException
     {
-        unpacked.executeTest().verifyErrorFreeLog()
-            .assertTestSuiteResults( 3, 0, 0, 0 )
-            .verifyTextInLog( "catA: 1" )
-            .verifyTextInLog( "catB: 1" )
-            .verifyTextInLog( "catC: 0" )
-            .verifyTextInLog( "catNone: 0" );
+        unpacked.executeTest().verifyErrorFreeLog().assertTestSuiteResults( 3, 0, 0, 0 ).verifyTextInLog(
+            "catA: 1" ).verifyTextInLog( "catB: 1" ).verifyTextInLog( "catC: 0" ).verifyTextInLog( "catNone: 0" );
     }
 
     public void testCategoriesAC()
@@ -73,17 +69,13 @@ public class JUnit48TestCategoriesIT
     private void runAC( SurefireLauncher surefireLauncher )
         throws Exception
     {
-        surefireLauncher.groups( "junit4.CategoryA,junit4.CategoryC" ).executeTest()
-            .verifyErrorFreeLog()
-            .assertTestSuiteResults( 6, 0, 0, 0 )
-            .verifyTextInLog( "catA: 1" )
-            .verifyTextInLog( "catB: 0" )
-            .verifyTextInLog( "catC: 1" )
-            .verifyTextInLog( "catNone: 0" )
-            .verifyTextInLog( "mA: 1" )
-            .verifyTextInLog( "mB: 1" ) // This seems questionable !? The class is annotated with category C and method with B
-            .verifyTextInLog( "mC: 1" )
-            .verifyTextInLog( "CatNone: 1" );
+        surefireLauncher.groups(
+            "junit4.CategoryA,junit4.CategoryC" ).executeTest().verifyErrorFreeLog().assertTestSuiteResults( 6, 0, 0,
+                                                                                                             0 ).verifyTextInLog(
+            "catA: 1" ).verifyTextInLog( "catB: 0" ).verifyTextInLog( "catC: 1" ).verifyTextInLog(
+            "catNone: 0" ).verifyTextInLog( "mA: 1" ).verifyTextInLog(
+            "mB: 1" ) // This seems questionable !? The class is annotated with category C and method with B
+            .verifyTextInLog( "mC: 1" ).verifyTextInLog( "CatNone: 1" );
     }
 
     private SurefireLauncher unpacked()

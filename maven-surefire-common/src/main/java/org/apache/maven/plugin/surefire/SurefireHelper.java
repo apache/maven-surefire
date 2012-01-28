@@ -48,8 +48,7 @@ public final class SurefireHelper
 
         if ( result.getCompletedCount() == 0 )
         {
-            if ( ( reportParameters.getFailIfNoTests() == null )
-                || !reportParameters.getFailIfNoTests() )
+            if ( ( reportParameters.getFailIfNoTests() == null ) || !reportParameters.getFailIfNoTests() )
             {
                 return;
             }
@@ -97,8 +96,7 @@ public final class SurefireHelper
 
         if ( result == ProviderConfiguration.NO_TESTS_EXIT_CODE )
         {
-            if ( ( reportParameters.getFailIfNoTests() == null )
-                || !reportParameters.getFailIfNoTests() )
+            if ( ( reportParameters.getFailIfNoTests() == null ) || !reportParameters.getFailIfNoTests() )
             {
                 return;
             }

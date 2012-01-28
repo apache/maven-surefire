@@ -31,6 +31,6 @@ public class DefaultConfigurationIT
 {
     public void testDefaultConfiguration()
     {
-        executeErrorFreeTest( "default-configuration" , 1 );
+        executeErrorFreeTest( "default-configuration", 1 );
     }
 }

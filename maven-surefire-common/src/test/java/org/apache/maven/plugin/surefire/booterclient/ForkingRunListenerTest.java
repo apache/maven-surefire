@@ -25,12 +25,11 @@ import java.io.PrintStream;
 import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
-
 import org.apache.maven.plugin.surefire.booterclient.output.ForkClient;
 import org.apache.maven.surefire.booter.ForkingRunListener;
 import org.apache.maven.surefire.report.CategorizedReportEntry;
-import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.ConsoleLogger;
+import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.PojoStackTraceWriter;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterException;
@@ -110,17 +109,19 @@ public class ForkingRunListenerTest
         standardTestRun.assertExpected( MockReporter.TEST_STARTING, expected );
     }
 
-    public void testStringTokenizer(){
-        String test ="5,11,com.abc.TestClass,testMethod,null,22,,,";
+    public void testStringTokenizer()
+    {
+        String test = "5,11,com.abc.TestClass,testMethod,null,22,,,";
         StringTokenizer tok = new StringTokenizer( test, "," );
-        assertEquals( "5", tok.nextToken());
-        assertEquals( "11", tok.nextToken());
-        assertEquals( "com.abc.TestClass", tok.nextToken());
-        assertEquals( "testMethod", tok.nextToken());
-        assertEquals( "null", tok.nextToken());
-        assertEquals( "22", tok.nextToken());
-        assertFalse(  tok.hasMoreTokens() );
+        assertEquals( "5", tok.nextToken() );
+        assertEquals( "11", tok.nextToken() );
+        assertEquals( "com.abc.TestClass", tok.nextToken() );
+        assertEquals( "testMethod", tok.nextToken() );
+        assertEquals( "null", tok.nextToken() );
+        assertEquals( "22", tok.nextToken() );
+        assertFalse( tok.hasMoreTokens() );
     }
+
     public void testSucceded()
         throws ReporterException, IOException
     {
@@ -217,7 +218,7 @@ public class ForkingRunListenerTest
 
         forkStreamClient.consumeMultiLineContent( content.toString( "utf-8" ) );
 
-        assertTrue ( testVmSystemProperties.size() > 1 );
+        assertTrue( testVmSystemProperties.size() > 1 );
     }
 
     public void testMultipleEntries()

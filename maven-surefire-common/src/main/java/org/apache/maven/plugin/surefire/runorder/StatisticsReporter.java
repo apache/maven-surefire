@@ -21,8 +21,8 @@ package org.apache.maven.plugin.surefire.runorder;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import org.apache.maven.plugin.surefire.report.Reporter;
 import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.report.Reporter;
 import org.apache.maven.surefire.util.NestedRuntimeException;
 
 /**

@@ -50,7 +50,7 @@ public class TypeEncodedValue
         return getDecodedValue( Thread.currentThread().getContextClassLoader() );
     }
 
-    public Object getDecodedValue(ClassLoader classLoader)
+    public Object getDecodedValue( ClassLoader classLoader )
     {
         if ( type.trim().length() == 0 )
         {

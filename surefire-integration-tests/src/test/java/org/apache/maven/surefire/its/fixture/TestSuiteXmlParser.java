@@ -34,8 +34,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.apache.maven.surefire.its.fixture.ReportTestCase;
-import org.apache.maven.surefire.its.fixture.ReportTestSuite;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -47,8 +45,11 @@ public class TestSuiteXmlParser
     extends DefaultHandler
 {
     private ReportTestSuite defaultSuite;
+
     private ReportTestSuite currentSuite;
+
     private Map<String, ReportTestSuite> classesToSuites;
+
     private final NumberFormat numberFormat = NumberFormat.getInstance();
 
     /**
@@ -80,7 +81,9 @@ public class TestSuiteXmlParser
         return classesToSuites.values();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void startElement( String uri, String localName, String qName, Attributes attributes )
         throws SAXException
     {
@@ -181,7 +184,9 @@ public class TestSuiteXmlParser
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void endElement( String uri, String localName, String qName )
         throws SAXException
     {
@@ -216,7 +221,9 @@ public class TestSuiteXmlParser
         // TODO extract real skipped reasons
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void characters( char[] ch, int start, int length )
         throws SAXException
     {

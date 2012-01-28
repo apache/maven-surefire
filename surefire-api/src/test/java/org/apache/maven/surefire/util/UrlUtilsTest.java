@@ -19,12 +19,12 @@ package org.apache.maven.surefire.util;
  * under the License.
  */
 
-import junit.framework.TestCase;
-
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.net.URL;
+
+import junit.framework.TestCase;
 
 /**
  * Test the URL utilities.
@@ -67,12 +67,12 @@ public class UrlUtilsTest
             Object uri = toURI.invoke( u, null );
 
             // use reflection to do "File urlFile = new File( uri )" if JDK 1.4+
-            Constructor newFile = File.class.getConstructor( new Class[] { uri.getClass() } );
-            File urlFile = (File) newFile.newInstance( new Object[] { uri } );
+            Constructor newFile = File.class.getConstructor( new Class[]{ uri.getClass() } );
+            File urlFile = (File) newFile.newInstance( new Object[]{ uri } );
 
-            assertEquals( f, urlFile ); 
+            assertEquals( f, urlFile );
         }
-        catch (NoSuchMethodException e )
+        catch ( NoSuchMethodException e )
         {
             // URL.toURI() method in JDK 1.5+, not available currently
             // we won't be able to check for file equality...

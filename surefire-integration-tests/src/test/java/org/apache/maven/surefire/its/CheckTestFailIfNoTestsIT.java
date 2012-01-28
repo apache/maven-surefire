@@ -20,8 +20,8 @@ package org.apache.maven.surefire.its;
  */
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.apache.maven.surefire.its.fixture.TestFile;
 
 /**
@@ -53,8 +53,8 @@ public class CheckTestFailIfNoTestsIT
 
     public void test48CategoriesFailWhenNoTests()
     {
-        unpack().failIfNoTests( false ).activateProfile( "junit47" ).setJUnitVersion( "4.8.1" )
-            .executeTest().verifyErrorFreeLog();
+        unpack().failIfNoTests( false ).activateProfile( "junit47" ).setJUnitVersion(
+            "4.8.1" ).executeTest().verifyErrorFreeLog();
     }
 
 }

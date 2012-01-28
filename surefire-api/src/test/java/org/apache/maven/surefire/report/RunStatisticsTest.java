@@ -1,6 +1,7 @@
 package org.apache.maven.surefire.report;
 
 import java.util.Collection;
+
 import junit.framework.TestCase;
 
 /*

@@ -27,6 +27,7 @@ import org.apache.maven.surefire.util.ReflectionUtils;
 public final class JUnit48Reflector
 {
     private static final String CATEGORIES = "org.junit.experimental.categories.Categories";
+
     private static final String CATEGORY = "org.junit.experimental.categories.Category";
 
     private final Class categories;
@@ -43,8 +44,9 @@ public final class JUnit48Reflector
     {
         return categories != null;
     }
-    
-    public boolean isCategoryAnnotationPresent(Class clazz){
+
+    public boolean isCategoryAnnotationPresent( Class clazz )
+    {
         return category != null && clazz.getAnnotation( category ) != null;
     }
 }

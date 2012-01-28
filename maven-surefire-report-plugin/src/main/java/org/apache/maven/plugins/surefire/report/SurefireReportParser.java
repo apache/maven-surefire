@@ -30,12 +30,12 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Locale;
 import java.util.Map;
-
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.apache.maven.reporting.MavenReportException;
 import org.codehaus.plexus.util.DirectoryScanner;
 import org.codehaus.plexus.util.StringUtils;
+
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.xml.sax.SAXException;
 
 /**
@@ -49,9 +49,9 @@ public class SurefireReportParser
 
     private NumberFormat numberFormat = NumberFormat.getInstance();
 
-    private List reportsDirectories;
+    private List<File> reportsDirectories;
 
-    private final List testSuites = new ArrayList();
+    private final List<ReportTestSuite> testSuites = new ArrayList<ReportTestSuite>();
 
     private static final int PCENT = 100;
 
@@ -59,42 +59,38 @@ public class SurefireReportParser
     {
     }
 
-    public SurefireReportParser( List reportsDirectoriesFiles , Locale locale )
+    public SurefireReportParser( List<File> reportsDirectoriesFiles, Locale locale )
     {
         this.reportsDirectories = reportsDirectoriesFiles;
 
         setLocale( locale );
     }
 
-    public List parseXMLReportFiles()
+    public List<ReportTestSuite> parseXMLReportFiles()
         throws MavenReportException
     {
-        List xmlReportFileList = new ArrayList();
-        for ( int i = 0; i < reportsDirectories.size(); i++ )
+        List<File> xmlReportFileList = new ArrayList<File>();
+        for ( File reportsDirectory : reportsDirectories )
         {
-            File reportsDirectory = (File) reportsDirectories.get( i );
             if ( !reportsDirectory.exists() )
             {
                 continue;
             }
-            String[] xmlReportFiles =
-                getIncludedFiles( reportsDirectory, INCLUDES, EXCLUDES );
-            for ( int j = 0; j < xmlReportFiles.length; j++ )
+            String[] xmlReportFiles = getIncludedFiles( reportsDirectory, INCLUDES, EXCLUDES );
+            for ( String xmlReportFile : xmlReportFiles )
             {
-                File xmlReport = new File( reportsDirectory, xmlReportFiles[j] );
+                File xmlReport = new File( reportsDirectory, xmlReportFile );
                 xmlReportFileList.add( xmlReport );
             }
         }
         TestSuiteXmlParser parser = new TestSuiteXmlParser();
-        for ( int index = 0; index < xmlReportFileList.size(); index++ )
+        for ( File aXmlReportFileList : xmlReportFileList )
         {
-            Collection suites;
-
-            File currentReport = (File) xmlReportFileList.get( index );
+            Collection<ReportTestSuite> suites;
 
             try
             {
-                suites = parser.parse( currentReport.getAbsolutePath() );
+                suites = parser.parse( aXmlReportFileList.getAbsolutePath() );
             }
             catch ( ParserConfigurationException e )
             {
@@ -102,11 +98,11 @@ public class SurefireReportParser
             }
             catch ( SAXException e )
             {
-                throw new MavenReportException( "Error parsing JUnit XML report " + currentReport, e );
+                throw new MavenReportException( "Error parsing JUnit XML report " + aXmlReportFileList, e );
             }
             catch ( IOException e )
             {
-                throw new MavenReportException( "Error reading JUnit XML report " + currentReport, e );
+                throw new MavenReportException( "Error reading JUnit XML report " + aXmlReportFileList, e );
             }
 
             testSuites.addAll( suites );
@@ -132,7 +128,7 @@ public class SurefireReportParser
 
     public Map getSummary( List suites )
     {
-        Map totalSummary = new HashMap();
+        Map<String, String> totalSummary = new HashMap<String, String>();
 
         ListIterator iter = suites.listIterator();
 
@@ -198,17 +194,17 @@ public class SurefireReportParser
     {
         ListIterator iter = testSuitesList.listIterator();
 
-        Map suitePackage = new HashMap();
+        Map<String, List<ReportTestSuite>> suitePackage = new HashMap<String, List<ReportTestSuite>>();
 
         while ( iter.hasNext() )
         {
             ReportTestSuite suite = (ReportTestSuite) iter.next();
 
-            List suiteList = new ArrayList();
+            List<ReportTestSuite> suiteList = new ArrayList<ReportTestSuite>();
 
             if ( suitePackage.get( suite.getPackageName() ) != null )
             {
-                suiteList = (List) suitePackage.get( suite.getPackageName() );
+                suiteList = suitePackage.get( suite.getPackageName() );
             }
 
             suiteList.add( suite );
@@ -234,11 +230,11 @@ public class SurefireReportParser
         return numberFormat.format( percentage );
     }
 
-    public List getFailureDetails( List testSuitesList )
+    public List<ReportTestCase> getFailureDetails( List testSuitesList )
     {
         ListIterator iter = testSuitesList.listIterator();
 
-        List failureDetailList = new ArrayList();
+        List<ReportTestCase> failureDetailList = new ArrayList<ReportTestCase>();
 
         while ( iter.hasNext() )
         {

@@ -19,9 +19,9 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
-import junit.framework.TestCase;
-
 import java.util.Properties;
+
+import junit.framework.TestCase;
 
 /*
  * @author Kristian Rosenvold, kristian.rosenvold@gmail com

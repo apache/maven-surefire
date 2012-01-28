@@ -63,6 +63,7 @@ public class TestSetFailedException
      * Create a <code>TestFailedException</code> with the specified cause.  The
      * <code>getMessage</code> method of this exception object will return
      * <code>(cause == null ? "" : cause.toString())</code>.
+     *
      * @param cause The cause
      */
     public TestSetFailedException( Throwable cause )

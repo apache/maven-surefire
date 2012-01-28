@@ -19,6 +19,10 @@ package org.apache.maven.plugin.surefire;
  * under the License.
  */
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
@@ -35,11 +39,6 @@ import org.apache.maven.artifact.versioning.OverConstrainedVersionException;
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.surefire.booter.Classpath;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Does dependency resolution and artifact handling for the surefire plugin.
@@ -65,7 +64,8 @@ public class SurefireDependencyResolver
     private final String pluginName;
 
     protected SurefireDependencyResolver( ArtifactResolver artifactResolver, ArtifactFactory artifactFactory, Log log,
-                                          ArtifactRepository localRepository, List<ArtifactRepository> remoteRepositories,
+                                          ArtifactRepository localRepository,
+                                          List<ArtifactRepository> remoteRepositories,
                                           ArtifactMetadataSource artifactMetadataSource, String pluginName )
     {
         this.artifactResolver = artifactResolver;
@@ -118,7 +118,7 @@ public class SurefireDependencyResolver
         }
 
         Artifact originatingArtifact = artifactFactory.createBuildArtifact( "dummy", "dummy", "1.0", "jar" );
-        
+
         return artifactResolver.resolveTransitively( Collections.singleton( providerArtifact ), originatingArtifact,
                                                      localRepository, remoteRepositories, artifactMetadataSource,
                                                      filter );
@@ -146,7 +146,7 @@ public class SurefireDependencyResolver
         return new Classpath( files );
     }
 
-    public Classpath addProviderToClasspath( Map<String,Artifact> pluginArtifactMap, Artifact surefireArtifact )
+    public Classpath addProviderToClasspath( Map<String, Artifact> pluginArtifactMap, Artifact surefireArtifact )
         throws ArtifactResolutionException, ArtifactNotFoundException
     {
         List<String> files = new ArrayList<String>();

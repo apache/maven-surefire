@@ -68,7 +68,6 @@ public class JUnitCoreProvider
     private final ProviderParameters providerParameters;
 
 
-
     private TestsToRun testsToRun;
 
     private JUnit48Reflector jUnit48Reflector;
@@ -120,7 +119,7 @@ public class JUnitCoreProvider
             testsToRun = forkTestSet == null ? getSuitesAsList( filter ) : TestsToRun.fromClass( (Class) forkTestSet );
         }
 
-        if (testsToRun.size() == 0)
+        if ( testsToRun.size() == 0 )
         {
             filter = null;
         }
@@ -181,15 +180,15 @@ public class JUnitCoreProvider
     private Filter createJUnit48Filter()
     {
         final FilterFactory filterFactory = new FilterFactory( testClassLoader );
-        return isMethodFilterSpecified() ?
-            filterFactory.createMethodFilter( requestedTestMethod ) :
-            filterFactory.createGroupFilter( providerParameters.getProviderProperties() );
+        return isMethodFilterSpecified()
+            ? filterFactory.createMethodFilter( requestedTestMethod )
+            : filterFactory.createGroupFilter( providerParameters.getProviderProperties() );
     }
 
     private TestsToRun scanClassPath()
     {
         final TestsToRun scanned = directoryScanner.locateTestClasses( testClassLoader, scannerFilter );
-        return  runOrderCalculator.orderTestClasses(  scanned );
+        return runOrderCalculator.orderTestClasses( scanned );
     }
 
     private boolean isMethodFilterSpecified()

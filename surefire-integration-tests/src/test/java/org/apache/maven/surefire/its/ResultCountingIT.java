@@ -19,11 +19,10 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
+import java.io.IOException;
 import org.apache.maven.it.VerificationException;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
-
-import java.io.IOException;
 
 /**
  * Verifies that the providers get the result summary at the bottom of the run correctly, in different forkmodes
@@ -34,7 +33,7 @@ import java.io.IOException;
 public class ResultCountingIT
     extends SurefireIntegrationTestCase
 {
-   public void testCountingWithJunit481ForkNever()
+    public void testCountingWithJunit481ForkNever()
         throws Exception
     {
         assertForkMode( "never" );

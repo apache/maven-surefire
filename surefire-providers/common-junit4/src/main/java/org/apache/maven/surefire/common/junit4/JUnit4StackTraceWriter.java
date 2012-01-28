@@ -20,6 +20,7 @@ package org.apache.maven.surefire.common.junit4;
  */
 
 import org.apache.maven.surefire.report.PojoStackTraceWriter;
+import org.apache.maven.surefire.report.SafeThrowable;
 import org.apache.maven.surefire.report.StackTraceWriter;
 
 import org.junit.runner.notification.Failure;
@@ -78,9 +79,9 @@ public class JUnit4StackTraceWriter
      *
      * @see org.apache.maven.surefire.report.StackTraceWriter#getThrowable()
      */
-    public Throwable getThrowable()
+    public SafeThrowable getThrowable()
     {
-        return junitFailure.getException();
+        return new SafeThrowable( junitFailure.getException() );
     }
 
 }

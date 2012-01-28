@@ -22,7 +22,6 @@ package org.apache.maven.plugin.surefire;
 import org.apache.maven.surefire.booter.ProviderConfiguration;
 import org.apache.maven.surefire.booter.ProviderFactory;
 import org.apache.maven.surefire.booter.StartupConfiguration;
-import org.apache.maven.surefire.booter.StartupReportConfiguration;
 import org.apache.maven.surefire.booter.SurefireExecutionException;
 import org.apache.maven.surefire.suite.RunResult;
 

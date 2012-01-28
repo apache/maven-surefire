@@ -23,7 +23,7 @@ import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
 
 /**
  * SUREFIRE-818
- * 
+ *
  * @author Kristian Rosenvold
  */
 public class Surefire818NpeIgnoresTestsIT

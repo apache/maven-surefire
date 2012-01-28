@@ -142,8 +142,9 @@ public class ReflectionUtils
             throw new SurefireReflectionException( e );
         }
     }
+
     public static Object instantiateTwoArgs( ClassLoader classLoader, String className, Class param1Class,
-                                            Object param1, Class param2Class, Object param2 )
+                                             Object param1, Class param2Class, Object param2 )
     {
 
         try
@@ -165,8 +166,8 @@ public class ReflectionUtils
             throw new SurefireReflectionException( e );
         }
     }
-    
-    
+
+
     public static void invokeSetter( Object o, String name, Class value1clazz, Object value )
 
     {

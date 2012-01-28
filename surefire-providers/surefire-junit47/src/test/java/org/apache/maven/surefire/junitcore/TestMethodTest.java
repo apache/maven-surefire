@@ -19,9 +19,10 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
-import junit.framework.TestCase;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.SimpleReportEntry;
+
+import junit.framework.TestCase;
 
 /**
  * @author Kristian Rosenvold

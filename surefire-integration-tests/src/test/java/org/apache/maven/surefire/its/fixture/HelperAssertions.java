@@ -39,14 +39,15 @@ public class HelperAssertions
     /**
      * assert that the reports in the specified testDir have the right summary statistics
      */
-    public static void assertIntegrationTestSuiteResults( int total, int errors, int failures, int skipped, File testDir )
+    public static void assertIntegrationTestSuiteResults( int total, int errors, int failures, int skipped,
+                                                          File testDir )
     {
-        IntegrationTestSuiteResults suite = parseIntegrationTestResults( new File[] { testDir } );
+        IntegrationTestSuiteResults suite = parseIntegrationTestResults( new File[]{ testDir } );
         assertTestSuiteResults( total, errors, failures, skipped, suite );
     }
 
     public static void assertTestSuiteResults( int total, int errors, int failures, int skipped,
-                                                  IntegrationTestSuiteResults actualSuite )
+                                               IntegrationTestSuiteResults actualSuite )
     {
         Assert.assertEquals( "wrong number of tests", total, actualSuite.getTotal() );
         Assert.assertEquals( "wrong number of errors", errors, actualSuite.getErrors() );

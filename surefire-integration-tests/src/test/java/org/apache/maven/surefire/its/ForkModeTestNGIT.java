@@ -21,7 +21,7 @@ package org.apache.maven.surefire.its;
 
 /**
  * Test forkMode
- * 
+ *
  * @author <a href="mailto:velo.br@gmail.com">Marvin Froeder</a>
  */
 public class ForkModeTestNGIT

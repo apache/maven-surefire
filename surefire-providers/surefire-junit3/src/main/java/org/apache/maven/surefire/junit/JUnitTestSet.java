@@ -19,13 +19,12 @@ package org.apache.maven.surefire.junit;
  * under the License.
  */
 
-import org.apache.maven.surefire.common.junit3.JUnit3Reflector;
-import org.apache.maven.surefire.report.RunListener;
-import org.apache.maven.surefire.testset.TestSetFailedException;
-
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import org.apache.maven.surefire.common.junit3.JUnit3Reflector;
+import org.apache.maven.surefire.report.RunListener;
+import org.apache.maven.surefire.testset.TestSetFailedException;
 
 public final class JUnitTestSet
     implements SurefireTestSet

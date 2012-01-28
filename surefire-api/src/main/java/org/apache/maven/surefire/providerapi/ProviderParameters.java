@@ -51,6 +51,7 @@ public interface ProviderParameters
 
     /**
      * Provides a service to calculate run order of tests. Applied after directory scanning.
+     *
      * @return A RunOrderCalculator
      */
     RunOrderCalculator getRunOrderCalculator();

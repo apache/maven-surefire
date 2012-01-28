@@ -31,7 +31,7 @@ import org.apache.maven.surefire.booter.ProviderParameterNames;
  * -threadcount (int)
  * -parallel (String)
  * <p/>
- * 
+ *
  * @author <a href='mailto:the[dot]mindstorm[at]gmail[dot]com'>Alex Popescu</a>
  */
 public class TestNG52Configurator

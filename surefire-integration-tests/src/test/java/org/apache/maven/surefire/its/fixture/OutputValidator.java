@@ -19,11 +19,10 @@ package org.apache.maven.surefire.its.fixture;
  * under the License.
  */
 
-import org.apache.maven.it.VerificationException;
-import org.apache.maven.it.Verifier;
-
 import java.io.File;
 import java.util.List;
+import org.apache.maven.it.VerificationException;
+import org.apache.maven.it.Verifier;
 
 /**
  * A specialized verifier that enforces a standard use case for surefire IT's
@@ -33,13 +32,13 @@ import java.util.List;
 public class OutputValidator
 {
     protected final Verifier verifier;
-    
+
     protected final File baseDir;
 
     public OutputValidator( Verifier verifier )
     {
         this.verifier = verifier;
-        this.baseDir = new File( verifier.getBasedir());
+        this.baseDir = new File( verifier.getBasedir() );
 
     }
 
@@ -70,7 +69,7 @@ public class OutputValidator
         return this;
     }
 
-    public OutputValidator verifyErrorFree(int total)
+    public OutputValidator verifyErrorFree( int total )
     {
         try
         {
@@ -135,7 +134,7 @@ public class OutputValidator
         return verifier.getArtifactPath( org, name, version, ext );
     }
 
-    
+
     public OutputValidator assertTestSuiteResults( int total, int errors, int failures, int skipped )
     {
         HelperAssertions.assertTestSuiteResults( total, errors, failures, skipped, baseDir );
@@ -151,22 +150,21 @@ public class OutputValidator
     public TestFile getTargetFile( String fileName )
     {
         File targetDir = getSubFile( "target" );
-        return new TestFile(new File( targetDir, fileName ), this);
+        return new TestFile( new File( targetDir, fileName ), this );
     }
 
 
     public TestFile getSurefireReportsFile( String fileName )
     {
         File targetDir = getSubFile( "target/surefire-reports" );
-        return new TestFile(new File( targetDir, fileName ), this);
+        return new TestFile( new File( targetDir, fileName ), this );
     }
 
     public TestFile getSiteFile( String fileName )
     {
         File targetDir = getSubFile( "target/site" );
-        return new TestFile(new File( targetDir, fileName ), this);
+        return new TestFile( new File( targetDir, fileName ), this );
     }
-
 
 
     public File getBaseDir()
@@ -174,7 +172,7 @@ public class OutputValidator
         return baseDir;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings( "unchecked" )
     private List<String> getLog()
         throws VerificationException
     {

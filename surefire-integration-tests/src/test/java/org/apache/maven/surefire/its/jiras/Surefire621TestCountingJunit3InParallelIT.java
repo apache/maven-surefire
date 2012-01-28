@@ -31,7 +31,7 @@ public class Surefire621TestCountingJunit3InParallelIT
 {
     public void testJunit3ParallelBuildResultCount()
     {
-        unpack( "surefire-621-testCounting-junit3-in-parallel" ).failNever().execute( "install" )
-            .assertTestSuiteResults(6, 0, 0, 0);
+        unpack( "surefire-621-testCounting-junit3-in-parallel" ).failNever().execute(
+            "install" ).assertTestSuiteResults( 6, 0, 0, 0 );
     }
 }

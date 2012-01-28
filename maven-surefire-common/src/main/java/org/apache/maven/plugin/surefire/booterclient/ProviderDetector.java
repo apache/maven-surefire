@@ -56,8 +56,8 @@ public class ProviderDetector
      * defined using the SPI mechanism.
      *
      * @param urlEnumeration The urls from the resource
-     * @throws IOException When reading the streams fails
      * @return The set of service provider names
+     * @throws IOException When reading the streams fails
      */
     private static Set<String> getNames( final Enumeration<URL> urlEnumeration )
         throws IOException

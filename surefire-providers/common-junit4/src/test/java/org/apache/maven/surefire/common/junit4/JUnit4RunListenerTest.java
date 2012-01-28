@@ -40,8 +40,7 @@ public class JUnit4RunListenerTest
     public void testTestStarted()
         throws Exception
     {
-        RunListener jUnit4TestSetReporter =
-            new JUnit4RunListener( new MockReporter( ) );
+        RunListener jUnit4TestSetReporter = new JUnit4RunListener( new MockReporter() );
         Runner junitTestRunner = Request.classes( "abc", STest1.class, STest2.class ).getRunner();
         RunNotifier runNotifier = new RunNotifier();
         runNotifier.addListener( jUnit4TestSetReporter );
@@ -60,13 +59,14 @@ public class JUnit4RunListenerTest
 
         jUnit4TestSetReporter.testStarted( testSomething );
 
-        new Thread(new Runnable(){
+        new Thread( new Runnable()
+        {
             public void run()
             {
                 try
                 {
-                    jUnit4TestSetReporter.testStarted(  testSomething2 );
-                    jUnit4TestSetReporter.testFailure( new Failure( testSomething2, new AssertionError( "Fud" ) ));
+                    jUnit4TestSetReporter.testStarted( testSomething2 );
+                    jUnit4TestSetReporter.testFailure( new Failure( testSomething2, new AssertionError( "Fud" ) ) );
                     jUnit4TestSetReporter.testFinished( testSomething2 );
                     countDownLatch.countDown();
                 }
@@ -75,7 +75,7 @@ public class JUnit4RunListenerTest
                     throw new RuntimeException( e );
                 }
             }
-        }).start();
+        } ).start();
 
         countDownLatch.await();
         jUnit4TestSetReporter.testFinished( testSomething );

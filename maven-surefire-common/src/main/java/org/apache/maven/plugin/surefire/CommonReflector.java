@@ -22,7 +22,6 @@ package org.apache.maven.plugin.surefire;
 import java.io.File;
 import java.lang.reflect.Constructor;
 import org.apache.maven.plugin.surefire.report.FileReporterFactory;
-import org.apache.maven.surefire.booter.StartupReportConfiguration;
 import org.apache.maven.surefire.util.ReflectionUtils;
 import org.apache.maven.surefire.util.SurefireReflectionException;
 
@@ -62,17 +61,16 @@ public class CommonReflector
     Object createStartupReportConfiguration( StartupReportConfiguration reporterConfiguration )
     {
         Constructor<?> constructor = ReflectionUtils.getConstructor( this.startupReportConfiguration,
-                                                                  new Class[]{ boolean.class, boolean.class,
-                                                                      String.class, boolean.class, boolean.class,
-                                                                      File.class, boolean.class, String.class,
-                                                                      String.class, boolean.class } );
+                                                                     new Class[]{ boolean.class, boolean.class,
+                                                                         String.class, boolean.class, boolean.class,
+                                                                         File.class, boolean.class, String.class,
+                                                                         String.class, boolean.class } );
         //noinspection BooleanConstructorCall
-        final Object[] params =
-            { reporterConfiguration.isUseFile(), reporterConfiguration.isPrintSummary(),
-                reporterConfiguration.getReportFormat(), reporterConfiguration.isRedirectTestOutputToFile(),
-                reporterConfiguration.isDisableXmlReport(), reporterConfiguration.getReportsDirectory(),
-                reporterConfiguration.isTrimStackTrace(), reporterConfiguration.getReportNameSuffix(),
-                reporterConfiguration.getConfigurationHash(), reporterConfiguration.isRequiresRunHistory() };
+        final Object[] params = { reporterConfiguration.isUseFile(), reporterConfiguration.isPrintSummary(),
+            reporterConfiguration.getReportFormat(), reporterConfiguration.isRedirectTestOutputToFile(),
+            reporterConfiguration.isDisableXmlReport(), reporterConfiguration.getReportsDirectory(),
+            reporterConfiguration.isTrimStackTrace(), reporterConfiguration.getReportNameSuffix(),
+            reporterConfiguration.getConfigurationHash(), reporterConfiguration.isRequiresRunHistory() };
         return ReflectionUtils.newInstance( constructor, params );
     }
 

@@ -19,12 +19,12 @@ package org.apache.maven.surefire.testng.utils;
  * under the License.
  */
 
+import java.util.List;
 import org.codehaus.plexus.util.SelectorUtils;
+
 import org.testng.IMethodSelector;
 import org.testng.IMethodSelectorContext;
 import org.testng.ITestNGMethod;
-
-import java.util.List;
 
 /**
  * For internal use only

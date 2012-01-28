@@ -137,19 +137,21 @@ public class Classpath
 
     }
 
-    public ClassLoader createClassLoader( ClassLoader parent, boolean childDelegation, boolean enableAssertions )
+    public ClassLoader createClassLoader( ClassLoader parent, boolean childDelegation, boolean enableAssertions,
+                                          String roleName )
         throws SurefireExecutionException
     {
         try
         {
             List urls = getAsUrlList();
-            IsolatedClassLoader classLoader = new IsolatedClassLoader( parent, childDelegation );
+            IsolatedClassLoader classLoader = new IsolatedClassLoader( parent, childDelegation, roleName );
             for ( Iterator iter = urls.iterator(); iter.hasNext(); )
             {
                 URL url = (URL) iter.next();
                 classLoader.addURL( url );
             }
-            if (parent != null){
+            if ( parent != null )
+            {
                 jdkReflector.invokeAssertionStatusMethod( parent, enableAssertions );
             }
             jdkReflector.invokeAssertionStatusMethod( classLoader, enableAssertions );

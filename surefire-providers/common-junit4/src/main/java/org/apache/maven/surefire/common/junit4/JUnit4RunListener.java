@@ -33,12 +33,12 @@ import org.junit.runner.notification.Failure;
 public class JUnit4RunListener
     extends org.junit.runner.notification.RunListener
 {
-    private static final Pattern PARENS = Pattern.compile( "^" + "[^\\(\\)]+" //non-parens
+    private static final Pattern PARENS = Pattern.compile( "^" + ".+" //any character
                                                                + "\\(("
                                                                // then an open-paren (start matching a group)
                                                                + "[^\\\\(\\\\)]+" //non-parens
                                                                + ")\\)" + "$" );
-        // then a close-paren (end group match)
+    // then a close-paren (end group match)
 
     protected final RunListener reporter;
 
@@ -47,6 +47,8 @@ public class JUnit4RunListener
      * This is necessary because JUnit4 always fires a <code>testRunFinished</code> event-- even if there was a failure.
      */
     private final ThreadLocal<Boolean> failureFlag = new InheritableThreadLocal<Boolean>();
+
+    private final JUnit4Reflector jUnit4Reflector = new JUnit4Reflector();
 
     /**
      * Constructor.
@@ -68,7 +70,10 @@ public class JUnit4RunListener
     public void testIgnored( Description description )
         throws Exception
     {
-        reporter.testSkipped( createReportEntry( description ) );
+        final String reason = jUnit4Reflector.getAnnotatedIgnoreValue( description );
+        final SimpleReportEntry report =
+            new SimpleReportEntry( extractClassName( description ), description.getDisplayName(), reason );
+        reporter.testSkipped( report );
     }
 
     /**
@@ -92,9 +97,9 @@ public class JUnit4RunListener
     public void testFailure( Failure failure )
         throws Exception
     {
-        ReportEntry report = new SimpleReportEntry( extractClassName( failure.getDescription() ),
-                                                    failure.getTestHeader(),
-                                                    new JUnit4StackTraceWriter( failure ) );
+        ReportEntry report =
+            new SimpleReportEntry( extractClassName( failure.getDescription() ), failure.getTestHeader(),
+                                   new JUnit4StackTraceWriter( failure ) );
 
         if ( failure.getException() instanceof AssertionError )
         {
@@ -132,8 +137,7 @@ public class JUnit4RunListener
 
     private SimpleReportEntry createReportEntry( Description description )
     {
-        return new SimpleReportEntry( extractClassName( description ),
-                                      description.getDisplayName() );
+        return new SimpleReportEntry( extractClassName( description ), description.getDisplayName() );
     }
 
 

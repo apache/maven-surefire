@@ -23,8 +23,8 @@ import java.io.IOException;
 import java.util.Calendar;
 import org.apache.maven.it.VerificationException;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 
 /**
  * Verifies the runOrder setting and its effect
@@ -73,8 +73,8 @@ public class RunOrderIT
     public void testNonExistingRunOrder()
         throws Exception
     {
-        unpack().forkMode( getForkMode() ).runOrder( "nonExistingRunOrder" ).executeTestWithFailure()
-        .verifyTextInLog( "There's no RunOrder with the name nonExistingRunOrder." );
+        unpack().forkMode( getForkMode() ).runOrder( "nonExistingRunOrder" ).executeTestWithFailure().verifyTextInLog(
+            "There's no RunOrder with the name nonExistingRunOrder." );
     }
 
     private OutputValidator executeWithRunOrder( String runOrder )

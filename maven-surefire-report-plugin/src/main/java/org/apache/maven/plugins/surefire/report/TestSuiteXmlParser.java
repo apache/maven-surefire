@@ -46,9 +46,12 @@ public class TestSuiteXmlParser
     extends DefaultHandler
 {
     private ReportTestSuite defaultSuite;
+
     private ReportTestSuite currentSuite;
-    private Map classesToSuites;
-    private final NumberFormat numberFormat = NumberFormat.getInstance( Locale.ENGLISH);
+
+    private Map<String, ReportTestSuite> classesToSuites;
+
+    private final NumberFormat numberFormat = NumberFormat.getInstance( Locale.ENGLISH );
 
     /**
      * @noinspection StringBufferField
@@ -57,14 +60,14 @@ public class TestSuiteXmlParser
 
     private ReportTestCase testCase;
 
-    public Collection parse( String xmlPath )
+    public Collection<ReportTestSuite> parse( String xmlPath )
         throws ParserConfigurationException, SAXException, IOException
     {
         SAXParserFactory factory = SAXParserFactory.newInstance();
 
         SAXParser saxParser = factory.newSAXParser();
 
-        classesToSuites = new HashMap();
+        classesToSuites = new HashMap<String, ReportTestSuite>();
 
         saxParser.parse( new File( xmlPath ), this );
 
@@ -79,7 +82,9 @@ public class TestSuiteXmlParser
         return classesToSuites.values();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void startElement( String uri, String localName, String qName, Attributes attributes )
         throws SAXException
     {
@@ -170,7 +175,8 @@ public class TestSuiteXmlParser
             }
             else if ( "skipped".equals( qName ) )
             {
-                testCase.addFailure( "skipped", "skipped" ); // TODO extract real reasons
+                final String message = attributes.getValue( "message" );
+                testCase.addFailure( message != null ? message : "skipped", "skipped" );
                 currentSuite.setNumberOfSkipped( 1 + currentSuite.getNumberOfSkipped() );
             }
         }
@@ -180,7 +186,9 @@ public class TestSuiteXmlParser
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void endElement( String uri, String localName, String qName )
         throws SAXException
     {
@@ -215,7 +223,9 @@ public class TestSuiteXmlParser
         // TODO extract real skipped reasons
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void characters( char[] ch, int start, int length )
         throws SAXException
     {

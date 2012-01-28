@@ -19,12 +19,11 @@ package org.apache.maven.surefire.common.junit3;
  * under the License.
  */
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import org.apache.maven.surefire.NonAbstractClassFilter;
 import org.apache.maven.surefire.util.ReflectionUtils;
 import org.apache.maven.surefire.util.ScannerFilter;
-
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 
 /**
  * Missing tests ? This class is basically a subset of the JUnit4TestChecker, which is tested

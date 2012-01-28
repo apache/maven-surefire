@@ -22,11 +22,11 @@ package org.apache.maven.surefire.junitcore;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ExecutionException;
-
 import org.apache.maven.surefire.util.NestedRuntimeException;
+
 import org.junit.runner.Computer;
 import org.junit.runner.Runner;
 import org.junit.runners.ParentRunner;
@@ -140,14 +140,17 @@ public class ConfigurableParallelComputer
         throws Throwable
     {
         Runner runner = super.getRunner( builder, testClass );
-        ClassDemarcatingRunner classDemarcatingRunner = new ClassDemarcatingRunner(runner, testClass);
-        return fMethods && !isTestSuite(  testClass )? parallelize( classDemarcatingRunner, getMethodInterceptor() ) : classDemarcatingRunner;
+        ClassDemarcatingRunner classDemarcatingRunner = new ClassDemarcatingRunner( runner, testClass );
+        return fMethods && !isTestSuite( testClass )
+            ? parallelize( classDemarcatingRunner, getMethodInterceptor() )
+            : classDemarcatingRunner;
     }
 
-    private boolean isTestSuite( Class<?> testClass){
+    private boolean isTestSuite( Class<?> testClass )
+    {
         // Todo: Find out how/if this is enough
         final Suite.SuiteClasses annotation = testClass.getAnnotation( Suite.SuiteClasses.class );
-        return (annotation != null);
+        return ( annotation != null );
     }
 
     @Override

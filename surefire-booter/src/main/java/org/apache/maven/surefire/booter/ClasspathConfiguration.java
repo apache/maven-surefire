@@ -88,25 +88,25 @@ public class ClasspathConfiguration
     public ClassLoader createTestClassLoader( boolean childDelegation )
         throws SurefireExecutionException
     {
-        return classpathUrls.createClassLoader( null, childDelegation, enableAssertions );
+        return classpathUrls.createClassLoader( null, childDelegation, enableAssertions, "test" );
     }
 
     public ClassLoader createTestClassLoader()
         throws SurefireExecutionException
     {
-        return classpathUrls.createClassLoader( null, this.childDelegation, enableAssertions );
+        return classpathUrls.createClassLoader( null, this.childDelegation, enableAssertions, "test" );
     }
 
     public ClassLoader createSurefireClassLoader( ClassLoader parent )
         throws SurefireExecutionException
     {
-        return surefireClasspathUrls.createClassLoader( parent, false, enableAssertions );
+        return surefireClasspathUrls.createClassLoader( parent, false, enableAssertions, "provider" );
     }
 
     public ClassLoader createInprocSurefireClassLoader( ClassLoader parent )
         throws SurefireExecutionException
     {
-        return inprocClasspath.createClassLoader( parent, false, enableAssertions );
+        return inprocClasspath.createClassLoader( parent, false, enableAssertions, "provider" );
     }
 
     public Classpath getTestClasspath()

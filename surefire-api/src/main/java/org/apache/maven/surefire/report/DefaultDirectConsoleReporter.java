@@ -10,11 +10,13 @@ public class DefaultDirectConsoleReporter
 {
     private final PrintStream systemOut;
 
-    public DefaultDirectConsoleReporter( PrintStream systemOut ) {
+    public DefaultDirectConsoleReporter( PrintStream systemOut )
+    {
         this.systemOut = systemOut;
     }
 
-    public void info( String message ) {
-        systemOut.println(message);
+    public void info( String message )
+    {
+        systemOut.println( message );
     }
 }

@@ -20,6 +20,8 @@ package org.apache.maven.surefire.report;
  */
 
 import java.io.File;
+import org.apache.maven.plugin.surefire.report.FileReporter;
+
 import junit.framework.TestCase;
 
 public class FileReporterTest
@@ -43,7 +45,8 @@ public class FileReporterTest
         reporter.testSetStarting( reportEntry );
 
         File expectedReportFile = new File( reportDir, testName + ".txt" );
-        assertTrue("Report file (" + expectedReportFile.getAbsolutePath() + ") doesn't exist",  expectedReportFile.exists() );
+        assertTrue( "Report file (" + expectedReportFile.getAbsolutePath() + ") doesn't exist",
+                    expectedReportFile.exists() );
         expectedReportFile.delete();
     }
 
@@ -59,7 +62,8 @@ public class FileReporterTest
         reporter.testSetStarting( reportEntry );
 
         File expectedReportFile = new File( reportDir, testName + "-" + suffixText + ".txt" );
-        assertTrue("Report file (" + expectedReportFile.getAbsolutePath() + ") doesn't exist",  expectedReportFile.exists() );
+        assertTrue( "Report file (" + expectedReportFile.getAbsolutePath() + ") doesn't exist",
+                    expectedReportFile.exists() );
         expectedReportFile.delete();
     }
 

@@ -29,9 +29,9 @@ import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
 public class NoRunnableTestsInClassIT
     extends SurefireIntegrationTestCase
 {
-   public void testJunit3ParallelBuildResultCount()
+    public void testJunit3ParallelBuildResultCount()
     {
-        unpack( "norunnableTests" ).failNever().executeTest()
-        .verifyTextInLog( "No tests found in junit.norunnabletests.BasicTest" );
+        unpack( "norunnableTests" ).failNever().executeTest().verifyTextInLog(
+            "No tests found in junit.norunnabletests.BasicTest" );
     }
 }

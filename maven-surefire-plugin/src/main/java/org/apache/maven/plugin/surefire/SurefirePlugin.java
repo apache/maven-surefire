@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
@@ -59,7 +58,7 @@ public class SurefirePlugin
     /**
      * Information about this plugin, mainly used to lookup this plugin's configuration from the currently executing
      * project.
-     * 
+     *
      * @parameter default-value="${plugin}"
      * @readonly
      * @since 2.12
@@ -69,7 +68,7 @@ public class SurefirePlugin
     /**
      * Set this to "true" to skip running tests, but still compile them. Its use is NOT RECOMMENDED, but quite
      * convenient on occasion.
-     * 
+     *
      * @parameter default-value="false" expression="${skipTests}"
      * @since 2.4
      */
@@ -246,7 +245,7 @@ public class SurefirePlugin
      * @parameter
      * @since 2.5
      */
-    private Map<String,String> systemPropertyVariables;
+    private Map<String, String> systemPropertyVariables;
 
     /**
      * List of System properties, loaded from a file, to pass to the JUnit tests.
@@ -272,7 +271,7 @@ public class SurefirePlugin
      * @required
      * @readonly
      */
-    private Map<String,Artifact> pluginArtifactMap;
+    private Map<String, Artifact> pluginArtifactMap;
 
     /**
      * Map of project artifacts.
@@ -281,7 +280,7 @@ public class SurefirePlugin
      * @required
      * @readonly
      */
-    private Map<String,Artifact> projectArtifactMap;
+    private Map<String, Artifact> projectArtifactMap;
 
     /**
      * Option to print summary of test suites or just print the test cases that have errors.
@@ -334,7 +333,7 @@ public class SurefirePlugin
     /**
      * Set this to "true" to cause a failure if the none of the tests specified in -Dtest=... are run. Defaults to
      * "true".
-     * 
+     *
      * @parameter expression="${surefire.failIfNoSpecifiedTests}"
      * @since 2.12
      */
@@ -393,7 +392,7 @@ public class SurefirePlugin
      * @parameter
      * @since 2.1.3
      */
-    private Map<String,String> environmentVariables = new HashMap<String,String>();
+    private Map<String, String> environmentVariables = new HashMap<String, String>();
 
     /**
      * Command line working directory.
@@ -909,12 +908,12 @@ public class SurefirePlugin
         this.systemProperties = systemProperties;
     }
 
-    public Map<String,String> getSystemPropertyVariables()
+    public Map<String, String> getSystemPropertyVariables()
     {
         return systemPropertyVariables;
     }
 
-    public void setSystemPropertyVariables( Map<String,String> systemPropertyVariables )
+    public void setSystemPropertyVariables( Map<String, String> systemPropertyVariables )
     {
         this.systemPropertyVariables = systemPropertyVariables;
     }
@@ -939,22 +938,22 @@ public class SurefirePlugin
         this.properties = properties;
     }
 
-    public Map<String,Artifact> getPluginArtifactMap()
+    public Map<String, Artifact> getPluginArtifactMap()
     {
         return pluginArtifactMap;
     }
 
-    public void setPluginArtifactMap( Map<String,Artifact> pluginArtifactMap )
+    public void setPluginArtifactMap( Map<String, Artifact> pluginArtifactMap )
     {
         this.pluginArtifactMap = pluginArtifactMap;
     }
 
-    public Map<String,Artifact> getProjectArtifactMap()
+    public Map<String, Artifact> getProjectArtifactMap()
     {
         return projectArtifactMap;
     }
 
-    public void setProjectArtifactMap( Map<String,Artifact> projectArtifactMap )
+    public void setProjectArtifactMap( Map<String, Artifact> projectArtifactMap )
     {
         this.projectArtifactMap = projectArtifactMap;
     }
@@ -1079,12 +1078,12 @@ public class SurefirePlugin
         this.forkedProcessTimeoutInSeconds = forkedProcessTimeoutInSeconds;
     }
 
-    public Map<String,String> getEnvironmentVariables()
+    public Map<String, String> getEnvironmentVariables()
     {
         return environmentVariables;
     }
 
-    public void setEnvironmentVariables( Map<String,String> environmentVariables )
+    public void setEnvironmentVariables( Map<String, String> environmentVariables )
     {
         this.environmentVariables = environmentVariables;
     }

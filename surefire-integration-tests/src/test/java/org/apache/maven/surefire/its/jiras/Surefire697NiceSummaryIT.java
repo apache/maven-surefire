@@ -23,7 +23,7 @@ import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
 
 /**
  * SUREFIRE-697 Asserts proper truncation of long exception messages Some say testing this is a bit over the top.
- * 
+ *
  * @author Kristian Rosenvold
  */
 public class Surefire697NiceSummaryIT
@@ -31,7 +31,7 @@ public class Surefire697NiceSummaryIT
 {
     public void testBuildFailingWhenErrors()
     {
-        unpack( "/surefire-697-niceSummary" ).failNever().executeTest()
-            .verifyTextInLog( "testShortMultiline(junit.surefire697.BasicTest): A very short multiline message" );
+        unpack( "/surefire-697-niceSummary" ).failNever().executeTest().verifyTextInLog(
+            "testShortMultiline(junit.surefire697.BasicTest): A very short multiline message" );
     }
 }

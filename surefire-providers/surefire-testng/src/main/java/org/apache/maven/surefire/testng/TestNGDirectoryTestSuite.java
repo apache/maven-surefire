@@ -71,9 +71,9 @@ public class TestNGDirectoryTestSuite
     private final RunOrderCalculator runOrderCalculator;
 
     public TestNGDirectoryTestSuite( File basedir, ArrayList includes, ArrayList excludes, ArrayList specificTests,
-                                     String testSourceDirectory,
-                                     String artifactVersion, Properties confOptions, File reportsDirectory,
-                                     String testMethodPattern, RunOrderCalculator runOrderCalculator )
+                                     String testSourceDirectory, String artifactVersion, Properties confOptions,
+                                     File reportsDirectory, String testMethodPattern,
+                                     RunOrderCalculator runOrderCalculator )
     {
 
         this.surefireDirectoryScanner = new DefaultDirectoryScanner( basedir, includes, excludes, specificTests );

@@ -50,8 +50,7 @@ public class SurefireReflectorTest
 
         DirectoryScannerParameters directoryScannerParameters =
             new DirectoryScannerParameters( new File( "ABC" ), new ArrayList(), new ArrayList(), new ArrayList(),
-                                            Boolean.FALSE,
-                                            "hourly" );
+                                            Boolean.FALSE, "hourly" );
         surefireReflector.setDirectoryScannerParameters( foo, directoryScannerParameters );
         assertTrue( isCalled( foo ).booleanValue() );
 

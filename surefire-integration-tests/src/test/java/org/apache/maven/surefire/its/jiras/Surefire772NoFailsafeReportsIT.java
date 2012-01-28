@@ -22,8 +22,8 @@ package org.apache.maven.surefire.its.jiras;
 import java.io.IOException;
 import org.apache.maven.it.VerificationException;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.apache.maven.surefire.its.fixture.TestFile;
 
 /**
@@ -48,8 +48,8 @@ public class Surefire772NoFailsafeReportsIT
     public void testSkippedFailsafeReportGeneration()
         throws Exception
     {
-        final OutputValidator validator =
-            unpack().activateProfile( "skipFailsafe" ).addFailsafeReportOnlyGoal().addSurefireReportOnlyGoal().executeCurrentGoals();
+        final OutputValidator validator = unpack().activateProfile(
+            "skipFailsafe" ).addFailsafeReportOnlyGoal().addSurefireReportOnlyGoal().executeCurrentGoals();
         assertSurefireReportPresent( validator );
         assertNoFailsefeReport( validator );
 
@@ -58,8 +58,8 @@ public class Surefire772NoFailsafeReportsIT
     public void testForcedFailsafeReportGeneration()
         throws Exception
     {
-        final OutputValidator validator =
-            unpack().activateProfile( "forceFailsafe" ).addFailsafeReportOnlyGoal().addSurefireReportOnlyGoal().executeCurrentGoals();
+        final OutputValidator validator = unpack().activateProfile(
+            "forceFailsafe" ).addFailsafeReportOnlyGoal().addSurefireReportOnlyGoal().executeCurrentGoals();
         assertSurefireReportPresent( validator );
         assertFailsafeReport( validator );
     }
@@ -67,8 +67,8 @@ public class Surefire772NoFailsafeReportsIT
     public void testSkipForcedFailsafeReportGeneration()
         throws Exception
     {
-        final OutputValidator validator =
-            unpack().activateProfile( "forceFailsafe" ).activateProfile( "skipFailsafe" ).addFailsafeReportOnlyGoal().addSurefireReportOnlyGoal().executeCurrentGoals();
+        final OutputValidator validator = unpack().activateProfile( "forceFailsafe" ).activateProfile(
+            "skipFailsafe" ).addFailsafeReportOnlyGoal().addSurefireReportOnlyGoal().executeCurrentGoals();
 
         assertSurefireReportPresent( validator );
         assertNoFailsefeReport( validator );

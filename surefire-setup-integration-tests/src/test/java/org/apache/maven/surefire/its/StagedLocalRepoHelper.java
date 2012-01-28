@@ -19,6 +19,11 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Random;
 import org.apache.maven.settings.Profile;
 import org.apache.maven.settings.Repository;
 import org.apache.maven.settings.RepositoryPolicy;
@@ -28,12 +33,6 @@ import org.apache.maven.settings.io.xpp3.SettingsXpp3Writer;
 import org.codehaus.plexus.util.ReaderFactory;
 import org.codehaus.plexus.util.WriterFactory;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Random;
 
 /**
  * Helper class to assist in using verifier with a staged local repository.
@@ -155,7 +154,7 @@ public final class StagedLocalRepoHelper
         }
 
         policy.setUpdatePolicy( "never" );
-        
+
         return policy;
     }
 

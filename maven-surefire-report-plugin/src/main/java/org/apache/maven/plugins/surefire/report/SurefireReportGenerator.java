@@ -19,12 +19,7 @@ package org.apache.maven.plugins.surefire.report;
  * under the License.
  */
 
-import org.apache.maven.doxia.markup.HtmlMarkup;
-import org.apache.maven.doxia.sink.Sink;
-import org.apache.maven.doxia.sink.SinkEventAttributeSet;
-import org.apache.maven.doxia.sink.SinkEventAttributes;
-import org.apache.maven.reporting.MavenReportException;
-
+import java.io.File;
 import java.text.NumberFormat;
 import java.util.Iterator;
 import java.util.List;
@@ -33,6 +28,11 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
+import org.apache.maven.doxia.markup.HtmlMarkup;
+import org.apache.maven.doxia.sink.Sink;
+import org.apache.maven.doxia.sink.SinkEventAttributeSet;
+import org.apache.maven.doxia.sink.SinkEventAttributes;
+import org.apache.maven.reporting.MavenReportException;
 
 /**
  * @version $Id$
@@ -41,13 +41,14 @@ public class SurefireReportGenerator
 {
     private final SurefireReportParser report;
 
-    private List testSuites;
+    private List<ReportTestSuite> testSuites;
 
     private final boolean showSuccess;
 
     private final String xrefLocation;
 
-    public SurefireReportGenerator( List reportsDirectories, Locale locale, boolean showSuccess, String xrefLocation )
+    public SurefireReportGenerator( List<File> reportsDirectories, Locale locale, boolean showSuccess,
+                                    String xrefLocation )
     {
         report = new SurefireReportParser( reportsDirectories, locale );
 
@@ -73,9 +74,9 @@ public class SurefireReportGenerator
 
         SinkEventAttributeSet atts = new SinkEventAttributeSet();
         atts.addAttribute( SinkEventAttributes.TYPE, "text/javascript" );
-        sink.unknown( "script", new Object[]{new Integer( HtmlMarkup.TAG_TYPE_START )}, atts );
-        sink.unknown( "cdata", new Object[]{new Integer( HtmlMarkup.CDATA_TYPE ), javascriptToggleDisplayCode() }, null );
-        sink.unknown( "script", new Object[]{new Integer( HtmlMarkup.TAG_TYPE_END )}, null );
+        sink.unknown( "script", new Object[]{ HtmlMarkup.TAG_TYPE_START }, atts );
+        sink.unknown( "cdata", new Object[]{ HtmlMarkup.CDATA_TYPE, javascriptToggleDisplayCode() }, null );
+        sink.unknown( "script", new Object[]{ HtmlMarkup.TAG_TYPE_END }, null );
 
         sink.section1();
         sink.sectionTitle1();
@@ -327,8 +328,8 @@ public class SurefireReportGenerator
                     sinkCell( sink, Integer.toString( suite.getNumberOfSkipped() ) );
 
                     String percentage = report.computePercentage( suite.getNumberOfTests(), suite.getNumberOfErrors(),
-                                                                  suite.getNumberOfFailures(), suite
-                        .getNumberOfSkipped() );
+                                                                  suite.getNumberOfFailures(),
+                                                                  suite.getNumberOfSkipped() );
                     sinkCell( sink, percentage + "%" );
 
                     sinkCell( sink, numberFormat.format( suite.getTimeElapsed() ) );
@@ -360,12 +361,8 @@ public class SurefireReportGenerator
 
         constructHotLinks( sink, bundle );
 
-        ListIterator suiteIterator = testSuites.listIterator();
-
-        while ( suiteIterator.hasNext() )
+        for ( ReportTestSuite suite : testSuites )
         {
-            ReportTestSuite suite = (ReportTestSuite) suiteIterator.next();
-
             List testCases = suite.getTestCases();
 
             if ( testCases != null && !testCases.isEmpty() )
@@ -417,28 +414,28 @@ public class SurefireReportGenerator
                             SinkEventAttributeSet atts = new SinkEventAttributeSet();
                             atts.addAttribute( SinkEventAttributes.CLASS, "detailToggle" );
                             atts.addAttribute( SinkEventAttributes.STYLE, "display:inline" );
-                            sink.unknown( "div", new Object[]{new Integer( HtmlMarkup.TAG_TYPE_START )}, atts );
+                            sink.unknown( "div", new Object[]{ HtmlMarkup.TAG_TYPE_START }, atts );
 
                             sink.link( "javascript:toggleDisplay('" + toHtmlId( testCase.getFullName() ) + "');" );
 
                             atts = new SinkEventAttributeSet();
                             atts.addAttribute( SinkEventAttributes.STYLE, "display:inline;" );
                             atts.addAttribute( SinkEventAttributes.ID, toHtmlId( testCase.getFullName() ) + "off" );
-                            sink.unknown( "span", new Object[]{new Integer( HtmlMarkup.TAG_TYPE_START )}, atts );
+                            sink.unknown( "span", new Object[]{ HtmlMarkup.TAG_TYPE_START }, atts );
                             sink.text( " + " );
-                            sink.unknown( "span", new Object[]{new Integer( HtmlMarkup.TAG_TYPE_END )}, null );
+                            sink.unknown( "span", new Object[]{ HtmlMarkup.TAG_TYPE_END }, null );
 
                             atts = new SinkEventAttributeSet();
                             atts.addAttribute( SinkEventAttributes.STYLE, "display:none;" );
                             atts.addAttribute( SinkEventAttributes.ID, toHtmlId( testCase.getFullName() ) + "on" );
-                            sink.unknown( "span", new Object[]{new Integer( HtmlMarkup.TAG_TYPE_START )}, atts );
+                            sink.unknown( "span", new Object[]{ HtmlMarkup.TAG_TYPE_START }, atts );
                             sink.text( " - " );
-                            sink.unknown( "span", new Object[]{new Integer( HtmlMarkup.TAG_TYPE_END )}, null );
+                            sink.unknown( "span", new Object[]{ HtmlMarkup.TAG_TYPE_END }, null );
 
                             sink.text( "[ Detail ]" );
                             sink.link_();
 
-                            sink.unknown( "div", new Object[]{new Integer( HtmlMarkup.TAG_TYPE_END )}, null );
+                            sink.unknown( "div", new Object[]{ HtmlMarkup.TAG_TYPE_END }, null );
 
                             sink.tableCell_();
                         }
@@ -469,9 +466,10 @@ public class SurefireReportGenerator
 
                                 sink.tableCell();
                                 SinkEventAttributeSet atts = new SinkEventAttributeSet();
-                                atts.addAttribute( SinkEventAttributes.ID, toHtmlId( testCase.getFullName() ) + "error" );
+                                atts.addAttribute( SinkEventAttributes.ID,
+                                                   toHtmlId( testCase.getFullName() ) + "error" );
                                 atts.addAttribute( SinkEventAttributes.STYLE, "display:none;" );
-                                sink.unknown( "div", new Object[]{new Integer( HtmlMarkup.TAG_TYPE_START )}, atts );
+                                sink.unknown( "div", new Object[]{ HtmlMarkup.TAG_TYPE_START }, atts );
 
                                 Iterator it = detail.iterator();
 
@@ -483,7 +481,7 @@ public class SurefireReportGenerator
                                 }
                                 sink.verbatim_();
 
-                                sink.unknown( "div", new Object[]{new Integer( HtmlMarkup.TAG_TYPE_END )}, null );
+                                sink.unknown( "div", new Object[]{ HtmlMarkup.TAG_TYPE_END }, null );
                                 sink.tableCell_();
 
                                 sinkCell( sink, "" );
@@ -506,9 +504,11 @@ public class SurefireReportGenerator
     }
 
 
-    private String toHtmlId(String id){
-        return id.replace(".", "_");
+    private String toHtmlId( String id )
+    {
+        return id.replace( ".", "_" );
     }
+
     private void constructFailureDetails( Sink sink, ResourceBundle bundle, List failureList )
     {
         Iterator failIter = failureList.iterator();
@@ -553,7 +553,7 @@ public class SurefireReportGenerator
 
                 sinkCell( sink, "" );
 
-                StringBuffer sb = new StringBuffer();
+                StringBuilder sb = new StringBuilder();
                 sb.append( type );
 
                 if ( message != null )
@@ -594,14 +594,14 @@ public class SurefireReportGenerator
                     sink.tableCell();
                     SinkEventAttributeSet atts = new SinkEventAttributeSet();
                     atts.addAttribute( SinkEventAttributes.ID, tCase.getName() + "error" );
-                    sink.unknown( "div", new Object[]{new Integer( HtmlMarkup.TAG_TYPE_START )}, atts );
+                    sink.unknown( "div", new Object[]{ HtmlMarkup.TAG_TYPE_START }, atts );
 
                     if ( xrefLocation != null )
                     {
                         String path = tCase.getFullClassName().replace( '.', '/' );
 
                         sink.link( xrefLocation + "/" + path + ".html#" +
-                            getErrorLineNumber( tCase.getFullName(), techMessage ) );
+                                       getErrorLineNumber( tCase.getFullName(), techMessage ) );
                     }
                     sink.text(
                         tCase.getFullClassName() + ":" + getErrorLineNumber( tCase.getFullName(), techMessage ) );
@@ -610,7 +610,7 @@ public class SurefireReportGenerator
                     {
                         sink.link_();
                     }
-                    sink.unknown( "div", new Object[]{new Integer( HtmlMarkup.TAG_TYPE_END )}, null );
+                    sink.unknown( "div", new Object[]{ HtmlMarkup.TAG_TYPE_END }, null );
 
                     sink.tableCell_();
 
@@ -736,7 +736,7 @@ public class SurefireReportGenerator
 
     private static String javascriptToggleDisplayCode()
     {
-        final StringBuffer str = new StringBuffer( 64 );
+        final StringBuilder str = new StringBuilder( 64 );
 
         // the javascript code is emitted within a commented CDATA section
         // so we have to start with a newline and comment the CDATA closing in the end

@@ -19,10 +19,6 @@ package org.apache.maven.plugin.surefire.booterclient;
  * under the License.
  */
 
-import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.surefire.util.NestedRuntimeException;
-
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
@@ -30,6 +26,9 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.surefire.util.NestedRuntimeException;
 
 /**
  * @author Kristian Rosenvold
@@ -55,7 +54,7 @@ public class ChecksumCalculator
         checksumItems.add( value );
     }
 
-    public void add( Map<?,?> map )
+    public void add( Map<?, ?> map )
     {
         if ( map != null )
         {

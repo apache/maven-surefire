@@ -24,8 +24,8 @@ import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.surefire.booter.Classpath;
 
 /**
-* @author Kristian Rosenvold
-*/
+ * @author Kristian Rosenvold
+ */
 public interface ProviderInfo
 {
     String getProviderName();

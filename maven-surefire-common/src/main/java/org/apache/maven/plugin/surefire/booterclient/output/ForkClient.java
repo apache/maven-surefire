@@ -28,11 +28,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
-
 import org.apache.maven.surefire.booter.ForkingRunListener;
 import org.apache.maven.surefire.report.CategorizedReportEntry;
-import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.ConsoleLogger;
+import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterFactory;
@@ -57,6 +56,8 @@ public class ForkClient
         Collections.synchronizedMap( new HashMap<Integer, RunListener>() );
 
     private final Properties testVmSystemProperties;
+
+    private volatile boolean saidGoodBye = false;
 
     public ForkClient( ReporterFactory providerReporterFactory, Properties testVmSystemProperties )
     {
@@ -141,6 +142,9 @@ public class ForkClient
                 case ForkingRunListener.BOOTERCODE_CONSOLE:
                     ( (ConsoleLogger) reporter ).info( createConsoleMessage( remaining ) );
                     break;
+                case ForkingRunListener.BOOTERCODE_BYE:
+                    saidGoodBye = true;
+                    break;
                 default:
                     System.out.println( s );
             }
@@ -179,14 +183,15 @@ public class ForkClient
             String source = tokens.nextToken();
             String name = tokens.nextToken();
             String group = nullableCsv( tokens.nextToken() );
+            String message = nullableCsv( tokens.nextToken() );
             String elapsedStr = tokens.nextToken();
             Integer elapsed = "null".equals( elapsedStr ) ? null : Integer.decode( elapsedStr );
             final StackTraceWriter stackTraceWriter =
                 tokens.hasMoreTokens() ? deserializeStackStraceWriter( tokens ) : null;
 
             return group != null
-                ? new CategorizedReportEntry( source, name, group, stackTraceWriter, elapsed )
-                : new SimpleReportEntry( source, name, stackTraceWriter, elapsed );
+                ? new CategorizedReportEntry( source, name, group, stackTraceWriter, elapsed, message )
+                : new SimpleReportEntry( source, name, stackTraceWriter, elapsed, message );
         }
         catch ( RuntimeException e )
         {
@@ -235,10 +240,9 @@ public class ForkClient
 
     public void close()
     {
-        /*Iterator iter = testSetReporters.values().iterator();
-        while( iter.hasNext() )
-        {
-            ((AsynchRunListener)iter.next()).close();
-        } */
+        if (!saidGoodBye){
+            throw new RuntimeException( "The forked VM terminated without saying properly goodbye. VM crash or System.exit called ?" );
+        }
     }
+    
 }

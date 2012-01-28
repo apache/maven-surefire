@@ -21,13 +21,45 @@ package org.apache.maven.surefire.report;
 
 public interface ReportEntry
 {
+    /**
+     * The class name of the test
+     *
+     * @return A string with the class name
+     */
     public String getSourceName();
 
+    /**
+     * The name of the test case
+     *
+     * @return A string describing the test case
+     */
     public String getName();
 
+    /**
+     * The group/category of the testcase
+     *
+     * @return A string
+     */
     public String getGroup();
 
+    /**
+     * The group/category of the testcase
+     *
+     * @return A string
+     */
     public StackTraceWriter getStackTraceWriter();
 
+    /**
+     * @deprecated
+     */
     public Integer getElapsed();
+
+
+    /**
+     * A message relating to a non-successful termination.
+     * May be the "message" from an exception or the reason for a test being ignored
+     *
+     * @return A string that explains an anomaly
+     */
+    public String getMessage();
 }

@@ -19,8 +19,8 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 
 /**
  * Test failIfNoTests with various forkModes.
@@ -48,24 +48,24 @@ public class CheckTestFailIfNoTestsForkModeIT
 
     public void testDontFailIfNoTestsForkModeAlways()
     {
-        doTest( unpack().forkAlways().failIfNoTests( false) );
+        doTest( unpack().forkAlways().failIfNoTests( false ) );
     }
 
     public void testDontFailIfNoTestsForkModeNever()
     {
-        doTest( unpack().forkNever().failIfNoTests( false) );
+        doTest( unpack().forkNever().failIfNoTests( false ) );
     }
 
     public void testDontFailIfNoTestsForkModeOnce()
     {
-        doTest( unpack().forkOnce().failIfNoTests( false) );
+        doTest( unpack().forkOnce().failIfNoTests( false ) );
     }
 
     private void doTest( SurefireLauncher launcher )
     {
         if ( launcher.isFailIfNoTests() )
         {
-             launcher.executeTestWithFailure();
+            launcher.executeTestWithFailure();
         }
         else
         {

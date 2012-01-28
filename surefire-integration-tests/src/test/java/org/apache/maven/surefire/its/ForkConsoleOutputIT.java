@@ -20,8 +20,8 @@ package org.apache.maven.surefire.its;
  */
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 
 /**
  * Asserts proper behaviour of console output when forking
@@ -53,7 +53,8 @@ public class ForkConsoleOutputIT
 
     public void testPrintSummaryFalseWithRedirect()
     {
-        final OutputValidator outputValidator = unpack().redirectToFile( true ).printSummary( false ).debugLogging().showErrorStackTraces().executeTest();
+        final OutputValidator outputValidator =
+            unpack().redirectToFile( true ).printSummary( false ).debugLogging().showErrorStackTraces().executeTest();
         outputValidator.getSurefireReportsFile( "forkConsoleOutput.Test1-output.txt" ).assertFileExists();
     }
 

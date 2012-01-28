@@ -19,22 +19,18 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
+import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.List;
+import org.apache.maven.plugin.surefire.StartupReportConfiguration;
 import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
-import org.apache.maven.surefire.booter.StartupReportConfiguration;
 import org.apache.maven.surefire.report.ConsoleLogger;
 import org.apache.maven.surefire.report.DefaultDirectConsoleReporter;
-import org.apache.maven.surefire.report.MulticastingReporter;
-import org.apache.maven.surefire.report.Reporter;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.RunStatistics;
-import org.apache.maven.surefire.report.TestSetRunListener;
 import org.apache.maven.surefire.suite.RunResult;
-
-import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Provides RunListener implementations to the providers.

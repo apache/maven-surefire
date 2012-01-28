@@ -19,8 +19,8 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 
 /**
  * Test simple TestNG suite XML file
@@ -42,7 +42,7 @@ public class CheckTestNgSuiteXmlIT
 
     private SurefireLauncher unpack()
     {
-       return unpack( "testng-suite-xml" );
+        return unpack( "testng-suite-xml" );
     }
 
 

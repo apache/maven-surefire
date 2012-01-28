@@ -62,6 +62,7 @@ public class PropertiesWrapperTest
 
 
     private final PropertiesWrapper mapper = new PropertiesWrapper( properties );
+
     private final Classpath classpathWithTwoElements = createClasspathWithTwoElements();
 
     public void testReadFromProperties()
@@ -83,7 +84,7 @@ public class PropertiesWrapperTest
     public void testWriteToProperties()
         throws Exception
     {
-        mapper.setClasspath( DUMMY_PREFIX,  classpathWithTwoElements);
+        mapper.setClasspath( DUMMY_PREFIX, classpathWithTwoElements );
         assertEquals( FIRST_ELEMENT, mapper.getProperty( DUMMY_PREFIX + "0" ) );
         assertEquals( SECOND_ELEMENT, mapper.getProperty( DUMMY_PREFIX + "1" ) );
     }
@@ -91,7 +92,7 @@ public class PropertiesWrapperTest
     public void testRoundtrip()
         throws Exception
     {
-        mapper.setClasspath( DUMMY_PREFIX,  classpathWithTwoElements);
+        mapper.setClasspath( DUMMY_PREFIX, classpathWithTwoElements );
         Classpath recreatedClasspath = readClasspathFromProperties();
         assertEquals( classpathWithTwoElements, recreatedClasspath );
     }
@@ -106,6 +107,6 @@ public class PropertiesWrapperTest
 
     private Classpath readClasspathFromProperties()
     {
-        return mapper.getClasspath( DUMMY_PREFIX);
+        return mapper.getClasspath( DUMMY_PREFIX );
     }
 }

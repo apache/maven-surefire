@@ -70,6 +70,7 @@ public class ByteBuffer
 
     /**
      * Convert the integer to an unsigned number.
+     *
      * @param i the value
      */
     private void toHex( int i )

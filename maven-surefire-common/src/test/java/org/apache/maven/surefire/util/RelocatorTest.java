@@ -19,6 +19,8 @@ package org.apache.maven.surefire.util;
  * under the License.
  */
 
+import org.apache.maven.plugin.surefire.util.Relocator;
+
 import junit.framework.TestCase;
 
 /**
@@ -28,14 +30,17 @@ public class RelocatorTest
     extends TestCase
 {
 
-    public void testFoo(){
+    public void testFoo()
+    {
         Relocator relocator = new Relocator( "shadefire" );
         String cn = "org.apache.maven.surefire.report.ForkingConsoleReporter";
-        assertEquals( "org.apache.maven.surefire.shadefire.report.ForkingConsoleReporter", relocator.relocate( cn ));
+        assertEquals( "org.apache.maven.surefire.shadefire.report.ForkingConsoleReporter", relocator.relocate( cn ) );
     }
-    public void testRelocation(){
+
+    public void testRelocation()
+    {
         Relocator relocator = new Relocator( "shadefire" );
         String org1 = "org.apache.maven.surefire.fooz.Baz";
-        assertEquals( "org.apache.maven.surefire.shadefire.fooz.Baz", relocator.relocate( org1 ));
+        assertEquals( "org.apache.maven.surefire.shadefire.fooz.Baz", relocator.relocate( org1 ) );
     }
 }

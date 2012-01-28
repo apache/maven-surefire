@@ -23,12 +23,11 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
 import org.apache.maven.surefire.SpecificTestClassFilter;
 
 /**
  * Scans directories looking for tests.
- * 
+ *
  * @author Karl M. Davis
  * @author Kristian Rosenvold
  */
@@ -145,10 +144,10 @@ public class DefaultDirectoryScanner
     {
         List newList = new ArrayList();
         Iterator iter = list.iterator();
-        while (iter.hasNext())
+        while ( iter.hasNext() )
         {
             String include = (String) iter.next();
-            String [] includes = include.split( "," );
+            String[] includes = include.split( "," );
             for ( int i = 0; i < includes.length; ++i )
             {
                 newList.add( includes[i] );
@@ -162,10 +161,10 @@ public class DefaultDirectoryScanner
             String inc = (String) newList.get( i );
             if ( inc.endsWith( JAVA_SOURCE_FILE_EXTENSION ) )
             {
-                inc =
-                    new StringBuffer( inc.length() - JAVA_SOURCE_FILE_EXTENSION.length()
-                        + JAVA_CLASS_FILE_EXTENSION.length() ).append( inc.substring( 0,
-                                                                                      inc.lastIndexOf( JAVA_SOURCE_FILE_EXTENSION ) ) ).append( JAVA_CLASS_FILE_EXTENSION ).toString();
+                inc = new StringBuffer(
+                    inc.length() - JAVA_SOURCE_FILE_EXTENSION.length() + JAVA_CLASS_FILE_EXTENSION.length() ).append(
+                    inc.substring( 0, inc.lastIndexOf( JAVA_SOURCE_FILE_EXTENSION ) ) ).append(
+                    JAVA_CLASS_FILE_EXTENSION ).toString();
             }
             incs[i] = inc;
 

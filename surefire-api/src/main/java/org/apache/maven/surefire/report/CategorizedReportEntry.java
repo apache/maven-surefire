@@ -40,6 +40,13 @@ public class CategorizedReportEntry
         this.group = group;
     }
 
+    public CategorizedReportEntry( String source, String name, String group, StackTraceWriter stackTraceWriter,
+                                   Integer elapsed, String message )
+    {
+        super( source, name, stackTraceWriter, elapsed, message );
+        this.group = group;
+    }
+
     public String getGroup()
     {
         return group;

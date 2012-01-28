@@ -29,7 +29,7 @@ import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
 public class TestSingleMethodIT
     extends SurefireIntegrationTestCase
 {
-    public void singleMethod(String projectName)
+    public void singleMethod( String projectName )
         throws Exception
     {
         unpack( projectName ).executeTest().verifyErrorFreeLog().assertTestSuiteResults( 1, 0, 0, 0 );

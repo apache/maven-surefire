@@ -150,7 +150,8 @@ public class Surefire746Test
         public void testFinished( Description description )
             throws Exception
         {
-            throw new RuntimeException( "This Exception will cause Surefire to receive a internal JUnit Description and fail" );
+            throw new RuntimeException(
+                "This Exception will cause Surefire to receive a internal JUnit Description and fail" );
         }
     }
 }

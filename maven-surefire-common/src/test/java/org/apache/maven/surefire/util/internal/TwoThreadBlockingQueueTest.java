@@ -25,6 +25,9 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.LinkedBlockingQueue;
+import org.apache.maven.plugin.surefire.util.internal.BlockingQueue;
+import org.apache.maven.plugin.surefire.util.internal.FunkyTwoThreadBlockingQueue;
+import org.apache.maven.plugin.surefire.util.internal.TwoThreadBlockingQueue;
 
 import junit.framework.Assert;
 import junit.framework.TestCase;
@@ -110,7 +113,7 @@ public class TwoThreadBlockingQueueTest
 
         futureTask.get();
 
-       // System.out.println( "TwoThreadBlockingQueue produced and taken " + num + " elements in  = " + elapsed );
+        // System.out.println( "TwoThreadBlockingQueue produced and taken " + num + " elements in  = " + elapsed );
         System.gc();
     }
 

@@ -45,5 +45,5 @@ public interface StackTraceWriter
      *
      * @return the throwable
      */
-    Throwable getThrowable();
+    SafeThrowable getThrowable();
 }

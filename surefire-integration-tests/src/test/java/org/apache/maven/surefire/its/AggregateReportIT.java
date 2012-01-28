@@ -20,9 +20,11 @@ package org.apache.maven.surefire.its;
  */
 
 import java.io.File;
-
-import org.apache.maven.surefire.its.fixture.*;
 import org.apache.maven.surefire.its.fixture.HelperAssertions;
+import org.apache.maven.surefire.its.fixture.IntegrationTestSuiteResults;
+import org.apache.maven.surefire.its.fixture.OutputValidator;
+import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.TestFile;
 
 /**
  * Test report aggregation

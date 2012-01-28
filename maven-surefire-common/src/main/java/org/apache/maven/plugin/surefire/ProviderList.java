@@ -19,15 +19,14 @@ package org.apache.maven.plugin.surefire;
  * under the License.
  */
 
-import org.apache.maven.plugin.logging.Log;
-import org.apache.maven.plugin.surefire.booterclient.ProviderDetector;
-import org.apache.maven.surefire.providerapi.SurefireProvider;
-import org.apache.maven.surefire.util.NestedRuntimeException;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import org.apache.maven.plugin.logging.Log;
+import org.apache.maven.plugin.surefire.booterclient.ProviderDetector;
+import org.apache.maven.surefire.providerapi.SurefireProvider;
+import org.apache.maven.surefire.util.NestedRuntimeException;
 
 /**
  * @author Kristian Rosenvold

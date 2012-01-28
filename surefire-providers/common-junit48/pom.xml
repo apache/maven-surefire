@@ -49,7 +49,7 @@
     </dependency>
     <dependency>
       <groupId>org.apache.maven.surefire</groupId>
-      <artifactId>maven-surefire-common</artifactId>
+      <artifactId>surefire-grouper</artifactId>
     </dependency>
   </dependencies>
 

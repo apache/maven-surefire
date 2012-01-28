@@ -19,13 +19,12 @@ package org.apache.maven.surefire.testng;
  * under the License.
  */
 
+import java.util.ResourceBundle;
 import org.apache.maven.surefire.report.CategorizedReportEntry;
 import org.apache.maven.surefire.report.PojoStackTraceWriter;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.SimpleReportEntry;
-
-import java.util.ResourceBundle;
 
 import org.testng.ISuite;
 import org.testng.ISuiteListener;

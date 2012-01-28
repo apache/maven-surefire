@@ -20,12 +20,12 @@ package org.apache.maven.surefire.its;
  */
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 
 /**
  * JUnit4 RunListener Integration Test.
- * 
+ *
  * @author <a href="mailto:matthew.gilliard@gmail.com">Matthew Gilliard</a>
  */
 public class JUnit4RunListenerIT
@@ -46,7 +46,7 @@ public class JUnit4RunListenerIT
     {
         final OutputValidator outputValidator = unpack().addGoal( "-Dprovider=surefire-junit4" ).setJUnitVersion(
             "4.4" ).executeTest().verifyErrorFreeLog();
-        assertResults(outputValidator);
+        assertResults( outputValidator );
         outputValidator.verifyTextInLog( "testRunStarted null" );
         outputValidator.verifyTextInLog( "testFinished simpleTest" );
         outputValidator.verifyTextInLog( "testRunFinished org.junit.runner.Result" );
@@ -55,9 +55,10 @@ public class JUnit4RunListenerIT
     public void testRunlistenerJunitCoreProvider()
         throws Exception
     {
-        final OutputValidator outputValidator = unpack().addGoal( "-Dprovider=surefire-junit47" ).setJUnitVersion(
-            "4.8.1" ).addGoal( "-DjunitVersion=4.8.1" ).executeTest().verifyErrorFreeLog();   // Todo: Fix junitVesion
-        assertResults(outputValidator);
+        final OutputValidator outputValidator =
+            unpack().addGoal( "-Dprovider=surefire-junit47" ).setJUnitVersion( "4.8.1" ).addGoal(
+                "-DjunitVersion=4.8.1" ).executeTest().verifyErrorFreeLog();   // Todo: Fix junitVesion
+        assertResults( outputValidator );
         outputValidator.verifyTextInLog( "testRunStarted null" );
         outputValidator.verifyTextInLog( "testFinished simpleTest" );
         outputValidator.verifyTextInLog( "testRunFinished org.junit.runner.Result" );

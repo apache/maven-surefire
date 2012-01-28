@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-
 import org.apache.maven.surefire.booter.ProviderParameterNames;
 import org.apache.maven.surefire.group.match.AndGroupMatcher;
 import org.apache.maven.surefire.group.match.GroupMatcher;
@@ -35,6 +34,7 @@ import org.apache.maven.surefire.group.match.InverseGroupMatcher;
 import org.apache.maven.surefire.group.parse.GroupMatcherParser;
 import org.apache.maven.surefire.group.parse.ParseException;
 import org.codehaus.plexus.util.SelectorUtils;
+
 import org.junit.experimental.categories.Category;
 import org.junit.runner.Description;
 import org.junit.runner.manipulation.Filter;
@@ -65,8 +65,8 @@ public class FilterFactory
             }
             catch ( ParseException e )
             {
-                throw new IllegalArgumentException( "Invalid group expression: '" + groups + "'. Reason: "
-                    + e.getMessage(), e );
+                throw new IllegalArgumentException(
+                    "Invalid group expression: '" + groups + "'. Reason: " + e.getMessage(), e );
             }
         }
 
@@ -79,8 +79,8 @@ public class FilterFactory
             }
             catch ( ParseException e )
             {
-                throw new IllegalArgumentException( "Invalid group expression: '" + excludedGroups + "'. Reason: "
-                    + e.getMessage(), e );
+                throw new IllegalArgumentException(
+                    "Invalid group expression: '" + excludedGroups + "'. Reason: " + e.getMessage(), e );
             }
         }
 
@@ -152,10 +152,11 @@ public class FilterFactory
         {
             for ( Description o : description.getChildren() )
             {
-                if (isDescriptionMatch( o )){
+                if ( isDescriptionMatch( o ) )
+                {
                     return true;
                 }
-                
+
             }
             return isDescriptionMatch( description );
         }
@@ -170,7 +171,7 @@ public class FilterFactory
         @Override
         public String describe()
         {
-            return "By method"  + requestedTestMethod;
+            return "By method" + requestedTestMethod;
         }
     }
 
@@ -203,9 +204,9 @@ public class FilterFactory
         @Override
         public boolean shouldRun( Description description )
         {
-            return shouldRun( description,
-                              ( description.getMethodName() == null ? null
-                                              : Description.createSuiteDescription( description.getTestClass() ) ) );
+            return shouldRun( description, ( description.getMethodName() == null
+                ? null
+                : Description.createSuiteDescription( description.getTestClass() ) ) );
         }
 
         private boolean shouldRun( Description description, Description parent )
@@ -246,7 +247,7 @@ public class FilterFactory
             // System.out.println( "Checking " + cats.size() + " categories..." );
             //
             // System.out.println( "Enabled? " + ( matcher.enabled( cats.toArray( new Class<?>[] {} ) ) ) + "\n\n" );
-            result = matcher.enabled( cats.toArray( new Class<?>[] {} ) );
+            result = matcher.enabled( cats.toArray( new Class<?>[]{ } ) );
 
             if ( parent == null )
             {

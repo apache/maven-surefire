@@ -27,7 +27,7 @@ import java.util.List;
  */
 public class ReportTestSuite
 {
-    private List testCases = new ArrayList();
+    private List<ReportTestCase> testCases = new ArrayList<ReportTestCase>();
 
     private int numberOfErrors;
 
@@ -45,7 +45,7 @@ public class ReportTestSuite
 
     private float timeElapsed;
 
-    public List getTestCases()
+    public List<ReportTestCase> getTestCases()
     {
         return this.testCases;
     }
@@ -84,7 +84,7 @@ public class ReportTestSuite
     {
         if ( numberOfTests != null )
         {
-            return numberOfTests.intValue();
+            return numberOfTests;
         }
         if ( testCases != null )
         {
@@ -95,7 +95,7 @@ public class ReportTestSuite
 
     public void setNumberOfTests( int numberOfTests )
     {
-        this.numberOfTests = new Integer( numberOfTests );
+        this.numberOfTests = numberOfTests;
     }
 
     public String getName()
@@ -151,15 +151,17 @@ public class ReportTestSuite
         this.timeElapsed = timeElapsed;
     }
 
-    public void setTestCases( List testCases )
+    public void setTestCases( List<ReportTestCase> testCases )
     {
         this.testCases = testCases;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public String toString()
     {
-        return fullClassName + " [" + getNumberOfTests() + "/" + getNumberOfFailures() + "/" + getNumberOfErrors()
-            + "/" + getNumberOfSkipped() + "]";
+        return fullClassName + " [" + getNumberOfTests() + "/" + getNumberOfFailures() + "/" + getNumberOfErrors() + "/"
+            + getNumberOfSkipped() + "]";
     }
 }

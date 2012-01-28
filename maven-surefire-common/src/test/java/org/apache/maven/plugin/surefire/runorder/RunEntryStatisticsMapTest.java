@@ -51,7 +51,7 @@ public class RunEntryStatisticsMapTest
     {
         final RunEntryStatisticsMap runEntryStatisticsMap = RunEntryStatisticsMap.fromReader( getStatisticsFile() );
         final List<?> list = Arrays.asList( new Class[]{ A.class, B.class, C.class } );
-        final List<?> prioritizedTestsClassRunTime = runEntryStatisticsMap.getPrioritizedTestsByFailureFirst( list);
+        final List<?> prioritizedTestsClassRunTime = runEntryStatisticsMap.getPrioritizedTestsByFailureFirst( list );
         assertEquals( A.class, prioritizedTestsClassRunTime.get( 0 ) );
         assertEquals( C.class, prioritizedTestsClassRunTime.get( 1 ) );
         assertEquals( B.class, prioritizedTestsClassRunTime.get( 2 ) );

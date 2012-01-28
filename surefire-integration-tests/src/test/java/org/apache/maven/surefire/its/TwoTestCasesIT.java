@@ -23,10 +23,11 @@ import java.io.File;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import org.apache.maven.surefire.its.fixture.*;
 import org.apache.maven.surefire.its.fixture.HelperAssertions;
+import org.apache.maven.surefire.its.fixture.IntegrationTestSuiteResults;
+import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.ReportTestSuite;
+import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
 
 /**
  * Test running two test cases; confirms reporting works correctly
@@ -84,7 +85,8 @@ public class TwoTestCasesIT
         final OutputValidator outputValidator = unpack( "junit4-twoTestCaseSuite" ).executeTest();
         outputValidator.verifyErrorFreeLog().assertTestSuiteResults( 2, 0, 0, 0 );
 
-        List<ReportTestSuite> reports = HelperAssertions.extractReports( ( new File[]{ outputValidator.getBaseDir() } ) );
+        List<ReportTestSuite> reports =
+            HelperAssertions.extractReports( ( new File[]{ outputValidator.getBaseDir() } ) );
         Set<String> classNames = extractClassNames( reports );
         assertContains( classNames, "twoTestCaseSuite.BasicTest" );
         assertContains( classNames, "twoTestCaseSuite.Junit4TestTwo" );

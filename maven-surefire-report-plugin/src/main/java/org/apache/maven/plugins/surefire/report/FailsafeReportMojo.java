@@ -104,12 +104,12 @@ public class FailsafeReportMojo
     {
         return getBundle( locale ).getString( "report.failsafe.description" );
     }
-    
+
 
     /*
-     * This is currently a copy of the getBundle() method of the AbstractSurefireReportMojo class,
-     * cause the failsafe report only different in two names for the bundles.
-     */
+    * This is currently a copy of the getBundle() method of the AbstractSurefireReportMojo class,
+    * cause the failsafe report only different in two names for the bundles.
+    */
     private ResourceBundle getBundle( Locale locale )
     {
         return ResourceBundle.getBundle( "surefire-report", locale, this.getClass().getClassLoader() );

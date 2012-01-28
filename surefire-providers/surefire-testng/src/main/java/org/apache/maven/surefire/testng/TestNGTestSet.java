@@ -32,6 +32,7 @@ public class TestNGTestSet
     /**
      * Creates a new test testset that will process the class being
      * passed in to determine the testing configuration.
+     *
      * @param testClass The test class
      */
     public TestNGTestSet( Class testClass )
