@@ -33,7 +33,7 @@ import org.junit.runner.notification.Failure;
 public class JUnit4RunListener
     extends org.junit.runner.notification.RunListener
 {
-    private static final Pattern PARENS = Pattern.compile( "^" + "[^\\(\\)]+" //non-parens
+    private static final Pattern PARENS = Pattern.compile( "^" + ".+" //any character
                                                                + "\\(("
                                                                // then an open-paren (start matching a group)
                                                                + "[^\\\\(\\\\)]+" //non-parens

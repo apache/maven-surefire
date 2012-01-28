@@ -33,6 +33,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
+import org.apache.maven.surefire.report.DescriptionDecoder;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.SafeThrowable;
@@ -84,7 +85,9 @@ public class XMLReporter
 
     private final String reportNameSuffix;
 
-    private final List results = Collections.synchronizedList( new ArrayList() );
+    private final List<Xpp3Dom> results = Collections.synchronizedList( new ArrayList<Xpp3Dom>() );
+
+    private static final DescriptionDecoder decoder = new DescriptionDecoder();
 
     private int elapsed = 0;
 
@@ -141,9 +144,9 @@ public class XMLReporter
 
         testSuite.setAttribute( "failures", String.valueOf( this.getNumFailures() ) );
 
-        for ( Iterator i = results.iterator(); i.hasNext(); )
+        for ( Object result : results )
         {
-            Xpp3Dom testcase = (Xpp3Dom) i.next();
+            Xpp3Dom testcase = (Xpp3Dom) result;
             testSuite.addChild( testcase );
         }
 
@@ -196,21 +199,6 @@ public class XMLReporter
         return reportFile;
     }
 
-    private String getReportName( ReportEntry report )
-    {
-        String reportName;
-
-        if ( report.getName().indexOf( "(" ) > 0 )
-        {
-            reportName = report.getName().substring( 0, report.getName().indexOf( "(" ) );
-        }
-        else
-        {
-            reportName = report.getName();
-        }
-        return reportName;
-    }
-
     public void testSucceeded( ReportEntry report )
     {
         super.testSucceeded( report );
@@ -224,9 +212,9 @@ public class XMLReporter
 
     private Xpp3Dom createTestElement( ReportEntry report, long runTime )
     {
-        elapsed += report.getElapsed().intValue();
+        elapsed += report.getElapsed();
         Xpp3Dom testCase = new Xpp3Dom( "testcase" );
-        testCase.setAttribute( "name", getReportName( report ) );
+        testCase.setAttribute( "name", decoder.getReportName( report ) );
         if ( report.getGroup() != null )
         {
             testCase.setAttribute( "group", report.getGroup() );
@@ -252,11 +240,11 @@ public class XMLReporter
 
         if ( reportNameSuffix != null && reportNameSuffix.length() > 0 )
         {
-            testCase.setAttribute( "name", getReportName( report ) + "(" + reportNameSuffix + ")" );
+            testCase.setAttribute( "name", decoder.getReportName( report ) + "(" + reportNameSuffix + ")" );
         }
         else
         {
-            testCase.setAttribute( "name", getReportName( report ) );
+            testCase.setAttribute( "name", decoder.getReportName( report ) );
         }
         if ( report.getGroup() != null )
         {
@@ -309,7 +297,7 @@ public class XMLReporter
             {
                 if ( t.getMessage() != null )
                 {
-                    element.setAttribute( "type", ( stackTrace.indexOf( ":" ) > -1
+                    element.setAttribute( "type", ( stackTrace.contains( ":" )
                         ? stackTrace.substring( 0, stackTrace.indexOf( ":" ) )
                         : stackTrace ) );
                 }
@@ -352,12 +340,8 @@ public class XMLReporter
     /**
      * Adds system properties to the XML report.
      * <p/>
-     * <<<<<<< HEAD
      *
      * @param testSuite The test suite to report to
-     *                  =======
-     * @param testSuite the target dom suite
-     *                  >>>>>>> [SUREFIRE-537]
      */
     private void showProperties( Xpp3Dom testSuite )
     {
