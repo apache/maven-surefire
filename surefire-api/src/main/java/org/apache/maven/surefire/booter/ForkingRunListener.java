@@ -75,6 +75,8 @@ public class ForkingRunListener
 
     public static final byte BOOTERCODE_SYSPROPS = (byte) 'I';
 
+    public static final byte BOOTERCODE_BYE = (byte) 'Z';
+
     private final PrintStream target;
 
     private final Integer testSetChannelId;

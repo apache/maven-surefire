@@ -72,7 +72,9 @@ public class ForkedBooter
 
             Object testSet = forkedTestSet != null ? forkedTestSet.getDecodedValue( testClassLoader ) : null;
             runSuitesInProcess( testSet, testClassLoader, startupConfiguration, providerConfiguration );
-
+            // Say bye.
+            System.out.println("Z,0,BYE!");
+            System.out.flush();
             // noinspection CallToSystemExit
             System.exit( 0 );
         }

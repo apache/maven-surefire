@@ -57,6 +57,8 @@ public class ForkClient
 
     private final Properties testVmSystemProperties;
 
+    private volatile boolean saidGoodBye = false;
+
     public ForkClient( ReporterFactory providerReporterFactory, Properties testVmSystemProperties )
     {
         this.providerReporterFactory = providerReporterFactory;
@@ -139,6 +141,9 @@ public class ForkClient
                     break;
                 case ForkingRunListener.BOOTERCODE_CONSOLE:
                     ( (ConsoleLogger) reporter ).info( createConsoleMessage( remaining ) );
+                    break;
+                case ForkingRunListener.BOOTERCODE_BYE:
+                    saidGoodBye = true;
                     break;
                 default:
                     System.out.println( s );
@@ -235,10 +240,9 @@ public class ForkClient
 
     public void close()
     {
-        /*Iterator iter = testSetReporters.values().iterator();
-        while( iter.hasNext() )
-        {
-            ((AsynchRunListener)iter.next()).close();
-        } */
+        if (!saidGoodBye){
+            throw new RuntimeException( "The forked VM terminated without saying properly goodbye. VM crash or System.exit called ?" );
+        }
     }
+    
 }
