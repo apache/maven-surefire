@@ -35,7 +35,7 @@ public class Surefire809GroupExpressionsIT
 
     public void testTestNGRunCategoryAB()
     {
-        OutputValidator validator = unpackTestNG().groups( "CategoryA&&CategoryB" ).executeTest();
+        OutputValidator validator = unpackTestNG().groups( "CategoryA&&CategoryB" ).debugLogging().executeTest();
         validator.verifyErrorFreeLog();
         validator.assertTestSuiteResults( 2, 0, 0, 0 );
         validator.verifyTextInLog( "BasicTest.testInCategoriesAB()" );
@@ -44,7 +44,7 @@ public class Surefire809GroupExpressionsIT
 
     public void testTestNGRunCategoryNotC()
     {
-        OutputValidator validator = unpackTestNG().groups( "!CategoryC" ).executeTest();
+        OutputValidator validator = unpackTestNG().groups( "!CategoryC" ).debugLogging().executeTest();
         validator.verifyErrorFreeLog();
         validator.assertTestSuiteResults( 8, 0, 0, 0 );
         validator.verifyTextInLog( "catA: 2" );
