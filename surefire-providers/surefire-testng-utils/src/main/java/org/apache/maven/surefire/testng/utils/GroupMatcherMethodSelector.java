@@ -59,13 +59,23 @@ public class GroupMatcherMethodSelector
         try
         {
             AndGroupMatcher matcher = new AndGroupMatcher();
-            GroupMatcher in = groups == null ? null : new GroupMatcherParser( groups ).parse();
+            GroupMatcher in = null;
+            if ( groups != null /* && groups.trim().length() > 0 */)
+            {
+                in = new GroupMatcherParser( groups ).parse();
+            }
+
             if ( in != null )
             {
                 matcher.addMatcher( in );
             }
 
-            GroupMatcher ex = excludedGroups == null ? null : new GroupMatcherParser( excludedGroups ).parse();
+            GroupMatcher ex = null;
+            if ( excludedGroups != null/* && excludedGroups.trim().length() > 0 */)
+            {
+                ex = new GroupMatcherParser( excludedGroups ).parse();
+            }
+
             if ( ex != null )
             {
                 matcher.addMatcher( new InverseGroupMatcher( ex ) );
