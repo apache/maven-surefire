@@ -95,7 +95,7 @@
         </property>
       </activation>
       <properties>
-        <groups>junit4.CategoryA && junit4.CategoryB</groups>
+        <groups>junit4.CategoryA &amp;&amp; junit4.CategoryB</groups>
         <excludedGroups></excludedGroups>
       </properties>
     </profile>

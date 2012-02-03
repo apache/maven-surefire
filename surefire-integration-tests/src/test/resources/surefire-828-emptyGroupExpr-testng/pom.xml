@@ -73,7 +73,7 @@
         </property>
       </activation>
       <properties>
-        <groups>CategoryA && CategoryB</groups>
+        <groups>CategoryA &amp;&amp; CategoryB</groups>
         <excludedGroups></excludedGroups>
       </properties>
     </profile>

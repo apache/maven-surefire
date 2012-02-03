@@ -12,14 +12,12 @@ public class Surefire828EmptyGroupExprIT
     {
         OutputValidator validator = unpackJUnit().addD( "profile", "emptyGroups" ).executeTest();
         validator.verifyErrorFreeLog();
-        validator.assertTestSuiteResults( 2, 0, 0, 0 );
-        validator.verifyTextInLog( "catA: 1" );
-        validator.verifyTextInLog( "catB: 1" );
+        validator.assertTestSuiteResults( 5, 0, 0, 0 );
+        validator.verifyTextInLog( "catA: 2" );
+        validator.verifyTextInLog( "catB: 2" );
         validator.verifyTextInLog( "catC: 0" );
-        validator.verifyTextInLog( "catNone: 0" );
-        validator.verifyTextInLog( "mA: 1" );
-        validator.verifyTextInLog( "mB: 1" );
-        validator.verifyTextInLog( "mC: 0" );
+        validator.verifyTextInLog( "catNone: 1" );
+        validator.verifyTextInLog( "NoCategoryTest.CatNone: 1" );
     }
 
     // CategoryA && CategoryB

@@ -57,7 +57,7 @@ public class FilterFactory
         String excludedGroups = providerProperties.getProperty( ProviderParameterNames.TESTNG_EXCLUDEDGROUPS_PROP );
 
         GroupMatcher included = null;
-        if ( groups != null )
+        if ( groups != null && groups.trim().length() > 0 )
         {
             try
             {
@@ -71,7 +71,7 @@ public class FilterFactory
         }
 
         GroupMatcher excluded = null;
-        if ( excludedGroups != null )
+        if ( excludedGroups != null && excludedGroups.trim().length() > 0 )
         {
             try
             {
