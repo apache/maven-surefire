@@ -39,25 +39,36 @@ Developer Center
   http://svn.apache.org/repos/asf/maven/surefire/trunk and
   build from there.
 
-* Essential source code reading list
+* Making testcases for demonstrating problems
 
-  Some methods/classes reveal more about the basic working of a piece of code than others. The enclosed classes/methods
-  are a "reading list" for getting quickly acquainted with the code:
+  When reporting an issue, it is immensely useful to create a small sample project
+  that demonstrates the problem. Surefire already contains a large number of such
+  projects, and they can be found at
+  https://svn.apache.org/repos/asf/maven/surefire/trunk/surefire-integration-tests/src/test/resources/
+  Typically you can check out one of the pre-existing projects and run it like this:
 
-    AbstractSurefireMojo#executeAllProviders
-    ForkStarter#fork
-    ForkedBooter#main
++---+
+svn co https://svn.apache.org/repos/asf/maven/surefire/trunk/surefire-integration-tests/src/test/resources/failsafe-buildfail
+cd failsafe-buildfail
+mvn -Dsurefire.version=2.12 verify
++---+
 
-* JDK Versions
+* Attaching a debugger
 
-  The surefire booter is capable of booting all the way back to jdk1.3. Specifically
-  this means surefire-api, surefire-booter, common-junit3 and surefire-junit3 are
-  source/target 1.3. The plugin and several providers are 1.5.
+  Sometimes it's appropriate to attach a remote debugger to the surefire fork to try to determine what
+  is /really/ going on. If you checkout & build trunk, you'd usually do something like this:
+
++---+
+  mvn -Dmaven.surefire.debug=true install
++---+
+
+  Load the source in your IDE, set a breakpoint at the start of ForkedBooter#main and attach
+  a debugger to port 5005.
 
 * TestCases
 
   All patches to surefire must contain test coverage, either as an integration test
-  or a unit test. All new fearures (changed/added plugin options) must be covered by
+  or a unit test. All new features (changed/added plugin options) must be covered by
   and end-to-end integration test.
 
   There are
@@ -66,6 +77,25 @@ Developer Center
 
   Example integration tests are Surefire141PluggableProvidersIT and the corresponding
   surefire-integration-tests/src/test/resources/surefire-141-pluggableproviders.
+
+
+* Essential source code reading list
+
+  Some methods/classes reveal more about the basic working of a piece of code than others. The enclosed classes/methods
+  are a "reading list" for getting quickly acquainted with the code:
+
++---+
+AbstractSurefireMojo#executeAllProviders
+ForkStarter#fork
+ForkedBooter#main
++---+
+
+* JDK Versions
+
+  The surefire booter is capable of booting all the way back to jdk1.3. Specifically
+  this means surefire-api, surefire-booter, common-junit3 and surefire-junit3 are
+  source/target 1.3. The plugin and several providers are 1.5.
+
 
 * Provider Isolation
 
@@ -94,5 +124,4 @@ Developer Center
 
   Surefire depends on a previous version of itself, which
   is too advanced for maven 2.2.x dependency resolution, and maven 3.x is
-  required to build surefire. Until a 3.x site plugin is released the site
-  for surefire has to be deployed with mvn 2.2.1 (using -N option).
+  required to build surefire
