@@ -297,7 +297,7 @@ public abstract class AbstractSurefireMojo
 
     protected boolean isAnyGroupsSelected()
     {
-        return this.getGroups() != null && this.getExcludedGroups() != null;
+        return this.getGroups() != null || this.getExcludedGroups() != null;
     }
 
     /**
