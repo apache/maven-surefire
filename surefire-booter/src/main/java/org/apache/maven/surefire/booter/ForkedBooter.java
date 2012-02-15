@@ -49,6 +49,7 @@ public class ForkedBooter
     public static void main( String[] args )
         throws Throwable
     {
+        final PrintStream originalOut = System.out;
         try
         {
             if ( args.length > 1 )
@@ -73,8 +74,8 @@ public class ForkedBooter
             Object testSet = forkedTestSet != null ? forkedTestSet.getDecodedValue( testClassLoader ) : null;
             runSuitesInProcess( testSet, testClassLoader, startupConfiguration, providerConfiguration );
             // Say bye.
-            System.out.println("Z,0,BYE!");
-            System.out.flush();
+            originalOut.println( "Z,0,BYE!" );
+            originalOut.flush();
             // noinspection CallToSystemExit
             System.exit( 0 );
         }
