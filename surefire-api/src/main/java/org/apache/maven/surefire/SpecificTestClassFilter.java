@@ -42,6 +42,9 @@ public class SpecificTestClassFilter
             for ( Iterator it = names.iterator(); it.hasNext(); )
             {
                 String pattern = (String) it.next();
+                if ('\\' == FS){
+                    pattern = pattern.replace('/', FS);
+                }
 
                 // This is the same utility used under the covers in the plexus DirectoryScanner, and
                 // therefore in the surefire DefaultDirectoryScanner implementation.
