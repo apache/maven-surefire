@@ -18,6 +18,8 @@ package org.apache.maven.surefire.junit4;
  * under the License.
  */
 
+import java.util.Collections;
+import java.util.Set;
 import org.apache.maven.surefire.common.junit4.JUnit4TestChecker;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
@@ -115,6 +117,22 @@ public class JUnit4TestCheckerTest
         assertFalse( jUnit4TestChecker.accept( NestedTC.Inner.class ) );
     }
 
+    @Test
+    public void testCannotLoadRunWithAnnotation()
+        throws Exception
+    {
+        Class testClass = SimpleJUnit4TestClass.class;
+        ClassLoader testClassLoader = testClass.getClassLoader();
+        // Emulate an OSGi classloader which filters on package level.
+        // Use a classloader which can only load classes in package org.junit,
+        // e.g. org.junit.Test, but no classes from other packages,
+        // in particular org.junit.runner.RunWith can't be loaded
+        Set<String> visiblePackages = Collections.singleton( "org.junit" );
+        PackageFilteringClassLoader filteringTestClassloader =
+            new PackageFilteringClassLoader( testClassLoader, visiblePackages );
+        JUnit4TestChecker checker = new JUnit4TestChecker( filteringTestClassloader );
+        assertTrue( checker.accept( testClass ) );
+    }
 
     public static class AlsoValid
         extends TestCase
@@ -216,6 +234,14 @@ public class JUnit4TestCheckerTest
         public void testSomething()
         {
 
+        }
+    }
+    
+    public static class SimpleJUnit4TestClass
+    {
+        @Test
+        public void testMethod()
+        {
         }
     }
 

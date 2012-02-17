@@ -59,10 +59,13 @@ public class JUnit4TestChecker
             return false;
         }
 
-        Annotation runWithAnnotation = testClass.getAnnotation( runWith );
-        if ( runWithAnnotation != null )
+        if ( runWith != null )
         {
-            return true;
+            Annotation runWithAnnotation = testClass.getAnnotation( runWith );
+            if ( runWithAnnotation != null )
+            {
+                return true;
+            }
         }
 
         Class classToCheck = testClass;
