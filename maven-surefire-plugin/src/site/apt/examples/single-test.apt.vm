@@ -4,7 +4,7 @@
   Allan Ramirez
   Olivier Lamy
   ------
- 2011-02-26
+ 2012-02-28
   ------
   
  ~~ Licensed to the Apache Software Foundation (ASF) under one
@@ -96,6 +96,18 @@ mvn -Dit.test=ITCircle#mytest verify
 #{if}(${project.artifactId}=="maven-surefire-plugin")
 +---+
 mvn -Dtest=TestCircle#test* test
++---+
+#{else}
++---+
+mvn -Dit.test=ITCircle#test* verify
++---+
+#{end}
+
+  With 2.13, you can select methods too
+
+#{if}(${project.artifactId}=="maven-surefire-plugin")
++---+
+mvn -Dtest=TestCircle#testOne+testTwo test
 +---+
 #{else}
 +---+
