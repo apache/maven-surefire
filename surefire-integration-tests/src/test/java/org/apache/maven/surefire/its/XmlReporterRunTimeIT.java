@@ -19,12 +19,13 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import java.io.File;
-import java.util.List;
 import org.apache.maven.surefire.its.fixture.HelperAssertions;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.ReportTestSuite;
 import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+
+import java.io.File;
+import java.util.List;
 
 /**
  * Test reported runtime
@@ -44,11 +45,13 @@ public class XmlReporterRunTimeIT
         {
             if ( "runorder.parallel.Test1".equals( report.getFullClassName() ) )
             {
-                assertTrue( report.getTimeElapsed() >= 1.2f );
+                assertTrue( "runorder.parallel.Test1 report.getTimeElapsed found:" + report.getTimeElapsed(),
+                            report.getTimeElapsed() >= 1.2f );
             }
             else if ( "runorder.parallel.Test2".equals( report.getFullClassName() ) )
             {
-                assertTrue( report.getTimeElapsed() >= 0.9f );
+                assertTrue( "runorder.parallel.Test2 report.getTimeElapsed found:" + report.getTimeElapsed(),
+                            report.getTimeElapsed() >= 0.9f );
             }
             else
             {
