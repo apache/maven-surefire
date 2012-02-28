@@ -19,9 +19,6 @@ package org.apache.maven.surefire.junit4;
  * under the License.
  */
 
-import java.lang.reflect.Method;
-import java.util.Iterator;
-import java.util.List;
 import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
 import org.apache.maven.surefire.common.junit4.JUnit4RunListenerFactory;
 import org.apache.maven.surefire.common.junit4.JUnit4TestChecker;
@@ -43,11 +40,14 @@ import org.apache.maven.surefire.util.RunOrderCalculator;
 import org.apache.maven.surefire.util.TestsToRun;
 import org.apache.maven.surefire.util.internal.StringUtils;
 import org.codehaus.plexus.util.SelectorUtils;
-
 import org.junit.runner.Request;
 import org.junit.runner.Result;
 import org.junit.runner.Runner;
 import org.junit.runner.notification.RunNotifier;
+
+import java.lang.reflect.Method;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * @author Kristian Rosenvold
@@ -131,7 +131,16 @@ public class JUnit4Provider
 
         try
         {
-            execute( clazz, listeners, this.requestedTestMethod );
+            if ( !StringUtils.isBlank( this.requestedTestMethod ) )
+            {
+                String actualTestMethod = getMethod( clazz, this.requestedTestMethod );//add by rainLee
+                String[] testMethods = StringUtils.split( actualTestMethod, "+" );
+                execute( clazz, listeners, testMethods );
+            }
+            else
+            {//the original way
+                execute( clazz, listeners, null );
+            }
         }
         catch ( TestSetFailedException e )
         {
@@ -214,18 +223,22 @@ public class JUnit4Provider
     }
 
 
-    private static void execute( Class<?> testClass, RunNotifier fNotifier, String testMethod )
+    private static void execute( Class<?> testClass, RunNotifier fNotifier, String[] testMethods )
         throws TestSetFailedException
     {
-        if ( !StringUtils.isBlank( testMethod ) )
+        if ( null != testMethods )
         {
             Method[] methods = testClass.getMethods();
             for ( int i = 0, size = methods.length; i < size; i++ )
             {
-                if ( SelectorUtils.match( testMethod, methods[i].getName() ) )
+                for ( int j = 0; j < testMethods.length; j++ )
                 {
-                    Runner junitTestRunner = Request.method( testClass, methods[i].getName() ).getRunner();
-                    junitTestRunner.run( fNotifier );
+                    if ( SelectorUtils.match( testMethods[j], methods[i].getName() ) )
+                    {
+                        Runner junitTestRunner = Request.method( testClass, methods[i].getName() ).getRunner();
+                        junitTestRunner.run( fNotifier );
+                    }
+
                 }
             }
             return;
@@ -234,5 +247,37 @@ public class JUnit4Provider
         Runner junitTestRunner = Request.aClass( testClass ).getRunner();
 
         junitTestRunner.run( fNotifier );
+    }
+
+    /**
+     * this method retrive  testMethods from String like "com.xx.ImmutablePairTest#testBasic,com.xx.StopWatchTest#testLang315+testStopWatchSimpleGet"
+     * <br>
+     * and we need to think about cases that 2 or more method in 1 class. we should choose the correct method
+     *
+     * @param testClass
+     * @param testMethodStr
+     * @return
+     * @author railLee
+     */
+    private static String getMethod( Class testClass, String testMethodStr )
+    {
+        String className = testClass.getName();
+
+        if ( testMethodStr.indexOf( "#" ) < 0 && testMethodStr.indexOf( "," ) < 0 )
+        {//the original way
+            return testMethodStr;
+        }
+        testMethodStr += ",";//for the bellow  split code
+        int beginIndex = testMethodStr.indexOf( className );
+        int endIndex = testMethodStr.indexOf( ",", beginIndex );
+        String classMethodStr =
+            testMethodStr.substring( beginIndex, endIndex );//String like "StopWatchTest#testLang315"
+
+        int index = classMethodStr.indexOf( '#' );
+        if ( index >= 0 )
+        {
+            return classMethodStr.substring( index + 1, classMethodStr.length() );
+        }
+        return null;
     }
 }

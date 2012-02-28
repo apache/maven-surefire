@@ -19,11 +19,6 @@ package org.apache.maven.plugin.surefire;
  * under the License.
  */
 
-import java.io.File;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
@@ -38,6 +33,12 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.toolchain.ToolchainManager;
 import org.codehaus.plexus.util.StringUtils;
+
+import java.io.File;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * Run tests using Surefire.
@@ -832,12 +833,20 @@ public class SurefirePlugin
         {
             return null;
         }
-        int index = test.indexOf( '#' );
-        if ( index >= 0 )
+        String[] testArray = StringUtils.split( test, "," );
+        StringBuffer tests = new StringBuffer();
+        for ( int i = 0; i < testArray.length; i++ )
         {
-            return test.substring( 0, index );
+            String singleTest = testArray[i];
+            int index = singleTest.indexOf( '#' );
+            if ( index >= 0 )
+            {// the way version 2.7.3.  support single test method
+                singleTest = singleTest.substring( 0, index );
+            }
+            tests.append( singleTest );
+            tests.append( "," );
         }
-        return test;
+        return tests.toString();
     }
 
     /**
@@ -849,10 +858,27 @@ public class SurefirePlugin
         {
             return null;
         }
+        //modified by rainLee, see http://jira.codehaus.org/browse/SUREFIRE-745
         int index = this.test.indexOf( '#' );
+        int index2 = this.test.indexOf( "," );
         if ( index >= 0 )
         {
-            return this.test.substring( index + 1, this.test.length() );
+            if ( index2 < 0 )
+            {
+                String testStrAfterFirstSharp = this.test.substring( index + 1, this.test.length() );
+                if ( testStrAfterFirstSharp.indexOf( "+" ) < 0 )
+                {//the original way
+                    return testStrAfterFirstSharp;
+                }
+                else
+                {
+                    return this.test;
+                }
+            }
+            else
+            {
+                return this.test;
+            }
         }
         return null;
     }
