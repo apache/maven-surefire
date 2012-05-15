@@ -47,6 +47,8 @@ public class SurefireReportGenerator
 
     private final String xrefLocation;
 
+    private static final int LEFT = Sink.JUSTIFY_LEFT;
+
     public SurefireReportGenerator( List<File> reportsDirectories, Locale locale, boolean showSuccess,
                                     String xrefLocation )
     {
@@ -127,6 +129,8 @@ public class SurefireReportGenerator
 
         sink.table();
 
+        sink.tableRows( new int[]{LEFT, LEFT, LEFT, LEFT, LEFT, LEFT}, true );
+
         sink.tableRow();
 
         sinkHeader( sink, bundle.getString( "report.surefire.label.tests" ) );
@@ -159,6 +163,8 @@ public class SurefireReportGenerator
 
         sink.tableRow_();
 
+        sink.tableRows_();
+
         sink.table_();
 
         sink.lineBreak();
@@ -188,6 +194,8 @@ public class SurefireReportGenerator
         sinkLineBreak( sink );
 
         sink.table();
+
+        sink.tableRows( new int[]{LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT}, true );
 
         sink.tableRow();
 
@@ -236,6 +244,8 @@ public class SurefireReportGenerator
             sink.tableRow_();
         }
 
+        sink.tableRows_();
+
         sink.table_();
 
         sink.lineBreak();
@@ -261,7 +271,27 @@ public class SurefireReportGenerator
 
             sinkAnchor( sink, packageName );
 
+            boolean showTable = false;
+
+            while ( suiteIterator.hasNext() )
+            {
+                ReportTestSuite suite = (ReportTestSuite) suiteIterator.next();
+
+                if ( showSuccess || suite.getNumberOfErrors() != 0 || suite.getNumberOfFailures() != 0 )
+                {
+                    showTable = true;
+
+                    break;
+                }
+            }
+
+            suiteIterator = testSuiteList.iterator();
+
+            if ( showTable )
+            {
             sink.table();
+
+            sink.tableRows( new int[]{LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT}, true );
 
             sink.tableRow();
 
@@ -338,7 +368,10 @@ public class SurefireReportGenerator
                 }
             }
 
+            sink.tableRows_();
+
             sink.table_();
+            }
 
             sink.section2_();
         }
@@ -376,7 +409,27 @@ public class SurefireReportGenerator
 
                 sinkAnchor( sink, suite.getPackageName() + suite.getName() );
 
+                boolean showTable = false;
+
+                while ( caseIterator.hasNext() )
+                {
+                    ReportTestCase testCase = (ReportTestCase) caseIterator.next();
+
+                    if ( testCase.getFailure() != null || showSuccess )
+                    {
+                        showTable = true;
+
+                        break;
+                    }
+                }
+
+                caseIterator = testCases.listIterator();
+
+                if ( showTable )
+                {
                 sink.table();
+
+                sink.tableRows( new int[]{LEFT, LEFT, LEFT}, true );
 
                 while ( caseIterator.hasNext() )
                 {
@@ -492,7 +545,10 @@ public class SurefireReportGenerator
                     }
                 }
 
+                sink.tableRows_();
+
                 sink.table_();
+                }
 
                 sink.section2_();
             }
@@ -527,6 +583,8 @@ public class SurefireReportGenerator
             sinkLineBreak( sink );
 
             sink.table();
+
+            sink.tableRows( new int[]{LEFT, LEFT}, true );
 
             while ( failIter.hasNext() )
             {
@@ -617,6 +675,8 @@ public class SurefireReportGenerator
                     sink.tableRow_();
                 }
             }
+
+            sink.tableRows_();
 
             sink.table_();
         }
