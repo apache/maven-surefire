@@ -66,15 +66,15 @@ public class JUnitCoreRunListener
         final ArrayList<Description> children = description.getChildren();
 
         TestSet testSet = new TestSet( description );
-        Class<?> itemTestClass = null;
+        String itemTestClassName = null;
         for ( Description item : children )
         {
             if ( item.isTest() && item.getMethodName() != null )
             {
                 testSet.incrementTestMethodCount();
-                if ( itemTestClass == null )
+                if ( itemTestClassName == null )
                 {
-                    itemTestClass = item.getTestClass();
+                    itemTestClassName = item.getClassName();
                 }
             }
             else if ( item.getChildren().size() > 0 )
@@ -86,9 +86,9 @@ public class JUnitCoreRunListener
                 classMethodCounts.put( item.getClassName(), testSet );
             }
         }
-        if ( itemTestClass != null )
+        if ( itemTestClassName != null )
         {
-            classMethodCounts.put( itemTestClass.getName(), testSet );
+            classMethodCounts.put( itemTestClassName, testSet );
         }
     }
 
