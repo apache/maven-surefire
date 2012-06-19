@@ -157,7 +157,8 @@ public class ForkStarter
                     public RunResult call()
                         throws Exception
                     {
-                        return fork( testSet, properties, forkClient, fileReporterFactory.getGlobalRunStatistics() );
+                        return fork( testSet, (Properties) properties.clone(), forkClient,
+                                     fileReporterFactory.getGlobalRunStatistics() );
                     }
                 };
                 results.add( executorService.submit( pf ) );
