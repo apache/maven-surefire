@@ -48,6 +48,13 @@ public class TestNGMapConfigurator
     public void configure( TestNG testng, Map options )
         throws TestSetFailedException
     {
+        Map convertedOptions = getConvertedOptions(options);
+        testng.configure( convertedOptions );
+    }
+
+    Map getConvertedOptions(Map options )
+            throws TestSetFailedException
+    {
         Map convertedOptions = new HashMap();
         for ( Iterator it = options.entrySet().iterator(); it.hasNext(); )
         {
@@ -77,6 +84,10 @@ public class TestNGMapConfigurator
             {
                 val = convert( val, Boolean.class );
             }
+            else if ( "mixed".equals( key ) )
+            {
+                val = convert( val, Boolean.class );
+            }
             else if ( ProviderParameterNames.THREADCOUNT_PROP.equals( key ) )
             {
                 val = convert( val, String.class );
@@ -91,8 +102,7 @@ public class TestNGMapConfigurator
                 convertedOptions.put( "-" + key, val );
             }
         }
-
-        testng.configure( convertedOptions );
+        return convertedOptions;
     }
 
     // ReporterConfig only became available in later versions of TestNG
