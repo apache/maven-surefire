@@ -14,9 +14,13 @@ public class Test1
 
     static void sleep( int ms )
     {
+        long target = System.currentTimeMillis() + ms;
         try
         {
-            Thread.sleep( ms );
+            do
+            {
+                Thread.sleep( ms );
+            } while ( System.currentTimeMillis() < target);
         }
         catch ( InterruptedException e )
         {

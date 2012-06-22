@@ -9,7 +9,7 @@ public class Surefire809GroupExpressionsIT
 {
     public void testJUnitRunCategoryAB()
     {
-        OutputValidator validator = unpackJUnit().groups( "junit4.CategoryA&&junit4.CategoryB" ).executeTest();
+        OutputValidator validator = unpackJUnit().groups( "junit4.CategoryA AND junit4.CategoryB" ).executeTest();
         validator.verifyErrorFreeLog();
         validator.assertTestSuiteResults( 2, 0, 0, 0 );
         validator.verifyTextInLog( "catA: 1" );
@@ -35,7 +35,7 @@ public class Surefire809GroupExpressionsIT
 
     public void testTestNGRunCategoryAB()
     {
-        OutputValidator validator = unpackTestNG().groups( "CategoryA&&CategoryB" ).debugLogging().executeTest();
+        OutputValidator validator = unpackTestNG().groups( "CategoryA AND CategoryB" ).debugLogging().executeTest();
         validator.verifyErrorFreeLog();
         validator.assertTestSuiteResults( 2, 0, 0, 0 );
         validator.verifyTextInLog( "BasicTest.testInCategoriesAB()" );

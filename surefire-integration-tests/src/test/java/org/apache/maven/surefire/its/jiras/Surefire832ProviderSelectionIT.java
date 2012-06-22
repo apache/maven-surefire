@@ -9,7 +9,7 @@ public class Surefire832ProviderSelectionIT
 {
     public void testJUnitRunCategoryAB()
     {
-        OutputValidator validator = unpackJUnit().groups( "junit4.CategoryA&&junit4.CategoryB" ).executeTest();
+        OutputValidator validator = unpackJUnit().groups( "junit4.CategoryA AND junit4.CategoryB" ).executeTest();
         validator.verifyErrorFreeLog();
         validator.assertTestSuiteResults( 2, 0, 0, 0 );
         validator.verifyTextInLog( "catA: 1" );
