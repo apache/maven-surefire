@@ -206,7 +206,7 @@ public class TestSetRunListener
     public String getAsString( List<ByteBuffer> byteBufferList )
     {
         StringBuilder stringBuffer = new StringBuilder();
-        for ( ByteBuffer byteBuffer : byteBufferList )
+        for ( ByteBuffer byteBuffer : new ArrayList<ByteBuffer>(byteBufferList) )
         {
             stringBuffer.append( byteBuffer.toString() );
         }
