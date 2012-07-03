@@ -20,12 +20,15 @@ package org.apache.maven.surefire.junitcore;
  */
 
 import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.maven.surefire.junit4.MockReporter;
 
 import junit.framework.TestCase;
 import org.junit.Assume;
 import org.junit.Test;
 import org.junit.runner.Computer;
+import org.junit.runner.Description;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
 import org.junit.runner.notification.RunListener;
@@ -58,6 +61,25 @@ public class JUnitCoreRunListenerTest
         Result result = core.run( new Computer(), TestWithAssumptionFailure.class );
         core.removeListener( jUnit4TestSetReporter );
         assertEquals( 1, result.getRunCount() );
+    }
+
+    public void testTestClassNotLoadableFromJUnitClassLoader()
+        throws Exception
+    {
+        // can't use Description.createTestDescription() methods as these require a loaded Class
+        Description testDescription = Description.createSuiteDescription( "testMethod(cannot.be.loaded.by.junit.Test)" );
+        assertEquals( "testMethod", testDescription.getMethodName() );
+        assertEquals( "cannot.be.loaded.by.junit.Test", testDescription.getClassName() );
+        // assert that the test class is not visible by the JUnit classloader
+        assertNull( testDescription.getTestClass() );
+        Description suiteDescription = Description.createSuiteDescription( "testSuite" );
+        suiteDescription.addChild( testDescription );
+        Map<String, TestSet> classMethodCounts = new HashMap<String, TestSet>();
+        JUnitCoreRunListener listener = new JUnitCoreRunListener( new MockReporter(), classMethodCounts );
+        listener.testRunStarted( suiteDescription );
+        assertEquals( 1, classMethodCounts.size() );
+        TestSet testSet = classMethodCounts.get( "cannot.be.loaded.by.junit.Test" );
+        assertNotNull( testSet );
     }
 
     public static class STest1
