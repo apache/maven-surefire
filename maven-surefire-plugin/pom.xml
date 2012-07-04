@@ -34,13 +34,6 @@
 
   <name>Maven Surefire Plugin</name>
 
-  <contributors>
-    <contributor>
-      <name>Joakim Erdfelt</name>
-      <email>joakim@erdfelt.com</email>
-    </contributor>
-  </contributors>
-
   <mailingLists>
     <!-- duplication from maven-plugins pom - temporary until they inherit properly -->
     <mailingList>
