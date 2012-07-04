@@ -19,6 +19,34 @@ package org.apache.maven.plugin.failsafe;
  * under the License.
  */
 
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.factory.ArtifactFactory;
+import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
+import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.artifact.resolver.ArtifactResolver;
+import org.apache.maven.execution.MavenSession;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugin.descriptor.PluginDescriptor;
+import org.apache.maven.plugin.surefire.AbstractSurefireMojo;
+import org.apache.maven.plugin.surefire.Summary;
+import org.apache.maven.plugin.surefire.booterclient.ChecksumCalculator;
+import org.apache.maven.plugins.annotations.Component;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.apache.maven.project.MavenProject;
+import org.apache.maven.surefire.booter.ProviderConfiguration;
+import org.apache.maven.surefire.failsafe.model.FailsafeSummary;
+import org.apache.maven.surefire.failsafe.model.io.xpp3.FailsafeSummaryXpp3Reader;
+import org.apache.maven.surefire.failsafe.model.io.xpp3.FailsafeSummaryXpp3Writer;
+import org.apache.maven.surefire.suite.RunResult;
+import org.apache.maven.toolchain.ToolchainManager;
+import org.codehaus.plexus.util.ReaderFactory;
+import org.codehaus.plexus.util.StringUtils;
+import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -32,28 +60,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.factory.ArtifactFactory;
-import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
-import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.artifact.resolver.ArtifactResolver;
-import org.apache.maven.execution.MavenSession;
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugin.descriptor.PluginDescriptor;
-import org.apache.maven.plugin.surefire.AbstractSurefireMojo;
-import org.apache.maven.plugin.surefire.Summary;
-import org.apache.maven.plugin.surefire.booterclient.ChecksumCalculator;
-import org.apache.maven.project.MavenProject;
-import org.apache.maven.surefire.booter.ProviderConfiguration;
-import org.apache.maven.surefire.failsafe.model.FailsafeSummary;
-import org.apache.maven.surefire.failsafe.model.io.xpp3.FailsafeSummaryXpp3Reader;
-import org.apache.maven.surefire.failsafe.model.io.xpp3.FailsafeSummaryXpp3Writer;
-import org.apache.maven.surefire.suite.RunResult;
-import org.apache.maven.toolchain.ToolchainManager;
-import org.codehaus.plexus.util.ReaderFactory;
-import org.codehaus.plexus.util.StringUtils;
-import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 
 import static org.codehaus.plexus.util.IOUtil.close;
 
@@ -62,13 +68,10 @@ import static org.codehaus.plexus.util.IOUtil.close;
  *
  * @author Jason van Zyl
  * @author Stephen Connolly
- * @requiresProject true
- * @requiresDependencyResolution test
- * @goal integration-test
- * @phase integration-test
- * @threadSafe
  * @noinspection JavaDoc, UnusedDeclaration
  */
+@Mojo( name = "integration-test", requiresProject = true, requiresDependencyResolution = ResolutionScope.TEST,
+       defaultPhase = LifecyclePhase.INTEGRATION_TEST, threadSafe = true )
 public class IntegrationTestMojo
     extends AbstractSurefireMojo
 {
@@ -79,87 +82,80 @@ public class IntegrationTestMojo
      * Information about this plugin, mainly used to lookup this plugin's configuration from the currently executing
      * project.
      *
-     * @parameter default-value="${plugin}"
-     * @readonly
      * @since 2.12
      */
+    @Parameter( defaultValue = "${plugin}", readonly = true )
     private PluginDescriptor pluginDescriptor;
 
     /**
      * Set this to "true" to skip running tests, but still compile them. Its use is NOT RECOMMENDED, but quite
      * convenient on occasion.
      *
-     * @parameter default-value="false" expression="${skipTests}"
      * @since 2.4
      */
+    @Parameter( property = "skipTests", defaultValue = "false" )
     private boolean skipTests;
 
     /**
      * Set this to "true" to skip running integration tests, but still compile them. Its use is NOT RECOMMENDED, but
      * quite convenient on occasion.
      *
-     * @parameter expression="${skipITs}"
      * @since 2.4.3-alpha-2
      */
+    @Parameter( property = "skipITs" )
     private boolean skipITs;
 
     /**
      * This old parameter is just like <code>skipTests</code>, but bound to the old property "maven.test.skip.exec".
      *
-     * @parameter expression="${maven.test.skip.exec}"
      * @since 2.3
      * @deprecated Use skipTests instead.
      */
+    @Parameter( property = "maven.test.skip.exec" )
     private boolean skipExec;
 
     /**
      * Set this to "true" to bypass unit tests entirely. Its use is NOT RECOMMENDED, especially if you enable it using
      * the "maven.test.skip" property, because maven.test.skip disables both running the tests and compiling the tests.
      * Consider using the <code>skipTests parameter</code> instead.
-     *
-     * @parameter default-value="false" expression="${maven.test.skip}"
      */
+    @Parameter( property = "maven.test.skip", defaultValue = "false" )
     private boolean skip;
 
     /**
      * The base directory of the project being tested. This can be obtained in your integration test via
      * System.getProperty("basedir").
-     *
-     * @parameter default-value="${basedir}"
      */
+    @Parameter( defaultValue = "${basedir}" )
     private File basedir;
 
     /**
      * The directory containing generated test classes of the project being tested. This will be included at the
      * beginning of the test classpath.
-     *
-     * @parameter default-value="${project.build.testOutputDirectory}"
      */
+    @Parameter( defaultValue = "${project.build.testOutputDirectory}" )
     private File testClassesDirectory;
 
     /**
      * The directory containing generated classes of the project being tested. This will be included after the test
      * classes in the test classpath.
-     *
-     * @parameter default-value="${project.build.outputDirectory}"
      */
+    @Parameter( defaultValue = "${project.build.outputDirectory}" )
     private File classesDirectory;
 
     /**
      * The Maven Project Object.
-     *
-     * @parameter default-value="${project}"
-     * @readonly
      */
+    @Component
     private MavenProject project;
 
     /**
      * List of dependencies to exclude from the test classpath. Each dependency string must follow the format
      * <i>groupId:artifactId</i>. For example: <i>org.acme:project-a</i>
      *
-     * @parameter
      * @since 2.6
      */
+    @Parameter
     private List<String> classpathDependencyExcludes;
 
     /**
@@ -174,33 +170,31 @@ public class IntegrationTestMojo
      * <li><i>test</i> - system, provided, compile, runtime, test
      * </ul>
      *
-     * @parameter default-value=""
      * @since 2.6
      */
+    @Parameter( defaultValue = "" )
     private String classpathDependencyScopeExclude;
 
     /**
      * Additional elements to be appended to the classpath.
      *
-     * @parameter
      * @since 2.4
      */
+    @Parameter
     private List<String> additionalClasspathElements;
 
     /**
      * Base directory where all reports are written to.
-     *
-     * @parameter default-value="${project.build.directory}/failsafe-reports"
      */
+    @Parameter( defaultValue = "${project.build.directory}/failsafe-reports" )
     private File reportsDirectory;
 
     /**
      * The test source directory containing test class sources.
      *
-     * @parameter default-value="${project.build.testSourceDirectory}"
-     * @required
      * @since 2.2
      */
+    @Parameter( defaultValue = "${project.build.testSourceDirectory}", required = true )
     private File testSourceDirectory;
 
     /**
@@ -213,9 +207,8 @@ public class IntegrationTestMojo
      * <p/>
      * since 2.7.3 You can execute a limited number of method in the test with adding #myMethod or #my*ethod. Si type
      * "-Dtest=MyTest#myMethod" <b>supported for junit 4.x and testNg</b>
-     *
-     * @parameter expression="${it.test}"
      */
+    @Parameter( property = "it.test" )
     private String test;
 
     /**
@@ -232,9 +225,8 @@ public class IntegrationTestMojo
      * &nbsp;&lt;include> entries.<br/>
      * <p/>
      * This parameter is ignored if the TestNG <code>suiteXmlFiles</code> parameter is specified.
-     *
-     * @parameter
      */
+    @Parameter
     private List<String> includes;
 
     /**
@@ -248,92 +240,78 @@ public class IntegrationTestMojo
      * <p/>
      * Each exclude item may also contain a comma-separated sublist of items, which will be treated as multiple
      * &nbsp;&lt;exclude> entries.<br/>
-     *
-     * @parameter
      */
+    @Parameter
     private List<String> excludes;
 
     /**
      * ArtifactRepository of the localRepository. To obtain the directory of localRepository in unit tests use
      * System.getProperty("localRepository").
-     *
-     * @parameter expression="${localRepository}"
-     * @required
-     * @readonly
      */
+    @Parameter( defaultValue = "${localRepository}", required = true, readonly = true )
     private ArtifactRepository localRepository;
 
     /**
      * List of System properties to pass to the JUnit tests.
      *
-     * @parameter
      * @deprecated Use systemPropertyVariables instead.
      */
+    @Parameter
     private Properties systemProperties;
 
     /**
      * List of System properties to pass to the JUnit tests.
      *
-     * @parameter
      * @since 2.5
      */
+    @Parameter
     private Map<String, String> systemPropertyVariables;
 
     /**
      * List of System properties, loaded from a file, to pass to the JUnit tests.
      *
-     * @parameter
      * @since 2.8.2
      */
+    @Parameter
     private File systemPropertiesFile;
 
     /**
      * List of properties for configuring all TestNG related configurations. This is the new preferred method of
      * configuring TestNG.
      *
-     * @parameter
      * @since 2.4
      */
+    @Parameter
     private Properties properties;
 
     /**
      * Map of plugin artifacts.
-     *
-     * @parameter expression="${plugin.artifactMap}"
-     * @required
-     * @readonly
      */
+    @Parameter( defaultValue = "${plugin.artifactMap}", required = true, readonly = true )
     private Map<String, Artifact> pluginArtifactMap;
 
     /**
      * Map of project artifacts.
-     *
-     * @parameter expression="${project.artifactMap}"
-     * @required
-     * @readonly
      */
+    @Parameter( defaultValue = "${project.artifactMap}", readonly = true, required = true )
     private Map<String, Artifact> projectArtifactMap;
 
     /**
      * The summary file to write integration test results to.
-     *
-     * @parameter expression="${project.build.directory}/failsafe-reports/failsafe-summary.xml"
-     * @required
      */
+    @Parameter( defaultValue = "${project.build.directory}/failsafe-reports/failsafe-summary.xml", required = true )
     private File summaryFile;
 
     /**
      * Option to print summary of test suites or just print the test cases that have errors.
-     *
-     * @parameter expression="${failsafe.printSummary}" default-value="true"
      */
+    @Parameter( property = "failsafe.printSummary", defaultValue = "true" )
     private boolean printSummary;
 
     /**
      * Selects the formatting for the test report to be generated. Can be set as "brief" or "plain".
-     *
-     * @parameter expression="${failsafe.reportFormat}" default-value="brief"
      */
+    @Parameter( property = "failsafe.reportFormat", defaultValue = "brief" )
     private String reportFormat;
 
     /**
@@ -341,51 +319,49 @@ public class IntegrationTestMojo
      * testClassName-reportNameSuffix.txt and testClassName-reportNameSuffix-output.txt.
      * File TEST-testClassName-reportNameSuffix.xml has changed attributes 'testsuite'--'name'
      * and 'testcase'--'classname' - reportNameSuffix is added to the attribute value.
-     *
-     * @parameter expression="${surefire.reportNameSuffix}" default-value=""
      */
+    @Parameter( property = "surefire.reportNameSuffix", defaultValue = "" )
     private String reportNameSuffix;
 
     /**
      * Option to generate a file test report or just output the test report to the console.
-     *
-     * @parameter expression="${failsafe.useFile}" default-value="true"
      */
+    @Parameter( property = "failsafe.useFile", defaultValue = "true" )
     private boolean useFile;
 
     /**
      * Set this to "true" to redirect the unit test standard output to a file (found in
      * reportsDirectory/testName-output.txt).
      *
-     * @parameter expression="${maven.test.redirectTestOutputToFile}" default-value="false"
      * @since 2.3
      */
+    @Parameter( property = "maven.test.redirectTestOutputToFile", defaultValue = "false" )
     private boolean redirectTestOutputToFile;
 
     /**
      * Set this to "true" to cause a failure if there are no tests to run. Defaults to "false".
      *
-     * @parameter expression="${failIfNoTests}"
      * @since 2.4
      */
+    @Parameter( property = "failIfNoTests" )
     private Boolean failIfNoTests;
 
     /**
      * Set this to "true" to cause a failure if the none of the tests specified in -Dtest=... are run. Defaults to
      * "true".
      *
-     * @parameter expression="${it.failIfNoSpecifiedTests}"
      * @since 2.12
      */
+    @Parameter( property = "it.failIfNoSpecifiedTests" )
     private Boolean failIfNoSpecifiedTests;
 
     /**
      * Option to specify the forking mode. Can be "never", "once", "always" or "perthread". "none" and "pertest" are also accepted
      * for backwards compatibility. "always" forks for each test-class. "perthread" will create "threadCount" parallel forks.
      *
-     * @parameter expression="${forkMode}" default-value="once"
      * @since 2.1
      */
+    @Parameter( property = "forkMode", defaultValue = "once" )
     private String forkMode;
 
     /**
@@ -393,17 +369,17 @@ public class IntegrationTestMojo
      * jvm will be a new instance of the same VM as the one used to run Maven. JVM settings are not inherited from
      * MAVEN_OPTS.
      *
-     * @parameter expression="${jvm}"
      * @since 2.1
      */
+    @Parameter( property = "jvm" )
     private String jvm;
 
     /**
      * Arbitrary JVM options to set on the command line.
      *
-     * @parameter expression="${argLine}"
      * @since 2.1
      */
+    @Parameter( property = "argLine" )
     private String argLine;
 
     /**
@@ -412,34 +388,34 @@ public class IntegrationTestMojo
      * arbitrary debuggability options (without overwriting the other options specified through the <code>argLine</code>
      * parameter).
      *
-     * @parameter expression="${maven.failsafe.debug}"
      * @since 2.4
      */
+    @Parameter( property = "maven.failsafe.debug" )
     private String debugForkedProcess;
 
     /**
      * Kill the forked test process after a certain number of seconds. If set to 0, wait forever for the process, never
      * timing out.
      *
-     * @parameter expression="${failsafe.timeout}"
      * @since 2.4
      */
+    @Parameter( property = "failsafe.timeout" )
     private int forkedProcessTimeoutInSeconds;
 
     /**
      * Additional environment variables to set on the command line.
      *
-     * @parameter
      * @since 2.1.3
      */
+    @Parameter
     private Map<String, String> environmentVariables = new HashMap<String, String>();
 
     /**
      * Command line working directory.
      *
-     * @parameter expression="${basedir}"
      * @since 2.1.3
      */
+    @Parameter( property = "basedir" )
     private File workingDirectory;
 
     /**
@@ -448,9 +424,9 @@ public class IntegrationTestMojo
      * Setting it to false helps with some problems caused by conflicts between xml parsers in the classpath and the
      * Java 5 provider parser.
      *
-     * @parameter expression="${childDelegation}" default-value="false"
      * @since 2.1
      */
+    @Parameter( property = "childDelegation", defaultValue = "false" )
     private boolean childDelegation;
 
     /**
@@ -458,9 +434,9 @@ public class IntegrationTestMojo
      * be included in test run, if specified.<br/>For JUnit, this parameter forces the use of the 4.7 provider<br/>
      * This parameter is ignored if the <code>suiteXmlFiles</code> parameter is specified.
      *
-     * @parameter expression="${groups}"
      * @since 2.2
      */
+    @Parameter( property = "groups" )
     private String groups;
 
     /**
@@ -468,9 +444,9 @@ public class IntegrationTestMojo
      * specifically not be run.<br/>For JUnit, this parameter forces the use of the 4.7 provider<br/>
      * This parameter is ignored if the <code>suiteXmlFiles</code> parameter is specified.
      *
-     * @parameter expression="${excludedGroups}"
      * @since 2.2
      */
+    @Parameter( property = "excludedGroups" )
     private String excludedGroups;
 
     /**
@@ -480,25 +456,25 @@ public class IntegrationTestMojo
      * This parameter is ignored if the <code>test</code> parameter is specified (allowing you to run a single test
      * instead of an entire suite).
      *
-     * @parameter
      * @since 2.2
      */
+    @Parameter
     private File[] suiteXmlFiles;
 
     /**
      * Allows you to specify the name of the JUnit artifact. If not set, <code>junit:junit</code> will be used.
      *
-     * @parameter expression="${junitArtifactName}" default-value="junit:junit"
      * @since 2.3.1
      */
+    @Parameter( property = "junitArtifactName", defaultValue = "junit:junit" )
     private String junitArtifactName;
 
     /**
      * Allows you to specify the name of the TestNG artifact. If not set, <code>org.testng:testng</code> will be used.
      *
-     * @parameter expression="${testNGArtifactName}" default-value="org.testng:testng"
      * @since 2.3.1
      */
+    @Parameter( property = "testNGArtifactName", defaultValue = "org.testng:testng" )
     private String testNGArtifactName;
 
     /**
@@ -506,17 +482,17 @@ public class IntegrationTestMojo
      * allocated for this execution. Only makes sense to use in conjunction with the <code>parallel</code> parameter. (forkMode=perthread
      * does not support/require the <code>parallel</code> parameter)
      *
-     * @parameter expression="${threadCount}"
      * @since 2.2
      */
+    @Parameter( property = "threadCount" )
     private int threadCount;
 
     /**
      * (JUnit 4.7 provider) Indicates that threadCount is per cpu core.
      *
-     * @parameter expression="${perCoreThreadCount}" default-value="true"
      * @since 2.5
      */
+    @Parameter( property = "perCoreThreadCount", defaultValue = "true" )
     private boolean perCoreThreadCount;
 
     /**
@@ -524,9 +500,9 @@ public class IntegrationTestMojo
      * the actual number of classes/methods will decide. Setting this to "true" effectively disables
      * <code>perCoreThreadCount</code> and <code>threadCount</code>. Defaults to "false".
      *
-     * @parameter expression="${useUnlimitedThreads}" default-value="false"
      * @since 2.5
      */
+    @Parameter( property = "useUnlimitedThreads", defaultValue = "false" )
     private boolean useUnlimitedThreads;
 
     /**
@@ -537,47 +513,44 @@ public class IntegrationTestMojo
      * (JUnit 4.7 provider) Supports values "classes"/"methods"/"both" to run in separate threads, as controlled by
      * <code>threadCount</code>.
      *
-     * @parameter expression="${parallel}"
      * @todo test how this works with forking, and console/file output parallelism
      * @since 2.2
      */
+    @Parameter( property = "parallel" )
     private String parallel;
 
     /**
      * Whether to trim the stack trace in the reports to just the lines within the test, or show the full trace.
      *
-     * @parameter expression="${trimStackTrace}" default-value="true"
      * @since 2.2
      */
+    @Parameter( property = "trimStackTrace", defaultValue = "true" )
     private boolean trimStackTrace;
 
     /**
      * Resolves the artifacts needed.
-     *
-     * @component
      */
+    @Component
     private ArtifactResolver artifactResolver;
 
     /**
      * Creates the artifact.
-     *
-     * @component
      */
+    @Component
     private ArtifactFactory artifactFactory;
 
     /**
      * The remote plugin repositories declared in the POM.
      *
-     * @parameter expression="${project.pluginArtifactRepositories}"
      * @since 2.2
      */
+    @Parameter( defaultValue = "${project.pluginArtifactRepositories}" )
     private List remoteRepositories;
 
     /**
      * For retrieval of artifact's metadata.
-     *
-     * @component
      */
+    @Component
     private ArtifactMetadataSource metadataSource;
 
     private Properties originalSystemProperties;
@@ -590,9 +563,9 @@ public class IntegrationTestMojo
     /**
      * Flag to disable the generation of report files in xml format.
      *
-     * @parameter expression="${disableXmlReport}" default-value="false"
      * @since 2.2
      */
+    @Parameter( property = "disableXmlReport", defaultValue = "false" )
     private boolean disableXmlReport;
 
     /**
@@ -600,9 +573,9 @@ public class IntegrationTestMojo
      * Prevents problems with JDKs which implement the service provider lookup mechanism by using the system's
      * classloader.
      *
-     * @parameter expression="${failsafe.useSystemClassLoader}" default-value="true"
      * @since 2.3
      */
+    @Parameter( property = "failsafe.useSystemClassLoader", defaultValue = "true" )
     private boolean useSystemClassLoader;
 
     /**
@@ -613,48 +586,44 @@ public class IntegrationTestMojo
      * <p/>
      * Beware, setting this to "false" may cause your tests to fail on Windows if your classpath is too long.
      *
-     * @parameter expression="${failsafe.useManifestOnlyJar}" default-value="true"
      * @since 2.4.3
      */
+    @Parameter( property = "failsafe.useManifestOnlyJar", defaultValue = "true" )
     private boolean useManifestOnlyJar;
 
     /**
      * By default, Surefire enables JVM assertions for the execution of your test cases. To disable the assertions, set
      * this flag to "false".
      *
-     * @parameter expression="${enableAssertions}" default-value="true"
      * @since 2.3.1
      */
+    @Parameter( property = "enableAssertions", defaultValue = "true" )
     private boolean enableAssertions;
 
     /**
      * The current build session instance.
-     *
-     * @parameter expression="${session}"
-     * @required
-     * @readonly
      */
+    @Component
     private MavenSession session;
 
     /**
      * (TestNG only) Define the factory class used to create all test instances.
      *
-     * @parameter expression="${objectFactory}"
      * @since 2.5
      */
+    @Parameter( property = "objectFactory" )
     private String objectFactory;
 
     /**
      * The character encoding scheme to be applied.
-     *
-     * @parameter expression="${encoding}" default-value="${project.reporting.outputEncoding}"
      */
+    @Parameter( property = "encoding", defaultValue = "${project.reporting.outputEncoding}" )
     private String encoding;
 
     /**
-     * @parameter default-value="${session.parallel}"
-     * @readonly
+     *
      */
+    @Parameter( defaultValue = "${session.parallel}", readonly = true )
     private Boolean parallelMavenExecution;
 
     /**
@@ -675,14 +644,15 @@ public class IntegrationTestMojo
      * so different configurations will have different statistics files, meaning if you change any config
      * settings you will re-run once before new statistics data can be established.
      *
-     * @parameter default-value="filesystem"
      * @since 2.7
      */
+    @Parameter( defaultValue = "filesystem" )
     private String runOrder;
 
     /**
-     * @component
+     *
      */
+    @Component
     private ToolchainManager toolchainManager;
 
     protected void handleSummary( Summary summary )

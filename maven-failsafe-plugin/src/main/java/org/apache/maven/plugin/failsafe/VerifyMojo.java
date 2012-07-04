@@ -19,17 +19,14 @@ package org.apache.maven.plugin.failsafe;
  * under the License.
  */
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.surefire.SurefireHelper;
 import org.apache.maven.plugin.surefire.SurefireReportParameters;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.surefire.failsafe.model.FailsafeSummary;
 import org.apache.maven.surefire.failsafe.model.io.xpp3.FailsafeSummaryXpp3Reader;
 import org.codehaus.plexus.util.IOUtil;
@@ -37,16 +34,20 @@ import org.codehaus.plexus.util.ReaderFactory;
 import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+
 /**
  * Verify integration tests ran using Surefire.
  *
  * @author Stephen Connolly
  * @author Jason van Zyl
- * @requiresProject true
- * @goal verify
- * @phase verify
- * @threadSafe
  */
+@Mojo( name = "verify", defaultPhase = LifecyclePhase.VERIFY, requiresProject = true, threadSafe = true )
 public class VerifyMojo
     extends AbstractMojo
     implements SurefireReportParameters
@@ -56,101 +57,95 @@ public class VerifyMojo
      * Set this to 'true' to skip running tests, but still compile them. Its use is NOT RECOMMENDED, but quite
      * convenient on occasion.
      *
-     * @parameter expression="${skipTests}"
      * @since 2.4
      */
+    @Parameter( property = "skipTests" )
     private boolean skipTests;
 
     /**
      * Set this to 'true' to skip running integration tests, but still compile them. Its use is NOT RECOMMENDED, but quite
      * convenient on occasion.
      *
-     * @parameter expression="${skipITs}"
      * @since 2.4.3-alpha-2
      */
+    @Parameter( property = "skipITs" )
     private boolean skipITs;
 
     /**
      * This old parameter is just like skipTests, but bound to the old property maven.test.skip.exec.
      *
-     * @parameter expression="${maven.test.skip.exec}"
      * @since 2.3
      * @deprecated Use -DskipTests instead.
      */
+    @Parameter( property = "maven.test.skip.exec" )
     private boolean skipExec;
 
     /**
      * Set this to 'true' to bypass unit tests entirely. Its use is NOT RECOMMENDED, especially if you
      * enable it using the "maven.test.skip" property, because maven.test.skip disables both running the
      * tests and compiling the tests.  Consider using the skipTests parameter instead.
-     *
-     * @parameter default-value="false" expression="${maven.test.skip}"
      */
+    @Parameter( property = "maven.test.skip", defaultValue = "false" )
     private boolean skip;
 
     /**
      * Set this to true to ignore a failure during testing. Its use is NOT RECOMMENDED, but quite convenient on
      * occasion.
-     *
-     * @parameter default-value="false" expression="${maven.test.failure.ignore}"
      */
+    @Parameter( property = "maven.test.failure.ignore", defaultValue = "false" )
     private boolean testFailureIgnore;
 
     /**
      * The base directory of the project being tested. This can be obtained in your unit test by
      * System.getProperty("basedir").
-     *
-     * @parameter default-value="${basedir}"
      */
+    @Parameter( defaultValue = "${basedir}" )
     private File basedir;
 
     /**
      * The directory containing generated test classes of the project being tested.
      * This will be included at the beginning the test classpath.
-     *
-     * @parameter default-value="${project.build.testOutputDirectory}"
      */
+    @Parameter( defaultValue = "${project.build.testOutputDirectory}" )
     private File testClassesDirectory;
 
     /**
      * Base directory where all reports are written to.
-     *
-     * @parameter default-value="${project.build.directory}/failsafe-reports"
      */
+    @Parameter( defaultValue = "${project.build.directory}/failsafe-reports" )
     private File reportsDirectory;
 
     /**
      * The summary file to read integration test results from.
      *
-     * @parameter expression="${project.build.directory}/failsafe-reports/failsafe-summary.xml"
-     * @required
      * @noinspection UnusedDeclaration
      */
+    @Parameter( defaultValue = "${project.build.directory}/failsafe-reports/failsafe-summary.xml", required = true )
     private File summaryFile;
 
     /**
      * Additional summary files to read integration test results from.
      *
-     * @parameter
      * @noinspection UnusedDeclaration, MismatchedReadAndWriteOfArray
      * @since 2.6
      */
+    @Parameter
     private File[] summaryFiles;
 
     /**
      * Set this to "true" to cause a failure if there are no tests to run.
      *
-     * @parameter expression="${failIfNoTests}"
      * @since 2.4
      */
+    @Parameter( property = "failIfNoTests" )
     private Boolean failIfNoTests;
 
     /**
      * The character encoding scheme to be applied.
      *
-     * @parameter expression="${encoding}" default-value="${project.reporting.outputEncoding}"
      * @noinspection UnusedDeclaration
      */
+    @Parameter( property = "encoding", defaultValue = "${project.reporting.outputEncoding}" )
     private String encoding;
 
 
