@@ -29,6 +29,7 @@ import java.util.Map.Entry;
  * TestNG 6.5.2 configurator. Changed objectFactory type to String
  *
  * @author <a href='mailto:marvin[at]marvinformatics[dot]com'>Marvin Froeder</a>
+ * @since 2.13
  */
 public class TestNG652Configurator
     extends TestNGMapConfigurator
