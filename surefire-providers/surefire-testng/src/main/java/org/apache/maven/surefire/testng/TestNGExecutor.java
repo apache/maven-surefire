@@ -33,6 +33,7 @@ import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.testng.conf.Configurator;
 import org.apache.maven.surefire.testng.conf.TestNG4751Configurator;
 import org.apache.maven.surefire.testng.conf.TestNG52Configurator;
+import org.apache.maven.surefire.testng.conf.TestNG652Configurator;
 import org.apache.maven.surefire.testng.conf.TestNGMapConfigurator;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.NestedRuntimeException;
@@ -192,10 +193,15 @@ public class TestNGExecutor
             {
                 return new TestNG52Configurator();
             }
-            range = VersionRange.createFromVersionSpec( "[5.3,)" );
+            range = VersionRange.createFromVersionSpec( "[5.3,6.4]" );
             if ( range.containsVersion( version ) )
             {
                 return new TestNGMapConfigurator();
+            }
+            range = VersionRange.createFromVersionSpec( "[6.5,)" );
+            if ( range.containsVersion( version ) )
+            {
+                return new TestNG652Configurator();
             }
 
             throw new TestSetFailedException( "Unknown TestNG version " + version );
