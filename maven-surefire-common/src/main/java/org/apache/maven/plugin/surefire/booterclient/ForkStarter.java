@@ -277,12 +277,12 @@ public class ForkStarter
             final int result =
                 CommandLineUtils.executeCommandLine( cli, threadedStreamConsumer, threadedStreamConsumer, timeout );
 
+            threadedStreamConsumer.close();
+            forkClient.close();
             if ( result != RunResult.SUCCESS )
             {
                 throw new SurefireBooterForkException( "Error occurred in starting fork, check output in log" );
             }
-            threadedStreamConsumer.close();
-            forkClient.close();
 
             runResult = globalRunStatistics.getRunResult();
         }
