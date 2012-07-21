@@ -56,6 +56,7 @@ public class TestNGMapConfigurator
             throws TestSetFailedException
     {
         Map convertedOptions = new HashMap();
+        convertedOptions.put( "-mixed", Boolean.FALSE );
         for ( Iterator it = options.entrySet().iterator(); it.hasNext(); )
         {
             Map.Entry entry = (Map.Entry) it.next();

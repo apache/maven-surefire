@@ -1,0 +1,8 @@
+<suite name="BaseSuite" verbose="1" parallel="classes"
+       thread-count="2">
+    <test name="SUREFIRE-847" preserve-order="false">
+        <packages>
+            <package name="org.codehaus"/>
+        </packages>
+    </test>
+</suite>
