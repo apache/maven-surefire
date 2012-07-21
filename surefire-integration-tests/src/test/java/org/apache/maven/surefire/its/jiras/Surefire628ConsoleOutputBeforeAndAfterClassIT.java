@@ -44,16 +44,4 @@ public class Surefire628ConsoleOutputBeforeAndAfterClassIT
         validator.verifyTextInLog( "BeforeClass628Test2" );
         validator.verifyTextInLog( "AfterClass628Test2" );
     }
-
-    public void testProperBeforeAndAfterClassCapture()
-    {
-        OutputValidator validator =
-            unpack( "surefire-628-consoleoutputbeforeandafterclass" ).failNever().redirectToFile(
-                true ).parallelClasses().executeTest();
-
-        final TestFile surefireReportsFile = validator.getSurefireReportsFile( "surefire628.Test2-output.txt" );
-
-        surefireReportsFile.assertContainsText( "628Test2" ).assertContainsText(
-            "BeforeClass628Test2" ).assertContainsText( "AfterClass628Test2" );
-    }
 }
