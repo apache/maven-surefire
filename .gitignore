@@ -11,3 +11,4 @@ build
 .idea
 .surefire-*
 .DS_Store
+*.versionsBackup
