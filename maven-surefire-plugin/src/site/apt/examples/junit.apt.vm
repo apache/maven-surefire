@@ -236,7 +236,13 @@ else
 </plugins>
 +---+
 
-  This will execute only those tests annotated with the <<<@Categories(com.mycompany.SlowTests.class)>>> annotation:
+  This will execute only those tests annotated with the <<<@Category(com.mycompany.SlowTests.class)>>> annotation and those tests
+  annotated with <<<@Category(com.mycompany.SlowerTests.class)>>> if class/interface <<<SlowerTests>>> is subclass of <<<SlowTests>>>:
+
++---+
+    public interface SlowTests{}
+    public interface SlowerTests extends SlowTests{}
++---+
 
 +---+
     public class AppTest {
@@ -244,6 +250,12 @@ else
       @Category(com.mycompany.SlowTests.class)
       public void testSlow() {
         System.out.println("slow");
+      }
+
+      @Test
+      @Category(com.mycompany.SlowerTests.class)
+      public void testSlower() {
+        System.out.println("slower");
       }
 
       @Test

@@ -65,12 +65,12 @@ public class SingleGroupMatcher
         {
             for ( Class<?> cls : cats )
             {
-                String name = cls.getName();
-                if ( enabledClass != null && enabledClass.getName().equals( name ) )
+                if ( enabledClass != null && enabledClass.isAssignableFrom(cls) )
                 {
                     return true;
                 }
 
+                String name = cls.getName();
                 if ( name.endsWith( enabled ) )
                 {
                     return true;
