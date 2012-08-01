@@ -1338,7 +1338,9 @@ public abstract class AbstractSurefireMojo
 
     }
 
-    protected abstract void addPluginSpecificChecksumItems( ChecksumCalculator checksum );
+    protected void addPluginSpecificChecksumItems( ChecksumCalculator checksum ){
+
+    }
 
     protected boolean hasExecutedBefore()
     {
@@ -1879,6 +1881,409 @@ public abstract class AbstractSurefireMojo
             return dependencyResolver.addProviderToClasspath( pluginArtifactMap, plugin );
         }
 
+    }
+
+
+    public List<String> getIncludes()
+    {
+        return includes;
+    }
+
+    public void setIncludes( List<String> includes )
+    {
+        this.includes = includes;
+    }
+
+    public List<String> getExcludes()
+    {
+        return excludes;
+    }
+
+    public void setExcludes( List<String> excludes )
+    {
+        this.excludes = excludes;
+    }
+
+    public ArtifactRepository getLocalRepository()
+    {
+        return localRepository;
+    }
+
+    public void setLocalRepository( ArtifactRepository localRepository )
+    {
+        this.localRepository = localRepository;
+    }
+
+    /**
+     * @noinspection deprecation
+     */
+    public Properties getSystemProperties()
+    {
+        return systemProperties;
+    }
+
+    /**
+     * @noinspection deprecation
+     */
+    public void setSystemProperties( Properties systemProperties )
+    {
+        this.systemProperties = systemProperties;
+    }
+
+    public Map<String, String> getSystemPropertyVariables()
+    {
+        return systemPropertyVariables;
+    }
+
+    public void setSystemPropertyVariables( Map<String, String> systemPropertyVariables )
+    {
+        this.systemPropertyVariables = systemPropertyVariables;
+    }
+
+    public File getSystemPropertiesFile()
+    {
+        return systemPropertiesFile;
+    }
+
+    public void setSystemPropertiesFile( File systemPropertiesFile )
+    {
+        this.systemPropertiesFile = systemPropertiesFile;
+    }
+
+    public Properties getProperties()
+    {
+        return properties;
+    }
+
+    public void setProperties( Properties properties )
+    {
+        this.properties = properties;
+    }
+
+    public Map<String, Artifact> getPluginArtifactMap()
+    {
+        return pluginArtifactMap;
+    }
+
+    public void setPluginArtifactMap( Map<String, Artifact> pluginArtifactMap )
+    {
+        this.pluginArtifactMap = pluginArtifactMap;
+    }
+
+    public Map<String, Artifact> getProjectArtifactMap()
+    {
+        return projectArtifactMap;
+    }
+
+    public void setProjectArtifactMap( Map<String, Artifact> projectArtifactMap )
+    {
+        this.projectArtifactMap = projectArtifactMap;
+    }
+
+
+    public String getReportNameSuffix()
+    {
+        return reportNameSuffix;
+    }
+
+    public void setReportNameSuffix( String reportNameSuffix )
+    {
+        this.reportNameSuffix = reportNameSuffix;
+    }
+
+
+    public boolean isRedirectTestOutputToFile()
+    {
+        return redirectTestOutputToFile;
+    }
+
+    public void setRedirectTestOutputToFile( boolean redirectTestOutputToFile )
+    {
+        this.redirectTestOutputToFile = redirectTestOutputToFile;
+    }
+
+
+    public Boolean getFailIfNoTests()
+    {
+        return failIfNoTests;
+    }
+
+    public void setFailIfNoTests( Boolean failIfNoTests )
+    {
+        this.failIfNoTests = failIfNoTests;
+    }
+
+    public String getForkMode()
+    {
+        return forkMode;
+    }
+
+    public void setForkMode( String forkMode )
+    {
+        this.forkMode = forkMode;
+    }
+
+    public String getJvm()
+    {
+        return jvm;
+    }
+
+    public void setJvm( String jvm )
+    {
+        this.jvm = jvm;
+    }
+
+    public String getArgLine()
+    {
+        return argLine;
+    }
+
+    public void setArgLine( String argLine )
+    {
+        this.argLine = argLine;
+    }
+
+
+    public Map<String, String> getEnvironmentVariables()
+    {
+        return environmentVariables;
+    }
+
+    public void setEnvironmentVariables( Map<String, String> environmentVariables )
+    {
+        this.environmentVariables = environmentVariables;
+    }
+
+    public File getWorkingDirectory()
+    {
+        return workingDirectory;
+    }
+
+    public void setWorkingDirectory( File workingDirectory )
+    {
+        this.workingDirectory = workingDirectory;
+    }
+
+    public boolean isChildDelegation()
+    {
+        return childDelegation;
+    }
+
+    public void setChildDelegation( boolean childDelegation )
+    {
+        this.childDelegation = childDelegation;
+    }
+
+    public String getGroups()
+    {
+        return groups;
+    }
+
+    public void setGroups( String groups )
+    {
+        this.groups = groups;
+    }
+
+    public String getExcludedGroups()
+    {
+        return excludedGroups;
+    }
+
+    public void setExcludedGroups( String excludedGroups )
+    {
+        this.excludedGroups = excludedGroups;
+    }
+
+    public File[] getSuiteXmlFiles()
+    {
+        return suiteXmlFiles;
+    }
+
+    public void setSuiteXmlFiles( File[] suiteXmlFiles )
+    {
+        this.suiteXmlFiles = suiteXmlFiles;
+    }
+
+    public String getJunitArtifactName()
+    {
+        return junitArtifactName;
+    }
+
+    public void setJunitArtifactName( String junitArtifactName )
+    {
+        this.junitArtifactName = junitArtifactName;
+    }
+
+    public String getTestNGArtifactName()
+    {
+        return testNGArtifactName;
+    }
+
+    public void setTestNGArtifactName( String testNGArtifactName )
+    {
+        this.testNGArtifactName = testNGArtifactName;
+    }
+
+    public int getThreadCount()
+    {
+        return threadCount;
+    }
+
+    public void setThreadCount( int threadCount )
+    {
+        this.threadCount = threadCount;
+    }
+
+    public boolean getPerCoreThreadCount()
+    {
+        return perCoreThreadCount;
+    }
+
+    public void setPerCoreThreadCount( boolean perCoreThreadCount )
+    {
+        this.perCoreThreadCount = perCoreThreadCount;
+    }
+
+    public boolean getUseUnlimitedThreads()
+    {
+        return useUnlimitedThreads;
+    }
+
+    public void setUseUnlimitedThreads( boolean useUnlimitedThreads )
+    {
+        this.useUnlimitedThreads = useUnlimitedThreads;
+    }
+
+    public String getParallel()
+    {
+        return parallel;
+    }
+
+    public void setParallel( String parallel )
+    {
+        this.parallel = parallel;
+    }
+
+    public boolean isTrimStackTrace()
+    {
+        return trimStackTrace;
+    }
+
+    public void setTrimStackTrace( boolean trimStackTrace )
+    {
+        this.trimStackTrace = trimStackTrace;
+    }
+
+    public ArtifactResolver getArtifactResolver()
+    {
+        return artifactResolver;
+    }
+
+    public void setArtifactResolver( ArtifactResolver artifactResolver )
+    {
+        this.artifactResolver = artifactResolver;
+    }
+
+    public ArtifactFactory getArtifactFactory()
+    {
+        return artifactFactory;
+    }
+
+    public void setArtifactFactory( ArtifactFactory artifactFactory )
+    {
+        this.artifactFactory = artifactFactory;
+    }
+
+    public List<ArtifactRepository> getRemoteRepositories()
+    {
+        return remoteRepositories;
+    }
+
+    public void setRemoteRepositories( List<ArtifactRepository> remoteRepositories )
+    {
+        this.remoteRepositories = remoteRepositories;
+    }
+
+    public ArtifactMetadataSource getMetadataSource()
+    {
+        return metadataSource;
+    }
+
+    public void setMetadataSource( ArtifactMetadataSource metadataSource )
+    {
+        this.metadataSource = metadataSource;
+    }
+
+
+    public boolean isDisableXmlReport()
+    {
+        return disableXmlReport;
+    }
+
+    public void setDisableXmlReport( boolean disableXmlReport )
+    {
+        this.disableXmlReport = disableXmlReport;
+    }
+
+
+    public boolean isEnableAssertions()
+    {
+        return enableAssertions;
+    }
+
+    public void setEnableAssertions( boolean enableAssertions )
+    {
+        this.enableAssertions = enableAssertions;
+    }
+
+    public MavenSession getSession()
+    {
+        return session;
+    }
+
+    public void setSession( MavenSession session )
+    {
+        this.session = session;
+    }
+
+    public String getObjectFactory()
+    {
+        return objectFactory;
+    }
+
+    public void setObjectFactory( String objectFactory )
+    {
+        this.objectFactory = objectFactory;
+    }
+
+    public ToolchainManager getToolchainManager()
+    {
+        return toolchainManager;
+    }
+
+    public void setToolchainManager( ToolchainManager toolchainManager )
+    {
+        this.toolchainManager = toolchainManager;
+    }
+
+    public boolean isMavenParallel()
+    {
+        return parallelMavenExecution != null && parallelMavenExecution;
+    }
+
+    public String getRunOrder()
+    {
+        return runOrder;
+    }
+
+    public void setRunOrder( String runOrder )
+    {
+        this.runOrder = runOrder;
+    }
+
+    public PluginDescriptor getPluginDescriptor()
+    {
+        return pluginDescriptor;
     }
 
 }
