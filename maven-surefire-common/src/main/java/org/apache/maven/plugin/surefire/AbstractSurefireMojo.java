@@ -573,6 +573,7 @@ public abstract class AbstractSurefireMojo
     boolean verifyParameters()
         throws MojoFailureException
     {
+        setProperties( new OrderedProperties( getProperties() ) );
         if ( isSkipExecution() )
         {
             getLog().info( "Tests are skipped." );
@@ -593,7 +594,6 @@ public abstract class AbstractSurefireMojo
             ensureParallelRunningCompatibility();
             warnIfUselessUseSystemClassLoaderParameter();
         }
-
         return true;
     }
 
@@ -642,6 +642,7 @@ public abstract class AbstractSurefireMojo
     {
         List<ProviderInfo> providers = createProviders();
         Summary summary = new Summary();
+
         for ( ProviderInfo provider : providers )
         {
             executeProvider( provider, summary );
@@ -717,11 +718,6 @@ public abstract class AbstractSurefireMojo
      */
     private void convertTestNGParameters()
     {
-        if ( getProperties() == null ) // May be predefined from plugin paramaters
-        {
-            setProperties( new Properties() );
-        }
-
         if ( this.getParallel() != null )
         {
             getProperties().setProperty( ProviderParameterNames.PARALLEL_PROP, this.getParallel() );
@@ -747,10 +743,6 @@ public abstract class AbstractSurefireMojo
 
     private void convertGroupParameters()
     {
-        if ( getProperties() == null ) // May be predefined from plugin paramaters
-        {
-            setProperties( new Properties() );
-        }
         if ( this.getExcludedGroups() != null )
         {
             getProperties().setProperty( ProviderParameterNames.TESTNG_EXCLUDEDGROUPS_PROP, this.getExcludedGroups() );
@@ -777,11 +769,6 @@ public abstract class AbstractSurefireMojo
      */
     private void convertJunitCoreParameters()
     {
-        if ( getProperties() == null )
-        {
-            setProperties( new Properties() );
-        }
-
         if ( this.getParallel() != null )
         {
             getProperties().setProperty( ProviderParameterNames.PARALLEL_PROP, this.getParallel() );
@@ -889,10 +876,6 @@ public abstract class AbstractSurefireMojo
         }
 
         Properties providerProperties = getProperties();
-        if ( providerProperties == null )
-        {
-            providerProperties = new Properties();
-        }
 
         RunOrderParameters runOrderParameters =
             new RunOrderParameters( getRunOrder(), getStatisticsFileName( configurationHash ) );
@@ -1338,7 +1321,8 @@ public abstract class AbstractSurefireMojo
 
     }
 
-    protected void addPluginSpecificChecksumItems( ChecksumCalculator checksum ){
+    protected void addPluginSpecificChecksumItems( ChecksumCalculator checksum )
+    {
 
     }
 
@@ -1539,7 +1523,7 @@ public abstract class AbstractSurefireMojo
 
         if ( this.getSystemPropertiesFile() != null )
         {
-            Properties props = new Properties();
+            Properties props = new OrderedProperties();
             try
             {
                 FileInputStream fis = new FileInputStream( getSystemPropertiesFile() );
