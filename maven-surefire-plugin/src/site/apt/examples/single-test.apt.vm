@@ -103,7 +103,7 @@ mvn -Dit.test=ITCircle#test* verify
 +---+
 #{end}
 
-  With 2.13, you can select methods too
+  As of surefire 2.12.1, you can select multiple methods (JUnit4X only at this time, patches welcome)
 
 #{if}(${project.artifactId}=="maven-surefire-plugin")
 +---+
