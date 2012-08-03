@@ -37,6 +37,7 @@
     <it.settings.showPasswords>false</it.settings.showPasswords>
     <testng.version>5.7</testng.version>
     <surefire.threadcount>1</surefire.threadcount>
+    <mavenHomeUsed>${maven.home}</mavenHomeUsed>
   </properties>
 
   <dependencies>
@@ -88,33 +89,14 @@
         <configuration>
           <!-- Pass current surefire version to the main suite so that it -->
           <!-- can forward to all integration test projects. SUREFIRE-513 -->
-          <systemProperties>
-            <property>
-              <name>surefire.version</name>
-              <value>${project.version}</value>
-            </property>
-            <property>
-              <name>testng.version</name>
-              <value>${testng.version}</value>
-            </property>
-            <property>
-              <name>maven.home</name>
-              <value>${maven.home}</value>
-            </property>
-            <property>
-              <name>maven.settings.file</name>
-              <value>${project.basedir}/../surefire-setup-integration-tests/target/private/it-settings.xml</value>
-            </property>
-            <property>
-              <name>maven.repo.local</name>
-              <value>${project.basedir}/../surefire-setup-integration-tests/target/it-repo</value>
-            </property>
-            <property>
-              <name>maven.test.tmpdir</name>
-              <value>${project.build.directory}</value>
-            </property>
-          </systemProperties>
-
+          <systemPropertyVariables>
+            <surefire.version>${project.version}</surefire.version>
+            <testng.version>${testng.version}</testng.version>
+            <maven.home>${mavenHomeUsed}</maven.home>
+            <maven.settings.file>${project.basedir}/../surefire-setup-integration-tests/target/private/it-settings.xml</maven.settings.file>
+            <maven.repo.local>${project.basedir}/../surefire-setup-integration-tests/target/it-repo</maven.repo.local>
+            <maven.test.tmpdir>${project.build.directory}</maven.test.tmpdir>
+          </systemPropertyVariables>
         </configuration>
         <executions>
           <execution>
