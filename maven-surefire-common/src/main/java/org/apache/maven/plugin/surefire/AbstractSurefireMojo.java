@@ -273,14 +273,17 @@ public abstract class AbstractSurefireMojo
 
     /**
      * Map of plugin artifacts.
+     *
      */
-    @Parameter( defaultValue = "${plugin.artifactMap}", required = true, readonly = true )
+    // olamy: would make more sense using defaultValue but doesn't work with maven 2.x
+    @Parameter( property = "plugin.artifactMap", required = true, readonly = true )
     protected Map<String, Artifact> pluginArtifactMap;
 
     /**
      * Map of project artifacts.
      */
-    @Parameter( defaultValue = "${project.artifactMap}", readonly = true, required = true )
+    // olamy: would make more sense using defaultValue but doesn't work with maven 2.x
+    @Parameter( property = "project.artifactMap", readonly = true, required = true )
     protected Map<String, Artifact> projectArtifactMap;
 
     /**
