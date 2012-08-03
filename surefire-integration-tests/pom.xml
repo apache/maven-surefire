@@ -96,6 +96,8 @@
             <maven.settings.file>${project.basedir}/../surefire-setup-integration-tests/target/private/it-settings.xml</maven.settings.file>
             <maven.repo.local>${project.basedir}/../surefire-setup-integration-tests/target/it-repo</maven.repo.local>
             <maven.test.tmpdir>${project.build.directory}</maven.test.tmpdir>
+            <user.localRepository>${settings.localRepository}</user.localRepository>
+            <testBuildDirectory>${project.build.testOutputDirectory}</testBuildDirectory>
           </systemPropertyVariables>
         </configuration>
         <executions>

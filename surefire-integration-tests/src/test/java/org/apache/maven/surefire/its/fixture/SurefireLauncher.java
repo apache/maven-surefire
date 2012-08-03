@@ -19,12 +19,7 @@ package org.apache.maven.surefire.its.fixture;
  * under the License.
  */
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import org.apache.commons.lang.text.StrSubstitutor;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
@@ -33,6 +28,13 @@ import org.apache.maven.it.VerificationException;
 import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.FileUtils;
 import org.apache.maven.it.util.ResourceExtractor;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Encapsulate all needed features to start a surefire run
@@ -277,6 +279,32 @@ public class SurefireLauncher
 
     public OutputValidator executeCurrentGoals()
     {
+
+        // hack "a la" invoker plugin to download dependencies from local repo
+        // and not download from central
+        try
+        {
+            String userLocalRepo = System.getProperty( "user.localRepository" );
+            String testBuildDirectory = System.getProperty( "testBuildDirectory" );
+
+            Map<String, String> values = new HashMap<String, String>( 1 );
+            values.put( "localRepositoryUrl", toUrl( userLocalRepo ) );
+            StrSubstitutor strSubstitutor = new StrSubstitutor( values );
+
+            String fileContent = FileUtils.fileRead( new File( testBuildDirectory, "settings.xml" ) );
+
+            File interpolatedSettings = new File( testBuildDirectory, "interpolated-settings.xml" );
+            String filtered = strSubstitutor.replace( fileContent );
+
+            FileUtils.fileWrite( interpolatedSettings.getAbsolutePath(), filtered );
+
+            cliOptions.add( "-s " + interpolatedSettings.getAbsolutePath() );
+        }
+        catch ( IOException e )
+        {
+            throw new SurefireVerifierException( e );
+        }
+
         verifier.setCliOptions( cliOptions );
         try
         {
@@ -291,6 +319,20 @@ public class SurefireLauncher
         {
             verifier.resetStreams();
         }
+    }
+
+    private static String toUrl( String filename )
+    {
+        /*
+         * NOTE: Maven fails to properly handle percent-encoded "file:" URLs (WAGON-111) so don't use File.toURI() here
+         * as-is but use the decoded path component in the URL.
+         */
+        String url = "file://" + new File( filename ).toURI().getPath();
+        if ( url.endsWith( "/" ) )
+        {
+            url = url.substring( 0, url.length() - 1 );
+        }
+        return url;
     }
 
 
