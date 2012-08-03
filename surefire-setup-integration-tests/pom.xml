@@ -155,28 +155,13 @@
           <!--test>**/SetUpForIntegrationTest</test-->
           <!-- Pass current surefire version to the main suite so that it -->
           <!-- can forward to all integration test projects. SUREFIRE-513 -->
-          <systemProperties>
-            <property>
-              <name>surefire.version</name>
-              <value>${project.version}</value>
-            </property>
-            <property>
-              <name>testng.version</name>
-              <value>${testng.version}</value>
-            </property>
-            <property>
-              <name>maven.home</name>
-              <value>${maven.home}</value>
-            </property>
-            <property>
-              <name>maven.settings.file</name>
-              <value>${project.build.directory}/private/settings.xml</value>
-            </property>
-            <property>
-              <name>maven.staged.local.repo</name>
-              <value>${project.build.directory}/it-repo</value>
-            </property>
-          </systemProperties>
+          <systemPropertyVariables>
+            <surefire.version>${project.version}</surefire.version>
+            <testng.version>${testng.version}</testng.version>
+            <maven.home>${maven.home}</maven.home>
+            <maven.settings.file>${project.build.directory}/private/settings.xml</maven.settings.file>
+            <maven.staged.local.repo>${project.build.directory}/it-repo</maven.staged.local.repo>
+          </systemPropertyVariables>
         </configuration>
         <dependencies>
           <dependency>
