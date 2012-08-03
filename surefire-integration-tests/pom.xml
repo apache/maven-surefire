@@ -163,5 +163,43 @@
       </dependencies>
     </profile>
 
+    <profile>
+      <id>maven-2.2.1</id>
+      <properties>
+        <mavenHomeUsed>${project.build.directory}/maven-extract/apache-maven-2.2.1</mavenHomeUsed>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <version>2.4</version>
+            <executions>
+              <execution>
+                <id>unpack</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>unpack</goal>
+                </goals>
+                <configuration>
+                  <artifactItems>
+                    <artifactItem>
+                      <groupId>org.apache.maven</groupId>
+                      <artifactId>apache-maven</artifactId>
+                      <version>2.2.1</version>
+                      <type>tar.gz</type>
+                      <classifier>bin</classifier>
+                      <overWrite>false</overWrite>
+                      <outputDirectory>${project.build.directory}/maven-extract</outputDirectory>
+                    </artifactItem>
+                  </artifactItems>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
   </profiles>
 </project>
