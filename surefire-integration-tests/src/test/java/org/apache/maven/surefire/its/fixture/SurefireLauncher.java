@@ -280,30 +280,36 @@ public class SurefireLauncher
     public OutputValidator executeCurrentGoals()
     {
 
-        // hack "a la" invoker plugin to download dependencies from local repo
-        // and not download from central
-        try
+        String userLocalRepo = System.getProperty( "user.localRepository" );
+        String testBuildDirectory = System.getProperty( "testBuildDirectory" );
+
+        File interpolatedSettings = new File( testBuildDirectory, "interpolated-settings.xml" );
+        if ( !interpolatedSettings.exists() )
         {
-            String userLocalRepo = System.getProperty( "user.localRepository" );
-            String testBuildDirectory = System.getProperty( "testBuildDirectory" );
+            // hack "a la" invoker plugin to download dependencies from local repo
+            // and not download from central
+            try
+            {
 
-            Map<String, String> values = new HashMap<String, String>( 1 );
-            values.put( "localRepositoryUrl", toUrl( userLocalRepo ) );
-            StrSubstitutor strSubstitutor = new StrSubstitutor( values );
+                Map<String, String> values = new HashMap<String, String>( 1 );
+                values.put( "localRepositoryUrl", toUrl( userLocalRepo ) );
+                StrSubstitutor strSubstitutor = new StrSubstitutor( values );
 
-            String fileContent = FileUtils.fileRead( new File( testBuildDirectory, "settings.xml" ) );
+                String fileContent = FileUtils.fileRead( new File( testBuildDirectory, "settings.xml" ) );
 
-            File interpolatedSettings = new File( testBuildDirectory, "interpolated-settings.xml" );
-            String filtered = strSubstitutor.replace( fileContent );
+                String filtered = strSubstitutor.replace( fileContent );
 
-            FileUtils.fileWrite( interpolatedSettings.getAbsolutePath(), filtered );
+                FileUtils.fileWrite( interpolatedSettings.getAbsolutePath(), filtered );
 
-            cliOptions.add( "-s " + interpolatedSettings.getAbsolutePath() );
+
+            }
+            catch ( IOException e )
+            {
+                throw new SurefireVerifierException( e );
+            }
         }
-        catch ( IOException e )
-        {
-            throw new SurefireVerifierException( e );
-        }
+
+        cliOptions.add( "-s " + interpolatedSettings.getAbsolutePath() );
 
         verifier.setCliOptions( cliOptions );
         try
