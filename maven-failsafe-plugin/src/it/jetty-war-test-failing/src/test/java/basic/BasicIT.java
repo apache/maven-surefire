@@ -19,13 +19,12 @@ package basic;
  * under the License.
  */
 
-import java.util.Properties;
 import java.io.IOException;
-
-import junit.framework.*;
+import java.util.Properties;
 
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import junit.framework.TestCase;
 
 public class BasicIT
     extends TestCase

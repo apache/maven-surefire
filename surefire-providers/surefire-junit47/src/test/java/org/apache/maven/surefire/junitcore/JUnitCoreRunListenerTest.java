@@ -21,7 +21,6 @@ package org.apache.maven.surefire.junitcore;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import org.apache.maven.surefire.junit4.MockReporter;
 
 import junit.framework.TestCase;
@@ -67,7 +66,8 @@ public class JUnitCoreRunListenerTest
         throws Exception
     {
         // can't use Description.createTestDescription() methods as these require a loaded Class
-        Description testDescription = Description.createSuiteDescription( "testMethod(cannot.be.loaded.by.junit.Test)" );
+        Description testDescription =
+            Description.createSuiteDescription( "testMethod(cannot.be.loaded.by.junit.Test)" );
         assertEquals( "testMethod", testDescription.getMethodName() );
         assertEquals( "cannot.be.loaded.by.junit.Test", testDescription.getClassName() );
         // assert that the test class is not visible by the JUnit classloader

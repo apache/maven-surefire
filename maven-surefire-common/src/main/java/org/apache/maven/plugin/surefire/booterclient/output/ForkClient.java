@@ -240,9 +240,11 @@ public class ForkClient
 
     public void close()
     {
-        if (!saidGoodBye){
-            throw new RuntimeException( "The forked VM terminated without saying properly goodbye. VM crash or System.exit called ?" );
+        if ( !saidGoodBye )
+        {
+            throw new RuntimeException(
+                "The forked VM terminated without saying properly goodbye. VM crash or System.exit called ?" );
         }
     }
-    
+
 }

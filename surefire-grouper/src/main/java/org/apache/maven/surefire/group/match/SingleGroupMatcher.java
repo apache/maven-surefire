@@ -65,7 +65,7 @@ public class SingleGroupMatcher
         {
             for ( Class<?> cls : cats )
             {
-                if ( enabledClass != null && enabledClass.isAssignableFrom(cls) )
+                if ( enabledClass != null && enabledClass.isAssignableFrom( cls ) )
                 {
                     return true;
                 }

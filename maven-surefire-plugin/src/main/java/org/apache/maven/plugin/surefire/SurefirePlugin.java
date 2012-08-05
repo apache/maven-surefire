@@ -19,31 +19,18 @@ package org.apache.maven.plugin.surefire;
  * under the License.
  */
 
-import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.factory.ArtifactFactory;
-import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
-import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.artifact.resolver.ArtifactResolver;
-import org.apache.maven.execution.MavenSession;
+import java.io.File;
+import java.util.List;
+import java.util.Properties;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugin.descriptor.PluginDescriptor;
-import org.apache.maven.plugin.surefire.booterclient.ChecksumCalculator;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.surefire.suite.RunResult;
-import org.apache.maven.toolchain.ToolchainManager;
 import org.codehaus.plexus.util.StringUtils;
-
-import java.io.File;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
 
 /**
  * Run tests using Surefire.
@@ -426,6 +413,7 @@ public class SurefirePlugin
     {
         this.internalSystemProperties = internalSystemProperties;
     }
+
     public boolean isUseSystemClassLoader()
     {
         return useSystemClassLoader;
@@ -445,6 +433,7 @@ public class SurefirePlugin
     {
         this.useManifestOnlyJar = useManifestOnlyJar;
     }
+
     public Boolean getFailIfNoSpecifiedTests()
     {
         return failIfNoSpecifiedTests;

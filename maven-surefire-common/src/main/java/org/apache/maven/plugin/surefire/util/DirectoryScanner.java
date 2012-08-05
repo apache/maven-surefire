@@ -19,13 +19,12 @@ package org.apache.maven.plugin.surefire.util;
  * under the License.
  */
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.maven.surefire.util.DefaultScanResult;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.maven.surefire.util.DefaultScanResult;
 
 /**
  * Scans directories looking for tests.
@@ -50,7 +49,7 @@ public class DirectoryScanner
 
     private final List<String> specificTests;
 
-    public DirectoryScanner(File basedir, List<String> includes, List<String> excludes, List<String> specificTests)
+    public DirectoryScanner( File basedir, List<String> includes, List<String> excludes, List<String> specificTests )
     {
         this.basedir = basedir;
         this.includes = includes;
@@ -81,31 +80,35 @@ public class DirectoryScanner
             }
 
             scanner.scan();
-            for (String test : scanner.getIncludedFiles() ){
-                if (specificTestFilter.accept(stripBaseDir(basedir.getAbsolutePath(), test))){
-                    result.add( convertToJavaClassName(test));
+            for ( String test : scanner.getIncludedFiles() )
+            {
+                if ( specificTestFilter.accept( stripBaseDir( basedir.getAbsolutePath(), test ) ) )
+                {
+                    result.add( convertToJavaClassName( test ) );
                 }
             }
         }
-        return new DefaultScanResult( result);
+        return new DefaultScanResult( result );
     }
 
     private String convertToJavaClassName( String test )
     {
-        return StringUtils.removeEnd(test, ".class").replace( FS, "." );
+        return StringUtils.removeEnd( test, ".class" ).replace( FS, "." );
     }
 
-    private String stripBaseDir( String basedir, String test){
-            return StringUtils.removeStart( test, basedir );
+    private String stripBaseDir( String basedir, String test )
+    {
+        return StringUtils.removeStart( test, basedir );
     }
 
     private static String[] processIncludesExcludes( List<String> list )
     {
         List<String> newList = new ArrayList<String>();
-        for (Object aList : list) {
+        for ( Object aList : list )
+        {
             String include = (String) aList;
-            String[] includes = include.split(",");
-            Collections.addAll(newList, includes);
+            String[] includes = include.split( "," );
+            Collections.addAll( newList, includes );
         }
 
         String[] incs = new String[newList.size()];
@@ -115,7 +118,7 @@ public class DirectoryScanner
             String inc = newList.get( i );
             if ( inc.endsWith( JAVA_SOURCE_FILE_EXTENSION ) )
             {
-                inc = StringUtils.removeEnd(inc, JAVA_SOURCE_FILE_EXTENSION) + JAVA_CLASS_FILE_EXTENSION;
+                inc = StringUtils.removeEnd( inc, JAVA_SOURCE_FILE_EXTENSION ) + JAVA_CLASS_FILE_EXTENSION;
             }
             incs[i] = inc;
 

@@ -19,26 +19,30 @@ package org.apache.maven.surefire.util;
  * under the License.
  */
 
-import junit.framework.TestCase;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
+import junit.framework.TestCase;
+
 /**
  * @author Kristian Rosenvold
  */
-public class ScanResultTest extends TestCase {
-    public void testWriteTo() throws Exception {
-        List files = Arrays.asList(new String[]{"abc","cde"});
-        DefaultScanResult scanResult = new DefaultScanResult(files);
+public class ScanResultTest
+    extends TestCase
+{
+    public void testWriteTo()
+        throws Exception
+    {
+        List files = Arrays.asList( new String[]{ "abc", "cde" } );
+        DefaultScanResult scanResult = new DefaultScanResult( files );
         Properties serialized = new Properties();
-        scanResult.writeTo(serialized);
+        scanResult.writeTo( serialized );
 
-        DefaultScanResult read = DefaultScanResult.from(serialized);
+        DefaultScanResult read = DefaultScanResult.from( serialized );
         List files1 = read.getFiles();
-        assertEquals(2, files1.size());
-        assertTrue(files1.contains("abc"));
-        assertTrue( files1.contains("cde"));
+        assertEquals( 2, files1.size() );
+        assertTrue( files1.contains( "abc" ) );
+        assertTrue( files1.contains( "cde" ) );
     }
 }

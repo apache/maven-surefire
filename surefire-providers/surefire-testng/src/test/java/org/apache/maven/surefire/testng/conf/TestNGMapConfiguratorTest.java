@@ -19,22 +19,26 @@ package org.apache.maven.surefire.testng.conf;
  * under the License.
  */
 
-import junit.framework.TestCase;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import junit.framework.TestCase;
 
 /**
  * @author Kristian Rosenvold
  */
-public class TestNGMapConfiguratorTest extends TestCase {
-    public void testGetConvertedOptions() throws Exception {
+public class TestNGMapConfiguratorTest
+    extends TestCase
+{
+    public void testGetConvertedOptions()
+        throws Exception
+    {
         TestNGMapConfigurator testNGMapConfigurator = new TestNGMapConfigurator();
         Map raw = new HashMap();
-        raw.put("mixed", "true");
-        Map convertedOptions = testNGMapConfigurator.getConvertedOptions(raw);
-        Boolean bool = (Boolean) convertedOptions.get("-mixed");
-        assertTrue(bool.booleanValue());
+        raw.put( "mixed", "true" );
+        Map convertedOptions = testNGMapConfigurator.getConvertedOptions( raw );
+        Boolean bool = (Boolean) convertedOptions.get( "-mixed" );
+        assertTrue( bool.booleanValue() );
 
     }
 }

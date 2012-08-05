@@ -19,10 +19,10 @@ package org.apache.maven.surefire.testng.conf;
  * under the License.
  */
 
-import junit.framework.TestCase;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import junit.framework.TestCase;
 
 /**
  * @author <a href='mailto:marvin[at]marvinformatics[dot]com'>Marvin Froeder</a>

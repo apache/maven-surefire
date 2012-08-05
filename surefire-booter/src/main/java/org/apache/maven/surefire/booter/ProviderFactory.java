@@ -168,7 +168,8 @@ public class ProviderFactory
             }
             finally
             {
-                if ( System.getSecurityManager() == null){
+                if ( System.getSecurityManager() == null )
+                {
                     Thread.currentThread().setContextClassLoader( current );
                 }
             }

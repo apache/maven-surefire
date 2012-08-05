@@ -18,49 +18,56 @@ package org.apache.maven.plugin.surefire;
  * under the License.
  */
 
-import junit.framework.TestCase;
-
 import java.util.Enumeration;
 import java.util.Properties;
+
+import junit.framework.TestCase;
 
 /**
  * Tests the insertion-order preserving properties collection
  */
-public class OrderedPropertiesTest extends TestCase {
+public class OrderedPropertiesTest
+    extends TestCase
+{
 
-    public void testKeys() throws Exception {
-        OrderedProperties orderedProperties = new OrderedProperties(null);
-        orderedProperties.setProperty("abc", "1");
-        orderedProperties.setProperty("xyz", "1");
-        orderedProperties.setProperty("efg", "1");
+    public void testKeys()
+        throws Exception
+    {
+        OrderedProperties orderedProperties = new OrderedProperties( null );
+        orderedProperties.setProperty( "abc", "1" );
+        orderedProperties.setProperty( "xyz", "1" );
+        orderedProperties.setProperty( "efg", "1" );
 
         Enumeration<Object> keys = orderedProperties.keys();
-        assertEquals("abc", keys.nextElement());
-        assertEquals("xyz", keys.nextElement());
+        assertEquals( "abc", keys.nextElement() );
+        assertEquals( "xyz", keys.nextElement() );
         assertEquals( "efg", keys.nextElement() );
 
     }
 
-    public void testKeysReinsert() throws Exception {
-        OrderedProperties orderedProperties = new OrderedProperties(null);
-        orderedProperties.setProperty("abc", "1");
-        orderedProperties.setProperty("xyz", "1");
-        orderedProperties.setProperty("efg", "1");
-        orderedProperties.setProperty("abc", "2");
+    public void testKeysReinsert()
+        throws Exception
+    {
+        OrderedProperties orderedProperties = new OrderedProperties( null );
+        orderedProperties.setProperty( "abc", "1" );
+        orderedProperties.setProperty( "xyz", "1" );
+        orderedProperties.setProperty( "efg", "1" );
+        orderedProperties.setProperty( "abc", "2" );
         orderedProperties.remove( "xyz" );
         orderedProperties.setProperty( "xyz", "1" );
 
         Enumeration<Object> keys = orderedProperties.keys();
-        assertEquals("abc", keys.nextElement());
-        assertEquals("efg", keys.nextElement());
-        assertEquals("xyz", keys.nextElement());
+        assertEquals( "abc", keys.nextElement() );
+        assertEquals( "efg", keys.nextElement() );
+        assertEquals( "xyz", keys.nextElement() );
     }
 
-    public void testConstructWithOther(){
-        Properties src = new Properties(  );
-        src.setProperty( "a" , "1");
-        src.setProperty( "b" , "2");
-        OrderedProperties orderedProperties = new OrderedProperties(src);
+    public void testConstructWithOther()
+    {
+        Properties src = new Properties();
+        src.setProperty( "a", "1" );
+        src.setProperty( "b", "2" );
+        OrderedProperties orderedProperties = new OrderedProperties( src );
         // Cannot make assumptions about insertion order
         assertEquals( 2, orderedProperties.size() );
 

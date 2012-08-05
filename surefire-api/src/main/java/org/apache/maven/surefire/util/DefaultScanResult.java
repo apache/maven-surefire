@@ -27,93 +27,115 @@ import java.util.Properties;
 /**
  * @author Kristian Rosenvold
  */
-public class DefaultScanResult implements ScanResult {
+public class DefaultScanResult
+    implements ScanResult
+{
     private final List files;
+
     private static final String scanResultNo = "tc.";
 
-    public DefaultScanResult(List files) {
+    public DefaultScanResult( List files )
+    {
         this.files = files;
     }
 
-    public int size() {
+    public int size()
+    {
         return files.size();
     }
 
-    public String getClassName(int index) {
-        return (String) files.get(index);
+    public String getClassName( int index )
+    {
+        return (String) files.get( index );
     }
 
-    public void writeTo(Properties properties) {
+    public void writeTo( Properties properties )
+    {
         int size = files.size();
-        for (int i = 0; i < size; i++) {
-            properties.setProperty(scanResultNo + i, (String) files.get(i));
+        for ( int i = 0; i < size; i++ )
+        {
+            properties.setProperty( scanResultNo + i, (String) files.get( i ) );
         }
     }
 
-    public static DefaultScanResult from(Properties properties) {
+    public static DefaultScanResult from( Properties properties )
+    {
         List result = new ArrayList();
         int i = 0;
-        while (true) {
-            String item = properties.getProperty(scanResultNo + (i++));
-            if (item == null) {
-                return new DefaultScanResult(result);
+        while ( true )
+        {
+            String item = properties.getProperty( scanResultNo + ( i++ ) );
+            if ( item == null )
+            {
+                return new DefaultScanResult( result );
             }
-            result.add(item);
+            result.add( item );
         }
     }
 
-    public boolean isEmpty() {
+    public boolean isEmpty()
+    {
         return files.isEmpty();
     }
 
-    public List getFiles() {
-        return Collections.unmodifiableList(files);
+    public List getFiles()
+    {
+        return Collections.unmodifiableList( files );
     }
 
-    public TestsToRun applyFilter(ScannerFilter scannerFilter, ClassLoader testClassLoader) {
+    public TestsToRun applyFilter( ScannerFilter scannerFilter, ClassLoader testClassLoader )
+    {
         List result = new ArrayList();
 
         int size = size();
-        for (int i = 0; i < size; i++) {
-            String className = getClassName(i);
+        for ( int i = 0; i < size; i++ )
+        {
+            String className = getClassName( i );
 
-            Class testClass = loadClass(testClassLoader, className);
+            Class testClass = loadClass( testClassLoader, className );
 
-            if (scannerFilter == null || scannerFilter.accept(testClass)) {
-                result.add(testClass);
+            if ( scannerFilter == null || scannerFilter.accept( testClass ) )
+            {
+                result.add( testClass );
             }
         }
 
-        return new TestsToRun(result);
+        return new TestsToRun( result );
     }
 
-    public List getClassesSkippedByValidation(ScannerFilter scannerFilter, ClassLoader testClassLoader) {
+    public List getClassesSkippedByValidation( ScannerFilter scannerFilter, ClassLoader testClassLoader )
+    {
         List result = new ArrayList();
 
         int size = size();
-        for (int i = 0; i < size; i++) {
-            String className = getClassName(i);
+        for ( int i = 0; i < size; i++ )
+        {
+            String className = getClassName( i );
 
-            Class testClass = loadClass(testClassLoader, className);
+            Class testClass = loadClass( testClassLoader, className );
 
-            if (scannerFilter != null && !scannerFilter.accept(testClass)) {
-                result.add(testClass);
+            if ( scannerFilter != null && !scannerFilter.accept( testClass ) )
+            {
+                result.add( testClass );
             }
         }
 
         return result;
     }
 
-    private static Class loadClass(ClassLoader classLoader, String className) {
+    private static Class loadClass( ClassLoader classLoader, String className )
+    {
         Class testClass;
-        try {
-            testClass = classLoader.loadClass(className);
-        } catch (ClassNotFoundException e) {
-            throw new NestedRuntimeException("Unable to create test class '" + className + "'", e);
+        try
+        {
+            testClass = classLoader.loadClass( className );
+        }
+        catch ( ClassNotFoundException e )
+        {
+            throw new NestedRuntimeException( "Unable to create test class '" + className + "'", e );
         }
         return testClass;
     }
-
 
 
 }

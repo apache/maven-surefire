@@ -20,43 +20,44 @@ package org.apache.maven.plugin.surefire.util;
  */
 
 import junit.framework.TestCase;
-import org.apache.maven.plugin.surefire.util.SpecificFileFilter;
-
-import java.io.File;
 
 /**
  * @author Kristian Rosenvold
  */
-public class SpecificFileFilterTest extends TestCase {
+public class SpecificFileFilterTest
+    extends TestCase
+{
     public void testMatchSingleCharacterWildcard()
     {
-        SpecificFileFilter filter = createFileFilter("org/apache/maven/surefire/?pecificTestClassFilter.class");
-        assertTrue( filter.accept(getFile()) );
+        SpecificFileFilter filter = createFileFilter( "org/apache/maven/surefire/?pecificTestClassFilter.class" );
+        assertTrue( filter.accept( getFile() ) );
     }
 
     public void testMatchSingleSegmentWordWildcard()
     {
-        SpecificFileFilter filter = createFileFilter("org/apache/maven/surefire/*TestClassFilter.class");
-        assertTrue( filter.accept(getFile()) );
+        SpecificFileFilter filter = createFileFilter( "org/apache/maven/surefire/*TestClassFilter.class" );
+        assertTrue( filter.accept( getFile() ) );
     }
 
     public void testMatchMultiSegmentWildcard()
     {
-        SpecificFileFilter filter = createFileFilter("org/**/SpecificTestClassFilter.class");
-        assertTrue( filter.accept(getFile()) );
+        SpecificFileFilter filter = createFileFilter( "org/**/SpecificTestClassFilter.class" );
+        assertTrue( filter.accept( getFile() ) );
     }
 
     public void testMatchSingleSegmentWildcard()
     {
-        SpecificFileFilter filter = createFileFilter("org/*/maven/surefire/SpecificTestClassFilter.class");
-        assertTrue( filter.accept(getFile()) );
+        SpecificFileFilter filter = createFileFilter( "org/*/maven/surefire/SpecificTestClassFilter.class" );
+        assertTrue( filter.accept( getFile() ) );
     }
 
-    private SpecificFileFilter createFileFilter(String s) {
-        return new SpecificFileFilter( new String[]{s} );
+    private SpecificFileFilter createFileFilter( String s )
+    {
+        return new SpecificFileFilter( new String[]{ s } );
     }
 
-    private String getFile() {
+    private String getFile()
+    {
         return "org/apache/maven/surefire/SpecificTestClassFilter.class";
     }
 }

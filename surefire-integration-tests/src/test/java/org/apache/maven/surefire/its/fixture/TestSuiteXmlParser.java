@@ -23,7 +23,13 @@ import java.io.File;
 import java.io.IOException;
 import java.text.NumberFormat;
 import java.text.ParseException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.StringTokenizer;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -45,7 +51,7 @@ public class TestSuiteXmlParser
 
     private Map<String, ReportTestSuite> classesToSuites;
 
-    private final NumberFormat numberFormat = NumberFormat.getInstance(Locale.US);
+    private final NumberFormat numberFormat = NumberFormat.getInstance( Locale.US );
 
     /**
      * @noinspection StringBufferField

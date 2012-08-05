@@ -236,7 +236,7 @@ public class JUnit4TestCheckerTest
 
         }
     }
-    
+
     public static class SimpleJUnit4TestClass
     {
         @Test

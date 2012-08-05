@@ -45,8 +45,9 @@ public interface ProviderParameters
     /**
      * Provides a directory scanner that enforces the includes/excludes parameters that were passed to surefire.
      * See #getDirectoryScannerParameters for details
-     * @deprecated Use scanresult instead, as of version 2.12.2. Will be removed in next major version.
+     *
      * @return The directory scanner
+     * @deprecated Use scanresult instead, as of version 2.12.2. Will be removed in next major version.
      */
     DirectoryScanner getDirectoryScanner();
 
@@ -85,8 +86,8 @@ public interface ProviderParameters
     /**
      * The raw parameters used in creating the directory scanner
      *
-     * @deprecated Use scanresult instead, as of version 2.12.2. Will be removed in next major version.
      * @return The parameters
+     * @deprecated Use scanresult instead, as of version 2.12.2. Will be removed in next major version.
      */
     DirectoryScannerParameters getDirectoryScannerParameters();
 

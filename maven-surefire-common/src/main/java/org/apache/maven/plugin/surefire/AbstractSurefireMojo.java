@@ -19,6 +19,20 @@ package org.apache.maven.plugin.surefire;
  * under the License.
  */
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
@@ -43,8 +57,6 @@ import org.apache.maven.plugin.surefire.booterclient.ChecksumCalculator;
 import org.apache.maven.plugin.surefire.booterclient.ForkConfiguration;
 import org.apache.maven.plugin.surefire.booterclient.ForkStarter;
 import org.apache.maven.plugin.surefire.util.DirectoryScanner;
-import org.apache.maven.surefire.util.DefaultScanResult;
-import org.apache.maven.surefire.util.ScanResult;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
@@ -63,26 +75,13 @@ import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.RunOrderParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestRequest;
+import org.apache.maven.surefire.util.DefaultScanResult;
 import org.apache.maven.surefire.util.NestedRuntimeException;
 import org.apache.maven.surefire.util.RunOrder;
+import org.apache.maven.surefire.util.ScanResult;
 import org.apache.maven.toolchain.Toolchain;
 import org.apache.maven.toolchain.ToolchainManager;
 import org.codehaus.plexus.util.StringUtils;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
 
 /**
  * Abstract base class for running tests using Surefire.
@@ -276,7 +275,6 @@ public abstract class AbstractSurefireMojo
 
     /**
      * Map of plugin artifacts.
-     *
      */
     // olamy: would make more sense using defaultValue but doesn't work with maven 2.x
     @Parameter( property = "plugin.artifactMap", required = true, readonly = true )
@@ -571,19 +569,21 @@ public abstract class AbstractSurefireMojo
     {
         if ( verifyParameters() && !hasExecutedBefore() )
         {
-            DirectoryScanner directoryScanner = new DirectoryScanner( getTestClassesDirectory(), getIncludeList(), getExcludeList(),
-                    getSpecificTests() );
+            DirectoryScanner directoryScanner =
+                new DirectoryScanner( getTestClassesDirectory(), getIncludeList(), getExcludeList(),
+                                      getSpecificTests() );
             DefaultScanResult scan = directoryScanner.scan();
             if ( scan.isEmpty() )
             {
                 if ( getEffectiveFailIfNoTests() )
                 {
-                    throw new MojoFailureException( "No tests were executed!  (Set -DfailIfNoTests=false to ignore this error.)" );
+                    throw new MojoFailureException(
+                        "No tests were executed!  (Set -DfailIfNoTests=false to ignore this error.)" );
                 }
                 return;
             }
             logReportsDirectory();
-            executeAfterPreconditionsChecked(scan);
+            executeAfterPreconditionsChecked( scan );
         }
     }
 
@@ -616,11 +616,11 @@ public abstract class AbstractSurefireMojo
 
     protected abstract boolean isSkipExecution();
 
-    protected void executeAfterPreconditionsChecked(DefaultScanResult scanResult)
+    protected void executeAfterPreconditionsChecked( DefaultScanResult scanResult )
         throws MojoExecutionException, MojoFailureException
     {
         createDependencyResolver();
-        Summary summary = executeAllProviders(scanResult);
+        Summary summary = executeAllProviders( scanResult );
         restoreOriginalSystemPropertiesWhenNotForking( summary );
         handleSummary( summary );
     }
@@ -654,7 +654,7 @@ public abstract class AbstractSurefireMojo
         }
     }
 
-    private Summary executeAllProviders(DefaultScanResult scanResult)
+    private Summary executeAllProviders( DefaultScanResult scanResult )
         throws MojoExecutionException, MojoFailureException
     {
         List<ProviderInfo> providers = createProviders();
@@ -667,7 +667,7 @@ public abstract class AbstractSurefireMojo
         return summary;
     }
 
-    private void executeProvider(ProviderInfo provider, DefaultScanResult scanResult, Summary summary)
+    private void executeProvider( ProviderInfo provider, DefaultScanResult scanResult, Summary summary )
         throws MojoExecutionException, MojoFailureException
     {
         ForkConfiguration forkConfiguration = getForkConfiguration();
@@ -685,11 +685,12 @@ public abstract class AbstractSurefireMojo
                 InPluginVMSurefireStarter surefireStarter =
                     createInprocessStarter( provider, forkConfiguration, classLoaderConfiguration, runOrderParameters,
                                             scanResult );
-                result = surefireStarter.runSuitesInProcess(scanResult);
+                result = surefireStarter.runSuitesInProcess( scanResult );
             }
             else
             {
-                ForkStarter forkStarter = createForkStarter( provider, forkConfiguration, classLoaderConfiguration, runOrderParameters );
+                ForkStarter forkStarter =
+                    createForkStarter( provider, forkConfiguration, classLoaderConfiguration, runOrderParameters );
                 result = forkStarter.run( scanResult );
             }
             summary.registerRunResult( result );
@@ -832,7 +833,8 @@ public abstract class AbstractSurefireMojo
         return runOrders.contains( RunOrder.BALANCED ) || runOrders.contains( RunOrder.FAILEDFIRST );
     }
 
-    private boolean getEffectiveFailIfNoTests(){
+    private boolean getEffectiveFailIfNoTests()
+    {
         if ( isSpecificTestSpecified() )
         {
             if ( getFailIfNoSpecifiedTests() != null )
@@ -1132,7 +1134,7 @@ public abstract class AbstractSurefireMojo
             createStartupConfiguration( forkConfiguration, provider, classLoaderConfiguration );
         String configChecksum = getConfigChecksum();
         StartupReportConfiguration startupReportConfiguration = getStartupReportConfiguration( configChecksum );
-        ProviderConfiguration providerConfiguration = createProviderConfiguration( runOrderParameters);
+        ProviderConfiguration providerConfiguration = createProviderConfiguration( runOrderParameters );
         return new ForkStarter( providerConfiguration, startupConfiguration, forkConfiguration,
                                 getForkedProcessTimeoutInSeconds(), startupReportConfiguration );
     }

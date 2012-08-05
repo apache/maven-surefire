@@ -21,7 +21,6 @@ package org.apache.maven.surefire.its.jiras;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
-import org.apache.maven.surefire.its.fixture.TestFile;
 
 /**
  * Asserts that console output always goes somewhere ;)

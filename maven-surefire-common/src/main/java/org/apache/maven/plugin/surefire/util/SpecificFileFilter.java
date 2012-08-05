@@ -18,13 +18,11 @@ package org.apache.maven.plugin.surefire.util;
  * specific language governing permissions and limitations
  * under the License.
  */
-import org.codehaus.plexus.util.SelectorUtils;
 
-import java.io.File;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import org.apache.commons.lang3.StringUtils;
+import org.codehaus.plexus.util.SelectorUtils;
 
 public class SpecificFileFilter
 {

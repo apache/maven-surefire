@@ -25,14 +25,15 @@ import java.util.Properties;
 /**
  * @author Kristian Rosenvold
  */
-public interface ScanResult {
+public interface ScanResult
+{
     int size();
 
-    String getClassName(int index);
+    String getClassName( int index );
 
-    TestsToRun applyFilter(ScannerFilter scannerFilter, ClassLoader testClassLoader);
+    TestsToRun applyFilter( ScannerFilter scannerFilter, ClassLoader testClassLoader );
 
-    List getClassesSkippedByValidation(ScannerFilter scannerFilter, ClassLoader testClassLoader);
+    List getClassesSkippedByValidation( ScannerFilter scannerFilter, ClassLoader testClassLoader );
 
-    void writeTo(Properties properties);
+    void writeTo( Properties properties );
 }

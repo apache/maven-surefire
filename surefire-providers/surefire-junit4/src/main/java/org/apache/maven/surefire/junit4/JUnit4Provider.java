@@ -19,6 +19,9 @@ package org.apache.maven.surefire.junit4;
  * under the License.
  */
 
+import java.lang.reflect.Method;
+import java.util.Iterator;
+import java.util.List;
 import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
 import org.apache.maven.surefire.common.junit4.JUnit4RunListenerFactory;
 import org.apache.maven.surefire.common.junit4.JUnit4TestChecker;
@@ -34,17 +37,16 @@ import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.SimpleReportEntry;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
-import org.apache.maven.surefire.util.*;
+import org.apache.maven.surefire.util.RunOrderCalculator;
+import org.apache.maven.surefire.util.ScanResult;
+import org.apache.maven.surefire.util.TestsToRun;
 import org.apache.maven.surefire.util.internal.StringUtils;
 import org.codehaus.plexus.util.SelectorUtils;
+
 import org.junit.runner.Request;
 import org.junit.runner.Result;
 import org.junit.runner.Runner;
 import org.junit.runner.notification.RunNotifier;
-
-import java.lang.reflect.Method;
-import java.util.Iterator;
-import java.util.List;
 
 /**
  * @author Kristian Rosenvold
@@ -65,6 +67,7 @@ public class JUnit4Provider
     private final ProviderParameters providerParameters;
 
     private final RunOrderCalculator runOrderCalculator;
+
     private final ScanResult scanResult;
 
 
@@ -188,7 +191,7 @@ public class JUnit4Provider
 
     private TestsToRun scanClassPath()
     {
-        final TestsToRun scannedClasses = scanResult.applyFilter(jUnit4TestChecker, testClassLoader);
+        final TestsToRun scannedClasses = scanResult.applyFilter( jUnit4TestChecker, testClassLoader );
         return runOrderCalculator.orderTestClasses( scannedClasses );
     }
 
@@ -196,20 +199,22 @@ public class JUnit4Provider
     private void upgradeCheck()
         throws TestSetFailedException
     {
-        if ( isJunit4UpgradeCheck())
+        if ( isJunit4UpgradeCheck() )
         {
-            List<String> classesSkippedByValidation = scanResult.getClassesSkippedByValidation(jUnit4TestChecker, testClassLoader);
-            if (!classesSkippedByValidation.isEmpty()){
-            StringBuilder reason = new StringBuilder();
-            reason.append( "Updated check failed\n" );
-            reason.append( "There are tests that would be run with junit4 / surefire 2.6 but not with [2.7,):\n" );
-            for ( String testClass : classesSkippedByValidation )
+            List<String> classesSkippedByValidation =
+                scanResult.getClassesSkippedByValidation( jUnit4TestChecker, testClassLoader );
+            if ( !classesSkippedByValidation.isEmpty() )
             {
-                reason.append( "   " );
-                reason.append( testClass );
-                reason.append( "\n" );
-            }
-            throw new TestSetFailedException( reason.toString() );
+                StringBuilder reason = new StringBuilder();
+                reason.append( "Updated check failed\n" );
+                reason.append( "There are tests that would be run with junit4 / surefire 2.6 but not with [2.7,):\n" );
+                for ( String testClass : classesSkippedByValidation )
+                {
+                    reason.append( "   " );
+                    reason.append( testClass );
+                    reason.append( "\n" );
+                }
+                throw new TestSetFailedException( reason.toString() );
             }
         }
     }
@@ -227,11 +232,14 @@ public class JUnit4Provider
         if ( null != testMethods )
         {
             Method[] methods = testClass.getMethods();
-            for (Method method : methods) {
-                for (String testMethod : testMethods) {
-                    if (SelectorUtils.match(testMethod, method.getName())) {
-                        Runner junitTestRunner = Request.method(testClass, method.getName()).getRunner();
-                        junitTestRunner.run(fNotifier);
+            for ( Method method : methods )
+            {
+                for ( String testMethod : testMethods )
+                {
+                    if ( SelectorUtils.match( testMethod, method.getName() ) )
+                    {
+                        Runner junitTestRunner = Request.method( testClass, method.getName() ).getRunner();
+                        junitTestRunner.run( fNotifier );
                     }
 
                 }
@@ -249,7 +257,7 @@ public class JUnit4Provider
      * <br>
      * and we need to think about cases that 2 or more method in 1 class. we should choose the correct method
      *
-     * @param testClass  the testclass
+     * @param testClass     the testclass
      * @param testMethodStr the test method string
      * @return a string ;)
      */
@@ -257,7 +265,7 @@ public class JUnit4Provider
     {
         String className = testClass.getName();
 
-        if (!testMethodStr.contains("#") && !testMethodStr.contains(","))
+        if ( !testMethodStr.contains( "#" ) && !testMethodStr.contains( "," ) )
         {//the original way
             return testMethodStr;
         }

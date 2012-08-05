@@ -36,7 +36,6 @@ import org.apache.maven.plugin.surefire.StartupReportConfiguration;
 import org.apache.maven.plugin.surefire.booterclient.output.ForkClient;
 import org.apache.maven.plugin.surefire.booterclient.output.ThreadedStreamConsumer;
 import org.apache.maven.plugin.surefire.report.FileReporterFactory;
-import org.apache.maven.surefire.util.DefaultScanResult;
 import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.ClasspathConfiguration;
 import org.apache.maven.surefire.booter.ProviderConfiguration;
@@ -48,6 +47,7 @@ import org.apache.maven.surefire.booter.SystemPropertyManager;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
 import org.apache.maven.surefire.report.RunStatistics;
 import org.apache.maven.surefire.suite.RunResult;
+import org.apache.maven.surefire.util.DefaultScanResult;
 import org.codehaus.plexus.util.cli.CommandLineException;
 import org.codehaus.plexus.util.cli.CommandLineTimeOutException;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
@@ -113,8 +113,7 @@ public class ForkStarter
             {
                 final ForkClient forkClient =
                     new ForkClient( fileReporterFactory, startupReportConfiguration.getTestVmSystemProperties() );
-                result = fork( null, providerProperties, forkClient,
-                               fileReporterFactory.getGlobalRunStatistics() );
+                result = fork( null, providerProperties, forkClient, fileReporterFactory.getGlobalRunStatistics() );
             }
             else if ( ForkConfiguration.FORK_ALWAYS.equals( requestedForkMode ) )
             {
@@ -122,8 +121,7 @@ public class ForkStarter
             }
             else if ( ForkConfiguration.FORK_PERTHREAD.equals( requestedForkMode ) )
             {
-                result = runSuitesForkPerTestSet( providerProperties,
-                                                  forkConfiguration.getThreadCount() );
+                result = runSuitesForkPerTestSet( providerProperties, forkConfiguration.getThreadCount() );
             }
             else
             {

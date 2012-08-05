@@ -16,10 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 import junit.framework.TestCase;
 
-public class MyAT extends TestCase {
-    public void testSomething() {
-        assertTrue(false);
+public class MyAT
+    extends TestCase
+{
+    public void testSomething()
+    {
+        assertTrue( false );
     }
 }

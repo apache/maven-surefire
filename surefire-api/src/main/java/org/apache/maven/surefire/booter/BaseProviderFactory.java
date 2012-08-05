@@ -84,7 +84,8 @@ public class BaseProviderFactory
                                             directoryScannerParameters.getSpecificTests() );
     }
 
-    public ScanResult getScanResult() {
+    public ScanResult getScanResult()
+    {
         return DefaultScanResult.from( providerProperties );
     }
 

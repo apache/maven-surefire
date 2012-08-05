@@ -19,20 +19,25 @@ package org.apache.maven.plugin.surefire.util;
  * under the License.
  */
 
-import junit.framework.TestCase;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.ScanResult;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
+import junit.framework.TestCase;
 
 /**
  * @author Kristian Rosenvold
  */
-public class DirectoryScannerTest extends TestCase {
+public class DirectoryScannerTest
+    extends TestCase
+{
     public void testLocateTestClasses()
-            throws IOException, TestSetFailedException
+        throws IOException, TestSetFailedException
     {
         // use target as people can configure ide to compile in an other place than maven
         File baseDir = new File( new File( "target/test-classes" ).getCanonicalPath() );
@@ -40,15 +45,16 @@ public class DirectoryScannerTest extends TestCase {
         include.add( "**/*ZT*A.java" );
         List<String> exclude = new ArrayList<String>();
 
-        DirectoryScanner surefireDirectoryScanner = new DirectoryScanner( baseDir, include, exclude, new ArrayList<String>() );
+        DirectoryScanner surefireDirectoryScanner =
+            new DirectoryScanner( baseDir, include, exclude, new ArrayList<String>() );
 
         ScanResult classNames = surefireDirectoryScanner.scan();
         assertNotNull( classNames );
-        System.out.println( "classNames " + Arrays.asList(classNames) );
-        assertEquals(3, classNames.size());
+        System.out.println( "classNames " + Arrays.asList( classNames ) );
+        assertEquals( 3, classNames.size() );
 
         Properties props = new Properties();
-        classNames.writeTo( props);
-        assertEquals(3, props.size());
+        classNames.writeTo( props );
+        assertEquals( 3, props.size() );
     }
 }

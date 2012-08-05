@@ -39,7 +39,10 @@ import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
-import org.apache.maven.surefire.util.*;
+import org.apache.maven.surefire.util.RunOrderCalculator;
+import org.apache.maven.surefire.util.ScanResult;
+import org.apache.maven.surefire.util.ScannerFilter;
+import org.apache.maven.surefire.util.TestsToRun;
 import org.apache.maven.surefire.util.internal.StringUtils;
 
 import org.junit.runner.Description;
@@ -70,6 +73,7 @@ public class JUnitCoreProvider
     private RunOrderCalculator runOrderCalculator;
 
     private String requestedTestMethod;
+
     private final ScanResult scanResult;
 
     public JUnitCoreProvider( ProviderParameters providerParameters )
@@ -183,7 +187,7 @@ public class JUnitCoreProvider
 
     private TestsToRun scanClassPath()
     {
-        final TestsToRun scanned = scanResult.applyFilter(scannerFilter, testClassLoader);
+        final TestsToRun scanned = scanResult.applyFilter( scannerFilter, testClassLoader );
         return runOrderCalculator.orderTestClasses( scanned );
     }
 

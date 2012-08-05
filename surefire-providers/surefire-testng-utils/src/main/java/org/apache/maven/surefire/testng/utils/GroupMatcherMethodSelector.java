@@ -3,12 +3,12 @@ package org.apache.maven.surefire.testng.utils;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.maven.surefire.group.match.AndGroupMatcher;
 import org.apache.maven.surefire.group.match.GroupMatcher;
 import org.apache.maven.surefire.group.match.InverseGroupMatcher;
 import org.apache.maven.surefire.group.parse.GroupMatcherParser;
 import org.apache.maven.surefire.group.parse.ParseException;
+
 import org.testng.IMethodSelector;
 import org.testng.IMethodSelectorContext;
 import org.testng.ITestNGMethod;
@@ -89,8 +89,9 @@ public class GroupMatcherMethodSelector
         }
         catch ( ParseException e )
         {
-            throw new IllegalArgumentException( "Cannot parse group includes/excludes expression(s):\nIncludes: "
-                + groups + "\nExcludes: " + excludedGroups, e );
+            throw new IllegalArgumentException(
+                "Cannot parse group includes/excludes expression(s):\nIncludes: " + groups + "\nExcludes: "
+                    + excludedGroups, e );
         }
     }
 

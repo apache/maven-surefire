@@ -18,7 +18,10 @@ package org.apache.maven.plugin.surefire;
  * under the License.
  */
 
-import java.util.*;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.LinkedHashSet;
+import java.util.Properties;
 
 /**
  * A properties implementation that preserves insertion order.
@@ -36,7 +39,7 @@ public class OrderedProperties
     {
         if ( source != null )
         {
-            this.putAll(  source );
+            this.putAll( source );
         }
     }
 

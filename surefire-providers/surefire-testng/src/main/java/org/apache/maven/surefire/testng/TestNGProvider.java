@@ -19,6 +19,8 @@ package org.apache.maven.surefire.testng;
  * under the License.
  */
 
+import java.util.Iterator;
+import java.util.Properties;
 import org.apache.maven.surefire.providerapi.AbstractProvider;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.report.ReporterConfiguration;
@@ -32,9 +34,6 @@ import org.apache.maven.surefire.util.NestedRuntimeException;
 import org.apache.maven.surefire.util.RunOrderCalculator;
 import org.apache.maven.surefire.util.ScanResult;
 import org.apache.maven.surefire.util.TestsToRun;
-
-import java.util.Iterator;
-import java.util.Properties;
 
 /**
  * @author Kristian Rosenvold
@@ -120,11 +119,10 @@ public class TestNGProvider
 
     private TestNGDirectoryTestSuite getDirectorySuite()
     {
-        return new TestNGDirectoryTestSuite(
-                testRequest.getTestSourceDirectory().toString(),
+        return new TestNGDirectoryTestSuite( testRequest.getTestSourceDirectory().toString(),
                                              testArtifactInfo.getVersion(), providerProperties,
                                              reporterConfiguration.getReportsDirectory(),
-                                             testRequest.getRequestedTestMethod(), runOrderCalculator, scanResult);
+                                             testRequest.getRequestedTestMethod(), runOrderCalculator, scanResult );
     }
 
     private TestNGXmlTestSuite getXmlSuite()

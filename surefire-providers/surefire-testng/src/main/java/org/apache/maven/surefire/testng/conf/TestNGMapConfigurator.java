@@ -48,12 +48,12 @@ public class TestNGMapConfigurator
     public void configure( TestNG testng, Map options )
         throws TestSetFailedException
     {
-        Map convertedOptions = getConvertedOptions(options);
+        Map convertedOptions = getConvertedOptions( options );
         testng.configure( convertedOptions );
     }
 
-    Map getConvertedOptions(Map options )
-            throws TestSetFailedException
+    Map getConvertedOptions( Map options )
+        throws TestSetFailedException
     {
         Map convertedOptions = new HashMap();
         convertedOptions.put( "-mixed", Boolean.FALSE );
