@@ -39,10 +39,7 @@ import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
-import org.apache.maven.surefire.util.DirectoryScanner;
-import org.apache.maven.surefire.util.RunOrderCalculator;
-import org.apache.maven.surefire.util.ScannerFilter;
-import org.apache.maven.surefire.util.TestsToRun;
+import org.apache.maven.surefire.util.*;
 import org.apache.maven.surefire.util.internal.StringUtils;
 
 import org.junit.runner.Description;
@@ -56,8 +53,6 @@ public class JUnitCoreProvider
     extends AbstractProvider
 {
     private final ClassLoader testClassLoader;
-
-    private final DirectoryScanner directoryScanner;
 
     private final JUnitCoreParameters jUnitCoreParameters;
 
@@ -75,12 +70,13 @@ public class JUnitCoreProvider
     private RunOrderCalculator runOrderCalculator;
 
     private String requestedTestMethod;
+    private final ScanResult scanResult;
 
     public JUnitCoreProvider( ProviderParameters providerParameters )
     {
         this.providerParameters = providerParameters;
         this.testClassLoader = providerParameters.getTestClassLoader();
-        this.directoryScanner = providerParameters.getDirectoryScanner();
+        this.scanResult = providerParameters.getScanResult();
         this.runOrderCalculator = providerParameters.getRunOrderCalculator();
         this.jUnitCoreParameters = new JUnitCoreParameters( providerParameters.getProviderProperties() );
         this.scannerFilter = new JUnit4TestChecker( testClassLoader );
@@ -187,7 +183,7 @@ public class JUnitCoreProvider
 
     private TestsToRun scanClassPath()
     {
-        final TestsToRun scanned = directoryScanner.locateTestClasses( testClassLoader, scannerFilter );
+        final TestsToRun scanned = scanResult.applyFilter(scannerFilter, testClassLoader);
         return runOrderCalculator.orderTestClasses( scanned );
     }
 

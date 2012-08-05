@@ -33,10 +33,7 @@ import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.SimpleReportEntry;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
-import org.apache.maven.surefire.util.DirectoryScanner;
-import org.apache.maven.surefire.util.ReflectionUtils;
-import org.apache.maven.surefire.util.RunOrderCalculator;
-import org.apache.maven.surefire.util.TestsToRun;
+import org.apache.maven.surefire.util.*;
 
 /**
  * @author Kristian Rosenvold
@@ -45,8 +42,6 @@ public class JUnit3Provider
     extends AbstractProvider
 {
     private final ClassLoader testClassLoader;
-
-    private final DirectoryScanner directoryScanner;
 
     private final PojoAndJUnit3Checker testChecker;
 
@@ -59,12 +54,13 @@ public class JUnit3Provider
     private final RunOrderCalculator runOrderCalculator;
 
     private TestsToRun testsToRun;
+    private final ScanResult scanResult;
 
     public JUnit3Provider( ProviderParameters booterParameters )
     {
         this.providerParameters = booterParameters;
         this.testClassLoader = booterParameters.getTestClassLoader();
-        this.directoryScanner = booterParameters.getDirectoryScanner();
+        this.scanResult = booterParameters.getScanResult();
         this.runOrderCalculator = booterParameters.getRunOrderCalculator();
         this.reflector = new JUnit3Reflector( testClassLoader );
         jUnit3TestChecker = new JUnit3TestChecker( testClassLoader );
@@ -106,7 +102,7 @@ public class JUnit3Provider
     {
         return reflector.isJUnit3Available() && jUnit3TestChecker.accept( clazz )
             ? new JUnitTestSet( clazz, reflector )
-            : (SurefireTestSet) new PojoTestSet( clazz );
+            : new PojoTestSet( clazz );
 
     }
 
@@ -125,8 +121,8 @@ public class JUnit3Provider
 
     private TestsToRun scanClassPath()
     {
-        final TestsToRun scanResult = directoryScanner.locateTestClasses( testClassLoader, testChecker );
-        return runOrderCalculator.orderTestClasses( scanResult );
+        final TestsToRun testsToRun = scanResult.applyFilter(testChecker, testClassLoader );
+        return runOrderCalculator.orderTestClasses( testsToRun );
     }
 
     public Iterator getSuites()

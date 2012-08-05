@@ -28,6 +28,7 @@ import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.util.DirectoryScanner;
 import org.apache.maven.surefire.util.RunOrderCalculator;
+import org.apache.maven.surefire.util.ScanResult;
 
 /**
  * Injected into the providers upon provider construction. Allows the provider to request services and data it needs.
@@ -44,10 +45,18 @@ public interface ProviderParameters
     /**
      * Provides a directory scanner that enforces the includes/excludes parameters that were passed to surefire.
      * See #getDirectoryScannerParameters for details
-     *
+     * @deprecated Use scanresult instead, as of version 2.12.2. Will be removed in next major version.
      * @return The directory scanner
      */
     DirectoryScanner getDirectoryScanner();
+
+    /**
+     * Provides the result of the directory scan performed in the plugin
+     *
+     * @return The scan result
+     */
+    ScanResult getScanResult();
+
 
     /**
      * Provides a service to calculate run order of tests. Applied after directory scanning.
@@ -76,6 +85,7 @@ public interface ProviderParameters
     /**
      * The raw parameters used in creating the directory scanner
      *
+     * @deprecated Use scanresult instead, as of version 2.12.2. Will be removed in next major version.
      * @return The parameters
      */
     DirectoryScannerParameters getDirectoryScannerParameters();

@@ -73,3 +73,20 @@ Maven Surefire Provider API
     TestsToRun scanned = directoryScanner.locateTestClasses( testClassLoader, scannerFilter );
     return providerParameters.getRunOrderCalculator().orderTestClasses(  scanned );
 +---+
+
+** API changes for 2.12.2:
+
+   Prior to this version, the provider would do
+
++---+
+    directoryScanner = booterParameters.getDirectoryScanner();
+    final TestsToRun scanResult = directoryScanner.locateTestClasses( testClassLoader, testChecker );
++---+
+
+   from this version ProviderParameters#getDirectoryScanner has been deprecated, and *will* be removed
+   for the next major version.
+
++---+
+    scanResult = booterParameters.getScanResult();
+    final TestsToRun testsToRun = scanResult.applyFilter(testChecker, testClassLoader );
++---+

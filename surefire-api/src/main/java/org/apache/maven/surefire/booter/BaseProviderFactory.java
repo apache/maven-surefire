@@ -31,8 +31,10 @@ import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.util.DefaultDirectoryScanner;
 import org.apache.maven.surefire.util.DefaultRunOrderCalculator;
+import org.apache.maven.surefire.util.DefaultScanResult;
 import org.apache.maven.surefire.util.DirectoryScanner;
 import org.apache.maven.surefire.util.RunOrderCalculator;
+import org.apache.maven.surefire.util.ScanResult;
 
 /**
  * @author Kristian Rosenvold
@@ -80,6 +82,10 @@ public class BaseProviderFactory
                                             directoryScannerParameters.getIncludes(),
                                             directoryScannerParameters.getExcludes(),
                                             directoryScannerParameters.getSpecificTests() );
+    }
+
+    public ScanResult getScanResult() {
+        return DefaultScanResult.from( providerProperties );
     }
 
     private int getThreadCount()

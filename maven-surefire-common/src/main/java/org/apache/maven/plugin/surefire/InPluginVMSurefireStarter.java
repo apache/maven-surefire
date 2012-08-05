@@ -19,11 +19,13 @@ package org.apache.maven.plugin.surefire;
  * under the License.
  */
 
+import java.util.Properties;
 import org.apache.maven.surefire.booter.ProviderConfiguration;
 import org.apache.maven.surefire.booter.ProviderFactory;
 import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.SurefireExecutionException;
 import org.apache.maven.surefire.suite.RunResult;
+import org.apache.maven.surefire.util.DefaultScanResult;
 
 /**
  * Starts the provider in the same VM as the surefire plugin.
@@ -56,11 +58,15 @@ public class InPluginVMSurefireStarter
         this.providerConfiguration = providerConfiguration;
     }
 
-    public RunResult runSuitesInProcess()
+    public RunResult runSuitesInProcess( DefaultScanResult scanResult )
         throws SurefireExecutionException
     {
         // The test classloader must be constructed first to avoid issues with commons-logging until we properly
         // separate the TestNG classloader
+
+        Properties providerProperties = providerConfiguration.getProviderProperties();
+        scanResult.writeTo( providerProperties );
+
         startupConfiguration.writeSurefireTestClasspathProperty();
         ClassLoader testsClassLoader = startupConfiguration.getClasspathConfiguration().createTestClassLoader();
 

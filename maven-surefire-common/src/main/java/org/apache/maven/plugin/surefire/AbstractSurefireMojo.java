@@ -42,6 +42,9 @@ import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.apache.maven.plugin.surefire.booterclient.ChecksumCalculator;
 import org.apache.maven.plugin.surefire.booterclient.ForkConfiguration;
 import org.apache.maven.plugin.surefire.booterclient.ForkStarter;
+import org.apache.maven.plugin.surefire.util.DirectoryScanner;
+import org.apache.maven.surefire.util.DefaultScanResult;
+import org.apache.maven.surefire.util.ScanResult;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
@@ -568,8 +571,19 @@ public abstract class AbstractSurefireMojo
     {
         if ( verifyParameters() && !hasExecutedBefore() )
         {
+            DirectoryScanner directoryScanner = new DirectoryScanner( getTestClassesDirectory(), getIncludeList(), getExcludeList(),
+                    getSpecificTests() );
+            DefaultScanResult scan = directoryScanner.scan();
+            if ( scan.isEmpty() )
+            {
+                if ( getEffectiveFailIfNoTests() )
+                {
+                    throw new MojoFailureException( "No tests were executed!  (Set -DfailIfNoTests=false to ignore this error.)" );
+                }
+                return;
+            }
             logReportsDirectory();
-            executeAfterPreconditionsChecked();
+            executeAfterPreconditionsChecked(scan);
         }
     }
 
@@ -602,11 +616,11 @@ public abstract class AbstractSurefireMojo
 
     protected abstract boolean isSkipExecution();
 
-    protected void executeAfterPreconditionsChecked()
+    protected void executeAfterPreconditionsChecked(DefaultScanResult scanResult)
         throws MojoExecutionException, MojoFailureException
     {
         createDependencyResolver();
-        Summary summary = executeAllProviders();
+        Summary summary = executeAllProviders(scanResult);
         restoreOriginalSystemPropertiesWhenNotForking( summary );
         handleSummary( summary );
     }
@@ -640,7 +654,7 @@ public abstract class AbstractSurefireMojo
         }
     }
 
-    private Summary executeAllProviders()
+    private Summary executeAllProviders(DefaultScanResult scanResult)
         throws MojoExecutionException, MojoFailureException
     {
         List<ProviderInfo> providers = createProviders();
@@ -648,30 +662,35 @@ public abstract class AbstractSurefireMojo
 
         for ( ProviderInfo provider : providers )
         {
-            executeProvider( provider, summary );
+            executeProvider( provider, scanResult, summary );
         }
         return summary;
     }
 
-    private void executeProvider( ProviderInfo provider, Summary summary )
+    private void executeProvider(ProviderInfo provider, DefaultScanResult scanResult, Summary summary)
         throws MojoExecutionException, MojoFailureException
     {
         ForkConfiguration forkConfiguration = getForkConfiguration();
         summary.reportForkConfiguration( forkConfiguration );
         ClassLoaderConfiguration classLoaderConfiguration = getClassLoaderConfiguration( forkConfiguration );
+
         try
         {
+            RunOrderParameters runOrderParameters =
+                new RunOrderParameters( getRunOrder(), getStatisticsFileName( getConfigChecksum() ) );
+
             final RunResult result;
             if ( ForkConfiguration.FORK_NEVER.equals( forkConfiguration.getForkMode() ) )
             {
                 InPluginVMSurefireStarter surefireStarter =
-                    createInprocessStarter( provider, forkConfiguration, classLoaderConfiguration );
-                result = surefireStarter.runSuitesInProcess();
+                    createInprocessStarter( provider, forkConfiguration, classLoaderConfiguration, runOrderParameters,
+                                            scanResult );
+                result = surefireStarter.runSuitesInProcess(scanResult);
             }
             else
             {
-                ForkStarter forkStarter = createForkStarter( provider, forkConfiguration, classLoaderConfiguration );
-                result = forkStarter.run();
+                ForkStarter forkStarter = createForkStarter( provider, forkConfiguration, classLoaderConfiguration, runOrderParameters );
+                result = forkStarter.run( scanResult );
             }
             summary.registerRunResult( result );
         }
@@ -813,7 +832,29 @@ public abstract class AbstractSurefireMojo
         return runOrders.contains( RunOrder.BALANCED ) || runOrders.contains( RunOrder.FAILEDFIRST );
     }
 
-    protected ProviderConfiguration createProviderConfiguration( String configurationHash )
+    private boolean getEffectiveFailIfNoTests(){
+        if ( isSpecificTestSpecified() )
+        {
+            if ( getFailIfNoSpecifiedTests() != null )
+            {
+                return getFailIfNoSpecifiedTests();
+            }
+            else if ( getFailIfNoTests() != null )
+            {
+                return getFailIfNoTests();
+            }
+            else
+            {
+                return true;
+            }
+        }
+        else
+        {
+            return getFailIfNoTests() != null && getFailIfNoTests();
+        }
+    }
+
+    private ProviderConfiguration createProviderConfiguration( RunOrderParameters runOrderParameters )
         throws MojoExecutionException, MojoFailureException
     {
         ReporterConfiguration reporterConfiguration =
@@ -850,24 +891,12 @@ public abstract class AbstractSurefireMojo
         {
             if ( isSpecificTestSpecified() )
             {
-                if ( getFailIfNoSpecifiedTests() != null )
-                {
-                    failIfNoTests = getFailIfNoSpecifiedTests().booleanValue();
-                }
-                else if ( getFailIfNoTests() != null )
-                {
-                    failIfNoTests = getFailIfNoTests().booleanValue();
-                }
-                else
-                {
-                    failIfNoTests = true;
-                }
-
+                failIfNoTests = getEffectiveFailIfNoTests();
                 setFailIfNoTests( Boolean.valueOf( failIfNoTests ) );
             }
             else
             {
-                failIfNoTests = getFailIfNoTests() != null && getFailIfNoTests().booleanValue();
+                failIfNoTests = getFailIfNoTests() != null && getFailIfNoTests();
             }
 
             List<String> includes = getIncludeList();
@@ -879,9 +908,6 @@ public abstract class AbstractSurefireMojo
         }
 
         Properties providerProperties = getProperties();
-
-        RunOrderParameters runOrderParameters =
-            new RunOrderParameters( getRunOrder(), getStatisticsFileName( configurationHash ) );
 
         return new ProviderConfiguration( directoryScannerParameters, runOrderParameters, failIfNoTests,
                                           reporterConfiguration, testNg, testSuiteDefinition, providerProperties,
@@ -1098,28 +1124,30 @@ public abstract class AbstractSurefireMojo
     }
 
     protected ForkStarter createForkStarter( ProviderInfo provider, ForkConfiguration forkConfiguration,
-                                             ClassLoaderConfiguration classLoaderConfiguration )
+                                             ClassLoaderConfiguration classLoaderConfiguration,
+                                             RunOrderParameters runOrderParameters )
         throws MojoExecutionException, MojoFailureException
     {
         StartupConfiguration startupConfiguration =
             createStartupConfiguration( forkConfiguration, provider, classLoaderConfiguration );
         String configChecksum = getConfigChecksum();
         StartupReportConfiguration startupReportConfiguration = getStartupReportConfiguration( configChecksum );
-        ProviderConfiguration providerConfiguration = createProviderConfiguration( configChecksum );
+        ProviderConfiguration providerConfiguration = createProviderConfiguration( runOrderParameters);
         return new ForkStarter( providerConfiguration, startupConfiguration, forkConfiguration,
                                 getForkedProcessTimeoutInSeconds(), startupReportConfiguration );
     }
 
     protected InPluginVMSurefireStarter createInprocessStarter( ProviderInfo provider,
                                                                 ForkConfiguration forkConfiguration,
-                                                                ClassLoaderConfiguration classLoaderConfiguration )
+                                                                ClassLoaderConfiguration classLoaderConfiguration,
+                                                                RunOrderParameters runOrderParameters, ScanResult scan )
         throws MojoExecutionException, MojoFailureException
     {
         StartupConfiguration startupConfiguration =
             createStartupConfiguration( forkConfiguration, provider, classLoaderConfiguration );
         String configChecksum = getConfigChecksum();
         StartupReportConfiguration startupReportConfiguration = getStartupReportConfiguration( configChecksum );
-        ProviderConfiguration providerConfiguration = createProviderConfiguration( configChecksum );
+        ProviderConfiguration providerConfiguration = createProviderConfiguration( runOrderParameters );
         return new InPluginVMSurefireStarter( startupConfiguration, providerConfiguration, startupReportConfiguration );
 
     }

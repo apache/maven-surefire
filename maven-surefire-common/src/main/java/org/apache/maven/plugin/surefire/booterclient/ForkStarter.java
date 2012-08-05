@@ -36,6 +36,7 @@ import org.apache.maven.plugin.surefire.StartupReportConfiguration;
 import org.apache.maven.plugin.surefire.booterclient.output.ForkClient;
 import org.apache.maven.plugin.surefire.booterclient.output.ThreadedStreamConsumer;
 import org.apache.maven.plugin.surefire.report.FileReporterFactory;
+import org.apache.maven.surefire.util.DefaultScanResult;
 import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.ClasspathConfiguration;
 import org.apache.maven.surefire.booter.ProviderConfiguration;
@@ -99,27 +100,29 @@ public class ForkStarter
         fileReporterFactory = new FileReporterFactory( startupReportConfiguration );
     }
 
-    public RunResult run()
+    public RunResult run( DefaultScanResult scanResult )
         throws SurefireBooterForkException, SurefireExecutionException
     {
         final RunResult result;
         final String requestedForkMode = forkConfiguration.getForkMode();
         try
         {
+            Properties providerProperties = providerConfiguration.getProviderProperties();
+            scanResult.writeTo( providerProperties );
             if ( ForkConfiguration.FORK_ONCE.equals( requestedForkMode ) )
             {
                 final ForkClient forkClient =
                     new ForkClient( fileReporterFactory, startupReportConfiguration.getTestVmSystemProperties() );
-                result = fork( null, providerConfiguration.getProviderProperties(), forkClient,
+                result = fork( null, providerProperties, forkClient,
                                fileReporterFactory.getGlobalRunStatistics() );
             }
             else if ( ForkConfiguration.FORK_ALWAYS.equals( requestedForkMode ) )
             {
-                result = runSuitesForkPerTestSet( providerConfiguration.getProviderProperties(), 1 );
+                result = runSuitesForkPerTestSet( providerProperties, 1 );
             }
             else if ( ForkConfiguration.FORK_PERTHREAD.equals( requestedForkMode ) )
             {
-                result = runSuitesForkPerTestSet( providerConfiguration.getProviderProperties(),
+                result = runSuitesForkPerTestSet( providerProperties,
                                                   forkConfiguration.getThreadCount() );
             }
             else

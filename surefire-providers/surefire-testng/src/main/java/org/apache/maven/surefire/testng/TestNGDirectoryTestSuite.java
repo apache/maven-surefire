@@ -40,9 +40,8 @@ import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.SimpleReportEntry;
 import org.apache.maven.surefire.testset.TestSetFailedException;
-import org.apache.maven.surefire.util.DefaultDirectoryScanner;
-import org.apache.maven.surefire.util.DirectoryScanner;
 import org.apache.maven.surefire.util.RunOrderCalculator;
+import org.apache.maven.surefire.util.ScanResult;
 import org.apache.maven.surefire.util.TestsToRun;
 
 /**
@@ -64,25 +63,24 @@ public class TestNGDirectoryTestSuite
 
     private SortedMap testSets;
 
-    private final DirectoryScanner surefireDirectoryScanner;
+    private final ScanResult scanResult;
 
     private final String testMethodPattern;
 
     private final RunOrderCalculator runOrderCalculator;
 
-    public TestNGDirectoryTestSuite( File basedir, ArrayList includes, ArrayList excludes, ArrayList specificTests,
-                                     String testSourceDirectory, String artifactVersion, Properties confOptions,
+    public TestNGDirectoryTestSuite( String testSourceDirectory, String artifactVersion, Properties confOptions,
                                      File reportsDirectory, String testMethodPattern,
-                                     RunOrderCalculator runOrderCalculator )
+                                     RunOrderCalculator runOrderCalculator, ScanResult scanResult )
     {
 
-        this.surefireDirectoryScanner = new DefaultDirectoryScanner( basedir, includes, excludes, specificTests );
         this.runOrderCalculator = runOrderCalculator;
 
         this.options = confOptions;
 
         this.testSourceDirectory = testSourceDirectory;
         this.reportsDirectory = reportsDirectory;
+        this.scanResult = scanResult;
         this.version = new DefaultArtifactVersion( artifactVersion );
         this.testMethodPattern = testMethodPattern;
     }
@@ -267,8 +265,7 @@ public class TestNGDirectoryTestSuite
         }
         testSets = new TreeMap();
 
-        final TestsToRun scanned =
-            surefireDirectoryScanner.locateTestClasses( classLoader, new NonAbstractClassFilter() );
+        final TestsToRun scanned = scanResult.applyFilter( new NonAbstractClassFilter(), classLoader );
 
         final TestsToRun testsToRun = runOrderCalculator.orderTestClasses( scanned );
         Class[] locatedClasses = testsToRun.getLocatedClasses();

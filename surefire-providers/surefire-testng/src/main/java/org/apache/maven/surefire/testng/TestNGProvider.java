@@ -19,24 +19,22 @@ package org.apache.maven.surefire.testng;
  * under the License.
  */
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Properties;
 import org.apache.maven.surefire.providerapi.AbstractProvider;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.suite.RunResult;
-import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.testset.TestSetFailedException;
-import org.apache.maven.surefire.util.DirectoryScanner;
 import org.apache.maven.surefire.util.NestedRuntimeException;
 import org.apache.maven.surefire.util.RunOrderCalculator;
+import org.apache.maven.surefire.util.ScanResult;
 import org.apache.maven.surefire.util.TestsToRun;
+
+import java.util.Iterator;
+import java.util.Properties;
 
 /**
  * @author Kristian Rosenvold
@@ -53,9 +51,7 @@ public class TestNGProvider
 
     private final ClassLoader testClassLoader;
 
-    private final DirectoryScannerParameters directoryScannerParameters;
-
-    private final DirectoryScanner directoryScanner;
+    private final ScanResult scanResult;
 
     private final TestRequest testRequest;
 
@@ -63,22 +59,18 @@ public class TestNGProvider
 
     private TestsToRun testsToRun;
 
-    private final File basedir;
-
     private final RunOrderCalculator runOrderCalculator;
 
     public TestNGProvider( ProviderParameters booterParameters )
     {
         this.providerParameters = booterParameters;
         this.testClassLoader = booterParameters.getTestClassLoader();
-        this.directoryScannerParameters = booterParameters.getDirectoryScannerParameters();
         this.runOrderCalculator = booterParameters.getRunOrderCalculator();
         this.providerProperties = booterParameters.getProviderProperties();
         this.testRequest = booterParameters.getTestRequest();
-        basedir = directoryScannerParameters != null ? directoryScannerParameters.getTestClassesDirectory() : null;
         testArtifactInfo = booterParameters.getTestArtifactInfo();
         reporterConfiguration = booterParameters.getReporterConfiguration();
-        this.directoryScanner = booterParameters.getDirectoryScanner();
+        this.scanResult = booterParameters.getScanResult();
     }
 
     public Boolean isRunnable()
@@ -128,13 +120,11 @@ public class TestNGProvider
 
     private TestNGDirectoryTestSuite getDirectorySuite()
     {
-        return new TestNGDirectoryTestSuite( basedir, new ArrayList( directoryScannerParameters.getIncludes() ),
-                                             new ArrayList( directoryScannerParameters.getExcludes() ),
-                                             new ArrayList( directoryScannerParameters.getSpecificTests() ),
-                                             testRequest.getTestSourceDirectory().toString(),
+        return new TestNGDirectoryTestSuite(
+                testRequest.getTestSourceDirectory().toString(),
                                              testArtifactInfo.getVersion(), providerProperties,
                                              reporterConfiguration.getReportsDirectory(),
-                                             testRequest.getRequestedTestMethod(), runOrderCalculator );
+                                             testRequest.getRequestedTestMethod(), runOrderCalculator, scanResult);
     }
 
     private TestNGXmlTestSuite getXmlSuite()
@@ -167,7 +157,7 @@ public class TestNGProvider
 
     private TestsToRun scanClassPath()
     {
-        final TestsToRun scanned = directoryScanner.locateTestClasses( testClassLoader, null );
+        final TestsToRun scanned = scanResult.applyFilter( null, testClassLoader );
         return runOrderCalculator.orderTestClasses( scanned );
     }
 
