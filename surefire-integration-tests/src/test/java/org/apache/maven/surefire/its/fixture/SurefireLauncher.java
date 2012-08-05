@@ -281,34 +281,34 @@ public class SurefireLauncher
 
         String userLocalRepo = System.getProperty( "user.localRepository" );
         String testBuildDirectory = System.getProperty( "testBuildDirectory" );
-
-        File interpolatedSettings = null;
+        boolean useInterpolatedSettings = Boolean.getBoolean( "useInterpolatedSettings" );
 
         try
         {
-
-            interpolatedSettings = File.createTempFile( "interpolated-settings", "xml" );
-
-            if ( !interpolatedSettings.exists() )
+            if ( useInterpolatedSettings )
             {
-                // hack "a la" invoker plugin to download dependencies from local repo
-                // and not download from central
+                File interpolatedSettings = File.createTempFile( "interpolated-settings", "xml" );
 
-                Map<String, String> values = new HashMap<String, String>( 1 );
-                values.put( "localRepositoryUrl", toUrl( userLocalRepo ) );
-                StrSubstitutor strSubstitutor = new StrSubstitutor( values );
+                if ( !interpolatedSettings.exists() )
+                {
+                    // hack "a la" invoker plugin to download dependencies from local repo
+                    // and not download from central
 
-                String fileContent = FileUtils.fileRead( new File( testBuildDirectory, "settings.xml" ) );
+                    Map<String, String> values = new HashMap<String, String>( 1 );
+                    values.put( "localRepositoryUrl", toUrl( userLocalRepo ) );
+                    StrSubstitutor strSubstitutor = new StrSubstitutor( values );
 
-                String filtered = strSubstitutor.replace( fileContent );
+                    String fileContent = FileUtils.fileRead( new File( testBuildDirectory, "settings.xml" ) );
 
-                FileUtils.fileWrite( interpolatedSettings.getAbsolutePath(), filtered );
+                    String filtered = strSubstitutor.replace( fileContent );
+
+                    FileUtils.fileWrite( interpolatedSettings.getAbsolutePath(), filtered );
 
 
+                }
+
+                cliOptions.add( "-s " + interpolatedSettings.getAbsolutePath() );
             }
-
-            cliOptions.add( "-s " + interpolatedSettings.getAbsolutePath() );
-
             verifier.setCliOptions( cliOptions );
 
             verifier.executeGoals( goals, envvars );

@@ -76,6 +76,29 @@
   </dependencies>
 
   <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <artifactId>maven-failsafe-plugin</artifactId>
+          <version>${shadedVersion}</version>
+          <configuration>
+            <!-- Pass current surefire version to the main suite so that it -->
+            <!-- can forward to all integration test projects. SUREFIRE-513 -->
+            <systemPropertyVariables>
+              <surefire.version>${project.version}</surefire.version>
+              <testng.version>${testng.version}</testng.version>
+              <maven.home>${mavenHomeUsed}</maven.home>
+              <maven.settings.file>${project.basedir}/../surefire-setup-integration-tests/target/private/it-settings.xml</maven.settings.file>
+              <maven.repo.local>${project.basedir}/../surefire-setup-integration-tests/target/it-repo</maven.repo.local>
+              <maven.test.tmpdir>${project.build.directory}</maven.test.tmpdir>
+              <user.localRepository>${settings.localRepository}</user.localRepository>
+              <useInterpolatedSettings>true</useInterpolatedSettings>
+              <testBuildDirectory>${project.build.testOutputDirectory}</testBuildDirectory>
+            </systemPropertyVariables>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
     <plugins>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
@@ -86,20 +109,6 @@
       <plugin>
         <artifactId>maven-failsafe-plugin</artifactId>
         <version>${shadedVersion}</version>
-        <configuration>
-          <!-- Pass current surefire version to the main suite so that it -->
-          <!-- can forward to all integration test projects. SUREFIRE-513 -->
-          <systemPropertyVariables>
-            <surefire.version>${project.version}</surefire.version>
-            <testng.version>${testng.version}</testng.version>
-            <maven.home>${mavenHomeUsed}</maven.home>
-            <maven.settings.file>${project.basedir}/../surefire-setup-integration-tests/target/private/it-settings.xml</maven.settings.file>
-            <maven.repo.local>${project.basedir}/../surefire-setup-integration-tests/target/it-repo</maven.repo.local>
-            <maven.test.tmpdir>${project.build.directory}</maven.test.tmpdir>
-            <user.localRepository>${settings.localRepository}</user.localRepository>
-            <testBuildDirectory>${project.build.testOutputDirectory}</testBuildDirectory>
-          </systemPropertyVariables>
-        </configuration>
         <executions>
           <execution>
             <goals>
@@ -149,6 +158,9 @@
               <configuration>
                 <parallel>classes</parallel>
                 <threadCount>${surefire.threadcount}</threadCount>
+                <systemPropertyVariables combine.self="override">
+                  <useInterpolatedSettings>false</useInterpolatedSettings>
+                </systemPropertyVariables>
               </configuration>
             </plugin>
           </plugins>
