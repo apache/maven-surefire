@@ -92,7 +92,8 @@
               <maven.repo.local>${project.basedir}/../surefire-setup-integration-tests/target/it-repo</maven.repo.local>
               <maven.test.tmpdir>${project.build.directory}</maven.test.tmpdir>
               <user.localRepository>${settings.localRepository}</user.localRepository>
-              <useInterpolatedSettings>true</useInterpolatedSettings>
+              <!-- olamy fail on jenkins so don't use that -->
+              <useInterpolatedSettings>false</useInterpolatedSettings>
               <testBuildDirectory>${project.build.testOutputDirectory}</testBuildDirectory>
             </systemPropertyVariables>
           </configuration>
