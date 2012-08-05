@@ -38,6 +38,7 @@
     <testng.version>5.7</testng.version>
     <surefire.threadcount>1</surefire.threadcount>
     <mavenHomeUsed>${maven.home}</mavenHomeUsed>
+    <useInterpolatedSettings>true</useInterpolatedSettings>
   </properties>
 
   <dependencies>
@@ -92,8 +93,7 @@
               <maven.repo.local>${project.basedir}/../surefire-setup-integration-tests/target/it-repo</maven.repo.local>
               <maven.test.tmpdir>${project.build.directory}</maven.test.tmpdir>
               <user.localRepository>${settings.localRepository}</user.localRepository>
-              <!-- olamy fail on jenkins so don't use that -->
-              <useInterpolatedSettings>false</useInterpolatedSettings>
+              <useInterpolatedSettings>${useInterpolatedSettings}</useInterpolatedSettings>
               <testBuildDirectory>${project.build.testOutputDirectory}</testBuildDirectory>
             </systemPropertyVariables>
           </configuration>
@@ -150,6 +150,9 @@
   <profiles>
     <profile>
       <id>parallel</id>
+      <properties>
+        <useInterpolatedSettings>false</useInterpolatedSettings>
+      </properties>
       <build>
         <pluginManagement>
           <plugins>
@@ -159,9 +162,6 @@
               <configuration>
                 <parallel>classes</parallel>
                 <threadCount>${surefire.threadcount}</threadCount>
-                <systemPropertyVariables combine.self="override">
-                  <useInterpolatedSettings>false</useInterpolatedSettings>
-                </systemPropertyVariables>
               </configuration>
             </plugin>
           </plugins>

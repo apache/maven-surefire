@@ -19,12 +19,6 @@ package org.apache.maven.surefire.its.fixture;
  * under the License.
  */
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import org.apache.commons.lang.text.StrSubstitutor;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
@@ -34,6 +28,13 @@ import org.apache.maven.it.VerificationException;
 import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.FileUtils;
 import org.apache.maven.it.util.ResourceExtractor;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Encapsulate all needed features to start a surefire run
@@ -287,7 +288,7 @@ public class SurefireLauncher
         {
             if ( useInterpolatedSettings )
             {
-                File interpolatedSettings = File.createTempFile( "interpolated-settings", "xml" );
+                File interpolatedSettings = new File( testBuildDirectory, "interpolated-settings" );
 
                 if ( !interpolatedSettings.exists() )
                 {
@@ -304,10 +305,9 @@ public class SurefireLauncher
 
                     FileUtils.fileWrite( interpolatedSettings.getAbsolutePath(), filtered );
 
-
                 }
 
-                cliOptions.add( "-s " + interpolatedSettings.getAbsolutePath() );
+                cliOptions.add( "-s " + interpolatedSettings.getCanonicalPath() );
             }
             verifier.setCliOptions( cliOptions );
 
