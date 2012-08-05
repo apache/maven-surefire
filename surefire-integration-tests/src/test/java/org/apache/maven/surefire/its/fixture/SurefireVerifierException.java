@@ -25,6 +25,11 @@ package org.apache.maven.surefire.its.fixture;
 public class SurefireVerifierException
     extends RuntimeException
 {
+    public SurefireVerifierException( String message, Throwable cause )
+    {
+        super( message, cause );
+    }
+
     public SurefireVerifierException( Throwable cause )
     {
         super( cause );

@@ -282,13 +282,17 @@ public class SurefireLauncher
         String userLocalRepo = System.getProperty( "user.localRepository" );
         String testBuildDirectory = System.getProperty( "testBuildDirectory" );
 
-        File interpolatedSettings = new File( testBuildDirectory, "interpolated-settings.xml" );
-        if ( !interpolatedSettings.exists() )
+        File interpolatedSettings = null;
+
+        try
         {
-            // hack "a la" invoker plugin to download dependencies from local repo
-            // and not download from central
-            try
+
+            interpolatedSettings = File.createTempFile( "interpolated-settings", "xml" );
+
+            if ( !interpolatedSettings.exists() )
             {
+                // hack "a la" invoker plugin to download dependencies from local repo
+                // and not download from central
 
                 Map<String, String> values = new HashMap<String, String>( 1 );
                 values.put( "localRepositoryUrl", toUrl( userLocalRepo ) );
@@ -302,23 +306,21 @@ public class SurefireLauncher
 
 
             }
-            catch ( IOException e )
-            {
-                throw new SurefireVerifierException( e );
-            }
-        }
 
-        cliOptions.add( "-s " + interpolatedSettings.getAbsolutePath() );
+            cliOptions.add( "-s " + interpolatedSettings.getAbsolutePath() );
 
-        verifier.setCliOptions( cliOptions );
-        try
-        {
+            verifier.setCliOptions( cliOptions );
+
             verifier.executeGoals( goals, envvars );
             return surefireVerifier;
         }
+        catch ( IOException e )
+        {
+            throw new SurefireVerifierException( e.getMessage(), e );
+        }
         catch ( VerificationException e )
         {
-            throw new SurefireVerifierException( e );
+            throw new SurefireVerifierException( e.getMessage(), e );
         }
         finally
         {
