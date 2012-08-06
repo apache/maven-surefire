@@ -176,6 +176,9 @@
           <scope>test</scope>
         </dependency>
       </dependencies>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
     </profile>
 
     <profile>
