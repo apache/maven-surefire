@@ -32,6 +32,7 @@
   <properties>
     <junitVersion>4.8.1</junitVersion>
       <groups>junit4.CategoryA,junit4.CategoryB</groups>
+      <excludedGroups></excludedGroups>
   </properties>
 
   <dependencies>
@@ -59,6 +60,7 @@
         <version>${surefire.version}</version>
         <configuration>
           <groups>${groups}</groups>
+	  <excludedGroups>${excludedGroups}</excludedGroups>
         </configuration>
         <dependencies>
           <dependency>
