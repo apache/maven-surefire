@@ -77,7 +77,7 @@ public class ForkedBooter
             originalOut.println( "Z,0,BYE!" );
             originalOut.flush();
             // noinspection CallToSystemExit
-            System.exit( 0 );
+            exit( 0 );
         }
         catch ( Throwable t )
         {
@@ -85,9 +85,18 @@ public class ForkedBooter
             // noinspection UseOfSystemOutOrSystemErr
             t.printStackTrace( System.err );
             // noinspection ProhibitedExceptionThrown,CallToSystemExit
-            System.exit( 1 );
+            exit( 1 );
         }
     }
+
+    private final static long SYSTEM_EXIT_TIMEOUT = 30 * 1000;
+
+    private static void exit( final int returnCode )
+    {
+        launchLastDitchDaemonShutdownThread( returnCode );
+        System.exit( returnCode );
+    }
+
 
     public static RunResult runSuitesInProcess( Object testSet, ClassLoader testsClassLoader,
                                                 StartupConfiguration startupConfiguration,
@@ -112,4 +121,25 @@ public class ForkedBooter
         final PrintStream originalSystemOut = providerConfiguration.getReporterConfiguration().getOriginalSystemOut();
         return surefireReflector.createForkingReporterFactory( trimStackTrace, originalSystemOut );
     }
+
+    private static void launchLastDitchDaemonShutdownThread( final int returnCode )
+    {
+        Thread lastExit = new Thread( new Runnable()
+        {
+            public void run()
+            {
+                try
+                {
+                    Thread.sleep( SYSTEM_EXIT_TIMEOUT );
+                    Runtime.getRuntime().halt( returnCode );
+                }
+                catch ( InterruptedException ignore )
+                {
+                }
+            }
+        } );
+        lastExit.setDaemon( true );
+        lastExit.start();
+    }
+
 }
