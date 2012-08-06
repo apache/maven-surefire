@@ -81,6 +81,7 @@ import org.apache.maven.surefire.util.RunOrder;
 import org.apache.maven.surefire.util.ScanResult;
 import org.apache.maven.toolchain.Toolchain;
 import org.apache.maven.toolchain.ToolchainManager;
+import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.StringUtils;
 
 /**
@@ -702,6 +703,26 @@ public abstract class AbstractSurefireMojo
         catch ( SurefireExecutionException e )
         {
             summary.registerException( e );
+        }
+        finally
+        {
+            cleanupForkConfiguration( forkConfiguration );
+        }
+    }
+
+    protected void cleanupForkConfiguration( ForkConfiguration forkConfiguration )
+    {
+        if ( !getLog().isDebugEnabled() && forkConfiguration != null )
+        {
+            File tempDirectory = forkConfiguration.getTempDirectory();
+            try
+            {
+                FileUtils.deleteDirectory( tempDirectory );
+            }
+            catch ( IOException ioe )
+            {
+                getLog().warn( "Could not delete temp direcotry " + tempDirectory + " because " + ioe.getMessage() );
+            }
         }
     }
 
