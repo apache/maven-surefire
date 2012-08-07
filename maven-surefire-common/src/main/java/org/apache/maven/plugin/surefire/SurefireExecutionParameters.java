@@ -245,10 +245,6 @@ public interface SurefireExecutionParameters
 
     void setOriginalSystemProperties( Properties originalSystemProperties );
 
-    Properties getInternalSystemProperties();
-
-    void setInternalSystemProperties( Properties internalSystemProperties );
-
     boolean isDisableXmlReport();
 
     void setDisableXmlReport( boolean disableXmlReport );

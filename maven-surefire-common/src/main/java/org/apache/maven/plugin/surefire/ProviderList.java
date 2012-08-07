@@ -37,7 +37,7 @@ public class ProviderList
 
     private final ConfigurableProviderInfo dynamicProvider;
 
-    public ProviderList( ProviderInfo[] wellKnownProviders, ConfigurableProviderInfo dynamicProviderInfo )
+    public ProviderList( ConfigurableProviderInfo dynamicProviderInfo, ProviderInfo... wellKnownProviders )
     {
         this.wellKnownProviders = wellKnownProviders;
         this.dynamicProvider = dynamicProviderInfo;
@@ -90,8 +90,6 @@ public class ProviderList
         {
             throw new NestedRuntimeException( e );
         }
-
-
     }
 
     private ProviderInfo findByName( String providerClassName )

@@ -404,16 +404,6 @@ public class SurefirePlugin
         this.originalSystemProperties = originalSystemProperties;
     }
 
-    public Properties getInternalSystemProperties()
-    {
-        return internalSystemProperties;
-    }
-
-    public void setInternalSystemProperties( Properties internalSystemProperties )
-    {
-        this.internalSystemProperties = internalSystemProperties;
-    }
-
     public boolean isUseSystemClassLoader()
     {
         return useSystemClassLoader;

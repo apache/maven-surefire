@@ -116,6 +116,11 @@ public class ForkConfiguration
         return !FORK_NEVER.equals( forkMode );
     }
 
+    public static boolean isForking( String forkMode )
+    {
+        return !FORK_NEVER.equals( getForkMode( forkMode ) );
+    }
+
     public void setSystemProperties( Properties systemProperties )
     {
         this.systemProperties = (Properties) systemProperties.clone();

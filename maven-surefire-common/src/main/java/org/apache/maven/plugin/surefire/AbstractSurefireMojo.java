@@ -20,13 +20,11 @@ package org.apache.maven.plugin.surefire;
  */
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -78,7 +76,6 @@ import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.util.DefaultScanResult;
 import org.apache.maven.surefire.util.NestedRuntimeException;
 import org.apache.maven.surefire.util.RunOrder;
-import org.apache.maven.surefire.util.ScanResult;
 import org.apache.maven.toolchain.Toolchain;
 import org.apache.maven.toolchain.ToolchainManager;
 import org.codehaus.plexus.util.FileUtils;
@@ -570,10 +567,7 @@ public abstract class AbstractSurefireMojo
     {
         if ( verifyParameters() && !hasExecutedBefore() )
         {
-            DirectoryScanner directoryScanner =
-                new DirectoryScanner( getTestClassesDirectory(), getIncludeList(), getExcludeList(),
-                                      getSpecificTests() );
-            DefaultScanResult scan = directoryScanner.scan();
+            DefaultScanResult scan = scanDirectories();
             if ( scan.isEmpty() )
             {
                 if ( getEffectiveFailIfNoTests() )
@@ -586,6 +580,12 @@ public abstract class AbstractSurefireMojo
             logReportsDirectory();
             executeAfterPreconditionsChecked( scan );
         }
+    }
+
+    private DefaultScanResult scanDirectories()
+    {
+        return new DirectoryScanner( getTestClassesDirectory(), getIncludeList(), getExcludeList(),
+                                     getSpecificTests() ).scan();
     }
 
     boolean verifyParameters()
@@ -641,11 +641,11 @@ public abstract class AbstractSurefireMojo
         try
         {
             final Artifact junitDepArtifact = getJunitDepArtifact();
-            ProviderList wellKnownProviders = new ProviderList(
-                new ProviderInfo[]{ new TestNgProviderInfo( getTestNgArtifact() ),
-                    new JUnitCoreProviderInfo( getJunitArtifact(), junitDepArtifact ),
-                    new JUnit4ProviderInfo( getJunitArtifact(), junitDepArtifact ), new JUnit3ProviderInfo() },
-                new DynamicProviderInfo( null ) );
+            ProviderList wellKnownProviders =
+                new ProviderList( new DynamicProviderInfo( null ), new TestNgProviderInfo( getTestNgArtifact() ),
+                                  new JUnitCoreProviderInfo( getJunitArtifact(), junitDepArtifact ),
+                                  new JUnit4ProviderInfo( getJunitArtifact(), junitDepArtifact ),
+                                  new JUnit3ProviderInfo() );
 
             return wellKnownProviders.resolve( getLog() );
         }
@@ -668,10 +668,29 @@ public abstract class AbstractSurefireMojo
         return summary;
     }
 
+    private SurefireProperties setupProperties( boolean isForking )
+    {
+        storeOriginalSystemProperties();
+        SurefireProperties effectiveProperties = createEffectiveProperties();
+        if ( !isForking )
+        {
+            effectiveProperties.copyToSystemProperties();
+        }
+
+        effectiveProperties.verifyLegalSystemProperties( getLog() );
+        if ( getLog().isDebugEnabled() )
+        {
+            effectiveProperties.showToLog( getLog(), "system property" );
+        }
+        return effectiveProperties;
+
+    }
+
     private void executeProvider( ProviderInfo provider, DefaultScanResult scanResult, Summary summary )
         throws MojoExecutionException, MojoFailureException
     {
-        ForkConfiguration forkConfiguration = getForkConfiguration();
+        SurefireProperties effectiveProperties = setupProperties( ForkConfiguration.isForking( getForkMode() ) );
+        ForkConfiguration forkConfiguration = getForkConfiguration( effectiveProperties );
         summary.reportForkConfiguration( forkConfiguration );
         ClassLoaderConfiguration classLoaderConfiguration = getClassLoaderConfiguration( forkConfiguration );
 
@@ -684,8 +703,7 @@ public abstract class AbstractSurefireMojo
             if ( ForkConfiguration.FORK_NEVER.equals( forkConfiguration.getForkMode() ) )
             {
                 InPluginVMSurefireStarter surefireStarter =
-                    createInprocessStarter( provider, forkConfiguration, classLoaderConfiguration, runOrderParameters,
-                                            scanResult );
+                    createInprocessStarter( provider, forkConfiguration, classLoaderConfiguration, runOrderParameters );
                 result = surefireStarter.runSuitesInProcess( scanResult );
             }
             else
@@ -1101,9 +1119,9 @@ public abstract class AbstractSurefireMojo
         List<String> specificTests = new ArrayList<String>();
         String[] testRegexes = StringUtils.split( getTest(), "," );
 
-        for ( int i = 0; i < testRegexes.length; i++ )
+        for ( String testRegexe : testRegexes )
         {
-            String testRegex = testRegexes[i];
+            String testRegex = testRegexe;
             if ( testRegex.endsWith( ".java" ) )
             {
                 testRegex = testRegex.substring( 0, testRegex.length() - 5 );
@@ -1119,7 +1137,6 @@ public abstract class AbstractSurefireMojo
     private Artifact getTestNgArtifact()
         throws MojoFailureException, InvalidVersionSpecificationException
     {
-        // TODO: this is pretty manual, but I'd rather not require the plugin > dependencies section right now
         Artifact artifact = getProjectArtifactMap().get( getTestNGArtifactName() );
 
         if ( artifact != null )
@@ -1163,7 +1180,7 @@ public abstract class AbstractSurefireMojo
     protected InPluginVMSurefireStarter createInprocessStarter( ProviderInfo provider,
                                                                 ForkConfiguration forkConfiguration,
                                                                 ClassLoaderConfiguration classLoaderConfiguration,
-                                                                RunOrderParameters runOrderParameters, ScanResult scan )
+                                                                RunOrderParameters runOrderParameters )
         throws MojoExecutionException, MojoFailureException
     {
         StartupConfiguration startupConfiguration =
@@ -1175,7 +1192,7 @@ public abstract class AbstractSurefireMojo
 
     }
 
-    protected ForkConfiguration getForkConfiguration()
+    protected ForkConfiguration getForkConfiguration( SurefireProperties effectiveProperties )
     {
         File tmpDir = getSurefireTempDir();
         //noinspection ResultOfMethodCallIgnored
@@ -1197,15 +1214,6 @@ public abstract class AbstractSurefireMojo
         ForkConfiguration fork = new ForkConfiguration( bootClasspathConfiguration, getForkMode(), tmpDir );
 
         fork.setTempDirectory( tmpDir );
-
-        processSystemProperties( !fork.isForking() );
-
-        verifyLegalSystemProperties();
-
-        if ( getLog().isDebugEnabled() )
-        {
-            showMap( getInternalSystemProperties(), "system property" );
-        }
 
         Toolchain tc = getToolchain();
 
@@ -1230,7 +1238,7 @@ public abstract class AbstractSurefireMojo
         {
             setUseSystemClassLoader( isUseSystemClassLoader() );
 
-            fork.setSystemProperties( getInternalSystemProperties() );
+            fork.setSystemProperties( effectiveProperties );
 
             if ( "true".equals( getDebugForkedProcess() ) )
             {
@@ -1290,20 +1298,9 @@ public abstract class AbstractSurefireMojo
         return fork;
     }
 
-    private void verifyLegalSystemProperties()
+    private void storeOriginalSystemProperties()
     {
-        final Properties properties = getInternalSystemProperties();
-
-        for ( Object o : properties.keySet() )
-        {
-            String key = (String) o;
-
-            if ( "java.library.path".equals( key ) )
-            {
-                getLog().warn(
-                    "java.library.path cannot be set as system property, use <argLine>-Djava.library.path=...<argLine> instead" );
-            }
-        }
+        setOriginalSystemProperties( (Properties) System.getProperties().clone() );
     }
 
 
@@ -1571,97 +1568,19 @@ public abstract class AbstractSurefireMojo
         return new Classpath( items );
     }
 
-    void processSystemProperties( boolean setInSystem )
+    private SurefireProperties createEffectiveProperties()
     {
-        copyPropertiesToInternalSystemProperties( getSystemProperties() );
+        SurefireProperties result =
+            SurefireProperties.calculateEffectiveProperties( getSystemProperties(), getSystemPropertiesFile(),
+                                                             getSystemPropertyVariables(), getUserProperties(),
+                                                             getLog() );
 
-        if ( this.getSystemPropertiesFile() != null )
-        {
-            Properties props = new OrderedProperties();
-            try
-            {
-                FileInputStream fis = new FileInputStream( getSystemPropertiesFile() );
-                props.load( fis );
-                fis.close();
-            }
-            catch ( IOException e )
-            {
-                String msg =
-                    "The system property file '" + getSystemPropertiesFile().getAbsolutePath() + "' can't be read.";
-                if ( getLog().isDebugEnabled() )
-                {
-                    getLog().warn( msg, e );
-                }
-                else
-                {
-                    getLog().warn( msg );
-                }
-            }
-
-            Enumeration<?> keys = props.propertyNames();
-            //loop through all properties
-            while ( keys.hasMoreElements() )
-            {
-                String key = (String) keys.nextElement();
-                String value = props.getProperty( key );
-                getInternalSystemProperties().setProperty( key, value );
-            }
-        }
-
-        if ( this.getSystemPropertyVariables() != null )
-        {
-            for ( Object o : getSystemPropertyVariables().keySet() )
-            {
-                String key = (String) o;
-                String value = (String) getSystemPropertyVariables().get( key );
-                //java Properties does not accept null value
-                if ( value != null )
-                {
-                    getInternalSystemProperties().setProperty( key, value );
-                }
-            }
-        }
-
-        setOriginalSystemProperties( (Properties) System.getProperties().clone() );
-
-        // We used to take all of our system properties and dump them in with the
-        // user specified properties for SUREFIRE-121, causing SUREFIRE-491.
-        // Not gonna do THAT any more... instead, we only propagate those system properties
-        // that have been explicitly specified by the user via -Dkey=value on the CLI
-
-        copyPropertiesToInternalSystemProperties( getUserProperties() );
-
-        getInternalSystemProperties().setProperty( "basedir", getBasedir().getAbsolutePath() );
-        getInternalSystemProperties().setProperty( "user.dir", getWorkingDirectory().getAbsolutePath() );
-        getInternalSystemProperties().setProperty( "localRepository", getLocalRepository().getBasedir() );
-
-        if ( setInSystem )
-        {
-            // Add all system properties configured by the user
-
-            for ( Object o : getInternalSystemProperties().keySet() )
-            {
-                String key = (String) o;
-
-                String value = getInternalSystemProperties().getProperty( key );
-
-                System.setProperty( key, value );
-            }
-        }
+        result.setProperty( "basedir", getBasedir().getAbsolutePath() );
+        result.setProperty( "user.dir", getWorkingDirectory().getAbsolutePath() );
+        result.setProperty( "localRepository", getLocalRepository().getBasedir() );
+        return result;
     }
 
-    private void copyPropertiesToInternalSystemProperties( Properties properties )
-    {
-        if ( properties != null )
-        {
-            for ( Object o : properties.keySet() )
-            {
-                String key = (String) o;
-                String value = properties.getProperty( key );
-                getInternalSystemProperties().setProperty( key, value );
-            }
-        }
-    }
 
     private Properties getUserProperties()
     {
@@ -1669,8 +1588,8 @@ public abstract class AbstractSurefireMojo
         try
         {
             // try calling MavenSession.getUserProperties() from Maven 2.1.0-M1+
-            Method getUserProperties = getSession().getClass().getMethod( "getUserProperties", null );
-            props = (Properties) getUserProperties.invoke( getSession(), null );
+            Method getUserProperties = getSession().getClass().getMethod( "getUserProperties" );
+            props = (Properties) getUserProperties.invoke( getSession() );
         }
         catch ( Exception e )
         {
