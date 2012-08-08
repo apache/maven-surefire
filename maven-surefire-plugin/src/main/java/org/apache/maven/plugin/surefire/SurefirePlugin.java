@@ -21,7 +21,6 @@ package org.apache.maven.plugin.surefire;
 
 import java.io.File;
 import java.util.List;
-import java.util.Properties;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -120,13 +119,6 @@ public class SurefirePlugin
      */
     @Parameter( property = "surefire.timeout" )
     private int forkedProcessTimeoutInSeconds;
-
-    private Properties originalSystemProperties;
-
-    /**
-     * systemPropertyVariables + systemProperties
-     */
-    private Properties internalSystemProperties = new Properties();
 
     /**
      * Option to pass dependencies to the system's classloader instead of using an isolated class loader when forking.
@@ -345,10 +337,10 @@ public class SurefirePlugin
             return null;
         }
         String[] testArray = StringUtils.split( test, "," );
-        StringBuffer tests = new StringBuffer();
-        for ( int i = 0; i < testArray.length; i++ )
+        StringBuilder tests = new StringBuilder();
+        for ( String aTestArray : testArray )
         {
-            String singleTest = testArray[i];
+            String singleTest = aTestArray;
             int index = singleTest.indexOf( '#' );
             if ( index >= 0 )
             {// the way version 2.7.3.  support single test method
@@ -377,7 +369,7 @@ public class SurefirePlugin
             if ( index2 < 0 )
             {
                 String testStrAfterFirstSharp = this.test.substring( index + 1, this.test.length() );
-                if ( testStrAfterFirstSharp.indexOf( "+" ) < 0 )
+                if ( !testStrAfterFirstSharp.contains( "+" ) )
                 {//the original way
                     return testStrAfterFirstSharp;
                 }
@@ -392,16 +384,6 @@ public class SurefirePlugin
             }
         }
         return null;
-    }
-
-    public Properties getOriginalSystemProperties()
-    {
-        return originalSystemProperties;
-    }
-
-    public void setOriginalSystemProperties( Properties originalSystemProperties )
-    {
-        this.originalSystemProperties = originalSystemProperties;
     }
 
     public boolean isUseSystemClassLoader()

@@ -621,9 +621,22 @@ public abstract class AbstractSurefireMojo
         throws MojoExecutionException, MojoFailureException
     {
         createDependencyResolver();
-        Summary summary = executeAllProviders( scanResult );
-        restoreOriginalSystemPropertiesWhenNotForking( summary );
-        handleSummary( summary );
+
+        Properties originalSystemProperties =
+            ForkConfiguration.isInProcess( getForkMode() ) ? (Properties) System.getProperties().clone() : null;
+        try
+        {
+            Summary summary = executeAllProviders( scanResult );
+
+            handleSummary( summary );
+        }
+        finally
+        {
+            if ( originalSystemProperties != null )
+            {
+                System.setProperties( originalSystemProperties );
+            }
+        }
     }
 
     private Artifact surefireBooterArtifact;
@@ -668,29 +681,30 @@ public abstract class AbstractSurefireMojo
         return summary;
     }
 
-    private SurefireProperties setupProperties( boolean isForking )
+    private SurefireProperties setupProperties()
     {
-        storeOriginalSystemProperties();
-        SurefireProperties effectiveProperties = createEffectiveProperties();
-        if ( !isForking )
-        {
-            effectiveProperties.copyToSystemProperties();
-        }
+        SurefireProperties result =
+            SurefireProperties.calculateEffectiveProperties( getSystemProperties(), getSystemPropertiesFile(),
+                                                             getSystemPropertyVariables(), getUserProperties(),
+                                                             getLog() );
 
-        effectiveProperties.verifyLegalSystemProperties( getLog() );
+        result.setProperty( "basedir", getBasedir().getAbsolutePath() );
+        result.setProperty( "user.dir", getWorkingDirectory().getAbsolutePath() );
+        result.setProperty( "localRepository", getLocalRepository().getBasedir() );
+
+        result.verifyLegalSystemProperties( getLog() );
         if ( getLog().isDebugEnabled() )
         {
-            effectiveProperties.showToLog( getLog(), "system property" );
+            result.showToLog( getLog(), "system property" );
         }
-        return effectiveProperties;
-
+        return result;
     }
 
     private void executeProvider( ProviderInfo provider, DefaultScanResult scanResult, Summary summary )
         throws MojoExecutionException, MojoFailureException
     {
-        SurefireProperties effectiveProperties = setupProperties( ForkConfiguration.isForking( getForkMode() ) );
-        ForkConfiguration forkConfiguration = getForkConfiguration( effectiveProperties );
+        SurefireProperties effectiveProperties = setupProperties();
+        ForkConfiguration forkConfiguration = getForkConfiguration();
         summary.reportForkConfiguration( forkConfiguration );
         ClassLoaderConfiguration classLoaderConfiguration = getClassLoaderConfiguration( forkConfiguration );
 
@@ -702,6 +716,7 @@ public abstract class AbstractSurefireMojo
             final RunResult result;
             if ( ForkConfiguration.FORK_NEVER.equals( forkConfiguration.getForkMode() ) )
             {
+                effectiveProperties.copyToSystemProperties();
                 InPluginVMSurefireStarter surefireStarter =
                     createInprocessStarter( provider, forkConfiguration, classLoaderConfiguration, runOrderParameters );
                 result = surefireStarter.runSuitesInProcess( scanResult );
@@ -709,7 +724,7 @@ public abstract class AbstractSurefireMojo
             else
             {
                 ForkStarter forkStarter =
-                    createForkStarter( provider, forkConfiguration, classLoaderConfiguration, runOrderParameters );
+                    createForkStarter( provider, forkConfiguration, classLoaderConfiguration, runOrderParameters, effectiveProperties );
                 result = forkStarter.run( scanResult );
             }
             summary.registerRunResult( result );
@@ -746,14 +761,6 @@ public abstract class AbstractSurefireMojo
 
     protected abstract void handleSummary( Summary summary )
         throws MojoExecutionException, MojoFailureException;
-
-    protected void restoreOriginalSystemPropertiesWhenNotForking( Summary summary )
-    {
-        if ( ( getOriginalSystemProperties() != null ) && ( summary.isForking() ) )
-        {
-            System.setProperties( getOriginalSystemProperties() );
-        }
-    }
 
     protected void logReportsDirectory()
     {
@@ -1165,7 +1172,8 @@ public abstract class AbstractSurefireMojo
 
     protected ForkStarter createForkStarter( ProviderInfo provider, ForkConfiguration forkConfiguration,
                                              ClassLoaderConfiguration classLoaderConfiguration,
-                                             RunOrderParameters runOrderParameters )
+                                             RunOrderParameters runOrderParameters,
+                                             SurefireProperties effectiveSystemProperties )
         throws MojoExecutionException, MojoFailureException
     {
         StartupConfiguration startupConfiguration =
@@ -1174,7 +1182,7 @@ public abstract class AbstractSurefireMojo
         StartupReportConfiguration startupReportConfiguration = getStartupReportConfiguration( configChecksum );
         ProviderConfiguration providerConfiguration = createProviderConfiguration( runOrderParameters );
         return new ForkStarter( providerConfiguration, startupConfiguration, forkConfiguration,
-                                getForkedProcessTimeoutInSeconds(), startupReportConfiguration );
+                                getForkedProcessTimeoutInSeconds(), startupReportConfiguration, effectiveSystemProperties );
     }
 
     protected InPluginVMSurefireStarter createInprocessStarter( ProviderInfo provider,
@@ -1192,7 +1200,7 @@ public abstract class AbstractSurefireMojo
 
     }
 
-    protected ForkConfiguration getForkConfiguration( SurefireProperties effectiveProperties )
+    protected ForkConfiguration getForkConfiguration()
     {
         File tmpDir = getSurefireTempDir();
         //noinspection ResultOfMethodCallIgnored
@@ -1237,8 +1245,6 @@ public abstract class AbstractSurefireMojo
         if ( fork.isForking() )
         {
             setUseSystemClassLoader( isUseSystemClassLoader() );
-
-            fork.setSystemProperties( effectiveProperties );
 
             if ( "true".equals( getDebugForkedProcess() ) )
             {
@@ -1296,11 +1302,6 @@ public abstract class AbstractSurefireMojo
             }
         }
         return fork;
-    }
-
-    private void storeOriginalSystemProperties()
-    {
-        setOriginalSystemProperties( (Properties) System.getProperties().clone() );
     }
 
 

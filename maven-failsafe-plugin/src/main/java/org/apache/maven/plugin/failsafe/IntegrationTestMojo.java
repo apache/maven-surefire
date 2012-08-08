@@ -219,6 +219,7 @@ public class IntegrationTestMojo
         File summaryFile = getSummaryFile();
         if ( !summaryFile.getParentFile().isDirectory() )
         {
+            //noinspection ResultOfMethodCallIgnored
             summaryFile.getParentFile().mkdirs();
         }
 
@@ -372,12 +373,12 @@ public class IntegrationTestMojo
         this.project = project;
     }
 
-    public List getClasspathDependencyExcludes()
+    public List<String> getClasspathDependencyExcludes()
     {
         return classpathDependencyExcludes;
     }
 
-    public void setClasspathDependencyExcludes( List classpathDependencyExcludes )
+    public void setClasspathDependencyExcludes( List<String> classpathDependencyExcludes )
     {
         this.classpathDependencyExcludes = classpathDependencyExcludes;
     }
@@ -392,12 +393,12 @@ public class IntegrationTestMojo
         this.classpathDependencyScopeExclude = classpathDependencyScopeExclude;
     }
 
-    public List getAdditionalClasspathElements()
+    public List<String> getAdditionalClasspathElements()
     {
         return additionalClasspathElements;
     }
 
-    public void setAdditionalClasspathElements( List additionalClasspathElements )
+    public void setAdditionalClasspathElements( List<String> additionalClasspathElements )
     {
         this.additionalClasspathElements = additionalClasspathElements;
     }
@@ -517,16 +518,6 @@ public class IntegrationTestMojo
     public void setForkedProcessTimeoutInSeconds( int forkedProcessTimeoutInSeconds )
     {
         this.forkedProcessTimeoutInSeconds = forkedProcessTimeoutInSeconds;
-    }
-
-    public Properties getOriginalSystemProperties()
-    {
-        return originalSystemProperties;
-    }
-
-    public void setOriginalSystemProperties( Properties originalSystemProperties )
-    {
-        this.originalSystemProperties = originalSystemProperties;
     }
 
     public boolean isUseSystemClassLoader()

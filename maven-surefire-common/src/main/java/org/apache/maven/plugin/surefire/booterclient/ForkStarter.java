@@ -33,6 +33,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import org.apache.maven.plugin.surefire.CommonReflector;
 import org.apache.maven.plugin.surefire.StartupReportConfiguration;
+import org.apache.maven.plugin.surefire.SurefireProperties;
 import org.apache.maven.plugin.surefire.booterclient.output.ForkClient;
 import org.apache.maven.plugin.surefire.booterclient.output.ThreadedStreamConsumer;
 import org.apache.maven.plugin.surefire.report.FileReporterFactory;
@@ -81,22 +82,24 @@ public class ForkStarter
 
     private final StartupReportConfiguration startupReportConfiguration;
 
+    private final SurefireProperties effectiveSystemProperties;
+
     private final FileReporterFactory fileReporterFactory;
 
     private static volatile int systemPropertiesFileCounter = 0;
 
-    private static final Object lock = new Object();
-
 
     public ForkStarter( ProviderConfiguration providerConfiguration, StartupConfiguration startupConfiguration,
                         ForkConfiguration forkConfiguration, int forkedProcessTimeoutInSeconds,
-                        StartupReportConfiguration startupReportConfiguration )
+                        StartupReportConfiguration startupReportConfiguration,
+                        SurefireProperties effectiveSystemProperties )
     {
         this.forkConfiguration = forkConfiguration;
         this.providerConfiguration = providerConfiguration;
         this.forkedProcessTimeoutInSeconds = forkedProcessTimeoutInSeconds;
         this.startupConfiguration = startupConfiguration;
         this.startupReportConfiguration = startupReportConfiguration;
+        this.effectiveSystemProperties = effectiveSystemProperties;
         fileReporterFactory = new FileReporterFactory( startupReportConfiguration );
     }
 
@@ -220,7 +223,7 @@ public class ForkStarter
         throws SurefireBooterForkException
     {
         File surefireProperties;
-        File systemProperties = null;
+        File systPropsFile = null;
         try
         {
             BooterSerializer booterSerializer = new BooterSerializer( forkConfiguration, properties );
@@ -228,9 +231,9 @@ public class ForkStarter
             surefireProperties = booterSerializer.serialize( providerConfiguration, startupConfiguration, testSet,
                                                              forkConfiguration.getForkMode() );
 
-            if ( forkConfiguration.getSystemProperties() != null )
+            if ( effectiveSystemProperties != null )
             {
-                systemProperties = SystemPropertyManager.writePropertiesFile( forkConfiguration.getSystemProperties(),
+                systPropsFile = SystemPropertyManager.writePropertiesFile( effectiveSystemProperties,
                                                                               forkConfiguration.getTempDirectory(),
                                                                               "surefire_"
                                                                                   + systemPropertiesFileCounter++,
@@ -252,15 +255,16 @@ public class ForkStarter
         // Surefire-booter if !useSystemClassLoader
         Classpath bootClasspath = Classpath.join( bootClasspathConfiguration, additionlClassPathUrls );
 
+        @SuppressWarnings( "unchecked" )
         Commandline cli = forkConfiguration.createCommandLine( bootClasspath.getClassPath(),
                                                                startupConfiguration.getClassLoaderConfiguration(),
                                                                startupConfiguration.isShadefire() );
 
         cli.createArg().setFile( surefireProperties );
 
-        if ( systemProperties != null )
+        if ( systPropsFile != null )
         {
-            cli.createArg().setFile( systemProperties );
+            cli.createArg().setFile( systPropsFile );
         }
 
         ThreadedStreamConsumer threadedStreamConsumer = new ThreadedStreamConsumer( forkClient );

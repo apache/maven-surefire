@@ -241,10 +241,6 @@ public interface SurefireExecutionParameters
 
     void setMetadataSource( ArtifactMetadataSource metadataSource );
 
-    Properties getOriginalSystemProperties();
-
-    void setOriginalSystemProperties( Properties originalSystemProperties );
-
     boolean isDisableXmlReport();
 
     void setDisableXmlReport( boolean disableXmlReport );
