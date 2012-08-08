@@ -23,10 +23,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
@@ -62,13 +60,11 @@ public class ForkConfiguration
 
     private final String forkMode;
 
-    private Properties systemProperties;
-
     private String jvmExecutable;
 
     private String argLine;
 
-    private Map environmentVariables;
+    private Map<String, String> environmentVariables;
 
     private File workingDirectory;
 
@@ -116,21 +112,6 @@ public class ForkConfiguration
         return !FORK_NEVER.equals( forkMode );
     }
 
-    public static boolean isForking( String forkMode )
-    {
-        return !FORK_NEVER.equals( getForkMode( forkMode ) );
-    }
-
-    public static boolean isInProcess( String forkMode )
-    {
-        return !isForking( forkMode );
-    }
-
-    public void setSystemProperties( Properties systemProperties )
-    {
-        this.systemProperties = (Properties) systemProperties.clone();
-    }
-
     public void setJvmExecutable( String jvmExecutable )
     {
         this.jvmExecutable = jvmExecutable;
@@ -146,9 +127,9 @@ public class ForkConfiguration
         this.debugLine = debugLine;
     }
 
-    public void setEnvironmentVariables( Map environmentVariables )
+    public void setEnvironmentVariables( Map<String, String> environmentVariables )
     {
-        this.environmentVariables = new HashMap( environmentVariables );
+        this.environmentVariables = new HashMap<String, String>( environmentVariables );
     }
 
     public void setWorkingDirectory( File workingDirectory )
@@ -196,13 +177,10 @@ public class ForkConfiguration
 
         if ( environmentVariables != null )
         {
-            Iterator iter = environmentVariables.keySet().iterator();
 
-            while ( iter.hasNext() )
+            for ( String key : environmentVariables.keySet() )
             {
-                String key = (String) iter.next();
-
-                String value = (String) environmentVariables.get( key );
+                String value = environmentVariables.get( key );
 
                 cli.addEnvironment( key, value );
             }

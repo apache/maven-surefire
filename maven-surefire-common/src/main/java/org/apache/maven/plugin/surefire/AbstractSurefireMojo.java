@@ -622,21 +622,9 @@ public abstract class AbstractSurefireMojo
     {
         createDependencyResolver();
 
-        Properties originalSystemProperties =
-            ForkConfiguration.isInProcess( getForkMode() ) ? (Properties) System.getProperties().clone() : null;
-        try
-        {
-            Summary summary = executeAllProviders( scanResult );
+        Summary summary = executeAllProviders( scanResult );
 
-            handleSummary( summary );
-        }
-        finally
-        {
-            if ( originalSystemProperties != null )
-            {
-                System.setProperties( originalSystemProperties );
-            }
-        }
+        handleSummary( summary );
     }
 
     private Artifact surefireBooterArtifact;
@@ -723,9 +711,18 @@ public abstract class AbstractSurefireMojo
             }
             else
             {
-                ForkStarter forkStarter =
-                    createForkStarter( provider, forkConfiguration, classLoaderConfiguration, runOrderParameters, effectiveProperties );
-                result = forkStarter.run( scanResult );
+                Properties originalSystemProperties = (Properties) System.getProperties().clone();
+                try
+                {
+                    ForkStarter forkStarter =
+                        createForkStarter( provider, forkConfiguration, classLoaderConfiguration, runOrderParameters,
+                                           effectiveProperties );
+                    result = forkStarter.run( scanResult );
+                }
+                finally
+                {
+                    System.setProperties( originalSystemProperties );
+                }
             }
             summary.registerRunResult( result );
         }
@@ -1182,7 +1179,8 @@ public abstract class AbstractSurefireMojo
         StartupReportConfiguration startupReportConfiguration = getStartupReportConfiguration( configChecksum );
         ProviderConfiguration providerConfiguration = createProviderConfiguration( runOrderParameters );
         return new ForkStarter( providerConfiguration, startupConfiguration, forkConfiguration,
-                                getForkedProcessTimeoutInSeconds(), startupReportConfiguration, effectiveSystemProperties );
+                                getForkedProcessTimeoutInSeconds(), startupReportConfiguration,
+                                effectiveSystemProperties );
     }
 
     protected InPluginVMSurefireStarter createInprocessStarter( ProviderInfo provider,
@@ -1225,6 +1223,7 @@ public abstract class AbstractSurefireMojo
 
         Toolchain tc = getToolchain();
 
+        String jvmToUse = getJvm();
         if ( tc != null )
         {
             getLog().info( "Toolchain in " + getPluginName() + "-plugin: " + tc );
@@ -1232,13 +1231,13 @@ public abstract class AbstractSurefireMojo
             {
                 setForkMode( ForkConfiguration.FORK_ONCE );
             }
-            if ( getJvm() != null )
+            if ( jvmToUse != null )
             {
-                getLog().warn( "Toolchains are ignored, 'executable' parameter is set to " + getJvm() );
+                getLog().warn( "Toolchains are ignored, 'executable' parameter is set to " + jvmToUse );
             }
             else
             {
-                setJvm( tc.findTool( "java" ) ); //NOI18N
+                jvmToUse = tc.findTool( "java" ); //NOI18N
             }
         }
 
@@ -1254,14 +1253,14 @@ public abstract class AbstractSurefireMojo
 
             fork.setDebugLine( getDebugForkedProcess() );
 
-            if ( ( getJvm() == null || "".equals( getJvm() ) ) )
+            if ( ( jvmToUse == null || "".equals( jvmToUse ) ) )
             {
                 // use the same JVM as the one used to run Maven (the "java.home" one)
-                setJvm( System.getProperty( "java.home" ) + File.separator + "bin" + File.separator + "java" );
-                getLog().debug( "Using JVM: " + getJvm() );
+                jvmToUse = System.getProperty( "java.home" ) + File.separator + "bin" + File.separator + "java";
+                getLog().debug( "Using JVM: " + jvmToUse );
             }
 
-            fork.setJvmExecutable( getJvm() );
+            fork.setJvmExecutable( jvmToUse );
 
             if ( getWorkingDirectory() != null )
             {
@@ -1568,20 +1567,6 @@ public abstract class AbstractSurefireMojo
         }
         return new Classpath( items );
     }
-
-    private SurefireProperties createEffectiveProperties()
-    {
-        SurefireProperties result =
-            SurefireProperties.calculateEffectiveProperties( getSystemProperties(), getSystemPropertiesFile(),
-                                                             getSystemPropertyVariables(), getUserProperties(),
-                                                             getLog() );
-
-        result.setProperty( "basedir", getBasedir().getAbsolutePath() );
-        result.setProperty( "user.dir", getWorkingDirectory().getAbsolutePath() );
-        result.setProperty( "localRepository", getLocalRepository().getBasedir() );
-        return result;
-    }
-
 
     private Properties getUserProperties()
     {
@@ -1986,11 +1971,6 @@ public abstract class AbstractSurefireMojo
         return jvm;
     }
 
-    public void setJvm( String jvm )
-    {
-        this.jvm = jvm;
-    }
-
     public String getArgLine()
     {
         return argLine;
@@ -2242,6 +2222,26 @@ public abstract class AbstractSurefireMojo
     public PluginDescriptor getPluginDescriptor()
     {
         return pluginDescriptor;
+    }
+
+    public MavenProject getProject()
+    {
+        return project;
+    }
+
+    public void setProject( MavenProject project )
+    {
+        this.project = project;
+    }
+
+    public File getTestSourceDirectory()
+    {
+        return testSourceDirectory;
+    }
+
+    public void setTestSourceDirectory( File testSourceDirectory )
+    {
+        this.testSourceDirectory = testSourceDirectory;
     }
 
 }

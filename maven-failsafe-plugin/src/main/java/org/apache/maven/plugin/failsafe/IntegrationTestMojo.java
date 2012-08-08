@@ -363,16 +363,6 @@ public class IntegrationTestMojo
         this.classesDirectory = classesDirectory;
     }
 
-    public MavenProject getProject()
-    {
-        return project;
-    }
-
-    public void setProject( MavenProject project )
-    {
-        this.project = project;
-    }
-
     public List<String> getClasspathDependencyExcludes()
     {
         return classpathDependencyExcludes;
@@ -411,16 +401,6 @@ public class IntegrationTestMojo
     public void setReportsDirectory( File reportsDirectory )
     {
         this.reportsDirectory = reportsDirectory;
-    }
-
-    public File getTestSourceDirectory()
-    {
-        return testSourceDirectory;
-    }
-
-    public void setTestSourceDirectory( File testSourceDirectory )
-    {
-        this.testSourceDirectory = testSourceDirectory;
     }
 
     public String getTest()

@@ -21,20 +21,10 @@ package org.apache.maven.plugin.surefire;
 
 import java.io.File;
 import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.factory.ArtifactFactory;
-import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
 import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.artifact.resolver.ArtifactResolver;
-import org.apache.maven.execution.MavenSession;
-import org.apache.maven.plugin.descriptor.PluginDescriptor;
-import org.apache.maven.project.MavenProject;
-import org.apache.maven.toolchain.ToolchainManager;
 
 /**
- * The parameters required to execute surefire.
+ * This interface contains all the common parameters that have different implementations in Surefire vs IntegrationTest
  *
  * @author Stephen Connolly
  * @noinspection UnusedDeclaration, UnusedDeclaration
@@ -64,10 +54,6 @@ public interface SurefireExecutionParameters
     File getClassesDirectory();
 
     void setClassesDirectory( File classesDirectory );
-
-    MavenProject getProject();
-
-    void setProject( MavenProject project );
 
     List<String> getClasspathDependencyExcludes();
 
@@ -107,32 +93,6 @@ public interface SurefireExecutionParameters
 
     void setLocalRepository( ArtifactRepository localRepository );
 
-    Properties getSystemProperties();
-
-    void setSystemProperties( Properties systemProperties );
-
-    Map<String, String> getSystemPropertyVariables();
-
-    void setSystemPropertyVariables( Map<String, String> systemPropertyVariables );
-
-    File getSystemPropertiesFile();
-
-    void setSystemPropertiesFile( File systemPropertiesFile );
-
-    Properties getProperties();
-
-    void setProperties( Properties properties );
-
-    PluginDescriptor getPluginDescriptor();
-
-    Map<String, Artifact> getPluginArtifactMap();
-
-    void setPluginArtifactMap( Map<String, Artifact> pluginArtifactMap );
-
-    Map<String, Artifact> getProjectArtifactMap();
-
-    void setProjectArtifactMap( Map<String, Artifact> projectArtifactMap );
-
     boolean isPrintSummary();
 
     void setPrintSummary( boolean printSummary );
@@ -141,29 +101,9 @@ public interface SurefireExecutionParameters
 
     void setReportFormat( String reportFormat );
 
-    String getReportNameSuffix();
-
-    void setReportNameSuffix( String reportNameSuffix );
-
     boolean isUseFile();
 
     void setUseFile( boolean useFile );
-
-    boolean isRedirectTestOutputToFile();
-
-    void setRedirectTestOutputToFile( boolean redirectTestOutputToFile );
-
-    String getForkMode();
-
-    void setForkMode( String forkMode );
-
-    String getJvm();
-
-    void setJvm( String jvm );
-
-    String getArgLine();
-
-    void setArgLine( String argLine );
 
     String getDebugForkedProcess();
 
@@ -173,78 +113,6 @@ public interface SurefireExecutionParameters
 
     void setForkedProcessTimeoutInSeconds( int forkedProcessTimeoutInSeconds );
 
-    Map<String, String> getEnvironmentVariables();
-
-    void setEnvironmentVariables( Map<String, String> environmentVariables );
-
-    File getWorkingDirectory();
-
-    void setWorkingDirectory( File workingDirectory );
-
-    boolean isChildDelegation();
-
-    void setChildDelegation( boolean childDelegation );
-
-    String getGroups();
-
-    void setGroups( String groups );
-
-    String getExcludedGroups();
-
-    void setExcludedGroups( String excludedGroups );
-
-    File[] getSuiteXmlFiles();
-
-    void setSuiteXmlFiles( File[] suiteXmlFiles );
-
-    String getJunitArtifactName();
-
-    void setJunitArtifactName( String junitArtifactName );
-
-    String getTestNGArtifactName();
-
-    void setTestNGArtifactName( String testNGArtifactName );
-
-    int getThreadCount();
-
-    void setThreadCount( int threadCount );
-
-    boolean getPerCoreThreadCount();
-
-    void setPerCoreThreadCount( boolean perCoreThreadCount );
-
-    boolean getUseUnlimitedThreads();
-
-    void setUseUnlimitedThreads( boolean useUnlimitedThreads );
-
-    String getParallel();
-
-    void setParallel( String parallel );
-
-    boolean isTrimStackTrace();
-
-    void setTrimStackTrace( boolean trimStackTrace );
-
-    ArtifactResolver getArtifactResolver();
-
-    void setArtifactResolver( ArtifactResolver artifactResolver );
-
-    ArtifactFactory getArtifactFactory();
-
-    void setArtifactFactory( ArtifactFactory artifactFactory );
-
-    List<ArtifactRepository> getRemoteRepositories();
-
-    void setRemoteRepositories( List<ArtifactRepository> remoteRepositories );
-
-    ArtifactMetadataSource getMetadataSource();
-
-    void setMetadataSource( ArtifactMetadataSource metadataSource );
-
-    boolean isDisableXmlReport();
-
-    void setDisableXmlReport( boolean disableXmlReport );
-
     boolean isUseSystemClassLoader();
 
     void setUseSystemClassLoader( boolean useSystemClassLoader );
@@ -253,34 +121,7 @@ public interface SurefireExecutionParameters
 
     void setUseManifestOnlyJar( boolean useManifestOnlyJar );
 
-    boolean isEnableAssertions();
-
-    void setEnableAssertions( boolean enableAssertions );
-
-    MavenSession getSession();
-
-    void setSession( MavenSession session );
-
-    String getObjectFactory();
-
-    void setObjectFactory( String objectFactory );
-
-    ToolchainManager getToolchainManager();
-
-    void setToolchainManager( ToolchainManager toolchainManager );
-
     Boolean getFailIfNoSpecifiedTests();
 
     void setFailIfNoSpecifiedTests( Boolean failIfNoSpecifiedTests );
-
-    Boolean getFailIfNoTests();
-
-    void setFailIfNoTests( Boolean failIfNoTests );
-
-    boolean isMavenParallel();
-
-    void setRunOrder( String runOrder );
-
-    String getRunOrder();
-
 }

@@ -270,15 +270,6 @@ public class SurefirePlugin
         this.classesDirectory = classesDirectory;
     }
 
-    public MavenProject getProject()
-    {
-        return project;
-    }
-
-    public void setProject( MavenProject project )
-    {
-        this.project = project;
-    }
 
     public List<String> getClasspathDependencyExcludes()
     {
@@ -318,16 +309,6 @@ public class SurefirePlugin
     public void setReportsDirectory( File reportsDirectory )
     {
         this.reportsDirectory = reportsDirectory;
-    }
-
-    public File getTestSourceDirectory()
-    {
-        return testSourceDirectory;
-    }
-
-    public void setTestSourceDirectory( File testSourceDirectory )
-    {
-        this.testSourceDirectory = testSourceDirectory;
     }
 
     public String getTest()
