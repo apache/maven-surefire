@@ -98,14 +98,12 @@ public class BooterDeserializer
         boolean useSystemClassLoader = properties.getBooleanProperty( USESYSTEMCLASSLOADER );
         boolean useManifestOnlyJar = properties.getBooleanProperty( USEMANIFESTONLYJAR );
         String providerConfiguration = properties.getProperty( PROVIDER_CONFIGURATION );
-        String forkMode = properties.getProperty( FORKMODE );
 
         ClassLoaderConfiguration classLoaderConfiguration =
             new ClassLoaderConfiguration( useSystemClassLoader, useManifestOnlyJar );
 
         ClasspathConfiguration classpathConfiguration = new ClasspathConfiguration( properties );
 
-        return StartupConfiguration.inForkedVm( providerConfiguration, classpathConfiguration, classLoaderConfiguration,
-                                                forkMode );
+        return StartupConfiguration.inForkedVm( providerConfiguration, classpathConfiguration, classLoaderConfiguration );
     }
 }

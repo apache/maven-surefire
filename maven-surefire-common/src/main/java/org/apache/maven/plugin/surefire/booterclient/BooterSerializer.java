@@ -64,8 +64,8 @@ class BooterSerializer
     }
 
 
-    public File serialize( ProviderConfiguration booterConfiguration, StartupConfiguration providerConfiguration,
-                           Object testSet, String forkMode )
+    public File serialize(ProviderConfiguration booterConfiguration, StartupConfiguration providerConfiguration,
+                          Object testSet)
         throws IOException
     {
         providerConfiguration.getClasspathConfiguration().setForkProperties( properties );
@@ -113,7 +113,6 @@ class BooterSerializer
         Boolean rep = reporterConfiguration.isTrimStackTrace();
         properties.setProperty( BooterConstants.ISTRIMSTACKTRACE, rep );
         properties.setProperty( BooterConstants.REPORTSDIRECTORY, reporterConfiguration.getReportsDirectory() );
-        properties.setProperty( BooterConstants.FORKMODE, forkMode );
         ClassLoaderConfiguration classLoaderConfiguration = providerConfiguration.getClassLoaderConfiguration();
         properties.setProperty( BooterConstants.USESYSTEMCLASSLOADER,
                                 String.valueOf( classLoaderConfiguration.isUseSystemClassLoader() ) );

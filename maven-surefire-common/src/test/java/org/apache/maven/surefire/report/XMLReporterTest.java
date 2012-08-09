@@ -94,7 +94,7 @@ public class XMLReporterTest
      */
     public void testFileNameWithSuffix()
     {
-        File reportDir = new File( "." );
+        File reportDir = new File( "target" );
         String testName = "org.apache.maven.surefire.report.XMLReporterTest";
         String suffixText = "sampleSuffixText";
         reportEntry = new SimpleReportEntry( this.getClass().getName(), testName );

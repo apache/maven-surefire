@@ -130,7 +130,7 @@ public class BooterDeserializerStartupConfigurationTest
         Properties props = new Properties();
         BooterSerializer booterSerializer = new BooterSerializer( forkConfiguration, props );
         String aTest = "aTest";
-        booterSerializer.serialize( getProviderConfiguration(), startupConfiguration, aTest, "never" );
+        booterSerializer.serialize( getProviderConfiguration(), startupConfiguration, aTest);
         final File propsTest =
             SystemPropertyManager.writePropertiesFile( props, forkConfiguration.getTempDirectory(), "propsTest", true );
         BooterDeserializer booterDeserializer = new BooterDeserializer( new FileInputStream( propsTest ) );
@@ -159,7 +159,7 @@ public class BooterDeserializerStartupConfigurationTest
 
     private StartupConfiguration getTestStartupConfiguration( ClassLoaderConfiguration classLoaderConfiguration )
     {
-        return new StartupConfiguration( "com.provider", classpathConfiguration, classLoaderConfiguration, "never",
+        return new StartupConfiguration( "com.provider", classpathConfiguration, classLoaderConfiguration, false,
                                          false );
     }
 

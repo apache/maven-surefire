@@ -103,11 +103,10 @@ public class ForkStarter
         fileReporterFactory = new FileReporterFactory( startupReportConfiguration );
     }
 
-    public RunResult run( DefaultScanResult scanResult )
+    public RunResult run(DefaultScanResult scanResult, String requestedForkMode)
         throws SurefireBooterForkException, SurefireExecutionException
     {
         final RunResult result;
-        final String requestedForkMode = forkConfiguration.getForkMode();
         try
         {
             Properties providerProperties = providerConfiguration.getProviderProperties();
@@ -228,8 +227,7 @@ public class ForkStarter
         {
             BooterSerializer booterSerializer = new BooterSerializer( forkConfiguration, properties );
 
-            surefireProperties = booterSerializer.serialize( providerConfiguration, startupConfiguration, testSet,
-                                                             forkConfiguration.getForkMode() );
+            surefireProperties = booterSerializer.serialize( providerConfiguration, startupConfiguration, testSet);
 
             if ( effectiveSystemProperties != null )
             {

@@ -74,7 +74,7 @@ public class ForkConfigurationTest
         throws IOException
     {
         ForkConfiguration forkConfiguration =
-            new ForkConfiguration( new Classpath(), ForkConfiguration.FORK_ONCE, null );
+            new ForkConfiguration( new Classpath(), null );
         forkConfiguration.setWorkingDirectory( new File( "." ).getCanonicalFile() );
         return forkConfiguration;
     }

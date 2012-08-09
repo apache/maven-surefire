@@ -19,7 +19,6 @@ package org.apache.maven.plugin.surefire;
  * under the License.
  */
 
-import org.apache.maven.plugin.surefire.booterclient.ForkConfiguration;
 import org.apache.maven.surefire.suite.RunResult;
 
 public class Summary
@@ -30,9 +29,9 @@ public class Summary
 
     private Exception exception;
 
-    public void reportForkConfiguration( ForkConfiguration configuration )
+    public void reportForkConfiguration( boolean isForking )
     {
-        forking = configuration.isForking();
+        forking = isForking;
     }
 
     public void registerException( Exception exception )

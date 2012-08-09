@@ -89,25 +89,16 @@ public class SummaryTest
 
     public void testSummaryIsForkingIfTheLastConfigurationIsForking()
     {
-        summary.reportForkConfiguration( createNonForkingConfiguration() );
-        summary.reportForkConfiguration( createForkingConfiguration() );
+        summary.reportForkConfiguration(false);
+        summary.reportForkConfiguration(true);
         assertTrue( summary.isForking() );
     }
 
     public void testSummaryIsNotForkingIfTheLastConfigurationIsNotForking()
     {
-        summary.reportForkConfiguration( createForkingConfiguration() );
-        summary.reportForkConfiguration( createNonForkingConfiguration() );
+        summary.reportForkConfiguration(true);
+        summary.reportForkConfiguration(false);
         assertFalse( summary.isForking() );
     }
 
-    private ForkConfiguration createForkingConfiguration()
-    {
-        return new ForkConfiguration( null, ForkConfiguration.FORK_ALWAYS, null );
-    }
-
-    private ForkConfiguration createNonForkingConfiguration()
-    {
-        return new ForkConfiguration( null, ForkConfiguration.FORK_NEVER, null );
-    }
 }

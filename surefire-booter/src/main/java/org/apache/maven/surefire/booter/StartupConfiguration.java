@@ -40,22 +40,20 @@ public class StartupConfiguration
 
 
     public StartupConfiguration( String providerClassName, ClasspathConfiguration classpathConfiguration,
-                                 ClassLoaderConfiguration classLoaderConfiguration, String forkMode,
-                                 boolean inForkedVm )
+                                 ClassLoaderConfiguration classLoaderConfiguration, boolean isForkRequested, boolean inForkedVm )
     {
         this.providerClassName = providerClassName;
         this.classpathConfiguration = classpathConfiguration;
         this.classLoaderConfiguration = classLoaderConfiguration;
-        isForkRequested = !"never".equals( forkMode );
+        this.isForkRequested = isForkRequested;
         isInForkedVm = inForkedVm;
     }
 
     public static StartupConfiguration inForkedVm( String providerClassName,
                                                    ClasspathConfiguration classpathConfiguration,
-                                                   ClassLoaderConfiguration classLoaderConfiguration, String forkMode )
+                                                   ClassLoaderConfiguration classLoaderConfiguration )
     {
-        return new StartupConfiguration( providerClassName, classpathConfiguration, classLoaderConfiguration, forkMode,
-                                         true );
+        return new StartupConfiguration( providerClassName, classpathConfiguration, classLoaderConfiguration, true, true );
     }
 
     public ClasspathConfiguration getClasspathConfiguration()

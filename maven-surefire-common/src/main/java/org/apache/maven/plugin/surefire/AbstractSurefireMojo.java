@@ -554,9 +554,9 @@ public abstract class AbstractSurefireMojo
     @Component
     protected ToolchainManager toolchainManager;
 
-    // common field getters/setters
+    private Artifact surefireBooterArtifact;
 
-    // common code
+    private Toolchain toolchain;
 
     protected abstract String getPluginName();
 
@@ -565,6 +565,9 @@ public abstract class AbstractSurefireMojo
     public void execute()
         throws MojoExecutionException, MojoFailureException
     {
+        // Stuff that should have been final
+        setupStuff();
+
         if ( verifyParameters() && !hasExecutedBefore() )
         {
             DefaultScanResult scan = scanDirectories();
@@ -582,6 +585,13 @@ public abstract class AbstractSurefireMojo
         }
     }
 
+    private void setupStuff()
+    {
+        createDependencyResolver();
+        surefireBooterArtifact = getSurefireBooterArtifact();
+        toolchain = getToolchain();
+    }
+
     private DefaultScanResult scanDirectories()
     {
         return new DirectoryScanner( getTestClassesDirectory(), getIncludeList(), getExcludeList(),
@@ -596,6 +606,16 @@ public abstract class AbstractSurefireMojo
         {
             getLog().info( "Tests are skipped." );
             return false;
+        }
+
+        String jvmToUse = getJvm();
+        if ( toolchain != null )
+        {
+            getLog().info( "Toolchain in " + getPluginName() + "-plugin: " + toolchain );
+            if ( jvmToUse != null )
+            {
+                getLog().warn( "Toolchains are ignored, 'executable' parameter is set to " + jvmToUse );
+            }
         }
 
         if ( !getTestClassesDirectory().exists() )
@@ -620,14 +640,12 @@ public abstract class AbstractSurefireMojo
     protected void executeAfterPreconditionsChecked( DefaultScanResult scanResult )
         throws MojoExecutionException, MojoFailureException
     {
-        createDependencyResolver();
 
         Summary summary = executeAllProviders( scanResult );
 
         handleSummary( summary );
     }
 
-    private Artifact surefireBooterArtifact;
 
     private void createDependencyResolver()
     {
@@ -692,9 +710,8 @@ public abstract class AbstractSurefireMojo
         throws MojoExecutionException, MojoFailureException
     {
         SurefireProperties effectiveProperties = setupProperties();
-        ForkConfiguration forkConfiguration = getForkConfiguration();
-        summary.reportForkConfiguration( forkConfiguration );
-        ClassLoaderConfiguration classLoaderConfiguration = getClassLoaderConfiguration( forkConfiguration );
+        summary.reportForkConfiguration( isForking() );
+        ClassLoaderConfiguration classLoaderConfiguration = getClassLoaderConfiguration( isForking() );
 
         try
         {
@@ -702,26 +719,28 @@ public abstract class AbstractSurefireMojo
                 new RunOrderParameters( getRunOrder(), getStatisticsFileName( getConfigChecksum() ) );
 
             final RunResult result;
-            if ( ForkConfiguration.FORK_NEVER.equals( forkConfiguration.getForkMode() ) )
+            if ( isForkModeNever() )
             {
                 effectiveProperties.copyToSystemProperties();
                 InPluginVMSurefireStarter surefireStarter =
-                    createInprocessStarter( provider, forkConfiguration, classLoaderConfiguration, runOrderParameters );
+                    createInprocessStarter( provider, classLoaderConfiguration, runOrderParameters );
                 result = surefireStarter.runSuitesInProcess( scanResult );
             }
             else
             {
+                ForkConfiguration forkConfiguration = getForkConfiguration();
                 Properties originalSystemProperties = (Properties) System.getProperties().clone();
                 try
                 {
                     ForkStarter forkStarter =
                         createForkStarter( provider, forkConfiguration, classLoaderConfiguration, runOrderParameters,
                                            effectiveProperties );
-                    result = forkStarter.run( scanResult );
+                    result = forkStarter.run( scanResult, getEffectiveForkMode() );
                 }
                 finally
                 {
                     System.setProperties( originalSystemProperties );
+                    cleanupForkConfiguration( forkConfiguration );
                 }
             }
             summary.registerRunResult( result );
@@ -733,10 +752,6 @@ public abstract class AbstractSurefireMojo
         catch ( SurefireExecutionException e )
         {
             summary.registerException( e );
-        }
-        finally
-        {
-            cleanupForkConfiguration( forkConfiguration );
         }
     }
 
@@ -860,7 +875,24 @@ public abstract class AbstractSurefireMojo
 
     boolean isForkModeNever()
     {
-        return ForkConfiguration.FORK_NEVER.equals( getForkMode() );
+        return ForkConfiguration.FORK_NEVER.equals( getEffectiveForkMode() );
+    }
+
+    boolean isForking()
+    {
+        return !isForkModeNever();
+    }
+
+    private String getEffectiveForkMode()
+    {
+        String forkMode1 = getForkMode();
+
+        if ( toolchain != null && isForkModeNever() )
+        {
+            return ForkConfiguration.FORK_ONCE;
+        }
+
+        return ForkConfiguration.getEffectiveForkMode( forkMode1 );
     }
 
     private List<RunOrder> getRunOrders()
@@ -937,7 +969,7 @@ public abstract class AbstractSurefireMojo
             if ( isSpecificTestSpecified() )
             {
                 failIfNoTests = getEffectiveFailIfNoTests();
-                setFailIfNoTests( Boolean.valueOf( failIfNoTests ) );
+                setFailIfNoTests( failIfNoTests );
             }
             else
             {
@@ -966,7 +998,7 @@ public abstract class AbstractSurefireMojo
     }
 
 
-    StartupConfiguration createStartupConfiguration( ForkConfiguration forkConfiguration, ProviderInfo provider,
+    StartupConfiguration createStartupConfiguration( ProviderInfo provider,
                                                      ClassLoaderConfiguration classLoaderConfiguration )
         throws MojoExecutionException, MojoFailureException
     {
@@ -989,7 +1021,7 @@ public abstract class AbstractSurefireMojo
                                             isChildDelegation() );
 
             return new StartupConfiguration( providerName, classpathConfiguration, classLoaderConfiguration,
-                                             forkConfiguration.getForkMode(), false );
+                                             isForking(), false );
         }
         catch ( ArtifactResolutionException e )
         {
@@ -1173,8 +1205,7 @@ public abstract class AbstractSurefireMojo
                                              SurefireProperties effectiveSystemProperties )
         throws MojoExecutionException, MojoFailureException
     {
-        StartupConfiguration startupConfiguration =
-            createStartupConfiguration( forkConfiguration, provider, classLoaderConfiguration );
+        StartupConfiguration startupConfiguration = createStartupConfiguration( provider, classLoaderConfiguration );
         String configChecksum = getConfigChecksum();
         StartupReportConfiguration startupReportConfiguration = getStartupReportConfiguration( configChecksum );
         ProviderConfiguration providerConfiguration = createProviderConfiguration( runOrderParameters );
@@ -1184,13 +1215,11 @@ public abstract class AbstractSurefireMojo
     }
 
     protected InPluginVMSurefireStarter createInprocessStarter( ProviderInfo provider,
-                                                                ForkConfiguration forkConfiguration,
                                                                 ClassLoaderConfiguration classLoaderConfiguration,
                                                                 RunOrderParameters runOrderParameters )
         throws MojoExecutionException, MojoFailureException
     {
-        StartupConfiguration startupConfiguration =
-            createStartupConfiguration( forkConfiguration, provider, classLoaderConfiguration );
+        StartupConfiguration startupConfiguration = createStartupConfiguration( provider, classLoaderConfiguration );
         String configChecksum = getConfigChecksum();
         StartupReportConfiguration startupReportConfiguration = getStartupReportConfiguration( configChecksum );
         ProviderConfiguration providerConfiguration = createProviderConfiguration( runOrderParameters );
@@ -1206,101 +1235,88 @@ public abstract class AbstractSurefireMojo
 
         Artifact shadeFire = getPluginArtifactMap().get( "org.apache.maven.surefire:surefire-shadefire" );
 
-        surefireBooterArtifact = getPluginArtifactMap().get( "org.apache.maven.surefire:surefire-booter" );
-        if ( surefireBooterArtifact == null )
-        {
-            throw new RuntimeException( "Unable to locate surefire-booter in the list of plugin artifacts" );
-        }
-
-        surefireBooterArtifact.isSnapshot(); // MNG-2961: before Maven 2.0.8, fixes getBaseVersion to be -SNAPSHOT if needed
-
         final Classpath bootClasspathConfiguration =
             getArtifactClasspath( shadeFire != null ? shadeFire : surefireBooterArtifact );
 
-        ForkConfiguration fork = new ForkConfiguration( bootClasspathConfiguration, getForkMode(), tmpDir );
+        ForkConfiguration fork = new ForkConfiguration( bootClasspathConfiguration, tmpDir );
 
-        fork.setTempDirectory( tmpDir );
+        setUseSystemClassLoader( isUseSystemClassLoader() );
 
-        Toolchain tc = getToolchain();
+        fork.setDebugLine( getEffectiveDebugForkedProcess() );
 
-        String jvmToUse = getJvm();
-        if ( tc != null )
+        fork.setJvmExecutable( getEffectiveJvm() );
+
+        fork.setWorkingDirectory( getWorkingDirectory() != null ? getWorkingDirectory() : getBasedir() );
+
+        fork.setArgLine( getArgLine() );
+
+        fork.setEnvironmentVariables( getEnvironmentVariables() );
+
+        if ( getLog().isDebugEnabled() )
         {
-            getLog().info( "Toolchain in " + getPluginName() + "-plugin: " + tc );
-            if ( isForkModeNever() )
+            showMap( getEnvironmentVariables(), "environment variable" );
+
+            fork.setDebug( true );
+        }
+
+        if ( getArgLine() != null )
+        {
+            List<String> args = Arrays.asList( getArgLine().split( " " ) );
+            if ( args.contains( "-da" ) || args.contains( "-disableassertions" ) )
             {
-                setForkMode( ForkConfiguration.FORK_ONCE );
-            }
-            if ( jvmToUse != null )
-            {
-                getLog().warn( "Toolchains are ignored, 'executable' parameter is set to " + jvmToUse );
-            }
-            else
-            {
-                jvmToUse = tc.findTool( "java" ); //NOI18N
+                setEnableAssertions( false );
             }
         }
 
-        if ( fork.isForking() )
+        if ( ForkConfiguration.FORK_PERTHREAD.equals( getEffectiveForkMode() ) )
         {
-            setUseSystemClassLoader( isUseSystemClassLoader() );
-
-            if ( "true".equals( getDebugForkedProcess() ) )
-            {
-                setDebugForkedProcess(
-                    "-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005" );
-            }
-
-            fork.setDebugLine( getDebugForkedProcess() );
-
-            if ( ( jvmToUse == null || "".equals( jvmToUse ) ) )
-            {
-                // use the same JVM as the one used to run Maven (the "java.home" one)
-                jvmToUse = System.getProperty( "java.home" ) + File.separator + "bin" + File.separator + "java";
-                getLog().debug( "Using JVM: " + jvmToUse );
-            }
-
-            fork.setJvmExecutable( jvmToUse );
-
-            if ( getWorkingDirectory() != null )
-            {
-                fork.setWorkingDirectory( getWorkingDirectory() );
-            }
-            else
-            {
-                fork.setWorkingDirectory( getBasedir() );
-            }
-
-            fork.setArgLine( getArgLine() );
-
-            fork.setEnvironmentVariables( getEnvironmentVariables() );
-
-            if ( getLog().isDebugEnabled() )
-            {
-                showMap( getEnvironmentVariables(), "environment variable" );
-
-                fork.setDebug( true );
-            }
-
-            if ( getArgLine() != null )
-            {
-                List<String> args = Arrays.asList( getArgLine().split( " " ) );
-                if ( args.contains( "-da" ) || args.contains( "-disableassertions" ) )
-                {
-                    setEnableAssertions( false );
-                }
-            }
-
-            if ( fork.getForkMode().equals( ForkConfiguration.FORK_PERTHREAD ) )
-            {
-                fork.setThreadCount( getThreadCount() );
-            }
-            else
-            {
-                fork.setThreadCount( 1 );
-            }
+            fork.setThreadCount( getThreadCount() );
+        }
+        else
+        {
+            fork.setThreadCount( 1 );
         }
         return fork;
+    }
+
+    private String getEffectiveDebugForkedProcess()
+    {
+        String debugForkedProcess = getDebugForkedProcess();
+        if ( "true".equals( debugForkedProcess ) )
+        {
+            return "-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005";
+        }
+        return debugForkedProcess;
+    }
+
+    private String getEffectiveJvm()
+    {
+        String jvmToUse = getJvm();
+        if ( toolchain != null && jvmToUse == null )
+        {
+            jvmToUse = toolchain.findTool( "java" ); //NOI18N
+        }
+
+        if ( StringUtils.isEmpty( jvmToUse ) )
+        {
+            // use the same JVM as the one used to run Maven (the "java.home" one)
+            jvmToUse = System.getProperty( "java.home" ) + File.separator + "bin" + File.separator + "java";
+            getLog().debug( "Using JVM: " + jvmToUse );
+        }
+
+        return jvmToUse;
+    }
+
+
+    private Artifact getSurefireBooterArtifact()
+    {
+        Artifact artifact = getPluginArtifactMap().get( "org.apache.maven.surefire:surefire-booter" );
+        if ( artifact == null )
+        {
+            throw new RuntimeException( "Unable to locate surefire-booter in the list of plugin artifacts" );
+        }
+        artifact.isSnapshot(); // MNG-2961: before Maven 2.0.8, fixes getBaseVersion to be -SNAPSHOT if needed
+        return artifact;
     }
 
 
@@ -1314,6 +1330,11 @@ public abstract class AbstractSurefireMojo
         return new File( getReportsDirectory().getParentFile(), "surefire" );
     }
 
+    /**
+     * Operates on raw plugin paramenters, not the "effective" values.
+     *
+     * @return  The checksum
+     */
     private String getConfigChecksum()
     {
         ChecksumCalculator checksum = new ChecksumCalculator();
@@ -1392,9 +1413,9 @@ public abstract class AbstractSurefireMojo
         return false;
     }
 
-    protected ClassLoaderConfiguration getClassLoaderConfiguration( ForkConfiguration fork )
+    protected ClassLoaderConfiguration getClassLoaderConfiguration( boolean isForking )
     {
-        return fork.isForking()
+        return isForking
             ? new ClassLoaderConfiguration( isUseSystemClassLoader(), isUseManifestOnlyJar() )
             : new ClassLoaderConfiguration( false, false );
     }
@@ -1865,9 +1886,7 @@ public abstract class AbstractSurefireMojo
         return systemProperties;
     }
 
-    /**
-     * @noinspection deprecation
-     */
+    @SuppressWarnings( { "UnusedDeclaration", "deprecation" } )
     public void setSystemProperties( Properties systemProperties )
     {
         this.systemProperties = systemProperties;
@@ -1878,6 +1897,7 @@ public abstract class AbstractSurefireMojo
         return systemPropertyVariables;
     }
 
+    @SuppressWarnings( "UnusedDeclaration" )
     public void setSystemPropertyVariables( Map<String, String> systemPropertyVariables )
     {
         this.systemPropertyVariables = systemPropertyVariables;
@@ -1888,6 +1908,7 @@ public abstract class AbstractSurefireMojo
         return systemPropertiesFile;
     }
 
+    @SuppressWarnings( "UnusedDeclaration" )
     public void setSystemPropertiesFile( File systemPropertiesFile )
     {
         this.systemPropertiesFile = systemPropertiesFile;
@@ -1908,6 +1929,7 @@ public abstract class AbstractSurefireMojo
         return pluginArtifactMap;
     }
 
+    @SuppressWarnings( "UnusedDeclaration" )
     public void setPluginArtifactMap( Map<String, Artifact> pluginArtifactMap )
     {
         this.pluginArtifactMap = pluginArtifactMap;
@@ -1918,6 +1940,7 @@ public abstract class AbstractSurefireMojo
         return projectArtifactMap;
     }
 
+    @SuppressWarnings( "UnusedDeclaration" )
     public void setProjectArtifactMap( Map<String, Artifact> projectArtifactMap )
     {
         this.projectArtifactMap = projectArtifactMap;
@@ -1929,6 +1952,7 @@ public abstract class AbstractSurefireMojo
         return reportNameSuffix;
     }
 
+    @SuppressWarnings( "UnusedDeclaration" )
     public void setReportNameSuffix( String reportNameSuffix )
     {
         this.reportNameSuffix = reportNameSuffix;
@@ -1940,6 +1964,7 @@ public abstract class AbstractSurefireMojo
         return redirectTestOutputToFile;
     }
 
+    @SuppressWarnings( "UnusedDeclaration" )
     public void setRedirectTestOutputToFile( boolean redirectTestOutputToFile )
     {
         this.redirectTestOutputToFile = redirectTestOutputToFile;
@@ -1961,6 +1986,7 @@ public abstract class AbstractSurefireMojo
         return forkMode;
     }
 
+    @SuppressWarnings( "UnusedDeclaration" )
     public void setForkMode( String forkMode )
     {
         this.forkMode = forkMode;
@@ -1976,6 +2002,7 @@ public abstract class AbstractSurefireMojo
         return argLine;
     }
 
+    @SuppressWarnings( "UnusedDeclaration" )
     public void setArgLine( String argLine )
     {
         this.argLine = argLine;
@@ -1987,6 +2014,7 @@ public abstract class AbstractSurefireMojo
         return environmentVariables;
     }
 
+    @SuppressWarnings( "UnusedDeclaration" )
     public void setEnvironmentVariables( Map<String, String> environmentVariables )
     {
         this.environmentVariables = environmentVariables;
@@ -1997,6 +2025,7 @@ public abstract class AbstractSurefireMojo
         return workingDirectory;
     }
 
+    @SuppressWarnings( "UnusedDeclaration" )
     public void setWorkingDirectory( File workingDirectory )
     {
         this.workingDirectory = workingDirectory;
@@ -2007,6 +2036,7 @@ public abstract class AbstractSurefireMojo
         return childDelegation;
     }
 
+    @SuppressWarnings( "UnusedDeclaration" )
     public void setChildDelegation( boolean childDelegation )
     {
         this.childDelegation = childDelegation;
@@ -2017,6 +2047,7 @@ public abstract class AbstractSurefireMojo
         return groups;
     }
 
+    @SuppressWarnings( "UnusedDeclaration" )
     public void setGroups( String groups )
     {
         this.groups = groups;
@@ -2027,6 +2058,7 @@ public abstract class AbstractSurefireMojo
         return excludedGroups;
     }
 
+    @SuppressWarnings( "UnusedDeclaration" )
     public void setExcludedGroups( String excludedGroups )
     {
         this.excludedGroups = excludedGroups;
@@ -2037,6 +2069,7 @@ public abstract class AbstractSurefireMojo
         return suiteXmlFiles;
     }
 
+    @SuppressWarnings( "UnusedDeclaration" )
     public void setSuiteXmlFiles( File[] suiteXmlFiles )
     {
         this.suiteXmlFiles = suiteXmlFiles;
@@ -2047,6 +2080,7 @@ public abstract class AbstractSurefireMojo
         return junitArtifactName;
     }
 
+    @SuppressWarnings( "UnusedDeclaration" )
     public void setJunitArtifactName( String junitArtifactName )
     {
         this.junitArtifactName = junitArtifactName;
@@ -2057,6 +2091,7 @@ public abstract class AbstractSurefireMojo
         return testNGArtifactName;
     }
 
+    @SuppressWarnings( "UnusedDeclaration" )
     public void setTestNGArtifactName( String testNGArtifactName )
     {
         this.testNGArtifactName = testNGArtifactName;
@@ -2067,6 +2102,7 @@ public abstract class AbstractSurefireMojo
         return threadCount;
     }
 
+    @SuppressWarnings( "UnusedDeclaration" )
     public void setThreadCount( int threadCount )
     {
         this.threadCount = threadCount;
@@ -2077,6 +2113,7 @@ public abstract class AbstractSurefireMojo
         return perCoreThreadCount;
     }
 
+    @SuppressWarnings( "UnusedDeclaration" )
     public void setPerCoreThreadCount( boolean perCoreThreadCount )
     {
         this.perCoreThreadCount = perCoreThreadCount;
@@ -2087,6 +2124,7 @@ public abstract class AbstractSurefireMojo
         return useUnlimitedThreads;
     }
 
+    @SuppressWarnings( "UnusedDeclaration" )
     public void setUseUnlimitedThreads( boolean useUnlimitedThreads )
     {
         this.useUnlimitedThreads = useUnlimitedThreads;
@@ -2097,6 +2135,7 @@ public abstract class AbstractSurefireMojo
         return parallel;
     }
 
+    @SuppressWarnings( "UnusedDeclaration" )
     public void setParallel( String parallel )
     {
         this.parallel = parallel;
@@ -2107,6 +2146,7 @@ public abstract class AbstractSurefireMojo
         return trimStackTrace;
     }
 
+    @SuppressWarnings( "UnusedDeclaration" )
     public void setTrimStackTrace( boolean trimStackTrace )
     {
         this.trimStackTrace = trimStackTrace;
@@ -2117,6 +2157,7 @@ public abstract class AbstractSurefireMojo
         return artifactResolver;
     }
 
+    @SuppressWarnings( "UnusedDeclaration" )
     public void setArtifactResolver( ArtifactResolver artifactResolver )
     {
         this.artifactResolver = artifactResolver;
@@ -2127,6 +2168,7 @@ public abstract class AbstractSurefireMojo
         return artifactFactory;
     }
 
+    @SuppressWarnings( "UnusedDeclaration" )
     public void setArtifactFactory( ArtifactFactory artifactFactory )
     {
         this.artifactFactory = artifactFactory;
@@ -2137,6 +2179,7 @@ public abstract class AbstractSurefireMojo
         return remoteRepositories;
     }
 
+    @SuppressWarnings( "UnusedDeclaration" )
     public void setRemoteRepositories( List<ArtifactRepository> remoteRepositories )
     {
         this.remoteRepositories = remoteRepositories;
@@ -2147,6 +2190,7 @@ public abstract class AbstractSurefireMojo
         return metadataSource;
     }
 
+    @SuppressWarnings( "UnusedDeclaration" )
     public void setMetadataSource( ArtifactMetadataSource metadataSource )
     {
         this.metadataSource = metadataSource;
@@ -2158,6 +2202,7 @@ public abstract class AbstractSurefireMojo
         return disableXmlReport;
     }
 
+    @SuppressWarnings( "UnusedDeclaration" )
     public void setDisableXmlReport( boolean disableXmlReport )
     {
         this.disableXmlReport = disableXmlReport;
@@ -2169,6 +2214,7 @@ public abstract class AbstractSurefireMojo
         return enableAssertions;
     }
 
+    @SuppressWarnings( "UnusedDeclaration" )
     public void setEnableAssertions( boolean enableAssertions )
     {
         this.enableAssertions = enableAssertions;
@@ -2179,6 +2225,7 @@ public abstract class AbstractSurefireMojo
         return session;
     }
 
+    @SuppressWarnings( "UnusedDeclaration" )
     public void setSession( MavenSession session )
     {
         this.session = session;
@@ -2189,6 +2236,7 @@ public abstract class AbstractSurefireMojo
         return objectFactory;
     }
 
+    @SuppressWarnings( "UnusedDeclaration" )
     public void setObjectFactory( String objectFactory )
     {
         this.objectFactory = objectFactory;
@@ -2199,6 +2247,7 @@ public abstract class AbstractSurefireMojo
         return toolchainManager;
     }
 
+    @SuppressWarnings( "UnusedDeclaration" )
     public void setToolchainManager( ToolchainManager toolchainManager )
     {
         this.toolchainManager = toolchainManager;
@@ -2214,6 +2263,7 @@ public abstract class AbstractSurefireMojo
         return runOrder;
     }
 
+    @SuppressWarnings( "UnusedDeclaration" )
     public void setRunOrder( String runOrder )
     {
         this.runOrder = runOrder;
@@ -2229,6 +2279,7 @@ public abstract class AbstractSurefireMojo
         return project;
     }
 
+    @SuppressWarnings( "UnusedDeclaration" )
     public void setProject( MavenProject project )
     {
         this.project = project;

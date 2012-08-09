@@ -58,8 +58,6 @@ public class ForkConfiguration
 
     private final Classpath bootClasspathConfiguration;
 
-    private final String forkMode;
-
     private String jvmExecutable;
 
     private String argLine;
@@ -68,16 +66,15 @@ public class ForkConfiguration
 
     private File workingDirectory;
 
-    private File tempDirectory;
+    private final File tempDirectory;
 
     private boolean debug;
 
     private String debugLine;
 
-    public ForkConfiguration( Classpath bootClasspathConfiguration, String forkMode, File tmpDir )
+    public ForkConfiguration(Classpath bootClasspathConfiguration, File tmpDir)
     {
         this.bootClasspathConfiguration = bootClasspathConfiguration;
-        this.forkMode = getForkMode( forkMode );
         this.tempDirectory = tmpDir;
     }
 
@@ -86,7 +83,7 @@ public class ForkConfiguration
         return bootClasspathConfiguration;
     }
 
-    private static String getForkMode( String forkMode )
+    public static String getEffectiveForkMode(String forkMode)
     {
         if ( "pertest".equalsIgnoreCase( forkMode ) )
         {
@@ -105,11 +102,6 @@ public class ForkConfiguration
         {
             throw new IllegalArgumentException( "Fork mode " + forkMode + " is not a legal value" );
         }
-    }
-
-    public boolean isForking()
-    {
-        return !FORK_NEVER.equals( forkMode );
     }
 
     public void setJvmExecutable( String jvmExecutable )
@@ -137,16 +129,6 @@ public class ForkConfiguration
         this.workingDirectory = workingDirectory;
     }
 
-    public void setTempDirectory( File tempDirectory )
-    {
-        this.tempDirectory = tempDirectory;
-    }
-
-
-    public String getForkMode()
-    {
-        return forkMode;
-    }
 
     /**
      * @param classPath              cla the classpath arguments
