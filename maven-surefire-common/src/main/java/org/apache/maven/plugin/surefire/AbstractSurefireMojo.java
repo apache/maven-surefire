@@ -729,6 +729,12 @@ public abstract class AbstractSurefireMojo
             else
             {
                 ForkConfiguration forkConfiguration = getForkConfiguration();
+                if ( getLog().isDebugEnabled() )
+                {
+                    showMap( getEnvironmentVariables(), "environment variable" );
+                }
+
+
                 Properties originalSystemProperties = (Properties) System.getProperties().clone();
                 try
                 {
@@ -1017,7 +1023,7 @@ public abstract class AbstractSurefireMojo
             logClasspath( testClasspath, "test classpath" );
             logClasspath( providerClasspath, "provider classpath" );
             final ClasspathConfiguration classpathConfiguration =
-                new ClasspathConfiguration( testClasspath, providerClasspath, inprocClassPath, isEnableAssertions(),
+                new ClasspathConfiguration( testClasspath, providerClasspath, inprocClassPath, effectiveIsEnableAssertions(),
                                             isChildDelegation() );
 
             return new StartupConfiguration( providerName, classpathConfiguration, classLoaderConfiguration,
@@ -1238,45 +1244,19 @@ public abstract class AbstractSurefireMojo
         final Classpath bootClasspathConfiguration =
             getArtifactClasspath( shadeFire != null ? shadeFire : surefireBooterArtifact );
 
-        ForkConfiguration fork = new ForkConfiguration( bootClasspathConfiguration, tmpDir );
+        ForkConfiguration fork =
+            new ForkConfiguration( bootClasspathConfiguration, tmpDir, getEffectiveDebugForkedProcess(),
+                                   getEffectiveJvm(),
+                                   getWorkingDirectory() != null ? getWorkingDirectory() : getBasedir(), getArgLine(),
+                                   getEnvironmentVariables(), getLog().isDebugEnabled(), getEffectiveForkCount() );
 
-        setUseSystemClassLoader( isUseSystemClassLoader() );
-
-        fork.setDebugLine( getEffectiveDebugForkedProcess() );
-
-        fork.setJvmExecutable( getEffectiveJvm() );
-
-        fork.setWorkingDirectory( getWorkingDirectory() != null ? getWorkingDirectory() : getBasedir() );
-
-        fork.setArgLine( getArgLine() );
-
-        fork.setEnvironmentVariables( getEnvironmentVariables() );
-
-        if ( getLog().isDebugEnabled() )
-        {
-            showMap( getEnvironmentVariables(), "environment variable" );
-
-            fork.setDebug( true );
-        }
-
-        if ( getArgLine() != null )
-        {
-            List<String> args = Arrays.asList( getArgLine().split( " " ) );
-            if ( args.contains( "-da" ) || args.contains( "-disableassertions" ) )
-            {
-                setEnableAssertions( false );
-            }
-        }
-
-        if ( ForkConfiguration.FORK_PERTHREAD.equals( getEffectiveForkMode() ) )
-        {
-            fork.setThreadCount( getThreadCount() );
-        }
-        else
-        {
-            fork.setThreadCount( 1 );
-        }
         return fork;
+    }
+
+
+    private int getEffectiveForkCount()
+    {
+        return ( ForkConfiguration.FORK_PERTHREAD.equals( getEffectiveForkMode() ) ) ? getThreadCount() : 1;
     }
 
     private String getEffectiveDebugForkedProcess()
@@ -1333,7 +1313,7 @@ public abstract class AbstractSurefireMojo
     /**
      * Operates on raw plugin paramenters, not the "effective" values.
      *
-     * @return  The checksum
+     * @return The checksum
      */
     private String getConfigChecksum()
     {
@@ -2212,6 +2192,18 @@ public abstract class AbstractSurefireMojo
     public boolean isEnableAssertions()
     {
         return enableAssertions;
+    }
+
+    public boolean effectiveIsEnableAssertions(){
+        if ( getArgLine() != null )
+        {
+            List<String> args = Arrays.asList( getArgLine().split( " " ) );
+            if ( args.contains( "-da" ) || args.contains( "-disableassertions" ) )
+            {
+                return false;
+            }
+        }
+        return isEnableAssertions();
     }
 
     @SuppressWarnings( "UnusedDeclaration" )

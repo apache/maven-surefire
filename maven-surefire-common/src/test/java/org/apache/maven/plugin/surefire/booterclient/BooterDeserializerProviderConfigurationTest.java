@@ -170,7 +170,7 @@ public class BooterDeserializerProviderConfigurationTest
                                                  StartupConfiguration testProviderConfiguration )
         throws IOException
     {
-        final ForkConfiguration forkConfiguration = ForkConfigurationTest.getForkConfiguration();
+        final ForkConfiguration forkConfiguration = ForkConfigurationTest.getForkConfiguration( null, null );
         Properties props = new Properties();
         BooterSerializer booterSerializer = new BooterSerializer( forkConfiguration, props );
         String aTest = "aTest";

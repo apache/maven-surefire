@@ -54,28 +54,37 @@ public class ForkConfiguration
 
     public static final String FORK_PERTHREAD = "perthread";
 
-    private int threadCount;
+    private final int forkCount;
 
     private final Classpath bootClasspathConfiguration;
 
-    private String jvmExecutable;
+    private final String jvmExecutable;
 
-    private String argLine;
+    private final String argLine;
 
-    private Map<String, String> environmentVariables;
+    private final Map<String, String> environmentVariables;
 
-    private File workingDirectory;
+    private final File workingDirectory;
 
     private final File tempDirectory;
 
-    private boolean debug;
+    private final boolean debug;
 
-    private String debugLine;
+    private final String debugLine;
 
-    public ForkConfiguration(Classpath bootClasspathConfiguration, File tmpDir)
+    public ForkConfiguration( Classpath bootClasspathConfiguration, File tmpDir, String debugLine, String jvmExecutable,
+                              File workingDirectory, String argLine, Map<String, String> environmentVariables,
+                              boolean debugEnabled, int forkCount )
     {
         this.bootClasspathConfiguration = bootClasspathConfiguration;
         this.tempDirectory = tmpDir;
+        this.debugLine = debugLine;
+        this.jvmExecutable = jvmExecutable;
+        this.workingDirectory = workingDirectory;
+        this.argLine = argLine;
+        this.environmentVariables = environmentVariables;
+        this.debug = debugEnabled;
+        this.forkCount = forkCount;
     }
 
     public Classpath getBootClasspath()
@@ -102,31 +111,6 @@ public class ForkConfiguration
         {
             throw new IllegalArgumentException( "Fork mode " + forkMode + " is not a legal value" );
         }
-    }
-
-    public void setJvmExecutable( String jvmExecutable )
-    {
-        this.jvmExecutable = jvmExecutable;
-    }
-
-    public void setArgLine( String argLine )
-    {
-        this.argLine = argLine;
-    }
-
-    public void setDebugLine( String debugLine )
-    {
-        this.debugLine = debugLine;
-    }
-
-    public void setEnvironmentVariables( Map<String, String> environmentVariables )
-    {
-        this.environmentVariables = new HashMap<String, String>( environmentVariables );
-    }
-
-    public void setWorkingDirectory( File workingDirectory )
-    {
-        this.workingDirectory = workingDirectory;
     }
 
 
@@ -246,11 +230,6 @@ public class ForkConfiguration
         return file;
     }
 
-    public void setDebug( boolean debug )
-    {
-        this.debug = debug;
-    }
-
     public boolean isDebug()
     {
         return debug;
@@ -266,19 +245,13 @@ public class ForkConfiguration
         return debugLine;
     }
 
-
     public File getTempDirectory()
     {
         return tempDirectory;
     }
 
-    public int getThreadCount()
+    public int getForkCount()
     {
-        return threadCount;
-    }
-
-    public void setThreadCount( int threadCount )
-    {
-        this.threadCount = threadCount;
+        return forkCount;
     }
 }

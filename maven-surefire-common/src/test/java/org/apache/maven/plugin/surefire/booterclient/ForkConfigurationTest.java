@@ -36,15 +36,14 @@ public class ForkConfigurationTest
     public void testCreateCommandLine_UseSystemClassLoaderForkOnce_ShouldConstructManifestOnlyJar()
         throws IOException, SurefireBooterForkException
     {
-        ForkConfiguration config = getForkConfiguration();
+        ForkConfiguration config = getForkConfiguration(null, "java");
         File cpElement = getTempClasspathFile();
-        config.setJvmExecutable( "java" );
 
         Commandline cli =
             config.createCommandLine( Collections.singletonList( cpElement.getAbsolutePath() ), true, false );
 
         String line = StringUtils.join( cli.getCommandline(), " " );
-        assertTrue( line.indexOf( "-jar" ) > -1 );
+        assertTrue( line.contains( "-jar" ) );
     }
 
     public void testArglineWithNewline()
@@ -52,9 +51,7 @@ public class ForkConfigurationTest
     {
         // SUREFIRE-657
         File cpElement = getTempClasspathFile();
-        ForkConfiguration forkConfiguration = getForkConfiguration();
-
-        forkConfiguration.setArgLine( "abc\ndef" );
+        ForkConfiguration forkConfiguration = getForkConfiguration("abc\ndef", null );
 
         final Commandline commandLine =
             forkConfiguration.createCommandLine( Collections.singletonList( cpElement.getAbsolutePath() ), false,
@@ -70,12 +67,12 @@ public class ForkConfigurationTest
         return cpElement;
     }
 
-    public static ForkConfiguration getForkConfiguration()
+    public static ForkConfiguration getForkConfiguration( String argLine, String jvm )
         throws IOException
     {
         ForkConfiguration forkConfiguration =
-            new ForkConfiguration( new Classpath(), null );
-        forkConfiguration.setWorkingDirectory( new File( "." ).getCanonicalFile() );
+            new ForkConfiguration( new Classpath(), null, null, jvm, new File( "." ).getCanonicalFile() ,
+                                   argLine, null, false, 1 );
         return forkConfiguration;
     }
 

@@ -123,7 +123,7 @@ public class ForkStarter
             }
             else if ( ForkConfiguration.FORK_PERTHREAD.equals( requestedForkMode ) )
             {
-                result = runSuitesForkPerTestSet( providerProperties, forkConfiguration.getThreadCount() );
+                result = runSuitesForkPerTestSet( providerProperties, forkConfiguration.getForkCount() );
             }
             else
             {
