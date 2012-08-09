@@ -38,7 +38,7 @@
     <testng.version>5.7</testng.version>
     <surefire.threadcount>1</surefire.threadcount>
     <mavenHomeUsed>${maven.home}</mavenHomeUsed>
-    <useInterpolatedSettings>true</useInterpolatedSettings>
+    <useInterpolatedSettings>false</useInterpolatedSettings>
   </properties>
 
   <dependencies>
@@ -176,9 +176,6 @@
           <scope>test</scope>
         </dependency>
       </dependencies>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
     </profile>
 
     <profile>
