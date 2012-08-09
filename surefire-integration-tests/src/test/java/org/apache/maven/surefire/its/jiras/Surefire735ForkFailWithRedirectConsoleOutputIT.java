@@ -19,23 +19,30 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.Not2xCompatible;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 /**
  * @author Kristian Rosenvold
  */
+@Category( Not2xCompatible.class)
 public class Surefire735ForkFailWithRedirectConsoleOutputIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
 
-    public void testVMStartFail()
+    @Test
+    public void vmStartFail()
         throws Exception
     {
         unpack().failNever().executeTest().verifyTextInLog( "Invalid maximum heap size: -Xmxxxx712743m" );
     }
 
-    public void testVMStartFtestVMStartFailail()
+    @Test
+    public void vmStartFailShouldFailBuildk()
         throws Exception
     {
         unpack().executeTestWithFailure();

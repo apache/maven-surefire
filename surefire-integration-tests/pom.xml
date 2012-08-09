@@ -53,11 +53,12 @@
       <version>2.0.6</version>
       <scope>test</scope>
     </dependency>
-    <!-- dependency>
-      <groupId>org.codehaus.plexus</groupId>
-      <artifactId>plexus-utils</artifactId>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.10</version>
       <scope>test</scope>
-    </dependency -->
+    </dependency>
     <dependency>
       <groupId>net.sourceforge.htmlunit</groupId>
       <artifactId>htmlunit</artifactId>
@@ -97,6 +98,13 @@
               <testBuildDirectory>${project.build.testOutputDirectory}</testBuildDirectory>
             </systemPropertyVariables>
           </configuration>
+          <dependencies>
+            <dependency>
+              <groupId>org.apache.maven.surefire</groupId>
+              <artifactId>surefire-junit47</artifactId>
+              <version>${shadedVersion}</version>
+            </dependency>
+          </dependencies>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -211,6 +219,13 @@
                 </configuration>
               </execution>
             </executions>
+          </plugin>
+          <plugin>
+            <artifactId>maven-failsafe-plugin</artifactId>
+            <version>${shadedVersion}</version>
+            <configuration>
+              <excludedGroups>org.apache.maven.surefire.its.Not2xCompatible</excludedGroups>
+            </configuration>
           </plugin>
         </plugins>
       </build>
