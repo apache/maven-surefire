@@ -180,8 +180,8 @@ public class ForkClient
         StringTokenizer tokens = new StringTokenizer( untokenized, "," );
         try
         {
-            String source = tokens.nextToken();
-            String name = tokens.nextToken();
+            String source = nullableCsv( tokens.nextToken() );
+            String name = nullableCsv( tokens.nextToken() );
             String group = nullableCsv( tokens.nextToken() );
             String message = nullableCsv( tokens.nextToken() );
             String elapsedStr = tokens.nextToken();
