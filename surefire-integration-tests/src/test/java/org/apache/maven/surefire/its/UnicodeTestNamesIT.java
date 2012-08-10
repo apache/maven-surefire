@@ -29,9 +29,9 @@ import org.junit.Assume;
 import org.junit.Test;
 
 /**
- * Use -Dtest to run a single TestNG test, overriding the suite XML parameter.
+ * Verifies unicode filenames pass through correctly.
  *
- * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
+ * If the underlying file system turns out not to support unicode, we just fail an assumption.s
  */
 public class UnicodeTestNamesIT
     extends SurefireJUnit4IntegrationTestCase
