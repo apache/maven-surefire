@@ -578,6 +578,7 @@ public abstract class AbstractSurefireMojo
                     throw new MojoFailureException(
                         "No tests were executed!  (Set -DfailIfNoTests=false to ignore this error.)" );
                 }
+                handleSummary( Summary.notests() );
                 return;
             }
             logReportsDirectory();
@@ -1244,13 +1245,10 @@ public abstract class AbstractSurefireMojo
         final Classpath bootClasspathConfiguration =
             getArtifactClasspath( shadeFire != null ? shadeFire : surefireBooterArtifact );
 
-        ForkConfiguration fork =
-            new ForkConfiguration( bootClasspathConfiguration, tmpDir, getEffectiveDebugForkedProcess(),
-                                   getEffectiveJvm(),
-                                   getWorkingDirectory() != null ? getWorkingDirectory() : getBasedir(), getArgLine(),
-                                   getEnvironmentVariables(), getLog().isDebugEnabled(), getEffectiveForkCount() );
-
-        return fork;
+        return new ForkConfiguration( bootClasspathConfiguration, tmpDir, getEffectiveDebugForkedProcess(),
+                               getEffectiveJvm(),
+                               getWorkingDirectory() != null ? getWorkingDirectory() : getBasedir(), getArgLine(),
+                               getEnvironmentVariables(), getLog().isDebugEnabled(), getEffectiveForkCount() );
     }
 
 

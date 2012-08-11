@@ -266,9 +266,10 @@ public class SurefireLauncher
     }
 
 
-    public OutputValidator executeVerify()
+    public FailsafeOutputValidator executeVerify()
     {
-        return execute( "verify" );
+        OutputValidator verify = execute( "verify" );
+        return new FailsafeOutputValidator( verify.getVerifier());
     }
 
     public OutputValidator execute( String goal )

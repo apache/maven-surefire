@@ -71,4 +71,9 @@ public class Summary
     {
         return runResult;
     }
+
+    public static Summary notests(){
+        return new Summary();
+    }
 }
+

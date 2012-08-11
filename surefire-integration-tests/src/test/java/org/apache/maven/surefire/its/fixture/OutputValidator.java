@@ -197,4 +197,8 @@ public class OutputValidator
         return false;
     }
 
+    Verifier getVerifier()
+    {
+        return verifier;
+    }
 }
