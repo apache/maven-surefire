@@ -89,6 +89,10 @@ public class TestNGMapConfigurator
             {
                 val = convert( val, Boolean.class );
             }
+            else if ( "group-by-instances".equals( key ) )
+            {
+                val = convert( val, Boolean.class );
+            }
             else if ( ProviderParameterNames.THREADCOUNT_PROP.equals( key ) )
             {
                 val = convert( val, String.class );

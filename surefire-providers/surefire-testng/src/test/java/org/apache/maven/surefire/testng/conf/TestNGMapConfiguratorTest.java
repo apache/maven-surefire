@@ -22,6 +22,8 @@ package org.apache.maven.surefire.testng.conf;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.maven.surefire.testset.TestSetFailedException;
+
 import junit.framework.TestCase;
 
 /**
@@ -33,12 +35,25 @@ public class TestNGMapConfiguratorTest
     public void testGetConvertedOptions()
         throws Exception
     {
-        TestNGMapConfigurator testNGMapConfigurator = new TestNGMapConfigurator();
-        Map raw = new HashMap();
-        raw.put( "mixed", "true" );
-        Map convertedOptions = testNGMapConfigurator.getConvertedOptions( raw );
+        Map convertedOptions = getConvertedOptions( "mixed", "true" );
         Boolean bool = (Boolean) convertedOptions.get( "-mixed" );
         assertTrue( bool.booleanValue() );
+    }
 
+    public void testGroupByInstances()
+        throws Exception
+    {
+        Map convertedOptions = getConvertedOptions( "group-by-instances", "true" );
+        Boolean bool = (Boolean) convertedOptions.get( "-group-by-instances" );
+        assertTrue( bool.booleanValue() );
+    }
+
+    private Map getConvertedOptions( String key, String value )
+        throws TestSetFailedException
+    {
+        TestNGMapConfigurator testNGMapConfigurator = new TestNGMapConfigurator();
+        Map raw = new HashMap();
+        raw.put( key, value );
+        return testNGMapConfigurator.getConvertedOptions( raw );
     }
 }
