@@ -4,7 +4,7 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-public class EscapeÀTest
+public class EscapeTest
     extends TestCase
 {
 
@@ -12,7 +12,7 @@ public class EscapeÀTest
 
     private static boolean tearDownCalled = false;
 
-    public EscapeÀTest( String name )
+    public EscapeTest( String name )
     {
         super( name );
     }
@@ -20,7 +20,7 @@ public class EscapeÀTest
     public static Test suite()
     {
         TestSuite suite = new TestSuite();
-        Test test = new EscapeÀTest( "testSetUp" );
+        Test test = new EscapeTest( "testSetUp" );
         suite.addTest( test );
 
         return new TestSetup( suite )
