@@ -22,6 +22,7 @@ package org.apache.maven.surefire.its;
 import java.io.File;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.apache.maven.surefire.its.fixture.TestFile;
 
 import org.junit.Assert;
@@ -30,7 +31,7 @@ import org.junit.Test;
 
 /**
  * Verifies unicode filenames pass through correctly.
- *
+ * <p/>
  * If the underlying file system turns out not to support unicode, we just fail an assumption.s
  */
 public class UnicodeTestNamesIT
@@ -39,10 +40,17 @@ public class UnicodeTestNamesIT
     @Test
     public void checkFileNamesWithUnicode()
     {
-        File sourceFile = new File("src/test/resources/unicode-testnames/src/test/java/junit/twoTestCases/\u800C\u7D22\u5176\u60C5Test.java");
-        Assume.assumeTrue( sourceFile.exists() );
-        OutputValidator outputValidator =
-            unpack( "/unicode-testnames" ).executeTest().assertTestSuiteResults( 2, 0, 0, 0 );
+        SurefireLauncher unpacked = unpack( "unicode-testnames" );
+        File xxyz = new File( unpacked.getUnpackLocation(), "src/test/java/junit/twoTestCases/XXYZTest.java" );
+        System.out.println( "xxyz.exists" + xxyz.exists() );
+        System.err.println( "xxyz.exists" + xxyz.exists() );
+
+        File dest = new File( unpacked.getUnpackLocation(),
+                              "src/test/java/junit/twoTestCases/\u800C\u7D22\u5176\u60C5Test.java" );
+
+        Assume.assumeTrue( xxyz.renameTo( dest ));
+        Assume.assumeTrue( dest.exists() );
+        OutputValidator outputValidator = unpacked.executeTest().assertTestSuiteResults( 2, 0, 0, 0 );
         TestFile surefireReportsFile = outputValidator.getSurefireReportsFile( "junit.twoTestCases.而索其情Test.txt" );
         Assert.assertTrue( surefireReportsFile.exists() );
         //surefireReportsFile .assertContainsText( "junit.twoTestCases.\u800C\u7D22\u5176\u60C5Test.txt" );
