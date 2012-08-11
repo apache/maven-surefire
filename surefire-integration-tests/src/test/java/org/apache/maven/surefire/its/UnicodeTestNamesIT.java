@@ -39,7 +39,7 @@ public class UnicodeTestNamesIT
     @Test
     public void checkFileNamesWithUnicode()
     {
-        File sourceFile = new File("src/test/resources/unicode-testnames/src/test/java/junit/twoTestCases/而索其情Test.java");
+        File sourceFile = new File("src/test/resources/unicode-testnames/src/test/java/junit/twoTestCases/\u800C\u7D22\u5176\u60C5Test.java");
         Assume.assumeTrue( sourceFile.exists() );
         OutputValidator outputValidator =
             unpack( "/unicode-testnames" ).executeTest().assertTestSuiteResults( 2, 0, 0, 0 );
