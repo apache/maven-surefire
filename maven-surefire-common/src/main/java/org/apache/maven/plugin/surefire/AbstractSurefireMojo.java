@@ -578,7 +578,7 @@ public abstract class AbstractSurefireMojo
                     throw new MojoFailureException(
                         "No tests were executed!  (Set -DfailIfNoTests=false to ignore this error.)" );
                 }
-                handleSummary( Summary.notests() );
+                handleSummary( Summary.noTestsRun() );
                 return;
             }
             logReportsDirectory();

@@ -137,4 +137,9 @@ public class RunResult
         int err = getErrors() + other.getErrors();
         return new RunResult( completed, err, fail, ign, failure, timeout );
     }
+
+    public static RunResult noTestsRun()
+    {
+        return new RunResult( 0, 0, 0, 0 );
+    }
 }

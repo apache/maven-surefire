@@ -29,6 +29,15 @@ public class Summary
 
     private Exception exception;
 
+    public Summary()
+    {
+    }
+
+    public Summary( RunResult runResult )
+    {
+        this.runResult = runResult;
+    }
+
     public void reportForkConfiguration( boolean isForking )
     {
         forking = isForking;
@@ -72,8 +81,8 @@ public class Summary
         return runResult;
     }
 
-    public static Summary notests(){
-        return new Summary();
+    public static Summary noTestsRun(){
+        return new Summary(RunResult.noTestsRun());
     }
 }
 
