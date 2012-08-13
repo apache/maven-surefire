@@ -36,8 +36,7 @@ import org.apache.maven.surefire.util.internal.ByteBuffer;
  * <p/>
  */
 public class TestSetRunListener
-    implements RunListener, Reporter, ConsoleOutputReceiver,
-    ConsoleLogger     // todo: Does this have to be a reporter ?
+    implements RunListener, ConsoleOutputReceiver, ConsoleLogger
 {
     private final TestSetStatistics testSetStatistics;
 
@@ -196,11 +195,6 @@ public class TestSetRunListener
     public void testAssumptionFailure( ReportEntry report )
     {
         testSkipped( report );
-    }
-
-    public void reset()
-    {
-        multicastingReporter.reset();
     }
 
     public String getAsString( List<ByteBuffer> byteBufferList )

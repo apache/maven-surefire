@@ -85,7 +85,6 @@ public class ForkClient
             if ( reporter == null )
             {
                 reporter = providerReporterFactory.createReporter();
-                //reporter = new AsynchRunListener( reporter, "ForkClient" );
                 testSetReporters.put( channelNumber, reporter );
             }
             int rest = s.indexOf( ",", commma );
