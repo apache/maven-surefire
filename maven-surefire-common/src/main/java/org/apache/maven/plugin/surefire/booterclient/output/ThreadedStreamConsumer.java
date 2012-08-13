@@ -60,12 +60,12 @@ public class ThreadedStreamConsumer
         {
             try
             {
-                String item = (String) queue.take();
+                String item = queue.take();
                 //noinspection StringEquality
                 while ( item != poison )
                 {
                     target.consumeLine( item );
-                    item = (String) queue.take();
+                    item = queue.take();
                 }
             }
             catch ( InterruptedException e )

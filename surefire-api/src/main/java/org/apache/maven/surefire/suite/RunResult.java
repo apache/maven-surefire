@@ -48,6 +48,8 @@ public class RunResult
 
     public static final RunResult Timeout = new RunResult( 0, 0, 0, 0, false, true );
 
+    public static final RunResult Failure = new RunResult( 0, 0, 0, 0, true, false);
+
     public RunResult( int completedCount, int errors, int failures, int skipped )
     {
         this( completedCount, errors, failures, skipped, false, false );

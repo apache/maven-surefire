@@ -103,7 +103,7 @@ public class ForkStarter
         fileReporterFactory = new FileReporterFactory( startupReportConfiguration );
     }
 
-    public RunResult run(DefaultScanResult scanResult, String requestedForkMode)
+    public RunResult run( DefaultScanResult scanResult, String requestedForkMode )
         throws SurefireBooterForkException, SurefireExecutionException
     {
         final RunResult result;
@@ -227,15 +227,14 @@ public class ForkStarter
         {
             BooterSerializer booterSerializer = new BooterSerializer( forkConfiguration, properties );
 
-            surefireProperties = booterSerializer.serialize( providerConfiguration, startupConfiguration, testSet);
+            surefireProperties = booterSerializer.serialize( providerConfiguration, startupConfiguration, testSet );
 
             if ( effectiveSystemProperties != null )
             {
                 systPropsFile = SystemPropertyManager.writePropertiesFile( effectiveSystemProperties,
-                                                                              forkConfiguration.getTempDirectory(),
-                                                                              "surefire_"
-                                                                                  + systemPropertiesFileCounter++,
-                                                                              forkConfiguration.isDebug() );
+                                                                           forkConfiguration.getTempDirectory(),
+                                                                           "surefire_" + systemPropertiesFileCounter++,
+                                                                           forkConfiguration.isDebug() );
             }
         }
         catch ( IOException e )
@@ -253,10 +252,10 @@ public class ForkStarter
         // Surefire-booter if !useSystemClassLoader
         Classpath bootClasspath = Classpath.join( bootClasspathConfiguration, additionlClassPathUrls );
 
-        @SuppressWarnings( "unchecked" )
-        Commandline cli = forkConfiguration.createCommandLine( bootClasspath.getClassPath(),
-                                                               startupConfiguration.getClassLoaderConfiguration(),
-                                                               startupConfiguration.isShadefire() );
+        @SuppressWarnings( "unchecked" ) Commandline cli =
+            forkConfiguration.createCommandLine( bootClasspath.getClassPath(),
+                                                 startupConfiguration.getClassLoaderConfiguration(),
+                                                 startupConfiguration.isShadefire() );
 
         cli.createArg().setFile( surefireProperties );
 
@@ -272,22 +271,19 @@ public class ForkStarter
             System.out.println( "Forking command line: " + cli );
         }
 
-        RunResult runResult;
+        RunResult runResult = null;
 
         try
         {
             final int timeout = forkedProcessTimeoutInSeconds > 0 ? forkedProcessTimeoutInSeconds : 0;
             final int result =
                 CommandLineUtils.executeCommandLine( cli, threadedStreamConsumer, threadedStreamConsumer, timeout );
-
-            threadedStreamConsumer.close();
-            forkClient.close();
             if ( result != RunResult.SUCCESS )
             {
                 throw new SurefireBooterForkException( "Error occurred in starting fork, check output in log" );
             }
 
-            runResult = globalRunStatistics.getRunResult();
+
         }
         catch ( CommandLineTimeOutException e )
         {
@@ -295,7 +291,17 @@ public class ForkStarter
         }
         catch ( CommandLineException e )
         {
+            runResult = RunResult.Failure;
             throw new SurefireBooterForkException( "Error while executing forked tests.", e.getCause() );
+        }
+        finally
+        {
+            threadedStreamConsumer.close();
+            forkClient.close();
+            if ( runResult == null )
+            {
+                runResult = globalRunStatistics.getRunResult();
+            }
         }
 
         return runResult;
