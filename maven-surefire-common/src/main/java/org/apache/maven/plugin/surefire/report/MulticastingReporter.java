@@ -126,14 +126,6 @@ public class MulticastingReporter
         }
     }
 
-    public void writeMessage( byte[] b, int off, int len )
-    {
-        for ( int i = 0; i < size; i++ )
-        {
-            target[i].writeMessage( b, off, len );
-        }
-    }
-
     public void reset()
     {
         for ( int i = 0; i < size; i++ )

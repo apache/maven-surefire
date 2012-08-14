@@ -28,13 +28,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
+
+import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
 import org.apache.maven.surefire.booter.ForkingRunListener;
 import org.apache.maven.surefire.report.CategorizedReportEntry;
 import org.apache.maven.surefire.report.ConsoleLogger;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterException;
-import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.SimpleReportEntry;
 import org.apache.maven.surefire.report.StackTraceWriter;
@@ -50,7 +51,7 @@ import org.codehaus.plexus.util.cli.StreamConsumer;
 public class ForkClient
     implements StreamConsumer
 {
-    private final ReporterFactory providerReporterFactory;
+    private final DefaultReporterFactory providerReporterFactory;
 
     private final Map<Integer, RunListener> testSetReporters =
         Collections.synchronizedMap( new HashMap<Integer, RunListener>() );
@@ -59,7 +60,7 @@ public class ForkClient
 
     private volatile boolean saidGoodBye = false;
 
-    public ForkClient( ReporterFactory providerReporterFactory, Properties testVmSystemProperties )
+    public ForkClient( DefaultReporterFactory providerReporterFactory, Properties testVmSystemProperties )
     {
         this.providerReporterFactory = providerReporterFactory;
         this.testVmSystemProperties = testVmSystemProperties;
@@ -81,40 +82,34 @@ public class ForkClient
                 return;
             }
             final Integer channelNumber = Integer.parseInt( s.substring( 2, commma ), 16 );
-            RunListener reporter = testSetReporters.get( channelNumber );
-            if ( reporter == null )
-            {
-                reporter = providerReporterFactory.createReporter();
-                testSetReporters.put( channelNumber, reporter );
-            }
             int rest = s.indexOf( ",", commma );
             final String remaining = s.substring( rest + 1 );
 
             switch ( operationId )
             {
                 case ForkingRunListener.BOOTERCODE_TESTSET_STARTING:
-                    reporter.testSetStarting( createReportEntry( remaining ) );
+                    getOrCreateReporter(channelNumber).testSetStarting( createReportEntry( remaining ) );
                     break;
                 case ForkingRunListener.BOOTERCODE_TESTSET_COMPLETED:
-                    reporter.testSetCompleted( createReportEntry( remaining ) );
+                    getOrCreateReporter(channelNumber).testSetCompleted( createReportEntry( remaining ) );
                     break;
                 case ForkingRunListener.BOOTERCODE_TEST_STARTING:
-                    reporter.testStarting( createReportEntry( remaining ) );
+                    getOrCreateReporter(channelNumber).testStarting( createReportEntry( remaining ) );
                     break;
                 case ForkingRunListener.BOOTERCODE_TEST_SUCCEEDED:
-                    reporter.testSucceeded( createReportEntry( remaining ) );
+                    getOrCreateReporter(channelNumber).testSucceeded( createReportEntry( remaining ) );
                     break;
                 case ForkingRunListener.BOOTERCODE_TEST_FAILED:
-                    reporter.testFailed( createReportEntry( remaining ) );
+                    getOrCreateReporter(channelNumber).testFailed( createReportEntry( remaining ) );
                     break;
                 case ForkingRunListener.BOOTERCODE_TEST_SKIPPED:
-                    reporter.testSkipped( createReportEntry( remaining ) );
+                    getOrCreateReporter(channelNumber).testSkipped( createReportEntry( remaining ) );
                     break;
                 case ForkingRunListener.BOOTERCODE_TEST_ERROR:
-                    reporter.testError( createReportEntry( remaining ) );
+                    getOrCreateReporter(channelNumber).testError( createReportEntry( remaining ) );
                     break;
                 case ForkingRunListener.BOOTERCODE_TEST_ASSUMPTIONFAILURE:
-                    reporter.testAssumptionFailure( createReportEntry( remaining ) );
+                    getOrCreateReporter(channelNumber).testAssumptionFailure( createReportEntry( remaining ) );
                     break;
                 case ForkingRunListener.BOOTERCODE_SYSPROPS:
                     int keyEnd = remaining.indexOf( "," );
@@ -131,15 +126,15 @@ public class ForkClient
                 case ForkingRunListener.BOOTERCODE_STDOUT:
                     byte[] bytes = new byte[remaining.length() * 2];
                     int len = StringUtils.unescapeJava( bytes, remaining );
-                    ( (ConsoleOutputReceiver) reporter ).writeTestOutput( bytes, 0, len, true );
+                    getOrCreateConsoleOutputReceiver(channelNumber).writeTestOutput( bytes, 0, len, true );
                     break;
                 case ForkingRunListener.BOOTERCODE_STDERR:
                     bytes = new byte[remaining.length() * 2];
                     len = StringUtils.unescapeJava( bytes, remaining );
-                    ( (ConsoleOutputReceiver) reporter ).writeTestOutput( bytes, 0, len, false );
+                    getOrCreateConsoleOutputReceiver(channelNumber).writeTestOutput( bytes, 0, len, false );
                     break;
                 case ForkingRunListener.BOOTERCODE_CONSOLE:
-                    ( (ConsoleLogger) reporter ).info( createConsoleMessage( remaining ) );
+                    getOrCreateConsoleLogger(channelNumber).info( createConsoleMessage( remaining ) );
                     break;
                 case ForkingRunListener.BOOTERCODE_BYE:
                     saidGoodBye = true;
@@ -233,9 +228,26 @@ public class ForkClient
      */
     public RunListener getReporter( Integer channelNumber )
     {
-        return testSetReporters.get( channelNumber );
+        return testSetReporters.get(channelNumber);
     }
 
+    private RunListener getOrCreateReporter(Integer channelNumber) {
+        RunListener reporter = testSetReporters.get( channelNumber );
+        if ( reporter == null )
+        {
+            reporter = providerReporterFactory.createReporter();
+            testSetReporters.put( channelNumber, reporter );
+        }
+        return reporter;
+    }
+
+    private ConsoleOutputReceiver getOrCreateConsoleOutputReceiver(Integer channelNumber){
+        return (ConsoleOutputReceiver) getOrCreateReporter(channelNumber);
+    }
+
+    private ConsoleLogger getOrCreateConsoleLogger(Integer channelNumber){
+        return (ConsoleLogger) getOrCreateReporter(channelNumber);
+    }
 
     public void close()
     {

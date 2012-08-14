@@ -51,9 +51,9 @@ public class ForkingRunListenerTest
 
     private final PrintStream printStream;
 
-    final Integer defaultChannel = new Integer( 17 );
+    final Integer defaultChannel = 17;
 
-    final Integer anotherChannel = new Integer( 18 );
+    final Integer anotherChannel = 18;
 
     public ForkingRunListenerTest()
     {
@@ -210,7 +210,7 @@ public class ForkingRunListenerTest
         standardTestRun.run();
 
         reset();
-        RunListener forkingReporter = createForkingRunListener( defaultChannel );
+        createForkingRunListener( defaultChannel );
 
         TestSetMockReporterFactory providerReporterFactory = new TestSetMockReporterFactory();
         final Properties testVmSystemProperties = new Properties();
@@ -257,8 +257,8 @@ public class ForkingRunListenerTest
         ReportEntry expected = createDefaultReportEntry();
         final SimpleReportEntry secondExpected = createAnotherDefaultReportEntry();
 
-        new ForkingRunListener( printStream, defaultChannel.intValue() ).testStarting( expected );
-        new ForkingRunListener( printStream, anotherChannel.intValue() ).testSkipped( secondExpected );
+        new ForkingRunListener( printStream, defaultChannel, false).testStarting( expected );
+        new ForkingRunListener( printStream, anotherChannel, false).testSkipped( secondExpected );
 
         TestSetMockReporterFactory providerReporterFactory = new TestSetMockReporterFactory();
         final ForkClient forkStreamClient = new ForkClient( providerReporterFactory, new Properties() );
@@ -279,12 +279,12 @@ public class ForkingRunListenerTest
 
     private SimpleReportEntry createDefaultReportEntry()
     {
-        return new SimpleReportEntry( "com.abc.TestClass", "testMethod", new Integer( 22 ) );
+        return new SimpleReportEntry( "com.abc.TestClass", "testMethod", 22);
     }
 
     private SimpleReportEntry createAnotherDefaultReportEntry()
     {
-        return new SimpleReportEntry( "com.abc.AnotherTestClass", "testAnotherMethod", new Integer( 42 ) );
+        return new SimpleReportEntry( "com.abc.AnotherTestClass", "testAnotherMethod", 42);
     }
 
     private SimpleReportEntry createReportEntryWithStackTrace()
@@ -298,7 +298,7 @@ public class ForkingRunListenerTest
             StackTraceWriter stackTraceWriter =
                 new PojoStackTraceWriter( "org.apache.tests.TestClass", "testMethod11", e );
             return new CategorizedReportEntry( "com.abc.TestClass", "testMethod", "aGroup", stackTraceWriter,
-                                               new Integer( 77 ) );
+                    77);
         }
     }
 
@@ -313,13 +313,13 @@ public class ForkingRunListenerTest
             StackTraceWriter stackTraceWriter =
                 new PojoStackTraceWriter( "org.apache.tests.TestClass", "testMethod11", e );
             return new CategorizedReportEntry( "com.abc.TestClass", "testMethod", "aGroup", stackTraceWriter,
-                                               new Integer( 77 ) );
+                    77);
         }
     }
 
     private RunListener createForkingRunListener( Integer testSetCHannel )
     {
-        return new ForkingRunListener( printStream, testSetCHannel.intValue() );
+        return new ForkingRunListener( printStream, testSetCHannel, false);
     }
 
     private class StandardTestRun
@@ -345,7 +345,7 @@ public class ForkingRunListenerTest
 
         public String getFirstEvent()
         {
-            return (String) reporter.getEvents().get( 0 );
+            return reporter.getEvents().get( 0 );
         }
 
         public ReportEntry getFirstData()
@@ -361,6 +361,7 @@ public class ForkingRunListenerTest
             final ReportEntry firstData = getFirstData();
             assertEquals( expected.getSourceName(), firstData.getSourceName() );
             assertEquals( expected.getName(), firstData.getName() );
+            //noinspection deprecation
             assertEquals( expected.getElapsed(), firstData.getElapsed() );
             assertEquals( expected.getGroup(), firstData.getGroup() );
             if ( expected.getStackTraceWriter() != null )

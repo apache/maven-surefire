@@ -21,7 +21,7 @@ package org.apache.maven.plugin.surefire;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
-import org.apache.maven.plugin.surefire.report.FileReporterFactory;
+import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
 import org.apache.maven.surefire.util.ReflectionUtils;
 import org.apache.maven.surefire.util.SurefireReflectionException;
 
@@ -53,7 +53,7 @@ public class CommonReflector
         Class<?>[] args = new Class[]{ this.startupReportConfiguration };
         Object src = createStartupReportConfiguration( startupReportConfiguration );
         Object[] params = new Object[]{ src };
-        return ReflectionUtils.instantiateObject( FileReporterFactory.class.getName(), args, params,
+        return ReflectionUtils.instantiateObject( DefaultReporterFactory.class.getName(), args, params,
                                                   surefireClassLoader );
     }
 

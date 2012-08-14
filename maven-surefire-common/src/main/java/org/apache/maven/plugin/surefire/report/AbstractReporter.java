@@ -66,13 +66,6 @@ public abstract class AbstractReporter
     }
 
 
-    public void writeMessage( byte[] b, int off, int len )
-    {
-        // Keep quiet about console output
-        // Reporting is itching for a cleanup
-    }
-
-
     public void testSetStarting( ReportEntry report )
         throws ReporterException
     {

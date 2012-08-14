@@ -22,6 +22,7 @@ package org.apache.maven.surefire.report;
 import org.apache.maven.surefire.suite.RunResult;
 
 /**
+ * Used by the providers to request (per-thread) run listeners.
  * @author Kristian Rosenvold
  */
 public interface ReporterFactory
@@ -41,5 +42,4 @@ public interface ReporterFactory
      */
     RunResult close();
 
-    RunStatistics getGlobalRunStatistics();
 }

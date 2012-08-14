@@ -20,14 +20,14 @@ package org.apache.maven.plugin.surefire.booterclient;
  */
 
 import org.apache.maven.plugin.surefire.StartupReportConfiguration;
-import org.apache.maven.plugin.surefire.report.FileReporterFactory;
+import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
 import org.apache.maven.surefire.report.RunListener;
 
 /**
  * @author Kristian Rosenvold
  */
 public class TestSetMockReporterFactory
-    extends FileReporterFactory
+    extends DefaultReporterFactory
 {
     public TestSetMockReporterFactory()
     {

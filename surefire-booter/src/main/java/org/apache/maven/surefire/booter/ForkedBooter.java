@@ -72,7 +72,7 @@ public class ForkedBooter
             startupConfiguration.writeSurefireTestClasspathProperty();
 
             Object testSet = forkedTestSet != null ? forkedTestSet.getDecodedValue( testClassLoader ) : null;
-            runSuitesInProcess( testSet, testClassLoader, startupConfiguration, providerConfiguration );
+            runSuitesInProcess( testSet, testClassLoader, startupConfiguration, providerConfiguration, originalOut );
             // Say bye.
             originalOut.println( "Z,0,BYE!" );
             originalOut.flush();
@@ -100,7 +100,8 @@ public class ForkedBooter
 
     public static RunResult runSuitesInProcess( Object testSet, ClassLoader testsClassLoader,
                                                 StartupConfiguration startupConfiguration,
-                                                ProviderConfiguration providerConfiguration )
+                                                ProviderConfiguration providerConfiguration,
+                                                PrintStream originalSystemOut )
         throws SurefireExecutionException
     {
         final ClasspathConfiguration classpathConfiguration = startupConfiguration.getClasspathConfiguration();
@@ -108,17 +109,18 @@ public class ForkedBooter
 
         SurefireReflector surefireReflector = new SurefireReflector( surefireClassLoader );
 
-        final Object factory = createForkingReporterFactory( surefireReflector, providerConfiguration );
+        final Object factory =
+            createForkingReporterFactory( surefireReflector, providerConfiguration, originalSystemOut );
 
         return ProviderFactory.invokeProvider( testSet, testsClassLoader, surefireClassLoader, factory,
                                                providerConfiguration, true, startupConfiguration );
     }
 
     private static Object createForkingReporterFactory( SurefireReflector surefireReflector,
-                                                        ProviderConfiguration providerConfiguration )
+                                                        ProviderConfiguration providerConfiguration,
+                                                        PrintStream originalSystemOut )
     {
         final Boolean trimStackTrace = providerConfiguration.getReporterConfiguration().isTrimStackTrace();
-        final PrintStream originalSystemOut = providerConfiguration.getReporterConfiguration().getOriginalSystemOut();
         return surefireReflector.createForkingReporterFactory( trimStackTrace, originalSystemOut );
     }
 

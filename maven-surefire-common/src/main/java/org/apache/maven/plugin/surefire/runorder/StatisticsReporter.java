@@ -88,10 +88,6 @@ public class StatisticsReporter
     {
     }
 
-    public void writeMessage( byte[] b, int off, int len )
-    {
-    }
-
     public void reset()
     {
     }

@@ -42,7 +42,7 @@ import org.apache.maven.surefire.util.internal.StringUtils;
  * This class is threadsafe.
  * <p/>
  * The synchronization in the underlying PrintStream (target instance)
- * is used to preserve thread safety of the ouput stream. To perform
+ * is used to preserve thread safety of the output stream. To perform
  * multiple writes/prints for a single request, they must
  * synchronize on "target" variable in this class.
  *
@@ -87,11 +87,6 @@ public class ForkingRunListener
 
     private final byte[] stdErrHeader;
 
-    public ForkingRunListener( PrintStream target, int testSetChannelId )
-    {
-        this( target, testSetChannelId, false );
-    }
-
     public ForkingRunListener( PrintStream target, int testSetChannelId, boolean trimStackTraces )
     {
         this.target = target;
@@ -100,7 +95,6 @@ public class ForkingRunListener
         stdOutHeader = createHeader( BOOTERCODE_STDOUT, testSetChannelId );
         stdErrHeader = createHeader( BOOTERCODE_STDERR, testSetChannelId );
         sendProps();
-
     }
 
     public void testSetStarting( ReportEntry report )

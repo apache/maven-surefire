@@ -19,21 +19,13 @@ package org.apache.maven.plugin.surefire;
  * under the License.
  */
 
+import org.apache.maven.plugin.surefire.report.*;
+import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
+import org.apache.maven.plugin.surefire.report.TestcycleConsoleOutputReceiver;
+
 import java.io.File;
 import java.io.PrintStream;
 import java.util.Properties;
-import org.apache.maven.plugin.surefire.report.AbstractConsoleReporter;
-import org.apache.maven.plugin.surefire.report.AbstractFileReporter;
-import org.apache.maven.plugin.surefire.report.BriefConsoleReporter;
-import org.apache.maven.plugin.surefire.report.BriefFileReporter;
-import org.apache.maven.plugin.surefire.report.ConsoleOutputDirectReporter;
-import org.apache.maven.plugin.surefire.report.ConsoleOutputFileReporter;
-import org.apache.maven.plugin.surefire.report.ConsoleReporter;
-import org.apache.maven.plugin.surefire.report.DetailedConsoleReporter;
-import org.apache.maven.plugin.surefire.report.FileReporter;
-import org.apache.maven.plugin.surefire.report.Reporter;
-import org.apache.maven.plugin.surefire.report.XMLReporter;
-import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
 
 /**
  * All the parameters used to construct reporters
@@ -43,6 +35,10 @@ import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
  */
 public class StartupReportConfiguration
 {
+    private final PrintStream originalSystemOut;
+
+    private final PrintStream originalSystemErr;
+
     private final boolean useFile;
 
     private final boolean printSummary;
@@ -84,6 +80,8 @@ public class StartupReportConfiguration
         this.reportNameSuffix = reportNameSuffix;
         this.configurationHash = configurationHash;
         this.requiresRunHistory = requiresRunHistory;
+        this.originalSystemOut = System.out;
+        this.originalSystemErr = System.err;
     }
 
     public static StartupReportConfiguration defaultValue()
@@ -178,7 +176,7 @@ public class StartupReportConfiguration
         return null;
     }
 
-    public Reporter instantiateConsoleOutputFileReporter( PrintStream originalSystemOut )
+    public TestcycleConsoleOutputReceiver instantiateConsoleOutputFileReporter()
     {
         if ( isRedirectTestOutputToFile() )
         {
@@ -186,7 +184,7 @@ public class StartupReportConfiguration
         }
         else
         {
-            return new ConsoleOutputDirectReporter( originalSystemOut );
+            return new DirectConsoleOutput( originalSystemOut, originalSystemErr );
         }
     }
 
@@ -225,5 +223,15 @@ public class StartupReportConfiguration
     public boolean isRequiresRunHistory()
     {
         return requiresRunHistory;
+    }
+
+    public PrintStream getOriginalSystemOut()
+    {
+        return originalSystemOut;
+    }
+
+    public PrintStream getOriginalSystemErr()
+    {
+        return originalSystemErr;
     }
 }

@@ -36,7 +36,7 @@ import org.apache.maven.plugin.surefire.StartupReportConfiguration;
 import org.apache.maven.plugin.surefire.SurefireProperties;
 import org.apache.maven.plugin.surefire.booterclient.output.ForkClient;
 import org.apache.maven.plugin.surefire.booterclient.output.ThreadedStreamConsumer;
-import org.apache.maven.plugin.surefire.report.FileReporterFactory;
+import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
 import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.ClasspathConfiguration;
 import org.apache.maven.surefire.booter.ProviderConfiguration;
@@ -84,7 +84,7 @@ public class ForkStarter
 
     private final SurefireProperties effectiveSystemProperties;
 
-    private final FileReporterFactory fileReporterFactory;
+    private final DefaultReporterFactory fileReporterFactory;
 
     private static volatile int systemPropertiesFileCounter = 0;
 
@@ -100,7 +100,7 @@ public class ForkStarter
         this.startupConfiguration = startupConfiguration;
         this.startupReportConfiguration = startupReportConfiguration;
         this.effectiveSystemProperties = effectiveSystemProperties;
-        fileReporterFactory = new FileReporterFactory( startupReportConfiguration );
+        fileReporterFactory = new DefaultReporterFactory( startupReportConfiguration );
     }
 
     public RunResult run( DefaultScanResult scanResult, String requestedForkMode )

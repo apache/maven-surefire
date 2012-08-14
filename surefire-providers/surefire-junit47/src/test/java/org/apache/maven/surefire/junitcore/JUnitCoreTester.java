@@ -21,7 +21,7 @@ package org.apache.maven.surefire.junitcore;
 
 import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
-import org.apache.maven.plugin.surefire.report.FileReporterFactory;
+import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
 import org.apache.maven.surefire.report.ConsoleOutputCapture;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.DefaultConsoleReporter;
@@ -54,7 +54,7 @@ public class JUnitCoreTester
     public Result run( boolean parallelClasses, Class<?>... classes )
         throws TestSetFailedException, ExecutionException
     {
-        ReporterFactory reporterManagerFactory = FileReporterFactory.defaultNoXml();
+        ReporterFactory reporterManagerFactory = DefaultReporterFactory.defaultNoXml();
 
         final HashMap<String, TestSet> classMethodCounts = new HashMap<String, TestSet>();
         RunListener reporter =

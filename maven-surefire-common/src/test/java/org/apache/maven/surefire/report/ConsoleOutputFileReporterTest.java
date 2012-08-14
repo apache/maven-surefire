@@ -41,7 +41,7 @@ public class ConsoleOutputFileReporterTest
     {
         File reportDir = new File( System.getProperty( "java.io.tmpdir" ) );
         reportEntry = new SimpleReportEntry( this.getClass().getName(), testName );
-        reporter = new ConsoleOutputFileReporter( reportDir );
+        reporter = new ConsoleOutputFileReporter( reportDir, null );
         reporter.testSetStarting( reportEntry );
         reporter.writeMessage( "some text".getBytes(), 0, 5 );
         reporter.testSetCompleted( reportEntry );

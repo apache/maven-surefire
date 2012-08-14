@@ -109,10 +109,6 @@ public class XMLReporter
     {
     }
 
-    public void writeMessage( byte[] b, int off, int len )
-    {
-    }
-
     public void testSetStarting( ReportEntry report )
         throws ReporterException
     {

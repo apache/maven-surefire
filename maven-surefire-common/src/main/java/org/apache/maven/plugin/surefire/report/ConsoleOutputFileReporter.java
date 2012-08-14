@@ -19,40 +19,30 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.util.NestedRuntimeException;
 
+import java.io.*;
+
 /**
  * Surefire output consumer proxy that writes test output to a {@link java.io.File} for each test suite.
  * <p/>
- * This class is not threadsafe, but can be encapsulated with a SynchronizedOutputConsumer. It may still be
- * accessed from different threads (serially).
+ * This class is not threadsafe, but can be serially handed off from thread to thread.
  *
- * @author <a href="mailto:carlos@apache.org">Carlos Sanchez</a>
- * @version $Id$
- * @since 2.1
+ * @author Kristian Rosenvold
+ * @author Carlos Sanchez
  */
 public class ConsoleOutputFileReporter
-    implements Reporter
+    implements TestcycleConsoleOutputReceiver
 {
     private final File reportsDirectory;
+
+    private final String reportNameSuffix;
 
     private PrintWriter printWriter = null;
 
     private String reportEntryName;
-
-    private final String reportNameSuffix;
-
-    public ConsoleOutputFileReporter( File reportsDirectory )
-    {
-        this( reportsDirectory, null );
-    }
 
     public ConsoleOutputFileReporter( File reportsDirectory, String reportNameSuffix )
     {
@@ -77,6 +67,10 @@ public class ConsoleOutputFileReporter
 
     public void writeMessage( byte[] b, int off, int len )
     {
+        writeTestOutput(b, off,len, true);
+    }
+
+    public void writeTestOutput(byte[] buf, int off, int len, boolean stdout) {
         try
         {
             if ( printWriter == null )
@@ -87,43 +81,14 @@ public class ConsoleOutputFileReporter
                     reportsDirectory.mkdirs();
                 }
                 File file = AbstractFileReporter.getReportFile( reportsDirectory, reportEntryName, reportNameSuffix,
-                                                                "-output.txt" );
+                        "-output.txt" );
                 printWriter = new PrintWriter( new BufferedWriter( new FileWriter( file ) ) );
             }
-            printWriter.write( new String( b, off, len ) );
+            printWriter.write( new String( buf, off, len ) );
         }
         catch ( IOException e )
         {
             throw new NestedRuntimeException( e );
         }
-    }
-
-
-    public void testStarting( ReportEntry report )
-    {
-    }
-
-    public void testSucceeded( ReportEntry report )
-    {
-    }
-
-    public void testSkipped( ReportEntry report )
-    {
-    }
-
-    public void testError( ReportEntry report, String stdOut, String stdErr )
-    {
-    }
-
-    public void testFailed( ReportEntry report, String stdOut, String stdErr )
-    {
-    }
-
-    public void writeMessage( String message )
-    {
-    }
-
-    public void reset()
-    {
     }
 }

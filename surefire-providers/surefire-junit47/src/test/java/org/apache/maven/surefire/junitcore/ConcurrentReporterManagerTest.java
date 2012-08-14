@@ -23,7 +23,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Map;
-import org.apache.maven.plugin.surefire.report.FileReporterFactory;
+import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
 import org.apache.maven.surefire.report.DefaultConsoleReporter;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.RunListener;
@@ -145,7 +145,7 @@ public class ConcurrentReporterManagerTest
     private void runClasses( int success, int ignored, int failure, Class<?>... classes )
         throws TestSetFailedException
     {
-        ReporterFactory reporterFactory = createReporterFactory();
+        DefaultReporterFactory reporterFactory = createReporterFactory();
         HashMap<String, TestSet> classMethodCounts = new HashMap<String, TestSet>();
         final DefaultConsoleReporter defaultConsoleReporter = new DefaultConsoleReporter( System.out );
         RunListener reporter =
@@ -166,7 +166,7 @@ public class ConcurrentReporterManagerTest
         throws TestSetFailedException
     {
         HashMap<String, TestSet> classMethodCounts = new HashMap<String, TestSet>();
-        final ReporterFactory reporterManagerFactory = createReporterFactory();
+        final DefaultReporterFactory reporterManagerFactory = createReporterFactory();
         org.junit.runner.notification.RunListener demultiplexingRunListener =
             createRunListener( reporterManagerFactory, classMethodCounts );
 
@@ -180,7 +180,7 @@ public class ConcurrentReporterManagerTest
         return reporterManagerFactory.getGlobalRunStatistics();
     }
 
-    private RunStatistics runClasses( ReporterFactory reporterManagerFactory,
+    private RunStatistics runClasses( DefaultReporterFactory reporterManagerFactory,
                                       org.junit.runner.notification.RunListener demultiplexingRunListener,
                                       Class<?>... classes )
         throws TestSetFailedException
@@ -379,9 +379,9 @@ public class ConcurrentReporterManagerTest
     }
 
 
-    private ReporterFactory createReporterFactory()
+    private DefaultReporterFactory createReporterFactory()
     {
-        return FileReporterFactory.defaultNoXml();
+        return DefaultReporterFactory.defaultNoXml();
     }
 
 

@@ -96,8 +96,6 @@ public interface Reporter
      */
     void writeMessage( String message );
 
-    void writeMessage( byte[] b, int off, int len );
-
     /**
      * Restores the instance of the reporter, making the instance re-usable for a subsequent run in the
      * same thread.
