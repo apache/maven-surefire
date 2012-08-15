@@ -47,7 +47,7 @@ public interface Reporter
      * @throws org.apache.maven.surefire.report.ReporterException
      *          When reporting fails
      */
-    void testSetCompleted( ReportEntry report )
+    void testSetCompleted( ReportEntry report, TestSetStats testSetStats )
         throws ReporterException;
 
     // Tests
@@ -64,10 +64,10 @@ public interface Reporter
      *
      * @param report The report entry to log for
      */
-    void testSucceeded( ReportEntry report );
+    void testSucceeded( ReportEntry report, TestSetStats testSetStats );
 
 
-    void testSkipped( ReportEntry report );
+    void testSkipped( ReportEntry report, TestSetStats testSetStats );
 
     /**
      * Event fired when a test ended with an error (non anticipated problem)
@@ -76,7 +76,7 @@ public interface Reporter
      * @param stdOut standard output from the test case
      * @param stdErr error output from the test case
      */
-    void testError( ReportEntry report, String stdOut, String stdErr );
+    void testError( ReportEntry report, String stdOut, String stdErr, TestSetStats testSetStats );
 
     /**
      * Event fired when a test ended with a failure (anticipated problem)
@@ -85,7 +85,7 @@ public interface Reporter
      * @param stdOut standard output from the test case
      * @param stdErr error output from the test case
      */
-    void testFailed( ReportEntry report, String stdOut, String stdErr );
+    void testFailed( ReportEntry report, String stdOut, String stdErr, TestSetStats testSetStats );
 
     /**
      * Writes a message that will be displayed in all free-text format reporters.

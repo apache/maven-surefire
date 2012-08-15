@@ -31,7 +31,7 @@ import org.apache.maven.surefire.report.ReporterException;
  * @author <a href="mailto:brett@apache.org">Brett Porter</a>
  */
 public abstract class AbstractTextReporter
-    extends AbstractReporter
+    implements Reporter
 {
     static final String BRIEF = "brief";
 
@@ -39,24 +39,24 @@ public abstract class AbstractTextReporter
 
     static final String SUMMARY = "summary";
 
+    private final boolean isPlain;
+
+    private final boolean isBrief;
+
     protected PrintWriter writer;
-
-    private static final String TEST_SET_COMPLETED_PREFIX = "Tests run: ";
-
-    private final String format;
 
     private List<String> testResults;
 
 
-    protected AbstractTextReporter( boolean trimStackTrace, String format )
+    protected AbstractTextReporter( String format )
     {
-        super( trimStackTrace );
-        this.format = format;
+        isPlain = PLAIN.equals( format );
+        isBrief = BRIEF.equals( format );
     }
 
-    protected AbstractTextReporter( PrintWriter writer, boolean trimStackTrace, String format )
+    protected AbstractTextReporter( PrintWriter writer, String format )
     {
-        this( trimStackTrace, format );
+        this( format );
         this.writer = writer;
     }
 
@@ -76,56 +76,44 @@ public abstract class AbstractTextReporter
         }
     }
 
-    public void testSucceeded( ReportEntry report )
+    public void testSucceeded( ReportEntry report, TestSetStats testSetStats )
     {
-        super.testSucceeded( report );
-
-        if ( PLAIN.equals( format ) )
+        if ( isPlain )
         {
-            testResults.add( getElapsedTimeSummary( report ) );
+            testResults.add( testSetStats.getElapsedTimeSummary( report ) );
         }
     }
 
-    public void testSkipped( ReportEntry report )
+    public void testSkipped( ReportEntry report, TestSetStats testSetStats )
     {
-        super.testSkipped( report );
-
-        if ( PLAIN.equals( format ) )
+        if ( isPlain )
         {
             testResults.add( report.getName() + " skipped" );
         }
     }
 
-    public void testError( ReportEntry report, String stdOut, String stdErr )
+    public void testError( ReportEntry report, String stdOut, String stdErr, TestSetStats testSetStats )
     {
-        super.testError( report, stdOut, stdErr );
-
-        testResults.add( getOutput( report, "ERROR" ) );
+        testResults.add( testSetStats.getOutput( report, "ERROR" ) );
     }
 
-    public void testFailed( ReportEntry report, String stdOut, String stdErr )
+    public void testFailed( ReportEntry report, String stdOut, String stdErr, TestSetStats testSetStats )
     {
-        super.testFailed( report, stdOut, stdErr );
-
-        testResults.add( getOutput( report, "FAILURE" ) );
+        testResults.add( testSetStats.getOutput( report, "FAILURE" ) );
     }
 
     public void testSetStarting( ReportEntry report )
         throws ReporterException
     {
-        super.testSetStarting( report );
-
         testResults = new ArrayList<String>();
     }
 
-    public void testSetCompleted( ReportEntry report )
+    public void testSetCompleted( ReportEntry report, TestSetStats testSetStats )
         throws ReporterException
     {
-        super.testSetCompleted( report );
+        writeMessage( testSetStats.getTestSetSummary( report.getElapsed() ) );
 
-        writeMessage( getTestSetSummary( report ) );
-
-        if ( format.equals( BRIEF ) || format.equals( PLAIN ) )
+        if ( isBrief || isPlain )
         {
             for ( String testResult : testResults )
             {
@@ -134,63 +122,13 @@ public abstract class AbstractTextReporter
         }
     }
 
-    protected String getTestSetSummary( ReportEntry report )
+    public void testStarting( ReportEntry report )
     {
-        StringBuilder buf = new StringBuilder();
-
-        buf.append( TEST_SET_COMPLETED_PREFIX );
-        buf.append( completedCount );
-        buf.append( ", Failures: " );
-        buf.append( failures );
-        buf.append( ", Errors: " );
-        buf.append( errors );
-        buf.append( ", Skipped: " );
-        buf.append( skipped );
-        buf.append( ", Time elapsed: " );
-        int elapsed =
-            report.getElapsed() != null ? report.getElapsed() : (int) ( System.currentTimeMillis() - testSetStartTime );
-        buf.append( elapsedTimeAsString( elapsed ) );
-        buf.append( " sec" );
-
-        if ( failures > 0 || errors > 0 )
-        {
-            buf.append( " <<< FAILURE!" );
-        }
-
-        buf.append( "\n" );
-
-        return buf.toString();
     }
 
-    protected String getElapsedTimeSummary( ReportEntry report )
-    {
-        StringBuilder reportContent = new StringBuilder();
-        long runTime = getActualRunTime( report );
-
-        reportContent.append( report.getName() );
-        reportContent.append( "  Time elapsed: " );
-        reportContent.append( elapsedTimeAsString( runTime ) );
-        reportContent.append( " sec" );
-
-        return reportContent.toString();
-    }
-
-    protected String getOutput( ReportEntry report, String msg )
-    {
-        StringBuilder buf = new StringBuilder();
-
-        buf.append( getElapsedTimeSummary( report ) );
-
-        buf.append( "  <<< " ).append( msg ).append( "!" ).append( NL );
-
-        buf.append( getStackTrace( report ) );
-
-        return buf.toString();
-    }
 
     public void reset()
     {
-        super.reset();
         if ( writer != null )
         {
             writer.flush();

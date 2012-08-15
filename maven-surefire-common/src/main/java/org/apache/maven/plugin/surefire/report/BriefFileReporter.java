@@ -31,8 +31,8 @@ public class BriefFileReporter
     extends AbstractFileReporter
 {
 
-    public BriefFileReporter( boolean trimStackTrace, File reportsDirectory, String reportNameSuffix )
+    public BriefFileReporter( File reportsDirectory, String reportNameSuffix )
     {
-        super( trimStackTrace, BRIEF, reportsDirectory, reportNameSuffix );
+        super( BRIEF, reportsDirectory, reportNameSuffix );
     }
 }

@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.report;
+package org.apache.maven.plugin.surefire.report;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -20,7 +20,10 @@ package org.apache.maven.surefire.report;
  */
 
 import java.io.File;
-import org.apache.maven.plugin.surefire.report.XMLReporter;
+
+import org.apache.maven.surefire.report.PojoStackTraceWriter;
+import org.apache.maven.surefire.report.ReportEntry;
+import org.apache.maven.surefire.report.SimpleReportEntry;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 
 import junit.framework.AssertionFailedError;
@@ -36,15 +39,17 @@ public class XMLReporterTest
 
     private String message;
 
+    private TestSetStats stats;
+
     protected void setUp()
         throws Exception
     {
         super.setUp();
-        reporter = new XMLReporter( true, new File( "." ) );
+        reporter = new XMLReporter( new File( "." ) );
         message = "junit.framework.AssertionFailedError";
         reportEntry = new SimpleReportEntry( this.getClass().getName(), "XMLReporterTest",
-                                             new PojoStackTraceWriter( "", "", new AssertionFailedError() ),
-                                             new Integer( 17 ) );
+                                             new PojoStackTraceWriter( "", "", new AssertionFailedError() ), 17 );
+        stats = new TestSetStats( false );
     }
 
     /*
@@ -52,7 +57,7 @@ public class XMLReporterTest
      */
     public void testTestError()
     {
-        reporter.testError( reportEntry, "", "" );
+        reporter.testError( reportEntry, "", "", stats );
         assertResult( reporter, message );
     }
 
@@ -61,7 +66,7 @@ public class XMLReporterTest
      */
     public void testTestFailed()
     {
-        reporter.testError( reportEntry, "", "" );
+        reporter.testError( reportEntry, "", "", stats );
         assertResult( reporter, message );
     }
 
@@ -78,14 +83,15 @@ public class XMLReporterTest
     public void testFileNameWithoutSuffix()
     {
         File reportDir = new File( "." );
-        String testName = "org.apache.maven.surefire.report.XMLReporterTest";
-        reportEntry = new SimpleReportEntry( this.getClass().getName(), testName, new Integer( 12 ) );
-        reporter = new XMLReporter( true, reportDir, null );
-        reporter.testSetCompleted( reportEntry );
+        String testName = "org.apache.maven.plugin.surefire.report.XMLReporterTest";
+        reportEntry = new SimpleReportEntry( this.getClass().getName(), testName, 12 );
+        reporter = new XMLReporter( reportDir, null );
+        reporter.testSetCompleted( reportEntry, stats );
 
         File expectedReportFile = new File( reportDir, "TEST-" + testName + ".xml" );
         assertTrue( "Report file (" + expectedReportFile.getAbsolutePath() + ") doesn't exist",
                     expectedReportFile.exists() );
+        //noinspection ResultOfMethodCallIgnored
         expectedReportFile.delete();
     }
 
@@ -95,16 +101,43 @@ public class XMLReporterTest
     public void testFileNameWithSuffix()
     {
         File reportDir = new File( "target" );
-        String testName = "org.apache.maven.surefire.report.XMLReporterTest";
+        String testName = "org.apache.maven.plugin.surefire.report.XMLReporterTest";
         String suffixText = "sampleSuffixText";
         reportEntry = new SimpleReportEntry( this.getClass().getName(), testName );
-        reporter = new XMLReporter( true, reportDir, suffixText );
-        reporter.testSetCompleted( reportEntry );
+        reporter = new XMLReporter( reportDir, suffixText );
+        reporter.testSetCompleted( reportEntry, stats );
 
         File expectedReportFile = new File( reportDir, "TEST-" + testName + "-" + suffixText + ".xml" );
         assertTrue( "Report file (" + expectedReportFile.getAbsolutePath() + ") doesn't exist",
                     expectedReportFile.exists() );
+        //noinspection ResultOfMethodCallIgnored
         expectedReportFile.delete();
     }
+
+    public void testGetReportNameWithParams()
+        throws Exception
+    {
+        String category = "[0] 1\u002C 2\u002C 3 (testSum)(surefire.testcase.JunitParamsTest)";
+        ReportEntry reportEntry = new SimpleReportEntry( "fud", category );
+        final String reportName = XMLReporter.getReportName( reportEntry );
+        assertEquals( "[0] 1, 2, 3 (testSum)", reportName );
+    }
+
+    public void testClassNameOnly()
+        throws Exception
+    {
+        String category = "surefire.testcase.JunitParamsTest";
+        ReportEntry reportEntry = new SimpleReportEntry( "fud", category );
+        final String reportName = XMLReporter.getReportName( reportEntry );
+        assertEquals( "surefire.testcase.JunitParamsTest", reportName );
+    }
+
+    public void testRegular()
+    {
+        ReportEntry reportEntry = new SimpleReportEntry( "fud", "testSum(surefire.testcase.NonJunitParamsTest)" );
+        final String reportName = XMLReporter.getReportName( reportEntry );
+        assertEquals( "testSum", reportName );
+    }
+
 
 }

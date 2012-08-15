@@ -29,8 +29,8 @@ public class ConsoleReporter
     extends AbstractConsoleReporter
 {
 
-    public ConsoleReporter( boolean trimStackTrace )
+    public ConsoleReporter()
     {
-        super( trimStackTrace, SUMMARY );
+        super(SUMMARY );
     }
 }

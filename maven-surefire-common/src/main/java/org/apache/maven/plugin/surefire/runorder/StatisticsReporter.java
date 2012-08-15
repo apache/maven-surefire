@@ -22,6 +22,7 @@ package org.apache.maven.plugin.surefire.runorder;
 import java.io.File;
 import java.io.FileNotFoundException;
 import org.apache.maven.plugin.surefire.report.Reporter;
+import org.apache.maven.plugin.surefire.report.TestSetStats;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.util.NestedRuntimeException;
 
@@ -48,7 +49,7 @@ public class StatisticsReporter
     {
     }
 
-    public void testSetCompleted( ReportEntry report )
+    public void testSetCompleted( ReportEntry report, TestSetStats testSetStats )
     {
         try
         {
@@ -64,22 +65,22 @@ public class StatisticsReporter
     {
     }
 
-    public void testSucceeded( ReportEntry report )
+    public void testSucceeded( ReportEntry report, TestSetStats testSetStats )
     {
         newResults.add( existing.createNextGeneration( report ) );
     }
 
-    public void testSkipped( ReportEntry report )
+    public void testSkipped( ReportEntry report, TestSetStats testSetStats )
     {
         newResults.add( existing.createNextGeneration( report ) );
     }
 
-    public void testError( ReportEntry report, String stdOut, String stdErr )
+    public void testError( ReportEntry report, String stdOut, String stdErr, TestSetStats testSetStats )
     {
         newResults.add( existing.createNextGenerationFailure( report ) );
     }
 
-    public void testFailed( ReportEntry report, String stdOut, String stdErr )
+    public void testFailed( ReportEntry report, String stdOut, String stdErr, TestSetStats testSetStats )
     {
         newResults.add( existing.createNextGenerationFailure( report ) );
     }

@@ -52,11 +52,11 @@ public class MulticastingReporter
         }
     }
 
-    public void testSetCompleted( ReportEntry report )
+    public void testSetCompleted(ReportEntry report, TestSetStats testSetStats)
     {
         for ( int i = 0; i < size; i++ )
         {
-            target[i].testSetCompleted( report );
+            target[i].testSetCompleted( report, testSetStats);
         }
     }
 
@@ -70,39 +70,39 @@ public class MulticastingReporter
         }
     }
 
-    public void testSucceeded( ReportEntry report )
+    public void testSucceeded(ReportEntry report, TestSetStats testSetStats)
     {
         ReportEntry wrapped = wrap( report );
         for ( int i = 0; i < size; i++ )
         {
-            target[i].testSucceeded( wrapped );
+            target[i].testSucceeded( wrapped, testSetStats);
         }
     }
 
-    public void testError( ReportEntry report, String stdOut, String stdErr )
+    public void testError(ReportEntry report, String stdOut, String stdErr, TestSetStats testSetStats)
     {
         ReportEntry wrapped = wrap( report );
         for ( int i = 0; i < size; i++ )
         {
-            target[i].testError( wrapped, stdOut, stdErr );
+            target[i].testError( wrapped, stdOut, stdErr, testSetStats);
         }
     }
 
-    public void testFailed( ReportEntry report, String stdOut, String stdErr )
+    public void testFailed(ReportEntry report, String stdOut, String stdErr, TestSetStats testSetStats)
     {
         ReportEntry wrapped = wrap( report );
         for ( int i = 0; i < size; i++ )
         {
-            target[i].testFailed( wrapped, stdOut, stdErr );
+            target[i].testFailed( wrapped, stdOut, stdErr, testSetStats);
         }
     }
 
-    public void testSkipped( ReportEntry report )
+    public void testSkipped(ReportEntry report, TestSetStats testSetStats)
     {
         ReportEntry wrapped = wrap( report );
         for ( int i = 0; i < size; i++ )
         {
-            target[i].testSkipped( wrapped );
+            target[i].testSkipped( wrapped, testSetStats);
         }
     }
 

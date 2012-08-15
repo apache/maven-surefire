@@ -30,8 +30,8 @@ public class BriefConsoleReporter
     extends AbstractConsoleReporter
 {
 
-    public BriefConsoleReporter( boolean trimStackTrace )
+    public BriefConsoleReporter()
     {
-        super( trimStackTrace, BRIEF );
+        super( BRIEF );
     }
 }

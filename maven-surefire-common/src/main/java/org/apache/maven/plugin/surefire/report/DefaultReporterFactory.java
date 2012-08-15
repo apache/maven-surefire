@@ -19,12 +19,10 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.maven.plugin.surefire.StartupReportConfiguration;
 import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
-import org.apache.maven.surefire.report.ConsoleLogger;
 import org.apache.maven.surefire.report.DefaultDirectConsoleReporter;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterFactory;
@@ -70,13 +68,11 @@ public class DefaultReporterFactory
 
     public RunListener createReporter()
     {
-        final PrintStream sout = reportConfiguration.getOriginalSystemOut();
-        final PrintStream serr = reportConfiguration.getOriginalSystemErr();
         return new TestSetRunListener( reportConfiguration.instantiateConsoleReporter(),
                                        reportConfiguration.instantiateFileReporter(),
                                        reportConfiguration.instantiateXmlReporter(),
                                        reportConfiguration.instantiateConsoleOutputFileReporter(),
-                                       statisticsReporter, globalStats );
+                                       statisticsReporter, globalStats, reportConfiguration.isTrimStackTrace() );
     }
 
     private List<Reporter> instantiateReports()

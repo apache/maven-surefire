@@ -37,6 +37,8 @@ public class TestSetRunListener
 
     private final RunStatistics globalStatistics;
 
+    private final TestSetStats detailsForThis;
+
     private final MulticastingReporter multicastingReporter;
 
     private final List<ByteBuffer> testStdOut = Collections.synchronizedList( new ArrayList<ByteBuffer>() );
@@ -45,11 +47,12 @@ public class TestSetRunListener
 
     private final TestcycleConsoleOutputReceiver consoleOutputReceiver;
 
-    public TestSetRunListener( AbstractConsoleReporter consoleReporter, AbstractFileReporter fileReporter,
-                               XMLReporter xmlReporter, TestcycleConsoleOutputReceiver consoleOutputReceiver, StatisticsReporter statisticsReporter,
-                               RunStatistics globalStats )
+    public TestSetRunListener(AbstractConsoleReporter consoleReporter, AbstractFileReporter fileReporter,
+                              XMLReporter xmlReporter, TestcycleConsoleOutputReceiver consoleOutputReceiver, StatisticsReporter statisticsReporter,
+                              RunStatistics globalStats, boolean trimStackTrace)
     {
         List<Reporter> reporters = new ArrayList<Reporter>();
+        this.detailsForThis = new TestSetStats(trimStackTrace);
         if ( consoleReporter != null )
         {
             reporters.add( consoleReporter );
@@ -95,6 +98,7 @@ public class TestSetRunListener
 
     public void testSetStarting( ReportEntry report )
     {
+        detailsForThis.testSetStart();
         multicastingReporter.testSetStarting(report);
         consoleOutputReceiver.testSetStarting( report);
     }
@@ -107,8 +111,9 @@ public class TestSetRunListener
 
     public void testSetCompleted( ReportEntry report )
     {
-        multicastingReporter.testSetCompleted( report );
+        multicastingReporter.testSetCompleted( report, detailsForThis);
         consoleOutputReceiver.testSetCompleted( report);
+        detailsForThis.reset();
         multicastingReporter.reset();
         globalStatistics.add(testSetStatistics);
         testSetStatistics.reset();
@@ -120,19 +125,24 @@ public class TestSetRunListener
 
     public void testStarting( ReportEntry report )
     {
+        detailsForThis.testStart();
         multicastingReporter.testStarting( report );
     }
 
-    public void testSucceeded( ReportEntry report )
+    public void testSucceeded( ReportEntry reportEntry )
     {
+        detailsForThis.testEnd();
         testSetStatistics.incrementCompletedCount();
-        multicastingReporter.testSucceeded( report );
+        multicastingReporter.testSucceeded( reportEntry, detailsForThis);
         clearCapture();
     }
 
     public void testError( ReportEntry reportEntry )
     {
-        multicastingReporter.testError( reportEntry, getAsString( testStdOut ), getAsString( testStdErr ) );
+        detailsForThis.incrementErrorsCount();
+        detailsForThis.testEnd();
+
+        multicastingReporter.testError( reportEntry, getAsString( testStdOut ), getAsString( testStdErr ), detailsForThis);
         testSetStatistics.incrementErrorsCount();
         testSetStatistics.incrementCompletedCount();
         globalStatistics.addErrorSource( reportEntry.getName(), reportEntry.getStackTraceWriter() );
@@ -141,7 +151,10 @@ public class TestSetRunListener
 
     public void testFailed( ReportEntry reportEntry )
     {
-        multicastingReporter.testFailed(reportEntry, getAsString(testStdOut), getAsString(testStdErr));
+        detailsForThis.incrementFailureCount();
+        detailsForThis.testEnd();
+
+        multicastingReporter.testFailed(reportEntry, getAsString(testStdOut), getAsString(testStdErr),  detailsForThis);
         testSetStatistics.incrementFailureCount();
         testSetStatistics.incrementCompletedCount();
         globalStatistics.addFailureSource(reportEntry.getName(), reportEntry.getStackTraceWriter());
@@ -152,12 +165,15 @@ public class TestSetRunListener
     // Counters
     // ----------------------------------------------------------------------
 
-    public void testSkipped( ReportEntry report )
+    public void testSkipped( ReportEntry reportEntry )
     {
+        detailsForThis.incrementSkippedCount();
+        detailsForThis.testEnd();
+
         clearCapture();
         testSetStatistics.incrementSkippedCount();
         testSetStatistics.incrementCompletedCount();
-        multicastingReporter.testSkipped(report);
+        multicastingReporter.testSkipped(reportEntry,  detailsForThis);
     }
 
     public void testAssumptionFailure( ReportEntry report )

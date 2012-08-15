@@ -137,7 +137,7 @@ public class StartupReportConfiguration
     {
         if ( !isDisableXmlReport() )
         {
-            return new XMLReporter( trimStackTrace, reportsDirectory, reportNameSuffix );
+            return new XMLReporter( reportsDirectory, reportNameSuffix );
         }
         return null;
     }
@@ -148,11 +148,11 @@ public class StartupReportConfiguration
         {
             if ( BRIEF_REPORT_FORMAT.equals( getReportFormat() ) )
             {
-                return new BriefFileReporter( trimStackTrace, reportsDirectory, getReportNameSuffix() );
+                return new BriefFileReporter( reportsDirectory, getReportNameSuffix() );
             }
             else if ( PLAIN_REPORT_FORMAT.equals( getReportFormat() ) )
             {
-                return new FileReporter( trimStackTrace, reportsDirectory, getReportNameSuffix() );
+                return new FileReporter( reportsDirectory, getReportNameSuffix() );
             }
         }
         return null;
@@ -163,15 +163,15 @@ public class StartupReportConfiguration
     {
         if ( isUseFile() )
         {
-            return isPrintSummary() ? new ConsoleReporter( trimStackTrace ) : null;
+            return isPrintSummary() ? new ConsoleReporter() : null;
         }
         else if ( isRedirectTestOutputToFile() || BRIEF_REPORT_FORMAT.equals( getReportFormat() ) )
         {
-            return new BriefConsoleReporter( trimStackTrace );
+            return new BriefConsoleReporter();
         }
         else if ( PLAIN_REPORT_FORMAT.equals( getReportFormat() ) )
         {
-            return new DetailedConsoleReporter( trimStackTrace );
+            return new DetailedConsoleReporter();
         }
         return null;
     }

@@ -40,14 +40,14 @@ public abstract class AbstractFileReporter
 
     private final String reportNameSuffix;
 
-    AbstractFileReporter( boolean trimStackTrace, String format, File reportsDirectory )
+    AbstractFileReporter( String format, File reportsDirectory )
     {
-        this( trimStackTrace, format, reportsDirectory, null );
+        this( format, reportsDirectory, null );
     }
 
-    AbstractFileReporter( boolean trimStackTrace, String format, File reportsDirectory, String reportNameSuffix )
+    AbstractFileReporter( String format, File reportsDirectory, String reportNameSuffix )
     {
-        super( trimStackTrace, format );
+        super( format );
         this.reportsDirectory = reportsDirectory;
         this.deleteOnStarting = false;
         this.reportNameSuffix = reportNameSuffix;
@@ -105,10 +105,10 @@ public abstract class AbstractFileReporter
         return reportFile;
     }
 
-    public void testSetCompleted( ReportEntry report )
+    public void testSetCompleted( ReportEntry report, TestSetStats testSetStats )
         throws ReporterException
     {
-        super.testSetCompleted( report );
+        super.testSetCompleted( report, testSetStats );
 
         writer.flush();
 

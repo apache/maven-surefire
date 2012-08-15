@@ -44,9 +44,9 @@ public abstract class AbstractConsoleReporter
 
     private static final PrintStream ORIGINAL_SYSTEM_OUT = System.out;
 
-    AbstractConsoleReporter( boolean trimStackTrace, String format )
+    AbstractConsoleReporter( String format )
     {
-        super( getPrintWriter(), trimStackTrace, format );
+        super( getPrintWriter(), format );
     }
 
     private static PrintWriter getPrintWriter()

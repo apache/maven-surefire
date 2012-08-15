@@ -41,7 +41,7 @@ public class FileReporterTest
     {
         File reportDir = new File( "target" );
         reportEntry = new SimpleReportEntry( this.getClass().getName(), testName );
-        reporter = new FileReporter( true, reportDir, null );
+        reporter = new FileReporter( reportDir, null );
         reporter.testSetStarting( reportEntry );
 
         File expectedReportFile = new File( reportDir, testName + ".txt" );
@@ -58,7 +58,7 @@ public class FileReporterTest
         File reportDir = new File( "target" );
         String suffixText = "sampleSuffixText";
         reportEntry = new SimpleReportEntry( this.getClass().getName(), testName );
-        reporter = new FileReporter( true, reportDir, suffixText );
+        reporter = new FileReporter( reportDir, suffixText );
         reporter.testSetStarting( reportEntry );
 
         File expectedReportFile = new File( reportDir, testName + "-" + suffixText + ".txt" );

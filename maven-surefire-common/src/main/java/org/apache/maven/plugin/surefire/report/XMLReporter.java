@@ -33,7 +33,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
-import org.apache.maven.surefire.report.DescriptionDecoder;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.SafeThrowable;
@@ -75,7 +74,7 @@ import org.codehaus.plexus.util.xml.Xpp3DomWriter;
  *      (not yet implemented by Ant 1.8.2)
  */
 public class XMLReporter
-    extends AbstractReporter
+    implements Reporter
 {
     private static final String LS = System.getProperty( "line.separator" );
 
@@ -87,18 +86,15 @@ public class XMLReporter
 
     private final List<Xpp3Dom> results = Collections.synchronizedList( new ArrayList<Xpp3Dom>() );
 
-    private static final DescriptionDecoder decoder = new DescriptionDecoder();
-
     private int elapsed = 0;
 
-    public XMLReporter( boolean trimStackTrace, File reportsDirectory )
+    public XMLReporter( File reportsDirectory )
     {
-        this( trimStackTrace, reportsDirectory, null );
+        this( reportsDirectory, null );
     }
 
-    public XMLReporter( boolean trimStackTrace, File reportsDirectory, String reportNameSuffix )
+    public XMLReporter( File reportsDirectory, String reportNameSuffix )
     {
-        super( trimStackTrace );
         this.reportsDirectory = reportsDirectory;
         this.deleteOnStarting = false;
         this.reportNameSuffix = reportNameSuffix;
@@ -112,8 +108,6 @@ public class XMLReporter
     public void testSetStarting( ReportEntry report )
         throws ReporterException
     {
-        super.testSetStarting( report );
-
         if ( deleteOnStarting )
         {
             final File reportFile = getReportFile( report );
@@ -121,24 +115,31 @@ public class XMLReporter
         }
     }
 
-    public void testSetCompleted( ReportEntry report )
+    void deleteIfExisting( File reportFile )
+    {
+        if ( reportFile.exists() )
+        {
+            //noinspection ResultOfMethodCallIgnored
+            reportFile.delete();
+        }
+    }
+
+
+    public void testSetCompleted( ReportEntry report, TestSetStats testSetStats )
         throws ReporterException
     {
-        super.testSetCompleted( report );
 
-        long runTime = elapsed > 0 ? elapsed : ( System.currentTimeMillis() - testSetStartTime );
-
-        Xpp3Dom testSuite = createTestSuiteElement( report, runTime );
+        Xpp3Dom testSuite = createTestSuiteElement( report, testSetStats );
 
         showProperties( testSuite );
 
-        testSuite.setAttribute( "tests", String.valueOf( this.getNumTests() ) );
+        testSuite.setAttribute( "tests", String.valueOf( testSetStats.getCompletedCount() ) );
 
-        testSuite.setAttribute( "errors", String.valueOf( this.getNumErrors() ) );
+        testSuite.setAttribute( "errors", String.valueOf( testSetStats.getErrors() ) );
 
-        testSuite.setAttribute( "skipped", String.valueOf( this.getNumSkipped() ) );
+        testSuite.setAttribute( "skipped", String.valueOf( testSetStats.getSkipped() ) );
 
-        testSuite.setAttribute( "failures", String.valueOf( this.getNumFailures() ) );
+        testSuite.setAttribute( "failures", String.valueOf( testSetStats.getFailures() ) );
 
         for ( Object result : results )
         {
@@ -195,22 +196,28 @@ public class XMLReporter
         return reportFile;
     }
 
-    public void testSucceeded( ReportEntry report )
+    public void testSucceeded( ReportEntry report, TestSetStats testSetStats )
     {
-        super.testSucceeded( report );
-
-        long runTime = getActualRunTime( report );
-
-        Xpp3Dom testCase = createTestElement( report, runTime );
+        Xpp3Dom testCase = createTestElement( report, testSetStats );
 
         results.add( testCase );
     }
 
-    private Xpp3Dom createTestElement( ReportEntry report, long runTime )
+    public void testStarting( ReportEntry report )
+    {
+    }
+
+    static String getReportName( ReportEntry report )
+    {
+        final int i = report.getName().lastIndexOf( "(" );
+        return i > 0 ? report.getName().substring( 0, i ) : report.getName();
+    }
+
+    private Xpp3Dom createTestElement( ReportEntry report, TestSetStats runTime )
     {
         elapsed += report.getElapsed();
         Xpp3Dom testCase = new Xpp3Dom( "testcase" );
-        testCase.setAttribute( "name", decoder.getReportName( report ) );
+        testCase.setAttribute( "name", getReportName( report ) );
         if ( report.getGroup() != null )
         {
             testCase.setAttribute( "group", report.getGroup() );
@@ -226,59 +233,55 @@ public class XMLReporter
                 testCase.setAttribute( "classname", report.getSourceName() );
             }
         }
-        testCase.setAttribute( "time", elapsedTimeAsString( runTime ) );
+        testCase.setAttribute( "time", runTime.elapsedTimeAsString( runTime.getActualRunTime( report ) ) );
         return testCase;
     }
 
-    private Xpp3Dom createTestSuiteElement( ReportEntry report, long runTime )
+    private Xpp3Dom createTestSuiteElement( ReportEntry report, TestSetStats testSetStats )
     {
         Xpp3Dom testCase = new Xpp3Dom( "testsuite" );
 
         if ( reportNameSuffix != null && reportNameSuffix.length() > 0 )
         {
-            testCase.setAttribute( "name", decoder.getReportName( report ) + "(" + reportNameSuffix + ")" );
+            testCase.setAttribute( "name", getReportName( report ) + "(" + reportNameSuffix + ")" );
         }
         else
         {
-            testCase.setAttribute( "name", decoder.getReportName( report ) );
+            testCase.setAttribute( "name", getReportName( report ) );
         }
         if ( report.getGroup() != null )
         {
             testCase.setAttribute( "group", report.getGroup() );
         }
-        testCase.setAttribute( "time", elapsedTimeAsString( runTime ) );
+        long runTime = elapsed > 0 ? elapsed : ( System.currentTimeMillis() - testSetStats.getTestSetStartAt() );
+        testCase.setAttribute( "time", testSetStats.elapsedTimeAsString( runTime ) );
         return testCase;
     }
 
-    public void testError( ReportEntry report, String stdOut, String stdErr )
+    public void testError( ReportEntry report, String stdOut, String stdErr, TestSetStats testSetStats )
     {
-        super.testError( report, stdOut, stdErr );
-
-        writeTestProblems( report, stdOut, stdErr, "error" );
+        writeTestProblems( report, stdOut, stdErr, "error", testSetStats );
     }
 
-    public void testFailed( ReportEntry report, String stdOut, String stdErr )
+    public void testFailed( ReportEntry report, String stdOut, String stdErr, TestSetStats testSetStats )
     {
-        super.testFailed( report, stdOut, stdErr );
-
-        writeTestProblems( report, stdOut, stdErr, "failure" );
+        writeTestProblems( report, stdOut, stdErr, "failure", testSetStats );
     }
 
-    public void testSkipped( ReportEntry report )
+    public void testSkipped( ReportEntry report, TestSetStats testSetStats )
     {
-        super.testSkipped( report );
-        writeTestProblems( report, null, null, "skipped" );
+        writeTestProblems( report, null, null, "skipped", testSetStats );
     }
 
-    private void writeTestProblems( ReportEntry report, String stdOut, String stdErr, String name )
+    private void writeTestProblems( ReportEntry report, String stdOut, String stdErr, String name,
+                                    TestSetStats elapsedForTest )
     {
-        long runTime = getActualRunTime( report );
 
-        Xpp3Dom testCase = createTestElement( report, runTime );
+        Xpp3Dom testCase = createTestElement( report, elapsedForTest );
 
         Xpp3Dom element = createElement( testCase, name );
 
-        String stackTrace = getStackTrace( report );
+        String stackTrace = elapsedForTest.getStackTrace( report );
 
         if ( report.getMessage() != null && report.getMessage().length() > 0 )
         {
@@ -379,6 +382,5 @@ public class XMLReporter
     {
         results.clear();
         elapsed = 0;
-        super.reset();
     }
 }
