@@ -19,11 +19,10 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.List;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterException;
+
+import java.io.PrintWriter;
 
 /**
  * Text based reporter.
@@ -33,20 +32,17 @@ import org.apache.maven.surefire.report.ReporterException;
 public abstract class AbstractTextReporter
     implements Reporter
 {
-    static final String BRIEF = "brief";
+    public static final String BRIEF = "brief";
 
-    static final String PLAIN = "plain";
+    public static final String PLAIN = "plain";
 
-    static final String SUMMARY = "summary";
+    public static final String SUMMARY = "summary";
 
     private final boolean isPlain;
 
     private final boolean isBrief;
 
     protected PrintWriter writer;
-
-    private List<String> testResults;
-
 
     protected AbstractTextReporter( String format )
     {
@@ -76,37 +72,6 @@ public abstract class AbstractTextReporter
         }
     }
 
-    public void testSucceeded( ReportEntry report, TestSetStats testSetStats )
-    {
-        if ( isPlain )
-        {
-            testResults.add( testSetStats.getElapsedTimeSummary( report ) );
-        }
-    }
-
-    public void testSkipped( ReportEntry report, TestSetStats testSetStats )
-    {
-        if ( isPlain )
-        {
-            testResults.add( report.getName() + " skipped" );
-        }
-    }
-
-    public void testError( ReportEntry report, String stdOut, String stdErr, TestSetStats testSetStats )
-    {
-        testResults.add( testSetStats.getOutput( report, "ERROR" ) );
-    }
-
-    public void testFailed( ReportEntry report, String stdOut, String stdErr, TestSetStats testSetStats )
-    {
-        testResults.add( testSetStats.getOutput( report, "FAILURE" ) );
-    }
-
-    public void testSetStarting( ReportEntry report )
-        throws ReporterException
-    {
-        testResults = new ArrayList<String>();
-    }
 
     public void testSetCompleted( ReportEntry report, TestSetStats testSetStats )
         throws ReporterException
@@ -115,15 +80,11 @@ public abstract class AbstractTextReporter
 
         if ( isBrief || isPlain )
         {
-            for ( String testResult : testResults )
+            for ( String testResult : testSetStats.getTestResults() )
             {
                 writeMessage( testResult );
             }
         }
-    }
-
-    public void testStarting( ReportEntry report )
-    {
     }
 
 
@@ -133,5 +94,25 @@ public abstract class AbstractTextReporter
         {
             writer.flush();
         }
+    }
+
+    public void testSucceeded( ReportEntry report, TestSetStats testSetStats )
+    {
+    }
+
+    public void testSkipped( ReportEntry report, TestSetStats testSetStats )
+    {
+    }
+
+    public void testError( ReportEntry report, String stdOut, String stdErr, TestSetStats testSetStats )
+    {
+    }
+
+    public void testFailed( ReportEntry report, String stdOut, String stdErr, TestSetStats testSetStats )
+    {
+    }
+
+    public void testStarting( ReportEntry report )
+    {
     }
 }

@@ -33,11 +33,10 @@ import org.apache.maven.surefire.util.internal.ByteBuffer;
 public class TestSetRunListener
     implements RunListener, ConsoleOutputReceiver, ConsoleLogger
 {
-    private final TestSetStatistics testSetStatistics;
-
     private final RunStatistics globalStatistics;
 
     private final TestSetStats detailsForThis;
+
 
     private final MulticastingReporter multicastingReporter;
 
@@ -47,12 +46,12 @@ public class TestSetRunListener
 
     private final TestcycleConsoleOutputReceiver consoleOutputReceiver;
 
-    public TestSetRunListener(AbstractConsoleReporter consoleReporter, AbstractFileReporter fileReporter,
-                              XMLReporter xmlReporter, TestcycleConsoleOutputReceiver consoleOutputReceiver, StatisticsReporter statisticsReporter,
-                              RunStatistics globalStats, boolean trimStackTrace)
+    public TestSetRunListener( ConsoleReporter consoleReporter, FileReporter fileReporter, XMLReporter xmlReporter,
+                               TestcycleConsoleOutputReceiver consoleOutputReceiver,
+                               StatisticsReporter statisticsReporter, RunStatistics globalStats, boolean trimStackTrace,
+                               boolean isPlainFormat )
     {
         List<Reporter> reporters = new ArrayList<Reporter>();
-        this.detailsForThis = new TestSetStats(trimStackTrace);
         if ( consoleReporter != null )
         {
             reporters.add( consoleReporter );
@@ -71,9 +70,8 @@ public class TestSetRunListener
         }
 
         this.consoleOutputReceiver = consoleOutputReceiver;
-
+        this.detailsForThis = new TestSetStats( trimStackTrace, isPlainFormat );
         multicastingReporter = new MulticastingReporter( reporters );
-        this.testSetStatistics = new TestSetStatistics();
         this.globalStatistics = globalStats;
     }
 
@@ -99,8 +97,8 @@ public class TestSetRunListener
     public void testSetStarting( ReportEntry report )
     {
         detailsForThis.testSetStart();
-        multicastingReporter.testSetStarting(report);
-        consoleOutputReceiver.testSetStarting( report);
+        multicastingReporter.testSetStarting( report );
+        consoleOutputReceiver.testSetStarting( report );
     }
 
     public void clearCapture()
@@ -111,12 +109,11 @@ public class TestSetRunListener
 
     public void testSetCompleted( ReportEntry report )
     {
-        multicastingReporter.testSetCompleted( report, detailsForThis);
-        consoleOutputReceiver.testSetCompleted( report);
+        multicastingReporter.testSetCompleted( report, detailsForThis );
+        consoleOutputReceiver.testSetCompleted( report );
+        globalStatistics.add( detailsForThis );
         detailsForThis.reset();
         multicastingReporter.reset();
-        globalStatistics.add(testSetStatistics);
-        testSetStatistics.reset();
     }
 
     // ----------------------------------------------------------------------
@@ -131,33 +128,26 @@ public class TestSetRunListener
 
     public void testSucceeded( ReportEntry reportEntry )
     {
-        detailsForThis.testEnd();
-        testSetStatistics.incrementCompletedCount();
-        multicastingReporter.testSucceeded( reportEntry, detailsForThis);
+        detailsForThis.testEnd( reportEntry );
+        multicastingReporter.testSucceeded( wrap( reportEntry ), detailsForThis );
         clearCapture();
     }
 
     public void testError( ReportEntry reportEntry )
     {
-        detailsForThis.incrementErrorsCount();
-        detailsForThis.testEnd();
-
-        multicastingReporter.testError( reportEntry, getAsString( testStdOut ), getAsString( testStdErr ), detailsForThis);
-        testSetStatistics.incrementErrorsCount();
-        testSetStatistics.incrementCompletedCount();
+        detailsForThis.testError( reportEntry );
+        multicastingReporter.testError( wrap( reportEntry ), getAsString( testStdOut ), getAsString( testStdErr ),
+                                        detailsForThis );
         globalStatistics.addErrorSource( reportEntry.getName(), reportEntry.getStackTraceWriter() );
         clearCapture();
     }
 
     public void testFailed( ReportEntry reportEntry )
     {
-        detailsForThis.incrementFailureCount();
-        detailsForThis.testEnd();
-
-        multicastingReporter.testFailed(reportEntry, getAsString(testStdOut), getAsString(testStdErr),  detailsForThis);
-        testSetStatistics.incrementFailureCount();
-        testSetStatistics.incrementCompletedCount();
-        globalStatistics.addFailureSource(reportEntry.getName(), reportEntry.getStackTraceWriter());
+        detailsForThis.testFailure( reportEntry );
+        multicastingReporter.testFailed( wrap( reportEntry ), getAsString( testStdOut ), getAsString( testStdErr ),
+                                         detailsForThis );
+        globalStatistics.addFailureSource( reportEntry.getName(), reportEntry.getStackTraceWriter() );
         clearCapture();
     }
 
@@ -167,18 +157,15 @@ public class TestSetRunListener
 
     public void testSkipped( ReportEntry reportEntry )
     {
-        detailsForThis.incrementSkippedCount();
-        detailsForThis.testEnd();
 
+        detailsForThis.testSkipped( reportEntry );
         clearCapture();
-        testSetStatistics.incrementSkippedCount();
-        testSetStatistics.incrementCompletedCount();
-        multicastingReporter.testSkipped(reportEntry,  detailsForThis);
+        multicastingReporter.testSkipped( wrap( reportEntry ), detailsForThis );
     }
 
     public void testAssumptionFailure( ReportEntry report )
     {
-        testSkipped(report);
+        testSkipped( report );
     }
 
     public String getAsString( List<ByteBuffer> byteBufferList )
@@ -193,4 +180,16 @@ public class TestSetRunListener
         }
         return stringBuffer.toString();
     }
+
+    private ReportEntry wrap( ReportEntry other )
+    {
+        if ( other.getElapsed() != null )
+        {
+            return other;
+        }
+        return CategorizedReportEntry.reportEntry( other.getSourceName(), other.getName(), other.getGroup(),
+                                                   other.getStackTraceWriter(),
+                                                   detailsForThis.getElapsedSinceLastStart(), other.getMessage() );
+    }
+
 }

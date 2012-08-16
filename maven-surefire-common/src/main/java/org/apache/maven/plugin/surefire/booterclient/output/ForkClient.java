@@ -88,28 +88,28 @@ public class ForkClient
             switch ( operationId )
             {
                 case ForkingRunListener.BOOTERCODE_TESTSET_STARTING:
-                    getOrCreateReporter(channelNumber).testSetStarting( createReportEntry( remaining ) );
+                    getOrCreateReporter( channelNumber ).testSetStarting( createReportEntry( remaining ) );
                     break;
                 case ForkingRunListener.BOOTERCODE_TESTSET_COMPLETED:
-                    getOrCreateReporter(channelNumber).testSetCompleted( createReportEntry( remaining ) );
+                    getOrCreateReporter( channelNumber ).testSetCompleted( createReportEntry( remaining ) );
                     break;
                 case ForkingRunListener.BOOTERCODE_TEST_STARTING:
-                    getOrCreateReporter(channelNumber).testStarting( createReportEntry( remaining ) );
+                    getOrCreateReporter( channelNumber ).testStarting( createReportEntry( remaining ) );
                     break;
                 case ForkingRunListener.BOOTERCODE_TEST_SUCCEEDED:
-                    getOrCreateReporter(channelNumber).testSucceeded( createReportEntry( remaining ) );
+                    getOrCreateReporter( channelNumber ).testSucceeded( createReportEntry( remaining ) );
                     break;
                 case ForkingRunListener.BOOTERCODE_TEST_FAILED:
-                    getOrCreateReporter(channelNumber).testFailed( createReportEntry( remaining ) );
+                    getOrCreateReporter( channelNumber ).testFailed( createReportEntry( remaining ) );
                     break;
                 case ForkingRunListener.BOOTERCODE_TEST_SKIPPED:
-                    getOrCreateReporter(channelNumber).testSkipped( createReportEntry( remaining ) );
+                    getOrCreateReporter( channelNumber ).testSkipped( createReportEntry( remaining ) );
                     break;
                 case ForkingRunListener.BOOTERCODE_TEST_ERROR:
-                    getOrCreateReporter(channelNumber).testError( createReportEntry( remaining ) );
+                    getOrCreateReporter( channelNumber ).testError( createReportEntry( remaining ) );
                     break;
                 case ForkingRunListener.BOOTERCODE_TEST_ASSUMPTIONFAILURE:
-                    getOrCreateReporter(channelNumber).testAssumptionFailure( createReportEntry( remaining ) );
+                    getOrCreateReporter( channelNumber ).testAssumptionFailure( createReportEntry( remaining ) );
                     break;
                 case ForkingRunListener.BOOTERCODE_SYSPROPS:
                     int keyEnd = remaining.indexOf( "," );
@@ -126,15 +126,15 @@ public class ForkClient
                 case ForkingRunListener.BOOTERCODE_STDOUT:
                     byte[] bytes = new byte[remaining.length() * 2];
                     int len = StringUtils.unescapeJava( bytes, remaining );
-                    getOrCreateConsoleOutputReceiver(channelNumber).writeTestOutput( bytes, 0, len, true );
+                    getOrCreateConsoleOutputReceiver( channelNumber ).writeTestOutput( bytes, 0, len, true );
                     break;
                 case ForkingRunListener.BOOTERCODE_STDERR:
                     bytes = new byte[remaining.length() * 2];
                     len = StringUtils.unescapeJava( bytes, remaining );
-                    getOrCreateConsoleOutputReceiver(channelNumber).writeTestOutput( bytes, 0, len, false );
+                    getOrCreateConsoleOutputReceiver( channelNumber ).writeTestOutput( bytes, 0, len, false );
                     break;
                 case ForkingRunListener.BOOTERCODE_CONSOLE:
-                    getOrCreateConsoleLogger(channelNumber).info( createConsoleMessage( remaining ) );
+                    getOrCreateConsoleLogger( channelNumber ).info( createConsoleMessage( remaining ) );
                     break;
                 case ForkingRunListener.BOOTERCODE_BYE:
                     saidGoodBye = true;
@@ -183,9 +183,7 @@ public class ForkClient
             final StackTraceWriter stackTraceWriter =
                 tokens.hasMoreTokens() ? deserializeStackStraceWriter( tokens ) : null;
 
-            return group != null
-                ? new CategorizedReportEntry( source, name, group, stackTraceWriter, elapsed, message )
-                : new SimpleReportEntry( source, name, stackTraceWriter, elapsed, message );
+            return CategorizedReportEntry.reportEntry( source, name, group, stackTraceWriter, elapsed, message );
         }
         catch ( RuntimeException e )
         {
@@ -228,10 +226,11 @@ public class ForkClient
      */
     public RunListener getReporter( Integer channelNumber )
     {
-        return testSetReporters.get(channelNumber);
+        return testSetReporters.get( channelNumber );
     }
 
-    private RunListener getOrCreateReporter(Integer channelNumber) {
+    private RunListener getOrCreateReporter( Integer channelNumber )
+    {
         RunListener reporter = testSetReporters.get( channelNumber );
         if ( reporter == null )
         {
@@ -241,12 +240,14 @@ public class ForkClient
         return reporter;
     }
 
-    private ConsoleOutputReceiver getOrCreateConsoleOutputReceiver(Integer channelNumber){
-        return (ConsoleOutputReceiver) getOrCreateReporter(channelNumber);
+    private ConsoleOutputReceiver getOrCreateConsoleOutputReceiver( Integer channelNumber )
+    {
+        return (ConsoleOutputReceiver) getOrCreateReporter( channelNumber );
     }
 
-    private ConsoleLogger getOrCreateConsoleLogger(Integer channelNumber){
-        return (ConsoleLogger) getOrCreateReporter(channelNumber);
+    private ConsoleLogger getOrCreateConsoleLogger( Integer channelNumber )
+    {
+        return (ConsoleLogger) getOrCreateReporter( channelNumber );
     }
 
     public void close()

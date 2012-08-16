@@ -61,9 +61,9 @@ public class StartupReportConfiguration
 
     private final Properties testVmSystemProperties = new Properties();
 
-    public static final String BRIEF_REPORT_FORMAT = "brief";
+    public static final String BRIEF_REPORT_FORMAT = AbstractTextReporter.BRIEF;
 
-    public static final String PLAIN_REPORT_FORMAT = "plain";
+    public static final String PLAIN_REPORT_FORMAT = AbstractTextReporter.PLAIN;
 
     public StartupReportConfiguration( boolean useFile, boolean printSummary, String reportFormat,
                                        boolean redirectTestOutputToFile, boolean disableXmlReport,
@@ -142,36 +142,36 @@ public class StartupReportConfiguration
         return null;
     }
 
-    public AbstractFileReporter instantiateFileReporter()
+    public FileReporter instantiateFileReporter()
     {
         if ( isUseFile() )
         {
             if ( BRIEF_REPORT_FORMAT.equals( getReportFormat() ) )
             {
-                return new BriefFileReporter( reportsDirectory, getReportNameSuffix() );
+                return new FileReporter( AbstractTextReporter.BRIEF, reportsDirectory, getReportNameSuffix() );
             }
             else if ( PLAIN_REPORT_FORMAT.equals( getReportFormat() ) )
             {
-                return new FileReporter( reportsDirectory, getReportNameSuffix() );
+                return new FileReporter( AbstractTextReporter.PLAIN, reportsDirectory, getReportNameSuffix() );
             }
         }
         return null;
     }
 
 
-    public AbstractConsoleReporter instantiateConsoleReporter()
+    public ConsoleReporter instantiateConsoleReporter()
     {
         if ( isUseFile() )
         {
-            return isPrintSummary() ? new ConsoleReporter() : null;
+            return isPrintSummary() ? new ConsoleReporter( AbstractTextReporter.SUMMARY ) : null;
         }
         else if ( isRedirectTestOutputToFile() || BRIEF_REPORT_FORMAT.equals( getReportFormat() ) )
         {
-            return new BriefConsoleReporter();
+            return new ConsoleReporter( AbstractTextReporter.BRIEF );
         }
         else if ( PLAIN_REPORT_FORMAT.equals( getReportFormat() ) )
         {
-            return new DetailedConsoleReporter();
+            return new ConsoleReporter( AbstractTextReporter.PLAIN );
         }
         return null;
     }

@@ -20,19 +20,93 @@ package org.apache.maven.plugin.surefire.report;
  */
 
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import org.apache.maven.surefire.report.ReportEntry;
+import org.apache.maven.surefire.report.ReporterException;
 
 /**
- * Text file reporter.
+ * Base class for file reporters.
  *
- * @author <a href="mailto:jruiz@exist.com">Johnny R. Ruiz III</a>
- * @version $Id$
+ * @author <a href="mailto:brett@apache.org">Brett Porter</a>
  */
 public class FileReporter
-    extends AbstractFileReporter
+    extends AbstractTextReporter
 {
+    private final File reportsDirectory;
 
-    public FileReporter( File reportsDirectory, String reportNamePrefix )
+    private final boolean deleteOnStarting;
+
+    private final String reportNameSuffix;
+
+    public FileReporter( String format, File reportsDirectory, String reportNameSuffix )
     {
-        super(PLAIN, reportsDirectory, reportNamePrefix );
+        super( format );
+        this.reportsDirectory = reportsDirectory;
+        this.deleteOnStarting = false;
+        this.reportNameSuffix = reportNameSuffix;
+    }
+
+    public void testSetStarting( ReportEntry report )
+        throws ReporterException
+    {
+        File reportFile = getReportFile( reportsDirectory, report.getName(), reportNameSuffix, ".txt" );
+
+        File reportDir = reportFile.getParentFile();
+
+        //noinspection ResultOfMethodCallIgnored
+        reportDir.mkdirs();
+
+        if ( deleteOnStarting && reportFile.exists() )
+        {
+            //noinspection ResultOfMethodCallIgnored
+            reportFile.delete();
+        }
+
+        try
+        {
+            PrintWriter writer = new PrintWriter( new FileWriter( reportFile ) );
+
+            writer.println( "-------------------------------------------------------------------------------" );
+
+            writer.println( "Test set: " + report.getName() );
+
+            writer.println( "-------------------------------------------------------------------------------" );
+
+            setWriter( writer );
+        }
+        catch ( IOException e )
+        {
+            throw new ReporterException( "Unable to create file for report: " + e.getMessage(), e );
+        }
+    }
+
+    public static File getReportFile( File reportsDirectory, String reportEntryName, String reportNameSuffix,
+                                      String fileExtension )
+    {
+        File reportFile;
+
+        if ( reportNameSuffix != null && reportNameSuffix.length() > 0 )
+        {
+            reportFile = new File( reportsDirectory, reportEntryName + "-" + reportNameSuffix + fileExtension );
+        }
+        else
+        {
+            reportFile = new File( reportsDirectory, reportEntryName + fileExtension );
+        }
+        return reportFile;
+    }
+
+    public void testSetCompleted( ReportEntry report, TestSetStats testSetStats )
+        throws ReporterException
+    {
+        super.testSetCompleted( report, testSetStats );
+
+        writer.flush();
+
+        writer.close();
+
+        writer = null;
     }
 }

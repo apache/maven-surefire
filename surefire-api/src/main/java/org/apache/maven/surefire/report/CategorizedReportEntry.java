@@ -47,6 +47,14 @@ public class CategorizedReportEntry
         this.group = group;
     }
 
+    public static ReportEntry reportEntry( String source, String name, String group, StackTraceWriter stackTraceWriter,
+                                           Integer elapsed, String message )
+    {
+        return group != null
+            ? new CategorizedReportEntry( source, name, group, stackTraceWriter, elapsed, message )
+            : new SimpleReportEntry( source, name, stackTraceWriter, elapsed, message );
+    }
+
     public String getGroup()
     {
         return group;

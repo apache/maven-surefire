@@ -19,9 +19,9 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
-import java.util.List;
-import org.apache.maven.surefire.report.CategorizedReportEntry;
 import org.apache.maven.surefire.report.ReportEntry;
+
+import java.util.List;
 
 /**
  * A reporter that broadcasts to other reporters
@@ -35,8 +35,6 @@ public class MulticastingReporter
 
     private final int size;
 
-    private volatile long lastStartAt;
-
     public MulticastingReporter( List<Reporter> target )
     {
         size = target.size();
@@ -45,77 +43,59 @@ public class MulticastingReporter
 
     public void testSetStarting( ReportEntry report )
     {
-        lastStartAt = System.currentTimeMillis();
         for ( int i = 0; i < size; i++ )
         {
             target[i].testSetStarting( report );
         }
     }
 
-    public void testSetCompleted(ReportEntry report, TestSetStats testSetStats)
+    public void testSetCompleted( ReportEntry report, TestSetStats testSetStats )
     {
         for ( int i = 0; i < size; i++ )
         {
-            target[i].testSetCompleted( report, testSetStats);
+            target[i].testSetCompleted( report, testSetStats );
         }
     }
 
 
     public void testStarting( ReportEntry report )
     {
-        lastStartAt = System.currentTimeMillis();
         for ( int i = 0; i < size; i++ )
         {
             target[i].testStarting( report );
         }
     }
 
-    public void testSucceeded(ReportEntry report, TestSetStats testSetStats)
+    public void testSucceeded( ReportEntry report, TestSetStats testSetStats )
     {
-        ReportEntry wrapped = wrap( report );
         for ( int i = 0; i < size; i++ )
         {
-            target[i].testSucceeded( wrapped, testSetStats);
+            target[i].testSucceeded( report, testSetStats );
         }
     }
 
-    public void testError(ReportEntry report, String stdOut, String stdErr, TestSetStats testSetStats)
+    public void testError( ReportEntry report, String stdOut, String stdErr, TestSetStats testSetStats )
     {
-        ReportEntry wrapped = wrap( report );
         for ( int i = 0; i < size; i++ )
         {
-            target[i].testError( wrapped, stdOut, stdErr, testSetStats);
+            target[i].testError( report, stdOut, stdErr, testSetStats );
         }
     }
 
-    public void testFailed(ReportEntry report, String stdOut, String stdErr, TestSetStats testSetStats)
+    public void testFailed( ReportEntry report, String stdOut, String stdErr, TestSetStats testSetStats )
     {
-        ReportEntry wrapped = wrap( report );
         for ( int i = 0; i < size; i++ )
         {
-            target[i].testFailed( wrapped, stdOut, stdErr, testSetStats);
+            target[i].testFailed( report, stdOut, stdErr, testSetStats );
         }
     }
 
-    public void testSkipped(ReportEntry report, TestSetStats testSetStats)
+    public void testSkipped( ReportEntry report, TestSetStats testSetStats )
     {
-        ReportEntry wrapped = wrap( report );
         for ( int i = 0; i < size; i++ )
         {
-            target[i].testSkipped( wrapped, testSetStats);
+            target[i].testSkipped( report, testSetStats );
         }
-    }
-
-    private ReportEntry wrap( ReportEntry other )
-    {
-        if ( other.getElapsed() != null )
-        {
-            return other;
-        }
-        return new CategorizedReportEntry( other.getSourceName(), other.getName(), other.getGroup(),
-                                           other.getStackTraceWriter(),
-                                           (int) ( System.currentTimeMillis() - this.lastStartAt ),
-                                           other.getMessage() );
     }
 
     public void writeMessage( String message )

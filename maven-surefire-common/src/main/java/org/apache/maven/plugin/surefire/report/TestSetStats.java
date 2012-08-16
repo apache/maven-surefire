@@ -22,11 +22,18 @@ import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.StackTraceWriter;
 
 import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
+/**
+ * Maintains per-thread test result state. Not thread safe.
+ */
 public class TestSetStats
 {
     private final boolean trimStackTrace;
+
+    private final boolean plainFormat;
 
     private long testSetStartAt;
 
@@ -42,9 +49,14 @@ public class TestSetStats
 
     private int skipped;
 
-    public TestSetStats( boolean trimStackTrace )
+    private long lastStartAt;
+
+    private final List<String> testResults = new ArrayList<String>();
+
+    public TestSetStats( boolean trimStackTrace, boolean plainFormat )
     {
         this.trimStackTrace = trimStackTrace;
+        this.plainFormat = plainFormat;
     }
 
     public long getTestSetStartAt()
@@ -57,14 +69,21 @@ public class TestSetStats
         return (int) ( System.currentTimeMillis() - testSetStartAt );
     }
 
+    public int getElapsedSinceLastStart()
+    {
+        return (int) ( System.currentTimeMillis() - lastStartAt );
+    }
+
     public void testSetStart()
     {
-        testSetStartAt = System.currentTimeMillis();
+        lastStartAt = testSetStartAt = System.currentTimeMillis();
+        testResults.clear();
+
     }
 
     public void testStart()
     {
-        testStartAt = System.currentTimeMillis();
+        lastStartAt = testStartAt = System.currentTimeMillis();
     }
 
     public long testEnd()
@@ -80,27 +99,48 @@ public class TestSetStats
         return testEndAt - testStartAt;
     }
 
-    public synchronized void incrementCompletedCount()
+    public void testEnd( ReportEntry reportEntry )
+    {
+        testEnd();
+        if ( plainFormat )
+        {
+            addTestResult( reportEntry );
+        }
+    }
+
+
+    public void incrementCompletedCount()
     {
         completedCount += 1;
     }
 
-    public synchronized void incrementErrorsCount()
+    public void testError( ReportEntry reportEntry )
     {
         errors += 1;
+        testEnd();
+        testResults.add( getOutput( reportEntry, "ERROR" ) );
+
     }
 
-    public synchronized void incrementFailureCount()
+    public void testFailure( ReportEntry reportEntry )
     {
         failures += 1;
+        testEnd();
+        testResults.add( getOutput( reportEntry, "FAILURE" ) );
     }
 
-    public synchronized void incrementSkippedCount()
+    public void testSkipped( ReportEntry reportEntry )
     {
         skipped += 1;
+        testEnd();
+        if ( plainFormat )
+        {
+            testResults.add( reportEntry.getName() + " skipped" );
+        }
+
     }
 
-    public synchronized void reset()
+    public void reset()
     {
         completedCount = 0;
         errors = 0;
@@ -108,7 +148,7 @@ public class TestSetStats
         skipped = 0;
     }
 
-    public synchronized int getCompletedCount()
+    public int getCompletedCount()
     {
         return completedCount;
     }
@@ -161,7 +201,7 @@ public class TestSetStats
         buf.append( errors );
         buf.append( ", Skipped: " );
         buf.append( skipped );
-        buf.append( ", Time elaXpsed: " );
+        buf.append( ", Time elapsed: " );
         buf.append( elapsedTimeAsString( elapsed != null ? elapsed : getElapsedSinceTestSetStart() ) );
         buf.append( " sec" );
 
@@ -216,5 +256,13 @@ public class TestSetStats
         return this.trimStackTrace ? writer.writeTrimmedTraceToString() : writer.writeTraceToString();
     }
 
+    public void addTestResult( ReportEntry reportEntry )
+    {
+        testResults.add( getElapsedTimeSummary( reportEntry ) );
+    }
 
+    public List<String> getTestResults()
+    {
+        return testResults;
+    }
 }

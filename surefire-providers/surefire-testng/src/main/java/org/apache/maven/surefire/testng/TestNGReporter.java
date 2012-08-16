@@ -96,10 +96,11 @@ public class TestNGReporter
 
     public void onTestFailure( ITestResult result )
     {
-        ReportEntry report = new SimpleReportEntry( getSource( result ), getUserFriendlyTestName( result ),
-                                                    new PojoStackTraceWriter(
-                                                        result.getTestClass().getRealClass().getName(),
-                                                        result.getMethod().getMethodName(), result.getThrowable() ) );
+        ReportEntry report = SimpleReportEntry.withException( getSource( result ), getUserFriendlyTestName( result ),
+                                                              new PojoStackTraceWriter(
+                                                                  result.getTestClass().getRealClass().getName(),
+                                                                  result.getMethod().getMethodName(),
+                                                                  result.getThrowable() ) );
 
         reporter.testFailed( report );
     }
@@ -119,10 +120,11 @@ public class TestNGReporter
 
     public void onTestFailedButWithinSuccessPercentage( ITestResult result )
     {
-        ReportEntry report = new SimpleReportEntry( getSource( result ), getUserFriendlyTestName( result ),
-                                                    new PojoStackTraceWriter(
-                                                        result.getTestClass().getRealClass().getName(),
-                                                        result.getMethod().getMethodName(), result.getThrowable() ) );
+        ReportEntry report = SimpleReportEntry.withException( getSource( result ), getUserFriendlyTestName( result ),
+                                                              new PojoStackTraceWriter(
+                                                                  result.getTestClass().getRealClass().getName(),
+                                                                  result.getMethod().getMethodName(),
+                                                                  result.getThrowable() ) );
 
         reporter.testError( report );
     }

@@ -147,9 +147,9 @@ public class JUnit4Provider
         }
         catch ( Throwable e )
         {
-            reporter.testError( new SimpleReportEntry( report.getSourceName(), report.getName(),
-                                                       new PojoStackTraceWriter( report.getSourceName(),
-                                                                                 report.getName(), e ) ) );
+            reporter.testError( SimpleReportEntry.withException( report.getSourceName(), report.getName(),
+                                                                 new PojoStackTraceWriter( report.getSourceName(),
+                                                                                           report.getName(), e ) ) );
         }
         finally
         {

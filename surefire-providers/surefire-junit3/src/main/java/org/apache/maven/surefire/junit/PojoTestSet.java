@@ -130,9 +130,10 @@ public class PojoTestSet
         }
         catch ( Throwable e )
         {
-            report = new SimpleReportEntry( testObject.getClass().getName(), getTestName( userFriendlyMethodName ),
-                                            new PojoStackTraceWriter( testObject.getClass().getName(), method.getName(),
-                                                                      e ) );
+            report =
+                SimpleReportEntry.withException( testObject.getClass().getName(), getTestName( userFriendlyMethodName ),
+                                                 new PojoStackTraceWriter( testObject.getClass().getName(),
+                                                                           method.getName(), e ) );
 
             reportManager.testFailed( report );
 
@@ -157,9 +158,10 @@ public class PojoTestSet
         {
             Throwable t = ite.getTargetException();
 
-            report = new SimpleReportEntry( testObject.getClass().getName(), getTestName( userFriendlyMethodName ),
-                                            new PojoStackTraceWriter( testObject.getClass().getName(), method.getName(),
-                                                                      t ) );
+            report =
+                SimpleReportEntry.withException( testObject.getClass().getName(), getTestName( userFriendlyMethodName ),
+                                                 new PojoStackTraceWriter( testObject.getClass().getName(),
+                                                                           method.getName(), t ) );
 
             reportManager.testFailed( report );
             // Don't return  here, because tearDownFixture should be called even
@@ -167,9 +169,10 @@ public class PojoTestSet
         }
         catch ( Throwable t )
         {
-            report = new SimpleReportEntry( testObject.getClass().getName(), getTestName( userFriendlyMethodName ),
-                                            new PojoStackTraceWriter( testObject.getClass().getName(), method.getName(),
-                                                                      t ) );
+            report =
+                SimpleReportEntry.withException( testObject.getClass().getName(), getTestName( userFriendlyMethodName ),
+                                                 new PojoStackTraceWriter( testObject.getClass().getName(),
+                                                                           method.getName(), t ) );
 
             reportManager.testFailed( report );
             // Don't return  here, because tearDownFixture should be called even
@@ -183,9 +186,10 @@ public class PojoTestSet
         catch ( Throwable t )
         {
             // Treat any exception from tearDownFixture as a failure of the test.
-            report = new SimpleReportEntry( testObject.getClass().getName(), getTestName( userFriendlyMethodName ),
-                                            new PojoStackTraceWriter( testObject.getClass().getName(), method.getName(),
-                                                                      t ) );
+            report =
+                SimpleReportEntry.withException( testObject.getClass().getName(), getTestName( userFriendlyMethodName ),
+                                                 new PojoStackTraceWriter( testObject.getClass().getName(),
+                                                                           method.getName(), t ) );
 
             reportManager.testFailed( report );
 

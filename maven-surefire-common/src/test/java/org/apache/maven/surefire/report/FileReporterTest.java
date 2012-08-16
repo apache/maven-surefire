@@ -19,29 +19,30 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
-import java.io.File;
-import org.apache.maven.plugin.surefire.report.FileReporter;
-
 import junit.framework.TestCase;
+
+import org.apache.maven.plugin.surefire.report.FileReporter;
+import org.apache.maven.plugin.surefire.report.Reporter;
+
+import java.io.File;
+
+import static org.apache.maven.plugin.surefire.report.AbstractTextReporter.PLAIN;
 
 public class FileReporterTest
     extends TestCase
 {
 
-    private FileReporter reporter;
+    private Reporter reporter;
 
     private ReportEntry reportEntry;
 
     private static final String testName = "org.apache.maven.surefire.report.FileReporterTest";
 
-    /*
-     * Test method for 'org.codehaus.surefire.report.FileReporter.testSetStarting(ReportEntry report)'
-     */
     public void testFileNameWithoutSuffix()
     {
         File reportDir = new File( "target" );
         reportEntry = new SimpleReportEntry( this.getClass().getName(), testName );
-        reporter = new FileReporter( reportDir, null );
+        reporter = new FileReporter( PLAIN, reportDir, null );
         reporter.testSetStarting( reportEntry );
 
         File expectedReportFile = new File( reportDir, testName + ".txt" );
@@ -50,15 +51,12 @@ public class FileReporterTest
         expectedReportFile.delete();
     }
 
-    /*
-     * Test method for 'org.codehaus.surefire.report.FileReporter.testSetStarting(ReportEntry report)'
-     */
     public void testFileNameWithSuffix()
     {
         File reportDir = new File( "target" );
         String suffixText = "sampleSuffixText";
         reportEntry = new SimpleReportEntry( this.getClass().getName(), testName );
-        reporter = new FileReporter( reportDir, suffixText );
+        reporter = new FileReporter( PLAIN, reportDir, suffixText );
         reporter.testSetStarting( reportEntry );
 
         File expectedReportFile = new File( reportDir, testName + "-" + suffixText + ".txt" );

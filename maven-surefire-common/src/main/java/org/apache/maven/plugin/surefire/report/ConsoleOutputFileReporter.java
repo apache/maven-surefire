@@ -67,10 +67,11 @@ public class ConsoleOutputFileReporter
 
     public void writeMessage( byte[] b, int off, int len )
     {
-        writeTestOutput(b, off,len, true);
+        writeTestOutput( b, off, len, true );
     }
 
-    public void writeTestOutput(byte[] buf, int off, int len, boolean stdout) {
+    public void writeTestOutput( byte[] buf, int off, int len, boolean stdout )
+    {
         try
         {
             if ( printWriter == null )
@@ -80,8 +81,8 @@ public class ConsoleOutputFileReporter
                     //noinspection ResultOfMethodCallIgnored
                     reportsDirectory.mkdirs();
                 }
-                File file = AbstractFileReporter.getReportFile( reportsDirectory, reportEntryName, reportNameSuffix,
-                        "-output.txt" );
+                File file =
+                    FileReporter.getReportFile( reportsDirectory, reportEntryName, reportNameSuffix, "-output.txt" );
                 printWriter = new PrintWriter( new BufferedWriter( new FileWriter( file ) ) );
             }
             printWriter.write( new String( buf, off, len ) );

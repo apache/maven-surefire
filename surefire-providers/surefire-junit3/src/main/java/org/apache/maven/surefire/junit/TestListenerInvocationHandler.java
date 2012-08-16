@@ -149,8 +149,8 @@ public class TestListenerInvocationHandler
     private void handleAddError( Object[] args )
         throws IllegalAccessException, InvocationTargetException
     {
-        ReportEntry report =
-            new SimpleReportEntry( args[0].getClass().getName(), args[0].toString(), getStackTraceWriter( args ) );
+        ReportEntry report = SimpleReportEntry.withException( args[0].getClass().getName(), args[0].toString(),
+                                                              getStackTraceWriter( args ) );
 
         reporter.testError( report );
 
@@ -178,8 +178,8 @@ public class TestListenerInvocationHandler
     private void handleAddFailure( Object[] args )
         throws IllegalAccessException, InvocationTargetException
     {
-        ReportEntry report =
-            new SimpleReportEntry( args[0].getClass().getName(), args[0].toString(), getStackTraceWriter( args ) );
+        ReportEntry report = SimpleReportEntry.withException( args[0].getClass().getName(), args[0].toString(),
+                                                              getStackTraceWriter( args ) );
 
         reporter.testFailed( report );
 

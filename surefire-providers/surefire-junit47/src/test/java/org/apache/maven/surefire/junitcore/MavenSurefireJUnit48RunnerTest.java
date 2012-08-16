@@ -113,7 +113,6 @@ public class MavenSurefireJUnit48RunnerTest
 
         Assert.assertEquals( "JUnit should report correctly number of test ran(Finished)", 0, result.getRunCount() );
 
-        // Sys.out swallowed in ConsoleReporter..
         for ( Failure failure : result.getFailures() )
         {
             System.out.println( failure.getException().getMessage() );

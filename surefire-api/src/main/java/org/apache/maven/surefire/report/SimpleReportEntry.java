@@ -40,12 +40,7 @@ public class SimpleReportEntry
         this( source, name, null, null );
     }
 
-    public SimpleReportEntry( String source, String name, String message )
-    {
-        this( source, name, null, null, message );
-    }
-
-    public SimpleReportEntry( String source, String name, StackTraceWriter stackTraceWriter )
+    private SimpleReportEntry( String source, String name, StackTraceWriter stackTraceWriter )
     {
         this( source, name, stackTraceWriter, null );
     }
@@ -55,38 +50,8 @@ public class SimpleReportEntry
         this( source, name, null, elapsed );
     }
 
-    protected SimpleReportEntry( String name )
-    {
-        this.name = name;
-        this.stackTraceWriter = null;
-        this.message = null;
-        this.elapsed = null;
-        this.source = null;
-    }
-
-
-    public SimpleReportEntry( String source, String name, StackTraceWriter stackTraceWriter, Integer elapsed )
-    {
-        //noinspection ThrowableResultOfMethodCallIgnored
-        this( source, name, stackTraceWriter, elapsed, safeGetMessage( stackTraceWriter ) );
-    }
-
-    private static String safeGetMessage( StackTraceWriter stackTraceWriter )
-    {
-        try
-        {
-            return ( stackTraceWriter != null && stackTraceWriter.getThrowable() != null )
-                ? stackTraceWriter.getThrowable().getMessage()
-                : null;
-        }
-        catch ( Throwable t )
-        {
-            return t.getMessage();
-        }
-    }
-
-    public SimpleReportEntry( String source, String name, StackTraceWriter stackTraceWriter, Integer elapsed,
-                              String message )
+    protected SimpleReportEntry( String source, String name, StackTraceWriter stackTraceWriter, Integer elapsed,
+                                 String message )
     {
         if ( source == null )
         {
@@ -106,6 +71,37 @@ public class SimpleReportEntry
         this.message = message;
 
         this.elapsed = elapsed;
+    }
+
+
+    public SimpleReportEntry( String source, String name, StackTraceWriter stackTraceWriter, Integer elapsed )
+    {
+        //noinspection ThrowableResultOfMethodCallIgnored
+        this( source, name, stackTraceWriter, elapsed, safeGetMessage( stackTraceWriter ) );
+    }
+
+    public static SimpleReportEntry ignored( String source, String name, String message )
+    {
+        return new SimpleReportEntry( source, name, null, null, message );
+    }
+
+    public static SimpleReportEntry withException( String source, String name, StackTraceWriter stackTraceWriter )
+    {
+        return new SimpleReportEntry( source, name, stackTraceWriter );
+    }
+
+    private static String safeGetMessage( StackTraceWriter stackTraceWriter )
+    {
+        try
+        {
+            return ( stackTraceWriter != null && stackTraceWriter.getThrowable() != null )
+                ? stackTraceWriter.getThrowable().getMessage()
+                : null;
+        }
+        catch ( Throwable t )
+        {
+            return t.getMessage();
+        }
     }
 
     public String getSourceName()

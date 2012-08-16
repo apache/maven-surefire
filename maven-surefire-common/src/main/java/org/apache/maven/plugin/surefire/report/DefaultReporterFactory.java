@@ -72,7 +72,8 @@ public class DefaultReporterFactory
                                        reportConfiguration.instantiateFileReporter(),
                                        reportConfiguration.instantiateXmlReporter(),
                                        reportConfiguration.instantiateConsoleOutputFileReporter(),
-                                       statisticsReporter, globalStats, reportConfiguration.isTrimStackTrace() );
+                                       statisticsReporter, globalStats, reportConfiguration.isTrimStackTrace(),
+                AbstractTextReporter.PLAIN.equals(reportConfiguration.getReportFormat()));
     }
 
     private List<Reporter> instantiateReports()

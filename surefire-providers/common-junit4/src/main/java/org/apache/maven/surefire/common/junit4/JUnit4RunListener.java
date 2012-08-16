@@ -72,7 +72,7 @@ public class JUnit4RunListener
     {
         final String reason = jUnit4Reflector.getAnnotatedIgnoreValue( description );
         final SimpleReportEntry report =
-            new SimpleReportEntry( extractClassName( description ), description.getDisplayName(), reason );
+            SimpleReportEntry.ignored( extractClassName( description ), description.getDisplayName(), reason );
         reporter.testSkipped( report );
     }
 
@@ -98,8 +98,8 @@ public class JUnit4RunListener
         throws Exception
     {
         ReportEntry report =
-            new SimpleReportEntry( extractClassName( failure.getDescription() ), failure.getTestHeader(),
-                                   new JUnit4StackTraceWriter( failure ) );
+            SimpleReportEntry.withException( extractClassName( failure.getDescription() ), failure.getTestHeader(),
+                                             new JUnit4StackTraceWriter( failure ) );
 
         if ( failure.getException() instanceof AssertionError )
         {

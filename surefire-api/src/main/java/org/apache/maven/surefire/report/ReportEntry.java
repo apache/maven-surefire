@@ -50,7 +50,9 @@ public interface ReportEntry
     public StackTraceWriter getStackTraceWriter();
 
     /**
-     * @deprecated
+     * Gets the runtime for the item. Optional parameter. If the value is not set, it will be determined within
+     * the reporting subsustem. Some providers like to calculate this value themselves, and it gets the
+     * most accurate value.
      */
     public Integer getElapsed();
 
