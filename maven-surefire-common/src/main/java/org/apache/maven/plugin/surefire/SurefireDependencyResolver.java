@@ -127,23 +127,30 @@ public class SurefireDependencyResolver
     public Classpath getProviderClasspath( String provider, String version, Artifact filteredArtifact )
         throws ArtifactNotFoundException, ArtifactResolutionException
     {
-        Artifact providerArtifact = artifactFactory.createDependencyArtifact( "org.apache.maven.surefire", provider,
-                                                                              VersionRange.createFromVersion( version ),
-                                                                              "jar", null, Artifact.SCOPE_TEST );
-        ArtifactResolutionResult result = resolveArtifact( filteredArtifact, providerArtifact );
-        List<String> files = new ArrayList<String>();
-
-        for ( Object o : result.getArtifacts() )
+        Classpath classPath = ClasspathCache.getCachedClassPath( provider );
+        if ( classPath == null )
         {
-            Artifact artifact = (Artifact) o;
+            Artifact providerArtifact = artifactFactory.createDependencyArtifact( "org.apache.maven.surefire", provider,
+                                                                                  VersionRange.createFromVersion(
+                                                                                      version ), "jar", null,
+                                                                                  Artifact.SCOPE_TEST );
+            ArtifactResolutionResult result = resolveArtifact( filteredArtifact, providerArtifact );
+            List<String> files = new ArrayList<String>();
 
-            log.debug(
-                "Adding to " + pluginName + " test classpath: " + artifact.getFile().getAbsolutePath() + " Scope: "
-                    + artifact.getScope() );
+            for ( Object o : result.getArtifacts() )
+            {
+                Artifact artifact = (Artifact) o;
 
-            files.add( artifact.getFile().getAbsolutePath() );
+                log.debug(
+                    "Adding to " + pluginName + " test classpath: " + artifact.getFile().getAbsolutePath() + " Scope: "
+                        + artifact.getScope() );
+
+                files.add( artifact.getFile().getAbsolutePath() );
+            }
+            classPath = new Classpath( files );
+            ClasspathCache.setCachedClasspath( provider, classPath );
         }
-        return new Classpath( files );
+        return classPath;
     }
 
     public Classpath addProviderToClasspath( Map<String, Artifact> pluginArtifactMap, Artifact surefireArtifact )

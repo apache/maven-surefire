@@ -19,18 +19,6 @@ package org.apache.maven.plugin.surefire;
  * under the License.
  */
 
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
@@ -80,6 +68,19 @@ import org.apache.maven.toolchain.Toolchain;
 import org.apache.maven.toolchain.ToolchainManager;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.StringUtils;
+
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * Abstract base class for running tests using Surefire.
@@ -735,7 +736,6 @@ public abstract class AbstractSurefireMojo
                     showMap( getEnvironmentVariables(), "environment variable" );
                 }
 
-
                 Properties originalSystemProperties = (Properties) System.getProperties().clone();
                 try
                 {
@@ -1013,8 +1013,15 @@ public abstract class AbstractSurefireMojo
         try
         {
             provider.addProviderProperties();
+            // cache the provider lookup
             String providerName = provider.getProviderName();
-            Classpath providerClasspath = provider.getProviderClasspath();
+            Classpath providerClasspath = ClasspathCache.getCachedClassPath( providerName );
+            if ( providerClasspath == null )
+            {
+                providerClasspath = provider.getProviderClasspath();
+                ClasspathCache.setCachedClasspath( providerName, providerClasspath );
+
+            }
             Classpath inprocClassPath = new Classpath( providerClasspath );
             Artifact surefireArtifact = getCommonArtifact();
             inprocClassPath.addClassPathElementUrl( surefireArtifact.getFile().getAbsolutePath() );
@@ -1024,8 +1031,8 @@ public abstract class AbstractSurefireMojo
             logClasspath( testClasspath, "test classpath" );
             logClasspath( providerClasspath, "provider classpath" );
             final ClasspathConfiguration classpathConfiguration =
-                new ClasspathConfiguration( testClasspath, providerClasspath, inprocClassPath, effectiveIsEnableAssertions(),
-                                            isChildDelegation() );
+                new ClasspathConfiguration( testClasspath, providerClasspath, inprocClassPath,
+                                            effectiveIsEnableAssertions(), isChildDelegation() );
 
             return new StartupConfiguration( providerName, classpathConfiguration, classLoaderConfiguration,
                                              isForking(), false );
@@ -1061,7 +1068,7 @@ public abstract class AbstractSurefireMojo
     void logClasspath( Classpath classpath, String descriptor )
     {
         getLog().debug( descriptor + " classpath:" );
-        @SuppressWarnings( "unchecked" ) final List<String> classPath = classpath.getClassPath();
+        @SuppressWarnings("unchecked") final List<String> classPath = classpath.getClassPath();
         for ( String classpathElement : classPath )
         {
             if ( classpathElement == null )
@@ -1144,7 +1151,7 @@ public abstract class AbstractSurefireMojo
 
             if ( plugin != null )
             {
-                @SuppressWarnings( "rawtypes" ) List executions = plugin.getExecutions();
+                @SuppressWarnings("rawtypes") List executions = plugin.getExecutions();
                 return executions != null && executions.size() > 1;
             }
         }
@@ -1246,9 +1253,10 @@ public abstract class AbstractSurefireMojo
             getArtifactClasspath( shadeFire != null ? shadeFire : surefireBooterArtifact );
 
         return new ForkConfiguration( bootClasspathConfiguration, tmpDir, getEffectiveDebugForkedProcess(),
-                               getEffectiveJvm(),
-                               getWorkingDirectory() != null ? getWorkingDirectory() : getBasedir(), getArgLine(),
-                               getEnvironmentVariables(), getLog().isDebugEnabled(), getEffectiveForkCount() );
+                                      getEffectiveJvm(),
+                                      getWorkingDirectory() != null ? getWorkingDirectory() : getBasedir(),
+                                      getArgLine(), getEnvironmentVariables(), getLog().isDebugEnabled(),
+                                      getEffectiveForkCount() );
     }
 
 
@@ -1380,7 +1388,7 @@ public abstract class AbstractSurefireMojo
     {
         // A tribute to Linus Torvalds
         String configChecksum = getConfigChecksum();
-        @SuppressWarnings( "unchecked" ) Map<String, String> pluginContext = getPluginContext();
+        @SuppressWarnings("unchecked") Map<String, String> pluginContext = getPluginContext();
         if ( pluginContext.containsKey( configChecksum ) )
         {
             getLog().info( "Skipping execution of surefire because it has already been run for this configuration" );
@@ -1420,7 +1428,7 @@ public abstract class AbstractSurefireMojo
 
         classpath.add( getClassesDirectory().getAbsolutePath() );
 
-        @SuppressWarnings( "unchecked" ) Set<Artifact> classpathArtifacts = getProject().getArtifacts();
+        @SuppressWarnings("unchecked") Set<Artifact> classpathArtifacts = getProject().getArtifacts();
 
         if ( getClasspathDependencyScopeExclude() != null && !getClasspathDependencyScopeExclude().equals( "" ) )
         {
@@ -1551,20 +1559,26 @@ public abstract class AbstractSurefireMojo
 
     private Classpath getArtifactClasspath( Artifact surefireArtifact )
     {
-        ArtifactResolutionResult result = resolveArtifact( null, surefireArtifact );
-
-        List<String> items = new ArrayList<String>();
-        for ( Object o : result.getArtifacts() )
+        Classpath existing = ClasspathCache.getCachedClassPath( surefireArtifact.getArtifactId() );
+        if ( existing == null )
         {
-            Artifact artifact = (Artifact) o;
+            ArtifactResolutionResult result = resolveArtifact( null, surefireArtifact );
 
-            getLog().debug(
-                "Adding to " + getPluginName() + " booter test classpath: " + artifact.getFile().getAbsolutePath() +
-                    " Scope: " + artifact.getScope() );
+            List<String> items = new ArrayList<String>();
+            for ( Object o : result.getArtifacts() )
+            {
+                Artifact artifact = (Artifact) o;
 
-            items.add( artifact.getFile().getAbsolutePath() );
+                getLog().debug(
+                    "Adding to " + getPluginName() + " booter test classpath: " + artifact.getFile().getAbsolutePath() +
+                        " Scope: " + artifact.getScope() );
+
+                items.add( artifact.getFile().getAbsolutePath() );
+            }
+            existing = new Classpath( items );
+            ClasspathCache.setCachedClasspath( surefireArtifact.getArtifactId(), existing );
         }
-        return new Classpath( items );
+        return existing;
     }
 
     private Properties getUserProperties()
@@ -1864,7 +1878,7 @@ public abstract class AbstractSurefireMojo
         return systemProperties;
     }
 
-    @SuppressWarnings( { "UnusedDeclaration", "deprecation" } )
+    @SuppressWarnings({ "UnusedDeclaration", "deprecation" })
     public void setSystemProperties( Properties systemProperties )
     {
         this.systemProperties = systemProperties;
@@ -1875,7 +1889,7 @@ public abstract class AbstractSurefireMojo
         return systemPropertyVariables;
     }
 
-    @SuppressWarnings( "UnusedDeclaration" )
+    @SuppressWarnings("UnusedDeclaration")
     public void setSystemPropertyVariables( Map<String, String> systemPropertyVariables )
     {
         this.systemPropertyVariables = systemPropertyVariables;
@@ -1886,7 +1900,7 @@ public abstract class AbstractSurefireMojo
         return systemPropertiesFile;
     }
 
-    @SuppressWarnings( "UnusedDeclaration" )
+    @SuppressWarnings("UnusedDeclaration")
     public void setSystemPropertiesFile( File systemPropertiesFile )
     {
         this.systemPropertiesFile = systemPropertiesFile;
@@ -1907,7 +1921,7 @@ public abstract class AbstractSurefireMojo
         return pluginArtifactMap;
     }
 
-    @SuppressWarnings( "UnusedDeclaration" )
+    @SuppressWarnings("UnusedDeclaration")
     public void setPluginArtifactMap( Map<String, Artifact> pluginArtifactMap )
     {
         this.pluginArtifactMap = pluginArtifactMap;
@@ -1918,7 +1932,7 @@ public abstract class AbstractSurefireMojo
         return projectArtifactMap;
     }
 
-    @SuppressWarnings( "UnusedDeclaration" )
+    @SuppressWarnings("UnusedDeclaration")
     public void setProjectArtifactMap( Map<String, Artifact> projectArtifactMap )
     {
         this.projectArtifactMap = projectArtifactMap;
@@ -1930,7 +1944,7 @@ public abstract class AbstractSurefireMojo
         return reportNameSuffix;
     }
 
-    @SuppressWarnings( "UnusedDeclaration" )
+    @SuppressWarnings("UnusedDeclaration")
     public void setReportNameSuffix( String reportNameSuffix )
     {
         this.reportNameSuffix = reportNameSuffix;
@@ -1942,7 +1956,7 @@ public abstract class AbstractSurefireMojo
         return redirectTestOutputToFile;
     }
 
-    @SuppressWarnings( "UnusedDeclaration" )
+    @SuppressWarnings("UnusedDeclaration")
     public void setRedirectTestOutputToFile( boolean redirectTestOutputToFile )
     {
         this.redirectTestOutputToFile = redirectTestOutputToFile;
@@ -1964,7 +1978,7 @@ public abstract class AbstractSurefireMojo
         return forkMode;
     }
 
-    @SuppressWarnings( "UnusedDeclaration" )
+    @SuppressWarnings("UnusedDeclaration")
     public void setForkMode( String forkMode )
     {
         this.forkMode = forkMode;
@@ -1980,7 +1994,7 @@ public abstract class AbstractSurefireMojo
         return argLine;
     }
 
-    @SuppressWarnings( "UnusedDeclaration" )
+    @SuppressWarnings("UnusedDeclaration")
     public void setArgLine( String argLine )
     {
         this.argLine = argLine;
@@ -1992,7 +2006,7 @@ public abstract class AbstractSurefireMojo
         return environmentVariables;
     }
 
-    @SuppressWarnings( "UnusedDeclaration" )
+    @SuppressWarnings("UnusedDeclaration")
     public void setEnvironmentVariables( Map<String, String> environmentVariables )
     {
         this.environmentVariables = environmentVariables;
@@ -2003,7 +2017,7 @@ public abstract class AbstractSurefireMojo
         return workingDirectory;
     }
 
-    @SuppressWarnings( "UnusedDeclaration" )
+    @SuppressWarnings("UnusedDeclaration")
     public void setWorkingDirectory( File workingDirectory )
     {
         this.workingDirectory = workingDirectory;
@@ -2014,7 +2028,7 @@ public abstract class AbstractSurefireMojo
         return childDelegation;
     }
 
-    @SuppressWarnings( "UnusedDeclaration" )
+    @SuppressWarnings("UnusedDeclaration")
     public void setChildDelegation( boolean childDelegation )
     {
         this.childDelegation = childDelegation;
@@ -2025,7 +2039,7 @@ public abstract class AbstractSurefireMojo
         return groups;
     }
 
-    @SuppressWarnings( "UnusedDeclaration" )
+    @SuppressWarnings("UnusedDeclaration")
     public void setGroups( String groups )
     {
         this.groups = groups;
@@ -2036,7 +2050,7 @@ public abstract class AbstractSurefireMojo
         return excludedGroups;
     }
 
-    @SuppressWarnings( "UnusedDeclaration" )
+    @SuppressWarnings("UnusedDeclaration")
     public void setExcludedGroups( String excludedGroups )
     {
         this.excludedGroups = excludedGroups;
@@ -2047,7 +2061,7 @@ public abstract class AbstractSurefireMojo
         return suiteXmlFiles;
     }
 
-    @SuppressWarnings( "UnusedDeclaration" )
+    @SuppressWarnings("UnusedDeclaration")
     public void setSuiteXmlFiles( File[] suiteXmlFiles )
     {
         this.suiteXmlFiles = suiteXmlFiles;
@@ -2058,7 +2072,7 @@ public abstract class AbstractSurefireMojo
         return junitArtifactName;
     }
 
-    @SuppressWarnings( "UnusedDeclaration" )
+    @SuppressWarnings("UnusedDeclaration")
     public void setJunitArtifactName( String junitArtifactName )
     {
         this.junitArtifactName = junitArtifactName;
@@ -2069,7 +2083,7 @@ public abstract class AbstractSurefireMojo
         return testNGArtifactName;
     }
 
-    @SuppressWarnings( "UnusedDeclaration" )
+    @SuppressWarnings("UnusedDeclaration")
     public void setTestNGArtifactName( String testNGArtifactName )
     {
         this.testNGArtifactName = testNGArtifactName;
@@ -2080,7 +2094,7 @@ public abstract class AbstractSurefireMojo
         return threadCount;
     }
 
-    @SuppressWarnings( "UnusedDeclaration" )
+    @SuppressWarnings("UnusedDeclaration")
     public void setThreadCount( int threadCount )
     {
         this.threadCount = threadCount;
@@ -2091,7 +2105,7 @@ public abstract class AbstractSurefireMojo
         return perCoreThreadCount;
     }
 
-    @SuppressWarnings( "UnusedDeclaration" )
+    @SuppressWarnings("UnusedDeclaration")
     public void setPerCoreThreadCount( boolean perCoreThreadCount )
     {
         this.perCoreThreadCount = perCoreThreadCount;
@@ -2102,7 +2116,7 @@ public abstract class AbstractSurefireMojo
         return useUnlimitedThreads;
     }
 
-    @SuppressWarnings( "UnusedDeclaration" )
+    @SuppressWarnings("UnusedDeclaration")
     public void setUseUnlimitedThreads( boolean useUnlimitedThreads )
     {
         this.useUnlimitedThreads = useUnlimitedThreads;
@@ -2113,7 +2127,7 @@ public abstract class AbstractSurefireMojo
         return parallel;
     }
 
-    @SuppressWarnings( "UnusedDeclaration" )
+    @SuppressWarnings("UnusedDeclaration")
     public void setParallel( String parallel )
     {
         this.parallel = parallel;
@@ -2124,7 +2138,7 @@ public abstract class AbstractSurefireMojo
         return trimStackTrace;
     }
 
-    @SuppressWarnings( "UnusedDeclaration" )
+    @SuppressWarnings("UnusedDeclaration")
     public void setTrimStackTrace( boolean trimStackTrace )
     {
         this.trimStackTrace = trimStackTrace;
@@ -2135,7 +2149,7 @@ public abstract class AbstractSurefireMojo
         return artifactResolver;
     }
 
-    @SuppressWarnings( "UnusedDeclaration" )
+    @SuppressWarnings("UnusedDeclaration")
     public void setArtifactResolver( ArtifactResolver artifactResolver )
     {
         this.artifactResolver = artifactResolver;
@@ -2146,7 +2160,7 @@ public abstract class AbstractSurefireMojo
         return artifactFactory;
     }
 
-    @SuppressWarnings( "UnusedDeclaration" )
+    @SuppressWarnings("UnusedDeclaration")
     public void setArtifactFactory( ArtifactFactory artifactFactory )
     {
         this.artifactFactory = artifactFactory;
@@ -2157,7 +2171,7 @@ public abstract class AbstractSurefireMojo
         return remoteRepositories;
     }
 
-    @SuppressWarnings( "UnusedDeclaration" )
+    @SuppressWarnings("UnusedDeclaration")
     public void setRemoteRepositories( List<ArtifactRepository> remoteRepositories )
     {
         this.remoteRepositories = remoteRepositories;
@@ -2168,7 +2182,7 @@ public abstract class AbstractSurefireMojo
         return metadataSource;
     }
 
-    @SuppressWarnings( "UnusedDeclaration" )
+    @SuppressWarnings("UnusedDeclaration")
     public void setMetadataSource( ArtifactMetadataSource metadataSource )
     {
         this.metadataSource = metadataSource;
@@ -2180,7 +2194,7 @@ public abstract class AbstractSurefireMojo
         return disableXmlReport;
     }
 
-    @SuppressWarnings( "UnusedDeclaration" )
+    @SuppressWarnings("UnusedDeclaration")
     public void setDisableXmlReport( boolean disableXmlReport )
     {
         this.disableXmlReport = disableXmlReport;
@@ -2192,7 +2206,8 @@ public abstract class AbstractSurefireMojo
         return enableAssertions;
     }
 
-    public boolean effectiveIsEnableAssertions(){
+    public boolean effectiveIsEnableAssertions()
+    {
         if ( getArgLine() != null )
         {
             List<String> args = Arrays.asList( getArgLine().split( " " ) );
@@ -2204,7 +2219,7 @@ public abstract class AbstractSurefireMojo
         return isEnableAssertions();
     }
 
-    @SuppressWarnings( "UnusedDeclaration" )
+    @SuppressWarnings("UnusedDeclaration")
     public void setEnableAssertions( boolean enableAssertions )
     {
         this.enableAssertions = enableAssertions;
@@ -2215,7 +2230,7 @@ public abstract class AbstractSurefireMojo
         return session;
     }
 
-    @SuppressWarnings( "UnusedDeclaration" )
+    @SuppressWarnings("UnusedDeclaration")
     public void setSession( MavenSession session )
     {
         this.session = session;
@@ -2226,7 +2241,7 @@ public abstract class AbstractSurefireMojo
         return objectFactory;
     }
 
-    @SuppressWarnings( "UnusedDeclaration" )
+    @SuppressWarnings("UnusedDeclaration")
     public void setObjectFactory( String objectFactory )
     {
         this.objectFactory = objectFactory;
@@ -2237,7 +2252,7 @@ public abstract class AbstractSurefireMojo
         return toolchainManager;
     }
 
-    @SuppressWarnings( "UnusedDeclaration" )
+    @SuppressWarnings("UnusedDeclaration")
     public void setToolchainManager( ToolchainManager toolchainManager )
     {
         this.toolchainManager = toolchainManager;
@@ -2253,7 +2268,7 @@ public abstract class AbstractSurefireMojo
         return runOrder;
     }
 
-    @SuppressWarnings( "UnusedDeclaration" )
+    @SuppressWarnings("UnusedDeclaration")
     public void setRunOrder( String runOrder )
     {
         this.runOrder = runOrder;
@@ -2269,7 +2284,7 @@ public abstract class AbstractSurefireMojo
         return project;
     }
 
-    @SuppressWarnings( "UnusedDeclaration" )
+    @SuppressWarnings("UnusedDeclaration")
     public void setProject( MavenProject project )
     {
         this.project = project;
