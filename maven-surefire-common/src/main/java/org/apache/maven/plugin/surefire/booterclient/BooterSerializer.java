@@ -55,20 +55,24 @@ class BooterSerializer
 {
     private final ForkConfiguration forkConfiguration;
 
-    private final PropertiesWrapper properties;
-
-    public BooterSerializer( ForkConfiguration forkConfiguration, Properties properties )
+    public BooterSerializer( ForkConfiguration forkConfiguration )
     {
         this.forkConfiguration = forkConfiguration;
-        this.properties = new PropertiesWrapper( properties );
     }
 
 
-    public File serialize(ProviderConfiguration booterConfiguration, StartupConfiguration providerConfiguration,
+    /*
+    DOes not modify sourceProperties
+     */
+    public File serialize(Properties sourceProperties, ProviderConfiguration booterConfiguration, StartupConfiguration providerConfiguration,
                           Object testSet)
         throws IOException
     {
-        providerConfiguration.getClasspathConfiguration().setForkProperties( properties );
+
+        PropertiesWrapper properties = new PropertiesWrapper(new Properties(  ) );
+        properties.getProperties().putAll( sourceProperties );
+
+        providerConfiguration.getClasspathConfiguration().addForkProperties( properties );
 
         TestArtifactInfo testNg = booterConfiguration.getTestArtifact();
         if ( testNg != null )

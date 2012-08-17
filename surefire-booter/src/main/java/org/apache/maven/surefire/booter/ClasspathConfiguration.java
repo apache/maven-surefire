@@ -77,7 +77,7 @@ public class ClasspathConfiguration
         this.surefireClasspathUrls = surefireClassPathUrls;
     }
 
-    public void setForkProperties( PropertiesWrapper properties )
+    public void addForkProperties( PropertiesWrapper properties )
     {
         properties.setClasspath( CLASSPATH, classpathUrls );
         properties.setClasspath( SUREFIRE_CLASSPATH, surefireClasspathUrls );

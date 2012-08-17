@@ -742,7 +742,7 @@ public abstract class AbstractSurefireMojo
                     ForkStarter forkStarter =
                         createForkStarter( provider, forkConfiguration, classLoaderConfiguration, runOrderParameters,
                                            effectiveProperties );
-                    result = forkStarter.run( scanResult, getEffectiveForkMode() );
+                    result = forkStarter.run( effectiveProperties, scanResult, getEffectiveForkMode() );
                 }
                 finally
                 {
@@ -1224,8 +1224,7 @@ public abstract class AbstractSurefireMojo
         StartupReportConfiguration startupReportConfiguration = getStartupReportConfiguration( configChecksum );
         ProviderConfiguration providerConfiguration = createProviderConfiguration( runOrderParameters );
         return new ForkStarter( providerConfiguration, startupConfiguration, forkConfiguration,
-                                getForkedProcessTimeoutInSeconds(), startupReportConfiguration,
-                                effectiveSystemProperties );
+                                getForkedProcessTimeoutInSeconds(), startupReportConfiguration );
     }
 
     protected InPluginVMSurefireStarter createInprocessStarter( ProviderInfo provider,

@@ -172,11 +172,9 @@ public class BooterDeserializerProviderConfigurationTest
     {
         final ForkConfiguration forkConfiguration = ForkConfigurationTest.getForkConfiguration( null, null );
         Properties props = new Properties();
-        BooterSerializer booterSerializer = new BooterSerializer( forkConfiguration, props );
+        BooterSerializer booterSerializer = new BooterSerializer( forkConfiguration );
         String aTest = "aTest";
-        booterSerializer.serialize( booterConfiguration, testProviderConfiguration, aTest);
-        final File propsTest =
-            SystemPropertyManager.writePropertiesFile( props, forkConfiguration.getTempDirectory(), "propsTest", true );
+        final File propsTest = booterSerializer.serialize( props, booterConfiguration, testProviderConfiguration, aTest);
         BooterDeserializer booterDeserializer = new BooterDeserializer( new FileInputStream( propsTest ) );
         return booterDeserializer.deserialize();
     }

@@ -82,8 +82,6 @@ public class ForkStarter
 
     private final StartupReportConfiguration startupReportConfiguration;
 
-    private final SurefireProperties effectiveSystemProperties;
-
     private final DefaultReporterFactory fileReporterFactory;
 
     private static volatile int systemPropertiesFileCounter = 0;
@@ -91,19 +89,17 @@ public class ForkStarter
 
     public ForkStarter( ProviderConfiguration providerConfiguration, StartupConfiguration startupConfiguration,
                         ForkConfiguration forkConfiguration, int forkedProcessTimeoutInSeconds,
-                        StartupReportConfiguration startupReportConfiguration,
-                        SurefireProperties effectiveSystemProperties )
+                        StartupReportConfiguration startupReportConfiguration )
     {
         this.forkConfiguration = forkConfiguration;
         this.providerConfiguration = providerConfiguration;
         this.forkedProcessTimeoutInSeconds = forkedProcessTimeoutInSeconds;
         this.startupConfiguration = startupConfiguration;
         this.startupReportConfiguration = startupReportConfiguration;
-        this.effectiveSystemProperties = effectiveSystemProperties;
         fileReporterFactory = new DefaultReporterFactory( startupReportConfiguration );
     }
 
-    public RunResult run( DefaultScanResult scanResult, String requestedForkMode )
+    public RunResult run( SurefireProperties effectiveSystemProperties, DefaultScanResult scanResult, String requestedForkMode )
         throws SurefireBooterForkException, SurefireExecutionException
     {
         final RunResult result;
@@ -115,15 +111,16 @@ public class ForkStarter
             {
                 final ForkClient forkClient =
                     new ForkClient( fileReporterFactory, startupReportConfiguration.getTestVmSystemProperties() );
-                result = fork( null, providerProperties, forkClient, fileReporterFactory.getGlobalRunStatistics() );
+                result = fork( null, providerProperties, forkClient, fileReporterFactory.getGlobalRunStatistics(),
+                               effectiveSystemProperties );
             }
             else if ( ForkConfiguration.FORK_ALWAYS.equals( requestedForkMode ) )
             {
-                result = runSuitesForkPerTestSet( providerProperties, 1 );
+                result = runSuitesForkPerTestSet( providerProperties, effectiveSystemProperties, 1 );
             }
             else if ( ForkConfiguration.FORK_PERTHREAD.equals( requestedForkMode ) )
             {
-                result = runSuitesForkPerTestSet( providerProperties, forkConfiguration.getForkCount() );
+                result = runSuitesForkPerTestSet( providerProperties, effectiveSystemProperties, forkConfiguration.getForkCount() );
             }
             else
             {
@@ -137,7 +134,8 @@ public class ForkStarter
         return result;
     }
 
-    private RunResult runSuitesForkPerTestSet( final Properties properties, int forkCount )
+    private RunResult runSuitesForkPerTestSet( final Properties properties,
+                                               final SurefireProperties effectiveSystemProperties, int forkCount )
         throws SurefireBooterForkException
     {
 
@@ -160,8 +158,9 @@ public class ForkStarter
                     public RunResult call()
                         throws Exception
                     {
-                        return fork( testSet, (Properties) properties.clone(), forkClient,
-                                     fileReporterFactory.getGlobalRunStatistics() );
+                        return fork( testSet, properties, forkClient,
+                                     fileReporterFactory.getGlobalRunStatistics(),
+                                     effectiveSystemProperties );
                     }
                 };
                 results.add( executorService.submit( pf ) );
@@ -217,17 +216,17 @@ public class ForkStarter
     }
 
 
-    private RunResult fork( Object testSet, Properties properties, ForkClient forkClient,
-                            RunStatistics globalRunStatistics )
+    private RunResult fork( Object testSet, Properties providerProperties, ForkClient forkClient,
+                            RunStatistics globalRunStatistics, SurefireProperties effectiveSystemProperties )
         throws SurefireBooterForkException
     {
         File surefireProperties;
         File systPropsFile = null;
         try
         {
-            BooterSerializer booterSerializer = new BooterSerializer( forkConfiguration, properties );
+            BooterSerializer booterSerializer = new BooterSerializer( forkConfiguration );
 
-            surefireProperties = booterSerializer.serialize( providerConfiguration, startupConfiguration, testSet );
+            surefireProperties = booterSerializer.serialize( providerProperties, providerConfiguration, startupConfiguration, testSet );
 
             if ( effectiveSystemProperties != null )
             {
