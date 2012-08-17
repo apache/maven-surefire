@@ -18,9 +18,6 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.report.StackTraceWriter;
-
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,8 +36,6 @@ public class TestSetStats
 
     private long testStartAt;
 
-    private long testEndAt;
-
     private int completedCount;
 
     private int errors;
@@ -51,17 +46,14 @@ public class TestSetStats
 
     private long lastStartAt;
 
-    private final List<String> testResults = new ArrayList<String>();
+    private long elapsedForTestSet;
+
+    private final List<WrappedReportEntry> reportEntries = new ArrayList<WrappedReportEntry>();
 
     public TestSetStats( boolean trimStackTrace, boolean plainFormat )
     {
         this.trimStackTrace = trimStackTrace;
         this.plainFormat = plainFormat;
-    }
-
-    public long getTestSetStartAt()
-    {
-        return testSetStartAt;
     }
 
     public int getElapsedSinceTestSetStart()
@@ -77,8 +69,6 @@ public class TestSetStats
     public void testSetStart()
     {
         lastStartAt = testSetStartAt = System.currentTimeMillis();
-        testResults.clear();
-
     }
 
     public void testStart()
@@ -86,58 +76,45 @@ public class TestSetStats
         lastStartAt = testStartAt = System.currentTimeMillis();
     }
 
-    public long testEnd()
+    private long finishTest( WrappedReportEntry reportEntry )
     {
+        reportEntries.add( reportEntry );
         incrementCompletedCount();
-        testEndAt = System.currentTimeMillis();
+        long testEndAt = System.currentTimeMillis();
         // SUREFIRE-398 skipped tests call endTest without calling testStarting
         // if startTime = 0, set it to endTime, so the diff will be 0
         if ( testStartAt == 0 )
         {
             testStartAt = testEndAt;
         }
-        return testEndAt - testStartAt;
+        long elapsedForThis = reportEntry.getElapsed() != null ? reportEntry.getElapsed() : testEndAt - testStartAt;
+        elapsedForTestSet += elapsedForThis;
+        return elapsedForThis;
     }
 
-    public void testEnd( ReportEntry reportEntry )
+    public void testSucceeded( WrappedReportEntry reportEntry )
     {
-        testEnd();
-        if ( plainFormat )
-        {
-            addTestResult( reportEntry );
-        }
+        finishTest( reportEntry );
     }
 
 
-    public void incrementCompletedCount()
-    {
-        completedCount += 1;
-    }
-
-    public void testError( ReportEntry reportEntry )
+    public void testError( WrappedReportEntry reportEntry )
     {
         errors += 1;
-        testEnd();
-        testResults.add( getOutput( reportEntry, "ERROR" ) );
+        finishTest( reportEntry );
 
     }
 
-    public void testFailure( ReportEntry reportEntry )
+    public void testFailure( WrappedReportEntry reportEntry )
     {
         failures += 1;
-        testEnd();
-        testResults.add( getOutput( reportEntry, "FAILURE" ) );
+        finishTest( reportEntry );
     }
 
-    public void testSkipped( ReportEntry reportEntry )
+    public void testSkipped( WrappedReportEntry reportEntry )
     {
         skipped += 1;
-        testEnd();
-        if ( plainFormat )
-        {
-            testResults.add( reportEntry.getName() + " skipped" );
-        }
-
+        finishTest( reportEntry );
     }
 
     public void reset()
@@ -146,6 +123,8 @@ public class TestSetStats
         errors = 0;
         failures = 0;
         skipped = 0;
+        elapsedForTestSet = 0;
+        reportEntries.clear();
     }
 
     public int getCompletedCount()
@@ -168,28 +147,28 @@ public class TestSetStats
         return skipped;
     }
 
-    long getActualRunTime( ReportEntry reportEntry )
-    {
-        @SuppressWarnings( "deprecation" )
-        final Integer clientSpecifiedElapsed = reportEntry.getElapsed();
-        return clientSpecifiedElapsed != null ? clientSpecifiedElapsed : testEndAt - testStartAt;
-    }
-
     private static final String TEST_SET_COMPLETED_PREFIX = "Tests run: ";
 
     private final NumberFormat numberFormat = NumberFormat.getInstance( Locale.ENGLISH );
 
-    static final String NL = System.getProperty( "line.separator" );
-
     private static final int MS_PER_SEC = 1000;
-
 
     String elapsedTimeAsString( long runTime )
     {
         return numberFormat.format( (double) runTime / MS_PER_SEC );
     }
 
-    public String getTestSetSummary( Integer elapsed )
+    public String getElapsedForTestSet()
+    {
+        return elapsedTimeAsString( elapsedForTestSet );
+    }
+
+    private void incrementCompletedCount()
+    {
+        completedCount += 1;
+    }
+
+    public String getTestSetSummary( WrappedReportEntry reportEntry )
     {
         StringBuilder buf = new StringBuilder();
 
@@ -202,7 +181,7 @@ public class TestSetStats
         buf.append( ", Skipped: " );
         buf.append( skipped );
         buf.append( ", Time elapsed: " );
-        buf.append( elapsedTimeAsString( elapsed != null ? elapsed : getElapsedSinceTestSetStart() ) );
+        buf.append( reportEntry.elapsedTimeAsString() );
         buf.append( " sec" );
 
         if ( failures > 0 || errors > 0 )
@@ -215,54 +194,29 @@ public class TestSetStats
         return buf.toString();
     }
 
-    public String getElapsedTimeSummary( ReportEntry report )
-    {
-        StringBuilder reportContent = new StringBuilder();
-        reportContent.append( report.getName() );
-        reportContent.append( "  Time elapsed: " );
-        reportContent.append( getActualRunTime( report ) );
-        reportContent.append( " sec" );
-
-        return reportContent.toString();
-    }
-
-
-    public String getOutput( ReportEntry report, String msg )
-    {
-        StringBuilder buf = new StringBuilder();
-
-        buf.append( getElapsedTimeSummary( report ) );
-
-        buf.append( "  <<< " ).append( msg ).append( "!" ).append( NL );
-
-        buf.append( getStackTrace( report ) );
-
-        return buf.toString();
-    }
-
-    /**
-     * Returns stacktrace as String.
-     *
-     * @param report ReportEntry object.
-     * @return stacktrace as string.
-     */
-    public String getStackTrace( ReportEntry report )
-    {
-        StackTraceWriter writer = report.getStackTraceWriter();
-        if ( writer == null )
-        {
-            return null;
-        }
-        return this.trimStackTrace ? writer.writeTrimmedTraceToString() : writer.writeTraceToString();
-    }
-
-    public void addTestResult( ReportEntry reportEntry )
-    {
-        testResults.add( getElapsedTimeSummary( reportEntry ) );
-    }
-
     public List<String> getTestResults()
     {
-        return testResults;
+        List<String> result = new ArrayList<String>();
+        for ( WrappedReportEntry testResult : reportEntries )
+        {
+            if ( testResult.isErrorOrFailure() )
+            {
+                result.add( testResult.getOutput( trimStackTrace ) );
+            }
+            else if ( plainFormat && testResult.isSkipped() )
+            {
+                result.add( testResult.getName() + " skipped" );
+            }
+            else if ( plainFormat && testResult.isSucceeded() )
+            {
+                result.add( testResult.getElapsedTimeSummary() );
+            }
+        }
+        return result;
+    }
+
+    public List<WrappedReportEntry> getReportEntries()
+    {
+        return reportEntries;
     }
 }

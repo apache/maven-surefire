@@ -19,12 +19,9 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
-import java.util.ArrayList;
-import java.util.List;
 import org.apache.maven.plugin.surefire.StartupReportConfiguration;
 import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
 import org.apache.maven.surefire.report.DefaultDirectConsoleReporter;
-import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.RunStatistics;
@@ -40,11 +37,10 @@ import org.apache.maven.surefire.suite.RunResult;
 public class DefaultReporterFactory
     implements ReporterFactory
 {
-    private final ReporterConfiguration reporterConfiguration;
 
     private final RunStatistics globalStats = new RunStatistics();
 
-    private final MulticastingReporter multicastingReporter;
+    private final ConsoleReporter multicastingReporter;
 
     private final StartupReportConfiguration reportConfiguration;
 
@@ -53,45 +49,20 @@ public class DefaultReporterFactory
     public DefaultReporterFactory( StartupReportConfiguration reportConfiguration )
     {
         this.reportConfiguration = reportConfiguration;
-        this.reporterConfiguration = getReporterConfiguration();
-        multicastingReporter = new MulticastingReporter( instantiateReports() );
+        multicastingReporter = reportConfiguration.instantiateConsoleReporter();
         this.statisticsReporter = reportConfiguration.instantiateStatisticsReporter();
         runStarting();
-    }
-
-    private ReporterConfiguration getReporterConfiguration()
-    {
-        //noinspection BooleanConstructorCall
-        return new ReporterConfiguration( reportConfiguration.getReportsDirectory(),
-                                          reportConfiguration.isTrimStackTrace() );
     }
 
     public RunListener createReporter()
     {
         return new TestSetRunListener( reportConfiguration.instantiateConsoleReporter(),
                                        reportConfiguration.instantiateFileReporter(),
-                                       reportConfiguration.instantiateXmlReporter(),
-                                       reportConfiguration.instantiateConsoleOutputFileReporter(),
-                                       statisticsReporter, globalStats, reportConfiguration.isTrimStackTrace(),
-                AbstractTextReporter.PLAIN.equals(reportConfiguration.getReportFormat()));
-    }
-
-    private List<Reporter> instantiateReports()
-    {
-        List<Reporter> result = new ArrayList<Reporter>();
-        addIfNotNull( result, reportConfiguration.instantiateConsoleReporter() );
-        addIfNotNull( result, reportConfiguration.instantiateFileReporter() );
-        addIfNotNull( result, reportConfiguration.instantiateXmlReporter() );
-        addIfNotNull( result, statisticsReporter );
-        return result;
-    }
-
-    private void addIfNotNull( List<Reporter> result, Reporter reporter )
-    {
-        if ( reporter != null )
-        {
-            result.add( reporter );
-        }
+                                       reportConfiguration.instantiateStatelessXmlReporter(),
+                                       reportConfiguration.instantiateConsoleOutputFileReporter(), statisticsReporter,
+                                       globalStats, reportConfiguration.isTrimStackTrace(),
+                                       ConsoleReporter.PLAIN.equals( reportConfiguration.getReportFormat() ),
+                                       reportConfiguration.isBriefOrPlainFormat() );
     }
 
     public RunResult close()

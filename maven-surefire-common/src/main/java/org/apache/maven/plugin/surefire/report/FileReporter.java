@@ -19,20 +19,22 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
+import org.apache.maven.surefire.report.ReportEntry;
+import org.apache.maven.surefire.report.ReporterException;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.report.ReporterException;
+import java.util.List;
 
 /**
  * Base class for file reporters.
  *
  * @author <a href="mailto:brett@apache.org">Brett Porter</a>
+ * @author Kristian Rosenvold
  */
 public class FileReporter
-    extends AbstractTextReporter
 {
     private final File reportsDirectory;
 
@@ -40,15 +42,14 @@ public class FileReporter
 
     private final String reportNameSuffix;
 
-    public FileReporter( String format, File reportsDirectory, String reportNameSuffix )
+    public FileReporter( File reportsDirectory, String reportNameSuffix )
     {
-        super( format );
         this.reportsDirectory = reportsDirectory;
         this.deleteOnStarting = false;
         this.reportNameSuffix = reportNameSuffix;
     }
 
-    public void testSetStarting( ReportEntry report )
+    private PrintWriter testSetStarting( ReportEntry report )
         throws ReporterException
     {
         File reportFile = getReportFile( reportsDirectory, report.getName(), reportNameSuffix, ".txt" );
@@ -74,7 +75,7 @@ public class FileReporter
 
             writer.println( "-------------------------------------------------------------------------------" );
 
-            setWriter( writer );
+            return writer;
         }
         catch ( IOException e )
         {
@@ -98,15 +99,22 @@ public class FileReporter
         return reportFile;
     }
 
-    public void testSetCompleted( ReportEntry report, TestSetStats testSetStats )
+    public void testSetCompleted( WrappedReportEntry report, TestSetStats testSetStats, List<String> testResults )
         throws ReporterException
     {
-        super.testSetCompleted( report, testSetStats );
+        PrintWriter writer = testSetStarting( report );
+        writer.print( testSetStats.getTestSetSummary( report ) );
+
+        if ( testResults != null )
+        {
+            for ( String testResult : testResults )
+            {
+                writer.println( testResult );
+            }
+        }
 
         writer.flush();
 
         writer.close();
-
-        writer = null;
     }
 }

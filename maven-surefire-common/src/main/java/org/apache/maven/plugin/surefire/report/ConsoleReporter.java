@@ -19,21 +19,27 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
+import org.apache.maven.surefire.report.ReportEntry;
+import org.apache.maven.surefire.report.ReporterException;
+
 import java.io.BufferedOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.PrintWriter;
-import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.report.ReporterException;
+import java.util.List;
 
 /**
  * Base class for console reporters.
  *
  * @author <a href="mailto:brett@apache.org">Brett Porter</a>
+ * @author Kristian Rosenvold
  */
 public class ConsoleReporter
-    extends AbstractTextReporter
 {
+    public static final String BRIEF = "brief";
+
+    public static final String PLAIN = "plain";
+
     private static final String TEST_SET_STARTING_PREFIX = "Running ";
 
     private static final String TEST_SET_STARTING_GROUP_PREFIX = " (of ";
@@ -44,9 +50,12 @@ public class ConsoleReporter
 
     private static final PrintStream ORIGINAL_SYSTEM_OUT = System.out;
 
-    public ConsoleReporter( String format )
+    private final PrintWriter writer;
+
+
+    public ConsoleReporter()
     {
-        super( getPrintWriter(), format );
+        this.writer = getPrintWriter();
     }
 
     private static PrintWriter getPrintWriter()
@@ -59,6 +68,49 @@ public class ConsoleReporter
         throws ReporterException
     {
         writeMessage( getTestSetStartingMessage( report ) );
+    }
+
+    public void writeMessage( String message )
+    {
+        if ( writer != null )
+        {
+            writer.print( message );
+
+            writer.flush();
+        }
+    }
+
+    public void writeLnMessage( String message )
+    {
+        if ( writer != null )
+        {
+            writer.println( message );
+
+            writer.flush();
+        }
+    }
+
+    public void testSetCompleted( WrappedReportEntry report, TestSetStats testSetStats, List<String> testResults )
+        throws ReporterException
+    {
+        writeMessage( testSetStats.getTestSetSummary( report ) );
+
+        if ( testResults != null )
+        {
+            for ( String testResult : testResults )
+            {
+                writeLnMessage( testResult );
+            }
+        }
+    }
+
+
+    public void reset()
+    {
+        if ( writer != null )
+        {
+            writer.flush();
+        }
     }
 
     /**
@@ -84,5 +136,6 @@ public class ConsoleReporter
         message.append( "\n" );
         return message.toString();
     }
+
 
 }

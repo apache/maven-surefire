@@ -19,16 +19,23 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
+import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
+import org.apache.maven.surefire.report.ConsoleLogger;
+import org.apache.maven.surefire.report.ConsoleOutputReceiver;
+import org.apache.maven.surefire.report.ReportEntry;
+import org.apache.maven.surefire.report.RunListener;
+import org.apache.maven.surefire.report.RunStatistics;
+import org.apache.maven.surefire.util.internal.ByteBuffer;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
-import org.apache.maven.surefire.report.*;
-import org.apache.maven.surefire.util.internal.ByteBuffer;
 
 /**
  * Reports data for a single test set.
  * <p/>
+ *
+ * @author Kristian Rosenvold
  */
 public class TestSetRunListener
     implements RunListener, ConsoleOutputReceiver, ConsoleLogger
@@ -38,46 +45,44 @@ public class TestSetRunListener
     private final TestSetStats detailsForThis;
 
 
-    private final MulticastingReporter multicastingReporter;
-
     private final List<ByteBuffer> testStdOut = Collections.synchronizedList( new ArrayList<ByteBuffer>() );
 
     private final List<ByteBuffer> testStdErr = Collections.synchronizedList( new ArrayList<ByteBuffer>() );
 
     private final TestcycleConsoleOutputReceiver consoleOutputReceiver;
 
-    public TestSetRunListener( ConsoleReporter consoleReporter, FileReporter fileReporter, XMLReporter xmlReporter,
+    private final boolean briefOrPlainFormat;
+
+    private final StatelessXmlReporter simpleXMLReporter;
+
+    private final ConsoleReporter consoleReporter;
+
+    private final FileReporter fileReporter;
+
+    private final StatisticsReporter statisticsReporter;
+
+    public TestSetRunListener( ConsoleReporter consoleReporter, FileReporter fileReporter,
+                               StatelessXmlReporter simpleXMLReporter,
                                TestcycleConsoleOutputReceiver consoleOutputReceiver,
                                StatisticsReporter statisticsReporter, RunStatistics globalStats, boolean trimStackTrace,
-                               boolean isPlainFormat )
+                               boolean isPlainFormat, boolean briefOrPlainFormat )
     {
-        List<Reporter> reporters = new ArrayList<Reporter>();
-        if ( consoleReporter != null )
-        {
-            reporters.add( consoleReporter );
-        }
-        if ( fileReporter != null )
-        {
-            reporters.add( fileReporter );
-        }
-        if ( xmlReporter != null )
-        {
-            reporters.add( xmlReporter );
-        }
-        if ( statisticsReporter != null )
-        {
-            reporters.add( statisticsReporter );
-        }
-
+        this.consoleReporter = consoleReporter;
+        this.fileReporter = fileReporter;
+        this.statisticsReporter = statisticsReporter;
+        this.simpleXMLReporter = simpleXMLReporter;
         this.consoleOutputReceiver = consoleOutputReceiver;
+        this.briefOrPlainFormat = briefOrPlainFormat;
         this.detailsForThis = new TestSetStats( trimStackTrace, isPlainFormat );
-        multicastingReporter = new MulticastingReporter( reporters );
         this.globalStatistics = globalStats;
     }
 
     public void info( String message )
     {
-        multicastingReporter.writeMessage( message );
+        if ( consoleReporter != null )
+        {
+            consoleReporter.writeMessage( message );
+        }
     }
 
     public void writeTestOutput( byte[] buf, int off, int len, boolean stdout )
@@ -97,7 +102,10 @@ public class TestSetRunListener
     public void testSetStarting( ReportEntry report )
     {
         detailsForThis.testSetStart();
-        multicastingReporter.testSetStarting( report );
+        if ( consoleReporter != null )
+        {
+            consoleReporter.testSetStarting( report );
+        }
         consoleOutputReceiver.testSetStarting( report );
     }
 
@@ -109,11 +117,33 @@ public class TestSetRunListener
 
     public void testSetCompleted( ReportEntry report )
     {
-        multicastingReporter.testSetCompleted( report, detailsForThis );
-        consoleOutputReceiver.testSetCompleted( report );
+        WrappedReportEntry wrap = wrapTestSet( report, null );
+        List<String> testResults = briefOrPlainFormat ? detailsForThis.getTestResults() : null;
+        if ( consoleReporter != null )
+        {
+            consoleReporter.testSetCompleted( wrap, detailsForThis, testResults );
+        }
+        consoleOutputReceiver.testSetCompleted( wrap );
+        if ( fileReporter != null )
+        {
+            fileReporter.testSetCompleted( wrap, detailsForThis, testResults );
+        }
+        if ( simpleXMLReporter != null )
+        {
+            simpleXMLReporter.testSetCompleted( wrap, detailsForThis );
+        }
+        if ( statisticsReporter != null )
+        {
+            statisticsReporter.testSetCompleted();
+        }
+        if ( consoleReporter != null )
+        {
+            consoleReporter.reset();
+        }
+
         globalStatistics.add( detailsForThis );
         detailsForThis.reset();
-        multicastingReporter.reset();
+
     }
 
     // ----------------------------------------------------------------------
@@ -123,30 +153,40 @@ public class TestSetRunListener
     public void testStarting( ReportEntry report )
     {
         detailsForThis.testStart();
-        multicastingReporter.testStarting( report );
+
     }
 
     public void testSucceeded( ReportEntry reportEntry )
     {
-        detailsForThis.testEnd( reportEntry );
-        multicastingReporter.testSucceeded( wrap( reportEntry ), detailsForThis );
+        WrappedReportEntry wrapped = wrap( reportEntry, ReportEntryType.success );
+        detailsForThis.testSucceeded( wrapped );
+        if ( statisticsReporter != null )
+        {
+            statisticsReporter.testSucceeded( reportEntry );
+        }
         clearCapture();
     }
 
     public void testError( ReportEntry reportEntry )
     {
-        detailsForThis.testError( reportEntry );
-        multicastingReporter.testError( wrap( reportEntry ), getAsString( testStdOut ), getAsString( testStdErr ),
-                                        detailsForThis );
+        WrappedReportEntry wrapped = wrap( reportEntry, ReportEntryType.error );
+        detailsForThis.testError( wrapped );
+        if ( statisticsReporter != null )
+        {
+            statisticsReporter.testError( reportEntry );
+        }
         globalStatistics.addErrorSource( reportEntry.getName(), reportEntry.getStackTraceWriter() );
         clearCapture();
     }
 
     public void testFailed( ReportEntry reportEntry )
     {
-        detailsForThis.testFailure( reportEntry );
-        multicastingReporter.testFailed( wrap( reportEntry ), getAsString( testStdOut ), getAsString( testStdErr ),
-                                         detailsForThis );
+        WrappedReportEntry wrapped = wrap( reportEntry, ReportEntryType.failure );
+        detailsForThis.testFailure( wrapped );
+        if ( statisticsReporter != null )
+        {
+            statisticsReporter.testFailed( reportEntry );
+        }
         globalStatistics.addFailureSource( reportEntry.getName(), reportEntry.getStackTraceWriter() );
         clearCapture();
     }
@@ -158,9 +198,13 @@ public class TestSetRunListener
     public void testSkipped( ReportEntry reportEntry )
     {
 
-        detailsForThis.testSkipped( reportEntry );
+        WrappedReportEntry wrapped = wrap( reportEntry, ReportEntryType.skipped );
+        detailsForThis.testSkipped( wrapped );
+        if ( statisticsReporter != null )
+        {
+            statisticsReporter.testSkipped( reportEntry );
+        }
         clearCapture();
-        multicastingReporter.testSkipped( wrap( reportEntry ), detailsForThis );
     }
 
     public void testAssumptionFailure( ReportEntry report )
@@ -181,15 +225,18 @@ public class TestSetRunListener
         return stringBuffer.toString();
     }
 
-    private ReportEntry wrap( ReportEntry other )
+    private WrappedReportEntry wrap( ReportEntry other, ReportEntryType reportEntryType )
     {
-        if ( other.getElapsed() != null )
-        {
-            return other;
-        }
-        return CategorizedReportEntry.reportEntry( other.getSourceName(), other.getName(), other.getGroup(),
-                                                   other.getStackTraceWriter(),
-                                                   detailsForThis.getElapsedSinceLastStart(), other.getMessage() );
+        return new WrappedReportEntry( other, reportEntryType, other.getElapsed() != null
+            ? other.getElapsed()
+            : detailsForThis.getElapsedSinceLastStart(), getAsString( testStdOut ), getAsString( testStdErr ) );
+    }
+
+    private WrappedReportEntry wrapTestSet( ReportEntry other, ReportEntryType reportEntryType )
+    {
+        return new WrappedReportEntry( other, reportEntryType, other.getElapsed() != null
+            ? other.getElapsed()
+            : detailsForThis.getElapsedSinceTestSetStart(), getAsString( testStdOut ), getAsString( testStdErr ) );
     }
 
 }

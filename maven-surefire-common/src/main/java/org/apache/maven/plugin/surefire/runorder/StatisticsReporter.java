@@ -19,18 +19,16 @@ package org.apache.maven.plugin.surefire.runorder;
  * under the License.
  */
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import org.apache.maven.plugin.surefire.report.Reporter;
-import org.apache.maven.plugin.surefire.report.TestSetStats;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.util.NestedRuntimeException;
+
+import java.io.File;
+import java.io.FileNotFoundException;
 
 /**
  * @author Kristian Rosenvold
  */
 public class StatisticsReporter
-    implements Reporter
 {
     private final RunEntryStatisticsMap existing;
 
@@ -45,11 +43,7 @@ public class StatisticsReporter
         this.newResults = new RunEntryStatisticsMap();
     }
 
-    public void testSetStarting( ReportEntry report )
-    {
-    }
-
-    public void testSetCompleted( ReportEntry report, TestSetStats testSetStats )
+    public void testSetCompleted()
     {
         try
         {
@@ -61,35 +55,23 @@ public class StatisticsReporter
         }
     }
 
-    public void testStarting( ReportEntry report )
-    {
-    }
-
-    public void testSucceeded( ReportEntry report, TestSetStats testSetStats )
+    public void testSucceeded( ReportEntry report )
     {
         newResults.add( existing.createNextGeneration( report ) );
     }
 
-    public void testSkipped( ReportEntry report, TestSetStats testSetStats )
+    public void testSkipped( ReportEntry report )
     {
         newResults.add( existing.createNextGeneration( report ) );
     }
 
-    public void testError( ReportEntry report, String stdOut, String stdErr, TestSetStats testSetStats )
+    public void testError( ReportEntry report )
     {
         newResults.add( existing.createNextGenerationFailure( report ) );
     }
 
-    public void testFailed( ReportEntry report, String stdOut, String stdErr, TestSetStats testSetStats )
+    public void testFailed( ReportEntry report )
     {
         newResults.add( existing.createNextGenerationFailure( report ) );
-    }
-
-    public void writeMessage( String message )
-    {
-    }
-
-    public void reset()
-    {
     }
 }
