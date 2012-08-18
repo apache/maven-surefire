@@ -2,12 +2,16 @@ package org.apache.maven.surefire.its.jiras;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 
+import org.junit.Test;
+
 public class Surefire809GroupExpressionsIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
-    public void testJUnitRunCategoryAB()
+    @Test
+    public void categoryAB()
     {
         OutputValidator validator = unpackJUnit().groups( "junit4.CategoryA AND junit4.CategoryB" ).executeTest();
         validator.verifyErrorFreeLog();
@@ -21,6 +25,13 @@ public class Surefire809GroupExpressionsIT
         validator.verifyTextInLog( "mC: 0" );
     }
 
+    @Test
+    public void incorrectJUnitVersions()
+    {
+        unpackJUnit().setJUnitVersion( "4.5" ).groups( "junit4.CategoryA AND junit4.CategoryB" ).executeTestWithFailure();
+    }
+
+    @Test
     public void testJUnitRunCategoryNotC()
     {
         OutputValidator validator = unpackJUnit().groups( "!junit4.CategoryC" ).executeTest();
@@ -33,7 +44,21 @@ public class Surefire809GroupExpressionsIT
         validator.verifyTextInLog( "NoCategoryTest.CatNone: 1" );
     }
 
-    public void testTestNGRunCategoryAB()
+    @Test
+    public void testExcludedGroups()
+    {
+        OutputValidator validator = unpackJUnit().setExcludedGroups( "junit4.CategoryC" ).executeTest();
+        validator.verifyErrorFreeLog();
+        validator.assertTestSuiteResults( 5, 0, 0, 0 );
+        validator.verifyTextInLog( "catA: 2" );
+        validator.verifyTextInLog( "catB: 2" );
+        validator.verifyTextInLog( "catC: 0" );
+        validator.verifyTextInLog( "catNone: 1" );
+        validator.verifyTextInLog( "NoCategoryTest.CatNone: 1" );
+    }
+
+    @Test
+    public void testNGRunCategoryAB()
     {
         OutputValidator validator = unpackTestNG().groups( "CategoryA AND CategoryB" ).debugLogging().executeTest();
         validator.verifyErrorFreeLog();
@@ -42,7 +67,8 @@ public class Surefire809GroupExpressionsIT
         validator.verifyTextInLog( "CategoryCTest.testInCategoriesAB()" );
     }
 
-    public void testTestNGRunCategoryNotC()
+    @Test
+    public void testNGRunCategoryNotC()
     {
         OutputValidator validator = unpackTestNG().groups( "!CategoryC" ).debugLogging().executeTest();
         validator.verifyErrorFreeLog();

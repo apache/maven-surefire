@@ -601,7 +601,7 @@ public abstract class AbstractSurefireMojo
     }
 
     boolean verifyParameters()
-        throws MojoFailureException
+        throws MojoFailureException, MojoExecutionException
     {
         setProperties( new OrderedProperties( getProperties() ) );
         if ( isSkipExecution() )
@@ -633,6 +633,7 @@ public abstract class AbstractSurefireMojo
             ensureWorkingDirectoryExists();
             ensureParallelRunningCompatibility();
             warnIfUselessUseSystemClassLoaderParameter();
+            warnIfDefunctGroupsCombinations();
         }
         return true;
     }
@@ -657,10 +658,8 @@ public abstract class AbstractSurefireMojo
     }
 
     protected List<ProviderInfo> createProviders()
-        throws MojoFailureException
+        throws MojoFailureException, MojoExecutionException
     {
-        try
-        {
             final Artifact junitDepArtifact = getJunitDepArtifact();
             ProviderList wellKnownProviders =
                 new ProviderList( new DynamicProviderInfo( null ), new TestNgProviderInfo( getTestNgArtifact() ),
@@ -669,11 +668,6 @@ public abstract class AbstractSurefireMojo
                                   new JUnit3ProviderInfo() );
 
             return wellKnownProviders.resolve( getLog() );
-        }
-        catch ( InvalidVersionSpecificationException e )
-        {
-            throw new NestedRuntimeException( e );
-        }
     }
 
     private Summary executeAllProviders( DefaultScanResult scanResult )
@@ -945,14 +939,7 @@ public abstract class AbstractSurefireMojo
             new ReporterConfiguration( getReportsDirectory(), isTrimStackTrace() );
 
         Artifact testNgArtifact;
-        try
-        {
-            testNgArtifact = getTestNgArtifact();
-        }
-        catch ( InvalidVersionSpecificationException e )
-        {
-            throw new MojoExecutionException( "Error determining the TestNG version requested: " + e.getMessage(), e );
-        }
+        testNgArtifact = getTestNgArtifact();
 
         DirectoryScannerParameters directoryScannerParameters = null;
         final boolean isTestNg = testNgArtifact != null;
@@ -1185,22 +1172,34 @@ public abstract class AbstractSurefireMojo
     }
 
     private Artifact getTestNgArtifact()
-        throws MojoFailureException, InvalidVersionSpecificationException
+        throws MojoExecutionException
     {
         Artifact artifact = getProjectArtifactMap().get( getTestNGArtifactName() );
 
         if ( artifact != null )
         {
-            VersionRange range = VersionRange.createFromVersionSpec( "[4.7,)" );
+            VersionRange range = createVersionRange();
             if ( !range.containsVersion( new DefaultArtifactVersion( artifact.getVersion() ) ) )
             {
-                throw new MojoFailureException(
+                throw new MojoExecutionException(
                     "TestNG support requires version 4.7 or above. You have declared version "
                         + artifact.getVersion() );
             }
         }
         return artifact;
 
+    }
+
+    private VersionRange createVersionRange()
+    {
+        try
+        {
+            return VersionRange.createFromVersionSpec( "[4.7,)" );
+        }
+        catch ( InvalidVersionSpecificationException e )
+        {
+            throw new RuntimeException( e );
+        }
     }
 
     private Artifact getJunitArtifact()
@@ -1419,7 +1418,7 @@ public abstract class AbstractSurefireMojo
      */
     Classpath generateTestClasspath()
         throws InvalidVersionSpecificationException, MojoFailureException, ArtifactResolutionException,
-        ArtifactNotFoundException
+        ArtifactNotFoundException, MojoExecutionException
     {
         List<String> classpath = new ArrayList<String>( 2 + getProject().getArtifacts().size() );
 
@@ -1650,6 +1649,27 @@ public abstract class AbstractSurefireMojo
         }
     }
 
+    void warnIfDefunctGroupsCombinations()
+        throws MojoFailureException, MojoExecutionException
+    {
+        if (isAnyGroupsSelected()){
+            if (getTestNgArtifact() != null){
+                return;
+            }
+            Artifact junitArtifact = getJunitArtifact();
+            boolean junit47Compatible = isJunit47Compatible( junitArtifact );
+            if (junit47Compatible )
+            {
+                return;
+            }
+            if (junitArtifact != null && !junit47Compatible ){
+                throw new MojoFailureException("groups/excludedGroups are specified but JUnit version on classpath"
+                                                   + " is too old to support groups. Check your dependency:tree to see if your project is picking up an old junit version");
+            }
+            throw new MojoFailureException("groups/excludedGroups require TestNG or JUunit48+ on project test classpath");
+
+        }
+    }
     class TestNgProviderInfo
         implements ProviderInfo
     {
