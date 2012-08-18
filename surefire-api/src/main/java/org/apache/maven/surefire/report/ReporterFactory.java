@@ -28,8 +28,7 @@ import org.apache.maven.surefire.suite.RunResult;
 public interface ReporterFactory
 {
     /**
-     * Creates a reporter. The reporter is a singleton that is expected to be
-     * used in the provider.
+     * Creates a reporter.
      *
      * @return A reporter instance
      */

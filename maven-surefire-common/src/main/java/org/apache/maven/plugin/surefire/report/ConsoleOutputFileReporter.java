@@ -56,19 +56,22 @@ public class ConsoleOutputFileReporter
 
     public void testSetStarting( ReportEntry reportEntry )
     {
+        close();
         this.reportEntryName = reportEntry.getName();
     }
 
     public void testSetCompleted( ReportEntry report )
         throws ReporterException
     {
+    }
+
+    public void close(){
         if ( printWriter != null )
         {
             printWriter.close();
             printWriter = null;
         }
     }
-
     public void writeTestOutput( byte[] buf, int off, int len, boolean stdout )
     {
         try

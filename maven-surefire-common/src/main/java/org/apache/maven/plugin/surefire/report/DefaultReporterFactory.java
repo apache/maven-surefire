@@ -19,6 +19,9 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import org.apache.maven.plugin.surefire.StartupReportConfiguration;
 import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
 import org.apache.maven.surefire.report.DefaultDirectConsoleReporter;
@@ -46,6 +49,8 @@ public class DefaultReporterFactory
 
     private final StatisticsReporter statisticsReporter;
 
+    private final List<TestSetRunListener> listeners = Collections.synchronizedList(new ArrayList<TestSetRunListener>(  ));
+
     public DefaultReporterFactory( StartupReportConfiguration reportConfiguration )
     {
         this.reportConfiguration = reportConfiguration;
@@ -56,18 +61,25 @@ public class DefaultReporterFactory
 
     public RunListener createReporter()
     {
-        return new TestSetRunListener( reportConfiguration.instantiateConsoleReporter(),
-                                       reportConfiguration.instantiateFileReporter(),
-                                       reportConfiguration.instantiateStatelessXmlReporter(),
-                                       reportConfiguration.instantiateConsoleOutputFileReporter(), statisticsReporter,
-                                       globalStats, reportConfiguration.isTrimStackTrace(),
-                                       ConsoleReporter.PLAIN.equals( reportConfiguration.getReportFormat() ),
-                                       reportConfiguration.isBriefOrPlainFormat() );
+        TestSetRunListener testSetRunListener =
+            new TestSetRunListener( reportConfiguration.instantiateConsoleReporter(),
+                                    reportConfiguration.instantiateFileReporter(),
+                                    reportConfiguration.instantiateStatelessXmlReporter(),
+                                    reportConfiguration.instantiateConsoleOutputFileReporter(), statisticsReporter,
+                                    globalStats, reportConfiguration.isTrimStackTrace(),
+                                    ConsoleReporter.PLAIN.equals( reportConfiguration.getReportFormat() ),
+                                    reportConfiguration.isBriefOrPlainFormat() );
+        listeners.add( testSetRunListener );
+        return testSetRunListener;
     }
 
     public RunResult close()
     {
         runCompleted();
+        for ( TestSetRunListener listener : listeners )
+        {
+            listener.close();
+        }
         return globalStats.getRunResult();
     }
 

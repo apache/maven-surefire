@@ -68,7 +68,7 @@ public class ProviderFactory
     public static RunResult invokeProvider( Object testSet, ClassLoader testsClassLoader,
                                             ClassLoader surefireClassLoader, Object factory,
                                             ProviderConfiguration providerConfiguration, boolean insideFork,
-                                            StartupConfiguration startupConfiguration1 )
+                                            StartupConfiguration startupConfiguration1, boolean restoreStreams )
     {
         final PrintStream orgSystemOut = System.out;
         final PrintStream orgSystemErr = System.err;
@@ -94,7 +94,7 @@ public class ProviderFactory
         }
         finally
         {
-            if ( System.getSecurityManager() == null )
+            if ( restoreStreams && System.getSecurityManager() == null )
             {
                 System.setOut( orgSystemOut );
                 System.setErr( orgSystemErr );

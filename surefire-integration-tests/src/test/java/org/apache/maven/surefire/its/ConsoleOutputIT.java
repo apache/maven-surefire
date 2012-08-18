@@ -21,6 +21,7 @@ package org.apache.maven.surefire.its;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.TestFile;
 
 /**
  * Basic suite test using all known versions of JUnit 4.x
@@ -34,6 +35,9 @@ public class ConsoleOutputIT
     {
         final OutputValidator outputValidator =
             unpack( "/consoleOutput" ).redirectToFile( true ).setJUnitVersion( "4.7" ).executeTest();
-        outputValidator.getSurefireReportsFile( "consoleOutput.Test1-output.txt" ).assertContainsText( "SoutAgain" );
+        TestFile surefireReportsFile = outputValidator.getSurefireReportsFile( "consoleOutput.Test1-output.txt" );
+        surefireReportsFile.assertContainsText( "SoutAgain" );
+        surefireReportsFile.assertContainsText( "Printline in shutdown hook" );
     }
+
 }

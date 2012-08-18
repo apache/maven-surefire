@@ -239,4 +239,8 @@ public class TestSetRunListener
             : detailsForThis.getElapsedSinceTestSetStart(), getAsString( testStdOut ), getAsString( testStdErr ) );
     }
 
+    public void close()
+    {
+        if (consoleOutputReceiver != null) consoleOutputReceiver.close();
+    }
 }

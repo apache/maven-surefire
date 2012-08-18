@@ -78,7 +78,7 @@ public class InPluginVMSurefireStarter
         final Object factory = surefireReflector.createReportingReporterFactory( startupReportConfiguration );
 
         return ProviderFactory.invokeProvider( null, testsClassLoader, surefireClassLoader, factory,
-                                               providerConfiguration, false, startupConfiguration );
+                                               providerConfiguration, false, startupConfiguration, true );
     }
 
 }

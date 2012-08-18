@@ -98,7 +98,7 @@ public class ForkedBooter
     }
 
 
-    public static RunResult runSuitesInProcess( Object testSet, ClassLoader testsClassLoader,
+    private static RunResult runSuitesInProcess( Object testSet, ClassLoader testsClassLoader,
                                                 StartupConfiguration startupConfiguration,
                                                 ProviderConfiguration providerConfiguration,
                                                 PrintStream originalSystemOut )
@@ -113,7 +113,7 @@ public class ForkedBooter
             createForkingReporterFactory( surefireReflector, providerConfiguration, originalSystemOut );
 
         return ProviderFactory.invokeProvider( testSet, testsClassLoader, surefireClassLoader, factory,
-                                               providerConfiguration, true, startupConfiguration );
+                                               providerConfiguration, true, startupConfiguration, false );
     }
 
     private static Object createForkingReporterFactory( SurefireReflector surefireReflector,

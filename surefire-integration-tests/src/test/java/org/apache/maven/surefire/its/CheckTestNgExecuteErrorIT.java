@@ -20,6 +20,7 @@ package org.apache.maven.surefire.its;
  */
 
 import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.TestFile;
 
 /**
  * Test for checking that the output from a forked suite is properly captured even if the suite encounters a severe error.
@@ -33,7 +34,9 @@ public class CheckTestNgExecuteErrorIT
     public void testExecuteError()
         throws Exception
     {
-        unpack( "/testng-execute-error" ).executeTestWithFailure().verifyTextInLog(
-            "at org.apache.maven.surefire.testng.TestNGExecutor.run" );
+        TestFile surefireReportsFile =
+            unpack( "/testng-execute-error" ).executeTestWithFailure().getSurefireReportsFile(
+                "it.BasicTest-output.txt" );
+        surefireReportsFile.assertContainsText( "at org.apache.maven.surefire.testng.TestNGExecutor.run" );
     }
 }

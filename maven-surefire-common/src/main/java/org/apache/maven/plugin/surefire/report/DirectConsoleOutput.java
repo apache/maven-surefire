@@ -54,4 +54,9 @@ public class DirectConsoleOutput
 
     public void testSetCompleted(ReportEntry report) {
     }
+
+    public void close()
+    {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
 }
