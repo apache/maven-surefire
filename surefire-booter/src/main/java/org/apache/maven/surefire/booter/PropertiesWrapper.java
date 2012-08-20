@@ -23,6 +23,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import org.apache.maven.surefire.util.internal.StringUtils;
 
@@ -30,6 +31,7 @@ import org.apache.maven.surefire.util.internal.StringUtils;
  * @author Kristian Rosenvold
  */
 public class PropertiesWrapper
+    implements KeyValueSource
 {
     private final Properties properties;
 
@@ -183,4 +185,14 @@ public class PropertiesWrapper
         }
     }
 
+    public void copyTo( Map target )
+    {
+        Iterator iter = properties.keySet().iterator();
+        Object key;
+        while ( iter.hasNext() )
+        {
+            key = iter.next();
+            target.put( key, properties.get( key ) );
+        }
+    }
 }

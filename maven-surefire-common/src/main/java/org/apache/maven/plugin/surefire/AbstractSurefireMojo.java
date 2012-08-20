@@ -603,7 +603,7 @@ public abstract class AbstractSurefireMojo
     boolean verifyParameters()
         throws MojoFailureException, MojoExecutionException
     {
-        setProperties( new OrderedProperties( getProperties() ) );
+        setProperties( new SurefireProperties( getProperties() ) );
         if ( isSkipExecution() )
         {
             getLog().info( "Tests are skipped." );

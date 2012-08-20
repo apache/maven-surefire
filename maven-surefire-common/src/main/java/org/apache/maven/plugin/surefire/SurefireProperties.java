@@ -1,5 +1,4 @@
 package org.apache.maven.plugin.surefire;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -19,21 +18,119 @@ package org.apache.maven.plugin.surefire;
  * under the License.
  */
 
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Properties;
 import org.apache.maven.plugin.logging.Log;
+import org.apache.maven.surefire.booter.KeyValueSource;
 
 /**
- * A wrapper around java.util.Properties providing surefire-specific helper stuff
+ * A properties implementation that preserves insertion order.
  */
 public class SurefireProperties
-    extends Properties
+    extends Properties implements KeyValueSource
 {
+    private final LinkedHashSet<Object> items = new LinkedHashSet<Object>();
+
+    public SurefireProperties()
+    {
+    }
+
+    public SurefireProperties( Properties source )
+    {
+        if ( source != null )
+        {
+            this.putAll( source );
+        }
+    }
+
+    @Override
+    public synchronized Object put( Object key, Object value )
+    {
+        items.add( key );
+        return super.put( key, value );
+    }
+
+    @Override
+    public synchronized Object remove( Object key )
+    {
+        items.remove( key );
+        return super.remove( key );
+    }
+
+    @Override
+    public synchronized void clear()
+    {
+        items.clear();
+        super.clear();
+    }
+
+    public synchronized Enumeration<Object> keys()
+    {
+        return Collections.enumeration( items );
+    }
+
+    public void copyProperties( Properties source )
+    {
+        if ( source != null )
+        {
+            //noinspection unchecked
+            for ( Object key : source.keySet() )
+            {
+                Object value = source.get( key );
+                put( key, value );
+            }
+        }
+    }
+
+    private Iterable<Object> getStringKeySet()
+    {
+
+        //noinspection unchecked
+        return keySet();
+    }
+
+    public void showToLog( org.apache.maven.plugin.logging.Log log, String setting )
+    {
+        for ( Object key : getStringKeySet() )
+        {
+            String value = getProperty( (String) key );
+            log.debug( "Setting " + setting + " [" + key + "]=[" + value + "]" );
+        }
+    }
+
+    public void verifyLegalSystemProperties( org.apache.maven.plugin.logging.Log log )
+    {
+        for ( Object key : getStringKeySet() )
+        {
+            if ( "java.library.path".equals( key ) )
+            {
+                log.warn(
+                    "java.library.path cannot be set as system property, use <argLine>-Djava.library.path=...<argLine> instead" );
+            }
+        }
+    }
+
+
+    public void copyToSystemProperties()
+    {
+
+        //noinspection unchecked
+        for ( Object o : items )
+        {
+            String key = (String) o;
+            String value = getProperty( key );
+
+            System.setProperty( key, value );
+        }
+    }
 
     static SurefireProperties calculateEffectiveProperties( Properties systemProperties, File systemPropertiesFile,
                                                             Map<String, String> systemPropertyVariables,
@@ -44,7 +141,7 @@ public class SurefireProperties
 
         if ( systemPropertiesFile != null )
         {
-            Properties props = new OrderedProperties();
+            Properties props = new SurefireProperties();
             try
             {
                 InputStream fis = new FileInputStream( systemPropertiesFile );
@@ -79,19 +176,6 @@ public class SurefireProperties
         return result;
     }
 
-    public void copyProperties( Properties source )
-    {
-        if ( source != null )
-        {
-            //noinspection unchecked
-            for ( Object key : source.keySet() )
-            {
-                Object value = source.get( key );
-                put( key, value );
-            }
-        }
-    }
-
     public static void copyProperties( Properties target, Map<String, String> source )
     {
         if ( source != null )
@@ -108,44 +192,14 @@ public class SurefireProperties
         }
     }
 
-    public void copyToSystemProperties()
+    public void copyTo( Map target )
     {
-
-        //noinspection unchecked
-        for ( Object o : getStringKeySet() )
-        {
-            String key = (String) o;
-            String value = getProperty( key );
-
-            System.setProperty( key, value );
-        }
-    }
-
-    public void showToLog( org.apache.maven.plugin.logging.Log log, String setting )
-    {
-        for ( Object key : getStringKeySet() )
-        {
-            String value = getProperty( (String) key );
-            log.debug( "Setting " + setting + " [" + key + "]=[" + value + "]" );
-        }
-    }
-
-    private Iterable<Object> getStringKeySet()
-    {
-
-        //noinspection unchecked
-        return keySet();
-    }
-
-    public void verifyLegalSystemProperties( org.apache.maven.plugin.logging.Log log )
-    {
-        for ( Object key : getStringKeySet() )
-        {
-            if ( "java.library.path".equals( key ) )
-            {
-                log.warn(
-                    "java.library.path cannot be set as system property, use <argLine>-Djava.library.path=...<argLine> instead" );
-            }
+        Iterator iter = keySet().iterator();
+        Object key;
+        while(iter.hasNext()){
+            key = iter.next();
+            //noinspection unchecked
+            target.put(  key, get( key ));
         }
     }
 

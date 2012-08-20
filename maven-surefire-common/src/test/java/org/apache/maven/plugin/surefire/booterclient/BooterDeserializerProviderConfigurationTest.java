@@ -30,6 +30,7 @@ import java.util.Properties;
 import org.apache.maven.surefire.booter.BooterDeserializer;
 import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
 import org.apache.maven.surefire.booter.ClasspathConfiguration;
+import org.apache.maven.surefire.booter.PropertiesWrapper;
 import org.apache.maven.surefire.booter.ProviderConfiguration;
 import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.SystemPropertyManager;
@@ -171,7 +172,7 @@ public class BooterDeserializerProviderConfigurationTest
         throws IOException
     {
         final ForkConfiguration forkConfiguration = ForkConfigurationTest.getForkConfiguration( null, null );
-        Properties props = new Properties();
+        PropertiesWrapper props = new PropertiesWrapper( new Properties());
         BooterSerializer booterSerializer = new BooterSerializer( forkConfiguration );
         String aTest = "aTest";
         final File propsTest = booterSerializer.serialize( props, booterConfiguration, testProviderConfiguration, aTest);

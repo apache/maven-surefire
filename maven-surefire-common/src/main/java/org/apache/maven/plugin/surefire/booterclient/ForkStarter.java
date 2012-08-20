@@ -32,13 +32,15 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import org.apache.maven.plugin.surefire.CommonReflector;
-import org.apache.maven.plugin.surefire.StartupReportConfiguration;
 import org.apache.maven.plugin.surefire.SurefireProperties;
+import org.apache.maven.plugin.surefire.StartupReportConfiguration;
 import org.apache.maven.plugin.surefire.booterclient.output.ForkClient;
 import org.apache.maven.plugin.surefire.booterclient.output.ThreadedStreamConsumer;
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
 import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.ClasspathConfiguration;
+import org.apache.maven.surefire.booter.KeyValueSource;
+import org.apache.maven.surefire.booter.PropertiesWrapper;
 import org.apache.maven.surefire.booter.ProviderConfiguration;
 import org.apache.maven.surefire.booter.ProviderFactory;
 import org.apache.maven.surefire.booter.StartupConfiguration;
@@ -111,7 +113,7 @@ public class ForkStarter
             {
                 final ForkClient forkClient =
                     new ForkClient( fileReporterFactory, startupReportConfiguration.getTestVmSystemProperties() );
-                result = fork( null, providerProperties, forkClient, fileReporterFactory.getGlobalRunStatistics(),
+                result = fork( null, new PropertiesWrapper( providerProperties), forkClient, fileReporterFactory.getGlobalRunStatistics(),
                                effectiveSystemProperties );
             }
             else if ( ForkConfiguration.FORK_ALWAYS.equals( requestedForkMode ) )
@@ -158,7 +160,7 @@ public class ForkStarter
                     public RunResult call()
                         throws Exception
                     {
-                        return fork( testSet, properties, forkClient,
+                        return fork( testSet, new PropertiesWrapper( properties), forkClient,
                                      fileReporterFactory.getGlobalRunStatistics(),
                                      effectiveSystemProperties );
                     }
@@ -216,7 +218,7 @@ public class ForkStarter
     }
 
 
-    private RunResult fork( Object testSet, Properties providerProperties, ForkClient forkClient,
+    private RunResult fork( Object testSet, KeyValueSource providerProperties, ForkClient forkClient,
                             RunStatistics globalRunStatistics, SurefireProperties effectiveSystemProperties )
         throws SurefireBooterForkException
     {

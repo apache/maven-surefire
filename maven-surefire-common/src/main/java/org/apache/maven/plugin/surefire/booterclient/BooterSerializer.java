@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.util.Properties;
 import org.apache.maven.surefire.booter.BooterConstants;
 import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
+import org.apache.maven.surefire.booter.KeyValueSource;
 import org.apache.maven.surefire.booter.PropertiesWrapper;
 import org.apache.maven.surefire.booter.ProviderConfiguration;
 import org.apache.maven.surefire.booter.StartupConfiguration;
@@ -64,13 +65,13 @@ class BooterSerializer
     /*
     DOes not modify sourceProperties
      */
-    public File serialize(Properties sourceProperties, ProviderConfiguration booterConfiguration, StartupConfiguration providerConfiguration,
+    public File serialize(KeyValueSource sourceProperties, ProviderConfiguration booterConfiguration, StartupConfiguration providerConfiguration,
                           Object testSet)
         throws IOException
     {
 
         PropertiesWrapper properties = new PropertiesWrapper(new Properties(  ) );
-        properties.getProperties().putAll( sourceProperties );
+        sourceProperties.copyTo( properties.getProperties() );
 
         providerConfiguration.getClasspathConfiguration().addForkProperties( properties );
 

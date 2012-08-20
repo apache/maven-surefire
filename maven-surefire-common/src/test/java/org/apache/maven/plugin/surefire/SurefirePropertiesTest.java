@@ -26,14 +26,14 @@ import junit.framework.TestCase;
 /**
  * Tests the insertion-order preserving properties collection
  */
-public class OrderedPropertiesTest
+public class SurefirePropertiesTest
     extends TestCase
 {
 
     public void testKeys()
         throws Exception
     {
-        OrderedProperties orderedProperties = new OrderedProperties( null );
+        SurefireProperties orderedProperties = new SurefireProperties( null );
         orderedProperties.setProperty( "abc", "1" );
         orderedProperties.setProperty( "xyz", "1" );
         orderedProperties.setProperty( "efg", "1" );
@@ -48,7 +48,7 @@ public class OrderedPropertiesTest
     public void testKeysReinsert()
         throws Exception
     {
-        OrderedProperties orderedProperties = new OrderedProperties( null );
+        SurefireProperties orderedProperties = new SurefireProperties( null );
         orderedProperties.setProperty( "abc", "1" );
         orderedProperties.setProperty( "xyz", "1" );
         orderedProperties.setProperty( "efg", "1" );
@@ -67,7 +67,7 @@ public class OrderedPropertiesTest
         Properties src = new Properties();
         src.setProperty( "a", "1" );
         src.setProperty( "b", "2" );
-        OrderedProperties orderedProperties = new OrderedProperties( src );
+        SurefireProperties orderedProperties = new SurefireProperties( src );
         // Cannot make assumptions about insertion order
         assertEquals( 2, orderedProperties.size() );
 

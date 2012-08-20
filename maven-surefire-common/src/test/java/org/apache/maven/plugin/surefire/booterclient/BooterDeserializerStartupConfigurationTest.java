@@ -127,7 +127,7 @@ public class BooterDeserializerStartupConfigurationTest
         throws IOException
     {
         final ForkConfiguration forkConfiguration = ForkConfigurationTest.getForkConfiguration( null, null );
-        Properties props = new Properties();
+        PropertiesWrapper props = new PropertiesWrapper( new Properties());
         BooterSerializer booterSerializer = new BooterSerializer( forkConfiguration );
         String aTest = "aTest";
         final File propsTest  = booterSerializer.serialize( props, getProviderConfiguration(), startupConfiguration, aTest);
