@@ -151,12 +151,7 @@ public abstract class ConcurrentReporterManager
 
     TestSet getTestSet( ReportEntry description )
     {
-        TestSet testSet = classMethodCounts.get( description.getSourceName() );
-        if ( testSet == null )
-        {
-            testSet = classMethodCounts.get( ClassDemarcatingRunner.getCurrentTestClass() );
-        }
-        return testSet;
+        return classMethodCounts.get( description.getSourceName() );
     }
 
     RunListener getRunListener()
@@ -195,17 +190,8 @@ public abstract class ConcurrentReporterManager
         }
         else
         {
-            String currentTestClassName = ClassDemarcatingRunner.getCurrentTestClass();
-            TestSet testSet = currentTestClassName != null ? classMethodCounts.get( currentTestClassName ) : null;
-            if ( testSet != null )
-            {
-                testSet.getClassLevelLogicalStream().write( stdout, buf, off, len );
-            }
-            else
-            {
-                // Not able to assocaite output with any thread. Just dump to console
-                consoleLogger.info( new String( buf, off, len ) );
-            }
+            // Not able to assocaite output with any thread. Just dump to console
+            consoleLogger.info( new String( buf, off, len ) );
         }
     }
 
