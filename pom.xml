@@ -273,6 +273,25 @@
           <artifactId>maven-plugin-plugin</artifactId>
           <version>${mavenPluginPluginVersion}</version>
         </plugin>
+        <plugin>
+          <groupId>org.apache.rat</groupId>
+          <artifactId>apache-rat-plugin</artifactId>
+          <configuration>
+            <excludes>
+              <exclude>.git/**/*</exclude>
+              <exclude>**/.idea</exclude>
+              <exclude>**/.svn/**/*</exclude>
+              <exclude>src/test/resources/**/*</exclude>
+              <exclude>**/*.jj</exclude>
+              <exclude>src/test/resources/**/*.css</exclude>
+              <exclude>**/*.iml</exclude>
+              <exclude>**/*.ipr</exclude>
+              <exclude>**/*.iws</exclude>
+              <exclude>**/*.versionsBackup</exclude>
+              <exclude>.gitignore</exclude>
+              <exclude>src/main/resources/META-INF/services/org.apache.maven.surefire.providerapi.SurefireProvider</exclude>
+            </excludes>
+          </configuration>        </plugin>
       </plugins>
     </pluginManagement>
   </build>
