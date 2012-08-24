@@ -632,6 +632,7 @@ public abstract class AbstractSurefireMojo
         {
             ensureWorkingDirectoryExists();
             ensureParallelRunningCompatibility();
+            ensureThreadCountWithPerThread();
             warnIfUselessUseSystemClassLoaderParameter();
             warnIfDefunctGroupsCombinations();
         }
@@ -1638,6 +1639,15 @@ public abstract class AbstractSurefireMojo
         if ( isMavenParallel() && isForkModeNever() )
         {
             throw new MojoFailureException( "parallel maven execution is not compatible with surefire forkmode NEVER" );
+        }
+    }
+
+    void ensureThreadCountWithPerThread()
+        throws MojoFailureException
+    {
+        if ( ForkConfiguration.FORK_PERTHREAD.equals( getEffectiveForkMode() ) && getThreadCount() < 1 )
+        {
+            throw new MojoFailureException( "Fork mode perthread requires a thread count" );
         }
     }
 

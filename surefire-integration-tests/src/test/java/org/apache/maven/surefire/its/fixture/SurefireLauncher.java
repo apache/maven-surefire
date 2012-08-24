@@ -379,6 +379,10 @@ public class SurefireLauncher
     {
         return forkMode( "pertest" );
     }
+    public SurefireLauncher forkPerThread()
+    {
+        return forkMode( "perthread" );
+    }
 
     public SurefireLauncher forkMode( String forkMode )
     {
