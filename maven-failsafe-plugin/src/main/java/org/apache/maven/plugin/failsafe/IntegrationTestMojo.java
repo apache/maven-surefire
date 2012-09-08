@@ -29,7 +29,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.List;
-import java.util.Properties;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.surefire.AbstractSurefireMojo;
@@ -39,7 +38,6 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
-import org.apache.maven.project.MavenProject;
 import org.apache.maven.surefire.booter.ProviderConfiguration;
 import org.apache.maven.surefire.failsafe.model.FailsafeSummary;
 import org.apache.maven.surefire.failsafe.model.io.xpp3.FailsafeSummaryXpp3Reader;
@@ -148,13 +146,6 @@ public class IntegrationTestMojo
     @Parameter( property = "failsafe.timeout" )
     private int forkedProcessTimeoutInSeconds;
 
-
-    private Properties originalSystemProperties;
-
-    /**
-     * systemPropertyVariables + systemProperties
-     */
-    private Properties internalSystemProperties = new Properties();
 
     /**
      * Option to pass dependencies to the system's classloader instead of using an isolated class loader when forking.
@@ -313,11 +304,13 @@ public class IntegrationTestMojo
         this.skipITs = skipITs;
     }
 
+    @Deprecated
     public boolean isSkipExec()
     {
         return skipExec;
     }
 
+    @Deprecated
     public void setSkipExec( boolean skipExec )
     {
         this.skipExec = skipExec;
