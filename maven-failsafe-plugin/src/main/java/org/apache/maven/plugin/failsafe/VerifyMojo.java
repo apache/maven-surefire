@@ -183,9 +183,9 @@ public class VerifyMojo
                 }
                 if ( summaryFiles != null )
                 {
-                    for ( int i = 0; i < summaryFiles.length; i++ )
+                    for ( File file : summaryFiles )
                     {
-                        summary.merge( readSummary( encoding, summaryFiles[i] ) );
+                        summary.merge( readSummary( encoding, file ) );
                     }
                 }
                 result = summary.getResult();
@@ -277,11 +277,13 @@ public class VerifyMojo
         this.skipITs = skipITs;
     }
 
+    @Deprecated
     public boolean isSkipExec()
     {
         return skipExec;
     }
 
+    @Deprecated
     public void setSkipExec( boolean skipExec )
     {
         this.skipExec = skipExec;
