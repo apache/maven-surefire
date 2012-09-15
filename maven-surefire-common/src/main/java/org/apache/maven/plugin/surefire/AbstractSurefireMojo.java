@@ -877,7 +877,12 @@ public abstract class AbstractSurefireMojo
 
     boolean isForkModeNever()
     {
-        return ForkConfiguration.FORK_NEVER.equals( getEffectiveForkMode() );
+        return isForkModeNever( getEffectiveForkMode() );
+    }
+
+    static boolean isForkModeNever(String forkMode)
+    {
+        return ForkConfiguration.FORK_NEVER.equals( forkMode );
     }
 
     boolean isForking()
@@ -885,11 +890,11 @@ public abstract class AbstractSurefireMojo
         return !isForkModeNever();
     }
 
-    private String getEffectiveForkMode()
+    String getEffectiveForkMode()
     {
         String forkMode1 = getForkMode();
 
-        if ( toolchain != null && isForkModeNever() )
+        if ( toolchain != null && isForkModeNever(forkMode1) )
         {
             return ForkConfiguration.FORK_ONCE;
         }
