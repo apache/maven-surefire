@@ -47,7 +47,7 @@ public class TestNgGroupsIT
     @Test
     public void groupsWithDash()
     {
-        unpack().setGroups( "abc-def" ).executeTest().verifyErrorFree( 2 );
+        unpack().setGroups( "abc-def" ).executeTest().verifyErrorFree( 0 );
     }
 
     public SurefireLauncher unpack()
