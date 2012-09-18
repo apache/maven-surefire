@@ -97,9 +97,9 @@
   </modules>
 
   <scm>
-    <connection>scm:git:https://git-wip-us.apache.org/repos/asf?p=maven-surefire</connection>
-    <developerConnection>scm:svn:https://git-wip-us.apache.org/repos/asf?p=maven-surefire</developerConnection>
-    <url>http://svn.apache.org/viewcvs.cgi/maven/surefire/trunk</url>
+    <connection>scm:git:https://git-wip-us.apache.org/repos/asf/maven-surefire.git</connection>
+    <developerConnection>scm:git:https://git-wip-us.apache.org/repos/asf/maven-surefire.git</developerConnection>
+    <url>https://git-wip-us.apache.org/repos/asf?p=maven-surefire</url>
   </scm>
   <issueManagement>
     <system>jira</system>
