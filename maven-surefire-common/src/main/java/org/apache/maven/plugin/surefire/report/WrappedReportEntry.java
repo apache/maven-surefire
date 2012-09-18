@@ -147,7 +147,7 @@ public class WrappedReportEntry implements ReportEntry
         StringBuilder reportContent = new StringBuilder();
         reportContent.append( getName() );
         reportContent.append( "  Time elapsed: " );
-        reportContent.append( getElapsed() );
+        reportContent.append( elapsedTimeAsString() );
         reportContent.append( " sec" );
 
         return reportContent.toString();
