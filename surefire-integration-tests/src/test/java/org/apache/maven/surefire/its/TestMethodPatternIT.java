@@ -24,7 +24,7 @@ import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
 /**
  * Test project using -Dtest=mtClass#myMethod
  *
- * @author <a href="mailto:olamy@apache.org">Olivier Lamy</a>
+ * @author Olivier Lamy
  */
 public class TestMethodPatternIT
     extends SurefireIntegrationTestCase
