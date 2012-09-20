@@ -34,7 +34,7 @@ import org.apache.maven.surefire.suite.RunResult;
  * @author Jason van Zyl
  * @author Emmanuel Venisse
  * @author Kristian Rosenvold
- * @version $Id$
+ *
  */
 public class ForkedBooter
 {

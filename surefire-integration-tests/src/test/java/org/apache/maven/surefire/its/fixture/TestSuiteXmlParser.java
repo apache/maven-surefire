@@ -40,7 +40,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
- * @version $Id$
+ *
  */
 public class TestSuiteXmlParser
     extends DefaultHandler

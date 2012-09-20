@@ -31,7 +31,7 @@ import org.apache.maven.project.MavenProject;
  * See <a href="http://jira.codehaus.org/browse/SUREFIRE-257">http://jira.codehaus.org/browse/SUREFIRE-257</a>
  *
  * @author Stephen Connolly
- * @version $Id$
+ *
  * @goal failsafe-report-only
  * @execute phase="validate" lifecycle="surefire"
  * @since 2.10

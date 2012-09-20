@@ -23,7 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @version $Id$
+ *
  */
 public class ReportTestCase
 {

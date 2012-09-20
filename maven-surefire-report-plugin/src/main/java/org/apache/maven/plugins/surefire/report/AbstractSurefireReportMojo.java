@@ -37,7 +37,7 @@ import org.codehaus.plexus.util.StringUtils;
  * Abstract base class for reporting test results using Surefire.
  *
  * @author Stephen Connolly
- * @version $Id$
+ *
  */
 public abstract class AbstractSurefireReportMojo
     extends AbstractMavenReport

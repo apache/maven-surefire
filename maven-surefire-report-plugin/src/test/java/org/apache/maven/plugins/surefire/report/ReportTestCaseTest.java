@@ -23,7 +23,7 @@ import junit.framework.TestCase;
 
 /**
  * @author Jontri
- * @version $Id$
+ *
  */
 public class ReportTestCaseTest
     extends TestCase

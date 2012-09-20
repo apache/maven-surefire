@@ -34,7 +34,7 @@ import org.codehaus.plexus.util.StringUtils;
  * Run tests using Surefire.
  *
  * @author Jason van Zyl
- * @version $Id$
+ *
  * @noinspection JavaDoc
  */
 @Mojo( name = "test", defaultPhase = LifecyclePhase.TEST, threadSafe = true,

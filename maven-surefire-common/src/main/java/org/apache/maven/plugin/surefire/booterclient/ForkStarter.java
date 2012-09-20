@@ -70,7 +70,7 @@ import org.codehaus.plexus.util.cli.Commandline;
  * @author Dan Fabulich
  * @author Carlos Sanchez
  * @author Kristian Rosenvold
- * @version $Id$
+ *
  */
 public class ForkStarter
 {

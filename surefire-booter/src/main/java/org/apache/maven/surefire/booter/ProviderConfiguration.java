@@ -36,7 +36,7 @@ import org.apache.maven.surefire.testset.TestRequest;
  * @author Jason van Zyl
  * @author Emmanuel Venisse
  * @author Kristian Rosenvold
- * @version $Id$
+ *
  */
 public class ProviderConfiguration
 {

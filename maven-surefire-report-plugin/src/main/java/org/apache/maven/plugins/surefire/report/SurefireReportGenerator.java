@@ -35,7 +35,7 @@ import org.apache.maven.doxia.sink.SinkEventAttributes;
 import org.apache.maven.reporting.MavenReportException;
 
 /**
- * @version $Id$
+ *
  */
 public class SurefireReportGenerator
 {

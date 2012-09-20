@@ -50,7 +50,7 @@ import org.apache.maven.surefire.util.RunOrder;
  * @author Brett Porter
  * @author Dan Fabulich
  * @author Kristian Rosenvold
- * @version $Id$
+ *
  */
 class BooterSerializer
 {

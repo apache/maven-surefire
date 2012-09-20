@@ -25,7 +25,7 @@ import java.util.List;
 import junit.framework.TestCase;
 
 /**
- * @version $Id$
+ *
  */
 public class ReportTestSuiteTest
     extends TestCase

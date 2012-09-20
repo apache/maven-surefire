@@ -32,7 +32,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.xml.sax.SAXException;
 
 /**
- * @version $Id$
+ *
  */
 public class SurefireReportParser
 {

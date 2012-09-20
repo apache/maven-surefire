@@ -27,7 +27,7 @@ import org.apache.maven.project.MavenProject;
  * Creates a nicely formatted Surefire Test Report in html format.
  *
  * @author <a href="mailto:jruiz@exist.com">Johnny R. Ruiz III</a>
- * @version $Id$
+ *
  * @goal report
  * @execute phase="test" lifecycle="surefire"
  */

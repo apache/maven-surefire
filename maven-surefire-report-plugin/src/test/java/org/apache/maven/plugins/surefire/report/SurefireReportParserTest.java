@@ -34,7 +34,7 @@ import org.apache.maven.reporting.MavenReportException;
 import junit.framework.TestCase;
 
 /**
- * @version $Id$
+ *
  */
 public class SurefireReportParserTest
     extends TestCase
