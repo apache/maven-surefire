@@ -75,7 +75,11 @@ public abstract class ConcurrentReporterManager
 
     public void testFailed( ReportEntry failure )
     {
-        getOrCreateTestMethod( failure ).testFailure( failure );
+    	final TestMethod testMethod = getOrCreateTestMethod( failure );
+        if (testMethod != null)
+        {
+        	testMethod.testFailure( failure );
+        }
     }
 
     public void testError( ReportEntry failure )
@@ -97,7 +101,11 @@ public abstract class ConcurrentReporterManager
 
     public void testAssumptionFailure( ReportEntry failure )
     {
-        getOrCreateTestMethod( failure ).testIgnored( failure );
+    	final TestMethod testMethod = getOrCreateTestMethod( failure );
+    	if (testMethod != null)
+        {
+    		testMethod.testIgnored( failure );
+        }
     }
 
     public void testStarting( ReportEntry description )
