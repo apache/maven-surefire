@@ -50,11 +50,12 @@ public class RunEntryStatisticsMapTest
         throws IOException
     {
         final RunEntryStatisticsMap runEntryStatisticsMap = RunEntryStatisticsMap.fromReader( getStatisticsFile() );
-        final List<?> list = Arrays.asList( new Class[]{ A.class, B.class, C.class } );
+        final List<?> list = Arrays.asList( A.class, B.class, NewClass.class, C.class );
         final List<?> prioritizedTestsClassRunTime = runEntryStatisticsMap.getPrioritizedTestsByFailureFirst( list );
         assertEquals( A.class, prioritizedTestsClassRunTime.get( 0 ) );
-        assertEquals( C.class, prioritizedTestsClassRunTime.get( 1 ) );
-        assertEquals( B.class, prioritizedTestsClassRunTime.get( 2 ) );
+        assertEquals( NewClass.class, prioritizedTestsClassRunTime.get( 1 ) );
+        assertEquals( C.class, prioritizedTestsClassRunTime.get( 2 ) );
+        assertEquals( B.class, prioritizedTestsClassRunTime.get( 3 ) );
     }
 
     private StringReader getStatisticsFile()
@@ -103,5 +104,8 @@ public class RunEntryStatisticsMapTest
     class C
     {
     }
-
+    
+    class NewClass
+    {
+    }
 }

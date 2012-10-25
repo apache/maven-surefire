@@ -37,10 +37,15 @@ public class Priority
         this.className = className;
     }
 
-    public static Priority lowest( String className )
+    /**
+     * Returns a priority that applies to a new testclass (that has never been run/recorded)
+     * @param className The class name
+     * @return A priority
+     */
+    public static Priority newTestClassPriority( String className )
     {
         Priority priority1 = new Priority( className );
-        priority1.setPriority( Integer.MAX_VALUE );
+        priority1.setPriority( 0 );
         priority1.minSuccessRate = 0;
         return priority1;
     }
@@ -50,6 +55,7 @@ public class Priority
         totalRuntime += itemStat.getRunTime();
         minSuccessRate = Math.min( minSuccessRate, itemStat.getSuccessfulBuilds() );
     }
+
 
     public int getTotalRuntime()
     {

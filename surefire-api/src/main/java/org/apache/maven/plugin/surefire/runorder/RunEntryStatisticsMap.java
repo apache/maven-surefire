@@ -185,7 +185,7 @@ public class RunEntryStatisticsMap
             Priority pri = (Priority) classPriorities.get( clazz.getName() );
             if ( pri == null )
             {
-                pri = Priority.lowest( clazz.getName() );
+                pri = Priority.newTestClassPriority( clazz.getName() );
             }
             PrioritizedTest prioritizedTest = new PrioritizedTest( clazz, pri );
             tests.add( prioritizedTest );
