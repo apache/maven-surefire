@@ -24,19 +24,23 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Properties;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import org.apache.maven.plugin.surefire.CommonReflector;
-import org.apache.maven.plugin.surefire.SurefireProperties;
 import org.apache.maven.plugin.surefire.StartupReportConfiguration;
+import org.apache.maven.plugin.surefire.SurefireProperties;
 import org.apache.maven.plugin.surefire.booterclient.output.ForkClient;
 import org.apache.maven.plugin.surefire.booterclient.output.ThreadedStreamConsumer;
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
+import org.apache.maven.shared.utils.cli.CommandLineException;
+import org.apache.maven.shared.utils.cli.CommandLineTimeOutException;
+import org.apache.maven.shared.utils.cli.CommandLineUtils;
+import org.apache.maven.shared.utils.cli.Commandline;
 import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.ClasspathConfiguration;
 import org.apache.maven.surefire.booter.KeyValueSource;
@@ -51,10 +55,6 @@ import org.apache.maven.surefire.providerapi.SurefireProvider;
 import org.apache.maven.surefire.report.RunStatistics;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.util.DefaultScanResult;
-import org.apache.maven.shared.utils.cli.CommandLineException;
-import org.apache.maven.shared.utils.cli.CommandLineTimeOutException;
-import org.apache.maven.shared.utils.cli.CommandLineUtils;
-import org.apache.maven.shared.utils.cli.Commandline;
 
 
 /**
@@ -70,7 +70,6 @@ import org.apache.maven.shared.utils.cli.Commandline;
  * @author Dan Fabulich
  * @author Carlos Sanchez
  * @author Kristian Rosenvold
- *
  */
 public class ForkStarter
 {
@@ -101,7 +100,8 @@ public class ForkStarter
         fileReporterFactory = new DefaultReporterFactory( startupReportConfiguration );
     }
 
-    public RunResult run( SurefireProperties effectiveSystemProperties, DefaultScanResult scanResult, String requestedForkMode )
+    public RunResult run( SurefireProperties effectiveSystemProperties, DefaultScanResult scanResult,
+                          String requestedForkMode )
         throws SurefireBooterForkException, SurefireExecutionException
     {
         final RunResult result;
@@ -113,8 +113,8 @@ public class ForkStarter
             {
                 final ForkClient forkClient =
                     new ForkClient( fileReporterFactory, startupReportConfiguration.getTestVmSystemProperties() );
-                result = fork( null, new PropertiesWrapper( providerProperties), forkClient, fileReporterFactory.getGlobalRunStatistics(),
-                               effectiveSystemProperties );
+                result = fork( null, new PropertiesWrapper( providerProperties ), forkClient,
+                               fileReporterFactory.getGlobalRunStatistics(), effectiveSystemProperties );
             }
             else if ( ForkConfiguration.FORK_ALWAYS.equals( requestedForkMode ) )
             {
@@ -122,7 +122,8 @@ public class ForkStarter
             }
             else if ( ForkConfiguration.FORK_PERTHREAD.equals( requestedForkMode ) )
             {
-                result = runSuitesForkPerTestSet( providerProperties, effectiveSystemProperties, forkConfiguration.getForkCount() );
+                result = runSuitesForkPerTestSet( providerProperties, effectiveSystemProperties,
+                                                  forkConfiguration.getForkCount() );
             }
             else
             {
@@ -142,8 +143,8 @@ public class ForkStarter
     {
 
         ArrayList<Future<RunResult>> results = new ArrayList<Future<RunResult>>( 500 );
-        ExecutorService executorService = new ThreadPoolExecutor( forkCount, forkCount, 60, TimeUnit.SECONDS,
-                                                                  new ArrayBlockingQueue<Runnable>( 500 ) );
+        ExecutorService executorService =
+            new ThreadPoolExecutor( forkCount, forkCount, 60, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>() );
 
         try
         {
@@ -160,9 +161,8 @@ public class ForkStarter
                     public RunResult call()
                         throws Exception
                     {
-                        return fork( testSet, new PropertiesWrapper( properties), forkClient,
-                                     fileReporterFactory.getGlobalRunStatistics(),
-                                     effectiveSystemProperties );
+                        return fork( testSet, new PropertiesWrapper( properties ), forkClient,
+                                     fileReporterFactory.getGlobalRunStatistics(), effectiveSystemProperties );
                     }
                 };
                 results.add( executorService.submit( pf ) );
@@ -228,7 +228,8 @@ public class ForkStarter
         {
             BooterSerializer booterSerializer = new BooterSerializer( forkConfiguration );
 
-            surefireProperties = booterSerializer.serialize( providerProperties, providerConfiguration, startupConfiguration, testSet );
+            surefireProperties =
+                booterSerializer.serialize( providerProperties, providerConfiguration, startupConfiguration, testSet );
 
             if ( effectiveSystemProperties != null )
             {
