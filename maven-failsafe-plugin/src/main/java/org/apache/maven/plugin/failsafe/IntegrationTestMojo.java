@@ -107,6 +107,7 @@ public class IntegrationTestMojo
 
     /**
      * Selects the formatting for the test report to be generated. Can be set as "brief" or "plain".
+     * Only applies to the output format of the output files  (target/surefire-reports/testName.txt)
      */
     @Parameter( property = "failsafe.reportFormat", defaultValue = "brief" )
     private String reportFormat;

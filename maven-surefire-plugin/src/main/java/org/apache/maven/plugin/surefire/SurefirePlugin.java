@@ -79,6 +79,7 @@ public class SurefirePlugin
 
     /**
      * Selects the formatting for the test report to be generated. Can be set as "brief" or "plain".
+     * Only applies to the output format of the output files  (target/surefire-reports/testName.txt)
      */
     @Parameter( property = "surefire.reportFormat", defaultValue = "brief" )
     private String reportFormat;
