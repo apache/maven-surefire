@@ -19,6 +19,9 @@ package org.apache.maven.plugin.surefire;
  * under the License.
  */
 
+import java.io.File;
+import java.io.PrintStream;
+import java.util.Properties;
 import org.apache.maven.plugin.surefire.report.ConsoleOutputFileReporter;
 import org.apache.maven.plugin.surefire.report.ConsoleReporter;
 import org.apache.maven.plugin.surefire.report.DirectConsoleOutput;
@@ -26,10 +29,6 @@ import org.apache.maven.plugin.surefire.report.FileReporter;
 import org.apache.maven.plugin.surefire.report.StatelessXmlReporter;
 import org.apache.maven.plugin.surefire.report.TestcycleConsoleOutputReceiver;
 import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
-
-import java.io.File;
-import java.io.PrintStream;
-import java.util.Properties;
 
 /**
  * All the parameters used to construct reporters
@@ -148,40 +147,27 @@ public class StartupReportConfiguration
 
     public FileReporter instantiateFileReporter()
     {
-        if ( isUseFile() )
+        if ( isUseFile() && isBriefOrPlainFormat() )
         {
-            if ( BRIEF_REPORT_FORMAT.equals( getReportFormat() ) )
-            {
-                return new FileReporter( reportsDirectory, getReportNameSuffix() );
-            }
-            else if ( PLAIN_REPORT_FORMAT.equals( getReportFormat() ) )
-            {
-                return new FileReporter( reportsDirectory, getReportNameSuffix() );
-            }
+            return new FileReporter( reportsDirectory, getReportNameSuffix() );
         }
         return null;
     }
 
     public boolean isBriefOrPlainFormat()
     {
-        return BRIEF_REPORT_FORMAT.equals( getReportFormat() ) || PLAIN_REPORT_FORMAT.equals( getReportFormat() );
+        String fmt = getReportFormat();
+        return BRIEF_REPORT_FORMAT.equals( fmt ) || PLAIN_REPORT_FORMAT.equals( fmt );
     }
 
     public ConsoleReporter instantiateConsoleReporter()
     {
-        if ( isUseFile() )
-        {
-            return isPrintSummary() ? new ConsoleReporter() : null;
-        }
-        else if ( isRedirectTestOutputToFile() || BRIEF_REPORT_FORMAT.equals( getReportFormat() ) )
-        {
-            return new ConsoleReporter();
-        }
-        else if ( PLAIN_REPORT_FORMAT.equals( getReportFormat() ) )
-        {
-            return new ConsoleReporter();
-        }
-        return null;
+        return shouldReportToConsole() ? new ConsoleReporter() : null;
+    }
+
+    private boolean shouldReportToConsole()
+    {
+        return isUseFile() ? isPrintSummary() : isRedirectTestOutputToFile() || isBriefOrPlainFormat();
     }
 
     public TestcycleConsoleOutputReceiver instantiateConsoleOutputFileReporter()
