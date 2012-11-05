@@ -28,7 +28,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.surefire.suite.RunResult;
-import org.codehaus.plexus.util.StringUtils;
+import org.apache.maven.surefire.util.internal.StringUtils;
 
 /**
  * Run tests using Surefire.

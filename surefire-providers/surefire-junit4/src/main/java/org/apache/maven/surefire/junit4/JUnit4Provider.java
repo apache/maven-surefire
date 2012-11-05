@@ -22,6 +22,7 @@ package org.apache.maven.surefire.junit4;
 import java.lang.reflect.Method;
 import java.util.Iterator;
 import java.util.List;
+import org.apache.maven.shared.utils.io.SelectorUtils;
 import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
 import org.apache.maven.surefire.common.junit4.JUnit4RunListenerFactory;
 import org.apache.maven.surefire.common.junit4.JUnit4TestChecker;
@@ -41,7 +42,6 @@ import org.apache.maven.surefire.util.RunOrderCalculator;
 import org.apache.maven.surefire.util.ScanResult;
 import org.apache.maven.surefire.util.TestsToRun;
 import org.apache.maven.surefire.util.internal.StringUtils;
-import org.codehaus.plexus.util.SelectorUtils;
 
 import org.junit.runner.Request;
 import org.junit.runner.Result;

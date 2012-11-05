@@ -38,10 +38,10 @@
       <version>3.8.2</version>
       <scope>provided</scope>
     </dependency>
-    <dependency>
-      <groupId>org.codehaus.plexus</groupId>
-      <artifactId>plexus-utils</artifactId>
-    </dependency>
+      <dependency>
+          <groupId>org.apache.maven.shared</groupId>
+          <artifactId>maven-shared-utils</artifactId>
+      </dependency>
     <dependency>
       <groupId>org.apache.maven.surefire</groupId>
       <artifactId>surefire-grouper</artifactId>
@@ -63,13 +63,13 @@
               <minimizeJar>true</minimizeJar>
               <artifactSet>
                 <includes>
-                  <include>org.codehaus.plexus:plexus-utils</include>
+                  <include>org.apache.maven.shared:maven-shared-utils</include>
                 </includes>
               </artifactSet>
               <relocations>
                 <relocation>
-                  <pattern>org.codehaus.plexus.util</pattern>
-                  <shadedPattern>org.apache.maven.surefire.shade.org.codehaus.plexus.util</shadedPattern>
+                  <pattern>org.apache.maven.shared</pattern>
+                  <shadedPattern>org.apache.maven.surefire.shade.org.apache.maven.shared</shadedPattern>
                 </relocation>
               </relocations>
             </configuration>

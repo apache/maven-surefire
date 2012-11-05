@@ -22,20 +22,19 @@ package org.apache.maven.plugin.surefire.booterclient;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import org.apache.maven.plugin.surefire.util.Relocator;
+import org.apache.maven.shared.utils.StringUtils;
+import org.apache.maven.shared.utils.cli.Commandline;
 import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
 import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.ForkedBooter;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.apache.maven.surefire.util.UrlUtils;
-import org.codehaus.plexus.util.StringUtils;
-import org.codehaus.plexus.util.cli.Commandline;
 
 /**
  * Configuration for forking tests.
@@ -92,7 +91,7 @@ public class ForkConfiguration
         return bootClasspathConfiguration;
     }
 
-    public static String getEffectiveForkMode(String forkMode)
+    public static String getEffectiveForkMode( String forkMode )
     {
         if ( "pertest".equalsIgnoreCase( forkMode ) )
         {

@@ -38,16 +38,17 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.apache.maven.shared.utils.StringUtils;
 import org.apache.maven.surefire.booter.ProviderConfiguration;
 import org.apache.maven.surefire.failsafe.model.FailsafeSummary;
 import org.apache.maven.surefire.failsafe.model.io.xpp3.FailsafeSummaryXpp3Reader;
 import org.apache.maven.surefire.failsafe.model.io.xpp3.FailsafeSummaryXpp3Writer;
 import org.apache.maven.surefire.suite.RunResult;
-import org.codehaus.plexus.util.ReaderFactory;
-import org.codehaus.plexus.util.StringUtils;
+import org.apache.maven.shared.utils.ReaderFactory;
+
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 
-import static org.codehaus.plexus.util.IOUtil.close;
+import static org.apache.maven.shared.utils.io.IOUtil.close;
 
 /**
  * Run integration tests using Surefire.

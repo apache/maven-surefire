@@ -22,7 +22,7 @@ package org.apache.maven.plugin.surefire.util;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import org.codehaus.plexus.util.SelectorUtils;
+import org.apache.maven.shared.utils.io.SelectorUtils;
 
 public class SpecificFileFilter
 {

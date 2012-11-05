@@ -18,7 +18,8 @@
   ~ under the License.
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -51,8 +52,8 @@
       <artifactId>surefire-booter</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.codehaus.plexus</groupId>
-      <artifactId>plexus-utils</artifactId>
+      <groupId>org.apache.maven.shared</groupId>
+      <artifactId>maven-shared-utils</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>
@@ -119,13 +120,14 @@
               <minimizeJar>true</minimizeJar>
               <artifactSet>
                 <includes>
-                  <include>org.codehaus.plexus:plexus-utils</include>
+                  <include>org.apache.maven.shared:maven-shared-utils</include>
+                  <include>org.apache.maven.shared:maven-common-artifact-filters</include>
                 </includes>
               </artifactSet>
               <relocations>
                 <relocation>
-                  <pattern>org.codehaus.plexus.util.xml</pattern>
-                  <shadedPattern>org.apache.maven.plugin.surefire.report.plexus.util.xml</shadedPattern>
+                  <pattern>org.apache.maven.shared</pattern>
+                  <shadedPattern>org.apache.maven.surefire.shade.org.apache.maven.shared</shadedPattern>
                 </relocation>
               </relocations>
             </configuration>

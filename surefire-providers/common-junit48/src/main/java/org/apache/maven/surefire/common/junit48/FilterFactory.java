@@ -27,13 +27,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import org.apache.maven.shared.utils.io.SelectorUtils;
 import org.apache.maven.surefire.booter.ProviderParameterNames;
 import org.apache.maven.surefire.group.match.AndGroupMatcher;
 import org.apache.maven.surefire.group.match.GroupMatcher;
 import org.apache.maven.surefire.group.match.InverseGroupMatcher;
 import org.apache.maven.surefire.group.parse.GroupMatcherParser;
 import org.apache.maven.surefire.group.parse.ParseException;
-import org.codehaus.plexus.util.SelectorUtils;
 
 import org.junit.experimental.categories.Category;
 import org.junit.runner.Description;

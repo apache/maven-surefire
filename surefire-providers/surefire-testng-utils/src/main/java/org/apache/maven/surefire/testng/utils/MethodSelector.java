@@ -20,7 +20,7 @@ package org.apache.maven.surefire.testng.utils;
  */
 
 import java.util.List;
-import org.codehaus.plexus.util.SelectorUtils;
+import org.apache.maven.shared.utils.io.SelectorUtils;
 
 import org.testng.IMethodSelector;
 import org.testng.IMethodSelectorContext;

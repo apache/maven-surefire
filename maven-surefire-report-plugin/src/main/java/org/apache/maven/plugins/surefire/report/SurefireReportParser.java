@@ -31,8 +31,8 @@ import java.util.ListIterator;
 import java.util.Locale;
 import java.util.Map;
 import org.apache.maven.reporting.MavenReportException;
-import org.codehaus.plexus.util.DirectoryScanner;
-import org.codehaus.plexus.util.StringUtils;
+import org.apache.maven.shared.utils.StringUtils;
+import org.apache.maven.shared.utils.io.DirectoryScanner;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -230,29 +230,20 @@ public class SurefireReportParser
         return numberFormat.format( percentage );
     }
 
-    public List<ReportTestCase> getFailureDetails( List testSuitesList )
+    public List<ReportTestCase> getFailureDetails( List<ReportTestSuite> testSuitesList )
     {
-        ListIterator iter = testSuitesList.listIterator();
-
         List<ReportTestCase> failureDetailList = new ArrayList<ReportTestCase>();
 
-        while ( iter.hasNext() )
+        for (ReportTestSuite suite : testSuitesList)
         {
-            ReportTestSuite suite = (ReportTestSuite) iter.next();
-
-            List testCaseList = suite.getTestCases();
+            List<ReportTestCase> testCaseList = suite.getTestCases();
 
             if ( testCaseList != null )
             {
-                ListIterator caseIter = testCaseList.listIterator();
+                for (ReportTestCase tCase : testCaseList) {
 
-                while ( caseIter.hasNext() )
-                {
-                    ReportTestCase tCase = (ReportTestCase) caseIter.next();
-
-                    if ( tCase.getFailure() != null )
-                    {
-                        failureDetailList.add( tCase );
+                    if (tCase.getFailure() != null) {
+                        failureDetailList.add(tCase);
                     }
                 }
             }
@@ -281,7 +272,7 @@ public class SurefireReportParser
 
         scanner.setIncludes( StringUtils.split( includes, "," ) );
 
-        scanner.setExcludes( StringUtils.split( excludes, "," ) );
+        scanner.setExcludes( StringUtils.split(excludes, ",") );
 
         scanner.scan();
 

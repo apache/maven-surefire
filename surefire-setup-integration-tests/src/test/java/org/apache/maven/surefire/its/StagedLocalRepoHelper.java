@@ -30,8 +30,8 @@ import org.apache.maven.settings.RepositoryPolicy;
 import org.apache.maven.settings.Settings;
 import org.apache.maven.settings.io.xpp3.SettingsXpp3Reader;
 import org.apache.maven.settings.io.xpp3.SettingsXpp3Writer;
-import org.codehaus.plexus.util.ReaderFactory;
-import org.codehaus.plexus.util.WriterFactory;
+import org.apache.maven.shared.utils.ReaderFactory;
+import org.apache.maven.shared.utils.WriterFactory;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 
 /**

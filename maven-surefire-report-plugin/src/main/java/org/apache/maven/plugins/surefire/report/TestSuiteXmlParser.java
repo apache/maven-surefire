@@ -20,7 +20,9 @@ package org.apache.maven.plugins.surefire.report;
  */
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -63,13 +65,29 @@ public class TestSuiteXmlParser
     public Collection<ReportTestSuite> parse( String xmlPath )
         throws ParserConfigurationException, SAXException, IOException
     {
+
+        File f = new File(xmlPath);
+
+        FileInputStream fileInputStream = new FileInputStream(f);
+
+        try {
+            return parse(fileInputStream);
+        } finally
+        {
+            fileInputStream.close();
+        }
+    }
+
+    public Collection<ReportTestSuite> parse( InputStream stream )
+            throws ParserConfigurationException, SAXException, IOException
+    {
         SAXParserFactory factory = SAXParserFactory.newInstance();
 
         SAXParser saxParser = factory.newSAXParser();
 
         classesToSuites = new HashMap<String, ReportTestSuite>();
 
-        saxParser.parse( new File( xmlPath ), this );
+        saxParser.parse( stream, this );
 
         if ( currentSuite != defaultSuite )
         { // omit the defaultSuite if it's empty and there are alternatives

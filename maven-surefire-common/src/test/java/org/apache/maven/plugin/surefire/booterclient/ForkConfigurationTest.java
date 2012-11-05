@@ -22,10 +22,11 @@ package org.apache.maven.plugin.surefire.booterclient;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
+
+import org.apache.maven.shared.utils.StringUtils;
 import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
-import org.codehaus.plexus.util.StringUtils;
-import org.codehaus.plexus.util.cli.Commandline;
+import org.apache.maven.shared.utils.cli.Commandline;
 
 import junit.framework.TestCase;
 

@@ -113,7 +113,7 @@ public class DefaultDirectoryScanner
         String[] tests = EMPTY_STRING_ARRAY;
         if ( basedir.exists() )
         {
-            org.codehaus.plexus.util.DirectoryScanner scanner = new org.codehaus.plexus.util.DirectoryScanner();
+            org.apache.maven.shared.utils.io.DirectoryScanner scanner = new org.apache.maven.shared.utils.io.DirectoryScanner();
 
             scanner.setBasedir( basedir );
 

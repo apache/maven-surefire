@@ -30,14 +30,13 @@ import org.apache.maven.model.ReportPlugin;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.reporting.AbstractMavenReport;
 import org.apache.maven.reporting.MavenReportException;
-import org.codehaus.plexus.util.PathTool;
-import org.codehaus.plexus.util.StringUtils;
+import org.apache.maven.shared.utils.PathTool;
+import org.apache.maven.shared.utils.StringUtils;
 
 /**
  * Abstract base class for reporting test results using Surefire.
  *
  * @author Stephen Connolly
- *
  */
 public abstract class AbstractSurefireReportMojo
     extends AbstractMavenReport

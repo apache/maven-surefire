@@ -219,6 +219,11 @@
         <version>3.0.8</version>
       </dependency>
       <dependency>
+        <groupId>org.apache.maven.shared</groupId>
+        <artifactId>maven-shared-utils</artifactId>
+        <version>0.1</version>
+      </dependency>
+      <dependency>
         <groupId>jmock</groupId>
         <artifactId>jmock</artifactId>
         <version>1.0.1</version>

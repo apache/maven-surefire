@@ -19,9 +19,11 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
+import org.apache.maven.shared.utils.xml.XMLWriter;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+
 import java.io.PrintWriter;
 import java.util.LinkedList;
-import org.codehaus.plexus.util.xml.XMLWriter;
 
 public class PrettyPrintXMLWriter
     implements XMLWriter
@@ -63,6 +65,14 @@ public class PrettyPrintXMLWriter
         {
             writeDocumentHeaders();
         }
+    }
+
+    public void setEncoding(String encoding) {
+        throw new NotImplementedException();
+    }
+
+    public void setDocType(String docType) {
+        throw new NotImplementedException();
     }
 
     private PrettyPrintXMLWriter( PrintWriter writer, String encoding, String doctype )

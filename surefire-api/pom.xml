@@ -17,7 +17,8 @@
   ~ under the License.
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -33,8 +34,8 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.codehaus.plexus</groupId>
-      <artifactId>plexus-utils</artifactId>
+      <groupId>org.apache.maven.shared</groupId>
+      <artifactId>maven-shared-utils</artifactId>
     </dependency>
   </dependencies>
 
@@ -71,6 +72,7 @@
               <artifactSet>
                 <includes>
                   <include>org.codehaus.plexus:plexus-utils</include>
+                  <include>org.apache.maven.shared:maven-shared-utils</include>
                   <include>commons-lang:commons-lang</include>
                 </includes>
               </artifactSet>
@@ -78,6 +80,10 @@
                 <relocation>
                   <pattern>org.codehaus.plexus.util</pattern>
                   <shadedPattern>org.apache.maven.surefire.shade.org.codehaus.plexus.util</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>org.apache.maven.shared</pattern>
+                  <shadedPattern>org.apache.maven.surefire.shade.org.apache.maven.shared</shadedPattern>
                 </relocation>
                 <relocation>
                   <pattern>org.apache.commons.lang</pattern>

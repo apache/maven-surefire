@@ -33,11 +33,11 @@ import org.apache.maven.plugin.surefire.SurefireReportParameters;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.shared.utils.StringUtils;
 import org.apache.maven.surefire.failsafe.model.FailsafeSummary;
 import org.apache.maven.surefire.failsafe.model.io.xpp3.FailsafeSummaryXpp3Reader;
-import org.codehaus.plexus.util.IOUtil;
-import org.codehaus.plexus.util.ReaderFactory;
-import org.codehaus.plexus.util.StringUtils;
+import org.apache.maven.shared.utils.io.IOUtil;
+import org.apache.maven.shared.utils.ReaderFactory;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 
 /**

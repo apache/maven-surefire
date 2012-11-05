@@ -21,7 +21,7 @@ package org.apache.maven.plugin.surefire.booterclient.output;
 
 import org.apache.maven.plugin.surefire.util.internal.BlockingQueue;
 import org.apache.maven.plugin.surefire.util.internal.Java15BlockingQueue;
-import org.codehaus.plexus.util.cli.StreamConsumer;
+import org.apache.maven.shared.utils.cli.StreamConsumer;
 
 /**
  * Knows how to reconstruct *all* the state transmitted over stdout by the forked process.
