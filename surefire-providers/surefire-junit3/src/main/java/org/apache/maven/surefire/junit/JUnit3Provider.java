@@ -76,7 +76,7 @@ public class JUnit3Provider
     {
         if ( testsToRun == null )
         {
-            testsToRun = forkTestSet == null ? scanClassPath() : TestsToRun.fromClass( (Class) forkTestSet );
+            testsToRun = forkTestSet == null ? scanClassPath() : TestsToRun.fromClass( (Class<?>) forkTestSet );
         }
 
         ReporterFactory reporterFactory = providerParameters.getReporterFactory();
@@ -101,7 +101,7 @@ public class JUnit3Provider
         return reporterFactory.close();
     }
 
-    private SurefireTestSet createTestSet( Class clazz )
+    private SurefireTestSet createTestSet( Class<?> clazz )
         throws TestSetFailedException
     {
         return reflector.isJUnit3Available() && jUnit3TestChecker.accept( clazz )

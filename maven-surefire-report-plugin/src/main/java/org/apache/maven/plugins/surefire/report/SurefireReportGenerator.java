@@ -23,7 +23,6 @@ import java.io.File;
 import java.text.NumberFormat;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -88,7 +87,7 @@ public class SurefireReportGenerator
 
         constructSummarySection( bundle, sink );
 
-        Map suitePackages = report.getSuitesGroupByPackage( testSuites );
+        Map<String, List<ReportTestSuite>> suitePackages = report.getSuitesGroupByPackage( testSuites );
         if ( !suitePackages.isEmpty() )
         {
             constructPackagesSection( bundle, sink, suitePackages );
@@ -99,7 +98,7 @@ public class SurefireReportGenerator
             constructTestCasesSection( bundle, sink );
         }
 
-        List failureList = report.getFailureDetails( testSuites );
+        List<ReportTestCase> failureList = report.getFailureDetails( testSuites );
         if ( !failureList.isEmpty() )
         {
             constructFailureDetails( sink, bundle, failureList );
@@ -114,7 +113,7 @@ public class SurefireReportGenerator
 
     private void constructSummarySection( ResourceBundle bundle, Sink sink )
     {
-        Map summary = report.getSummary( testSuites );
+        Map<String, String> summary = report.getSummary( testSuites );
 
         sink.section1();
         sink.sectionTitle1();
@@ -149,17 +148,17 @@ public class SurefireReportGenerator
 
         sink.tableRow();
 
-        sinkCell( sink, (String) summary.get( "totalTests" ) );
+        sinkCell( sink, summary.get( "totalTests" ) );
 
-        sinkCell( sink, (String) summary.get( "totalErrors" ) );
+        sinkCell( sink, summary.get( "totalErrors" ) );
 
-        sinkCell( sink, (String) summary.get( "totalFailures" ) );
+        sinkCell( sink, summary.get( "totalFailures" ) );
 
-        sinkCell( sink, (String) summary.get( "totalSkipped" ) );
+        sinkCell( sink, summary.get( "totalSkipped" ) );
 
         sinkCell( sink, summary.get( "totalPercentage" ) + "%" );
 
-        sinkCell( sink, (String) summary.get( "totalElapsedTime" ) );
+        sinkCell( sink, summary.get( "totalElapsedTime" ) );
 
         sink.tableRow_();
 
@@ -178,7 +177,8 @@ public class SurefireReportGenerator
         sink.section1_();
     }
 
-    private void constructPackagesSection( ResourceBundle bundle, Sink sink, Map suitePackages )
+    private void constructPackagesSection( ResourceBundle bundle, Sink sink,
+                                           Map<String, List<ReportTestSuite>> suitePackages )
     {
         NumberFormat numberFormat = report.getNumberFormat();
 
@@ -215,31 +215,29 @@ public class SurefireReportGenerator
 
         sink.tableRow_();
 
-        Iterator packIter = suitePackages.keySet().iterator();
-
-        while ( packIter.hasNext() )
+        for ( Map.Entry<String, List<ReportTestSuite>> entry: suitePackages.entrySet() )
         {
             sink.tableRow();
 
-            String packageName = (String) packIter.next();
+            String packageName = entry.getKey();
 
-            List testSuiteList = (List) suitePackages.get( packageName );
+            List<ReportTestSuite> testSuiteList = entry.getValue();
 
-            Map packageSummary = report.getSummary( testSuiteList );
+            Map<String, String> packageSummary = report.getSummary( testSuiteList );
 
             sinkCellLink( sink, packageName, "#" + packageName );
 
-            sinkCell( sink, (String) packageSummary.get( "totalTests" ) );
+            sinkCell( sink, packageSummary.get( "totalTests" ) );
 
-            sinkCell( sink, (String) packageSummary.get( "totalErrors" ) );
+            sinkCell( sink, packageSummary.get( "totalErrors" ) );
 
-            sinkCell( sink, (String) packageSummary.get( "totalFailures" ) );
+            sinkCell( sink, packageSummary.get( "totalFailures" ) );
 
-            sinkCell( sink, (String) packageSummary.get( "totalSkipped" ) );
+            sinkCell( sink, packageSummary.get( "totalSkipped" ) );
 
             sinkCell( sink, packageSummary.get( "totalPercentage" ) + "%" );
 
-            sinkCell( sink, (String) packageSummary.get( "totalElapsedTime" ) );
+            sinkCell( sink, packageSummary.get( "totalElapsedTime" ) );
 
             sink.tableRow_();
         }
@@ -254,15 +252,11 @@ public class SurefireReportGenerator
         sink.text( bundle.getString( "report.surefire.text.note2" ) );
         sink.paragraph_();
 
-        packIter = suitePackages.keySet().iterator();
-
-        while ( packIter.hasNext() )
+        for ( Map.Entry<String, List<ReportTestSuite>> entry: suitePackages.entrySet() )
         {
-            String packageName = (String) packIter.next();
+            String packageName = entry.getKey();
 
-            List testSuiteList = (List) suitePackages.get( packageName );
-
-            Iterator suiteIterator = testSuiteList.iterator();
+            List<ReportTestSuite> testSuiteList = entry.getValue();
 
             sink.section2();
             sink.sectionTitle2();
@@ -273,10 +267,8 @@ public class SurefireReportGenerator
 
             boolean showTable = false;
 
-            while ( suiteIterator.hasNext() )
+            for ( ReportTestSuite suite : testSuiteList )
             {
-                ReportTestSuite suite = (ReportTestSuite) suiteIterator.next();
-
                 if ( showSuccess || suite.getNumberOfErrors() != 0 || suite.getNumberOfFailures() != 0 )
                 {
                     showTable = true;
@@ -284,8 +276,6 @@ public class SurefireReportGenerator
                     break;
                 }
             }
-
-            suiteIterator = testSuiteList.iterator();
 
             if ( showTable )
             {
@@ -313,10 +303,8 @@ public class SurefireReportGenerator
 
                 sink.tableRow_();
 
-                while ( suiteIterator.hasNext() )
+                for ( ReportTestSuite suite : testSuiteList )
                 {
-                    ReportTestSuite suite = (ReportTestSuite) suiteIterator.next();
-
                     if ( showSuccess || suite.getNumberOfErrors() != 0 || suite.getNumberOfFailures() != 0 )
                     {
 
@@ -396,12 +384,10 @@ public class SurefireReportGenerator
 
         for ( ReportTestSuite suite : testSuites )
         {
-            List testCases = suite.getTestCases();
+            List<ReportTestCase> testCases = suite.getTestCases();
 
             if ( testCases != null && !testCases.isEmpty() )
             {
-                ListIterator caseIterator = testCases.listIterator();
-
                 sink.section2();
                 sink.sectionTitle2();
                 sink.text( suite.getName() );
@@ -411,10 +397,8 @@ public class SurefireReportGenerator
 
                 boolean showTable = false;
 
-                while ( caseIterator.hasNext() )
+                for ( ReportTestCase testCase : testCases )
                 {
-                    ReportTestCase testCase = (ReportTestCase) caseIterator.next();
-
                     if ( testCase.getFailure() != null || showSuccess )
                     {
                         showTable = true;
@@ -423,25 +407,21 @@ public class SurefireReportGenerator
                     }
                 }
 
-                caseIterator = testCases.listIterator();
-
                 if ( showTable )
                 {
                     sink.table();
 
                     sink.tableRows( new int[]{ LEFT, LEFT, LEFT }, true );
 
-                    while ( caseIterator.hasNext() )
+                    for ( ReportTestCase testCase : testCases )
                     {
-                        ReportTestCase testCase = (ReportTestCase) caseIterator.next();
-
                         if ( testCase.getFailure() != null || showSuccess )
                         {
                             sink.tableRow();
 
                             sink.tableCell();
 
-                            Map failure = testCase.getFailure();
+                            Map<String, Object> failure = testCase.getFailure();
 
                             if ( failure != null )
                             {
@@ -510,7 +490,7 @@ public class SurefireReportGenerator
                                 sinkCell( sink, "" );
                                 sink.tableRow_();
 
-                                List detail = (List) failure.get( "detail" );
+                                List<String> detail = (List<String>) failure.get( "detail" );
                                 if ( detail != null )
                                 {
 
@@ -524,12 +504,10 @@ public class SurefireReportGenerator
                                     atts.addAttribute( SinkEventAttributes.STYLE, "display:none;" );
                                     sink.unknown( "div", new Object[]{ HtmlMarkup.TAG_TYPE_START }, atts );
 
-                                    Iterator it = detail.iterator();
-
                                     sink.verbatim( null );
-                                    while ( it.hasNext() )
+                                    for ( String line: detail )
                                     {
-                                        sink.text( it.next().toString() );
+                                        sink.text( line );
                                         sink.lineBreak();
                                     }
                                     sink.verbatim_();
@@ -565,9 +543,9 @@ public class SurefireReportGenerator
         return id.replace( ".", "_" );
     }
 
-    private void constructFailureDetails( Sink sink, ResourceBundle bundle, List failureList )
+    private void constructFailureDetails( Sink sink, ResourceBundle bundle, List<ReportTestCase> failureList )
     {
-        Iterator failIter = failureList.iterator();
+        Iterator<ReportTestCase> failIter = failureList.iterator();
 
         if ( failIter != null )
         {
@@ -588,9 +566,9 @@ public class SurefireReportGenerator
 
             while ( failIter.hasNext() )
             {
-                ReportTestCase tCase = (ReportTestCase) failIter.next();
+                ReportTestCase tCase = failIter.next();
 
-                Map failure = tCase.getFailure();
+                Map<String, Object> failure = tCase.getFailure();
 
                 sink.tableRow();
 
@@ -624,17 +602,15 @@ public class SurefireReportGenerator
 
                 sink.tableRow_();
 
-                List detail = (List) failure.get( "detail" );
+                List<String> detail = (List<String>) failure.get( "detail" );
                 if ( detail != null )
                 {
-                    Iterator it = detail.iterator();
-
                     boolean firstLine = true;
 
                     String techMessage = "";
-                    while ( it.hasNext() )
+                    for ( String line : detail )
                     {
-                        techMessage = it.next().toString();
+                        techMessage = line;
                         if ( firstLine )
                         {
                             firstLine = false;

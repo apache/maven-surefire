@@ -37,7 +37,7 @@ public class ReportTestCase
 
     private float time;
 
-    private Map failure;
+    private Map<String, Object> failure;
 
     public String getName()
     {
@@ -79,7 +79,7 @@ public class ReportTestCase
         this.time = time;
     }
 
-    public Map getFailure()
+    public Map<String, Object> getFailure()
     {
         return failure;
     }
@@ -96,7 +96,7 @@ public class ReportTestCase
 
     public void addFailure( String message, String type )
     {
-        failure = new HashMap();
+        failure = new HashMap<String, Object>();
         failure.put( "message", message );
         failure.put( "type", type );
     }

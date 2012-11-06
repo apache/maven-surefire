@@ -30,7 +30,7 @@ public class PrettyPrintXMLWriter
 {
     private final PrintWriter writer;
 
-    private final LinkedList elementStack = new LinkedList();
+    private final LinkedList<String> elementStack = new LinkedList<String>();
 
     private boolean tagInProgress;
 
@@ -67,11 +67,13 @@ public class PrettyPrintXMLWriter
         }
     }
 
-    public void setEncoding(String encoding) {
+    public void setEncoding( String encoding )
+    {
         throw new NotImplementedException();
     }
 
-    public void setDocType(String docType) {
+    public void setDocType( String docType )
+    {
         throw new NotImplementedException();
     }
 

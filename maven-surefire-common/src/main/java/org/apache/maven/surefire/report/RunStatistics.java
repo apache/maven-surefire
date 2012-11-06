@@ -30,7 +30,8 @@ import org.apache.maven.surefire.util.internal.StringUtils;
 /**
  * @author Kristian Rosenvold
  */
-public class RunStatistics {
+public class RunStatistics
+{
     /**
      * Holds the source(s) that causes the error(s).
      */
@@ -56,12 +57,12 @@ public class RunStatistics {
         failureSources.addSource( failureSource, stackTraceWriter );
     }
 
-    public Collection getErrorSources()
+    public Collection<String> getErrorSources()
     {
         return errorSources.getListOfSources();
     }
 
-    public Collection getFailureSources()
+    public Collection<String> getFailureSources()
     {
         return failureSources.getListOfSources();
     }
@@ -86,7 +87,8 @@ public class RunStatistics {
         return skipped;
     }
 
-    public synchronized void add( TestSetStats testSetStats){
+    public synchronized void add( TestSetStats testSetStats )
+    {
         this.completedCount += testSetStats.getCompletedCount();
         this.errors += testSetStats.getErrors();
         this.failures += testSetStats.getFailures();
@@ -131,7 +133,7 @@ public class RunStatistics {
             return i >= 0 ? str.substring( 0, i ) + "(..)" : str;
         }
 
-        Collection getListOfSources()
+        Collection<String> getListOfSources()
         {
             synchronized ( listOfSources )
             {

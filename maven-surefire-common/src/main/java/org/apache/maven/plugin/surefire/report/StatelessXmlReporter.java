@@ -280,7 +280,7 @@ public class StatelessXmlReporter
 
         if ( systemProperties != null )
         {
-            Enumeration propertyKeys = systemProperties.propertyNames();
+            Enumeration<?> propertyKeys = systemProperties.propertyNames();
 
             while ( propertyKeys.hasMoreElements() )
             {

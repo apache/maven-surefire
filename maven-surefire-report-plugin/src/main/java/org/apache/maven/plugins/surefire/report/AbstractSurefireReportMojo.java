@@ -1,4 +1,5 @@
 package org.apache.maven.plugins.surefire.report;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -168,9 +169,9 @@ public abstract class AbstractSurefireReportMojo
         if ( !isGeneratedWhenNoResults() )
         {
             boolean atLeastOneDirectoryExists = false;
-            for ( Iterator i = reportsDirectoryList.iterator(); i.hasNext() && !atLeastOneDirectoryExists; )
+            for ( Iterator<File> i = reportsDirectoryList.iterator(); i.hasNext() && !atLeastOneDirectoryExists; )
             {
-                atLeastOneDirectoryExists = SurefireReportParser.hasReportFiles( (File) i.next() );
+                atLeastOneDirectoryExists = SurefireReportParser.hasReportFiles( i.next() );
             }
             if ( !atLeastOneDirectoryExists )
             {
@@ -191,7 +192,7 @@ public abstract class AbstractSurefireReportMojo
             return false;
         }
 
-        final List reportsDirectoryList = getReportsDirectories();
+        final List<File> reportsDirectoryList = getReportsDirectories();
 
         if ( reportsDirectoryList == null )
         {
@@ -201,9 +202,9 @@ public abstract class AbstractSurefireReportMojo
         if ( !isGeneratedWhenNoResults() )
         {
             boolean atLeastOneDirectoryExists = false;
-            for ( Iterator i = reportsDirectoryList.iterator(); i.hasNext() && !atLeastOneDirectoryExists; )
+            for ( Iterator<File> i = reportsDirectoryList.iterator(); i.hasNext() && !atLeastOneDirectoryExists; )
             {
-                atLeastOneDirectoryExists = SurefireReportParser.hasReportFiles( (File) i.next() );
+                atLeastOneDirectoryExists = SurefireReportParser.hasReportFiles( i.next() );
             }
             if ( !atLeastOneDirectoryExists )
             {

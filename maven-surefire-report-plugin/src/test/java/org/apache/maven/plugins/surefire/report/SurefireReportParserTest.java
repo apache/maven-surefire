@@ -25,7 +25,6 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -70,14 +69,12 @@ public class SurefireReportParserTest
     {
         report.setReportsDirectory( getTestDir( "/test-reports" ) );
 
-        List suites = report.parseXMLReportFiles();
+        List<ReportTestSuite> suites = report.parseXMLReportFiles();
 
         assertEquals( 8, suites.size() );
 
-        Iterator it = suites.iterator();
-        while ( it.hasNext() )
+        for ( ReportTestSuite suite : suites )
         {
-            ReportTestSuite suite = (ReportTestSuite) it.next();
             assertNotNull( suite.getName() + " was not correctly parsed", suite.getTestCases() );
             assertNotNull( suite.getName() );
             assertNotNull( suite.getPackageName() );
@@ -134,13 +131,13 @@ public class SurefireReportParserTest
 
         tSuite2.setNumberOfTests( 100 );
 
-        List suiteList = new ArrayList();
+        List<ReportTestSuite> suiteList = new ArrayList<ReportTestSuite>();
 
         suiteList.add( tSuite1 );
 
         suiteList.add( tSuite2 );
 
-        Map testMap = report.getSummary( suiteList );
+        Map<String, String> testMap = report.getSummary( suiteList );
 
         assertEquals( 20, Integer.parseInt( testMap.get( "totalErrors" ).toString() ) );
 
@@ -171,7 +168,7 @@ public class SurefireReportParserTest
 
         tSuite3.setPackageName( "Package2" );
 
-        List suiteList = new ArrayList();
+        List<ReportTestSuite> suiteList = new ArrayList<ReportTestSuite>();
 
         suiteList.add( tSuite1 );
 
@@ -179,15 +176,15 @@ public class SurefireReportParserTest
 
         suiteList.add( tSuite3 );
 
-        Map groupMap = report.getSuitesGroupByPackage( suiteList );
+        Map<String, List<ReportTestSuite>> groupMap = report.getSuitesGroupByPackage( suiteList );
 
         assertEquals( 2, groupMap.size() );
 
-        assertEquals( tSuite1, ( (List) groupMap.get( "Package1" ) ).get( 0 ) );
+        assertEquals( tSuite1, groupMap.get( "Package1" ).get( 0 ) );
 
-        assertEquals( tSuite2, ( (List) groupMap.get( "Package1" ) ).get( 1 ) );
+        assertEquals( tSuite2, groupMap.get( "Package1" ).get( 1 ) );
 
-        assertEquals( tSuite3, ( (List) groupMap.get( "Package2" ) ).get( 0 ) );
+        assertEquals( tSuite3, groupMap.get( "Package2" ).get( 0 ) );
     }
 
     public void testComputePercentage()
@@ -214,9 +211,9 @@ public class SurefireReportParserTest
 
         tCase3.addFailure( null, null );
 
-        List tCaseList = new ArrayList();
+        List<ReportTestCase> tCaseList = new ArrayList<ReportTestCase>();
 
-        List tCaseList2 = new ArrayList();
+        List<ReportTestCase> tCaseList2 = new ArrayList<ReportTestCase>();
 
         tCaseList.add( tCase1 );
 
@@ -228,13 +225,13 @@ public class SurefireReportParserTest
 
         tSuite2.setTestCases( tCaseList2 );
 
-        List suiteList = new ArrayList();
+        List<ReportTestSuite> suiteList = new ArrayList<ReportTestSuite>();
 
         suiteList.add( tSuite1 );
 
         suiteList.add( tSuite2 );
 
-        List failList = report.getFailureDetails( suiteList );
+        List<ReportTestCase> failList = report.getFailureDetails( suiteList );
 
         assertEquals( 2, failList.size() );
 

@@ -66,13 +66,15 @@ public class TestSuiteXmlParser
         throws ParserConfigurationException, SAXException, IOException
     {
 
-        File f = new File(xmlPath);
+        File f = new File( xmlPath );
 
-        FileInputStream fileInputStream = new FileInputStream(f);
+        FileInputStream fileInputStream = new FileInputStream( f );
 
-        try {
-            return parse(fileInputStream);
-        } finally
+        try
+        {
+            return parse( fileInputStream );
+        }
+        finally
         {
             fileInputStream.close();
         }
@@ -152,7 +154,7 @@ public class TestSuiteXmlParser
                 // if the testcase declares its own classname, it may need to belong to its own suite
                 if ( fullClassName != null )
                 {
-                    currentSuite = (ReportTestSuite) classesToSuites.get( fullClassName );
+                    currentSuite = classesToSuites.get( fullClassName );
                     if ( currentSuite == null )
                     {
                         currentSuite = new ReportTestSuite();
@@ -216,13 +218,13 @@ public class TestSuiteXmlParser
         }
         else if ( "failure".equals( qName ) )
         {
-            Map failure = testCase.getFailure();
+            Map<String, Object> failure = testCase.getFailure();
 
             failure.put( "detail", parseCause( currentElement.toString() ) );
         }
         else if ( "error".equals( qName ) )
         {
-            Map error = testCase.getFailure();
+            Map<String, Object> error = testCase.getFailure();
 
             error.put( "detail", parseCause( currentElement.toString() ) );
         }
@@ -255,17 +257,17 @@ public class TestSuiteXmlParser
         }
     }
 
-    private List parseCause( String detail )
+    private List<String> parseCause( String detail )
     {
         String fullName = testCase.getFullName();
         String name = fullName.substring( fullName.lastIndexOf( "." ) + 1 );
         return parseCause( detail, name );
     }
 
-    private List parseCause( String detail, String compareTo )
+    private List<String> parseCause( String detail, String compareTo )
     {
         StringTokenizer stringTokenizer = new StringTokenizer( detail, "\n" );
-        List parsedDetail = new ArrayList( stringTokenizer.countTokens() );
+        List<String> parsedDetail = new ArrayList<String>( stringTokenizer.countTokens() );
 
         while ( stringTokenizer.hasMoreTokens() )
         {

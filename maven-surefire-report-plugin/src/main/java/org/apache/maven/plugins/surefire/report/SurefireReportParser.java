@@ -27,7 +27,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Locale;
 import java.util.Map;
 import org.apache.maven.reporting.MavenReportException;
@@ -126,11 +125,9 @@ public class SurefireReportParser
         return lineString.substring( 0, lineString.indexOf( "(" ) );
     }
 
-    public Map getSummary( List suites )
+    public Map<String, String> getSummary( List<ReportTestSuite> suites )
     {
         Map<String, String> totalSummary = new HashMap<String, String>();
-
-        ListIterator iter = suites.listIterator();
 
         int totalNumberOfTests = 0;
 
@@ -142,10 +139,8 @@ public class SurefireReportParser
 
         float totalElapsedTime = 0.0f;
 
-        while ( iter.hasNext() )
+        for ( ReportTestSuite suite : suites )
         {
-            ReportTestSuite suite = (ReportTestSuite) iter.next();
-
             totalNumberOfTests += suite.getNumberOfTests();
 
             totalNumberOfErrors += suite.getNumberOfErrors();
@@ -190,16 +185,12 @@ public class SurefireReportParser
         return this.numberFormat;
     }
 
-    public Map getSuitesGroupByPackage( List testSuitesList )
+    public Map<String, List<ReportTestSuite>> getSuitesGroupByPackage( List<ReportTestSuite> testSuitesList )
     {
-        ListIterator iter = testSuitesList.listIterator();
-
         Map<String, List<ReportTestSuite>> suitePackage = new HashMap<String, List<ReportTestSuite>>();
 
-        while ( iter.hasNext() )
+        for ( ReportTestSuite suite : testSuitesList )
         {
-            ReportTestSuite suite = (ReportTestSuite) iter.next();
-
             List<ReportTestSuite> suiteList = new ArrayList<ReportTestSuite>();
 
             if ( suitePackage.get( suite.getPackageName() ) != null )
@@ -240,10 +231,12 @@ public class SurefireReportParser
 
             if ( testCaseList != null )
             {
-                for (ReportTestCase tCase : testCaseList) {
+                for ( ReportTestCase tCase : testCaseList )
+                {
 
-                    if (tCase.getFailure() != null) {
-                        failureDetailList.add(tCase);
+                    if ( tCase.getFailure() != null )
+                    {
+                        failureDetailList.add( tCase );
                     }
                 }
             }

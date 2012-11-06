@@ -37,22 +37,25 @@ public class DirectConsoleOutput
     private final PrintStream sout;
     private final PrintStream serr;
 
-    public DirectConsoleOutput(PrintStream sout, PrintStream serr)
+    public DirectConsoleOutput( PrintStream sout, PrintStream serr )
     {
         this.sout = sout;
         this.serr = serr;
     }
 
 
-    public void writeTestOutput(byte[] buf, int off, int len, boolean stdout) {
+    public void writeTestOutput( byte[] buf, int off, int len, boolean stdout )
+    {
         PrintStream stream = stdout ? sout : serr;
         stream.write(buf, off, len);
     }
 
-    public void testSetStarting(ReportEntry reportEntry) {
+    public void testSetStarting( ReportEntry reportEntry )
+    {
     }
 
-    public void testSetCompleted(ReportEntry report) {
+    public void testSetCompleted( ReportEntry report )
+    {
     }
 
     public void close()
