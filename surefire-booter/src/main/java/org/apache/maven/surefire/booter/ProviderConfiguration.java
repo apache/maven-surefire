@@ -64,12 +64,17 @@ public class ProviderConfiguration
     private final boolean failIfNoTests;
 
     private final TypeEncodedValue forkTestSet;
+    
+    private final List multipleTestsForFork;
+    
+    private final boolean readTestsFromInStream;
 
     public ProviderConfiguration( DirectoryScannerParameters directoryScannerParameters,
                                   RunOrderParameters runOrderParameters, boolean failIfNoTests,
                                   ReporterConfiguration reporterConfiguration, TestArtifactInfo testArtifact,
                                   TestRequest testSuiteDefinition, Properties providerProperties,
-                                  TypeEncodedValue typeEncodedTestSet )
+                                  TypeEncodedValue typeEncodedTestSet, List multipleTestsForFork,
+                                  boolean readTestsFromInStream)
     {
         this.runOrderParameters = runOrderParameters;
         this.providerProperties = providerProperties;
@@ -79,6 +84,8 @@ public class ProviderConfiguration
         this.dirScannerParams = directoryScannerParameters;
         this.failIfNoTests = failIfNoTests;
         this.forkTestSet = typeEncodedTestSet;
+        this.multipleTestsForFork = multipleTestsForFork; 
+        this.readTestsFromInStream = readTestsFromInStream;
     }
 
 
@@ -133,9 +140,19 @@ public class ProviderConfiguration
     {
         return forkTestSet;
     }
+    
+    public List getMultipleTestsForFork()
+    {
+        return multipleTestsForFork;
+    }
 
     public RunOrderParameters getRunOrderParameters()
     {
         return runOrderParameters;
     }
+
+
+	public boolean isReadTestsFromInStream() {
+		return readTestsFromInStream;
+	}
 }

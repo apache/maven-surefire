@@ -25,6 +25,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Properties;
+
+import junit.framework.TestCase;
+
 import org.apache.maven.surefire.booter.BooterDeserializer;
 import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
 import org.apache.maven.surefire.booter.Classpath;
@@ -32,15 +35,12 @@ import org.apache.maven.surefire.booter.ClasspathConfiguration;
 import org.apache.maven.surefire.booter.PropertiesWrapper;
 import org.apache.maven.surefire.booter.ProviderConfiguration;
 import org.apache.maven.surefire.booter.StartupConfiguration;
-import org.apache.maven.surefire.booter.SystemPropertyManager;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.RunOrderParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.util.RunOrder;
-
-import junit.framework.TestCase;
 
 /**
  * Performs roundtrip testing of serialization/deserialization of The StartupConfiguration
@@ -130,7 +130,7 @@ public class BooterDeserializerStartupConfigurationTest
         PropertiesWrapper props = new PropertiesWrapper( new Properties());
         BooterSerializer booterSerializer = new BooterSerializer( forkConfiguration );
         String aTest = "aTest";
-        final File propsTest  = booterSerializer.serialize( props, getProviderConfiguration(), startupConfiguration, aTest);
+        final File propsTest  = booterSerializer.serialize( props, getProviderConfiguration(), startupConfiguration, aTest, false );
         BooterDeserializer booterDeserializer = new BooterDeserializer( new FileInputStream( propsTest ) );
         return booterDeserializer.getProviderConfiguration();
     }
@@ -152,7 +152,7 @@ public class BooterDeserializerStartupConfigurationTest
         RunOrderParameters runOrderParameters = new RunOrderParameters( RunOrder.DEFAULT, null );
         return new ProviderConfiguration( directoryScannerParameters, runOrderParameters, true, reporterConfiguration,
                                           new TestArtifactInfo( "5.0", "ABC" ), testSuiteDefinition, new Properties(),
-                                          BooterDeserializerProviderConfigurationTest.aTestTyped );
+                                          BooterDeserializerProviderConfigurationTest.aTestTyped, null, true );
     }
 
     private StartupConfiguration getTestStartupConfiguration( ClassLoaderConfiguration classLoaderConfiguration )

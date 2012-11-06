@@ -27,13 +27,16 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+
+import junit.framework.Assert;
+import junit.framework.TestCase;
+
 import org.apache.maven.surefire.booter.BooterDeserializer;
 import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
 import org.apache.maven.surefire.booter.ClasspathConfiguration;
 import org.apache.maven.surefire.booter.PropertiesWrapper;
 import org.apache.maven.surefire.booter.ProviderConfiguration;
 import org.apache.maven.surefire.booter.StartupConfiguration;
-import org.apache.maven.surefire.booter.SystemPropertyManager;
 import org.apache.maven.surefire.booter.TypeEncodedValue;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
@@ -41,9 +44,6 @@ import org.apache.maven.surefire.testset.RunOrderParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.util.RunOrder;
-
-import junit.framework.Assert;
-import junit.framework.TestCase;
 
 /**
  * Performs roundtrip testing of serialization/deserialization of the ProviderConfiguration
@@ -55,7 +55,7 @@ public class BooterDeserializerProviderConfigurationTest
 {
 
     public static final TypeEncodedValue aTestTyped = new TypeEncodedValue( String.class.getName(), "aTest" );
-
+    
     private final String aUserRequestedTest = "aUserRequestedTest";
 
     private static ClassLoaderConfiguration getForkConfiguration()
@@ -79,7 +79,7 @@ public class BooterDeserializerProviderConfigurationTest
         ClassLoaderConfiguration forkConfiguration = getForkConfiguration();
         final StartupConfiguration testStartupConfiguration = getTestStartupConfiguration( forkConfiguration );
         ProviderConfiguration providerConfiguration = getReloadedProviderConfiguration();
-        ProviderConfiguration read = saveAndReload( providerConfiguration, testStartupConfiguration );
+        ProviderConfiguration read = saveAndReload( providerConfiguration, testStartupConfiguration, false );
 
         Assert.assertEquals( aDir, read.getBaseDir() );
         Assert.assertEquals( includes.get( 0 ), read.getIncludes().get( 0 ) );
@@ -95,10 +95,10 @@ public class BooterDeserializerProviderConfigurationTest
         DirectoryScannerParameters directoryScannerParameters = getDirectoryScannerParametersWithoutSpecificTests();
         ClassLoaderConfiguration forkConfiguration = getForkConfiguration();
 
-        ProviderConfiguration providerConfiguration = getTestProviderConfiguration( directoryScannerParameters );
+        ProviderConfiguration providerConfiguration = getTestProviderConfiguration( directoryScannerParameters, false );
 
         final StartupConfiguration testProviderConfiguration = getTestStartupConfiguration( forkConfiguration );
-        ProviderConfiguration reloaded = saveAndReload( providerConfiguration, testProviderConfiguration );
+        ProviderConfiguration reloaded = saveAndReload( providerConfiguration, testProviderConfiguration, false );
 
         assertTrue( reloaded.getReporterConfiguration().isTrimStackTrace().booleanValue() );
         assertNotNull( reloaded.getReporterConfiguration().getReportsDirectory() );
@@ -134,6 +134,15 @@ public class BooterDeserializerProviderConfigurationTest
         Assert.assertEquals( aTestTyped, reloaded.getTestForFork() );
 
     }
+    
+    public void testTestForForkWithMultipleFiles()
+            throws IOException
+        {
+            final ProviderConfiguration reloaded = getReloadedProviderConfigurationForReadFromInStream();
+            Assert.assertNull( reloaded.getTestForFork() );
+            Assert.assertTrue( reloaded.isReadTestsFromInStream() );
+
+        }
 
     public void testFailIfNoTests()
         throws IOException
@@ -143,14 +152,26 @@ public class BooterDeserializerProviderConfigurationTest
 
     }
 
+    private ProviderConfiguration getReloadedProviderConfigurationForReadFromInStream()
+            throws IOException
+   {
+    	return getReloadedProviderConfiguration(true);
+   }
+    
     private ProviderConfiguration getReloadedProviderConfiguration()
+            throws IOException
+   {
+    	return getReloadedProviderConfiguration(false);
+   }
+    
+    private ProviderConfiguration getReloadedProviderConfiguration(boolean readTestsFromInStream)
         throws IOException
     {
         DirectoryScannerParameters directoryScannerParameters = getDirectoryScannerParametersWithoutSpecificTests();
         ClassLoaderConfiguration forkConfiguration = getForkConfiguration();
-        ProviderConfiguration booterConfiguration = getTestProviderConfiguration( directoryScannerParameters );
+        ProviderConfiguration booterConfiguration = getTestProviderConfiguration( directoryScannerParameters, readTestsFromInStream );
         final StartupConfiguration testProviderConfiguration = getTestStartupConfiguration( forkConfiguration );
-        return saveAndReload( booterConfiguration, testProviderConfiguration );
+        return saveAndReload( booterConfiguration, testProviderConfiguration, readTestsFromInStream );
     }
 
     private DirectoryScannerParameters getDirectoryScannerParametersWithoutSpecificTests()
@@ -168,19 +189,27 @@ public class BooterDeserializerProviderConfigurationTest
     }
 
     private ProviderConfiguration saveAndReload( ProviderConfiguration booterConfiguration,
-                                                 StartupConfiguration testProviderConfiguration )
+                                                 StartupConfiguration testProviderConfiguration, boolean readTestsFromInStream )
         throws IOException
     {
         final ForkConfiguration forkConfiguration = ForkConfigurationTest.getForkConfiguration( null, null );
         PropertiesWrapper props = new PropertiesWrapper( new Properties());
         BooterSerializer booterSerializer = new BooterSerializer( forkConfiguration );
-        String aTest = "aTest";
-        final File propsTest = booterSerializer.serialize( props, booterConfiguration, testProviderConfiguration, aTest);
+        Object test;
+        if (readTestsFromInStream) 
+        {	
+        	test = null;
+        }
+        else
+        {
+        	test = "aTest";
+        }
+        final File propsTest = booterSerializer.serialize( props, booterConfiguration, testProviderConfiguration, test, readTestsFromInStream);
         BooterDeserializer booterDeserializer = new BooterDeserializer( new FileInputStream( propsTest ) );
         return booterDeserializer.deserialize();
     }
 
-    private ProviderConfiguration getTestProviderConfiguration( DirectoryScannerParameters directoryScannerParameters )
+    private ProviderConfiguration getTestProviderConfiguration( DirectoryScannerParameters directoryScannerParameters, boolean readTestsFromInStream )
     {
 
         File cwd = new File( "." );
@@ -192,7 +221,7 @@ public class BooterDeserializerProviderConfigurationTest
         RunOrderParameters runOrderParameters = new RunOrderParameters( RunOrder.DEFAULT, null );
         return new ProviderConfiguration( directoryScannerParameters, runOrderParameters, true, reporterConfiguration,
                                           new TestArtifactInfo( "5.0", "ABC" ), testSuiteDefinition, new Properties(),
-                                          aTestTyped );
+                                          aTestTyped, null, readTestsFromInStream );
     }
 
     private StartupConfiguration getTestStartupConfiguration( ClassLoaderConfiguration classLoaderConfiguration )

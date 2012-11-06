@@ -81,6 +81,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.Map.Entry;
 
 /**
  * Abstract base class for running tests using Surefire.
@@ -313,8 +314,11 @@ public abstract class AbstractSurefireMojo
     protected Boolean failIfNoTests;
 
     /**
-     * Option to specify the forking mode. Can be "never", "once", "always" or "perthread". "none" and "pertest" are also accepted
-     * for backwards compatibility. "always" forks for each test-class. "perthread" will create "threadCount" parallel forks.
+     * Option to specify the forking mode. Can be "never", "once", "always", "perthread" or "onceperthread". "none" and "pertest" are also accepted
+     * for backwards compatibility. "always" forks for each test-class. "perthread" will create "threadCount" parallel forks, each executing one test-class.
+     * "onceperthread" will fork "threadCount" processes that each execute a 1/"threadCount" of all test-classes.<br/>
+     * The system properties and the "argLine" of the forked processes may contain the place holder string <code>${surefire.threadNumber}</code>,
+     * which is replaced with a fixed number for each thread, ranging from 1 to "threadCount".
      *
      * @since 2.1
      */
@@ -415,9 +419,9 @@ public abstract class AbstractSurefireMojo
     protected String testNGArtifactName;
 
     /**
-     * (forkMode=perthread or TestNG/JUnit 4.7 provider) The attribute thread-count allows you to specify how many threads should be
-     * allocated for this execution. Only makes sense to use in conjunction with the <code>parallel</code> parameter. (forkMode=perthread
-     * does not support/require the <code>parallel</code> parameter)
+     * (forkMode=perthread, forkmode=onceperthread or TestNG/JUnit 4.7 provider) The attribute thread-count allows you to specify how many threads should be
+     * allocated for this execution. Only makes sense to use in conjunction with the <code>parallel</code> parameter or with forkMode=perthread
+     * or forkmode=onceperthread.
      *
      * @since 2.2
      */
@@ -558,6 +562,12 @@ public abstract class AbstractSurefireMojo
     private Artifact surefireBooterArtifact;
 
     private Toolchain toolchain;
+    
+    /**
+     * The placeholder that is replaced by the executing thread's running number. The thread number
+     * range starts with 1 
+     */
+    public static final String THREAD_NUMBER_PLACEHOLDER = "${surefire.threadNumber}";
 
     protected abstract String getPluginName();
 
@@ -718,7 +728,8 @@ public abstract class AbstractSurefireMojo
             final RunResult result;
             if ( isForkModeNever() )
             {
-                effectiveProperties.copyToSystemProperties();
+                createCopyAndReplaceThreadNumPlaceholder(effectiveProperties, 1).copyToSystemProperties();
+                
                 InPluginVMSurefireStarter surefireStarter =
                     createInprocessStarter( provider, classLoaderConfiguration, runOrderParameters );
                 result = surefireStarter.runSuitesInProcess( scanResult );
@@ -755,6 +766,17 @@ public abstract class AbstractSurefireMojo
         {
             summary.registerException( e );
         }
+    }
+    
+    public static SurefireProperties createCopyAndReplaceThreadNumPlaceholder(SurefireProperties effectiveSystemProperties, int threadNumber) {
+        SurefireProperties filteredProperties = new SurefireProperties(effectiveSystemProperties);
+        String threadNumberString = String.valueOf(threadNumber);
+        for (Entry<Object,Object> entry : effectiveSystemProperties.entrySet()) {
+            if (entry.getValue() instanceof String) {
+                filteredProperties.put(entry.getKey(), ((String)entry.getValue()).replace(THREAD_NUMBER_PLACEHOLDER, threadNumberString));
+            }
+        }
+        return filteredProperties;
     }
 
     protected void cleanupForkConfiguration( ForkConfiguration forkConfiguration )
@@ -988,7 +1010,7 @@ public abstract class AbstractSurefireMojo
 
         return new ProviderConfiguration( directoryScannerParameters, runOrderParameters, failIfNoTests,
                                           reporterConfiguration, testNg, testSuiteDefinition, providerProperties,
-                                          null );
+                                          null, null, false );
     }
 
     public String getStatisticsFileName( String configurationHash )
@@ -1266,7 +1288,8 @@ public abstract class AbstractSurefireMojo
 
     private int getEffectiveForkCount()
     {
-        return ( ForkConfiguration.FORK_PERTHREAD.equals( getEffectiveForkMode() ) ) ? getThreadCount() : 1;
+        return ( ForkConfiguration.FORK_PERTHREAD.equals( getEffectiveForkMode() ) ||
+                 ForkConfiguration.FORK_ONCE_PERTHREAD.equals( getEffectiveForkMode() ) ) ? getThreadCount() : 1;
     }
 
     private String getEffectiveDebugForkedProcess()
@@ -1650,9 +1673,10 @@ public abstract class AbstractSurefireMojo
     void ensureThreadCountWithPerThread()
         throws MojoFailureException
     {
-        if ( ForkConfiguration.FORK_PERTHREAD.equals( getEffectiveForkMode() ) && getThreadCount() < 1 )
+        if ( ( ForkConfiguration.FORK_PERTHREAD.equals( getEffectiveForkMode() ) || 
+               ForkConfiguration.FORK_ONCE_PERTHREAD.equals( getEffectiveForkMode() )) && getThreadCount() < 1 )
         {
-            throw new MojoFailureException( "Fork mode perthread requires a thread count" );
+            throw new MojoFailureException( "Fork modes perthread and onceperthread require a thread count" );
         }
     }
 

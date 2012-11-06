@@ -128,9 +128,10 @@ public class TestNGDirectoryTestSuite
 
         List testNgTestClasses = new ArrayList();
         List junitTestClasses = new ArrayList();
-        for ( Iterator it = testsToRun.iterator(); it.hasNext(); )
+        Class[] allClasses = testsToRun.getLocatedClasses();
+        for ( int i = 0; i < allClasses.length; i++)
         {
-            Class c = (Class) it.next();
+            Class c = allClasses[i];
             if ( junitTest != null && junitTest.isAssignableFrom( c ) )
             {
                 junitTestClasses.add( c );

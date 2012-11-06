@@ -28,6 +28,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
+
+import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.TestProvidingInputStream;
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
 import org.apache.maven.shared.utils.cli.StreamConsumer;
 import org.apache.maven.surefire.booter.ForkingRunListener;
@@ -36,6 +38,7 @@ import org.apache.maven.surefire.report.ConsoleLogger;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterException;
+import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.StackTraceWriter;
 import org.apache.maven.surefire.util.NestedRuntimeException;
@@ -49,7 +52,9 @@ import org.apache.maven.surefire.util.internal.StringUtils;
 public class ForkClient
     implements StreamConsumer
 {
+
     private final DefaultReporterFactory providerReporterFactory;
+    private final TestProvidingInputStream testProvidingInputStream;
 
     private final Map<Integer, RunListener> testSetReporters =
         Collections.synchronizedMap( new HashMap<Integer, RunListener>() );
@@ -60,8 +65,14 @@ public class ForkClient
 
     public ForkClient( DefaultReporterFactory providerReporterFactory, Properties testVmSystemProperties )
     {
+        this(providerReporterFactory, testVmSystemProperties, null);
+    }
+    
+    public ForkClient( DefaultReporterFactory providerReporterFactory, Properties testVmSystemProperties, TestProvidingInputStream testProvidingInputStream )
+    {
         this.providerReporterFactory = providerReporterFactory;
         this.testVmSystemProperties = testVmSystemProperties;
+        this.testProvidingInputStream = testProvidingInputStream;
     }
 
     public void consumeLine( String s )
@@ -134,6 +145,12 @@ public class ForkClient
                 case ForkingRunListener.BOOTERCODE_CONSOLE:
                     getOrCreateConsoleLogger( channelNumber ).info( createConsoleMessage( remaining ) );
                     break;
+                case ForkingRunListener.BOOTERCODE_NEXT_TEST:
+                	if (null != testProvidingInputStream)
+                	{
+                		testProvidingInputStream.provideNewTest();
+                	}
+                	break;
                 case ForkingRunListener.BOOTERCODE_BYE:
                     saidGoodBye = true;
                     break;
