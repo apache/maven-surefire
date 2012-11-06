@@ -22,6 +22,7 @@ package org.apache.maven.surefire.booter;
 import java.io.PrintStream;
 import java.util.Enumeration;
 import java.util.Properties;
+
 import org.apache.maven.surefire.report.ConsoleLogger;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.ReportEntry;
@@ -74,6 +75,8 @@ public class ForkingRunListener
     public static final byte BOOTERCODE_CONSOLE = (byte) 'H';
 
     public static final byte BOOTERCODE_SYSPROPS = (byte) 'I';
+
+    public static final byte BOOTERCODE_NEXT_TEST = (byte) 'N';
 
     public static final byte BOOTERCODE_BYE = (byte) 'Z';
 

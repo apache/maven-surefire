@@ -21,7 +21,9 @@ package org.apache.maven.plugin.surefire.booterclient;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Properties;
+
 import org.apache.maven.surefire.booter.BooterConstants;
 import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
 import org.apache.maven.surefire.booter.KeyValueSource;
@@ -66,7 +68,7 @@ class BooterSerializer
     DOes not modify sourceProperties
      */
     public File serialize(KeyValueSource sourceProperties, ProviderConfiguration booterConfiguration, StartupConfiguration providerConfiguration,
-                          Object testSet)
+                          Object testSet, boolean readTestsFromInStream)
         throws IOException
     {
 
@@ -82,7 +84,9 @@ class BooterSerializer
             properties.setProperty( BooterConstants.TESTARTIFACT_CLASSIFIER, testNg.getClassifier() );
         }
 
-        properties.setProperty( BooterConstants.FORKTESTSET, getTypeEncoded( testSet ) );
+       	properties.setProperty( BooterConstants.FORKTESTSET_PREFER_TESTS_FROM_IN_STREAM, Boolean.valueOf( readTestsFromInStream ) );        	
+       	properties.setProperty( BooterConstants.FORKTESTSET, getTypeEncoded( testSet ) );
+
         TestRequest testSuiteDefinition = booterConfiguration.getTestSuiteDefinition();
         if ( testSuiteDefinition != null )
         {

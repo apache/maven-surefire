@@ -116,12 +116,17 @@ public class JUnitCoreProvider
 
         if ( testsToRun == null )
         {
-            testsToRun = forkTestSet == null ? getSuitesAsList( filter ) : TestsToRun.fromClass( (Class) forkTestSet );
-        }
-
-        if ( testsToRun.size() == 0 )
-        {
-            filter = null;
+            if (forkTestSet instanceof TestsToRun)
+            {
+                testsToRun = (TestsToRun) forkTestSet;
+            }
+            else if (forkTestSet instanceof Class)
+            {
+                testsToRun = TestsToRun.fromClass( (Class) forkTestSet );
+            } else
+            {
+                testsToRun = getSuitesAsList( filter );
+            }
         }
 
         final Map<String, TestSet> testSetMap = new ConcurrentHashMap<String, TestSet>();
