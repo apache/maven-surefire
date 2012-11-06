@@ -63,7 +63,7 @@
       <name>Surefire Developer List</name>
       <post>surefire-dev@maven.apache.org</post>
       <subscribe>surefire-dev-subscribe@maven.apache.org</subscribe>
-      <unsubscribe>surfire-dev-unsubscribe@maven.apache.org</unsubscribe>
+      <unsubscribe>surefire-dev-unsubscribe@maven.apache.org</unsubscribe>
       <archive>http://mail-archives.apache.org/mod_mbox/maven-surefire-dev/</archive>
       <otherArchives>
         <otherArchive>http://www.mail-archive.com/surefire-dev@maven.apache.org</otherArchive>
@@ -296,7 +296,8 @@
               <exclude>.gitignore</exclude>
               <exclude>src/main/resources/META-INF/services/org.apache.maven.surefire.providerapi.SurefireProvider</exclude>
             </excludes>
-          </configuration>        </plugin>
+          </configuration>
+        </plugin>
       </plugins>
     </pluginManagement>
   </build>
@@ -331,12 +332,12 @@
                 </reportPlugins>
               </configuration>
               <dependencies>
-              <dependency>
-              <groupId>org.apache.maven.surefire</groupId>
-              <artifactId>surefire-shadefire</artifactId>
-              <version>${project.version}</version>
-            </dependency>
-            </dependencies>
+                <dependency>
+                  <groupId>org.apache.maven.surefire</groupId>
+                  <artifactId>surefire-shadefire</artifactId>
+                  <version>${project.version}</version>
+                </dependency>
+              </dependencies>
             </plugin>
           </plugins>
         </pluginManagement>
