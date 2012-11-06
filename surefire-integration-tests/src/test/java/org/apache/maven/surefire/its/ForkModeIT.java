@@ -19,6 +19,10 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
@@ -55,8 +59,25 @@ public class ForkModeIT
         String[] pids = doTest( unpack( getProject() ).forkMode( "none" ) );
         assertSamePids( pids );
     }
+    
+    public void testForkModeOncePerThreadSingleThread()
+    {
+        String[] pids = doTest( unpack( getProject() ).forkOncePerThread().threadCount(1) );
+        assertSamePids( pids );
+    }
 
-    public void testForkModeOnce()
+    public void testForkModeOncePerThreadTwoThreads()
+    {
+        String[] pids = doTest( unpack( getProject() ).forkOncePerThread().threadCount(2) );
+        assertDifferentPids( pids, 2 );
+    }
+    
+    private void assertDifferentPids(String[] pids, int numOfDifferentPids) {
+		Set<String> pidSet = new HashSet<String>(Arrays.asList(pids));
+		assertEquals( "number of different pids is not as expected", numOfDifferentPids, pidSet.size() );
+	}
+
+	public void testForkModeOnce()
     {
         String[] pids = doTest( unpack( getProject() ).forkOnce() );
         // DGF It would be nice to assert that "once" was different
@@ -92,6 +113,7 @@ public class ForkModeIT
 
     private String[] doTest( SurefireLauncher forkMode )
     {
+    	forkMode.addD( "testProperty", "testValue_${surefire.threadNumber}" );
         final OutputValidator outputValidator = forkMode.executeTest();
         outputValidator.verifyErrorFreeLog().assertTestSuiteResults( 3, 0, 0, 0 );
         String[] pids = new String[3];

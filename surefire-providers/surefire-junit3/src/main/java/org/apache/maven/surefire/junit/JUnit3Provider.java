@@ -76,7 +76,17 @@ public class JUnit3Provider
     {
         if ( testsToRun == null )
         {
-            testsToRun = forkTestSet == null ? scanClassPath() : TestsToRun.fromClass( (Class<?>) forkTestSet );
+            if (forkTestSet instanceof TestsToRun)
+            {
+                testsToRun = (TestsToRun) forkTestSet;
+            }
+            else if (forkTestSet instanceof Class)
+            {
+                testsToRun = TestsToRun.fromClass( (Class<?>) forkTestSet );
+            } else
+            {
+                testsToRun = scanClassPath();
+            }
         }
 
         ReporterFactory reporterFactory = providerParameters.getReporterFactory();

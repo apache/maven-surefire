@@ -89,9 +89,19 @@ public class JUnit4Provider
     {
         if ( testsToRun == null )
         {
-            testsToRun = forkTestSet == null ? scanClassPath() : TestsToRun.fromClass( (Class<?>) forkTestSet );
+            if (forkTestSet instanceof TestsToRun)
+            {
+                testsToRun = (TestsToRun) forkTestSet;
+            }
+            else if (forkTestSet instanceof Class)
+            {
+                testsToRun = TestsToRun.fromClass( (Class) forkTestSet );
+            } else
+            {
+                testsToRun = scanClassPath();
+            }
         }
-
+        
         upgradeCheck();
 
         final ReporterFactory reporterFactory = providerParameters.getReporterFactory();
@@ -107,9 +117,9 @@ public class JUnit4Provider
 
         runNotifer.fireTestRunStarted( null );
 
-        for ( Class<?> clazz : testsToRun.getLocatedClasses() )
+        for ( Iterator<Class<?>> iter = testsToRun.iterator(); iter.hasNext(); )
         {
-            executeTestSet( clazz, reporter, runNotifer );
+            executeTestSet( iter.next(), reporter, runNotifer );
         }
 
         runNotifer.fireTestRunFinished( result );
