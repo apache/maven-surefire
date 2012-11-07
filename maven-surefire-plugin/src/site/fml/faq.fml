@@ -50,6 +50,23 @@ under the License.
         </p>
       </answer>
     </faq>
+    <faq id="vm-termination">
+      <question>Surefire fails with the message "The forked VM terminated without saying properly goodbye"</question>
+      <answer>
+        <p>
+        Surefire does not support tests or any referenced libraries calling System.exit() at any time. If
+        they do so, they are incompatible with surefire and you should probably file an issue with the library/vendor.
+
+        Alternatively the forked VM could also crash for a number of reasons, which can also make this issue happen.
+        Look for the classical "hs_err*" files indicating VM crashes or examine the log output from running maven
+        when the tests execute. Some "extraordinary" output from crashing processes may be dumped to the console/log.
+
+        If this happens on a CI environment and only after some time runs there is a fair chance your test suite is
+        leaking some kind of OS-level resource that makes things worse for every run. Regular os-level monitoring tools
+        may give you some indication.
+        </p>
+      </answer>
+    </faq>
     <faq id="GWT">
       <question>How can I run GWT tests ?</question>
       <answer>
