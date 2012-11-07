@@ -3,15 +3,16 @@
  */
 package org.apache.maven.surefire.util;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.maven.shared.utils.cli.StreamConsumer;
-import org.apache.maven.shared.utils.cli.StreamPumper;
 import org.apache.maven.surefire.booter.ForkingRunListener;
 
 /**
@@ -29,8 +30,7 @@ import org.apache.maven.surefire.booter.ForkingRunListener;
  */
 public class LazyTestsToRun extends TestsToRun {
 	private List workQueue = new ArrayList();
-	private StreamPumper streamPumper;
-	private boolean started = false;
+	private BufferedReader inputReader;
 	private boolean streamClosed = false;
 	private ClassLoader testClassLoader;
 	private PrintStream originalOutStream;
@@ -41,42 +41,22 @@ public class LazyTestsToRun extends TestsToRun {
 		this.testClassLoader = testClassLoader;
 		this.originalOutStream = originalOutStream;
 
-		streamPumper = new DoneReportingStreamPumper(testSource, new StreamConsumer() {
-			public void consumeLine(String line) {
-				addWorkItem(line);
-			}
-		});
+		inputReader = new BufferedReader(new InputStreamReader(testSource));
 	}
 
 	protected void addWorkItem(String className) {
 		synchronized (workQueue) {
 			workQueue.add(ReflectionUtils.loadClass(testClassLoader, className));
-			workQueue.notifyAll();
 		}
 	}
 
-	private final class DoneReportingStreamPumper extends StreamPumper {
-		private DoneReportingStreamPumper(InputStream in, StreamConsumer consumer) {
-			super(in, consumer);
-		}
-
-		public void setDone() {
-			super.setDone();
-			synchronized (workQueue) {
-				streamClosed = true;
-				workQueue.notifyAll();
-			}
-		}
-	}
-
-	protected void nextTestRequired() {
-		StringBuffer sb = new StringBuffer().append((char) ForkingRunListener.BOOTERCODE_NEXT_TEST).append(
-				",0,want more!\n");
+	protected void requestNextTest() {
+		StringBuffer sb = new StringBuffer();
+		sb.append((char) ForkingRunListener.BOOTERCODE_NEXT_TEST).append(",0,want more!\n");
 		originalOutStream.print(sb.toString());
 	}
 
 	private class BlockingIterator implements Iterator {
-		private static final long TIMEOUT = 30000L;
 		private int lastPos = -1;
 
 		public boolean hasNext() {
@@ -86,15 +66,20 @@ public class LazyTestsToRun extends TestsToRun {
 					return true;
 				} else {
 					if (needsToWaitForInput(nextPos)) {
-						// request new test
-						nextTestRequired();
+						requestNextTest();
 
-						long waitUntilTime = System.currentTimeMillis() + TIMEOUT;
-						
-						// wait for the queue to get filled, the stream to
-						// get closed, to our timeout to run up
-						while (needsToWaitForInput(nextPos) && !hasWaitedLongEnough(waitUntilTime)) {
-							safeWait(workQueue);
+						String nextClassName;
+						try {
+							nextClassName = inputReader.readLine();
+						} catch (IOException e) {
+							streamClosed = true;
+							return false;
+						}
+
+						if (null == nextClassName) {
+							streamClosed = true;
+						} else {
+							addWorkItem(nextClassName);
 						}
 					}
 
@@ -103,19 +88,8 @@ public class LazyTestsToRun extends TestsToRun {
 			}
 		}
 
-		private boolean hasWaitedLongEnough(long waitUntilTime) {
-			return System.currentTimeMillis() > waitUntilTime;
-		}
-
 		private boolean needsToWaitForInput(int nextPos) {
 			return workQueue.size() == nextPos && !streamClosed;
-		}
-
-		private void safeWait(Object obj) {
-			try {
-				obj.wait(TIMEOUT);
-			} catch (InterruptedException e) {
-			}
 		}
 
 		public Object next() {
@@ -131,17 +105,7 @@ public class LazyTestsToRun extends TestsToRun {
 	}
 
 	public Iterator iterator() {
-		startPumperIfNecessary();
 		return new BlockingIterator();
-	}
-
-	protected void startPumperIfNecessary() {
-		synchronized (streamPumper) {
-			if (!started) {
-				streamPumper.start();
-				started = true;
-			}
-		}
 	}
 
 	/**
@@ -159,7 +123,6 @@ public class LazyTestsToRun extends TestsToRun {
 	}
 
 	public String toString() {
-		startPumperIfNecessary();
 		StringBuffer sb = new StringBuffer("LazyTestsToRun ");
 		synchronized (workQueue) {
 			sb.append("(more items expected: ").append(!streamClosed).append("): ");
