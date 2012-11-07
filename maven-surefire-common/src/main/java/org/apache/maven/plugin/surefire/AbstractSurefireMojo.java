@@ -1681,7 +1681,7 @@ public abstract class AbstractSurefireMojo
                 throw new MojoFailureException("groups/excludedGroups are specified but JUnit version on classpath"
                                                    + " is too old to support groups. Check your dependency:tree to see if your project is picking up an old junit version");
             }
-            throw new MojoFailureException("groups/excludedGroups require TestNG or JUunit48+ on project test classpath");
+            throw new MojoFailureException("groups/excludedGroups require TestNG or JUnit48+ on project test classpath");
 
         }
     }
