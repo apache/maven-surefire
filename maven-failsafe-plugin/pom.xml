@@ -112,13 +112,6 @@
     <maven>2.0.9</maven>
   </prerequisites>
 
-  <distributionManagement>
-    <site>
-      <id>apache.website</id>
-      <url>scp://people.apache.org/www/maven.apache.org/plugins/maven-failsafe-plugin</url>
-    </site>
-  </distributionManagement>
-
   <properties>
     <thisPlugin>Failsafe</thisPlugin>
     <thatPlugin>Surefire</thatPlugin>
@@ -181,7 +174,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-plugin-plugin</artifactId>
-        <version>${mavenPluginPluginVersion}</version>
         <configuration>
           <skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
         </configuration>
@@ -210,13 +202,6 @@
             <version>${project.version}</version>
           </dependency>
         </dependencies>
-      </plugin>
-      <plugin>
-        <artifactId>maven-site-plugin</artifactId>
-        <configuration>
-          <stagingSiteURL>scp://people.apache.org/www/maven.apache.org/plugins/${project.artifactId}-${project.version}</stagingSiteURL>
-          <siteDirectory>${project.build.directory}/source-site</siteDirectory>
-        </configuration>
       </plugin>
       <plugin>
         <groupId>org.codehaus.modello</groupId>
