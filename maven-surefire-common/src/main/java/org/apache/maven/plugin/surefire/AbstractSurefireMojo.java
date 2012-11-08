@@ -69,7 +69,10 @@ import org.apache.maven.surefire.util.RunOrder;
 import org.apache.maven.toolchain.Toolchain;
 import org.apache.maven.toolchain.ToolchainManager;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -218,6 +221,13 @@ public abstract class AbstractSurefireMojo
     protected List<String> includes;
 
     /**
+     * A file containing include patterns.
+     * Blank lines, or lines starting with # are ignored.  If {@code includes} are also specified these patterns are appended.
+     */
+    @Parameter
+    protected File includesFile;
+
+    /**
      * A list of &lt;exclude> elements specifying the tests (by pattern) that should be excluded in testing. When not
      * specified and when the <code>test</code> parameter is not specified, the default excludes will be <code><br/>
      * &lt;excludes><br/>
@@ -231,6 +241,13 @@ public abstract class AbstractSurefireMojo
      */
     @Parameter
     protected List<String> excludes;
+
+    /**
+     * A file containing exclude patterns.
+     * Blank lines, or lines starting with # are ignored.  If {@code excludes} are also specified these patterns are appended.
+     */
+    @Parameter
+    protected File excludesFile;
 
     /**
      * ArtifactRepository of the localRepository. To obtain the directory of localRepository in unit tests use
@@ -1086,9 +1103,53 @@ public abstract class AbstractSurefireMojo
         return getSuiteXmlFiles() != null && getSuiteXmlFiles().length > 0;
     }
 
+    private List<String> readListFromFile(final File file) {
+        List<String> list = new ArrayList<String>();
+
+        getLog().debug("Reading list from: " + file);
+
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(file));
+            try {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    line = line.trim();
+
+                    // skip empty and comment lines
+                    if (line.length() == 0 || line.startsWith("#")) {
+                        continue;
+                    }
+
+                    list.add(line);
+                }
+            }
+            finally {
+                reader.close();
+            }
+        }
+        catch (Exception e) {
+            throw new RuntimeException("Failed to load list from file: " + file, e);
+        }
+
+        if (getLog().isDebugEnabled()) {
+            getLog().debug("List contents:");
+            for (String entry : list) {
+                getLog().debug("  " + entry);
+            }
+        }
+
+        return list;
+    }
+
+    private void maybeAppendList(final List<String> base, final List<String> list) {
+        if (list != null) {
+            base.addAll(list);
+        }
+    }
+
     private List<String> getExcludeList()
     {
-        List<String> excludes;
+        List<String> excludes = null;
         if ( isSpecificTestSpecified() )
         {
             // Check to see if we are running a single test. The raw parameter will
@@ -1099,8 +1160,17 @@ public abstract class AbstractSurefireMojo
         }
         else
         {
+            if (getExcludesFile() != null) {
+                excludes = readListFromFile(getExcludesFile());
+            }
 
-            excludes = this.getExcludes();
+            // If we have excludesFile, and we have excludes, then append excludes to excludesFile content
+            if (excludes == null) {
+                excludes = this.getExcludes();
+            }
+            else {
+                maybeAppendList(excludes, this.getExcludes());
+            }
 
             // defaults here, qdox doesn't like the end javadoc value
             // Have to wrap in an ArrayList as surefire expects an ArrayList instead of a List for some reason
@@ -1114,14 +1184,24 @@ public abstract class AbstractSurefireMojo
 
     private List<String> getIncludeList()
     {
-        List<String> includes;
+        List<String> includes = null;
         if ( isSpecificTestSpecified() && !isMultipleExecutionBlocksDetected() )
         {
             includes = getSpecificTests();
         }
         else
         {
-            includes = this.getIncludes();
+            if (getIncludesFile() != null) {
+                includes = readListFromFile(getIncludesFile());
+            }
+
+            // If we have includesFile, and we have includes, then append includes to includesFile content
+            if (includes == null) {
+                includes = this.getIncludes();
+            }
+            else {
+                maybeAppendList(includes, this.getIncludes());
+            }
         }
 
         // defaults here, qdox doesn't like the end javadoc value
@@ -1879,6 +1959,11 @@ public abstract class AbstractSurefireMojo
         return includes;
     }
 
+    public File getIncludesFile()
+    {
+        return includesFile;
+    }
+
     public void setIncludes( List<String> includes )
     {
         this.includes = includes;
@@ -1887,6 +1972,11 @@ public abstract class AbstractSurefireMojo
     public List<String> getExcludes()
     {
         return excludes;
+    }
+
+    public File getExcludesFile()
+    {
+        return excludesFile;
     }
 
     public void setExcludes( List<String> excludes )
