@@ -19,8 +19,6 @@ package org.apache.maven.surefire.suite;
  * under the License.
  */
 
-import java.util.StringTokenizer;
-
 /**
  * Represents a test-run-result; this may be from a single test run or an aggregated result.
  *
@@ -90,29 +88,13 @@ public class RunResult
         return completedCount == 0 ? NO_TESTS : isErrorFree() ? SUCCESS : FAILURE;
     }
 
+    /* Indicates if the tests are error free */
     public boolean isErrorFree()
     {
         return getFailures() == 0 && getErrors() == 0;
     }
 
-    public String getAsString()
-    {
-        return getCompletedCount() + "," + getErrors() + "," + getFailures() + "," + getSkipped() + "," + isFailure()
-            + "," + isTimeout();
-    }
-
-    public static RunResult fromString( String string )
-    {
-        StringTokenizer strTok = new StringTokenizer( string, "," );
-        int completed = Integer.parseInt( strTok.nextToken() );
-        int errors = Integer.parseInt( strTok.nextToken() );
-        int failures = Integer.parseInt( strTok.nextToken() );
-        int skipped = Integer.parseInt( strTok.nextToken() );
-        boolean isFailure = Boolean.parseBoolean( strTok.nextToken() );
-        boolean isTimeout = Boolean.parseBoolean( strTok.nextToken() );
-        return new RunResult( completed, errors, failures, skipped, isFailure, isTimeout );
-    }
-
+    /* Indicates test timeout or technical failure */
     public boolean isFailureOrTimeout()
     {
         return this.timeout || this.failure;

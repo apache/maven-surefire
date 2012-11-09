@@ -19,6 +19,7 @@ package org.apache.maven.plugin.surefire;
  * under the License.
  */
 
+import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.surefire.booter.ProviderConfiguration;
@@ -41,10 +42,9 @@ public final class SurefireHelper
     // Todo: Fix the duplication, probably by making failsafe relate to a "RunResult" too.
 
     public static void reportExecution( SurefireReportParameters reportParameters, RunResult result, Log log )
-        throws MojoFailureException
+        throws MojoFailureException, MojoExecutionException
     {
 
-        String msg;
 
         if ( result.getCompletedCount() == 0 )
         {
@@ -52,27 +52,20 @@ public final class SurefireHelper
             {
                 return;
             }
-            // TODO: i18n
             throw new MojoFailureException(
                 "No tests were executed!  (Set -DfailIfNoTests=false to ignore this error.)" );
         }
 
-        if ( result.isErrorFree() )
+        boolean timeoutOrOtherFailure = result.isFailureOrTimeout();
+        if ( !timeoutOrOtherFailure && result.isErrorFree() )
         {
             return;
         }
 
-        if ( result.isFailureOrTimeout() )
-        {
-            msg = "There was a timeout or other error in the fork";
-        }
-        else
-        {
-            // TODO: i18n
-            msg = "There are test failures.\n\nPlease refer to " + reportParameters.getReportsDirectory()
-                + " for the individual test results.";
-
-        }
+        String msg = timeoutOrOtherFailure ?
+                "There was a timeout or other error in the fork" :
+                "There are test failures.\n\nPlease refer to " + reportParameters.getReportsDirectory()
+                        + " for the individual test results.";
 
         if ( reportParameters.isTestFailureIgnore() )
         {
@@ -80,7 +73,14 @@ public final class SurefireHelper
         }
         else
         {
-            throw new MojoFailureException( msg );
+            if (result.isFailure())
+            {
+                throw new MojoExecutionException(msg );
+            }
+            else
+            {
+                throw new MojoFailureException( msg );
+            }
         }
     }
 
