@@ -46,13 +46,6 @@
     <maven>${mavenVersion}</maven>
   </prerequisites>
 
-  <distributionManagement>
-    <site>
-      <id>apache.website</id>
-      <url>scp://people.apache.org/www/maven.apache.org/plugins/maven-surefire-report-plugin</url>
-    </site>
-  </distributionManagement>
-
   <properties>
     <doxiaVersion>1.1.4</doxiaVersion>
   </properties>
@@ -143,13 +136,6 @@
             </goals>
           </execution>
         </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-site-plugin</artifactId>
-        <configuration>
-          <stagingSiteURL>scp://people.apache.org/www/maven.apache.org/plugins/${project.artifactId}-${project.version}</stagingSiteURL>
-        </configuration>
       </plugin>
     </plugins>
   </build>
