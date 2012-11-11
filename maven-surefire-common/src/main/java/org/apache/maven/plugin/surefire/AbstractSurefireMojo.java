@@ -1010,7 +1010,7 @@ public abstract class AbstractSurefireMojo
 
         return new ProviderConfiguration( directoryScannerParameters, runOrderParameters, failIfNoTests,
                                           reporterConfiguration, testNg, testSuiteDefinition, providerProperties,
-                                          null, null, false );
+                                          null, false );
     }
 
     public String getStatisticsFileName( String configurationHash )

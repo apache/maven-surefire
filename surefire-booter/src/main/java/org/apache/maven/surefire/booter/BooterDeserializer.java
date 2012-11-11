@@ -64,7 +64,6 @@ public class BooterDeserializer
         
         final TypeEncodedValue typeEncodedTestForFork = properties.getTypeEncodedValue( FORKTESTSET );
         final boolean preferTestsFromInStream = properties.getBooleanProperty( FORKTESTSET_PREFER_TESTS_FROM_IN_STREAM );
-        final List multipleTestSet = properties.getStringList( FORKTEST_MULTIPLE_PREFIX );
         
         final String requestedTest = properties.getProperty( REQUESTEDTEST );
         final String requestedTestMethod = properties.getProperty( REQUESTEDTESTMETHOD );
@@ -94,7 +93,7 @@ public class BooterDeserializer
 
         return new ProviderConfiguration( dirScannerParams, runOrderParameters,
                                           properties.getBooleanProperty( FAILIFNOTESTS ), reporterConfiguration, testNg,
-                                          testSuiteDefinition, properties.getProperties(), typeEncodedTestForFork, multipleTestSet, preferTestsFromInStream );
+                                          testSuiteDefinition, properties.getProperties(), typeEncodedTestForFork, preferTestsFromInStream );
     }
 
     public StartupConfiguration getProviderConfiguration()

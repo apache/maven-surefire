@@ -152,7 +152,7 @@ public class BooterDeserializerStartupConfigurationTest
         RunOrderParameters runOrderParameters = new RunOrderParameters( RunOrder.DEFAULT, null );
         return new ProviderConfiguration( directoryScannerParameters, runOrderParameters, true, reporterConfiguration,
                                           new TestArtifactInfo( "5.0", "ABC" ), testSuiteDefinition, new Properties(),
-                                          BooterDeserializerProviderConfigurationTest.aTestTyped, null, true );
+                                          BooterDeserializerProviderConfigurationTest.aTestTyped, true );
     }
 
     private StartupConfiguration getTestStartupConfiguration( ClassLoaderConfiguration classLoaderConfiguration )

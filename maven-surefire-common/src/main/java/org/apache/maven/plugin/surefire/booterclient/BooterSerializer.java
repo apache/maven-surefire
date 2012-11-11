@@ -85,14 +85,8 @@ class BooterSerializer
         }
 
        	properties.setProperty( BooterConstants.FORKTESTSET_PREFER_TESTS_FROM_IN_STREAM, Boolean.valueOf( readTestsFromInStream ) );        	
-        if (testSet instanceof List) 
-        {
-        	properties.addList((List) testSet, BooterConstants.FORKTEST_MULTIPLE_PREFIX);        	
-        }
-        else 
-        {
-        	properties.setProperty( BooterConstants.FORKTESTSET, getTypeEncoded( testSet ) );
-        }
+       	properties.setProperty( BooterConstants.FORKTESTSET, getTypeEncoded( testSet ) );
+
         TestRequest testSuiteDefinition = booterConfiguration.getTestSuiteDefinition();
         if ( testSuiteDefinition != null )
         {
