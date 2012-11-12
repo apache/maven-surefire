@@ -57,7 +57,9 @@ public class TestNGDirectoryTestSuite
     private final ArtifactVersion version;
 
     private final Map options;
-
+    
+    private final Map junitOptions;
+    
     private final String testSourceDirectory;
 
     private final File reportsDirectory;
@@ -69,6 +71,8 @@ public class TestNGDirectoryTestSuite
     private final String testMethodPattern;
 
     private final RunOrderCalculator runOrderCalculator;
+    
+    private final Class junitTestClass;
 
     public TestNGDirectoryTestSuite( String testSourceDirectory, String artifactVersion, Properties confOptions,
                                      File reportsDirectory, String testMethodPattern,
@@ -84,6 +88,8 @@ public class TestNGDirectoryTestSuite
         this.scanResult = scanResult;
         this.version = new DefaultArtifactVersion( artifactVersion );
         this.testMethodPattern = testMethodPattern;
+        this.junitTestClass = findJUnitTestClass();
+        this.junitOptions = createJUnitOptions();
     }
 
     public void execute( TestsToRun testsToRun, ReporterFactory reporterManagerFactory )
@@ -98,62 +104,37 @@ public class TestNGDirectoryTestSuite
     		executeMulti( testsToRun, reporterManagerFactory );
     	} else if ( testsToRun.size() == 1 )
     	{
-            this.options.put( "suitename", testsToRun.getLocatedClasses()[0].getName() );
-
-            RunListener reporter = reporterManagerFactory.createReporter();
-            ConsoleOutputCapture.startCapture( (ConsoleOutputReceiver) reporter );
-
-            startTestSuite( reporter, this );
-
-            TestNGExecutor.run( new Class[]{ (Class) testsToRun.iterator().next() }, this.testSourceDirectory, this.options,
-                                this.version, reporter, this, reportsDirectory, testMethodPattern );
-
-            finishTestSuite( reporter, this );
+    		Class testClass = (Class) testsToRun.iterator().next();
+            executeSingleClass( reporterManagerFactory, testClass );
     	}
     }
 
+	private void executeSingleClass( ReporterFactory reporterManagerFactory, Class testClass ) throws TestSetFailedException {
+		this.options.put( "suitename", testClass.getName() );
+
+		RunListener reporter = reporterManagerFactory.createReporter();
+		ConsoleOutputCapture.startCapture( (ConsoleOutputReceiver) reporter );
+
+		startTestSuite( reporter, this );
+
+		final Map optionsToUse = isJUnitTest(testClass) ? junitOptions : options;
+		
+		TestNGExecutor.run( new Class[]{ testClass }, testSourceDirectory, optionsToUse,
+		                    version, reporter, this, reportsDirectory, testMethodPattern );
+
+		finishTestSuite( reporter, this );
+	}
+
     public void executeLazy( TestsToRun testsToRun, ReporterFactory reporterFactory )
             throws ReporterException, TestSetFailedException
+    {
+        
+        for ( Iterator testClassIt = testsToRun.iterator(); testClassIt.hasNext(); )
         {
-            Class junitTest = findJUnitTestClass();
-
-            final File testNgReportsDirectory, junitReportsDirectory;
-            
-            if ( junitTest == null )
-            {
-                testNgReportsDirectory = reportsDirectory;
-                junitReportsDirectory = reportsDirectory;
-
-            } else
-            {
-            	testNgReportsDirectory = new File( reportsDirectory, "testng-native-results" );
-            	junitReportsDirectory = new File( reportsDirectory, "testng-junit-results" );
-            }
-
-            final Map junitOptions = createJUnitOptions();
-
-            // RunListener reporterManager = new SynchronizedReporterManager( reporterFactory.createReporter() );
-            RunListener reporterManager = reporterFactory.createReporter();
-            ConsoleOutputCapture.startCapture( (ConsoleOutputReceiver) reporterManager );
-            startTestSuite( reporterManager, this );
-            
-            for ( Iterator testClassIt = testsToRun.iterator(); testClassIt.hasNext(); )
-            {
-                Class c = (Class) testClassIt.next();
-                if ( junitTest != null && junitTest.isAssignableFrom( c ) )
-                {
-                    TestNGExecutor.run( new Class[]{c}, this.testSourceDirectory, junitOptions, this.version, reporterManager,
-                                        this, junitReportsDirectory, testMethodPattern );
-                }
-                else
-                {
-                    TestNGExecutor.run( new Class[]{c}, this.testSourceDirectory, this.options, this.version, reporterManager, this,
-                    		testNgReportsDirectory, testMethodPattern );
-                }
-            }
-
-            finishTestSuite( reporterManager, this );
+            Class c = (Class) testClassIt.next();
+            executeSingleClass(reporterFactory, c);
         }
+    }
 
 	private Class findJUnitTestClass() {
 		Class junitTest;
@@ -171,15 +152,13 @@ public class TestNGDirectoryTestSuite
     public void executeMulti( TestsToRun testsToRun, ReporterFactory reporterFactory )
         throws ReporterException, TestSetFailedException
     {
-        Class junitTest = findJUnitTestClass();
-
         List testNgTestClasses = new ArrayList();
         List junitTestClasses = new ArrayList();
         Class[] allClasses = testsToRun.getLocatedClasses();
         for ( int i = 0; i < allClasses.length; i++)
         {
             Class c = allClasses[i];
-            if ( junitTest != null && junitTest.isAssignableFrom( c ) )
+            if ( isJUnitTest(c) )
             {
                 junitTestClasses.add( c );
             }
@@ -204,21 +183,23 @@ public class TestNGDirectoryTestSuite
 
         Class[] testClasses = (Class[]) testNgTestClasses.toArray( new Class[testNgTestClasses.size()] );
 
-        TestNGExecutor.run( testClasses, this.testSourceDirectory, this.options, this.version, reporterManager, this,
+        TestNGExecutor.run( testClasses, this.testSourceDirectory, options, version, reporterManager, this,
                             testNgReportsDirectory, testMethodPattern );
 
         if ( junitTestClasses.size() > 0 )
         {
             testClasses = (Class[]) junitTestClasses.toArray( new Class[junitTestClasses.size()] );
 
-            Map junitOptions = createJUnitOptions();
-
-            TestNGExecutor.run( testClasses, this.testSourceDirectory, junitOptions, this.version, reporterManager,
+            TestNGExecutor.run( testClasses, testSourceDirectory, junitOptions, version, reporterManager,
                                 this, junitReportsDirectory, testMethodPattern );
         }
 
         finishTestSuite( reporterManager, this );
     }
+
+	private boolean isJUnitTest(Class c) {
+		return junitTestClass != null && junitTestClass.isAssignableFrom( c );
+	}
 
 	private Map createJUnitOptions() {
 		Map junitOptions = new HashMap(this.options);
