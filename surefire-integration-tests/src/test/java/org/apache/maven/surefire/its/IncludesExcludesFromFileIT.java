@@ -36,17 +36,22 @@ public class IncludesExcludesFromFileIT
         return unpack( "/includes-excludes-from-file" );
     }
 
-    public void testIncludesExcludes()
+    public void testSimple()
     {
         testWithProfile( "-Psimple" );
     }
 
-    public void testRegexIncludesExcludes()
+    public void testSimpleMixed()
+    {
+        testWithProfile( "-Psimple-mixed" );
+    }
+
+    public void testRegex()
     {
         testWithProfile( "-Pregex" );
     }
 
-    public void testPathBasedIncludesExcludes()
+    public void testPath()
     {
         testWithProfile( "-Ppath" );
     }

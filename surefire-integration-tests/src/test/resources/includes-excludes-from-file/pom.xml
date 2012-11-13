@@ -70,6 +70,24 @@ under the License.
     </profile>
 
     <profile>
+      <id>simple-mixed</id>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <excludesFile>${project.basedir}/common-excludes.txt</excludesFile>
+              <includes>
+                <include>**/NotIncludedByDefault.java</include>
+              </includes>
+              <includesFile>${project.basedir}/simple-mixed-includes.txt</includesFile>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <profile>
       <id>regex</id>
       <build>
         <plugins>
@@ -93,21 +111,6 @@ under the License.
             <configuration>
               <excludesFile>${project.basedir}/common-excludes.txt</excludesFile>
               <includesFile>${project.basedir}/path-includes.txt</includesFile>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-
-    <profile>
-      <id>withXmlFile</id>
-      <build>
-        <plugins>
-          <plugin>
-            <artifactId>maven-surefire-plugin</artifactId>
-            <configuration>
-              <excludesFile>${project.basedir}/common-excludes.txt</excludesFile>
-              <includesFile>${project.basedir}/withXmlFile-includes.txt</includesFile>
             </configuration>
           </plugin>
         </plugins>
