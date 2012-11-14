@@ -299,7 +299,7 @@ public class ForkStarter
         finally
         {
             threadedStreamConsumer.close();
-            forkClient.close();
+            forkClient.close(runResult == RunResult.Timeout);
             if ( runResult == null )
             {
                 runResult = globalRunStatistics.getRunResult();

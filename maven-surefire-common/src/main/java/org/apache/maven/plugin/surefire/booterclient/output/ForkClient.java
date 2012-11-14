@@ -248,9 +248,9 @@ public class ForkClient
         return (ConsoleLogger) getOrCreateReporter( channelNumber );
     }
 
-    public void close()
+    public void close(boolean hadTimeout)
     {
-        if ( !saidGoodBye )
+        if ( !saidGoodBye && !hadTimeout)
         {
             throw new RuntimeException(
                 "The forked VM terminated without saying properly goodbye. VM crash or System.exit called ?" );

@@ -45,8 +45,9 @@ public final class SurefireHelper
         throws MojoFailureException, MojoExecutionException
     {
 
+        boolean timeoutOrOtherFailure = result.isFailureOrTimeout();
 
-        if ( result.getCompletedCount() == 0 )
+        if ( !timeoutOrOtherFailure && result.getCompletedCount() == 0 )
         {
             if ( ( reportParameters.getFailIfNoTests() == null ) || !reportParameters.getFailIfNoTests() )
             {
@@ -56,7 +57,6 @@ public final class SurefireHelper
                 "No tests were executed!  (Set -DfailIfNoTests=false to ignore this error.)" );
         }
 
-        boolean timeoutOrOtherFailure = result.isFailureOrTimeout();
         if ( !timeoutOrOtherFailure && result.isErrorFree() )
         {
             return;
