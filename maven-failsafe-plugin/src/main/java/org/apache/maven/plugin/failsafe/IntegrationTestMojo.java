@@ -32,7 +32,6 @@ import java.util.List;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.surefire.AbstractSurefireMojo;
-import org.apache.maven.plugin.surefire.Summary;
 import org.apache.maven.plugin.surefire.booterclient.ChecksumCalculator;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -43,9 +42,10 @@ import org.apache.maven.surefire.booter.ProviderConfiguration;
 import org.apache.maven.surefire.failsafe.model.FailsafeSummary;
 import org.apache.maven.surefire.failsafe.model.io.xpp3.FailsafeSummaryXpp3Reader;
 import org.apache.maven.surefire.failsafe.model.io.xpp3.FailsafeSummaryXpp3Writer;
-import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.shared.utils.ReaderFactory;
 
+import org.apache.maven.surefire.suite.RunResult;
+import org.apache.maven.surefire.util.NestedCheckedException;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 
 import static org.apache.maven.shared.utils.io.IOUtil.close;
@@ -178,29 +178,28 @@ public class IntegrationTestMojo
     @Parameter( property = "encoding", defaultValue = "${project.reporting.outputEncoding}" )
     private String encoding;
 
-    protected void handleSummary( Summary summary )
+    protected void handleSummary(RunResult summary, NestedCheckedException firstForkException)
         throws MojoExecutionException, MojoFailureException
     {
-        FailsafeSummary failsafeSummary = createFailsafeSummaryFromSummary( summary );
+        FailsafeSummary failsafeSummary = createFailsafeSummaryFromSummary( summary, firstForkException );
         writeSummary( failsafeSummary );
     }
 
-    private FailsafeSummary createFailsafeSummaryFromSummary( Summary summary )
+    private FailsafeSummary createFailsafeSummaryFromSummary(RunResult summary, NestedCheckedException firstForkException)
     {
         FailsafeSummary failsafeSummary = new FailsafeSummary();
-        if ( summary.isErrorFree() )
+        if ( firstForkException == null )
         {
-            RunResult result = summary.getResultOfLastSuccessfulRun();
-            if ( result != null )
+            if ( summary != null )
             {
-                failsafeSummary.setResult( result.getForkedProcessCode() );
+                failsafeSummary.setResult( summary.getForkedProcessCode() );
             }
         }
         else
         {
             failsafeSummary.setResult( ProviderConfiguration.TESTS_FAILED_EXIT_CODE );
             //noinspection ThrowableResultOfMethodCallIgnored
-            failsafeSummary.setException( summary.getFirstException().getMessage() );
+            failsafeSummary.setException( firstForkException.getMessage() );
         }
         return failsafeSummary;
     }

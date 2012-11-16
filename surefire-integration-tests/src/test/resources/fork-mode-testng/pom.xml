@@ -26,6 +26,7 @@
         <version>${surefire.version}</version>
         <configuration>
           <forkMode>${forkMode}</forkMode>
+          <threadCount>${threadCount}</threadCount>
         </configuration>
       </plugin>
     </plugins>

@@ -28,6 +28,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.surefire.suite.RunResult;
+import org.apache.maven.surefire.util.NestedCheckedException;
 import org.apache.maven.surefire.util.internal.StringUtils;
 
 /**
@@ -143,38 +144,31 @@ public class SurefirePlugin
     @Parameter( property = "surefire.useManifestOnlyJar", defaultValue = "true" )
     private boolean useManifestOnlyJar;
 
-    protected void handleSummary( Summary summary )
+    protected void handleSummary(RunResult summary, NestedCheckedException firstForkException)
         throws MojoExecutionException, MojoFailureException
     {
-        assertNoException( summary );
-        assertNoFailureOrTimeout( summary );
-        writeSummary( summary );
+        assertNoException( firstForkException );
+        assertNoFailureOrTimeout( firstForkException );  // todo: These seem identical ??
+
+        SurefireHelper.reportExecution(this, summary, getLog() );
     }
 
-    private void assertNoException( Summary summary )
-        throws MojoExecutionException
-    {
-        if ( !summary.isErrorFree() )
-        {
-            Exception cause = summary.getFirstException();
-            throw new MojoExecutionException( cause.getMessage(), cause );
-        }
-    }
-
-    private void assertNoFailureOrTimeout( Summary summary )
-        throws MojoExecutionException
-    {
-        if ( summary.isFailureOrTimeout() )
-        {
-            throw new MojoExecutionException( "Failure or timeout" );
-        }
-    }
-
-    private void writeSummary( Summary summary )
+    private void assertNoException( NestedCheckedException firstForkException )
         throws MojoFailureException
     {
-        RunResult result = summary.getResultOfLastSuccessfulRun();
-        SurefireHelper.reportExecution( this, result, getLog() );
+        if ( firstForkException != null )
+        {
+            throw new MojoFailureException( firstForkException.getMessage(), firstForkException );
+        }
+    }
+
+    private void assertNoFailureOrTimeout( NestedCheckedException summary )
+        throws MojoFailureException
+    {
+        if ( summary != null )
+        {
+            throw new MojoFailureException( "Failure or timeout" );
+        }
     }
 
     protected boolean isSkipExecution()

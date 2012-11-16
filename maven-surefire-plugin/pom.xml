@@ -112,13 +112,6 @@
     <maven>2.0.9</maven>
   </prerequisites>
 
-  <distributionManagement>
-    <site>
-      <id>apache.website</id>
-      <url>scp://people.apache.org/www/maven.apache.org/plugins/maven-surefire-plugin</url>
-    </site>
-  </distributionManagement>
-
   <properties>
     <thisPlugin>Surefire</thisPlugin>
     <thatPlugin>Failsafe</thatPlugin>
@@ -169,7 +162,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-plugin-plugin</artifactId>
-        <version>${mavenPluginPluginVersion}</version>
         <configuration>
           <skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
         </configuration>
@@ -188,13 +180,6 @@
             </goals>
           </execution>
         </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-site-plugin</artifactId>
-        <configuration>
-          <stagingSiteURL>scp://people.apache.org/www/maven.apache.org/plugins/${project.artifactId}-${project.version}</stagingSiteURL>
-        </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>

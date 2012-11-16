@@ -17,7 +17,8 @@
   ~ under the License. 
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -63,7 +64,7 @@
       <name>Surefire Developer List</name>
       <post>surefire-dev@maven.apache.org</post>
       <subscribe>surefire-dev-subscribe@maven.apache.org</subscribe>
-      <unsubscribe>surfire-dev-unsubscribe@maven.apache.org</unsubscribe>
+      <unsubscribe>surefire-dev-unsubscribe@maven.apache.org</unsubscribe>
       <archive>http://mail-archives.apache.org/mod_mbox/maven-surefire-dev/</archive>
       <otherArchives>
         <otherArchive>http://www.mail-archive.com/surefire-dev@maven.apache.org</otherArchive>
@@ -123,12 +124,12 @@
         <artifactId>surefire-api</artifactId>
         <version>${project.version}</version>
       </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>3.1</version>
-        </dependency>
-        <dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-lang3</artifactId>
+        <version>3.1</version>
+      </dependency>
+      <dependency>
         <groupId>org.apache.maven.surefire</groupId>
         <artifactId>surefire-booter</artifactId>
         <version>${project.version}</version>
@@ -207,12 +208,12 @@
         <groupId>org.apache.maven</groupId>
         <artifactId>maven-model</artifactId>
         <version>${mavenVersion}</version>
-      </dependency>      
+      </dependency>
       <dependency>
         <groupId>org.apache.maven</groupId>
         <artifactId>maven-toolchain</artifactId>
         <version>${mavenVersion}</version>
-      </dependency>                                                      
+      </dependency>
       <dependency>
         <groupId>org.codehaus.plexus</groupId>
         <artifactId>plexus-utils</artifactId>
@@ -221,7 +222,7 @@
       <dependency>
         <groupId>org.apache.maven.shared</groupId>
         <artifactId>maven-shared-utils</artifactId>
-        <version>0.1</version>
+        <version>0.2-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>jmock</groupId>
@@ -234,7 +235,7 @@
         <artifactId>junit</artifactId>
         <version>3.8.1</version>
         <scope>test</scope>
-      </dependency>      
+      </dependency>
     </dependencies>
   </dependencyManagement>
   <dependencies>
@@ -294,9 +295,11 @@
               <exclude>**/*.iws</exclude>
               <exclude>**/*.versionsBackup</exclude>
               <exclude>.gitignore</exclude>
-              <exclude>src/main/resources/META-INF/services/org.apache.maven.surefire.providerapi.SurefireProvider</exclude>
+              <exclude>src/main/resources/META-INF/services/org.apache.maven.surefire.providerapi.SurefireProvider
+              </exclude>
             </excludes>
-          </configuration>        </plugin>
+          </configuration>
+        </plugin>
       </plugins>
     </pluginManagement>
   </build>
@@ -321,17 +324,26 @@
                   <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>${shadedVersion}</version>
+                    <version>${project.version}</version>
+                  </plugin>
+                  <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-project-info-reports-plugin</artifactId>
+            <version>2.6</version>
+                  </plugin>
+                  <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-plugin-plugin</artifactId>
                   </plugin>
                 </reportPlugins>
               </configuration>
               <dependencies>
-              <dependency>
-              <groupId>org.apache.maven.surefire</groupId>
-              <artifactId>surefire-shadefire</artifactId>
-              <version>${project.version}</version>
-            </dependency>
-            </dependencies>
+                <dependency>
+                  <groupId>org.apache.maven.surefire</groupId>
+                  <artifactId>surefire-shadefire</artifactId>
+                  <version>${project.version}</version>
+                </dependency>
+              </dependencies>
             </plugin>
           </plugins>
         </pluginManagement>
@@ -357,9 +369,9 @@
             <configuration>
               <mappingId>customizable</mappingId>
               <configurators>
-                <configurator id="org.maven.ide.eclipse.jdt.javaConfigurator" />
-                <configurator id="org.maven.ide.eclipse.modello.modelloConfigurator" />
-                <configurator id="org.maven.ide.eclipse.plexus.annotations.plexusConfigurator" />
+                <configurator id="org.maven.ide.eclipse.jdt.javaConfigurator"/>
+                <configurator id="org.maven.ide.eclipse.modello.modelloConfigurator"/>
+                <configurator id="org.maven.ide.eclipse.plexus.annotations.plexusConfigurator"/>
               </configurators>
               <mojoExecutions>
                 <mojoExecution>org.apache.maven.plugins:maven-resources-plugin::</mojoExecution>
@@ -368,6 +380,6 @@
           </plugin>
         </plugins>
       </build>
-    </profile>    
+    </profile>
   </profiles>
 </project>

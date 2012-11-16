@@ -27,29 +27,38 @@ import junit.framework.TestCase;
 public class RunResultTest
     extends TestCase
 {
-    public void testGetAsString()
-        throws Exception
+
+    public void testEmptySummaryShouldBeErrorFree()
     {
+        RunResult summary = RunResult.noTestsRun();
+        assertTrue( summary.isErrorFree() );
+    }
+
+    public void testFailuresInFirstRun()
+    {
+        RunResult resultOne = new RunResult( 10, 1, 3, 2 );
+        RunResult resultTwo = new RunResult( 20, 0, 0, 0 );
+        assertFalse( resultOne.aggregate( resultTwo ).isErrorFree() );
+    }
+
+
+    public void testAggregatedValues()
+    {
+        RunResult simple = getSimpleAggregate();
+        assertEquals( 20, simple.getCompletedCount() );
+        assertEquals( 3, simple.getErrors() );
+        assertEquals( 7, simple.getFailures() );
+        assertEquals( 4, simple.getSkipped() );
 
     }
 
-    public void testFromString()
-        throws Exception
+    private RunResult getSimpleAggregate()
     {
-        RunResult original = new RunResult( 4, 3, 2, 1, true, false );
-        final String asString = original.getAsString();
-        final RunResult runResult = RunResult.fromString( asString );
-        verifySame( original, runResult );
+        RunResult resultOne = new RunResult( 10, 1, 3, 2 );
+        RunResult resultTwo = new RunResult( 10, 2, 4, 2 );
+        return resultOne.aggregate( resultTwo );
     }
 
-    public void testFromString2()
-        throws Exception
-    {
-        RunResult original = new RunResult( 5, 6, 7, 8, false, true );
-        final String asString = original.getAsString();
-        final RunResult runResult = RunResult.fromString( asString );
-        verifySame( original, runResult );
-    }
 
     private void verifySame( RunResult original, RunResult runResult )
     {

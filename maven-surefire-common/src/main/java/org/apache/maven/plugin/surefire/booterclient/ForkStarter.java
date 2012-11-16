@@ -23,20 +23,31 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
+import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import org.apache.maven.plugin.surefire.AbstractSurefireMojo;
 import org.apache.maven.plugin.surefire.CommonReflector;
-import org.apache.maven.plugin.surefire.SurefireProperties;
 import org.apache.maven.plugin.surefire.StartupReportConfiguration;
+import org.apache.maven.plugin.surefire.SurefireProperties;
+import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.ProcessAwareCommandline;
+import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.TestProvidingInputStream;
 import org.apache.maven.plugin.surefire.booterclient.output.ForkClient;
 import org.apache.maven.plugin.surefire.booterclient.output.ThreadedStreamConsumer;
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
+import org.apache.maven.shared.utils.cli.CommandLineException;
+import org.apache.maven.shared.utils.cli.CommandLineTimeOutException;
+import org.apache.maven.shared.utils.cli.CommandLineUtils;
 import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.ClasspathConfiguration;
 import org.apache.maven.surefire.booter.KeyValueSource;
@@ -48,13 +59,9 @@ import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.apache.maven.surefire.booter.SurefireExecutionException;
 import org.apache.maven.surefire.booter.SystemPropertyManager;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
-import org.apache.maven.surefire.report.RunStatistics;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.util.DefaultScanResult;
-import org.apache.maven.shared.utils.cli.CommandLineException;
-import org.apache.maven.shared.utils.cli.CommandLineTimeOutException;
-import org.apache.maven.shared.utils.cli.CommandLineUtils;
-import org.apache.maven.shared.utils.cli.Commandline;
+import org.codehaus.plexus.util.CollectionUtils;
 
 
 /**
@@ -70,7 +77,6 @@ import org.apache.maven.shared.utils.cli.Commandline;
  * @author Dan Fabulich
  * @author Carlos Sanchez
  * @author Kristian Rosenvold
- *
  */
 public class ForkStarter
 {
@@ -88,6 +94,17 @@ public class ForkStarter
 
     private static volatile int systemPropertiesFileCounter = 0;
 
+    private final ThreadLocal<Integer> threadNumber = new ThreadLocal<Integer>()
+    {
+        private final AtomicInteger nextThreadNumber = new AtomicInteger( 1 );
+
+        @Override
+        protected Integer initialValue()
+        {
+            return nextThreadNumber.getAndIncrement();
+        }
+    };
+
 
     public ForkStarter( ProviderConfiguration providerConfiguration, StartupConfiguration startupConfiguration,
                         ForkConfiguration forkConfiguration, int forkedProcessTimeoutInSeconds,
@@ -101,7 +118,8 @@ public class ForkStarter
         fileReporterFactory = new DefaultReporterFactory( startupReportConfiguration );
     }
 
-    public RunResult run( SurefireProperties effectiveSystemProperties, DefaultScanResult scanResult, String requestedForkMode )
+    public RunResult run( SurefireProperties effectiveSystemProperties, DefaultScanResult scanResult,
+                          String requestedForkMode )
         throws SurefireBooterForkException, SurefireExecutionException
     {
         final RunResult result;
@@ -113,16 +131,21 @@ public class ForkStarter
             {
                 final ForkClient forkClient =
                     new ForkClient( fileReporterFactory, startupReportConfiguration.getTestVmSystemProperties() );
-                result = fork( null, new PropertiesWrapper( providerProperties), forkClient, fileReporterFactory.getGlobalRunStatistics(),
-                               effectiveSystemProperties );
+                result =
+                    fork( null, new PropertiesWrapper( providerProperties ), forkClient, effectiveSystemProperties, 1,
+                          null );
             }
             else if ( ForkConfiguration.FORK_ALWAYS.equals( requestedForkMode ) )
             {
-                result = runSuitesForkPerTestSet( providerProperties, effectiveSystemProperties, 1 );
+                result = runSuitesForkPerTestSet( effectiveSystemProperties, 1 );
             }
             else if ( ForkConfiguration.FORK_PERTHREAD.equals( requestedForkMode ) )
             {
-                result = runSuitesForkPerTestSet( providerProperties, effectiveSystemProperties, forkConfiguration.getForkCount() );
+                result = runSuitesForkPerTestSet( effectiveSystemProperties, forkConfiguration.getForkCount() );
+            }
+            else if ( ForkConfiguration.FORK_ONCE_PERTHREAD.equals( requestedForkMode ) )
+            {
+                result = runSuitesForkOncePerThread( effectiveSystemProperties, forkConfiguration.getForkCount() );
             }
             else
             {
@@ -136,33 +159,117 @@ public class ForkStarter
         return result;
     }
 
-    private RunResult runSuitesForkPerTestSet( final Properties properties,
-                                               final SurefireProperties effectiveSystemProperties, int forkCount )
+    private RunResult runSuitesForkOncePerThread( final SurefireProperties effectiveSystemProperties, int forkCount )
         throws SurefireBooterForkException
     {
 
-        ArrayList<Future<RunResult>> results = new ArrayList<Future<RunResult>>( 500 );
+        ArrayList<Future<RunResult>> results = new ArrayList<Future<RunResult>>( forkCount );
         ExecutorService executorService = new ThreadPoolExecutor( forkCount, forkCount, 60, TimeUnit.SECONDS,
-                                                                  new ArrayBlockingQueue<Runnable>( 500 ) );
+                                                                  new ArrayBlockingQueue<Runnable>( forkCount ) );
 
         try
         {
             // Ask to the executorService to run all tasks
             RunResult globalResult = new RunResult( 0, 0, 0, 0 );
-            final Iterator suites = getSuitesIterator();
-            while ( suites.hasNext() )
+
+            List<Class<?>> suites = CollectionUtils.iteratorToList( getSuitesIterator() );
+            final Queue<String> messageQueue = new ConcurrentLinkedQueue<String>();
+            for ( Class<?> clazz : suites )
             {
-                final Object testSet = suites.next();
-                final ForkClient forkClient =
-                    new ForkClient( fileReporterFactory, startupReportConfiguration.getTestVmSystemProperties() );
+                messageQueue.add( clazz.getName() );
+            }
+
+            for ( int threadNum = 0; threadNum < forkCount && threadNum < suites.size(); threadNum++ )
+            {
+                final int finalThreadNumber = threadNum + 1;
+
                 Callable<RunResult> pf = new Callable<RunResult>()
                 {
                     public RunResult call()
                         throws Exception
                     {
-                        return fork( testSet, new PropertiesWrapper( properties), forkClient,
-                                     fileReporterFactory.getGlobalRunStatistics(),
-                                     effectiveSystemProperties );
+                        TestProvidingInputStream testProvidingInputStream =
+                            new TestProvidingInputStream( messageQueue );
+
+                        ForkClient forkClient =
+                            new ForkClient( fileReporterFactory, startupReportConfiguration.getTestVmSystemProperties(),
+                                            testProvidingInputStream );
+
+                        return fork( null, new PropertiesWrapper( providerConfiguration.getProviderProperties() ),
+                                     forkClient, effectiveSystemProperties, finalThreadNumber,
+                                     testProvidingInputStream );
+                    }
+                };
+
+                results.add( executorService.submit( pf ) );
+            }
+
+            for ( Future<RunResult> result : results )
+            {
+                try
+                {
+                    RunResult cur = result.get();
+                    if ( cur != null )
+                    {
+                        globalResult = globalResult.aggregate( cur );
+                    }
+                    else
+                    {
+                        throw new SurefireBooterForkException( "No results for " + result.toString() );
+                    }
+                }
+                catch ( InterruptedException e )
+                {
+                    throw new SurefireBooterForkException( "Interrupted", e );
+                }
+                catch ( ExecutionException e )
+                {
+                    throw new SurefireBooterForkException( "ExecutionException", e );
+                }
+            }
+            return globalResult;
+
+        }
+        finally
+        {
+            closeExecutor( executorService );
+        }
+
+    }
+
+    private RunResult runSuitesForkPerTestSet( final SurefireProperties effectiveSystemProperties, final int forkCount )
+        throws SurefireBooterForkException
+    {
+
+        ArrayList<Future<RunResult>> results = new ArrayList<Future<RunResult>>( 500 );
+        ExecutorService executorService =
+            new ThreadPoolExecutor( forkCount, forkCount, 60, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>() );
+
+        try
+        {
+            // Ask to the executorService to run all tasks
+            RunResult globalResult = new RunResult( 0, 0, 0, 0 );
+            final Iterator<Class<?>> suites = getSuitesIterator();
+            while ( suites.hasNext() )
+            {
+                final Object testSet = suites.next();
+                Callable<RunResult> pf = new Callable<RunResult>()
+                {
+                    public RunResult call()
+                        throws Exception
+                    {
+                        int thisThreadsThreadNumber = threadNumber.get();
+                        if ( thisThreadsThreadNumber > forkCount )
+                        {
+                            // this would be a bug in the ThreadPoolExecutor
+                            throw new IllegalStateException(
+                                "More threads than " + forkCount + " have been created by the ThreadPoolExecutor." );
+                        }
+
+                        ForkClient forkClient = new ForkClient( fileReporterFactory,
+                                                                startupReportConfiguration.getTestVmSystemProperties() );
+                        return fork( testSet, new PropertiesWrapper( providerConfiguration.getProviderProperties() ),
+                                     forkClient, effectiveSystemProperties, thisThreadsThreadNumber, null );
                     }
                 };
                 results.add( executorService.submit( pf ) );
@@ -217,9 +324,9 @@ public class ForkStarter
         }
     }
 
-
     private RunResult fork( Object testSet, KeyValueSource providerProperties, ForkClient forkClient,
-                            RunStatistics globalRunStatistics, SurefireProperties effectiveSystemProperties )
+                            SurefireProperties effectiveSystemProperties, int threadNumber,
+                            TestProvidingInputStream testProvidingInputStream )
         throws SurefireBooterForkException
     {
         File surefireProperties;
@@ -228,14 +335,19 @@ public class ForkStarter
         {
             BooterSerializer booterSerializer = new BooterSerializer( forkConfiguration );
 
-            surefireProperties = booterSerializer.serialize( providerProperties, providerConfiguration, startupConfiguration, testSet );
+            surefireProperties =
+                booterSerializer.serialize( providerProperties, providerConfiguration, startupConfiguration, testSet,
+                                            null != testProvidingInputStream );
 
             if ( effectiveSystemProperties != null )
             {
-                systPropsFile = SystemPropertyManager.writePropertiesFile( effectiveSystemProperties,
-                                                                           forkConfiguration.getTempDirectory(),
-                                                                           "surefire_" + systemPropertiesFileCounter++,
-                                                                           forkConfiguration.isDebug() );
+                SurefireProperties filteredProperties =
+                    AbstractSurefireMojo.createCopyAndReplaceThreadNumPlaceholder( effectiveSystemProperties,
+                                                                                   threadNumber );
+                systPropsFile =
+                    SystemPropertyManager.writePropertiesFile( filteredProperties, forkConfiguration.getTempDirectory(),
+                                                               "surefire_" + systemPropertiesFileCounter++,
+                                                               forkConfiguration.isDebug() );
             }
         }
         catch ( IOException e )
@@ -253,10 +365,15 @@ public class ForkStarter
         // Surefire-booter if !useSystemClassLoader
         Classpath bootClasspath = Classpath.join( bootClasspathConfiguration, additionlClassPathUrls );
 
-        @SuppressWarnings( "unchecked" ) Commandline cli =
+        @SuppressWarnings( "unchecked" ) ProcessAwareCommandline cli =
             forkConfiguration.createCommandLine( bootClasspath.getClassPath(),
                                                  startupConfiguration.getClassLoaderConfiguration(),
-                                                 startupConfiguration.isShadefire() );
+                                                 startupConfiguration.isShadefire(), threadNumber );
+
+        if ( testProvidingInputStream != null )
+        {
+            testProvidingInputStream.setFlushReceiverProvider( cli );
+        }
 
         cli.createArg().setFile( surefireProperties );
 
@@ -278,7 +395,8 @@ public class ForkStarter
         {
             final int timeout = forkedProcessTimeoutInSeconds > 0 ? forkedProcessTimeoutInSeconds : 0;
             final int result =
-                CommandLineUtils.executeCommandLine( cli, threadedStreamConsumer, threadedStreamConsumer, timeout );
+                CommandLineUtils.executeCommandLine( cli, testProvidingInputStream, threadedStreamConsumer,
+                                                     threadedStreamConsumer, timeout );
             if ( result != RunResult.SUCCESS )
             {
                 throw new SurefireBooterForkException( "Error occurred in starting fork, check output in log" );
@@ -298,17 +416,18 @@ public class ForkStarter
         finally
         {
             threadedStreamConsumer.close();
-            forkClient.close();
+            forkClient.close( runResult == RunResult.Timeout );
             if ( runResult == null )
             {
-                runResult = globalRunStatistics.getRunResult();
+                runResult = fileReporterFactory.getGlobalRunStatistics().getRunResult();
             }
         }
 
         return runResult;
     }
 
-    private Iterator getSuitesIterator()
+    @SuppressWarnings( "unchecked" )
+    private Iterator<Class<?>> getSuitesIterator()
         throws SurefireBooterForkException
     {
         try
