@@ -29,7 +29,7 @@ import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 
 import org.apache.maven.plugin.surefire.AbstractSurefireMojo;
-import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.ProcessAwareCommandline;
+import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.OutputStreamFlushableCommandline;
 import org.apache.maven.plugin.surefire.util.Relocator;
 import org.apache.maven.shared.utils.StringUtils;
 import org.apache.maven.shared.utils.cli.Commandline;
@@ -128,17 +128,17 @@ public class ForkConfiguration
      * @throws org.apache.maven.surefire.booter.SurefireBooterForkException
      *          when unable to perform the fork
      */
-    public ProcessAwareCommandline createCommandLine( List<String> classPath, ClassLoaderConfiguration classpathConfiguration,
+    public OutputStreamFlushableCommandline createCommandLine( List<String> classPath, ClassLoaderConfiguration classpathConfiguration,
                                           boolean shadefire, int threadNumber )
         throws SurefireBooterForkException
     {
         return createCommandLine( classPath, classpathConfiguration.isManifestOnlyJarRequestedAndUsable(), shadefire, threadNumber );
     }
 
-    public ProcessAwareCommandline createCommandLine( List<String> classPath, boolean useJar, boolean shadefire, int threadNumber )
+    public OutputStreamFlushableCommandline createCommandLine( List<String> classPath, boolean useJar, boolean shadefire, int threadNumber )
         throws SurefireBooterForkException
     {
-    	ProcessAwareCommandline cli = new ProcessAwareCommandline();
+    	OutputStreamFlushableCommandline cli = new OutputStreamFlushableCommandline();
 
         cli.setExecutable( jvmExecutable );
 

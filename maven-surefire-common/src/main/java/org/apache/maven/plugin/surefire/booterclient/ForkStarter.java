@@ -40,7 +40,7 @@ import org.apache.maven.plugin.surefire.AbstractSurefireMojo;
 import org.apache.maven.plugin.surefire.CommonReflector;
 import org.apache.maven.plugin.surefire.StartupReportConfiguration;
 import org.apache.maven.plugin.surefire.SurefireProperties;
-import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.ProcessAwareCommandline;
+import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.OutputStreamFlushableCommandline;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.TestProvidingInputStream;
 import org.apache.maven.plugin.surefire.booterclient.output.ForkClient;
 import org.apache.maven.plugin.surefire.booterclient.output.ThreadedStreamConsumer;
@@ -365,7 +365,7 @@ public class ForkStarter
         // Surefire-booter if !useSystemClassLoader
         Classpath bootClasspath = Classpath.join( bootClasspathConfiguration, additionlClassPathUrls );
 
-        @SuppressWarnings( "unchecked" ) ProcessAwareCommandline cli =
+        @SuppressWarnings( "unchecked" ) OutputStreamFlushableCommandline cli =
             forkConfiguration.createCommandLine( bootClasspath.getClassPath(),
                                                  startupConfiguration.getClassLoaderConfiguration(),
                                                  startupConfiguration.isShadefire(), threadNumber );
