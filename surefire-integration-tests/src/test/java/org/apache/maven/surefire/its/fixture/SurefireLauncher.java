@@ -384,6 +384,16 @@ public class SurefireLauncher
         return forkMode( "perthread" );
     }
 
+    public SurefireLauncher forkOncePerThread()
+    {
+        return forkMode( "onceperthread" );
+    }
+    
+    public SurefireLauncher threadCount(int threadCount)
+    {
+        return addGoal( "-DthreadCount=" + threadCount );
+    }
+    
     public SurefireLauncher forkMode( String forkMode )
     {
         return addGoal( "-DforkMode=" + forkMode );

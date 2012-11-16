@@ -19,7 +19,6 @@ package org.apache.maven.surefire.its.jiras;
  */
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
-import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 
 import org.junit.Test;
 
@@ -30,7 +29,7 @@ public class Surefire907PerThreadWithoutThreadCountIT
     public void categoryAB()
     {
         OutputValidator validator = unpack("fork-mode").forkPerThread().executeTestWithFailure();
-        validator.verifyTextInLog( "Fork mode perthread requires a thread count" );
+        validator.verifyTextInLog( "Fork modes perthread and onceperthread require a thread count" );
     }
 
 }

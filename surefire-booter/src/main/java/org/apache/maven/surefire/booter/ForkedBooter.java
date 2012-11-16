@@ -23,7 +23,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.PrintStream;
+
 import org.apache.maven.surefire.suite.RunResult;
+import org.apache.maven.surefire.util.LazyTestsToRun;
 
 /**
  * The part of the booter that is unique to a forked vm.
@@ -64,6 +66,7 @@ public class ForkedBooter
             final StartupConfiguration startupConfiguration = booterDeserializer.getProviderConfiguration();
 
             TypeEncodedValue forkedTestSet = providerConfiguration.getTestForFork();
+            boolean readTestsFromInputStream = providerConfiguration.isReadTestsFromInStream();
 
             final ClasspathConfiguration classpathConfiguration = startupConfiguration.getClasspathConfiguration();
             final ClassLoader testClassLoader = classpathConfiguration.createForkingTestClassLoader(
@@ -71,7 +74,17 @@ public class ForkedBooter
 
             startupConfiguration.writeSurefireTestClasspathProperty();
 
-            Object testSet = forkedTestSet != null ? forkedTestSet.getDecodedValue( testClassLoader ) : null;
+            Object testSet;
+            if (forkedTestSet != null) {
+                 testSet = forkedTestSet.getDecodedValue( testClassLoader );
+            } 
+            else if (readTestsFromInputStream) {
+                testSet = new LazyTestsToRun(System.in, testClassLoader, originalOut);
+            }
+            else {
+                testSet = null;
+            }
+
             runSuitesInProcess( testSet, testClassLoader, startupConfiguration, providerConfiguration, originalOut );
             // Say bye.
             originalOut.println( "Z,0,BYE!" );
