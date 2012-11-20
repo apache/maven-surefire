@@ -100,7 +100,7 @@
   <scm>
     <connection>scm:git:https://git-wip-us.apache.org/repos/asf/maven-surefire.git</connection>
     <developerConnection>scm:git:https://git-wip-us.apache.org/repos/asf/maven-surefire.git</developerConnection>
-    <url>https://git-wip-us.apache.org/repos/asf?p=maven-surefire</url>
+    <url>https://git-wip-us.apache.org/repos/asf?p=maven-surefire.git</url>
   </scm>
   <issueManagement>
     <system>jira</system>
