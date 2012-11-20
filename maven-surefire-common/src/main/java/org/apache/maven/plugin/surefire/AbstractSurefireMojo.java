@@ -694,8 +694,12 @@ public abstract class AbstractSurefireMojo
                     firstForkException = e;
                 }
             }
-
         }
+
+        if (firstForkException != null){
+            current = RunResult.failure(current, firstForkException);
+        }
+
         handleSummary( current, firstForkException );
     }
 

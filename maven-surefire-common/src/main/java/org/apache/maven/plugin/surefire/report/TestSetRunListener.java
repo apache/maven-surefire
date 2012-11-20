@@ -44,6 +44,9 @@ public class TestSetRunListener
 
     private final TestSetStats detailsForThis;
 
+    static {
+        System.out.println("static = " + true);
+    }
 
     private final List<ByteBuffer> testStdOut = Collections.synchronizedList( new ArrayList<ByteBuffer>() );
 

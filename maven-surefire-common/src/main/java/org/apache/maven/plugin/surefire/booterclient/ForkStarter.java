@@ -406,21 +406,21 @@ public class ForkStarter
         }
         catch ( CommandLineTimeOutException e )
         {
-            runResult = RunResult.Timeout;
+            runResult = RunResult.timeout(fileReporterFactory.getGlobalRunStatistics().getRunResult());
         }
         catch ( CommandLineException e )
         {
-            runResult = RunResult.Failure;
+            runResult = RunResult.failure(fileReporterFactory.getGlobalRunStatistics().getRunResult(), e);
             throw new SurefireBooterForkException( "Error while executing forked tests.", e.getCause() );
         }
         finally
         {
             threadedStreamConsumer.close();
-            forkClient.close( runResult == RunResult.Timeout );
             if ( runResult == null )
             {
                 runResult = fileReporterFactory.getGlobalRunStatistics().getRunResult();
             }
+            forkClient.close( runResult.isTimeout());
         }
 
         return runResult;

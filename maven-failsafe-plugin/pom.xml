@@ -204,28 +204,6 @@
         </dependencies>
       </plugin>
       <plugin>
-        <groupId>org.codehaus.modello</groupId>
-        <artifactId>modello-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <goals>
-              <!-- Generate the xpp3 reader code -->
-              <goal>xpp3-reader</goal>
-              <!-- Generate the xpp3 writer code -->
-              <goal>xpp3-writer</goal>
-              <!-- Generate the Java sources for the model itself -->
-              <goal>java</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <models>
-            <model>src/main/mdo/failsafe-summary.mdo</model>
-          </models>
-          <version>2.12</version>
-        </configuration>
-      </plugin>
-      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-invoker-plugin</artifactId>
         <configuration>
