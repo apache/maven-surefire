@@ -148,7 +148,6 @@ public class SurefirePlugin
         throws MojoExecutionException, MojoFailureException
     {
         assertNoException( firstForkException );
-        assertNoFailureOrTimeout( firstForkException );  // todo: These seem identical ??
 
         SurefireHelper.reportExecution(this, summary, getLog() );
     }

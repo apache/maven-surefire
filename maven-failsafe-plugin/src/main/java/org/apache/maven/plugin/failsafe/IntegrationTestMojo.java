@@ -19,16 +19,6 @@ package org.apache.maven.plugin.failsafe;
  * under the License.
  */
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.util.List;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.surefire.AbstractSurefireMojo;
@@ -37,16 +27,16 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
-import org.apache.maven.shared.utils.StringUtils;
-import org.apache.maven.surefire.booter.ProviderConfiguration;
-import org.apache.maven.surefire.failsafe.model.FailsafeSummary;
-import org.apache.maven.surefire.failsafe.model.io.xpp3.FailsafeSummaryXpp3Reader;
-import org.apache.maven.surefire.failsafe.model.io.xpp3.FailsafeSummaryXpp3Writer;
 import org.apache.maven.shared.utils.ReaderFactory;
-
+import org.apache.maven.shared.utils.StringUtils;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.util.NestedCheckedException;
-import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.List;
 
 import static org.apache.maven.shared.utils.io.IOUtil.close;
 
@@ -55,7 +45,7 @@ import static org.apache.maven.shared.utils.io.IOUtil.close;
  *
  * @author Jason van Zyl
  * @author Stephen Connolly
- * @noinspection JavaDoc, UnusedDeclaration
+ * @noinspection JavaDoc,
  */
 @Mojo( name = "integration-test", requiresProject = true, requiresDependencyResolution = ResolutionScope.TEST,
        defaultPhase = LifecyclePhase.INTEGRATION_TEST, threadSafe = true )
@@ -181,31 +171,11 @@ public class IntegrationTestMojo
     protected void handleSummary(RunResult summary, NestedCheckedException firstForkException)
         throws MojoExecutionException, MojoFailureException
     {
-        FailsafeSummary failsafeSummary = createFailsafeSummaryFromSummary( summary, firstForkException );
-        writeSummary( failsafeSummary );
-    }
-
-    private FailsafeSummary createFailsafeSummaryFromSummary(RunResult summary, NestedCheckedException firstForkException)
-    {
-        FailsafeSummary failsafeSummary = new FailsafeSummary();
-        if ( firstForkException == null )
-        {
-            if ( summary != null )
-            {
-                failsafeSummary.setResult( summary.getForkedProcessCode() );
-            }
-        }
-        else
-        {
-            failsafeSummary.setResult( ProviderConfiguration.TESTS_FAILED_EXIT_CODE );
-            //noinspection ThrowableResultOfMethodCallIgnored
-            failsafeSummary.setException( firstForkException.getMessage() );
-        }
-        return failsafeSummary;
+        writeSummary( summary, firstForkException );
     }
 
     @SuppressWarnings( "unchecked" )
-    private void writeSummary( FailsafeSummary summary )
+    private void writeSummary( RunResult summary, NestedCheckedException firstForkException )
         throws MojoExecutionException
     {
         File summaryFile = getSummaryFile();
@@ -219,31 +189,10 @@ public class IntegrationTestMojo
         FileInputStream fin = null;
         try
         {
-            FailsafeSummary mergedSummary = summary;
             Object token = getPluginContext().get( FAILSAFE_IN_PROGRESS_CONTEXT_KEY );
-            if ( summaryFile.exists() && token != null )
-            {
-                fin = new FileInputStream( summaryFile );
-
-                mergedSummary = new FailsafeSummaryXpp3Reader().read(
-                    new InputStreamReader( new BufferedInputStream( fin ), getEncodingOrDefault() ) );
-
-                mergedSummary.merge( summary );
-            }
-
-            fout = new FileOutputStream( summaryFile );
-            BufferedOutputStream bufferedOutputStream = new BufferedOutputStream( fout );
-            Writer writer = new OutputStreamWriter( bufferedOutputStream, getEncodingOrDefault() );
-            FailsafeSummaryXpp3Writer xpp3Writer = new FailsafeSummaryXpp3Writer();
-            xpp3Writer.write( writer, mergedSummary );
-            writer.close();
-            bufferedOutputStream.close();
+            summary.writeSummary(summaryFile, token != null, getEncodingOrDefault());
         }
         catch ( IOException e )
-        {
-            throw new MojoExecutionException( e.getMessage(), e );
-        }
-        catch ( XmlPullParserException e )
         {
             throw new MojoExecutionException( e.getMessage(), e );
         }
@@ -270,6 +219,7 @@ public class IntegrationTestMojo
         }
     }
 
+    @SuppressWarnings("deprecation")
     protected boolean isSkipExecution()
     {
         return isSkip() || isSkipTests() || isSkipITs() || isSkipExec();
@@ -305,12 +255,14 @@ public class IntegrationTestMojo
         this.skipITs = skipITs;
     }
 
+    @SuppressWarnings("deprecation")
     @Deprecated
     public boolean isSkipExec()
     {
         return skipExec;
     }
 
+    @SuppressWarnings("deprecation")
     @Deprecated
     public void setSkipExec( boolean skipExec )
     {

@@ -57,7 +57,7 @@ public class SurefireReportParser
                 continue;
             }
             String[] xmlReportFiles = getIncludedFiles( reportsDirectory, "*.xml",
-                                                        "*.txt, testng-failed.xml, testng-failures.xml, testng-results.xml" );
+                             "*.txt, testng-failed.xml, testng-failures.xml, testng-results.xml, failsafe-summary.xml");
             for ( String xmlReportFile : xmlReportFiles )
             {
                 File xmlReport = new File( reportsDirectory, xmlReportFile );
