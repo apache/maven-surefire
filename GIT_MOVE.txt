@@ -1,4 +1,0 @@
-sources move to git cannonical repository: https://git-wip-us.apache.org/repos/asf/maven-surefire.git
-browse url: https://git-wip-us.apache.org/repos/asf?p=maven-surefire
-
-
