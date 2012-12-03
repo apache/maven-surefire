@@ -596,7 +596,7 @@ public abstract class AbstractSurefireMojo
         if ( verifyParameters() && !hasExecutedBefore() )
         {
             DefaultScanResult scan = scanDirectories();
-            if ( scan.isEmpty() )
+            if ( !isValidSuiteXmlFileConfig() && scan.isEmpty() )
             {
                 if ( getEffectiveFailIfNoTests() )
                 {
