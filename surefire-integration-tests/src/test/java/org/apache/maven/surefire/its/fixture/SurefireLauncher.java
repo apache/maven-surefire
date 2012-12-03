@@ -26,8 +26,8 @@ import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.it.VerificationException;
 import org.apache.maven.it.Verifier;
-import org.apache.maven.it.util.FileUtils;
 import org.apache.maven.it.util.ResourceExtractor;
+import org.apache.maven.shared.utils.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
