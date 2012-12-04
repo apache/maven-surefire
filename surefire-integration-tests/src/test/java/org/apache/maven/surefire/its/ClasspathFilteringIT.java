@@ -32,6 +32,6 @@ public class ClasspathFilteringIT
     public void testAdditionalClasspath()
         throws Exception
     {
-        unpack( "classpath-filtering" ).executeTest().verifyErrorFree( 1 );
+        unpack( "classpath-filtering" ).debugLogging().executeTest().verifyErrorFree( 1 );
     }
 }

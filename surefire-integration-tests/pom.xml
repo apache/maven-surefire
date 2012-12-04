@@ -87,7 +87,10 @@
           <artifactId>maven-failsafe-plugin</artifactId>
           <version>${shadedVersion}</version>
           <configuration>
-            <!-- Pass current surefire version to the main suite so that it -->
+            <threadCount>${surefire.threadcount}</threadCount>
+            <perCoreThreadCount>false</perCoreThreadCount>
+
+              <!-- Pass current surefire version to the main suite so that it -->
             <!-- can forward to all integration test projects. SUREFIRE-513 -->
             <systemPropertyVariables>
               <surefire.version>${project.version}</surefire.version>
@@ -99,6 +102,7 @@
               <user.localRepository>${settings.localRepository}</user.localRepository>
               <useInterpolatedSettings>${useInterpolatedSettings}</useInterpolatedSettings>
               <testBuildDirectory>${project.build.testOutputDirectory}</testBuildDirectory>
+              <verifier.forkMode>${verifier.forkMode}</verifier.forkMode>
             </systemPropertyVariables>
           </configuration>
           <dependencies>

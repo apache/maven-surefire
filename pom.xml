@@ -113,7 +113,7 @@
 
   <properties>
     <mavenVersion>2.0.9</mavenVersion>
-    <shadedVersion>2.12</shadedVersion>
+    <shadedVersion>2.12.4</shadedVersion>
     <mavenPluginPluginVersion>3.1</mavenPluginPluginVersion>
   </properties>
 
