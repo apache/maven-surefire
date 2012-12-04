@@ -1,4 +1,4 @@
-package junit.twoTestCases;
+package surefire141;
 import junit.extensions.TestSetup;
 import junit.framework.Test;
 import junit.framework.TestCase;

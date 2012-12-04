@@ -43,7 +43,7 @@ public abstract class SurefireJUnit4IntegrationTestCase
     {
         try
         {
-            return new SurefireLauncher( this.getClass(), sourceName );
+            return new SurefireLauncher( this.getClass(), sourceName, "" );
         }
         catch ( VerificationException e )
         {

@@ -19,6 +19,12 @@ package org.apache.maven.surefire.its.fixture;
  * under the License.
  */
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.apache.commons.lang.text.StrSubstitutor;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
@@ -28,13 +34,6 @@ import org.apache.maven.it.VerificationException;
 import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
 import org.apache.maven.shared.utils.io.FileUtils;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Encapsulate all needed features to start a surefire run
@@ -57,48 +56,107 @@ public class SurefireLauncher
 
     private final String surefireVersion = System.getProperty( "surefire.version" );
 
-    private final Verifier verifier;
+    private Verifier verifier;
 
-    private final OutputValidator surefireVerifier;
+    private OutputValidator validator;
 
     private boolean failIfNoTests;
 
+    private final Class testClass;
 
-    public SurefireLauncher( Class testClass, String resourceName )
+    private final String resourceName;
+
+    private final String suffix;
+
+
+    public SurefireLauncher( Class testClass, String resourceName, String suffix )
         throws VerificationException, IOException
     {
-        this( createVerifier( testClass, resourceName ) );
-
-    }
-
-    public SurefireLauncher( Verifier verifier )
-    {
-        this.verifier = verifier;
-        this.surefireVerifier = new OutputValidator( verifier );
+        this.testClass = testClass;
+        this.resourceName = resourceName;
+        this.suffix = suffix != null ? suffix : "";
         goals.clear();
         goals.addAll( getInitialGoals() );
         cliOptions.clear();
     }
 
-    private static Verifier createVerifier( Class testClass, String resourceName )
+    public SurefireLauncher( Verifier verifier )
+    {
+        this.testClass = null;
+        this.resourceName = null;
+        this.suffix = "";
+        this.verifier = verifier;
+        goals.clear();
+        goals.addAll( getInitialGoals() );
+        cliOptions.clear();
+    }
+
+    private Verifier createVerifier( Class testClass, String resourceName )
         throws IOException, VerificationException
     {
         return new Verifier( simpleExtractResources( testClass, resourceName ).getAbsolutePath() );
     }
 
-    private static File simpleExtractResources( Class<?> cl, String resourcePath )
+    private File simpleExtractResources( Class<?> cl, String resourcePath )
         throws IOException
     {
         if ( !resourcePath.startsWith( "/" ) )
         {
             resourcePath = "/" + resourcePath;
         }
-        String tempDirPath = System.getProperty( "maven.test.tmpdir", System.getProperty( "java.io.tmpdir" ) );
-        File tempDir = new File( tempDirPath, cl.getSimpleName() );
+        File tempDir = getUnpackDir();
         File testDir = new File( tempDir, resourcePath );
         FileUtils.deleteDirectory( testDir );
 
-        return ResourceExtractor.extractResourcePath( cl, resourcePath, tempDir, true );
+        return ResourceExtractor.extractResourceToDestination( cl, resourcePath, tempDir, true );
+    }
+
+    private File getUnpackDir()
+    {
+        String tempDirPath = System.getProperty( "maven.test.tmpdir", System.getProperty( "java.io.tmpdir" ) );
+        return new File( tempDirPath, testClass.getSimpleName() + File.separator + getTestMethodName()  + suffix);
+    }
+
+    String getTestMethodName()
+    {
+        // dirty. Im sure we can use junit4 rules to attach testname to thread instead
+        StackTraceElement[] stackTrace = getStackTraceElements();
+        StackTraceElement topInTestClass = null;
+        topInTestClass = findTopElemenent( stackTrace, testClass );
+        if (topInTestClass == null){
+            // Look in superclass...
+            topInTestClass = findTopElemenent( stackTrace, testClass.getSuperclass() );
+        }
+        if ( topInTestClass != null )
+        {
+            return topInTestClass.getMethodName();
+        }
+        throw new IllegalStateException( "Cannot find " + testClass.getName() + "in stacktrace" );
+    }
+
+    private StackTraceElement findTopElemenent( StackTraceElement[] stackTrace, Class testClassToLookFor )
+    {
+        StackTraceElement bestmatch = null;
+        for ( StackTraceElement stackTraceElement : stackTrace )
+        {
+            if ( stackTraceElement.getClassName().equals( testClassToLookFor.getName() ) )
+            {
+                bestmatch = stackTraceElement;
+            }
+        }
+        return bestmatch;
+    }
+
+    StackTraceElement[] getStackTraceElements()
+    {
+        try
+        {
+            throw new RuntimeException();
+        }
+        catch ( RuntimeException e )
+        {
+            return e.getStackTrace();
+        }
     }
 
     public void reset()
@@ -111,14 +169,14 @@ public class SurefireLauncher
     public SurefireLauncher getSubProjectLauncher( String subProject )
         throws VerificationException
     {
-        final File subFile = surefireVerifier.getSubFile( subProject );
+        final File subFile = getValidator().getSubFile( subProject );
         return new SurefireLauncher( new Verifier( subFile.getAbsolutePath() ) );
     }
 
     public OutputValidator getSubProjectValidator( String subProject )
         throws VerificationException
     {
-        final File subFile = surefireVerifier.getSubFile( subProject );
+        final File subFile = getValidator().getSubFile( subProject );
         return new OutputValidator( new Verifier( subFile.getAbsolutePath() ) );
     }
 
@@ -186,7 +244,7 @@ public class SurefireLauncher
 
     public SurefireLauncher assertNotPresent( String subFile )
     {
-        verifier.assertFileNotPresent( surefireVerifier.getSubFile( subFile ).getAbsolutePath() );
+        getVerifier().assertFileNotPresent( getValidator().getSubFile( subFile ).getAbsolutePath() );
         return this;
     }
 
@@ -247,7 +305,7 @@ public class SurefireLauncher
         }
         catch ( SurefireVerifierException ignore )
         {
-            return surefireVerifier;
+            return getValidator();
         }
         throw new RuntimeException( "Expecting build failure, got none!" );
     }
@@ -260,7 +318,7 @@ public class SurefireLauncher
         }
         catch ( SurefireVerifierException ignore )
         {
-            return surefireVerifier;
+            return getValidator();
         }
         throw new RuntimeException( "Expecting build failure, got none!" );
     }
@@ -269,7 +327,7 @@ public class SurefireLauncher
     public FailsafeOutputValidator executeVerify()
     {
         OutputValidator verify = execute( "verify" );
-        return new FailsafeOutputValidator( verify.getVerifier());
+        return new FailsafeOutputValidator( verify.getVerifier() );
     }
 
     public OutputValidator execute( String goal )
@@ -310,10 +368,10 @@ public class SurefireLauncher
 
                 cliOptions.add( "-s " + interpolatedSettings.getCanonicalPath() );
             }
-            verifier.setCliOptions( cliOptions );
+            getVerifier().setCliOptions( cliOptions );
 
-            verifier.executeGoals( goals, envvars );
-            return surefireVerifier;
+            getVerifier().executeGoals( goals, envvars );
+            return getValidator();
         }
         catch ( IOException e )
         {
@@ -325,7 +383,7 @@ public class SurefireLauncher
         }
         finally
         {
-            verifier.resetStreams();
+            getVerifier().resetStreams();
         }
     }
 
@@ -379,6 +437,7 @@ public class SurefireLauncher
     {
         return forkMode( "pertest" );
     }
+
     public SurefireLauncher forkPerThread()
     {
         return forkMode( "perthread" );
@@ -388,12 +447,12 @@ public class SurefireLauncher
     {
         return forkMode( "onceperthread" );
     }
-    
-    public SurefireLauncher threadCount(int threadCount)
+
+    public SurefireLauncher threadCount( int threadCount )
     {
         return addGoal( "-DthreadCount=" + threadCount );
     }
-    
+
     public SurefireLauncher forkMode( String forkMode )
     {
         return addGoal( "-DforkMode=" + forkMode );
@@ -484,7 +543,8 @@ public class SurefireLauncher
 
     public File getUnpackLocation()
     {
-        return new File( verifier.getBasedir() );
+        getVerifier(); // Make sure we have unpacked
+        return getUnpackDir();
     }
 
     public SurefireLauncher addFailsafeReportOnlyGoal()
@@ -511,7 +571,7 @@ public class SurefireLauncher
     {
         try
         {
-            FileUtils.deleteDirectory( surefireVerifier.getSubFile( "site" ) );
+            FileUtils.deleteDirectory( getValidator().getSubFile( "site" ) );
         }
         catch ( IOException e )
         {
@@ -526,8 +586,32 @@ public class SurefireLauncher
         return this;
     }
 
-    public OutputValidator getSurefireVerifier()
+    public OutputValidator getValidator()
     {
-        return surefireVerifier;
+        if ( validator == null )
+        {
+            this.validator = new OutputValidator( getVerifier() );
+        }
+        return validator;
+    }
+
+    private Verifier getVerifier()
+    {
+        if ( verifier == null )
+        {
+            try
+            {
+                this.verifier = createVerifier( testClass, resourceName );
+            }
+            catch ( IOException e )
+            {
+                throw new RuntimeException( e );
+            }
+            catch ( VerificationException e )
+            {
+                throw new RuntimeException( e );
+            }
+        }
+        return verifier;
     }
 }

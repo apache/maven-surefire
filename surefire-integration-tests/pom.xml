@@ -36,7 +36,7 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <it.settings.showPasswords>false</it.settings.showPasswords>
     <testng.version>5.7</testng.version>
-    <surefire.threadcount>1</surefire.threadcount>
+    <surefire.threadcount>4</surefire.threadcount>
     <mavenHomeUsed>${maven.home}</mavenHomeUsed>
     <useInterpolatedSettings>false</useInterpolatedSettings>
   </properties>
@@ -45,7 +45,7 @@
     <dependency>
       <groupId>org.apache.maven.shared</groupId>
       <artifactId>maven-verifier</artifactId>
-      <version>1.3</version>
+      <version>1.4-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>
@@ -87,7 +87,7 @@
           <artifactId>maven-failsafe-plugin</artifactId>
           <version>${shadedVersion}</version>
           <configuration>
-            <threadCount>${surefire.threadcount}</threadCount>
+            <threadCount>1</threadCount>
             <perCoreThreadCount>false</perCoreThreadCount>
 
               <!-- Pass current surefire version to the main suite so that it -->

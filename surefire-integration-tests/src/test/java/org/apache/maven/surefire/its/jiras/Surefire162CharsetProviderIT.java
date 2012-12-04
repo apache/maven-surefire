@@ -38,7 +38,7 @@ public class Surefire162CharsetProviderIT
         throws Exception
     {
         SurefireLauncher unpack = unpack( "/surefire-162-charsetProvider" );
-        OutputValidator verifier = unpack.getSurefireVerifier();
+        OutputValidator verifier = unpack.getValidator();
         File jarFile = new File( verifier.getArtifactPath( "jcharset", "jcharset", "1.2.1", "jar" ) );
         jarFile.getParentFile().mkdirs();
         FileUtils.copyFile( verifier.getSubFile( "repo/jcharset/jcharset/1.2.1/jcharset-1.2.1.jar" ), jarFile );

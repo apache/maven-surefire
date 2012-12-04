@@ -26,6 +26,9 @@
   <version>1.0-SNAPSHOT</version>
   <name>Test provider</name>
 
+  <properties>
+    <surefire.version>2.12.4</surefire.version>
+  </properties>
   <dependencies>
     <dependency>
       <groupId>org.apache.maven.surefire</groupId>

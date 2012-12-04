@@ -46,7 +46,23 @@ public abstract class SurefireIntegrationTestCase
     {
         try
         {
-            return new SurefireLauncher( this.getClass(), sourceName );
+            return new SurefireLauncher( this.getClass(), sourceName, "" );
+        }
+        catch ( VerificationException e )
+        {
+            throw new SurefireVerifierException( e );
+        }
+        catch ( IOException e )
+        {
+            throw new SurefireVerifierException( e );
+        }
+    }
+
+    public SurefireLauncher unpack( String sourceName, String suffix )
+    {
+        try
+        {
+            return new SurefireLauncher( this.getClass(), sourceName, suffix );
         }
         catch ( VerificationException e )
         {
