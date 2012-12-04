@@ -38,37 +38,37 @@ public class ForkModeIT
 {
     public void testForkModeAlways()
     {
-        String[] pids = doTest( unpack( getProject() ).forkAlways() );
+        String[] pids = doTest( unpack( getProject() ).debugLogging().forkAlways() );
         assertDifferentPids( pids );
     }
 
     public void testForkModePerTest()
     {
-        String[] pids = doTest( unpack( getProject() ).forkPerTest() );
+        String[] pids = doTest( unpack( getProject() ).debugLogging().forkPerTest() );
         assertDifferentPids( pids );
     }
 
     public void testForkModeNever()
     {
-        String[] pids = doTest( unpack( getProject() ).forkNever() );
+        String[] pids = doTest( unpack( getProject() ).debugLogging().forkNever() );
         assertSamePids( pids );
     }
 
     public void testForkModeNone()
     {
-        String[] pids = doTest( unpack( getProject() ).forkMode( "none" ) );
+        String[] pids = doTest( unpack( getProject() ).debugLogging().forkMode( "none" ) );
         assertSamePids( pids );
     }
     
     public void testForkModeOncePerThreadSingleThread()
     {
-        String[] pids = doTest( unpack( getProject() ).forkOncePerThread().threadCount(1) );
+        String[] pids = doTest( unpack( getProject() ).debugLogging().forkOncePerThread().threadCount(1) );
         assertSamePids( pids );
     }
 
     public void testForkModeOncePerThreadTwoThreads()
     {
-        String[] pids = doTest( unpack( getProject() ).forkOncePerThread().threadCount(2) );
+        String[] pids = doTest( unpack( getProject() ).debugLogging().forkOncePerThread().threadCount(2) );
         assertDifferentPids( pids, 2 );
     }
     
