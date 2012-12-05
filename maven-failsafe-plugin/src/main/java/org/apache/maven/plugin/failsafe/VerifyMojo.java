@@ -19,12 +19,6 @@ package org.apache.maven.plugin.failsafe;
  * under the License.
  */
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -33,12 +27,13 @@ import org.apache.maven.plugin.surefire.SurefireReportParameters;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.shared.utils.StringUtils;
-import org.apache.maven.surefire.failsafe.model.FailsafeSummary;
-import org.apache.maven.surefire.failsafe.model.io.xpp3.FailsafeSummaryXpp3Reader;
-import org.apache.maven.shared.utils.io.IOUtil;
 import org.apache.maven.shared.utils.ReaderFactory;
+import org.apache.maven.shared.utils.StringUtils;
+import org.apache.maven.shared.utils.io.IOUtil;
+import org.apache.maven.surefire.suite.RunResult;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
+
+import java.io.*;
 
 /**
  * Verify integration tests ran using Surefire.
@@ -156,7 +151,7 @@ public class VerifyMojo
             getLog().info(
                 StringUtils.capitalizeFirstLetter( getPluginName() ) + " report directory: " + getReportsDirectory() );
 
-            int result;
+            RunResult summary;
             try
             {
                 String encoding;
@@ -172,10 +167,9 @@ public class VerifyMojo
                     encoding = this.encoding;
                 }
 
-                final FailsafeSummary summary;
                 if ( !summaryFile.isFile() && summaryFiles != null )
                 {
-                    summary = new FailsafeSummary();
+                    summary = RunResult.noTestsRun();
                 }
                 else
                 {
@@ -185,10 +179,9 @@ public class VerifyMojo
                 {
                     for ( File file : summaryFiles )
                     {
-                        summary.merge( readSummary( encoding, file ) );
+                        summary = summary.aggregate( readSummary( encoding, file ) );
                     }
                 }
-                result = summary.getResult();
             }
             catch ( IOException e )
             {
@@ -199,11 +192,11 @@ public class VerifyMojo
                 throw new MojoExecutionException( e.getMessage(), e );
             }
 
-            SurefireHelper.reportExecution( this, result, getLog() );
+            SurefireHelper.reportExecution( this, summary, getLog() );
         }
     }
 
-    private FailsafeSummary readSummary( String encoding, File summaryFile )
+    private RunResult readSummary( String encoding, File summaryFile )
         throws IOException, XmlPullParserException
     {
         FileInputStream fileInputStream = null;
@@ -214,8 +207,7 @@ public class VerifyMojo
             fileInputStream = new FileInputStream( summaryFile );
             bufferedInputStream = new BufferedInputStream( fileInputStream );
             reader = new InputStreamReader( bufferedInputStream, encoding );
-            FailsafeSummaryXpp3Reader xpp3Reader = new FailsafeSummaryXpp3Reader();
-            return xpp3Reader.read( reader );
+            return RunResult.fromInputStream(bufferedInputStream, encoding);
         }
         finally
         {
@@ -236,7 +228,7 @@ public class VerifyMojo
 
         if ( !getTestClassesDirectory().exists() )
         {
-            if ( getFailIfNoTests() != null && getFailIfNoTests().booleanValue() )
+            if ( getFailIfNoTests() != null && getFailIfNoTests())
             {
                 throw new MojoFailureException( "No tests to run!" );
             }
