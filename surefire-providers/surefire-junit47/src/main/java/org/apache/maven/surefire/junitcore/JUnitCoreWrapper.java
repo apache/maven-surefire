@@ -19,13 +19,12 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-
 import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.TestsToRun;
+
 import org.junit.runner.Computer;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Request;
@@ -54,18 +53,14 @@ class JUnitCoreWrapper
 
         try
         {
-	        Iterator classIter = testsToRun.iterator();
-	        while (classIter.hasNext()) 
-	        {
-		        Request req = Request.classes( computer, new Class[]{ (Class) classIter.next() });
-		        if ( filter != null )
-		        {
-		            req = req.filterWith( filter );
-		        }
-	
-	            final Result run = junitCore.run( req );
-	            JUnit4RunListener.rethrowAnyTestMechanismFailures( run );
-        	}
+            Request req = Request.classes( computer, testsToRun.getLocatedClasses() );
+            if ( filter != null )
+            {
+                req = req.filterWith( filter );
+            }
+
+            final Result run = junitCore.run( req );
+            JUnit4RunListener.rethrowAnyTestMechanismFailures( run );
         }
         finally
         {

@@ -108,13 +108,14 @@ public class SurefireLauncher
         File testDir = new File( tempDir, resourcePath );
         FileUtils.deleteDirectory( testDir );
 
-        return ResourceExtractor.extractResourceToDestination( cl, resourcePath, tempDir, true );
+        File file = ResourceExtractor.extractResourceToDestination( cl, resourcePath, tempDir, true );
+        return file.getCanonicalFile();
     }
 
     private File getUnpackDir()
     {
         String tempDirPath = System.getProperty( "maven.test.tmpdir", System.getProperty( "java.io.tmpdir" ) );
-        return new File( tempDirPath, testClass.getSimpleName() + File.separator + getTestMethodName()  + suffix);
+        return new File( tempDirPath, testClass.getSimpleName() + File.separator + getTestMethodName() + suffix );
     }
 
     String getTestMethodName()
@@ -123,7 +124,8 @@ public class SurefireLauncher
         StackTraceElement[] stackTrace = getStackTraceElements();
         StackTraceElement topInTestClass = null;
         topInTestClass = findTopElemenent( stackTrace, testClass );
-        if (topInTestClass == null){
+        if ( topInTestClass == null )
+        {
             // Look in superclass...
             topInTestClass = findTopElemenent( stackTrace, testClass.getSuperclass() );
         }

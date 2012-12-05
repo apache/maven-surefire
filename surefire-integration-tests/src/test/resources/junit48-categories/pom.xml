@@ -30,16 +30,16 @@
 
 
   <properties>
-    <junitVersion>4.8.1</junitVersion>
-      <groups>junit4.CategoryA,junit4.CategoryB</groups>
-      <excludedGroups></excludedGroups>
+    <junit.version>4.8.1</junit.version>
+    <groups>junit4.CategoryA,junit4.CategoryB</groups>
+    <excludedGroups></excludedGroups>
   </properties>
 
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>${junitVersion}</version>
+      <version>${junit.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -60,7 +60,7 @@
         <version>${surefire.version}</version>
         <configuration>
           <groups>${groups}</groups>
-	  <excludedGroups>${excludedGroups}</excludedGroups>
+          <excludedGroups>${excludedGroups}</excludedGroups>
         </configuration>
         <dependencies>
           <dependency>

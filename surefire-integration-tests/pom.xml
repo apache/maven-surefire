@@ -18,7 +18,8 @@
   ~ under the License.
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -36,7 +37,7 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <it.settings.showPasswords>false</it.settings.showPasswords>
     <testng.version>5.7</testng.version>
-    <surefire.threadcount>4</surefire.threadcount>
+    <surefire.threadcount>5</surefire.threadcount>
     <mavenHomeUsed>${maven.home}</mavenHomeUsed>
     <useInterpolatedSettings>false</useInterpolatedSettings>
   </properties>
@@ -77,7 +78,7 @@
     <dependency>
       <groupId>org.apache.maven.shared</groupId>
       <artifactId>maven-shared-utils</artifactId>
-  </dependency>
+    </dependency>
   </dependencies>
 
   <build>
@@ -90,13 +91,15 @@
             <threadCount>1</threadCount>
             <perCoreThreadCount>false</perCoreThreadCount>
 
-              <!-- Pass current surefire version to the main suite so that it -->
+            <!-- Pass current surefire version to the main suite so that it -->
             <!-- can forward to all integration test projects. SUREFIRE-513 -->
             <systemPropertyVariables>
               <surefire.version>${project.version}</surefire.version>
               <testng.version>${testng.version}</testng.version>
               <maven.home>${mavenHomeUsed}</maven.home>
-              <maven.settings.file>${project.basedir}/../surefire-setup-integration-tests/target/private/it-settings.xml</maven.settings.file>
+              <maven.settings.file>
+                ${project.basedir}/../surefire-setup-integration-tests/target/private/it-settings.xml
+              </maven.settings.file>
               <maven.repo.local>${project.basedir}/../surefire-setup-integration-tests/target/it-repo</maven.repo.local>
               <maven.test.tmpdir>${project.build.directory}</maven.test.tmpdir>
               <user.localRepository>${settings.localRepository}</user.localRepository>
