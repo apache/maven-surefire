@@ -25,7 +25,6 @@ import org.apache.maven.plugin.testing.stubs.MavenProjectStub;
 
 /**
  * @author <a href="mailto:aramirez@apache.org">Allan Ramirez</a>
- *
  */
 public class SurefireRepMavenProjectStub2
     extends MavenProjectStub

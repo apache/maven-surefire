@@ -19,11 +19,11 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
-import org.apache.maven.shared.utils.xml.XMLWriter;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
-
 import java.io.PrintWriter;
 import java.util.LinkedList;
+import org.apache.maven.shared.utils.xml.XMLWriter;
+
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 public class PrettyPrintXMLWriter
     implements XMLWriter

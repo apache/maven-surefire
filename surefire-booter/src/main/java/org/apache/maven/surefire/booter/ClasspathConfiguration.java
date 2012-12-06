@@ -26,7 +26,6 @@ package org.apache.maven.surefire.booter;
  * @author Jason van Zyl
  * @author Emmanuel Venisse
  * @author Kristian Rosenvold
- *
  */
 public class ClasspathConfiguration
 {

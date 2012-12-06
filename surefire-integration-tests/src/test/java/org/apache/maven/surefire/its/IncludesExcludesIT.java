@@ -27,7 +27,6 @@ import org.apache.maven.surefire.its.fixture.SurefireLauncher;
  * Test include/exclude patterns.
  *
  * @author Benjamin Bentmann
- *
  */
 public class IncludesExcludesIT
     extends SurefireIntegrationTestCase

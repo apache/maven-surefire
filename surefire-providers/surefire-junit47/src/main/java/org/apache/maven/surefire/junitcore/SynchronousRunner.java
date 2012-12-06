@@ -17,6 +17,7 @@ package org.apache.maven.surefire.junitcore;
  * specific language governing permissions and limitations
  * under the License.
  */
+
 import org.junit.runners.model.RunnerScheduler;
 
 /**

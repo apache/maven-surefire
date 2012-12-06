@@ -21,8 +21,8 @@ package org.apache.maven.surefire;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-import org.apache.maven.surefire.util.ScannerFilter;
 import org.apache.maven.shared.utils.io.SelectorUtils;
+import org.apache.maven.surefire.util.ScannerFilter;
 
 public class SpecificTestClassFilter
     implements ScannerFilter

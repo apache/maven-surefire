@@ -23,7 +23,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.PrintStream;
-
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.util.LazyTestsToRun;
 
@@ -36,7 +35,6 @@ import org.apache.maven.surefire.util.LazyTestsToRun;
  * @author Jason van Zyl
  * @author Emmanuel Venisse
  * @author Kristian Rosenvold
- *
  */
 public class ForkedBooter
 {
@@ -75,13 +73,16 @@ public class ForkedBooter
             startupConfiguration.writeSurefireTestClasspathProperty();
 
             Object testSet;
-            if (forkedTestSet != null) {
-                 testSet = forkedTestSet.getDecodedValue( testClassLoader );
-            } 
-            else if (readTestsFromInputStream) {
-                testSet = new LazyTestsToRun(System.in, testClassLoader, originalOut);
+            if ( forkedTestSet != null )
+            {
+                testSet = forkedTestSet.getDecodedValue( testClassLoader );
             }
-            else {
+            else if ( readTestsFromInputStream )
+            {
+                testSet = new LazyTestsToRun( System.in, testClassLoader, originalOut );
+            }
+            else
+            {
                 testSet = null;
             }
 
@@ -112,9 +113,9 @@ public class ForkedBooter
 
 
     private static RunResult runSuitesInProcess( Object testSet, ClassLoader testsClassLoader,
-                                                StartupConfiguration startupConfiguration,
-                                                ProviderConfiguration providerConfiguration,
-                                                PrintStream originalSystemOut )
+                                                 StartupConfiguration startupConfiguration,
+                                                 ProviderConfiguration providerConfiguration,
+                                                 PrintStream originalSystemOut )
         throws SurefireExecutionException
     {
         final ClasspathConfiguration classpathConfiguration = startupConfiguration.getClasspathConfiguration();

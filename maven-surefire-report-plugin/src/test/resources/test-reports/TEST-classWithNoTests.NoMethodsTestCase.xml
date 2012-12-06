@@ -13,10 +13,14 @@
     <property value="SUN_STANDARD" name="sun.java.launcher"/>
     <property value="Service Pack 2" name="sun.os.patch.level"/>
     <property value="Java Virtual Machine Specification" name="java.vm.specification.name"/>
-    <property value="C:\svn\maven\trunks\surefire\surefire-integration-tests\src\test\resources\default-configuration-classWithNoTests" name="user.dir"/>
+    <property
+        value="C:\svn\maven\trunks\surefire\surefire-integration-tests\src\test\resources\default-configuration-classWithNoTests"
+        name="user.dir"/>
     <property value="1.5.0_12-b04" name="java.runtime.version"/>
     <property value="sun.awt.Win32GraphicsEnvironment" name="java.awt.graphicsenv"/>
-    <property value="C:\svn\maven\trunks\surefire\surefire-integration-tests\src\test\resources\default-configuration-classWithNoTests" name="basedir"/>
+    <property
+        value="C:\svn\maven\trunks\surefire\surefire-integration-tests\src\test\resources\default-configuration-classWithNoTests"
+        name="basedir"/>
     <property value="C:\devtools\jdk1.5.0_12\jre\lib\endorsed" name="java.endorsed.dirs"/>
     <property value="x86" name="os.arch"/>
     <property value="C:\DOCUME~1\DAN~1.FAB\LOCALS~1\Temp\" name="java.io.tmpdir"/>
@@ -27,8 +31,12 @@
     <property value="Windows XP" name="os.name"/>
     <property value="C:\devtools\maven-2.0.8\bin\m2.conf" name="classworlds.conf"/>
     <property value="Cp1252" name="sun.jnu.encoding"/>
-    <property value="C:\devtools\jdk1.5.0_12\bin;.;C:\WINDOWS\system32;C:\WINDOWS;c:\devtools\apache-ant-1.7.0\bin;C:\Python25;C:\Perl\bin;C:\devtools\php-5.2.3\;c:\devtools\ruby-1.8.6-25\bin;C:\devtools\jdk1.5.0_12\bin;C:\devtools\maven-2.0.8\bin;c:\dan\bin;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\Program Files\IDM Computer Solutions\UltraEdit-32;C:\Program Files\Subversion\bin;C:\Program Files\cvsnt;C:\Program Files\GNU\GnuPG\pub;c:\cygwin\bin;C:\Program Files\MySQL\MySQL Server 5.0\bin;C:\Program Files\PostgreSQL\8.2\bin;C:\Program Files\Perforce;" name="java.library.path"/>
-    <property value="C:\svn\maven\trunks\surefire\surefire-integration-tests\src\test\resources\default-configuration-classWithNoTests\target\test-classes;C:\svn\maven\trunks\surefire\surefire-integration-tests\src\test\resources\default-configuration-classWithNoTests\target\classes;c:\weirdlocalrepo\junit\junit\3.8.1\junit-3.8.1.jar;" name="surefire.test.class.path"/>
+    <property
+        value="C:\devtools\jdk1.5.0_12\bin;.;C:\WINDOWS\system32;C:\WINDOWS;c:\devtools\apache-ant-1.7.0\bin;C:\Python25;C:\Perl\bin;C:\devtools\php-5.2.3\;c:\devtools\ruby-1.8.6-25\bin;C:\devtools\jdk1.5.0_12\bin;C:\devtools\maven-2.0.8\bin;c:\dan\bin;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\Program Files\IDM Computer Solutions\UltraEdit-32;C:\Program Files\Subversion\bin;C:\Program Files\cvsnt;C:\Program Files\GNU\GnuPG\pub;c:\cygwin\bin;C:\Program Files\MySQL\MySQL Server 5.0\bin;C:\Program Files\PostgreSQL\8.2\bin;C:\Program Files\Perforce;"
+        name="java.library.path"/>
+    <property
+        value="C:\svn\maven\trunks\surefire\surefire-integration-tests\src\test\resources\default-configuration-classWithNoTests\target\test-classes;C:\svn\maven\trunks\surefire\surefire-integration-tests\src\test\resources\default-configuration-classWithNoTests\target\classes;c:\weirdlocalrepo\junit\junit\3.8.1\junit-3.8.1.jar;"
+        name="surefire.test.class.path"/>
     <property value="Java Platform API Specification" name="java.specification.name"/>
     <property value="49.0" name="java.class.version"/>
     <property value="HotSpot Client Compiler" name="sun.management.compiler"/>
@@ -49,7 +57,9 @@
     <property value="mixed mode" name="java.vm.info"/>
     <property value="1.5.0_12" name="java.version"/>
     <property value="C:\devtools\jdk1.5.0_12\jre\lib\ext" name="java.ext.dirs"/>
-    <property value="C:\devtools\jdk1.5.0_12\jre\lib\rt.jar;C:\devtools\jdk1.5.0_12\jre\lib\i18n.jar;C:\devtools\jdk1.5.0_12\jre\lib\sunrsasign.jar;C:\devtools\jdk1.5.0_12\jre\lib\jsse.jar;C:\devtools\jdk1.5.0_12\jre\lib\jce.jar;C:\devtools\jdk1.5.0_12\jre\lib\charsets.jar;C:\devtools\jdk1.5.0_12\jre\classes" name="sun.boot.class.path"/>
+    <property
+        value="C:\devtools\jdk1.5.0_12\jre\lib\rt.jar;C:\devtools\jdk1.5.0_12\jre\lib\i18n.jar;C:\devtools\jdk1.5.0_12\jre\lib\sunrsasign.jar;C:\devtools\jdk1.5.0_12\jre\lib\jsse.jar;C:\devtools\jdk1.5.0_12\jre\lib\jce.jar;C:\devtools\jdk1.5.0_12\jre\lib\charsets.jar;C:\devtools\jdk1.5.0_12\jre\classes"
+        name="sun.boot.class.path"/>
     <property value="Sun Microsystems Inc." name="java.vendor"/>
     <property value="C:\devtools\maven-2.0.8" name="maven.home"/>
     <property value="c:\weirdlocalrepo" name="localRepository"/>

@@ -19,15 +19,14 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.report.ReporterException;
-import org.apache.maven.surefire.util.NestedRuntimeException;
-
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import org.apache.maven.surefire.report.ReportEntry;
+import org.apache.maven.surefire.report.ReporterException;
+import org.apache.maven.surefire.util.NestedRuntimeException;
 
 /**
  * Surefire output consumer proxy that writes test output to a {@link java.io.File} for each test suite.
@@ -65,13 +64,15 @@ public class ConsoleOutputFileReporter
     {
     }
 
-    public void close(){
+    public void close()
+    {
         if ( printWriter != null )
         {
             printWriter.close();
             printWriter = null;
         }
     }
+
     public void writeTestOutput( byte[] buf, int off, int len, boolean stdout )
     {
         try

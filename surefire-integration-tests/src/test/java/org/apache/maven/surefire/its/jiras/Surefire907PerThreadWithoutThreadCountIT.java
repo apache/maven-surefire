@@ -17,6 +17,7 @@ package org.apache.maven.surefire.its.jiras;
  * specific language governing permissions and limitations
  * under the License.
  */
+
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 
@@ -28,7 +29,7 @@ public class Surefire907PerThreadWithoutThreadCountIT
     @Test
     public void categoryAB()
     {
-        OutputValidator validator = unpack("fork-mode").forkPerThread().executeTestWithFailure();
+        OutputValidator validator = unpack( "fork-mode" ).forkPerThread().executeTestWithFailure();
         validator.verifyTextInLog( "Fork modes perthread and onceperthread require a thread count" );
     }
 

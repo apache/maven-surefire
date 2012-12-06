@@ -19,10 +19,10 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
-import junit.framework.TestCase;
+import java.io.File;
 import org.apache.maven.plugin.surefire.report.ConsoleOutputFileReporter;
 
-import java.io.File;
+import junit.framework.TestCase;
 
 public class ConsoleOutputFileReporterTest
     extends TestCase

@@ -1,11 +1,12 @@
 package org.apache.maven.surefire.its.fixture;
 
-import org.junit.Test;
-import org.xml.sax.SAXException;
-
-import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.util.Collection;
+
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.junit.Test;
+import org.xml.sax.SAXException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -21,10 +22,10 @@ public class TestSuiteXmlParserTest
     {
         TestSuiteXmlParser parser = new TestSuiteXmlParser();
 
-        Collection<ReportTestSuite> oldResult =
-            parser.parse( "src/test/resources/fixture/testsuitexmlparser/TEST-org.apache.maven.surefire.test.FailingTest.xml" );
+        Collection<ReportTestSuite> oldResult = parser.parse(
+            "src/test/resources/fixture/testsuitexmlparser/TEST-org.apache.maven.surefire.test.FailingTest.xml" );
 
-        assertNotNull( oldResult);
+        assertNotNull( oldResult );
 
         assertEquals( 1, oldResult.size() );
         ReportTestSuite next = oldResult.iterator().next();

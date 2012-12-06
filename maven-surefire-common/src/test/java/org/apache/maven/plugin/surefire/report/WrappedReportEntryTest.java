@@ -18,9 +18,10 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
-import junit.framework.TestCase;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.SimpleReportEntry;
+
+import junit.framework.TestCase;
 
 /**
  * @author Kristian Rosenvold
@@ -64,7 +65,8 @@ public class WrappedReportEntryTest
         ReportEntry reportEntry = new SimpleReportEntry( "fud", category );
         WrappedReportEntry wr = new WrappedReportEntry( reportEntry, null, 12, null, null );
         String elapsedTimeSummary = wr.getElapsedTimeSummary();
-        assertEquals( "[0] 1, 2, 3 (testSum)(surefire.testcase.JunitParamsTest)  Time elapsed: 0.012 sec", elapsedTimeSummary );
+        assertEquals( "[0] 1, 2, 3 (testSum)(surefire.testcase.JunitParamsTest)  Time elapsed: 0.012 sec",
+                      elapsedTimeSummary );
     }
 
 

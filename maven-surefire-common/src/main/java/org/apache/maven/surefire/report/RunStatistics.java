@@ -22,7 +22,6 @@ package org.apache.maven.surefire.report;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-
 import org.apache.maven.plugin.surefire.report.TestSetStats;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.util.internal.StringUtils;
@@ -41,9 +40,13 @@ public class RunStatistics
      * Holds the source(s) that causes the failure(s).
      */
     private final Sources failureSources = new Sources();
+
     private int completedCount;
+
     private int errors;
+
     private int failures;
+
     private int skipped;
 
 

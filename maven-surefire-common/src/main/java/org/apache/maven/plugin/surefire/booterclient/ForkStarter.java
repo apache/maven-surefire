@@ -406,11 +406,11 @@ public class ForkStarter
         }
         catch ( CommandLineTimeOutException e )
         {
-            runResult = RunResult.timeout(fileReporterFactory.getGlobalRunStatistics().getRunResult());
+            runResult = RunResult.timeout( fileReporterFactory.getGlobalRunStatistics().getRunResult() );
         }
         catch ( CommandLineException e )
         {
-            runResult = RunResult.failure(fileReporterFactory.getGlobalRunStatistics().getRunResult(), e);
+            runResult = RunResult.failure( fileReporterFactory.getGlobalRunStatistics().getRunResult(), e );
             throw new SurefireBooterForkException( "Error while executing forked tests.", e.getCause() );
         }
         finally
@@ -420,15 +420,15 @@ public class ForkStarter
             {
                 runResult = fileReporterFactory.getGlobalRunStatistics().getRunResult();
             }
-            if (!runResult.isTimeout()  && !forkClient.isSaidGoodBye())
+            if ( !runResult.isTimeout() && !forkClient.isSaidGoodBye() )
             {
                 //noinspection ThrowFromFinallyBlock
                 throw new RuntimeException(
                     "The forked VM terminated without saying properly goodbye. VM crash or System.exit called ?" +
-                        "\nCommand was" + cli.toString());
+                        "\nCommand was" + cli.toString() );
             }
 
-            forkClient.close( runResult.isTimeout());
+            forkClient.close( runResult.isTimeout() );
         }
 
         return runResult;

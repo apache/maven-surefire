@@ -22,11 +22,10 @@ package org.apache.maven.plugin.surefire.booterclient;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
-
 import org.apache.maven.shared.utils.StringUtils;
+import org.apache.maven.shared.utils.cli.Commandline;
 import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
-import org.apache.maven.shared.utils.cli.Commandline;
 
 import junit.framework.TestCase;
 
@@ -37,7 +36,7 @@ public class ForkConfigurationTest
     public void testCreateCommandLine_UseSystemClassLoaderForkOnce_ShouldConstructManifestOnlyJar()
         throws IOException, SurefireBooterForkException
     {
-        ForkConfiguration config = getForkConfiguration(null, "java");
+        ForkConfiguration config = getForkConfiguration( null, "java" );
         File cpElement = getTempClasspathFile();
 
         Commandline cli =
@@ -52,11 +51,11 @@ public class ForkConfigurationTest
     {
         // SUREFIRE-657
         File cpElement = getTempClasspathFile();
-        ForkConfiguration forkConfiguration = getForkConfiguration("abc\ndef", null );
+        ForkConfiguration forkConfiguration = getForkConfiguration( "abc\ndef", null );
 
         final Commandline commandLine =
-            forkConfiguration.createCommandLine( Collections.singletonList( cpElement.getAbsolutePath() ), false,
-                                                 false, 1 );
+            forkConfiguration.createCommandLine( Collections.singletonList( cpElement.getAbsolutePath() ), false, false,
+                                                 1 );
         assertTrue( commandLine.toString().contains( "abc def" ) );
     }
 
@@ -72,8 +71,8 @@ public class ForkConfigurationTest
         throws IOException
     {
         ForkConfiguration forkConfiguration =
-            new ForkConfiguration( new Classpath(), null, null, jvm, new File( "." ).getCanonicalFile() ,
-                                   argLine, null, false, 1 );
+            new ForkConfiguration( new Classpath(), null, null, jvm, new File( "." ).getCanonicalFile(), argLine, null,
+                                   false, 1 );
         return forkConfiguration;
     }
 

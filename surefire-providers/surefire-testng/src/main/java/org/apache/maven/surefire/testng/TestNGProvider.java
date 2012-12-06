@@ -100,14 +100,15 @@ public class TestNGProvider
         {
             if ( testsToRun == null )
             {
-                if (forkTestSet instanceof TestsToRun)
+                if ( forkTestSet instanceof TestsToRun )
                 {
                     testsToRun = (TestsToRun) forkTestSet;
                 }
-                else if (forkTestSet instanceof Class)
+                else if ( forkTestSet instanceof Class )
                 {
                     testsToRun = TestsToRun.fromClass( (Class) forkTestSet );
-                } else
+                }
+                else
                 {
                     testsToRun = scanClassPath();
                 }

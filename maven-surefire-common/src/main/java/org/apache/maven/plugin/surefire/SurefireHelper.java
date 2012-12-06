@@ -59,10 +59,10 @@ public final class SurefireHelper
             return;
         }
 
-        String msg = timeoutOrOtherFailure ?
-                "There was a timeout or other error in the fork" :
-                "There are test failures.\n\nPlease refer to " + reportParameters.getReportsDirectory()
-                        + " for the individual test results.";
+        String msg = timeoutOrOtherFailure
+            ? "There was a timeout or other error in the fork"
+            : "There are test failures.\n\nPlease refer to " + reportParameters.getReportsDirectory()
+                + " for the individual test results.";
 
         if ( reportParameters.isTestFailureIgnore() )
         {
@@ -70,9 +70,9 @@ public final class SurefireHelper
         }
         else
         {
-            if (result.isFailure())
+            if ( result.isFailure() )
             {
-                throw new MojoExecutionException(msg );
+                throw new MojoExecutionException( msg );
             }
             else
             {

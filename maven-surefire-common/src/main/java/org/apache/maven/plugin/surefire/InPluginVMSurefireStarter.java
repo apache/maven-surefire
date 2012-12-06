@@ -38,7 +38,6 @@ import org.apache.maven.surefire.util.DefaultScanResult;
  * @author Emmanuel Venisse
  * @author Dan Fabulich
  * @author Kristian Rosenvold
- *
  */
 public class InPluginVMSurefireStarter
 {

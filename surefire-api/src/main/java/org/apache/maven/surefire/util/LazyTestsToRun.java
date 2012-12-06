@@ -28,7 +28,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-
 import org.apache.maven.surefire.booter.ForkingRunListener;
 
 /**
@@ -40,125 +39,157 @@ import org.apache.maven.surefire.booter.ForkingRunListener;
  * <p/>
  * The methods {@link #getLocatedClasses()} and {@link #size()} will throw an
  * {@link UnsupportedOperationException}.
- * 
+ *
  * @author Andreas Gudian
- * 
  */
-public class LazyTestsToRun extends TestsToRun {
-	private List workQueue = new ArrayList();
-	private BufferedReader inputReader;
-	private boolean streamClosed = false;
-	private ClassLoader testClassLoader;
-	private PrintStream originalOutStream;
+public class LazyTestsToRun
+    extends TestsToRun
+{
+    private List workQueue = new ArrayList();
 
-	/**
-	 * C'tor
-	 * 
-	 * @param testSource source to read the tests from
-	 * @param testClassLoader class loader to load the test classes
-	 * @param originalOutStream the output stream to use when requesting new new tests
-	 */
-	public LazyTestsToRun(InputStream testSource, ClassLoader testClassLoader, PrintStream originalOutStream) {
-		super(Collections.emptyList());
+    private BufferedReader inputReader;
 
-		this.testClassLoader = testClassLoader;
-		this.originalOutStream = originalOutStream;
+    private boolean streamClosed = false;
 
-		inputReader = new BufferedReader(new InputStreamReader(testSource));
-	}
+    private ClassLoader testClassLoader;
 
-	protected void addWorkItem(String className) {
-		synchronized (workQueue) {
-			workQueue.add(ReflectionUtils.loadClass(testClassLoader, className));
-		}
-	}
+    private PrintStream originalOutStream;
 
-	protected void requestNextTest() {
-		StringBuffer sb = new StringBuffer();
-		sb.append((char) ForkingRunListener.BOOTERCODE_NEXT_TEST).append(",0,want more!\n");
-		originalOutStream.print(sb.toString());
-	}
+    /**
+     * C'tor
+     *
+     * @param testSource        source to read the tests from
+     * @param testClassLoader   class loader to load the test classes
+     * @param originalOutStream the output stream to use when requesting new new tests
+     */
+    public LazyTestsToRun( InputStream testSource, ClassLoader testClassLoader, PrintStream originalOutStream )
+    {
+        super( Collections.emptyList() );
 
-	private class BlockingIterator implements Iterator {
-		private int lastPos = -1;
+        this.testClassLoader = testClassLoader;
+        this.originalOutStream = originalOutStream;
 
-		public boolean hasNext() {
-			int nextPos = lastPos + 1;
-			synchronized (workQueue) {
-				if (workQueue.size() > nextPos) {
-					return true;
-				} else {
-					if (needsToWaitForInput(nextPos)) {
-						requestNextTest();
+        inputReader = new BufferedReader( new InputStreamReader( testSource ) );
+    }
 
-						String nextClassName;
-						try {
-							nextClassName = inputReader.readLine();
-						} catch (IOException e) {
-							streamClosed = true;
-							return false;
-						}
+    protected void addWorkItem( String className )
+    {
+        synchronized ( workQueue )
+        {
+            workQueue.add( ReflectionUtils.loadClass( testClassLoader, className ) );
+        }
+    }
 
-						if (null == nextClassName) {
-							streamClosed = true;
-						} else {
-							addWorkItem(nextClassName);
-						}
-					}
+    protected void requestNextTest()
+    {
+        StringBuffer sb = new StringBuffer();
+        sb.append( (char) ForkingRunListener.BOOTERCODE_NEXT_TEST ).append( ",0,want more!\n" );
+        originalOutStream.print( sb.toString() );
+    }
 
-					return (workQueue.size() > nextPos);
-				}
-			}
-		}
+    private class BlockingIterator
+        implements Iterator
+    {
+        private int lastPos = -1;
 
-		private boolean needsToWaitForInput(int nextPos) {
-			return workQueue.size() == nextPos && !streamClosed;
-		}
+        public boolean hasNext()
+        {
+            int nextPos = lastPos + 1;
+            synchronized ( workQueue )
+            {
+                if ( workQueue.size() > nextPos )
+                {
+                    return true;
+                }
+                else
+                {
+                    if ( needsToWaitForInput( nextPos ) )
+                    {
+                        requestNextTest();
 
-		public Object next() {
-			synchronized (workQueue) {
-				return workQueue.get(++lastPos);
-			}
-		}
+                        String nextClassName;
+                        try
+                        {
+                            nextClassName = inputReader.readLine();
+                        }
+                        catch ( IOException e )
+                        {
+                            streamClosed = true;
+                            return false;
+                        }
 
-		public void remove() {
-			throw new UnsupportedOperationException();
-		}
+                        if ( null == nextClassName )
+                        {
+                            streamClosed = true;
+                        }
+                        else
+                        {
+                            addWorkItem( nextClassName );
+                        }
+                    }
 
-	}
+                    return ( workQueue.size() > nextPos );
+                }
+            }
+        }
 
-	/* (non-Javadoc)
-	 * @see org.apache.maven.surefire.util.TestsToRun#iterator()
-	 */
-	public Iterator iterator() {
-		return new BlockingIterator();
-	}
+        private boolean needsToWaitForInput( int nextPos )
+        {
+            return workQueue.size() == nextPos && !streamClosed;
+        }
 
-	/**
-	 * Unsupported. Use {@link #iterator()} instead.
-	 */
-	public int size() {
-		throw new UnsupportedOperationException("use method iterator()");
-	}
+        public Object next()
+        {
+            synchronized ( workQueue )
+            {
+                return workQueue.get( ++lastPos );
+            }
+        }
 
-	/**
-	 * Unsupported. Use {@link #iterator()} instead.
-	 */
-	public Class[] getLocatedClasses() {
-		throw new UnsupportedOperationException("use method iterator()");
-	}
+        public void remove()
+        {
+            throw new UnsupportedOperationException();
+        }
 
-	/* (non-Javadoc)
-	 * @see org.apache.maven.surefire.util.TestsToRun#toString()
-	 */
-	public String toString() {
-		StringBuffer sb = new StringBuffer("LazyTestsToRun ");
-		synchronized (workQueue) {
-			sb.append("(more items expected: ").append(!streamClosed).append("): ");
-			sb.append(workQueue);
-		}
+    }
 
-		return sb.toString();
-	}
+    /* (non-Javadoc)
+      * @see org.apache.maven.surefire.util.TestsToRun#iterator()
+      */
+    public Iterator iterator()
+    {
+        return new BlockingIterator();
+    }
+
+    /**
+     * Unsupported. Use {@link #iterator()} instead.
+     */
+    public int size()
+    {
+        throw new UnsupportedOperationException( "use method iterator()" );
+    }
+
+    /**
+     * Unsupported. Use {@link #iterator()} instead.
+     */
+    public Class[] getLocatedClasses()
+    {
+        throw new UnsupportedOperationException( "use method iterator()" );
+    }
+
+    /* (non-Javadoc)
+      * @see org.apache.maven.surefire.util.TestsToRun#toString()
+      */
+    public String toString()
+    {
+        StringBuffer sb = new StringBuffer( "LazyTestsToRun " );
+        synchronized ( workQueue )
+        {
+            sb.append( "(more items expected: " ).append( !streamClosed ).append( "): " );
+            sb.append( workQueue );
+        }
+
+        return sb.toString();
+    }
 
 }

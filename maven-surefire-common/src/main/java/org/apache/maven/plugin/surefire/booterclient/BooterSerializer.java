@@ -21,9 +21,7 @@ package org.apache.maven.plugin.surefire.booterclient;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 import java.util.Properties;
-
 import org.apache.maven.surefire.booter.BooterConstants;
 import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
 import org.apache.maven.surefire.booter.KeyValueSource;
@@ -52,7 +50,6 @@ import org.apache.maven.surefire.util.RunOrder;
  * @author Brett Porter
  * @author Dan Fabulich
  * @author Kristian Rosenvold
- *
  */
 class BooterSerializer
 {
@@ -67,12 +64,12 @@ class BooterSerializer
     /*
     DOes not modify sourceProperties
      */
-    public File serialize(KeyValueSource sourceProperties, ProviderConfiguration booterConfiguration, StartupConfiguration providerConfiguration,
-                          Object testSet, boolean readTestsFromInStream)
+    public File serialize( KeyValueSource sourceProperties, ProviderConfiguration booterConfiguration,
+                           StartupConfiguration providerConfiguration, Object testSet, boolean readTestsFromInStream )
         throws IOException
     {
 
-        PropertiesWrapper properties = new PropertiesWrapper(new Properties(  ) );
+        PropertiesWrapper properties = new PropertiesWrapper( new Properties() );
         sourceProperties.copyTo( properties.getProperties() );
 
         providerConfiguration.getClasspathConfiguration().addForkProperties( properties );
@@ -84,8 +81,9 @@ class BooterSerializer
             properties.setProperty( BooterConstants.TESTARTIFACT_CLASSIFIER, testNg.getClassifier() );
         }
 
-       	properties.setProperty( BooterConstants.FORKTESTSET_PREFER_TESTS_FROM_IN_STREAM, Boolean.valueOf( readTestsFromInStream ) );        	
-       	properties.setProperty( BooterConstants.FORKTESTSET, getTypeEncoded( testSet ) );
+        properties.setProperty( BooterConstants.FORKTESTSET_PREFER_TESTS_FROM_IN_STREAM,
+                                Boolean.valueOf( readTestsFromInStream ) );
+        properties.setProperty( BooterConstants.FORKTESTSET, getTypeEncoded( testSet ) );
 
         TestRequest testSuiteDefinition = booterConfiguration.getTestSuiteDefinition();
         if ( testSuiteDefinition != null )

@@ -20,11 +20,9 @@ package org.apache.maven.plugin.surefire.report;
  */
 
 import java.io.File;
-
 import org.apache.maven.surefire.report.PojoStackTraceWriter;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.SimpleReportEntry;
-import org.codehaus.plexus.util.xml.Xpp3Dom;
 
 import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
@@ -56,7 +54,8 @@ public class StatelessXMLReporterTest
         File reportDir = new File( "." );
         String testName = "org.apache.maven.plugin.surefire.report.StatelessXMLReporterTest";
         reportEntry = new SimpleReportEntry( this.getClass().getName(), testName, 12 );
-        WrappedReportEntry testSetReportEntry = new WrappedReportEntry( reportEntry, ReportEntryType.success, 12, null, null );
+        WrappedReportEntry testSetReportEntry =
+            new WrappedReportEntry( reportEntry, ReportEntryType.success, 12, null, null );
         stats.testSucceeded( testSetReportEntry );
         reporter.testSetCompleted( testSetReportEntry, stats );
 

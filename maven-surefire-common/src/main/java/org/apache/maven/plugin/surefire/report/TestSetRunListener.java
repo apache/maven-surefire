@@ -19,6 +19,9 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
 import org.apache.maven.surefire.report.ConsoleLogger;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
@@ -26,10 +29,6 @@ import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.RunStatistics;
 import org.apache.maven.surefire.util.internal.ByteBuffer;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * Reports data for a single test set.
@@ -44,8 +43,9 @@ public class TestSetRunListener
 
     private final TestSetStats detailsForThis;
 
-    static {
-        System.out.println("static = " + true);
+    static
+    {
+        System.out.println( "static = " + true );
     }
 
     private final List<ByteBuffer> testStdOut = Collections.synchronizedList( new ArrayList<ByteBuffer>() );
@@ -244,6 +244,9 @@ public class TestSetRunListener
 
     public void close()
     {
-        if (consoleOutputReceiver != null) consoleOutputReceiver.close();
+        if ( consoleOutputReceiver != null )
+        {
+            consoleOutputReceiver.close();
+        }
     }
 }

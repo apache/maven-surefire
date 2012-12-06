@@ -1,12 +1,12 @@
-  ------
-  Introduction
-  ------
-  Stephen Connolly
-  Allan Ramirez
-  ------
-  2011-06-27
-  ------
-  
+------
+Introduction
+------
+Stephen Connolly
+Allan Ramirez
+------
+2011-06-27
+------
+
 ~~ Licensed to the Apache Software Foundation (ASF) under one
 ~~ or more contributor license agreements.  See the NOTICE file
 ~~ distributed with this work for additional information
@@ -26,127 +26,144 @@
 
 ~~ NOTE: For help with the syntax of this file, see:
 ~~ http://maven.apache.org/doxia/references/apt-format.html
-  
+
 
 Maven ${thisPlugin} Plugin
 
 #{if}(${project.artifactId}=="maven-surefire-plugin")
-  The Surefire Plugin is used during the <<<test>>> phase of the build
-  lifecycle to execute the unit tests of an application. It generates reports
-  in 2 different file formats:
+The Surefire Plugin is used during the <<
+<test>>> phase of the build
+    lifecycle to execute the unit tests of an application. It generates reports
+    in 2 different file formats:
 #{else}
-  The Failsafe Plugin is designed to run integration tests while the Surefire Plugins is designed to run unit tests.
-  The name (failsafe) was chosen both because it is a synonym of surefire and because it implies that when it fails, it
-  does so in a safe way.
+    The Failsafe Plugin is designed to run integration tests while the Surefire Plugins is designed to run unit tests.
+    The name (failsafe) was chosen both because it is a synonym of surefire and because it implies that when it fails,
+    it
+    does so in a safe way.
 
-  The Maven lifecycle has four phases for running integration tests:
+    The Maven lifecycle has four phases for running integration tests:
 
-  * <<<pre-integration-test>>> for setting up the integration test environment.
+    * <<
+<pre-integration-test>>> for setting up the integration test environment.
 
-  * <<<integration-test>>> for running the integration tests.
+    * <<
+<integration-test>>> for running the integration tests.
 
-  * <<<post-integration-test>>> for tearing down the integration test environment.
+    * <<
+<post-integration-test>>> for tearing down the integration test environment.
 
-  * <<<verify>>> for checking the results of the integration tests.
+    * <<
+<verify>>> for checking the results of the integration tests.
 
-  []
+    []
 
-  If you use the Surefire Plugin for running tests, then when you have a test failure, the build will stop at the
-  <<<integration-test>>> phase and your integration test environment will not have been torn down correctly.
+    If you use the Surefire Plugin for running tests, then when you have a test failure, the build will stop at the
+    <<
+<integration-test>>> phase and your integration test environment will not have been torn down correctly.
 
-  The Failsafe Plugin is used during the <<<integration-test>>> and <<<verify>>> phases of the build
-  lifecycle to execute the integration tests of an application. The Failsafe Plugin will not fail the build during
-  the <<<integration-test>>> phase thus enabling the <<<post-integration-test>>> phase to execute.
+    The Failsafe Plugin is used during the <<
+<integration-test>>> and <<
+<verify>>> phases of the build
+    lifecycle to execute the integration tests of an application. The Failsafe Plugin will not fail the build during
+    the <<
+<integration-test>>> phase thus enabling the <<
+<post-integration-test>>> phase to execute.
 
-  NOTE: when running integration tests, you should invoke maven with the (shorter to type too)
+    NOTE: when running integration tests, you should invoke maven with the (shorter to type too)
 
-+---+
-mvn verify
-+---+
+    +---+
+    mvn verify
+    +---+
 
-  rather than trying to invoke the <<<integration-test>>> phase directly, as otherwise the <<<post-integration-test>>>
-  phase will not be executed.
+    rather than trying to invoke the <<
+<integration-test>>> phase directly, as otherwise the <<
+<post-integration-test>>>
+    phase will not be executed.
 
-  The Failsafe Plugin generates reports in 2 different file formats:
+    The Failsafe Plugin generates reports in 2 different file formats:
 
 #{end}
 
-  * Plain text files (<<<*.txt>>>)
+    * Plain text files (<<<*.txt>>>)
 
-  * XML files (<<<*.xml>>>)
+    * XML files (<<<*.xml>>>)
 
-  []
+    []
 
-  By default, these files are generated at <<<$\{basedir\}/target/${thisPlugin.toLowerCase()}-reports>>>.
+    By default, these files are generated at <<<$\{basedir\}/target/${thisPlugin.toLowerCase()}-reports>>>.
 
-  For an HTML format of the report, please see the
-  {{{http://maven.apache.org/plugins/maven-surefire-report-plugin/}Maven Surefire Report Plugin}}.
+    For an HTML format of the report, please see the
+    {{{http://maven.apache.org/plugins/maven-surefire-report-plugin/}Maven Surefire Report Plugin}}.
 
-* Goals Overview
+    * Goals Overview
 
 #{if}(${project.artifactId}=="maven-surefire-plugin")
-  The Surefire Plugin has only 1 goal:
+    The Surefire Plugin has only 1 goal:
 
-  * {{{./test-mojo.html}surefire:test}} runs the unit tests of an application.
+    * {{{./test-mojo.html}surefire:test}} runs the unit tests of an application.
 
-  []
+    []
 
 #{else}
-  The Failsafe Plugin has only 2 goals:
+    The Failsafe Plugin has only 2 goals:
 
-  * {{{./integration-test-mojo.html}failsafe:integration-test}} runs the integration tests of an application.
+    * {{{./integration-test-mojo.html}failsafe:integration-test}} runs the integration tests of an application.
 
-  * {{{./verify-mojo.html}failsafe:verify}} verifies that the integration tests of an application passed.
+    * {{{./verify-mojo.html}failsafe:verify}} verifies that the integration tests of an application passed.
 
-  []
+    []
 
 #{end}
 
-* Usage
+    * Usage
 
-  General instructions on how to use the ${thisPlugin} Plugin can be found on the {{{./usage.html}usage page}}. Some more
-  specific use cases are described in the examples given below.
-  #{if}(${project.artifactId}=="maven-surefire-plugin") Last but not least, users occasionally contribute
-  additional examples, tips or errata to the
-  {{{http://docs.codehaus.org/display/MAVENUSER/Surefire+Plugin}plugin's wiki page}}.#{end}
+    General instructions on how to use the ${thisPlugin} Plugin can be found on the {{{./usage.html}usage page}}. Some
+    more
+    specific use cases are described in the examples given below.
+#{if}(${project.artifactId}=="maven-surefire-plugin") Last but not least, users occasionally contribute
+    additional examples, tips or errata to the
+    {{{http://docs.codehaus.org/display/MAVENUSER/Surefire+Plugin}plugin's wiki page}}.#{end}
 
-  In case you still have questions regarding the plugin's usage, please have a look at the {{{./faq.html}FAQ}} and feel
-  free to contact the {{{./mail-lists.html}user mailing list}}. The posts to the mailing list are archived and could
-  already contain the answer to your question as part of an older thread. Hence, it is also worth browsing/searching
-  the {{{./mail-lists.html}mail archive}}.
+    In case you still have questions regarding the plugin's usage, please have a look at the {{{./faq.html}FAQ}} and
+    feel
+    free to contact the {{{./mail-lists.html}user mailing list}}. The posts to the mailing list are archived and could
+    already contain the answer to your question as part of an older thread. Hence, it is also worth browsing/searching
+    the {{{./mail-lists.html}mail archive}}.
 
-  If you feel like the plugin is missing a feature or has a defect, you can fill a feature request or bug report in our
-  {{{./issue-tracking.html}issue tracker}}. When creating a new issue, please provide a comprehensive description of your
-  concern. Especially for fixing bugs it is crucial that the developers can reproduce your problem. For this reason,
-  entire debug logs, POMs or most preferably little demo projects attached to the issue are very much appreciated.
-  Of course, patches are welcome, too. Contributors can check out the project from our
-  {{{./source-repository.html}source repository}} and will find supplementary information in the
-  {{{http://maven.apache.org/guides/development/guide-helping.html}guide to helping with Maven}}.
+    If you feel like the plugin is missing a feature or has a defect, you can fill a feature request or bug report in
+    our
+    {{{./issue-tracking.html}issue tracker}}. When creating a new issue, please provide a comprehensive description of
+    your
+    concern. Especially for fixing bugs it is crucial that the developers can reproduce your problem. For this reason,
+    entire debug logs, POMs or most preferably little demo projects attached to the issue are very much appreciated.
+    Of course, patches are welcome, too. Contributors can check out the project from our
+    {{{./source-repository.html}source repository}} and will find supplementary information in the
+    {{{http://maven.apache.org/guides/development/guide-helping.html}guide to helping with Maven}}.
 
-* Examples
+    * Examples
 
-  The following examples show how to use the ${thisPlugin} Plugin in more advanced use-cases:
+    The following examples show how to use the ${thisPlugin} Plugin in more advanced use-cases:
 
-  * {{{./examples/testng.html}Using TestNG}}
+    * {{{./examples/testng.html}Using TestNG}}
 
-  * {{{./examples/junit.html}Using JUnit}}
+    * {{{./examples/junit.html}Using JUnit}}
 
-  * {{{./examples/pojo-test.html}Using POJO Tests}}
+    * {{{./examples/pojo-test.html}Using POJO Tests}}
 
-  * {{{./examples/skipping-test.html}Skipping Tests}}
+    * {{{./examples/skipping-test.html}Skipping Tests}}
 
-  * {{{./examples/inclusion-exclusion.html}Inclusions and Exclusions of Tests}}
+    * {{{./examples/inclusion-exclusion.html}Inclusions and Exclusions of Tests}}
 
-  * {{{./examples/single-test.html}Running a Single Test}}
+    * {{{./examples/single-test.html}Running a Single Test}}
 
-  * {{{./examples/class-loading.html}Class Loading Issues}}
+    * {{{./examples/class-loading.html}Class Loading Issues}}
 
-  * {{{./examples/debugging.html}Debugging Tests}}
+    * {{{./examples/debugging.html}Debugging Tests}}
 
-  * {{{./examples/system-properties.html}Using System Properties}}
+    * {{{./examples/system-properties.html}Using System Properties}}
 
-  * {{{./examples/configuring-classpath.html}Configuring the Classpath}}
+    * {{{./examples/configuring-classpath.html}Configuring the Classpath}}
 
-  * {{{./examples/providers.html}Selecting providers}}
+    * {{{./examples/providers.html}Selecting providers}}
 
-  []
+    []

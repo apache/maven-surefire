@@ -49,7 +49,8 @@ public class DefaultReporterFactory
 
     private final StatisticsReporter statisticsReporter;
 
-    private final List<TestSetRunListener> listeners = Collections.synchronizedList(new ArrayList<TestSetRunListener>(  ));
+    private final List<TestSetRunListener> listeners =
+        Collections.synchronizedList( new ArrayList<TestSetRunListener>() );
 
     public DefaultReporterFactory( StartupReportConfiguration reportConfiguration )
     {

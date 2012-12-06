@@ -576,10 +576,10 @@ public abstract class AbstractSurefireMojo
     private Artifact surefireBooterArtifact;
 
     private Toolchain toolchain;
-    
+
     /**
      * The placeholder that is replaced by the executing thread's running number. The thread number
-     * range starts with 1 
+     * range starts with 1
      */
     public static final String THREAD_NUMBER_PLACEHOLDER = "${surefire.threadNumber}";
 
@@ -696,8 +696,9 @@ public abstract class AbstractSurefireMojo
             }
         }
 
-        if (firstForkException != null){
-            current = RunResult.failure(current, firstForkException);
+        if ( firstForkException != null )
+        {
+            current = RunResult.failure( current, firstForkException );
         }
 
         handleSummary( current, firstForkException );
@@ -755,7 +756,7 @@ public abstract class AbstractSurefireMojo
         final RunResult result;
         if ( isForkModeNever() )
         {
-            createCopyAndReplaceThreadNumPlaceholder(effectiveProperties, 1).copyToSystemProperties();
+            createCopyAndReplaceThreadNumPlaceholder( effectiveProperties, 1 ).copyToSystemProperties();
 
             InPluginVMSurefireStarter surefireStarter =
                 createInprocessStarter( provider, classLoaderConfiguration, runOrderParameters );
@@ -787,12 +788,18 @@ public abstract class AbstractSurefireMojo
     }
 
 
-    public static SurefireProperties createCopyAndReplaceThreadNumPlaceholder(SurefireProperties effectiveSystemProperties, int threadNumber) {
-        SurefireProperties filteredProperties = new SurefireProperties(effectiveSystemProperties);
-        String threadNumberString = String.valueOf(threadNumber);
-        for (Entry<Object,Object> entry : effectiveSystemProperties.entrySet()) {
-            if (entry.getValue() instanceof String) {
-                filteredProperties.put(entry.getKey(), ((String)entry.getValue()).replace(THREAD_NUMBER_PLACEHOLDER, threadNumberString));
+    public static SurefireProperties createCopyAndReplaceThreadNumPlaceholder(
+        SurefireProperties effectiveSystemProperties, int threadNumber )
+    {
+        SurefireProperties filteredProperties = new SurefireProperties( effectiveSystemProperties );
+        String threadNumberString = String.valueOf( threadNumber );
+        for ( Entry<Object, Object> entry : effectiveSystemProperties.entrySet() )
+        {
+            if ( entry.getValue() instanceof String )
+            {
+                filteredProperties.put( entry.getKey(),
+                                        ( (String) entry.getValue() ).replace( THREAD_NUMBER_PLACEHOLDER,
+                                                                               threadNumberString ) );
             }
         }
         return filteredProperties;
@@ -1028,8 +1035,8 @@ public abstract class AbstractSurefireMojo
         Properties providerProperties = getProperties();
 
         return new ProviderConfiguration( directoryScannerParameters, runOrderParameters, failIfNoTests,
-                                          reporterConfiguration, testNg, testSuiteDefinition, providerProperties,
-                                          null, false );
+                                          reporterConfiguration, testNg, testSuiteDefinition, providerProperties, null,
+                                          false );
     }
 
     public String getStatisticsFileName( String configurationHash )
@@ -1133,9 +1140,9 @@ public abstract class AbstractSurefireMojo
 
         getLog().debug( "Reading list from: " + file );
 
-        if (!file.exists())
+        if ( !file.exists() )
         {
-            throw new RuntimeException( "Failed to load list from file: " + file);
+            throw new RuntimeException( "Failed to load list from file: " + file );
         }
 
         try
@@ -1371,8 +1378,8 @@ public abstract class AbstractSurefireMojo
 
     private int getEffectiveForkCount()
     {
-        return ( ForkConfiguration.FORK_PERTHREAD.equals( getEffectiveForkMode() ) ||
-                 ForkConfiguration.FORK_ONCE_PERTHREAD.equals( getEffectiveForkMode() ) ) ? getThreadCount() : 1;
+        return ( ForkConfiguration.FORK_PERTHREAD.equals( getEffectiveForkMode() )
+            || ForkConfiguration.FORK_ONCE_PERTHREAD.equals( getEffectiveForkMode() ) ) ? getThreadCount() : 1;
     }
 
     private String getEffectiveDebugForkedProcess()
@@ -1756,8 +1763,8 @@ public abstract class AbstractSurefireMojo
     void ensureThreadCountWithPerThread()
         throws MojoFailureException
     {
-        if ( ( ForkConfiguration.FORK_PERTHREAD.equals( getEffectiveForkMode() ) || 
-               ForkConfiguration.FORK_ONCE_PERTHREAD.equals( getEffectiveForkMode() )) && getThreadCount() < 1 )
+        if ( ( ForkConfiguration.FORK_PERTHREAD.equals( getEffectiveForkMode() )
+            || ForkConfiguration.FORK_ONCE_PERTHREAD.equals( getEffectiveForkMode() ) ) && getThreadCount() < 1 )
         {
             throw new MojoFailureException( "Fork modes perthread and onceperthread require a thread count" );
         }

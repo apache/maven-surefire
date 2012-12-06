@@ -19,11 +19,10 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
+import java.io.PrintStream;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.suite.RunResult;
-
-import java.io.PrintStream;
 
 /**
  * Creates ForkingReporters, which are typically one instance per TestSet or thread.

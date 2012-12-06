@@ -41,7 +41,6 @@ import org.apache.maven.surefire.testset.TestRequest;
  * @author Jason van Zyl
  * @author Emmanuel Venisse
  * @author Kristian Rosenvold
- *
  */
 public class BooterDeserializer
     implements BooterConstants
@@ -61,10 +60,11 @@ public class BooterDeserializer
         final File reportsDirectory = new File( properties.getProperty( REPORTSDIRECTORY ) );
         final String testNgVersion = properties.getProperty( TESTARTIFACT_VERSION );
         final String testArtifactClassifier = properties.getProperty( TESTARTIFACT_CLASSIFIER );
-        
+
         final TypeEncodedValue typeEncodedTestForFork = properties.getTypeEncodedValue( FORKTESTSET );
-        final boolean preferTestsFromInStream = properties.getBooleanProperty( FORKTESTSET_PREFER_TESTS_FROM_IN_STREAM );
-        
+        final boolean preferTestsFromInStream =
+            properties.getBooleanProperty( FORKTESTSET_PREFER_TESTS_FROM_IN_STREAM );
+
         final String requestedTest = properties.getProperty( REQUESTEDTEST );
         final String requestedTestMethod = properties.getProperty( REQUESTEDTESTMETHOD );
         final File sourceDirectory = properties.getFileProperty( SOURCE_DIRECTORY );
@@ -93,7 +93,8 @@ public class BooterDeserializer
 
         return new ProviderConfiguration( dirScannerParams, runOrderParameters,
                                           properties.getBooleanProperty( FAILIFNOTESTS ), reporterConfiguration, testNg,
-                                          testSuiteDefinition, properties.getProperties(), typeEncodedTestForFork, preferTestsFromInStream );
+                                          testSuiteDefinition, properties.getProperties(), typeEncodedTestForFork,
+                                          preferTestsFromInStream );
     }
 
     public StartupConfiguration getProviderConfiguration()
@@ -107,6 +108,7 @@ public class BooterDeserializer
 
         ClasspathConfiguration classpathConfiguration = new ClasspathConfiguration( properties );
 
-        return StartupConfiguration.inForkedVm( providerConfiguration, classpathConfiguration, classLoaderConfiguration );
+        return StartupConfiguration.inForkedVm( providerConfiguration, classpathConfiguration,
+                                                classLoaderConfiguration );
     }
 }

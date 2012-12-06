@@ -21,14 +21,14 @@ package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
 
 /**
  * Provides a {@link FlushReceiver}.
- * 
- * @author Andreas Gudian
  *
+ * @author Andreas Gudian
  */
-public interface FlushReceiverProvider {
+public interface FlushReceiverProvider
+{
 
-	/**
-	 * @return a {@link FlushReceiver}
-	 */
-	FlushReceiver getFlushReceiver();
+    /**
+     * @return a {@link FlushReceiver}
+     */
+    FlushReceiver getFlushReceiver();
 }

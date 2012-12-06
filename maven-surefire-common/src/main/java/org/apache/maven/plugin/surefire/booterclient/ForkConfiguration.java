@@ -27,12 +27,10 @@ import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
-
 import org.apache.maven.plugin.surefire.AbstractSurefireMojo;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.OutputStreamFlushableCommandline;
 import org.apache.maven.plugin.surefire.util.Relocator;
 import org.apache.maven.shared.utils.StringUtils;
-import org.apache.maven.shared.utils.cli.Commandline;
 import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
 import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.ForkedBooter;
@@ -55,7 +53,7 @@ public class ForkConfiguration
     public static final String FORK_NEVER = "never";
 
     public static final String FORK_PERTHREAD = "perthread";
-    
+
     public static final String FORK_ONCE_PERTHREAD = "onceperthread";
 
     private final int forkCount;
@@ -108,7 +106,7 @@ public class ForkConfiguration
         }
         else if ( forkMode.equals( FORK_NEVER ) || forkMode.equals( FORK_ONCE ) ||
             forkMode.equals( FORK_ALWAYS ) || forkMode.equals( FORK_PERTHREAD ) ||
-            forkMode.equals( FORK_ONCE_PERTHREAD ))
+            forkMode.equals( FORK_ONCE_PERTHREAD ) )
         {
             return forkMode;
         }
@@ -128,23 +126,26 @@ public class ForkConfiguration
      * @throws org.apache.maven.surefire.booter.SurefireBooterForkException
      *          when unable to perform the fork
      */
-    public OutputStreamFlushableCommandline createCommandLine( List<String> classPath, ClassLoaderConfiguration classpathConfiguration,
-                                          boolean shadefire, int threadNumber )
+    public OutputStreamFlushableCommandline createCommandLine( List<String> classPath,
+                                                               ClassLoaderConfiguration classpathConfiguration,
+                                                               boolean shadefire, int threadNumber )
         throws SurefireBooterForkException
     {
-        return createCommandLine( classPath, classpathConfiguration.isManifestOnlyJarRequestedAndUsable(), shadefire, threadNumber );
+        return createCommandLine( classPath, classpathConfiguration.isManifestOnlyJarRequestedAndUsable(), shadefire,
+                                  threadNumber );
     }
 
-    public OutputStreamFlushableCommandline createCommandLine( List<String> classPath, boolean useJar, boolean shadefire, int threadNumber )
+    public OutputStreamFlushableCommandline createCommandLine( List<String> classPath, boolean useJar,
+                                                               boolean shadefire, int threadNumber )
         throws SurefireBooterForkException
     {
-    	OutputStreamFlushableCommandline cli = new OutputStreamFlushableCommandline();
+        OutputStreamFlushableCommandline cli = new OutputStreamFlushableCommandline();
 
         cli.setExecutable( jvmExecutable );
 
         if ( argLine != null )
         {
-            cli.createArg().setLine( replaceThreadNumberPlaceholder(stripNewLines( argLine ), threadNumber) );
+            cli.createArg().setLine( replaceThreadNumberPlaceholder( stripNewLines( argLine ), threadNumber ) );
         }
 
         if ( environmentVariables != null )
@@ -193,8 +194,9 @@ public class ForkConfiguration
         return cli;
     }
 
-    private String replaceThreadNumberPlaceholder(String argLine, int threadNumber) {
-        return argLine.replace(AbstractSurefireMojo.THREAD_NUMBER_PLACEHOLDER, String.valueOf(threadNumber));
+    private String replaceThreadNumberPlaceholder( String argLine, int threadNumber )
+    {
+        return argLine.replace( AbstractSurefireMojo.THREAD_NUMBER_PLACEHOLDER, String.valueOf( threadNumber ) );
     }
 
     /**

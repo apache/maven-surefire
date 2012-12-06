@@ -27,70 +27,88 @@ import java.util.concurrent.Semaphore;
 /**
  * An {@link InputStream} that, when read, provides test class names out of
  * a queue.
- * <p>
+ * <p/>
  * The Stream provides only one test at a time, but only after {@link #provideNewTest()}
  * has been invoked.
- * <p>
- * After providing each test class name, followed by a newline character, a flush is 
+ * <p/>
+ * After providing each test class name, followed by a newline character, a flush is
  * performed on the {@link FlushReceiver} provided by the {@link FlushReceiverProvider}
  * that can be set using {@link #setFlushReceiverProvider(FlushReceiverProvider)}.
- * 
- * @author Andreas Gudian
  *
+ * @author Andreas Gudian
  */
-public class TestProvidingInputStream extends InputStream {
-	private final Queue<String> testItemQueue;
-	private byte[] currentBuffer;
-	private int currentPos;
-	private Semaphore semaphore = new Semaphore(0);
-	private FlushReceiverProvider flushReceiverProvider;
+public class TestProvidingInputStream
+    extends InputStream
+{
+    private final Queue<String> testItemQueue;
 
-	/**
-	 * C'tor
-	 * 
-	 * @param testItemQueue source of the tests to be read from this stream
-	 */
-	public TestProvidingInputStream(Queue<String> testItemQueue) {
-		this.testItemQueue = testItemQueue;
-	}
+    private byte[] currentBuffer;
 
-	/**
-	 * @param flushReceiverProvider the provider for a flush receiver.
-	 */
-	public void setFlushReceiverProvider(FlushReceiverProvider flushReceiverProvider) {
-		this.flushReceiverProvider = flushReceiverProvider;
-	}
+    private int currentPos;
 
-	@Override
-	public synchronized int read() throws IOException {
-		if (null == currentBuffer) {
-			if (null != flushReceiverProvider && null != flushReceiverProvider.getFlushReceiver()) {
-				flushReceiverProvider.getFlushReceiver().flush();
-			}
-			
-			semaphore.acquireUninterruptibly();
+    private Semaphore semaphore = new Semaphore( 0 );
 
-			String currentElement = testItemQueue.poll();
-			if (null != currentElement) {
-				currentBuffer = currentElement.getBytes();
-				currentPos = 0;
-			} else {
-				return -1;
-			}
-		}
+    private FlushReceiverProvider flushReceiverProvider;
 
-		if (currentPos < currentBuffer.length) {
-			return (currentBuffer[currentPos++] & 0xff);
-		} else {
-			currentBuffer = null;
-			return ('\n' & 0xff);
-		}
-	}
+    /**
+     * C'tor
+     *
+     * @param testItemQueue source of the tests to be read from this stream
+     */
+    public TestProvidingInputStream( Queue<String> testItemQueue )
+    {
+        this.testItemQueue = testItemQueue;
+    }
 
-	/**
-	 * Signal that a new test is to be provided.
-	 */
-	public void provideNewTest() {
-		semaphore.release();
-	}
+    /**
+     * @param flushReceiverProvider the provider for a flush receiver.
+     */
+    public void setFlushReceiverProvider( FlushReceiverProvider flushReceiverProvider )
+    {
+        this.flushReceiverProvider = flushReceiverProvider;
+    }
+
+    @Override
+    public synchronized int read()
+        throws IOException
+    {
+        if ( null == currentBuffer )
+        {
+            if ( null != flushReceiverProvider && null != flushReceiverProvider.getFlushReceiver() )
+            {
+                flushReceiverProvider.getFlushReceiver().flush();
+            }
+
+            semaphore.acquireUninterruptibly();
+
+            String currentElement = testItemQueue.poll();
+            if ( null != currentElement )
+            {
+                currentBuffer = currentElement.getBytes();
+                currentPos = 0;
+            }
+            else
+            {
+                return -1;
+            }
+        }
+
+        if ( currentPos < currentBuffer.length )
+        {
+            return ( currentBuffer[currentPos++] & 0xff );
+        }
+        else
+        {
+            currentBuffer = null;
+            return ( '\n' & 0xff );
+        }
+    }
+
+    /**
+     * Signal that a new test is to be provided.
+     */
+    public void provideNewTest()
+    {
+        semaphore.release();
+    }
 }

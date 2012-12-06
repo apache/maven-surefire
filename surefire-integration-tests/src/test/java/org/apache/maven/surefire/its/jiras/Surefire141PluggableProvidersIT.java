@@ -19,7 +19,6 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
-import org.apache.maven.shared.utils.io.FileUtils;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
 
@@ -34,7 +33,7 @@ public class Surefire141PluggableProvidersIT
     public void testParallelBuildResultCount()
         throws Exception
     {
-        OutputValidator outputValidator = unpack( "surefire-141-pluggableproviders-provider" , "prov").executeInstall();
+        OutputValidator outputValidator = unpack( "surefire-141-pluggableproviders-provider", "prov" ).executeInstall();
 
         unpack( "surefire-141-pluggableproviders" ).setEOption().executeTest().verifyTextInLog(
             "Using configured provider org.apache.maven.surefire.testprovider.TestProvider" ).verifyTextInLog(

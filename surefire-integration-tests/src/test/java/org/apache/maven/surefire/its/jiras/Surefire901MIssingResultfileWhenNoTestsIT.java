@@ -19,7 +19,6 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 
 import org.junit.Test;

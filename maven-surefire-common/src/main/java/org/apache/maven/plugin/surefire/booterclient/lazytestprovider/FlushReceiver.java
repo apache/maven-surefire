@@ -23,15 +23,16 @@ import java.io.IOException;
 
 /**
  * Something that can be flushed.
- * 
- * @author Andreas Gudian
  *
+ * @author Andreas Gudian
  */
-public interface FlushReceiver {
-	/**
-	 * Performs a flush, releasing any buffered resources.
-	 * 
-	 * @throws IOException in case the flush operation failed
-	 */
-	void flush() throws IOException;
+public interface FlushReceiver
+{
+    /**
+     * Performs a flush, releasing any buffered resources.
+     *
+     * @throws IOException in case the flush operation failed
+     */
+    void flush()
+        throws IOException;
 }

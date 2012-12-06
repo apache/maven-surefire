@@ -104,7 +104,7 @@ public class RunEntryStatisticsMapTest
     class C
     {
     }
-    
+
     class NewClass
     {
     }

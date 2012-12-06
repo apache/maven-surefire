@@ -89,7 +89,7 @@ public class TestNGMapConfigurator
             {
                 val = convert( val, Boolean.class );
             }
-			else if ( "configfailurepolicy".equals( key ) )
+            else if ( "configfailurepolicy".equals( key ) )
             {
                 val = convert( val, String.class );
             }

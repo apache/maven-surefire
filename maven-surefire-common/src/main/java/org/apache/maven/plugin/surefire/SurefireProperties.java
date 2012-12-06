@@ -35,7 +35,8 @@ import org.apache.maven.surefire.booter.KeyValueSource;
  * A properties implementation that preserves insertion order.
  */
 public class SurefireProperties
-    extends Properties implements KeyValueSource
+    extends Properties
+    implements KeyValueSource
 {
     private final LinkedHashSet<Object> items = new LinkedHashSet<Object>();
 
@@ -196,10 +197,11 @@ public class SurefireProperties
     {
         Iterator iter = keySet().iterator();
         Object key;
-        while(iter.hasNext()){
+        while ( iter.hasNext() )
+        {
             key = iter.next();
             //noinspection unchecked
-            target.put(  key, get( key ));
+            target.put( key, get( key ) );
         }
     }
 

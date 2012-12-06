@@ -215,7 +215,7 @@ public class SurefireReportGenerator
 
         sink.tableRow_();
 
-        for ( Map.Entry<String, List<ReportTestSuite>> entry: suitePackages.entrySet() )
+        for ( Map.Entry<String, List<ReportTestSuite>> entry : suitePackages.entrySet() )
         {
             sink.tableRow();
 
@@ -252,7 +252,7 @@ public class SurefireReportGenerator
         sink.text( bundle.getString( "report.surefire.text.note2" ) );
         sink.paragraph_();
 
-        for ( Map.Entry<String, List<ReportTestSuite>> entry: suitePackages.entrySet() )
+        for ( Map.Entry<String, List<ReportTestSuite>> entry : suitePackages.entrySet() )
         {
             String packageName = entry.getKey();
 
@@ -505,7 +505,7 @@ public class SurefireReportGenerator
                                     sink.unknown( "div", new Object[]{ HtmlMarkup.TAG_TYPE_START }, atts );
 
                                     sink.verbatim( null );
-                                    for ( String line: detail )
+                                    for ( String line : detail )
                                     {
                                         sink.text( line );
                                         sink.lineBreak();

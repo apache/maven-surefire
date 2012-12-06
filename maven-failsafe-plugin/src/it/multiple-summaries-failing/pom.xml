@@ -40,41 +40,41 @@
         <artifactId>@project.artifactId@</artifactId>
         <version>@project.version@</version>
         <executions>
-            <execution>
-                <id>integration-test</id>
-                <goals>
-                    <goal>integration-test</goal>
-                </goals>
-                <configuration>
-                    <summaryFile>${project.build.directory}/failsafe-reports/failsafe-summary-1.xml</summaryFile>
-                </configuration>
-            </execution>
-            <execution>
-                <id>acceptance-test</id>
-                <goals>
-                    <goal>integration-test</goal>
-                </goals>
-                <configuration>
-                    <includes>
-                        <include>**/AT*.java</include>
-                        <include>**/*AT.java</include>
-                        <include>**/*ATCase.java</include>
-                    </includes>
-                    <summaryFile>${project.build.directory}/failsafe-reports/failsafe-summary-2.xml</summaryFile>
-                </configuration>
-            </execution>
-            <execution>
-                <id>verify</id>
-                <goals>
-                    <goal>verify</goal>
-                </goals>
-                <configuration>
-                    <summaryFiles>
-                        <summaryFile>${project.build.directory}/failsafe-reports/failsafe-summary-1.xml</summaryFile>
-                        <summaryFile>${project.build.directory}/failsafe-reports/failsafe-summary-2.xml</summaryFile>
-                    </summaryFiles>
-                </configuration>
-            </execution>
+          <execution>
+            <id>integration-test</id>
+            <goals>
+              <goal>integration-test</goal>
+            </goals>
+            <configuration>
+              <summaryFile>${project.build.directory}/failsafe-reports/failsafe-summary-1.xml</summaryFile>
+            </configuration>
+          </execution>
+          <execution>
+            <id>acceptance-test</id>
+            <goals>
+              <goal>integration-test</goal>
+            </goals>
+            <configuration>
+              <includes>
+                <include>**/AT*.java</include>
+                <include>**/*AT.java</include>
+                <include>**/*ATCase.java</include>
+              </includes>
+              <summaryFile>${project.build.directory}/failsafe-reports/failsafe-summary-2.xml</summaryFile>
+            </configuration>
+          </execution>
+          <execution>
+            <id>verify</id>
+            <goals>
+              <goal>verify</goal>
+            </goals>
+            <configuration>
+              <summaryFiles>
+                <summaryFile>${project.build.directory}/failsafe-reports/failsafe-summary-1.xml</summaryFile>
+                <summaryFile>${project.build.directory}/failsafe-reports/failsafe-summary-2.xml</summaryFile>
+              </summaryFiles>
+            </configuration>
+          </execution>
         </executions>
       </plugin>
     </plugins>

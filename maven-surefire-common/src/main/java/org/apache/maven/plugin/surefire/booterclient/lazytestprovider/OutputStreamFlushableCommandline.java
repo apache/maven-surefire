@@ -21,7 +21,6 @@ package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
 
 import java.io.IOException;
 import java.io.OutputStream;
-
 import org.apache.maven.shared.utils.cli.CommandLineException;
 import org.apache.maven.shared.utils.cli.Commandline;
 
@@ -29,45 +28,55 @@ import org.apache.maven.shared.utils.cli.Commandline;
  * A {@link Commandline} implementation that provides the output stream of
  * the executed process in form of a {@link FlushReceiver}, for it to be
  * flushed on demand.
- * 
- * @author Andreas Gudian
  *
+ * @author Andreas Gudian
  */
-public class OutputStreamFlushableCommandline extends Commandline implements FlushReceiverProvider {
-	/**
-	 * Wraps an output stream in order to delegate a flush.
-	 *
-	 */
-	private final class OutputStreamFlushReceiver implements FlushReceiver {
-		private final OutputStream outputStream;
+public class OutputStreamFlushableCommandline
+    extends Commandline
+    implements FlushReceiverProvider
+{
+    /**
+     * Wraps an output stream in order to delegate a flush.
+     */
+    private final class OutputStreamFlushReceiver
+        implements FlushReceiver
+    {
+        private final OutputStream outputStream;
 
-		private OutputStreamFlushReceiver(OutputStream outputStream) {
-			this.outputStream = outputStream;
-		}
+        private OutputStreamFlushReceiver( OutputStream outputStream )
+        {
+            this.outputStream = outputStream;
+        }
 
-		public void flush() throws IOException {
-			outputStream.flush();
-		}
-	}
+        public void flush()
+            throws IOException
+        {
+            outputStream.flush();
+        }
+    }
 
-	private FlushReceiver flushReceiver;
-	
-	@Override
-	public Process execute() throws CommandLineException {
-		Process process = super.execute();
+    private FlushReceiver flushReceiver;
 
-		if (process.getOutputStream() != null) {
-			flushReceiver = new OutputStreamFlushReceiver(process.getOutputStream());
-		}
-		
-		return process;
-	}
+    @Override
+    public Process execute()
+        throws CommandLineException
+    {
+        Process process = super.execute();
 
-	/* (non-Javadoc)
-	 * @see org.apache.maven.plugin.surefire.booterclient.lazytestprovider.FlushReceiverProvider#getFlushReceiver()
-	 */
-	public FlushReceiver getFlushReceiver() {
-		return flushReceiver;
-	}
+        if ( process.getOutputStream() != null )
+        {
+            flushReceiver = new OutputStreamFlushReceiver( process.getOutputStream() );
+        }
+
+        return process;
+    }
+
+    /* (non-Javadoc)
+      * @see org.apache.maven.plugin.surefire.booterclient.lazytestprovider.FlushReceiverProvider#getFlushReceiver()
+      */
+    public FlushReceiver getFlushReceiver()
+    {
+        return flushReceiver;
+    }
 
 }

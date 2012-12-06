@@ -75,10 +75,10 @@ public abstract class ConcurrentReporterManager
 
     public void testFailed( ReportEntry failure )
     {
-    	final TestMethod testMethod = getOrCreateTestMethod( failure );
-        if (testMethod != null)
+        final TestMethod testMethod = getOrCreateTestMethod( failure );
+        if ( testMethod != null )
         {
-        	testMethod.testFailure( failure );
+            testMethod.testFailure( failure );
         }
     }
 
@@ -101,10 +101,10 @@ public abstract class ConcurrentReporterManager
 
     public void testAssumptionFailure( ReportEntry failure )
     {
-    	final TestMethod testMethod = getOrCreateTestMethod( failure );
-    	if (testMethod != null)
+        final TestMethod testMethod = getOrCreateTestMethod( failure );
+        if ( testMethod != null )
         {
-    		testMethod.testIgnored( failure );
+            testMethod.testIgnored( failure );
         }
     }
 

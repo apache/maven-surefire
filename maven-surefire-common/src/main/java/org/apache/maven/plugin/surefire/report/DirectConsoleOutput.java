@@ -20,7 +20,6 @@ package org.apache.maven.plugin.surefire.report;
  */
 
 import java.io.PrintStream;
-
 import org.apache.maven.surefire.report.ReportEntry;
 
 /**
@@ -35,6 +34,7 @@ public class DirectConsoleOutput
     implements TestcycleConsoleOutputReceiver
 {
     private final PrintStream sout;
+
     private final PrintStream serr;
 
     public DirectConsoleOutput( PrintStream sout, PrintStream serr )
@@ -47,7 +47,7 @@ public class DirectConsoleOutput
     public void writeTestOutput( byte[] buf, int off, int len, boolean stdout )
     {
         PrintStream stream = stdout ? sout : serr;
-        stream.write(buf, off, len);
+        stream.write( buf, off, len );
     }
 
     public void testSetStarting( ReportEntry reportEntry )

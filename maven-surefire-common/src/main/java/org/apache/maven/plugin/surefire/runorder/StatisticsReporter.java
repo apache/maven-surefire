@@ -19,11 +19,10 @@ package org.apache.maven.plugin.surefire.runorder;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.util.NestedRuntimeException;
-
 import java.io.File;
 import java.io.FileNotFoundException;
+import org.apache.maven.surefire.report.ReportEntry;
+import org.apache.maven.surefire.util.NestedRuntimeException;
 
 /**
  * @author Kristian Rosenvold

@@ -113,7 +113,8 @@ public class DefaultDirectoryScanner
         String[] tests = EMPTY_STRING_ARRAY;
         if ( basedir.exists() )
         {
-            org.apache.maven.shared.utils.io.DirectoryScanner scanner = new org.apache.maven.shared.utils.io.DirectoryScanner();
+            org.apache.maven.shared.utils.io.DirectoryScanner scanner =
+                new org.apache.maven.shared.utils.io.DirectoryScanner();
 
             scanner.setBasedir( basedir );
 

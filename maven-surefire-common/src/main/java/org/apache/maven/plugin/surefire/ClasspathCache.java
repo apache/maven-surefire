@@ -18,9 +18,8 @@ package org.apache.maven.plugin.surefire;
  * under the License.
  */
 
-import org.apache.maven.surefire.booter.Classpath;
-
 import java.util.concurrent.ConcurrentHashMap;
+import org.apache.maven.surefire.booter.Classpath;
 
 /**
  * @author Kristian Rosenvold
@@ -35,7 +34,8 @@ public class ClasspathCache
         return classpaths.get( artifactId );
     }
 
-    public static void setCachedClasspath(String key, Classpath classpath){
-        classpaths.put(key, classpath);
+    public static void setCachedClasspath( String key, Classpath classpath )
+    {
+        classpaths.put( key, classpath );
     }
 }

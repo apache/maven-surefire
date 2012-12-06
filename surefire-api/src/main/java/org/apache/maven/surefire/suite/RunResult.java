@@ -19,6 +19,15 @@ package org.apache.maven.surefire.suite;
  * under the License.
  */
 
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintWriter;
 import org.apache.maven.shared.utils.StringUtils;
 import org.apache.maven.shared.utils.io.IOUtil;
 import org.apache.maven.shared.utils.xml.PrettyPrintXMLWriter;
@@ -26,11 +35,9 @@ import org.apache.maven.shared.utils.xml.Xpp3Dom;
 import org.apache.maven.shared.utils.xml.Xpp3DomBuilder;
 import org.apache.maven.shared.utils.xml.Xpp3DomWriter;
 
-import java.io.*;
-
 /**
  * Represents a test-run-result; this may be from a single test run or an aggregated result.
- *
+ * <p/>
  * In the case of timeout==true, the run-counts reflect the state of the test-run at the time
  * of the timeout.
  *
@@ -56,17 +63,20 @@ public class RunResult
 
     private static final int NO_TESTS = 254;
 
-    public static RunResult timeout(RunResult accumulatedAtTimeout){
-        return errorCode( accumulatedAtTimeout, accumulatedAtTimeout.getFailure(), true);
+    public static RunResult timeout( RunResult accumulatedAtTimeout )
+    {
+        return errorCode( accumulatedAtTimeout, accumulatedAtTimeout.getFailure(), true );
     }
 
-    public static RunResult failure(RunResult accumulatedAtTimeout, Exception cause){
-        return errorCode( accumulatedAtTimeout, getStackTrace(cause), accumulatedAtTimeout.isTimeout());
+    public static RunResult failure( RunResult accumulatedAtTimeout, Exception cause )
+    {
+        return errorCode( accumulatedAtTimeout, getStackTrace( cause ), accumulatedAtTimeout.isTimeout() );
     }
 
-    private static RunResult errorCode( RunResult other, String failure, boolean  timeout){
-        return new RunResult(other.getCompletedCount(), other.getErrors(),
-                other.getFailures(), other.getSkipped(), failure, timeout);
+    private static RunResult errorCode( RunResult other, String failure, boolean timeout )
+    {
+        return new RunResult( other.getCompletedCount(), other.getErrors(), other.getFailures(), other.getSkipped(),
+                              failure, timeout );
 
     }
 
@@ -85,12 +95,16 @@ public class RunResult
         this.timeout = timeout;
     }
 
-    private static String getStackTrace(Exception e){
-        if (e== null)  return null;
+    private static String getStackTrace( Exception e )
+    {
+        if ( e == null )
+        {
+            return null;
+        }
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        PrintWriter pw = new PrintWriter(out);
-        e.printStackTrace(pw);
-        return new String(out.toByteArray());
+        PrintWriter pw = new PrintWriter( out );
+        e.printStackTrace( pw );
+        return new String( out.toByteArray() );
     }
 
     public int getCompletedCount()
@@ -115,8 +129,14 @@ public class RunResult
 
     public Integer getFailsafeCode()  // Only used for compatibility reasons.
     {
-        if (completedCount == 0) return Integer.valueOf(NO_TESTS);
-        if (!isErrorFree()) return Integer.valueOf( FAILURE );
+        if ( completedCount == 0 )
+        {
+            return Integer.valueOf( NO_TESTS );
+        }
+        if ( !isErrorFree() )
+        {
+            return Integer.valueOf( FAILURE );
+        }
         return null;
     }
 
@@ -137,7 +157,8 @@ public class RunResult
         return failure != null;
     }
 
-    public String getFailure() {
+    public String getFailure()
+    {
         return failure;
     }
 
@@ -163,43 +184,52 @@ public class RunResult
         return new RunResult( 0, 0, 0, 0 );
     }
 
-    private Xpp3Dom create(String node, String value){
-        Xpp3Dom dom = new Xpp3Dom(node);
-        dom.setValue( value);
+    private Xpp3Dom create( String node, String value )
+    {
+        Xpp3Dom dom = new Xpp3Dom( node );
+        dom.setValue( value );
         return dom;
     }
-    private Xpp3Dom create(String node, int value){
-        return create(node, Integer.toString(value));
+
+    private Xpp3Dom create( String node, int value )
+    {
+        return create( node, Integer.toString( value ) );
     }
 
-    Xpp3Dom asXpp3Dom(){
-        Xpp3Dom dom = new Xpp3Dom("failsafe-summary");
+    Xpp3Dom asXpp3Dom()
+    {
+        Xpp3Dom dom = new Xpp3Dom( "failsafe-summary" );
         Integer failsafeCode = getFailsafeCode();
-        if ( failsafeCode != null ){
-            dom.setAttribute( "result", Integer.toString( failsafeCode.intValue()) );
+        if ( failsafeCode != null )
+        {
+            dom.setAttribute( "result", Integer.toString( failsafeCode.intValue() ) );
         }
-        dom.setAttribute("timeout", Boolean.toString(this.timeout));
-        dom.addChild(create("completed", this.completedCount));
-        dom.addChild(create("errors", this.errors));
-        dom.addChild(create("failures", this.failures));
-        dom.addChild(create("skipped", this.skipped));
-        dom.addChild(create("failureMessage", this.failure));
+        dom.setAttribute( "timeout", Boolean.toString( this.timeout ) );
+        dom.addChild( create( "completed", this.completedCount ) );
+        dom.addChild( create( "errors", this.errors ) );
+        dom.addChild( create( "failures", this.failures ) );
+        dom.addChild( create( "skipped", this.skipped ) );
+        dom.addChild( create( "failureMessage", this.failure ) );
         return dom;
     }
 
-    public static RunResult fromInputStream(InputStream inputStream, String encoding) throws FileNotFoundException {
-        Xpp3Dom dom = Xpp3DomBuilder.build(inputStream, encoding);
-        boolean timeout = Boolean.parseBoolean(dom.getAttribute("timeout"));
-        int completed = Integer.parseInt(dom.getChild("completed").getValue());
-        int errors = Integer.parseInt(dom.getChild("errors").getValue());
-        int failures = Integer.parseInt(dom.getChild("failures").getValue());
-        int skipped = Integer.parseInt( dom.getChild("skipped").getValue());
-        String failureMessage1 = dom.getChild("failureMessage").getValue();
-        String failureMessage = StringUtils.isEmpty(failureMessage1) ? null : failureMessage1;
-        return new RunResult(completed, errors, failures, skipped, failureMessage, timeout);
+    public static RunResult fromInputStream( InputStream inputStream, String encoding )
+        throws FileNotFoundException
+    {
+        Xpp3Dom dom = Xpp3DomBuilder.build( inputStream, encoding );
+        boolean timeout = Boolean.parseBoolean( dom.getAttribute( "timeout" ) );
+        int completed = Integer.parseInt( dom.getChild( "completed" ).getValue() );
+        int errors = Integer.parseInt( dom.getChild( "errors" ).getValue() );
+        int failures = Integer.parseInt( dom.getChild( "failures" ).getValue() );
+        int skipped = Integer.parseInt( dom.getChild( "skipped" ).getValue() );
+        String failureMessage1 = dom.getChild( "failureMessage" ).getValue();
+        String failureMessage = StringUtils.isEmpty( failureMessage1 ) ? null : failureMessage1;
+        return new RunResult( completed, errors, failures, skipped, failureMessage, timeout );
     }
 
-    public void writeSummary( File summaryFile, boolean inProgress, String encoding) throws IOException {
+    public void writeSummary( File summaryFile, boolean inProgress, String encoding )
+        throws IOException
+    {
         if ( !summaryFile.getParentFile().isDirectory() )
         {
             //noinspection ResultOfMethodCallIgnored
@@ -215,45 +245,71 @@ public class RunResult
             {
                 fin = new FileInputStream( summaryFile );
 
-                RunResult runResult = RunResult.fromInputStream(new BufferedInputStream(fin), encoding);
-                mergedSummary = mergedSummary.aggregate( runResult);
+                RunResult runResult = RunResult.fromInputStream( new BufferedInputStream( fin ), encoding );
+                mergedSummary = mergedSummary.aggregate( runResult );
             }
 
-            writer = new FileWriter(summaryFile);
-            writer.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-            PrettyPrintXMLWriter prettyPrintXMLWriter = new PrettyPrintXMLWriter(writer);
-            Xpp3DomWriter.write(prettyPrintXMLWriter, mergedSummary.asXpp3Dom());
+            writer = new FileWriter( summaryFile );
+            writer.write( "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" );
+            PrettyPrintXMLWriter prettyPrintXMLWriter = new PrettyPrintXMLWriter( writer );
+            Xpp3DomWriter.write( prettyPrintXMLWriter, mergedSummary.asXpp3Dom() );
         }
         finally
         {
-            IOUtil.close(fin);
-            IOUtil.close(writer);
+            IOUtil.close( fin );
+            IOUtil.close( writer );
         }
     }
 
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+    public boolean equals( Object o )
+    {
+        if ( this == o )
+        {
+            return true;
+        }
+        if ( o == null || getClass() != o.getClass() )
+        {
+            return false;
+        }
 
         RunResult runResult = (RunResult) o;
 
-        if (completedCount != runResult.completedCount) return false;
-        if (errors != runResult.errors) return false;
-        if (failures != runResult.failures) return false;
-        if (skipped != runResult.skipped) return false;
-        if (timeout != runResult.timeout) return false;
-        if (failure != null ? !failure.equals(runResult.failure) : runResult.failure != null) return false;
+        if ( completedCount != runResult.completedCount )
+        {
+            return false;
+        }
+        if ( errors != runResult.errors )
+        {
+            return false;
+        }
+        if ( failures != runResult.failures )
+        {
+            return false;
+        }
+        if ( skipped != runResult.skipped )
+        {
+            return false;
+        }
+        if ( timeout != runResult.timeout )
+        {
+            return false;
+        }
+        if ( failure != null ? !failure.equals( runResult.failure ) : runResult.failure != null )
+        {
+            return false;
+        }
 
         return true;
     }
 
-    public int hashCode() {
+    public int hashCode()
+    {
         int result = completedCount;
         result = 31 * result + errors;
         result = 31 * result + failures;
         result = 31 * result + skipped;
-        result = 31 * result + (failure != null ? failure.hashCode() : 0);
-        result = 31 * result + (timeout ? 1 : 0);
+        result = 31 * result + ( failure != null ? failure.hashCode() : 0 );
+        result = 31 * result + ( timeout ? 1 : 0 );
         return result;
     }
 }

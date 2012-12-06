@@ -56,7 +56,7 @@ public class JUnit48TestCategoriesIT
     public void testCategoriesAC()
         throws Exception
     {
-        runAC( unpacked());
+        runAC( unpacked() );
     }
 
     public void testCategoriesACForkAlways()

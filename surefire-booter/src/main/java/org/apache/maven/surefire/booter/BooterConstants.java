@@ -46,5 +46,5 @@ public interface BooterConstants
     String TEST_SUITE_XML_FILES = "testSuiteXmlFiles";
     String PROVIDER_CONFIGURATION = "providerConfiguration";
     String FORKTESTSET = "forkTestSet";
-	String FORKTESTSET_PREFER_TESTS_FROM_IN_STREAM = "preferTestsFromInStream";
+    String FORKTESTSET_PREFER_TESTS_FROM_IN_STREAM = "preferTestsFromInStream";
 }

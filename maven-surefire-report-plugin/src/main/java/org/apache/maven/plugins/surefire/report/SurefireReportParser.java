@@ -225,7 +225,7 @@ public class SurefireReportParser
     {
         List<ReportTestCase> failureDetailList = new ArrayList<ReportTestCase>();
 
-        for (ReportTestSuite suite : testSuitesList)
+        for ( ReportTestSuite suite : testSuitesList )
         {
             List<ReportTestCase> testCaseList = suite.getTestCases();
 
@@ -265,7 +265,7 @@ public class SurefireReportParser
 
         scanner.setIncludes( StringUtils.split( includes, "," ) );
 
-        scanner.setExcludes( StringUtils.split(excludes, ",") );
+        scanner.setExcludes( StringUtils.split( excludes, "," ) );
 
         scanner.scan();
 

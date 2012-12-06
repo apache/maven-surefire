@@ -17,6 +17,7 @@ package org.apache.maven.surefire.testng.utils;
  * specific language governing permissions and limitations
  * under the License.
  */
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

@@ -19,13 +19,6 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
-import org.apache.maven.shared.utils.xml.Xpp3Dom;
-import org.apache.maven.shared.utils.xml.Xpp3DomWriter;
-import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.report.ReporterException;
-import org.apache.maven.surefire.report.SafeThrowable;
-import org.apache.maven.shared.utils.io.IOUtil;
-
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -36,6 +29,12 @@ import java.io.UnsupportedEncodingException;
 import java.util.Enumeration;
 import java.util.Properties;
 import java.util.StringTokenizer;
+import org.apache.maven.shared.utils.io.IOUtil;
+import org.apache.maven.shared.utils.xml.Xpp3Dom;
+import org.apache.maven.shared.utils.xml.Xpp3DomWriter;
+import org.apache.maven.surefire.report.ReportEntry;
+import org.apache.maven.surefire.report.ReporterException;
+import org.apache.maven.surefire.report.SafeThrowable;
 
 /**
  * XML format reporter writing to <code>TEST-<i>reportName</i>[-<i>suffix</i>].xml</code> file like written and read

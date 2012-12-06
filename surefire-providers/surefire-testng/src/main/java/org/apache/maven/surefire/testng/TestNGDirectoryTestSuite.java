@@ -57,9 +57,9 @@ public class TestNGDirectoryTestSuite
     private final ArtifactVersion version;
 
     private final Map options;
-    
+
     private final Map junitOptions;
-    
+
     private final String testSourceDirectory;
 
     private final File reportsDirectory;
@@ -71,7 +71,7 @@ public class TestNGDirectoryTestSuite
     private final String testMethodPattern;
 
     private final RunOrderCalculator runOrderCalculator;
-    
+
     private final Class junitTestClass;
 
     public TestNGDirectoryTestSuite( String testSourceDirectory, String artifactVersion, Properties confOptions,
@@ -96,69 +96,74 @@ public class TestNGDirectoryTestSuite
         throws ReporterException, TestSetFailedException
     {
 
-    	if ( testsToRun instanceof LazyTestsToRun )
-    	{
-    		executeLazy( testsToRun, reporterManagerFactory );
-    	} else if ( testsToRun.size() > 1 )
-    	{
-    		executeMulti( testsToRun, reporterManagerFactory );
-    	} else if ( testsToRun.size() == 1 )
-    	{
-    		Class testClass = (Class) testsToRun.iterator().next();
-            executeSingleClass( reporterManagerFactory, testClass );
-    	}
-    }
-
-	private void executeSingleClass( ReporterFactory reporterManagerFactory, Class testClass ) throws TestSetFailedException {
-		this.options.put( "suitename", testClass.getName() );
-
-		RunListener reporter = reporterManagerFactory.createReporter();
-		ConsoleOutputCapture.startCapture( (ConsoleOutputReceiver) reporter );
-
-		startTestSuite( reporter, this );
-
-		final Map optionsToUse = isJUnitTest(testClass) ? junitOptions : options;
-		
-		TestNGExecutor.run( new Class[]{ testClass }, testSourceDirectory, optionsToUse,
-		                    version, reporter, this, reportsDirectory, testMethodPattern );
-
-		finishTestSuite( reporter, this );
-	}
-
-    public void executeLazy( TestsToRun testsToRun, ReporterFactory reporterFactory )
-            throws ReporterException, TestSetFailedException
-    {
-        
-        for ( Iterator testClassIt = testsToRun.iterator(); testClassIt.hasNext(); )
+        if ( testsToRun instanceof LazyTestsToRun )
         {
-            Class c = (Class) testClassIt.next();
-            executeSingleClass(reporterFactory, c);
+            executeLazy( testsToRun, reporterManagerFactory );
+        }
+        else if ( testsToRun.size() > 1 )
+        {
+            executeMulti( testsToRun, reporterManagerFactory );
+        }
+        else if ( testsToRun.size() == 1 )
+        {
+            Class testClass = (Class) testsToRun.iterator().next();
+            executeSingleClass( reporterManagerFactory, testClass );
         }
     }
 
-	private Class findJUnitTestClass() {
-		Class junitTest;
-		try
-		{
-		    junitTest = Class.forName( "junit.framework.Test" );
-		}
-		catch ( ClassNotFoundException e )
-		{
-		    junitTest = null;
-		}
-		return junitTest;
-	}
-    
+    private void executeSingleClass( ReporterFactory reporterManagerFactory, Class testClass )
+        throws TestSetFailedException
+    {
+        this.options.put( "suitename", testClass.getName() );
+
+        RunListener reporter = reporterManagerFactory.createReporter();
+        ConsoleOutputCapture.startCapture( (ConsoleOutputReceiver) reporter );
+
+        startTestSuite( reporter, this );
+
+        final Map optionsToUse = isJUnitTest( testClass ) ? junitOptions : options;
+
+        TestNGExecutor.run( new Class[]{ testClass }, testSourceDirectory, optionsToUse, version, reporter, this,
+                            reportsDirectory, testMethodPattern );
+
+        finishTestSuite( reporter, this );
+    }
+
+    public void executeLazy( TestsToRun testsToRun, ReporterFactory reporterFactory )
+        throws ReporterException, TestSetFailedException
+    {
+
+        for ( Iterator testClassIt = testsToRun.iterator(); testClassIt.hasNext(); )
+        {
+            Class c = (Class) testClassIt.next();
+            executeSingleClass( reporterFactory, c );
+        }
+    }
+
+    private Class findJUnitTestClass()
+    {
+        Class junitTest;
+        try
+        {
+            junitTest = Class.forName( "junit.framework.Test" );
+        }
+        catch ( ClassNotFoundException e )
+        {
+            junitTest = null;
+        }
+        return junitTest;
+    }
+
     public void executeMulti( TestsToRun testsToRun, ReporterFactory reporterFactory )
         throws ReporterException, TestSetFailedException
     {
         List testNgTestClasses = new ArrayList();
         List junitTestClasses = new ArrayList();
         Class[] allClasses = testsToRun.getLocatedClasses();
-        for ( int i = 0; i < allClasses.length; i++)
+        for ( int i = 0; i < allClasses.length; i++ )
         {
             Class c = allClasses[i];
-            if ( isJUnitTest(c) )
+            if ( isJUnitTest( c ) )
             {
                 junitTestClasses.add( c );
             }
@@ -190,22 +195,24 @@ public class TestNGDirectoryTestSuite
         {
             testClasses = (Class[]) junitTestClasses.toArray( new Class[junitTestClasses.size()] );
 
-            TestNGExecutor.run( testClasses, testSourceDirectory, junitOptions, version, reporterManager,
-                                this, junitReportsDirectory, testMethodPattern );
+            TestNGExecutor.run( testClasses, testSourceDirectory, junitOptions, version, reporterManager, this,
+                                junitReportsDirectory, testMethodPattern );
         }
 
         finishTestSuite( reporterManager, this );
     }
 
-	private boolean isJUnitTest(Class c) {
-		return junitTestClass != null && junitTestClass.isAssignableFrom( c );
-	}
+    private boolean isJUnitTest( Class c )
+    {
+        return junitTestClass != null && junitTestClass.isAssignableFrom( c );
+    }
 
-	private Map createJUnitOptions() {
-		Map junitOptions = new HashMap(this.options);
-		junitOptions.put( "junit", Boolean.TRUE );
-		return junitOptions;
-	}
+    private Map createJUnitOptions()
+    {
+        Map junitOptions = new HashMap( this.options );
+        junitOptions.put( "junit", Boolean.TRUE );
+        return junitOptions;
+    }
 
     // single class test
     public void execute( String testSetName, ReporterFactory reporterManagerFactory )

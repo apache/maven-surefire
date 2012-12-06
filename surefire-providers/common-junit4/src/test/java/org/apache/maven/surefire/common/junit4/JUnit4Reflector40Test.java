@@ -17,6 +17,7 @@ package org.apache.maven.surefire.common.junit4;
  * specific language governing permissions and limitations
  * under the License.
  */
+
 import junit.framework.TestCase;
 import org.junit.Assert;
 import org.junit.Ignore;

@@ -19,6 +19,12 @@ package org.apache.maven.plugin.failsafe;
  * under the License.
  */
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -32,8 +38,6 @@ import org.apache.maven.shared.utils.StringUtils;
 import org.apache.maven.shared.utils.io.IOUtil;
 import org.apache.maven.surefire.suite.RunResult;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
-
-import java.io.*;
 
 /**
  * Verify integration tests ran using Surefire.
@@ -207,7 +211,7 @@ public class VerifyMojo
             fileInputStream = new FileInputStream( summaryFile );
             bufferedInputStream = new BufferedInputStream( fileInputStream );
             reader = new InputStreamReader( bufferedInputStream, encoding );
-            return RunResult.fromInputStream(bufferedInputStream, encoding);
+            return RunResult.fromInputStream( bufferedInputStream, encoding );
         }
         finally
         {
@@ -228,7 +232,7 @@ public class VerifyMojo
 
         if ( !getTestClassesDirectory().exists() )
         {
-            if ( getFailIfNoTests() != null && getFailIfNoTests())
+            if ( getFailIfNoTests() != null && getFailIfNoTests() )
             {
                 throw new MojoFailureException( "No tests to run!" );
             }

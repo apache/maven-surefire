@@ -36,7 +36,6 @@ import org.apache.maven.surefire.testset.TestRequest;
  * @author Jason van Zyl
  * @author Emmanuel Venisse
  * @author Kristian Rosenvold
- *
  */
 public class ProviderConfiguration
 {
@@ -64,14 +63,14 @@ public class ProviderConfiguration
     private final boolean failIfNoTests;
 
     private final TypeEncodedValue forkTestSet;
-    
+
     private final boolean readTestsFromInStream;
 
     public ProviderConfiguration( DirectoryScannerParameters directoryScannerParameters,
                                   RunOrderParameters runOrderParameters, boolean failIfNoTests,
                                   ReporterConfiguration reporterConfiguration, TestArtifactInfo testArtifact,
                                   TestRequest testSuiteDefinition, Properties providerProperties,
-                                  TypeEncodedValue typeEncodedTestSet, boolean readTestsFromInStream)
+                                  TypeEncodedValue typeEncodedTestSet, boolean readTestsFromInStream )
     {
         this.runOrderParameters = runOrderParameters;
         this.providerProperties = providerProperties;
@@ -136,14 +135,15 @@ public class ProviderConfiguration
     {
         return forkTestSet;
     }
-    
+
     public RunOrderParameters getRunOrderParameters()
     {
         return runOrderParameters;
     }
 
 
-	public boolean isReadTestsFromInStream() {
-		return readTestsFromInStream;
-	}
+    public boolean isReadTestsFromInStream()
+    {
+        return readTestsFromInStream;
+    }
 }

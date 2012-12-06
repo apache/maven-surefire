@@ -35,7 +35,6 @@ import org.apache.maven.surefire.util.internal.StringUtils;
  * Run tests using Surefire.
  *
  * @author Jason van Zyl
- *
  * @noinspection JavaDoc
  */
 @Mojo( name = "test", defaultPhase = LifecyclePhase.TEST, threadSafe = true,
@@ -144,12 +143,12 @@ public class SurefirePlugin
     @Parameter( property = "surefire.useManifestOnlyJar", defaultValue = "true" )
     private boolean useManifestOnlyJar;
 
-    protected void handleSummary(RunResult summary, NestedCheckedException firstForkException)
+    protected void handleSummary( RunResult summary, NestedCheckedException firstForkException )
         throws MojoExecutionException, MojoFailureException
     {
         assertNoException( firstForkException );
 
-        SurefireHelper.reportExecution(this, summary, getLog() );
+        SurefireHelper.reportExecution( this, summary, getLog() );
     }
 
     private void assertNoException( NestedCheckedException firstForkException )

@@ -25,11 +25,14 @@ import org.apache.maven.surefire.report.ReportEntry;
 /**
  * @author Kristian Rosenvold
  */
-public interface TestcycleConsoleOutputReceiver extends ConsoleOutputReceiver
+public interface TestcycleConsoleOutputReceiver
+    extends ConsoleOutputReceiver
 {
 
     void testSetStarting( ReportEntry reportEntry );
+
     void testSetCompleted( ReportEntry report );
+
     void close();
 
 }

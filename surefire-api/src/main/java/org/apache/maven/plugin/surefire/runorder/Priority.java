@@ -39,6 +39,7 @@ public class Priority
 
     /**
      * Returns a priority that applies to a new testclass (that has never been run/recorded)
+     *
      * @param className The class name
      * @return A priority
      */

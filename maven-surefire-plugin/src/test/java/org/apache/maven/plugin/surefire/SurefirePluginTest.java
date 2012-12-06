@@ -38,7 +38,7 @@ public class SurefirePluginTest
         assertEquals( ForkConfiguration.FORK_ONCE, surefirePlugin.getEffectiveForkMode() );
     }
 
-    private void setFieldValue( SurefirePlugin plugin, String fieldName, Object value)
+    private void setFieldValue( SurefirePlugin plugin, String fieldName, Object value )
         throws NoSuchFieldException, IllegalAccessException
     {
         Field field = findField( plugin.getClass(), fieldName );
@@ -47,8 +47,10 @@ public class SurefirePluginTest
 
     }
 
-    private Field findField( Class clazz, String fieldName){
-        while (clazz != null){
+    private Field findField( Class clazz, String fieldName )
+    {
+        while ( clazz != null )
+        {
             try
             {
                 return clazz.getDeclaredField( fieldName );
@@ -61,7 +63,9 @@ public class SurefirePluginTest
         throw new IllegalArgumentException( "Field not found" );
     }
 
-    private class MyToolChain implements Toolchain {
+    private class MyToolChain
+        implements Toolchain
+    {
         public String getType()
         {
             return null;

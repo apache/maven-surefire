@@ -23,8 +23,6 @@ import org.apache.maven.surefire.util.NestedCheckedException;
 
 /**
  * Encapsulates exceptions thrown during Surefire forking.
- *
- *
  */
 public class SurefireBooterForkException
     extends NestedCheckedException

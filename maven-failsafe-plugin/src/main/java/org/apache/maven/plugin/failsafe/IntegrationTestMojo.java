@@ -19,6 +19,11 @@ package org.apache.maven.plugin.failsafe;
  * under the License.
  */
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.List;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.surefire.AbstractSurefireMojo;
@@ -31,12 +36,6 @@ import org.apache.maven.shared.utils.ReaderFactory;
 import org.apache.maven.shared.utils.StringUtils;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.util.NestedCheckedException;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.List;
 
 import static org.apache.maven.shared.utils.io.IOUtil.close;
 
@@ -168,7 +167,7 @@ public class IntegrationTestMojo
     @Parameter( property = "encoding", defaultValue = "${project.reporting.outputEncoding}" )
     private String encoding;
 
-    protected void handleSummary(RunResult summary, NestedCheckedException firstForkException)
+    protected void handleSummary( RunResult summary, NestedCheckedException firstForkException )
         throws MojoExecutionException, MojoFailureException
     {
         writeSummary( summary, firstForkException );
@@ -190,7 +189,7 @@ public class IntegrationTestMojo
         try
         {
             Object token = getPluginContext().get( FAILSAFE_IN_PROGRESS_CONTEXT_KEY );
-            summary.writeSummary(summaryFile, token != null, getEncodingOrDefault());
+            summary.writeSummary( summaryFile, token != null, getEncodingOrDefault() );
         }
         catch ( IOException e )
         {
@@ -219,7 +218,7 @@ public class IntegrationTestMojo
         }
     }
 
-    @SuppressWarnings("deprecation")
+    @SuppressWarnings( "deprecation" )
     protected boolean isSkipExecution()
     {
         return isSkip() || isSkipTests() || isSkipITs() || isSkipExec();
@@ -255,14 +254,14 @@ public class IntegrationTestMojo
         this.skipITs = skipITs;
     }
 
-    @SuppressWarnings("deprecation")
+    @SuppressWarnings( "deprecation" )
     @Deprecated
     public boolean isSkipExec()
     {
         return skipExec;
     }
 
-    @SuppressWarnings("deprecation")
+    @SuppressWarnings( "deprecation" )
     @Deprecated
     public void setSkipExec( boolean skipExec )
     {

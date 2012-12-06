@@ -81,7 +81,7 @@ public class TestSuiteXmlParser
     }
 
     public Collection<ReportTestSuite> parse( InputStream stream )
-            throws ParserConfigurationException, SAXException, IOException
+        throws ParserConfigurationException, SAXException, IOException
     {
         SAXParserFactory factory = SAXParserFactory.newInstance();
 

@@ -19,7 +19,6 @@ package org.apache.maven.surefire.its.jiras;
  */
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 
@@ -46,7 +45,8 @@ public class Surefire809GroupExpressionsIT
     @Test
     public void incorrectJUnitVersions()
     {
-        unpackJUnit().setJUnitVersion( "4.5" ).groups( "junit4.CategoryA AND junit4.CategoryB" ).executeTestWithFailure();
+        unpackJUnit().setJUnitVersion( "4.5" ).groups(
+            "junit4.CategoryA AND junit4.CategoryB" ).executeTestWithFailure();
     }
 
     @Test

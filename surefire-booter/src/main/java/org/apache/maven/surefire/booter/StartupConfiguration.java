@@ -40,7 +40,8 @@ public class StartupConfiguration
 
 
     public StartupConfiguration( String providerClassName, ClasspathConfiguration classpathConfiguration,
-                                 ClassLoaderConfiguration classLoaderConfiguration, boolean isForkRequested, boolean inForkedVm )
+                                 ClassLoaderConfiguration classLoaderConfiguration, boolean isForkRequested,
+                                 boolean inForkedVm )
     {
         this.providerClassName = providerClassName;
         this.classpathConfiguration = classpathConfiguration;
@@ -53,7 +54,8 @@ public class StartupConfiguration
                                                    ClasspathConfiguration classpathConfiguration,
                                                    ClassLoaderConfiguration classLoaderConfiguration )
     {
-        return new StartupConfiguration( providerClassName, classpathConfiguration, classLoaderConfiguration, true, true );
+        return new StartupConfiguration( providerClassName, classpathConfiguration, classLoaderConfiguration, true,
+                                         true );
     }
 
     public ClasspathConfiguration getClasspathConfiguration()
