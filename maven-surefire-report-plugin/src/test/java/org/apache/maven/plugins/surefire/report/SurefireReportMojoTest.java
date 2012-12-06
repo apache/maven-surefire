@@ -32,8 +32,8 @@ import org.apache.maven.doxia.siterenderer.SiteRenderingContext;
 import org.apache.maven.doxia.siterenderer.sink.SiteRendererSink;
 import org.apache.maven.plugin.testing.AbstractMojoTestCase;
 import org.apache.maven.shared.utils.WriterFactory;
+import org.apache.maven.shared.utils.io.FileUtils;
 import org.apache.maven.shared.utils.io.IOUtil;
-import org.codehaus.plexus.util.FileUtils;
 
 /**
  * @author <a href="mailto:aramirez@apache.org">Allan Ramirez</a>

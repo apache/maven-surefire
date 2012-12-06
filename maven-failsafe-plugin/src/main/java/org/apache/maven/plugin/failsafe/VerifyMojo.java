@@ -37,7 +37,6 @@ import org.apache.maven.shared.utils.ReaderFactory;
 import org.apache.maven.shared.utils.StringUtils;
 import org.apache.maven.shared.utils.io.IOUtil;
 import org.apache.maven.surefire.suite.RunResult;
-import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 
 /**
  * Verify integration tests ran using Surefire.
@@ -191,17 +190,13 @@ public class VerifyMojo
             {
                 throw new MojoExecutionException( e.getMessage(), e );
             }
-            catch ( XmlPullParserException e )
-            {
-                throw new MojoExecutionException( e.getMessage(), e );
-            }
 
             SurefireHelper.reportExecution( this, summary, getLog() );
         }
     }
 
     private RunResult readSummary( String encoding, File summaryFile )
-        throws IOException, XmlPullParserException
+        throws IOException
     {
         FileInputStream fileInputStream = null;
         BufferedInputStream bufferedInputStream = null;

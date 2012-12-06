@@ -49,6 +49,10 @@
     </dependency>
     <dependency>
       <groupId>org.apache.maven.surefire</groupId>
+      <artifactId>surefire-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.surefire</groupId>
       <artifactId>surefire-booter</artifactId>
     </dependency>
     <dependency>
@@ -61,7 +65,15 @@
     </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>
+      <artifactId>maven-plugin-descriptor</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
       <artifactId>maven-project</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-model</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>
@@ -74,10 +86,6 @@
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>jmock</groupId>
-      <artifactId>jmock</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.shared</groupId>

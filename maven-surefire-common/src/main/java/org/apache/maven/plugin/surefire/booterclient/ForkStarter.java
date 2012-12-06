@@ -61,7 +61,6 @@ import org.apache.maven.surefire.booter.SystemPropertyManager;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.util.DefaultScanResult;
-import org.codehaus.plexus.util.CollectionUtils;
 
 
 /**
@@ -172,7 +171,12 @@ public class ForkStarter
             // Ask to the executorService to run all tasks
             RunResult globalResult = new RunResult( 0, 0, 0, 0 );
 
-            List<Class<?>> suites = CollectionUtils.iteratorToList( getSuitesIterator() );
+            List<Class<?>> suites = new ArrayList<Class<?>>();
+            Iterator<Class<?>> suitesIterator = getSuitesIterator();
+            while ( suitesIterator.hasNext() )
+            {
+                suites.add( suitesIterator.next() );
+            }
             final Queue<String> messageQueue = new ConcurrentLinkedQueue<String>();
             for ( Class<?> clazz : suites )
             {

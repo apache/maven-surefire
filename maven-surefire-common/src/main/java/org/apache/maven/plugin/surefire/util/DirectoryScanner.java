@@ -65,7 +65,7 @@ public class DirectoryScanner
         List<String> result = new ArrayList<String>();
         if ( basedir.exists() )
         {
-            org.codehaus.plexus.util.DirectoryScanner scanner = new org.codehaus.plexus.util.DirectoryScanner();
+            org.apache.maven.shared.utils.io.DirectoryScanner scanner = new org.apache.maven.shared.utils.io.DirectoryScanner();
 
             scanner.setBasedir( basedir );
 

@@ -96,25 +96,6 @@ public class RunResultTest
         summary.delete();
 
     }
-
-    public void testStringValue()
-        throws FileNotFoundException
-    {
-        RunResult simpleAggregate = new RunResult( 3, 2, 1, 0, null, true );
-        StringWriter stringWriter = getStringWriter( simpleAggregate );
-        String actual = stringWriter.toString();
-
-        String expected = StringUtils.unifyLineSeparators( "<failsafe-summary result=\"255\" timeout=\"true\">\n" +
-                                                               "  <completed>3</completed>\n" +
-                                                               "  <errors>2</errors>\n" +
-                                                               "  <failures>1</failures>\n" +
-                                                               "  <skipped>0</skipped>\n" +
-                                                               "  <failureMessage/>\n" +
-                                                               "</failsafe-summary>" );
-        assertEquals( expected, actual );
-    }
-
-
     private void writeReadCheck( RunResult simpleAggregate )
         throws FileNotFoundException
     {
