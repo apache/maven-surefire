@@ -12,9 +12,9 @@ public class Test1
     extends TestCase
 {
 
-	private static final Random RANDOM = new Random();
+    private static final Random RANDOM = new Random();
 
-	public void test1()
+    public void test1()
         throws IOException
     {
         dumpPidFile( this );
@@ -24,7 +24,7 @@ public class Test1
         throws IOException
     {
         String fileName = test.getName() + "-pid";
-        File target = new File( "target" );
+        File target = new File( "target" ).getCanonicalFile();  // getCanonicalFile required for embedded mode
         if ( !( target.exists() && target.isDirectory() ) )
         {
             target = new File( "." );
@@ -39,6 +39,8 @@ public class Test1
         fw.write( System.getProperty( "testProperty", String.valueOf( RANDOM.nextLong() ) ) );
         fw.flush();
         fw.close();
+        System.out.println( "Done Writing pid file" + pidFile.getAbsolutePath() );
     }
+
 
 }

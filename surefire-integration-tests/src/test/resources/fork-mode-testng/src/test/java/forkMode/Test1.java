@@ -24,7 +24,7 @@ public class Test1
         throws IOException
     {
         String fileName = name + "-pid";
-        File target = new File( "target" );
+        File target = new File( "target" ).getCanonicalFile();
         if ( !( target.exists() && target.isDirectory() ) )
         {
             target = new File( "." );

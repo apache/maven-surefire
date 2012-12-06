@@ -420,6 +420,14 @@ public class ForkStarter
             {
                 runResult = fileReporterFactory.getGlobalRunStatistics().getRunResult();
             }
+            if (!runResult.isTimeout()  && !forkClient.isSaidGoodBye())
+            {
+                //noinspection ThrowFromFinallyBlock
+                throw new RuntimeException(
+                    "The forked VM terminated without saying properly goodbye. VM crash or System.exit called ?" +
+                        "\nCommand was" + cli.toString());
+            }
+
             forkClient.close( runResult.isTimeout());
         }
 

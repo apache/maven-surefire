@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
 import org.apache.maven.surefire.common.junit4.JUnit4RunListenerFactory;
 import org.apache.maven.surefire.common.junit4.JUnit4TestChecker;
 import org.apache.maven.surefire.common.junit48.FilterFactory;
@@ -51,7 +52,7 @@ import org.junit.runner.manipulation.Filter;
 /**
  * @author Kristian Rosenvold
  */
-@SuppressWarnings( { "UnusedDeclaration" } )
+@SuppressWarnings({ "UnusedDeclaration" })
 public class JUnitCoreProvider
     extends AbstractProvider
 {

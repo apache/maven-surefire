@@ -82,42 +82,6 @@
   </dependencies>
 
   <build>
-    <pluginManagement>
-      <plugins>
-        <plugin>
-          <artifactId>maven-failsafe-plugin</artifactId>
-          <version>${shadedVersion}</version>
-          <configuration>
-            <threadCount>1</threadCount>
-            <perCoreThreadCount>false</perCoreThreadCount>
-
-            <!-- Pass current surefire version to the main suite so that it -->
-            <!-- can forward to all integration test projects. SUREFIRE-513 -->
-            <systemPropertyVariables>
-              <surefire.version>${project.version}</surefire.version>
-              <testng.version>${testng.version}</testng.version>
-              <maven.home>${mavenHomeUsed}</maven.home>
-              <maven.settings.file>
-                ${project.basedir}/../surefire-setup-integration-tests/target/private/it-settings.xml
-              </maven.settings.file>
-              <maven.repo.local>${project.basedir}/../surefire-setup-integration-tests/target/it-repo</maven.repo.local>
-              <maven.test.tmpdir>${project.build.directory}</maven.test.tmpdir>
-              <user.localRepository>${settings.localRepository}</user.localRepository>
-              <useInterpolatedSettings>${useInterpolatedSettings}</useInterpolatedSettings>
-              <testBuildDirectory>${project.build.testOutputDirectory}</testBuildDirectory>
-              <verifier.forkMode>${verifier.forkMode}</verifier.forkMode>
-            </systemPropertyVariables>
-          </configuration>
-          <dependencies>
-            <dependency>
-              <groupId>org.apache.maven.surefire</groupId>
-              <artifactId>surefire-junit47</artifactId>
-              <version>${shadedVersion}</version>
-            </dependency>
-          </dependencies>
-        </plugin>
-      </plugins>
-    </pluginManagement>
     <plugins>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
@@ -127,7 +91,35 @@
       </plugin>
       <plugin>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <version>${shadedVersion}</version>
+        <version>${project.version}</version>
+        <configuration>
+          <threadCount>1</threadCount>
+          <perCoreThreadCount>false</perCoreThreadCount>
+          <forkMode>never</forkMode>
+          <argLine>-Xmx512m -XX:MaxPermSize=256m</argLine>
+          <!-- Pass current surefire version to the main suite so that it -->
+          <!-- can forward to all integration test projects. SUREFIRE-513 -->
+          <systemPropertyVariables>
+            <surefire.version>${project.version}</surefire.version>
+            <testng.version>${testng.version}</testng.version>
+            <maven.home>${mavenHomeUsed}</maven.home>
+            <maven.settings.file>${project.basedir}/../surefire-setup-integration-tests/target/private/it-settings.xml</maven.settings.file>
+            <maven.repo.local>${project.basedir}/../surefire-setup-integration-tests/target/it-repo</maven.repo.local>
+            <maven.test.tmpdir>${project.build.directory}</maven.test.tmpdir>
+            <user.localRepository>${settings.localRepository}</user.localRepository>
+            <useInterpolatedSettings>${useInterpolatedSettings}</useInterpolatedSettings>
+            <testBuildDirectory>${project.build.testOutputDirectory}</testBuildDirectory>
+            <verifier.forkMode>${verifier.forkMode}</verifier.forkMode>
+          </systemPropertyVariables>
+        </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>org.apache.maven.surefire</groupId>
+            <artifactId>surefire-junit47</artifactId>
+            <version>${shadedVersion}</version>
+          </dependency>
+        </dependencies>
+
         <executions>
           <execution>
             <goals>
@@ -172,19 +164,17 @@
         <useInterpolatedSettings>false</useInterpolatedSettings>
       </properties>
       <build>
-        <pluginManagement>
-          <plugins>
-            <plugin>
-              <artifactId>maven-failsafe-plugin</artifactId>
-              <version>${shadedVersion}</version>
-              <configuration>
-                <parallel>classes</parallel>
-                <threadCount>${surefire.threadcount}</threadCount>
-              </configuration>
-            </plugin>
-          </plugins>
-        </pluginManagement>
-
+        <plugins>
+          <plugin>
+            <artifactId>maven-failsafe-plugin</artifactId>
+            <version>${shadedVersion}</version>
+            <configuration>
+              <parallel>classes</parallel>
+              <threadCount>${surefire.threadcount}</threadCount>
+              <argLine>-Xmx2512m -XX:MaxPermSize=256m</argLine>
+            </configuration>
+          </plugin>
+        </plugins>
       </build>
       <dependencies>
         <dependency>

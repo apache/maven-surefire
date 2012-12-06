@@ -115,8 +115,7 @@ public class WorkingDirectoryIT
         // test if not a symlink
         if ( childTestDir.getBaseDir().getCanonicalFile().equals( childTestDir.getBaseDir().getAbsoluteFile() ) )
         {
-            assertEquals( "wrong user.dir ! symlink ", childTestDir.getBaseDir().getAbsolutePath(),
-                          userDir.getAbsolutePath() );
+            assertTrue( "wrong user.dir ! symlink ", childTestDir.getBaseDir().getAbsolutePath().equalsIgnoreCase(userDir.getAbsolutePath()));
         }
         else
         {

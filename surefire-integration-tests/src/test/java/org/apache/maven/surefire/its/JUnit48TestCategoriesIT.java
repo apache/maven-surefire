@@ -43,7 +43,7 @@ public class JUnit48TestCategoriesIT
     public void testCategoriesABForkAlways()
         throws Exception
     {
-        runAB( unpacked().forkAlways() );
+        runAB( unpacked() );
     }
 
     private void runAB( SurefireLauncher unpacked )
@@ -56,7 +56,7 @@ public class JUnit48TestCategoriesIT
     public void testCategoriesAC()
         throws Exception
     {
-        runAC( unpacked().forkAlways() );
+        runAC( unpacked());
     }
 
     public void testCategoriesACForkAlways()
@@ -81,7 +81,7 @@ public class JUnit48TestCategoriesIT
     private SurefireLauncher unpacked()
         throws VerificationException, IOException
     {
-        return unpack( "/junit48-categories" );
+        return unpack( "/junit48-categories" ); // .debugSurefireFork();
     }
 
 }

@@ -162,7 +162,7 @@ public class StartupReportConfiguration
 
     public ConsoleReporter instantiateConsoleReporter()
     {
-        return shouldReportToConsole() ? new ConsoleReporter() : null;
+        return shouldReportToConsole() ? new ConsoleReporter(originalSystemOut) : null;
     }
 
     private boolean shouldReportToConsole()

@@ -48,20 +48,13 @@ public class ConsoleReporter
 
     private static final int BUFFER_SIZE = 4096;
 
-    private static final PrintStream ORIGINAL_SYSTEM_OUT = System.out;
-
     private final PrintWriter writer;
 
 
-    public ConsoleReporter()
+    public ConsoleReporter( PrintStream originalSystemOut )
     {
-        this.writer = getPrintWriter();
-    }
-
-    private static PrintWriter getPrintWriter()
-    {
-        return new PrintWriter(
-            new OutputStreamWriter( new BufferedOutputStream( ORIGINAL_SYSTEM_OUT, BUFFER_SIZE ) ) );
+        OutputStreamWriter out = new OutputStreamWriter( new BufferedOutputStream( originalSystemOut, BUFFER_SIZE ) );
+        this.writer = new PrintWriter( out );
     }
 
     public void testSetStarting( ReportEntry report )
