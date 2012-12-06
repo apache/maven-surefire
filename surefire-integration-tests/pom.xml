@@ -91,7 +91,7 @@
       </plugin>
       <plugin>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <version>${project.version}</version>
+        <version>${shadedVersion}</version>
         <configuration>
           <threadCount>1</threadCount>
           <perCoreThreadCount>false</perCoreThreadCount>
@@ -168,7 +168,6 @@
         <plugins>
           <plugin>
             <artifactId>maven-failsafe-plugin</artifactId>
-            <version>${shadedVersion}</version>
             <configuration>
               <parallel>classes</parallel>
               <threadCount>${surefire.threadcount}</threadCount>
