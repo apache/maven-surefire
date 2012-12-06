@@ -44,19 +44,22 @@ public final class SurefireHelper
 
         boolean timeoutOrOtherFailure = result.isFailureOrTimeout();
 
-        if ( !timeoutOrOtherFailure && result.getCompletedCount() == 0 )
+        if ( !timeoutOrOtherFailure )
         {
-            if ( ( reportParameters.getFailIfNoTests() == null ) || !reportParameters.getFailIfNoTests() )
+            if ( result.getCompletedCount() == 0 )
+            {
+                if ( ( reportParameters.getFailIfNoTests() == null ) || !reportParameters.getFailIfNoTests() )
+                {
+                    return;
+                }
+                throw new MojoFailureException(
+                    "No tests were executed!  (Set -DfailIfNoTests=false to ignore this error.)" );
+            }
+
+            if ( result.isErrorFree() )
             {
                 return;
             }
-            throw new MojoFailureException(
-                "No tests were executed!  (Set -DfailIfNoTests=false to ignore this error.)" );
-        }
-
-        if ( !timeoutOrOtherFailure && result.isErrorFree() )
-        {
-            return;
         }
 
         String msg = timeoutOrOtherFailure
