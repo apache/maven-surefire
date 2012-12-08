@@ -19,6 +19,7 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
@@ -29,7 +30,9 @@ import org.junit.runner.Computer;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Request;
 import org.junit.runner.Result;
+import org.junit.runner.Runner;
 import org.junit.runner.manipulation.Filter;
+import org.junit.runner.manipulation.NoTestsRemainException;
 import org.junit.runner.notification.RunListener;
 
 /**
@@ -40,6 +43,25 @@ import org.junit.runner.notification.RunListener;
 
 class JUnitCoreWrapper
 {
+    private static class FilteringRequest extends Request {
+        private Runner filteredRunner;
+
+        public FilteringRequest( Request req, Filter filter ) {
+            try {
+                Runner runner= req.getRunner();
+                filter.apply( runner );
+                filteredRunner = runner;
+            } catch ( NoTestsRemainException e ) {
+                filteredRunner = null;
+            }
+        }
+
+        @Override 
+        public Runner getRunner() {
+            return filteredRunner;
+        }
+    }
+
     public static void execute( TestsToRun testsToRun, JUnitCoreParameters jUnitCoreParameters,
                                 List<RunListener> listeners, Filter filter )
         throws TestSetFailedException
@@ -53,14 +75,23 @@ class JUnitCoreWrapper
 
         try
         {
-            Request req = Request.classes( computer, testsToRun.getLocatedClasses() );
-            if ( filter != null )
+            // in order to support LazyTestsToRun, the iterator must be used
+            Iterator classIter = testsToRun.iterator();
+            while (classIter.hasNext()) 
             {
-                req = req.filterWith( filter );
-            }
+                Request req = Request.classes( computer, new Class[]{ (Class) classIter.next() });
+                if ( filter != null )
+                {
+                    req = new FilteringRequest( req, filter );
+                    if ( req.getRunner() == null )
+                    {
+                        continue;
+                    }
+                }
 
-            final Result run = junitCore.run( req );
-            JUnit4RunListener.rethrowAnyTestMechanismFailures( run );
+                final Result run = junitCore.run( req );
+                JUnit4RunListener.rethrowAnyTestMechanismFailures( run );
+            }
         }
         finally
         {
@@ -71,7 +102,7 @@ class JUnitCoreWrapper
             }
         }
     }
-
+    
     private static void closeIfConfigurable( Computer computer )
         throws TestSetFailedException
     {
