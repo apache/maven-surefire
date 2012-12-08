@@ -25,7 +25,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringWriter;
-import org.apache.maven.shared.utils.StringUtils;
 import org.apache.maven.shared.utils.xml.PrettyPrintXMLWriter;
 import org.apache.maven.shared.utils.xml.Xpp3DomWriter;
 
@@ -96,6 +95,7 @@ public class RunResultTest
         summary.delete();
 
     }
+
     private void writeReadCheck( RunResult simpleAggregate )
         throws FileNotFoundException
     {

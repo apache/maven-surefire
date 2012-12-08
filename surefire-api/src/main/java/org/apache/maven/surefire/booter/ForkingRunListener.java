@@ -77,6 +77,8 @@ public class ForkingRunListener
 
     public static final byte BOOTERCODE_NEXT_TEST = (byte) 'N';
 
+    public static final byte BOOTERCODE_ERROR = (byte) 'X';
+
     public static final byte BOOTERCODE_BYE = (byte) 'Z';
 
     private final PrintStream target;
@@ -244,17 +246,21 @@ public class ForkingRunListener
         StringBuffer stringBuffer = new StringBuffer();
         append( stringBuffer, operationCode ).comma( stringBuffer );
         append( stringBuffer, Integer.toHexString( testSetChannelId.intValue() ) ).comma( stringBuffer );
-        nullableEncoding( stringBuffer, reportEntry.getSourceName() ).comma( stringBuffer );
-        nullableEncoding( stringBuffer, reportEntry.getName() ).comma( stringBuffer );
-        nullableEncoding( stringBuffer, reportEntry.getGroup() ).comma( stringBuffer );
-        nullableEncoding( stringBuffer, reportEntry.getMessage() ).comma( stringBuffer );
+        nullableEncoding( stringBuffer, reportEntry.getSourceName() );
+        comma( stringBuffer );
+        nullableEncoding( stringBuffer, reportEntry.getName() );
+        comma( stringBuffer );
+        nullableEncoding( stringBuffer, reportEntry.getGroup() );
+        comma( stringBuffer );
+        nullableEncoding( stringBuffer, reportEntry.getMessage() );
+        comma( stringBuffer );
         nullableEncoding( stringBuffer, reportEntry.getElapsed() );
         encode( stringBuffer, reportEntry.getStackTraceWriter() );
         stringBuffer.append( "\n" );
         return stringBuffer.toString();
     }
 
-    private void comma( StringBuffer stringBuffer )
+    private static void comma( StringBuffer stringBuffer )
     {
         stringBuffer.append( "," );
     }
@@ -289,7 +295,7 @@ public class ForkingRunListener
     }
 
 
-    private ForkingRunListener nullableEncoding( StringBuffer stringBuffer, String source )
+    private static void nullableEncoding( StringBuffer stringBuffer, String source )
     {
         if ( source == null || source.length() == 0 )
         {
@@ -299,10 +305,14 @@ public class ForkingRunListener
         {
             StringUtils.escapeJavaStyleString( stringBuffer, source );
         }
-        return this;
     }
 
     private void encode( StringBuffer stringBuffer, StackTraceWriter stackTraceWriter )
+    {
+        encode( stringBuffer, stackTraceWriter, trimStackTraces );
+    }
+
+    public static void encode( StringBuffer stringBuffer, StackTraceWriter stackTraceWriter, boolean trimStackTraces )
     {
         if ( stackTraceWriter != null )
         {

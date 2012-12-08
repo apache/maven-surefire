@@ -20,13 +20,13 @@ package org.apache.maven.surefire.booter;
  */
 
 import java.io.PrintStream;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Iterator;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
-import org.apache.maven.surefire.util.NestedRuntimeException;
 import org.apache.maven.surefire.util.ReflectionUtils;
 
 
@@ -69,6 +69,7 @@ public class ProviderFactory
                                             ClassLoader surefireClassLoader, Object factory,
                                             ProviderConfiguration providerConfiguration, boolean insideFork,
                                             StartupConfiguration startupConfiguration1, boolean restoreStreams )
+        throws TestSetFailedException, InvocationTargetException
     {
         final PrintStream orgSystemOut = System.out;
         final PrintStream orgSystemErr = System.err;
@@ -83,14 +84,6 @@ public class ProviderFactory
         try
         {
             return provider.invoke( testSet );
-        }
-        catch ( TestSetFailedException e )
-        {
-            throw new NestedRuntimeException( e );
-        }
-        catch ( ReporterException e )
-        {
-            throw new NestedRuntimeException( e );
         }
         finally
         {
@@ -154,7 +147,7 @@ public class ProviderFactory
         }
 
         public RunResult invoke( Object forkTestSet )
-            throws TestSetFailedException, ReporterException
+            throws TestSetFailedException, ReporterException, InvocationTargetException
         {
             ClassLoader current = swapClassLoader( testsClassLoader );
             try
@@ -162,8 +155,8 @@ public class ProviderFactory
                 final Method invoke =
                     ReflectionUtils.getMethod( providerInOtherClassLoader.getClass(), "invoke", invokeParamaters );
 
-                final Object result = ReflectionUtils.invokeMethodWithArray( providerInOtherClassLoader, invoke,
-                                                                             new Object[]{ forkTestSet } );
+                final Object result = ReflectionUtils.invokeMethodWithArray2( providerInOtherClassLoader, invoke,
+                                                                              new Object[]{ forkTestSet } );
                 return (RunResult) surefireReflector.convertIfRunResult( result );
             }
             finally

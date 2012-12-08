@@ -131,7 +131,7 @@ public class ReflectionUtils
         }
         catch ( InvocationTargetException e )
         {
-            throw new SurefireReflectionException( e );
+            throw new SurefireReflectionException( e.getTargetException() );
         }
         catch ( InstantiationException e )
         {
@@ -155,7 +155,7 @@ public class ReflectionUtils
         }
         catch ( InvocationTargetException e )
         {
-            throw new SurefireReflectionException( e );
+            throw new SurefireReflectionException( e.getTargetException() );
         }
         catch ( InstantiationException e )
         {
@@ -193,6 +193,21 @@ public class ReflectionUtils
             throw new SurefireReflectionException( e );
         }
         catch ( InvocationTargetException e )
+        {
+            throw new SurefireReflectionException( e.getTargetException() );
+        }
+
+    }
+
+    public static Object invokeMethodWithArray2( Object target, Method method, Object[] args )
+        throws InvocationTargetException
+
+    {
+        try
+        {
+            return method.invoke( target, args );
+        }
+        catch ( IllegalAccessException e )
         {
             throw new SurefireReflectionException( e );
         }

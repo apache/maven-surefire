@@ -62,6 +62,8 @@ public class ForkClient
 
     private volatile boolean saidGoodBye = false;
 
+    private volatile StackTraceWriter errorInFork = null;
+
     public ForkClient( DefaultReporterFactory providerReporterFactory, Properties testVmSystemProperties )
     {
         this( providerReporterFactory, testVmSystemProperties, null );
@@ -150,6 +152,9 @@ public class ForkClient
                     {
                         testProvidingInputStream.provideNewTest();
                     }
+                    break;
+                case ForkingRunListener.BOOTERCODE_ERROR:
+                    errorInFork = deserializeStackStraceWriter( new StringTokenizer( remaining, "," ) );
                     break;
                 case ForkingRunListener.BOOTERCODE_BYE:
                     saidGoodBye = true;
@@ -274,4 +279,13 @@ public class ForkClient
         return saidGoodBye;
     }
 
+    public StackTraceWriter getErrorInFork()
+    {
+        return errorInFork;
+    }
+
+    public boolean isErrorInFork()
+    {
+        return errorInFork != null;
+    }
 }

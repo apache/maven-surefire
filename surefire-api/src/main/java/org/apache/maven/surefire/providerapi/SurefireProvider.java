@@ -19,6 +19,7 @@ package org.apache.maven.surefire.providerapi;
  * under the License.
  */
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Iterator;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.suite.RunResult;
@@ -67,7 +68,7 @@ public interface SurefireProvider
      */
 
     RunResult invoke( Object forkTestSet )
-        throws TestSetFailedException, ReporterException;
+        throws TestSetFailedException, ReporterException, InvocationTargetException;
 
     /**
      * Makes an attempt at cancelling the current run, giving the provider a chance to notify

@@ -19,8 +19,13 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
+import org.apache.maven.it.VerificationException;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  * SUREFIRE-613 Asserts proper test counts when running in parallel
@@ -28,15 +33,46 @@ import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
  * @author Kristian Rosenvold
  */
 public class Surefire141PluggableProvidersIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
-    public void testParallelBuildResultCount()
+    @BeforeClass
+    public static void installProvider()
+        throws VerificationException
+    {
+        unpack( Surefire141PluggableProvidersIT.class, "surefire-141-pluggableproviders-provider", "prov" ).executeInstall();
+    }
+
+    @Test
+    public void pluggableProviderPresent()
         throws Exception
     {
-        OutputValidator outputValidator = unpack( "surefire-141-pluggableproviders-provider", "prov" ).executeInstall();
-
         unpack( "surefire-141-pluggableproviders" ).setEOption().executeTest().verifyTextInLog(
             "Using configured provider org.apache.maven.surefire.testprovider.TestProvider" ).verifyTextInLog(
             "Using configured provider org.apache.maven.surefire.junit.JUnit3Provider" ).verifyErrorFreeLog();
     }
+
+    @Test
+    public void invokeRuntimeException()
+        throws Exception
+    {
+        unpack( "surefire-141-pluggableproviders" ).addD( "invokeCrash", "runtimeException" ).executeTestWithFailure().verifyTextInLog(
+            "Let's fail with a runtimeException" );
+    }
+
+    @Test
+    public void invokeReporterException()
+        throws Exception
+    {
+        unpack( "surefire-141-pluggableproviders" ).addD( "invokeCrash", "reporterException" ).executeTestWithFailure().verifyTextInLog(
+            "Let's fail with a reporterexception" );
+    }
+
+    @Test
+    public void constructorReuntimeException()
+        throws Exception
+    {
+        unpack( "surefire-141-pluggableproviders" ).addD( "constructorCrash", "runtimeException" ).executeTestWithFailure().verifyTextInLog(
+            "Let's fail with a runtimeException" );
+    }
+
 }

@@ -19,12 +19,14 @@ package org.apache.maven.plugin.surefire;
  * under the License.
  */
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Properties;
 import org.apache.maven.surefire.booter.ProviderConfiguration;
 import org.apache.maven.surefire.booter.ProviderFactory;
 import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.SurefireExecutionException;
 import org.apache.maven.surefire.suite.RunResult;
+import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.DefaultScanResult;
 
 /**
@@ -58,7 +60,7 @@ public class InPluginVMSurefireStarter
     }
 
     public RunResult runSuitesInProcess( DefaultScanResult scanResult )
-        throws SurefireExecutionException
+        throws SurefireExecutionException, TestSetFailedException
     {
         // The test classloader must be constructed first to avoid issues with commons-logging until we properly
         // separate the TestNG classloader
@@ -76,8 +78,15 @@ public class InPluginVMSurefireStarter
 
         final Object factory = surefireReflector.createReportingReporterFactory( startupReportConfiguration );
 
-        return ProviderFactory.invokeProvider( null, testsClassLoader, surefireClassLoader, factory,
-                                               providerConfiguration, false, startupConfiguration, true );
+        try
+        {
+            return ProviderFactory.invokeProvider( null, testsClassLoader, surefireClassLoader, factory,
+                                                   providerConfiguration, false, startupConfiguration, true );
+        }
+        catch ( InvocationTargetException e )
+        {
+            throw new SurefireExecutionException( "Exception in provider", e.getTargetException() );
+        }
     }
 
 }

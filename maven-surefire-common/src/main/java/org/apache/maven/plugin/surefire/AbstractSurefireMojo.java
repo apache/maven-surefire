@@ -76,6 +76,7 @@ import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.RunOrderParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestRequest;
+import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.DefaultScanResult;
 import org.apache.maven.surefire.util.NestedCheckedException;
 import org.apache.maven.surefire.util.NestedRuntimeException;
@@ -694,6 +695,13 @@ public abstract class AbstractSurefireMojo
                     firstForkException = e;
                 }
             }
+            catch ( TestSetFailedException e )
+            {
+                if ( firstForkException == null )
+                {
+                    firstForkException = e;
+                }
+            }
         }
 
         if ( firstForkException != null )
@@ -745,7 +753,8 @@ public abstract class AbstractSurefireMojo
     }
 
     private RunResult executeProvider( ProviderInfo provider, DefaultScanResult scanResult )
-        throws MojoExecutionException, MojoFailureException, SurefireExecutionException, SurefireBooterForkException
+        throws MojoExecutionException, MojoFailureException, SurefireExecutionException, SurefireBooterForkException,
+        TestSetFailedException
     {
         SurefireProperties effectiveProperties = setupProperties();
         ClassLoaderConfiguration classLoaderConfiguration = getClassLoaderConfiguration( isForking() );

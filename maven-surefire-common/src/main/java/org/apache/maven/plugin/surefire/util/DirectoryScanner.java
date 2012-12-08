@@ -65,7 +65,8 @@ public class DirectoryScanner
         List<String> result = new ArrayList<String>();
         if ( basedir.exists() )
         {
-            org.apache.maven.shared.utils.io.DirectoryScanner scanner = new org.apache.maven.shared.utils.io.DirectoryScanner();
+            org.apache.maven.shared.utils.io.DirectoryScanner scanner =
+                new org.apache.maven.shared.utils.io.DirectoryScanner();
 
             scanner.setBasedir( basedir );
 

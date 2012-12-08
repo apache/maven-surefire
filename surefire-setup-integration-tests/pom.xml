@@ -136,7 +136,7 @@
         <version>1.8</version>
         <configuration>
           <extraArtifacts>
-              <extraArtifact>org.apache.maven.surefire:surefire-testng-utils:${project.version}</extraArtifact>
+            <extraArtifact>org.apache.maven.surefire:surefire-testng-utils:${project.version}</extraArtifact>
           </extraArtifacts>
           <localRepositoryPath>${project.build.directory}/it-repo</localRepositoryPath>
         </configuration>

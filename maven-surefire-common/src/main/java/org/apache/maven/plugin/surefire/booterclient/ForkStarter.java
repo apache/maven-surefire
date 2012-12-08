@@ -59,6 +59,7 @@ import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.apache.maven.surefire.booter.SurefireExecutionException;
 import org.apache.maven.surefire.booter.SystemPropertyManager;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
+import org.apache.maven.surefire.report.StackTraceWriter;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.util.DefaultScanResult;
 
@@ -424,14 +425,24 @@ public class ForkStarter
             {
                 runResult = fileReporterFactory.getGlobalRunStatistics().getRunResult();
             }
-            if ( !runResult.isTimeout() && !forkClient.isSaidGoodBye() )
+            if ( !runResult.isTimeout() )
             {
-                //noinspection ThrowFromFinallyBlock
-                throw new RuntimeException(
-                    "The forked VM terminated without saying properly goodbye. VM crash or System.exit called ?" +
-                        "\nCommand was" + cli.toString() );
-            }
+                StackTraceWriter errorInFork = forkClient.getErrorInFork();
+                if ( errorInFork != null )
+                {
+                    //noinspection ThrowFromFinallyBlock
+                    throw new RuntimeException(
+                        "There was an error in the forked process\n" + errorInFork.writeTraceToString() );
+                }
+                if ( !forkClient.isSaidGoodBye() )
+                {
+                    //noinspection ThrowFromFinallyBlock
+                    throw new RuntimeException(
+                        "The forked VM terminated without saying properly goodbye. VM crash or System.exit called ?" +
+                            "\nCommand was" + cli.toString() );
+                }
 
+            }
             forkClient.close( runResult.isTimeout() );
         }
 

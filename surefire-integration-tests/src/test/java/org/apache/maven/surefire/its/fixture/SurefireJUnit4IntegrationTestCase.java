@@ -54,4 +54,21 @@ public abstract class SurefireJUnit4IntegrationTestCase
             throw new SurefireVerifierException( e );
         }
     }
+
+    public static SurefireLauncher unpack( Class testClass, String sourceName, String suffix )
+    {
+        try
+        {
+            return new SurefireLauncher( testClass, sourceName, suffix );
+        }
+        catch ( VerificationException e )
+        {
+            throw new SurefireVerifierException( e );
+        }
+        catch ( IOException e )
+        {
+            throw new SurefireVerifierException( e );
+        }
+    }
+
 }

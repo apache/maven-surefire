@@ -23,7 +23,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.lang.reflect.InvocationTargetException;
+import org.apache.maven.surefire.report.PojoStackTraceWriter;
 import org.apache.maven.surefire.suite.RunResult;
+import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.LazyTestsToRun;
 
 /**
@@ -86,9 +89,30 @@ public class ForkedBooter
                 testSet = null;
             }
 
-            runSuitesInProcess( testSet, testClassLoader, startupConfiguration, providerConfiguration, originalOut );
+            try
+            {
+                runSuitesInProcess( testSet, testClassLoader, startupConfiguration, providerConfiguration,
+                                    originalOut );
+            }
+            catch ( InvocationTargetException t )
+            {
+
+                PojoStackTraceWriter stackTraceWriter =
+                    new PojoStackTraceWriter( "test subystem", "no method", t.getTargetException() );
+                StringBuffer stringBuffer = new StringBuffer();
+                ForkingRunListener.encode( stringBuffer, stackTraceWriter, false );
+                originalOut.println( ( (char) ForkingRunListener.BOOTERCODE_ERROR ) + ",0," + stringBuffer.toString() );
+            }
+            catch ( Throwable t )
+            {
+
+                PojoStackTraceWriter stackTraceWriter = new PojoStackTraceWriter( "test subystem", "no method", t );
+                StringBuffer stringBuffer = new StringBuffer();
+                ForkingRunListener.encode( stringBuffer, stackTraceWriter, false );
+                originalOut.println( ( (char) ForkingRunListener.BOOTERCODE_ERROR ) + ",0," + stringBuffer.toString() );
+            }
             // Say bye.
-            originalOut.println( "Z,0,BYE!" );
+            originalOut.println( ( (char) ForkingRunListener.BOOTERCODE_BYE ) + ",0,BYE!" );
             originalOut.flush();
             // noinspection CallToSystemExit
             exit( 0 );
@@ -116,7 +140,7 @@ public class ForkedBooter
                                                  StartupConfiguration startupConfiguration,
                                                  ProviderConfiguration providerConfiguration,
                                                  PrintStream originalSystemOut )
-        throws SurefireExecutionException
+        throws SurefireExecutionException, TestSetFailedException, InvocationTargetException
     {
         final ClasspathConfiguration classpathConfiguration = startupConfiguration.getClasspathConfiguration();
         ClassLoader surefireClassLoader = classpathConfiguration.createSurefireClassLoader( testsClassLoader );
