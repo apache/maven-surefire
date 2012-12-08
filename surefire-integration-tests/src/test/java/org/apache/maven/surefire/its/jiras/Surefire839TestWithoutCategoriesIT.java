@@ -30,4 +30,10 @@ public class Surefire839TestWithoutCategoriesIT
     {
         unpack( "junit48-categories" ).setJUnitVersion( "4.11" ).executeTest().verifyErrorFree( 2 );
     }
+
+    @Test
+    public void classWithoutCategoryForked()
+    {
+        unpack( "junit48-categories" ).setJUnitVersion( "4.11" ).forkOncePerThread().threadCount(2).executeTest().verifyErrorFree( 2 );
+    }
 }

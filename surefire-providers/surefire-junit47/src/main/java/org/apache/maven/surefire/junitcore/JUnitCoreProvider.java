@@ -103,22 +103,6 @@ public class JUnitCoreProvider
         return testsToRun.iterator();
     }
 
-    private boolean containsSomethingRunnable( TestsToRun testsToRun, Filter filter )
-    {
-        if ( filter == null )
-        {
-            return true;
-        }
-        for ( Class o : testsToRun.getLocatedClasses() )
-        {
-            if ( canRunClass( filter, o ) )
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-
     public RunResult invoke( Object forkTestSet )
         throws TestSetFailedException, ReporterException
     {
@@ -147,24 +131,20 @@ public class JUnitCoreProvider
             }
         }
 
-        if ( containsSomethingRunnable( testsToRun, filter ) )
-        {
+        final Map<String, TestSet> testSetMap = new ConcurrentHashMap<String, TestSet>();
 
-            final Map<String, TestSet> testSetMap = new ConcurrentHashMap<String, TestSet>();
+        RunListener listener = ConcurrentReporterManager.createInstance( testSetMap, reporterFactory,
+                                                                         jUnitCoreParameters.isParallelClasses(),
+                                                                         jUnitCoreParameters.isParallelBoth(),
+                                                                         consoleLogger );
 
-            RunListener listener = ConcurrentReporterManager.createInstance( testSetMap, reporterFactory,
-                                                                             jUnitCoreParameters.isParallelClasses(),
-                                                                             jUnitCoreParameters.isParallelBoth(),
-                                                                             consoleLogger );
+        ConsoleOutputCapture.startCapture( (ConsoleOutputReceiver) listener );
 
-            ConsoleOutputCapture.startCapture( (ConsoleOutputReceiver) listener );
+        org.junit.runner.notification.RunListener jUnit4RunListener =
+            new JUnitCoreRunListener( listener, testSetMap );
+        customRunListeners.add( 0, jUnit4RunListener );
 
-            org.junit.runner.notification.RunListener jUnit4RunListener =
-                new JUnitCoreRunListener( listener, testSetMap );
-            customRunListeners.add( 0, jUnit4RunListener );
-
-            JUnitCoreWrapper.execute( testsToRun, jUnitCoreParameters, customRunListeners, filter );
-        }
+        JUnitCoreWrapper.execute( testsToRun, jUnitCoreParameters, customRunListeners, filter );
         return reporterFactory.close();
     }
 
@@ -192,14 +172,10 @@ public class JUnitCoreProvider
 
     private boolean canRunClass( Filter filter, Class<?> clazz )
     {
-        boolean isCategoryAnnotatedClass = jUnit48Reflector.isCategoryAnnotationPresent( clazz );
-        Description d = Description.createSuiteDescription( clazz );
+        final Description d = Description.createSuiteDescription( clazz );
         if ( filter.shouldRun( d ) )
         {
-            return true;
-        }
-        else
-        {
+            // if the class-level check passes, we need to check if any methods are left to run
             for ( Method method : clazz.getMethods() )
             {
                 final Description testDescription =
@@ -210,6 +186,7 @@ public class JUnitCoreProvider
                 }
             }
         }
+
         return false;
     }
 

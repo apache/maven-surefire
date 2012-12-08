@@ -19,6 +19,7 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
@@ -53,14 +54,19 @@ class JUnitCoreWrapper
 
         try
         {
-            Request req = Request.classes( computer, testsToRun.getLocatedClasses() );
-            if ( filter != null )
+            // in order to support LazyTestsToRun, the iterator must be used
+            Iterator classIter = testsToRun.iterator();
+            while (classIter.hasNext()) 
             {
-                req = req.filterWith( filter );
-            }
+                Request req = Request.classes( computer, new Class[]{ (Class) classIter.next() });
+                if ( filter != null )
+                {
+                    req = req.filterWith( filter );
+                }
 
-            final Result run = junitCore.run( req );
-            JUnit4RunListener.rethrowAnyTestMechanismFailures( run );
+                final Result run = junitCore.run( req );
+                JUnit4RunListener.rethrowAnyTestMechanismFailures( run );
+            }
         }
         finally
         {
