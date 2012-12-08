@@ -99,7 +99,7 @@ public class JUnitCoreProvider
     public Iterator getSuites()
     {
         final Filter filter = jUnit48Reflector.isJUnit48Available() ? createJUnit48Filter() : null;
-        testsToRun = getSuitesAsList( filter );
+        testsToRun = scanClassPath();
         return testsToRun.iterator();
     }
 
@@ -127,7 +127,7 @@ public class JUnitCoreProvider
             }
             else
             {
-                testsToRun = getSuitesAsList( filter );
+                testsToRun = scanClassPath();
             }
         }
 
@@ -146,48 +146,6 @@ public class JUnitCoreProvider
 
         JUnitCoreWrapper.execute( testsToRun, jUnitCoreParameters, customRunListeners, filter );
         return reporterFactory.close();
-    }
-
-    @SuppressWarnings( "unchecked" )
-    private TestsToRun getSuitesAsList( Filter filter )
-    {
-        List<Class<?>> res = new ArrayList<Class<?>>( 500 );
-        TestsToRun max = scanClassPath();
-        if ( filter == null )
-        {
-            return max;
-        }
-
-        Iterator<Class<?>> it = max.iterator();
-        while ( it.hasNext() )
-        {
-            Class<?> clazz = it.next();
-            if ( canRunClass( filter, clazz ) )
-            {
-                res.add( clazz );
-            }
-        }
-        return new TestsToRun( res );
-    }
-
-    private boolean canRunClass( Filter filter, Class<?> clazz )
-    {
-        final Description d = Description.createSuiteDescription( clazz );
-        if ( filter.shouldRun( d ) )
-        {
-            // if the class-level check passes, we need to check if any methods are left to run
-            for ( Method method : clazz.getMethods() )
-            {
-                final Description testDescription =
-                    Description.createTestDescription( clazz, method.getName(), method.getAnnotations() );
-                if ( filter.shouldRun( testDescription ) )
-                {
-                    return true;
-                }
-            }
-        }
-
-        return false;
     }
 
     private Filter createJUnit48Filter()
