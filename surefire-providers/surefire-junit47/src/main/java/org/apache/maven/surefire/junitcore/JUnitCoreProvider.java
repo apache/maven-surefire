@@ -19,8 +19,6 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
-import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -45,7 +43,6 @@ import org.apache.maven.surefire.util.ScannerFilter;
 import org.apache.maven.surefire.util.TestsToRun;
 import org.apache.maven.surefire.util.internal.StringUtils;
 
-import org.junit.runner.Description;
 import org.junit.runner.manipulation.Filter;
 
 /**
@@ -99,24 +96,8 @@ public class JUnitCoreProvider
     public Iterator getSuites()
     {
         final Filter filter = jUnit48Reflector.isJUnit48Available() ? createJUnit48Filter() : null;
-        testsToRun = getSuitesAsList( filter );
+        testsToRun = scanClassPath();
         return testsToRun.iterator();
-    }
-
-    private boolean containsSomethingRunnable( TestsToRun testsToRun, Filter filter )
-    {
-        if ( filter == null )
-        {
-            return true;
-        }
-        for ( Class o : testsToRun.getLocatedClasses() )
-        {
-            if ( canRunClass( filter, o ) )
-            {
-                return true;
-            }
-        }
-        return false;
     }
 
     public RunResult invoke( Object forkTestSet )
@@ -143,74 +124,24 @@ public class JUnitCoreProvider
             }
             else
             {
-                testsToRun = getSuitesAsList( filter );
+                testsToRun = scanClassPath();
             }
         }
 
-        if ( containsSomethingRunnable( testsToRun, filter ) )
-        {
+        final Map<String, TestSet> testSetMap = new ConcurrentHashMap<String, TestSet>();
 
-            final Map<String, TestSet> testSetMap = new ConcurrentHashMap<String, TestSet>();
+        RunListener listener = ConcurrentReporterManager.createInstance( testSetMap, reporterFactory,
+                                                                         jUnitCoreParameters.isParallelClasses(),
+                                                                         jUnitCoreParameters.isParallelBoth(),
+                                                                         consoleLogger );
 
-            RunListener listener = ConcurrentReporterManager.createInstance( testSetMap, reporterFactory,
-                                                                             jUnitCoreParameters.isParallelClasses(),
-                                                                             jUnitCoreParameters.isParallelBoth(),
-                                                                             consoleLogger );
+        ConsoleOutputCapture.startCapture( (ConsoleOutputReceiver) listener );
 
-            ConsoleOutputCapture.startCapture( (ConsoleOutputReceiver) listener );
+        org.junit.runner.notification.RunListener jUnit4RunListener = new JUnitCoreRunListener( listener, testSetMap );
+        customRunListeners.add( 0, jUnit4RunListener );
 
-            org.junit.runner.notification.RunListener jUnit4RunListener =
-                new JUnitCoreRunListener( listener, testSetMap );
-            customRunListeners.add( 0, jUnit4RunListener );
-
-            JUnitCoreWrapper.execute( testsToRun, jUnitCoreParameters, customRunListeners, filter );
-        }
+        JUnitCoreWrapper.execute( testsToRun, jUnitCoreParameters, customRunListeners, filter );
         return reporterFactory.close();
-    }
-
-    @SuppressWarnings( "unchecked" )
-    private TestsToRun getSuitesAsList( Filter filter )
-    {
-        List<Class<?>> res = new ArrayList<Class<?>>( 500 );
-        TestsToRun max = scanClassPath();
-        if ( filter == null )
-        {
-            return max;
-        }
-
-        Iterator<Class<?>> it = max.iterator();
-        while ( it.hasNext() )
-        {
-            Class<?> clazz = it.next();
-            if ( canRunClass( filter, clazz ) )
-            {
-                res.add( clazz );
-            }
-        }
-        return new TestsToRun( res );
-    }
-
-    private boolean canRunClass( Filter filter, Class<?> clazz )
-    {
-        boolean isCategoryAnnotatedClass = jUnit48Reflector.isCategoryAnnotationPresent( clazz );
-        Description d = Description.createSuiteDescription( clazz );
-        if ( filter.shouldRun( d ) )
-        {
-            return true;
-        }
-        else
-        {
-            for ( Method method : clazz.getMethods() )
-            {
-                final Description testDescription =
-                    Description.createTestDescription( clazz, method.getName(), method.getAnnotations() );
-                if ( filter.shouldRun( testDescription ) )
-                {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 
     private Filter createJUnit48Filter()
