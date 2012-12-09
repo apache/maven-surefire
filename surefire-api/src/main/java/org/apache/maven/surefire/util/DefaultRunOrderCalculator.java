@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import org.apache.maven.plugin.surefire.runorder.RunEntryStatisticsMap;
 import org.apache.maven.surefire.testset.RunOrderParameters;
@@ -54,7 +55,13 @@ public class DefaultRunOrderCalculator
 
     public TestsToRun orderTestClasses( TestsToRun scannedClasses )
     {
-        List result = new ArrayList( Arrays.asList( scannedClasses.getLocatedClasses() ) );
+        
+        List result = new ArrayList( 500 );
+        
+        for ( Iterator it = scannedClasses.iterator(); it.hasNext(); )
+        {
+            result.add(it.next());
+        }
 
         orderTestClasses( result, runOrder.length != 0 ? runOrder[0] : null );
         return new TestsToRun( result );

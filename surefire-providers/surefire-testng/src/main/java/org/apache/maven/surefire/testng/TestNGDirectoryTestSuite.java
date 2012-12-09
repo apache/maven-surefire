@@ -100,17 +100,32 @@ public class TestNGDirectoryTestSuite
         {
             executeLazy( testsToRun, reporterManagerFactory );
         }
-        else if ( testsToRun.size() > 1 )
+        else if ( containsAtLeast( testsToRun, 2 ) )
         {
             executeMulti( testsToRun, reporterManagerFactory );
         }
-        else if ( testsToRun.size() == 1 )
+        else if ( containsAtLeast( testsToRun, 1 ) )
         {
             Class testClass = (Class) testsToRun.iterator().next();
             executeSingleClass( reporterManagerFactory, testClass );
         }
     }
+    
+    private boolean containsAtLeast( TestsToRun testsToRun, int atLeast ) {
+        Iterator it = testsToRun.iterator();
+        for ( int i = 0; i < atLeast; i++ )
+        {
+            if ( !it.hasNext() )
+            {
+                return false;
+            }
 
+            it.next();
+        }
+        
+        return true;
+    }
+    
     private void executeSingleClass( ReporterFactory reporterManagerFactory, Class testClass )
         throws TestSetFailedException
     {
@@ -159,10 +174,9 @@ public class TestNGDirectoryTestSuite
     {
         List testNgTestClasses = new ArrayList();
         List junitTestClasses = new ArrayList();
-        Class[] allClasses = testsToRun.getLocatedClasses();
-        for ( int i = 0; i < allClasses.length; i++ )
+        for ( Iterator it = testsToRun.iterator(); it.hasNext(); )
         {
-            Class c = allClasses[i];
+            Class c = (Class) it.next();
             if ( isJUnitTest( c ) )
             {
                 junitTestClasses.add( c );
@@ -181,7 +195,6 @@ public class TestNGDirectoryTestSuite
             junitReportsDirectory = new File( reportsDirectory, "testng-junit-results" );
         }
 
-//        RunListener reporterManager = new SynchronizedReporterManager( reporterFactory.createReporter() );
         RunListener reporterManager = reporterFactory.createReporter();
         ConsoleOutputCapture.startCapture( (ConsoleOutputReceiver) reporterManager );
         startTestSuite( reporterManager, this );
@@ -303,11 +316,10 @@ public class TestNGDirectoryTestSuite
         final TestsToRun scanned = scanResult.applyFilter( new NonAbstractClassFilter(), classLoader );
 
         final TestsToRun testsToRun = runOrderCalculator.orderTestClasses( scanned );
-        Class[] locatedClasses = testsToRun.getLocatedClasses();
 
-        for ( int i = 0; i < locatedClasses.length; i++ )
+        for ( Iterator it = testsToRun.iterator(); it.hasNext(); )
         {
-            Class testClass = locatedClasses[i];
+            Class testClass = (Class) it.next();
             TestNGTestSet testSet = new TestNGTestSet( testClass );
 
             if ( testSets.containsKey( testSet.getName() ) )

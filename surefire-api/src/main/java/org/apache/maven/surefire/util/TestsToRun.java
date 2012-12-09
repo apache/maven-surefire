@@ -64,16 +64,6 @@ public class TestsToRun
         return new TestsToRun( Arrays.asList( new Class[]{ clazz } ) );
     }
 
-    public int size()
-    {
-        return locatedClasses.size();
-    }
-
-    public Class[] getLocatedClasses()
-    {
-        return (Class[]) locatedClasses.toArray( new Class[locatedClasses.size()] );
-    }
-
     /**
      * Returns an iterator over the located java.lang.Class objects
      *
