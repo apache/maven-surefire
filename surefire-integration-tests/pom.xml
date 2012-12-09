@@ -187,7 +187,14 @@
     </profile>
 
     <profile>
-      <id>maven-2.2.1</id>
+      <id>embedded</id>
+      <properties>
+        <verifier.forkMode>auto</verifier.forkMode>
+      </properties>
+    </profile>
+
+    <profile>
+    <id>maven-2.2.1</id>
       <properties>
         <mavenHomeUsed>${project.build.directory}/maven-extract/apache-maven-2.2.1</mavenHomeUsed>
       </properties>
