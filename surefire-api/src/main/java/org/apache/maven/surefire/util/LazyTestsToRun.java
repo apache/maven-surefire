@@ -36,9 +36,6 @@ import org.apache.maven.surefire.booter.ForkingRunListener;
  * {@link #iterator()} returns an Iterator that blocks on calls to
  * {@link Iterator#hasNext()} until new classes are available, or no more
  * classes will be available.
- * <p/>
- * The methods {@link #getLocatedClasses()} and {@link #size()} will throw an
- * {@link UnsupportedOperationException}.
  *
  * @author Andreas Gudian
  */
@@ -159,22 +156,6 @@ public class LazyTestsToRun
     public Iterator iterator()
     {
         return new BlockingIterator();
-    }
-
-    /**
-     * Unsupported. Use {@link #iterator()} instead.
-     */
-    public int size()
-    {
-        throw new UnsupportedOperationException( "use method iterator()" );
-    }
-
-    /**
-     * Unsupported. Use {@link #iterator()} instead.
-     */
-    public Class[] getLocatedClasses()
-    {
-        throw new UnsupportedOperationException( "use method iterator()" );
     }
 
     /* (non-Javadoc)
