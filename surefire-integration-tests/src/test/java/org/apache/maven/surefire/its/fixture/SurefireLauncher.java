@@ -176,7 +176,6 @@ public class SurefireLauncher
     private void resetCliOptions()
     {
         cliOptions.clear();
-        offline();
     }
 
     public SurefireLauncher getSubProjectLauncher( String subProject )
