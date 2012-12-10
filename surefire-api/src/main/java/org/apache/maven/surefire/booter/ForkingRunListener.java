@@ -325,7 +325,8 @@ public class ForkingRunListener
                 nullableEncoding( stringBuffer, message );
             }
             comma( stringBuffer );
-
+            nullableEncoding( stringBuffer, stackTraceWriter.smartTrimmedStackTrace() );
+            comma( stringBuffer );
             nullableEncoding( stringBuffer, trimStackTraces
                 ? stackTraceWriter.writeTrimmedTraceToString()
                 : stackTraceWriter.writeTraceToString() );

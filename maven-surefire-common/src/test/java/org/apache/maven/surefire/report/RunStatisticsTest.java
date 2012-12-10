@@ -24,30 +24,25 @@ import junit.framework.TestCase;
 public class RunStatisticsTest
     extends TestCase
 {
-    private static final String DUMMY_ERROR_SOURCE = "dummy error source";
+    private static final String Method = "AClass#AMethod";
+
+    private static final String DUMMY_ERROR_SOURCE = Method + " RuntimeException";
 
     private static final String DUMMY_FAILURE_SOURCE = "dummy failure source";
 
-    private static final String DUMMY_MESSAGE = "dummy message";
+    private static final String DUMMY_MESSAGE = "foo";
 
     public void testAddErrorSourceWithThrowableMessage()
     {
         RuntimeException throwable = new RuntimeException( DUMMY_MESSAGE );
         RunStatistics statistics = createRunStatisticsAndAddErrorSourceWithThrowable( throwable );
-        assertRunStatisticsHasErrorSource( statistics, DUMMY_ERROR_SOURCE + ": " + DUMMY_MESSAGE );
-    }
-
-    public void testAddErrorSourceWithoutStackTraceWriter()
-    {
-        RunStatistics statistics = new RunStatistics();
-        statistics.addErrorSource( DUMMY_ERROR_SOURCE, null );
-        assertRunStatisticsHasErrorSource( statistics, DUMMY_ERROR_SOURCE );
+        assertRunStatisticsHasErrorSource( statistics, DUMMY_ERROR_SOURCE + " " + DUMMY_MESSAGE );
     }
 
     public void testAddErrorSourceWithoutThrowable()
     {
         RunStatistics statistics = createRunStatisticsAndAddErrorSourceWithThrowable( null );
-        assertRunStatisticsHasErrorSource( statistics, DUMMY_ERROR_SOURCE );
+        assertRunStatisticsHasErrorSource( statistics, Method );
     }
 
     public void testAddErrorSourceWithThrowableWithoutMessage()
@@ -61,43 +56,36 @@ public class RunStatisticsTest
     {
         RuntimeException throwable = new RuntimeException( DUMMY_MESSAGE );
         RunStatistics statistics = createRunStatisticsAndAddFailureSourceWithThrowable( throwable );
-        assertRunStatisticsHasFailureSource( statistics, DUMMY_FAILURE_SOURCE + ": " + DUMMY_MESSAGE );
-    }
-
-    public void testAddFailureSourceWithoutStackTraceWriter()
-    {
-        RunStatistics statistics = new RunStatistics();
-        statistics.addFailureSource( DUMMY_FAILURE_SOURCE, null );
-        assertRunStatisticsHasFailureSource( statistics, DUMMY_FAILURE_SOURCE );
+        assertRunStatisticsHasFailureSource( statistics, DUMMY_ERROR_SOURCE + " " + DUMMY_MESSAGE );
     }
 
     public void testAddFailureSourceWithoutThrowable()
     {
         RunStatistics statistics = createRunStatisticsAndAddFailureSourceWithThrowable( null );
-        assertRunStatisticsHasFailureSource( statistics, DUMMY_FAILURE_SOURCE );
+        assertRunStatisticsHasFailureSource( statistics, Method );
     }
 
     public void testAddFailureSourceWithThrowableWithoutMessage()
     {
         RuntimeException throwable = new RuntimeException();
         RunStatistics statistics = createRunStatisticsAndAddFailureSourceWithThrowable( throwable );
-        assertRunStatisticsHasFailureSource( statistics, DUMMY_FAILURE_SOURCE );
+        assertRunStatisticsHasFailureSource( statistics, DUMMY_ERROR_SOURCE );
     }
 
     private RunStatistics createRunStatisticsAndAddErrorSourceWithThrowable( Throwable throwable )
     {
-        StackTraceWriter stackTraceWriter = new PojoStackTraceWriter( null, null, throwable );
+        StackTraceWriter stackTraceWriter = new LegacyPojoStackTraceWriter( "AClass", "AMethod", throwable );
         RunStatistics statistics = new RunStatistics();
-        statistics.addErrorSource( DUMMY_ERROR_SOURCE, stackTraceWriter );
+        statistics.addErrorSource( stackTraceWriter );
 
         return statistics;
     }
 
     private RunStatistics createRunStatisticsAndAddFailureSourceWithThrowable( Throwable throwable )
     {
-        StackTraceWriter stackTraceWriter = new PojoStackTraceWriter( null, null, throwable );
+        StackTraceWriter stackTraceWriter = new LegacyPojoStackTraceWriter( "AClass", "AMethod", throwable );
         RunStatistics statistics = new RunStatistics();
-        statistics.addFailureSource( DUMMY_FAILURE_SOURCE, stackTraceWriter );
+        statistics.addFailureSource( stackTraceWriter );
 
         return statistics;
     }

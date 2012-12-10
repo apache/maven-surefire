@@ -22,10 +22,13 @@ package org.apache.maven.surefire.junitcore;
 import java.util.ArrayList;
 import java.util.Map;
 import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
+import org.apache.maven.surefire.common.junit48.JUnit46StackTraceWriter;
 import org.apache.maven.surefire.report.RunListener;
+import org.apache.maven.surefire.report.StackTraceWriter;
 
 import org.junit.runner.Description;
 import org.junit.runner.Result;
+import org.junit.runner.notification.Failure;
 
 public class JUnitCoreRunListener
     extends JUnit4RunListener
@@ -92,4 +95,9 @@ public class JUnitCoreRunListener
         }
     }
 
+    @Override
+    protected StackTraceWriter createStackTraceWriter( Failure failure )
+    {
+        return new JUnit46StackTraceWriter( failure );
+    }
 }

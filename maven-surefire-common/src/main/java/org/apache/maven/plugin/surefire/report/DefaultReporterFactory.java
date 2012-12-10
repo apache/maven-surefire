@@ -22,7 +22,6 @@ package org.apache.maven.plugin.surefire.report;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
 import org.apache.maven.plugin.surefire.StartupReportConfiguration;
 import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
 import org.apache.maven.surefire.report.DefaultDirectConsoleReporter;

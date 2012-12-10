@@ -60,6 +60,11 @@
       <artifactId>common-junit48</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.maven.surefire</groupId>
+      <artifactId>common-java5</artifactId>
+      <version>${project.version}</version>
+    </dependency>
   </dependencies>
 
   <build>
@@ -92,6 +97,7 @@
                 <includes>
                   <include>org.apache.maven.surefire:common-junit3</include>
                   <include>org.apache.maven.surefire:common-junit4</include>
+                  <include>org.apache.maven.surefire:common-java5</include>
                 </includes>
               </artifactSet>
             </configuration>

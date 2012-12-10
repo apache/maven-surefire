@@ -173,7 +173,7 @@ public class TestSetRunListener
         {
             statisticsReporter.testError( reportEntry );
         }
-        globalStatistics.addErrorSource( reportEntry.getName(), reportEntry.getStackTraceWriter() );
+        globalStatistics.addErrorSource( reportEntry.getStackTraceWriter() );
         clearCapture();
     }
 
@@ -185,7 +185,7 @@ public class TestSetRunListener
         {
             statisticsReporter.testFailed( reportEntry );
         }
-        globalStatistics.addFailureSource( reportEntry.getName(), reportEntry.getStackTraceWriter() );
+        globalStatistics.addFailureSource( reportEntry.getStackTraceWriter() );
         clearCapture();
     }
 

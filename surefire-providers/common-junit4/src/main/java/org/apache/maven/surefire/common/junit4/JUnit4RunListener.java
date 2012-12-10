@@ -24,6 +24,7 @@ import java.util.regex.Pattern;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.SimpleReportEntry;
+import org.apache.maven.surefire.report.StackTraceWriter;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
 import org.junit.runner.Description;
@@ -99,7 +100,7 @@ public class JUnit4RunListener
     {
         ReportEntry report =
             SimpleReportEntry.withException( extractClassName( failure.getDescription() ), failure.getTestHeader(),
-                                             new JUnit4StackTraceWriter( failure ) );
+                                             createStackTraceWriter( failure ) );
 
         if ( failure.getException() instanceof AssertionError )
         {
@@ -110,6 +111,11 @@ public class JUnit4RunListener
             this.reporter.testError( report );
         }
         failureFlag.set( Boolean.TRUE );
+    }
+
+    protected StackTraceWriter createStackTraceWriter( Failure failure )
+    {
+        return new JUnit4StackTraceWriter( failure );
     }
 
     @SuppressWarnings( { "UnusedDeclaration" } )
@@ -141,7 +147,7 @@ public class JUnit4RunListener
     }
 
 
-    String extractClassName( Description description )
+    public static String extractClassName( Description description )
     {
         String displayName = description.getDisplayName();
         Matcher m = PARENS.matcher( displayName );

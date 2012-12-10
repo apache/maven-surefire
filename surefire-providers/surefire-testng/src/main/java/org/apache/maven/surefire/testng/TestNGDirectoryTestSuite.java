@@ -110,8 +110,9 @@ public class TestNGDirectoryTestSuite
             executeSingleClass( reporterManagerFactory, testClass );
         }
     }
-    
-    private boolean containsAtLeast( TestsToRun testsToRun, int atLeast ) {
+
+    private boolean containsAtLeast( TestsToRun testsToRun, int atLeast )
+    {
         Iterator it = testsToRun.iterator();
         for ( int i = 0; i < atLeast; i++ )
         {
@@ -122,10 +123,10 @@ public class TestNGDirectoryTestSuite
 
             it.next();
         }
-        
+
         return true;
     }
-    
+
     private void executeSingleClass( ReporterFactory reporterManagerFactory, Class testClass )
         throws TestSetFailedException
     {

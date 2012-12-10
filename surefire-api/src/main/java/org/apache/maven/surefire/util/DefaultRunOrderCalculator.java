@@ -20,7 +20,6 @@ package org.apache.maven.surefire.util;
  */
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
@@ -55,12 +54,12 @@ public class DefaultRunOrderCalculator
 
     public TestsToRun orderTestClasses( TestsToRun scannedClasses )
     {
-        
+
         List result = new ArrayList( 500 );
-        
+
         for ( Iterator it = scannedClasses.iterator(); it.hasNext(); )
         {
-            result.add(it.next());
+            result.add( it.next() );
         }
 
         orderTestClasses( result, runOrder.length != 0 ? runOrder[0] : null );

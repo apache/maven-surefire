@@ -30,7 +30,7 @@ import org.apache.maven.surefire.booter.ForkingRunListener;
 import org.apache.maven.surefire.report.CategorizedReportEntry;
 import org.apache.maven.surefire.report.ConsoleLogger;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
-import org.apache.maven.surefire.report.PojoStackTraceWriter;
+import org.apache.maven.surefire.report.LegacyPojoStackTraceWriter;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.RunListener;
@@ -296,7 +296,7 @@ public class ForkingRunListenerTest
         catch ( RuntimeException e )
         {
             StackTraceWriter stackTraceWriter =
-                new PojoStackTraceWriter( "org.apache.tests.TestClass", "testMethod11", e );
+                new LegacyPojoStackTraceWriter( "org.apache.tests.TestClass", "testMethod11", e );
             return new CategorizedReportEntry( "com.abc.TestClass", "testMethod", "aGroup", stackTraceWriter, 77 );
         }
     }
@@ -310,7 +310,7 @@ public class ForkingRunListenerTest
         catch ( RuntimeException e )
         {
             StackTraceWriter stackTraceWriter =
-                new PojoStackTraceWriter( "org.apache.tests.TestClass", "testMethod11", e );
+                new LegacyPojoStackTraceWriter( "org.apache.tests.TestClass", "testMethod11", e );
             return new CategorizedReportEntry( "com.abc.TestClass", "testMethod", "aGroup", stackTraceWriter, 77 );
         }
     }

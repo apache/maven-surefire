@@ -24,7 +24,8 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
-import org.apache.maven.surefire.report.PojoStackTraceWriter;
+import org.apache.maven.surefire.report.LegacyPojoStackTraceWriter;
+import org.apache.maven.surefire.report.StackTraceWriter;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.LazyTestsToRun;
@@ -97,16 +98,15 @@ public class ForkedBooter
             catch ( InvocationTargetException t )
             {
 
-                PojoStackTraceWriter stackTraceWriter =
-                    new PojoStackTraceWriter( "test subystem", "no method", t.getTargetException() );
+                LegacyPojoStackTraceWriter stackTraceWriter =
+                    new LegacyPojoStackTraceWriter( "test subystem", "no method", t.getTargetException() );
                 StringBuffer stringBuffer = new StringBuffer();
                 ForkingRunListener.encode( stringBuffer, stackTraceWriter, false );
                 originalOut.println( ( (char) ForkingRunListener.BOOTERCODE_ERROR ) + ",0," + stringBuffer.toString() );
             }
             catch ( Throwable t )
             {
-
-                PojoStackTraceWriter stackTraceWriter = new PojoStackTraceWriter( "test subystem", "no method", t );
+                StackTraceWriter stackTraceWriter = new LegacyPojoStackTraceWriter( "test subystem", "no method", t );
                 StringBuffer stringBuffer = new StringBuffer();
                 ForkingRunListener.encode( stringBuffer, stackTraceWriter, false );
                 originalOut.println( ( (char) ForkingRunListener.BOOTERCODE_ERROR ) + ",0," + stringBuffer.toString() );

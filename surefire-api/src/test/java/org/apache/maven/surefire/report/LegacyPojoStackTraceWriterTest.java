@@ -1,29 +1,13 @@
 package org.apache.maven.surefire.report;
 
-/*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
-
 import java.io.PrintWriter;
 
 import junit.framework.TestCase;
 
-public class PojoStackTraceWriterTest
+/**
+ * @author Kristian Rosenvold
+ */
+public class LegacyPojoStackTraceWriterTest
     extends TestCase
 {
 
@@ -61,7 +45,7 @@ public class PojoStackTraceWriterTest
             "    at org.apache.maven.surefire.booter.SurefireBooter.runSuitesInProcess(SurefireBooter.java:318)\n" +
             "    at org.apache.maven.surefire.booter.SurefireBooter.main(SurefireBooter.java:956)\n";
         MockThrowable t = new MockThrowable( stackTrace );
-        PojoStackTraceWriter w = new PojoStackTraceWriter( "TestSurefire3", "testQuote", t );
+        LegacyPojoStackTraceWriter w = new LegacyPojoStackTraceWriter( "TestSurefire3", "testQuote", t );
         String out = w.writeTrimmedTraceToString();
         String expected = "junit.framework.AssertionFailedError: blah\n" +
             "    at junit.framework.Assert.fail(Assert.java:47)\n" +
@@ -108,7 +92,7 @@ public class PojoStackTraceWriterTest
             "    at TestSurefire3.testBlah(TestSurefire3.java:43)\n" +
             "    ... 26 more\n";
         MockThrowable t = new MockThrowable( stackTrace );
-        PojoStackTraceWriter w = new PojoStackTraceWriter( "TestSurefire3", "testBlah", t );
+        LegacyPojoStackTraceWriter w = new LegacyPojoStackTraceWriter( "TestSurefire3", "testBlah", t );
         String out = w.writeTrimmedTraceToString();
         String expected = "java.lang.RuntimeException: blah\n" +
             "    at TestSurefire3.testBlah(TestSurefire3.java:45)\n" +

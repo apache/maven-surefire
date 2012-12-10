@@ -22,7 +22,6 @@ package org.apache.maven.surefire.report;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import org.apache.maven.surefire.util.internal.StringUtils;
 
 /**
  * Write the trace out for a POJO test.
@@ -56,46 +55,15 @@ public class PojoStackTraceWriter
         return w.toString();
     }
 
+    public String smartTrimmedStackTrace()
+    {
+        SmartStackTraceParser parser = new SmartStackTraceParser( testClass, t );
+        return parser.getString();
+    }
+
     public String writeTrimmedTraceToString()
     {
-        String text = writeTraceToString();
-
-        String marker = "at " + testClass + "." + testMethod;
-
-        String[] lines = StringUtils.split( text, "\n" );
-        int lastLine = lines.length - 1;
-        int causedByLine = -1;
-        // skip first
-        for ( int i = 1; i < lines.length; i++ )
-        {
-            String line = lines[i].trim();
-            if ( line.startsWith( marker ) )
-            {
-                lastLine = i;
-            }
-            else if ( line.startsWith( "Caused by" ) )
-            {
-                causedByLine = i;
-                break;
-            }
-        }
-
-        StringBuffer trace = new StringBuffer();
-        for ( int i = 0; i <= lastLine; i++ )
-        {
-            trace.append( lines[i] );
-            trace.append( "\n" );
-        }
-
-        if ( causedByLine != -1 )
-        {
-            for ( int i = causedByLine; i < lines.length; i++ )
-            {
-                trace.append( lines[i] );
-                trace.append( "\n" );
-            }
-        }
-        return trace.toString();
+        return SmartStackTraceParser.innerMostWithFocusOnClass( t, testClass );
     }
 
     public SafeThrowable getThrowable()

@@ -41,6 +41,13 @@ public interface StackTraceWriter
     String writeTrimmedTraceToString();
 
     /**
+     * Get the "smart" trimmed (1-2 lines) stacktrace.
+     *
+     * @return the trace
+     */
+    String smartTrimmedStackTrace();
+
+    /**
      * Retrieve the throwable for this writer.
      *
      * @return the throwable

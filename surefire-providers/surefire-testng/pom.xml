@@ -44,6 +44,11 @@
       <version>3.8.2</version>
       <scope>provided</scope>
     </dependency>
+    <dependency>
+      <groupId>org.apache.maven.surefire</groupId>
+      <artifactId>common-java5</artifactId>
+      <version>${project.version}</version>
+    </dependency>
   </dependencies>
 
   <build>

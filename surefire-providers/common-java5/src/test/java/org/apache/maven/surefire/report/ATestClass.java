@@ -1,4 +1,5 @@
 package org.apache.maven.surefire.report;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -18,44 +19,45 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
-/**
- * Guards against misbehaving throwables
- */
-public class SafeThrowable
+import java.io.File;
+
+@SuppressWarnings( "UnusedDeclaration" )
+public class ATestClass
 {
-    private final Throwable target;
 
-    public SafeThrowable( Throwable target )
+    public void failInAssert()
     {
-        this.target = target;
+        throw new AssertionError( "X is not Z" );
     }
 
-    public String getLocalizedMessage()
+    public void nestedFailInAssert()
     {
-        try
-        {
-            return target.getLocalizedMessage();
-        }
-        catch ( Throwable t )
-        {
-            return t.getLocalizedMessage();
-        }
+        failInAssert();
     }
 
-    public String getMessage()
+    public void npe()
     {
-        try
-        {
-            return target.getMessage();
-        }
-        catch ( Throwable t )
-        {
-            return t.getMessage();
-        }
+        throw new NullPointerException( "It was null" );
     }
 
-    public Throwable getTarget()
+    public void nestedNpe()
     {
-        return target;
+        npe();
+    }
+
+    public void npeOutsideTest()
+    {
+        File file = new File( (String) null );
+    }
+
+    public void nestedNpeOutsideTest()
+    {
+        npeOutsideTest();
+    }
+
+    public void aLongTestErrorMessage()
+    {
+        throw new RuntimeException( "This message will be truncated, somewhere over the rainbow. "
+                                        + "Gangnam style, Gangnam style, Gangnam style, , Gangnam style, Gangnam style" );
     }
 }

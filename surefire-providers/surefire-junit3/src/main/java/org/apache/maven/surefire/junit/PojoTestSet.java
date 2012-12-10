@@ -24,7 +24,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.maven.surefire.report.PojoStackTraceWriter;
+import org.apache.maven.surefire.report.LegacyPojoStackTraceWriter;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.SimpleReportEntry;
@@ -132,8 +132,8 @@ public class PojoTestSet
         {
             report =
                 SimpleReportEntry.withException( testObject.getClass().getName(), getTestName( userFriendlyMethodName ),
-                                                 new PojoStackTraceWriter( testObject.getClass().getName(),
-                                                                           method.getName(), e ) );
+                                                 new LegacyPojoStackTraceWriter( testObject.getClass().getName(),
+                                                                                 method.getName(), e ) );
 
             reportManager.testFailed( report );
 
@@ -160,8 +160,8 @@ public class PojoTestSet
 
             report =
                 SimpleReportEntry.withException( testObject.getClass().getName(), getTestName( userFriendlyMethodName ),
-                                                 new PojoStackTraceWriter( testObject.getClass().getName(),
-                                                                           method.getName(), t ) );
+                                                 new LegacyPojoStackTraceWriter( testObject.getClass().getName(),
+                                                                                 method.getName(), t ) );
 
             reportManager.testFailed( report );
             // Don't return  here, because tearDownFixture should be called even
@@ -171,8 +171,8 @@ public class PojoTestSet
         {
             report =
                 SimpleReportEntry.withException( testObject.getClass().getName(), getTestName( userFriendlyMethodName ),
-                                                 new PojoStackTraceWriter( testObject.getClass().getName(),
-                                                                           method.getName(), t ) );
+                                                 new LegacyPojoStackTraceWriter( testObject.getClass().getName(),
+                                                                                 method.getName(), t ) );
 
             reportManager.testFailed( report );
             // Don't return  here, because tearDownFixture should be called even
@@ -188,8 +188,8 @@ public class PojoTestSet
             // Treat any exception from tearDownFixture as a failure of the test.
             report =
                 SimpleReportEntry.withException( testObject.getClass().getName(), getTestName( userFriendlyMethodName ),
-                                                 new PojoStackTraceWriter( testObject.getClass().getName(),
-                                                                           method.getName(), t ) );
+                                                 new LegacyPojoStackTraceWriter( testObject.getClass().getName(),
+                                                                                 method.getName(), t ) );
 
             reportManager.testFailed( report );
 

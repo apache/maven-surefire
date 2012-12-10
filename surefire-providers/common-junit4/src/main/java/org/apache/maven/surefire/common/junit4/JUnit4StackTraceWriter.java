@@ -19,8 +19,8 @@ package org.apache.maven.surefire.common.junit4;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.PojoStackTraceWriter;
 import org.apache.maven.surefire.report.SafeThrowable;
+import org.apache.maven.surefire.report.SmartStackTraceParser;
 import org.apache.maven.surefire.report.StackTraceWriter;
 
 import org.junit.runner.notification.Failure;
@@ -35,7 +35,7 @@ public class JUnit4StackTraceWriter
     implements StackTraceWriter
 {
     // Member Variables
-    private final Failure junitFailure;
+    protected final Failure junitFailure;
 
     /**
      * Constructor.
@@ -57,6 +57,27 @@ public class JUnit4StackTraceWriter
         return junitFailure.getTrace();
     }
 
+
+    protected String getTestClassName()
+    {
+        return JUnit4RunListener.extractClassName( junitFailure.getDescription() );
+    }
+
+    @SuppressWarnings( "ThrowableResultOfMethodCallIgnored" )
+    public String smartTrimmedStackTrace()
+    {
+        Throwable exception = junitFailure.getException();
+        if ( exception != null )
+        {
+            SmartStackTraceParser smartStackTraceParser = new SmartStackTraceParser( getTestClassName(), exception );
+            return smartStackTraceParser.getString();
+        }
+        else
+        {
+            return junitFailure.getMessage();
+        }
+    }
+
     /**
      * At the moment, returns the same as {@link #writeTraceToString()}.
      *
@@ -64,13 +85,14 @@ public class JUnit4StackTraceWriter
      */
     public String writeTrimmedTraceToString()
     {
+        String testClass = getTestClassName();
         try
         {
-            return junitFailure.getTrace();
+            return SmartStackTraceParser.innerMostWithFocusOnClass( junitFailure.getException(), testClass );
         }
         catch ( Throwable t )
         {
-            return new PojoStackTraceWriter( "", "", t ).writeTrimmedTraceToString();
+            return SmartStackTraceParser.innerMostWithFocusOnClass( t, testClass );
         }
     }
 

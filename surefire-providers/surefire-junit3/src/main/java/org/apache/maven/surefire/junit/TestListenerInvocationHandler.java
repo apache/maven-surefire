@@ -24,6 +24,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
+import org.apache.maven.surefire.report.LegacyPojoStackTraceWriter;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.SimpleReportEntry;
@@ -157,7 +158,7 @@ public class TestListenerInvocationHandler
         failedTestsSet.add( new FailedTest( args[0], Thread.currentThread() ) );
     }
 
-    private JUnitStackTraceWriter getStackTraceWriter( Object[] args )
+    private LegacyPojoStackTraceWriter getStackTraceWriter( Object[] args )
         throws IllegalAccessException, InvocationTargetException
     {
         String testName;
@@ -172,7 +173,7 @@ public class TestListenerInvocationHandler
             testName = "UNKNOWN";
         }
 
-        return new JUnitStackTraceWriter( args[0].getClass().getName(), testName, (Throwable) args[1] );
+        return new LegacyPojoStackTraceWriter( args[0].getClass().getName(), testName, (Throwable) args[1] );
     }
 
     private void handleAddFailure( Object[] args )

@@ -20,7 +20,7 @@ package org.apache.maven.plugin.surefire.report;
  */
 
 import java.io.File;
-import org.apache.maven.surefire.report.PojoStackTraceWriter;
+import org.apache.maven.surefire.report.LegacyPojoStackTraceWriter;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.SimpleReportEntry;
 
@@ -45,7 +45,7 @@ public class StatelessXMLReporterTest
         super.setUp();
         message = "junit.framework.AssertionFailedError";
         reportEntry = new SimpleReportEntry( this.getClass().getName(), "StatelessXMLReporterTest",
-                                             new PojoStackTraceWriter( "", "", new AssertionFailedError() ), 17 );
+                                             new LegacyPojoStackTraceWriter( "", "", new AssertionFailedError() ), 17 );
         stats = new TestSetStats( false, true );
     }
 
