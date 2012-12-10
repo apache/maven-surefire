@@ -22,6 +22,7 @@ package org.apache.maven.plugin.surefire.report;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
 import org.apache.maven.plugin.surefire.StartupReportConfiguration;
 import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
 import org.apache.maven.surefire.report.DefaultDirectConsoleReporter;
@@ -98,9 +99,12 @@ public class DefaultReporterFactory
     private void runCompleted()
     {
         final DefaultDirectConsoleReporter logger = createConsoleLogger();
-        logger.info( "" );
-        logger.info( "Results :" );
-        logger.info( "" );
+        if ( reportConfiguration.isPrintSummary() )
+        {
+            logger.info( "" );
+            logger.info( "Results :" );
+            logger.info( "" );
+        }
         if ( globalStats.hadFailures() )
         {
             logger.info( "Failed tests: " );
