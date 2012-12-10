@@ -37,7 +37,6 @@ public class Surefire740TruncatedCommaIT
                                                                                          "-Duser.language=ru -Duser.country=RU" ).failNever().addSurefireReportGoal().executeCurrentGoals();
 
         TestFile siteFile = validator.getSiteFile( "surefire-report.html" );
-        System.out.println( "siteFile.getAbsolutePath() = " + siteFile.getAbsolutePath() );
         assertTrue( "Expecting file", siteFile.exists() );
         siteFile.assertContainsText( "027" ); // Avoid asserting with the "," or "." ;)
     }

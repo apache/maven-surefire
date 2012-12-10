@@ -48,13 +48,13 @@ public class SurefireLauncher
 {
     private final List<String> cliOptions = new ArrayList<String>();
 
-    private final List<String> goals = getInitialGoals();
-
-    private final Map<String, String> envvars = new HashMap<String, String>();
-
     private final String testNgVersion = System.getProperty( "testng.version" );
 
     private final String surefireVersion = System.getProperty( "surefire.version" );
+
+    private final List<String> goals = getInitialGoals( testNgVersion );
+
+    private final Map<String, String> envvars = new HashMap<String, String>();
 
     private Verifier verifier;
 
@@ -76,8 +76,8 @@ public class SurefireLauncher
         this.resourceName = resourceName;
         this.suffix = suffix != null ? suffix : "";
         goals.clear();
-        goals.addAll( getInitialGoals() );
-        cliOptions.clear();
+        goals.addAll( getInitialGoals( testNgVersion ) );
+        resetCliOptions();
     }
 
     public SurefireLauncher( Verifier verifier )
@@ -87,8 +87,13 @@ public class SurefireLauncher
         this.suffix = "";
         this.verifier = verifier;
         goals.clear();
-        goals.addAll( getInitialGoals() );
-        cliOptions.clear();
+        goals.addAll( getInitialGoals( testNgVersion ) );
+        resetCliOptions();
+    }
+
+    private void addCliOption( String cliOption )
+    {
+        cliOptions.add( cliOption );
     }
 
     private Verifier createVerifier( Class testClass, String resourceName )
@@ -122,7 +127,7 @@ public class SurefireLauncher
     {
         // dirty. Im sure we can use junit4 rules to attach testname to thread instead
         StackTraceElement[] stackTrace = getStackTraceElements();
-        StackTraceElement topInTestClass = null;
+        StackTraceElement topInTestClass;
         topInTestClass = findTopElemenent( stackTrace, testClass );
         if ( topInTestClass == null )
         {
@@ -164,8 +169,14 @@ public class SurefireLauncher
     public void reset()
     {
         goals.clear();
-        goals.addAll( getInitialGoals() );
+        goals.addAll( getInitialGoals( testNgVersion ) );
+        resetCliOptions();
+    }
+
+    private void resetCliOptions()
+    {
         cliOptions.clear();
+        offline();
     }
 
     public SurefireLauncher getSubProjectLauncher( String subProject )
@@ -188,16 +199,16 @@ public class SurefireLauncher
         return this;
     }
 
-    private List<String> getInitialGoals()
+    private List<String> getInitialGoals( String testNgVersion1 )
     {
         List<String> goals1 = new ArrayList<String>();
         goals1.add( "-Dsurefire.version=" + surefireVersion );
 
         if ( testNgVersion != null )
         {
-            goals1.add( "-DtestNgVersion=" + testNgVersion );
+            goals1.add( "-DtestNgVersion=" + testNgVersion1 );
 
-            ArtifactVersion v = new DefaultArtifactVersion( testNgVersion );
+            ArtifactVersion v = new DefaultArtifactVersion( testNgVersion1 );
             try
             {
                 if ( VersionRange.createFromVersionSpec( "(,5.12.1)" ).containsVersion( v ) )
@@ -214,32 +225,10 @@ public class SurefireLauncher
         return goals1;
     }
 
-    // Todo remove duplication between this and getInitialGoals
     public SurefireLauncher resetInitialGoals( String testNgVersion )
     {
-        List<String> goals = new ArrayList<String>();
-        goals.add( "-Dsurefire.version=" + surefireVersion );
-
-        if ( testNgVersion != null )
-        {
-            goals.add( "-DtestNgVersion=" + testNgVersion );
-
-            ArtifactVersion v = new DefaultArtifactVersion( testNgVersion );
-            try
-            {
-                if ( VersionRange.createFromVersionSpec( "(,5.12.1)" ).containsVersion( v ) )
-                {
-                    goals.add( "-DtestNgClassifier=jdk15" );
-                }
-            }
-            catch ( InvalidVersionSpecificationException e )
-            {
-                throw new RuntimeException( e.getMessage(), e );
-            }
-        }
-
         this.goals.clear();
-        this.goals.addAll( goals );
+        this.goals.addAll( getInitialGoals( testNgVersion ) );
         return this;
     }
 
@@ -252,13 +241,13 @@ public class SurefireLauncher
 
     public SurefireLauncher showErrorStackTraces()
     {
-        cliOptions.add( "-e" );
+        addCliOption( "-e" );
         return this;
     }
 
     public SurefireLauncher debugLogging()
     {
-        cliOptions.add( "-X" );
+        addCliOption( "-X" );
         return this;
     }
 
@@ -270,9 +259,14 @@ public class SurefireLauncher
 
     public SurefireLauncher failNever()
     {
-        cliOptions.add( "-fn" );
+        addCliOption( "-fn" );
         return this;
+    }
 
+    public SurefireLauncher offline()
+    {
+        addCliOption( "-o" );
+        return this;
     }
 
     public SurefireLauncher skipClean()
@@ -296,6 +290,7 @@ public class SurefireLauncher
 
     public OutputValidator executeTest()
     {
+        addCliOption( "-o" );
         return execute( "test" );
     }
 
@@ -374,7 +369,7 @@ public class SurefireLauncher
 
                 }
 
-                cliOptions.add( "-s " + interpolatedSettings.getCanonicalPath() );
+                addCliOption( "-s " + interpolatedSettings.getCanonicalPath() );
             }
             getVerifier().setCliOptions( cliOptions );
 
@@ -539,7 +534,7 @@ public class SurefireLauncher
 
     public SurefireLauncher setEOption()
     {
-        cliOptions.add( "-e" );
+        addCliOption( "-e" );
         return this;
     }
 

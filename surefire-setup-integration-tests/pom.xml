@@ -66,7 +66,7 @@
       <artifactId>surefire-testng</artifactId>
       <version>${project.version}</version>
       <exclusions>
-        <!-- SC don't want our surefire getting confulsed and trying to use the testng runner -->
+        <!-- SC don't want our surefire getting confused and trying to use the testng runner -->
         <exclusion>
           <groupId>org.testng</groupId>
           <artifactId>testng</artifactId>
@@ -139,6 +139,58 @@
             <extraArtifact>org.apache.maven.surefire:surefire-testng-utils:${project.version}</extraArtifact>
           </extraArtifacts>
           <localRepositoryPath>${project.build.directory}/it-repo</localRepositoryPath>
+          <extraArtifacts>
+            <extraArtifact>org.testng:testng:4.7:jar:jdk15</extraArtifact>
+            <extraArtifact>org.testng:testng:5.0.2:jar:jdk15</extraArtifact>
+            <extraArtifact>org.testng:testng:5.1:jar:jdk15</extraArtifact>
+            <extraArtifact>org.testng:testng:5.5:jar:jdk15</extraArtifact>
+            <extraArtifact>org.testng:testng:5.6:jar:jdk15</extraArtifact>
+            <extraArtifact>org.testng:testng:5.7:jar:jdk14</extraArtifact>
+            <extraArtifact>org.testng:testng:5.7:jar:jdk15</extraArtifact>
+            <extraArtifact>org.testng:testng:5.8:jar:jdk15</extraArtifact>
+            <extraArtifact>org.testng:testng:5.9:jar:jdk15</extraArtifact>
+            <extraArtifact>org.testng:testng:5.10:jar:jdk15</extraArtifact>
+            <extraArtifact>org.testng:testng:5.12.1</extraArtifact>
+            <extraArtifact>org.testng:testng:5.13</extraArtifact>
+            <extraArtifact>org.testng:testng:5.13.1</extraArtifact>
+            <extraArtifact>org.testng:testng:5.14</extraArtifact>
+            <extraArtifact>org.testng:testng:5.14.1</extraArtifact>
+            <extraArtifact>org.testng:testng:5.14.2</extraArtifact>
+            <extraArtifact>org.testng:testng:5.14.9</extraArtifact>
+            <extraArtifact>org.testng:testng:6.0</extraArtifact>
+            <extraArtifact>org.testng:testng:6.5.1</extraArtifact>
+            <extraArtifact>com.google.inject:guice:3.0:jar:no_aop</extraArtifact>
+            <extraArtifact>log4j:log4j:1.2.16</extraArtifact>
+            <extraArtifact>org.apache.maven.plugins:maven-clean-plugin:2.4.1</extraArtifact>
+            <extraArtifact>org.apache.maven.plugins:maven-compiler-plugin:2.3.2</extraArtifact>
+            <extraArtifact>org.apache.maven.plugins:maven-compiler-plugin:2.5.1</extraArtifact>
+            <extraArtifact>org.apache.maven.plugins:maven-install-plugin:2.3.1</extraArtifact>
+            <extraArtifact>org.apache.maven.plugins:maven-compiler-plugin:2.0.2</extraArtifact>
+            <extraArtifact>org.apache.maven.plugins:maven-resources-plugin:2.5</extraArtifact>
+            <extraArtifact>org.apache.maven.plugins:maven-jar-plugin:2.3.2</extraArtifact>
+            <extraArtifact>org.apache.commons:commons-email:1.2</extraArtifact>
+            <extraArtifact>org.codehaus.mojo:build-helper-maven-plugin:1.2</extraArtifact>
+            <extraArtifact>org.apache.maven.reporting:maven-reporting-api:2.0.9</extraArtifact>
+            <extraArtifact>commons-collections:commons-collections:3.2</extraArtifact>
+            <extraArtifact>commons-logging:commons-logging:1.0.4</extraArtifact>
+            <extraArtifact>xml-apis:xml-apis:1.0.b2</extraArtifact>
+            <extraArtifact>org.apache.httpcomponents:httpclient:4.0.2</extraArtifact>
+            <extraArtifact>junit:junit:4.4</extraArtifact>
+            <extraArtifact>junit:junit:4.5</extraArtifact>
+            <extraArtifact>junit:junit:4.7</extraArtifact>
+            <extraArtifact>junit:junit:4.8.1</extraArtifact>
+            <extraArtifact>junit:junit:4.8.2</extraArtifact>
+            <extraArtifact>junit:junit:4.11</extraArtifact>
+            <extraArtifact>junit:junit-dep:4.8</extraArtifact>
+            <extraArtifact>junit:junit-dep:4.7</extraArtifact>
+            <extraArtifact>junit:junit-dep:4.4</extraArtifact>
+            <!--- W00t! This is for the WorkingDirectoryInvalid test that will use mavens default surefire version -->
+            <extraArtifact>org.apache.maven.plugins:maven-surefire-plugin:2.10</extraArtifact>
+            <extraArtifact>org.apache.maven.surefire:surefire-junit3:2.10</extraArtifact>
+            <extraArtifact>org.codehaus.plexus:plexus-utils:1.0.4</extraArtifact>
+            <extraArtifact>org.codehaus.plexus:plexus-utils:1.5.1</extraArtifact>
+            <extraArtifact>org.mockito:mockito-core:1.8.5</extraArtifact>
+          </extraArtifacts>
         </configuration>
         <executions>
           <execution>

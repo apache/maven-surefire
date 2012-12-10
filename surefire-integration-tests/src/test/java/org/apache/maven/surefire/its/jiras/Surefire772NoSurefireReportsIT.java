@@ -38,11 +38,9 @@ public class Surefire772NoSurefireReportsIT
             unpack().addFailsafeReportOnlyGoal().addSurefireReportOnlyGoal().executeCurrentGoals();
 
         TestFile siteFile = validator.getSiteFile( "surefire-report.html" );
-        System.out.println( "siteFile.getAbsolutePath() = " + siteFile.getAbsolutePath() );
         assertTrue( "Expecting surefire report file", siteFile.isFile() );
 
         siteFile = validator.getSiteFile( "failsafe-report.html" );
-        System.out.println( "siteFile.getAbsolutePath() = " + siteFile.getAbsolutePath() );
         assertTrue( "Expecting failsafe report file", siteFile.isFile() );
     }
 
@@ -52,11 +50,9 @@ public class Surefire772NoSurefireReportsIT
             "skipSurefire" ).addFailsafeReportOnlyGoal().addSurefireReportOnlyGoal().executeCurrentGoals();
 
         TestFile siteFile = validator.getSiteFile( "surefire-report.html" );
-        System.out.println( "siteFile.getAbsolutePath() = " + siteFile.getAbsolutePath() );
         assertFalse( "Expecting no surefire report file", siteFile.isFile() );
 
         siteFile = validator.getSiteFile( "failsafe-report.html" );
-        System.out.println( "siteFile.getAbsolutePath() = " + siteFile.getAbsolutePath() );
         assertTrue( "Expecting failsafe report file", siteFile.isFile() );
     }
 
@@ -66,11 +62,9 @@ public class Surefire772NoSurefireReportsIT
             "optionalSurefire" ).addFailsafeReportOnlyGoal().addSurefireReportOnlyGoal().executeCurrentGoals();
 
         TestFile siteFile = validator.getSiteFile( "surefire-report.html" );
-        System.out.println( "siteFile.getAbsolutePath() = " + siteFile.getAbsolutePath() );
         assertFalse( "Expecting no surefire report file", siteFile.isFile() );
 
         siteFile = validator.getSiteFile( "failsafe-report.html" );
-        System.out.println( "siteFile.getAbsolutePath() = " + siteFile.getAbsolutePath() );
         assertTrue( "Expecting failsafe report file", siteFile.isFile() );
     }
 
@@ -80,11 +74,9 @@ public class Surefire772NoSurefireReportsIT
             "skipSurefire" ).addFailsafeReportOnlyGoal().addSurefireReportOnlyGoal().executeCurrentGoals();
 
         TestFile siteFile = validator.getSiteFile( "surefire-report.html" );
-        System.out.println( "siteFile.getAbsolutePath() = " + siteFile.getAbsolutePath() );
         assertFalse( "Expecting no surefire report file", siteFile.isFile() );
 
         siteFile = validator.getSiteFile( "failsafe-report.html" );
-        System.out.println( "siteFile.getAbsolutePath() = " + siteFile.getAbsolutePath() );
         assertTrue( "Expecting failsafe report file", siteFile.isFile() );
     }
 
