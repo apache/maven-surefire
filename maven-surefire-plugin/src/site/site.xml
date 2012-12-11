@@ -34,6 +34,7 @@
       <item name="Feature matrix" href="featurematrix.html"/>
       <item name="API" href="api.html"/>
       <item name="FAQ" href="faq.html"/>
+      <item name="Developing" href="developing.html"/>
     </menu>
     <menu name="Examples">
       <item name="Using TestNG" href="examples/testng.html"/>
@@ -46,9 +47,6 @@
       <item name="System Properties" href="examples/system-properties.html"/>
       <item name="Configuring the Classpath" href="examples/configuring-classpath.html"/>
       <item name="Selecting providers" href="examples/providers.html"/>
-    </menu>
-    <menu name="Developer Center">
-      <item name="Developing" href="developing.html"/>
     </menu>
   </body>
 </project>
