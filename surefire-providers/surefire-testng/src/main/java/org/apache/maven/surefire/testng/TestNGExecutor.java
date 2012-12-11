@@ -70,7 +70,7 @@ public class TestNGExecutor
         }
 
         Configurator configurator = getConfigurator( version );
-        System.out.println( "Configuring TestNG with: " + configurator );
+        System.out.println( "Configuring TestNG with: " + configurator.getClass().getSimpleName() );
         configurator.configure( testng, options );
         postConfigure( testng, testSourceDirectory, reportManager, suite, reportsDirectory );
         testng.setTestClasses( testClasses );
