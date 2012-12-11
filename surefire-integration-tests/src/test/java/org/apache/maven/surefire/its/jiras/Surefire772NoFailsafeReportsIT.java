@@ -97,7 +97,8 @@ public class Surefire772NoFailsafeReportsIT
     {
         final SurefireLauncher unpack = unpack( "surefire-772-no-failsafe-reports" );
         unpack.deleteSiteDir();
-        return unpack.skipClean().failNever().assertNotPresent( "site" );
+        unpack.maven().skipClean().failNever().assertNotPresent( "site" );
+        return unpack;
     }
 
 }

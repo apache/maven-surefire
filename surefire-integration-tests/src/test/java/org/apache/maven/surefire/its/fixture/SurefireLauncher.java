@@ -20,20 +20,13 @@ package org.apache.maven.surefire.its.fixture;
  */
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import org.apache.commons.lang.text.StrSubstitutor;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.it.VerificationException;
-import org.apache.maven.it.Verifier;
-import org.apache.maven.it.util.ResourceExtractor;
-import org.apache.maven.shared.utils.io.FileUtils;
 
 /**
  * Encapsulate all needed features to start a surefire run
@@ -42,172 +35,78 @@ import org.apache.maven.shared.utils.io.FileUtils;
  * files, which AbstractSurefireIntegrationTestClass does not.
  * Thread safe only for running in "classes" mode.
  *
- * @author Kristian Rosenvold
+ * @author Kristian Rosenvold                                 -
  */
 public class SurefireLauncher
 {
-    private final List<String> cliOptions = new ArrayList<String>();
+
+    private final MavenLauncher mavenLauncher;
 
     private final String testNgVersion = System.getProperty( "testng.version" );
 
     private final String surefireVersion = System.getProperty( "surefire.version" );
 
-    private final List<String> goals = getInitialGoals( testNgVersion );
-
-    private final Map<String, String> envvars = new HashMap<String, String>();
-
-    private Verifier verifier;
-
-    private OutputValidator validator;
-
     private boolean failIfNoTests;
 
-    private final Class testClass;
-
-    private final String resourceName;
-
-    private final String suffix;
-
-
-    public SurefireLauncher( Class testClass, String resourceName, String suffix )
-        throws VerificationException, IOException
+    public SurefireLauncher( MavenLauncher mavenLauncher )
     {
-        this.testClass = testClass;
-        this.resourceName = resourceName;
-        this.suffix = suffix != null ? suffix : "";
-        goals.clear();
-        goals.addAll( getInitialGoals( testNgVersion ) );
-        resetCliOptions();
+        this.mavenLauncher = mavenLauncher;
+        reset();
     }
 
-    public SurefireLauncher( Verifier verifier )
+    public MavenLauncher maven()
     {
-        this.testClass = null;
-        this.resourceName = null;
-        this.suffix = "";
-        this.verifier = verifier;
-        goals.clear();
-        goals.addAll( getInitialGoals( testNgVersion ) );
-        resetCliOptions();
+        return mavenLauncher;
     }
 
     private void addCliOption( String cliOption )
     {
-        cliOptions.add( cliOption );
-    }
-
-    private Verifier createVerifier( Class testClass, String resourceName )
-        throws IOException, VerificationException
-    {
-        return new Verifier( simpleExtractResources( testClass, resourceName ).getAbsolutePath() );
-    }
-
-    private File simpleExtractResources( Class<?> cl, String resourcePath )
-        throws IOException
-    {
-        if ( !resourcePath.startsWith( "/" ) )
-        {
-            resourcePath = "/" + resourcePath;
-        }
-        File tempDir = getUnpackDir();
-        File testDir = new File( tempDir, resourcePath );
-        FileUtils.deleteDirectory( testDir );
-
-        File file = ResourceExtractor.extractResourceToDestination( cl, resourcePath, tempDir, true );
-        return file.getCanonicalFile();
-    }
-
-    private File getUnpackDir()
-    {
-        String tempDirPath = System.getProperty( "maven.test.tmpdir", System.getProperty( "java.io.tmpdir" ) );
-        return new File( tempDirPath, testClass.getSimpleName() + File.separator + getTestMethodName() + suffix );
+        mavenLauncher.addCliOption( cliOption );
     }
 
     String getTestMethodName()
     {
-        // dirty. Im sure we can use junit4 rules to attach testname to thread instead
-        StackTraceElement[] stackTrace = getStackTraceElements();
-        StackTraceElement topInTestClass;
-        topInTestClass = findTopElemenent( stackTrace, testClass );
-        if ( topInTestClass == null )
-        {
-            // Look in superclass...
-            topInTestClass = findTopElemenent( stackTrace, testClass.getSuperclass() );
-        }
-        if ( topInTestClass != null )
-        {
-            return topInTestClass.getMethodName();
-        }
-        throw new IllegalStateException( "Cannot find " + testClass.getName() + "in stacktrace" );
-    }
-
-    private StackTraceElement findTopElemenent( StackTraceElement[] stackTrace, Class testClassToLookFor )
-    {
-        StackTraceElement bestmatch = null;
-        for ( StackTraceElement stackTraceElement : stackTrace )
-        {
-            if ( stackTraceElement.getClassName().equals( testClassToLookFor.getName() ) )
-            {
-                bestmatch = stackTraceElement;
-            }
-        }
-        return bestmatch;
-    }
-
-    StackTraceElement[] getStackTraceElements()
-    {
-        try
-        {
-            throw new RuntimeException();
-        }
-        catch ( RuntimeException e )
-        {
-            return e.getStackTrace();
-        }
+        return mavenLauncher.getTestMethodName();
     }
 
     public void reset()
     {
-        goals.clear();
-        goals.addAll( getInitialGoals( testNgVersion ) );
-        resetCliOptions();
+        mavenLauncher.reset();
+        for ( String s : getInitialGoals( testNgVersion ) )
+        {
+            mavenLauncher.addGoal( s );
+        }
     }
 
-    private void resetCliOptions()
-    {
-        cliOptions.clear();
-    }
 
     public SurefireLauncher getSubProjectLauncher( String subProject )
         throws VerificationException
     {
-        final File subFile = getValidator().getSubFile( subProject );
-        return new SurefireLauncher( new Verifier( subFile.getAbsolutePath() ) );
+        return new SurefireLauncher( mavenLauncher.getSubProjectLauncher( subProject ) );
     }
 
     public OutputValidator getSubProjectValidator( String subProject )
         throws VerificationException
     {
-        final File subFile = getValidator().getSubFile( subProject );
-        return new OutputValidator( new Verifier( subFile.getAbsolutePath() ) );
+        return mavenLauncher.getSubProjectValidator( subProject );
     }
 
     public SurefireLauncher addEnvVar( String key, String value )
     {
-        envvars.put( key, value );
+        mavenLauncher.addEnvVar( key, value );
         return this;
     }
 
-    private List<String> getInitialGoals( String testNgVersion1 )
+    private List<String> getInitialGoals( String testNgVersion )
     {
         List<String> goals1 = new ArrayList<String>();
         goals1.add( "-Dsurefire.version=" + surefireVersion );
 
-        if ( testNgVersion != null )
+        if ( this.testNgVersion != null )
         {
-            goals1.add( "-DtestNgVersion=" + testNgVersion1 );
+            goals1.add( "-DtestNgVersion=" + testNgVersion );
 
-            ArtifactVersion v = new DefaultArtifactVersion( testNgVersion1 );
+            ArtifactVersion v = new DefaultArtifactVersion( testNgVersion );
             try
             {
                 if ( VersionRange.createFromVersionSpec( "(,5.12.1)" ).containsVersion( v ) )
@@ -226,77 +125,74 @@ public class SurefireLauncher
 
     public SurefireLauncher resetInitialGoals( String testNgVersion )
     {
-        this.goals.clear();
-        this.goals.addAll( getInitialGoals( testNgVersion ) );
+        mavenLauncher.resetGoals();
+        for ( String s : getInitialGoals( testNgVersion ) )
+        {
+            mavenLauncher.addGoal( s );
+        }
         return this;
     }
 
 
     public SurefireLauncher assertNotPresent( String subFile )
     {
-        getVerifier().assertFileNotPresent( getValidator().getSubFile( subFile ).getAbsolutePath() );
+        mavenLauncher.assertNotPresent( subFile );
         return this;
     }
 
     public SurefireLauncher showErrorStackTraces()
     {
-        addCliOption( "-e" );
+        mavenLauncher.showErrorStackTraces();
         return this;
     }
 
     public SurefireLauncher debugLogging()
     {
-        addCliOption( "-X" );
+        mavenLauncher.debugLogging();
         return this;
     }
 
     public SurefireLauncher debugSurefireFork()
     {
-        addD( "maven.surefire.debug", "true" );
+        mavenLauncher.addD( "maven.surefire.debug", "true" );
         return this;
     }
 
     public SurefireLauncher failNever()
     {
-        addCliOption( "-fn" );
+        mavenLauncher.failNever();
         return this;
     }
 
     public SurefireLauncher offline()
     {
-        addCliOption( "-o" );
-        return this;
-    }
-
-    public SurefireLauncher skipClean()
-    {
-        goals.add( "-Dclean.skip=true" );
+        mavenLauncher.offline();
         return this;
     }
 
     public SurefireLauncher groups( String groups )
     {
-        goals.add( "-Dgroups=" + groups );
+        mavenLauncher.addD( "groups", groups );
         return this;
     }
 
 
     public SurefireLauncher addGoal( String goal )
     {
-        goals.add( goal );
+        mavenLauncher.addGoal( goal );
         return this;
     }
 
     public OutputValidator executeTest()
     {
-        addCliOption( "-o" );
-        return execute( "test" );
+        mavenLauncher.addCliOption( "-o" );
+        return mavenLauncher.execute( "test" );
     }
 
     public OutputValidator executeInstall()
         throws VerificationException
     {
-        return execute( "install" );
+        return mavenLauncher.execute( "install" );
     }
 
     public OutputValidator executeTestWithFailure()
@@ -307,7 +203,7 @@ public class SurefireLauncher
         }
         catch ( SurefireVerifierException ignore )
         {
-            return getValidator();
+            return mavenLauncher.getValidator();
         }
         throw new RuntimeException( "Expecting build failure, got none!" );
     }
@@ -320,7 +216,7 @@ public class SurefireLauncher
         }
         catch ( SurefireVerifierException ignore )
         {
-            return getValidator();
+            return mavenLauncher.getValidator();
         }
         throw new RuntimeException( "Expecting build failure, got none!" );
     }
@@ -329,95 +225,30 @@ public class SurefireLauncher
     public FailsafeOutputValidator executeVerify()
     {
         OutputValidator verify = execute( "verify" );
-        return new FailsafeOutputValidator( verify.getVerifier() );
+        return new FailsafeOutputValidator( verify );
     }
 
     public OutputValidator execute( String goal )
     {
-        addGoal( goal );
-        return executeCurrentGoals();
+        return mavenLauncher.execute( goal );
     }
 
     public OutputValidator executeCurrentGoals()
     {
-
-        String userLocalRepo = System.getProperty( "user.localRepository" );
-        String testBuildDirectory = System.getProperty( "testBuildDirectory" );
-        boolean useInterpolatedSettings = Boolean.getBoolean( "useInterpolatedSettings" );
-
-        try
-        {
-            if ( useInterpolatedSettings )
-            {
-                File interpolatedSettings = new File( testBuildDirectory, "interpolated-settings" );
-
-                if ( !interpolatedSettings.exists() )
-                {
-                    // hack "a la" invoker plugin to download dependencies from local repo
-                    // and not download from central
-
-                    Map<String, String> values = new HashMap<String, String>( 1 );
-                    values.put( "localRepositoryUrl", toUrl( userLocalRepo ) );
-                    StrSubstitutor strSubstitutor = new StrSubstitutor( values );
-
-                    String fileContent = FileUtils.fileRead( new File( testBuildDirectory, "settings.xml" ) );
-
-                    String filtered = strSubstitutor.replace( fileContent );
-
-                    FileUtils.fileWrite( interpolatedSettings.getAbsolutePath(), filtered );
-
-                }
-
-                addCliOption( "-s " + interpolatedSettings.getCanonicalPath() );
-            }
-            getVerifier().setCliOptions( cliOptions );
-
-            getVerifier().executeGoals( goals, envvars );
-            return getValidator();
-        }
-        catch ( IOException e )
-        {
-            throw new SurefireVerifierException( e.getMessage(), e );
-        }
-        catch ( VerificationException e )
-        {
-            throw new SurefireVerifierException( e.getMessage(), e );
-        }
-        finally
-        {
-            getVerifier().resetStreams();
-        }
-    }
-
-    private static String toUrl( String filename )
-    {
-        /*
-         * NOTE: Maven fails to properly handle percent-encoded "file:" URLs (WAGON-111) so don't use File.toURI() here
-         * as-is but use the decoded path component in the URL.
-         */
-        String url = "file://" + new File( filename ).toURI().getPath();
-        if ( url.endsWith( "/" ) )
-        {
-            url = url.substring( 0, url.length() - 1 );
-        }
-        return url;
+        return mavenLauncher.executeCurrentGoals();
     }
 
 
     public SurefireLauncher printSummary( boolean printsummary )
     {
-        return addGoal( "-DprintSummary=" + printsummary );
-    }
-
-    public SurefireLauncher redirectToFileReally( boolean redirect )
-    {
-        return addGoal( "-Dmaven.test.redirectTestOutputToFile=" + redirect );
+        mavenLauncher.addD( "printSummary", printsummary );
+        return this;
     }
 
     public SurefireLauncher redirectToFile( boolean redirect )
     {
-        return redirectToFileReally( redirect );
-        //addGoal( "-Dredirect.to.file=" + redirect );
+        mavenLauncher.addD( "maven.test.redirectTestOutputToFile", redirect );
+        return this;
     }
 
     public SurefireLauncher forkOnce()
@@ -452,39 +283,53 @@ public class SurefireLauncher
 
     public SurefireLauncher threadCount( int threadCount )
     {
-        return addGoal( "-DthreadCount=" + threadCount );
+        mavenLauncher.addD( "threadCount", threadCount );
+        return this;
     }
 
     public SurefireLauncher forkMode( String forkMode )
     {
-        return addGoal( "-DforkMode=" + forkMode );
+        mavenLauncher.addD( "forkMode", forkMode );
+        return this;
     }
 
     public SurefireLauncher runOrder( String runOrder )
     {
-        return addGoal( "-DrunOrder=" + runOrder );
+        mavenLauncher.addD( "runOrder", runOrder );
+        return this;
     }
 
     public SurefireLauncher failIfNoTests( boolean fail )
     {
         this.failIfNoTests = fail;
-        return addGoal( "-DfailIfNoTests=" + fail );
+        mavenLauncher.addD( "failIfNoTests", fail );
+        return this;
+    }
+
+
+    public SurefireLauncher mavenTestFailureIgnore( boolean fail )
+    {
+        mavenLauncher.addD( "maven.test.failure.ignore", fail );
+        return this;
     }
 
     public SurefireLauncher failIfNoSpecifiedTests( boolean fail )
     {
         this.failIfNoTests = fail;
-        return addGoal( "-Dsurefire.failIfNoSpecifiedTests=" + fail );
+        mavenLauncher.addD( "surefire.failIfNoSpecifiedTests", fail );
+        return this;
     }
 
     public SurefireLauncher useSystemClassLoader( boolean useSystemClassLoader )
     {
-        return addGoal( "-DuseSystemClassLoader=" + useSystemClassLoader );
+        mavenLauncher.addD( "useSystemClassLoader", useSystemClassLoader );
+        return this;
     }
 
     public SurefireLauncher activateProfile( String profile )
     {
-        return addGoal( "-P" + profile );
+        mavenLauncher.activateProfile( profile );
+        return this;
     }
 
 
@@ -495,7 +340,9 @@ public class SurefireLauncher
 
     public SurefireLauncher parallel( String parallel )
     {
-        return addD( "parallel", parallel );
+
+        mavenLauncher.addD( "parallel", parallel );
+        return this;
     }
 
 
@@ -512,23 +359,26 @@ public class SurefireLauncher
 
     public SurefireLauncher addD( String variable, String value )
     {
-        return addGoal( "-D" + variable + "=" + value );
+        mavenLauncher.addD( variable, value );
+        return this;
     }
 
     public SurefireLauncher setJUnitVersion( String version )
     {
-        addD( "junit.version", version );
+        mavenLauncher.addD( "junit.version", version );
         return this;
     }
 
     public SurefireLauncher setGroups( String groups )
     {
-        return addD( "groups", groups );
+        mavenLauncher.addD( "groups", groups );
+        return this;
     }
 
     public SurefireLauncher setExcludedGroups( String excludedGroups )
     {
-        return addD( "excludedGroups", excludedGroups );
+        mavenLauncher.addD( "excludedGroups", excludedGroups );
+        return this;
     }
 
     public SurefireLauncher setEOption()
@@ -543,77 +393,44 @@ public class SurefireLauncher
         return failIfNoTests;
     }
 
-    public File getUnpackLocation()
+    public File getUnpackedAt()
     {
-        getVerifier(); // Make sure we have unpacked
-        return getUnpackDir();
+        return mavenLauncher.getUnpackedAt();
     }
 
     public SurefireLauncher addFailsafeReportOnlyGoal()
     {
-        goals.add(
-            "org.apache.maven.plugins:maven-surefire-report-plugin:" + getSurefireVersion() + ":failsafe-report-only" );
+        mavenLauncher.addGoal( getReportPluginGoal( ":failsafe-report-only" ) );
         return this;
     }
 
     public SurefireLauncher addSurefireReportGoal()
     {
-        goals.add( "org.apache.maven.plugins:maven-surefire-report-plugin:" + getSurefireVersion() + ":report" );
+        mavenLauncher.addGoal( getReportPluginGoal( "report" ) );
         return this;
     }
 
     public SurefireLauncher addSurefireReportOnlyGoal()
     {
-        goals.add( "org.apache.maven.plugins:maven-surefire-report-plugin:" + getSurefireVersion() + ":report-only" );
+        mavenLauncher.addGoal( getReportPluginGoal( "report-only" ) );
         return this;
+    }
+
+    private String getReportPluginGoal( String goal )
+    {
+        return "org.apache.maven.plugins:maven-surefire-report-plugin:" + getSurefireVersion() + ":" + goal;
     }
 
 
     public SurefireLauncher deleteSiteDir()
     {
-        try
-        {
-            FileUtils.deleteDirectory( getValidator().getSubFile( "site" ) );
-        }
-        catch ( IOException e )
-        {
-            throw new SurefireVerifierException( e );
-        }
+        mavenLauncher.deleteSiteDir();
         return this;
     }
 
     public SurefireLauncher setTestToRun( String basicTest )
     {
-        addD( "test", basicTest );
+        mavenLauncher.addD( "test", basicTest );
         return this;
-    }
-
-    public OutputValidator getValidator()
-    {
-        if ( validator == null )
-        {
-            this.validator = new OutputValidator( getVerifier() );
-        }
-        return validator;
-    }
-
-    private Verifier getVerifier()
-    {
-        if ( verifier == null )
-        {
-            try
-            {
-                this.verifier = createVerifier( testClass, resourceName );
-            }
-            catch ( IOException e )
-            {
-                throw new RuntimeException( e );
-            }
-            catch ( VerificationException e )
-            {
-                throw new RuntimeException( e );
-            }
-        }
-        return verifier;
     }
 }

@@ -19,13 +19,13 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import java.io.File;
-import java.io.IOException;
 import org.apache.maven.it.VerificationException;
-import org.apache.maven.it.Verifier;
-import org.apache.maven.shared.utils.io.FileUtils;
+import org.apache.maven.surefire.its.fixture.MavenLauncher;
 import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+
+import java.io.File;
+import java.io.IOException;
 
 /**
  * Test a directory with an umlaut
@@ -50,11 +50,12 @@ public class UmlautDirIT
     SurefireLauncher specialUnpack()
         throws VerificationException, IOException
     {
-        final File unpackLocation = unpack( "junit-pathWithUmlaut" ).getUnpackLocation();
-        File dest = new File( unpackLocation.getParentFile().getPath(), "/junit-pathWith\u00DCmlaut" );
-        FileUtils.deleteDirectory( dest );
-        unpackLocation.renameTo( dest );
-        return new SurefireLauncher( new Verifier( dest.getAbsolutePath() ) );
+        SurefireLauncher unpack = unpack( "junit-pathWithUmlaut" );
+        MavenLauncher maven = unpack.maven();
+
+        File dest = new File( maven.getUnpackedAt().getParentFile().getPath(), "/junit-pathWith\u00DCmlaut" );
+        maven.moveUnpackTo( dest );
+        return unpack;
     }
 
 }

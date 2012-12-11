@@ -19,6 +19,7 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
+import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 
@@ -36,7 +37,9 @@ public class SiblingAggregatorIT
         throws Exception
     {
         final SurefireLauncher unpack = unpack( "sibling-aggregator" );
-        unpack.getSubProjectLauncher( "aggregator" ).executeTest().verifyErrorFreeLog();
-        unpack.getSubProjectValidator( "child2" ).assertTestSuiteResults( 1, 0, 0, 0 );
+        SurefireLauncher aggregator = unpack.getSubProjectLauncher( "aggregator" );
+        aggregator.executeTest().verifyErrorFreeLog();
+        OutputValidator child2 = unpack.getSubProjectValidator( "child2" );
+        child2.assertTestSuiteResults( 1, 0, 0, 0 );
     }
 }

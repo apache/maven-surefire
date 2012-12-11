@@ -37,7 +37,7 @@ public class PlexusConflictIT
 
     public void testPlexusConflictIsolatedClassLoader()
     {
-        unpack().addD( "surefire.useSystemClassLoader", "false" ).executeTest().verifyErrorFree( 1 );
+        unpack().useSystemClassLoader(false).executeTest().verifyErrorFree( 1 );
     }
 
     private SurefireLauncher unpack()

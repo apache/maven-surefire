@@ -38,28 +38,28 @@ public class IncludesExcludesFromFileIT
 
     public void testSimple()
     {
-        testWithProfile( "-Psimple" );
+        testWithProfile( "simple" );
     }
 
     public void testSimpleMixed()
     {
-        testWithProfile( "-Psimple-mixed" );
+        testWithProfile( "simple-mixed" );
     }
 
     public void testRegex()
     {
-        testWithProfile( "-Pregex" );
+        testWithProfile( "regex" );
     }
 
     public void testPath()
     {
-        testWithProfile( "-Ppath" );
+        testWithProfile( "path" );
     }
 
     private void testWithProfile( String profile )
     {
         final OutputValidator outputValidator = unpack().
-            addGoal( profile ).executeTest().verifyErrorFree( 2 );
+            activateProfile( profile ).executeTest().verifyErrorFree( 2 );
 
         outputValidator.getTargetFile( "testTouchFile.txt" ).assertFileExists();
         outputValidator.getTargetFile( "defaultTestTouchFile.txt" ).assertFileExists();
@@ -67,18 +67,18 @@ public class IncludesExcludesFromFileIT
 
     public void testMissingExcludes()
     {
-        expectBuildFailure( "-Pmissing-excludes-file", "Failed to load list from file", "no-such-excludes-file" );
+        expectBuildFailure( "missing-excludes-file", "Failed to load list from file", "no-such-excludes-file" );
     }
 
     public void testMissingIncludes()
     {
-        expectBuildFailure( "-Pmissing-includes-file", "Failed to load list from file", "no-such-includes-file" );
+        expectBuildFailure( "missing-includes-file", "Failed to load list from file", "no-such-includes-file" );
     }
 
     private void expectBuildFailure( final String profile, final String... messages )
     {
-        final OutputValidator outputValidator = unpack().
-            addGoal( profile ).executeTestWithFailure();
+        final OutputValidator outputValidator = unpack().activateProfile( profile )
+            .executeTestWithFailure();
 
         for ( String message : messages )
         {

@@ -41,23 +41,23 @@ public class IncludesExcludesIT
      */
     public void testIncludesExcludes()
     {
-        testWithProfile( "-Psimple" );
+        testWithProfile( "simple" );
     }
 
     public void testRegexIncludesExcludes()
     {
-        testWithProfile( "-Pregex" );
+        testWithProfile( "regex" );
     }
 
     public void testPathBasedIncludesExcludes()
     {
-        testWithProfile( "-Ppath" );
+        testWithProfile( "path" );
     }
 
     private void testWithProfile( String profile )
     {
         final OutputValidator outputValidator = unpack().
-            addGoal( profile ).executeTest().verifyErrorFree( 2 );
+            activateProfile( profile ).executeTest().verifyErrorFree( 2 );
         outputValidator.getTargetFile( "testTouchFile.txt" ).assertFileExists();
         outputValidator.getTargetFile( "defaultTestTouchFile.txt" ).assertFileExists();
     }

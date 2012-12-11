@@ -37,8 +37,7 @@ public class Surefire920TestFailureIgnoreWithTimeoutIT
     public void timeoutInForkWithNoBuildFail()
     {
         OutputValidator validator =
-            unpack( "fork-timeout" ).addD( "junit.parallel", "none" ).addD( "maven.test.failure.ignore",
-                                                                            "true" ).executeTest();
+            unpack( "fork-timeout" ).addD( "junit.parallel", "none" ).mavenTestFailureIgnore( true ).executeTest();
         validator.verifyTextInLog( "[ERROR] There was a timeout or other error in the fork" );
     }
 

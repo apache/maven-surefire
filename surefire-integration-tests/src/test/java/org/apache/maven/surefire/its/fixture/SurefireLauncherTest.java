@@ -16,7 +16,8 @@ public class SurefireLauncherTest
     public void launcherGetsProperMethodName()
         throws IOException, VerificationException
     {
-        String method = new SurefireLauncher( SurefireLauncherTest.class, "foo", "" ).getTestMethodName();
+        MavenLauncher mavenLauncher = new MavenLauncher(  SurefireLauncherTest.class, "foo", "");
+        String method = new SurefireLauncher( mavenLauncher ).getTestMethodName();
         assertEquals( "launcherGetsProperMethodName", method );
 
     }

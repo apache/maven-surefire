@@ -19,9 +19,6 @@ package org.apache.maven.surefire.its.fixture;
  * under the License.
  */
 
-import java.io.IOException;
-import org.apache.maven.it.VerificationException;
-
 /**
  * Contains commonly used features for most tests, encapsulating
  * common use cases.
@@ -41,34 +38,14 @@ public abstract class SurefireJUnit4IntegrationTestCase
 
     public SurefireLauncher unpack( String sourceName )
     {
-        try
-        {
-            return new SurefireLauncher( this.getClass(), sourceName, "" );
-        }
-        catch ( VerificationException e )
-        {
-            throw new SurefireVerifierException( e );
-        }
-        catch ( IOException e )
-        {
-            throw new SurefireVerifierException( e );
-        }
+            MavenLauncher mavenLauncher = new MavenLauncher( this.getClass(), sourceName, "" );
+            return new SurefireLauncher( mavenLauncher );
     }
 
     public static SurefireLauncher unpack( Class testClass, String sourceName, String suffix )
     {
-        try
-        {
-            return new SurefireLauncher( testClass, sourceName, suffix );
-        }
-        catch ( VerificationException e )
-        {
-            throw new SurefireVerifierException( e );
-        }
-        catch ( IOException e )
-        {
-            throw new SurefireVerifierException( e );
-        }
+            MavenLauncher mavenLauncher = new MavenLauncher( testClass, sourceName, suffix );
+            return new SurefireLauncher( mavenLauncher );
     }
 
 }

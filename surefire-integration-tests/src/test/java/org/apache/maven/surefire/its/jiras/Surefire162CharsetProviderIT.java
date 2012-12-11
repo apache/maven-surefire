@@ -20,6 +20,8 @@ package org.apache.maven.surefire.its.jiras;
  */
 
 import java.io.File;
+
+import org.apache.maven.surefire.its.fixture.MavenLauncher;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
@@ -38,12 +40,13 @@ public class Surefire162CharsetProviderIT
         throws Exception
     {
         SurefireLauncher unpack = unpack( "/surefire-162-charsetProvider" );
-        OutputValidator verifier = unpack.getValidator();
-        File jarFile = new File( verifier.getArtifactPath( "jcharset", "jcharset", "1.2.1", "jar" ) );
+        MavenLauncher maven = unpack.maven();
+        OutputValidator verifier = maven.getValidator();
+        File jarFile = maven.getArtifactPath( "jcharset", "jcharset", "1.2.1", "jar" );
+        File pomFile = maven.getArtifactPath( "jcharset", "jcharset", "1.2.1", "pom" );
         jarFile.getParentFile().mkdirs();
         FileUtils.copyFile( verifier.getSubFile( "repo/jcharset/jcharset/1.2.1/jcharset-1.2.1.jar" ), jarFile );
-        FileUtils.copyFile( verifier.getSubFile( "repo/jcharset/jcharset/1.2.1/jcharset-1.2.1.pom" ),
-                            new File( verifier.getArtifactPath( "jcharset", "jcharset", "1.2.1", "pom" ) ) );
+        FileUtils.copyFile( verifier.getSubFile( "repo/jcharset/jcharset/1.2.1/jcharset-1.2.1.pom" ), pomFile );
         unpack.executeTest().verifyErrorFree( 1 );
     }
 }

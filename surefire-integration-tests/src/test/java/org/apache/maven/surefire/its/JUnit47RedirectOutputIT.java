@@ -39,7 +39,7 @@ public class JUnit47RedirectOutputIT
         throws Exception
     {
         final OutputValidator clean =
-            unpack().redirectToFile( true ).addGoal( "clean" ).parallelClasses().executeTest();
+            unpack().redirectToFile( true ).parallelClasses().addGoal( "clean" ).executeTest();
         checkReports( clean );
     }
 
