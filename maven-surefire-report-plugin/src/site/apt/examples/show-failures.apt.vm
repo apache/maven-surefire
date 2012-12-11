@@ -1,10 +1,10 @@
-------
-Showing Failure Tests
-------
-Allan Ramirez
-------
-July 2006
-------
+  ------
+  Showing Failure Tests
+  ------
+  Allan Ramirez
+  ------
+  July 2006
+  ------
 
 ~~ Copyright 2006 The Apache Software Foundation.
 ~~
@@ -25,36 +25,33 @@ July 2006
 
 Showing Failure Tests
 
-By default, the Surefire Report Plugin shows all test result status (success
-and failures) in the generated HTML. To be able to show the failures only, the
-property <
-<showSuccess>> should be set to <
-    <false>>.
+  By default, the Surefire Report Plugin shows all test result status (success
+  and failures) in the generated HTML. To be able to show the failures only, the
+  property <<showSuccess>> should be set to <<false>>.
 
-        +----+
-        <project>
-            [...]
-            <reporting>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-report-plugin</artifactId>
-                        <version>${project.version}</version>
-                        <configuration>
-                            <showSuccess>false</showSuccess>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </reporting>
-            [...]
-        </project>
-        +----+
++----+
+<project>
+  [...]
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-report-plugin</artifactId>
+        <version>${project.version}</version>
+        <configuration>
+          <showSuccess>false</showSuccess>
+        </configuration>
+      </plugin>
+    </plugins>
+  </reporting>
+  [...]
+</project>
++----+
 
-        Then execute <<
-        <mvn site>>> for the report generation.
+  Then execute <<<mvn site>>> for the report generation.
 
-            It can also be set via commandline with the standalone goal.
+  It can also be set via commandline with the standalone goal.
 
-            +----+
-            mvn surefire-report:report -DshowSuccess=false
-            +----+
++----+
+  mvn surefire-report:report -DshowSuccess=false
++----+

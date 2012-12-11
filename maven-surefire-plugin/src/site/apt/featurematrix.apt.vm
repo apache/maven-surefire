@@ -20,34 +20,27 @@
 
 Feature matrix
 
-Not all features are supported for all test frameworks, and the following table gives a brief overview
-of support status:
+    Not all features are supported for all test frameworks, and the following table gives a brief overview
+    of support status:
 
 *---------------------------------------------+-----------+-----------+------------+-----------+----------+
-|| <
-<Feature>> ||<
-    <JUnit3>>||<
-        <JUnit4>>||<
-            <Junit47>>||<
-                <TestNG>>||<
-                    <Pojo>> |
-                        *---------------------------------------------+------------+----------+------------+-----------+----------+
-                        | groups/category support | N | N | Y | Y | N |
-                        *---------------------------------------------+------------+----------+------------+-----------+----------+
-                        | security manager support | Y | N | N | N | N |
-                        *---------------------------------------------+------------+----------+------------+-----------+----------+
-                        | runOrder support | Y | Y | Y | ? | Y |
-                        *---------------------------------------------+------------+----------+------------+-----------+----------+
-                        | run >1 individual test method in a class | N | Y | Y | N | N |
-                        *---------------------------------------------+------------+----------+------------+-----------+----------+
-                        | parallel support | N | N | Y | Y | N |
-                        *---------------------------------------------+------------+----------+------------+-----------+----------+
+|| <<Feature>>                                ||<<JUnit3>>||<<JUnit4>>||<<Junit47>>||<<TestNG>>||<<Pojo>> |
+*---------------------------------------------+------------+----------+------------+-----------+----------+
+| groups/category support                     |     N      |    N     |      Y     |    Y      |  N       |
+*---------------------------------------------+------------+----------+------------+-----------+----------+
+| security manager support                    |     Y      |    N     |      N     |    N      |  N       |
+*---------------------------------------------+------------+----------+------------+-----------+----------+
+| runOrder support                            |     Y      |    Y     |      Y     |    ?      |  Y       |
+*---------------------------------------------+------------+----------+------------+-----------+----------+
+| run >1 individual test method in a class    |     N      |    Y     |      Y     |    N      |  N       |
+*---------------------------------------------+------------+----------+------------+-----------+----------+
+| parallel support                            |     N      |    N     |      Y     |    Y      |  N       |
+*---------------------------------------------+------------+----------+------------+-----------+----------+
 
 
-                        Legend: Y means supported, N means not supported. ? means not tested.
+    Legend: Y means supported, N means not supported. ? means not tested.
 
-                        If you would like to implement support for
-                        a given provider with an N or a ? (or create tests for it), you should create a patch and mark
-                        the issue is an
-                        improvement. If there is something wrong with an implementation marked with "Y" it's a bug.
+    If you would like to implement support for
+    a given provider with an N or a ? (or create tests for it), you should create a patch and mark the issue is an
+    improvement. If there is something wrong with an implementation marked with "Y" it's a bug.
 

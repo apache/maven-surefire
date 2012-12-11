@@ -1,10 +1,10 @@
-------
-Usage
-------
-Allan Ramirez
-------
-July 2006
-------
+  ------
+  Usage
+  ------
+  Allan Ramirez
+  ------
+  July 2006
+  ------
 
 ~~ Copyright 2006 The Apache Software Foundation.
 ~~
@@ -27,41 +27,39 @@ Usage
 
 * Generate the report as part of Project Reports
 
-To generate the Surefire report as part of the site generation, add the following in
-the \
-<reporting\> section of your POM:
+  To generate the Surefire report as part of the site generation, add the following in
+  the \<reporting\> section of your POM:
 
 +---+
 <project>
-    ...
-    <reporting>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-report-plugin</artifactId>
-                <version>${project.version}</version>
-            </plugin>
-        </plugins>
-    </reporting>
-    ...
+  ...
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-report-plugin</artifactId>
+        <version>${project.version}</version>
+      </plugin>
+    </plugins>
+  </reporting>
+  ...
 </project>
 +---+
 
-When the <<
-<mvn site>>> is invoked, the report will be automatically
-    included in the Project Reports menu as shown in the figure below.
+  When the <<<mvn site>>> is invoked, the report will be automatically
+  included in the Project Reports menu as shown in the figure below.
 
-    [images/surefire-sample1.PNG] Sample Surefire Report
+[images/surefire-sample1.PNG] Sample Surefire Report
 
-    * Generate the report as standalone
+* Generate the report as standalone
 
-    The Surefire report can also generate the report using its standalone goal:
+  The Surefire report can also generate the report using its standalone goal:
 
-    +---+
-    mvn surefire-report:report
-    +---+
++---+
+mvn surefire-report:report  
++---+
 
-    A HTML report should be generated in <<<$\{basedir\}/target/site/surefire-report.html>>>.
+  A HTML report should be generated in <<<$\{basedir\}/target/site/surefire-report.html>>>.
 
-    [images/surefire-sample2.PNG] Sample standalone surefire-report
+[images/surefire-sample2.PNG] Sample standalone surefire-report
 

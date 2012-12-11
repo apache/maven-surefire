@@ -1,285 +1,271 @@
-------
-Using JUnit
-------
-Kristian Rosenvold
-<krosenvold@apache.org>
-------
-2010-10-10
-------
+ ------
+ Using JUnit
+ ------
+ Kristian Rosenvold <krosenvold@apache.org>
+ ------
+ 2010-10-10
+ ------
+ 
+ ~~ Licensed to the Apache Software Foundation (ASF) under one
+ ~~ or more contributor license agreements.  See the NOTICE file
+ ~~ distributed with this work for additional information
+ ~~ regarding copyright ownership.  The ASF licenses this file
+ ~~ to you under the Apache License, Version 2.0 (the
+ ~~ "License"); you may not use this file except in compliance
+ ~~ with the License.  You may obtain a copy of the License at
+ ~~
+ ~~   http://www.apache.org/licenses/LICENSE-2.0
+ ~~
+ ~~ Unless required by applicable law or agreed to in writing,
+ ~~ software distributed under the License is distributed on an
+ ~~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ ~~ KIND, either express or implied.  See the License for the
+ ~~ specific language governing permissions and limitations
+ ~~ under the License.
 
-~~ Licensed to the Apache Software Foundation (ASF) under one
-~~ or more contributor license agreements.  See the NOTICE file
-~~ distributed with this work for additional information
-~~ regarding copyright ownership.  The ASF licenses this file
-~~ to you under the Apache License, Version 2.0 (the
-~~ "License"); you may not use this file except in compliance
-~~ with the License.  You may obtain a copy of the License at
-~~
-~~   http://www.apache.org/licenses/LICENSE-2.0
-~~
-~~ Unless required by applicable law or agreed to in writing,
-~~ software distributed under the License is distributed on an
-~~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-~~ KIND, either express or implied.  See the License for the
-~~ specific language governing permissions and limitations
-~~ under the License.
-
-~~ NOTE: For help with the syntax of this file, see:
-~~ http://maven.apache.org/doxia/references/apt-format.html
+ ~~ NOTE: For help with the syntax of this file, see:
+ ~~ http://maven.apache.org/doxia/references/apt-format.html 
 
 Using JUnit
 
 * Configuring JUnit
 
-To get started with JUnit, you need to add the required version of JUnit to your project:
+  To get started with JUnit, you need to add the required version of JUnit to your project:
 
 +---+
 <dependencies>
-    [...]
+  [...]
     <dependency>
-        <groupId>junit</groupId>
-        <artifactId>junit</artifactId>
-        <version>4.8.1</version>
-        <scope>test</scope>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.8.1</version>
+      <scope>test</scope>
     </dependency>
-    [...]
+  [...]
 </dependencies>
 +---+
 
 
-This is the only step that is required to get started - you can now create tests in your test source directory
-(eg, <<
-<src/test/java>>>).
+  This is the only step that is required to get started - you can now create tests in your test source directory
+  (eg, <<<src/test/java>>>).
 
 * Different Generations of JUnit support
 
-Surefire supports three different generations of JUnit: JUnit 3.8.x, JUnit 4.x (serial provider) and JUnit 4.7 (junit-core provider
-with parallel support). The provider is selected based on the JUnit version in your project and the configuration parameters (for parallel).
+  Surefire supports three different generations of JUnit: JUnit 3.8.x, JUnit 4.x (serial provider) and JUnit 4.7 (junit-core provider
+  with parallel support). The provider is selected based on the JUnit version in your project and the configuration parameters (for parallel).
 
 * Upgrade check for JUnit 4.x
 
-As of Surefire version 2.7, the algorithm for choosing which tests to run
-has changed. From 2.7 and on, only valid JUnit tests are run for all versions of JUnit, where older versions
-of the plugin would also run invalid tests that satisfied the naming convention.
+  As of Surefire version 2.7, the algorithm for choosing which tests to run
+  has changed. From 2.7 and on, only valid JUnit tests are run for all versions of JUnit, where older versions
+  of the plugin would also run invalid tests that satisfied the naming convention.
 
-When upgrading from a Surefire version prior to 2.7, the build can be run with
-the flag -Dsurefire.junit4.upgradecheck. This will perform a check and notify you of any invalid tests that
-will not be run with this version of Surefire (and the build fails). This is only meant to be used as a tool
-when upgrading to check that all expected tests will be run. It is a transitional
-feature that will be removed in a future version of surefire.
+  When upgrading from a Surefire version prior to 2.7, the build can be run with
+  the flag -Dsurefire.junit4.upgradecheck. This will perform a check and notify you of any invalid tests that
+  will not be run with this version of Surefire (and the build fails). This is only meant to be used as a tool
+  when upgrading to check that all expected tests will be run. It is a transitional
+  feature that will be removed in a future version of surefire.
 
 * How is the provider chosen ?
 
-If nothing is configured, surefire detects which junit version to use by the following algorithm:
+   If nothing is configured, surefire detects which junit version to use by the following algorithm:
 
 +---+
 if the JUnit version in the project >= 4.7 and the parallel attribute has ANY value
-use junit47 provider
+    use junit47 provider
 if JUnit >= 4.0 is present
-use junit4 provider
+    use junit4 provider
 else
-use junit3.8.1
+    use junit3.8.1
 +---+
 
-Please note that the "else" part of this algorithm is also a FAQ response:
+    Please note that the "else" part of this algorithm is also a FAQ response:
 
-You depend on the appropriate version of JUnit being present in the project dependencies, or surefire may choose the wrong
-provider. If, for instance, one of your dependencies pulls in JUnit 3.8.1 you risk that surefire chooses the
-3.8.1 provider, which will not support annotations or any of the 4.x features.
+    You depend on the appropriate version of JUnit being present in the project dependencies, or surefire may choose the wrong
+    provider. If, for instance, one of your dependencies pulls in JUnit 3.8.1 you risk that surefire chooses the
+    3.8.1 provider, which will not support annotations or any of the 4.x features.
 
-Use mvn dependency:tree, pom dependency ordering and/or and exclusion of transitive dependencies to fix this problem.
+    Use mvn dependency:tree, pom dependency ordering and/or and exclusion of transitive dependencies to fix this problem.
 
 ** Manually specifying a provider
 
-You can also manually force a specific provider by adding it as a dependency to ${thisPlugin} itself:
+   You can also manually force a specific provider by adding it as a dependency to ${thisPlugin} itself:
+
++---+
+<plugins>
+[...]
+  <plugin>
+    <groupId>${project.groupId}</groupId>
+    <artifactId>${project.artifactId}</artifactId>
+    <version>${project.version}</version>
+    <dependencies>
+      <dependency>
+        <groupId>org.apache.maven.surefire</groupId>
+        <artifactId>surefire-junit47</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+    </dependencies>
+  </plugin>
+[...]
+</plugins>
++---+
+
+  When using this technique there  is no check that the proper test-frameworks are present on your project's
+  classpath. Failing to add the proper test-frameworks will result in a build failure.
+
+* Running tests in parallel
+
+  From JUnit 4.7 and onwards you can run your tests in parallel. To do this, you must set the
+  <<<parallel>>> parameter, and may change the <<<threadCount>>> or <<<useUnlimitedThreads>>> attribute.
+  For example:
 
 +---+
 <plugins>
     [...]
-    <plugin>
+      <plugin>
         <groupId>${project.groupId}</groupId>
         <artifactId>${project.artifactId}</artifactId>
         <version>${project.version}</version>
-        <dependencies>
-            <dependency>
-                <groupId>org.apache.maven.surefire</groupId>
-                <artifactId>surefire-junit47</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-        </dependencies>
-    </plugin>
+        <configuration>
+          <parallel>methods</parallel>
+          <threadCount>10</threadCount>
+        </configuration>
+      </plugin>
     [...]
 </plugins>
 +---+
 
-When using this technique there  is no check that the proper test-frameworks are present on your project's
-classpath. Failing to add the proper test-frameworks will result in a build failure.
 
-* Running tests in parallel
+  If your tests specify any value for the "parallel" attribute and your project uses JUnit 4.7+, your request will be routed to
+  the concurrent JUnit provider, which uses the JUnit JUnitCore testrunner.
 
-From JUnit 4.7 and onwards you can run your tests in parallel. To do this, you must set the
-<<
-<parallel>>> parameter, and may change the <<
-    <threadCount>>> or <<
-        <useUnlimitedThreads>>> attribute.
-            For example:
+  This is particularly useful for slow tests that can have high concurrency.
 
-            +---+
-            <plugins>
-                [...]
-                <plugin>
-                    <groupId>${project.groupId}</groupId>
-                    <artifactId>${project.artifactId}</artifactId>
-                    <version>${project.version}</version>
-                    <configuration>
-                        <parallel>methods</parallel>
-                        <threadCount>10</threadCount>
-                    </configuration>
-                </plugin>
-                [...]
-            </plugins>
-            +---+
+  As of surefire 2.7, no additional dependencies are needed to use the full set of options with parallel.
 
+* Using custom listeners and reporters
 
-            If your tests specify any value for the "parallel" attribute and your project uses JUnit 4.7+, your request
-            will be routed to
-            the concurrent JUnit provider, which uses the JUnit JUnitCore testrunner.
+  JUnit4/4.7 provider provides support for attaching custom RunListeners to your tests.
 
-            This is particularly useful for slow tests that can have high concurrency.
+  You can configure multiple custom listeners like this:
 
-            As of surefire 2.7, no additional dependencies are needed to use the full set of options with parallel.
++---+
+<plugins>
+[...]
+  <plugin>
+    <groupId>${project.groupId}</groupId>
+    <artifactId>${project.artifactId}</artifactId>
+    <version>${project.version}</version>
+    <configuration>
+      <properties>
+        <property>
+          <name>listener</name>
+          <value>com.mycompany.MyResultListener,com.mycompany.MyResultListener2</value>
+        </property>
+    </configuration>
+  </plugin>
+[...]
+</plugins>
++---+
 
-            * Using custom listeners and reporters
+* Using a security manager (JUnit3 only)
 
-            JUnit4/4.7 provider provides support for attaching custom RunListeners to your tests.
+   As long as forkMode!=never and you use JUnit3, you can run your tests with a java security manager active.
+   The classname of the security manager must be sent as a system property variable to the JUnit3 provider.
 
-            You can configure multiple custom listeners like this:
+   JUnit4 uses mechanisms internally that are not compatible with the tested security managers and is not supported
+   by surefire.
 
-            +---+
-            <plugins>
-                [...]
-                <plugin>
-                    <groupId>${project.groupId}</groupId>
-                    <artifactId>${project.artifactId}</artifactId>
-                    <version>${project.version}</version>
-                    <configuration>
-                        <properties>
-                            <property>
-                                <name>listener</name>
-                                <value>com.mycompany.MyResultListener,com.mycompany.MyResultListener2</value>
-                            </property>
-                    </configuration>
-                </plugin>
-                [...]
-            </plugins>
-            +---+
++---+
+<plugins>
+[...]
+      <plugin>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>${project.artifactId}</artifactId>
+        <version>${project.version}</version>
+        <configuration>
+          <systemPropertyVariables>
+            <surefire.security.manager>java.lang.SecurityManager</surefire.security.manager>
+          </systemPropertyVariables>
+        </configuration>
+      </plugin>
+[...]
+</plugins>
++---+
 
-            * Using a security manager (JUnit3 only)
+* Using a security manager (All providers)
 
-            As long as forkMode!=never and you use JUnit3, you can run your tests with a java security manager active.
-            The classname of the security manager must be sent as a system property variable to the JUnit3 provider.
+    Alternatively you can define a policy file that allows all providers to run with surefire
+    and send them using the argLine parameter and two system properties;
 
-            JUnit4 uses mechanisms internally that are not compatible with the tested security managers and is not
-            supported
-            by surefire.
++---+
+<plugins>
+[...]
+      <plugin>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>${project.artifactId}</artifactId>
+        <version>${project.version}</version>
+        <configuration>
+          <argLine>-Djava.security.manager -Djava.security.policy=${basedir}/src/test/resources/java.policy</argLine>
+        </configuration>
+      </plugin>
+[...]
+</plugins>
++---+
 
-            +---+
-            <plugins>
-                [...]
-                <plugin>
-                    <groupId>${project.groupId}</groupId>
-                    <artifactId>${project.artifactId}</artifactId>
-                    <version>${project.version}</version>
-                    <configuration>
-                        <systemPropertyVariables>
-                            <surefire.security.manager>java.lang.SecurityManager</surefire.security.manager>
-                        </systemPropertyVariables>
-                    </configuration>
-                </plugin>
-                [...]
-            </plugins>
-            +---+
+  The disadvantage of this solution is that the policy changes will affect the tests too, which make the
+  security environment less realistic.
 
-            * Using a security manager (All providers)
+* Using JUnit Categories
 
-            Alternatively you can define a policy file that allows all providers to run with surefire
-            and send them using the argLine parameter and two system properties;
+    JUnit 4.8 introduced the notion of Categories. You can use JUnit categories by using the <<<groups>>> parameter. As long as 
+    the JUnit version in the project is 4.8 or higher, the presence of the "groups" parameter will automatically make surefire select 
+    the junit47 provider, which supports groups.
 
-            +---+
-            <plugins>
-                [...]
-                <plugin>
-                    <groupId>${project.groupId}</groupId>
-                    <artifactId>${project.artifactId}</artifactId>
-                    <version>${project.version}</version>
-                    <configuration>
-                        <argLine>-Djava.security.manager -Djava.security.policy=${basedir}
-                            /src/test/resources/java.policy
-                        </argLine>
-                    </configuration>
-                </plugin>
-                [...]
-            </plugins>
-            +---+
++---+
+<plugins>
+[...]
+    <plugin>
+      <artifactId>maven-surefire-plugin</artifactId>
+      <version>2.11</version>
+      <configuration>
+        <groups>com.mycompany.SlowTests</groups>
+      </configuration>
+    </plugin>
+[...]
+</plugins>
++---+
 
-            The disadvantage of this solution is that the policy changes will affect the tests too, which make the
-            security environment less realistic.
+  This will execute only those tests annotated with the <<<@Category(com.mycompany.SlowTests.class)>>> annotation and those tests
+  annotated with <<<@Category(com.mycompany.SlowerTests.class)>>> if class/interface <<<SlowerTests>>> is subclass of <<<SlowTests>>>:
 
-            * Using JUnit Categories
++---+
+    public interface SlowTests{}
+    public interface SlowerTests extends SlowTests{}
++---+
 
-            JUnit 4.8 introduced the notion of Categories. You can use JUnit categories by using the <<
-            <groups>>> parameter. As long as
-                the JUnit version in the project is 4.8 or higher, the presence of the "groups" parameter will
-                automatically make surefire select
-                the junit47 provider, which supports groups.
++---+
+    public class AppTest {
+      @Test
+      @Category(com.mycompany.SlowTests.class)
+      public void testSlow() {
+        System.out.println("slow");
+      }
 
-                +---+
-                <plugins>
-                    [...]
-                    <plugin>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <version>2.11</version>
-                        <configuration>
-                            <groups>com.mycompany.SlowTests</groups>
-                        </configuration>
-                    </plugin>
-                    [...]
-                </plugins>
-                +---+
+      @Test
+      @Category(com.mycompany.SlowerTests.class)
+      public void testSlower() {
+        System.out.println("slower");
+      }
 
-                This will execute only those tests annotated with the <<<@Category(com.mycompany.SlowTests.class)>>>
-                annotation and those tests
-                annotated with <<<@Category(com.mycompany.SlowerTests.class)>>> if class/interface <<
-                <SlowerTests>>> is subclass of <<
-                    <SlowTests>>>:
+      @Test
+      @Category(com.cmycompany.FastTests.class)
+      public void testSlow() {
+        System.out.println("fast");
+      }
+    }
++---+
 
-                        +---+
-                        public interface SlowTests{}
-                        public interface SlowerTests extends SlowTests{}
-                        +---+
-
-                        +---+
-                        public class AppTest {
-                        @Test
-                        @Category(com.mycompany.SlowTests.class)
-                        public void testSlow() {
-                        System.out.println("slow");
-                        }
-
-                        @Test
-                        @Category(com.mycompany.SlowerTests.class)
-                        public void testSlower() {
-                        System.out.println("slower");
-                        }
-
-                        @Test
-                        @Category(com.cmycompany.FastTests.class)
-                        public void testSlow() {
-                        System.out.println("fast");
-                        }
-                        }
-                        +---+
-
-                        The @Category annotation can also be applied at class-level.
-
-                        For more information on JUnit, see the {{{http://www.junit.org}JUnit web site}}.
+  The @Category annotation can also be applied at class-level.
+	
+  For more information on JUnit, see the {{{http://www.junit.org}JUnit web site}}.
