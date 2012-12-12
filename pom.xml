@@ -119,7 +119,7 @@
     <maven.surefire.siteFilePath>${maven.site.cache}/surefire-${project.version}/</maven.surefire.siteFilePath>
     <maven.surefire.siteUrlDeployment>file://${maven.surefire.siteFilePath}</maven.surefire.siteUrlDeployment>
     <maven.surefire.scmPubCheckoutDirectory>${maven.site.cache}/surefire-site-content-${project.version}</maven.surefire.scmPubCheckoutDirectory>
-    <maven.surefire.scmPubUrl>https://svn.apache.org/repos/infra/websites/production/maven/content/surefire-${project.version}</maven.surefire.scmPubUrl>
+    <maven.surefire.scmPubUrl>https://svn.apache.org/repos/infra/websites/production/maven/content/surefire-archives/surefire-${project.version}</maven.surefire.scmPubUrl>
   </properties>
 
   <distributionManagement>
