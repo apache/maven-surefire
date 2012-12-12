@@ -40,7 +40,7 @@ public class Surefire570MultipleReportDirectoriesIT
         SurefireLauncher surefireLauncher = unpack().failNever();
         surefireLauncher.executeTest();
         surefireLauncher.addGoal( "-Daggregate=true" );
-        OutputValidator validator = surefireLauncher.execute( "surefire-report:report" );
+        OutputValidator validator = surefireLauncher.executeSurefireReport( );
         TestFile siteFile = validator.getSiteFile( "surefire-report.html" );
         siteFile.assertContainsText( "MyModule1ClassTest" );
         siteFile.assertContainsText( "MyModule2ClassTest" );
@@ -53,7 +53,7 @@ public class Surefire570MultipleReportDirectoriesIT
         SurefireLauncher surefireLauncher = unpack().failNever();
         surefireLauncher.executeTest();
         surefireLauncher.reset();
-        surefireLauncher.execute( "surefire-report:report" );
+        surefireLauncher.executeSurefireReport( );
         OutputValidator module1 = surefireLauncher.getSubProjectValidator( "module1" );
         TestFile siteFile = module1.getSiteFile( "surefire-report.html" );
         siteFile.assertContainsText( "MyModule1ClassTest" );

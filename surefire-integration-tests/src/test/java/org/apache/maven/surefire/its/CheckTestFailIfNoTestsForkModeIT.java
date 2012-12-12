@@ -33,17 +33,17 @@ public class CheckTestFailIfNoTestsForkModeIT
 {
     public void testFailIfNoTestsForkModeAlways()
     {
-        doTest( unpack().forkAlways().failIfNoTests( true ) );
+        unpack().forkAlways().failIfNoTests( true ).maven().withFailure().executeTest();
     }
 
     public void testFailIfNoTestsForkModeNever()
     {
-        doTest( unpack().forkNever().failIfNoTests( true ) );
+        unpack().forkNever().failIfNoTests( true ).maven().withFailure().executeTest();
     }
 
     public void testFailIfNoTestsForkModeOnce()
     {
-        doTest( unpack().forkOnce().failIfNoTests( true ) );
+        unpack().forkOnce().failIfNoTests( true ).maven().withFailure().executeTest();
     }
 
     public void testDontFailIfNoTestsForkModeAlways()
@@ -63,14 +63,7 @@ public class CheckTestFailIfNoTestsForkModeIT
 
     private void doTest( SurefireLauncher launcher )
     {
-        if ( launcher.isFailIfNoTests() )
-        {
-            launcher.executeTestWithFailure();
-        }
-        else
-        {
             launcher.executeTest().verifyErrorFreeLog().assertTestSuiteResults( 0, 0, 0, 0 );
-        }
     }
 
     private SurefireLauncher unpack()

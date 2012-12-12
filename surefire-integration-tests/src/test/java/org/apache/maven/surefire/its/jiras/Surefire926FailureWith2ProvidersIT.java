@@ -29,6 +29,6 @@ public class Surefire926FailureWith2ProvidersIT
 {
     public void testBuildFailingWhenErrors()
     {
-        unpack( "surefire-926-2-provider-failure" ).executeTestWithFailure();
+        unpack( "surefire-926-2-provider-failure" ).maven().withFailure().executeTest();
     }
 }

@@ -35,7 +35,9 @@ public class Surefire772BothReportsIT
 
     public SurefireLauncher unpack()
     {
-        return unpack( "/surefire-772-both-reports" ).deleteSiteDir().addGoal( "-Dclean.skip=true" ).failNever();
+        SurefireLauncher unpack = unpack( "/surefire-772-both-reports" );
+        unpack.maven().deleteSiteDir().skipClean().failNever();
+        return unpack;
     }
 
     public void testReportGeneration()

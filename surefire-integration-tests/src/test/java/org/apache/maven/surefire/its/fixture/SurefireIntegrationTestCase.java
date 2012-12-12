@@ -19,10 +19,6 @@ package org.apache.maven.surefire.its.fixture;
  * under the License.
  */
 
-import java.io.IOException;
-
-import org.apache.maven.it.VerificationException;
-
 import junit.framework.TestCase;
 
 /**

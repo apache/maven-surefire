@@ -31,6 +31,7 @@ public class Surefire674BuildFailingWhenErrorsIT
 {
     public void testBuildFailingWhenErrors()
     {
-        unpack( "/surefire-674-buildFailingWhenErrors" ).executeTestWithFailure().verifyTextInLog( "BUILD FAILURE" );
+        unpack( "/surefire-674-buildFailingWhenErrors" ).maven().withFailure().executeTest().verifyTextInLog(
+            "BUILD FAILURE" );
     }
 }

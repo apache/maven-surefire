@@ -33,7 +33,7 @@ public class Junit47concurrencyIT
         throws Exception
     {
         // todo: Align with others
-        unpack( "concurrentjunit47" ).addD( "junitVersion", "4.7" ).setJUnitVersion(
+        unpack( "concurrentjunit47" ).sysProp( "junitVersion", "4.7" ).setJUnitVersion(
             "4.7" ).executeTest().verifyErrorFree( 1 );
 
     }

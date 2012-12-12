@@ -40,7 +40,7 @@ public class CheckTestFailIfNoTestsIT
 
     public void testFailIfNoTests()
     {
-        unpack().failIfNoTests( true ).executeTestWithFailure();
+        unpack().failIfNoTests( true ).maven().withFailure().executeTest();
     }
 
     public void testDontFailIfNoTests()

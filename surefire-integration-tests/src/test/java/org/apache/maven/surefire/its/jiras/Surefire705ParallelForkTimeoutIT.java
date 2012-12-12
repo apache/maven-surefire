@@ -32,6 +32,6 @@ public class Surefire705ParallelForkTimeoutIT
     public void testTimeoutForked()
     {
         unpack( "/fork-timeout" ).setJUnitVersion( "4.8.1" ).addGoal( "-Djunit.version=4.8.1" ).addGoal(
-            "-Djunit.parallel=classes" ).addGoal( "-DtimeOut=1" ).executeTestWithFailure();
+            "-Djunit.parallel=classes" ).addGoal( "-DtimeOut=1" ).maven().withFailure().executeTest();
     }
 }

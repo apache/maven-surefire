@@ -73,7 +73,7 @@ public class RunOrderIT
     public void testNonExistingRunOrder()
         throws Exception
     {
-        unpack().forkMode( getForkMode() ).runOrder( "nonExistingRunOrder" ).executeTestWithFailure().verifyTextInLog(
+        unpack().forkMode( getForkMode() ).runOrder( "nonExistingRunOrder" ).maven().withFailure().executeTest().verifyTextInLog(
             "There's no RunOrder with the name nonExistingRunOrder." );
     }
 

@@ -45,7 +45,7 @@ public class Surefire735ForkFailWithRedirectConsoleOutputIT
     public void vmStartFailShouldFailBuildk()
         throws Exception
     {
-        unpack().executeTestWithFailure();
+        unpack().maven().withFailure().executeTest();
     }
 
     public SurefireLauncher unpack()

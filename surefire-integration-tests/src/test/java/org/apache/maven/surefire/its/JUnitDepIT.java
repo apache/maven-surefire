@@ -38,28 +38,28 @@ public class JUnitDepIT
     public void testJUnit44Dep()
         throws Exception
     {
-        unpack().debugLogging().addD( "junit-dep.version", "4.4" ).executeTest().verifyErrorFree( 1 ).verifyTextInLog(
+        unpack().debugLogging().sysProp( "junit-dep.version", "4.4" ).executeTest().verifyErrorFree( 1 ).verifyTextInLog(
             "surefire-junit4" ); // Ahem. Will match on the 4.7 provider too
     }
 
     public void testJUnit44DepWithSneaky381()
         throws Exception
     {
-        unpack().debugLogging().addD( "junit-dep.version", "4.4" ).activateProfile(
+        unpack().debugLogging().sysProp( "junit-dep.version", "4.4" ).activateProfile(
             "provided381" ).executeTest().verifyErrorFree( 1 );
     }
 
     public void testJUnit47Dep()
         throws Exception
     {
-        unpack().debugLogging().addD( "junit-dep.version","4.7" ).executeTest().verifyErrorFree( 1 ).verifyTextInLog(
+        unpack().debugLogging().sysProp( "junit-dep.version", "4.7" ).executeTest().verifyErrorFree( 1 ).verifyTextInLog(
             "surefire-junit47" );
     }
 
     public void testJUnit48Dep()
         throws Exception
     {
-        unpack().debugLogging().addD( "junit-dep.version","4.8" ).executeTest().verifyErrorFree( 1 ).verifyTextInLog(
+        unpack().debugLogging().sysProp( "junit-dep.version", "4.8" ).executeTest().verifyErrorFree( 1 ).verifyTextInLog(
             "surefire-junit47" );
     }
 }

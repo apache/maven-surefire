@@ -113,7 +113,7 @@ public class ForkModeIT
 
     private String[] doTest( SurefireLauncher forkMode )
     {
-        forkMode.addD( "testProperty", "testValue_${surefire.threadNumber}" );
+        forkMode.sysProp( "testProperty", "testValue_${surefire.threadNumber}" );
         final OutputValidator outputValidator = forkMode.executeTest();
         outputValidator.verifyErrorFreeLog().assertTestSuiteResults( 3, 0, 0, 0 );
         String[] pids = new String[3];

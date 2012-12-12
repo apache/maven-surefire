@@ -70,7 +70,9 @@ public class Surefire772SpecifiedReportsIT
 
     public SurefireLauncher unpack()
     {
-        return unpack( "/surefire-772-specified-reports" ).deleteSiteDir().addGoal( "-Dclean.skip=true" ).failNever();
+        SurefireLauncher unpack = unpack( "/surefire-772-specified-reports" );
+        unpack.maven().deleteSiteDir().skipClean().failNever();
+        return unpack;
     }
 
 }

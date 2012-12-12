@@ -38,14 +38,14 @@ public abstract class SurefireJUnit4IntegrationTestCase
 
     public SurefireLauncher unpack( String sourceName )
     {
-            MavenLauncher mavenLauncher = new MavenLauncher( this.getClass(), sourceName, "" );
-            return new SurefireLauncher( mavenLauncher );
+        MavenLauncher mavenLauncher = new MavenLauncher( this.getClass(), sourceName, "" );
+        return new SurefireLauncher( mavenLauncher );
     }
 
     public static SurefireLauncher unpack( Class testClass, String sourceName, String suffix )
     {
-            MavenLauncher mavenLauncher = new MavenLauncher( testClass, sourceName, suffix );
-            return new SurefireLauncher( mavenLauncher );
+        MavenLauncher mavenLauncher = new MavenLauncher( testClass, sourceName, suffix );
+        return new SurefireLauncher( mavenLauncher );
     }
 
 }

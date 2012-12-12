@@ -34,6 +34,6 @@ public class CheckTestNgBeforeMethodFailureIT
     public void testTestNgBeforeMethodFailure()
         throws Exception
     {
-        unpack( "/testng-beforeMethodFailure" ).executeTestWithFailure().assertTestSuiteResults( 2, 0, 1, 1 );
+        unpack( "/testng-beforeMethodFailure" ).maven().withFailure().executeTest().assertTestSuiteResults( 2, 0, 1, 1 );
     }
 }

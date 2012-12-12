@@ -31,7 +31,7 @@ public class Surefire376TestNgAfterSuiteFailureIT
 {
     public void testAfterSuiteFailure()
     {
-        unpack( "/testng-afterSuiteFailure" ).executeTestWithFailure().
+        unpack( "/testng-afterSuiteFailure" ).maven().withFailure().executeTest().
             assertTestSuiteResults( 2, 0, 1, 0 );
     }
 }

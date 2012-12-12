@@ -28,16 +28,17 @@ public class Surefire803MultiFailsafeExecsIT
     public void testSecondExecutionRunsAfterFirstExecutionFails()
     {
         unpack(
-            "/surefire-803-multiFailsafeExec-failureInFirst" ).executeVerifyWithFailure().assertIntegrationTestSuiteResults(
+            "/surefire-803-multiFailsafeExec-failureInFirst" ).maven().withFailure().executeVerify().assertIntegrationTestSuiteResults(
             4, 0, 2, 0 );
     }
 
     public void testOneExecutionRunInTwoBuilds()
     {
         SurefireLauncher launcher = unpack( "/surefire-803-multiFailsafeExec-rebuildOverwrites" );
-        launcher.addD( "success", "false" ).executeVerifyWithFailure().assertIntegrationTestSuiteResults( 1, 0, 1, 0 );
+        launcher.sysProp( "success", "false" ).maven().withFailure().executeVerify().assertIntegrationTestSuiteResults(
+            1, 0, 1, 0 );
         launcher.reset();
-        launcher.addD( "success", "true" ).executeVerify().assertIntegrationTestSuiteResults( 1, 0, 0, 0 );
+        launcher.sysProp( "success", "true" ).executeVerify().assertIntegrationTestSuiteResults( 1, 0, 0, 0 );
     }
 
 }

@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.commons.lang.text.StrSubstitutor;
 import org.apache.maven.it.VerificationException;
 import org.apache.maven.it.Verifier;
@@ -57,6 +56,8 @@ public class MavenLauncher
     private final String resourceName;
 
     private final String suffix;
+
+    private boolean expectFailure;
 
 
     public MavenLauncher( Class testClass, String resourceName, String suffix )
@@ -161,7 +162,7 @@ public class MavenLauncher
     {
         MavenLauncher mavenLauncher =
             new MavenLauncher( testCaseBeingRun, resourceName + File.separator + subProject, suffix );
-        mavenLauncher.unpackedAt = new File(  ensureUnpacked(), subProject );
+        mavenLauncher.unpackedAt = new File( ensureUnpacked(), subProject );
         return mavenLauncher;
     }
 
@@ -223,7 +224,52 @@ public class MavenLauncher
 
     public OutputValidator executeTest()
     {
-        return execute( "test" );
+        try
+        {
+            execute( "test" );
+        }
+        catch ( SurefireVerifierException exc )
+        {
+            if ( expectFailure )
+            {
+                return getValidator();
+            }
+            else
+            {
+                throw exc;
+            }
+        }
+        if ( expectFailure )
+        {
+            throw new RuntimeException( "Expecting build failure, got none!" );
+        }
+        return getValidator();
+    }
+
+    public FailsafeOutputValidator executeVerify()
+    {
+        OutputValidator verify = null;
+        try
+        {
+            verify = execute( "verify" );
+        }
+        catch ( SurefireVerifierException exc )
+        {
+            if ( expectFailure )
+            {
+                return new FailsafeOutputValidator( getValidator() );
+            }
+            else
+            {
+                throw exc;
+            }
+        }
+        if ( expectFailure )
+        {
+            throw new RuntimeException( "Expecting build failure, got none!" );
+        }
+        return new FailsafeOutputValidator( verify );
+
     }
 
     public OutputValidator executeInstall()
@@ -232,43 +278,19 @@ public class MavenLauncher
         return execute( "install" );
     }
 
-    public OutputValidator executeTestWithFailure()
+    public MavenLauncher withFailure()
     {
-        try
-        {
-            execute( "test" );
-        }
-        catch ( SurefireVerifierException ignore )
-        {
-            return getValidator();
-        }
-        throw new RuntimeException( "Expecting build failure, got none!" );
-    }
-
-    public OutputValidator executeVerifyWithFailure()
-    {
-        try
-        {
-            executeVerify();
-        }
-        catch ( SurefireVerifierException ignore )
-        {
-            return getValidator();
-        }
-        throw new RuntimeException( "Expecting build failure, got none!" );
+        this.expectFailure = true;
+        return this;
     }
 
 
-    public MavenLauncher addCleanGoal(){
+    public MavenLauncher addCleanGoal()
+    {
         addGoal( "clean" );
         return this;
     }
 
-    public FailsafeOutputValidator executeVerify()
-    {
-        OutputValidator verify = execute( "verify" );
-        return new FailsafeOutputValidator( verify );
-    }
 
     public OutputValidator execute( String goal )
     {
@@ -346,22 +368,22 @@ public class MavenLauncher
         return addGoal( "-P" + profile );
     }
 
-    public MavenLauncher addD( String variable, String value )
+    public MavenLauncher sysProp( String variable, String value )
     {
         return addGoal( "-D" + variable + "=" + value );
     }
 
-    public MavenLauncher addD( String variable, boolean value )
+    public MavenLauncher sysProp( String variable, boolean value )
     {
         return addGoal( "-D" + variable + "=" + value );
     }
 
-    public MavenLauncher addD( String variable, int value )
+    public MavenLauncher sysProp( String variable, int value )
     {
         return addGoal( "-D" + variable + "=" + value );
     }
 
-    public MavenLauncher setEOption()
+    public MavenLauncher showExceptionMessages()
     {
         addCliOption( "-e" );
         return this;

@@ -82,7 +82,9 @@ public class Surefire772NoSurefireReportsIT
 
     public SurefireLauncher unpack()
     {
-        return unpack( "/surefire-772-no-surefire-reports" ).failNever().deleteSiteDir().addGoal( "-Dclean.skip=true" );
+        SurefireLauncher unpack = unpack( "/surefire-772-no-surefire-reports" );
+         unpack.maven().failNever().deleteSiteDir().skipClean( );
+        return unpack;
     }
 
 }

@@ -32,8 +32,7 @@ import org.apache.maven.it.VerificationException;
  * Encapsulate all needed features to start a surefire run
  * <p/>
  * Also includes thread-safe access to the extracted resource
- * files, which AbstractSurefireIntegrationTestClass does not.
- * Thread safe only for running in "classes" mode.
+ * files
  *
  * @author Kristian Rosenvold                                 -
  */
@@ -46,8 +45,6 @@ public class SurefireLauncher
 
     private final String surefireVersion = System.getProperty( "surefire.version" );
 
-    private boolean failIfNoTests;
-
     public SurefireLauncher( MavenLauncher mavenLauncher )
     {
         this.mavenLauncher = mavenLauncher;
@@ -57,11 +54,6 @@ public class SurefireLauncher
     public MavenLauncher maven()
     {
         return mavenLauncher;
-    }
-
-    private void addCliOption( String cliOption )
-    {
-        mavenLauncher.addCliOption( cliOption );
     }
 
     String getTestMethodName()
@@ -134,12 +126,6 @@ public class SurefireLauncher
     }
 
 
-    public SurefireLauncher assertNotPresent( String subFile )
-    {
-        mavenLauncher.assertNotPresent( subFile );
-        return this;
-    }
-
     public SurefireLauncher showErrorStackTraces()
     {
         mavenLauncher.showErrorStackTraces();
@@ -152,9 +138,10 @@ public class SurefireLauncher
         return this;
     }
 
+    @SuppressWarnings( "UnusedDeclaration" )
     public SurefireLauncher debugSurefireFork()
     {
-        mavenLauncher.addD( "maven.surefire.debug", "true" );
+        mavenLauncher.sysProp( "maven.surefire.debug", "true" );
         return this;
     }
 
@@ -164,15 +151,9 @@ public class SurefireLauncher
         return this;
     }
 
-    public SurefireLauncher offline()
-    {
-        mavenLauncher.offline();
-        return this;
-    }
-
     public SurefireLauncher groups( String groups )
     {
-        mavenLauncher.addD( "groups", groups );
+        mavenLauncher.sysProp( "groups", groups );
         return this;
     }
 
@@ -195,32 +176,6 @@ public class SurefireLauncher
         return mavenLauncher.execute( "install" );
     }
 
-    public OutputValidator executeTestWithFailure()
-    {
-        try
-        {
-            execute( "test" );
-        }
-        catch ( SurefireVerifierException ignore )
-        {
-            return mavenLauncher.getValidator();
-        }
-        throw new RuntimeException( "Expecting build failure, got none!" );
-    }
-
-    public OutputValidator executeVerifyWithFailure()
-    {
-        try
-        {
-            executeVerify();
-        }
-        catch ( SurefireVerifierException ignore )
-        {
-            return mavenLauncher.getValidator();
-        }
-        throw new RuntimeException( "Expecting build failure, got none!" );
-    }
-
 
     public FailsafeOutputValidator executeVerify()
     {
@@ -233,6 +188,12 @@ public class SurefireLauncher
         return mavenLauncher.execute( goal );
     }
 
+    public OutputValidator executeSurefireReport()
+    {
+        return mavenLauncher.execute( "surefire-report:report" );
+    }
+
+
     public OutputValidator executeCurrentGoals()
     {
         return mavenLauncher.executeCurrentGoals();
@@ -241,13 +202,13 @@ public class SurefireLauncher
 
     public SurefireLauncher printSummary( boolean printsummary )
     {
-        mavenLauncher.addD( "printSummary", printsummary );
+        mavenLauncher.sysProp( "printSummary", printsummary );
         return this;
     }
 
     public SurefireLauncher redirectToFile( boolean redirect )
     {
-        mavenLauncher.addD( "maven.test.redirectTestOutputToFile", redirect );
+        mavenLauncher.sysProp( "maven.test.redirectTestOutputToFile", redirect );
         return this;
     }
 
@@ -283,46 +244,44 @@ public class SurefireLauncher
 
     public SurefireLauncher threadCount( int threadCount )
     {
-        mavenLauncher.addD( "threadCount", threadCount );
+        mavenLauncher.sysProp( "threadCount", threadCount );
         return this;
     }
 
     public SurefireLauncher forkMode( String forkMode )
     {
-        mavenLauncher.addD( "forkMode", forkMode );
+        mavenLauncher.sysProp( "forkMode", forkMode );
         return this;
     }
 
     public SurefireLauncher runOrder( String runOrder )
     {
-        mavenLauncher.addD( "runOrder", runOrder );
+        mavenLauncher.sysProp( "runOrder", runOrder );
         return this;
     }
 
     public SurefireLauncher failIfNoTests( boolean fail )
     {
-        this.failIfNoTests = fail;
-        mavenLauncher.addD( "failIfNoTests", fail );
+        mavenLauncher.sysProp( "failIfNoTests", fail );
         return this;
     }
 
 
     public SurefireLauncher mavenTestFailureIgnore( boolean fail )
     {
-        mavenLauncher.addD( "maven.test.failure.ignore", fail );
+        mavenLauncher.sysProp( "maven.test.failure.ignore", fail );
         return this;
     }
 
     public SurefireLauncher failIfNoSpecifiedTests( boolean fail )
     {
-        this.failIfNoTests = fail;
-        mavenLauncher.addD( "surefire.failIfNoSpecifiedTests", fail );
+        mavenLauncher.sysProp( "surefire.failIfNoSpecifiedTests", fail );
         return this;
     }
 
     public SurefireLauncher useSystemClassLoader( boolean useSystemClassLoader )
     {
-        mavenLauncher.addD( "useSystemClassLoader", useSystemClassLoader );
+        mavenLauncher.sysProp( "useSystemClassLoader", useSystemClassLoader );
         return this;
     }
 
@@ -341,7 +300,7 @@ public class SurefireLauncher
     public SurefireLauncher parallel( String parallel )
     {
 
-        mavenLauncher.addD( "parallel", parallel );
+        mavenLauncher.sysProp( "parallel", parallel );
         return this;
     }
 
@@ -357,41 +316,30 @@ public class SurefireLauncher
     }
 
 
-    public SurefireLauncher addD( String variable, String value )
+    public SurefireLauncher sysProp( String variable, String value )
     {
-        mavenLauncher.addD( variable, value );
+        mavenLauncher.sysProp( variable, value );
         return this;
     }
 
     public SurefireLauncher setJUnitVersion( String version )
     {
-        mavenLauncher.addD( "junit.version", version );
+        mavenLauncher.sysProp( "junit.version", version );
         return this;
     }
 
     public SurefireLauncher setGroups( String groups )
     {
-        mavenLauncher.addD( "groups", groups );
+        mavenLauncher.sysProp( "groups", groups );
         return this;
     }
 
     public SurefireLauncher setExcludedGroups( String excludedGroups )
     {
-        mavenLauncher.addD( "excludedGroups", excludedGroups );
+        mavenLauncher.sysProp( "excludedGroups", excludedGroups );
         return this;
     }
 
-    public SurefireLauncher setEOption()
-    {
-        addCliOption( "-e" );
-        return this;
-    }
-
-
-    public boolean isFailIfNoTests()
-    {
-        return failIfNoTests;
-    }
 
     public File getUnpackedAt()
     {
@@ -422,15 +370,9 @@ public class SurefireLauncher
     }
 
 
-    public SurefireLauncher deleteSiteDir()
-    {
-        mavenLauncher.deleteSiteDir();
-        return this;
-    }
-
     public SurefireLauncher setTestToRun( String basicTest )
     {
-        mavenLauncher.addD( "test", basicTest );
+        mavenLauncher.sysProp( "test", basicTest );
         return this;
     }
 }

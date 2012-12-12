@@ -29,8 +29,9 @@ public class Surefire930TestNgSuiteXmlIT
     @Test
     public void suiteXmlRun()
     {
-        unpack( "surefire-930-failsafe-runtests" ).executeVerifyWithFailure().assertIntegrationTestSuiteResults( 1, 0,
-                                                                                                                 1, 0 );
+        unpack(
+            "surefire-930-failsafe-runtests" ).maven().withFailure().executeVerify().assertIntegrationTestSuiteResults(
+            1, 0, 1, 0 );
     }
 
 }

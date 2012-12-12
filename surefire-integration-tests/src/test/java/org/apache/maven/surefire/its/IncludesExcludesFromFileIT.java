@@ -78,7 +78,7 @@ public class IncludesExcludesFromFileIT
     private void expectBuildFailure( final String profile, final String... messages )
     {
         final OutputValidator outputValidator = unpack().activateProfile( profile )
-            .executeTestWithFailure();
+            .maven().withFailure().executeTest();
 
         for ( String message : messages )
         {

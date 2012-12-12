@@ -33,7 +33,7 @@ public class TimeoutForkedTestIT
         throws Exception
     {
         unpack( "/timeout-forked" ).addGoal( "-DsleepLength=10000" ).addGoal(
-            "-DforkTimeout=1" ).executeTestWithFailure();
+            "-DforkTimeout=1" ).maven().withFailure().executeTest();
         // SUREFIRE-468 test that had to be reverted due to SUREFIRE-705
         //assertFalse( getSurefireReportsFile( "TEST-timeoutForked.BasicTest.xml" ).exists() );
         // assertFalse( getSurefireReportsFile( "timeoutForked.BasicTest.txt" ).exists() );

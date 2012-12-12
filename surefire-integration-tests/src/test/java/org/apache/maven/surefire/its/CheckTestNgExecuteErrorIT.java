@@ -37,7 +37,7 @@ public class CheckTestNgExecuteErrorIT
     public void executionError()
         throws Exception
     {
-        OutputValidator outputValidator = unpack( "/testng-execute-error" ).executeTestWithFailure();
+        OutputValidator outputValidator = unpack( "/testng-execute-error" ).maven().withFailure().executeTest();
         outputValidator.verifyTextInLog( "at org.apache.maven.surefire.testng.TestNGExecutor.run" );
     }
 }

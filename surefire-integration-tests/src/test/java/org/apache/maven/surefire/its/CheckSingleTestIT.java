@@ -45,7 +45,7 @@ public class CheckSingleTestIT
 
     public void testSingleTestNonExistent()
     {
-        final OutputValidator output = unpack().setTestToRun( "DoesNotExist" ).executeTestWithFailure();
+        final OutputValidator output = unpack().setTestToRun( "DoesNotExist" ).maven().withFailure().executeTest();
         TestFile reportsDir = output.getTargetFile( "surefire-reports" );
         assertFalse( "Unexpected reports directory", reportsDir.exists() );
     }

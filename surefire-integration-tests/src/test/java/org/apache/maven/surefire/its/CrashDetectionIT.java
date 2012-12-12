@@ -29,6 +29,6 @@ public class CrashDetectionIT
 {
     public void testArgLine()
     {
-        unpack( "crash-detection" ).executeTestWithFailure();
+        unpack( "crash-detection" ).maven().withFailure().executeTest();
     }
 }
