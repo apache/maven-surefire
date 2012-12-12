@@ -55,11 +55,6 @@ public class HelperAssertions
         Assert.assertEquals( "wrong number of skipped", skipped, actualSuite.getSkipped() );
     }
 
-    public static IntegrationTestSuiteResults parseTestResults( File testDir )
-    {
-        return parseTestResults( new File[]{ testDir } );
-    }
-
     public static IntegrationTestSuiteResults parseTestResults( File[] testDirs )
     {
         List<ReportTestSuite> reports = extractReports( testDirs );

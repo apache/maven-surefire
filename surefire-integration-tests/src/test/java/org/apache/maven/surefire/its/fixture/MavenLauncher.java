@@ -59,7 +59,6 @@ public class MavenLauncher
 
     private boolean expectFailure;
 
-
     public MavenLauncher( Class testClass, String resourceName, String suffix )
     {
         this.testCaseBeingRun = testClass;
@@ -68,7 +67,6 @@ public class MavenLauncher
         resetGoals();
         resetCliOptions();
     }
-
 
     public File getUnpackedAt()
     {
@@ -103,23 +101,6 @@ public class MavenLauncher
     }
 
 
-    String getTestMethodName()
-    {
-        // dirty. Im sure we can use junit4 rules to attach testname to thread instead
-        StackTraceElement[] stackTrace = getStackTraceElements();
-        StackTraceElement topInTestClass;
-        topInTestClass = findTopElemenent( stackTrace, testCaseBeingRun );
-        if ( topInTestClass == null )
-        {
-            // Look in superclass...
-            topInTestClass = findTopElemenent( stackTrace, testCaseBeingRun.getSuperclass() );
-        }
-        if ( topInTestClass != null )
-        {
-            return topInTestClass.getMethodName();
-        }
-        throw new IllegalStateException( "Cannot find " + testCaseBeingRun.getName() + "in stacktrace" );
-    }
 
     private StackTraceElement findTopElemenent( StackTraceElement[] stackTrace, Class testClassToLookFor )
     {
@@ -222,11 +203,28 @@ public class MavenLauncher
         return this;
     }
 
+    public FailsafeOutputValidator executeVerify()
+    {
+        return new FailsafeOutputValidator( conditionalExec( "verify" ) );
+    }
+
     public OutputValidator executeTest()
     {
+        return conditionalExec( "test" );
+    }
+
+    public OutputValidator executeInstall()
+        throws VerificationException
+    {
+        return conditionalExec( "install" );
+    }
+
+    public OutputValidator conditionalExec(String goal)
+    {
+        OutputValidator verify;
         try
         {
-            execute( "test" );
+            verify = execute( goal );
         }
         catch ( SurefireVerifierException exc )
         {
@@ -243,39 +241,8 @@ public class MavenLauncher
         {
             throw new RuntimeException( "Expecting build failure, got none!" );
         }
-        return getValidator();
-    }
+        return verify;
 
-    public FailsafeOutputValidator executeVerify()
-    {
-        OutputValidator verify = null;
-        try
-        {
-            verify = execute( "verify" );
-        }
-        catch ( SurefireVerifierException exc )
-        {
-            if ( expectFailure )
-            {
-                return new FailsafeOutputValidator( getValidator() );
-            }
-            else
-            {
-                throw exc;
-            }
-        }
-        if ( expectFailure )
-        {
-            throw new RuntimeException( "Expecting build failure, got none!" );
-        }
-        return new FailsafeOutputValidator( verify );
-
-    }
-
-    public OutputValidator executeInstall()
-        throws VerificationException
-    {
-        return execute( "install" );
     }
 
     public MavenLauncher withFailure()
@@ -283,7 +250,6 @@ public class MavenLauncher
         this.expectFailure = true;
         return this;
     }
-
 
     public MavenLauncher addCleanGoal()
     {
@@ -458,5 +424,23 @@ public class MavenLauncher
     public File getArtifactPath( String gid, String aid, String version, String ext )
     {
         return new File( verifier.getArtifactPath( gid, aid, version, ext ) );
+    }
+
+    String getTestMethodName()
+    {
+        // dirty. Im sure we can use junit4 rules to attach testname to thread instead
+        StackTraceElement[] stackTrace = getStackTraceElements();
+        StackTraceElement topInTestClass;
+        topInTestClass = findTopElemenent( stackTrace, testCaseBeingRun );
+        if ( topInTestClass == null )
+        {
+            // Look in superclass...
+            topInTestClass = findTopElemenent( stackTrace, testCaseBeingRun.getSuperclass() );
+        }
+        if ( topInTestClass != null )
+        {
+            return topInTestClass.getMethodName();
+        }
+        throw new IllegalStateException( "Cannot find " + testCaseBeingRun.getName() + "in stacktrace" );
     }
 }
