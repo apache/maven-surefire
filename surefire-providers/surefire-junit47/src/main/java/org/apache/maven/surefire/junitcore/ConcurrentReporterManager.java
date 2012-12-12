@@ -71,6 +71,7 @@ public abstract class ConcurrentReporterManager
         {
             testSet.replay( reporterManager );
         }
+        reporterManagerThreadLocal.remove();
     }
 
     public void testFailed( ReportEntry failure )
@@ -172,6 +173,7 @@ public abstract class ConcurrentReporterManager
         }
         return runListener;
     }
+
 
     public static ConcurrentReporterManager createInstance( Map<String, TestSet> classMethodCounts,
                                                             ReporterFactory reporterManagerFactory,
