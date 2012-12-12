@@ -22,6 +22,7 @@ package org.apache.maven.surefire.junitcore;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+
 import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.TestsToRun;
@@ -74,12 +75,22 @@ class JUnitCoreWrapper
         throws TestSetFailedException
     {
         Computer computer = getComputer( jUnitCoreParameters );
-        JUnitCore junitCore = new JUnitCore();
-        for ( RunListener runListener : listeners )
+
+        JUnitCore junitCore = createJUnitCore( listeners );
+        /*
+                Request req = Request.classes( computer, testsToRun.getLocatedClasses() );
+        if ( filter != null )
         {
-            junitCore.addListener( runListener );
+            req = req.filterWith( filter );
         }
 
+        try
+        {
+            final Result run = junitCore.run( req );
+            JUnit4RunListener.rethrowAnyTestMechanismFailures( run );
+        }
+
+         */
         try
         {
             // in order to support LazyTestsToRun, the iterator must be used
@@ -151,4 +162,15 @@ class JUnitCoreWrapper
                 jUnitCoreParameters.getThreadCount(), jUnitCoreParameters.isPerCoreThreadCount() );
         }
     }
+
+    private static JUnitCore createJUnitCore( List<RunListener> listeners )
+    {
+        JUnitCore junitCore = new JUnitCore();
+        for ( RunListener runListener : listeners )
+        {
+            junitCore.addListener( runListener );
+        }
+        return junitCore;
+    }
+
 }
