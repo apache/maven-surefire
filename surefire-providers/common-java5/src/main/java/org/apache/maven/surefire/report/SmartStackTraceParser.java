@@ -179,7 +179,7 @@ public class SmartStackTraceParser
 
         for ( StackTraceElement element : elements )
         {
-            result.append( element.toString() );
+            result.append( "\tat " ).append( element.toString() );
             result.append( "\n" );
         }
         return result.toString();
