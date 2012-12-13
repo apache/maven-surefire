@@ -23,6 +23,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
 import org.apache.maven.surefire.common.junit4.JUnit4RunListenerFactory;
 import org.apache.maven.surefire.common.junit4.JUnit4TestChecker;
 import org.apache.maven.surefire.common.junit48.FilterFactory;
@@ -100,14 +101,18 @@ public class JUnitCoreProvider
         return testsToRun.iterator();
     }
 
+    private boolean isSingleThreaded()
+    {
+        return !jUnitCoreParameters.isAnyParallelitySelected() ||
+            ( testsToRun.containsExactly( 1 ) && !jUnitCoreParameters.isParallelMethod() );
+    }
+
     public RunResult invoke( Object forkTestSet )
         throws TestSetFailedException, ReporterException
     {
-        final String message = "Concurrency config is " + jUnitCoreParameters.toString() + "\n";
         final ReporterFactory reporterFactory = providerParameters.getReporterFactory();
 
         final ConsoleLogger consoleLogger = providerParameters.getConsoleLogger();
-        consoleLogger.info( message );
 
         Filter filter = jUnit48Reflector.isJUnit48Available() ? createJUnit48Filter() : null;
 
@@ -128,18 +133,26 @@ public class JUnitCoreProvider
             }
         }
 
-        final Map<String, TestSet> testSetMap = new ConcurrentHashMap<String, TestSet>();
+        org.junit.runner.notification.RunListener jUnit4RunListener;
+        if ( isSingleThreaded() )
+        {
+            NonConcurrentRunListener rm = new NonConcurrentRunListener( reporterFactory.createReporter() );
+            ConsoleOutputCapture.startCapture( rm );
+            jUnit4RunListener = rm;
+        }
+        else
+        {
+            final Map<String, TestSet> testSetMap = new ConcurrentHashMap<String, TestSet>();
 
-        RunListener listener = ConcurrentReporterManager.createInstance( testSetMap, reporterFactory,
-                                                                         jUnitCoreParameters.isParallelClasses(),
-                                                                         jUnitCoreParameters.isParallelBoth(),
-                                                                         consoleLogger );
+            RunListener listener = ConcurrentReporterManager.createInstance( testSetMap, reporterFactory,
+                                                                             jUnitCoreParameters.isParallelClasses(),
+                                                                             jUnitCoreParameters.isParallelBoth(),
+                                                                             consoleLogger );
+            ConsoleOutputCapture.startCapture( (ConsoleOutputReceiver) listener );
 
-        ConsoleOutputCapture.startCapture( (ConsoleOutputReceiver) listener );
-
-        org.junit.runner.notification.RunListener jUnit4RunListener = new JUnitCoreRunListener( listener, testSetMap );
+            jUnit4RunListener = new JUnitCoreRunListener( listener, testSetMap );
+        }
         customRunListeners.add( 0, jUnit4RunListener );
-
         JUnitCoreWrapper.execute( testsToRun, jUnitCoreParameters, customRunListeners, filter );
         return reporterFactory.close();
     }

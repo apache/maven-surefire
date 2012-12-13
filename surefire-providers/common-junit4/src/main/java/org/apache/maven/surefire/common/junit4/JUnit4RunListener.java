@@ -73,7 +73,7 @@ public class JUnit4RunListener
     {
         final String reason = jUnit4Reflector.getAnnotatedIgnoreValue( description );
         final SimpleReportEntry report =
-            SimpleReportEntry.ignored( extractClassName( description ), description.getDisplayName(), reason );
+            SimpleReportEntry.ignored( getClassName( description ), description.getDisplayName(), reason );
         reporter.testSkipped( report );
     }
 
@@ -99,7 +99,7 @@ public class JUnit4RunListener
         throws Exception
     {
         ReportEntry report =
-            SimpleReportEntry.withException( extractClassName( failure.getDescription() ), failure.getTestHeader(),
+            SimpleReportEntry.withException( getClassName( failure.getDescription() ), failure.getTestHeader(),
                                              createStackTraceWriter( failure ) );
 
         if ( failure.getException() instanceof AssertionError )
@@ -141,11 +141,15 @@ public class JUnit4RunListener
         }
     }
 
-    private SimpleReportEntry createReportEntry( Description description )
+    protected SimpleReportEntry createReportEntry( Description description )
     {
-        return new SimpleReportEntry( extractClassName( description ), description.getDisplayName() );
+        return new SimpleReportEntry( getClassName( description ), description.getDisplayName() );
     }
 
+    public String getClassName( Description description )
+    {
+        return extractClassName( description );
+    }
 
     public static String extractClassName( Description description )
     {

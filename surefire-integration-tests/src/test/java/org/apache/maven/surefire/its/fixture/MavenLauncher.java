@@ -219,7 +219,7 @@ public class MavenLauncher
         return conditionalExec( "install" );
     }
 
-    public OutputValidator conditionalExec(String goal)
+    private OutputValidator conditionalExec(String goal)
     {
         OutputValidator verify;
         try
