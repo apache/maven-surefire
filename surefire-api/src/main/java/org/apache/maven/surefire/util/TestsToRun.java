@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
 /**
@@ -87,6 +88,32 @@ public class TestsToRun
 
         sb.append( ']' );
         return sb.toString();
+    }
+
+    public boolean containsAtLeast( int atLeast )
+    {
+        return containsAtLeast( iterator(), atLeast );
+    }
+
+    private boolean containsAtLeast( Iterator it, int atLeast )
+    {
+        for ( int i = 0; i < atLeast; i++ )
+        {
+            if ( !it.hasNext() )
+            {
+                return false;
+            }
+
+            it.next();
+        }
+
+        return true;
+    }
+
+    public boolean containsExactly( int items )
+    {
+        Iterator it = iterator();
+        return containsAtLeast( it, items ) && !it.hasNext();
     }
 
 }

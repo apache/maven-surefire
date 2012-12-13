@@ -22,6 +22,7 @@ package org.apache.maven.surefire.junit4;
 import java.lang.reflect.Method;
 import java.util.Iterator;
 import java.util.List;
+
 import org.apache.maven.shared.utils.io.SelectorUtils;
 import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
 import org.apache.maven.surefire.common.junit4.JUnit4RunListenerFactory;
@@ -118,7 +119,7 @@ public class JUnit4Provider
 
         runNotifer.fireTestRunStarted( null );
 
-        for ( Iterator<Class<?>> iter = testsToRun.iterator(); iter.hasNext(); )
+        for ( @SuppressWarnings( "unchecked" ) Iterator<Class<?>> iter = testsToRun.iterator(); iter.hasNext(); )
         {
             executeTestSet( iter.next(), reporter, runNotifer );
         }
@@ -206,7 +207,7 @@ public class JUnit4Provider
         return runOrderCalculator.orderTestClasses( scannedClasses );
     }
 
-    @SuppressWarnings( "unchecked" )
+    @SuppressWarnings("unchecked")
     private void upgradeCheck()
         throws TestSetFailedException
     {

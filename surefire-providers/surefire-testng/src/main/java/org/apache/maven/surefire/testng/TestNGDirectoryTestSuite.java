@@ -100,31 +100,15 @@ public class TestNGDirectoryTestSuite
         {
             executeLazy( testsToRun, reporterManagerFactory );
         }
-        else if ( containsAtLeast( testsToRun, 2 ) )
+        else if ( testsToRun.containsAtLeast( 2 ) )
         {
             executeMulti( testsToRun, reporterManagerFactory );
         }
-        else if ( containsAtLeast( testsToRun, 1 ) )
+        else if ( testsToRun.containsAtLeast( 1 ) )
         {
             Class testClass = (Class) testsToRun.iterator().next();
             executeSingleClass( reporterManagerFactory, testClass );
         }
-    }
-
-    private boolean containsAtLeast( TestsToRun testsToRun, int atLeast )
-    {
-        Iterator it = testsToRun.iterator();
-        for ( int i = 0; i < atLeast; i++ )
-        {
-            if ( !it.hasNext() )
-            {
-                return false;
-            }
-
-            it.next();
-        }
-
-        return true;
     }
 
     private void executeSingleClass( ReporterFactory reporterManagerFactory, Class testClass )
