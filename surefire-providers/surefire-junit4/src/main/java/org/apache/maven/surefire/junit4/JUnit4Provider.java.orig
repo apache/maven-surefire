@@ -213,17 +213,17 @@ public class JUnit4Provider
     {
         if ( isJunit4UpgradeCheck() )
         {
-            List<Class> classesSkippedByValidation =
+            List<String> classesSkippedByValidation =
                 scanResult.getClassesSkippedByValidation( jUnit4TestChecker, testClassLoader );
             if ( !classesSkippedByValidation.isEmpty() )
             {
                 StringBuilder reason = new StringBuilder();
                 reason.append( "Updated check failed\n" );
                 reason.append( "There are tests that would be run with junit4 / surefire 2.6 but not with [2.7,):\n" );
-                for ( Class testClass : classesSkippedByValidation )
+                for ( String testClass : classesSkippedByValidation )
                 {
                     reason.append( "   " );
-                    reason.append( testClass.getName() );
+                    reason.append( testClass );
                     reason.append( "\n" );
                 }
                 throw new TestSetFailedException( reason.toString() );
