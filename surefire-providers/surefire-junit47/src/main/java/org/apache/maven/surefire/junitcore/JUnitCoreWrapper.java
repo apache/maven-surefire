@@ -19,14 +19,13 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-
 import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.TestsToRun;
+
 import org.junit.runner.Computer;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Request;
@@ -88,29 +87,28 @@ class JUnitCoreWrapper
             {
                 exeuteLazy( testsToRun, filter, computer, junitCore );
             }
-            
         }
         finally
         {
             closeIfConfigurable( computer );
-            for ( RunListener runListener : listeners )
-            {
-                junitCore.removeListener( runListener );
-            }
         }
+    }
+
+    private static JUnitCore createJUnitCore( List<RunListener> listeners )
+    {
+        JUnitCore junitCore = new JUnitCore();
+        for ( RunListener runListener : listeners )
+        {
+            junitCore.addListener( runListener );
+        }
+        return junitCore;
     }
 
     private static void executeEager(TestsToRun testsToRun, Filter filter, Computer computer, JUnitCore junitCore)
             throws TestSetFailedException 
     {
-        List<Class<?>> testList = new ArrayList<Class<?>>(500);
-        Iterator<?> classIter = testsToRun.iterator();
-
-        while ( classIter.hasNext() )
-        {
-            testList.add((Class<?>) classIter.next());
-        }
-        createReqestAndRun( filter, computer, junitCore, testList.toArray( new Class[ testList.size() ] ) );
+        Class[] tests = testsToRun.getLocatedClasses();
+        createReqestAndRun( filter, computer, junitCore, tests );
     }
 
     private static void exeuteLazy(TestsToRun testsToRun, Filter filter, Computer computer, JUnitCore junitCore)
@@ -182,16 +180,6 @@ class JUnitCoreWrapper
                 jUnitCoreParameters.isParallelMethod() | jUnitCoreParameters.isParallelBoth(),
                 jUnitCoreParameters.getThreadCount(), jUnitCoreParameters.isPerCoreThreadCount() );
         }
-    }
-
-    private static JUnitCore createJUnitCore( List<RunListener> listeners )
-    {
-        JUnitCore junitCore = new JUnitCore();
-        for ( RunListener runListener : listeners )
-        {
-            junitCore.addListener( runListener );
-        }
-        return junitCore;
     }
 
 }

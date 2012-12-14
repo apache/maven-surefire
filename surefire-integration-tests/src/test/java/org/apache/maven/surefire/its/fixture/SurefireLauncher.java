@@ -239,7 +239,9 @@ public class SurefireLauncher
 
     public SurefireLauncher forkOncePerThread()
     {
-        return forkMode( "onceperthread" );
+        forkPerThread();
+        mavenLauncher.sysProp( "reuseForks", true );
+        return this;
     }
 
     public SurefireLauncher threadCount( int threadCount )

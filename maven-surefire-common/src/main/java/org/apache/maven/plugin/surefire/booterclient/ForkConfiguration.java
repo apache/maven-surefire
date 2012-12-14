@@ -54,9 +54,9 @@ public class ForkConfiguration
 
     public static final String FORK_PERTHREAD = "perthread";
 
-    public static final String FORK_ONCE_PERTHREAD = "onceperthread";
-
     private final int forkCount;
+
+    private final boolean reuseForks;
 
     private final Classpath bootClasspathConfiguration;
 
@@ -76,7 +76,7 @@ public class ForkConfiguration
 
     public ForkConfiguration( Classpath bootClasspathConfiguration, File tmpDir, String debugLine, String jvmExecutable,
                               File workingDirectory, String argLine, Map<String, String> environmentVariables,
-                              boolean debugEnabled, int forkCount )
+                              boolean debugEnabled, int forkCount, boolean reuseForks )
     {
         this.bootClasspathConfiguration = bootClasspathConfiguration;
         this.tempDirectory = tmpDir;
@@ -87,6 +87,7 @@ public class ForkConfiguration
         this.environmentVariables = environmentVariables;
         this.debug = debugEnabled;
         this.forkCount = forkCount;
+        this.reuseForks = reuseForks;
     }
 
     public Classpath getBootClasspath()
@@ -105,8 +106,7 @@ public class ForkConfiguration
             return FORK_NEVER;
         }
         else if ( forkMode.equals( FORK_NEVER ) || forkMode.equals( FORK_ONCE ) ||
-            forkMode.equals( FORK_ALWAYS ) || forkMode.equals( FORK_PERTHREAD ) ||
-            forkMode.equals( FORK_ONCE_PERTHREAD ) )
+            forkMode.equals( FORK_ALWAYS ) || forkMode.equals( FORK_PERTHREAD ) )
         {
             return forkMode;
         }
@@ -265,5 +265,11 @@ public class ForkConfiguration
     public int getForkCount()
     {
         return forkCount;
+    }
+
+
+    public boolean isReuseForks()
+    {
+        return reuseForks;
     }
 }

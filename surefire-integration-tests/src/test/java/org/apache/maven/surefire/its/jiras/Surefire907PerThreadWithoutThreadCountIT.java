@@ -30,7 +30,7 @@ public class Surefire907PerThreadWithoutThreadCountIT
     public void categoryAB()
     {
         OutputValidator validator = unpack( "fork-mode" ).forkPerThread().maven().withFailure().executeTest();
-        validator.verifyTextInLog( "Fork modes perthread and onceperthread require a thread count" );
+        validator.verifyTextInLog( "Fork mode perthread requires a thread count" );
     }
 
 }

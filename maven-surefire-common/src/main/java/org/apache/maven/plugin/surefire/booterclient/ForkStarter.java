@@ -141,11 +141,14 @@ public class ForkStarter
             }
             else if ( ForkConfiguration.FORK_PERTHREAD.equals( requestedForkMode ) )
             {
-                result = runSuitesForkPerTestSet( effectiveSystemProperties, forkConfiguration.getForkCount() );
-            }
-            else if ( ForkConfiguration.FORK_ONCE_PERTHREAD.equals( requestedForkMode ) )
-            {
-                result = runSuitesForkOncePerThread( effectiveSystemProperties, forkConfiguration.getForkCount() );
+                if ( forkConfiguration.isReuseForks() )
+                {
+                    result = runSuitesForkOncePerThread( effectiveSystemProperties, forkConfiguration.getForkCount() );
+                }
+                else
+                {
+                    result = runSuitesForkPerTestSet( effectiveSystemProperties, forkConfiguration.getForkCount() );
+                }
             }
             else
             {

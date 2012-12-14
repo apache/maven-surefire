@@ -19,13 +19,13 @@ package org.apache.maven.surefire.util;
  * under the License.
  */
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
 /**
@@ -118,11 +118,25 @@ public class TestsToRun
 
     /**
      * @return {@code true}, if the classes may be read eagerly. {@code false},
-     * if the classes must only be read lazy.
+     *         if the classes must only be read lazy.
      */
     public boolean allowEagerReading()
     {
         return true;
     }
 
+    public Class[] getLocatedClasses()
+    {
+        if ( !allowEagerReading() )
+        {
+            throw new IllegalStateException( "Cannot eagerly read" );
+        }
+        List result = new ArrayList();
+        Iterator it = iterator();
+        while ( it.hasNext() )
+        {
+            result.add( it.next() );
+        }
+        return (Class[]) result.toArray( new Class[result.size()] );
+    }
 }
