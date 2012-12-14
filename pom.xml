@@ -116,13 +116,13 @@
     <shadedVersion>2.12.4</shadedVersion>
     <mavenPluginPluginVersion>3.2</mavenPluginPluginVersion>
     <maven.site.cache>${user.home}/maven-sites</maven.site.cache>
-    <maven.surefire.site.path>surefire-archives/surefire-${project.version}</maven.surefire.site.path>
+    <maven.site.path>${project.artifactId}-archives/${project.artifactId}-${project.version}</maven.site.path>
   </properties>
 
   <distributionManagement>
     <site>
       <id>apache.website</id>
-      <url>scm:svn:https://svn.apache.org/repos/infra/websites/production/maven/content/${maven.surefire.site.path}</url>
+      <url>scm:svn:https://svn.apache.org/repos/infra/websites/production/maven/content/${maven.site.path}</url>
     </site>
   </distributionManagement>
 
@@ -298,7 +298,7 @@
           <artifactId>maven-scm-publish-plugin</artifactId>
           <version>1.0-beta-2</version>
           <configuration>
-            <checkoutDirectory>${maven.site.cache}/${maven.surefire.site.path}</checkoutDirectory>
+            <checkoutDirectory>${maven.site.cache}/${maven.site.path}</checkoutDirectory>
             <tryUpdate>true</tryUpdate>
           </configuration>
         </plugin>
@@ -416,7 +416,7 @@
     <profile>
       <id>site-release</id>
       <properties>
-        <maven.surefire.site.path>surefire</maven.surefire.site.path>
+        <maven.site.path>${project.artifactId}</maven.site.path>
       </properties>
     </profile>
   </profiles>
