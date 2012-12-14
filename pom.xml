@@ -116,7 +116,6 @@
     <shadedVersion>2.12.4</shadedVersion>
     <mavenPluginPluginVersion>3.2</mavenPluginPluginVersion>
     <maven.site.cache>${user.home}/maven-sites</maven.site.cache>
-    <maven.surefire.scmPubCheckoutDirectory>${maven.site.cache}/surefire-site-content-${project.version}</maven.surefire.scmPubCheckoutDirectory>
     <maven.surefire.site.path>surefire-archives/surefire-${project.version}</maven.surefire.site.path>
   </properties>
 
@@ -299,7 +298,7 @@
           <artifactId>maven-scm-publish-plugin</artifactId>
           <version>1.0-beta-2</version>
           <configuration>
-            <checkoutDirectory>${maven.surefire.scmPubCheckoutDirectory}</checkoutDirectory>
+            <checkoutDirectory>${maven.site.cache}/${maven.surefire.site.path}</checkoutDirectory>
             <tryUpdate>true</tryUpdate>
           </configuration>
         </plugin>
@@ -417,7 +416,6 @@
     <profile>
       <id>site-release</id>
       <properties>
-        <maven.surefire.scmPubCheckoutDirectory>${maven.site.cache}/surefire-site-content</maven.surefire.scmPubCheckoutDirectory>
         <maven.surefire.site.path>surefire</maven.surefire.site.path>
       </properties>
     </profile>
