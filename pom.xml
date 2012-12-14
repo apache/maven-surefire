@@ -116,8 +116,6 @@
     <shadedVersion>2.12.4</shadedVersion>
     <mavenPluginPluginVersion>3.2</mavenPluginPluginVersion>
     <maven.site.cache>${user.home}/maven-sites</maven.site.cache>
-    <maven.surefire.siteFilePath>${maven.site.cache}/surefire-${project.version}/</maven.surefire.siteFilePath>
-    <maven.surefire.siteUrlDeployment>file://${maven.surefire.siteFilePath}</maven.surefire.siteUrlDeployment>
     <maven.surefire.scmPubCheckoutDirectory>${maven.site.cache}/surefire-site-content-${project.version}</maven.surefire.scmPubCheckoutDirectory>
     <maven.surefire.site.path>surefire-archives/surefire-${project.version}</maven.surefire.site.path>
   </properties>
@@ -125,7 +123,7 @@
   <distributionManagement>
     <site>
       <id>apache.website</id>
-      <url>${maven.surefire.siteUrlDeployment}</url>
+      <url>scm:svn:https://svn.apache.org/repos/infra/websites/production/maven/content/${maven.surefire.site.path}</url>
     </site>
   </distributionManagement>
 
@@ -302,9 +300,7 @@
           <version>1.0-beta-2</version>
           <configuration>
             <checkoutDirectory>${maven.surefire.scmPubCheckoutDirectory}</checkoutDirectory>
-            <pubScmUrl>scm:svn:https://svn.apache.org/repos/infra/websites/production/maven/content/${maven.surefire.site.path}</pubScmUrl>
             <checkinComment>Apache Maven Surefire site deployment</checkinComment>
-            <content>${maven.surefire.siteFilePath}</content>
             <tryUpdate>true</tryUpdate>
           </configuration>
         </plugin>
@@ -422,8 +418,6 @@
     <profile>
       <id>site-release</id>
       <properties>
-        <maven.surefire.siteFilePath>${maven.site.cache}/surefire</maven.surefire.siteFilePath>
-        <maven.surefire.siteUrlDeployment>file://${maven.surefire.siteFilePath}</maven.surefire.siteUrlDeployment>
         <maven.surefire.scmPubCheckoutDirectory>${maven.site.cache}/surefire-site-content</maven.surefire.scmPubCheckoutDirectory>
         <maven.surefire.site.path>surefire</maven.surefire.site.path>
       </properties>
