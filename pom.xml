@@ -33,7 +33,7 @@
   <version>2.13-SNAPSHOT</version>
   <packaging>pom</packaging>
 
-  <name>SureFire</name>
+  <name>Apache Maven Surefire</name>
   <description>Surefire is a test framework project.</description>
   <url>http://maven.apache.org/surefire</url>
   <inceptionYear>2004</inceptionYear>
@@ -300,7 +300,6 @@
           <version>1.0-beta-2</version>
           <configuration>
             <checkoutDirectory>${maven.surefire.scmPubCheckoutDirectory}</checkoutDirectory>
-            <checkinComment>Apache Maven Surefire site deployment</checkinComment>
             <tryUpdate>true</tryUpdate>
           </configuration>
         </plugin>
