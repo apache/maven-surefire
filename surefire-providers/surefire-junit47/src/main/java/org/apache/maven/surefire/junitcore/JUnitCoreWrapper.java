@@ -19,6 +19,7 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -26,7 +27,6 @@ import java.util.concurrent.ExecutionException;
 import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.TestsToRun;
-
 import org.junit.runner.Computer;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Request;
@@ -77,39 +77,18 @@ class JUnitCoreWrapper
         Computer computer = getComputer( jUnitCoreParameters );
 
         JUnitCore junitCore = createJUnitCore( listeners );
-        /*
-                Request req = Request.classes( computer, testsToRun.getLocatedClasses() );
-        if ( filter != null )
-        {
-            req = req.filterWith( filter );
-        }
 
         try
         {
-            final Result run = junitCore.run( req );
-            JUnit4RunListener.rethrowAnyTestMechanismFailures( run );
-        }
-
-         */
-        try
-        {
-            // in order to support LazyTestsToRun, the iterator must be used
-            Iterator classIter = testsToRun.iterator();
-            while ( classIter.hasNext() )
+            if ( testsToRun.allowEagerReading() )
             {
-                Request req = Request.classes( computer, new Class[]{ (Class) classIter.next() } );
-                if ( filter != null )
-                {
-                    req = new FilteringRequest( req, filter );
-                    if ( req.getRunner() == null )
-                    {
-                        continue;
-                    }
-                }
-
-                final Result run = junitCore.run( req );
-                JUnit4RunListener.rethrowAnyTestMechanismFailures( run );
+                executeEager( testsToRun, filter, computer, junitCore );
             }
+            else
+            {
+                exeuteLazy( testsToRun, filter, computer, junitCore );
+            }
+            
         }
         finally
         {
@@ -119,6 +98,48 @@ class JUnitCoreWrapper
                 junitCore.removeListener( runListener );
             }
         }
+    }
+
+    private static void executeEager(TestsToRun testsToRun, Filter filter, Computer computer, JUnitCore junitCore)
+            throws TestSetFailedException 
+    {
+        List<Class<?>> testList = new ArrayList<Class<?>>(500);
+        Iterator<?> classIter = testsToRun.iterator();
+
+        while ( classIter.hasNext() )
+        {
+            testList.add((Class<?>) classIter.next());
+        }
+        createReqestAndRun( filter, computer, junitCore, testList.toArray( new Class[ testList.size() ] ) );
+    }
+
+    private static void exeuteLazy(TestsToRun testsToRun, Filter filter, Computer computer, JUnitCore junitCore)
+            throws TestSetFailedException
+    {
+        // in order to support LazyTestsToRun, the iterator must be used
+        Iterator<?> classIter = testsToRun.iterator();
+        while ( classIter.hasNext() )
+        {
+            createReqestAndRun( filter, computer, junitCore, new Class[]{ (Class<?>) classIter.next() } );
+        }
+    }
+
+    private static void createReqestAndRun( Filter filter, Computer computer, JUnitCore junitCore, Class<?>[] classesToRun )
+            throws TestSetFailedException
+    {
+        Request req = Request.classes( computer, classesToRun );
+        if ( filter != null )
+        {
+            req = new FilteringRequest( req, filter );
+            if ( req.getRunner() == null )
+            {
+                // nothing to run
+                return;
+            }
+        }
+
+        final Result run = junitCore.run( req );
+        JUnit4RunListener.rethrowAnyTestMechanismFailures( run );
     }
 
     private static void closeIfConfigurable( Computer computer )

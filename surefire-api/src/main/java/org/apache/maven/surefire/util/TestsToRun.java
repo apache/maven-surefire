@@ -116,4 +116,13 @@ public class TestsToRun
         return containsAtLeast( it, items ) && !it.hasNext();
     }
 
+    /**
+     * @return {@code true}, if the classes may be read eagerly. {@code false},
+     * if the classes must only be read lazy.
+     */
+    public boolean allowEagerReading()
+    {
+        return true;
+    }
+
 }
