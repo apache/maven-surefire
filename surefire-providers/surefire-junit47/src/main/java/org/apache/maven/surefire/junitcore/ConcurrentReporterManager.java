@@ -71,6 +71,7 @@ public abstract class ConcurrentReporterManager
         {
             testSet.replay( reporterManager );
         }
+        detachTestMethodFromThread();
         reporterManagerThreadLocal.remove();
     }
 
@@ -81,6 +82,7 @@ public abstract class ConcurrentReporterManager
         {
             testMethod.testFailure( failure );
         }
+        detachTestMethodFromThread();
     }
 
     public void testError( ReportEntry failure )
@@ -90,6 +92,7 @@ public abstract class ConcurrentReporterManager
         {
             testMethod.testError( failure );
         }
+        detachTestMethodFromThread();
     }
 
     public void testSkipped( ReportEntry description )
@@ -98,6 +101,7 @@ public abstract class ConcurrentReporterManager
         TestMethod testMethod = getTestSet( description ).createTestMethod( description );
         testMethod.testIgnored( description );
         testSet.incrementFinishedTests( getRunListener(), reportImmediately );
+        detachTestMethodFromThread();
     }
 
     public void testAssumptionFailure( ReportEntry failure )
@@ -107,6 +111,7 @@ public abstract class ConcurrentReporterManager
         {
             testMethod.testIgnored( failure );
         }
+        detachTestMethodFromThread();
     }
 
     public void testStarting( ReportEntry description )
