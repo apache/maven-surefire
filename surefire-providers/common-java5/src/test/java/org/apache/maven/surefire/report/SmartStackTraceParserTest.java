@@ -184,7 +184,6 @@ public class SmartStackTraceParserTest
     {
         Throwable aThrownException = getAThrownException();
 
-        aThrownException.printStackTrace();
         List<StackTraceElement> innerMost =
             SmartStackTraceParser.focusInsideClass( aThrownException.getCause().getStackTrace(),
                                                     TestClass1.InnerBTestClass.class.getName() );
