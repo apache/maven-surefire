@@ -15,9 +15,11 @@ public class Test1
     private static final Random RANDOM = new Random();
 
     public void test1()
-        throws IOException
+        throws IOException, InterruptedException
     {
+        Thread.sleep( 750 );
         dumpPidFile( this );
+
     }
 
     public static void dumpPidFile( TestCase test )
