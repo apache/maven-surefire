@@ -42,7 +42,7 @@ public abstract class ConcurrentReporterManager
 {
     private final Map<String, TestSet> classMethodCounts;
 
-    private final ThreadLocal<RunListener> reporterManagerThreadLocal = new ThreadLocal<RunListener>();
+    private final ThreadLocal<RunListener> reporterManagerThreadLocal; // = new ThreadLocal<RunListener>();
 
     private final boolean reportImmediately;
 
@@ -58,6 +58,15 @@ public abstract class ConcurrentReporterManager
         this.reporterFactory = reporterFactory;
         this.classMethodCounts = classMethodCounts;
         this.consoleLogger = consoleLogger;
+
+        this.reporterManagerThreadLocal = new ThreadLocal<RunListener>()
+        {
+            @Override
+            protected RunListener initialValue()
+            {
+                return ConcurrentReporterManager.this.reporterFactory.createReporter();
+            }
+        };
     }
 
     public void testSetStarting( ReportEntry description )
@@ -71,54 +80,52 @@ public abstract class ConcurrentReporterManager
         {
             testSet.replay( reporterManager );
         }
-        detachTestMethodFromThread();
         reporterManagerThreadLocal.remove();
     }
 
     public void testFailed( ReportEntry failure )
     {
-        final TestMethod testMethod = getOrCreateTestMethod( failure );
+        final TestMethod testMethod = getOrCreateThreadAttachedTestMethod( failure );
         if ( testMethod != null )
         {
             testMethod.testFailure( failure );
+            testMethod.detachFromCurrentThread();
         }
-        detachTestMethodFromThread();
     }
 
     public void testError( ReportEntry failure )
     {
-        final TestMethod testMethod = getOrCreateTestMethod( failure );
+        final TestMethod testMethod = getOrCreateThreadAttachedTestMethod( failure );
         if ( testMethod != null )
         {
             testMethod.testError( failure );
+            testMethod.detachFromCurrentThread();
         }
-        detachTestMethodFromThread();
     }
 
     public void testSkipped( ReportEntry description )
     {
         TestSet testSet = getTestSet( description );
-        TestMethod testMethod = getTestSet( description ).createTestMethod( description );
+        TestMethod testMethod = testSet.createThreadAttachedTestMethod( description );
         testMethod.testIgnored( description );
         testSet.incrementFinishedTests( getRunListener(), reportImmediately );
-        detachTestMethodFromThread();
+        testMethod.detachFromCurrentThread();
     }
 
     public void testAssumptionFailure( ReportEntry failure )
     {
-        final TestMethod testMethod = getOrCreateTestMethod( failure );
+        final TestMethod testMethod = getOrCreateThreadAttachedTestMethod( failure );
         if ( testMethod != null )
         {
             testMethod.testIgnored( failure );
+            testMethod.detachFromCurrentThread();
         }
-        detachTestMethodFromThread();
     }
 
     public void testStarting( ReportEntry description )
     {
         TestSet testSet = getTestSet( description );
-        final TestMethod testMethod = testSet.createTestMethod( description );
-        testMethod.attachToThread();
+        testSet.createThreadAttachedTestMethod( description );
 
         checkIfTestSetCanBeReported( testSet );
         testSet.attachToThread();
@@ -126,12 +133,13 @@ public abstract class ConcurrentReporterManager
 
     public void testSucceeded( ReportEntry report )
     {
-        getTestMethod().testFinished();
-        TestSet.getThreadTestSet().incrementFinishedTests( getRunListener(), reportImmediately );
-        detachTestMethodFromThread();
+        TestMethod testMethod = getTestMethod();
+        testMethod.testFinished();
+        testMethod.getTestSet().incrementFinishedTests( getRunListener(), reportImmediately );
+        testMethod.detachFromCurrentThread();
     }
 
-    private TestMethod getOrCreateTestMethod( ReportEntry description )
+    private TestMethod getOrCreateThreadAttachedTestMethod( ReportEntry description )
     {
         TestMethod threadTestMethod = TestMethod.getThreadTestMethod();
         if ( threadTestMethod != null )
@@ -147,7 +155,7 @@ public abstract class ConcurrentReporterManager
         }
         else
         {
-            return testSet.createTestMethod( description );
+            return testSet.createThreadAttachedTestMethod( description );
         }
     }
 
@@ -158,11 +166,6 @@ public abstract class ConcurrentReporterManager
         return TestMethod.getThreadTestMethod();
     }
 
-    void detachTestMethodFromThread()
-    {
-        TestMethod.detachFromCurrentThread();
-    }
-
     TestSet getTestSet( ReportEntry description )
     {
         return classMethodCounts.get( description.getSourceName() );
@@ -170,13 +173,7 @@ public abstract class ConcurrentReporterManager
 
     RunListener getRunListener()
     {
-        RunListener runListener = reporterManagerThreadLocal.get();
-        if ( runListener == null )
-        {
-            runListener = reporterFactory.createReporter();
-            reporterManagerThreadLocal.set( runListener );
-        }
-        return runListener;
+        return reporterManagerThreadLocal.get();
     }
 
 

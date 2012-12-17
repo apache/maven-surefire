@@ -105,10 +105,11 @@ public class TestSet
         }
     }
 
-    public TestMethod createTestMethod( ReportEntry description )
+    public TestMethod createThreadAttachedTestMethod( ReportEntry description )
     {
-        TestMethod testMethod = new TestMethod( description );
+        TestMethod testMethod = new TestMethod( description, this );
         addTestMethod( testMethod );
+        testMethod.attachToThread();
         return testMethod;
     }
 
