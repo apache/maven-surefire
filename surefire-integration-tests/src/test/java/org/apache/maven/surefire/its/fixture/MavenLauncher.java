@@ -404,7 +404,7 @@ public class MavenLauncher
         try
         {
             FileUtils.deleteDirectory( testDir );
-            File file = ResourceExtractor.extractResourceToDestination( cl, resourcePath, tempDir, true );
+            File file = ResourceExtractor.extractResourcePath( cl, resourcePath, tempDir, true );
             return file.getCanonicalFile();
         }
         catch ( IOException e )
