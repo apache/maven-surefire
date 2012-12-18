@@ -213,12 +213,13 @@ public class TestSetRunListener
     public String getAsString( List<ByteBuffer> byteBufferList )
     {
         StringBuilder stringBuffer = new StringBuilder();
-        // To avoid getting a java.util.ConcurrentModificationException while iterating (see SUREFIRE-879) we need to
-        // iterate over a copy or the elements array. Since the passed in byteBufferList is always wrapped with
-        // Collections.synchronizedList( ) we are guaranteed toArray() is going to be atomic, so we are safe.
-        for ( Object byteBuffer : byteBufferList.toArray() )
-        {
-            stringBuffer.append( byteBuffer.toString() );
+        // byteBufferList is always wrapped with Collections.synchronizedList( ) but iteration is not thread-safe
+        // (see SUREFIRE-879).  We must synchronize on byteBufferList to avoid ConcurrentModificationException.
+        synchronized ( byteBufferList ) {
+            for ( ByteBuffer byteBuffer : byteBufferList )
+            {
+                stringBuffer.append( byteBuffer.toString() );
+            }
         }
         return stringBuffer.toString();
     }
