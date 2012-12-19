@@ -53,6 +53,7 @@ public class ConsoleOutputCapture
 
         public void write( byte[] buf, int off, int len )
         {
+            System.out.println( "buf = " + buf );
             target.writeTestOutput( buf, off, len, isStdout );
         }
 
