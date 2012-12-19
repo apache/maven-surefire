@@ -58,8 +58,8 @@ public class JUnitCoreTester
 
         final HashMap<String, TestSet> classMethodCounts = new HashMap<String, TestSet>();
         RunListener reporter =
-            ConcurrentReporterManager.createInstance( classMethodCounts, reporterManagerFactory, parallelClasses, false,
-                                                      new DefaultConsoleReporter( System.out ) );
+            ConcurrentRunListener.createInstance( classMethodCounts, reporterManagerFactory, parallelClasses, false,
+                                                  new DefaultConsoleReporter( System.out ) );
         ConsoleOutputCapture.startCapture( (ConsoleOutputReceiver) reporter );
 
         JUnitCoreRunListener runListener = new JUnitCoreRunListener( reporter, classMethodCounts );

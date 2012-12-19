@@ -90,7 +90,7 @@ public class ForkStarter
 
     private final StartupReportConfiguration startupReportConfiguration;
 
-    private final DefaultReporterFactory fileReporterFactory;
+    private final DefaultReporterFactory defaultReporterFactory;
 
     private static volatile int systemPropertiesFileCounter = 0;
 
@@ -115,7 +115,7 @@ public class ForkStarter
         this.forkedProcessTimeoutInSeconds = forkedProcessTimeoutInSeconds;
         this.startupConfiguration = startupConfiguration;
         this.startupReportConfiguration = startupReportConfiguration;
-        fileReporterFactory = new DefaultReporterFactory( startupReportConfiguration );
+        defaultReporterFactory = new DefaultReporterFactory( startupReportConfiguration );
     }
 
     public RunResult run( SurefireProperties effectiveSystemProperties, DefaultScanResult scanResult,
@@ -130,7 +130,7 @@ public class ForkStarter
             if ( ForkConfiguration.FORK_ONCE.equals( requestedForkMode ) )
             {
                 final ForkClient forkClient =
-                    new ForkClient( fileReporterFactory, startupReportConfiguration.getTestVmSystemProperties() );
+                    new ForkClient( defaultReporterFactory, startupReportConfiguration.getTestVmSystemProperties() );
                 result =
                     fork( null, new PropertiesWrapper( providerProperties ), forkClient, effectiveSystemProperties, 1,
                           null );
@@ -157,7 +157,7 @@ public class ForkStarter
         }
         finally
         {
-            fileReporterFactory.close();
+            defaultReporterFactory.close();
         }
         return result;
     }
@@ -200,7 +200,7 @@ public class ForkStarter
                             new TestProvidingInputStream( messageQueue );
 
                         ForkClient forkClient =
-                            new ForkClient( fileReporterFactory, startupReportConfiguration.getTestVmSystemProperties(),
+                            new ForkClient( defaultReporterFactory, startupReportConfiguration.getTestVmSystemProperties(),
                                             testProvidingInputStream );
 
                         return fork( null, new PropertiesWrapper( providerConfiguration.getProviderProperties() ),
@@ -274,7 +274,7 @@ public class ForkStarter
                                 "More threads than " + forkCount + " have been created by the ThreadPoolExecutor." );
                         }
 
-                        ForkClient forkClient = new ForkClient( fileReporterFactory,
+                        ForkClient forkClient = new ForkClient( defaultReporterFactory,
                                                                 startupReportConfiguration.getTestVmSystemProperties() );
                         return fork( testSet, new PropertiesWrapper( providerConfiguration.getProviderProperties() ),
                                      forkClient, effectiveSystemProperties, thisThreadsThreadNumber, null );
@@ -414,11 +414,11 @@ public class ForkStarter
         }
         catch ( CommandLineTimeOutException e )
         {
-            runResult = RunResult.timeout( fileReporterFactory.getGlobalRunStatistics().getRunResult() );
+            runResult = RunResult.timeout( defaultReporterFactory.getGlobalRunStatistics().getRunResult() );
         }
         catch ( CommandLineException e )
         {
-            runResult = RunResult.failure( fileReporterFactory.getGlobalRunStatistics().getRunResult(), e );
+            runResult = RunResult.failure( defaultReporterFactory.getGlobalRunStatistics().getRunResult(), e );
             throw new SurefireBooterForkException( "Error while executing forked tests.", e.getCause() );
         }
         finally
@@ -426,7 +426,7 @@ public class ForkStarter
             threadedStreamConsumer.close();
             if ( runResult == null )
             {
-                runResult = fileReporterFactory.getGlobalRunStatistics().getRunResult();
+                runResult = defaultReporterFactory.getGlobalRunStatistics().getRunResult();
             }
             if ( !runResult.isTimeout() )
             {

@@ -41,7 +41,7 @@ import org.junit.runner.JUnitCore;
 /*
  * @author Kristian Rosenvold
  */
-public class ConcurrentReporterManagerTest
+public class ConcurrentRunListenerTest
     extends TestCase
 {
     // Tests are in order of increasing complexity

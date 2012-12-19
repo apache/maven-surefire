@@ -51,7 +51,7 @@ public class ForkClient
     implements StreamConsumer
 {
 
-    private final DefaultReporterFactory providerReporterFactory;
+    private final DefaultReporterFactory defaultReporterFactory;
 
     private final TestProvidingInputStream testProvidingInputStream;
 
@@ -64,15 +64,15 @@ public class ForkClient
 
     private volatile StackTraceWriter errorInFork = null;
 
-    public ForkClient( DefaultReporterFactory providerReporterFactory, Properties testVmSystemProperties )
+    public ForkClient( DefaultReporterFactory defaultReporterFactory, Properties testVmSystemProperties )
     {
-        this( providerReporterFactory, testVmSystemProperties, null );
+        this( defaultReporterFactory, testVmSystemProperties, null );
     }
 
-    public ForkClient( DefaultReporterFactory providerReporterFactory, Properties testVmSystemProperties,
+    public ForkClient( DefaultReporterFactory defaultReporterFactory, Properties testVmSystemProperties,
                        TestProvidingInputStream testProvidingInputStream )
     {
-        this.providerReporterFactory = providerReporterFactory;
+        this.defaultReporterFactory = defaultReporterFactory;
         this.testVmSystemProperties = testVmSystemProperties;
         this.testProvidingInputStream = testProvidingInputStream;
     }
@@ -256,7 +256,7 @@ public class ForkClient
         RunListener reporter = testSetReporters.get( channelNumber );
         if ( reporter == null )
         {
-            reporter = providerReporterFactory.createReporter();
+            reporter = defaultReporterFactory.createReporter();
             testSetReporters.put( channelNumber, reporter );
         }
         return reporter;

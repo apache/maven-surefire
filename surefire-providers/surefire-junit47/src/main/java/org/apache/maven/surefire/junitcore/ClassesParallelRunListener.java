@@ -28,7 +28,7 @@ import org.apache.maven.surefire.testset.TestSetFailedException;
  * @author Kristian Rosenvold
  */
 public class ClassesParallelRunListener
-    extends ConcurrentReporterManager
+    extends ConcurrentRunListener
 {
     public ClassesParallelRunListener( Map<String, TestSet> classMethodCounts, ReporterFactory reporterFactory,
                                        ConsoleLogger consoleLogger )

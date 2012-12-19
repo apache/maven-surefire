@@ -154,10 +154,10 @@ public class JUnitCoreProvider
         {
             final Map<String, TestSet> testSetMap = new ConcurrentHashMap<String, TestSet>();
 
-            RunListener listener = ConcurrentReporterManager.createInstance( testSetMap, reporterFactory,
-                                                                             jUnitCoreParameters.isParallelClasses(),
-                                                                             jUnitCoreParameters.isParallelBoth(),
-                                                                             consoleLogger );
+            RunListener listener = ConcurrentRunListener.createInstance( testSetMap, reporterFactory,
+                                                                         jUnitCoreParameters.isParallelClasses(),
+                                                                         jUnitCoreParameters.isParallelBoth(),
+                                                                         consoleLogger );
             ConsoleOutputCapture.startCapture( (ConsoleOutputReceiver) listener );
 
             jUnit4RunListener = new JUnitCoreRunListener( listener, testSetMap );

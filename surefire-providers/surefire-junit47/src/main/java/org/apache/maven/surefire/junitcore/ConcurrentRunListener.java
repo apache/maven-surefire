@@ -37,7 +37,7 @@ import org.apache.maven.surefire.testset.TestSetFailedException;
  *
  * @author Kristian Rosenvold
  */
-public abstract class ConcurrentReporterManager
+public abstract class ConcurrentRunListener
     implements RunListener, ConsoleOutputReceiver
 {
     private final Map<String, TestSet> classMethodCounts;
@@ -50,8 +50,8 @@ public abstract class ConcurrentReporterManager
 
     private final ConsoleLogger consoleLogger;
 
-    ConcurrentReporterManager( ReporterFactory reporterFactory, ConsoleLogger consoleLogger, boolean reportImmediately,
-                               Map<String, TestSet> classMethodCounts )
+    ConcurrentRunListener( ReporterFactory reporterFactory, ConsoleLogger consoleLogger, boolean reportImmediately,
+                           Map<String, TestSet> classMethodCounts )
         throws TestSetFailedException
     {
         this.reportImmediately = reportImmediately;
@@ -64,7 +64,7 @@ public abstract class ConcurrentReporterManager
             @Override
             protected RunListener initialValue()
             {
-                return ConcurrentReporterManager.this.reporterFactory.createReporter();
+                return ConcurrentRunListener.this.reporterFactory.createReporter();
             }
         };
     }
@@ -177,7 +177,7 @@ public abstract class ConcurrentReporterManager
     }
 
 
-    public static ConcurrentReporterManager createInstance( Map<String, TestSet> classMethodCounts,
+    public static ConcurrentRunListener createInstance( Map<String, TestSet> classMethodCounts,
                                                             ReporterFactory reporterManagerFactory,
                                                             boolean parallelClasses, boolean parallelBoth,
                                                             ConsoleLogger consoleLogger )
