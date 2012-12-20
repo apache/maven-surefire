@@ -111,7 +111,14 @@ public class SmartStackTraceParser
         result.deleteCharAt( result.length() - 1 );
         result.deleteCharAt( result.length() - 1 );
 
-        if ( throwable.getTarget() instanceof AssertionError )
+        Throwable target = throwable.getTarget();
+        if ( target instanceof AssertionError )
+        {
+            result.append( " " );
+            result.append( throwable.getMessage() );
+        }
+        else if ( "junit.framework.AssertiponFailedError".equals( target.getClass().getName() )
+            || "junit.framework.ComparisonFailure".equals( target.getClass().getName() ) )
         {
             result.append( " " );
             result.append( throwable.getMessage() );
@@ -119,7 +126,7 @@ public class SmartStackTraceParser
         else
         {
             result.append( rootIsInclass() ? " " : " » " );
-            result.append( getMinimalThrowableMiniMessage( throwable.getTarget() ) );
+            result.append( getMinimalThrowableMiniMessage( target ) );
             result.append( getTruncatedMessage( 77 - result.length() ) );
         }
         return result.toString();
@@ -182,6 +189,10 @@ public class SmartStackTraceParser
 
     private static boolean isInSupers( Class testClass, String lookFor )
     {
+        if ( lookFor.startsWith( "junit.framework." ) )
+        {
+            return false;
+        }
         while ( !testClass.getName().equals( lookFor ) && testClass.getSuperclass() != null )
         {
             testClass = testClass.getSuperclass();

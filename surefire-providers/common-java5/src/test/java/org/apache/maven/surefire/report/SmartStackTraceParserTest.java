@@ -21,8 +21,10 @@ package org.apache.maven.surefire.report;
 import java.util.List;
 
 import junit.framework.Assert;
+import junit.framework.ComparisonFailure;
 import junit.framework.TestCase;
 
+@SuppressWarnings( "ThrowableResultOfMethodCallIgnored" )
 public class SmartStackTraceParserTest
     extends TestCase
 {
@@ -129,6 +131,22 @@ public class SmartStackTraceParserTest
         }
     }
 
+    public void testClassThatWillFail()
+        throws Exception
+    {
+        CaseThatWillFail aTestClass = new CaseThatWillFail();
+        try
+        {
+            aTestClass.testThatWillFail();
+        }
+        catch ( ComparisonFailure e )
+        {
+            SmartStackTraceParser smartStackTraceParser = new SmartStackTraceParser( CaseThatWillFail.class, e );
+            String res = smartStackTraceParser.getString();
+            assertEquals( "SmartStackTraceParserTest$CaseThatWillFail.testThatWillFail:170 expected:<abc> but was:<def>", res );
+        }
+    }
+
     static class ADifferen0tTestClass
     {
         static class InnerATestClass
@@ -142,6 +160,15 @@ public class SmartStackTraceParserTest
             {
                 Assert.assertTrue( false );
             }
+        }
+    }
+
+    static class CaseThatWillFail
+        extends TestCase
+    {
+        public void testThatWillFail()
+        {
+            assertEquals( "abc", "def" );
         }
     }
 
@@ -207,6 +234,16 @@ public class SmartStackTraceParserTest
         assertEquals( TestClass1.InnerBTestClass.class.getName(), outer.getClassName() );
     }
 
+    public void testAssertionWithNoMessage(){
+        try {
+        new AssertionNoMessage().testThrowSomething();
+        } catch(ComparisonFailure e){
+            SmartStackTraceParser smartStackTraceParser = new SmartStackTraceParser( AssertionNoMessage.class, e );
+            String res = smartStackTraceParser.getString();
+            assertEquals( "SmartStackTraceParserTest$AssertionNoMessage.testThrowSomething:270 expected:<abc> but was:<xyz>", res );
+        }
+    }
+
     public void testCollectorWithNested()
     {
         try
@@ -226,5 +263,13 @@ public class SmartStackTraceParserTest
         }
     }
 
+    static class AssertionNoMessage
+        extends TestCase
+    {
+        public void testThrowSomething()
+        {
+            assertEquals( "abc", "xyz" );
+        }
+    }
 
 }
