@@ -22,10 +22,14 @@ package org.apache.maven.surefire.junitcore;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.TestsToRun;
 
+import org.junit.experimental.ParallelComputer;
 import org.junit.runner.Computer;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Request;
@@ -136,8 +140,8 @@ class JUnitCoreWrapper
             }
         }
 
-        final Result run = junitCore.run( req );
-        JUnit4RunListener.rethrowAnyTestMechanismFailures( run );
+        final Result run = junitCore.run(req);
+        JUnit4RunListener.rethrowAnyTestMechanismFailures(run);
     }
 
     private static void closeIfConfigurable( Computer computer )
@@ -175,11 +179,62 @@ class JUnitCoreWrapper
         }
         else
         {
-            return new ConfigurableParallelComputer(
-                jUnitCoreParameters.isParallelClasses() | jUnitCoreParameters.isParallelBoth(),
-                jUnitCoreParameters.isParallelMethod() | jUnitCoreParameters.isParallelBoth(),
-                jUnitCoreParameters.getThreadCount(), jUnitCoreParameters.isPerCoreThreadCount() );
+            if ( JUnitUtils.isCompatibleVersionWith(4, 12) )
+            {
+                return createJUnitParallelComputer( jUnitCoreParameters );
+            }
+            else
+            {
+                return new ConfigurableParallelComputer(
+                        jUnitCoreParameters.isParallelClasses() | jUnitCoreParameters.isParallelBoth(),
+                        jUnitCoreParameters.isParallelMethod() | jUnitCoreParameters.isParallelBoth(),
+                        jUnitCoreParameters.getThreadCount(), jUnitCoreParameters.isPerCoreThreadCount() );
+            }
         }
     }
 
+    private static Computer createJUnitParallelComputer( JUnitCoreParameters jUnitCoreParameters )
+    {
+        if ( jUnitCoreParameters.isParallelClasses() )
+        {
+            return jUnitCoreParameters.isUseUnlimitedThreads() ? ParallelComputer.classes()
+                    : ParallelComputer.classes( createFixedPool( jUnitCoreParameters ) );
+        }
+        else if ( jUnitCoreParameters.isParallelMethod() )
+        {
+            return jUnitCoreParameters.isUseUnlimitedThreads() ? ParallelComputer.methods()
+                    : ParallelComputer.methods( createFixedPool( jUnitCoreParameters ) );
+        }
+        else if ( jUnitCoreParameters.isParallelBoth() )
+        {
+            int totalThreads = countAllThreads( jUnitCoreParameters );
+            // minConcurrentMethods should come from JUnitCoreParameters if specified, otherwise 50% of all threads
+            int minConcurrentMethods = (int) StrictMath.ceil( (double) totalThreads / 2 );
+            return jUnitCoreParameters.isUseUnlimitedThreads() ? ParallelComputer.classesAndMethodsUnbounded()
+                    : ParallelComputer.classesAndMethods( createFixedPool( jUnitCoreParameters ), minConcurrentMethods );
+        }
+        else
+        {
+            return new Computer();
+        }
+    }
+
+    private static ThreadPoolExecutor createFixedPool( JUnitCoreParameters jUnitCoreParameters )
+    {
+        int numberOfThreads = countAllThreads( jUnitCoreParameters );
+        return new ThreadPoolExecutor( numberOfThreads, numberOfThreads, 0L, TimeUnit.MILLISECONDS,
+                                      new LinkedBlockingQueue<Runnable>() );
+    }
+
+    private static int countAllThreads( JUnitCoreParameters jUnitCoreParameters )
+    {
+        int numberOfThreads = jUnitCoreParameters.getThreadCount();
+
+        if ( jUnitCoreParameters.isPerCoreThreadCount() )
+        {
+            numberOfThreads *= Runtime.getRuntime().availableProcessors();
+        }
+
+        return numberOfThreads;
+    }
 }
