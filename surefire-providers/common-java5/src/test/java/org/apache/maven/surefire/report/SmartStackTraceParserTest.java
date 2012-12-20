@@ -28,6 +28,76 @@ import junit.framework.TestCase;
 public class SmartStackTraceParserTest
     extends TestCase
 {
+
+    static class AssertionNoMessage
+        extends TestCase
+    {
+        public void testThrowSomething()
+        {
+            assertEquals( "abc", "xyz" );
+        }
+    }
+
+    static class ADifferen0tTestClass
+    {
+        static class InnerATestClass
+        {
+            public static void testFake()
+            {
+                innerMethod();
+            }
+
+            private static void innerMethod()
+            {
+                Assert.assertTrue( false );
+            }
+        }
+    }
+
+    static class CaseThatWillFail
+        extends TestCase
+    {
+        public void testThatWillFail()
+        {
+            assertEquals( "abc", "def" );
+        }
+    }
+
+    static class TestClass2
+    {
+        static class InnerCTestClass
+        {
+            public static void cThrows()
+                throws Exception
+            {
+                throw new Exception( "Hey ho, hey ho, a throwable we throw!" );
+            }
+        }
+    }
+
+    static class TestClass1
+    {
+        static class InnerBTestClass
+        {
+            public static void throwSomething()
+            {
+                innerThrowSomething();
+            }
+
+            public static void innerThrowSomething()
+            {
+                try
+                {
+                    TestClass2.InnerCTestClass.cThrows();
+                }
+                catch ( Exception e )
+                {
+                    throw new RuntimeException( e );
+                }
+            }
+        }
+    }
+
     public void testGetString()
         throws Exception
     {
@@ -143,67 +213,8 @@ public class SmartStackTraceParserTest
         {
             SmartStackTraceParser smartStackTraceParser = new SmartStackTraceParser( CaseThatWillFail.class, e );
             String res = smartStackTraceParser.getString();
-            assertEquals( "SmartStackTraceParserTest$CaseThatWillFail.testThatWillFail:170 expected:<abc> but was:<def>", res );
-        }
-    }
-
-    static class ADifferen0tTestClass
-    {
-        static class InnerATestClass
-        {
-            public static void testFake()
-            {
-                innerMethod();
-            }
-
-            private static void innerMethod()
-            {
-                Assert.assertTrue( false );
-            }
-        }
-    }
-
-    static class CaseThatWillFail
-        extends TestCase
-    {
-        public void testThatWillFail()
-        {
-            assertEquals( "abc", "def" );
-        }
-    }
-
-    static class TestClass2
-    {
-        static class InnerCTestClass
-        {
-            public static void cThrows()
-                throws Exception
-            {
-                throw new Exception( "Hey ho, hey ho, a throwable we throw!" );
-            }
-        }
-    }
-
-    static class TestClass1
-    {
-        static class InnerBTestClass
-        {
-            public static void throwSomething()
-            {
-                innerThrowSomething();
-            }
-
-            public static void innerThrowSomething()
-            {
-                try
-                {
-                    TestClass2.InnerCTestClass.cThrows();
-                }
-                catch ( Exception e )
-                {
-                    throw new RuntimeException( e );
-                }
-            }
+            assertEquals( "SmartStackTraceParserTest$CaseThatWillFail.testThatWillFail:62 expected:<abc> but was:<def>",
+                          res );
         }
     }
 
@@ -234,13 +245,19 @@ public class SmartStackTraceParserTest
         assertEquals( TestClass1.InnerBTestClass.class.getName(), outer.getClassName() );
     }
 
-    public void testAssertionWithNoMessage(){
-        try {
-        new AssertionNoMessage().testThrowSomething();
-        } catch(ComparisonFailure e){
+    public void testAssertionWithNoMessage()
+    {
+        try
+        {
+            new AssertionNoMessage().testThrowSomething();
+        }
+        catch ( ComparisonFailure e )
+        {
             SmartStackTraceParser smartStackTraceParser = new SmartStackTraceParser( AssertionNoMessage.class, e );
             String res = smartStackTraceParser.getString();
-            assertEquals( "SmartStackTraceParserTest$AssertionNoMessage.testThrowSomething:270 expected:<abc> but was:<xyz>", res );
+            assertEquals(
+                "SmartStackTraceParserTest$AssertionNoMessage.testThrowSomething:37 expected:<abc> but was:<xyz>",
+                res );
         }
     }
 
@@ -260,15 +277,6 @@ public class SmartStackTraceParserTest
             assertEquals( Assert.class.getName(), innerMost.getClassName() );
             StackTraceElement outer = stackTraceElements.get( 4 );
             assertEquals( ADifferen0tTestClass.InnerATestClass.class.getName(), outer.getClassName() );
-        }
-    }
-
-    static class AssertionNoMessage
-        extends TestCase
-    {
-        public void testThrowSomething()
-        {
-            assertEquals( "abc", "xyz" );
         }
     }
 
