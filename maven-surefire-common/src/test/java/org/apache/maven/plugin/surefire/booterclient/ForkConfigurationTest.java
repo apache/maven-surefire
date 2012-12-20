@@ -70,10 +70,8 @@ public class ForkConfigurationTest
     public static ForkConfiguration getForkConfiguration( String argLine, String jvm )
         throws IOException
     {
-        ForkConfiguration forkConfiguration =
-            new ForkConfiguration( new Classpath(), null, null, jvm, new File( "." ).getCanonicalFile(), argLine, null,
-                                   false, 1 );
-        return forkConfiguration;
+        return new ForkConfiguration( new Classpath(), null, null, jvm, new File( "." ).getCanonicalFile(), argLine, null,
+                               false, 1, false );
     }
 
 }

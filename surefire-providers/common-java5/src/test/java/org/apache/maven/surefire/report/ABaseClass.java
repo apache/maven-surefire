@@ -1,4 +1,5 @@
-package org.apache.maven.surefire.its.jiras;
+package org.apache.maven.surefire.report;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -18,19 +19,11 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 
-import org.junit.Test;
-
-public class Surefire907PerThreadWithoutThreadCountIT
-    extends SurefireJUnit4IntegrationTestCase
+public class ABaseClass
 {
-    @Test
-    public void categoryAB()
+    public void npe()
     {
-        OutputValidator validator = unpack( "fork-mode" ).forkPerThread().maven().withFailure().executeTest();
-        validator.verifyTextInLog( "Fork mode perthread requires a thread count" );
+        throw new NullPointerException( "It was null" );
     }
-
 }

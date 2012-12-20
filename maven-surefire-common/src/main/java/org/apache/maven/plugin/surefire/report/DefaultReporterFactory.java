@@ -59,6 +59,11 @@ public class DefaultReporterFactory
 
     public RunListener createReporter()
     {
+        return createTestSetRunListener();
+    }
+
+    public RunListener createTestSetRunListener()
+    {
         TestSetRunListener testSetRunListener =
             new TestSetRunListener( reportConfiguration.instantiateConsoleReporter(),
                                     reportConfiguration.instantiateFileReporter(),

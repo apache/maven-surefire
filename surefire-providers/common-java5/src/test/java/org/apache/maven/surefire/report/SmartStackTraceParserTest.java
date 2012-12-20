@@ -115,6 +115,22 @@ public class SmartStackTraceParserTest
         }
     }
 
+    public void testFailureInBaseClass()
+        throws Exception
+    {
+        ASubClass aTestClass = new ASubClass();
+        try
+        {
+            aTestClass.npe();
+        }
+        catch ( NullPointerException e )
+        {
+            SmartStackTraceParser smartStackTraceParser = new SmartStackTraceParser( ASubClass.class, e );
+            String res = smartStackTraceParser.getString();
+            Assert.assertTrue( "ASubClass#ABaseClass#npe(27) >> NullPointerException It was null".equals( res ) );
+
+        }
+    }
 
     static class ADifferen0tTestClass
     {
@@ -184,7 +200,6 @@ public class SmartStackTraceParserTest
     {
         Throwable aThrownException = getAThrownException();
 
-        aThrownException.printStackTrace();
         List<StackTraceElement> innerMost =
             SmartStackTraceParser.focusInsideClass( aThrownException.getCause().getStackTrace(),
                                                     TestClass1.InnerBTestClass.class.getName() );

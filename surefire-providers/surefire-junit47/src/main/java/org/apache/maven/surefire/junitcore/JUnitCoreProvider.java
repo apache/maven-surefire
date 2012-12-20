@@ -23,7 +23,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
 import org.apache.maven.surefire.common.junit4.JUnit4RunListenerFactory;
 import org.apache.maven.surefire.common.junit4.JUnit4TestChecker;
 import org.apache.maven.surefire.common.junit48.FilterFactory;
@@ -107,6 +106,7 @@ public class JUnitCoreProvider
             && !jUnitCoreParameters.isParallelMethod() );
     }
 
+
     public RunResult invoke( Object forkTestSet )
         throws TestSetFailedException, ReporterException
     {
@@ -154,10 +154,10 @@ public class JUnitCoreProvider
         {
             final Map<String, TestSet> testSetMap = new ConcurrentHashMap<String, TestSet>();
 
-            RunListener listener = ConcurrentReporterManager.createInstance( testSetMap, reporterFactory,
-                                                                             jUnitCoreParameters.isParallelClasses(),
-                                                                             jUnitCoreParameters.isParallelBoth(),
-                                                                             consoleLogger );
+            RunListener listener = ConcurrentRunListener.createInstance( testSetMap, reporterFactory,
+                                                                         jUnitCoreParameters.isParallelClasses(),
+                                                                         jUnitCoreParameters.isParallelBoth(),
+                                                                         consoleLogger );
             ConsoleOutputCapture.startCapture( (ConsoleOutputReceiver) listener );
 
             jUnit4RunListener = new JUnitCoreRunListener( listener, testSetMap );

@@ -329,9 +329,8 @@ public abstract class AbstractSurefireMojo
     protected Boolean failIfNoTests;
 
     /**
-     * Option to specify the forking mode. Can be "never", "once", "always", "perthread" or "onceperthread". "none" and "pertest" are also accepted
-     * for backwards compatibility. "always" forks for each test-class. "perthread" will create "threadCount" parallel forks, each executing one test-class.
-     * "onceperthread" will fork "threadCount" processes that each execute a 1/"threadCount" of all test-classes.<br/>
+     * Option to specify the forking mode. Can be "never", "once", "always", "perthread". "none" and "pertest" are also accepted
+     * for backwards compatibility. "always" forks for each test-class. "perthread" will create "threadCount" parallel forks, each executing one test-class, see also parameter reuseForks.<br/>
      * The system properties and the "argLine" of the forked processes may contain the place holder string <code>${surefire.threadNumber}</code>,
      * which is replaced with a fixed number for each thread, ranging from 1 to "threadCount".
      *
@@ -434,14 +433,24 @@ public abstract class AbstractSurefireMojo
     protected String testNGArtifactName;
 
     /**
-     * (forkMode=perthread, forkmode=onceperthread or TestNG/JUnit 4.7 provider) The attribute thread-count allows you to specify how many threads should be
-     * allocated for this execution. Only makes sense to use in conjunction with the <code>parallel</code> parameter or with forkMode=perthread
-     * or forkmode=onceperthread.
+     * (forkMode=perthread or TestNG/JUnit 4.7 provider) The attribute thread-count allows you to specify how many threads should be
+     * allocated for this execution. Only makes sense to use in conjunction with the <code>parallel</code> parameter or with forkMode=perthread.
      *
      * @since 2.2
      */
     @Parameter( property = "threadCount" )
     protected int threadCount;
+
+
+    /**
+     * Indicates if forks can be reused. Currently only meaningful
+     * when forking N parallel forks
+     *
+     * @since 2.13
+     */
+
+    @Parameter( property = "reuseForks", defaultValue = "false" )
+    private boolean reuseForks;
 
     /**
      * (JUnit 4.7 provider) Indicates that threadCount is per cpu core.
@@ -783,8 +792,7 @@ public abstract class AbstractSurefireMojo
             try
             {
                 ForkStarter forkStarter =
-                    createForkStarter( provider, forkConfiguration, classLoaderConfiguration, runOrderParameters,
-                                       effectiveProperties );
+                    createForkStarter( provider, forkConfiguration, classLoaderConfiguration, runOrderParameters );
                 result = forkStarter.run( effectiveProperties, scanResult, getEffectiveForkMode() );
             }
             finally
@@ -918,6 +926,7 @@ public abstract class AbstractSurefireMojo
             getProperties().setProperty( ProviderParameterNames.THREADCOUNT_PROP,
                                          Integer.toString( this.getThreadCount() ) );
         }
+        getProperties().setProperty( "reuseForks", Boolean.toString( reuseForks ) );
         getProperties().setProperty( "perCoreThreadCount", Boolean.toString( getPerCoreThreadCount() ) );
         getProperties().setProperty( "useUnlimitedThreads", Boolean.toString( getUseUnlimitedThreads() ) );
     }
@@ -1341,8 +1350,7 @@ public abstract class AbstractSurefireMojo
 
     protected ForkStarter createForkStarter( ProviderInfo provider, ForkConfiguration forkConfiguration,
                                              ClassLoaderConfiguration classLoaderConfiguration,
-                                             RunOrderParameters runOrderParameters,
-                                             SurefireProperties effectiveSystemProperties )
+                                             RunOrderParameters runOrderParameters )
         throws MojoExecutionException, MojoFailureException
     {
         StartupConfiguration startupConfiguration = createStartupConfiguration( provider, classLoaderConfiguration );
@@ -1381,14 +1389,13 @@ public abstract class AbstractSurefireMojo
                                       getEffectiveJvm(),
                                       getWorkingDirectory() != null ? getWorkingDirectory() : getBasedir(),
                                       getArgLine(), getEnvironmentVariables(), getLog().isDebugEnabled(),
-                                      getEffectiveForkCount() );
+                                      getEffectiveForkCount(), reuseForks );
     }
 
 
     private int getEffectiveForkCount()
     {
-        return ( ForkConfiguration.FORK_PERTHREAD.equals( getEffectiveForkMode() )
-            || ForkConfiguration.FORK_ONCE_PERTHREAD.equals( getEffectiveForkMode() ) ) ? getThreadCount() : 1;
+        return ForkConfiguration.FORK_PERTHREAD.equals( getEffectiveForkMode() ) ? getThreadCount() : 1;
     }
 
     private String getEffectiveDebugForkedProcess()
@@ -1772,10 +1779,9 @@ public abstract class AbstractSurefireMojo
     void ensureThreadCountWithPerThread()
         throws MojoFailureException
     {
-        if ( ( ForkConfiguration.FORK_PERTHREAD.equals( getEffectiveForkMode() )
-            || ForkConfiguration.FORK_ONCE_PERTHREAD.equals( getEffectiveForkMode() ) ) && getThreadCount() < 1 )
+        if ( ForkConfiguration.FORK_PERTHREAD.equals( getEffectiveForkMode() ) && getThreadCount() < 1 )
         {
-            throw new MojoFailureException( "Fork modes perthread and onceperthread require a thread count" );
+            throw new MojoFailureException( "Fork mode perthread requires a thread count" );
         }
     }
 

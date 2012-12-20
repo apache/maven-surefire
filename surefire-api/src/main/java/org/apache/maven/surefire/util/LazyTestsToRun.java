@@ -173,4 +173,11 @@ public class LazyTestsToRun
         return sb.toString();
     }
 
+    /* (non-Javadoc)
+     * @see org.apache.maven.surefire.util.TestsToRun#allowEagerReading()
+     */
+    public boolean allowEagerReading() {
+        return false;
+    }
+
 }

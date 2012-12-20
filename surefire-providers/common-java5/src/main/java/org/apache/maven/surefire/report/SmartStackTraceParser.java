@@ -38,30 +38,66 @@ public class SmartStackTraceParser
 
     private String testClassName;
 
+    private final Class testClass;
+
 
     public SmartStackTraceParser( Class testClass, Throwable throwable )
     {
         this( testClass.getName(), throwable );
     }
 
-    public SmartStackTraceParser( String testClass, Throwable throwable )
+    public SmartStackTraceParser( String testClassName, Throwable throwable )
     {
-        this.testClassName = testClass;
-        this.simpleName = testClassName.substring( testClassName.lastIndexOf( "." ) + 1 );
+        this.testClassName = testClassName;
+        this.testClass = getClass( testClassName );
+        this.simpleName = this.testClassName.substring( this.testClassName.lastIndexOf( "." ) + 1 );
         this.throwable = new SafeThrowable( throwable );
         stackTrace = throwable.getStackTrace();
+    }
+
+    private static Class getClass( String name )
+    {
+        try
+        {
+            return Class.forName( name );
+        }
+        catch ( ClassNotFoundException e )
+        {
+            throw new RuntimeException( e );
+        }
+    }
+
+
+    private static String getSimpleName( String className )
+    {
+        int i = className.lastIndexOf( "." );
+        return className.substring( i + 1 );
     }
 
     @SuppressWarnings( "ThrowableResultOfMethodCallIgnored" )
     public String getString()
     {
         StringBuilder result = new StringBuilder();
-        result.append( simpleName );
-        result.append( "#" );
-        List<StackTraceElement> stackTraceElements = focusOnClass( stackTrace, testClassName );
+        List<StackTraceElement> stackTraceElements = focusOnClass( stackTrace, testClass );
         Collections.reverse( stackTraceElements );
-        for ( StackTraceElement stackTraceElement : stackTraceElements )
+        StackTraceElement stackTraceElement;
+        for ( int i = 0; i < stackTraceElements.size(); i++ )
         {
+            stackTraceElement = stackTraceElements.get( i );
+            if ( i == 0 )
+            {
+                result.append( simpleName );
+                result.append( "#" );
+            }
+            if ( !stackTraceElement.getClassName().equals( testClassName ) )
+            {
+                if ( i > 0 )
+                {
+                    result.append( "<" );
+                }
+                result.append( getSimpleName( stackTraceElement.getClassName() ) ); // Add the name of the superclas
+                result.append( "#" );
+            }
             result.append( stackTraceElement.getMethodName() ).append( "(" ).append(
                 stackTraceElement.getLineNumber() ).append( ")" );
             result.append( "." );
@@ -110,17 +146,27 @@ public class SmartStackTraceParser
         return stackTrace[0].getClassName().equals( testClassName );
     }
 
-    static List<StackTraceElement> focusOnClass( StackTraceElement[] stackTrace, String className )
+    static List<StackTraceElement> focusOnClass( StackTraceElement[] stackTrace, Class clazz )
     {
         List<StackTraceElement> result = new ArrayList<StackTraceElement>();
         for ( StackTraceElement element : stackTrace )
         {
-            if ( className.equals( element.getClassName() ) )
+            if ( isInSupers( clazz, element.getClassName() ) )
             {
                 result.add( element );
             }
         }
         return result;
+    }
+
+
+    private static boolean isInSupers( Class testClass, String lookFor )
+    {
+        while ( !testClass.getName().equals( lookFor ) && testClass.getSuperclass() != null )
+        {
+            testClass = testClass.getSuperclass();
+        }
+        return testClass.getName().equals( lookFor );
     }
 
     private static Throwable findInnermost( Throwable t )

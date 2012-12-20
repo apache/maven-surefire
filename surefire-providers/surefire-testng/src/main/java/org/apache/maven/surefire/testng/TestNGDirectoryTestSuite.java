@@ -96,7 +96,7 @@ public class TestNGDirectoryTestSuite
         throws ReporterException, TestSetFailedException
     {
 
-        if ( testsToRun instanceof LazyTestsToRun )
+        if ( !testsToRun.allowEagerReading() )
         {
             executeLazy( testsToRun, reporterManagerFactory );
         }

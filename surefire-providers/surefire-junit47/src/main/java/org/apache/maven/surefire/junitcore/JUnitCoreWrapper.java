@@ -22,7 +22,6 @@ package org.apache.maven.surefire.junitcore;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-
 import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.TestsToRun;
@@ -77,48 +76,68 @@ class JUnitCoreWrapper
         Computer computer = getComputer( jUnitCoreParameters );
 
         JUnitCore junitCore = createJUnitCore( listeners );
-        /*
-                Request req = Request.classes( computer, testsToRun.getLocatedClasses() );
-        if ( filter != null )
-        {
-            req = req.filterWith( filter );
-        }
 
         try
         {
-            final Result run = junitCore.run( req );
-            JUnit4RunListener.rethrowAnyTestMechanismFailures( run );
-        }
-
-         */
-        try
-        {
-            // in order to support LazyTestsToRun, the iterator must be used
-            Iterator classIter = testsToRun.iterator();
-            while ( classIter.hasNext() )
+            if ( testsToRun.allowEagerReading() )
             {
-                Request req = Request.classes( computer, new Class[]{ (Class) classIter.next() } );
-                if ( filter != null )
-                {
-                    req = new FilteringRequest( req, filter );
-                    if ( req.getRunner() == null )
-                    {
-                        continue;
-                    }
-                }
-
-                final Result run = junitCore.run( req );
-                JUnit4RunListener.rethrowAnyTestMechanismFailures( run );
+                executeEager( testsToRun, filter, computer, junitCore );
+            }
+            else
+            {
+                exeuteLazy( testsToRun, filter, computer, junitCore );
             }
         }
         finally
         {
             closeIfConfigurable( computer );
-            for ( RunListener runListener : listeners )
+        }
+    }
+
+    private static JUnitCore createJUnitCore( List<RunListener> listeners )
+    {
+        JUnitCore junitCore = new JUnitCore();
+        for ( RunListener runListener : listeners )
+        {
+            junitCore.addListener( runListener );
+        }
+        return junitCore;
+    }
+
+    private static void executeEager(TestsToRun testsToRun, Filter filter, Computer computer, JUnitCore junitCore)
+            throws TestSetFailedException 
+    {
+        Class[] tests = testsToRun.getLocatedClasses();
+        createReqestAndRun( filter, computer, junitCore, tests );
+    }
+
+    private static void exeuteLazy(TestsToRun testsToRun, Filter filter, Computer computer, JUnitCore junitCore)
+            throws TestSetFailedException
+    {
+        // in order to support LazyTestsToRun, the iterator must be used
+        Iterator<?> classIter = testsToRun.iterator();
+        while ( classIter.hasNext() )
+        {
+            createReqestAndRun( filter, computer, junitCore, new Class[]{ (Class<?>) classIter.next() } );
+        }
+    }
+
+    private static void createReqestAndRun( Filter filter, Computer computer, JUnitCore junitCore, Class<?>[] classesToRun )
+            throws TestSetFailedException
+    {
+        Request req = Request.classes( computer, classesToRun );
+        if ( filter != null )
+        {
+            req = new FilteringRequest( req, filter );
+            if ( req.getRunner() == null )
             {
-                junitCore.removeListener( runListener );
+                // nothing to run
+                return;
             }
         }
+
+        final Result run = junitCore.run( req );
+        JUnit4RunListener.rethrowAnyTestMechanismFailures( run );
     }
 
     private static void closeIfConfigurable( Computer computer )
@@ -161,16 +180,6 @@ class JUnitCoreWrapper
                 jUnitCoreParameters.isParallelMethod() | jUnitCoreParameters.isParallelBoth(),
                 jUnitCoreParameters.getThreadCount(), jUnitCoreParameters.isPerCoreThreadCount() );
         }
-    }
-
-    private static JUnitCore createJUnitCore( List<RunListener> listeners )
-    {
-        JUnitCore junitCore = new JUnitCore();
-        for ( RunListener runListener : listeners )
-        {
-            junitCore.addListener( runListener );
-        }
-        return junitCore;
     }
 
 }

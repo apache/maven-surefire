@@ -43,18 +43,28 @@ public class TestsToRunTest
         assertFalse( it.hasNext() );
     }
 
-    public void testContainsAtleast(){
+    public void testContainsAtleast()
+    {
         TestsToRun testsToRun = new TestsToRun( Arrays.asList( new Class[]{ T1.class, T2.class } ) );
-        assertTrue(testsToRun.containsAtLeast( 2 ));
-        assertFalse(testsToRun.containsAtLeast( 3 ));
+        assertTrue( testsToRun.containsAtLeast( 2 ) );
+        assertFalse( testsToRun.containsAtLeast( 3 ) );
     }
 
-    public void testContainsExactly(){
+    public void testContainsExactly()
+    {
         TestsToRun testsToRun = new TestsToRun( Arrays.asList( new Class[]{ T1.class, T2.class } ) );
-        assertFalse(testsToRun.containsExactly( 1 ));
-        assertTrue(testsToRun.containsExactly( 2 ));
-        assertFalse(testsToRun.containsExactly( 3 ));
+        assertFalse( testsToRun.containsExactly( 1 ) );
+        assertTrue( testsToRun.containsExactly( 2 ) );
+        assertFalse( testsToRun.containsExactly( 3 ) );
     }
+
+    public void testToRunArray()
+    {
+        TestsToRun testsToRun = new TestsToRun( Arrays.asList( new Class[]{ T1.class, T2.class } ) );
+        Class[] locatedClasses = testsToRun.getLocatedClasses();
+        assertEquals( 2, locatedClasses.length );
+    }
+
     class T1
     {
 
@@ -65,3 +75,4 @@ public class TestsToRunTest
 
     }
 }
+

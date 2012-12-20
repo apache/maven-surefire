@@ -43,6 +43,7 @@
         <configuration>
           <forkMode>${forkMode}</forkMode>
           <threadCount>${threadCount}</threadCount>
+          <runOrder>alphabetical</runOrder>
         </configuration>
       </plugin>
     </plugins>

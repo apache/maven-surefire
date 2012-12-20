@@ -53,6 +53,8 @@ public class ConsoleOutputCapture
 
         public void write( byte[] buf, int off, int len )
         {
+            // Note: At this point the supplied "buf" instance is reused, which means
+            // data must be copied out of the buffer
             target.writeTestOutput( buf, off, len, isStdout );
         }
 

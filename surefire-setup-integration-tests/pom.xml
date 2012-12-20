@@ -184,7 +184,6 @@
             <extraArtifact>junit:junit-dep:4.8</extraArtifact>
             <extraArtifact>junit:junit-dep:4.7</extraArtifact>
             <extraArtifact>junit:junit-dep:4.4</extraArtifact>
-            <!--- W00t! This is for the WorkingDirectoryInvalid test that will use mavens default surefire version -->
             <extraArtifact>org.apache.maven.plugins:maven-surefire-plugin:2.10</extraArtifact>
             <extraArtifact>org.apache.maven.surefire:surefire-junit3:2.10</extraArtifact>
             <extraArtifact>org.codehaus.plexus:plexus-utils:1.0.4</extraArtifact>

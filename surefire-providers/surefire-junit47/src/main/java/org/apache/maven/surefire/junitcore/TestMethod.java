@@ -36,6 +36,8 @@ class TestMethod
 {
     private final ReportEntry description;
 
+    private final TestSet testSet;
+
     private final long startTime;
 
     private long endTime;
@@ -50,9 +52,10 @@ class TestMethod
 
     private volatile LogicalStream output;
 
-    public TestMethod( ReportEntry description )
+    public TestMethod( ReportEntry description, TestSet testSet )
     {
         this.description = description;
+        this.testSet = testSet;
         startTime = System.currentTimeMillis();
     }
 
@@ -133,7 +136,7 @@ class TestMethod
 
     }
 
-    public static void detachFromCurrentThread()
+    public void detachFromCurrentThread()
     {
         TEST_METHOD.remove();
         ConsoleOutputReceiverForCurrentThread.remove();
@@ -158,4 +161,8 @@ class TestMethod
         getLogicalStream().write( stdout, buf, off, len );
     }
 
+    public TestSet getTestSet()
+    {
+        return testSet;
+    }
 }
