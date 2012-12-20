@@ -22,7 +22,6 @@ package org.apache.maven.surefire.report;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.apache.maven.shared.utils.StringUtils;
 
 /**
  * @author Kristian Rosenvold
@@ -69,22 +68,34 @@ public class SmartStackTraceParser
     }
 
 
-    private static String getSimpleName(String className){
+    private static String getSimpleName( String className )
+    {
         int i = className.lastIndexOf( "." );
-        return className.substring(  i + 1 );
+        return className.substring( i + 1 );
     }
+
     @SuppressWarnings( "ThrowableResultOfMethodCallIgnored" )
     public String getString()
     {
         StringBuilder result = new StringBuilder();
-        result.append( simpleName );
-        result.append( "#" );
         List<StackTraceElement> stackTraceElements = focusOnClass( stackTrace, testClass );
         Collections.reverse( stackTraceElements );
-        for ( StackTraceElement stackTraceElement : stackTraceElements )
+        StackTraceElement stackTraceElement;
+        for ( int i = 0; i < stackTraceElements.size(); i++ )
         {
-            if (!stackTraceElement.getClassName().equals(  testClassName )){
-                result.append( "<" ).append( getSimpleName( stackTraceElement.getClassName() )); // Add the name of the superclas
+            stackTraceElement = stackTraceElements.get( i );
+            if ( i == 0 )
+            {
+                result.append( simpleName );
+                result.append( "#" );
+            }
+            if ( !stackTraceElement.getClassName().equals( testClassName ) )
+            {
+                if ( i > 0 )
+                {
+                    result.append( "<" );
+                }
+                result.append( getSimpleName( stackTraceElement.getClassName() ) ); // Add the name of the superclas
                 result.append( "#" );
             }
             result.append( stackTraceElement.getMethodName() ).append( "(" ).append(
@@ -140,10 +151,12 @@ public class SmartStackTraceParser
         List<StackTraceElement> result = new ArrayList<StackTraceElement>();
         for ( StackTraceElement element : stackTrace )
         {
-            if ( isInSupers( clazz, element.getClassName() ) ) {
-            result.add( element );
+            if ( isInSupers( clazz, element.getClassName() ) )
+            {
+                result.add( element );
+            }
         }
-        } return result;
+        return result;
     }
 
 
