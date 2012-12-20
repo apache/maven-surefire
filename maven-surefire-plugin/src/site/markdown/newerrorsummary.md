@@ -8,38 +8,20 @@ report of the run or the files on disk.
 ### Example output:
 
     Failed tests:
-      Test1#assertion1(59) Bending maths expected:<[123]> but was:<[312]>
-      Test1#assertion2(64) True is false
+      Test1.assertion1:59 Bending maths expected:<[123]> but was:<[312]>
+      Test1.assertion2:64 True is false
 
     Tests in error:
-      Test1#nullPointerInLibrary(38) >> NullPointerException
-      Test1#failInNestedLibInMethod(54).nestedLibFailure(72) >> NullPointerException
-      Test1#failInLibInMethod(48) >> NullPointerException
-      Test1#failInMethod(43).innerFailure(68) NullPointerException Fail here
-      Test2#test6281(33) RuntimeException FailHere
+      Test1.nullPointerInLibrary:38 » NullPointer
+      Test1.failInMethod:43->innerFailure:68 NullPointer Fail here
+      Test1.failInLibInMethod:48 » NullPointer
+      Test1.failInNestedLibInMethod:54->nestedLibFailure:72 » NullPointer
+      Test2.test6281:33 Runtime FailHere
 
-The format of the report is quite "packed", so some explanation is required, there are three different formats:
-
-
-### Format 1, assertion failure.
-#### Class#method(line number)...methodN(lineN) "Assertion failure message"
-
-    Test1#assertion2(64) True is false
-    Test1#assertion1(59) Bending maths expected:<[123]> but was:<[312]>
-
-### Format 2, Exception in test.
-#### Class#method(line number)...methodN(lineN) Exception "Message"
-In this case the exception was actually thrown on the line in question.
-
-    Test1#failInMethod(43).innerFailure(68) NullPointerException Fail here
-    Test2#test6281(33) RuntimeException FailHere
-
-### Format 3: Exception in code called by test.
-#### Same format as 2 but >> added before exception
-In this case the exception is thrown inside some code that was called from this line of the
-test. We do not show where the actual exception happened, only which line(s) of the test
-that were involved in the call.
-
-    Test1#failInLibInMethod(48) >> NullPointerException
-    Test1#failInNestedLibInMethod(54).nestedLibFailure(72) >> NullPointerException
-
+The main rules of the format are:
+ * Assertion failures only show the message
+ * Exception/Error is stripped from the Exception name to save space.
+ * The exception message is trimmed to an approximate 80 chars.
+ * The » symbol means that the exception happened below the method shown (in library code called by test)
+ * Methods in superclasses are normally shown as SuperClassName.methodName
+ * If the first method in the stacktrace is in a a superclass it will be show as this: TestClass>Superclass.method

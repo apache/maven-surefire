@@ -38,9 +38,10 @@ public class SmartStackTraceParserTest
         {
             SmartStackTraceParser smartStackTraceParser = new SmartStackTraceParser( ATestClass.class, e );
             String res = smartStackTraceParser.getString();
-            Assert.assertTrue( "ATestClass#failInAssert(30) X is not Z".equals( res ) );
+            assertEquals( "ATestClass.failInAssert:30 X is not Z", res );
 
         }
+
     }
 
     public void testNestedFailure()
@@ -55,8 +56,7 @@ public class SmartStackTraceParserTest
         {
             SmartStackTraceParser smartStackTraceParser = new SmartStackTraceParser( ATestClass.class, e );
             String res = smartStackTraceParser.getString();
-            Assert.assertTrue( "ATestClass#nestedFailInAssert(35).failInAssert(30) X is not Z".equals( res ) );
-
+            assertEquals( "ATestClass.nestedFailInAssert:35->failInAssert:30 X is not Z", res );
         }
     }
 
@@ -73,7 +73,7 @@ public class SmartStackTraceParserTest
         {
             SmartStackTraceParser smartStackTraceParser = new SmartStackTraceParser( ATestClass.class, e );
             String res = smartStackTraceParser.getString();
-            Assert.assertTrue( "ATestClass#nestedNpe(45).npe(40) NullPointerException It was null".equals( res ) );
+            assertEquals( "ATestClass.nestedNpe:45->npe:40 NullPointer It was null", res );
 
         }
     }
@@ -91,8 +91,7 @@ public class SmartStackTraceParserTest
         {
             SmartStackTraceParser smartStackTraceParser = new SmartStackTraceParser( ATestClass.class, e );
             String res = smartStackTraceParser.getString();
-            Assert.assertTrue(
-                "ATestClass#nestedNpeOutsideTest(55).npeOutsideTest(50) >> NullPointerException".equals( res ) );
+            assertEquals( "ATestClass.nestedNpeOutsideTest:55->npeOutsideTest:50 » NullPointer", res );
 
         }
     }
@@ -109,8 +108,7 @@ public class SmartStackTraceParserTest
         {
             SmartStackTraceParser smartStackTraceParser = new SmartStackTraceParser( ATestClass.class, e );
             String res = smartStackTraceParser.getString();
-            Assert.assertTrue(
-                "ATestClass#aLongTestErrorMessage(60) RuntimeException This message will be tru...".equals( res ) );
+            assertEquals( "ATestClass.aLongTestErrorMessage:60 Runtime This message will be truncated, so...", res );
 
         }
     }
@@ -127,8 +125,7 @@ public class SmartStackTraceParserTest
         {
             SmartStackTraceParser smartStackTraceParser = new SmartStackTraceParser( ASubClass.class, e );
             String res = smartStackTraceParser.getString();
-            Assert.assertTrue( "ASubClass#ABaseClass#npe(27) >> NullPointerException It was null".equals( res ) );
-
+            assertEquals( "ASubClass>ABaseClass.npe:27 » NullPointer It was null", res );
         }
     }
 

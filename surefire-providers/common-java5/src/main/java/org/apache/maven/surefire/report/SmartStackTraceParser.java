@@ -22,6 +22,7 @@ package org.apache.maven.surefire.report;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.apache.maven.shared.utils.StringUtils;
 
 /**
  * @author Kristian Rosenvold
@@ -87,22 +88,27 @@ public class SmartStackTraceParser
             if ( i == 0 )
             {
                 result.append( simpleName );
-                result.append( "#" );
+                if ( !stackTraceElement.getClassName().equals( testClassName ) )
+                {
+                    result.append( ">" );
+                }
+                else
+                {
+                    result.append( "." );
+                }
+
             }
             if ( !stackTraceElement.getClassName().equals( testClassName ) )
             {
-                if ( i > 0 )
-                {
-                    result.append( "<" );
-                }
                 result.append( getSimpleName( stackTraceElement.getClassName() ) ); // Add the name of the superclas
-                result.append( "#" );
+                result.append( "." );
             }
-            result.append( stackTraceElement.getMethodName() ).append( "(" ).append(
-                stackTraceElement.getLineNumber() ).append( ")" );
-            result.append( "." );
+            result.append( stackTraceElement.getMethodName() ).append( ":" ).append(
+                stackTraceElement.getLineNumber() );
+            result.append( "->" );
         }
 
+        result.deleteCharAt( result.length() - 1 );
         result.deleteCharAt( result.length() - 1 );
 
         if ( throwable.getTarget() instanceof AssertionError )
@@ -112,11 +118,25 @@ public class SmartStackTraceParser
         }
         else
         {
-            result.append( rootIsInclass() ? " " : " >> " );
-            result.append( throwable.getTarget().getClass().getSimpleName() );
+            result.append( rootIsInclass() ? " " : " » " );
+            result.append( getMinimalThrowableMiniMessage( throwable.getTarget() ) );
             result.append( getTruncatedMessage( 77 - result.length() ) );
         }
         return result.toString();
+    }
+
+    private String getMinimalThrowableMiniMessage( Throwable throwable )
+    {
+        String name = throwable.getClass().getSimpleName();
+        if ( name.endsWith( "Exception" ) )
+        {
+            return StringUtils.chompLast( name, "Exception" );
+        }
+        if ( name.endsWith( "Error" ) )
+        {
+            return StringUtils.chompLast( name, "Error" );
+        }
+        return name;
     }
 
     private String getTruncatedMessage( int i )
