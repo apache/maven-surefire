@@ -35,6 +35,7 @@ import org.apache.maven.surefire.testset.TestSetFailedException;
  * parallel=methods; beforeClass/afterClass run on main thread, constructor + each test method run on same thread
  * parallel=both; same as parallel=methods
  *
+ * @see org.apache.maven.surefire.junitcore.JUnitCoreRunListener for details about regular junit run listening
  * @author Kristian Rosenvold
  */
 public abstract class ConcurrentRunListener
