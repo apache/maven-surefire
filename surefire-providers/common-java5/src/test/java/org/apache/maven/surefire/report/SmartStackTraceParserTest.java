@@ -30,84 +30,6 @@ public class SmartStackTraceParserTest
     extends TestCase
 {
 
-    static class AssertionNoMessage
-        extends TestCase
-    {
-        public void testThrowSomething()
-        {
-            assertEquals( "abc", "xyz" );
-        }
-    }
-
-    static class ADifferen0tTestClass
-    {
-        static class InnerATestClass
-        {
-            public static void testFake()
-            {
-                innerMethod();
-            }
-
-            private static void innerMethod()
-            {
-                Assert.assertTrue( false );
-            }
-        }
-    }
-
-    static class CaseThatWillFail
-        extends TestCase
-    {
-        public void testThatWillFail()
-        {
-            assertEquals( "abc", "def" );
-        }
-    }
-
-    static class TestClass2
-    {
-        static class InnerCTestClass
-        {
-            public static void cThrows()
-                throws Exception
-            {
-                throw new Exception( "Hey ho, hey ho, a throwable we throw!" );
-            }
-        }
-    }
-
-    static class TestClass1
-    {
-        static class InnerBTestClass
-        {
-            public static void throwSomething()
-            {
-                innerThrowSomething();
-            }
-
-            public static void innerThrowSomething()
-            {
-                try
-                {
-                    TestClass2.InnerCTestClass.cThrows();
-                }
-                catch ( Exception e )
-                {
-                    throw new RuntimeException( e );
-                }
-            }
-        }
-    }
-
-    static class FailWithFail
-        extends TestCase
-    {
-        public void testThatWillFail()
-        {
-            fail( "abc" );
-        }
-    }
-
     public void testGetString()
         throws Exception
     {
@@ -223,7 +145,7 @@ public class SmartStackTraceParserTest
         {
             SmartStackTraceParser smartStackTraceParser = new SmartStackTraceParser( CaseThatWillFail.class, e );
             String res = smartStackTraceParser.getString();
-            assertEquals( "SmartStackTraceParserTest$CaseThatWillFail.testThatWillFail:64 expected:<abc> but was:<def>",
+            assertEquals( "CaseThatWillFail.testThatWillFail:29 expected:<abc> but was:<def>",
                           res );
         }
     }
@@ -266,7 +188,7 @@ public class SmartStackTraceParserTest
             SmartStackTraceParser smartStackTraceParser = new SmartStackTraceParser( AssertionNoMessage.class, e );
             String res = smartStackTraceParser.getString();
             assertEquals(
-                "SmartStackTraceParserTest$AssertionNoMessage.testThrowSomething:39 expected:<abc> but was:<xyz>",
+                "AssertionNoMessage.testThrowSomething:29 expected:<abc> but was:<xyz>",
                 res );
         }
     }
@@ -282,7 +204,7 @@ public class SmartStackTraceParserTest
             SmartStackTraceParser smartStackTraceParser = new SmartStackTraceParser( FailWithFail.class, e );
             String res = smartStackTraceParser.getString();
             assertEquals(
-                "SmartStackTraceParserTest$FailWithFail.testThatWillFail:108 abc",
+                "FailWithFail.testThatWillFail:29 abc",
                 res );
         }
     }
@@ -291,18 +213,18 @@ public class SmartStackTraceParserTest
     {
         try
         {
-            ADifferen0tTestClass.InnerATestClass.testFake();
+            InnerATestClass.testFake();
         }
         catch ( Throwable t )
         {
             List<StackTraceElement> stackTraceElements = SmartStackTraceParser.focusInsideClass( t.getStackTrace(),
-                                                                                                 ADifferen0tTestClass.InnerATestClass.class.getName() );
+                                                                                                 InnerATestClass.class.getName() );
             assertNotNull( stackTraceElements );
             assertEquals( 5, stackTraceElements.size() );
             StackTraceElement innerMost = stackTraceElements.get( 0 );
             assertEquals( Assert.class.getName(), innerMost.getClassName() );
             StackTraceElement outer = stackTraceElements.get( 4 );
-            assertEquals( ADifferen0tTestClass.InnerATestClass.class.getName(), outer.getClassName() );
+            assertEquals( InnerATestClass.class.getName(), outer.getClassName() );
         }
     }
 
