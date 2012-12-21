@@ -20,7 +20,6 @@ package org.apache.maven.surefire.report;
 
 import java.util.List;
 
-import com.sun.deploy.uitoolkit.impl.text.TextWindowFactory;
 import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
 import junit.framework.ComparisonFailure;
