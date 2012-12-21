@@ -42,7 +42,7 @@ public abstract class ConcurrentRunListener
 {
     private final Map<String, TestSet> classMethodCounts;
 
-    private final ThreadLocal<RunListener> reporterManagerThreadLocal; // = new ThreadLocal<RunListener>();
+    private final ThreadLocal<RunListener> reporterManagerThreadLocal;
 
     private final boolean reportImmediately;
 
