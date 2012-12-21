@@ -108,8 +108,11 @@ public class SmartStackTraceParser
             result.append( "->" );
         }
 
-        result.deleteCharAt( result.length() - 1 );
-        result.deleteCharAt( result.length() - 1 );
+        if ( result.length() >= 2 )
+        {
+            result.deleteCharAt( result.length() - 1 );
+            result.deleteCharAt( result.length() - 1 );
+        }
 
         Throwable target = throwable.getTarget();
         if ( target instanceof AssertionError )
@@ -117,7 +120,7 @@ public class SmartStackTraceParser
             result.append( " " );
             result.append( throwable.getMessage() );
         }
-        else if ( "junit.framework.AssertiponFailedError".equals( target.getClass().getName() )
+        else if ( "junit.framework.AssertionFailedError".equals( target.getClass().getName() )
             || "junit.framework.ComparisonFailure".equals( target.getClass().getName() ) )
         {
             result.append( " " );

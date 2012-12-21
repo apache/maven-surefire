@@ -20,7 +20,9 @@ package org.apache.maven.surefire.report;
 
 import java.util.List;
 
+import com.sun.deploy.uitoolkit.impl.text.TextWindowFactory;
 import junit.framework.Assert;
+import junit.framework.AssertionFailedError;
 import junit.framework.ComparisonFailure;
 import junit.framework.TestCase;
 
@@ -95,6 +97,15 @@ public class SmartStackTraceParserTest
                     throw new RuntimeException( e );
                 }
             }
+        }
+    }
+
+    static class FailWithFail
+        extends TestCase
+    {
+        public void testThatWillFail()
+        {
+            fail( "abc" );
         }
     }
 
@@ -213,7 +224,7 @@ public class SmartStackTraceParserTest
         {
             SmartStackTraceParser smartStackTraceParser = new SmartStackTraceParser( CaseThatWillFail.class, e );
             String res = smartStackTraceParser.getString();
-            assertEquals( "SmartStackTraceParserTest$CaseThatWillFail.testThatWillFail:62 expected:<abc> but was:<def>",
+            assertEquals( "SmartStackTraceParserTest$CaseThatWillFail.testThatWillFail:64 expected:<abc> but was:<def>",
                           res );
         }
     }
@@ -256,7 +267,23 @@ public class SmartStackTraceParserTest
             SmartStackTraceParser smartStackTraceParser = new SmartStackTraceParser( AssertionNoMessage.class, e );
             String res = smartStackTraceParser.getString();
             assertEquals(
-                "SmartStackTraceParserTest$AssertionNoMessage.testThrowSomething:37 expected:<abc> but was:<xyz>",
+                "SmartStackTraceParserTest$AssertionNoMessage.testThrowSomething:39 expected:<abc> but was:<xyz>",
+                res );
+        }
+    }
+
+    public void testFailWithFail()
+    {
+        try
+        {
+            new FailWithFail().testThatWillFail();
+        }
+        catch ( AssertionFailedError e )
+        {
+            SmartStackTraceParser smartStackTraceParser = new SmartStackTraceParser( FailWithFail.class, e );
+            String res = smartStackTraceParser.getString();
+            assertEquals(
+                "SmartStackTraceParserTest$FailWithFail.testThatWillFail:108 abc",
                 res );
         }
     }
