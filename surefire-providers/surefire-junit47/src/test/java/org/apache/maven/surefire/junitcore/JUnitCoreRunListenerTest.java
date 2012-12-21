@@ -20,6 +20,7 @@ package org.apache.maven.surefire.junitcore;
  */
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import org.apache.maven.surefire.junit4.MockReporter;
 
@@ -60,6 +61,27 @@ public class JUnitCoreRunListenerTest
         Result result = core.run( new Computer(), TestWithAssumptionFailure.class );
         core.removeListener( jUnit4TestSetReporter );
         assertEquals( 1, result.getRunCount() );
+    }
+
+    public void testStateForClassesWithNoChildren()
+        throws Exception
+    {
+        Description testDescription =
+            Description.createSuiteDescription( "testMethod(cannot.be.loaded.by.junit.Test)" );
+        Description st1 = Description.createSuiteDescription( STest1.class);
+//        st1.addChild( Description.createSuiteDescription( STest1.class ) );
+        testDescription.addChild( st1 );
+        Description st2 = Description.createSuiteDescription( STest2.class);
+  //      st2.addChild( Description.createSuiteDescription( STest2.class ) );
+        testDescription.addChild( st2 );
+
+        Map<String, TestSet> classMethodCounts = new HashMap<String, TestSet>();
+        JUnitCoreRunListener listener = new JUnitCoreRunListener( new MockReporter(), classMethodCounts );
+        listener.testRunStarted( testDescription );
+        assertEquals( 2, classMethodCounts.size() );
+        Iterator<TestSet> iterator = classMethodCounts.values().iterator();
+        assertFalse(iterator.next().equals( iterator.next() ));
+
     }
 
     public void testTestClassNotLoadableFromJUnitClassLoader()

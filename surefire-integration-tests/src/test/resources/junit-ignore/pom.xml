@@ -31,6 +31,7 @@
   <properties>
     <junit.version>4.4</junit.version>
     <surefire.parallel></surefire.parallel>
+    <surefire.threadcount>3</surefire.threadcount>
   </properties>
 
   <dependencies>
@@ -57,7 +58,8 @@
         <version>${surefire.version}</version>
         <configuration>
           <parallel>${surefire.parallel}</parallel>
-          <threadCount>3</threadCount>
+          <perCoreThreadCount>false</perCoreThreadCount>
+          <threadCount>${surefire.threadcount}</threadCount>
         </configuration>
       </plugin>
     </plugins>
