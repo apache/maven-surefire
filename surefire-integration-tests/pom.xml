@@ -187,13 +187,19 @@
 
     <profile>
       <id>embedded</id>
+      <activation>
+        <file>
+          <!--  This employs that the basedir expression is only recognized by Maven 3.x (see MNG-2363) -->
+          <exists>${basedir}</exists>
+        </file>
+      </activation>
       <properties>
         <verifier.forkMode>auto</verifier.forkMode>
       </properties>
     </profile>
 
     <profile>
-    <id>maven-2.2.1</id>
+      <id>maven-2.2.1</id>
       <properties>
         <mavenHomeUsed>${project.build.directory}/maven-extract/apache-maven-2.2.1</mavenHomeUsed>
       </properties>
