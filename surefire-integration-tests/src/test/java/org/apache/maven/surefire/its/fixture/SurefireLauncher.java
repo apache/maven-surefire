@@ -166,7 +166,6 @@ public class SurefireLauncher
 
     public OutputValidator executeTest()
     {
-        mavenLauncher.addCliOption( "-o" );
         return mavenLauncher.execute( "test" );
     }
 
