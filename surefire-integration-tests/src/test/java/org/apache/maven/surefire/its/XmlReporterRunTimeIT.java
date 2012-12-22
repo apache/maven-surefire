@@ -21,9 +21,9 @@ package org.apache.maven.surefire.its;
 
 import java.io.File;
 import java.util.List;
+import org.apache.maven.plugins.surefire.report.ReportTestSuite;
 import org.apache.maven.surefire.its.fixture.HelperAssertions;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.ReportTestSuite;
 import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
 
 /**

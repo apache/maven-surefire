@@ -21,6 +21,10 @@ package org.apache.maven.surefire.its.fixture;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+
+import org.apache.maven.plugins.surefire.report.ReportTestSuite;
+import org.apache.maven.plugins.surefire.report.SurefireReportParser;
 
 import junit.framework.Assert;
 
@@ -93,7 +97,7 @@ public class HelperAssertions
             Assert.assertTrue( "Reports directory is missing: " + reportsDir.getAbsolutePath(), reportsDir.exists() );
             reportsDirs.add( reportsDir );
         }
-        SurefireReportParser parser = new SurefireReportParser( reportsDirs );
+        SurefireReportParser parser = new SurefireReportParser( reportsDirs, Locale.getDefault() );
         List<ReportTestSuite> reports;
         try
         {
@@ -115,7 +119,7 @@ public class HelperAssertions
             Assert.assertTrue( "Reports directory is missing: " + reportsDir.getAbsolutePath(), reportsDir.exists() );
             reportsDirs.add( reportsDir );
         }
-        SurefireReportParser parser = new SurefireReportParser( reportsDirs );
+        SurefireReportParser   parser = new SurefireReportParser( reportsDirs, Locale.getDefault() );
         List<ReportTestSuite> reports;
         try
         {

@@ -21,10 +21,10 @@ package org.apache.maven.surefire.its.jiras;
 
 import java.io.File;
 import java.util.List;
+import org.apache.maven.plugins.surefire.report.ReportTestCase;
+import org.apache.maven.plugins.surefire.report.ReportTestSuite;
 import org.apache.maven.surefire.its.fixture.HelperAssertions;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.ReportTestCase;
-import org.apache.maven.surefire.its.fixture.ReportTestSuite;
 import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
 
 /**
@@ -43,7 +43,7 @@ public class Surefire224WellFormedXmlFailuresIT
 
         ReportTestSuite suite =
             HelperAssertions.extractReports( ( new File[]{ outputValidator.getBaseDir() } ) ).get( 0 );
-        List<ReportTestCase> testCases = suite.getTestCases();
+        List<org.apache.maven.plugins.surefire.report.ReportTestCase> testCases = suite.getTestCases();
         assertEquals( "Wrong number of test case objects", 4, testCases.size() );
         ReportTestCase testQuote = null, testLower = null, testGreater = null, testU0000 = null;
         for ( ReportTestCase current : testCases )
