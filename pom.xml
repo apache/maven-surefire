@@ -107,7 +107,7 @@
   </issueManagement>
   <ciManagement>
     <system>Jenkins</system>
-    <url>https://builds.apache.org/hudson/job/maven-surefire/</url>
+    <url>https://builds.apache.org/job/maven-surefire/</url>
   </ciManagement>
 
   <properties>
