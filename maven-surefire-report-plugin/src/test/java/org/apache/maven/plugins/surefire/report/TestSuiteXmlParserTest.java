@@ -96,7 +96,7 @@ public class TestSuiteXmlParserTest
 
     }
 
-    public void testParserHitsSum()
+    public void testParserHitsFailsafeSummary()
         throws IOException, SAXException, ParserConfigurationException
     {
         TestSuiteXmlParser parser = new TestSuiteXmlParser();
@@ -104,6 +104,11 @@ public class TestSuiteXmlParserTest
         parser.parse( "src/test/resources/fixture/testsuitexmlparser/failsafe-summary.xml" );
 
         assertFalse( parser.isValid() );
+
+        parser.parse(
+            "src/test/resources/fixture/testsuitexmlparser/TEST-org.apache.maven.surefire.test.FailingTest.xml" );
+
+        assertTrue( parser.isValid() );
     }
 
 

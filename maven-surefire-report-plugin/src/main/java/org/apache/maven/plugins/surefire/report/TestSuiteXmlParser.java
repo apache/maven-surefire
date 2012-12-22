@@ -62,7 +62,7 @@ public class TestSuiteXmlParser
 
     private ReportTestCase testCase;
 
-    private boolean valid = true;
+    private boolean valid;
 
     public Collection<ReportTestSuite> parse( String xmlPath )
         throws ParserConfigurationException, SAXException, IOException
@@ -88,6 +88,8 @@ public class TestSuiteXmlParser
         SAXParserFactory factory = SAXParserFactory.newInstance();
 
         SAXParser saxParser = factory.newSAXParser();
+
+        valid = true;
 
         classesToSuites = new HashMap<String, ReportTestSuite>();
 
