@@ -96,4 +96,15 @@ public class TestSuiteXmlParserTest
 
     }
 
+    public void testParserHitsSum()
+        throws IOException, SAXException, ParserConfigurationException
+    {
+        TestSuiteXmlParser parser = new TestSuiteXmlParser();
+
+        parser.parse( "src/test/resources/fixture/testsuitexmlparser/failsafe-summary.xml" );
+
+        assertFalse( parser.isValid() );
+    }
+
+
 }

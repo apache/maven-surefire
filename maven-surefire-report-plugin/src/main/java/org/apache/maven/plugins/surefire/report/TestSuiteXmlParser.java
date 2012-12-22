@@ -62,6 +62,8 @@ public class TestSuiteXmlParser
 
     private ReportTestCase testCase;
 
+    private boolean valid = true;
+
     public Collection<ReportTestSuite> parse( String xmlPath )
         throws ParserConfigurationException, SAXException, IOException
     {
@@ -108,6 +110,10 @@ public class TestSuiteXmlParser
     public void startElement( String uri, String localName, String qName, Attributes attributes )
         throws SAXException
     {
+        if ( !valid )
+        {
+            return;
+        }
         try
         {
             if ( "testsuite".equals( qName ) )
@@ -169,7 +175,7 @@ public class TestSuiteXmlParser
 
                 String timeAsString = attributes.getValue( "time" );
 
-                Number time = new Integer( 0 );
+                Number time = 0;
 
                 if ( timeAsString != null )
                 {
@@ -198,6 +204,10 @@ public class TestSuiteXmlParser
                 final String message = attributes.getValue( "message" );
                 testCase.addFailure( message != null ? message : "skipped", "skipped" );
                 currentSuite.setNumberOfSkipped( 1 + currentSuite.getNumberOfSkipped() );
+            }
+            else if ( "failsafe-summary".equals( qName ) )
+            {
+                valid = false;
             }
         }
         catch ( ParseException e )
@@ -249,6 +259,10 @@ public class TestSuiteXmlParser
     public void characters( char[] ch, int start, int length )
         throws SAXException
     {
+        if ( !valid )
+        {
+            return;
+        }
         String s = new String( ch, start, length );
 
         if ( !"".equals( s.trim() ) )
@@ -273,7 +287,7 @@ public class TestSuiteXmlParser
         {
             String lineString = stringTokenizer.nextToken().trim();
             parsedDetail.add( lineString );
-            if ( lineString.indexOf( compareTo ) >= 0 )
+            if ( lineString.contains( compareTo ) )
             {
                 break;
             }
@@ -282,4 +296,8 @@ public class TestSuiteXmlParser
         return parsedDetail;
     }
 
+    public boolean isValid()
+    {
+        return valid;
+    }
 }
