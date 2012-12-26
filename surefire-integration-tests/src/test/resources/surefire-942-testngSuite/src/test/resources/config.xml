@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suite name="tests" verbose="0">
+  <test name="tests">
+    <packages>
+      <package name="org.*"/>
+    </packages>
+  </test>
+</suite>
