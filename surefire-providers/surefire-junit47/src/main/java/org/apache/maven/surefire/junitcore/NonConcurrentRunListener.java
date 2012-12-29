@@ -24,6 +24,7 @@ import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.SimpleReportEntry;
 import org.apache.maven.surefire.testset.TestSetFailedException;
+
 import org.junit.runner.Description;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
@@ -59,14 +60,14 @@ public class NonConcurrentRunListener
 
     protected SimpleReportEntry createReportEntry( Description description )
     {
-        return new SimpleReportEntry( description.getClassName(), description.getClassName(),
+        return new SimpleReportEntry( description.getClassName(), description.getDisplayName(),
                                       (int) ( System.currentTimeMillis() - startTime ) );
     }
 
-
-    public String getClassName( Description description )
+    protected SimpleReportEntry createReportEntryForTestSet( Description description )
     {
-        return description.getClass().getSimpleName();
+        return new SimpleReportEntry( description.getClassName(), description.getClassName(),
+                                      (int) ( System.currentTimeMillis() - startTime ) );
     }
 
     @Override
@@ -78,11 +79,11 @@ public class NonConcurrentRunListener
             currentTestClass = description.getTestClass();
             if ( lastFinishedDescription != null )
             {
-                reporter.testSetCompleted( createReportEntry( lastFinishedDescription ) );
+                reporter.testSetCompleted( createReportEntryForTestSet( lastFinishedDescription ) );
                 lastFinishedDescription = null;
             }
             startTime = System.currentTimeMillis();
-            reporter.testSetStarting( createReportEntry( description ) );
+            reporter.testSetStarting( createReportEntryForTestSet( description ) );
         }
         super.testStarted( description );
     }
@@ -130,7 +131,7 @@ public class NonConcurrentRunListener
     {
         if ( lastFinishedDescription != null )
         {
-            reporter.testSetCompleted( createReportEntry( lastFinishedDescription ) );
+            reporter.testSetCompleted( createReportEntryForTestSet( lastFinishedDescription ) );
             lastFinishedDescription = null;
         }
     }
