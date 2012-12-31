@@ -23,10 +23,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
 import org.apache.maven.surefire.common.junit4.JUnit4RunListenerFactory;
-import org.apache.maven.surefire.common.junit4.JUnit4TestChecker;
 import org.apache.maven.surefire.common.junit48.FilterFactory;
 import org.apache.maven.surefire.common.junit48.JUnit48Reflector;
+import org.apache.maven.surefire.common.junit48.JUnit48TestChecker;
 import org.apache.maven.surefire.providerapi.AbstractProvider;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.report.ConsoleLogger;
@@ -42,7 +43,6 @@ import org.apache.maven.surefire.util.ScanResult;
 import org.apache.maven.surefire.util.ScannerFilter;
 import org.apache.maven.surefire.util.TestsToRun;
 import org.apache.maven.surefire.util.internal.StringUtils;
-
 import org.junit.runner.manipulation.Filter;
 
 /**
@@ -79,7 +79,7 @@ public class JUnitCoreProvider
         this.scanResult = providerParameters.getScanResult();
         this.runOrderCalculator = providerParameters.getRunOrderCalculator();
         this.jUnitCoreParameters = new JUnitCoreParameters( providerParameters.getProviderProperties() );
-        this.scannerFilter = new JUnit4TestChecker( testClassLoader );
+        this.scannerFilter = new JUnit48TestChecker( testClassLoader );
         this.requestedTestMethod = providerParameters.getTestRequest().getRequestedTestMethod();
 
         customRunListeners =
