@@ -34,6 +34,7 @@ import org.apache.maven.surefire.report.StackTraceWriter;
 import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
 
+@SuppressWarnings( "ResultOfMethodCallIgnored" )
 public class StatelessXMLReporterTest
     extends TestCase
 {
@@ -42,15 +43,12 @@ public class StatelessXMLReporterTest
 
     private ReportEntry reportEntry;
 
-    private String message;
-
     private TestSetStats stats;
 
     protected void setUp()
         throws Exception
     {
         super.setUp();
-        message = "junit.framework.AssertionFailedError";
         reportEntry = new SimpleReportEntry( this.getClass().getName(), "StatelessXMLReporterTest",
                                              new LegacyPojoStackTraceWriter( "", "", new AssertionFailedError() ), 17 );
         stats = new TestSetStats( false, true );

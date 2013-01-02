@@ -19,19 +19,14 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import org.apache.maven.shared.utils.io.IOUtil;
-import org.apache.maven.shared.utils.xml.Xpp3Dom;
-import org.apache.maven.shared.utils.xml.Xpp3DomWriter;
+import org.apache.maven.shared.utils.xml.XMLWriter;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.SafeThrowable;
@@ -64,7 +59,6 @@ import org.apache.maven.surefire.report.SafeThrowable;
  *  &lt;/testcase>
  *  [...]</pre>
  *
- * @author <a href="mailto:jruiz@exist.com">Johnny R. Ruiz III</a>
  * @author Kristian Rosenvold
  * @see <a href="http://wiki.apache.org/ant/Proposals/EnhancedTestReports">Ant's format enhancement proposal</a>
  *      (not yet implemented by Ant 1.8.2)
@@ -90,31 +84,47 @@ public class StatelessXmlReporter
         throws ReporterException
     {
 
-        Xpp3Dom testSuite = createTestSuiteElement( testSetReportEntry, testSetStats, reportNameSuffix );
+        FileWriter fw = getFileOutputStream( testSetReportEntry );
 
-        showProperties( testSuite );
+        org.apache.maven.shared.utils.xml.XMLWriter ppw =
+            new org.apache.maven.shared.utils.xml.PrettyPrintXMLWriter( fw );
+        ppw.setEncoding( "UTF-8" );
 
-        testSuite.setAttribute( "tests", String.valueOf( testSetStats.getCompletedCount() ) );
+        createTestSuiteElement( ppw, testSetReportEntry, testSetStats, reportNameSuffix );
 
-        testSuite.setAttribute( "errors", String.valueOf( testSetStats.getErrors() ) );
+        showProperties( ppw );
 
-        testSuite.setAttribute( "skipped", String.valueOf( testSetStats.getSkipped() ) );
-
-        testSuite.setAttribute( "failures", String.valueOf( testSetStats.getFailures() ) );
 
         for ( WrappedReportEntry entry : testSetStats.getReportEntries() )
         {
             if ( ReportEntryType.success.equals( entry.getReportEntryType() ) )
             {
-                testSuite.addChild( createTestElement( entry, reportNameSuffix ) );
+                startTestElement( ppw, entry, reportNameSuffix );
+                ppw.endElement();
             }
             else
             {
-                testSuite.addChild( getTestProblems( entry, trimStackTrace, reportNameSuffix ) );
+                getTestProblems( ppw, entry, trimStackTrace, reportNameSuffix );
             }
 
         }
 
+        ppw.endElement(); // TestSuite
+
+
+
+        try
+        {
+
+        }
+        finally
+        {
+            IOUtil.close( fw );
+        }
+    }
+
+    private FileWriter getFileOutputStream( WrappedReportEntry testSetReportEntry )
+    {
         File reportFile = getReportFile( testSetReportEntry, reportsDirectory, reportNameSuffix );
 
         File reportDir = reportFile.getParentFile();
@@ -122,29 +132,13 @@ public class StatelessXmlReporter
         //noinspection ResultOfMethodCallIgnored
         reportDir.mkdirs();
 
-        PrintWriter writer = null;
-
         try
         {
-            writer = new PrintWriter(
-                new BufferedWriter( new OutputStreamWriter( new FileOutputStream( reportFile ), "UTF-8" ) ) );
-
-            writer.write( "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + LS );
-
-            Xpp3DomWriter.write( new PrettyPrintXMLWriter( writer ), testSuite );
+            return new FileWriter( reportFile );
         }
-        catch ( UnsupportedEncodingException e )
+        catch ( IOException e )
         {
-            throw new ReporterException( "Unable to use UTF-8 encoding", e );
-        }
-        catch ( FileNotFoundException e )
-        {
-            throw new ReporterException( "Unable to create file: " + e.getMessage(), e );
-        }
-
-        finally
-        {
-            IOUtil.close( writer );
+            throw new ReporterException( "When writing report", e );
         }
     }
 
@@ -164,57 +158,65 @@ public class StatelessXmlReporter
         return reportFile;
     }
 
-    private static Xpp3Dom createTestElement( WrappedReportEntry report, String reportNameSuffix )
+    private static void startTestElement( XMLWriter ppw, WrappedReportEntry report, String reportNameSuffix )
     {
-        Xpp3Dom testCase = new Xpp3Dom( "testcase" );
-        testCase.setAttribute( "name", report.getReportName() );
+        ppw.startElement( "testcase" );
+        ppw.addAttribute( "name", report.getReportName() );
         if ( report.getGroup() != null )
         {
-            testCase.setAttribute( "group", report.getGroup() );
+            ppw.addAttribute( "group", report.getGroup() );
         }
         if ( report.getSourceName() != null )
         {
             if ( reportNameSuffix != null && reportNameSuffix.length() > 0 )
             {
-                testCase.setAttribute( "classname", report.getSourceName() + "(" + reportNameSuffix + ")" );
+                ppw.addAttribute( "classname", report.getSourceName() + "(" + reportNameSuffix + ")" );
             }
             else
             {
-                testCase.setAttribute( "classname", report.getSourceName() );
+                ppw.addAttribute( "classname", report.getSourceName() );
             }
         }
-        testCase.setAttribute( "time", report.elapsedTimeAsString() );
-        return testCase;
+        ppw.addAttribute( "time", report.elapsedTimeAsString() );
     }
 
-    private static Xpp3Dom createTestSuiteElement( WrappedReportEntry report, TestSetStats testSetStats,
-                                                   String reportNameSuffix1 )
+    private static void createTestSuiteElement( XMLWriter ppw, WrappedReportEntry report, TestSetStats testSetStats,
+                                                String reportNameSuffix1 )
     {
-        Xpp3Dom testCase = new Xpp3Dom( "testsuite" );
+        ppw.startElement( "testsuite" );
 
-        testCase.setAttribute( "name", report.getReportName( reportNameSuffix1 ) );
+        ppw.addAttribute( "name", report.getReportName( reportNameSuffix1 ) );
 
         if ( report.getGroup() != null )
         {
-            testCase.setAttribute( "group", report.getGroup() );
+            ppw.addAttribute( "group", report.getGroup() );
         }
-        testCase.setAttribute( "time", testSetStats.getElapsedForTestSet() );
-        return testCase;
+
+        ppw.addAttribute( "time", testSetStats.getElapsedForTestSet() );
+
+        ppw.addAttribute( "tests", String.valueOf( testSetStats.getCompletedCount() ) );
+
+        ppw.addAttribute( "errors", String.valueOf( testSetStats.getErrors() ) );
+
+        ppw.addAttribute( "skipped", String.valueOf( testSetStats.getSkipped() ) );
+
+        ppw.addAttribute( "failures", String.valueOf( testSetStats.getFailures() ) );
+
     }
 
 
-    private Xpp3Dom getTestProblems( WrappedReportEntry report, boolean trimStackTrace, String reportNameSuffix )
+    private void getTestProblems( XMLWriter ppw, WrappedReportEntry report, boolean trimStackTrace, String reportNameSuffix )
     {
 
-        Xpp3Dom testCase = createTestElement( report, reportNameSuffix );
+        startTestElement( ppw, report, reportNameSuffix );
 
-        Xpp3Dom element = createElement( testCase, report.getReportEntryType().name() );
+        ppw.startElement( report.getReportEntryType().name() );
 
         String stackTrace = report.getStackTrace( trimStackTrace );
 
         if ( report.getMessage() != null && report.getMessage().length() > 0 )
         {
-            element.setAttribute( "message", report.getMessage() );
+            ppw.addAttribute( "message", report.getMessage() );
         }
 
         if ( report.getStackTraceWriter() != null )
@@ -225,55 +227,50 @@ public class StatelessXmlReporter
             {
                 if ( t.getMessage() != null )
                 {
-                    element.setAttribute( "type", ( stackTrace.contains( ":" )
+                    ppw.addAttribute( "type", ( stackTrace.contains( ":" )
                         ? stackTrace.substring( 0, stackTrace.indexOf( ":" ) )
                         : stackTrace ) );
                 }
                 else
                 {
-                    element.setAttribute( "type", new StringTokenizer( stackTrace ).nextToken() );
+                    ppw.addAttribute( "type", new StringTokenizer( stackTrace ).nextToken() );
                 }
             }
         }
 
         if ( stackTrace != null )
         {
-            element.setValue( stackTrace );
+            ppw.writeText( stackTrace );
         }
 
-        addOutputStreamElement( report.getStdout(), "system-out", testCase );
+        ppw.endElement(); // entry type
 
-        addOutputStreamElement( report.getStdErr(), "system-err", testCase );
+        addOutputStreamElement( ppw, report.getStdout(), "system-out" );
 
-        return testCase;
+        addOutputStreamElement( ppw, report.getStdErr(), "system-err" );
+
+        ppw.endElement(); // test element
     }
 
-    private void addOutputStreamElement( String stdOut, String name, Xpp3Dom testCase )
+    private void addOutputStreamElement( XMLWriter xmlWriter, String stdOut, String name )
     {
         if ( stdOut != null && stdOut.trim().length() > 0 )
         {
-            createElement( testCase, name ).setValue( stdOut );
+            xmlWriter.startElement( name );
+            xmlWriter.writeText( stdOut );
+            xmlWriter.endElement();
         }
-    }
-
-    private Xpp3Dom createElement( Xpp3Dom element, String name )
-    {
-        Xpp3Dom component = new Xpp3Dom( name );
-
-        element.addChild( component );
-
-        return component;
     }
 
     /**
      * Adds system properties to the XML report.
      * <p/>
      *
-     * @param testSuite The test suite to report to
+     * @param xmlWriter The test suite to report to
      */
-    private void showProperties( Xpp3Dom testSuite )
+    private void showProperties( XMLWriter xmlWriter )
     {
-        Xpp3Dom properties = createElement( testSuite, "properties" );
+        xmlWriter.startElement( "properties" );
 
         Properties systemProperties = System.getProperties();
 
@@ -292,13 +289,16 @@ public class StatelessXmlReporter
                     value = "null";
                 }
 
-                Xpp3Dom property = createElement( properties, "property" );
+                xmlWriter.startElement( "property" );
 
-                property.setAttribute( "name", key );
+                xmlWriter.addAttribute( "name", key );
 
-                property.setAttribute( "value", value );
+                xmlWriter.addAttribute( "value", value );
+
+                xmlWriter.endElement();
 
             }
         }
+        xmlWriter.endElement();
     }
 }
