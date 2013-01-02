@@ -65,7 +65,6 @@ import org.apache.maven.surefire.report.SafeThrowable;
  */
 public class StatelessXmlReporter
 {
-    private static final String LS = System.getProperty( "line.separator" );
 
     private final File reportsDirectory;
 
@@ -84,37 +83,32 @@ public class StatelessXmlReporter
         throws ReporterException
     {
 
-        FileWriter fw = getFileOutputStream( testSetReportEntry );
-
-        org.apache.maven.shared.utils.xml.XMLWriter ppw =
-            new org.apache.maven.shared.utils.xml.PrettyPrintXMLWriter( fw );
-        ppw.setEncoding( "UTF-8" );
-
-        createTestSuiteElement( ppw, testSetReportEntry, testSetStats, reportNameSuffix );
-
-        showProperties( ppw );
-
-
-        for ( WrappedReportEntry entry : testSetStats.getReportEntries() )
-        {
-            if ( ReportEntryType.success.equals( entry.getReportEntryType() ) )
-            {
-                startTestElement( ppw, entry, reportNameSuffix );
-                ppw.endElement();
-            }
-            else
-            {
-                getTestProblems( ppw, entry, trimStackTrace, reportNameSuffix );
-            }
-
-        }
-
-        ppw.endElement(); // TestSuite
-
-
-
+        FileWriter fw = getFileWriter( testSetReportEntry );
         try
         {
+
+            org.apache.maven.shared.utils.xml.XMLWriter ppw =
+                new org.apache.maven.shared.utils.xml.PrettyPrintXMLWriter( fw );
+            ppw.setEncoding( "UTF-8" );
+
+            createTestSuiteElement( ppw, testSetReportEntry, testSetStats, reportNameSuffix );
+
+            showProperties( ppw );
+
+            for ( WrappedReportEntry entry : testSetStats.getReportEntries() )
+            {
+                if ( ReportEntryType.success.equals( entry.getReportEntryType() ) )
+                {
+                    startTestElement( ppw, entry, reportNameSuffix );
+                    ppw.endElement();
+                }
+                else
+                {
+                    getTestProblems( ppw, entry, trimStackTrace, reportNameSuffix );
+                }
+
+            }
+            ppw.endElement(); // TestSuite
 
         }
         finally
@@ -123,7 +117,7 @@ public class StatelessXmlReporter
         }
     }
 
-    private FileWriter getFileOutputStream( WrappedReportEntry testSetReportEntry )
+    private FileWriter getFileWriter( WrappedReportEntry testSetReportEntry )
     {
         File reportFile = getReportFile( testSetReportEntry, reportsDirectory, reportNameSuffix );
 
@@ -205,7 +199,8 @@ public class StatelessXmlReporter
     }
 
 
-    private void getTestProblems( XMLWriter ppw, WrappedReportEntry report, boolean trimStackTrace, String reportNameSuffix )
+    private void getTestProblems( XMLWriter ppw, WrappedReportEntry report, boolean trimStackTrace,
+                                  String reportNameSuffix )
     {
 
         startTestElement( ppw, report, reportNameSuffix );
