@@ -129,7 +129,7 @@ public class StatelessXmlReporter
             writer = new PrintWriter(
                 new BufferedWriter( new OutputStreamWriter( new FileOutputStream( reportFile ), "UTF-8" ) ) );
 
-            writer.write( "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>" + LS );
+            writer.write( "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + LS );
 
             Xpp3DomWriter.write( new PrettyPrintXMLWriter( writer ), testSuite );
         }
