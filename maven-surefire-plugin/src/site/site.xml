@@ -48,6 +48,7 @@
       <item name="Configuring the Classpath" href="examples/configuring-classpath.html"/>
       <item name="Selecting providers" href="examples/providers.html"/>
       <item name="New error summary" href="newerrorsummary.html"/>
+      <item name="Fork Options and Parallel Test Execution" href="examples/fork-options-and-parallel-execution.html"/>
     </menu>
   </body>
 </project>
