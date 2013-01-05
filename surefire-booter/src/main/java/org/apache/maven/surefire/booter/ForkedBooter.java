@@ -52,7 +52,7 @@ public class ForkedBooter
 
     private static boolean sayGoodbye = false;
 
-    private static final class GoodbyeReporterAndStdStreamCloser
+    private static final class GoodbyReporterAndStdStreamCloser
         implements Runnable
     {
 
@@ -60,7 +60,7 @@ public class ForkedBooter
 
         private PrintStream originalOut;
 
-        public GoodbyeReporterAndStdStreamCloser()
+        public GoodbyReporterAndStdStreamCloser()
         {
             this.originalIn = System.in;
             this.originalOut = System.out;
@@ -72,7 +72,7 @@ public class ForkedBooter
             {
                 originalIn.close();
             }
-            catch ( IOException ignore )
+            catch ( IOException e )
             {
             }
 
@@ -104,7 +104,7 @@ public class ForkedBooter
     {
         final PrintStream originalOut = System.out;
 
-        Runtime.getRuntime().addShutdownHook( new Thread( new GoodbyeReporterAndStdStreamCloser() ) );
+        Runtime.getRuntime().addShutdownHook( new Thread( new GoodbyReporterAndStdStreamCloser() ) );
 
         try
         {
