@@ -370,10 +370,15 @@ public class SurefireLauncher
         return "org.apache.maven.plugins:maven-surefire-report-plugin:" + getSurefireVersion() + ":" + goal;
     }
 
-
     public SurefireLauncher setTestToRun( String basicTest )
     {
         mavenLauncher.sysProp( "test", basicTest );
+        return this;
+    }
+
+    public SurefireLauncher setForkJvm( boolean forkJvm )
+    {
+        mavenLauncher.setForkJvm( true );
         return this;
     }
 }

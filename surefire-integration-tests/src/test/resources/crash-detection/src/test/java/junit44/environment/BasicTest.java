@@ -15,7 +15,13 @@ public class BasicTest
 
     @AfterClass
     public static void killTheVm(){
-        System.exit( 0 );
+        if ( Boolean.getBoolean( "killHard" ))
+        {
+            Runtime.getRuntime().halt( 0 );
+        }
+        else {
+            System.exit( 0 );
+        }
     }
 
 }
