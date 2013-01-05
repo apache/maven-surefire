@@ -27,8 +27,13 @@ import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
 public class CrashDetectionIT
     extends SurefireIntegrationTestCase
 {
-    public void testArgLine()
+    public void testCrashInFork()
     {
         unpack( "crash-detection" ).maven().withFailure().executeTest();
+    }
+
+    public void testCrashInReusableFork()
+    {
+        unpack( "crash-detection" ).forkOncePerThread().threadCount( 1 ).maven().withFailure().executeTest();
     }
 }

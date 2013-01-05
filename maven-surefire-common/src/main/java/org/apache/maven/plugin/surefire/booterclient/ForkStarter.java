@@ -21,6 +21,8 @@ package org.apache.maven.plugin.surefire.booterclient;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.security.AccessControlException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -36,6 +38,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import org.apache.maven.plugin.surefire.AbstractSurefireMojo;
 import org.apache.maven.plugin.surefire.CommonReflector;
 import org.apache.maven.plugin.surefire.StartupReportConfiguration;
@@ -63,14 +66,13 @@ import org.apache.maven.surefire.report.StackTraceWriter;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.util.DefaultScanResult;
 
-
 /**
  * Starts the fork or runs in-process.
  * <p/>
  * Lives only on the plugin-side (not present in remote vms)
  * <p/>
  * Knows how to fork new vms and also how to delegate non-forking invocation to SurefireStarter directly
- *
+ * 
  * @author Jason van Zyl
  * @author Emmanuel Venisse
  * @author Brett Porter
@@ -80,6 +82,36 @@ import org.apache.maven.surefire.util.DefaultScanResult;
  */
 public class ForkStarter
 {
+    /**
+     * Closes an InputStream
+     */
+    private final class InputStreamCloser
+        extends Thread
+    {
+        private InputStream testProvidingInputStream;
+
+        public InputStreamCloser( InputStream testProvidingInputStream )
+        {
+            this.testProvidingInputStream = testProvidingInputStream;
+        }
+
+        @Override
+        public void run()
+        {
+            if ( testProvidingInputStream != null )
+            {
+                try
+                {
+                    testProvidingInputStream.close();
+                }
+                catch ( IOException e )
+                {
+                    // ignore
+                }
+            }
+        }
+    }
+
     private final int forkedProcessTimeoutInSeconds;
 
     private final ProviderConfiguration providerConfiguration;
@@ -104,7 +136,6 @@ public class ForkStarter
             return nextThreadNumber.getAndIncrement();
         }
     };
-
 
     public ForkStarter( ProviderConfiguration providerConfiguration, StartupConfiguration startupConfiguration,
                         ForkConfiguration forkConfiguration, int forkedProcessTimeoutInSeconds,
@@ -167,8 +198,9 @@ public class ForkStarter
     {
 
         ArrayList<Future<RunResult>> results = new ArrayList<Future<RunResult>>( forkCount );
-        ExecutorService executorService = new ThreadPoolExecutor( forkCount, forkCount, 60, TimeUnit.SECONDS,
-                                                                  new ArrayBlockingQueue<Runnable>( forkCount ) );
+        ExecutorService executorService =
+            new ThreadPoolExecutor( forkCount, forkCount, 60, TimeUnit.SECONDS,
+                                    new ArrayBlockingQueue<Runnable>( forkCount ) );
 
         try
         {
@@ -196,16 +228,15 @@ public class ForkStarter
                     public RunResult call()
                         throws Exception
                     {
-                        TestProvidingInputStream testProvidingInputStream =
-                            new TestProvidingInputStream( messageQueue );
+                        TestProvidingInputStream testProvidingInputStream = new TestProvidingInputStream( messageQueue );
 
                         ForkClient forkClient =
-                            new ForkClient( defaultReporterFactory, startupReportConfiguration.getTestVmSystemProperties(),
+                            new ForkClient( defaultReporterFactory,
+                                            startupReportConfiguration.getTestVmSystemProperties(),
                                             testProvidingInputStream );
 
                         return fork( null, new PropertiesWrapper( providerConfiguration.getProviderProperties() ),
-                                     forkClient, effectiveSystemProperties, finalThreadNumber,
-                                     testProvidingInputStream );
+                                     forkClient, effectiveSystemProperties, finalThreadNumber, testProvidingInputStream );
                     }
                 };
 
@@ -270,12 +301,13 @@ public class ForkStarter
                         if ( thisThreadsThreadNumber > forkCount )
                         {
                             // this would be a bug in the ThreadPoolExecutor
-                            throw new IllegalStateException(
-                                "More threads than " + forkCount + " have been created by the ThreadPoolExecutor." );
+                            throw new IllegalStateException( "More threads than " + forkCount
+                                + " have been created by the ThreadPoolExecutor." );
                         }
 
-                        ForkClient forkClient = new ForkClient( defaultReporterFactory,
-                                                                startupReportConfiguration.getTestVmSystemProperties() );
+                        ForkClient forkClient =
+                            new ForkClient( defaultReporterFactory,
+                                            startupReportConfiguration.getTestVmSystemProperties() );
                         return fork( testSet, new PropertiesWrapper( providerConfiguration.getProviderProperties() ),
                                      forkClient, effectiveSystemProperties, thisThreadsThreadNumber, null );
                     }
@@ -353,8 +385,9 @@ public class ForkStarter
                     AbstractSurefireMojo.createCopyAndReplaceThreadNumPlaceholder( effectiveSystemProperties,
                                                                                    threadNumber );
                 systPropsFile =
-                    SystemPropertyManager.writePropertiesFile( filteredProperties, forkConfiguration.getTempDirectory(),
-                                                               "surefire_" + systemPropertiesFileCounter++,
+                    SystemPropertyManager.writePropertiesFile( filteredProperties,
+                                                               forkConfiguration.getTempDirectory(), "surefire_"
+                                                                   + systemPropertiesFileCounter++,
                                                                forkConfiguration.isDebug() );
             }
         }
@@ -365,22 +398,31 @@ public class ForkStarter
 
         final Classpath bootClasspathConfiguration = forkConfiguration.getBootClasspath();
 
-        final Classpath additionlClassPathUrls = startupConfiguration.useSystemClassLoader()
-            ? startupConfiguration.getClasspathConfiguration().getTestClasspath()
-            : null;
+        final Classpath additionlClassPathUrls =
+            startupConfiguration.useSystemClassLoader() ? startupConfiguration.getClasspathConfiguration().getTestClasspath()
+                            : null;
 
         // Surefire-booter + all test classes if "useSystemClassloader"
         // Surefire-booter if !useSystemClassLoader
         Classpath bootClasspath = Classpath.join( bootClasspathConfiguration, additionlClassPathUrls );
 
-        @SuppressWarnings( "unchecked" ) OutputStreamFlushableCommandline cli =
+        @SuppressWarnings( "unchecked" )
+        OutputStreamFlushableCommandline cli =
             forkConfiguration.createCommandLine( bootClasspath.getClassPath(),
                                                  startupConfiguration.getClassLoaderConfiguration(),
                                                  startupConfiguration.isShadefire(), threadNumber );
 
+        final InputStreamCloser inputStreamCloserHook;
         if ( testProvidingInputStream != null )
         {
             testProvidingInputStream.setFlushReceiverProvider( cli );
+
+            inputStreamCloserHook = new InputStreamCloser( testProvidingInputStream );
+            addShutDownHook( inputStreamCloserHook );
+        }
+        else
+        {
+            inputStreamCloserHook = null;
         }
 
         cli.createArg().setFile( surefireProperties );
@@ -410,7 +452,6 @@ public class ForkStarter
                 throw new SurefireBooterForkException( "Error occurred in starting fork, check output in log" );
             }
 
-
         }
         catch ( CommandLineTimeOutException e )
         {
@@ -424,6 +465,11 @@ public class ForkStarter
         finally
         {
             threadedStreamConsumer.close();
+            if ( inputStreamCloserHook != null )
+            {
+                removeShutdownHook( inputStreamCloserHook );
+                inputStreamCloserHook.run();
+            }
             if ( runResult == null )
             {
                 runResult = defaultReporterFactory.getGlobalRunStatistics().getRunResult();
@@ -433,16 +479,16 @@ public class ForkStarter
                 StackTraceWriter errorInFork = forkClient.getErrorInFork();
                 if ( errorInFork != null )
                 {
-                    //noinspection ThrowFromFinallyBlock
-                    throw new RuntimeException(
-                        "There was an error in the forked process\n" + errorInFork.writeTraceToString() );
+                    // noinspection ThrowFromFinallyBlock
+                    throw new RuntimeException( "There was an error in the forked process\n"
+                        + errorInFork.writeTraceToString() );
                 }
                 if ( !forkClient.isSaidGoodBye() )
                 {
-                    //noinspection ThrowFromFinallyBlock
+                    // noinspection ThrowFromFinallyBlock
                     throw new RuntimeException(
-                        "The forked VM terminated without saying properly goodbye. VM crash or System.exit called ?" +
-                            "\nCommand was" + cli.toString() );
+                                                "The forked VM terminated without saying properly goodbye. VM crash or System.exit called ?"
+                                                    + "\nCommand was" + cli.toString() );
                 }
 
             }
@@ -460,15 +506,14 @@ public class ForkStarter
         {
             final ClasspathConfiguration classpathConfiguration = startupConfiguration.getClasspathConfiguration();
             ClassLoader testsClassLoader = classpathConfiguration.createTestClassLoader( false );
-            ClassLoader surefireClassLoader =
-                classpathConfiguration.createInprocSurefireClassLoader( testsClassLoader );
+            ClassLoader surefireClassLoader = classpathConfiguration.createInprocSurefireClassLoader( testsClassLoader );
 
             CommonReflector commonReflector = new CommonReflector( surefireClassLoader );
             Object reporterFactory = commonReflector.createReportingReporterFactory( startupReportConfiguration );
 
             final ProviderFactory providerFactory =
-                new ProviderFactory( startupConfiguration, providerConfiguration, surefireClassLoader, testsClassLoader,
-                                     reporterFactory );
+                new ProviderFactory( startupConfiguration, providerConfiguration, surefireClassLoader,
+                                     testsClassLoader, reporterFactory );
             SurefireProvider surefireProvider = providerFactory.createProvider( false );
             return surefireProvider.getSuites();
         }
@@ -478,4 +523,37 @@ public class ForkStarter
         }
     }
 
+    // TODO use ShutdownHookUtils, once it's public again
+    public static void addShutDownHook( Thread hook )
+    {
+        try
+        {
+            Runtime.getRuntime().addShutdownHook( hook );
+        }
+        catch ( IllegalStateException ignore )
+        {
+            // ignore
+        }
+        catch ( AccessControlException ignore )
+        {
+            // ignore
+        }
+    }
+
+    // TODO use ShutdownHookUtils, once it's public again
+    public static void removeShutdownHook( Thread hook )
+    {
+        try
+        {
+            Runtime.getRuntime().removeShutdownHook( hook );
+        }
+        catch ( IllegalStateException ignore )
+        {
+            // ignore
+        }
+        catch ( AccessControlException ignore )
+        {
+            // ignore
+        }
+    }
 }

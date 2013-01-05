@@ -44,7 +44,7 @@ import org.apache.maven.surefire.util.internal.StringUtils;
 
 /**
  * Knows how to reconstruct *all* the state transmitted over stdout by the forked process.
- *
+ * 
  * @author Kristian Rosenvold
  */
 public class ForkClient
@@ -156,7 +156,11 @@ public class ForkClient
                 case ForkingRunListener.BOOTERCODE_ERROR:
                     errorInFork = deserializeStackStraceWriter( new StringTokenizer( remaining, "," ) );
                     break;
+                case ForkingRunListener.BOOTERCODE_CRASH:
+                    closeTestProvidingInputStream();
+                    break;
                 case ForkingRunListener.BOOTERCODE_BYE:
+                    closeTestProvidingInputStream();
                     saidGoodBye = true;
                     break;
                 default:
@@ -170,6 +174,14 @@ public class ForkClient
         catch ( ReporterException e )
         {
             throw new NestedRuntimeException( e );
+        }
+    }
+
+    private void closeTestProvidingInputStream()
+    {
+        if ( null != testProvidingInputStream )
+        {
+            testProvidingInputStream.close();
         }
     }
 
@@ -217,9 +229,9 @@ public class ForkClient
         String stackTraceMessage = nullableCsv( tokens.nextToken() );
         String smartStackTrace = nullableCsv( tokens.nextToken() );
         String stackTrace = tokens.hasMoreTokens() ? nullableCsv( tokens.nextToken() ) : null;
-        stackTraceWriter = stackTrace != null
-            ? new DeserializedStacktraceWriter( stackTraceMessage, smartStackTrace, stackTrace )
-            : null;
+        stackTraceWriter =
+            stackTrace != null ? new DeserializedStacktraceWriter( stackTraceMessage, smartStackTrace, stackTrace )
+                            : null;
         return stackTraceWriter;
     }
 
@@ -242,7 +254,7 @@ public class ForkClient
 
     /**
      * Used when getting reporters on the plugin side of a fork.
-     *
+     * 
      * @param channelNumber The logical channel number
      * @return A mock provider reporter
      */
