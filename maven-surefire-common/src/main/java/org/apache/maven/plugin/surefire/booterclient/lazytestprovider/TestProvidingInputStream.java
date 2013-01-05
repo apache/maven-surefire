@@ -25,16 +25,14 @@ import java.util.Queue;
 import java.util.concurrent.Semaphore;
 
 /**
- * An {@link InputStream} that, when read, provides test class names out of
- * a queue.
+ * An {@link InputStream} that, when read, provides test class names out of a queue.
  * <p/>
- * The Stream provides only one test at a time, but only after {@link #provideNewTest()}
- * has been invoked.
+ * The Stream provides only one test at a time, but only after {@link #provideNewTest()} has been invoked.
  * <p/>
- * After providing each test class name, followed by a newline character, a flush is
- * performed on the {@link FlushReceiver} provided by the {@link FlushReceiverProvider}
- * that can be set using {@link #setFlushReceiverProvider(FlushReceiverProvider)}.
- *
+ * After providing each test class name, followed by a newline character, a flush is performed on the
+ * {@link FlushReceiver} provided by the {@link FlushReceiverProvider} that can be set using
+ * {@link #setFlushReceiverProvider(FlushReceiverProvider)}.
+ * 
  * @author Andreas Gudian
  */
 public class TestProvidingInputStream
@@ -54,7 +52,7 @@ public class TestProvidingInputStream
 
     /**
      * C'tor
-     *
+     * 
      * @param testItemQueue source of the tests to be read from this stream
      */
     public TestProvidingInputStream( Queue<String> testItemQueue )
@@ -87,7 +85,7 @@ public class TestProvidingInputStream
             {
                 return -1;
             }
-            
+
             String currentElement = testItemQueue.poll();
             if ( null != currentElement )
             {
@@ -118,10 +116,10 @@ public class TestProvidingInputStream
     {
         semaphore.release();
     }
-    
-    public void close() 
+
+    public void close()
     {
-        closed  = true;
+        closed = true;
         semaphore.release();
     }
 }
