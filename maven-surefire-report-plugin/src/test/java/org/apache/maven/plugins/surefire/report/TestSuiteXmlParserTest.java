@@ -96,6 +96,23 @@ public class TestSuiteXmlParserTest
 
     }
 
+    public void notTestParserBadFile() // Determine problem with xml file.
+        throws IOException, SAXException, ParserConfigurationException
+    {
+        TestSuiteXmlParser parser = new TestSuiteXmlParser();
+
+        Collection<ReportTestSuite> oldResult = parser.parse(
+            "../surefire-integration-tests/target/Surefire224WellFormedXmlFailuresIT/testWellFormedXmlFailures/target/surefire-reports/TEST-wellFormedXmlFailures.TestSurefire3.xml" );
+
+        assertNotNull( oldResult );
+
+        assertEquals( 1, oldResult.size() );
+        ReportTestSuite next = oldResult.iterator().next();
+        assertEquals( 2, next.getNumberOfTests() );
+
+
+    }
+
     public void testParserHitsFailsafeSummary()
         throws IOException, SAXException, ParserConfigurationException
     {

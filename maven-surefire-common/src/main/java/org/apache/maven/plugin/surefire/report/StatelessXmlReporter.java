@@ -211,7 +211,7 @@ public class StatelessXmlReporter
 
         if ( report.getMessage() != null && report.getMessage().length() > 0 )
         {
-            ppw.addAttribute( "message", report.getMessage() );
+            ppw.addAttribute( "message", extraEscape( report.getMessage(), true ) );
         }
 
         if ( report.getStackTraceWriter() != null )
@@ -235,7 +235,7 @@ public class StatelessXmlReporter
 
         if ( stackTrace != null )
         {
-            ppw.writeText( stackTrace );
+            ppw.writeText( extraEscape( stackTrace, false ) );
         }
 
         ppw.endElement(); // entry type
@@ -252,7 +252,7 @@ public class StatelessXmlReporter
         if ( stdOut != null && stdOut.trim().length() > 0 )
         {
             xmlWriter.startElement( name );
-            xmlWriter.writeText( stdOut );
+            xmlWriter.writeText( extraEscape( stdOut, false ) );
             xmlWriter.endElement();
         }
     }
@@ -296,4 +296,65 @@ public class StatelessXmlReporter
         }
         xmlWriter.endElement();
     }
+
+    /**
+     * Handle stuff that may pop up in java that is not legal in xml
+     *
+     * @param message   The string
+     * @param attribute
+     * @return The escaped string
+     */
+    private static String extraEscape( String message, boolean attribute )
+    {
+        // Someday convert to xml 1.1 which handles everything but 0 inside string
+        if ( !containsEscapesIllegalnXml10( message ) )
+        {
+            return message;
+        }
+        return escapeXml( message, attribute );
+    }
+
+    private static boolean containsEscapesIllegalnXml10( String message )
+    {
+        int size = message.length();
+        for ( int i = 0; i < size; i++ )
+        {
+            if ( isIllegalEscape( message.charAt( i ) ) )
+            {
+                return true;
+            }
+
+        }
+        return false;
+    }
+
+    private static boolean isIllegalEscape( char c )
+    {
+        return c < 32 && c != '\n' && c != '\r' && c != '\t';
+    }
+
+    private static String escapeXml( String text, boolean attribute )
+    {
+        StringBuilder sb = new StringBuilder( text.length() * 2 );
+        for ( int i = 0; i < text.length(); i++ )
+        {
+            char c = text.charAt( i );
+            if ( isIllegalEscape( c ) )
+            {
+                // uh-oh!  This character is illegal in XML 1.0!
+                // http://www.w3.org/TR/1998/REC-xml-19980210#charsets
+                // we're going to deliberately doubly-XML escape it...
+                // there's nothing better we can do! :-(
+                // SUREFIRE-456
+                sb.append( attribute ? "&#" : "&amp#" ).append( (int) c ).append(
+                    ';' ); // & Will be encoded to amp inside xml encodingSHO
+            }
+            else
+            {
+                sb.append( c );
+            }
+        }
+        return sb.toString();
+    }
+
 }
