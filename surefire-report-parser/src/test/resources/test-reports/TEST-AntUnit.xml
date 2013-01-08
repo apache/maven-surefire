@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite buildFile="/home/pjanes/devel/maven/client/tools/tests/changebase.xml" hostname="merope"
+           name="tests.changebase_xml" timestamp="2008-04-23T13:25:46">
+  <testcase name="testNegativeValue">
+    <time>0.378</time>
+  </testcase>
+  <tests>1</tests>
+  <failures>0</failures>
+  <errors>0</errors>
+  <time>0.378</time>
+</testsuite>

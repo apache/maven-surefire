@@ -65,6 +65,11 @@
       <artifactId>maven-plugin-api</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>org.apache.maven.surefire</groupId>
+      <artifactId>surefire-report-parser</artifactId>
+      <version>${project.version}</version>
+    </dependency>
     <!-- shared -->
     <dependency>
       <groupId>org.apache.maven.reporting</groupId>

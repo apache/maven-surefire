@@ -288,7 +288,7 @@ public class StatelessXmlReporter
 
                 xmlWriter.addAttribute( "name", key );
 
-                xmlWriter.addAttribute( "value", value );
+                xmlWriter.addAttribute( "value", extraEscape( value, true ));
 
                 xmlWriter.endElement();
 
