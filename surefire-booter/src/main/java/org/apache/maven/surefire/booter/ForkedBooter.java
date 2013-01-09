@@ -72,7 +72,7 @@ public class ForkedBooter
             {
                 originalIn.close();
             }
-            catch ( IOException e )
+            catch ( IOException ignore )
             {
             }
 
