@@ -17,9 +17,9 @@ public class Test1
     public void test1()
         throws IOException, InterruptedException
     {
-        Thread.sleep( 750 );
+        int sleepLength = Integer.valueOf( System.getProperty( "sleepLength", "750" ));
+        Thread.sleep(sleepLength);
         dumpPidFile( this );
-
     }
 
     public static void dumpPidFile( TestCase test )
