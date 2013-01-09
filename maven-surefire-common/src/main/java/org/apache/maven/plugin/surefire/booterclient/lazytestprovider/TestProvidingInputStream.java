@@ -48,7 +48,7 @@ public class TestProvidingInputStream
 
     private FlushReceiverProvider flushReceiverProvider;
 
-    private boolean closed = false;
+    private volatile boolean closed = false;
 
     /**
      * C'tor
