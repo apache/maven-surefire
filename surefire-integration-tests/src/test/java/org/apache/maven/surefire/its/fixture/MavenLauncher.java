@@ -377,6 +377,16 @@ public class MavenLauncher
         return validator;
     }
 
+    public void setTimeoutInSeconds( int timeoutInSeconds )
+    {
+        getVerifier().setForkTimeoutInSeconds( timeoutInSeconds );
+    }
+
+    public void setKillProcessAfterTimeout( boolean killProcessAfterTimeout )
+    {
+        getVerifier().setKillForkAfterTimeout( killProcessAfterTimeout );
+    }
+
     private Verifier getVerifier()
     {
         if ( verifier == null )
@@ -392,7 +402,7 @@ public class MavenLauncher
         }
         return verifier;
     }
-
+    
     private File simpleExtractResources( Class<?> cl, String resourcePath )
     {
         if ( !resourcePath.startsWith( "/" ) )

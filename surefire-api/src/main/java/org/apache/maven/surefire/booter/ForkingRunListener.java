@@ -69,8 +69,6 @@ public class ForkingRunListener
 
     public static final byte BOOTERCODE_TEST_SKIPPED = (byte) '9';
 
-    public static final byte BOOTERCODE_CRASH = (byte) 'C';
-
     public static final byte BOOTERCODE_TEST_ASSUMPTIONFAILURE = (byte) 'G';
 
     public static final byte BOOTERCODE_CONSOLE = (byte) 'H';

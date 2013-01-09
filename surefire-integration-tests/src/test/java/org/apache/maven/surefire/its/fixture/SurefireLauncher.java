@@ -370,10 +370,21 @@ public class SurefireLauncher
         return "org.apache.maven.plugins:maven-surefire-report-plugin:" + getSurefireVersion() + ":" + goal;
     }
 
-
     public SurefireLauncher setTestToRun( String basicTest )
     {
         mavenLauncher.sysProp( "test", basicTest );
+        return this;
+    }
+
+    public SurefireLauncher setTimeoutInSeconds( int timeoutInSeconds )
+    {
+        mavenLauncher.setTimeoutInSeconds( timeoutInSeconds );
+        return this;
+    }
+
+    public SurefireLauncher setKillProcessAfterTimeout( boolean killProcessAfterTimeout )
+    {
+        mavenLauncher.setKillProcessAfterTimeout( killProcessAfterTimeout );
         return this;
     }
 }

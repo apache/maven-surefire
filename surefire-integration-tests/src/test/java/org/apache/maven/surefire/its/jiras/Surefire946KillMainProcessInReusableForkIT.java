@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.its;
+package org.apache.maven.surefire.its.jiras;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,26 +19,18 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.junit.Test;
 
-/**
- * @author <a href="mailto:krosenvold@apache.org">Kristian Rosenvold</a>
- */
-public class CrashDetectionIT
-    extends SurefireIntegrationTestCase
+public class Surefire946KillMainProcessInReusableForkIT
+    extends SurefireJUnit4IntegrationTestCase
 {
-    public void testCrashInFork()
+
+    @Test( timeout = 30000 )
+    public void test()
+        throws Exception
     {
-        unpack( "crash-detection" ).maven().withFailure().executeTest();
+        unpack( "surefire-946-killMainProcessInReusableFork" ).setTimeoutInSeconds( 10 ).setKillProcessAfterTimeout( true ).forkOncePerThread().threadCount( 1 ).maven().withFailure().executeTest();
     }
 
-    public void testCrashInReusableFork()
-    {
-        unpack( "crash-detection" ).forkOncePerThread().threadCount( 1 ).maven().withFailure().executeTest();
-    }
-
-    public void testHardCrashInReusableFork()
-    {
-        unpack( "crash-detection" ).forkOncePerThread().threadCount( 1 ).addGoal( "-DkillHard=true" ).maven().withFailure().executeTest();
-    }
 }
