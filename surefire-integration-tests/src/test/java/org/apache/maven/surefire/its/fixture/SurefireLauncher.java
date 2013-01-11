@@ -376,15 +376,9 @@ public class SurefireLauncher
         return this;
     }
 
-    public SurefireLauncher setTimeoutInSeconds( int timeoutInSeconds )
+    public SurefireLauncher setForkJvm( boolean forkJvm )
     {
-        mavenLauncher.setTimeoutInSeconds( timeoutInSeconds );
-        return this;
-    }
-
-    public SurefireLauncher setKillProcessAfterTimeout( boolean killProcessAfterTimeout )
-    {
-        mavenLauncher.setKillProcessAfterTimeout( killProcessAfterTimeout );
+        mavenLauncher.setForkJvm( true );
         return this;
     }
 }

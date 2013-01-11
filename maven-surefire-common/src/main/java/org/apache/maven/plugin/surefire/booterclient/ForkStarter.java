@@ -448,7 +448,7 @@ public class ForkStarter
             final int timeout = forkedProcessTimeoutInSeconds > 0 ? forkedProcessTimeoutInSeconds : 0;
             final int result =
                 CommandLineUtils.executeCommandLine( cli, testProvidingInputStream, threadedStreamConsumer,
-                                                     threadedStreamConsumer, timeout, false, inputStreamCloser );
+                                                     threadedStreamConsumer, timeout, inputStreamCloser );
             if ( result != RunResult.SUCCESS )
             {
                 throw new SurefireBooterForkException( "Error occurred in starting fork, check output in log" );

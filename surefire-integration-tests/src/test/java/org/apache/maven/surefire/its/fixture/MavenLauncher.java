@@ -377,14 +377,8 @@ public class MavenLauncher
         return validator;
     }
 
-    public void setTimeoutInSeconds( int timeoutInSeconds )
-    {
-        getVerifier().setForkTimeoutInSeconds( timeoutInSeconds );
-    }
-
-    public void setKillProcessAfterTimeout( boolean killProcessAfterTimeout )
-    {
-        getVerifier().setKillForkAfterTimeout( killProcessAfterTimeout );
+    public void setForkJvm( boolean forkJvm ) {
+        getVerifier().setForkJvm( forkJvm );
     }
 
     private Verifier getVerifier()
