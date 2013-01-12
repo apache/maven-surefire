@@ -124,4 +124,8 @@ public interface SurefireExecutionParameters
     Boolean getFailIfNoSpecifiedTests();
 
     void setFailIfNoSpecifiedTests( Boolean failIfNoSpecifiedTests );
+
+    List<String> getDependenciesToScan();
+
+    void setDependenciesToScan(List<String> dependenciesToScan);
 }

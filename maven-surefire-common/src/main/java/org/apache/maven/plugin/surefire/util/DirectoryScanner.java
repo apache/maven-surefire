@@ -18,12 +18,14 @@ package org.apache.maven.plugin.surefire.util;
  * specific language governing permissions and limitations
  * under the License.
  */
+import static org.apache.maven.plugin.surefire.util.ScannerUtil.convertToJavaClassName;
+import static org.apache.maven.plugin.surefire.util.ScannerUtil.processIncludesExcludes;
+import static org.apache.maven.plugin.surefire.util.ScannerUtil.stripBaseDir;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import org.apache.commons.lang3.StringUtils;
+
 import org.apache.maven.surefire.util.DefaultScanResult;
 
 /**
@@ -34,13 +36,6 @@ import org.apache.maven.surefire.util.DefaultScanResult;
  */
 public class DirectoryScanner
 {
-
-    private static final String FS = System.getProperty( "file.separator" );
-
-    private static final String JAVA_SOURCE_FILE_EXTENSION = ".java";
-
-    private static final String JAVA_CLASS_FILE_EXTENSION = ".class";
-
     private final File basedir;
 
     private final List<String> includes;
@@ -90,40 +85,5 @@ public class DirectoryScanner
             }
         }
         return new DefaultScanResult( result );
-    }
-
-    private String convertToJavaClassName( String test )
-    {
-        return StringUtils.removeEnd( test, ".class" ).replace( FS, "." );
-    }
-
-    private String stripBaseDir( String basedir, String test )
-    {
-        return StringUtils.removeStart( test, basedir );
-    }
-
-    private static String[] processIncludesExcludes( List<String> list )
-    {
-        List<String> newList = new ArrayList<String>();
-        for ( Object aList : list )
-        {
-            String include = (String) aList;
-            String[] includes = include.split( "," );
-            Collections.addAll( newList, includes );
-        }
-
-        String[] incs = new String[newList.size()];
-
-        for ( int i = 0; i < incs.length; i++ )
-        {
-            String inc = newList.get( i );
-            if ( inc.endsWith( JAVA_SOURCE_FILE_EXTENSION ) )
-            {
-                inc = StringUtils.removeEnd( inc, JAVA_SOURCE_FILE_EXTENSION ) + JAVA_CLASS_FILE_EXTENSION;
-            }
-            incs[i] = inc;
-
-        }
-        return incs;
     }
 }
