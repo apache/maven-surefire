@@ -39,7 +39,7 @@
   <custom>
     <fluidoSkin>
       <topBarEnabled>true</topBarEnabled>
-      <sideBarEnabled>false</sideBarEnabled>
+      <sideBarEnabled>true</sideBarEnabled>
       <googleSearch>
         <sitesearch>${project.url}</sitesearch>
       </googleSearch>
