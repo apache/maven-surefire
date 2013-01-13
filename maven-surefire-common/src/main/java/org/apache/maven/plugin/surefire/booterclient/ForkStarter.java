@@ -51,6 +51,7 @@ import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
 import org.apache.maven.shared.utils.cli.CommandLineException;
 import org.apache.maven.shared.utils.cli.CommandLineTimeOutException;
 import org.apache.maven.shared.utils.cli.CommandLineUtils;
+import org.apache.maven.shared.utils.cli.ShutdownHookUtils;
 import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.ClasspathConfiguration;
 import org.apache.maven.surefire.booter.KeyValueSource;
@@ -419,7 +420,7 @@ public class ForkStarter
             testProvidingInputStream.setFlushReceiverProvider( cli );
             inputStreamCloser = new InputStreamCloser( testProvidingInputStream );
             inputStreamCloserHook = new Thread( inputStreamCloser );
-            addShutDownHook( inputStreamCloserHook );
+            ShutdownHookUtils.addShutDownHook( inputStreamCloserHook );
         }
         else
         {
@@ -470,7 +471,7 @@ public class ForkStarter
             if ( inputStreamCloser != null )
             {
                 inputStreamCloser.run();
-                removeShutdownHook( inputStreamCloserHook );
+                ShutdownHookUtils.removeShutdownHook( inputStreamCloserHook );
             }
             if ( runResult == null )
             {
@@ -522,40 +523,6 @@ public class ForkStarter
         catch ( SurefireExecutionException e )
         {
             throw new SurefireBooterForkException( "Unable to create classloader to find test suites", e );
-        }
-    }
-
-    // TODO use ShutdownHookUtils, once it's public again
-    public static void addShutDownHook( Thread hook )
-    {
-        try
-        {
-            Runtime.getRuntime().addShutdownHook( hook );
-        }
-        catch ( IllegalStateException ignore )
-        {
-            // ignore
-        }
-        catch ( AccessControlException ignore )
-        {
-            // ignore
-        }
-    }
-
-    // TODO use ShutdownHookUtils, once it's public again
-    public static void removeShutdownHook( Thread hook )
-    {
-        try
-        {
-            Runtime.getRuntime().removeShutdownHook( hook );
-        }
-        catch ( IllegalStateException ignore )
-        {
-            // ignore
-        }
-        catch ( AccessControlException ignore )
-        {
-            // ignore
         }
     }
 }
