@@ -377,6 +377,10 @@ public class MavenLauncher
         return validator;
     }
 
+    public void setForkJvm( boolean forkJvm ) {
+        getVerifier().setForkJvm( forkJvm );
+    }
+
     private Verifier getVerifier()
     {
         if ( verifier == null )
@@ -392,7 +396,7 @@ public class MavenLauncher
         }
         return verifier;
     }
-
+    
     private File simpleExtractResources( Class<?> cl, String resourcePath )
     {
         if ( !resourcePath.startsWith( "/" ) )

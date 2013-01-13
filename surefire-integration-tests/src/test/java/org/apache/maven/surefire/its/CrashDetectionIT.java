@@ -36,4 +36,9 @@ public class CrashDetectionIT
     {
         unpack( "crash-detection" ).forkOncePerThread().threadCount( 1 ).maven().withFailure().executeTest();
     }
+
+    public void testHardCrashInReusableFork()
+    {
+        unpack( "crash-detection" ).forkOncePerThread().threadCount( 1 ).addGoal( "-DkillHard=true" ).maven().withFailure().executeTest();
+    }
 }

@@ -156,11 +156,7 @@ public class ForkClient
                 case ForkingRunListener.BOOTERCODE_ERROR:
                     errorInFork = deserializeStackStraceWriter( new StringTokenizer( remaining, "," ) );
                     break;
-                case ForkingRunListener.BOOTERCODE_CRASH:
-                    closeTestProvidingInputStream();
-                    break;
                 case ForkingRunListener.BOOTERCODE_BYE:
-                    closeTestProvidingInputStream();
                     saidGoodBye = true;
                     break;
                 default:
@@ -174,14 +170,6 @@ public class ForkClient
         catch ( ReporterException e )
         {
             throw new NestedRuntimeException( e );
-        }
-    }
-
-    private void closeTestProvidingInputStream()
-    {
-        if ( null != testProvidingInputStream )
-        {
-            testProvidingInputStream.close();
         }
     }
 

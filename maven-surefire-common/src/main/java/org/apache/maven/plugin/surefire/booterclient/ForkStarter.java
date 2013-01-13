@@ -51,6 +51,7 @@ import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
 import org.apache.maven.shared.utils.cli.CommandLineException;
 import org.apache.maven.shared.utils.cli.CommandLineTimeOutException;
 import org.apache.maven.shared.utils.cli.CommandLineUtils;
+import org.apache.maven.shared.utils.cli.ShutdownHookUtils;
 import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.ClasspathConfiguration;
 import org.apache.maven.surefire.booter.KeyValueSource;
@@ -86,7 +87,7 @@ public class ForkStarter
      * Closes an InputStream
      */
     private final class InputStreamCloser
-        extends Thread
+        implements Runnable
     {
         private InputStream testProvidingInputStream;
 
@@ -95,8 +96,7 @@ public class ForkStarter
             this.testProvidingInputStream = testProvidingInputStream;
         }
 
-        @Override
-        public void run()
+        public synchronized void run()
         {
             if ( testProvidingInputStream != null )
             {
@@ -108,6 +108,7 @@ public class ForkStarter
                 {
                     // ignore
                 }
+                testProvidingInputStream = null;
             }
         }
     }
@@ -412,16 +413,18 @@ public class ForkStarter
                                                  startupConfiguration.getClassLoaderConfiguration(),
                                                  startupConfiguration.isShadefire(), threadNumber );
 
-        final InputStreamCloser inputStreamCloserHook;
+        final InputStreamCloser inputStreamCloser;
+        final Thread inputStreamCloserHook;
         if ( testProvidingInputStream != null )
         {
             testProvidingInputStream.setFlushReceiverProvider( cli );
-
-            inputStreamCloserHook = new InputStreamCloser( testProvidingInputStream );
-            addShutDownHook( inputStreamCloserHook );
+            inputStreamCloser = new InputStreamCloser( testProvidingInputStream );
+            inputStreamCloserHook = new Thread( inputStreamCloser );
+            ShutdownHookUtils.addShutDownHook( inputStreamCloserHook );
         }
         else
         {
+            inputStreamCloser = null;
             inputStreamCloserHook = null;
         }
 
@@ -446,7 +449,7 @@ public class ForkStarter
             final int timeout = forkedProcessTimeoutInSeconds > 0 ? forkedProcessTimeoutInSeconds : 0;
             final int result =
                 CommandLineUtils.executeCommandLine( cli, testProvidingInputStream, threadedStreamConsumer,
-                                                     threadedStreamConsumer, timeout );
+                                                     threadedStreamConsumer, timeout, inputStreamCloser );
             if ( result != RunResult.SUCCESS )
             {
                 throw new SurefireBooterForkException( "Error occurred in starting fork, check output in log" );
@@ -465,10 +468,10 @@ public class ForkStarter
         finally
         {
             threadedStreamConsumer.close();
-            if ( inputStreamCloserHook != null )
+            if ( inputStreamCloser != null )
             {
-                removeShutdownHook( inputStreamCloserHook );
-                inputStreamCloserHook.run();
+                inputStreamCloser.run();
+                ShutdownHookUtils.removeShutdownHook( inputStreamCloserHook );
             }
             if ( runResult == null )
             {
@@ -520,40 +523,6 @@ public class ForkStarter
         catch ( SurefireExecutionException e )
         {
             throw new SurefireBooterForkException( "Unable to create classloader to find test suites", e );
-        }
-    }
-
-    // TODO use ShutdownHookUtils, once it's public again
-    public static void addShutDownHook( Thread hook )
-    {
-        try
-        {
-            Runtime.getRuntime().addShutdownHook( hook );
-        }
-        catch ( IllegalStateException ignore )
-        {
-            // ignore
-        }
-        catch ( AccessControlException ignore )
-        {
-            // ignore
-        }
-    }
-
-    // TODO use ShutdownHookUtils, once it's public again
-    public static void removeShutdownHook( Thread hook )
-    {
-        try
-        {
-            Runtime.getRuntime().removeShutdownHook( hook );
-        }
-        catch ( IllegalStateException ignore )
-        {
-            // ignore
-        }
-        catch ( AccessControlException ignore )
-        {
-            // ignore
         }
     }
 }

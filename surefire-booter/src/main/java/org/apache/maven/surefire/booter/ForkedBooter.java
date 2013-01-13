@@ -21,7 +21,6 @@ package org.apache.maven.surefire.booter;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
@@ -36,7 +35,7 @@ import org.apache.maven.surefire.util.LazyTestsToRun;
  * <p/>
  * Deals with deserialization of the booter wire-level protocol
  * <p/>
- * 
+ *
  * @author Jason van Zyl
  * @author Emmanuel Venisse
  * @author Kristian Rosenvold
@@ -44,58 +43,10 @@ import org.apache.maven.surefire.util.LazyTestsToRun;
 public class ForkedBooter
 {
 
-    private final static long SYSTEM_EXIT_TIMEOUT = 30 * 1000;
-
-    private final static String GOODBYE_MESSAGE = ( (char) ForkingRunListener.BOOTERCODE_BYE ) + ",0,BYE!";
-
-    private final static String CRASH_MESSAGE = ( (char) ForkingRunListener.BOOTERCODE_CRASH ) + ",0,F!";
-
-    private static boolean sayGoodbye = false;
-
-    private static final class GoodbyeReporterAndStdStreamCloser
-        implements Runnable
-    {
-
-        private InputStream originalIn;
-
-        private PrintStream originalOut;
-
-        public GoodbyeReporterAndStdStreamCloser()
-        {
-            this.originalIn = System.in;
-            this.originalOut = System.out;
-        }
-
-        public void run()
-        {
-            try
-            {
-                originalIn.close();
-            }
-            catch ( IOException ignore )
-            {
-            }
-
-            if ( sayGoodbye )
-            {
-                originalOut.println( GOODBYE_MESSAGE );
-            }
-            else
-            {
-                originalOut.println( CRASH_MESSAGE );
-            }
-
-            originalOut.flush();
-            originalOut.close();
-        }
-    }
-
     /**
      * This method is invoked when Surefire is forked - this method parses and organizes the arguments passed to it and
-     * then calls the Surefire class' run method.
-     * <p/>
-     * The system exit code will be 1 if an exception is thrown.
-     * 
+     * then calls the Surefire class' run method. <p/> The system exit code will be 1 if an exception is thrown.
+     *
      * @param args Commandline arguments
      * @throws Throwable Upon throwables
      */
@@ -103,9 +54,6 @@ public class ForkedBooter
         throws Throwable
     {
         final PrintStream originalOut = System.out;
-
-        Runtime.getRuntime().addShutdownHook( new Thread( new GoodbyeReporterAndStdStreamCloser() ) );
-
         try
         {
             if ( args.length > 1 )
@@ -123,8 +71,8 @@ public class ForkedBooter
             boolean readTestsFromInputStream = providerConfiguration.isReadTestsFromInStream();
 
             final ClasspathConfiguration classpathConfiguration = startupConfiguration.getClasspathConfiguration();
-            final ClassLoader testClassLoader =
-                classpathConfiguration.createForkingTestClassLoader( startupConfiguration.isManifestOnlyJarRequestedAndUsable() );
+            final ClassLoader testClassLoader = classpathConfiguration.createForkingTestClassLoader(
+                startupConfiguration.isManifestOnlyJarRequestedAndUsable() );
 
             startupConfiguration.writeSurefireTestClasspathProperty();
 
@@ -144,7 +92,8 @@ public class ForkedBooter
 
             try
             {
-                runSuitesInProcess( testSet, testClassLoader, startupConfiguration, providerConfiguration, originalOut );
+                runSuitesInProcess( testSet, testClassLoader, startupConfiguration, providerConfiguration,
+                                    originalOut );
             }
             catch ( InvocationTargetException t )
             {
@@ -162,8 +111,10 @@ public class ForkedBooter
                 ForkingRunListener.encode( stringBuffer, stackTraceWriter, false );
                 originalOut.println( ( (char) ForkingRunListener.BOOTERCODE_ERROR ) + ",0," + stringBuffer.toString() );
             }
-
-            sayGoodbye = true;
+            // Say bye.
+            originalOut.println( ( (char) ForkingRunListener.BOOTERCODE_BYE ) + ",0,BYE!" );
+            originalOut.flush();
+            // noinspection CallToSystemExit
             exit( 0 );
         }
         catch ( Throwable t )
@@ -176,11 +127,14 @@ public class ForkedBooter
         }
     }
 
+    private final static long SYSTEM_EXIT_TIMEOUT = 30 * 1000;
+
     private static void exit( final int returnCode )
     {
         launchLastDitchDaemonShutdownThread( returnCode );
         System.exit( returnCode );
     }
+
 
     private static RunResult runSuitesInProcess( Object testSet, ClassLoader testsClassLoader,
                                                  StartupConfiguration startupConfiguration,
