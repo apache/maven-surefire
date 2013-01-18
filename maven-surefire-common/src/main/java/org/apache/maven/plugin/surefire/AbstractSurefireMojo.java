@@ -329,10 +329,12 @@ public abstract class AbstractSurefireMojo
     protected Boolean failIfNoTests;
 
     /**
+     * <strong>DEPRECATED</strong> since version 2.14. Use <code>forkCount</code> and <code>reuseForks</code> instead.<br/>
+     * <br/>
      * Option to specify the forking mode. Can be "never", "once", "always", "perthread". "none" and "pertest" are also accepted
-     * for backwards compatibility. "always" forks for each test-class. "perthread" will create "threadCount" parallel forks, each executing one test-class, see also parameter reuseForks.<br/>
+     * for backwards compatibility. "always" forks for each test-class. "perthread" will create <code>threadCount</code> parallel forks, each executing one test-class, see also parameter <code>reuseForks</code>.<br/>
      * The system properties and the "argLine" of the forked processes may contain the place holder string <code>${surefire.threadNumber}</code>,
-     * which is replaced with a fixed number for each thread, ranging from 1 to "threadCount".
+     * which is replaced with a fixed number for each thread, ranging from 1 to <code>threadCount</code>.
      *
      * @since 2.1
      */
@@ -433,8 +435,8 @@ public abstract class AbstractSurefireMojo
     protected String testNGArtifactName;
 
     /**
-     * (forkMode=perthread or TestNG/JUnit 4.7 provider) The attribute thread-count allows you to specify how many threads should be
-     * allocated for this execution. Only makes sense to use in conjunction with the <code>parallel</code> parameter or with forkMode=perthread.
+     * (TestNG/JUnit 4.7 provider) The attribute thread-count allows you to specify how many threads should be
+     * allocated for this execution. Only makes sense to use in conjunction with the <code>parallel</code> parameter.
      *
      * @since 2.2
      */
@@ -443,13 +445,28 @@ public abstract class AbstractSurefireMojo
 
 
     /**
-     * Indicates if forks can be reused. Currently only meaningful
-     * when forking N parallel forks
+     * Option to specify the number of VMs to fork in parallel in order to execute the tests.
+     * When terminated with "C", the number part is multiplied with the number of CPU cores. Floating point value are only accepted together with "C".
+     * If set to "0", no VM is forked and all tests are executed within the main process.<br/>
+     * <br/>
+     * Example values: "1.5C", "4"<br/>
+     * <br/>
+     * The system properties and the <code>argLine</code> of the forked processes may contain the place holder string <code>${surefire.forkNumber}</code>,
+     * which is replaced with a fixed number for each of the parallel forks, ranging from <code>1</code> to the effective value of <code>forkCount</code>.
+     * 
+     * @since 2.14
+     */
+    @Parameter( property = "forkCount", defaultValue="1")
+    private String forkCount;
+
+    /**
+     * Indicates if forked VMs can be reused. If set to "false", a new VM is forked for each test class to be executed. 
+     * If set to "true", up to <code>forkCount</code> VMs will be forked and then reused to execute all tests.
      *
      * @since 2.13
      */
 
-    @Parameter( property = "reuseForks", defaultValue = "false" )
+    @Parameter( property = "reuseForks", defaultValue = "true" )
     private boolean reuseForks;
 
     /**
@@ -587,11 +604,20 @@ public abstract class AbstractSurefireMojo
 
     private Toolchain toolchain;
 
+    private int effectiveForkCount = -1;
+    
     /**
      * The placeholder that is replaced by the executing thread's running number. The thread number
      * range starts with 1
+     * Deprecated.
      */
     public static final String THREAD_NUMBER_PLACEHOLDER = "${surefire.threadNumber}";
+
+    /**
+     * The placeholder that is replaced by the executing fork's running number. The fork number
+     * range starts with 1
+     */
+    public static final String FORK_NUMBER_PLACEHOLDER = "${surefire.forkNumber}";
 
     protected abstract String getPluginName();
 
@@ -664,6 +690,7 @@ public abstract class AbstractSurefireMojo
         }
         else
         {
+            convertDeprecatedForkMode();
             ensureWorkingDirectoryExists();
             ensureParallelRunningCompatibility();
             ensureThreadCountWithPerThread();
@@ -772,9 +799,9 @@ public abstract class AbstractSurefireMojo
             new RunOrderParameters( getRunOrder(), getStatisticsFileName( getConfigChecksum() ) );
 
         final RunResult result;
-        if ( isForkModeNever() )
+        if ( isNotForking() )
         {
-            createCopyAndReplaceThreadNumPlaceholder( effectiveProperties, 1 ).copyToSystemProperties();
+            createCopyAndReplaceForkNumPlaceholder( effectiveProperties, 1 ).copyToSystemProperties();
 
             InPluginVMSurefireStarter surefireStarter =
                 createInprocessStarter( provider, classLoaderConfiguration, runOrderParameters );
@@ -793,7 +820,7 @@ public abstract class AbstractSurefireMojo
             {
                 ForkStarter forkStarter =
                     createForkStarter( provider, forkConfiguration, classLoaderConfiguration, runOrderParameters );
-                result = forkStarter.run( effectiveProperties, scanResult, getEffectiveForkMode() );
+                result = forkStarter.run( effectiveProperties, scanResult );
             }
             finally
             {
@@ -805,7 +832,7 @@ public abstract class AbstractSurefireMojo
     }
 
 
-    public static SurefireProperties createCopyAndReplaceThreadNumPlaceholder(
+    public static SurefireProperties createCopyAndReplaceForkNumPlaceholder(
         SurefireProperties effectiveSystemProperties, int threadNumber )
     {
         SurefireProperties filteredProperties = new SurefireProperties( effectiveSystemProperties );
@@ -814,9 +841,11 @@ public abstract class AbstractSurefireMojo
         {
             if ( entry.getValue() instanceof String )
             {
-                filteredProperties.put( entry.getKey(),
-                                        ( (String) entry.getValue() ).replace( THREAD_NUMBER_PLACEHOLDER,
-                                                                               threadNumberString ) );
+                String value = (String) entry.getValue();
+                value = value.replace( THREAD_NUMBER_PLACEHOLDER, threadNumberString );
+                value = value.replace( FORK_NUMBER_PLACEHOLDER, threadNumberString );
+
+                filteredProperties.put( entry.getKey(), value );
             }
         }
         return filteredProperties;
@@ -941,11 +970,6 @@ public abstract class AbstractSurefireMojo
         return dependencyResolver.isWithinVersionSpec( artifact, "[4.0,)" );
     }
 
-    boolean isForkModeNever()
-    {
-        return isForkModeNever( getEffectiveForkMode() );
-    }
-
     static boolean isForkModeNever( String forkMode )
     {
         return ForkConfiguration.FORK_NEVER.equals( forkMode );
@@ -953,7 +977,7 @@ public abstract class AbstractSurefireMojo
 
     boolean isForking()
     {
-        return !isForkModeNever();
+        return 0 < getEffectiveForkCount();
     }
 
     String getEffectiveForkMode()
@@ -1392,10 +1416,61 @@ public abstract class AbstractSurefireMojo
                                       getEffectiveForkCount(), reuseForks );
     }
 
-
-    private int getEffectiveForkCount()
+    private void convertDeprecatedForkMode()
     {
-        return ForkConfiguration.FORK_PERTHREAD.equals( getEffectiveForkMode() ) ? getThreadCount() : 1;
+        String effectiveForkMode = getEffectiveForkMode();
+        // FORK_ONCE (default) is represented by the default values of forkCount and reuseForks 
+        if ( ForkConfiguration.FORK_PERTHREAD.equals( effectiveForkMode ) )
+        {
+            forkCount = String.valueOf(threadCount);
+        }
+        else if ( ForkConfiguration.FORK_NEVER.equals( effectiveForkMode ) )
+        {
+            forkCount = "0";
+        } else if ( ForkConfiguration.FORK_ALWAYS.equals( effectiveForkMode )) {
+            forkCount = "1";
+            reuseForks = false;
+        }
+
+        if ( !ForkConfiguration.FORK_ONCE.equals( getForkMode() ) ) 
+        {
+            getLog().warn( "The parameter forkMode is deprecated since version 2.14. Use forkCount and reuseForks instead." );
+        }
+    }
+
+    protected int getEffectiveForkCount()
+    {
+        if ( effectiveForkCount < 0 )
+        {
+            try
+            {
+                effectiveForkCount = convertWithCoreCount( forkCount );
+            }
+            catch ( NumberFormatException ignored )
+            {
+            }
+
+            if ( effectiveForkCount < 0 )
+            {
+                throw new IllegalArgumentException( "Fork count " + forkCount.trim() + " is not a legal value." );
+            }
+        }
+
+        return effectiveForkCount;
+    }
+
+    protected int convertWithCoreCount( String count )
+    {
+        String trimmed = count.trim();
+        if ( trimmed.endsWith( "C" ) )
+        {
+            double multiplier = Double.parseDouble( trimmed.substring( 0, trimmed.length() - 1 ) );
+            return (int) ( multiplier * ( (double) Runtime.getRuntime().availableProcessors() ) );
+        }
+        else
+        {
+            return Integer.parseInt( trimmed );
+        }
     }
 
     private String getEffectiveDebugForkedProcess()
@@ -1482,6 +1557,8 @@ public abstract class AbstractSurefireMojo
         checksum.add( isUseFile() );
         checksum.add( isRedirectTestOutputToFile() );
         checksum.add( getForkMode() );
+        checksum.add( getForkCount() );
+        checksum.add( isReuseForks() );
         checksum.add( getJvm() );
         checksum.add( getArgLine() );
         checksum.add( getDebugForkedProcess() );
@@ -1770,9 +1847,9 @@ public abstract class AbstractSurefireMojo
     void ensureParallelRunningCompatibility()
         throws MojoFailureException
     {
-        if ( isMavenParallel() && isForkModeNever() )
+        if ( isMavenParallel() && isNotForking() )
         {
-            throw new MojoFailureException( "parallel maven execution is not compatible with surefire forkmode NEVER" );
+            throw new MojoFailureException( "parallel maven execution is not compatible with surefire forkCount 0" );
         }
     }
 
@@ -1787,10 +1864,15 @@ public abstract class AbstractSurefireMojo
 
     void warnIfUselessUseSystemClassLoaderParameter()
     {
-        if ( isUseSystemClassLoader() && isForkModeNever() )
+        if ( isUseSystemClassLoader() && isNotForking() )
         {
             getLog().warn( "useSystemClassloader setting has no effect when not forking" );
         }
+    }
+
+    private boolean isNotForking()
+    {
+        return !isForking();
     }
 
     void warnIfDefunctGroupsCombinations()
@@ -2478,4 +2560,13 @@ public abstract class AbstractSurefireMojo
         this.testSourceDirectory = testSourceDirectory;
     }
 
+    public String getForkCount()
+    {
+        return forkCount;
+    }
+
+    public boolean isReuseForks()
+    {
+        return reuseForks;
+    }
 }
