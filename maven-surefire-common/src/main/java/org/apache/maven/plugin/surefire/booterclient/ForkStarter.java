@@ -22,7 +22,6 @@ package org.apache.maven.plugin.surefire.booterclient;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.AccessControlException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -150,8 +149,7 @@ public class ForkStarter
         defaultReporterFactory = new DefaultReporterFactory( startupReportConfiguration );
     }
 
-    public RunResult run( SurefireProperties effectiveSystemProperties, DefaultScanResult scanResult,
-                          String requestedForkMode )
+    public RunResult run( SurefireProperties effectiveSystemProperties, DefaultScanResult scanResult )
         throws SurefireBooterForkException, SurefireExecutionException
     {
         final RunResult result;
@@ -159,7 +157,7 @@ public class ForkStarter
         {
             Properties providerProperties = providerConfiguration.getProviderProperties();
             scanResult.writeTo( providerProperties );
-            if ( ForkConfiguration.FORK_ONCE.equals( requestedForkMode ) )
+            if ( isForkOnce() )
             {
                 final ForkClient forkClient =
                     new ForkClient( defaultReporterFactory, startupReportConfiguration.getTestVmSystemProperties() );
@@ -167,11 +165,11 @@ public class ForkStarter
                     fork( null, new PropertiesWrapper( providerProperties ), forkClient, effectiveSystemProperties, 1,
                           null );
             }
-            else if ( ForkConfiguration.FORK_ALWAYS.equals( requestedForkMode ) )
+            else if ( isForkAlways() )
             {
                 result = runSuitesForkPerTestSet( effectiveSystemProperties, 1 );
             }
-            else if ( ForkConfiguration.FORK_PERTHREAD.equals( requestedForkMode ) )
+            else
             {
                 if ( forkConfiguration.isReuseForks() )
                 {
@@ -182,16 +180,22 @@ public class ForkStarter
                     result = runSuitesForkPerTestSet( effectiveSystemProperties, forkConfiguration.getForkCount() );
                 }
             }
-            else
-            {
-                throw new SurefireExecutionException( "Unknown forkmode: " + requestedForkMode, null );
-            }
         }
         finally
         {
             defaultReporterFactory.close();
         }
         return result;
+    }
+
+    private boolean isForkAlways()
+    {
+        return !forkConfiguration.isReuseForks() && 1 == forkConfiguration.getForkCount();
+    }
+
+    private boolean isForkOnce()
+    {
+        return forkConfiguration.isReuseForks() && 1 == forkConfiguration.getForkCount();
     }
 
     private RunResult runSuitesForkOncePerThread( final SurefireProperties effectiveSystemProperties, int forkCount )
@@ -383,7 +387,7 @@ public class ForkStarter
             if ( effectiveSystemProperties != null )
             {
                 SurefireProperties filteredProperties =
-                    AbstractSurefireMojo.createCopyAndReplaceThreadNumPlaceholder( effectiveSystemProperties,
+                    AbstractSurefireMojo.createCopyAndReplaceForkNumPlaceholder( effectiveSystemProperties,
                                                                                    threadNumber );
                 systPropsFile =
                     SystemPropertyManager.writePropertiesFile( filteredProperties,
