@@ -19,6 +19,7 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
+import java.lang.management.ManagementFactory;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -29,7 +30,7 @@ import org.apache.maven.surefire.its.fixture.TestFile;
 
 /**
  * Test forkMode
- *
+ * 
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
 public class ForkModeIT
@@ -39,36 +40,103 @@ public class ForkModeIT
     {
         String[] pids = doTest( unpack( getProject() ).debugLogging().forkAlways() );
         assertDifferentPids( pids );
+        assertEndWith( pids, "_1_1", 3);
+        assertFalse( "pid 1 is not the same as the main process' pid", pids[0].equals( getMyPID() ) );
     }
 
     public void testForkModePerTest()
     {
         String[] pids = doTest( unpack( getProject() ).debugLogging().forkPerTest() );
         assertDifferentPids( pids );
+        assertEndWith( pids, "_1_1", 3);
+        assertFalse( "pid 1 is not the same as the main process' pid", pids[0].equals( getMyPID() ) );
     }
 
     public void testForkModeNever()
     {
         String[] pids = doTest( unpack( getProject() ).debugLogging().forkNever() );
         assertSamePids( pids );
+        assertEndWith( pids, "_1_1", 3);
+        assertEquals( "my pid is equal to pid 1 of the test", getMyPID(), pids[0] );
     }
 
     public void testForkModeNone()
     {
         String[] pids = doTest( unpack( getProject() ).debugLogging().forkMode( "none" ) );
         assertSamePids( pids );
+        assertEndWith( pids, "_1_1", 3);
+        assertEquals( "my pid is equal to pid 1 of the test", getMyPID(), pids[0] );
     }
 
     public void testForkModeOncePerThreadSingleThread()
     {
         String[] pids = doTest( unpack( getProject() ).debugLogging().forkOncePerThread().threadCount( 1 ) );
         assertSamePids( pids );
+        assertEndWith( pids, "_1_1", 3);
+        assertFalse( "pid 1 is not the same as the main process' pid", pids[0].equals( getMyPID() ) );
     }
 
     public void testForkModeOncePerThreadTwoThreads()
     {
-        String[] pids = doTest( unpack( getProject() ).debugLogging().forkOncePerThread().threadCount( 2 ) );
+        String[] pids = doTest( unpack( getProject() ).debugLogging().forkOncePerThread().threadCount( 2 ).addGoal( "-DsleepLength=1200" ) );
         assertDifferentPids( pids, 2 );
+        assertEndWith( pids, "_1_1", 1);
+        assertEndWith( pids, "_2_2", 2);
+        assertFalse( "pid 1 is not the same as the main process' pid", pids[0].equals( getMyPID() ) );
+    }
+
+    public void testForkCountZero()
+    {
+        String[] pids = doTest( unpack( getProject() ).debugLogging().forkCount( 0 ) );
+        assertSamePids( pids );
+        assertEndWith( pids, "_1_1", 3);
+        assertEquals( "my pid is equal to pid 1 of the test", getMyPID(), pids[0] );
+    }
+
+    public void testForkCountOneNoReuse()
+    {
+        String[] pids = doTest( unpack( getProject() ).debugLogging().forkCount( 1 ).reuseForks( false ) );
+        assertDifferentPids( pids );
+        assertEndWith( pids, "_1_1", 3);
+        assertFalse( "pid 1 is not the same as the main process' pid", pids[0].equals( getMyPID() ) );
+    }
+
+    public void testForkCountOneReuse()
+    {
+        String[] pids = doTest( unpack( getProject() ).debugLogging().forkCount( 1 ).reuseForks( true ) );
+        assertSamePids( pids );
+        assertEndWith( pids, "_1_1", 3);
+        assertFalse( "pid 1 is not the same as the main process' pid", pids[0].equals( getMyPID() ) );
+    }
+
+    public void testForkCountTwoNoReuse()
+    {
+        String[] pids = doTest( unpack( getProject() ).debugLogging().forkCount( 2 ).reuseForks( false ).addGoal( "-DsleepLength=1200" ) );
+        assertDifferentPids( pids );
+        assertEndWith( pids, "_1_1", 1);
+        assertEndWith( pids, "_2_2", 2);
+        assertFalse( "pid 1 is not the same as the main process' pid", pids[0].equals( getMyPID() ) );
+    }
+
+    public void testForkCountTwoReuse()
+    {
+        String[] pids = doTest( unpack( getProject() ).debugLogging().forkCount( 2 ).reuseForks( true ).addGoal( "-DsleepLength=1200" ) );
+        assertDifferentPids( pids, 2 );
+        assertEndWith( pids, "_1_1", 1);
+        assertEndWith( pids, "_2_2", 2);
+        assertFalse( "pid 1 is not the same as the main process' pid", pids[0].equals( getMyPID() ) );
+    }
+
+    private void assertEndWith( String[] pids, String suffix, int expectedMatches )
+    {
+        int matches = 0;
+        for (String pid : pids) {
+            if ( pid.endsWith( suffix )) {
+                matches++;
+            }
+        }
+        
+        assertEquals( "suffix " + suffix + " matched the correct number of pids", expectedMatches, matches );
     }
 
     private void assertDifferentPids( String[] pids, int numOfDifferentPids )
@@ -80,11 +148,13 @@ public class ForkModeIT
     public void testForkModeOnce()
     {
         String[] pids = doTest( unpack( getProject() ).forkOnce() );
-        // DGF It would be nice to assert that "once" was different
-        // from "never" ... but there's no way to check the PID of
-        // Maven itself.  No matter, "once" is tested by setting
-        // argLine, which can't be done except by forking.
         assertSamePids( pids );
+        assertFalse( "pid 1 is not the same as the main process' pid", pids[0].equals( getMyPID() ) );
+    }
+
+    private String getMyPID()
+    {
+        return ManagementFactory.getRuntimeMXBean().getName() + " testValue_1_1";
     }
 
     private void assertSamePids( String[] pids )
@@ -113,7 +183,7 @@ public class ForkModeIT
 
     private String[] doTest( SurefireLauncher forkMode )
     {
-        forkMode.sysProp( "testProperty", "testValue_${surefire.threadNumber}" );
+        forkMode.sysProp( "testProperty", "testValue_${surefire.threadNumber}_${surefire.forkNumber}" );
         final OutputValidator outputValidator = forkMode.executeTest();
         outputValidator.verifyErrorFreeLog().assertTestSuiteResults( 3, 0, 0, 0 );
         String[] pids = new String[3];

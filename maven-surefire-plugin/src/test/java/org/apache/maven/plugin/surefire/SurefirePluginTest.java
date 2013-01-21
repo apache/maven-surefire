@@ -38,6 +38,40 @@ public class SurefirePluginTest
         assertEquals( ForkConfiguration.FORK_ONCE, surefirePlugin.getEffectiveForkMode() );
     }
 
+    public void testForkCountComputation()
+    {
+        SurefirePlugin surefirePlugin = new SurefirePlugin();
+        assertConversionFails( surefirePlugin, "nothing" );
+
+        assertConversionFails( surefirePlugin, "5,0" );
+        assertConversionFails( surefirePlugin, "5.0" );
+        assertConversionFails( surefirePlugin, "5,0C" );
+        assertConversionFails( surefirePlugin, "5.0CC" );
+        
+        assertForkCount( surefirePlugin, 5, "5" );
+        
+        int availableProcessors = Runtime.getRuntime().availableProcessors();
+        assertForkCount( surefirePlugin, 3*availableProcessors, "3C" );
+        assertForkCount( surefirePlugin, (int) ( 2.5*availableProcessors ), "2.5C" );
+        assertForkCount( surefirePlugin, availableProcessors, "1.0001 C" );
+    }
+
+    private void assertForkCount( SurefirePlugin surefirePlugin, int expected, String value )
+    {
+        assertEquals( expected, surefirePlugin.convertWithCoreCount( value ));
+    }
+    
+    private void assertConversionFails( SurefirePlugin surefirePlugin, String value )
+    {
+        try {
+            surefirePlugin.convertWithCoreCount( value );
+        } catch (NumberFormatException nfe)
+        {
+            return;
+        }
+        fail( "Expected NumberFormatException when converting " + value );
+    }
+
     private void setFieldValue( SurefirePlugin plugin, String fieldName, Object value )
         throws NoSuchFieldException, IllegalAccessException
     {

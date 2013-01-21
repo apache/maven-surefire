@@ -116,7 +116,6 @@ public class ForkConfiguration
         }
     }
 
-
     /**
      * @param classPath              cla the classpath arguments
      * @param classpathConfiguration the classpath configuration
@@ -196,7 +195,8 @@ public class ForkConfiguration
 
     private String replaceThreadNumberPlaceholder( String argLine, int threadNumber )
     {
-        return argLine.replace( AbstractSurefireMojo.THREAD_NUMBER_PLACEHOLDER, String.valueOf( threadNumber ) );
+        return argLine.replace( AbstractSurefireMojo.THREAD_NUMBER_PLACEHOLDER, String.valueOf( threadNumber ) )
+                        .replace( AbstractSurefireMojo.FORK_NUMBER_PLACEHOLDER, String.valueOf( threadNumber ) );
     }
 
     /**

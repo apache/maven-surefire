@@ -233,19 +233,29 @@ public class SurefireLauncher
 
     public SurefireLauncher forkPerThread()
     {
-        return forkMode( "perthread" );
+        return forkMode( "perthread" ).reuseForks( false );
     }
 
     public SurefireLauncher forkOncePerThread()
     {
-        forkPerThread();
-        mavenLauncher.sysProp( "reuseForks", true );
-        return this;
+        return forkPerThread().reuseForks( true );
     }
 
     public SurefireLauncher threadCount( int threadCount )
     {
         mavenLauncher.sysProp( "threadCount", threadCount );
+        return this;
+    }
+
+    public SurefireLauncher forkCount( int forkCount )
+    {
+        mavenLauncher.sysProp( "forkCount", forkCount );
+        return this;
+    }
+
+    public SurefireLauncher reuseForks( boolean reuseForks )
+    {
+        mavenLauncher.sysProp( "reuseForks", reuseForks );
         return this;
     }
 
