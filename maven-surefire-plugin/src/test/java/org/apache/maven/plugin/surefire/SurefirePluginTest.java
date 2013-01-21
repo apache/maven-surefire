@@ -52,7 +52,7 @@ public class SurefirePluginTest
         
         int availableProcessors = Runtime.getRuntime().availableProcessors();
         assertForkCount( surefirePlugin, 3*availableProcessors, "3C" );
-        assertForkCount( surefirePlugin, (int) 2.5*availableProcessors, "2.5C" );
+        assertForkCount( surefirePlugin, (int) ( 2.5*availableProcessors ), "2.5C" );
         assertForkCount( surefirePlugin, availableProcessors, "1.0001 C" );
     }
 
