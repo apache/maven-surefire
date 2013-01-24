@@ -54,25 +54,25 @@ mvn -Dmaven.${thisPlugin.toLowerCase()}.debug verify
 
 #{if}(${project.artifactId}=="maven-surefire-plugin")
 +---+
-mvn -Dmaven.surefire.debug="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000 -Xnoagent -Djava.compiler=NONE" test
+mvn -Dmaven.${thisPlugin.toLowerCase()}.debug="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000 -Xnoagent -Djava.compiler=NONE" test
 +---+
 #{else}
 +---+
-mvn -Dmaven.surefire.debug="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000 -Xnoagent -Djava.compiler=NONE" verify
+mvn -Dmaven.${thisPlugin.toLowerCase()}.debug="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000 -Xnoagent -Djava.compiler=NONE" verify
 +---+
 #{end}
 
 Non-forked Tests
 
-  You can force Maven not to fork tests by configuring the <<<forkMode>>> configuration parameter.
+  You can force Maven not to fork tests by setting the configuration parameter <<<forkCount>>> to <0>.
 
 #{if}(${project.artifactId}=="maven-surefire-plugin")
 +---+
-mvn -DforkMode=never test
+mvn -DforkCount=0 test
 +---+
 #{else}
 +---+
-mvn -DforkMode=never verify
+mvn -DforkCount=0 verify
 +---+
 #{end}
 
@@ -81,11 +81,11 @@ mvn -DforkMode=never verify
 
 #{if}(${project.artifactId}=="maven-surefire-plugin")
 +---+
-mvnDebug -DforkMode=never test
+mvnDebug -DforkCount=0 test
 +---+
 #{else}
 +---+
-mvnDebug -DforkMode=never verify
+mvnDebug -DforkCount=0 verify
 +---+
 #{end}
 

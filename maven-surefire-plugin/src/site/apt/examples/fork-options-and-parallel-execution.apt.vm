@@ -58,36 +58,32 @@ Fork Options and Parallel Test Execution
   memory and execution time, but you may be more vulnerable towards race
   conditions or other unexpected and hard to reproduce behavior.
 
-  The other possibility for parallel test execution is <<<forkMode=perthread>>>.
-  It spawns up to <<<threadCount>>> new JVM processes concurrently to execute
-  the tests. The next section covers the details about this and the other
-  <<<forkMode>>> settings.
+  The other possibility for parallel test execution is setting the parameter 
+  <<<forkCount>>> to a value higher than 1. The next section covers the details 
+  about this and the related <<<reuseForks>>> property.
 
 * Forked Test Execution
 
-  The default setting is <<<forkMode=once>>>, which means that Surefire creates
-  one new JVM process to execute all tests in one maven module.
+  The parameter <<<forkCount>>> defines the maximum number of JVM processes
+  that Surefire will spawn <concurrently> to execute the tests. It supports the
+  same syntax as <<<-T>>> in maven-core: if you termniate the value with a 'C',
+  that value will be multiplied with the number of available CPU cores in your
+  system. For example <<<forkCount=2.5C>>> on a Quad-Core system will result
+  in up to ten forked JVM processes.
 
-  Using <<<forkMode=never>>> disables forking and executes the tests within
-  the main maven process. This avoids the additional startup and warm-up time
-  of your JVM, but also means that you might have to account for higher memory
-  requirements, especially PermGen.
+  The parameter <<<reuseForks>>> is used to define whether to terminate the 
+  spawned process after one test class and to create a new process for the next 
+  test in line (<<<reuseForks=false>>>), or whether to reuse the processes to 
+  execute the next tests (<<<reuseForks=true>>>).
 
-  <<<forkMode=always>>> executes each test class in its own JVM process, one
-  after another. It creates the highest level of separation for the test
-  execution, but it would probably also give you the longest execution time
-  of all the available options. Consider it as a last resort.
+  The <default setting> is <<<forkCount=1>>>/<<<reuseForks=true>>>, which means
+  that Surefire creates one new JVM process to execute all tests in one maven
+  module.
 
-  The most powerful setting is <<<forkMode=perthread>>>. Surefire creates up to
-  <<<threadCount>>> JVM processes to execute tests in parallel. Each process
-  executes one test at a time. The parameter <<<reuseForks>>> is used to define
-  whether the process shall terminate after each test and to create a new
-  process for the next test in line (<<<reuseForks=false>>>, the default
-  setting), or whether to reuse the processes to execute the next tests
-  (<<<reuseForks=true>>>, new since Surefire 2.13).
-
-  Please note that <<<reuseForks>>> currently only affects
-  <<<forkMode=perthread>>>.
+  <<<forkMode=1>>>/<<<reuseForks=false>>> executes each test class in its own 
+  JVM process, one after another. It creates the highest level of separation for 
+  the test execution, but it would probably also give you the longest execution 
+  time of all the available options. Consider it as a last resort.
 
   With the <<<argLine>>> property, you can specify additional parameters to be
   passed to the forked JVM process, such as memory settings. System property
@@ -96,13 +92,13 @@ Fork Options and Parallel Test Execution
   specify variables and values to be added to the system properties during the
   test execution.
 
-  You can use the place holder <<<$\{surefire.threadNumber\}>>> within
+  You can use the place holder <<<$\{surefire.forkNumber\}>>> within
   <<<argLine>>>, or within the system properties (both those specified via
   <<<mvn test -D...>>> and via <<<systemPropertyVariables>>>). Before executing
   the tests, Surefire replaces that place holder by the number of the actually
-  executing process, counting from 1 to the value of <<<threadCount>>>.
+  executing process, counting from 1 to the effective value of <<<forkCount>>>.
 
-  For the fork modes other than <<<perthread>>>, the place holder will always be
+  In case forkig is disabled (<<<forkCount=0>>>), the place holder will be
   replaced with <1>.
 
   The following is an example configuration that makes use of up to three forked
@@ -120,12 +116,11 @@ Fork Options and Parallel Test Execution
     <artifactId>${project.artifactId}</artifactId>
     <version>${project.version}</version>
     <configuration>
-        <forkMode>perthread</forkMode>
+        <forkCount>3</threadCount>
         <reuseForks>true</reuseForks>
-        <threadCount>3</threadCount>
         <argLine>-Xmx1024m -XX:MaxPermSize=256m</argLine>
         <systemPropertyVariables>
-            <databaseSchema>MY_TEST_SCHEMA_${surefire.threadNumber}</databaseSchema>
+            <databaseSchema>MY_TEST_SCHEMA_${surefire.forkNumber}</databaseSchema>
         </systemPropertyVariables>
     </configuration>
   </plugin>
@@ -142,20 +137,44 @@ Fork Options and Parallel Test Execution
   Port numbers and file names are other examples of resources for which it may
   be hard or undesired to be shared among concurrent test executions.
 
-* Combining forkMode and parallel
+* Combining forkCount and parallel
 
-  The modes <<<forkMode=never>>> and <<<forkMode=once>>> can be combined freely 
-  with the available settings for <<<parallel>>>.
+  The modes <<<forkCount=0>>> and <<<forkCount=1>>>/<<<reuseForks=true>>> can
+  be combined freely with the available settings for <<<parallel>>>.
 
-  As <<<forkMode=always>>> creates a new JVM process for each test class,
+  As <<<reuseForks=false>>> creates a new JVM process for each test class,
   using <<<parallel=classes>>> would have no effect. You can still use
   <<<parallel=methods>>>, though.
 
-  When using <<<forkMode=perthread>>>, test classes are handed over to the
-  forked process one-by-one. Thus, <<<parallel=classes>>> would not change
-  anything. However, you can use <<<parallel=methods>>>: classes are executed in
-  <<<threadCount=X>>> concurrent processes, each of the processes can then use
-  the same number of <<<X>>> threads to execute the methods of one class in
-  parallel. Please note, that the option <<<perCoreThreadCount>>> only has an
-  effect on the number of threads for method-concurrency, but not on the number
-  of forked processes. 
+  When using <<<reuseForks=true>>> and a <<<forkCount>>> value larger than one,
+  test classes are handed over to the forked process one-by-one. Thus,
+  <<<parallel=classes>>> would not change anything. However, you can use
+  <<<parallel=methods>>>: classes are executed in <<<forkCount>>> concurrent
+  processes, each of the processes can then use <<<threadCount>>> threads to
+  execute the methods of one class in parallel.
+
+* Migrating the Deprecated forkMode Parameter to forkCount and reuseForks
+
+  Surefire versions prior 2.14 used the parameter <<<forkMode>>> to configure
+  forking. Although that parameter is still supported for backward
+  compatibility, users are strongly encouraged to migrate their configuration
+  and use <<<forkCount>>> and <<<reuseForks>>> instead.
+
+  The migration is quite simple, given the following mapping:
+
+*--------------------------+-------------------------------------------+
+ <<Old Setting>>           | <<New Setting>>                           |
+*--------------------------+-------------------------------------------+
+ <<<forkMode=once>>>       | <<<forkCount=1>>> (default),              |
+ (default)                 | <<<reuseForks=true>>> (default)           |
+*--------------------------+-------------------------------------------+
+ <<<forkMode=always>>>     | <<<forkCount=1>>> (default),              |
+                           | <<<reuseForks=false>>>                    |
+*--------------------------+-------------------------------------------+
+ <<<forkMode=never>>>      | <<<forkCount=0>>>                         |
+*--------------------------+-------------------------------------------+
+ <<<forkMode=perthread>>>, | <<<forkCount=N>>>,                        |
+ <<<threadCount=N>>>       | (<<<reuseForks=false>>>, if you did not   |
+                           | had that one set)                         |
+*--------------------------+-------------------------------------------+
+

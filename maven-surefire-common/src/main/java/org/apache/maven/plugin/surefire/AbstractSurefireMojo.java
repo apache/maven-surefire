@@ -332,9 +332,8 @@ public abstract class AbstractSurefireMojo
      * <strong>DEPRECATED</strong> since version 2.14. Use <code>forkCount</code> and <code>reuseForks</code> instead.<br/>
      * <br/>
      * Option to specify the forking mode. Can be "never", "once", "always", "perthread". "none" and "pertest" are also accepted
-     * for backwards compatibility. "always" forks for each test-class. "perthread" will create <code>threadCount</code> parallel forks, each executing one test-class, see also parameter <code>reuseForks</code>.<br/>
-     * The system properties and the "argLine" of the forked processes may contain the place holder string <code>${surefire.threadNumber}</code>,
-     * which is replaced with a fixed number for each thread, ranging from 1 to <code>threadCount</code>.
+     * for backwards compatibility. "always" forks for each test-class. "perthread" will create <code>threadCount</code>
+     * parallel forks, each executing one test-class. See also parameter <code>reuseForks</code>.<br/>
      *
      * @since 2.1
      */
