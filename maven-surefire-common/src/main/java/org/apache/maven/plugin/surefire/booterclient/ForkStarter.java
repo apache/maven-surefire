@@ -126,14 +126,14 @@ public class ForkStarter
 
     private static volatile int systemPropertiesFileCounter = 0;
 
-    private final ThreadLocal<Integer> threadNumber = new ThreadLocal<Integer>()
+    private final ThreadLocal<Integer> forkNumber = new ThreadLocal<Integer>()
     {
-        private final AtomicInteger nextThreadNumber = new AtomicInteger( 1 );
+        private final AtomicInteger nextforkNumber = new AtomicInteger( 1 );
 
         @Override
         protected Integer initialValue()
         {
-            return nextThreadNumber.getAndIncrement();
+            return nextforkNumber.getAndIncrement();
         }
     };
 
@@ -173,7 +173,7 @@ public class ForkStarter
             {
                 if ( forkConfiguration.isReuseForks() )
                 {
-                    result = runSuitesForkOncePerThread( effectiveSystemProperties, forkConfiguration.getForkCount() );
+                    result = runSuitesForkOnceMultiple( effectiveSystemProperties, forkConfiguration.getForkCount() );
                 }
                 else
                 {
@@ -198,7 +198,7 @@ public class ForkStarter
         return forkConfiguration.isReuseForks() && 1 == forkConfiguration.getForkCount();
     }
 
-    private RunResult runSuitesForkOncePerThread( final SurefireProperties effectiveSystemProperties, int forkCount )
+    private RunResult runSuitesForkOnceMultiple( final SurefireProperties effectiveSystemProperties, int forkCount )
         throws SurefireBooterForkException
     {
 
@@ -224,9 +224,9 @@ public class ForkStarter
                 messageQueue.add( clazz.getName() );
             }
 
-            for ( int threadNum = 0; threadNum < forkCount && threadNum < suites.size(); threadNum++ )
+            for ( int forkNum = 0; forkNum < forkCount && forkNum < suites.size(); forkNum++ )
             {
-                final int finalThreadNumber = threadNum + 1;
+                final int finalForkNumber = forkNum + 1;
 
                 Callable<RunResult> pf = new Callable<RunResult>()
                 {
@@ -241,7 +241,7 @@ public class ForkStarter
                                             testProvidingInputStream );
 
                         return fork( null, new PropertiesWrapper( providerConfiguration.getProviderProperties() ),
-                                     forkClient, effectiveSystemProperties, finalThreadNumber, testProvidingInputStream );
+                                     forkClient, effectiveSystemProperties, finalForkNumber, testProvidingInputStream );
                     }
                 };
 
@@ -302,8 +302,8 @@ public class ForkStarter
                     public RunResult call()
                         throws Exception
                     {
-                        int thisThreadsThreadNumber = threadNumber.get();
-                        if ( thisThreadsThreadNumber > forkCount )
+                        int thisThreadsForkNumber = forkNumber.get();
+                        if ( thisThreadsForkNumber > forkCount )
                         {
                             // this would be a bug in the ThreadPoolExecutor
                             throw new IllegalStateException( "More threads than " + forkCount
@@ -314,7 +314,7 @@ public class ForkStarter
                             new ForkClient( defaultReporterFactory,
                                             startupReportConfiguration.getTestVmSystemProperties() );
                         return fork( testSet, new PropertiesWrapper( providerConfiguration.getProviderProperties() ),
-                                     forkClient, effectiveSystemProperties, thisThreadsThreadNumber, null );
+                                     forkClient, effectiveSystemProperties, thisThreadsForkNumber, null );
                     }
                 };
                 results.add( executorService.submit( pf ) );
@@ -370,7 +370,7 @@ public class ForkStarter
     }
 
     private RunResult fork( Object testSet, KeyValueSource providerProperties, ForkClient forkClient,
-                            SurefireProperties effectiveSystemProperties, int threadNumber,
+                            SurefireProperties effectiveSystemProperties, int forkNumber,
                             TestProvidingInputStream testProvidingInputStream )
         throws SurefireBooterForkException
     {
@@ -388,7 +388,7 @@ public class ForkStarter
             {
                 SurefireProperties filteredProperties =
                     AbstractSurefireMojo.createCopyAndReplaceForkNumPlaceholder( effectiveSystemProperties,
-                                                                                   threadNumber );
+                                                                                   forkNumber );
                 systPropsFile =
                     SystemPropertyManager.writePropertiesFile( filteredProperties,
                                                                forkConfiguration.getTempDirectory(), "surefire_"
@@ -415,7 +415,7 @@ public class ForkStarter
         OutputStreamFlushableCommandline cli =
             forkConfiguration.createCommandLine( bootClasspath.getClassPath(),
                                                  startupConfiguration.getClassLoaderConfiguration(),
-                                                 startupConfiguration.isShadefire(), threadNumber );
+                                                 startupConfiguration.isShadefire(), forkNumber );
 
         final InputStreamCloser inputStreamCloser;
         final Thread inputStreamCloserHook;
