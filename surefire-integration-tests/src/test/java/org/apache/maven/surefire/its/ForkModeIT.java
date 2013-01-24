@@ -80,8 +80,6 @@ public class ForkModeIT
     {
         String[] pids = doTest( unpack( getProject() ).debugLogging().forkOncePerThread().threadCount( 2 ).addGoal( "-DsleepLength=1200" ) );
         assertDifferentPids( pids, 2 );
-        assertEndWith( pids, "_1_1", 1);
-        assertEndWith( pids, "_2_2", 2);
         assertFalse( "pid 1 is not the same as the main process' pid", pids[0].equals( getMyPID() ) );
     }
 
@@ -113,8 +111,6 @@ public class ForkModeIT
     {
         String[] pids = doTest( unpack( getProject() ).debugLogging().forkCount( 2 ).reuseForks( false ).addGoal( "-DsleepLength=1200" ) );
         assertDifferentPids( pids );
-        assertEndWith( pids, "_1_1", 1);
-        assertEndWith( pids, "_2_2", 2);
         assertFalse( "pid 1 is not the same as the main process' pid", pids[0].equals( getMyPID() ) );
     }
 
@@ -122,8 +118,6 @@ public class ForkModeIT
     {
         String[] pids = doTest( unpack( getProject() ).debugLogging().forkCount( 2 ).reuseForks( true ).addGoal( "-DsleepLength=1200" ) );
         assertDifferentPids( pids, 2 );
-        assertEndWith( pids, "_1_1", 1);
-        assertEndWith( pids, "_2_2", 2);
         assertFalse( "pid 1 is not the same as the main process' pid", pids[0].equals( getMyPID() ) );
     }
 
