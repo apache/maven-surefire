@@ -69,7 +69,7 @@ Fork Options and Parallel Test Execution
   same syntax as <<<-T>>> in maven-core: if you termniate the value with a 'C',
   that value will be multiplied with the number of available CPU cores in your
   system. For example <<<forkCount=2.5C>>> on a Quad-Core system will result
-  in up to ten forked JVM processes.
+  in forking up to ten concurrent JVM processes that execute tests.
 
   The parameter <<<reuseForks>>> is used to define whether to terminate the 
   spawned process after one test class and to create a new process for the next 

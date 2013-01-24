@@ -171,6 +171,8 @@ Using TestNG
   This is particularly useful for slow tests that can have high concurrency, or to quickly and roughly assess the independance
   and thread safety of your tests and code.
 
+  See also {{{./fork-options-and-parallel-execution.html}Fork Options and Parallel Test Execution}}.
+
 * Using custom listeners and reporters
 
   TestNG provides support for attaching custom listeners, reporters, annotation transformers and method interceptors to your tests.
