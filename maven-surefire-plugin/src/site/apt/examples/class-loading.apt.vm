@@ -33,7 +33,7 @@ Classloading and Forking in Maven Surefire
 
 * Executive Summary
 
- If you're having problems, you'll probably want to tinker with these three settings: <<<forkMode>>>, <<<useSystemClassLoader>>>, and <<<useManifestOnlyJar>>>.
+ If you're having problems, you'll probably want to tinker with these three settings: <<<forkCount>>>, <<<useSystemClassLoader>>>, and <<<useManifestOnlyJar>>>.
 
 * What problem does the Maven Surefire project solve?
 
@@ -167,7 +167,7 @@ java -classpath booter.jar MyApp
 
  * Run mvn with --debug (aka -X) to get more detailed output
 
- * Check your <<<forkMode>>>.  If <<<forkMode=never>>>, it's impossible to use the system classloader or a plain old Java classpath; we have to use an isolated classloader.
+ * Check your <<<forkCount>>>.  If <<<forkCount=0>>> (or <<<forkMode=never>>>, the deprecated version of that), it's impossible to use the system classloader or a plain old Java classpath; we have to use an isolated classloader.
 
  * If you're using the defaults, <<<useSystemClassLoader=true>>> and <<<useManifestOnlyJar=false>>>.  In that case, look at the generated manifest-only Surefire booter JAR.  Open it up (it's just a zip) and read its manifest.
 

@@ -142,6 +142,8 @@ else
   This is particularly useful for slow tests that can have high concurrency.
 
   As of surefire 2.7, no additional dependencies are needed to use the full set of options with parallel.
+  
+  See also {{{./fork-options-and-parallel-execution.html}Fork Options and Parallel Test Execution}}.
 
 * Using custom listeners and reporters
 
@@ -170,7 +172,7 @@ else
 
 * Using a security manager (JUnit3 only)
 
-   As long as forkMode!=never and you use JUnit3, you can run your tests with a java security manager active.
+   As long as forkCount!=0 and you use JUnit3, you can run your tests with a java security manager active.
    The classname of the security manager must be sent as a system property variable to the JUnit3 provider.
 
    JUnit4 uses mechanisms internally that are not compatible with the tested security managers and is not supported
