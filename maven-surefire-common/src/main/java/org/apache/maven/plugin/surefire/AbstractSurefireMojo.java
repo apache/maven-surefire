@@ -451,7 +451,9 @@ public abstract class AbstractSurefireMojo
      * Example values: "1.5C", "4"<br/>
      * <br/>
      * The system properties and the <code>argLine</code> of the forked processes may contain the place holder string <code>${surefire.forkNumber}</code>,
-     * which is replaced with a fixed number for each of the parallel forks, ranging from <code>1</code> to the effective value of <code>forkCount</code>.
+     * which is replaced with a fixed number for each of the parallel forks, ranging from <code>1</code> to the effective value of <code>forkCount</code>
+     * times the maximum number of parallel Surefire executions in maven parallel builds, i.e. the effective value of the <code>-T</code> command line
+     * argument of maven core.
      * 
      * @since 2.14
      */

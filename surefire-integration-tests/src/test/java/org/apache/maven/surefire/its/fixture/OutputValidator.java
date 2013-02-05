@@ -147,6 +147,12 @@ public class OutputValidator
         return this;
     }
 
+    public TestFile getTargetFile( String modulePath, String fileName )
+    {
+        File targetDir = getSubFile( modulePath + "/target" );
+        return new TestFile( new File( targetDir, fileName ), this );
+    }
+
     public TestFile getTargetFile( String fileName )
     {
         File targetDir = getSubFile( "target" );

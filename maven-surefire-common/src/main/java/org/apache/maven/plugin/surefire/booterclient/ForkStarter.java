@@ -36,7 +36,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.maven.plugin.surefire.AbstractSurefireMojo;
 import org.apache.maven.plugin.surefire.CommonReflector;
@@ -126,17 +125,6 @@ public class ForkStarter
 
     private static volatile int systemPropertiesFileCounter = 0;
 
-    private final ThreadLocal<Integer> forkNumber = new ThreadLocal<Integer>()
-    {
-        private final AtomicInteger nextforkNumber = new AtomicInteger( 1 );
-
-        @Override
-        protected Integer initialValue()
-        {
-            return nextforkNumber.getAndIncrement();
-        }
-    };
-
     public ForkStarter( ProviderConfiguration providerConfiguration, StartupConfiguration startupConfiguration,
                         ForkConfiguration forkConfiguration, int forkedProcessTimeoutInSeconds,
                         StartupReportConfiguration startupReportConfiguration )
@@ -162,12 +150,8 @@ public class ForkStarter
                 final ForkClient forkClient =
                     new ForkClient( defaultReporterFactory, startupReportConfiguration.getTestVmSystemProperties() );
                 result =
-                    fork( null, new PropertiesWrapper( providerProperties ), forkClient, effectiveSystemProperties, 1,
+                    fork( null, new PropertiesWrapper( providerProperties ), forkClient, effectiveSystemProperties,
                           null );
-            }
-            else if ( isForkAlways() )
-            {
-                result = runSuitesForkPerTestSet( effectiveSystemProperties, 1 );
             }
             else
             {
@@ -186,11 +170,6 @@ public class ForkStarter
             defaultReporterFactory.close();
         }
         return result;
-    }
-
-    private boolean isForkAlways()
-    {
-        return !forkConfiguration.isReuseForks() && 1 == forkConfiguration.getForkCount();
     }
 
     private boolean isForkOnce()
@@ -226,8 +205,6 @@ public class ForkStarter
 
             for ( int forkNum = 0; forkNum < forkCount && forkNum < suites.size(); forkNum++ )
             {
-                final int finalForkNumber = forkNum + 1;
-
                 Callable<RunResult> pf = new Callable<RunResult>()
                 {
                     public RunResult call()
@@ -241,7 +218,7 @@ public class ForkStarter
                                             testProvidingInputStream );
 
                         return fork( null, new PropertiesWrapper( providerConfiguration.getProviderProperties() ),
-                                     forkClient, effectiveSystemProperties, finalForkNumber, testProvidingInputStream );
+                                     forkClient, effectiveSystemProperties, testProvidingInputStream );
                     }
                 };
 
@@ -302,19 +279,11 @@ public class ForkStarter
                     public RunResult call()
                         throws Exception
                     {
-                        int thisThreadsForkNumber = forkNumber.get();
-                        if ( thisThreadsForkNumber > forkCount )
-                        {
-                            // this would be a bug in the ThreadPoolExecutor
-                            throw new IllegalStateException( "More threads than " + forkCount
-                                + " have been created by the ThreadPoolExecutor." );
-                        }
-
                         ForkClient forkClient =
                             new ForkClient( defaultReporterFactory,
                                             startupReportConfiguration.getTestVmSystemProperties() );
                         return fork( testSet, new PropertiesWrapper( providerConfiguration.getProviderProperties() ),
-                                     forkClient, effectiveSystemProperties, thisThreadsForkNumber, null );
+                                     forkClient, effectiveSystemProperties, null );
                     }
                 };
                 results.add( executorService.submit( pf ) );
@@ -370,6 +339,23 @@ public class ForkStarter
     }
 
     private RunResult fork( Object testSet, KeyValueSource providerProperties, ForkClient forkClient,
+                            SurefireProperties effectiveSystemProperties,
+                            TestProvidingInputStream testProvidingInputStream )
+        throws SurefireBooterForkException
+    {
+        int forkNumber = ForkNumberBucket.drawNumber();
+        try
+        {
+            return fork( testSet, providerProperties, forkClient, effectiveSystemProperties, forkNumber,
+                         testProvidingInputStream );
+        }
+        finally
+        {
+            ForkNumberBucket.returnNumber( forkNumber );
+        }
+    }
+
+    private RunResult fork( Object testSet, KeyValueSource providerProperties, ForkClient forkClient,
                             SurefireProperties effectiveSystemProperties, int forkNumber,
                             TestProvidingInputStream testProvidingInputStream )
         throws SurefireBooterForkException
@@ -387,8 +373,7 @@ public class ForkStarter
             if ( effectiveSystemProperties != null )
             {
                 SurefireProperties filteredProperties =
-                    AbstractSurefireMojo.createCopyAndReplaceForkNumPlaceholder( effectiveSystemProperties,
-                                                                                   forkNumber );
+                    AbstractSurefireMojo.createCopyAndReplaceForkNumPlaceholder( effectiveSystemProperties, forkNumber );
                 systPropsFile =
                     SystemPropertyManager.writePropertiesFile( filteredProperties,
                                                                forkConfiguration.getTempDirectory(), "surefire_"
