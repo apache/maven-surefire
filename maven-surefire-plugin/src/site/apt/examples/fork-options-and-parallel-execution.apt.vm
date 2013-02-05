@@ -62,6 +62,12 @@ Fork Options and Parallel Test Execution
   <<<forkCount>>> to a value higher than 1. The next section covers the details 
   about this and the related <<<reuseForks>>> property.
 
+* Parallel Surefire Execution in Multi-Module Maven Parallel Build
+
+  Maven core allows building modules of multi-module projects in parallel with
+  the command line option <<<-T>>>. This <multiplies> the extent of concurrency
+  configured directly in Surefire.
+
 * Forked Test Execution
 
   The parameter <<<forkCount>>> defines the maximum number of JVM processes
@@ -92,11 +98,14 @@ Fork Options and Parallel Test Execution
   specify variables and values to be added to the system properties during the
   test execution.
 
-  You can use the place holder <<<$\{surefire.forkNumber\}>>> within
-  <<<argLine>>>, or within the system properties (both those specified via
-  <<<mvn test -D...>>> and via <<<systemPropertyVariables>>>). Before executing
-  the tests, Surefire replaces that place holder by the number of the actually
-  executing process, counting from 1 to the effective value of <<<forkCount>>>.
+  You can use the place holder <<<$\{surefire.forkNumber\}>>> within 
+  <<<argLine>>>, or within the system properties (both those specified via 
+  <<<mvn test -D...>>> and via <<<systemPropertyVariables>>>). Before executing 
+  the tests, Surefire replaces that place holder by the number of the actually 
+  executing process, counting from 1 to the effective value of <<<forkCount>>> 
+  times the maximum number of parallel Surefire executions in maven parallel 
+  builds, i.e. the effective value of the <<<-T>>> command line argument of 
+  maven core.
 
   In case forkig is disabled (<<<forkCount=0>>>), the place holder will be
   replaced with <1>.
@@ -128,6 +137,10 @@ Fork Options and Parallel Test Execution
 </plugins>
 +---+
 
+  In case of a multi module project with tests in different modules, you could 
+  also use, say, <<<mvn -T 2 ...>>> to start the build, yielding values for 
+  <<<$\{surefire.forkNumber\}>>> ranging from 1 to 6.
+
   Imagine you execute some tests that use a JPA context, which has a notable
   initial startup time. By setting <<<reuseForks=true>>>, you can reuse that
   context for consecutive tests. And as many tests tend to use and access the
@@ -152,6 +165,10 @@ Fork Options and Parallel Test Execution
   <<<parallel=methods>>>: classes are executed in <<<forkCount>>> concurrent
   processes, each of the processes can then use <<<threadCount>>> threads to
   execute the methods of one class in parallel.
+
+  Regarding the compatibility with multi-module parallel maven builds via 
+  <<<-T>>>, the only limitation is that you can not use it together with
+  <<<forkCount=0>>>.
 
 * Migrating the Deprecated forkMode Parameter to forkCount and reuseForks
 
