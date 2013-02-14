@@ -19,26 +19,29 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
+import org.apache.maven.surefire.its.fixture.*;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.maven.surefire.its.fixture.HelperAssertions;
-import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
-import org.apache.maven.surefire.its.fixture.SurefireLauncher;
-import org.apache.maven.surefire.its.fixture.TestFile;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Test forkMode in a multi module project with parallel maven builds
  * 
  * @author Andreas Gudian
  */
+@Category( Not2xCompatible.class )
 public class ForkModeMultiModuleIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
+    @Test
     public void testForkCountOneNoReuse()
     {
         List<String> pids = doTest( unpack( getProject() ).forkCount( 1 ).reuseForks( false ) );
@@ -50,6 +53,8 @@ public class ForkModeMultiModuleIT
         assertEquals( "No other forkNumbers than 1 and 2 have been used", 6, matchesOne + matchesTwo);
     }
 
+
+    @Test
     public void testForkCountOneReuse()
     {
         List<String> pids = doTest( unpack( getProject() ).forkCount( 1 ).reuseForks( true ) );
@@ -58,6 +63,7 @@ public class ForkModeMultiModuleIT
         assertEndWith( pids, "_2_2", 3 );
     }
 
+    @Test
     public void testForkCountTwoNoReuse()
     {
         List<String> pids = doTest( unpack( getProject() ).forkCount( 2 ).reuseForks( false ) );
@@ -73,6 +79,7 @@ public class ForkModeMultiModuleIT
         assertEquals( "No other forkNumbers than 1, 2, 3, or 4 have been used", 6, matchesOne + matchesTwo + matchesThree + matchesFour );
     }
 
+    @Test
     public void testForkCountTwoReuse()
     {
         List<String> pids =
@@ -152,5 +159,6 @@ public class ForkModeMultiModuleIT
     {
         return "fork-mode-multimodule";
     }
+
 
 }
