@@ -19,7 +19,8 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.junit.Test;
 
 /**
  * Test support for POJO tests.
@@ -27,8 +28,9 @@ import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
  * @author Benjamin Bentmann
  */
 public class PojoSimpleIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
+    @Test
     public void testit()
     {
         unpack( "pojo-simple" ).executeTest().assertTestSuiteResults( 2, 0, 1, 0 );

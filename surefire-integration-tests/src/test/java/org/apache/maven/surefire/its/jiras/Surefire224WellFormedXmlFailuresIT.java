@@ -19,13 +19,17 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
-import java.io.File;
-import java.util.List;
 import org.apache.maven.plugins.surefire.report.ReportTestCase;
 import org.apache.maven.plugins.surefire.report.ReportTestSuite;
 import org.apache.maven.surefire.its.fixture.HelperAssertions;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.junit.Test;
+
+import java.io.File;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * Test Surefire-224 (XML test reports are not well-formed when failure message contains quotes)
@@ -33,8 +37,10 @@ import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
 public class Surefire224WellFormedXmlFailuresIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
+    @SuppressWarnings("ConstantConditions")
+    @Test
     public void testWellFormedXmlFailures()
     {
         OutputValidator outputValidator = unpack( "/surefire-224-wellFormedXmlFailures" ).executeTest();

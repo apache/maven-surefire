@@ -19,10 +19,8 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
-import org.apache.maven.surefire.its.fixture.SurefireLauncher;
-import org.apache.maven.surefire.its.fixture.TestFile;
+import org.apache.maven.surefire.its.fixture.*;
+import org.junit.Test;
 
 /**
  * Test Surefire-570 Multiple report directories
@@ -30,9 +28,10 @@ import org.apache.maven.surefire.its.fixture.TestFile;
  * @author Kristian Rosenvold
  */
 public class Surefire570MultipleReportDirectoriesIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
 
+    @Test
     public void testReportWithAggregate()
         throws Exception
     {
@@ -47,6 +46,7 @@ public class Surefire570MultipleReportDirectoriesIT
         siteFile.assertContainsText( "MyDummyClassM1Test" );
     }
 
+    @Test
     public void testReportWithoutAggregate()
         throws Exception
     {

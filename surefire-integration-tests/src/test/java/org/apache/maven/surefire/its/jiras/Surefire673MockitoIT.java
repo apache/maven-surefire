@@ -19,7 +19,8 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.junit.Test;
 
 /**
  * SUREFIRE-673 Asserts that a given mockito build works as it should (classloader problem in 2.7)
@@ -27,8 +28,9 @@ import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
  * @author Kristian Rosenvold
  */
 public class Surefire673MockitoIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
+    @Test
     public void testBuildFailingWhenErrors()
     {
         unpack( "/surefire-673-mockito" ).executeTest().verifyErrorFreeLog();

@@ -19,7 +19,8 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.junit.Test;
 
 /**
  * SUREFIRE-818
@@ -27,8 +28,9 @@ import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
  * @author Kristian Rosenvold
  */
 public class Surefire818NpeIgnoresTestsIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
+    @Test
     public void testBuildFailingWhenErrors()
     {
         unpack( "surefire-818-ignored-tests-on-npe" ).maven().withFailure().executeTest().assertTestSuiteResults( 2, 0,

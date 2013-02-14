@@ -21,10 +21,11 @@ package org.apache.maven.surefire.its.jiras;
 
 import java.io.IOException;
 import org.apache.maven.it.VerificationException;
-import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
-import org.apache.maven.surefire.its.fixture.SurefireLauncher;
-import org.apache.maven.surefire.its.fixture.TestFile;
+import org.apache.maven.surefire.its.fixture.*;
+import org.junit.Test;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Test Surefire-740 Truncated comma with non us locale
@@ -32,9 +33,10 @@ import org.apache.maven.surefire.its.fixture.TestFile;
  * @author Kristian Rosenvold
  */
 public class Surefire772NoFailsafeReportsIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
 
+    @Test
     public void testReportGeneration()
         throws Exception
     {
@@ -45,6 +47,7 @@ public class Surefire772NoFailsafeReportsIT
         assertNoFailsefeReport( site );
     }
 
+    @Test
     public void testSkippedFailsafeReportGeneration()
         throws Exception
     {
@@ -55,6 +58,7 @@ public class Surefire772NoFailsafeReportsIT
 
     }
 
+    @Test
     public void testForcedFailsafeReportGeneration()
         throws Exception
     {
@@ -64,6 +68,7 @@ public class Surefire772NoFailsafeReportsIT
         assertFailsafeReport( validator );
     }
 
+    @Test
     public void testSkipForcedFailsafeReportGeneration()
         throws Exception
     {

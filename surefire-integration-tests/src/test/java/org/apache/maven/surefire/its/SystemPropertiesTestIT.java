@@ -19,8 +19,9 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+import org.junit.Test;
 
 /**
  * Test system properties
@@ -28,15 +29,17 @@ import org.apache.maven.surefire.its.fixture.SurefireLauncher;
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
 public class SystemPropertiesTestIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
 
+    @Test
     public void testSystemProperties()
     {
         unpack().addGoal( "-DsetOnMavenCommandLine=baz" ).addGoal(
             "-DsetOnArgLineWorkAround=baz" ).executeTest().verifyErrorFree( 8 );
     }
 
+    @Test
     public void testSystemPropertiesNoFork()
     {
 

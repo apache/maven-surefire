@@ -19,7 +19,8 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.junit.Test;
 
 /**
  * Test additionalClasspathElements
@@ -28,9 +29,10 @@ import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
  * @author <a href="mailto:krosenvold@apache.org">Kristian Rosenvold</a>
  */
 public class ClasspathScopeFilteringIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
-    public void testAdditionalClasspath()
+    @Test
+    public void additionalClasspath()
     {
         unpack( "classpath-scope-filtering" ).executeTest().verifyErrorFree( 1 );
     }

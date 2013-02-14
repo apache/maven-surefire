@@ -20,8 +20,9 @@ package org.apache.maven.surefire.its;
  */
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+import org.junit.Test;
 
 /**
  * Asserts proper behaviour of console output when forking
@@ -31,37 +32,40 @@ import org.apache.maven.surefire.its.fixture.SurefireLauncher;
  * @author Kristian Rosenvold
  */
 public class ForkConsoleOutputIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
-
-    private SurefireLauncher unpack()
-    {
-        return unpack( "/fork-consoleOutput" );
-    }
-
-    public void testPrintSummaryTrueWithRedirect()
+    @Test
+    public void printSummaryTrueWithRedirect()
     {
         final OutputValidator outputValidator = unpack().redirectToFile( true ).printSummary( true ).executeTest();
         outputValidator.getSurefireReportsFile( "forkConsoleOutput.Test1-output.txt" ).assertFileExists();
     }
 
-    public void testPrintSummaryTrueWithoutRedirect()
+    @Test
+    public void printSummaryTrueWithoutRedirect()
     {
         final OutputValidator outputValidator = unpack().redirectToFile( false ).printSummary( true ).executeTest();
         outputValidator.getSurefireReportsFile( "forkConsoleOutput.Test1-output.txt" ).assertFileNotExists();
     }
 
-    public void testPrintSummaryFalseWithRedirect()
+    @Test
+    public void printSummaryFalseWithRedirect()
     {
         final OutputValidator outputValidator =
             unpack().redirectToFile( true ).printSummary( false ).debugLogging().showErrorStackTraces().executeTest();
         outputValidator.getSurefireReportsFile( "forkConsoleOutput.Test1-output.txt" ).assertFileExists();
     }
 
-    public void testPrintSummaryFalseWithoutRedirect()
+    @Test
+    public void printSummaryFalseWithoutRedirect()
     {
         final OutputValidator outputValidator = unpack().redirectToFile( false ).printSummary( false ).executeTest();
         outputValidator.getSurefireReportsFile( "forkConsoleOutput.Test1-output.txt" ).assertFileNotExists();
     }
 
+
+    private SurefireLauncher unpack()
+    {
+        return unpack( "/fork-consoleOutput" );
+    }
 }

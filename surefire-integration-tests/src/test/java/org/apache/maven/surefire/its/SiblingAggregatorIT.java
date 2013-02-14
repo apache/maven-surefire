@@ -20,8 +20,9 @@ package org.apache.maven.surefire.its;
  */
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+import org.junit.Test;
 
 /**
  * Test aggregator as a sibling to child modules; invokes modules as "../child"
@@ -30,9 +31,10 @@ import org.apache.maven.surefire.its.fixture.SurefireLauncher;
  * @author <a href="mailto:krosenvold@apache.org">Kristian Rosenvold</a>
  */
 public class SiblingAggregatorIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
 
+    @Test
     public void testSiblingAggregator()
         throws Exception
     {

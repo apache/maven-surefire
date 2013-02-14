@@ -19,7 +19,8 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.junit.Test;
 
 /**
  * Basic suite test using all known versions of JUnit 4.x
@@ -27,8 +28,9 @@ import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
  * @author Kristian Rosenvold
  */
 public class Junit47concurrencyIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
+    @Test
     public void test47()
         throws Exception
     {

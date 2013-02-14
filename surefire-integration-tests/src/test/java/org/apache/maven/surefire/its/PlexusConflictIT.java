@@ -19,8 +19,9 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+import org.junit.Test;
 
 /**
  * Test library using a conflicting version of plexus-utils
@@ -28,13 +29,15 @@ import org.apache.maven.surefire.its.fixture.SurefireLauncher;
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
 public class PlexusConflictIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
+    @Test
     public void testPlexusConflict()
     {
         unpack().executeTest().verifyErrorFree( 1 );
     }
 
+    @Test
     public void testPlexusConflictIsolatedClassLoader()
     {
         unpack().useSystemClassLoader(false).executeTest().verifyErrorFree( 1 );

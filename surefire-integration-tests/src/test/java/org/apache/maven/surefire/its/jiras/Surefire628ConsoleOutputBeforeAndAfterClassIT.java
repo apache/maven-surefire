@@ -20,7 +20,8 @@ package org.apache.maven.surefire.its.jiras;
  */
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.junit.Test;
 
 /**
  * Asserts that console output always goes somewhere ;)
@@ -28,9 +29,10 @@ import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
  * @author Kristian Rosenvold       assertContainsText
  */
 public class Surefire628ConsoleOutputBeforeAndAfterClassIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
 
+    @Test
     public void testJunit3ParallelBuildResultCount()
     {
         OutputValidator validator =

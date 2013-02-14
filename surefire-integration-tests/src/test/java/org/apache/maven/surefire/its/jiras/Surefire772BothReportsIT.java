@@ -19,10 +19,11 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
-import org.apache.maven.surefire.its.fixture.SurefireLauncher;
-import org.apache.maven.surefire.its.fixture.TestFile;
+import org.apache.maven.surefire.its.fixture.*;
+import org.junit.Test;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Test Surefire-740 Truncated comma with non us locale
@@ -30,7 +31,7 @@ import org.apache.maven.surefire.its.fixture.TestFile;
  * @author Kristian Rosenvold
  */
 public class Surefire772BothReportsIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
 
     public SurefireLauncher unpack()
@@ -40,6 +41,7 @@ public class Surefire772BothReportsIT
         return unpack;
     }
 
+    @Test
     public void testReportGeneration()
         throws Exception
     {
@@ -53,6 +55,7 @@ public class Surefire772BothReportsIT
         assertTrue( "Expecting failsafe report file", siteFile.isFile() );
     }
 
+    @Test
     public void testSkippedFailsafeReportGeneration()
         throws Exception
     {
@@ -67,6 +70,7 @@ public class Surefire772BothReportsIT
         assertFalse( "Expecting no failsafe report file", siteFile.isFile() );
     }
 
+    @Test
     public void testSkippedSurefireReportGeneration()
         throws Exception
     {
@@ -80,5 +84,4 @@ public class Surefire772BothReportsIT
         siteFile = validator.getSiteFile( "failsafe-report.html" );
         assertTrue( "Expecting failsafe report file", siteFile.isFile() );
     }
-
 }

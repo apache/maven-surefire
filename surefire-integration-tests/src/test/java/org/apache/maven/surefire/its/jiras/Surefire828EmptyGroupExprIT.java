@@ -19,13 +19,15 @@ package org.apache.maven.surefire.its.jiras;
  */
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+import org.junit.Test;
 
 public class Surefire828EmptyGroupExprIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
     // !CategoryC
+    @Test
     public void testJUnitRunEmptyGroups()
     {
         OutputValidator validator = unpackJUnit().sysProp( "profile", "emptyGroups" ).executeTest();
@@ -39,6 +41,7 @@ public class Surefire828EmptyGroupExprIT
     }
 
     // CategoryA && CategoryB
+    @Test
     public void testJUnitRunEmptyExcludeGroups()
     {
         OutputValidator validator = unpackJUnit().sysProp( "profile", "emptyExcludedGroups" ).executeTest();
@@ -54,6 +57,7 @@ public class Surefire828EmptyGroupExprIT
     }
 
     // CategoryA && CategoryB
+    @Test
     public void testTestNGRunEmptyExcludeGroups()
     {
         OutputValidator validator = unpackTestNG().sysProp( "profile", "emptyExcludedGroups" ).executeTest();
@@ -64,6 +68,7 @@ public class Surefire828EmptyGroupExprIT
     }
 
     // !CategoryC
+    @Test
     public void testTestNGRunEmptyGroups()
     {
         OutputValidator validator = unpackTestNG().sysProp( "profile", "emptyGroups" ).executeTest();

@@ -23,8 +23,9 @@ import java.io.IOException;
 import java.util.Calendar;
 import org.apache.maven.it.VerificationException;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+import org.junit.Test;
 
 /**
  * Verifies the runOrder setting and its effect
@@ -32,7 +33,7 @@ import org.apache.maven.surefire.its.fixture.SurefireLauncher;
  * @author Kristian Rosenvold
  */
 public class RunOrderIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
     private static final String[] TESTS_IN_ALPHABETICAL_ORDER = { "TA", "TB", "TC" };
 
@@ -40,6 +41,7 @@ public class RunOrderIT
 
     // testing random is left as an exercise to the reader. Patches welcome
 
+    @Test
     public void testAlphabetical()
         throws Exception
     {
@@ -47,6 +49,7 @@ public class RunOrderIT
         assertTestnamesAppearInSpecificOrder( validator, TESTS_IN_ALPHABETICAL_ORDER );
     }
 
+    @Test
     public void testReverseAlphabetical()
         throws Exception
     {
@@ -54,6 +57,7 @@ public class RunOrderIT
         assertTestnamesAppearInSpecificOrder( validator, TESTS_IN_REVERSE_ALPHABETICAL_ORDER );
     }
 
+    @Test
     public void testHourly()
         throws Exception
     {
@@ -70,6 +74,7 @@ public class RunOrderIT
         assertTestnamesAppearInSpecificOrder( validator, testnames );
     }
 
+    @Test
     public void testNonExistingRunOrder()
         throws Exception
     {

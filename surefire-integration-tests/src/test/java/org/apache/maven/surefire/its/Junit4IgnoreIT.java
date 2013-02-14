@@ -19,8 +19,9 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+import org.junit.Test;
 
 /**
  * Test JUnit 4 tests marked with "Ignore" attribute
@@ -28,14 +29,16 @@ import org.apache.maven.surefire.its.fixture.SurefireLauncher;
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
 public class Junit4IgnoreIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
+    @Test
     public void testJunit4Ignore()
     {
         // Todo: Support assumption failure == ignore for junit4
         unpack().executeTest().verifyErrorFreeLog().assertTestSuiteResults( 7, 0, 0, 6 );
     }
 
+    @Test
     public void testJunit47ParallelIgnore()
     {
         unpack().setJUnitVersion( "4.8.1" ).parallelClasses().executeTest().verifyErrorFreeLog().assertTestSuiteResults(

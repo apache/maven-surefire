@@ -19,15 +19,21 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import java.io.IOException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+import org.junit.Test;
+
+import java.io.IOException;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 
 public class JUnit47RedirectOutputIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
+    @Test
     public void testPrintSummaryTrueWithRedirect()
         throws Exception
     {
@@ -35,6 +41,7 @@ public class JUnit47RedirectOutputIT
         checkReports( clean );
     }
 
+    @Test
     public void testClassesParallel()
         throws Exception
     {

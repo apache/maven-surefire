@@ -20,8 +20,9 @@ package org.apache.maven.surefire.its;
  */
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+import org.junit.Test;
 
 /**
  * Test include/exclude from files.
@@ -29,50 +30,56 @@ import org.apache.maven.surefire.its.fixture.SurefireLauncher;
  * Based on {@link IncludesExcludesIT}.
  */
 public class IncludesExcludesFromFileIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
     private SurefireLauncher unpack()
     {
         return unpack( "/includes-excludes-from-file" );
     }
 
+    @Test
     public void testSimple()
     {
         testWithProfile( "simple" );
     }
 
+    @Test
     public void testSimpleMixed()
     {
         testWithProfile( "simple-mixed" );
     }
 
+    @Test
     public void testRegex()
     {
         testWithProfile( "regex" );
     }
 
+    @Test
     public void testPath()
     {
         testWithProfile( "path" );
     }
 
-    private void testWithProfile( String profile )
-    {
-        final OutputValidator outputValidator = unpack().
-            activateProfile( profile ).executeTest().verifyErrorFree( 2 );
-
-        outputValidator.getTargetFile( "testTouchFile.txt" ).assertFileExists();
-        outputValidator.getTargetFile( "defaultTestTouchFile.txt" ).assertFileExists();
-    }
-
+    @Test
     public void testMissingExcludes()
     {
-        expectBuildFailure( "missing-excludes-file", "Failed to load list from file", "no-such-excludes-file" );
+        expectBuildFailure("missing-excludes-file", "Failed to load list from file", "no-such-excludes-file");
     }
 
+    @Test
     public void testMissingIncludes()
     {
         expectBuildFailure( "missing-includes-file", "Failed to load list from file", "no-such-includes-file" );
+    }
+
+    private void testWithProfile( String profile )
+    {
+        final OutputValidator outputValidator = unpack().
+                activateProfile( profile ).executeTest().verifyErrorFree( 2 );
+
+        outputValidator.getTargetFile( "testTouchFile.txt" ).assertFileExists();
+        outputValidator.getTargetFile( "defaultTestTouchFile.txt" ).assertFileExists();
     }
 
     private void expectBuildFailure( final String profile, final String... messages )

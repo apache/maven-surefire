@@ -18,13 +18,15 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+import org.junit.Test;
 
 public class Surefire803MultiFailsafeExecsIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
 
+    @Test
     public void testSecondExecutionRunsAfterFirstExecutionFails()
     {
         unpack(
@@ -32,6 +34,7 @@ public class Surefire803MultiFailsafeExecsIT
             4, 0, 2, 0 );
     }
 
+    @Test
     public void testOneExecutionRunInTwoBuilds()
     {
         SurefireLauncher launcher = unpack( "/surefire-803-multiFailsafeExec-rebuildOverwrites" );

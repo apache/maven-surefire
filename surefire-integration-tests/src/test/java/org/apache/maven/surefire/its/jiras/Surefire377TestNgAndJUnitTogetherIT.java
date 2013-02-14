@@ -19,7 +19,8 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.junit.Test;
 
 /**
  * SUREFIRE-377 (When JUnit and TestNG tests are in same project, only one set gets run).
@@ -27,8 +28,9 @@ import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
 public class Surefire377TestNgAndJUnitTogetherIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
+    @Test
     public void testTestNgAndJUnitTogether()
     {
         executeErrorFreeTest( "/testng-junit-together", 2 );

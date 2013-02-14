@@ -19,12 +19,16 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import java.io.File;
-import java.util.List;
 import org.apache.maven.plugins.surefire.report.ReportTestSuite;
 import org.apache.maven.surefire.its.fixture.HelperAssertions;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.junit.Test;
+
+import java.io.File;
+import java.util.List;
+
+import static org.junit.Assert.assertTrue;
 
 /**
  * Test reported runtime
@@ -32,8 +36,9 @@ import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
  * @author Kristian Rosenvold
  */
 public class XmlReporterRunTimeIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
+    @Test
     public void testForkModeAlways()
         throws Exception
     {
@@ -59,5 +64,4 @@ public class XmlReporterRunTimeIT
         }
 
     }
-
 }

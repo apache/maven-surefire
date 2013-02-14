@@ -19,7 +19,8 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.junit.Test;
 
 /**
  * Test for checking the order of class path elements
@@ -28,9 +29,10 @@ import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
  * @author <a href="mailto:krosenvold@apache.org">Kristian Rosenvold</a>
  */
 public class ClassPathOrderIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
-    public void testClassPathOrder()
+    @Test
+    public void classPathOrder()
     {
         unpack( "/classpath-order" ).executeTest().verifyErrorFree( 2 );
     }

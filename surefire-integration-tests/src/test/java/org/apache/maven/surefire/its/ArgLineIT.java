@@ -19,7 +19,8 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.junit.Test;
 
 /**
  * Test passing an argLine parameter
@@ -28,9 +29,10 @@ import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
  * @author <a href="mailto:krosenvold@apache.org">Kristian Rosenvold</a>
  */
 public class ArgLineIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
-    public void testArgLine()
+    @Test
+    public void argLine()
     {
         unpack( "/argLine-parameter" ).executeTest().verifyErrorFree( 1 );
     }

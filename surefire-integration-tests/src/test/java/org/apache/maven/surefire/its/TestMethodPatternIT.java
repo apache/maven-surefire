@@ -19,7 +19,8 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.junit.Test;
 
 /**
  * Test project using -Dtest=mtClass#myMethod
@@ -27,33 +28,38 @@ import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
  * @author Olivier Lamy
  */
 public class TestMethodPatternIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
     public void runMethodPattern( String projectName )
     {
         unpack( projectName ).executeTest().assertTestSuiteResults( 2, 0, 0, 0 );
     }
 
+    @Test
     public void testJUnit44()
     {
         runMethodPattern( "junit44-method-pattern" );
     }
 
+    @Test
     public void testJUnit48()
     {
         runMethodPattern( "junit48-method-pattern" );
     }
 
+    @Test
     public void testTestNgMethodBefore()
     {
         runMethodPattern( "testng-method-pattern-before" );
     }
 
+    @Test
     public void testTestNGMethodPattern()
     {
         runMethodPattern( "/testng-method-pattern" );
     }
 
+    @Test
     public void testMethodPatternAfter()
     {
         unpack( "testng-method-pattern-after" ).executeTest().verifyErrorFree( 2 ).verifyTextInLog( "Called tearDown" );

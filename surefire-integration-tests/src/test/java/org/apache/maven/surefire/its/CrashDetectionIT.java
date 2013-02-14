@@ -19,25 +19,29 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:krosenvold@apache.org">Kristian Rosenvold</a>
  */
 public class CrashDetectionIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
-    public void testCrashInFork()
+    @Test
+    public void crashInFork()
     {
         unpack( "crash-detection" ).maven().withFailure().executeTest();
     }
 
-    public void testCrashInReusableFork()
+    @Test
+    public void crashInReusableFork()
     {
         unpack( "crash-detection" ).forkOncePerThread().threadCount( 1 ).maven().withFailure().executeTest();
     }
 
-    public void testHardCrashInReusableFork()
+    @Test
+    public void hardCrashInReusableFork()
     {
         unpack( "crash-detection" ).forkOncePerThread().threadCount( 1 ).addGoal( "-DkillHard=true" ).maven().withFailure().executeTest();
     }

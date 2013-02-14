@@ -24,10 +24,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.apache.maven.plugins.surefire.report.ReportTestSuite;
-import org.apache.maven.surefire.its.fixture.HelperAssertions;
-import org.apache.maven.surefire.its.fixture.IntegrationTestSuiteResults;
-import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.*;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 /**
  * Test running two test cases; confirms reporting works correctly
@@ -35,8 +36,9 @@ import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
 public class TwoTestCasesIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
+    @Test
     public void testTwoTestCases()
         throws Exception
     {
@@ -46,6 +48,7 @@ public class TwoTestCasesIT
     /**
      * Runs two tests encapsulated in a suite
      */
+    @Test
     public void testTwoTestCaseSuite()
         throws Exception
     {
@@ -79,6 +82,7 @@ public class TwoTestCasesIT
         return classNames;
     }
 
+    @Test
     public void testJunit4Suite()
         throws Exception
     {
@@ -95,6 +99,7 @@ public class TwoTestCasesIT
         HelperAssertions.assertTestSuiteResults( 2, 0, 0, 0, results );
     }
 
+    @Test
     public void testTestNGSuite()
         throws Exception
     {

@@ -20,8 +20,11 @@ package org.apache.maven.surefire.its.jiras;
  */
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.TestFile;
+import org.junit.Test;
+
+import static org.junit.Assert.assertTrue;
 
 /**
  * Test Surefire-740 Truncated comma with non us locale
@@ -29,8 +32,9 @@ import org.apache.maven.surefire.its.fixture.TestFile;
  * @author Kristian Rosenvold
  */
 public class Surefire740TruncatedCommaIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
+    @Test
     public void testRussianLocaleReport()
     {
         OutputValidator validator = unpack( "/surefire-740-comma-truncated" ).addEnvVar( "MAVEN_OPTS",

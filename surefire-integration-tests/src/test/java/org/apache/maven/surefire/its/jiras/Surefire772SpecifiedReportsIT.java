@@ -19,10 +19,11 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
-import org.apache.maven.surefire.its.fixture.SurefireLauncher;
-import org.apache.maven.surefire.its.fixture.TestFile;
+import org.apache.maven.surefire.its.fixture.*;
+import org.junit.Test;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Test Surefire-740 Truncated comma with non us locale
@@ -30,8 +31,9 @@ import org.apache.maven.surefire.its.fixture.TestFile;
  * @author Kristian Rosenvold
  */
 public class Surefire772SpecifiedReportsIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
+    @Test
     public void testReportGeneration()
     {
         OutputValidator validator =
@@ -44,6 +46,7 @@ public class Surefire772SpecifiedReportsIT
         assertTrue( "Expecting failsafe report file", siteFile.isFile() );
     }
 
+    @Test
     public void testSkippedFailsafeReportGeneration()
     {
         OutputValidator validator = unpack().activateProfile(
@@ -56,6 +59,7 @@ public class Surefire772SpecifiedReportsIT
         assertFalse( "Expecting no failsafe report file", siteFile.isFile() );
     }
 
+    @Test
     public void testSkippedSurefireReportGeneration()
     {
         OutputValidator validator = unpack().activateProfile(

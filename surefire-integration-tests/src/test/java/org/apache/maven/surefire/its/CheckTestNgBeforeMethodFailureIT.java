@@ -19,7 +19,8 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.junit.Test;
 
 /**
  * Test failures in @BeforeMethod annotation on TestNg suite
@@ -28,10 +29,11 @@ import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
  * @author <a href="mailto:krosenvold@apache.org">Kristian Rosenvold</a>
  */
 public class CheckTestNgBeforeMethodFailureIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
 
-    public void testTestNgBeforeMethodFailure()
+    @Test
+    public void TestNgBeforeMethodFailure()
         throws Exception
     {
         unpack( "/testng-beforeMethodFailure" ).maven().withFailure().executeTest().assertTestSuiteResults( 2, 0, 1, 1 );

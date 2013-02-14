@@ -20,8 +20,9 @@ package org.apache.maven.surefire.its;
  */
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+import org.junit.Test;
 
 /**
  * Test include/exclude patterns.
@@ -29,7 +30,7 @@ import org.apache.maven.surefire.its.fixture.SurefireLauncher;
  * @author Benjamin Bentmann
  */
 public class IncludesExcludesIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
     private SurefireLauncher unpack()
     {
@@ -39,16 +40,19 @@ public class IncludesExcludesIT
     /**
      * Test surefire inclusions/exclusions
      */
+    @Test
     public void testIncludesExcludes()
     {
         testWithProfile( "simple" );
     }
 
+    @Test
     public void testRegexIncludesExcludes()
     {
         testWithProfile( "regex" );
     }
 
+    @Test
     public void testPathBasedIncludesExcludes()
     {
         testWithProfile( "path" );
@@ -61,5 +65,4 @@ public class IncludesExcludesIT
         outputValidator.getTargetFile( "testTouchFile.txt" ).assertFileExists();
         outputValidator.getTargetFile( "defaultTestTouchFile.txt" ).assertFileExists();
     }
-
 }

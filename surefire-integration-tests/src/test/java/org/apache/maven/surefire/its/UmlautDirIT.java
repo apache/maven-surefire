@@ -21,8 +21,9 @@ package org.apache.maven.surefire.its;
 
 import org.apache.maven.it.VerificationException;
 import org.apache.maven.surefire.its.fixture.MavenLauncher;
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,14 +34,16 @@ import java.io.IOException;
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
 public class UmlautDirIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
+    @Test
     public void testUmlaut()
         throws Exception
     {
         specialUnpack().executeTest().verifyErrorFreeLog().assertTestSuiteResults( 1, 0, 0, 0 );
     }
 
+    @Test
     public void testUmlautIsolatedClassLoader()
         throws Exception
     {

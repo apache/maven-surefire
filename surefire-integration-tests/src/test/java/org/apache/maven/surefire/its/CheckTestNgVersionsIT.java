@@ -20,7 +20,9 @@ package org.apache.maven.surefire.its;
  */
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.junit.Ignore;
+import org.junit.Test;
 
 /**
  * Basic suite test using all known versions of TestNG. Used for regression testing Surefire against old versions.
@@ -31,120 +33,138 @@ import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
  * @author <a href="mailto:krosenvold@apache.org">Kristian Rosenvold</a>
  */
 public class CheckTestNgVersionsIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
 
+    @Test
     public void test47()
         throws Exception
     {
         runTestNgTest( "4.7" );
     }
 
-    // DGF SUREFIRE-375 + MAVENUPLOAD-1024
-    // The 5.0 and 5.0.1 jars on central are malformed
-
+    @Test
+    @Ignore("5.0 and 5.0.1 jars on central are malformed SUREFIRE-375 + MAVENUPLOAD-1024")
     public void XXXtest50()
         throws Exception
     {
         runTestNgTest( "5.0" );
     }
 
+    @Test
+    @Ignore("5.0 and 5.0.1 jars on central are malformed SUREFIRE-375 + MAVENUPLOAD-1024")
     public void XXXtest501()
         throws Exception
     {
         runTestNgTest( "5.0.1" );
     }
 
+    @Test
     public void test502()
         throws Exception
     {
         runTestNgTest( "5.0.2" );
     }
 
+    @Test
     public void test51()
         throws Exception
     {
         runTestNgTest( "5.1" );
     }
 
+    @Test
     public void test55()
         throws Exception
     {
         runTestNgTest( "5.5" );
     }
 
+    @Test
     public void test56()
         throws Exception
     {
         runTestNgTest( "5.6" );
     }
 
+    @Test
     public void test57()
         throws Exception
     {
         runTestNgTest( "5.7" );
     }
 
+    @Test
     public void test58()
         throws Exception
     {
         runTestNgTest( "5.8" );
     }
 
+    @Test
     public void test59()
         throws Exception
     {
         runTestNgTest( "5.9" );
     }
 
+    @Test
     public void test510()
         throws Exception
     {
         runTestNgTest( "5.10" );
     }
 
+    @Test
     public void test511()
         throws Exception
     {
         runTestNgTest( "5.11" );
     }
 
+    @Test
     public void test512()
         throws Exception
     {
         runTestNgTest( "5.12.1" );
     }
 
+    @Test
     public void test513()
         throws Exception
     {
         runTestNgTest( "5.13" );
     }
 
+    @Test
     public void test5131()
         throws Exception
     {
         runTestNgTest( "5.13.1" );
     }
 
+    @Test
     public void test514()
         throws Exception
     {
         runTestNgTest( "5.14" );
     }
 
+    @Test
     public void test5141()
         throws Exception
     {
         runTestNgTest( "5.14.1" );
     }
 
+    @Test
     public void test5142()
         throws Exception
     {
         runTestNgTest( "5.14.2" );
     }
 
+    @Test
     public void test60()
         throws Exception
     {

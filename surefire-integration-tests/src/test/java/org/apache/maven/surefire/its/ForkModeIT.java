@@ -23,10 +23,13 @@ import java.lang.management.ManagementFactory;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
-import org.apache.maven.surefire.its.fixture.SurefireLauncher;
-import org.apache.maven.surefire.its.fixture.TestFile;
+
+import org.apache.maven.surefire.its.fixture.*;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.fail;
 
 /**
  * Test forkMode
@@ -34,8 +37,9 @@ import org.apache.maven.surefire.its.fixture.TestFile;
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
 public class ForkModeIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
+    @Test
     public void testForkModeAlways()
     {
         String[] pids = doTest( unpack( getProject() ).setForkJvm( true ).forkAlways() );
@@ -44,6 +48,7 @@ public class ForkModeIT
         assertFalse( "pid 1 is not the same as the main process' pid", pids[0].equals( getMyPID() ) );
     }
 
+    @Test
     public void testForkModePerTest()
     {
         String[] pids = doTest( unpack( getProject() ).setForkJvm( true ).forkPerTest() );
@@ -52,6 +57,7 @@ public class ForkModeIT
         assertFalse( "pid 1 is not the same as the main process' pid", pids[0].equals( getMyPID() ) );
     }
 
+    @Test
     public void testForkModeNever()
     {
         String[] pids = doTest( unpack( getProject() ).forkNever() );
@@ -60,6 +66,7 @@ public class ForkModeIT
         assertEquals( "my pid is equal to pid 1 of the test", getMyPID(), pids[0] );
     }
 
+    @Test
     public void testForkModeNone()
     {
         String[] pids = doTest( unpack( getProject() ).forkMode( "none" ) );
@@ -68,6 +75,7 @@ public class ForkModeIT
         assertEquals( "my pid is equal to pid 1 of the test", getMyPID(), pids[0] );
     }
 
+    @Test
     public void testForkModeOncePerThreadSingleThread()
     {
         String[] pids = doTest( unpack( getProject() ).setForkJvm( true ).forkOncePerThread().threadCount( 1 ) );
@@ -76,6 +84,7 @@ public class ForkModeIT
         assertFalse( "pid 1 is not the same as the main process' pid", pids[0].equals( getMyPID() ) );
     }
 
+    @Test
     public void testForkModeOncePerThreadTwoThreads()
     {
         String[] pids = doTest( unpack( getProject() ).forkOncePerThread().threadCount( 2 ).addGoal( "-DsleepLength=1200" ) );
@@ -83,6 +92,7 @@ public class ForkModeIT
         assertFalse( "pid 1 is not the same as the main process' pid", pids[0].equals( getMyPID() ) );
     }
 
+    @Test
     public void testForkCountZero()
     {
         String[] pids = doTest( unpack( getProject() ).forkCount( 0 ) );
@@ -91,6 +101,7 @@ public class ForkModeIT
         assertEquals( "my pid is equal to pid 1 of the test", getMyPID(), pids[0] );
     }
 
+    @Test
     public void testForkCountOneNoReuse()
     {
         String[] pids = doTest( unpack( getProject() ).setForkJvm( true ).forkCount( 1 ).reuseForks( false ) );
@@ -99,6 +110,7 @@ public class ForkModeIT
         assertFalse( "pid 1 is not the same as the main process' pid", pids[0].equals( getMyPID() ) );
     }
 
+    @Test
     public void testForkCountOneReuse()
     {
         String[] pids = doTest( unpack( getProject() ).setForkJvm( true ).forkCount( 1 ).reuseForks( true ) );
@@ -107,6 +119,7 @@ public class ForkModeIT
         assertFalse( "pid 1 is not the same as the main process' pid", pids[0].equals( getMyPID() ) );
     }
 
+    @Test
     public void testForkCountTwoNoReuse()
     {
         String[] pids = doTest( unpack( getProject() ).forkCount( 2 ).reuseForks( false ).addGoal( "-DsleepLength=1200" ) );
@@ -114,6 +127,7 @@ public class ForkModeIT
         assertFalse( "pid 1 is not the same as the main process' pid", pids[0].equals( getMyPID() ) );
     }
 
+    @Test
     public void testForkCountTwoReuse()
     {
         String[] pids = doTest( unpack( getProject() ).forkCount( 2 ).reuseForks( true ).addGoal( "-DsleepLength=1200" ) );
@@ -139,6 +153,7 @@ public class ForkModeIT
         assertEquals( "number of different pids is not as expected", numOfDifferentPids, pidSet.size() );
     }
 
+    @Test
     public void testForkModeOnce()
     {
         String[] pids = doTest( unpack( getProject() ).forkOnce() );

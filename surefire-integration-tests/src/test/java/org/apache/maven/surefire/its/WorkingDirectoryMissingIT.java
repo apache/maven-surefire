@@ -19,7 +19,8 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.junit.Test;
 
 /**
  * Test when the configured working directory does not exist, SUREFIRE-607
@@ -27,11 +28,11 @@ import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
  * @author <a href="mailto:stephenc@apache.org">Stephen Connolly</a>
  */
 public class WorkingDirectoryMissingIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
+    @Test
     public void testWorkingDirectory()
     {
-
         unpack( "working-directory-missing" ).executeTest().verifyErrorFreeLog();
     }
 

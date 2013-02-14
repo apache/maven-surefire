@@ -21,11 +21,9 @@ package org.apache.maven.surefire.its.jiras;
 
 import java.io.File;
 
-import org.apache.maven.surefire.its.fixture.MavenLauncher;
-import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
-import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+import org.apache.maven.surefire.its.fixture.*;
 import org.codehaus.plexus.util.FileUtils;
+import org.junit.Test;
 
 /**
  * Test charset provider (SUREFIRE-162)
@@ -33,9 +31,10 @@ import org.codehaus.plexus.util.FileUtils;
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
 public class Surefire162CharsetProviderIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
     @SuppressWarnings( { "ResultOfMethodCallIgnored" } )
+    @Test
     public void testCharsetProvider()
         throws Exception
     {

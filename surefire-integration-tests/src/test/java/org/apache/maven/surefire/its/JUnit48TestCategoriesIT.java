@@ -19,10 +19,12 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import java.io.IOException;
 import org.apache.maven.it.VerificationException;
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+import org.junit.Test;
+
+import java.io.IOException;
 
 /**
  * Test project using "groups" support
@@ -31,8 +33,9 @@ import org.apache.maven.surefire.its.fixture.SurefireLauncher;
  * @author <a href="mailto:krosenvold@apache.org">Kristian Rosenvold</a>
  */
 public class JUnit48TestCategoriesIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
+    @Test
     public void testCategoriesAB()
         throws Exception
     {
@@ -40,25 +43,28 @@ public class JUnit48TestCategoriesIT
     }
 
 
+    @Test
     public void testCategoriesABForkAlways()
         throws Exception
     {
         runAB( unpacked() );
     }
 
-    private void runAB( SurefireLauncher unpacked )
-        throws VerificationException
-    {
-        unpacked.executeTest().verifyErrorFreeLog().assertTestSuiteResults( 3, 0, 0, 0 ).verifyTextInLog(
-            "catA: 1" ).verifyTextInLog( "catB: 1" ).verifyTextInLog( "catC: 0" ).verifyTextInLog( "catNone: 0" );
-    }
-
+    @Test
     public void testCategoriesAC()
         throws Exception
     {
         runAC( unpacked() );
     }
 
+    private void runAB( SurefireLauncher unpacked )
+            throws VerificationException
+    {
+        unpacked.executeTest().verifyErrorFreeLog().assertTestSuiteResults( 3, 0, 0, 0 ).verifyTextInLog(
+                "catA: 1" ).verifyTextInLog( "catB: 1" ).verifyTextInLog( "catC: 0" ).verifyTextInLog( "catNone: 0" );
+    }
+
+    @Test
     public void testCategoriesACForkAlways()
         throws Exception
     {
