@@ -136,7 +136,24 @@ public class IntegrationTestMojo
      */
     @Parameter( property = "failsafe.timeout" )
     private int forkedProcessTimeoutInSeconds;
-
+    
+    /**
+     * A list of &lt;include> elements specifying the tests (by pattern) that should be included in testing. When not
+     * specified and when the <code>test</code> parameter is not specified, the default includes will be <code><br/>
+     * &lt;includes><br/>
+     * &nbsp;&lt;include>**&#47;IT*.java&lt;/include><br/>
+     * &nbsp;&lt;include>**&#47;*IT.java&lt;/include><br/>
+     * &nbsp;&lt;include>**&#47;*ITCase.java&lt;/include><br/>
+     * &lt;/includes><br/>
+     * </code>
+     * <p/>
+     * Each include item may also contain a comma-separated sublist of items, which will be treated as multiple
+     * &nbsp;&lt;include> entries.<br/>
+     * <p/>
+     * This parameter is ignored if the TestNG <code>suiteXmlFiles</code> parameter is specified.
+     */
+    @Parameter
+    private List<String> includes;
 
     /**
      * Option to pass dependencies to the system's classloader instead of using an isolated class loader when forking.
@@ -491,5 +508,17 @@ public class IntegrationTestMojo
     public void setFailIfNoSpecifiedTests( Boolean failIfNoSpecifiedTests )
     {
         this.failIfNoSpecifiedTests = failIfNoSpecifiedTests;
+    }
+
+    @Override
+    public List<String> getIncludes()
+    {
+        return includes;
+    }
+
+    @Override
+    public void setIncludes( List<String> includes )
+    {
+        this.includes = includes;
     }
 }

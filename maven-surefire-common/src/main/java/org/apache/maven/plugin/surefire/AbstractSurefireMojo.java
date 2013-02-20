@@ -202,24 +202,6 @@ public abstract class AbstractSurefireMojo
     protected File testSourceDirectory;
 
     /**
-     * A list of &lt;include> elements specifying the tests (by pattern) that should be included in testing. When not
-     * specified and when the <code>test</code> parameter is not specified, the default includes will be <code><br/>
-     * &lt;includes><br/>
-     * &nbsp;&lt;include>**&#47;IT*.java&lt;/include><br/>
-     * &nbsp;&lt;include>**&#47;*IT.java&lt;/include><br/>
-     * &nbsp;&lt;include>**&#47;*ITCase.java&lt;/include><br/>
-     * &lt;/includes><br/>
-     * </code>
-     * <p/>
-     * Each include item may also contain a comma-separated sublist of items, which will be treated as multiple
-     * &nbsp;&lt;include> entries.<br/>
-     * <p/>
-     * This parameter is ignored if the TestNG <code>suiteXmlFiles</code> parameter is specified.
-     */
-    @Parameter
-    protected List<String> includes;
-
-    /**
      * A file containing include patterns.
      * Blank lines, or lines starting with # are ignored.  If {@code includes} are also specified these patterns are appended.
      */
@@ -2091,20 +2073,14 @@ public abstract class AbstractSurefireMojo
     }
 
 
-    public List<String> getIncludes()
-    {
-        return includes;
-    }
+    public abstract List<String> getIncludes();
 
     public File getIncludesFile()
     {
         return includesFile;
     }
 
-    public void setIncludes( List<String> includes )
-    {
-        this.includes = includes;
-    }
+    public abstract void setIncludes( List<String> includes );
 
     public List<String> getExcludes()
     {
