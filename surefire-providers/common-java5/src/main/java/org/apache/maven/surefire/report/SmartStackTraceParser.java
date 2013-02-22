@@ -41,7 +41,6 @@ public class SmartStackTraceParser
 
     private final Class testClass;
 
-
     public SmartStackTraceParser( Class testClass, Throwable throwable )
     {
         this( testClass.getName(), throwable );
@@ -64,10 +63,9 @@ public class SmartStackTraceParser
         }
         catch ( ClassNotFoundException e )
         {
-            throw new RuntimeException( e );
+            return null;
         }
     }
-
 
     private static String getSimpleName( String className )
     {
@@ -78,6 +76,11 @@ public class SmartStackTraceParser
     @SuppressWarnings( "ThrowableResultOfMethodCallIgnored" )
     public String getString()
     {
+        if ( testClass == null )
+        {
+            return throwable.getLocalizedMessage();
+        }
+
         StringBuilder result = new StringBuilder();
         List<StackTraceElement> stackTraceElements = focusOnClass( stackTrace, testClass );
         Collections.reverse( stackTraceElements );
@@ -103,8 +106,7 @@ public class SmartStackTraceParser
                 result.append( getSimpleName( stackTraceElement.getClassName() ) ); // Add the name of the superclas
                 result.append( "." );
             }
-            result.append( stackTraceElement.getMethodName() ).append( ":" ).append(
-                stackTraceElement.getLineNumber() );
+            result.append( stackTraceElement.getMethodName() ).append( ":" ).append( stackTraceElement.getLineNumber() );
             result.append( "->" );
         }
 
@@ -189,7 +191,6 @@ public class SmartStackTraceParser
         return result;
     }
 
-
     private static boolean isInSupers( Class testClass, String lookFor )
     {
         if ( lookFor.startsWith( "junit.framework." ) )
@@ -265,5 +266,3 @@ public class SmartStackTraceParser
         return result.toString();
     }
 }
-
-

@@ -1,4 +1,5 @@
 package org.apache.maven.surefire.report;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -64,7 +65,6 @@ public class SmartStackTraceParserTest
         }
     }
 
-
     public void testNestedNpe()
         throws Exception
     {
@@ -81,7 +81,6 @@ public class SmartStackTraceParserTest
 
         }
     }
-
 
     public void testNestedNpeOutsideTest()
         throws Exception
@@ -145,8 +144,7 @@ public class SmartStackTraceParserTest
         {
             SmartStackTraceParser smartStackTraceParser = new SmartStackTraceParser( CaseThatWillFail.class, e );
             String res = smartStackTraceParser.getString();
-            assertEquals( "CaseThatWillFail.testThatWillFail:29 expected:<abc> but was:<def>",
-                          res );
+            assertEquals( "CaseThatWillFail.testThatWillFail:29 expected:<abc> but was:<def>", res );
         }
     }
 
@@ -187,9 +185,7 @@ public class SmartStackTraceParserTest
         {
             SmartStackTraceParser smartStackTraceParser = new SmartStackTraceParser( AssertionNoMessage.class, e );
             String res = smartStackTraceParser.getString();
-            assertEquals(
-                "AssertionNoMessage.testThrowSomething:29 expected:<abc> but was:<xyz>",
-                res );
+            assertEquals( "AssertionNoMessage.testThrowSomething:29 expected:<abc> but was:<xyz>", res );
         }
     }
 
@@ -203,9 +199,7 @@ public class SmartStackTraceParserTest
         {
             SmartStackTraceParser smartStackTraceParser = new SmartStackTraceParser( FailWithFail.class, e );
             String res = smartStackTraceParser.getString();
-            assertEquals(
-                "FailWithFail.testThatWillFail:29 abc",
-                res );
+            assertEquals( "FailWithFail.testThatWillFail:29 abc", res );
         }
     }
 
@@ -217,8 +211,8 @@ public class SmartStackTraceParserTest
         }
         catch ( Throwable t )
         {
-            List<StackTraceElement> stackTraceElements = SmartStackTraceParser.focusInsideClass( t.getStackTrace(),
-                                                                                                 InnerATestClass.class.getName() );
+            List<StackTraceElement> stackTraceElements =
+                SmartStackTraceParser.focusInsideClass( t.getStackTrace(), InnerATestClass.class.getName() );
             assertNotNull( stackTraceElements );
             assertEquals( 5, stackTraceElements.size() );
             StackTraceElement innerMost = stackTraceElements.get( 0 );
@@ -228,4 +222,10 @@ public class SmartStackTraceParserTest
         }
     }
 
+    public void testNonClassNameStacktrace()
+    {
+        SmartStackTraceParser smartStackTraceParser =
+            new SmartStackTraceParser( "Not a class name", new Throwable( "my message" ) );
+        assertEquals( "my message", smartStackTraceParser.getString() );
+    }
 }
