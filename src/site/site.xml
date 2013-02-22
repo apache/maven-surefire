@@ -43,6 +43,11 @@
       <googleSearch>
         <sitesearch>${project.url}</sitesearch>
       </googleSearch>
+      <gitHub>
+        <projectId>apache/maven-surefire</projectId>
+        <ribbonOrientation>right</ribbonOrientation>
+        <ribbonColor>gray</ribbonColor>
+      </gitHub>
     </fluidoSkin>
 
   </custom>
