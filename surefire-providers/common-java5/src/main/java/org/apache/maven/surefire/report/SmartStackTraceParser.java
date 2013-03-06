@@ -85,6 +85,11 @@ public class SmartStackTraceParser
         List<StackTraceElement> stackTraceElements = focusOnClass( stackTrace, testClass );
         Collections.reverse( stackTraceElements );
         StackTraceElement stackTraceElement;
+        if (stackTrace.length == 0)
+        {
+            result.append( simpleName );
+            result.append("XX");
+        }
         for ( int i = 0; i < stackTraceElements.size(); i++ )
         {
             stackTraceElement = stackTraceElements.get( i );
@@ -175,7 +180,7 @@ public class SmartStackTraceParser
 
     private boolean rootIsInclass()
     {
-        return stackTrace[0].getClassName().equals( testClassName );
+        return  stackTrace.length > 0 && stackTrace[0].getClassName().equals( testClassName );
     }
 
     static List<StackTraceElement> focusOnClass( StackTraceElement[] stackTrace, Class clazz )
@@ -183,7 +188,7 @@ public class SmartStackTraceParser
         List<StackTraceElement> result = new ArrayList<StackTraceElement>();
         for ( StackTraceElement element : stackTrace )
         {
-            if ( isInSupers( clazz, element.getClassName() ) )
+            if ( element != null && isInSupers( clazz, element.getClassName() ) )
             {
                 result.add( element );
             }

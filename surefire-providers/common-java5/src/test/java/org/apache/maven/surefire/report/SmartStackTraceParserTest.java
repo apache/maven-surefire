@@ -19,6 +19,7 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
+import java.lang.reflect.Field;
 import java.util.List;
 
 import junit.framework.Assert;
@@ -228,4 +229,25 @@ public class SmartStackTraceParserTest
             new SmartStackTraceParser( "Not a class name", new Throwable( "my message" ) );
         assertEquals( "my message", smartStackTraceParser.getString() );
     }
+
+    public void testNullElementInStackTrace()
+            throws Exception
+    {
+        ATestClass aTestClass = new ATestClass();
+        try
+        {
+            aTestClass.failInAssert();
+        }
+        catch ( AssertionError e )
+        {
+            SmartStackTraceParser smartStackTraceParser = new SmartStackTraceParser( ATestClass.class, e );
+            Field stackTrace = SmartStackTraceParser.class.getDeclaredField("stackTrace");
+            stackTrace.setAccessible(true);
+            stackTrace.set(smartStackTraceParser, new StackTraceElement[0]);
+            String res = smartStackTraceParser.getString();
+            assertEquals( "ATestClass X is not Z", res );
+        }
+
+    }
+
 }
