@@ -62,7 +62,6 @@ public class JUnitCoreProvider
 
     private final ProviderParameters providerParameters;
 
-
     private TestsToRun testsToRun;
 
     private JUnit48Reflector jUnit48Reflector;
@@ -83,8 +82,8 @@ public class JUnitCoreProvider
         this.scannerFilter = new JUnit4TestChecker( testClassLoader );
         this.requestedTestMethod = providerParameters.getTestRequest().getRequestedTestMethod();
 
-        customRunListeners = JUnit4RunListenerFactory.
-            createCustomListeners( providerParameters.getProviderProperties().getProperty( "listener" ) );
+        customRunListeners =
+            JUnit4RunListenerFactory.createCustomListeners( providerParameters.getProviderProperties().getProperty( "listener" ) );
         jUnit48Reflector = new JUnit48Reflector( testClassLoader );
     }
 
@@ -95,17 +94,15 @@ public class JUnitCoreProvider
 
     public Iterator getSuites()
     {
-        final Filter filter = jUnit48Reflector.isJUnit48Available() ? createJUnit48Filter() : null;
         testsToRun = scanClassPath();
         return testsToRun.iterator();
     }
 
     private boolean isSingleThreaded()
     {
-        return !jUnitCoreParameters.isAnyParallelitySelected() || ( testsToRun.containsExactly( 1 )
-            && !jUnitCoreParameters.isParallelMethod() );
+        return !jUnitCoreParameters.isAnyParallelitySelected()
+            || ( testsToRun.containsExactly( 1 ) && !jUnitCoreParameters.isParallelMethod() );
     }
-
 
     public RunResult invoke( Object forkTestSet )
         throws TestSetFailedException, ReporterException
@@ -157,10 +154,10 @@ public class JUnitCoreProvider
         {
             final Map<String, TestSet> testSetMap = new ConcurrentHashMap<String, TestSet>();
 
-            RunListener listener = ConcurrentRunListener.createInstance( testSetMap, reporterFactory,
-                                                                         jUnitCoreParameters.isParallelClasses(),
-                                                                         jUnitCoreParameters.isParallelBoth(),
-                                                                         consoleLogger );
+            RunListener listener =
+                ConcurrentRunListener.createInstance( testSetMap, reporterFactory,
+                                                      jUnitCoreParameters.isParallelClasses(),
+                                                      jUnitCoreParameters.isParallelBoth(), consoleLogger );
             ConsoleOutputCapture.startCapture( (ConsoleOutputReceiver) listener );
 
             jUnit4RunListener = new JUnitCoreRunListener( listener, testSetMap );
@@ -171,9 +168,10 @@ public class JUnitCoreProvider
     private Filter createJUnit48Filter()
     {
         final FilterFactory filterFactory = new FilterFactory( testClassLoader );
-        return isMethodFilterSpecified()
-            ? filterFactory.createMethodFilter( requestedTestMethod )
-            : filterFactory.createGroupFilter( providerParameters.getProviderProperties() );
+        Filter groupFilter = filterFactory.createGroupFilter( providerParameters.getProviderProperties() );
+        return isMethodFilterSpecified() ? filterFactory.and( groupFilter,
+                                                              filterFactory.createMethodFilter( requestedTestMethod ) )
+                        : groupFilter;
     }
 
     private TestsToRun scanClassPath()

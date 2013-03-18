@@ -65,8 +65,8 @@ public class FilterFactory
             }
             catch ( ParseException e )
             {
-                throw new IllegalArgumentException(
-                    "Invalid group expression: '" + groups + "'. Reason: " + e.getMessage(), e );
+                throw new IllegalArgumentException( "Invalid group expression: '" + groups + "'. Reason: "
+                    + e.getMessage(), e );
             }
         }
 
@@ -79,13 +79,14 @@ public class FilterFactory
             }
             catch ( ParseException e )
             {
-                throw new IllegalArgumentException(
-                    "Invalid group expression: '" + excludedGroups + "'. Reason: " + e.getMessage(), e );
+                throw new IllegalArgumentException( "Invalid group expression: '" + excludedGroups + "'. Reason: "
+                    + e.getMessage(), e );
             }
         }
 
         // GroupMatcher included = commaSeparatedListToFilters( groups );
-        // GroupMatcher excluded = commaSeparatedListToFilters( excludedGroups );
+        // GroupMatcher excluded = commaSeparatedListToFilters( excludedGroups
+        // );
 
         if ( included != null && testClassLoader != null )
         {
@@ -120,7 +121,8 @@ public class FilterFactory
     // }
     // catch ( ParseException e )
     // {
-    // throw new IllegalArgumentException( "Invalid group expression: '" + group + "'. Reason: "
+    // throw new IllegalArgumentException( "Invalid group expression: '" + group
+    // + "'. Reason: "
     // + e.getMessage(), e );
     // }
     //
@@ -135,6 +137,11 @@ public class FilterFactory
     public Filter createMethodFilter( String requestedTestMethod )
     {
         return new MethodFilter( requestedTestMethod );
+    }
+
+    public Filter and( Filter filter1, Filter filter2 )
+    {
+        return new AndFilter( filter1, filter2 );
     }
 
     private static class MethodFilter
@@ -163,10 +170,9 @@ public class FilterFactory
 
         private boolean isDescriptionMatch( Description description )
         {
-            return description.getMethodName() != null && SelectorUtils.match( requestedTestMethod,
-                                                                               description.getMethodName() );
+            return description.getMethodName() != null
+                && SelectorUtils.match( requestedTestMethod, description.getMethodName() );
         }
-
 
         @Override
         public String describe()
@@ -204,9 +210,9 @@ public class FilterFactory
         @Override
         public boolean shouldRun( Description description )
         {
-            return shouldRun( description, ( description.getMethodName() == null
-                ? null
-                : Description.createSuiteDescription( description.getTestClass() ) ) );
+            return shouldRun( description,
+                              ( description.getMethodName() == null ? null
+                                              : Description.createSuiteDescription( description.getTestClass() ) ) );
         }
 
         private boolean shouldRun( Description description, Description parent )
@@ -230,7 +236,8 @@ public class FilterFactory
             Category cat = description.getAnnotation( Category.class );
             if ( cat != null )
             {
-                // System.out.println( "Adding categories: " + Arrays.toString( cat.value() ) );
+                // System.out.println( "Adding categories: " + Arrays.toString(
+                // cat.value() ) );
                 cats.addAll( Arrays.asList( cat.value() ) );
             }
 
@@ -239,21 +246,26 @@ public class FilterFactory
                 cat = parent.getAnnotation( Category.class );
                 if ( cat != null )
                 {
-                    // System.out.println( "Adding class-level categories: " + Arrays.toString( cat.value() ) );
+                    // System.out.println( "Adding class-level categories: " +
+                    // Arrays.toString( cat.value() ) );
                     cats.addAll( Arrays.asList( cat.value() ) );
                 }
             }
 
-            // System.out.println( "Checking " + cats.size() + " categories..." );
+            // System.out.println( "Checking " + cats.size() + " categories..."
+            // );
             //
-            // System.out.println( "Enabled? " + ( matcher.enabled( cats.toArray( new Class<?>[] {} ) ) ) + "\n\n" );
-            result = matcher.enabled( cats.toArray( new Class<?>[]{ } ) );
+            // System.out.println( "Enabled? " + ( matcher.enabled(
+            // cats.toArray( new Class<?>[] {} ) ) ) + "\n\n" );
+            result = matcher.enabled( cats.toArray( new Class<?>[] {} ) );
 
             if ( parent == null )
             {
                 if ( cats.size() == 0 )
                 {
-                    // System.out.println( "Allow method-level filtering by PASSing class-level shouldRun() test..." );
+                    // System.out.println(
+                    // "Allow method-level filtering by PASSing class-level shouldRun() test..."
+                    // );
                     result = true;
                 }
                 else if ( !result )
@@ -285,6 +297,31 @@ public class FilterFactory
 
     }
 
+    private static class AndFilter
+        extends Filter
+    {
+        private final Filter filter1;
+
+        private final Filter filter2;
+
+        public AndFilter( Filter filter1, Filter filter2 )
+        {
+            this.filter1 = filter1;
+            this.filter2 = filter2;
+        }
+
+        @Override
+        public boolean shouldRun( Description description )
+        {
+            return filter1.shouldRun( description ) && filter2.shouldRun( description );
+        }
+
+        @Override
+        public String describe()
+        {
+            return filter1.describe() + " AND " + filter2.describe();
+        }
+    }
 
     @SuppressWarnings( "unused" )
     private static class CombinedCategoryFilter
@@ -303,8 +340,8 @@ public class FilterFactory
         @Override
         public boolean shouldRun( Description description )
         {
-            return ( includedFilters.isEmpty() || inOneOfFilters( includedFilters, description ) ) && (
-                excludedFilters.isEmpty() || !inOneOfFilters( excludedFilters, description ) );
+            return ( includedFilters.isEmpty() || inOneOfFilters( includedFilters, description ) )
+                && ( excludedFilters.isEmpty() || !inOneOfFilters( excludedFilters, description ) );
         }
 
         private boolean inOneOfFilters( List<Filter> filters, Description description )

@@ -4,6 +4,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 
 public class BasicTest
@@ -43,6 +44,7 @@ public class BasicTest
     } 
     
     @Test
+    @Category(SampleCategory.class)
     public void testSuccessTwo()
     {
         Assert.assertTrue( true );

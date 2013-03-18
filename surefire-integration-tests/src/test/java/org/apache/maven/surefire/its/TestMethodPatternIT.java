@@ -48,6 +48,12 @@ public class TestMethodPatternIT
     }
 
     @Test
+    public void testJUnit48WithCategoryFilter()
+    {
+        unpack( "junit48-method-pattern" ).addGoal( "-Dgroups=junit4.SampleCategory" ).executeTest().assertTestSuiteResults( 1, 0, 0, 0 );;
+    }
+
+    @Test
     public void testTestNgMethodBefore()
     {
         runMethodPattern( "testng-method-pattern-before" );
