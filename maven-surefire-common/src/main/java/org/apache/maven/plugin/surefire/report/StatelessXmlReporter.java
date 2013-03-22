@@ -20,8 +20,9 @@ package org.apache.maven.plugin.surefire.report;
  */
 
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.Enumeration;
 import java.util.Properties;
 import java.util.StringTokenizer;
@@ -72,6 +73,8 @@ public class StatelessXmlReporter
 
     private final boolean trimStackTrace;
 
+    private final String encoding = "UTF-8";
+
     public StatelessXmlReporter( File reportsDirectory, String reportNameSuffix, boolean trimStackTrace )
     {
         this.reportsDirectory = reportsDirectory;
@@ -83,13 +86,13 @@ public class StatelessXmlReporter
         throws ReporterException
     {
 
-        FileWriter fw = getFileWriter( testSetReportEntry );
+        OutputStreamWriter fw = getWriter( testSetReportEntry );
         try
         {
 
             org.apache.maven.shared.utils.xml.XMLWriter ppw =
                 new org.apache.maven.shared.utils.xml.PrettyPrintXMLWriter( fw );
-            ppw.setEncoding( "UTF-8" );
+            ppw.setEncoding( encoding );
 
             createTestSuiteElement( ppw, testSetReportEntry, testSetStats, reportNameSuffix );
 
@@ -117,7 +120,7 @@ public class StatelessXmlReporter
         }
     }
 
-    private FileWriter getFileWriter( WrappedReportEntry testSetReportEntry )
+    private OutputStreamWriter getWriter( WrappedReportEntry testSetReportEntry )
     {
         File reportFile = getReportFile( testSetReportEntry, reportsDirectory, reportNameSuffix );
 
@@ -128,7 +131,10 @@ public class StatelessXmlReporter
 
         try
         {
-            return new FileWriter( reportFile );
+
+            FileOutputStream fos = new FileOutputStream( reportFile );
+
+            return new OutputStreamWriter( fos, encoding );
         }
         catch ( IOException e )
         {

@@ -89,6 +89,11 @@ public class SurefireLauncher
         return this;
     }
 
+    public SurefireLauncher setMavenOpts(String opts){
+        addEnvVar( "MAVEN_OPTS", opts );
+        return this;
+    }
+
     private List<String> getInitialGoals( String testNgVersion )
     {
         List<String> goals1 = new ArrayList<String>();

@@ -21,28 +21,21 @@ package org.apache.maven.surefire.its.jiras;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
-import org.apache.maven.surefire.its.fixture.TestFile;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
-import static org.junit.Assert.assertTrue;
-
-/**
- * Test Surefire-740 Truncated comma with non us locale
- *
- * @author Kristian Rosenvold
- */
-public class Surefire740TruncatedCommaIT
+public class Surefire975DefaultVMEncodingIT
     extends SurefireJUnit4IntegrationTestCase
 {
-    @Test
-    public void testRussianLocaleReport()
-    {
-        OutputValidator validator = unpack( "/surefire-740-comma-truncated" ).setMavenOpts(
-                                                                                         "-Duser.language=ru -Duser.country=RU" ).failNever().addSurefireReportGoal().executeCurrentGoals();
 
-        TestFile siteFile = validator.getSiteFile( "surefire-report.html" );
-        assertTrue( "Expecting file", siteFile.exists() );
-        siteFile.assertContainsText( "027" ); // Avoid asserting with the "," or "." ;)
+    @Test
+    public void runWithRussian1251()
+        throws Exception
+    {
+        OutputValidator outputValidator =
+            unpack( "surefire-975-wrong-encoding" ).setMavenOpts( "-Dfile.encoding=windows-1251" ).executeTest();
+        outputValidator.getSurefireReportsFile( "TEST-EncodingInReportTest.xml" ).assertContainsText(
+            "\u043A\u0438\u0440\u0438\u043B\u043B\u0438\u0446\u0435" );
     }
 
 }
