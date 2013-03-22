@@ -20,7 +20,11 @@ package org.apache.maven.surefire.its.fixture;
  */
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.List;
+
+import org.apache.commons.io.FileUtils;
 import org.apache.maven.it.VerificationException;
 import org.apache.maven.it.Verifier;
 
@@ -97,19 +101,19 @@ public class OutputValidator
         }
     }
 
-    public List<String> loadFile( File file, boolean hasCommand )
+    public List<String> loadFile( File file, Charset charset )
     {
         //noinspection unchecked
         try
         {
-            //noinspection unchecked
-            return verifier.loadFile( file, hasCommand );
+            return FileUtils.readLines( file, charset.name() );
         }
-        catch ( VerificationException e )
+        catch ( IOException e )
         {
             throw new SurefireVerifierException( e );
         }
     }
+
 
 
     public String getBasedir()
@@ -164,6 +168,12 @@ public class OutputValidator
     {
         File targetDir = getSubFile( "target/surefire-reports" );
         return new TestFile( new File( targetDir, fileName ), this );
+    }
+
+    public TestFile getSurefireReportsXmlFile( String fileName )
+    {
+        File targetDir = getSubFile( "target/surefire-reports" );
+        return new TestFile( new File( targetDir, fileName ), Charset.forName("UTF-8"), this );
     }
 
     public TestFile getSiteFile( String fileName )

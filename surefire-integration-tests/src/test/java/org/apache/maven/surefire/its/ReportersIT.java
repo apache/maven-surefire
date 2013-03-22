@@ -38,7 +38,7 @@ public class ReportersIT
         OutputValidator reporters = unpack( "reporters" ).redirectToFile( true ).printSummary( true ).executeTest();
 
         reporters.getSurefireReportsFile( "TestSuite-output.txt" ).assertFileExists();
-        reporters.getSurefireReportsFile( "TEST-TestSuite.xml" ).assertFileExists();
+        reporters.getSurefireReportsXmlFile( "TEST-TestSuite.xml" ).assertFileExists();
         reporters.getSurefireReportsFile( "TestSuite.txt" ).assertFileExists();
     }
 }

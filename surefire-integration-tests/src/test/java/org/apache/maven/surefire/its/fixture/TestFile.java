@@ -26,6 +26,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.Charset;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
 
@@ -41,11 +42,19 @@ public class TestFile
 
     private final File file;
 
+    private final Charset encoding;
+
     private final OutputValidator surefireVerifier;
 
     public TestFile( File file, OutputValidator surefireVerifier )
     {
+        this( file, Charset.defaultCharset(), surefireVerifier);
+    }
+
+    public TestFile( File file, Charset charset,OutputValidator surefireVerifier )
+    {
         this.file = file;
+        this.encoding = charset;
         this.surefireVerifier = surefireVerifier;
     }
 
@@ -123,7 +132,7 @@ public class TestFile
 
     public TestFile assertContainsText( String text )
     {
-        final List<String> list = surefireVerifier.loadFile( file, false );
+        final List<String> list = surefireVerifier.loadFile( file, encoding );
         for ( String line : list )
         {
             if ( line.contains( text ) )

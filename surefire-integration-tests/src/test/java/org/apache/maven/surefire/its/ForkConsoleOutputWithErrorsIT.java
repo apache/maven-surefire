@@ -40,7 +40,7 @@ public class ForkConsoleOutputWithErrorsIT
         final OutputValidator outputValidator = unpack( "/fork-consoleOutputWithErrors" ).
             failNever().redirectToFile( true ).executeTest();
         final TestFile surefireReportsFile =
-            outputValidator.getSurefireReportsFile( "TEST-forkConsoleOutput.Test2.xml" );
+            outputValidator.getSurefireReportsXmlFile( "TEST-forkConsoleOutput.Test2.xml" );
         surefireReportsFile.assertContainsText( "sout: Will Fail soon" );
         surefireReportsFile.assertContainsText( "serr: Will Fail now" );
     }

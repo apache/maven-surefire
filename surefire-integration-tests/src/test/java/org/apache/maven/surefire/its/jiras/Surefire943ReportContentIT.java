@@ -48,7 +48,7 @@ public class Surefire943ReportContentIT
         throws FileNotFoundException
     {
         Xpp3Dom testResult =
-            Xpp3DomBuilder.build( validator.getSurefireReportsFile( "TEST-" + className + ".xml" ).getFileInputStream(),
+            Xpp3DomBuilder.build( validator.getSurefireReportsXmlFile( "TEST-" + className + ".xml" ).getFileInputStream(),
                                   "UTF-8" );
         Xpp3Dom[] children = testResult.getChildren( "testcase" );
 

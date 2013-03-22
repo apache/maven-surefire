@@ -34,7 +34,7 @@ public class Surefire975DefaultVMEncodingIT
     {
         OutputValidator outputValidator =
             unpack( "surefire-975-wrong-encoding" ).setMavenOpts( "-Dfile.encoding=windows-1251" ).executeTest();
-        outputValidator.getSurefireReportsFile( "TEST-EncodingInReportTest.xml" ).assertContainsText(
+        outputValidator.getSurefireReportsXmlFile( "TEST-EncodingInReportTest.xml" ).assertContainsText(
             "\u043A\u0438\u0440\u0438\u043B\u043B\u0438\u0446\u0435" );
     }
 
