@@ -132,7 +132,7 @@ public class ForkModeMultiModuleIT
     {
         forkMode.addGoal( "-T 2" );
         forkMode.sysProp( "testProperty", "testValue_${surefire.threadNumber}_${surefire.forkNumber}" );
-        final OutputValidator outputValidator = forkMode.setForkJvm( true ).executeTest();
+        final OutputValidator outputValidator = forkMode.setForkJvm().executeTest();
         List<String> pids = new ArrayList<String>( 6 );
         pids.addAll( validateModule( outputValidator, "module-a" ) );
         pids.addAll( validateModule( outputValidator, "module-b" ) );

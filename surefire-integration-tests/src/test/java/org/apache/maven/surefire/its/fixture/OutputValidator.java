@@ -87,20 +87,6 @@ public class OutputValidator
         }
     }
 
-    public OutputValidator verifyErrorFreeIntegrationTests( int total )
-    {
-        try
-        {
-            verifier.verifyErrorFreeLog();
-            this.assertIntegrationTestSuiteResults( total, 0, 0, 0 );
-            return this;
-        }
-        catch ( VerificationException e )
-        {
-            throw new SurefireVerifierException( e );
-        }
-    }
-
     public List<String> loadFile( File file, Charset charset )
     {
         //noinspection unchecked
@@ -130,12 +116,6 @@ public class OutputValidator
     public File getSubFile( String path )
     {
         return new File( getBasedir(), path );
-    }
-
-
-    public String getArtifactPath( String org, String name, String version, String ext )
-    {
-        return verifier.getArtifactPath( org, name, version, ext );
     }
 
 
@@ -211,10 +191,5 @@ public class OutputValidator
             }
         }
         return false;
-    }
-
-    Verifier getVerifier()
-    {
-        return verifier;
     }
 }

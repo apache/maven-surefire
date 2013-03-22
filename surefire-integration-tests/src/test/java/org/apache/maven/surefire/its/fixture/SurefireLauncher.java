@@ -391,7 +391,7 @@ public class SurefireLauncher
         return this;
     }
 
-    public SurefireLauncher setForkJvm( boolean forkJvm )
+    public SurefireLauncher setForkJvm()
     {
         mavenLauncher.setForkJvm( true );
         return this;

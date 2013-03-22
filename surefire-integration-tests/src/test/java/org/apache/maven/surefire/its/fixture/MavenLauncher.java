@@ -86,6 +86,7 @@ public class MavenLauncher
         throws IOException
     {
         FileUtils.deleteDirectory( dest );
+        //noinspection ResultOfMethodCallIgnored
         getUnpackedAt().renameTo( dest );
         unpackedAt = dest;
     }
@@ -213,12 +214,6 @@ public class MavenLauncher
         return conditionalExec( "test" );
     }
 
-    public OutputValidator executeInstall()
-        throws VerificationException
-    {
-        return conditionalExec( "install" );
-    }
-
     private OutputValidator conditionalExec(String goal)
     {
         OutputValidator verify;
@@ -248,12 +243,6 @@ public class MavenLauncher
     public MavenLauncher withFailure()
     {
         this.expectFailure = true;
-        return this;
-    }
-
-    public MavenLauncher addCleanGoal()
-    {
-        addGoal( "clean" );
         return this;
     }
 

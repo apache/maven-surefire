@@ -65,7 +65,7 @@ public class Surefire946KillMainProcessInReusableForkIT
             .sysProp( "selfdestruct.method", method )
             .sysProp( "testSleepTime", String.valueOf( TEST_SLEEP_TIME ) )
             .addGoal( "org.apache.maven.plugins.surefire:maven-selfdestruct-plugin:selfdestruct" )
-            .setForkJvm( true )
+            .setForkJvm()
             .forkOncePerThread().threadCount( 1 ).maven().withFailure().executeTest();
     }
 }
