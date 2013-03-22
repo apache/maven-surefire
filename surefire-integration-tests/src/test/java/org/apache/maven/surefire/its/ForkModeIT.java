@@ -19,17 +19,20 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import java.lang.management.ManagementFactory;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.fail;
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.maven.surefire.its.fixture.*;
+import org.apache.maven.surefire.its.fixture.OutputValidator;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+import org.apache.maven.surefire.its.fixture.TestFile;
+import org.junit.BeforeClass;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.fail;
 
 /**
  * Test forkMode
@@ -39,13 +42,23 @@ import static org.junit.Assert.fail;
 public class ForkModeIT
     extends SurefireJUnit4IntegrationTestCase
 {
+
+    private OutputValidator outputValidator;
+
+    @BeforeClass
+    public static void installDumpPidPlugin()
+        throws Exception
+    {
+        unpack( ForkModeIT.class, "test-helper-dump-pid-plugin", "plugin" ).executeInstall();
+    }
+
     @Test
     public void testForkModeAlways()
     {
         String[] pids = doTest( unpack( getProject() ).setForkJvm().forkAlways() );
         assertDifferentPids( pids );
-        assertEndWith( pids, "_1_1", 3);
-        assertFalse( "pid 1 is not the same as the main process' pid", pids[0].equals( getMyPID() ) );
+        assertEndWith( pids, "_1_1", 3 );
+        assertFalse( "pid 1 is not the same as the main process' pid", pids[0].equals( getMainPID() ) );
     }
 
     @Test
@@ -53,8 +66,8 @@ public class ForkModeIT
     {
         String[] pids = doTest( unpack( getProject() ).setForkJvm().forkPerTest() );
         assertDifferentPids( pids );
-        assertEndWith( pids, "_1_1", 3);
-        assertFalse( "pid 1 is not the same as the main process' pid", pids[0].equals( getMyPID() ) );
+        assertEndWith( pids, "_1_1", 3 );
+        assertFalse( "pid 1 is not the same as the main process' pid", pids[0].equals( getMainPID() ) );
     }
 
     @Test
@@ -62,8 +75,8 @@ public class ForkModeIT
     {
         String[] pids = doTest( unpack( getProject() ).forkNever() );
         assertSamePids( pids );
-        assertEndWith( pids, "_1_1", 3);
-        assertEquals( "my pid is equal to pid 1 of the test", getMyPID(), pids[0] );
+        assertEndWith( pids, "_1_1", 3 );
+        assertEquals( "my pid is equal to pid 1 of the test", getMainPID(), pids[0] );
     }
 
     @Test
@@ -71,8 +84,8 @@ public class ForkModeIT
     {
         String[] pids = doTest( unpack( getProject() ).forkMode( "none" ) );
         assertSamePids( pids );
-        assertEndWith( pids, "_1_1", 3);
-        assertEquals( "my pid is equal to pid 1 of the test", getMyPID(), pids[0] );
+        assertEndWith( pids, "_1_1", 3 );
+        assertEquals( "my pid is equal to pid 1 of the test", getMainPID(), pids[0] );
     }
 
     @Test
@@ -80,16 +93,17 @@ public class ForkModeIT
     {
         String[] pids = doTest( unpack( getProject() ).setForkJvm().forkOncePerThread().threadCount( 1 ) );
         assertSamePids( pids );
-        assertEndWith( pids, "_1_1", 3);
-        assertFalse( "pid 1 is not the same as the main process' pid", pids[0].equals( getMyPID() ) );
+        assertEndWith( pids, "_1_1", 3 );
+        assertFalse( "pid 1 is not the same as the main process' pid", pids[0].equals( getMainPID() ) );
     }
 
     @Test
     public void testForkModeOncePerThreadTwoThreads()
     {
-        String[] pids = doTest( unpack( getProject() ).forkOncePerThread().threadCount( 2 ).addGoal( "-DsleepLength=1200" ) );
+        String[] pids =
+            doTest( unpack( getProject() ).forkOncePerThread().threadCount( 2 ).addGoal( "-DsleepLength=1200" ) );
         assertDifferentPids( pids, 2 );
-        assertFalse( "pid 1 is not the same as the main process' pid", pids[0].equals( getMyPID() ) );
+        assertFalse( "pid 1 is not the same as the main process' pid", pids[0].equals( getMainPID() ) );
     }
 
     @Test
@@ -97,8 +111,8 @@ public class ForkModeIT
     {
         String[] pids = doTest( unpack( getProject() ).forkCount( 0 ) );
         assertSamePids( pids );
-        assertEndWith( pids, "_1_1", 3);
-        assertEquals( "my pid is equal to pid 1 of the test", getMyPID(), pids[0] );
+        assertEndWith( pids, "_1_1", 3 );
+        assertEquals( "my pid is equal to pid 1 of the test", getMainPID(), pids[0] );
     }
 
     @Test
@@ -106,8 +120,8 @@ public class ForkModeIT
     {
         String[] pids = doTest( unpack( getProject() ).setForkJvm().forkCount( 1 ).reuseForks( false ) );
         assertDifferentPids( pids );
-        assertEndWith( pids, "_1_1", 3);
-        assertFalse( "pid 1 is not the same as the main process' pid", pids[0].equals( getMyPID() ) );
+        assertEndWith( pids, "_1_1", 3 );
+        assertFalse( "pid 1 is not the same as the main process' pid", pids[0].equals( getMainPID() ) );
     }
 
     @Test
@@ -115,35 +129,39 @@ public class ForkModeIT
     {
         String[] pids = doTest( unpack( getProject() ).setForkJvm().forkCount( 1 ).reuseForks( true ) );
         assertSamePids( pids );
-        assertEndWith( pids, "_1_1", 3);
-        assertFalse( "pid 1 is not the same as the main process' pid", pids[0].equals( getMyPID() ) );
+        assertEndWith( pids, "_1_1", 3 );
+        assertFalse( "pid 1 is not the same as the main process' pid", pids[0].equals( getMainPID() ) );
     }
 
     @Test
     public void testForkCountTwoNoReuse()
     {
-        String[] pids = doTest( unpack( getProject() ).forkCount( 2 ).reuseForks( false ).addGoal( "-DsleepLength=1200" ) );
+        String[] pids =
+            doTest( unpack( getProject() ).forkCount( 2 ).reuseForks( false ).addGoal( "-DsleepLength=1200" ) );
         assertDifferentPids( pids );
-        assertFalse( "pid 1 is not the same as the main process' pid", pids[0].equals( getMyPID() ) );
+        assertFalse( "pid 1 is not the same as the main process' pid", pids[0].equals( getMainPID() ) );
     }
 
     @Test
     public void testForkCountTwoReuse()
     {
-        String[] pids = doTest( unpack( getProject() ).forkCount( 2 ).reuseForks( true ).addGoal( "-DsleepLength=1200" ) );
+        String[] pids =
+            doTest( unpack( getProject() ).forkCount( 2 ).reuseForks( true ).addGoal( "-DsleepLength=1200" ) );
         assertDifferentPids( pids, 2 );
-        assertFalse( "pid 1 is not the same as the main process' pid", pids[0].equals( getMyPID() ) );
+        assertFalse( "pid 1 is not the same as the main process' pid", pids[0].equals( getMainPID() ) );
     }
 
     private void assertEndWith( String[] pids, String suffix, int expectedMatches )
     {
         int matches = 0;
-        for (String pid : pids) {
-            if ( pid.endsWith( suffix )) {
+        for ( String pid : pids )
+        {
+            if ( pid.endsWith( suffix ) )
+            {
                 matches++;
             }
         }
-        
+
         assertEquals( "suffix " + suffix + " matched the correct number of pids", expectedMatches, matches );
     }
 
@@ -158,12 +176,14 @@ public class ForkModeIT
     {
         String[] pids = doTest( unpack( getProject() ).forkOnce() );
         assertSamePids( pids );
-        assertFalse( "pid 1 is not the same as the main process' pid", pids[0].equals( getMyPID() ) );
+        assertFalse( "pid 1 is not the same as the main process' pid", pids[0].equals( getMainPID() ) );
     }
 
-    private String getMyPID()
+    private String getMainPID()
     {
-        return ManagementFactory.getRuntimeMXBean().getName() + " testValue_1_1";
+        final TestFile targetFile = outputValidator.getTargetFile( "maven.pid" );
+        String pid = targetFile.slurpFile();
+        return pid + " testValue_1_1";
     }
 
     private void assertSamePids( String[] pids )
@@ -193,7 +213,8 @@ public class ForkModeIT
     private String[] doTest( SurefireLauncher forkMode )
     {
         forkMode.sysProp( "testProperty", "testValue_${surefire.threadNumber}_${surefire.forkNumber}" );
-        final OutputValidator outputValidator = forkMode.debugLogging().executeTest();
+        forkMode.addGoal( "org.apache.maven.plugins.surefire:maven-dump-pid-plugin:dump-pid" );
+        outputValidator = forkMode.executeTest();
         outputValidator.verifyErrorFreeLog().assertTestSuiteResults( 3, 0, 0, 0 );
         String[] pids = new String[3];
         for ( int i = 1; i <= pids.length; i++ )
