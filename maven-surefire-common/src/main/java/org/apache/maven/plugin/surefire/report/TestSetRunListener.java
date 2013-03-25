@@ -33,7 +33,7 @@ import org.apache.maven.surefire.util.internal.ByteBuffer;
 /**
  * Reports data for a single test set.
  * <p/>
- *
+ * 
  * @author Kristian Rosenvold
  */
 public class TestSetRunListener
@@ -62,8 +62,8 @@ public class TestSetRunListener
     public TestSetRunListener( ConsoleReporter consoleReporter, FileReporter fileReporter,
                                StatelessXmlReporter simpleXMLReporter,
                                TestcycleConsoleOutputReceiver consoleOutputReceiver,
-                               StatisticsReporter statisticsReporter, RunStatistics globalStats, boolean trimStackTrace,
-                               boolean isPlainFormat, boolean briefOrPlainFormat )
+                               StatisticsReporter statisticsReporter, RunStatistics globalStats,
+                               boolean trimStackTrace, boolean isPlainFormat, boolean briefOrPlainFormat )
     {
         this.consoleReporter = consoleReporter;
         this.fileReporter = fileReporter;
@@ -115,7 +115,7 @@ public class TestSetRunListener
 
     public void testSetCompleted( ReportEntry report )
     {
-        WrappedReportEntry wrap = wrapTestSet( report, null );
+        WrappedReportEntry wrap = wrapTestSet( report );
         List<String> testResults = briefOrPlainFormat ? detailsForThis.getTestResults() : null;
         if ( consoleReporter != null )
         {
@@ -195,7 +195,6 @@ public class TestSetRunListener
 
     public void testSkipped( ReportEntry reportEntry )
     {
-
         WrappedReportEntry wrapped = wrap( reportEntry, ReportEntryType.skipped );
         detailsForThis.testSkipped( wrapped );
         if ( statisticsReporter != null )
@@ -225,16 +224,33 @@ public class TestSetRunListener
 
     private WrappedReportEntry wrap( ReportEntry other, ReportEntryType reportEntryType )
     {
-        return new WrappedReportEntry( other, reportEntryType, other.getElapsed() != null
-            ? other.getElapsed()
-            : detailsForThis.getElapsedSinceLastStart(), getAsString( testStdOut ), getAsString( testStdErr ) );
+        final int estimatedElapsed;
+        if ( reportEntryType != ReportEntryType.skipped )
+        {
+            if ( other.getElapsed() != null )
+            {
+                estimatedElapsed = other.getElapsed();
+            }
+            else
+            {
+                estimatedElapsed = detailsForThis.getElapsedSinceLastStart();
+            }
+        }
+        else
+        {
+            estimatedElapsed = 0;
+        }
+
+        return new WrappedReportEntry( other, reportEntryType, estimatedElapsed, getAsString( testStdOut ),
+                                       getAsString( testStdErr ) );
     }
 
-    private WrappedReportEntry wrapTestSet( ReportEntry other, ReportEntryType reportEntryType )
+    private WrappedReportEntry wrapTestSet( ReportEntry other )
     {
-        return new WrappedReportEntry( other, reportEntryType, other.getElapsed() != null
-            ? other.getElapsed()
-            : detailsForThis.getElapsedSinceTestSetStart(), getAsString( testStdOut ), getAsString( testStdErr ) );
+        return new WrappedReportEntry( other, null, other.getElapsed() != null 
+                        ? other.getElapsed()
+                        : detailsForThis.getElapsedSinceTestSetStart(), getAsString( testStdOut ),
+                                       getAsString( testStdErr ) );
     }
 
     public void close()

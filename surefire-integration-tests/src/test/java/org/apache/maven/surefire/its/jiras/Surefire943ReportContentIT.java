@@ -1,4 +1,5 @@
 package org.apache.maven.surefire.its.jiras;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -18,7 +19,6 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
-
 import java.io.FileNotFoundException;
 import org.apache.maven.shared.utils.xml.Xpp3Dom;
 import org.apache.maven.shared.utils.xml.Xpp3DomBuilder;
@@ -33,26 +33,57 @@ public class Surefire943ReportContentIT
 {
 
     @Test
-    public void test()
+    public void test_noParallel()
         throws Exception
     {
-        OutputValidator validator = unpack( "surefire-943-report-content" ).maven().withFailure().executeTest();
-        validator.assertTestSuiteResults( 6, 0, 3, 0 );
-
-        validate( validator, "org.sample.module.My1Test" );
-        validate( validator, "org.sample.module.My2Test" );
-        validate( validator, "org.sample.module.My3Test" );
+        doTest( "none" );
     }
 
-    private void validate( OutputValidator validator, String className )
+    @Test
+    public void test_parallelBoth()
+        throws Exception
+    {
+        doTest( "both" );
+    }
+
+    private void doTest( String parallelMode )
+        throws Exception
+    {
+        OutputValidator validator =
+            unpack( "surefire-943-report-content" ).maven().sysProp( "parallel", parallelMode ).withFailure().executeTest();
+        validator.assertTestSuiteResults( 9, 0, 3, 3 );
+
+        validate( validator, "org.sample.module.My1Test", 1 );
+        validate( validator, "org.sample.module.My2Test", 1 );
+        validate( validator, "org.sample.module.My3Test", 0 );
+        validateSkipped( validator, "org.sample.module.My4Test" );
+    }
+
+    private void validateSkipped( OutputValidator validator, String className )
         throws FileNotFoundException
     {
-        Xpp3Dom testResult =
-            Xpp3DomBuilder.build( validator.getSurefireReportsXmlFile( "TEST-" + className + ".xml" ).getFileInputStream(),
-                                  "UTF-8" );
-        Xpp3Dom[] children = testResult.getChildren( "testcase" );
+        Xpp3Dom[] children = readTests( validator, className );
 
-        Assert.assertEquals( 2, children.length );
+        Assert.assertEquals( 1, children.length );
+
+        Xpp3Dom child = children[0];
+
+        Assert.assertEquals( className, child.getAttribute( "classname" ) );
+        Assert.assertEquals( className, child.getAttribute( "name" ) );
+
+        Assert.assertEquals( "Expected skipped tag for ignored method for " + className, 1,
+                             child.getChildren( "skipped" ).length );
+
+        Assert.assertTrue( "time for ignored test is expected to be zero",
+                           Double.compare( Double.parseDouble( child.getAttribute( "time" ) ), 0.0d ) == 0 );
+    }
+
+    private void validate( OutputValidator validator, String className, int ignored )
+        throws FileNotFoundException
+    {
+        Xpp3Dom[] children = readTests( validator, className );
+
+        Assert.assertEquals( 2 + ignored, children.length );
 
         for ( Xpp3Dom child : children )
         {
@@ -62,15 +93,39 @@ public class Surefire943ReportContentIT
             {
                 Assert.assertEquals( "Expected no failures for method alwaysSuccessful for " + className, 0,
                                      child.getChildCount() );
+
+                Assert.assertTrue( "time for successful test is expected to be positive",
+                                   Double.compare( Double.parseDouble( child.getAttribute( "time" ) ), 0.0d ) > 0 );
+            }
+            else if ( child.getAttribute( "name" ).contains( "Ignored" ) )
+            {
+                Assert.assertEquals( "Expected skipped-tag for ignored method for " + className, 1,
+                                     child.getChildren( "skipped" ).length );
+
+                Assert.assertTrue( "time for ignored test is expected to be zero",
+                                   Double.compare( Double.parseDouble( child.getAttribute( "time" ) ), 0.0d ) == 0 );
+
             }
             else
             {
-                Assert.assertEquals( "Expected methods \"alwaysSuccessful\" and \"fails\" in " + className, "fails",
-                                     child.getAttribute( "name" ) );
+                Assert.assertEquals( "Expected methods \"alwaysSuccessful\", \"*Ignored\" and \"fails\" in "
+                    + className, "fails", child.getAttribute( "name" ) );
                 Assert.assertEquals( "Expected failure description for method \"fails\" in " + className, 1,
                                      child.getChildren( "failure" ).length );
+                Assert.assertTrue( "time for failed test is expected to be positive",
+                                   Double.compare( Double.parseDouble( child.getAttribute( "time" ) ), 0.0d ) > 0 );
             }
         }
+    }
+
+    private Xpp3Dom[] readTests( OutputValidator validator, String className )
+        throws FileNotFoundException
+    {
+        Xpp3Dom testResult =
+            Xpp3DomBuilder.build( validator.getSurefireReportsXmlFile( "TEST-" + className + ".xml" ).getFileInputStream(),
+                                  "UTF-8" );
+        Xpp3Dom[] children = testResult.getChildren( "testcase" );
+        return children;
     }
 
 }

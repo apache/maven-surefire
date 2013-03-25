@@ -8,20 +8,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.Ignore;
 
-public class My2Test {
-    @Test
-    public void fails()
-        throws Exception
-    {
-        Thread.sleep( 100 );
-        fail( "Always fails" );
-    }
+@Ignore( "Ignore-Message" )
+public class My4Test
+{
 
     @Test
-    public void alwaysSuccessful()
-        throws Exception
+    public void alsoIgnored()
     {
-        Thread.sleep( 100 );
+
     }
     
     @Test

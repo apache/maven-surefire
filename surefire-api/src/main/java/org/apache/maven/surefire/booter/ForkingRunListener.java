@@ -132,7 +132,6 @@ public class ForkingRunListener
         target.print( toString( BOOTERCODE_TEST_ERROR, report, testSetChannelId ) );
     }
 
-
     public void testFailed( ReportEntry report )
     {
         target.print( toString( BOOTERCODE_TEST_FAILED, report, testSetChannelId ) );
@@ -233,8 +232,10 @@ public class ForkingRunListener
     private String toPropertyString( String key, String value )
     {
         StringBuffer stringBuffer = new StringBuffer();
-        append( stringBuffer, BOOTERCODE_SYSPROPS ).comma( stringBuffer );
-        append( stringBuffer, Integer.toHexString( testSetChannelId.intValue() ) ).comma( stringBuffer );
+        append( stringBuffer, BOOTERCODE_SYSPROPS );
+        comma( stringBuffer );
+        append( stringBuffer, Integer.toHexString( testSetChannelId.intValue() ) );
+        comma( stringBuffer );
         StringUtils.escapeJavaStyleString( stringBuffer, key );
         append( stringBuffer, "," );
         StringUtils.escapeJavaStyleString( stringBuffer, value );
@@ -245,8 +246,10 @@ public class ForkingRunListener
     private String toString( byte operationCode, ReportEntry reportEntry, Integer testSetChannelId )
     {
         StringBuffer stringBuffer = new StringBuffer();
-        append( stringBuffer, operationCode ).comma( stringBuffer );
-        append( stringBuffer, Integer.toHexString( testSetChannelId.intValue() ) ).comma( stringBuffer );
+        append( stringBuffer, operationCode );
+        comma( stringBuffer );
+        append( stringBuffer, Integer.toHexString( testSetChannelId.intValue() ) );
+        comma( stringBuffer );
         nullableEncoding( stringBuffer, reportEntry.getSourceName() );
         comma( stringBuffer );
         nullableEncoding( stringBuffer, reportEntry.getName() );

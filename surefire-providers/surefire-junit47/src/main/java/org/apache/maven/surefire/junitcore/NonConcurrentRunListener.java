@@ -30,17 +30,14 @@ import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 
 /**
- * A class to be used when there is no JUnit parallelism (methods or/and class). This
- * allow to workaround JUnit limitation a la Junit4 provider. Specifically, we can redirect
- * properly the output even if we don't have class demarcation in JUnit. It works when
- * if there is a JVM instance per test run, i.e. with forkMode=always or perthread.
+ * A class to be used when there is no JUnit parallelism (methods or/and class). This allow to workaround JUnit
+ * limitation a la Junit4 provider. Specifically, we can redirect properly the output even if we don't have class
+ * demarcation in JUnit. It works when if there is a JVM instance per test run, i.e. with forkMode=always or perthread.
  */
 public class NonConcurrentRunListener
     extends JUnit4RunListener
     implements ConsoleOutputReceiver
 {
-
-    private long startTime = System.currentTimeMillis();
 
     private java.lang.Class<?> currentTestClass;
 
@@ -60,19 +57,25 @@ public class NonConcurrentRunListener
 
     protected SimpleReportEntry createReportEntry( Description description )
     {
-        return new SimpleReportEntry( description.getClassName(), description.getDisplayName(),
-                                      (int) ( System.currentTimeMillis() - startTime ) );
+        return new SimpleReportEntry( description.getClassName(), description.getDisplayName()/*,
+                                       (int) ( System.currentTimeMillis() - startTime ) */);
     }
 
     protected SimpleReportEntry createReportEntryForTestSet( Description description )
     {
-        return new SimpleReportEntry( description.getClassName(), description.getClassName(),
-                                      (int) ( System.currentTimeMillis() - startTime ) );
+        return new SimpleReportEntry( description.getClassName(), description.getClassName() /*,
+                                       (int) ( System.currentTimeMillis() - startTime ) */);
     }
 
     @Override
     public void testStarted( Description description )
         throws Exception
+    {
+        finishLastTestSetIfNeccessary( description );
+        super.testStarted( description );
+    }
+
+    private void finishLastTestSetIfNeccessary( Description description )
     {
         if ( !description.getTestClass().equals( currentTestClass ) )
         {
@@ -82,10 +85,8 @@ public class NonConcurrentRunListener
                 reporter.testSetCompleted( createReportEntryForTestSet( lastFinishedDescription ) );
                 lastFinishedDescription = null;
             }
-            startTime = System.currentTimeMillis();
             reporter.testSetStarting( createReportEntryForTestSet( description ) );
         }
-        super.testStarted( description );
     }
 
     @Override
@@ -100,6 +101,8 @@ public class NonConcurrentRunListener
     public void testIgnored( Description description )
         throws Exception
     {
+        finishLastTestSetIfNeccessary( description );
+
         super.testIgnored( description );
         this.lastFinishedDescription = description;
     }

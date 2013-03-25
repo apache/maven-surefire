@@ -58,9 +58,8 @@ public class WrappedReportEntry
 
     public Integer getElapsed()
     {
-        return original.getElapsed() != null ? original.getElapsed() : elapsed;
+        return elapsed;
     }
-
 
     public ReportEntryType getReportEntryType()
     {
