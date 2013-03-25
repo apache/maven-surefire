@@ -72,11 +72,6 @@ public class TestSet
 
         try
         {
-            int elapsed = 0;
-            for ( TestMethod testMethod : testMethods )
-            {
-                elapsed += testMethod.getElapsed();
-            }
             ReportEntry report = createReportEntry( null );
 
             target.testSetStarting( report );
@@ -86,8 +81,10 @@ public class TestSet
                 beforeClass.writeDetails( ( (ConsoleOutputReceiver) target ) );
             }
 
+            int elapsed = 0;
             for ( TestMethod testMethod : testMethods )
             {
+                elapsed += testMethod.getElapsed();
                 testMethod.replay( target );
             }
 
