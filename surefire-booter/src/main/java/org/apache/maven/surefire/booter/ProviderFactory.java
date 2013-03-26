@@ -97,7 +97,7 @@ public class ProviderFactory
 
     public SurefireProvider createProvider( boolean isInsideFork )
     {
-        ClassLoader context = java.lang.Thread.currentThread().getContextClassLoader();
+        ClassLoader systemClassLoader = java.lang.Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader( surefireClassLoader );
 
         StartupConfiguration starterConfiguration = startupConfiguration;
@@ -113,7 +113,7 @@ public class ProviderFactory
         surefireReflector.setIfDirScannerAware( o, providerConfiguration.getDirScannerParams() );
 
         Object provider = surefireReflector.instantiateProvider( starterConfiguration.getProviderClassName(), o );
-        Thread.currentThread().setContextClassLoader( context );
+        Thread.currentThread().setContextClassLoader( systemClassLoader );
 
         return new ProviderProxy( provider, testsClassLoader );
     }
