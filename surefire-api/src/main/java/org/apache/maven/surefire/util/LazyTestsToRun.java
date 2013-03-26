@@ -42,7 +42,7 @@ import org.apache.maven.surefire.booter.ForkingRunListener;
 public class LazyTestsToRun
     extends TestsToRun
 {
-    private List workQueue = new ArrayList();
+    private final List<Class> workQueue = new ArrayList<Class>();
 
     private BufferedReader inputReader;
 
@@ -61,7 +61,7 @@ public class LazyTestsToRun
      */
     public LazyTestsToRun( InputStream testSource, ClassLoader testClassLoader, PrintStream originalOutStream )
     {
-        super( Collections.emptyList() );
+        super( Collections.<Class>emptyList() );
 
         this.testClassLoader = testClassLoader;
         this.originalOutStream = originalOutStream;
@@ -79,13 +79,13 @@ public class LazyTestsToRun
 
     protected void requestNextTest()
     {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append( (char) ForkingRunListener.BOOTERCODE_NEXT_TEST ).append( ",0,want more!\n" );
         originalOutStream.print( sb.toString() );
     }
 
     private class BlockingIterator
-        implements Iterator
+        implements Iterator<Class>
     {
         private int lastPos = -1;
 
@@ -135,7 +135,7 @@ public class LazyTestsToRun
             return workQueue.size() == nextPos && !streamClosed;
         }
 
-        public Object next()
+        public Class next()
         {
             synchronized ( workQueue )
             {
@@ -153,7 +153,7 @@ public class LazyTestsToRun
     /* (non-Javadoc)
       * @see org.apache.maven.surefire.util.TestsToRun#iterator()
       */
-    public Iterator iterator()
+    public Iterator<Class> iterator()
     {
         return new BlockingIterator();
     }
@@ -163,7 +163,7 @@ public class LazyTestsToRun
       */
     public String toString()
     {
-        StringBuffer sb = new StringBuffer( "LazyTestsToRun " );
+        StringBuilder sb = new StringBuilder( "LazyTestsToRun " );
         synchronized ( workQueue )
         {
             sb.append( "(more items expected: " ).append( !streamClosed ).append( "): " );

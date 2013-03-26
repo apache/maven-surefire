@@ -59,7 +59,7 @@ public class LegacyPojoStackTraceWriter
 
     public String smartTrimmedStackTrace()
     {
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         result.append( testClass );
         result.append( "#" );
         result.append( testMethod );
@@ -128,7 +128,7 @@ public class LegacyPojoStackTraceWriter
             }
         }
 
-        StringBuffer trace = new StringBuffer();
+        StringBuilder trace = new StringBuilder();
         for ( int i = 0; i <= lastLine; i++ )
         {
             trace.append( lines[i] );

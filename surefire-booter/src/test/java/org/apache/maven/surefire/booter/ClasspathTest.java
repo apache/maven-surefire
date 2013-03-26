@@ -117,9 +117,9 @@ public class ClasspathTest
     private void assertClasspathConsistsOfElements( Classpath classpath, String[] elements )
     {
         List classpathElements = classpath.getClassPath();
-        for ( int i = 0; i < elements.length; ++i )
+        for ( String element : elements )
         {
-            assertTrue( "The element '" + elements[i] + " is missing.", classpathElements.contains( elements[i] ) );
+            assertTrue( "The element '" + element + " is missing.", classpathElements.contains( element ) );
         }
         assertEquals( "Wrong number of classpath elements.", elements.length, classpathElements.size() );
     }

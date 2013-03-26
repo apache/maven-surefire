@@ -37,7 +37,7 @@ public class PropertiesWrapperTest
 
         Properties props = new Properties();
         PropertiesWrapper propertiesWrapper = new PropertiesWrapper( props );
-        List items = new ArrayList();
+        List<String> items = new ArrayList<String>();
         items.add( "String1" );
         items.add( "String2,String3" );
         items.add( "String4" );

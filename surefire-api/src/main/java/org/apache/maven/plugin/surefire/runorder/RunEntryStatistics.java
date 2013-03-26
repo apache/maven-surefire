@@ -42,7 +42,7 @@ public class RunEntryStatistics
     public static RunEntryStatistics fromReportEntry( ReportEntry previous )
     {
         final Integer elapsed = previous.getElapsed();
-        return new RunEntryStatistics( elapsed != null ? elapsed.intValue() : 0, 0, previous.getName() );
+        return new RunEntryStatistics( elapsed != null ? elapsed : 0, 0, previous.getName() );
     }
 
     public static RunEntryStatistics fromValues( int runTime, int successfulBuilds, Class clazz, String testName )
@@ -87,7 +87,7 @@ public class RunEntryStatistics
 
     public String getAsString()
     {
-        StringBuffer stringBuffer = new StringBuffer();
+        StringBuilder stringBuffer = new StringBuilder();
         stringBuffer.append( successfulBuilds );
         stringBuffer.append( "," );
         stringBuffer.append( runTime );

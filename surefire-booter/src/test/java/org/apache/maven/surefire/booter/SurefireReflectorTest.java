@@ -52,7 +52,7 @@ public class SurefireReflectorTest
             new DirectoryScannerParameters( new File( "ABC" ), new ArrayList(), new ArrayList(), new ArrayList(),
                                             Boolean.FALSE, "hourly" );
         surefireReflector.setDirectoryScannerParameters( foo, directoryScannerParameters );
-        assertTrue( isCalled( foo ).booleanValue() );
+        assertTrue( isCalled( foo ) );
 
     }
 
@@ -64,7 +64,7 @@ public class SurefireReflectorTest
 
         RunOrderParameters runOrderParameters = new RunOrderParameters( RunOrder.DEFAULT, new File( "." ) );
         surefireReflector.setRunOrderParameters( foo, runOrderParameters );
-        assertTrue( isCalled( foo ).booleanValue() );
+        assertTrue( isCalled( foo ) );
 
     }
 
@@ -75,10 +75,10 @@ public class SurefireReflectorTest
         Object foo = getFoo();
 
         TestRequest testSuiteDefinition =
-            new TestRequest( Arrays.asList( new File[]{ new File( "file1" ), new File( "file2" ) } ),
+            new TestRequest( Arrays.asList( new File( "file1" ), new File( "file2" ) ),
                              new File( "TestSOurce" ), "aUserRequestedTest", "aMethodRequested" );
         surefireReflector.setTestSuiteDefinition( foo, testSuiteDefinition );
-        assertTrue( isCalled( foo ).booleanValue() );
+        assertTrue( isCalled( foo ) );
     }
 
     public void testProviderProperties()
@@ -88,7 +88,7 @@ public class SurefireReflectorTest
         Object foo = getFoo();
 
         surefireReflector.setProviderProperties( foo, new Properties() );
-        assertTrue( isCalled( foo ).booleanValue() );
+        assertTrue( isCalled( foo ) );
     }
 
     public void testReporterConfiguration()
@@ -99,7 +99,7 @@ public class SurefireReflectorTest
 
         ReporterConfiguration reporterConfiguration = getReporterConfiguration();
         surefireReflector.setReporterConfigurationAware( foo, reporterConfiguration );
-        assertTrue( isCalled( foo ).booleanValue() );
+        assertTrue( isCalled( foo ) );
     }
 
     private ReporterConfiguration getReporterConfiguration()
@@ -114,7 +114,7 @@ public class SurefireReflectorTest
         Object foo = getFoo();
 
         surefireReflector.setTestClassLoader( foo, getClass().getClassLoader(), getClass().getClassLoader() );
-        assertTrue( isCalled( foo ).booleanValue() );
+        assertTrue( isCalled( foo ) );
     }
 
     public void testArtifactInfoAware()
@@ -125,7 +125,7 @@ public class SurefireReflectorTest
 
         TestArtifactInfo testArtifactInfo = new TestArtifactInfo( "12.3", "test" );
         surefireReflector.setTestArtifactInfo( foo, testArtifactInfo );
-        assertTrue( isCalled( foo ).booleanValue() );
+        assertTrue( isCalled( foo ) );
     }
 
     private SurefireReflector getReflector()
@@ -145,7 +145,7 @@ public class SurefireReflectorTest
         try
         {
             isCalled = foo.getClass().getMethod( "isCalled", new Class[0] );
-            return (Boolean) isCalled.invoke( foo, new Object[0] );
+            return (Boolean) isCalled.invoke( foo );
         }
         catch ( IllegalAccessException e )
         {

@@ -127,7 +127,7 @@ public class ReflectionUtils
         {
             Class aClass = loadClass( classLoader, className );
             Constructor constructor = ReflectionUtils.getConstructor( aClass, new Class[]{ param1Class } );
-            return constructor.newInstance( new Object[]{ param1 } );
+            return constructor.newInstance( param1 );
         }
         catch ( InvocationTargetException e )
         {
@@ -151,7 +151,7 @@ public class ReflectionUtils
         {
             Class aClass = loadClass( classLoader, className );
             Constructor constructor = ReflectionUtils.getConstructor( aClass, new Class[]{ param1Class, param2Class } );
-            return constructor.newInstance( new Object[]{ param1, param2 } );
+            return constructor.newInstance( param1, param2 );
         }
         catch ( InvocationTargetException e )
         {

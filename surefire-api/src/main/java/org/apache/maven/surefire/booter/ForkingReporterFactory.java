@@ -50,7 +50,7 @@ public class ForkingReporterFactory
 
     public synchronized RunListener createReporter()
     {
-        return new ForkingRunListener( originalSystemOut, testSetChannelId++, isTrimstackTrace.booleanValue() );
+        return new ForkingRunListener( originalSystemOut, testSetChannelId++, isTrimstackTrace );
     }
 
     public RunResult close()

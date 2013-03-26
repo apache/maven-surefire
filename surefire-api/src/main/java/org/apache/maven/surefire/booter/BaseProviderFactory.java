@@ -58,7 +58,7 @@ public class BaseProviderFactory
 
     private TestArtifactInfo testArtifactInfo;
 
-    private static final Integer ROOT_CHANNEl = new Integer( 0 );
+    private static final Integer ROOT_CHANNEl = 0;
 
 
     private final ReporterFactory reporterFactory;
@@ -69,7 +69,7 @@ public class BaseProviderFactory
     public BaseProviderFactory( ReporterFactory reporterFactory, Boolean insideFork )
     {
         this.reporterFactory = reporterFactory;
-        this.insideFork = insideFork.booleanValue();
+        this.insideFork = insideFork;
     }
 
     public DirectoryScanner getDirectoryScanner()
@@ -128,8 +128,8 @@ public class BaseProviderFactory
     {
         if ( insideFork )
         {
-            return new ForkingRunListener( reporterConfiguration.getOriginalSystemOut(), ROOT_CHANNEl.intValue(),
-                                           reporterConfiguration.isTrimStackTrace().booleanValue() );
+            return new ForkingRunListener( reporterConfiguration.getOriginalSystemOut(), ROOT_CHANNEl,
+                                           reporterConfiguration.isTrimStackTrace() );
         }
         return new DefaultDirectConsoleReporter( reporterConfiguration.getOriginalSystemOut() );
     }

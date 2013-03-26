@@ -19,14 +19,14 @@ package org.apache.maven.surefire.util;
  * under the License.
  */
 
+import org.apache.maven.plugin.surefire.runorder.RunEntryStatisticsMap;
+import org.apache.maven.surefire.testset.RunOrderParameters;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
-import org.apache.maven.plugin.surefire.runorder.RunEntryStatisticsMap;
-import org.apache.maven.surefire.testset.RunOrderParameters;
 
 /**
  * Applies the final runorder of the tests
@@ -55,18 +55,18 @@ public class DefaultRunOrderCalculator
     public TestsToRun orderTestClasses( TestsToRun scannedClasses )
     {
 
-        List result = new ArrayList( 500 );
+        List<Class> result = new ArrayList<Class>( 500 );
 
-        for ( Iterator it = scannedClasses.iterator(); it.hasNext(); )
+        for ( Class scannedClass : scannedClasses )
         {
-            result.add( it.next() );
+            result.add( scannedClass );
         }
 
         orderTestClasses( result, runOrder.length != 0 ? runOrder[0] : null );
         return new TestsToRun( result );
     }
 
-    private void orderTestClasses( List testClasses, RunOrder runOrder )
+    private void orderTestClasses( List<Class> testClasses, RunOrder runOrder )
     {
         if ( RunOrder.RANDOM.equals( runOrder ) )
         {
@@ -76,7 +76,7 @@ public class DefaultRunOrderCalculator
         {
             RunEntryStatisticsMap runEntryStatisticsMap =
                 RunEntryStatisticsMap.fromFile( runOrderParameters.getRunStatisticsFile() );
-            final List prioritized = runEntryStatisticsMap.getPrioritizedTestsByFailureFirst( testClasses );
+            final List<Class> prioritized = runEntryStatisticsMap.getPrioritizedTestsByFailureFirst( testClasses );
             testClasses.clear();
             testClasses.addAll( prioritized );
 

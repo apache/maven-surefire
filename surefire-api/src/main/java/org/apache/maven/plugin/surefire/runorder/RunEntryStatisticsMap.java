@@ -20,6 +20,8 @@ package org.apache.maven.plugin.surefire.runorder;
  */
 
 
+import org.apache.maven.surefire.report.ReportEntry;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -32,28 +34,26 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.maven.surefire.report.ReportEntry;
 
 /**
  * @author Kristian Rosenvold
  */
 public class RunEntryStatisticsMap
 {
-    private final Map runEntryStatistics;
+    private final Map<String, RunEntryStatistics> runEntryStatistics;
 
-    public RunEntryStatisticsMap( Map runEntryStatistics )
+    public RunEntryStatisticsMap( Map<String, RunEntryStatistics> runEntryStatistics )
     {
         this.runEntryStatistics = Collections.synchronizedMap( runEntryStatistics );
     }
 
     public RunEntryStatisticsMap()
     {
-        this( new HashMap() );
+        this( new HashMap<String, RunEntryStatistics>() );
     }
 
     public static RunEntryStatisticsMap fromFile( File file )
@@ -81,7 +81,7 @@ public class RunEntryStatisticsMap
     static RunEntryStatisticsMap fromReader( Reader fileReader )
         throws IOException
     {
-        Map result = new HashMap();
+        Map<String, RunEntryStatistics> result = new HashMap<String, RunEntryStatistics>();
         BufferedReader bufferedReader = new BufferedReader( fileReader );
         String line = bufferedReader.readLine();
         while ( line != null )
@@ -101,12 +101,12 @@ public class RunEntryStatisticsMap
     {
         FileOutputStream fos = new FileOutputStream( file );
         PrintWriter printWriter = new PrintWriter( fos );
-        List items = new ArrayList( runEntryStatistics.values() );
+        List<RunEntryStatistics> items = new ArrayList<RunEntryStatistics>( runEntryStatistics.values() );
         Collections.sort( items, new RunCountComparator() );
         RunEntryStatistics item;
-        for ( Iterator iter = items.iterator(); iter.hasNext(); )
+        for ( RunEntryStatistics item1 : items )
         {
-            item = (RunEntryStatistics) iter.next();
+            item = item1;
             printWriter.println( item.getAsString() );
         }
         printWriter.close();
@@ -115,7 +115,7 @@ public class RunEntryStatisticsMap
 
     public RunEntryStatistics findOrCreate( ReportEntry reportEntry )
     {
-        final RunEntryStatistics item = (RunEntryStatistics) runEntryStatistics.get( reportEntry.getName() );
+        final RunEntryStatistics item = runEntryStatistics.get( reportEntry.getName() );
         return item != null ? item : RunEntryStatistics.fromReportEntry( reportEntry );
     }
 
@@ -123,14 +123,14 @@ public class RunEntryStatisticsMap
     {
         final RunEntryStatistics newItem = findOrCreate( reportEntry );
         final Integer elapsed = reportEntry.getElapsed();
-        return newItem.nextGeneration( elapsed != null ? elapsed.intValue() : 0 );
+        return newItem.nextGeneration( elapsed != null ? elapsed : 0 );
     }
 
     public RunEntryStatistics createNextGenerationFailure( ReportEntry reportEntry )
     {
         final RunEntryStatistics newItem = findOrCreate( reportEntry );
         final Integer elapsed = reportEntry.getElapsed();
-        return newItem.nextGenerationFailure( elapsed != null ? elapsed.intValue() : 0 );
+        return newItem.nextGenerationFailure( elapsed != null ? elapsed : 0 );
     }
 
     public void add( RunEntryStatistics item )
@@ -139,16 +139,14 @@ public class RunEntryStatisticsMap
     }
 
     class RunCountComparator
-        implements Comparator
+        implements Comparator<RunEntryStatistics>
     {
-        public int compare( Object o, Object o1 )
+        public int compare( RunEntryStatistics o, RunEntryStatistics o1 )
         {
-            RunEntryStatistics re = (RunEntryStatistics) o;
-            RunEntryStatistics re1 = (RunEntryStatistics) o1;
-            int runtime = re.getSuccessfulBuilds() - re1.getSuccessfulBuilds();
+            int runtime = o.getSuccessfulBuilds() - o1.getSuccessfulBuilds();
             if ( runtime == 0 )
             {
-                return re.getRunTime() - re1.getRunTime();
+                return o.getRunTime() - o1.getRunTime();
             }
             return runtime;
         }
@@ -156,32 +154,32 @@ public class RunEntryStatisticsMap
 
     public List getPrioritizedTestsClassRunTime( List testsToRun, int threadCount )
     {
-        final List prioritizedTests = getPrioritizedTests( testsToRun, new TestRuntimeComparator() );
+        final List<PrioritizedTest> prioritizedTests = getPrioritizedTests( testsToRun, new TestRuntimeComparator() );
         ThreadedExecutionScheduler threadedExecutionScheduler = new ThreadedExecutionScheduler( threadCount );
-        for ( Iterator prioritizedTest = prioritizedTests.iterator(); prioritizedTest.hasNext(); )
+        for ( Object prioritizedTest1 : prioritizedTests )
         {
-            threadedExecutionScheduler.addTest( (PrioritizedTest) prioritizedTest.next() );
+            threadedExecutionScheduler.addTest( (PrioritizedTest) prioritizedTest1 );
         }
 
         return threadedExecutionScheduler.getResult();
 
     }
 
-    public List getPrioritizedTestsByFailureFirst( List testsToRun )
+    public List<Class> getPrioritizedTestsByFailureFirst( List testsToRun )
     {
         final List prioritizedTests = getPrioritizedTests( testsToRun, new LeastFailureComparator() );
         return transformToClasses( prioritizedTests );
     }
 
 
-    private List getPrioritizedTests( List testsToRun, Comparator priorityComparator )
+    private List<PrioritizedTest> getPrioritizedTests( List testsToRun, Comparator<Priority> priorityComparator )
     {
         Map classPriorities = getPriorities( priorityComparator );
 
-        List tests = new ArrayList();
-        for ( Iterator iter = testsToRun.iterator(); iter.hasNext(); )
+        List<PrioritizedTest> tests = new ArrayList<PrioritizedTest>();
+        for ( Object aTestsToRun : testsToRun )
         {
-            Class clazz = (Class) iter.next();
+            Class clazz = (Class) aTestsToRun;
             Priority pri = (Priority) classPriorities.get( clazz.getName() );
             if ( pri == null )
             {
@@ -195,41 +193,40 @@ public class RunEntryStatisticsMap
 
     }
 
-    private List transformToClasses( List tests )
+    private List<Class> transformToClasses( List tests )
     {
-        List result = new ArrayList();
-        for ( int i = 0; i < tests.size(); i++ )
+        List<Class> result = new ArrayList<Class>();
+        for ( Object test : tests )
         {
-            result.add( ( (PrioritizedTest) tests.get( i ) ).getClazz() );
+            result.add( ( (PrioritizedTest) test ).getClazz() );
         }
         return result;
     }
 
-    public Map getPriorities( Comparator priorityComparator )
+    public Map getPriorities( Comparator<Priority> priorityComparator )
     {
-        Map priorities = new HashMap();
-        for ( Iterator iter = runEntryStatistics.keySet().iterator(); iter.hasNext(); )
+        Map<String, Priority> priorities = new HashMap<String, Priority>();
+        for ( Object o : runEntryStatistics.keySet() )
         {
-            String testNames = (String) iter.next();
+            String testNames = (String) o;
             String clazzName = extractClassName( testNames );
-            Priority priority = (Priority) priorities.get( clazzName );
+            Priority priority = priorities.get( clazzName );
             if ( priority == null )
             {
                 priority = new Priority( clazzName );
                 priorities.put( clazzName, priority );
             }
 
-            RunEntryStatistics itemStat = (RunEntryStatistics) runEntryStatistics.get( testNames );
+            RunEntryStatistics itemStat = runEntryStatistics.get( testNames );
             priority.addItem( itemStat );
         }
 
-        List items = new ArrayList( priorities.values() );
+        List<Priority> items = new ArrayList<Priority>( priorities.values() );
         Collections.sort( items, priorityComparator );
-        Map result = new HashMap();
+        Map<String, Priority> result = new HashMap<String, Priority>();
         int i = 0;
-        for ( Iterator iter = items.iterator(); iter.hasNext(); )
+        for ( Priority pri : items )
         {
-            Priority pri = (Priority) iter.next();
             pri.setPriority( i++ );
             result.put( pri.getClassName(), pri );
         }
@@ -237,35 +234,29 @@ public class RunEntryStatisticsMap
     }
 
     class PrioritizedTestComparator
-        implements Comparator
+        implements Comparator<PrioritizedTest>
     {
-        public int compare( Object o, Object o1 )
+        public int compare( PrioritizedTest o, PrioritizedTest o1 )
         {
-            PrioritizedTest re = (PrioritizedTest) o;
-            PrioritizedTest re1 = (PrioritizedTest) o1;
-            return re.getPriority() - re1.getPriority();
+            return o.getPriority() - o1.getPriority();
         }
     }
 
     class TestRuntimeComparator
-        implements Comparator
+        implements Comparator<Priority>
     {
-        public int compare( Object o, Object o1 )
+        public int compare( Priority o, Priority o1 )
         {
-            Priority re = (Priority) o;
-            Priority re1 = (Priority) o1;
-            return re1.getTotalRuntime() - re.getTotalRuntime();
+            return o1.getTotalRuntime() - o.getTotalRuntime();
         }
     }
 
     class LeastFailureComparator
-        implements Comparator
+        implements Comparator<Priority>
     {
-        public int compare( Object o, Object o1 )
+        public int compare( Priority o, Priority o1 )
         {
-            Priority re = (Priority) o;
-            Priority re1 = (Priority) o1;
-            return re.getMinSuccessRate() - re1.getMinSuccessRate();
+            return o.getMinSuccessRate() - o1.getMinSuccessRate();
         }
     }
 

@@ -96,6 +96,7 @@ public class TypeEncodedValue
         }
     }
 
+    @SuppressWarnings( "SimplifiableIfStatement" )
     public boolean equals( Object o )
     {
         if ( this == o )

@@ -32,7 +32,7 @@ public class IsolatedClassLoader
 {
     private final ClassLoader parent = ClassLoader.getSystemClassLoader();
 
-    private final Set urls = new HashSet();
+    private final Set<URL> urls = new HashSet<URL>();
 
     private final String roleName;
 

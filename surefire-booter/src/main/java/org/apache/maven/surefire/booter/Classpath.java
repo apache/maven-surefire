@@ -19,15 +19,14 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
+import org.apache.maven.surefire.util.UrlUtils;
+
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
-
-import org.apache.maven.surefire.util.UrlUtils;
 
 /**
  * An ordered list of classpath elements with set behaviour
@@ -46,19 +45,19 @@ public class Classpath
         return joinedClasspath;
     }
 
-    private final List elements;
+    private final List<String> elements;
 
     public Classpath()
     {
-        this.elements = new ArrayList();
+        this.elements = new ArrayList<String>();
     }
 
     public Classpath( Classpath other )
     {
-        this.elements = new ArrayList( other.elements );
+        this.elements = new ArrayList<String>( other.elements );
     }
 
-    public Classpath( List elements )
+    public Classpath( List<String> elements )
     {
         this();
         addElements( elements );
@@ -76,11 +75,11 @@ public class Classpath
         }
     }
 
-    private void addElements( List additionalElements )
+    private void addElements( List<String> additionalElements )
     {
-        for ( Iterator it = additionalElements.iterator(); it.hasNext(); )
+        for ( Object additionalElement : additionalElements )
         {
-            String element = (String) it.next();
+            String element = (String) additionalElement;
             addClassPathElementUrl( element );
         }
     }
@@ -101,10 +100,9 @@ public class Classpath
     public List getAsUrlList()
         throws MalformedURLException
     {
-        List urls = new ArrayList();
-        for ( Iterator i = elements.iterator(); i.hasNext(); )
+        List<URL> urls = new ArrayList<URL>();
+        for ( String url : elements )
         {
-            String url = (String) i.next();
             File f = new File( url );
             urls.add( UrlUtils.getURL( f ) );
         }
@@ -113,10 +111,10 @@ public class Classpath
 
     public void writeToSystemProperty( String propertyName )
     {
-        StringBuffer sb = new StringBuffer();
-        for ( Iterator i = elements.iterator(); i.hasNext(); )
+        StringBuilder sb = new StringBuilder();
+        for ( String element : elements )
         {
-            sb.append( (String) i.next() ).append( File.pathSeparatorChar );
+            sb.append( element ).append( File.pathSeparatorChar );
         }
         System.setProperty( propertyName, sb.toString() );
     }
@@ -146,9 +144,9 @@ public class Classpath
         {
             List urls = getAsUrlList();
             IsolatedClassLoader classLoader = new IsolatedClassLoader( parent, childDelegation, roleName );
-            for ( Iterator iter = urls.iterator(); iter.hasNext(); )
+            for ( Object url1 : urls )
             {
-                URL url = (URL) iter.next();
+                URL url = (URL) url1;
                 classLoader.addURL( url );
             }
             if ( parent != null )

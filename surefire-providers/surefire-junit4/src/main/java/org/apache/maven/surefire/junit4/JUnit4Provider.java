@@ -119,9 +119,9 @@ public class JUnit4Provider
 
         runNotifer.fireTestRunStarted( null );
 
-        for ( @SuppressWarnings( "unchecked" ) Iterator<Class<?>> iter = testsToRun.iterator(); iter.hasNext(); )
+        for ( Class aTestsToRun : testsToRun )
         {
-            executeTestSet( iter.next(), reporter, runNotifer );
+            executeTestSet( aTestsToRun, reporter, runNotifer );
         }
 
         runNotifer.fireTestRunFinished( result );

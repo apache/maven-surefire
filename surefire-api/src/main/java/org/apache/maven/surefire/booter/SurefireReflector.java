@@ -115,8 +115,7 @@ public class SurefireReflector
         final Integer getErrors = (Integer) ReflectionUtils.invokeGetter( result, "getErrors" );
         final Integer getSkipped = (Integer) ReflectionUtils.invokeGetter( result, "getSkipped" );
         final Integer getFailures = (Integer) ReflectionUtils.invokeGetter( result, "getFailures" );
-        return new RunResult( getCompletedCount1.intValue(), getErrors.intValue(), getFailures.intValue(),
-                              getSkipped.intValue() );
+        return new RunResult( getCompletedCount1, getErrors, getFailures, getSkipped );
 
     }
 

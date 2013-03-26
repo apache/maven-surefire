@@ -63,7 +63,7 @@ public class TestNGXmlTestSuite
      * Creates a testng testset to be configured by the specified
      * xml file(s). The XML files are suite definitions files according to TestNG DTD.
      */
-    public TestNGXmlTestSuite( List suiteFiles, String testSourceDirectory, String artifactVersion,
+    public TestNGXmlTestSuite( List<File> suiteFiles, String testSourceDirectory, String artifactVersion,
                                Properties confOptions, File reportsDirectory )
     {
         this.suiteFiles = suiteFiles;

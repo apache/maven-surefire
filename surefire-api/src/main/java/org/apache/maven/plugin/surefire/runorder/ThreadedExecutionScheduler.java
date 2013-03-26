@@ -40,7 +40,7 @@ public class ThreadedExecutionScheduler
         lists = new List[numThreads];
         for ( int i = 0; i < numThreads; i++ )
         {
-            lists[i] = new ArrayList();
+            lists[i] = new ArrayList<Class>();
         }
     }
 
@@ -48,14 +48,15 @@ public class ThreadedExecutionScheduler
     {
         final int leastBusySlot = findLeastBusySlot();
         runTime[leastBusySlot] += prioritizedTest.getTotalRuntime();
+        //noinspection unchecked
         lists[leastBusySlot].add( prioritizedTest.getClazz() );
     }
 
     public List getResult()
     {
-        List result = new ArrayList();
+        List<Class> result = new ArrayList<Class>();
         int index = 0;
-        boolean added = false;
+        boolean added;
         do
         {
             added = false;
@@ -63,7 +64,7 @@ public class ThreadedExecutionScheduler
             {
                 if ( lists[i].size() > index )
                 {
-                    result.add( lists[i].get( index ) );
+                    result.add( (Class) lists[i].get( index ) );
                     added = true;
                 }
             }

@@ -51,9 +51,9 @@ public class PropertiesWrapper
 
     public void setAsSystemProperties()
     {
-        for ( Iterator i = properties.keySet().iterator(); i.hasNext(); )
+        for ( Object o : properties.keySet() )
         {
-            String key = (String) i.next();
+            String key = (String) o;
 
             System.setProperty( key, properties.getProperty( key ) );
         }
@@ -66,8 +66,7 @@ public class PropertiesWrapper
 
     public boolean getBooleanProperty( String propertyName )
     {
-        final Boolean aBoolean = Boolean.valueOf( properties.getProperty( propertyName ) );
-        return aBoolean.booleanValue();
+        return Boolean.valueOf( properties.getProperty( propertyName ) );
     }
 
     public Boolean getBooleanObjectProperty( String propertyName )
@@ -86,10 +85,10 @@ public class PropertiesWrapper
         return (File) typeEncodedValue.getDecodedValue();
     }
 
-    public List getStringList( String propertyPrefix )
+    public List<String> getStringList( String propertyPrefix )
     {
         String value;
-        List result = new ArrayList();
+        List<String> result = new ArrayList<String>();
         // Whoa, C !!
         for ( int i = 0; ( value = getProperty( propertyPrefix + i ) ) != null; i++ )
         {
@@ -136,7 +135,7 @@ public class PropertiesWrapper
 
     Classpath getClasspath( String prefix )
     {
-        List elements = getStringList( prefix );
+        List<String> elements = getStringList( prefix );
         return new Classpath( elements );
     }
 
@@ -166,9 +165,8 @@ public class PropertiesWrapper
             return;
         }
         int i = 0;
-        for ( Iterator iterator = items.iterator(); iterator.hasNext(); )
+        for ( Object item : items )
         {
-            Object item = iterator.next();
             if ( item == null )
             {
                 throw new NullPointerException( propertyPrefix + i + " has null value" );
@@ -176,9 +174,9 @@ public class PropertiesWrapper
 
             String[] stringArray = StringUtils.split( item.toString(), "," );
 
-            for ( int j = 0; j < stringArray.length; j++ )
+            for ( String aStringArray : stringArray )
             {
-                properties.setProperty( propertyPrefix + i, stringArray[j] );
+                properties.setProperty( propertyPrefix + i, aStringArray );
                 i++;
             }
 
@@ -192,6 +190,7 @@ public class PropertiesWrapper
         while ( iter.hasNext() )
         {
             key = iter.next();
+            //noinspection unchecked
             target.put( key, properties.get( key ) );
         }
     }

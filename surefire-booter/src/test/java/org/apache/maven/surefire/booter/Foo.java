@@ -36,8 +36,6 @@ public class Foo
 {
     DirectoryScannerParameters directoryScannerParameters;
 
-    TestRequest testSuiteDefinition;
-
     Properties providerProperties;
 
     ReporterConfiguration reporterConfiguration;
@@ -67,7 +65,7 @@ public class Foo
      */
     public Boolean isCalled()
     {
-        return Boolean.valueOf( called );
+        return called;
     }
 
     public void setProviderProperties( Properties providerProperties )

@@ -44,10 +44,6 @@ public class ProviderConfiguration
      */
     public static final int TESTS_SUCCEEDED_EXIT_CODE = 0;
 
-    public static final int TESTS_FAILED_EXIT_CODE = 255;
-
-    public static final int NO_TESTS_EXIT_CODE = 254;
-
     private final DirectoryScannerParameters dirScannerParams;
 
     private final ReporterConfiguration reporterConfiguration;

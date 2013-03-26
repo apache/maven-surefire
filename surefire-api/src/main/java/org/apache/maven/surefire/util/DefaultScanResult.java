@@ -30,11 +30,11 @@ import java.util.Properties;
 public class DefaultScanResult
     implements ScanResult
 {
-    private final List files;
+    private final List<String> files;
 
     private static final String scanResultNo = "tc.";
 
-    public DefaultScanResult( List files )
+    public DefaultScanResult( List<String> files )
     {
         this.files = files;
     }
@@ -46,7 +46,7 @@ public class DefaultScanResult
 
     public String getClassName( int index )
     {
-        return (String) files.get( index );
+        return files.get( index );
     }
 
     public void writeTo( Properties properties )
@@ -54,13 +54,13 @@ public class DefaultScanResult
         int size = files.size();
         for ( int i = 0; i < size; i++ )
         {
-            properties.setProperty( scanResultNo + i, (String) files.get( i ) );
+            properties.setProperty( scanResultNo + i, files.get( i ) );
         }
     }
 
     public static DefaultScanResult from( Properties properties )
     {
-        List result = new ArrayList();
+        List<String> result = new ArrayList<String>();
         int i = 0;
         while ( true )
         {
@@ -85,7 +85,7 @@ public class DefaultScanResult
 
     public TestsToRun applyFilter( ScannerFilter scannerFilter, ClassLoader testClassLoader )
     {
-        List result = new ArrayList();
+        List<Class> result = new ArrayList<Class>();
 
         int size = size();
         for ( int i = 0; i < size; i++ )
@@ -105,7 +105,7 @@ public class DefaultScanResult
 
     public List getClassesSkippedByValidation( ScannerFilter scannerFilter, ClassLoader testClassLoader )
     {
-        List result = new ArrayList();
+        List<Class> result = new ArrayList<Class>();
 
         int size = size();
         for ( int i = 0; i < size; i++ )

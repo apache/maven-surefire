@@ -207,7 +207,6 @@
               <artifactId>maven-compiler-plugin</artifactId>
               <configuration>
                 <fork>false</fork>
-                <compilerVersion>1.4</compilerVersion>
               </configuration>
             </plugin>
           </plugins>

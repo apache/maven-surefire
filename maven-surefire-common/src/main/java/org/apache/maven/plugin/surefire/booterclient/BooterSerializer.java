@@ -81,8 +81,7 @@ class BooterSerializer
             properties.setProperty( BooterConstants.TESTARTIFACT_CLASSIFIER, testNg.getClassifier() );
         }
 
-        properties.setProperty( BooterConstants.FORKTESTSET_PREFER_TESTS_FROM_IN_STREAM,
-                                Boolean.valueOf( readTestsFromInStream ) );
+        properties.setProperty( BooterConstants.FORKTESTSET_PREFER_TESTS_FROM_IN_STREAM, readTestsFromInStream );
         properties.setProperty( BooterConstants.FORKTESTSET, getTypeEncoded( testSet ) );
 
         TestRequest testSuiteDefinition = booterConfiguration.getTestSuiteDefinition();

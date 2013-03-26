@@ -34,23 +34,22 @@ import org.apache.maven.surefire.testset.TestSetFailedException;
  *
  * @author Kristian Rosenvold (junit core adaption)
  */
-public class TestsToRun
+public class TestsToRun implements Iterable<Class>
 {
-    private final List locatedClasses;
+    private final List<Class> locatedClasses;
 
     /**
      * Constructor
      *
      * @param locatedClasses A list of java.lang.Class objects representing tests to run
      */
-    public TestsToRun( List locatedClasses )
+    public TestsToRun( List<Class> locatedClasses )
     {
         this.locatedClasses = Collections.unmodifiableList( locatedClasses );
-        Set testSets = new HashSet();
+        Set<Class> testSets = new HashSet<Class>();
 
-        for ( Iterator iterator = locatedClasses.iterator(); iterator.hasNext(); )
+        for ( Class testClass : locatedClasses )
         {
-            Class testClass = (Class) iterator.next();
             if ( testSets.contains( testClass ) )
             {
                 throw new RuntimeException( "Duplicate test set '" + testClass.getName() + "'" );
@@ -62,7 +61,7 @@ public class TestsToRun
     public static TestsToRun fromClass( Class clazz )
         throws TestSetFailedException
     {
-        return new TestsToRun( Arrays.asList( new Class[]{ clazz } ) );
+        return new TestsToRun( Arrays.<Class>asList( clazz ) );
     }
 
     /**
@@ -70,14 +69,14 @@ public class TestsToRun
      *
      * @return an unmodifiable iterator
      */
-    public Iterator iterator()
+    public Iterator<Class> iterator()
     {
         return locatedClasses.iterator();
     }
 
     public String toString()
     {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append( "TestsToRun: [" );
         Iterator it = iterator();
         while ( it.hasNext() )
@@ -131,12 +130,12 @@ public class TestsToRun
         {
             throw new IllegalStateException( "Cannot eagerly read" );
         }
-        List result = new ArrayList();
-        Iterator it = iterator();
+        List<Class> result = new ArrayList<Class>();
+        Iterator<Class> it = iterator();
         while ( it.hasNext() )
         {
             result.add( it.next() );
         }
-        return (Class[]) result.toArray( new Class[result.size()] );
+        return result.toArray( new Class[result.size()] );
     }
 }

@@ -131,11 +131,11 @@ public class RunResult
     {
         if ( completedCount == 0 )
         {
-            return Integer.valueOf( NO_TESTS );
+            return NO_TESTS;
         }
         if ( !isErrorFree() )
         {
-            return Integer.valueOf( FAILURE );
+            return FAILURE;
         }
         return null;
     }
@@ -202,7 +202,7 @@ public class RunResult
         Integer failsafeCode = getFailsafeCode();
         if ( failsafeCode != null )
         {
-            dom.setAttribute( "result", Integer.toString( failsafeCode.intValue() ) );
+            dom.setAttribute( "result", Integer.toString( failsafeCode ) );
         }
         dom.setAttribute( "timeout", Boolean.toString( this.timeout ) );
         dom.addChild( create( "completed", this.completedCount ) );
@@ -261,6 +261,7 @@ public class RunResult
         }
     }
 
+    @SuppressWarnings( "RedundantIfStatement" )
     public boolean equals( Object o )
     {
         if ( this == o )

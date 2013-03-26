@@ -24,7 +24,7 @@ package org.apache.maven.surefire.report;
  */
 public final class ConsoleOutputReceiverForCurrentThread
 {
-    private static final ThreadLocal current = new InheritableThreadLocal();
+    private static final ThreadLocal<ConsoleOutputReceiver> current = new InheritableThreadLocal<ConsoleOutputReceiver>();
 
     private ConsoleOutputReceiverForCurrentThread()
     {
@@ -32,7 +32,7 @@ public final class ConsoleOutputReceiverForCurrentThread
 
     public static ConsoleOutputReceiver get()
     {
-        return (ConsoleOutputReceiver) current.get();
+        return current.get();
     }
 
     public static void set( ConsoleOutputReceiver consoleOutputReceiver )
