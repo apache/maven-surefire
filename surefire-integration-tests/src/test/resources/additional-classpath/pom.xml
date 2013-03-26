@@ -23,6 +23,14 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
+
+  <parent>
+    <groupId>org.apache.maven.surefire</groupId>
+    <artifactId>it-parent</artifactId>
+    <version>1.0</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+
   <groupId>org.apache.maven.plugins.surefire</groupId>
   <artifactId>additional-classpath</artifactId>
   <version>1.0-SNAPSHOT</version>
@@ -32,12 +40,13 @@
     <plugins>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>${surefire.version}</version>
         <configuration>
           <additionalClasspathElements>
             <additionalClasspathElement>${basedir}/extraResource</additionalClasspathElement>
-            <additionalClasspathElement>${abc}</additionalClasspathElement><!-- SUREFIRE-694 -->
-            <additionalClasspathElement></additionalClasspathElement><!-- SUREFIRE-694 -->
+            <additionalClasspathElement>${abc}</additionalClasspathElement>
+            <!-- SUREFIRE-694 -->
+            <additionalClasspathElement></additionalClasspathElement>
+            <!-- SUREFIRE-694 -->
           </additionalClasspathElements>
         </configuration>
       </plugin>

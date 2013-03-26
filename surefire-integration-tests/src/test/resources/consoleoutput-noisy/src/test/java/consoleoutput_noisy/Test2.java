@@ -20,8 +20,6 @@ package consoleoutput_noisy;
  */
 
 import junit.framework.TestCase;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 
 public class Test2
     extends TestCase

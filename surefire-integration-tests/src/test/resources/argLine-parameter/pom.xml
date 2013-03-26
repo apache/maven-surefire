@@ -23,6 +23,14 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
+
+  <parent>
+    <groupId>org.apache.maven.surefire</groupId>
+    <artifactId>it-parent</artifactId>
+    <version>1.0</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+
   <groupId>org.apache.maven.plugins.surefire</groupId>
   <artifactId>testArgLine</artifactId>
   <version>1.0-SNAPSHOT</version>
@@ -42,8 +50,8 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>${surefire.version}</version>
         <configuration>
+          <forkMode>once</forkMode>
           <argLine>-Dfoo.property="foo foo/foo/bar/1.0" -Dbar.property="bar bar/foo/bar/2.0"</argLine>
         </configuration>
       </plugin>

@@ -21,6 +21,7 @@ package org.apache.maven.surefire.its.fixture;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -396,6 +397,12 @@ public class MavenLauncher
         File testDir = new File( tempDir, resourcePath );
         try
         {
+            File parentPom = new File( tempDir.getParentFile(), "pom.xml" );
+            if (!parentPom.exists()){
+                URL resource = cl.getResource( "/pom.xml" );
+                FileUtils.copyURLToFile( resource, parentPom );
+            }
+
             FileUtils.deleteDirectory( testDir );
             File file = ResourceExtractor.extractResourceToDestination( cl, resourcePath, tempDir, true );
             return file.getCanonicalFile();
@@ -411,7 +418,7 @@ public class MavenLauncher
     {
         String tempDirPath = System.getProperty( "maven.test.tmpdir", System.getProperty( "java.io.tmpdir" ) );
         return new File( tempDirPath,
-                         testCaseBeingRun.getSimpleName() + File.separator + getTestMethodName() + suffix );
+                         testCaseBeingRun.getSimpleName() + "_" + getTestMethodName() + suffix );
     }
 
     public File getArtifactPath( String gid, String aid, String version, String ext )
