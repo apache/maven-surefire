@@ -1230,10 +1230,10 @@ public abstract class AbstractSurefireMojo
             // Have to wrap in an ArrayList as surefire expects an ArrayList instead of a List for some reason
             if ( excludes == null || excludes.size() == 0 )
             {
-                excludes = new ArrayList<String>( Arrays.asList( new String[]{ "**/*$*" } ) );
+                excludes = Arrays.asList( new String[]{ "**/*$*" } );
             }
         }
-        return excludes;
+        return filterNulls( excludes );
     }
 
     private List<String> getIncludeList()
@@ -1265,10 +1265,24 @@ public abstract class AbstractSurefireMojo
         // Have to wrap in an ArrayList as surefire expects an ArrayList instead of a List for some reason
         if ( includes == null || includes.size() == 0 )
         {
-            includes = new ArrayList<String>( Arrays.asList( getDefaultIncludes() ) );
+            includes = Arrays.asList( getDefaultIncludes() );
         }
 
-        return includes;
+        return filterNulls( includes );
+    }
+
+    private List<String> filterNulls( List<String> toFilter )
+    {
+        List<String> result = new ArrayList<String>( toFilter.size() );
+        for ( String item : toFilter )
+        {
+            if ( item != null )
+            {
+                result.add( item );
+            }
+        }
+
+        return result;
     }
 
     private boolean isMultipleExecutionBlocksDetected()
