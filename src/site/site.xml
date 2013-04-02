@@ -57,8 +57,10 @@
     <menu ref="reports" inherit="bottom"/>
     
     <footer>
-        <div class="row span12"><span><a href="http://maven.apache.org/privacy-policy.html">Privacy Policy</a> - </span>
-        <span>Apache Maven, Maven, Apache, the Apache feather logo, and the Apache Maven project logos are trademarks of The Apache Software Foundation.</span></div>
+      <div class="row pull-left">Apache ${project.name}, ${project.name}, Apache, the Apache feather logo, and the Apache ${project.name} project logos are trademarks of The Apache Software Foundation.</div>
+      <div class="row pull-left">
+        <a href="${project.url}privacy-policy.html">Privacy Policy</a>
+      </div>
     </footer>
   </body>
 </project>
