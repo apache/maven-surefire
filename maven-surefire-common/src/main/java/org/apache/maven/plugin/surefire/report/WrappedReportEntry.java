@@ -171,4 +171,9 @@ public class WrappedReportEntry
     {
         return ReportEntryType.success == getReportEntryType();
     }
+
+    public String getNameWithGroup()
+    {
+        return original.getNameWithGroup();
+    }
 }

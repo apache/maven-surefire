@@ -187,5 +187,8 @@ public class SimpleReportEntry
         return result;
     }
 
-
+    public String getNameWithGroup()
+    {
+        return getName();
+    }
 }

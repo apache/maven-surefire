@@ -41,10 +41,6 @@ public class ConsoleReporter
 
     private static final String TEST_SET_STARTING_PREFIX = "Running ";
 
-    private static final String TEST_SET_STARTING_GROUP_PREFIX = " (of ";
-
-    private static final String TEST_SET_STARTING_GROUP_SUFIX = ")";
-
     private static final int BUFFER_SIZE = 4096;
 
     private final PrintWriter writer;
@@ -116,14 +112,7 @@ public class ConsoleReporter
     {
         StringBuilder message = new StringBuilder();
         message.append( TEST_SET_STARTING_PREFIX );
-        message.append( report.getName() );
-
-        if ( report.getGroup() != null && !report.getName().equals( report.getGroup() ) )
-        {
-            message.append( TEST_SET_STARTING_GROUP_PREFIX );
-            message.append( report.getGroup() );
-            message.append( TEST_SET_STARTING_GROUP_SUFIX );
-        }
+        message.append( report.getNameWithGroup() );
 
         message.append( "\n" );
         return message.toString();

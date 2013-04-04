@@ -188,6 +188,9 @@ public class TestSetStats
         {
             buf.append( " <<< FAILURE!" );
         }
+        
+        buf.append( " - in " );
+        buf.append( reportEntry.getNameWithGroup() );
 
         buf.append( "\n" );
 

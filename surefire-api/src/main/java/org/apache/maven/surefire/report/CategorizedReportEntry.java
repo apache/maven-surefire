@@ -26,6 +26,10 @@ public class CategorizedReportEntry
     extends SimpleReportEntry
     implements ReportEntry
 {
+    private static final String GROUP_PREFIX = " (of ";
+
+    private static final String GROUP_SUFIX = ")";
+
     private final String group;
 
     public CategorizedReportEntry( String source, String name, String group )
@@ -58,6 +62,22 @@ public class CategorizedReportEntry
     public String getGroup()
     {
         return group;
+    }
+
+    @Override
+    public String getNameWithGroup()
+    {
+        StringBuilder result = new StringBuilder();
+        result.append( getName() );
+
+        if ( getGroup() != null && !getName().equals( getGroup() ) )
+        {
+            result.append( GROUP_PREFIX );
+            result.append( getGroup() );
+            result.append( GROUP_SUFIX );
+        }
+
+        return result.toString();
     }
 
     public boolean equals( Object o )
