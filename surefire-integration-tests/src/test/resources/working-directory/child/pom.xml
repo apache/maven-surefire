@@ -24,14 +24,12 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.apache.maven.surefire</groupId>
-    <artifactId>it-parent</artifactId>
-    <version>1.0</version>
-    <relativePath>../../pom.xml</relativePath>
+    <groupId>org.apache.maven.plugins.surefire</groupId>
+    <artifactId>working-directory</artifactId>
+    <version>1.0-SNAPSHOT</version>
   </parent>
-  <groupId>org.apache.maven.plugins.surefire</groupId>
+
   <artifactId>working-directory-child</artifactId>
-  <version>1.0-SNAPSHOT</version>
   <name>Test for working directory configuration</name>
 
   <dependencies>
