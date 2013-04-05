@@ -110,7 +110,7 @@
           <dependency>
             <groupId>org.apache.maven.surefire</groupId>
             <artifactId>surefire-shadefire</artifactId>
-            <version>${project.version}</version>
+            <version>${shadedVersion}</version>
           </dependency>
         </dependencies>
       </plugin>
