@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
@@ -52,6 +53,7 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.descriptor.PluginDescriptor;
+import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugin.surefire.booterclient.ChecksumCalculator;
 import org.apache.maven.plugin.surefire.booterclient.ForkConfiguration;
 import org.apache.maven.plugin.surefire.booterclient.ForkStarter;
@@ -436,14 +438,14 @@ public abstract class AbstractSurefireMojo
      * which is replaced with a fixed number for each of the parallel forks, ranging from <code>1</code> to the effective value of <code>forkCount</code>
      * times the maximum number of parallel Surefire executions in maven parallel builds, i.e. the effective value of the <code>-T</code> command line
      * argument of maven core.
-     * 
+     *
      * @since 2.14
      */
-    @Parameter( property = "forkCount", defaultValue="1")
+    @Parameter( property = "forkCount", defaultValue = "1" )
     private String forkCount;
 
     /**
-     * Indicates if forked VMs can be reused. If set to "false", a new VM is forked for each test class to be executed. 
+     * Indicates if forked VMs can be reused. If set to "false", a new VM is forked for each test class to be executed.
      * If set to "true", up to <code>forkCount</code> VMs will be forked and then reused to execute all tests.
      *
      * @since 2.13
@@ -588,7 +590,7 @@ public abstract class AbstractSurefireMojo
     private Toolchain toolchain;
 
     private int effectiveForkCount = -1;
-    
+
     /**
      * The placeholder that is replaced by the executing thread's running number. The thread number
      * range starts with 1
@@ -802,7 +804,8 @@ public abstract class AbstractSurefireMojo
             try
             {
                 ForkStarter forkStarter =
-                    createForkStarter( provider, forkConfiguration, classLoaderConfiguration, runOrderParameters );
+                    createForkStarter( provider, forkConfiguration, classLoaderConfiguration, runOrderParameters,
+                                       getLog() );
                 result = forkStarter.run( effectiveProperties, scanResult );
             }
             finally
@@ -1094,8 +1097,8 @@ public abstract class AbstractSurefireMojo
 
             final Classpath testClasspath = generateTestClasspath();
 
-            logClasspath( testClasspath, "test classpath" );
-            logClasspath( providerClasspath, "provider classpath" );
+            getLog().debug( testClasspath.getLogMessage( "test" ) );
+            getLog().debug( providerClasspath.getLogMessage( "provider" ) );
             final ClasspathConfiguration classpathConfiguration =
                 new ClasspathConfiguration( testClasspath, providerClasspath, inprocClassPath,
                                             effectiveIsEnableAssertions(), isChildDelegation() );
@@ -1130,24 +1133,6 @@ public abstract class AbstractSurefireMojo
                                                getReportsDirectory(), isTrimStackTrace(), getReportNameSuffix(),
                                                configChecksum, requiresRunHistory() );
     }
-
-    void logClasspath( Classpath classpath, String descriptor )
-    {
-        getLog().debug( descriptor + " classpath:" );
-        @SuppressWarnings( "unchecked" ) final List<String> classPath = classpath.getClassPath();
-        for ( String classpathElement : classPath )
-        {
-            if ( classpathElement == null )
-            {
-                getLog().warn( "The test classpath contains a null element." );
-            }
-            else
-            {
-                getLog().debug( "  " + classpathElement );
-            }
-        }
-    }
-
 
     private boolean isSpecificTestSpecified()
     {
@@ -1230,7 +1215,7 @@ public abstract class AbstractSurefireMojo
             // Have to wrap in an ArrayList as surefire expects an ArrayList instead of a List for some reason
             if ( excludes == null || excludes.size() == 0 )
             {
-                excludes = Arrays.asList( new String[]{ "**/*$*" } );
+                excludes = Arrays.asList( "**/*$*" );
             }
         }
         return filterNulls( excludes );
@@ -1371,7 +1356,7 @@ public abstract class AbstractSurefireMojo
 
     protected ForkStarter createForkStarter( ProviderInfo provider, ForkConfiguration forkConfiguration,
                                              ClassLoaderConfiguration classLoaderConfiguration,
-                                             RunOrderParameters runOrderParameters )
+                                             RunOrderParameters runOrderParameters, Log log )
         throws MojoExecutionException, MojoFailureException
     {
         StartupConfiguration startupConfiguration = createStartupConfiguration( provider, classLoaderConfiguration );
@@ -1379,7 +1364,7 @@ public abstract class AbstractSurefireMojo
         StartupReportConfiguration startupReportConfiguration = getStartupReportConfiguration( configChecksum );
         ProviderConfiguration providerConfiguration = createProviderConfiguration( runOrderParameters );
         return new ForkStarter( providerConfiguration, startupConfiguration, forkConfiguration,
-                                getForkedProcessTimeoutInSeconds(), startupReportConfiguration );
+                                getForkedProcessTimeoutInSeconds(), startupReportConfiguration, log );
     }
 
     protected InPluginVMSurefireStarter createInprocessStarter( ProviderInfo provider,
@@ -1419,19 +1404,22 @@ public abstract class AbstractSurefireMojo
         // FORK_ONCE (default) is represented by the default values of forkCount and reuseForks 
         if ( ForkConfiguration.FORK_PERTHREAD.equals( effectiveForkMode ) )
         {
-            forkCount = String.valueOf(threadCount);
+            forkCount = String.valueOf( threadCount );
         }
         else if ( ForkConfiguration.FORK_NEVER.equals( effectiveForkMode ) )
         {
             forkCount = "0";
-        } else if ( ForkConfiguration.FORK_ALWAYS.equals( effectiveForkMode )) {
+        }
+        else if ( ForkConfiguration.FORK_ALWAYS.equals( effectiveForkMode ) )
+        {
             forkCount = "1";
             reuseForks = false;
         }
 
-        if ( !ForkConfiguration.FORK_ONCE.equals( getForkMode() ) ) 
+        if ( !ForkConfiguration.FORK_ONCE.equals( getForkMode() ) )
         {
-            getLog().warn( "The parameter forkMode is deprecated since version 2.14. Use forkCount and reuseForks instead." );
+            getLog().warn(
+                "The parameter forkMode is deprecated since version 2.14. Use forkCount and reuseForks instead." );
         }
     }
 

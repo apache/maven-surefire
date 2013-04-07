@@ -102,6 +102,11 @@ public class ClasspathConfiguration
         return surefireClasspathUrls.createClassLoader( parent, false, enableAssertions, "provider" );
     }
 
+    public Classpath getProviderClasspath()
+    {
+        return surefireClasspathUrls;
+    }
+
     public ClassLoader createInprocSurefireClassLoader( ClassLoader parent )
         throws SurefireExecutionException
     {

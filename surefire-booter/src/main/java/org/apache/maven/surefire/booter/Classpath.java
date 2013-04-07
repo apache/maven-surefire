@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+
 import org.apache.maven.surefire.util.UrlUtils;
 
 /**
@@ -167,5 +168,17 @@ public class Classpath
     public int hashCode()
     {
         return elements != null ? elements.hashCode() : 0;
+    }
+
+    public String getLogMessage( String descriptor )
+    {
+        StringBuffer result = new StringBuffer();
+        result.append( descriptor ).append( " classpath:" );
+        int size = elements.size();
+        for ( int i = 0; i < size; i++ )
+        {
+            result.append( "  " ).append( (String) elements.get( i ) );
+        }
+        return result.toString();
     }
 }

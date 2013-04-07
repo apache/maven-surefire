@@ -23,6 +23,7 @@ import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Iterator;
+
 import org.apache.maven.surefire.providerapi.SurefireProvider;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.suite.RunResult;
@@ -112,7 +113,7 @@ public class ProviderFactory
         surefireReflector.setRunOrderParameters( o, providerConfiguration.getRunOrderParameters() );
         surefireReflector.setIfDirScannerAware( o, providerConfiguration.getDirScannerParams() );
 
-        Object provider = surefireReflector.instantiateProvider( starterConfiguration.getProviderClassName(), o );
+        Object provider = surefireReflector.instantiateProvider( starterConfiguration.getActualClassName(), o );
         Thread.currentThread().setContextClassLoader( systemClassLoader );
 
         return new ProviderProxy( provider, testsClassLoader );

@@ -22,6 +22,7 @@ package org.apache.maven.plugin.surefire.booterclient;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
+
 import org.apache.maven.shared.utils.StringUtils;
 import org.apache.maven.shared.utils.cli.Commandline;
 import org.apache.maven.surefire.booter.Classpath;
@@ -40,7 +41,7 @@ public class ForkConfigurationTest
         File cpElement = getTempClasspathFile();
 
         Commandline cli =
-            config.createCommandLine( Collections.singletonList( cpElement.getAbsolutePath() ), true, false, 1 );
+            config.createCommandLine( Collections.singletonList( cpElement.getAbsolutePath() ), true, false, null, 1 );
 
         String line = StringUtils.join( cli.getCommandline(), " " );
         assertTrue( line.contains( "-jar" ) );
@@ -55,7 +56,7 @@ public class ForkConfigurationTest
 
         final Commandline commandLine =
             forkConfiguration.createCommandLine( Collections.singletonList( cpElement.getAbsolutePath() ), false, false,
-                                                 1 );
+                                                 null, 1 );
         assertTrue( commandLine.toString().contains( "abc def" ) );
     }
 
@@ -70,8 +71,8 @@ public class ForkConfigurationTest
     public static ForkConfiguration getForkConfiguration( String argLine, String jvm )
         throws IOException
     {
-        return new ForkConfiguration( new Classpath(), null, null, jvm, new File( "." ).getCanonicalFile(), argLine, null,
-                               false, 1, false );
+        return new ForkConfiguration( new Classpath(), null, null, jvm, new File( "." ).getCanonicalFile(), argLine,
+                                      null, false, 1, false );
     }
 
 }
