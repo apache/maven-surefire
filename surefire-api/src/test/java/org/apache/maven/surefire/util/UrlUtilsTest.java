@@ -68,7 +68,7 @@ public class UrlUtilsTest
 
             // use reflection to do "File urlFile = new File( uri )" if JDK 1.4+
             Constructor newFile = File.class.getConstructor( new Class[]{ uri.getClass() } );
-            File urlFile = (File) newFile.newInstance( new Object[]{ uri } );
+            File urlFile = (File) newFile.newInstance( uri );
 
             assertEquals( f, urlFile );
         }

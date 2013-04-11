@@ -152,7 +152,7 @@ public class RunEntryStatisticsMap
         }
     }
 
-    public List getPrioritizedTestsClassRunTime( List testsToRun, int threadCount )
+    public List<Class> getPrioritizedTestsClassRunTime( List testsToRun, int threadCount )
     {
         final List<PrioritizedTest> prioritizedTests = getPrioritizedTests( testsToRun, new TestRuntimeComparator() );
         ThreadedExecutionScheduler threadedExecutionScheduler = new ThreadedExecutionScheduler( threadCount );

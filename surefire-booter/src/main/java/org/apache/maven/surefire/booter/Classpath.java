@@ -170,12 +170,11 @@ public class Classpath
 
     public String getLogMessage( String descriptor )
     {
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         result.append( descriptor ).append( " classpath:" );
-        int size = elements.size();
-        for ( int i = 0; i < size; i++ )
+        for ( String element : elements )
         {
-            result.append( "  " ).append( (String) elements.get( i ) );
+            result.append( "  " ).append( element );
         }
         return result.toString();
     }

@@ -52,7 +52,7 @@ public class ThreadedExecutionScheduler
         lists[leastBusySlot].add( prioritizedTest.getClazz() );
     }
 
-    public List getResult()
+    public List<Class> getResult()
     {
         List<Class> result = new ArrayList<Class>();
         int index = 0;

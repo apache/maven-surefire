@@ -36,7 +36,7 @@ import java.util.List;
 public class DefaultRunOrderCalculator
     implements RunOrderCalculator
 {
-    private final Comparator sortOrder;
+    private final Comparator<Class> sortOrder;
 
     private final RunOrder[] runOrder;
 
@@ -85,7 +85,7 @@ public class DefaultRunOrderCalculator
         {
             RunEntryStatisticsMap runEntryStatisticsMap =
                 RunEntryStatisticsMap.fromFile( runOrderParameters.getRunStatisticsFile() );
-            final List prioritized = runEntryStatisticsMap.getPrioritizedTestsClassRunTime( testClasses, threadCount );
+            final List<Class> prioritized = runEntryStatisticsMap.getPrioritizedTestsClassRunTime( testClasses, threadCount );
             testClasses.clear();
             testClasses.addAll( prioritized );
 
@@ -96,7 +96,7 @@ public class DefaultRunOrderCalculator
         }
     }
 
-    private Comparator getSortOrderComparator( RunOrder runOrder )
+    private Comparator<Class> getSortOrderComparator( RunOrder runOrder )
     {
         if ( RunOrder.ALPHABETICAL.equals( runOrder ) )
         {
@@ -117,24 +117,24 @@ public class DefaultRunOrderCalculator
         }
     }
 
-    private Comparator getReverseAlphabeticalComparator()
+    private Comparator<Class> getReverseAlphabeticalComparator()
     {
-        return new Comparator()
+        return new Comparator<Class>()
         {
-            public int compare( Object o1, Object o2 )
+            public int compare( Class o1, Class o2 )
             {
-                return ( (Class) o2 ).getName().compareTo( ( (Class) o1 ).getName() );
+                return o2.getName().compareTo( o1.getName() );
             }
         };
     }
 
-    private Comparator getAlphabeticalComparator()
+    private Comparator<Class> getAlphabeticalComparator()
     {
-        return new Comparator()
+        return new Comparator<Class>()
         {
-            public int compare( Object o1, Object o2 )
+            public int compare( Class o1, Class o2 )
             {
-                return ( (Class) o1 ).getName().compareTo( ( (Class) o2 ).getName() );
+                return o1.getName().compareTo( o2.getName() );
             }
         };
     }

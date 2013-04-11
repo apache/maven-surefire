@@ -48,9 +48,9 @@ public class UrlUtils
         {
             byte[] bytes =
                 "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.!~*'():/".getBytes( ENCODING );
-            for ( int i = 0; i < bytes.length; i++ )
+            for ( byte aByte : bytes )
             {
-                UNRESERVED.set( bytes[i] );
+                UNRESERVED.set( aByte );
             }
         }
         catch ( UnsupportedEncodingException e )

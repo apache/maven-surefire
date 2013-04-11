@@ -18,8 +18,8 @@ package org.apache.maven.surefire;
  * under the License.
  */
 
+import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 import org.apache.maven.shared.utils.io.SelectorUtils;
 import org.apache.maven.surefire.util.ScannerFilter;
@@ -32,18 +32,14 @@ public class SpecificTestClassFilter
 
     private static final String JAVA_CLASS_FILE_EXTENSION = ".class";
 
-    private Set names;
+    private Set<String> names;
 
     public SpecificTestClassFilter( String[] classNames )
     {
         if ( classNames != null && classNames.length > 0 )
         {
-            this.names = new HashSet();
-            for ( int i = 0; i < classNames.length; i++ )
-            {
-                String name = classNames[i];
-                names.add( name );
-            }
+            this.names = new HashSet<String>();
+            Collections.addAll( names, classNames );
         }
     }
 
@@ -57,9 +53,8 @@ public class SpecificTestClassFilter
             String className = testClass.getName().replace( '.', FS ) + JAVA_CLASS_FILE_EXTENSION;
 
             boolean found = false;
-            for ( Iterator it = names.iterator(); it.hasNext(); )
+            for ( String pattern : names )
             {
-                String pattern = (String) it.next();
                 if ( '\\' == FS )
                 {
                     pattern = pattern.replace( '/', FS );
