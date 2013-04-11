@@ -61,7 +61,7 @@ public class JUnitTestSetTest
         implements RunListener
     {
 
-        private List succeededTests = new ArrayList();
+        private List<ReportEntry> succeededTests = new ArrayList<ReportEntry>();
 
         public void testSetStarting( ReportEntry report )
         {

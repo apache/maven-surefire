@@ -40,7 +40,7 @@ public class PojoTestSet
 
     private final Object testObject;
 
-    private List testMethods;
+    private List<Method> testMethods;
 
     private Method setUpMethod;
 
@@ -99,7 +99,7 @@ public class PojoTestSet
 
         for ( int i = 0; i < testMethods.size() && !abort; ++i )
         {
-            abort = executeTestMethod( (Method) testMethods.get( i ), EMPTY_OBJECT_ARRAY, reportManager );
+            abort = executeTestMethod( testMethods.get( i ), EMPTY_OBJECT_ARRAY, reportManager );
         }
     }
 
@@ -224,7 +224,7 @@ public class PojoTestSet
     {
         if ( setUpMethod != null )
         {
-            setUpMethod.invoke( testObject, new Object[0] );
+            setUpMethod.invoke( testObject );
         }
     }
 
@@ -233,7 +233,7 @@ public class PojoTestSet
     {
         if ( tearDownMethod != null )
         {
-            tearDownMethod.invoke( testObject, new Object[0] );
+            tearDownMethod.invoke( testObject );
         }
     }
 
@@ -241,14 +241,12 @@ public class PojoTestSet
     {
         if ( testMethods == null )
         {
-            testMethods = new ArrayList();
+            testMethods = new ArrayList<Method>();
 
             Method[] methods = getTestClass().getMethods();
 
-            for ( int i = 0; i < methods.length; ++i )
+            for ( Method m : methods )
             {
-                Method m = methods[i];
-
                 if ( isValidTestMethod( m ) )
                 {
                     String simpleName = m.getName();

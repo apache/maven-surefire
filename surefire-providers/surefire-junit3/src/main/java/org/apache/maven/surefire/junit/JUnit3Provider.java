@@ -102,9 +102,8 @@ public class JUnit3Provider
             System.setSecurityManager( securityManager );
         }
 
-        for ( Iterator iter = testsToRun.iterator(); iter.hasNext(); )
+        for ( Class clazz : testsToRun )
         {
-            Class clazz = (Class) iter.next();
             SurefireTestSet surefireTestSet = createTestSet( clazz );
             executeTestSet( surefireTestSet, reporter, testClassLoader );
         }

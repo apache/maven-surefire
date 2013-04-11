@@ -32,12 +32,12 @@ public class InverseGroupMatcher
 
     public boolean enabled( Class<?>... cats )
     {
-        return cats == null ? true : !matcher.enabled( cats );
+        return cats == null || !matcher.enabled( cats );
     }
 
     public boolean enabled( String... cats )
     {
-        return cats == null ? true : !matcher.enabled( cats );
+        return cats == null || !matcher.enabled( cats );
     }
 
     @Override

@@ -137,7 +137,7 @@ public final class JUnit3Reflector
             }
             else
             {
-                testObject = testConstructor.newInstance( new Object[]{ testClass.getName() } );
+                testObject = testConstructor.newInstance( testClass.getName() );
             }
         }
         return testObject;
