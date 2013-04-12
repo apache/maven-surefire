@@ -975,18 +975,19 @@ public abstract class AbstractSurefireMojo
      */
     private void convertJunitCoreParameters()
     {
-        if ( this.getParallel() != null )
-        {
-            getProperties().setProperty( ProviderParameterNames.PARALLEL_PROP, this.getParallel() );
-        }
-        if ( this.getThreadCount() > 0 )
-        {
-            getProperties().setProperty( ProviderParameterNames.THREADCOUNT_PROP,
-                                         Integer.toString( this.getThreadCount() ) );
-        }
-        getProperties().setProperty( "reuseForks", Boolean.toString( reuseForks ) );
+        String usedParallel = ( getParallel() != null ) ? getParallel() : "none";
+        String usedThreadCount = ( getThreadCount() > 0 ) ? Integer.toString( getThreadCount() ) : "2";
+
+        getProperties().setProperty( ProviderParameterNames.PARALLEL_PROP, usedParallel );
+        getProperties().setProperty( ProviderParameterNames.THREADCOUNT_PROP, usedThreadCount );
         getProperties().setProperty( "perCoreThreadCount", Boolean.toString( getPerCoreThreadCount() ) );
         getProperties().setProperty( "useUnlimitedThreads", Boolean.toString( getUseUnlimitedThreads() ) );
+
+        String message =
+            "parallel='" + usedParallel + '\'' + ", perCoreThreadCount=" + getPerCoreThreadCount() + ", threadCount="
+                + usedThreadCount + ", useUnlimitedThreads=" + getUseUnlimitedThreads();
+
+        getLog().info( message );
     }
 
     private boolean isJunit47Compatible( Artifact artifact )

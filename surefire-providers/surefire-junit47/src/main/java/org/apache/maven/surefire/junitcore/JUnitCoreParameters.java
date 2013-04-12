@@ -35,8 +35,6 @@ class JUnitCoreParameters
 
     private final Boolean useUnlimitedThreads;
 
-    private final boolean reuseForks;
-
     public static final String PARALLEL_KEY = ProviderParameterNames.PARALLEL_PROP;
 
     public static final String PERCORETHREADCOUNT_KEY = "perCoreThreadCount";
@@ -45,15 +43,12 @@ class JUnitCoreParameters
 
     public static final String USEUNLIMITEDTHREADS_KEY = "useUnlimitedThreads";
 
-    public static final String REUSEFORKS_KEY = "reuseForks";
-
     public JUnitCoreParameters( Properties properties )
     {
         this.parallel = properties.getProperty( PARALLEL_KEY, "none" ).toLowerCase();
         this.perCoreThreadCount = Boolean.valueOf( properties.getProperty( PERCORETHREADCOUNT_KEY, "true" ) );
         this.threadCount = Integer.valueOf( properties.getProperty( THREADCOUNT_KEY, "2" ) );
         this.useUnlimitedThreads = Boolean.valueOf( properties.getProperty( USEUNLIMITEDTHREADS_KEY, "false" ) );
-        this.reuseForks = Boolean.valueOf( properties.getProperty( REUSEFORKS_KEY, "false" ) );
     }
 
     public boolean isParallelMethod()
@@ -94,11 +89,6 @@ class JUnitCoreParameters
     public boolean isAnyParallelitySelected()
     {
         return !isNoThreading();
-    }
-
-    public boolean isReuseForks()
-    {
-        return reuseForks;
     }
 
     @Override
