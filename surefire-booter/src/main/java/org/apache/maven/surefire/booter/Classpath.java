@@ -35,7 +35,6 @@ import java.util.List;
  */
 public class Classpath
 {
-    private static final JdkReflector jdkReflector = new JdkReflector();
 
     public static Classpath join( Classpath firstClasspath, Classpath secondClasspath )
     {
@@ -92,12 +91,12 @@ public class Classpath
         }
     }
 
-    public List getClassPath()
+    public List<String> getClassPath()
     {
         return Collections.unmodifiableList( elements );
     }
 
-    public List getAsUrlList()
+    public List<URL> getAsUrlList()
         throws MalformedURLException
     {
         List<URL> urls = new ArrayList<URL>();
@@ -151,9 +150,9 @@ public class Classpath
             }
             if ( parent != null )
             {
-                jdkReflector.invokeAssertionStatusMethod( parent, enableAssertions );
+                parent.setDefaultAssertionStatus( enableAssertions );
             }
-            jdkReflector.invokeAssertionStatusMethod( classLoader, enableAssertions );
+            classLoader.setDefaultAssertionStatus( enableAssertions );
             return classLoader;
         }
         catch ( MalformedURLException e )
