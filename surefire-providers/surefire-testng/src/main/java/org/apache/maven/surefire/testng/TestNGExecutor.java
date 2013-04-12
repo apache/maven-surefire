@@ -19,27 +19,20 @@ package org.apache.maven.surefire.testng;
  * under the License.
  */
 
+import org.apache.maven.surefire.booter.ProviderParameterNames;
+import org.apache.maven.surefire.report.RunListener;
+import org.apache.maven.surefire.testng.conf.Configurator;
+import org.apache.maven.surefire.testset.TestSetFailedException;
+import org.apache.maven.surefire.util.NestedRuntimeException;
+import org.apache.maven.surefire.util.internal.StringUtils;
+import org.testng.TestNG;
+
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
-import org.apache.maven.artifact.versioning.ArtifactVersion;
-import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
-import org.apache.maven.artifact.versioning.VersionRange;
-import org.apache.maven.surefire.booter.ProviderParameterNames;
-import org.apache.maven.surefire.report.RunListener;
-import org.apache.maven.surefire.testng.conf.Configurator;
-import org.apache.maven.surefire.testng.conf.TestNG4751Configurator;
-import org.apache.maven.surefire.testng.conf.TestNG52Configurator;
-import org.apache.maven.surefire.testng.conf.TestNG652Configurator;
-import org.apache.maven.surefire.testng.conf.TestNGMapConfigurator;
-import org.apache.maven.surefire.testset.TestSetFailedException;
-import org.apache.maven.surefire.util.NestedRuntimeException;
-import org.apache.maven.surefire.util.internal.StringUtils;
-
-import org.testng.TestNG;
 
 /**
  * Contains utility methods for executing TestNG.
@@ -56,9 +49,8 @@ public class TestNGExecutor
         // noop
     }
 
-    public static void run( Class[] testClasses, String testSourceDirectory, Map options, ArtifactVersion version,
-                            RunListener reportManager, TestNgTestSuite suite, File reportsDirectory,
-                            final String methodNamePattern )
+    public static void run( Class[] testClasses, String testSourceDirectory, Map options, RunListener reportManager,
+                            TestNgTestSuite suite, File reportsDirectory, final String methodNamePattern )
         throws TestSetFailedException
     {
         TestNG testng = new TestNG( true );
@@ -69,7 +61,7 @@ public class TestNGExecutor
             applyMethodNameFiltering( testng, methodNamePattern );
         }
 
-        Configurator configurator = getConfigurator( version );
+        Configurator configurator = getConfigurator( (String) options.get("testng.configurator" ) );
         System.out.println( "Configuring TestNG with: " + configurator.getClass().getSimpleName() );
         configurator.configure( testng, options );
         postConfigure( testng, testSourceDirectory, reportManager, suite, reportsDirectory );
@@ -89,7 +81,7 @@ public class TestNGExecutor
             Class clazz = Class.forName( clazzName );
 
             Method method = clazz.getMethod( "setMethodName", new Class[]{ String.class } );
-            method.invoke( null, new Object[]{ methodNamePattern } );
+            method.invoke( null, methodNamePattern );
         }
         catch ( ClassNotFoundException e )
         {
@@ -138,7 +130,7 @@ public class TestNGExecutor
 
             // HORRIBLE hack, but TNG doesn't allow us to setup a method selector instance directly.
             Method method = clazz.getMethod( "setGroups", new Class[]{ String.class, String.class } );
-            method.invoke( null, new Object[]{ groups, excludedGroups } );
+            method.invoke( null, groups, excludedGroups );
         }
         catch ( ClassNotFoundException e )
         {
@@ -166,49 +158,35 @@ public class TestNGExecutor
         }
     }
 
-    public static void run( List suiteFiles, String testSourceDirectory, Map options, ArtifactVersion version,
-                            RunListener reportManager, TestNgTestSuite suite, File reportsDirectory )
+    public static void run( List<String> suiteFiles, String testSourceDirectory, Map options, RunListener reportManager,
+                            TestNgTestSuite suite, File reportsDirectory )
         throws TestSetFailedException
     {
         TestNG testng = new TestNG( true );
-        Configurator configurator = getConfigurator( version );
+        Configurator configurator = getConfigurator( (String) options.get("testng.configurator" ) );
         configurator.configure( testng, options );
         postConfigure( testng, testSourceDirectory, reportManager, suite, reportsDirectory );
         testng.setTestSuites( suiteFiles );
         testng.run();
     }
 
-    private static Configurator getConfigurator( ArtifactVersion version )
-        throws TestSetFailedException
+    private static Configurator getConfigurator( String className )
     {
         try
         {
-            VersionRange range = VersionRange.createFromVersionSpec( "[4.7,5.1]" );
-            if ( range.containsVersion( version ) )
-            {
-                return new TestNG4751Configurator();
-            }
-            range = VersionRange.createFromVersionSpec( "[5.2]" );
-            if ( range.containsVersion( version ) )
-            {
-                return new TestNG52Configurator();
-            }
-            range = VersionRange.createFromVersionSpec( "[5.3,6.4]" );
-            if ( range.containsVersion( version ) )
-            {
-                return new TestNGMapConfigurator();
-            }
-            range = VersionRange.createFromVersionSpec( "[6.5,)" );
-            if ( range.containsVersion( version ) )
-            {
-                return new TestNG652Configurator();
-            }
-
-            throw new TestSetFailedException( "Unknown TestNG version " + version );
+            return (Configurator) Class.forName( className ).newInstance();
         }
-        catch ( InvalidVersionSpecificationException invsex )
+        catch ( InstantiationException e )
         {
-            throw new TestSetFailedException( "Bug in plugin. Please report it with the attached stacktrace", invsex );
+            throw new RuntimeException( e );
+        }
+        catch ( IllegalAccessException e )
+        {
+            throw new RuntimeException( e );
+        }
+        catch ( ClassNotFoundException e )
+        {
+            throw new RuntimeException( e );
         }
     }
 
@@ -243,7 +221,7 @@ public class TestNGExecutor
             try
             {
                 Constructor ctor = c.getConstructor( new Class[]{ RunListener.class, TestNgTestSuite.class } );
-                return (TestNGReporter) ctor.newInstance( new Object[]{ reportManager, suite } );
+                return (TestNGReporter) ctor.newInstance( reportManager, suite );
             }
             catch ( Exception e )
             {

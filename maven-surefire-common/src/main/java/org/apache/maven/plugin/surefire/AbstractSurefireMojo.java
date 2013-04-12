@@ -44,6 +44,7 @@ import org.apache.maven.artifact.resolver.ArtifactResolver;
 import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
 import org.apache.maven.artifact.resolver.filter.ExcludesArtifactFilter;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
+import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
 import org.apache.maven.artifact.versioning.VersionRange;
@@ -879,7 +880,7 @@ public abstract class AbstractSurefireMojo
      * Converts old TestNG configuration parameters over to new properties based configuration
      * method. (if any are defined the old way)
      */
-    private void convertTestNGParameters()
+    private void convertTestNGParameters() throws MojoExecutionException
     {
         if ( this.getParallel() != null )
         {
@@ -901,8 +902,50 @@ public abstract class AbstractSurefireMojo
             getProperties().setProperty( "testng.test.classpath", getTestClassesDirectory().getAbsolutePath() );
         }
 
+        Artifact testNgArtifact = getTestNgArtifact();
+        if ( testNgArtifact != null){
+
+            DefaultArtifactVersion defaultArtifactVersion = new DefaultArtifactVersion( testNgArtifact.getVersion() );
+            getProperties().setProperty( "testng.configurator", getConfiguratorName( defaultArtifactVersion ) );
+        }
+
 
     }
+
+    private static String getConfiguratorName( ArtifactVersion version )
+        throws MojoExecutionException
+    {
+        try
+        {
+            VersionRange range = VersionRange.createFromVersionSpec( "[4.7,5.1]" );
+            if ( range.containsVersion( version ) )
+            {
+                return "org.apache.maven.surefire.testng.conf.TestNG4751Configurator";
+            }
+            range = VersionRange.createFromVersionSpec( "[5.2]" );
+            if ( range.containsVersion( version ) )
+            {
+                return "org.apache.maven.surefire.testng.conf.TestNG52Configurator";
+            }
+            range = VersionRange.createFromVersionSpec( "[5.3,6.4]" );
+            if ( range.containsVersion( version ) )
+            {
+                return "org.apache.maven.surefire.testng.conf.TestNGMapConfigurator";
+            }
+            range = VersionRange.createFromVersionSpec( "[6.5,)" );
+            if ( range.containsVersion( version ) )
+            {
+                return "org.apache.maven.surefire.testng.conf.TestNG652Configurator";
+            }
+
+            throw new MojoExecutionException( "Unknown TestNG version " + version );
+        }
+        catch ( InvalidVersionSpecificationException invsex )
+        {
+            throw new MojoExecutionException( "Bug in plugin. Please report it with the attached stacktrace", invsex );
+        }
+    }
+
 
     private void convertGroupParameters()
     {
@@ -1099,6 +1142,10 @@ public abstract class AbstractSurefireMojo
 
             getLog().debug( testClasspath.getLogMessage( "test" ) );
             getLog().debug( providerClasspath.getLogMessage( "provider" ) );
+
+            getLog().debug( testClasspath.getCompactLogMessage( "test(compact)" ) );
+            getLog().debug( providerClasspath.getCompactLogMessage( "provider(compact)" ) );
+
             final ClasspathConfiguration classpathConfiguration =
                 new ClasspathConfiguration( testClasspath, providerClasspath, inprocClassPath,
                                             effectiveIsEnableAssertions(), isChildDelegation() );
@@ -1906,7 +1953,7 @@ public abstract class AbstractSurefireMojo
             return testNgArtifact != null;
         }
 
-        public void addProviderProperties()
+        public void addProviderProperties() throws MojoExecutionException
         {
             convertTestNGParameters();
         }
@@ -2056,7 +2103,7 @@ public abstract class AbstractSurefireMojo
             return true;
         }
 
-        public void addProviderProperties()
+        public void addProviderProperties() throws MojoExecutionException
         {
             // Ok this is a bit lazy.
             convertJunitCoreParameters();

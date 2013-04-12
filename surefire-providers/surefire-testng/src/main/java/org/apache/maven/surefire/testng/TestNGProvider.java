@@ -27,7 +27,6 @@ import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.suite.RunResult;
-import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.NestedRuntimeException;
@@ -43,8 +42,6 @@ public class TestNGProvider
     extends AbstractProvider
 {
     private final Properties providerProperties;
-
-    private final TestArtifactInfo testArtifactInfo;
 
     private final ReporterConfiguration reporterConfiguration;
 
@@ -67,7 +64,6 @@ public class TestNGProvider
         this.runOrderCalculator = booterParameters.getRunOrderCalculator();
         this.providerProperties = booterParameters.getProviderProperties();
         this.testRequest = booterParameters.getTestRequest();
-        testArtifactInfo = booterParameters.getTestArtifactInfo();
         reporterConfiguration = booterParameters.getReporterConfiguration();
         this.scanResult = booterParameters.getScanResult();
     }
@@ -130,8 +126,7 @@ public class TestNGProvider
 
     private TestNGDirectoryTestSuite getDirectorySuite()
     {
-        return new TestNGDirectoryTestSuite( testRequest.getTestSourceDirectory().toString(),
-                                             testArtifactInfo.getVersion(), providerProperties,
+        return new TestNGDirectoryTestSuite( testRequest.getTestSourceDirectory().toString(), providerProperties,
                                              reporterConfiguration.getReportsDirectory(),
                                              testRequest.getRequestedTestMethod(), runOrderCalculator, scanResult );
     }
@@ -139,7 +134,7 @@ public class TestNGProvider
     private TestNGXmlTestSuite getXmlSuite()
     {
         return new TestNGXmlTestSuite( testRequest.getSuiteXmlFiles(), testRequest.getTestSourceDirectory().toString(),
-                                       testArtifactInfo.getVersion(), providerProperties,
+                                       providerProperties,
                                        reporterConfiguration.getReportsDirectory() );
     }
 

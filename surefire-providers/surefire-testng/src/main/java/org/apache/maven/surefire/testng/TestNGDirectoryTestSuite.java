@@ -29,8 +29,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import org.apache.maven.artifact.versioning.ArtifactVersion;
-import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.surefire.NonAbstractClassFilter;
 import org.apache.maven.surefire.report.ConsoleOutputCapture;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
@@ -40,7 +38,6 @@ import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.SimpleReportEntry;
 import org.apache.maven.surefire.testset.TestSetFailedException;
-import org.apache.maven.surefire.util.LazyTestsToRun;
 import org.apache.maven.surefire.util.RunOrderCalculator;
 import org.apache.maven.surefire.util.ScanResult;
 import org.apache.maven.surefire.util.TestsToRun;
@@ -54,7 +51,6 @@ import org.apache.maven.surefire.util.TestsToRun;
 public class TestNGDirectoryTestSuite
     implements TestNgTestSuite
 {
-    private final ArtifactVersion version;
 
     private final Map options;
 
@@ -64,7 +60,7 @@ public class TestNGDirectoryTestSuite
 
     private final File reportsDirectory;
 
-    private SortedMap testSets;
+    private SortedMap<String, TestNGTestSet> testSets;
 
     private final ScanResult scanResult;
 
@@ -74,8 +70,7 @@ public class TestNGDirectoryTestSuite
 
     private final Class junitTestClass;
 
-    public TestNGDirectoryTestSuite( String testSourceDirectory, String artifactVersion, Properties confOptions,
-                                     File reportsDirectory, String testMethodPattern,
+    public TestNGDirectoryTestSuite( String testSourceDirectory, Properties confOptions, File reportsDirectory, String testMethodPattern,
                                      RunOrderCalculator runOrderCalculator, ScanResult scanResult )
     {
 
@@ -86,7 +81,6 @@ public class TestNGDirectoryTestSuite
         this.testSourceDirectory = testSourceDirectory;
         this.reportsDirectory = reportsDirectory;
         this.scanResult = scanResult;
-        this.version = new DefaultArtifactVersion( artifactVersion );
         this.testMethodPattern = testMethodPattern;
         this.junitTestClass = findJUnitTestClass();
         this.junitOptions = createJUnitOptions();
@@ -106,7 +100,7 @@ public class TestNGDirectoryTestSuite
         }
         else if ( testsToRun.containsAtLeast( 1 ) )
         {
-            Class testClass = (Class) testsToRun.iterator().next();
+            Class testClass = testsToRun.iterator().next();
             executeSingleClass( reporterManagerFactory, testClass );
         }
     }
@@ -123,7 +117,7 @@ public class TestNGDirectoryTestSuite
 
         final Map optionsToUse = isJUnitTest( testClass ) ? junitOptions : options;
 
-        TestNGExecutor.run( new Class[]{ testClass }, testSourceDirectory, optionsToUse, version, reporter, this,
+        TestNGExecutor.run( new Class[]{ testClass }, testSourceDirectory, optionsToUse, reporter, this,
                             reportsDirectory, testMethodPattern );
 
         finishTestSuite( reporter, this );
@@ -133,9 +127,8 @@ public class TestNGDirectoryTestSuite
         throws ReporterException, TestSetFailedException
     {
 
-        for ( Iterator testClassIt = testsToRun.iterator(); testClassIt.hasNext(); )
+        for ( Class c : testsToRun )
         {
-            Class c = (Class) testClassIt.next();
             executeSingleClass( reporterFactory, c );
         }
     }
@@ -157,11 +150,10 @@ public class TestNGDirectoryTestSuite
     public void executeMulti( TestsToRun testsToRun, ReporterFactory reporterFactory )
         throws ReporterException, TestSetFailedException
     {
-        List testNgTestClasses = new ArrayList();
-        List junitTestClasses = new ArrayList();
-        for ( Iterator it = testsToRun.iterator(); it.hasNext(); )
+        List<Class> testNgTestClasses = new ArrayList<Class>();
+        List<Class> junitTestClasses = new ArrayList<Class>();
+        for ( Class c : testsToRun )
         {
-            Class c = (Class) it.next();
             if ( isJUnitTest( c ) )
             {
                 junitTestClasses.add( c );
@@ -184,16 +176,16 @@ public class TestNGDirectoryTestSuite
         ConsoleOutputCapture.startCapture( (ConsoleOutputReceiver) reporterManager );
         startTestSuite( reporterManager, this );
 
-        Class[] testClasses = (Class[]) testNgTestClasses.toArray( new Class[testNgTestClasses.size()] );
+        Class[] testClasses = testNgTestClasses.toArray( new Class[testNgTestClasses.size()] );
 
-        TestNGExecutor.run( testClasses, this.testSourceDirectory, options, version, reporterManager, this,
+        TestNGExecutor.run( testClasses, this.testSourceDirectory, options, reporterManager, this,
                             testNgReportsDirectory, testMethodPattern );
 
         if ( junitTestClasses.size() > 0 )
         {
-            testClasses = (Class[]) junitTestClasses.toArray( new Class[junitTestClasses.size()] );
+            testClasses = junitTestClasses.toArray( new Class[junitTestClasses.size()] );
 
-            TestNGExecutor.run( testClasses, testSourceDirectory, junitOptions, version, reporterManager, this,
+            TestNGExecutor.run( testClasses, testSourceDirectory, junitOptions, reporterManager, this,
                                 junitReportsDirectory, testMethodPattern );
         }
 
@@ -220,7 +212,7 @@ public class TestNGDirectoryTestSuite
         {
             throw new IllegalStateException( "You must call locateTestSets before calling execute" );
         }
-        TestNGTestSet testSet = (TestNGTestSet) testSets.get( testSetName );
+        TestNGTestSet testSet = testSets.get( testSetName );
 
         if ( testSet == null )
         {
@@ -232,8 +224,7 @@ public class TestNGDirectoryTestSuite
 
         startTestSuite( reporter, this );
 
-        TestNGExecutor.run( new Class[]{ testSet.getTestClass() }, this.testSourceDirectory, this.options, this.version,
-                            reporter, this, reportsDirectory, testMethodPattern );
+        TestNGExecutor.run( new Class[]{ testSet.getTestClass() }, this.testSourceDirectory, this.options, reporter, this, reportsDirectory, testMethodPattern );
 
         finishTestSuite( reporter, this );
     }
@@ -296,15 +287,14 @@ public class TestNGDirectoryTestSuite
         {
             throw new IllegalStateException( "You can't call locateTestSets twice" );
         }
-        testSets = new TreeMap();
+        testSets = new TreeMap<String, TestNGTestSet>();
 
         final TestsToRun scanned = scanResult.applyFilter( new NonAbstractClassFilter(), classLoader );
 
         final TestsToRun testsToRun = runOrderCalculator.orderTestClasses( scanned );
 
-        for ( Iterator it = testsToRun.iterator(); it.hasNext(); )
+        for ( Class testClass : testsToRun )
         {
-            Class testClass = (Class) it.next();
             TestNGTestSet testSet = new TestNGTestSet( testClass );
 
             if ( testSets.containsKey( testSet.getName() ) )

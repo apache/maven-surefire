@@ -178,4 +178,23 @@ public class Classpath
         }
         return result.toString();
     }
+    public String getCompactLogMessage( String descriptor )
+    {
+        StringBuilder result = new StringBuilder();
+        result.append( descriptor ).append( " classpath:" );
+        for ( String element : elements )
+        {
+            result.append( "  " );
+            if (element != null){
+                int pos = element.lastIndexOf( File.separatorChar );
+                if (pos >= 0){
+                result.append(  element.substring(  pos + 1) );
+                } else
+                    result.append( element);
+
+            } else result.append(element);
+        }
+        return result.toString();
+    }
+
 }

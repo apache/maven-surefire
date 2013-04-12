@@ -402,6 +402,7 @@ public class ForkStarter
         if ( log.isDebugEnabled() )
         {
             log.debug( bootClasspath.getLogMessage( "boot" ) );
+            log.debug( bootClasspath.getCompactLogMessage( "boot(compact)" ) );
         }
         OutputStreamFlushableCommandline cli =
             forkConfiguration.createCommandLine( bootClasspath.getClassPath(), startupConfiguration, forkNumber );

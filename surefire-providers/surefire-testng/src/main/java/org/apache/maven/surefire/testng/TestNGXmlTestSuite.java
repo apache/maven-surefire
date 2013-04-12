@@ -22,12 +22,9 @@ package org.apache.maven.surefire.testng;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import org.apache.maven.artifact.versioning.ArtifactVersion;
-import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.surefire.report.ConsoleOutputCapture;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.ReporterException;
@@ -46,31 +43,26 @@ public class TestNGXmlTestSuite
 {
     private final List suiteFiles;
 
-    private List suiteFilePaths;
+    private List<String> suiteFilePaths;
 
     private final String testSourceDirectory;
-
-    private final ArtifactVersion version;
 
     private final Map options;
 
     private final File reportsDirectory;
 
     // Not really used
-    private Map testSets;
+    private Map<File,String> testSets;
 
     /**
      * Creates a testng testset to be configured by the specified
      * xml file(s). The XML files are suite definitions files according to TestNG DTD.
      */
-    public TestNGXmlTestSuite( List<File> suiteFiles, String testSourceDirectory, String artifactVersion,
-                               Properties confOptions, File reportsDirectory )
+    public TestNGXmlTestSuite( List<File> suiteFiles, String testSourceDirectory, Properties confOptions, File reportsDirectory )
     {
         this.suiteFiles = suiteFiles;
 
         this.options = confOptions;
-
-        this.version = new DefaultArtifactVersion( artifactVersion );
 
         this.testSourceDirectory = testSourceDirectory;
 
@@ -89,7 +81,7 @@ public class TestNGXmlTestSuite
         ConsoleOutputCapture.startCapture( (ConsoleOutputReceiver) reporter );
 
         TestNGDirectoryTestSuite.startTestSuite( reporter, this );
-        TestNGExecutor.run( this.suiteFilePaths, this.testSourceDirectory, this.options, this.version, reporter, this,
+        TestNGExecutor.run( this.suiteFilePaths, this.testSourceDirectory, this.options, reporter, this,
                             reportsDirectory );
         TestNGDirectoryTestSuite.finishTestSuite( reporter, this );
     }
@@ -113,12 +105,12 @@ public class TestNGXmlTestSuite
             throw new IllegalStateException( "No suite files were specified" );
         }
 
-        this.testSets = new HashMap();
-        this.suiteFilePaths = new ArrayList();
+        this.testSets = new HashMap<File,String>();
+        this.suiteFilePaths = new ArrayList<String>();
 
-        for ( Iterator i = suiteFiles.iterator(); i.hasNext(); )
+        for ( Object suiteFile : suiteFiles )
         {
-            File file = (File) i.next();
+            File file = (File) suiteFile;
             if ( !file.exists() || !file.isFile() )
             {
                 throw new TestSetFailedException( "Suite file " + file + " is not a valid file" );

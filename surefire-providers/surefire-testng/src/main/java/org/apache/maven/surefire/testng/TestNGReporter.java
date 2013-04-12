@@ -163,7 +163,7 @@ public class TestNGReporter
         String retVal;
         if ( groups != null && groups.length > 0 )
         {
-            StringBuffer str = new StringBuffer();
+            StringBuilder str = new StringBuilder();
             for ( int i = 0; i < groups.length; i++ )
             {
                 str.append( groups[i] );
