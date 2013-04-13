@@ -24,11 +24,15 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
+
+import org.apache.maven.surefire.providerapi.ProviderParameters;
+import org.apache.maven.surefire.providerapi.SurefireProvider;
 import org.apache.maven.surefire.report.LegacyPojoStackTraceWriter;
+import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.StackTraceWriter;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
-import org.apache.maven.surefire.util.LazyTestsToRun;
+import org.apache.maven.surefire.util.ReflectionUtils;
 
 /**
  * The part of the booter that is unique to a forked vm.
@@ -71,19 +75,23 @@ public class ForkedBooter
             boolean readTestsFromInputStream = providerConfiguration.isReadTestsFromInStream();
 
             final ClasspathConfiguration classpathConfiguration = startupConfiguration.getClasspathConfiguration();
-            final ClassLoader testClassLoader = classpathConfiguration.createForkingTestClassLoader(
-                startupConfiguration.isManifestOnlyJarRequestedAndUsable() );
+            if ( startupConfiguration.isManifestOnlyJarRequestedAndUsable() )
+            {
+                classpathConfiguration.trickClassPathWhenManifestOnlyClasspath();
+            }
 
+            Thread.currentThread().getContextClassLoader().setDefaultAssertionStatus(
+                classpathConfiguration.isEnableAssertions() );
             startupConfiguration.writeSurefireTestClasspathProperty();
 
             Object testSet;
             if ( forkedTestSet != null )
             {
-                testSet = forkedTestSet.getDecodedValue( testClassLoader );
+                testSet = forkedTestSet.getDecodedValue( Thread.currentThread().getContextClassLoader() );
             }
             else if ( readTestsFromInputStream )
             {
-                testSet = new LazyTestsToRun( System.in, testClassLoader, originalOut );
+                testSet = new LazyTestsToRun( System.in, originalOut );
             }
             else
             {
@@ -92,8 +100,7 @@ public class ForkedBooter
 
             try
             {
-                runSuitesInProcess( testSet, testClassLoader, startupConfiguration, providerConfiguration,
-                                    originalOut );
+                runSuitesInProcess( testSet, startupConfiguration, providerConfiguration, originalOut );
             }
             catch ( InvocationTargetException t )
             {
@@ -136,30 +143,22 @@ public class ForkedBooter
     }
 
 
-    private static RunResult runSuitesInProcess( Object testSet, ClassLoader testsClassLoader,
-                                                 StartupConfiguration startupConfiguration,
+    private static RunResult runSuitesInProcess( Object testSet, StartupConfiguration startupConfiguration,
                                                  ProviderConfiguration providerConfiguration,
                                                  PrintStream originalSystemOut )
         throws SurefireExecutionException, TestSetFailedException, InvocationTargetException
     {
-        final ClasspathConfiguration classpathConfiguration = startupConfiguration.getClasspathConfiguration();
-        ClassLoader surefireClassLoader = classpathConfiguration.createSurefireClassLoader( testsClassLoader );
+        final ReporterFactory factory = createForkingReporterFactory( providerConfiguration, originalSystemOut );
 
-        SurefireReflector surefireReflector = new SurefireReflector( surefireClassLoader );
-
-        final Object factory =
-            createForkingReporterFactory( surefireReflector, providerConfiguration, originalSystemOut );
-
-        return ProviderFactory.invokeProvider( testSet, testsClassLoader, surefireClassLoader, factory,
-                                               providerConfiguration, true, startupConfiguration, false );
+        return invokeProviderInSameClassLoader( testSet, factory, providerConfiguration, true, startupConfiguration,
+                                                false );
     }
 
-    private static Object createForkingReporterFactory( SurefireReflector surefireReflector,
-                                                        ProviderConfiguration providerConfiguration,
-                                                        PrintStream originalSystemOut )
+    private static ReporterFactory createForkingReporterFactory( ProviderConfiguration providerConfiguration,
+                                                                 PrintStream originalSystemOut )
     {
         final Boolean trimStackTrace = providerConfiguration.getReporterConfiguration().isTrimStackTrace();
-        return surefireReflector.createForkingReporterFactory( trimStackTrace, originalSystemOut );
+        return SurefireReflector.createForkingReporterFactoryInCurrentClassLoader( trimStackTrace, originalSystemOut );
     }
 
     private static void launchLastDitchDaemonShutdownThread( final int returnCode )
@@ -182,4 +181,50 @@ public class ForkedBooter
         lastExit.start();
     }
 
+    public static RunResult invokeProviderInSameClassLoader( Object testSet, Object factory,
+                                                             ProviderConfiguration providerConfiguration,
+                                                             boolean insideFork,
+                                                             StartupConfiguration startupConfiguration1,
+                                                             boolean restoreStreams )
+        throws TestSetFailedException, InvocationTargetException
+    {
+        final PrintStream orgSystemOut = System.out;
+        final PrintStream orgSystemErr = System.err;
+        // Note that System.out/System.err are also read in the "ReporterConfiguration" instatiation
+        // in createProvider below. These are the same values as here.
+
+        final SurefireProvider provider =
+            createProviderInCurrentClassloader( startupConfiguration1, insideFork, providerConfiguration, factory );
+        try
+        {
+            return provider.invoke( testSet );
+        }
+        finally
+        {
+            if ( restoreStreams && System.getSecurityManager() == null )
+            {
+                System.setOut( orgSystemOut );
+                System.setErr( orgSystemErr );
+            }
+        }
+    }
+
+    public static SurefireProvider createProviderInCurrentClassloader( StartupConfiguration startupConfiguration1,
+                                                                       boolean isInsideFork,
+                                                                       ProviderConfiguration providerConfiguration,
+                                                                       Object reporterManagerFactory1 )
+    {
+        BaseProviderFactory bpf = new BaseProviderFactory( (ReporterFactory) reporterManagerFactory1, isInsideFork );
+        bpf.setTestRequest( providerConfiguration.getTestSuiteDefinition() );
+        bpf.setReporterConfiguration( providerConfiguration.getReporterConfiguration() );
+        ClassLoader clasLoader = Thread.currentThread().getContextClassLoader();
+        bpf.setClassLoaders( clasLoader, clasLoader );
+        bpf.setTestArtifactInfo( providerConfiguration.getTestArtifact() );
+        bpf.setProviderProperties( providerConfiguration.getProviderProperties() );
+        bpf.setRunOrderParameters( providerConfiguration.getRunOrderParameters() );
+        bpf.setDirectoryScannerParameters( providerConfiguration.getDirScannerParams() );
+        return (SurefireProvider) ReflectionUtils.instantiateOneArg( clasLoader,
+                                                                     startupConfiguration1.getActualClassName(),
+                                                                     ProviderParameters.class, bpf );
+    }
 }

@@ -96,6 +96,7 @@ public class ProviderFactory
         }
     }
 
+
     public SurefireProvider createProvider( boolean isInsideFork )
     {
         ClassLoader systemClassLoader = java.lang.Thread.currentThread().getContextClassLoader();
