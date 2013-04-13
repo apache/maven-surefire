@@ -90,6 +90,13 @@ public class ClasspathConfiguration
         return classpathUrls.createClassLoader( null, childDelegation, enableAssertions, "test" );
     }
 
+    public ClassLoader createMergedClassLoader()
+        throws SurefireExecutionException
+    {
+        return Classpath.join( inprocClasspath, classpathUrls)
+            .createClassLoader( null, this.childDelegation, enableAssertions, "test" );
+    }
+
     public ClassLoader createTestClassLoader()
         throws SurefireExecutionException
     {

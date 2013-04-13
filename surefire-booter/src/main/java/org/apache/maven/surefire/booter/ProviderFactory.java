@@ -104,6 +104,7 @@ public class ProviderFactory
 
         StartupConfiguration starterConfiguration = startupConfiguration;
 
+        // Note: Duplicated in ForkedBooter#createProviderInCurrentClassloader
         final Object o =
             surefireReflector.createBooterConfiguration( surefireClassLoader, reporterManagerFactory, isInsideFork );
         surefireReflector.setTestSuiteDefinitionAware( o, providerConfiguration.getTestSuiteDefinition() );

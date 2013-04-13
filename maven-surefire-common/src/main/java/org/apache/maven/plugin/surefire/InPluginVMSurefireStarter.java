@@ -69,10 +69,10 @@ public class InPluginVMSurefireStarter
         scanResult.writeTo( providerProperties );
 
         startupConfiguration.writeSurefireTestClasspathProperty();
-        ClassLoader testsClassLoader = startupConfiguration.getClasspathConfiguration().createTestClassLoader();
+        ClassLoader testsClassLoader = startupConfiguration.getClasspathConfiguration().createMergedClassLoader();
 
-        ClassLoader surefireClassLoader =
-            startupConfiguration.getClasspathConfiguration().createInprocSurefireClassLoader( testsClassLoader );
+        // Todo: Remove distinction "surefireClassLoader" and "testClassloader" through the rest of the cod
+        ClassLoader surefireClassLoader =   testsClassLoader;
 
         CommonReflector surefireReflector = new CommonReflector( surefireClassLoader );
 

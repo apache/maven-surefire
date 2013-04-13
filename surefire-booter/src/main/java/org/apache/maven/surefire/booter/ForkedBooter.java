@@ -214,6 +214,7 @@ public class ForkedBooter
                                                                        ProviderConfiguration providerConfiguration,
                                                                        Object reporterManagerFactory1 )
     {
+
         BaseProviderFactory bpf = new BaseProviderFactory( (ReporterFactory) reporterManagerFactory1, isInsideFork );
         bpf.setTestRequest( providerConfiguration.getTestSuiteDefinition() );
         bpf.setReporterConfiguration( providerConfiguration.getReporterConfiguration() );
