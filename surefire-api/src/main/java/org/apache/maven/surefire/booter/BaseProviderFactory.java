@@ -119,7 +119,7 @@ public class BaseProviderFactory
         this.reporterConfiguration = reporterConfiguration;
     }
 
-    public void setClassLoaders( ClassLoader surefireClassLoader, ClassLoader testClassLoader )
+    public void setClassLoaders( ClassLoader testClassLoader )
     {
         this.testClassLoader = testClassLoader;
     }

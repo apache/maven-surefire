@@ -501,15 +501,13 @@ public class ForkStarter
         try
         {
             final ClasspathConfiguration classpathConfiguration = startupConfiguration.getClasspathConfiguration();
-            ClassLoader testsClassLoader = classpathConfiguration.createTestClassLoader( false );
-            ClassLoader surefireClassLoader =
-                classpathConfiguration.createInprocSurefireClassLoader( testsClassLoader );
+            ClassLoader unifiedClassLoader = classpathConfiguration.createMergedClassLoader();
 
-            CommonReflector commonReflector = new CommonReflector( surefireClassLoader );
+            CommonReflector commonReflector = new CommonReflector( unifiedClassLoader );
             Object reporterFactory = commonReflector.createReportingReporterFactory( startupReportConfiguration );
 
             final ProviderFactory providerFactory =
-                new ProviderFactory( startupConfiguration, providerConfiguration, surefireClassLoader, testsClassLoader,
+                new ProviderFactory( startupConfiguration, providerConfiguration, unifiedClassLoader,
                                      reporterFactory );
             SurefireProvider surefireProvider = providerFactory.createProvider( false );
             return surefireProvider.getSuites();

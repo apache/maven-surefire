@@ -80,7 +80,7 @@ public class Foo
         this.called = true;
     }
 
-    public void setClassLoaders( ClassLoader surefireClassLoader, ClassLoader testClassLoader )
+    public void setClassLoaders( ClassLoader testClassLoader )
     {
         this.testClassLoader = testClassLoader;
         this.surefireClassLoader = surefireClassLoader;

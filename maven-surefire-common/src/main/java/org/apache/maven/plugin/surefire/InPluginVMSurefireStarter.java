@@ -71,16 +71,13 @@ public class InPluginVMSurefireStarter
         startupConfiguration.writeSurefireTestClasspathProperty();
         ClassLoader testsClassLoader = startupConfiguration.getClasspathConfiguration().createMergedClassLoader();
 
-        // Todo: Remove distinction "surefireClassLoader" and "testClassloader" through the rest of the cod
-        ClassLoader surefireClassLoader =   testsClassLoader;
-
-        CommonReflector surefireReflector = new CommonReflector( surefireClassLoader );
+        CommonReflector surefireReflector = new CommonReflector( testsClassLoader );
 
         final Object factory = surefireReflector.createReportingReporterFactory( startupReportConfiguration );
 
         try
         {
-            return ProviderFactory.invokeProvider( null, testsClassLoader, surefireClassLoader, factory,
+            return ProviderFactory.invokeProvider( null, testsClassLoader, factory,
                                                    providerConfiguration, false, startupConfiguration, true );
         }
         catch ( InvocationTargetException e )

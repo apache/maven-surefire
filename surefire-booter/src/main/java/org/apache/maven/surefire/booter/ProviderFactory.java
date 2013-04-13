@@ -43,9 +43,7 @@ public class ProviderFactory
 
     private final ProviderConfiguration providerConfiguration;
 
-    private final ClassLoader surefireClassLoader;
-
-    private final ClassLoader testsClassLoader;
+    private final ClassLoader classLoader;
 
     private final SurefireReflector surefireReflector;
 
@@ -55,19 +53,16 @@ public class ProviderFactory
 
 
     public ProviderFactory( StartupConfiguration startupConfiguration, ProviderConfiguration providerConfiguration,
-                            ClassLoader surefireClassLoader, ClassLoader testsClassLoader,
-                            Object reporterManagerFactory )
+                            ClassLoader testsClassLoader, Object reporterManagerFactory )
     {
         this.providerConfiguration = providerConfiguration;
-        this.surefireClassLoader = surefireClassLoader;
         this.startupConfiguration = startupConfiguration;
-        this.surefireReflector = new SurefireReflector( surefireClassLoader );
-        this.testsClassLoader = testsClassLoader;
+        this.surefireReflector = new SurefireReflector( testsClassLoader );
+        this.classLoader = testsClassLoader;
         this.reporterManagerFactory = reporterManagerFactory;
     }
 
-    public static RunResult invokeProvider( Object testSet, ClassLoader testsClassLoader,
-                                            ClassLoader surefireClassLoader, Object factory,
+    public static RunResult invokeProvider( Object testSet, ClassLoader testsClassLoader, Object factory,
                                             ProviderConfiguration providerConfiguration, boolean insideFork,
                                             StartupConfiguration startupConfiguration1, boolean restoreStreams )
         throws TestSetFailedException, InvocationTargetException
@@ -78,7 +73,7 @@ public class ProviderFactory
         // in createProvider below. These are the same values as here.
 
         ProviderFactory providerFactory =
-            new ProviderFactory( startupConfiguration1, providerConfiguration, surefireClassLoader, testsClassLoader,
+            new ProviderFactory( startupConfiguration1, providerConfiguration, testsClassLoader,
                                  factory );
         final SurefireProvider provider = providerFactory.createProvider( insideFork );
 
@@ -100,17 +95,17 @@ public class ProviderFactory
     public SurefireProvider createProvider( boolean isInsideFork )
     {
         ClassLoader systemClassLoader = java.lang.Thread.currentThread().getContextClassLoader();
-        Thread.currentThread().setContextClassLoader( surefireClassLoader );
+        Thread.currentThread().setContextClassLoader( classLoader );
 
         StartupConfiguration starterConfiguration = startupConfiguration;
 
         // Note: Duplicated in ForkedBooter#createProviderInCurrentClassloader
         final Object o =
-            surefireReflector.createBooterConfiguration( surefireClassLoader, reporterManagerFactory, isInsideFork );
+            surefireReflector.createBooterConfiguration( classLoader, reporterManagerFactory, isInsideFork );
         surefireReflector.setTestSuiteDefinitionAware( o, providerConfiguration.getTestSuiteDefinition() );
         surefireReflector.setProviderPropertiesAware( o, providerConfiguration.getProviderProperties() );
         surefireReflector.setReporterConfigurationAware( o, providerConfiguration.getReporterConfiguration() );
-        surefireReflector.setTestClassLoaderAware( o, surefireClassLoader, testsClassLoader );
+        surefireReflector.setTestClassLoaderAware( o, classLoader );
         surefireReflector.setTestArtifactInfoAware( o, providerConfiguration.getTestArtifact() );
         surefireReflector.setRunOrderParameters( o, providerConfiguration.getRunOrderParameters() );
         surefireReflector.setIfDirScannerAware( o, providerConfiguration.getDirScannerParams() );
@@ -118,7 +113,7 @@ public class ProviderFactory
         Object provider = surefireReflector.instantiateProvider( starterConfiguration.getActualClassName(), o );
         Thread.currentThread().setContextClassLoader( systemClassLoader );
 
-        return new ProviderProxy( provider, testsClassLoader );
+        return new ProviderProxy( provider, classLoader );
     }
 
 

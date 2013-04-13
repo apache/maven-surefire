@@ -219,7 +219,7 @@ public class ForkedBooter
         bpf.setTestRequest( providerConfiguration.getTestSuiteDefinition() );
         bpf.setReporterConfiguration( providerConfiguration.getReporterConfiguration() );
         ClassLoader clasLoader = Thread.currentThread().getContextClassLoader();
-        bpf.setClassLoaders( clasLoader, clasLoader );
+        bpf.setClassLoaders( clasLoader );
         bpf.setTestArtifactInfo( providerConfiguration.getTestArtifact() );
         bpf.setProviderProperties( providerConfiguration.getProviderProperties() );
         bpf.setRunOrderParameters( providerConfiguration.getRunOrderParameters() );
