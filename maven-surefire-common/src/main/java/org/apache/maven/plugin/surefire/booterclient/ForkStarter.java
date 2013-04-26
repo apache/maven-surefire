@@ -66,6 +66,8 @@ import org.apache.maven.surefire.report.StackTraceWriter;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.util.DefaultScanResult;
 
+import static org.apache.maven.surefire.booter.Classpath.join;
+
 /**
  * Starts the fork or runs in-process.
  * <p/>
@@ -387,17 +389,14 @@ public class ForkStarter
             throw new SurefireBooterForkException( "Error creating properties files for forking", e );
         }
 
+        // this could probably be simplified further
         final Classpath bootClasspathConfiguration = startupConfiguration.isProviderMainClass()
             ? startupConfiguration.getClasspathConfiguration().getProviderClasspath()
             : forkConfiguration.getBootClasspath();
 
-        final Classpath additionlClassPathUrls = startupConfiguration.useSystemClassLoader()
-            ? startupConfiguration.getClasspathConfiguration().getTestClasspath()
-            : null;
-
-        // Surefire-booter + all test classes if "useSystemClassloader"
-        // Surefire-booter if !useSystemClassLoader
-        Classpath bootClasspath = Classpath.join( bootClasspathConfiguration, additionlClassPathUrls );
+        Classpath bootClasspath = join(
+            join( bootClasspathConfiguration, startupConfiguration.getClasspathConfiguration().getTestClasspath() ),
+            startupConfiguration.getClasspathConfiguration().getProviderClasspath() );
 
         if ( log.isDebugEnabled() )
         {
@@ -502,15 +501,13 @@ public class ForkStarter
         try
         {
             final ClasspathConfiguration classpathConfiguration = startupConfiguration.getClasspathConfiguration();
-            ClassLoader testsClassLoader = classpathConfiguration.createTestClassLoader( false );
-            ClassLoader surefireClassLoader =
-                classpathConfiguration.createInprocSurefireClassLoader( testsClassLoader );
+            ClassLoader unifiedClassLoader = classpathConfiguration.createMergedClassLoader();
 
-            CommonReflector commonReflector = new CommonReflector( surefireClassLoader );
+            CommonReflector commonReflector = new CommonReflector( unifiedClassLoader );
             Object reporterFactory = commonReflector.createReportingReporterFactory( startupReportConfiguration );
 
             final ProviderFactory providerFactory =
-                new ProviderFactory( startupConfiguration, providerConfiguration, surefireClassLoader, testsClassLoader,
+                new ProviderFactory( startupConfiguration, providerConfiguration, unifiedClassLoader,
                                      reporterFactory );
             SurefireProvider surefireProvider = providerFactory.createProvider( false );
             return surefireProvider.getSuites();

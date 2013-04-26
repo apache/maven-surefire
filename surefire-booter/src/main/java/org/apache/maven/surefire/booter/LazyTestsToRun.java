@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.util;
+package org.apache.maven.surefire.booter;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -28,7 +28,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import org.apache.maven.surefire.booter.ForkingRunListener;
+
+import org.apache.maven.surefire.util.ReflectionUtils;
+import org.apache.maven.surefire.util.TestsToRun;
 
 /**
  * A variant of TestsToRun that is provided with test class names
@@ -39,7 +41,7 @@ import org.apache.maven.surefire.booter.ForkingRunListener;
  *
  * @author Andreas Gudian
  */
-public class LazyTestsToRun
+class LazyTestsToRun
     extends TestsToRun
 {
     private final List<Class> workQueue = new ArrayList<Class>();
@@ -48,22 +50,18 @@ public class LazyTestsToRun
 
     private boolean streamClosed = false;
 
-    private ClassLoader testClassLoader;
-
     private PrintStream originalOutStream;
 
     /**
      * C'tor
      *
      * @param testSource        source to read the tests from
-     * @param testClassLoader   class loader to load the test classes
      * @param originalOutStream the output stream to use when requesting new new tests
      */
-    public LazyTestsToRun( InputStream testSource, ClassLoader testClassLoader, PrintStream originalOutStream )
+    public LazyTestsToRun( InputStream testSource, PrintStream originalOutStream )
     {
         super( Collections.<Class>emptyList() );
 
-        this.testClassLoader = testClassLoader;
         this.originalOutStream = originalOutStream;
 
         inputReader = new BufferedReader( new InputStreamReader( testSource ) );
@@ -73,7 +71,7 @@ public class LazyTestsToRun
     {
         synchronized ( workQueue )
         {
-            workQueue.add( ReflectionUtils.loadClass( testClassLoader, className ) );
+            workQueue.add( ReflectionUtils.loadClass( Thread.currentThread().getContextClassLoader(), className ) );
         }
     }
 

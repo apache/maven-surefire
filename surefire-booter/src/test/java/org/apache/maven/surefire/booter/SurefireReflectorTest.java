@@ -113,7 +113,7 @@ public class SurefireReflectorTest
         SurefireReflector surefireReflector = getReflector();
         Object foo = getFoo();
 
-        surefireReflector.setTestClassLoader( foo, getClass().getClassLoader(), getClass().getClassLoader() );
+        surefireReflector.setTestClassLoader( foo, getClass().getClassLoader() );
         assertTrue( isCalled( foo ) );
     }
 

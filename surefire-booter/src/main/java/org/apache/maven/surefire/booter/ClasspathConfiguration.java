@@ -90,6 +90,13 @@ public class ClasspathConfiguration
         return classpathUrls.createClassLoader( null, childDelegation, enableAssertions, "test" );
     }
 
+    public ClassLoader createMergedClassLoader()
+        throws SurefireExecutionException
+    {
+        return Classpath.join( inprocClasspath, classpathUrls)
+            .createClassLoader( null, this.childDelegation, enableAssertions, "test" );
+    }
+
     public ClassLoader createTestClassLoader()
         throws SurefireExecutionException
     {
@@ -118,21 +125,15 @@ public class ClasspathConfiguration
         return classpathUrls;
     }
 
-    public ClassLoader createForkingTestClassLoader( boolean manifestOnlyJarRequestedAndUsable )
+    public void trickClassPathWhenManifestOnlyClasspath()
         throws SurefireExecutionException
     {
-        if ( manifestOnlyJarRequestedAndUsable )
-        {
             System.setProperty( "surefire.real.class.path", System.getProperty( "java.class.path" ) );
             getTestClasspath().writeToSystemProperty( "java.class.path" );
-            // this.getClass.getClassLoader() is always loaded in system classloader if forking
-            // this.getClass().getClassLoader() is plugin classloder if in-process
-            // "this" must refer to a class within the booter module
-            return this.getClass().getClassLoader();   // SUREFIRE-459, trick the app under test into thinking its classpath was conventional;
-        }
-        else
-        {
-            return createTestClassLoader();
-        }
+    }
+
+    public boolean isEnableAssertions()
+    {
+        return enableAssertions;
     }
 }

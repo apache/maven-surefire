@@ -217,12 +217,9 @@ public class SurefireReflector
             reporterConfiguration.isTrimStackTrace() } );
     }
 
-    public Object createForkingReporterFactory( Boolean trimStackTrace, PrintStream originalSystemOut )
+    public static ReporterFactory createForkingReporterFactoryInCurrentClassLoader( Boolean trimStackTrace, PrintStream originalSystemOut )
     {
-        Class[] args = new Class[]{ Boolean.class, PrintStream.class };
-        Object[] values = new Object[]{ trimStackTrace, originalSystemOut };
-        return ReflectionUtils.instantiateObject( ForkingReporterFactory.class.getName(), args, values,
-                                                  surefireClassLoader );
+        return new ForkingReporterFactory( trimStackTrace, originalSystemOut );
     }
 
     public Object createBooterConfiguration( ClassLoader surefireClassLoader, Object factoryInstance,
@@ -302,19 +299,19 @@ public class SurefireReflector
         ReflectionUtils.invokeSetter( o, "setReporterConfiguration", this.reporterConfiguration, param );
     }
 
-    public void setTestClassLoaderAware( Object o, ClassLoader surefireClassLoader, ClassLoader testClassLoader )
+    public void setTestClassLoaderAware( Object o, ClassLoader testClassLoader )
     {
         if ( testClassLoaderAware.isAssignableFrom( o.getClass() ) )
         {
-            setTestClassLoader( o, surefireClassLoader, testClassLoader );
+            setTestClassLoader( o, testClassLoader );
         }
     }
 
-    void setTestClassLoader( Object o, ClassLoader surefireClassLoader, ClassLoader testClassLoader )
+    void setTestClassLoader( Object o, ClassLoader testClassLoader )
     {
         final Method setter =
-            ReflectionUtils.getMethod( o, "setClassLoaders", new Class[]{ ClassLoader.class, ClassLoader.class } );
-        ReflectionUtils.invokeMethodWithArray( o, setter, new Object[]{ surefireClassLoader, testClassLoader } );
+            ReflectionUtils.getMethod( o, "setClassLoaders", new Class[]{ ClassLoader.class } );
+        ReflectionUtils.invokeMethodWithArray( o, setter, new Object[]{ testClassLoader } );
     }
 
     public void setTestArtifactInfoAware( Object o, TestArtifactInfo testArtifactInfo1 )
