@@ -170,7 +170,7 @@ public class FilterFactory
         public boolean shouldRun( Description description )
         {
             return shouldRun( description,
-                              ( description.getMethodName() == null ? null
+                              ( ( description.getMethodName() == null || description.getTestClass() == null ) ? null
                                               : Description.createSuiteDescription( description.getTestClass() ) ) );
         }
 
