@@ -106,7 +106,7 @@
         <executions>
           <execution>
             <id>prepare-site-source</id>
-            <phase>process-resources</phase>
+            <phase>pre-site</phase>
             <goals>
               <goal>effective-site</goal>
             </goals>
@@ -125,7 +125,7 @@
         <version>1.5.2</version>
         <executions>
            <execution>
-               <phase>prepare-package</phase>
+               <phase>pre-site</phase>
                <goals>
                    <goal>replace</goal>
                </goals>                   
