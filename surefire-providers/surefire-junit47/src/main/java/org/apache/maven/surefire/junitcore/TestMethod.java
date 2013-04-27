@@ -89,7 +89,7 @@ class TestMethod
 
     public int getElapsed()
     {
-        return (int) ( endTime - startTime );
+        return endTime > 0 ? (int) ( endTime - startTime ) : 0;
     }
 
 

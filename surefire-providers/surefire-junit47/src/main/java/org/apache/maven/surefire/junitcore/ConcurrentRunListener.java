@@ -135,9 +135,12 @@ public abstract class ConcurrentRunListener
     public void testSucceeded( ReportEntry report )
     {
         TestMethod testMethod = getTestMethod();
-        testMethod.testFinished();
-        testMethod.getTestSet().incrementFinishedTests( getRunListener(), reportImmediately );
-        testMethod.detachFromCurrentThread();
+        if ( null != testMethod )
+        {
+            testMethod.testFinished();
+            testMethod.getTestSet().incrementFinishedTests( getRunListener(), reportImmediately );
+            testMethod.detachFromCurrentThread();
+        }
     }
 
     private TestMethod getOrCreateThreadAttachedTestMethod( ReportEntry description )
