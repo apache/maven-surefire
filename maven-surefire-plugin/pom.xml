@@ -144,7 +144,7 @@
            </replacements>
         </configuration>
       </plugin>
-      <!-- END HACK ->
+      <!-- END HACK -->
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
         <executions>
