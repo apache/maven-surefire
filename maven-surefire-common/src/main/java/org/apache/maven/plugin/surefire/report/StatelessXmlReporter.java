@@ -32,6 +32,8 @@ import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.SafeThrowable;
 
+import static org.apache.maven.plugin.surefire.report.FileReporterUtils.stripIllegalFilenameChars;
+
 /**
  * XML format reporter writing to <code>TEST-<i>reportName</i>[-<i>suffix</i>].xml</code> file like written and read
  * by Ant's <a href="http://ant.apache.org/manual/Tasks/junit.html"><code>&lt;junit&gt;</code></a> and
@@ -148,16 +150,18 @@ public class StatelessXmlReporter
 
         if ( reportNameSuffix != null && reportNameSuffix.length() > 0 )
         {
-            reportFile = new File( reportsDirectory, "TEST-" + report.getName() + "-" + reportNameSuffix + ".xml" );
+            reportFile =
+                new File( reportsDirectory, stripIllegalFilenameChars( "TEST-" + report.getName() + "-"
+                    + reportNameSuffix + ".xml" ) );
         }
         else
         {
-            reportFile = new File( reportsDirectory, "TEST-" + report.getName() + ".xml" );
+            reportFile = new File( reportsDirectory, stripIllegalFilenameChars( "TEST-" + report.getName() + ".xml" ) );
         }
 
         return reportFile;
     }
-
+    
     private static void startTestElement( XMLWriter ppw, WrappedReportEntry report, String reportNameSuffix )
     {
         ppw.startElement( "testcase" );

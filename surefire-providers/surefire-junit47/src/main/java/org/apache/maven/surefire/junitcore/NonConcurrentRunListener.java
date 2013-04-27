@@ -24,7 +24,6 @@ import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.SimpleReportEntry;
 import org.apache.maven.surefire.testset.TestSetFailedException;
-
 import org.junit.runner.Description;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
@@ -39,7 +38,7 @@ public class NonConcurrentRunListener
     implements ConsoleOutputReceiver
 {
 
-    private java.lang.Class<?> currentTestClass;
+    private Description currentTestSetDescription;
 
     private Description lastFinishedDescription;
 
@@ -57,14 +56,20 @@ public class NonConcurrentRunListener
 
     protected SimpleReportEntry createReportEntry( Description description )
     {
-        return new SimpleReportEntry( description.getClassName(), description.getDisplayName()/*,
-                                       (int) ( System.currentTimeMillis() - startTime ) */);
+        return new SimpleReportEntry( description.getClassName(), description.getDisplayName()/*
+                                                                                               * , (int) (
+                                                                                               * System.currentTimeMillis
+                                                                                               * () - startTime )
+                                                                                               */);
     }
 
     protected SimpleReportEntry createReportEntryForTestSet( Description description )
     {
-        return new SimpleReportEntry( description.getClassName(), description.getClassName() /*,
-                                       (int) ( System.currentTimeMillis() - startTime ) */);
+        return new SimpleReportEntry( description.getClassName(), description.getClassName() /*
+                                                                                              * , (int) (
+                                                                                              * System.currentTimeMillis
+                                                                                              * () - startTime )
+                                                                                              */);
     }
 
     @Override
@@ -77,9 +82,9 @@ public class NonConcurrentRunListener
 
     private void finishLastTestSetIfNeccessary( Description description )
     {
-        if ( !description.getTestClass().equals( currentTestClass ) )
+        if ( describesNewTestSet( description ) )
         {
-            currentTestClass = description.getTestClass();
+            currentTestSetDescription = description;
             if ( lastFinishedDescription != null )
             {
                 reporter.testSetCompleted( createReportEntryForTestSet( lastFinishedDescription ) );
@@ -87,6 +92,25 @@ public class NonConcurrentRunListener
             }
             reporter.testSetStarting( createReportEntryForTestSet( description ) );
         }
+    }
+
+    private boolean describesNewTestSet( Description description )
+    {
+        if ( currentTestSetDescription != null )
+        {
+            if ( null != description.getTestClass() )
+            {
+                return !description.getTestClass().equals( currentTestSetDescription.getTestClass() );
+            }
+            else if ( description.isSuite() )
+            {
+                return description.getChildren().equals( currentTestSetDescription.getChildren() );
+            }
+            
+            return false;
+        }
+
+        return true;
     }
 
     @Override
