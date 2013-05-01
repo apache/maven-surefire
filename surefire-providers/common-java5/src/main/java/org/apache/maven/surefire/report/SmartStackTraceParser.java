@@ -19,9 +19,13 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
 import org.apache.maven.shared.utils.StringUtils;
 
 /**
@@ -85,10 +89,10 @@ public class SmartStackTraceParser
         List<StackTraceElement> stackTraceElements = focusOnClass( stackTrace, testClass );
         Collections.reverse( stackTraceElements );
         StackTraceElement stackTraceElement;
-        if (stackTrace.length == 0)
+        if ( stackTrace.length == 0 )
         {
             result.append( simpleName );
-            result.append("XX");
+            result.append( "XX" );
         }
         for ( int i = 0; i < stackTraceElements.size(); i++ )
         {
@@ -111,7 +115,8 @@ public class SmartStackTraceParser
                 result.append( getSimpleName( stackTraceElement.getClassName() ) ); // Add the name of the superclas
                 result.append( "." );
             }
-            result.append( stackTraceElement.getMethodName() ).append( ":" ).append( stackTraceElement.getLineNumber() );
+            result.append( stackTraceElement.getMethodName() ).append( ":" ).append(
+                stackTraceElement.getLineNumber() );
             result.append( "->" );
         }
 
@@ -180,7 +185,7 @@ public class SmartStackTraceParser
 
     private boolean rootIsInclass()
     {
-        return  stackTrace.length > 0 && stackTrace[0].getClassName().equals( testClassName );
+        return stackTrace.length > 0 && stackTrace[0].getClassName().equals( testClassName );
     }
 
     static List<StackTraceElement> focusOnClass( StackTraceElement[] stackTrace, Class clazz )
@@ -209,20 +214,29 @@ public class SmartStackTraceParser
         return testClass.getName().equals( lookFor );
     }
 
-    private static Throwable findInnermost( Throwable t )
+    static Throwable findInnermostWithClass( Throwable t, String className )
     {
-        Throwable real = t;
-        while ( real.getCause() != null )
+        Throwable match = t;
+        do
         {
-            real = real.getCause();
+            if ( containsClassName( t.getStackTrace(), className ) )
+            {
+                match = t;
+            }
+
+            t = t.getCause();
+
         }
-        return real;
+        while ( t != null );
+        return match;
     }
 
     public static String innerMostWithFocusOnClass( Throwable t, String className )
     {
-        List<StackTraceElement> stackTraceElements = focusInsideClass( findInnermost( t ).getStackTrace(), className );
-        return toString( t, stackTraceElements );
+        Throwable innermost = findInnermostWithClass( t, className );
+        List<StackTraceElement> stackTraceElements = focusInsideClass( innermost.getStackTrace(), className );
+        String s = causeToString( innermost.getCause() );
+        return toString( t, stackTraceElements ) + s;
     }
 
     static List<StackTraceElement> focusInsideClass( StackTraceElement[] stackTrace, String className )
@@ -255,7 +269,31 @@ public class SmartStackTraceParser
         return result;
     }
 
-    public static String toString( Throwable t, List<StackTraceElement> elements )
+    static boolean containsClassName( StackTraceElement[] stackTrace, String className )
+    {
+        for ( StackTraceElement element : stackTrace )
+        {
+            if ( className.equals( element.getClassName() ) )
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static String causeToString( Throwable cause )
+    {
+        StringBuilder resp = new StringBuilder();
+        while ( cause != null )
+        {
+            resp.append( "Caused by: " );
+            resp.append( toString( cause, Arrays.asList( cause.getStackTrace() ) ) );
+            cause = cause.getCause();
+        }
+        return resp.toString();
+    }
+
+    public static String toString( Throwable t, Iterable<StackTraceElement> elements )
     {
         StringBuilder result = new StringBuilder();
         result.append( t.getClass().getName() );
