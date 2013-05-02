@@ -19,9 +19,9 @@ package org.apache.maven.plugin.surefire.booterclient.output;
  * under the License.
  */
 
-import org.apache.maven.plugin.surefire.util.internal.BlockingQueue;
-import org.apache.maven.plugin.surefire.util.internal.Java15BlockingQueue;
 import org.apache.maven.shared.utils.cli.StreamConsumer;
+
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * Knows how to reconstruct *all* the state transmitted over stdout by the forked process.
@@ -32,7 +32,7 @@ public class ThreadedStreamConsumer
     implements StreamConsumer
 {
 
-    private final BlockingQueue items = new Java15BlockingQueue();
+    private final java.util.concurrent.BlockingQueue<String> items = new LinkedBlockingQueue<String>();
 
     private static final String poison = "Pioson";
 
@@ -43,14 +43,14 @@ public class ThreadedStreamConsumer
     static class Pumper
         implements Runnable
     {
-        private final BlockingQueue queue;
+        private final java.util.concurrent.BlockingQueue<String> queue;
 
         private final StreamConsumer target;
 
-        private volatile InterruptedException interruptedException;
+        private volatile Throwable throwable;
 
 
-        Pumper( BlockingQueue queue, StreamConsumer target )
+        Pumper( java.util.concurrent.BlockingQueue<String> queue, StreamConsumer target )
         {
             this.queue = queue;
             this.target = target;
@@ -68,15 +68,17 @@ public class ThreadedStreamConsumer
                     item = queue.take();
                 }
             }
-            catch ( InterruptedException e )
+            catch ( Throwable t )
             {
-                this.interruptedException = e;
+                // Think about what happens if the producer overruns us and creates an OOME. Not nice.
+                // Maybe limit length of blocking queue
+                this.throwable = t;
             }
         }
 
-        public InterruptedException getInterruptedException()
+        public Throwable getThrowable()
         {
-            return interruptedException;
+            return throwable;
         }
     }
 
@@ -90,6 +92,16 @@ public class ThreadedStreamConsumer
     public void consumeLine( String s )
     {
         items.add( s );
+        if ( items.size() > 10000 )
+        {
+            try
+            {
+                Thread.sleep( 100 );
+            }
+            catch ( InterruptedException ignore )
+            {
+            }
+        }
     }
 
 
@@ -99,15 +111,16 @@ public class ThreadedStreamConsumer
         {
             items.add( poison );
             thread.join();
-            //noinspection ThrowableResultOfMethodCallIgnored
-            if ( pumper.getInterruptedException() != null )
-            {
-                throw pumper.getInterruptedException();
-            }
         }
         catch ( InterruptedException e )
         {
             throw new RuntimeException( e );
+        }
+
+        //noinspection ThrowableResultOfMethodCallIgnored
+        if ( pumper.getThrowable() != null )
+        {
+            throw new RuntimeException( pumper.getThrowable() );
         }
     }
 }

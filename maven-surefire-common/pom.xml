@@ -71,6 +71,10 @@
       <artifactId>maven-project</artifactId>
     </dependency>
     <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-model</artifactId>
     </dependency>
@@ -129,12 +133,17 @@
                 <includes>
                   <include>org.apache.maven.shared:maven-shared-utils</include>
                   <include>org.apache.maven.shared:maven-common-artifact-filters</include>
+                  <include>commons-io:commons-io</include>
                 </includes>
               </artifactSet>
               <relocations>
                 <relocation>
                   <pattern>org.apache.maven.shared</pattern>
                   <shadedPattern>org.apache.maven.surefire.shade.org.apache.maven.shared</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>org.apache.commons.io</pattern>
+                  <shadedPattern>org.apache.maven.surefire.shade.org.apache.commons.io</shadedPattern>
                 </relocation>
               </relocations>
             </configuration>

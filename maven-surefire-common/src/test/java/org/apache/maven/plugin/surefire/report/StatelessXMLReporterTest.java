@@ -19,9 +19,9 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import junit.framework.AssertionFailedError;
+import junit.framework.TestCase;
+import org.apache.commons.io.output.DeferredFileOutputStream;
 import org.apache.maven.plugin.surefire.booterclient.output.DeserializedStacktraceWriter;
 import org.apache.maven.shared.utils.StringUtils;
 import org.apache.maven.shared.utils.xml.Xpp3Dom;
@@ -31,8 +31,9 @@ import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.SimpleReportEntry;
 import org.apache.maven.surefire.report.StackTraceWriter;
 
-import junit.framework.AssertionFailedError;
-import junit.framework.TestCase;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 
 @SuppressWarnings( "ResultOfMethodCallIgnored" )
 public class StatelessXMLReporterTest
@@ -85,9 +86,13 @@ public class StatelessXMLReporterTest
 
         stats.testSucceeded( testSetReportEntry );
         StackTraceWriter stackTraceWriter = new DeserializedStacktraceWriter( "A fud msg", "trimmed", "fail at foo" );
+        DeferredFileOutputStream s = new DeferredFileOutputStream( 1000000, "fds", "fdx", new File( "" ) );
+        s.write( "std-out!".getBytes() );
+        DeferredFileOutputStream s1 = new DeferredFileOutputStream( 1000000, "fds", "fdx", new File( "" ) );
+        s1.write( "std-err?".getBytes() );
         WrappedReportEntry t2 =
             new WrappedReportEntry( new SimpleReportEntry( Inner.class.getName(), testName2, stackTraceWriter, 13 ),
-                                    ReportEntryType.error, 13, "std-out!", "std-err?" );
+                                    ReportEntryType.error, 13, s, s1 );
 
         stats.testSucceeded( t2 );
         StatelessXmlReporter reporter = new StatelessXmlReporter( new File( "." ), null, false );

@@ -42,4 +42,12 @@ public class ConsoleOutputIT
         surefireReportsFile.assertContainsText( "Printline in shutdown hook" );
     }
 
+    @Test
+    public void largerSoutThanMemory()
+        throws Exception
+    {
+        unpack( "consoleoutput-noisy" ).setMavenOpts( "-Xmx64m" ).sysProp( "thousand", "100000" ).executeTest();
+    }
+
+
 }
