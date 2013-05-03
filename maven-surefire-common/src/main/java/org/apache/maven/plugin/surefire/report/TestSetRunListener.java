@@ -49,9 +49,9 @@ public class TestSetRunListener
 
     private DeferredFileOutputStream testStdErr = initDeferred( "stderr" );
 
-    private DeferredFileOutputStream initDeferred( String stdout )
+    private DeferredFileOutputStream initDeferred( String channel )
     {
-        return new DeferredFileOutputStream( 1000000, "deferred", stdout, new File( "target" ) );
+        return new DeferredFileOutputStream( 1000000, channel , "deferred", null );
     }
 
 
