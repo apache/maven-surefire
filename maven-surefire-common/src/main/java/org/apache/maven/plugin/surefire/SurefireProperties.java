@@ -24,10 +24,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
+
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.surefire.booter.KeyValueSource;
 
@@ -107,14 +110,18 @@ public class SurefireProperties
         }
     }
 
+    private static final Set<String> keysThatCannotBeUsedAsSystemProperties = new HashSet<String>(  ){{
+        add( "java.library.path" );
+        add( "file.encoding");
+        add( "jdk.map.althashing.threshold" );
+    }};
+
     public void verifyLegalSystemProperties( org.apache.maven.plugin.logging.Log log )
     {
         for ( Object key : getStringKeySet() )
         {
-            if ( "java.library.path".equals( key ) )
-            {
-                log.warn(
-                    "java.library.path cannot be set as system property, use <argLine>-Djava.library.path=...<argLine> instead" );
+            if (keysThatCannotBeUsedAsSystemProperties.contains( key )) {
+                log.warn( key + " cannot be set as system property, use <argLine>-D" + key + "=...<argLine> instead" );
             }
         }
     }
