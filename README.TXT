@@ -5,11 +5,6 @@ But in order to test it tests, you can do:
 
 Deploying web site
 ------------------
-Prerequisite:
-checkout the correct parent poms to the relative directories, e.g., for the current version:
- https://svn.apache.org/repos/asf/maven/pom/tags/maven-parent-22 to ../pom/maven
- https://svn.apache.org/repos/asf/maven/pom/tags/apache-13 to ../pom/asf
-
 You can use the deploySite.sh script
 Without any profile the site will be deployed to http://maven.apache.org/surefire-archives/surefire-${project.version}
 sh ./deploySite.sh -Preporting
