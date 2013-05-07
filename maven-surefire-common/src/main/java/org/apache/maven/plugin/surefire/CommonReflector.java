@@ -25,6 +25,8 @@ import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
 import org.apache.maven.surefire.util.ReflectionUtils;
 import org.apache.maven.surefire.util.SurefireReflectionException;
 
+import javax.annotation.Nonnull;
+
 /**
  * @author Kristian Rosenvold
  */
@@ -34,7 +36,7 @@ public class CommonReflector
 
     private final ClassLoader surefireClassLoader;
 
-    public CommonReflector( ClassLoader surefireClassLoader )
+    public CommonReflector( @Nonnull ClassLoader surefireClassLoader )
     {
         this.surefireClassLoader = surefireClassLoader;
 
@@ -48,7 +50,7 @@ public class CommonReflector
         }
     }
 
-    public Object createReportingReporterFactory( StartupReportConfiguration startupReportConfiguration )
+    public Object createReportingReporterFactory( @Nonnull StartupReportConfiguration startupReportConfiguration )
     {
         Class<?>[] args = new Class[]{ this.startupReportConfiguration };
         Object src = createStartupReportConfiguration( startupReportConfiguration );
@@ -58,7 +60,7 @@ public class CommonReflector
     }
 
 
-    Object createStartupReportConfiguration( StartupReportConfiguration reporterConfiguration )
+    Object createStartupReportConfiguration( @Nonnull StartupReportConfiguration reporterConfiguration )
     {
         Constructor<?> constructor = ReflectionUtils.getConstructor( this.startupReportConfiguration,
                                                                      new Class[]{ boolean.class, boolean.class,

@@ -88,6 +88,8 @@ import org.apache.maven.surefire.util.RunOrder;
 import org.apache.maven.toolchain.Toolchain;
 import org.apache.maven.toolchain.ToolchainManager;
 
+import javax.annotation.Nonnull;
+
 /**
  * Abstract base class for running tests using Surefire.
  *
@@ -1266,7 +1268,7 @@ public abstract class AbstractSurefireMojo
         }
     }
 
-    private List<String> getExcludeList()
+    private @Nonnull List<String> getExcludeList()
     {
         List<String> excludes = null;
         if ( isSpecificTestSpecified() )
@@ -1339,7 +1341,7 @@ public abstract class AbstractSurefireMojo
         return filterNulls( includes );
     }
 
-    private List<String> filterNulls( List<String> toFilter )
+    private @Nonnull List<String> filterNulls( @Nonnull List<String> toFilter )
     {
         List<String> result = new ArrayList<String>( toFilter.size() );
         for ( String item : toFilter )
@@ -2130,6 +2132,7 @@ public abstract class AbstractSurefireMojo
             return new DynamicProviderInfo( providerName );
         }
 
+        @Nonnull
         public String getProviderName()
         {
             return providerName;

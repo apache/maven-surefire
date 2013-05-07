@@ -34,6 +34,8 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.shared.utils.io.MatchPatterns;
 import org.apache.maven.surefire.util.DefaultScanResult;
 
+import javax.annotation.Nullable;
+
 /**
  * Scans dependencies looking for tests.
  *
@@ -141,7 +143,7 @@ public class DependencyScanner {
 
 		private SpecificFileFilter specificTestFilter;
 
-		public Matcher(List<String> includes, List<String> excludes, List<String> specificTests)
+		public Matcher(@Nullable List<String> includes, @Nullable List<String> excludes, @Nullable List<String> specificTests)
 		{
 			String[] specific = specificTests == null ? new String[0] : processIncludesExcludes( specificTests );
 			specificTestFilter = new SpecificFileFilter( specific );

@@ -25,6 +25,8 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
+import javax.annotation.Nonnull;
+
 final class ScannerUtil {
 
 	private ScannerUtil() {}
@@ -35,22 +37,22 @@ final class ScannerUtil {
 
     private static final String JAVA_CLASS_FILE_EXTENSION = ".class";
 
-    public static String convertToJavaClassName( String test )
+    public static @Nonnull String convertToJavaClassName( @Nonnull String test )
     {
         return StringUtils.removeEnd( test, ".class" ).replace( FS, "." );
     }
 
-    public static String convertJarFileResourceToJavaClassName( String test )
+    public static @Nonnull String convertJarFileResourceToJavaClassName( @Nonnull String test )
     {
         return StringUtils.removeEnd( test, ".class" ).replace( "/", "." );
     }
 
-    public static String stripBaseDir( String basedir, String test )
+    public static @Nonnull String stripBaseDir( String basedir, String test )
     {
         return StringUtils.removeStart( test, basedir );
     }
 
-    public static String[] processIncludesExcludes( List<String> list )
+    public static @Nonnull String[] processIncludesExcludes( @Nonnull List<String> list )
     {
         List<String> newList = new ArrayList<String>();
         for ( Object aList : list )

@@ -24,11 +24,14 @@ import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.surefire.booter.Classpath;
 
+import javax.annotation.Nonnull;
+
 /**
  * @author Kristian Rosenvold
  */
 public interface ProviderInfo
 {
+    @Nonnull
     String getProviderName();
 
     boolean isApplicable();

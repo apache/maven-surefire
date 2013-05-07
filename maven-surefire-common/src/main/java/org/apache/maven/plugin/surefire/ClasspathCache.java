@@ -21,6 +21,8 @@ package org.apache.maven.plugin.surefire;
 import java.util.concurrent.ConcurrentHashMap;
 import org.apache.maven.surefire.booter.Classpath;
 
+import javax.annotation.Nonnull;
+
 /**
  * @author Kristian Rosenvold
  */
@@ -29,12 +31,12 @@ public class ClasspathCache
     private static final ConcurrentHashMap<String, Classpath> classpaths =
         new ConcurrentHashMap<String, Classpath>( 4 );
 
-    public static Classpath getCachedClassPath( String artifactId )
+    public static Classpath getCachedClassPath( @Nonnull String artifactId )
     {
         return classpaths.get( artifactId );
     }
 
-    public static void setCachedClasspath( String key, Classpath classpath )
+    public static void setCachedClasspath( @Nonnull String key, @Nonnull Classpath classpath )
     {
         classpaths.put( key, classpath );
     }
