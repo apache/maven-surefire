@@ -20,6 +20,8 @@ package org.apache.maven.surefire.its;
  */
 
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.junit.Assume;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -33,6 +35,12 @@ import org.junit.Test;
 public class Junit47WithCucumberIT
     extends SurefireJUnit4IntegrationTestCase
 {
+
+    @Before
+    public void assumeJdk16()
+    {
+        Assume.assumeTrue( System.getProperty( "java.version" ).compareTo( "1.6" ) > 0 );
+    }
 
     @Test
     public void testWithoutParallel()
