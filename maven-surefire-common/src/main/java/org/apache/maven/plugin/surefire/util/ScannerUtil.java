@@ -40,6 +40,11 @@ final class ScannerUtil {
         return StringUtils.removeEnd( test, ".class" ).replace( FS, "." );
     }
 
+    public static String convertJarFileResourceToJavaClassName( String test )
+    {
+        return StringUtils.removeEnd( test, ".class" ).replace( "/", "." );
+    }
+
     public static String stripBaseDir( String basedir, String test )
     {
         return StringUtils.removeStart( test, basedir );
