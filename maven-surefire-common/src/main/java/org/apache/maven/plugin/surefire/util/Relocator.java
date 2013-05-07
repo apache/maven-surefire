@@ -19,8 +19,8 @@ package org.apache.maven.plugin.surefire.util;
  * under the License.
  */
 
-import com.sun.istack.internal.NotNull;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
@@ -50,7 +50,7 @@ public class Relocator
         return relocation;
     }
 
-    public @NotNull String relocate( @NotNull String className )
+    public @Nonnull String relocate( @Nonnull String className )
     {
         if ( relocation == null )
         {

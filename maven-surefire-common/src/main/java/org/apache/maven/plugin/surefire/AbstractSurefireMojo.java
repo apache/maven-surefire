@@ -675,6 +675,7 @@ public abstract class AbstractSurefireMojo
     private DefaultScanResult scanDependencies()
     {
         try {
+            //noinspection unchecked
             return new DependencyScanner(
                     DependencyScanner.filter(project.getTestArtifacts(), getDependenciesToScan()),
                     getIncludeList(), getExcludeList(), getSpecificTests()).scan();
@@ -1229,7 +1230,7 @@ public abstract class AbstractSurefireMojo
         return getSuiteXmlFiles() != null && getSuiteXmlFiles().length > 0;
     }
 
-    private List<String> readListFromFile( final File file )
+    @Nonnull private List<String> readListFromFile( @Nonnull final File file )
     {
         List<String> list;
 
@@ -2009,7 +2010,7 @@ public abstract class AbstractSurefireMojo
     class JUnit3ProviderInfo
         implements ProviderInfo
     {
-        public String getProviderName()
+        @Nonnull public String getProviderName()
         {
             return "org.apache.maven.surefire.junit.JUnit3Provider";
         }
@@ -2048,7 +2049,7 @@ public abstract class AbstractSurefireMojo
             this.junitDepArtifact = junitDepArtifact;
         }
 
-        public String getProviderName()
+        @Nonnull public String getProviderName()
         {
             return "org.apache.maven.surefire.junit4.JUnit4Provider";
         }
@@ -2085,7 +2086,7 @@ public abstract class AbstractSurefireMojo
             this.junitDepArtifact = junitDepArtifact;
         }
 
-        public String getProviderName()
+        @Nonnull public String getProviderName()
         {
             return "org.apache.maven.surefire.junitcore.JUnitCoreProvider";
         }
