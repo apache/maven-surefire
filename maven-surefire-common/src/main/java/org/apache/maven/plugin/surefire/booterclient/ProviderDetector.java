@@ -19,6 +19,7 @@ package org.apache.maven.plugin.surefire.booterclient;
  * under the License.
  */
 
+import javax.annotation.Nonnull;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,7 +38,7 @@ import java.util.Set;
 public class ProviderDetector
 {
 
-    public static Set<String> getServiceNames( Class<?> clazz, ClassLoader classLoader )
+    @Nonnull public static Set<String> getServiceNames( Class<?> clazz, ClassLoader classLoader )
         throws IOException
     {
         final String resourceName = "META-INF/services/" + clazz.getName();
@@ -59,7 +60,7 @@ public class ProviderDetector
      * @return The set of service provider names
      * @throws IOException When reading the streams fails
      */
-    private static Set<String> getNames( final Enumeration<URL> urlEnumeration )
+    @Nonnull private static Set<String> getNames( final Enumeration<URL> urlEnumeration )
         throws IOException
     {
         final Set<String> names = new HashSet<String>();
@@ -117,7 +118,7 @@ public class ProviderDetector
         return names;
     }
 
-    private static BufferedReader getReader( URL url )
+    @Nonnull private static BufferedReader getReader( @Nonnull URL url )
         throws IOException
     {
         final InputStream inputStream = url.openStream();

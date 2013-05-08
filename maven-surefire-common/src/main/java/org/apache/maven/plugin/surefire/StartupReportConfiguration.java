@@ -30,6 +30,8 @@ import org.apache.maven.plugin.surefire.report.StatelessXmlReporter;
 import org.apache.maven.plugin.surefire.report.TestcycleConsoleOutputReceiver;
 import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
 
+import javax.annotation.Nonnull;
+
 /**
  * All the parameters used to construct reporters
  * <p/>
@@ -70,7 +72,8 @@ public class StartupReportConfiguration
 
     public StartupReportConfiguration( boolean useFile, boolean printSummary, String reportFormat,
                                        boolean redirectTestOutputToFile, boolean disableXmlReport,
-                                       File reportsDirectory, boolean trimStackTrace, String reportNameSuffix,
+                                       @Nonnull File reportsDirectory,
+                                       boolean trimStackTrace, String reportNameSuffix,
                                        String configurationHash, boolean requiresRunHistory )
     {
         this.useFile = useFile;

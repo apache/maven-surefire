@@ -656,14 +656,7 @@ public abstract class AbstractSurefireMojo
     {
         DefaultScanResult scan = scanDirectories();
         DefaultScanResult scanDeps = scanDependencies();
-        if(!scanDeps.isEmpty())
-        {
-            List combined = new ArrayList();
-            combined.addAll(scan.getFiles());
-            combined.addAll(scanDeps.getFiles());
-            scan = new DefaultScanResult(combined);
-        }
-        return scan;
+        return scan.append( scanDeps );
     }
 
     private DefaultScanResult scanDirectories()
@@ -1983,7 +1976,7 @@ public abstract class AbstractSurefireMojo
             this.testNgArtifact = testNgArtifact;
         }
 
-        public String getProviderName()
+        public @Nonnull String getProviderName()
         {
             return "org.apache.maven.surefire.testng.TestNGProvider";
         }

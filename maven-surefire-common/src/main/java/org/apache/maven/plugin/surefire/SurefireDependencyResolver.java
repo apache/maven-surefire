@@ -40,6 +40,9 @@ import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.surefire.booter.Classpath;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 /**
  * Does dependency resolution and artifact handling for the surefire plugin.
  *
@@ -78,7 +81,7 @@ public class SurefireDependencyResolver
     }
 
 
-    public boolean isWithinVersionSpec( Artifact artifact, String versionSpec )
+    public boolean isWithinVersionSpec( @Nullable Artifact artifact, @Nonnull String versionSpec )
     {
         if ( artifact == null )
         {
@@ -107,7 +110,7 @@ public class SurefireDependencyResolver
     }
 
 
-    public ArtifactResolutionResult resolveArtifact( Artifact filteredArtifact, Artifact providerArtifact )
+    public ArtifactResolutionResult resolveArtifact( @Nullable Artifact filteredArtifact, Artifact providerArtifact )
         throws ArtifactResolutionException, ArtifactNotFoundException
     {
         ArtifactFilter filter = null;
