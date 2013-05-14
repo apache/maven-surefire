@@ -117,34 +117,6 @@
           </execution>
         </executions>
       </plugin>
-      <!-- BEGIN HACK: use replacer plugin to remove the second xml processing instruction (MSITE-670).  -->
-      <!-- can be removed once maven-site-plugin 3.3 is released. -->
-      <plugin>
-        <groupId>com.google.code.maven-replacer-plugin</groupId>
-        <artifactId>replacer</artifactId>
-        <version>1.5.2</version>
-        <executions>
-           <execution>
-               <phase>pre-site</phase>
-               <goals>
-                   <goal>replace</goal>
-               </goals>                   
-           </execution>
-        </executions>
-        <configuration>
-           <regexFlags>
-             <regexFlag>DOTALL</regexFlag>
-           </regexFlags>
-           <file>${project.build.directory}/source-site/site.xml</file>
-           <replacements>
-               <replacement>
-                   <token>(.+)&lt;\?xml [^&gt;]+&gt;(.*)</token>
-                   <value>$1$2</value>
-               </replacement>         
-           </replacements>
-        </configuration>
-      </plugin>
-      <!-- END HACK -->
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
         <executions>
