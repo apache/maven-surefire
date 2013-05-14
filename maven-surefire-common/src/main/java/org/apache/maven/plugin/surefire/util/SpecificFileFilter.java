@@ -24,6 +24,8 @@ import java.util.HashSet;
 import java.util.Set;
 import org.apache.maven.shared.utils.io.SelectorUtils;
 
+import javax.annotation.Nullable;
+
 public class SpecificFileFilter
 {
 
@@ -31,7 +33,7 @@ public class SpecificFileFilter
 
     private Set<String> names;
 
-    public SpecificFileFilter( String[] classNames )
+    public SpecificFileFilter( @Nullable String[] classNames )
     {
         if ( classNames != null && classNames.length > 0 )
         {
@@ -45,7 +47,7 @@ public class SpecificFileFilter
         }
     }
 
-    public boolean accept( String className )
+    public boolean accept( @Nullable String className )
     {
         // If the tests enumeration is empty, allow anything.
         if ( names != null && !names.isEmpty() )

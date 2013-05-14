@@ -28,6 +28,8 @@ import org.apache.maven.plugin.surefire.booterclient.ProviderDetector;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
 import org.apache.maven.surefire.util.NestedRuntimeException;
 
+import javax.annotation.Nonnull;
+
 /**
  * @author Kristian Rosenvold
  */
@@ -44,7 +46,7 @@ public class ProviderList
     }
 
 
-    public List<ProviderInfo> resolve( Log log )
+    public @Nonnull List<ProviderInfo> resolve( @Nonnull Log log )
     {
         List<ProviderInfo> providersToRun = new ArrayList<ProviderInfo>();
 
@@ -64,7 +66,7 @@ public class ProviderList
         return autoDetectOneProvider();
     }
 
-    private List<ProviderInfo> autoDetectOneProvider()
+    private @Nonnull List<ProviderInfo> autoDetectOneProvider()
     {
         List<ProviderInfo> providersToRun = new ArrayList<ProviderInfo>();
         for ( ProviderInfo wellKnownProvider : wellKnownProviders )

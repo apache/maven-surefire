@@ -34,6 +34,7 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.shared.utils.io.MatchPatterns;
 import org.apache.maven.surefire.util.DefaultScanResult;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
@@ -47,11 +48,11 @@ public class DependencyScanner {
 
 	protected final List<String> includes;
 
-	protected final List<String> excludes;
+	protected final @Nonnull List<String> excludes;
 
 	protected final List<String> specificTests;
 
-	public DependencyScanner(List<File> dependenciesToScan, List<String> includes, List<String> excludes, List<String> specificTests)
+	public DependencyScanner(List<File> dependenciesToScan, List<String> includes, @Nonnull List<String> excludes, List<String> specificTests)
 	{
 		this.dependenciesToScan = dependenciesToScan;
         this.includes = includes;
@@ -123,7 +124,7 @@ public class DependencyScanner {
 				if(groupArtifact.length != 2)
 				{
 					throw new IllegalArgumentException(
-							"dependencyToScan argument should be in format 'groupid:artifactid': " + groupArtifact);
+							"dependencyToScan argument should be in format 'groupid:artifactid': " + groups);
 				}
 				if(
 						artifact.getGroupId().matches(groupArtifact[0]) &&
@@ -143,7 +144,7 @@ public class DependencyScanner {
 
 		private SpecificFileFilter specificTestFilter;
 
-		public Matcher(@Nullable List<String> includes, @Nullable List<String> excludes, @Nullable List<String> specificTests)
+		public Matcher(@Nullable List<String> includes, @Nonnull List<String> excludes, @Nullable List<String> specificTests)
 		{
 			String[] specific = specificTests == null ? new String[0] : processIncludesExcludes( specificTests );
 			specificTestFilter = new SpecificFileFilter( specific );

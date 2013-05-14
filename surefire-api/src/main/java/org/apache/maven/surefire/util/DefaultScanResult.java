@@ -36,7 +36,7 @@ public class DefaultScanResult
 
     public DefaultScanResult( List<String> files )
     {
-        this.files = files;
+        this.files = Collections.unmodifiableList( files );
     }
 
     public int size()
@@ -80,7 +80,7 @@ public class DefaultScanResult
 
     public List getFiles()
     {
-        return Collections.unmodifiableList( files );
+        return files;
     }
 
     public TestsToRun applyFilter( ScannerFilter scannerFilter, ClassLoader testClassLoader )
@@ -135,6 +135,12 @@ public class DefaultScanResult
             throw new NestedRuntimeException( "Unable to create test class '" + className + "'", e );
         }
         return testClass;
+    }
+
+    public DefaultScanResult append(DefaultScanResult other){
+        List<String> src = new ArrayList<String>( files );
+        src.addAll( other.files );
+        return new DefaultScanResult( src );
     }
 
 
