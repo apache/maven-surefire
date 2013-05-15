@@ -587,7 +587,7 @@ public abstract class AbstractSurefireMojo
      * List of dependencies to scan for test classes to include in the test run. Each dependency string must follow the format
      * <i>groupId:artifactId</i>. For example: <i>org.acme:project-a</i>
      *
-     * @since 2.14
+     * @since 2.15
      */
     @Parameter
     protected List<String> dependenciesToScan = new ArrayList<String>(0);
