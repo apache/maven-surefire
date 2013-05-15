@@ -589,8 +589,8 @@ public abstract class AbstractSurefireMojo
      *
      * @since 2.14
      */
-    @Parameter(property = "dependenciesToScan")
-    protected List<String> dependenciesToScan;
+    @Parameter
+    protected List<String> dependenciesToScan = new ArrayList<String>(0);
 
     /**
      *
