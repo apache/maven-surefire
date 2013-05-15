@@ -57,7 +57,7 @@ public class PojoStackTraceWriter
 
     public String smartTrimmedStackTrace()
     {
-        SmartStackTraceParser parser = new SmartStackTraceParser( testClass, t );
+        SmartStackTraceParser parser = new SmartStackTraceParser( testClass, t, testMethod );
         return parser.getString();
     }
 

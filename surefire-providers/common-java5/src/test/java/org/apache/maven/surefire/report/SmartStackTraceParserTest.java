@@ -230,7 +230,7 @@ public class SmartStackTraceParserTest
     public void testNonClassNameStacktrace()
     {
         SmartStackTraceParser smartStackTraceParser =
-            new SmartStackTraceParser( "Not a class name", new Throwable( "my message" ) );
+            new SmartStackTraceParser( "Not a class name", new Throwable( "my message" ), null );
         assertEquals( "my message", smartStackTraceParser.getString() );
     }
 

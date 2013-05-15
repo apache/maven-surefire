@@ -63,13 +63,19 @@ public class JUnit4StackTraceWriter
         return JUnit4RunListener.extractClassName( junitFailure.getDescription() );
     }
 
+    protected String getTestMethodName()
+    {
+        return JUnit4RunListener.extractMethodName( junitFailure.getDescription() );
+    }
+
     @SuppressWarnings( "ThrowableResultOfMethodCallIgnored" )
     public String smartTrimmedStackTrace()
     {
         Throwable exception = junitFailure.getException();
         if ( exception != null )
         {
-            SmartStackTraceParser smartStackTraceParser = new SmartStackTraceParser( getTestClassName(), exception );
+            SmartStackTraceParser smartStackTraceParser = new SmartStackTraceParser( getTestClassName(), exception,
+                                                                                     getTestMethodName() );
             return smartStackTraceParser.getString();
         }
         else

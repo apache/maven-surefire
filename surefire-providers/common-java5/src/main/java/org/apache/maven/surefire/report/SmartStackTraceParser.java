@@ -19,8 +19,6 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -45,13 +43,16 @@ public class SmartStackTraceParser
 
     private final Class testClass;
 
+    private String testMethodName;
+
     public SmartStackTraceParser( Class testClass, Throwable throwable )
     {
-        this( testClass.getName(), throwable );
+        this( testClass.getName(), throwable, null );
     }
 
-    public SmartStackTraceParser( String testClassName, Throwable throwable )
+    public SmartStackTraceParser( String testClassName, Throwable throwable, String testMethodName )
     {
+        this.testMethodName = testMethodName;
         this.testClassName = testClassName;
         this.testClass = getClass( testClassName );
         this.simpleName = this.testClassName.substring( this.testClassName.lastIndexOf( "." ) + 1 );
@@ -89,41 +90,47 @@ public class SmartStackTraceParser
         List<StackTraceElement> stackTraceElements = focusOnClass( stackTrace, testClass );
         Collections.reverse( stackTraceElements );
         StackTraceElement stackTraceElement;
-        if ( stackTrace.length == 0 )
+        if ( stackTraceElements.isEmpty() )
         {
             result.append( simpleName );
-            result.append( "XX" );
-        }
-        for ( int i = 0; i < stackTraceElements.size(); i++ )
-        {
-            stackTraceElement = stackTraceElements.get( i );
-            if ( i == 0 )
+            if (StringUtils.isNotEmpty( testMethodName ))
             {
-                result.append( simpleName );
+                result.append( "." ).append( testMethodName );
+            }
+        }
+        else
+        {
+            for ( int i = 0; i < stackTraceElements.size(); i++ )
+            {
+                stackTraceElement = stackTraceElements.get( i );
+                if ( i == 0 )
+                {
+                    result.append( simpleName );
+                    if ( !stackTraceElement.getClassName().equals( testClassName ) )
+                    {
+                        result.append( ">" );
+                    }
+                    else
+                    {
+                        result.append( "." );
+                    }
+
+                }
                 if ( !stackTraceElement.getClassName().equals( testClassName ) )
                 {
-                    result.append( ">" );
-                }
-                else
-                {
+                    result.append( getSimpleName( stackTraceElement.getClassName() ) ); // Add the name of the superclas
                     result.append( "." );
                 }
-
+                result.append( stackTraceElement.getMethodName() ).append( ":" ).append(
+                    stackTraceElement.getLineNumber() );
+                result.append( "->" );
             }
-            if ( !stackTraceElement.getClassName().equals( testClassName ) )
+
+            if ( result.length() >= 2 )
             {
-                result.append( getSimpleName( stackTraceElement.getClassName() ) ); // Add the name of the superclas
-                result.append( "." );
+                result.deleteCharAt( result.length() - 1 );
+                result.deleteCharAt( result.length() - 1 );
             }
-            result.append( stackTraceElement.getMethodName() ).append( ":" ).append(
-                stackTraceElement.getLineNumber() );
-            result.append( "->" );
-        }
-
-        if ( result.length() >= 2 )
-        {
-            result.deleteCharAt( result.length() - 1 );
-            result.deleteCharAt( result.length() - 1 );
         }
 
         Throwable target = throwable.getTarget();
