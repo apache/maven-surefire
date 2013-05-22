@@ -138,9 +138,16 @@ public class DefaultScanResult
     }
 
     public DefaultScanResult append(DefaultScanResult other){
-        List<String> src = new ArrayList<String>( files );
-        src.addAll( other.files );
-        return new DefaultScanResult( src );
+        if ( other != null )
+        {
+            List<String> src = new ArrayList<String>( files );
+            src.addAll( other.files );
+            return new DefaultScanResult( src );
+        }
+        else
+        {
+            return this;
+        }
     }
 
 

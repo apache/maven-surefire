@@ -93,13 +93,13 @@ public class ChecksumCalculator
 
     }
 
-    public void add( File[] fileList )
+    public void add( Object[] items )
     {
-        if ( fileList != null )
+        if ( items != null )
         {
-            for ( File file : fileList )
+            for ( Object item : items )
             {
-                appendObject( file );
+                appendObject( item );
             }
         }
         else

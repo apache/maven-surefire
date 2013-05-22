@@ -280,37 +280,6 @@ public class SurefirePlugin
         this.classesDirectory = classesDirectory;
     }
 
-
-    public List<String> getClasspathDependencyExcludes()
-    {
-        return classpathDependencyExcludes;
-    }
-
-    public void setClasspathDependencyExcludes( List<String> classpathDependencyExcludes )
-    {
-        this.classpathDependencyExcludes = classpathDependencyExcludes;
-    }
-
-    public String getClasspathDependencyScopeExclude()
-    {
-        return classpathDependencyScopeExclude;
-    }
-
-    public void setClasspathDependencyScopeExclude( String classpathDependencyScopeExclude )
-    {
-        this.classpathDependencyScopeExclude = classpathDependencyScopeExclude;
-    }
-
-    public List<String> getAdditionalClasspathElements()
-    {
-        return additionalClasspathElements;
-    }
-
-    public void setAdditionalClasspathElements( List<String> additionalClasspathElements )
-    {
-        this.additionalClasspathElements = additionalClasspathElements;
-    }
-
     public File getReportsDirectory()
     {
         return reportsDirectory;

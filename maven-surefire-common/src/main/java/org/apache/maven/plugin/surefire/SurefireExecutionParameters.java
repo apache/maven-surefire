@@ -55,18 +55,6 @@ public interface SurefireExecutionParameters
 
     void setClassesDirectory( File classesDirectory );
 
-    List<String> getClasspathDependencyExcludes();
-
-    void setClasspathDependencyExcludes( List<String> classpathDependencyExcludes );
-
-    String getClasspathDependencyScopeExclude();
-
-    void setClasspathDependencyScopeExclude( String classpathDependencyScopeExclude );
-
-    List<String> getAdditionalClasspathElements();
-
-    void setAdditionalClasspathElements( List<String> additionalClasspathElements );
-
     File getReportsDirectory();
 
     void setReportsDirectory( File reportsDirectory );
@@ -124,8 +112,4 @@ public interface SurefireExecutionParameters
     Boolean getFailIfNoSpecifiedTests();
 
     void setFailIfNoSpecifiedTests( Boolean failIfNoSpecifiedTests );
-
-    List<String> getDependenciesToScan();
-
-    void setDependenciesToScan(List<String> dependenciesToScan);
 }

@@ -171,8 +171,8 @@ public abstract class AbstractSurefireMojo
      *
      * @since 2.6
      */
-    @Parameter
-    protected List<String> classpathDependencyExcludes;
+    @Parameter( property = "maven.test.dependency.excludes" )
+    private String[] classpathDependencyExcludes;
 
     /**
      * A dependency scope to exclude from the test classpath. The scope should be one of the scopes defined by
@@ -189,15 +189,15 @@ public abstract class AbstractSurefireMojo
      * @since 2.6
      */
     @Parameter( defaultValue = "" )
-    protected String classpathDependencyScopeExclude;
+    private String classpathDependencyScopeExclude;
 
     /**
      * Additional elements to be appended to the classpath.
      *
      * @since 2.4
      */
-    @Parameter
-    protected List<String> additionalClasspathElements;
+    @Parameter( property = "maven.test.additionalClasspath" )
+    private String[] additionalClasspathElements;
 
     /**
      * The test source directory containing test class sources.
@@ -589,8 +589,8 @@ public abstract class AbstractSurefireMojo
      *
      * @since 2.15
      */
-    @Parameter
-    protected List<String> dependenciesToScan = new ArrayList<String>(0);
+    @Parameter( property = "dependenciesToScan" )
+    private String[] dependenciesToScan;
 
     /**
      *
@@ -667,13 +667,23 @@ public abstract class AbstractSurefireMojo
 
     private DefaultScanResult scanDependencies()
     {
-        try {
-            //noinspection unchecked
-            return new DependencyScanner(
-                    DependencyScanner.filter(project.getTestArtifacts(), getDependenciesToScan()),
-                    getIncludeList(), getExcludeList(), getSpecificTests()).scan();
-	    } catch(Exception e) {
-	        throw new RuntimeException(e);
+        if ( getDependenciesToScan() == null )
+        {
+            return null;
+        }
+        else
+        {
+            try
+            {
+                // noinspection unchecked
+                return new DependencyScanner( DependencyScanner.filter( project.getTestArtifacts(),
+                                                                        Arrays.asList( getDependenciesToScan() ) ),
+                                              getIncludeList(), getExcludeList(), getSpecificTests() ).scan();
+            }
+            catch ( Exception e )
+            {
+                throw new RuntimeException( e );
+            }
         }
     }
 
@@ -697,7 +707,8 @@ public abstract class AbstractSurefireMojo
             }
         }
 
-        if ( !getTestClassesDirectory().exists() && getDependenciesToScan().size() == 0)
+        if ( !getTestClassesDirectory().exists()
+            && ( getDependenciesToScan() == null || getDependenciesToScan().length == 0 ) )
         {
             if ( Boolean.TRUE.equals( getFailIfNoTests() ) )
             {
@@ -1713,7 +1724,7 @@ public abstract class AbstractSurefireMojo
 
         if ( getClasspathDependencyExcludes() != null )
         {
-            ArtifactFilter dependencyFilter = new PatternIncludesArtifactFilter( getClasspathDependencyExcludes() );
+            ArtifactFilter dependencyFilter = new PatternIncludesArtifactFilter( Arrays.asList( getClasspathDependencyExcludes() ) );
             classpathArtifacts = this.filterArtifacts( classpathArtifacts, dependencyFilter );
         }
 
@@ -2594,12 +2605,12 @@ public abstract class AbstractSurefireMojo
         this.runOrder = runOrder;
     }
 
-    public List<String> getDependenciesToScan()
+    public String[] getDependenciesToScan()
     {
-        return this.dependenciesToScan;
+        return dependenciesToScan;
     }
 
-    public void setDependenciesToScan(List<String> dependenciesToScan)
+    public void setDependenciesToScan( String[] dependenciesToScan )
     {
         this.dependenciesToScan = dependenciesToScan;
     }
@@ -2638,5 +2649,35 @@ public abstract class AbstractSurefireMojo
     public boolean isReuseForks()
     {
         return reuseForks;
+    }
+
+    public String[] getAdditionalClasspathElements()
+    {
+        return additionalClasspathElements;
+    }
+
+    public void setAdditionalClasspathElements( String[] additionalClasspathElements )
+    {
+        this.additionalClasspathElements = additionalClasspathElements;
+    }
+
+    public String[] getClasspathDependencyExcludes()
+    {
+        return classpathDependencyExcludes;
+    }
+
+    public void setClasspathDependencyExcludes( String[] classpathDependencyExcludes )
+    {
+        this.classpathDependencyExcludes = classpathDependencyExcludes;
+    }
+    
+    public String getClasspathDependencyScopeExclude()
+    {
+        return classpathDependencyScopeExclude;
+    }
+
+    public void setClasspathDependencyScopeExclude( String classpathDependencyScopeExclude )
+    {
+        this.classpathDependencyScopeExclude = classpathDependencyScopeExclude;
     }
 }
