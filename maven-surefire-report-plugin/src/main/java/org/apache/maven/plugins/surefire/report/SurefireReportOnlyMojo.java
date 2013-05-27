@@ -19,6 +19,9 @@ package org.apache.maven.plugins.surefire.report;
  * under the License.
  */
 
+import java.io.File;
+import org.apache.maven.project.MavenProject;
+
 /**
  * Creates a nicely formatted Surefire Test Report in html format.
  * This goal does not run the tests, it only builds the reports.
@@ -27,11 +30,58 @@ package org.apache.maven.plugins.surefire.report;
  *
  * @author <a href="mailto:baerrach@gmail.com">Barrie Treloar</a>
  * @goal report-only
- * @execute phase="none"
  * @since 2.3
  */
 public class SurefireReportOnlyMojo
-    extends SurefireReportMojo
+    extends AbstractSurefireReportMojo
 {
+    /**
+     * The filename to use for the report.
+     *
+     * @parameter expression="${outputName}" default-value="surefire-report"
+     * @required
+     * @noinspection UnusedDeclaration
+     */
+    private String outputName;
+
+    /**
+     * If set to true the surefire report will be generated even when there are no surefire result files.
+     * Defaulyts to <code>true</code> to preserve legacy behaviour pre 2.10.
+     *
+     * @parameter expression="${alwaysGenerateSurefireReport}" default-value="true"
+     * @noinspection UnusedDeclaration
+     * @since 2.11
+     */
+    private boolean alwaysGenerateSurefireReport;
+
+    /**
+     * If set to true the surefire report generation will be skipped.
+     *
+     * @parameter expression="${skipSurefireReport}" default-value="false"
+     * @noinspection UnusedDeclaration
+     * @since 2.11
+     */
+    private boolean skipSurefireReport;
+
+    protected File getSurefireReportsDirectory( MavenProject subProject )
+    {
+        String buildDir = subProject.getBuild().getDirectory();
+        return new File( buildDir + "/surefire-reports" );
+    }
+
+    public String getOutputName()
+    {
+        return outputName;
+    }
+
+    protected boolean isSkipped()
+    {
+        return skipSurefireReport;
+    }
+
+    protected boolean isGeneratedWhenNoResults()
+    {
+        return alwaysGenerateSurefireReport;
+    }
 
 }
