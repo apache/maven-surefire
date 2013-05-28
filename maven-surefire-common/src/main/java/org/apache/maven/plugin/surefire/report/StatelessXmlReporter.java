@@ -19,23 +19,22 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FilterOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.util.Enumeration;
-import java.util.Properties;
-import java.util.StringTokenizer;
-
 import org.apache.commons.io.output.DeferredFileOutputStream;
 import org.apache.maven.shared.utils.io.IOUtil;
 import org.apache.maven.shared.utils.xml.XMLWriter;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.SafeThrowable;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FilterOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.util.Enumeration;
+import java.util.Properties;
+import java.util.StringTokenizer;
 
 import static org.apache.maven.plugin.surefire.report.FileReporterUtils.stripIllegalFilenameChars;
 
@@ -277,7 +276,8 @@ public class StatelessXmlReporter
         ppw.endElement(); // test element
     }
 
-    private void addOutputStreamElement( OutputStreamWriter outputStreamWriter, OutputStream fw, EncodingOutputStream eos, XMLWriter xmlWriter, DeferredFileOutputStream stdOut,
+    private void addOutputStreamElement( OutputStreamWriter outputStreamWriter, OutputStream fw,
+                                         EncodingOutputStream eos, XMLWriter xmlWriter, DeferredFileOutputStream stdOut,
                                          String name )
     {
         if ( stdOut != null && stdOut.getByteCount() > 0 )
@@ -380,6 +380,28 @@ public class StatelessXmlReporter
                 // SUREFIRE-456
                 out.write( ampBytes );
                 out.write( b );
+                out.write( ';' ); // & Will be encoded to amp inside xml encodingSHO
+            }
+            else if ( '<' == b )
+            {
+                out.write( '&' );
+                out.write( 'l' );
+                out.write( 't' );
+                out.write( ';' ); // & Will be encoded to amp inside xml encodingSHO
+            }
+            else if ( '>' == b )
+            {
+                out.write( '&' );
+                out.write( 'g' );
+                out.write( 't' );
+                out.write( ';' ); // & Will be encoded to amp inside xml encodingSHO
+            }
+            else if ( '&' == b )
+            {
+                out.write( '&' );
+                out.write( 'a' );
+                out.write( 'm' );
+                out.write( 'p' );
                 out.write( ';' ); // & Will be encoded to amp inside xml encodingSHO
             }
             else
