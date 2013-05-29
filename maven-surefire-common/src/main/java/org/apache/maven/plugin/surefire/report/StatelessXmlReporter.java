@@ -427,12 +427,12 @@ public class StatelessXmlReporter
 
     private static boolean isIllegalEscape( char c )
     {
-        return c < 32 && c != '\n' && c != '\r' && c != '\t';
+        return c >= 0 && c < 32 && c != '\n' && c != '\r' && c != '\t';
     }
 
     private static boolean isIllegalEscape( int c )
     {
-        return c < 32 && c != '\n' && c != '\r' && c != '\t';
+        return c >= 0 && c < 32 && c != '\n' && c != '\r' && c != '\t';
     }
 
     private static String escapeXml( String text, boolean attribute )
