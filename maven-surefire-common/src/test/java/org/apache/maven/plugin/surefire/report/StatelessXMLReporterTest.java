@@ -32,8 +32,10 @@ import org.apache.maven.surefire.report.SimpleReportEntry;
 import org.apache.maven.surefire.report.StackTraceWriter;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 
 @SuppressWarnings( "ResultOfMethodCallIgnored" )
 public class StatelessXMLReporterTest
@@ -87,9 +89,10 @@ public class StatelessXMLReporterTest
         stats.testSucceeded( testSetReportEntry );
         StackTraceWriter stackTraceWriter = new DeserializedStacktraceWriter( "A fud msg", "trimmed", "fail at foo" );
         DeferredFileOutputStream s = new DeferredFileOutputStream( 1000000, "fds", "fdx", new File( "" ) );
-        s.write( "std-o\u00DCt<null>!".getBytes() );
+        s.write( "std-o\u00DCt<null>!".getBytes("UTF-8") );
         DeferredFileOutputStream s1 = new DeferredFileOutputStream( 1000000, "fds", "fdx", new File( "" ) );
-        s1.write( "std-\u0115rr?&-&amp;&#163;".getBytes() );
+        byte[] bytes = "std-\u0115rr?&-&amp;&#163;".getBytes("UTF-8");
+        s1.write( bytes );
         WrappedReportEntry t2 =
             new WrappedReportEntry( new SimpleReportEntry( Inner.class.getName(), testName2, stackTraceWriter, 13 ),
                                     ReportEntryType.error, 13, s, s1 );
@@ -98,7 +101,9 @@ public class StatelessXMLReporterTest
         StatelessXmlReporter reporter = new StatelessXmlReporter( new File( "." ), null, false );
         reporter.testSetCompleted( testSetReportEntry, stats );
 
-        Xpp3Dom testSuite = Xpp3DomBuilder.build( new FileReader( expectedReportFile ) );
+        FileInputStream fileInputStream = new FileInputStream( expectedReportFile );
+
+        Xpp3Dom testSuite = Xpp3DomBuilder.build( new InputStreamReader( fileInputStream, "UTF-8") );
         assertEquals( "testsuite", testSuite.getName() );
         Xpp3Dom properties = testSuite.getChild( "properties" );
         assertEquals( System.getProperties().size(), properties.getChildCount() );
