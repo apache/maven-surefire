@@ -24,6 +24,8 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
+import static org.apache.maven.surefire.booter.Classpath.emptyClasspath;
+
 /**
  * @author Kristian Rosenvold
  */
@@ -39,7 +41,7 @@ public class ClasspathTest
     public void testShouldWriteEmptyPropertyForEmptyClasspath()
         throws Exception
     {
-        Classpath classpath = new Classpath();
+        Classpath classpath = Classpath.emptyClasspath();
         classpath.writeToSystemProperty( DUMMY_PROPERTY_NAME );
         assertEquals( "", System.getProperty( DUMMY_PROPERTY_NAME ) );
     }
@@ -47,9 +49,7 @@ public class ClasspathTest
     public void testShouldWriteSeparatedElementsAsSystemProperty()
         throws Exception
     {
-        Classpath classpath = new Classpath();
-        classpath.addClassPathElementUrl( DUMMY_URL_1 );
-        classpath.addClassPathElementUrl( DUMMY_URL_2 );
+        Classpath classpath = Classpath.emptyClasspath().addClassPathElementUrl( DUMMY_URL_1 ).addClassPathElementUrl( DUMMY_URL_2 );
         classpath.writeToSystemProperty( DUMMY_PROPERTY_NAME );
         assertEquals( DUMMY_URL_1 + File.pathSeparatorChar + DUMMY_URL_2 + File.pathSeparatorChar,
                       System.getProperty( DUMMY_PROPERTY_NAME ) );
@@ -57,9 +57,8 @@ public class ClasspathTest
 
     public void testShouldAddNoDuplicateElements()
     {
-        Classpath classpath = new Classpath();
-        classpath.addClassPathElementUrl( DUMMY_URL_1 );
-        classpath.addClassPathElementUrl( DUMMY_URL_1 );
+        Classpath classpath =
+            emptyClasspath().addClassPathElementUrl( DUMMY_URL_1 ).addClassPathElementUrl( DUMMY_URL_1 );
         assertClasspathConsistsOfElements( classpath, new String[]{ DUMMY_URL_1 } );
     }
 
@@ -81,10 +80,8 @@ public class ClasspathTest
     public void testShouldHaveAllElementsAfterJoiningTwoDifferentClasspaths()
         throws Exception
     {
-        Classpath firstClasspath = new Classpath();
-        firstClasspath.addClassPathElementUrl( DUMMY_URL_1 );
-        Classpath secondClasspath = new Classpath();
-        secondClasspath.addClassPathElementUrl( DUMMY_URL_2 );
+        Classpath firstClasspath = Classpath.emptyClasspath();
+        Classpath secondClasspath = firstClasspath.addClassPathElementUrl( DUMMY_URL_1 ).addClassPathElementUrl( DUMMY_URL_2 );
         Classpath joinedClasspath = Classpath.join( firstClasspath, secondClasspath );
         assertClasspathConsistsOfElements( joinedClasspath, new String[]{ DUMMY_URL_1, DUMMY_URL_2 } );
     }
@@ -92,10 +89,8 @@ public class ClasspathTest
     public void testShouldNotHaveDuplicatesAfterJoiningTowClasspathsWithEqualElements()
         throws Exception
     {
-        Classpath firstClasspath = new Classpath();
-        firstClasspath.addClassPathElementUrl( DUMMY_URL_1 );
-        Classpath secondClasspath = new Classpath();
-        secondClasspath.addClassPathElementUrl( DUMMY_URL_1 );
+        Classpath firstClasspath = Classpath.emptyClasspath().addClassPathElementUrl( DUMMY_URL_1 );
+        Classpath secondClasspath = Classpath.emptyClasspath().addClassPathElementUrl( DUMMY_URL_1 );
         Classpath joinedClasspath = Classpath.join( firstClasspath, secondClasspath );
         assertClasspathConsistsOfElements( joinedClasspath, new String[]{ DUMMY_URL_1 } );
     }
@@ -132,16 +127,14 @@ public class ClasspathTest
 
     private Classpath createClasspathWithTwoElements()
     {
-        Classpath classpath = new Classpath();
-        classpath.addClassPathElementUrl( DUMMY_URL_1 );
-        classpath.addClassPathElementUrl( DUMMY_URL_2 );
-        return classpath;
+        Classpath classpath = Classpath.emptyClasspath();
+        return classpath.addClassPathElementUrl( DUMMY_URL_1 ).addClassPathElementUrl( DUMMY_URL_2 );
     }
 
     public void testShouldThrowIllegalArgumentExceptionWhenNullIsAddedAsClassPathElementUrl()
         throws Exception
     {
-        Classpath classpath = new Classpath();
+        Classpath classpath = Classpath.emptyClasspath();
         try
         {
             classpath.addClassPathElementUrl( null );
@@ -155,7 +148,7 @@ public class ClasspathTest
     public void testShouldNotAddNullAsClassPathElementUrl()
         throws Exception
     {
-        Classpath classpath = new Classpath();
+        Classpath classpath = Classpath.emptyClasspath();
         try
         {
             classpath.addClassPathElementUrl( null );

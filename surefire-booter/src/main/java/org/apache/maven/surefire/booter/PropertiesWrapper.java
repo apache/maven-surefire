@@ -28,6 +28,8 @@ import java.util.Properties;
 import org.apache.maven.surefire.util.internal.StringUtils;
 
 /**
+ * Makes java.util.Properties behave like it's 2013
+ *
  * @author Kristian Rosenvold
  */
 public class PropertiesWrapper

@@ -21,86 +21,93 @@ package org.apache.maven.surefire.booter;
 
 import org.apache.maven.surefire.util.UrlUtils;
 
+import javax.annotation.concurrent.Immutable;
+import javax.annotation.concurrent.ThreadSafe;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 /**
  * An ordered list of classpath elements with set behaviour
  *
+ * A Classpath is immutable and thread safe.
+ *
+ *
  * @author Kristian Rosenvold
  */
-public class Classpath
+@ThreadSafe
+@Immutable
+public class Classpath implements Iterable<String>
 {
+
+    private final List<String> unmodifiableElements;
 
     public static Classpath join( Classpath firstClasspath, Classpath secondClasspath )
     {
-        Classpath joinedClasspath = new Classpath();
-        joinedClasspath.addElementsOfClasspath( firstClasspath );
-        joinedClasspath.addElementsOfClasspath( secondClasspath );
-        return joinedClasspath;
+        LinkedHashSet<String> accumulated =  new LinkedHashSet<String>(  );
+        if (firstClasspath != null) firstClasspath.addTo( accumulated );
+        if (secondClasspath != null) secondClasspath.addTo( accumulated );
+        return new Classpath( accumulated );
     }
 
-    private final List<String> elements;
 
-    public Classpath()
+    private void addTo(Collection<String> c){
+        c.addAll( unmodifiableElements );
+    }
+
+    private Classpath()
     {
-        this.elements = new ArrayList<String>();
+        this.unmodifiableElements = Collections.emptyList();
     }
 
-    public Classpath( Classpath other )
+
+    public Classpath( Classpath other, String additionalElement )
     {
-        this.elements = new ArrayList<String>( other.elements );
+        ArrayList<String> elems = new ArrayList<String>( other.unmodifiableElements );
+        elems.add( additionalElement );
+        this.unmodifiableElements = Collections.unmodifiableList( elems );
     }
 
-    public Classpath( List<String> elements )
+    public Classpath( Iterable<String> elements )
     {
-        this();
-        addElements( elements );
+        List<String> newCp = new ArrayList<String>(  );
+        for ( String element : elements )
+        {
+            newCp.add( element );
+        }
+        this.unmodifiableElements = Collections.unmodifiableList( newCp );
     }
 
-    public void addClassPathElementUrl( String path )
+    public static Classpath emptyClasspath()
+    {
+        return new Classpath();
+    }
+
+    public Classpath addClassPathElementUrl( String path )
     {
         if ( path == null )
         {
             throw new IllegalArgumentException( "Null is not a valid class path element url." );
         }
-        else if ( !elements.contains( path ) )
-        {
-            elements.add( path );
-        }
-    }
-
-    private void addElements( List<String> additionalElements )
-    {
-        for ( Object additionalElement : additionalElements )
-        {
-            String element = (String) additionalElement;
-            addClassPathElementUrl( element );
-        }
-    }
-
-    private void addElementsOfClasspath( Classpath otherClasspath )
-    {
-        if ( otherClasspath != null )
-        {
-            addElements( otherClasspath.elements );
-        }
+        return !unmodifiableElements.contains( path ) ? new Classpath( this, path ) : this;
     }
 
     public List<String> getClassPath()
     {
-        return Collections.unmodifiableList( elements );
+        return unmodifiableElements;
     }
 
     public List<URL> getAsUrlList()
         throws MalformedURLException
     {
         List<URL> urls = new ArrayList<URL>();
-        for ( String url : elements )
+        for ( String url : unmodifiableElements )
         {
             File f = new File( url );
             urls.add( UrlUtils.getURL( f ) );
@@ -111,7 +118,7 @@ public class Classpath
     public void writeToSystemProperty( String propertyName )
     {
         StringBuilder sb = new StringBuilder();
-        for ( String element : elements )
+        for ( String element : unmodifiableElements )
         {
             sb.append( element ).append( File.pathSeparatorChar );
         }
@@ -131,7 +138,8 @@ public class Classpath
 
         Classpath classpath = (Classpath) o;
 
-        return !( elements != null ? !elements.equals( classpath.elements ) : classpath.elements != null );
+        return !( unmodifiableElements
+            != null ? !unmodifiableElements.equals( classpath.unmodifiableElements ) : classpath.unmodifiableElements != null );
 
     }
 
@@ -164,36 +172,50 @@ public class Classpath
 
     public int hashCode()
     {
-        return elements != null ? elements.hashCode() : 0;
+        return unmodifiableElements != null ? unmodifiableElements.hashCode() : 0;
     }
 
     public String getLogMessage( String descriptor )
     {
         StringBuilder result = new StringBuilder();
         result.append( descriptor ).append( " classpath:" );
-        for ( String element : elements )
+        for ( String element : unmodifiableElements )
         {
             result.append( "  " ).append( element );
         }
         return result.toString();
     }
+
     public String getCompactLogMessage( String descriptor )
     {
         StringBuilder result = new StringBuilder();
         result.append( descriptor ).append( " classpath:" );
-        for ( String element : elements )
+        for ( String element : unmodifiableElements )
         {
             result.append( "  " );
-            if (element != null){
+            if ( element != null )
+            {
                 int pos = element.lastIndexOf( File.separatorChar );
-                if (pos >= 0){
-                result.append(  element.substring(  pos + 1) );
-                } else
-                    result.append( element);
+                if ( pos >= 0 )
+                {
+                    result.append( element.substring( pos + 1 ) );
+                }
+                else
+                {
+                    result.append( element );
+                }
 
-            } else result.append(element);
+            }
+            else
+            {
+                result.append( element );
+            }
         }
         return result.toString();
     }
 
+    public Iterator<String> iterator()
+    {
+        return unmodifiableElements.iterator();
+    }
 }

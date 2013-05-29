@@ -57,12 +57,13 @@ public class ClasspathConfiguration
 
     public ClasspathConfiguration( boolean enableAssertions, boolean childDelegation )
     {
-        this( new Classpath(), new Classpath(), new Classpath(), enableAssertions, childDelegation );
+        this( Classpath.emptyClasspath(), Classpath.emptyClasspath(), Classpath.emptyClasspath(), enableAssertions, childDelegation );
     }
 
     ClasspathConfiguration( PropertiesWrapper properties )
     {
-        this( properties.getClasspath( CLASSPATH ), properties.getClasspath( SUREFIRE_CLASSPATH ), new Classpath(),
+        this( properties.getClasspath( CLASSPATH ), properties.getClasspath( SUREFIRE_CLASSPATH ),
+              Classpath.emptyClasspath(),
               properties.getBooleanProperty( ENABLE_ASSERTIONS ), properties.getBooleanProperty( CHILD_DELEGATION ) );
     }
 

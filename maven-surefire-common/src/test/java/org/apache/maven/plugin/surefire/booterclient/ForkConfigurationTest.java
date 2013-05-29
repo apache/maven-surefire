@@ -71,7 +71,7 @@ public class ForkConfigurationTest
     public static ForkConfiguration getForkConfiguration( String argLine, String jvm )
         throws IOException
     {
-        return new ForkConfiguration( new Classpath(), null, null, jvm, new File( "." ).getCanonicalFile(), argLine,
+        return new ForkConfiguration( Classpath.emptyClasspath(), null, null, jvm, new File( "." ).getCanonicalFile(), argLine,
                                       null, false, 1, false );
     }
 

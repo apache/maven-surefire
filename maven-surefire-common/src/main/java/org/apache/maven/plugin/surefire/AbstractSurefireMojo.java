@@ -1177,9 +1177,8 @@ public abstract class AbstractSurefireMojo
                 ClasspathCache.setCachedClasspath( providerName, providerClasspath );
 
             }
-            Classpath inprocClassPath = new Classpath( providerClasspath );
             Artifact surefireArtifact = getCommonArtifact();
-            inprocClassPath.addClassPathElementUrl( surefireArtifact.getFile().getAbsolutePath() );
+            Classpath inprocClassPath = providerClasspath.addClassPathElementUrl( surefireArtifact.getFile().getAbsolutePath() );
 
             final Classpath testClasspath = generateTestClasspath();
 
