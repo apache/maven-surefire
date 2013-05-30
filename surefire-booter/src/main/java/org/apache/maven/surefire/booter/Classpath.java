@@ -38,11 +38,10 @@ import java.util.List;
  *
  * A Classpath is immutable and thread safe.
  *
+ * Immutable and thread safe
  *
  * @author Kristian Rosenvold
  */
-@ThreadSafe
-@Immutable
 public class Classpath implements Iterable<String>
 {
 
