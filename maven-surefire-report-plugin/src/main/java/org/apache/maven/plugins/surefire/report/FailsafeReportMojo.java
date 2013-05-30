@@ -32,7 +32,6 @@ import org.apache.maven.project.MavenProject;
  *
  * @author Stephen Connolly
  * @goal failsafe-report-only
- * @execute phase="validate" lifecycle="surefire"
  * @since 2.10
  */
 public class FailsafeReportMojo
