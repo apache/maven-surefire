@@ -21,8 +21,6 @@ package org.apache.maven.surefire.booter;
 
 import org.apache.maven.surefire.util.UrlUtils;
 
-import javax.annotation.concurrent.Immutable;
-import javax.annotation.concurrent.ThreadSafe;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
