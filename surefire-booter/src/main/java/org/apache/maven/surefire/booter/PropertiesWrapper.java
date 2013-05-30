@@ -119,22 +119,6 @@ public class PropertiesWrapper
     }
 
 
-    public void setProperty( String key, File file )
-    {
-        if ( file != null )
-        {
-            setProperty( key, file.toString() );
-        }
-    }
-
-    public void setProperty( String key, Boolean aBoolean )
-    {
-        if ( aBoolean != null )
-        {
-            setProperty( key, aBoolean.toString() );
-        }
-    }
-
     Classpath getClasspath( String prefix )
     {
         List<String> elements = getStringList( prefix );

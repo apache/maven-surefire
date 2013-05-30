@@ -29,13 +29,13 @@ package org.apache.maven.surefire.booter;
  */
 public class ClasspathConfiguration
 {
-    private static final String CHILD_DELEGATION = "childDelegation";
+    public static final String CHILD_DELEGATION = "childDelegation";
 
-    private static final String ENABLE_ASSERTIONS = "enableAssertions";
+    public static final String ENABLE_ASSERTIONS = "enableAssertions";
 
-    private static final String CLASSPATH = "classPathUrl.";
+    public static final String CLASSPATH = "classPathUrl.";
 
-    private static final String SUREFIRE_CLASSPATH = "surefireClassPathUrl.";
+    public static final String SUREFIRE_CLASSPATH = "surefireClassPathUrl.";
 
     private final Classpath classpathUrls;
 
@@ -77,20 +77,6 @@ public class ClasspathConfiguration
         this.surefireClasspathUrls = surefireClassPathUrls;
     }
 
-    public void addForkProperties( PropertiesWrapper properties )
-    {
-        properties.setClasspath( CLASSPATH, classpathUrls );
-        properties.setClasspath( SUREFIRE_CLASSPATH, surefireClasspathUrls );
-        properties.setProperty( ENABLE_ASSERTIONS, String.valueOf( enableAssertions ) );
-        properties.setProperty( CHILD_DELEGATION, String.valueOf( childDelegation ) );
-    }
-
-    public ClassLoader createTestClassLoader( boolean childDelegation )
-        throws SurefireExecutionException
-    {
-        return classpathUrls.createClassLoader( null, childDelegation, enableAssertions, "test" );
-    }
-
     public ClassLoader createMergedClassLoader()
         throws SurefireExecutionException
     {
@@ -98,30 +84,13 @@ public class ClasspathConfiguration
             .createClassLoader( null, this.childDelegation, enableAssertions, "test" );
     }
 
-    public ClassLoader createTestClassLoader()
-        throws SurefireExecutionException
-    {
-        return classpathUrls.createClassLoader( null, this.childDelegation, enableAssertions, "test" );
-    }
-
-    public ClassLoader createSurefireClassLoader( ClassLoader parent )
-        throws SurefireExecutionException
-    {
-        return surefireClasspathUrls.createClassLoader( parent, false, enableAssertions, "provider" );
-    }
-
     public Classpath getProviderClasspath()
     {
         return surefireClasspathUrls;
     }
 
-    public ClassLoader createInprocSurefireClassLoader( ClassLoader parent )
-        throws SurefireExecutionException
-    {
-        return inprocClasspath.createClassLoader( parent, false, enableAssertions, "provider" );
-    }
 
-    public Classpath getTestClasspath()
+        public Classpath getTestClasspath()
     {
         return classpathUrls;
     }
@@ -136,5 +105,10 @@ public class ClasspathConfiguration
     public boolean isEnableAssertions()
     {
         return enableAssertions;
+    }
+
+    public boolean isChildDelegation()
+    {
+        return childDelegation;
     }
 }

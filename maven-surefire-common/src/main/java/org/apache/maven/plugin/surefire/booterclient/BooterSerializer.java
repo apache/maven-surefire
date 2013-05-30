@@ -21,11 +21,12 @@ package org.apache.maven.plugin.surefire.booterclient;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Properties;
+
+import org.apache.maven.plugin.surefire.SurefireProperties;
 import org.apache.maven.surefire.booter.BooterConstants;
 import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
+import org.apache.maven.surefire.booter.ClasspathConfiguration;
 import org.apache.maven.surefire.booter.KeyValueSource;
-import org.apache.maven.surefire.booter.PropertiesWrapper;
 import org.apache.maven.surefire.booter.ProviderConfiguration;
 import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.SystemPropertyManager;
@@ -69,28 +70,31 @@ class BooterSerializer
         throws IOException
     {
 
-        PropertiesWrapper properties = new PropertiesWrapper( new Properties() );
-        sourceProperties.copyTo( properties.getProperties() );
+        SurefireProperties properties = new SurefireProperties( sourceProperties );
 
-        providerConfiguration.getClasspathConfiguration().addForkProperties( properties );
+        ClasspathConfiguration cp = providerConfiguration.getClasspathConfiguration();
+        properties.setClasspath( ClasspathConfiguration.CLASSPATH, cp.getTestClasspath() );
+        properties.setClasspath( ClasspathConfiguration.SUREFIRE_CLASSPATH, cp.getProviderClasspath() );
+        properties.setProperty( ClasspathConfiguration.ENABLE_ASSERTIONS, String.valueOf( cp.isEnableAssertions()) );
+        properties.setProperty( ClasspathConfiguration.CHILD_DELEGATION, String.valueOf( cp.isChildDelegation() ) );
 
         TestArtifactInfo testNg = booterConfiguration.getTestArtifact();
         if ( testNg != null )
         {
             properties.setProperty( BooterConstants.TESTARTIFACT_VERSION, testNg.getVersion() );
-            properties.setProperty( BooterConstants.TESTARTIFACT_CLASSIFIER, testNg.getClassifier() );
+            properties.setNullableProperty( BooterConstants.TESTARTIFACT_CLASSIFIER, testNg.getClassifier() );
         }
 
         properties.setProperty( BooterConstants.FORKTESTSET_PREFER_TESTS_FROM_IN_STREAM, readTestsFromInStream );
-        properties.setProperty( BooterConstants.FORKTESTSET, getTypeEncoded( testSet ) );
+        properties.setNullableProperty( BooterConstants.FORKTESTSET, getTypeEncoded( testSet ) );
 
         TestRequest testSuiteDefinition = booterConfiguration.getTestSuiteDefinition();
         if ( testSuiteDefinition != null )
         {
             properties.setProperty( BooterConstants.SOURCE_DIRECTORY, testSuiteDefinition.getTestSourceDirectory() );
             properties.addList( testSuiteDefinition.getSuiteXmlFiles(), BooterConstants.TEST_SUITE_XML_FILES );
-            properties.setProperty( BooterConstants.REQUESTEDTEST, testSuiteDefinition.getRequestedTest() );
-            properties.setProperty( BooterConstants.REQUESTEDTESTMETHOD, testSuiteDefinition.getRequestedTestMethod() );
+            properties.setNullableProperty( BooterConstants.REQUESTEDTEST, testSuiteDefinition.getRequestedTest() );
+            properties.setNullableProperty( BooterConstants.REQUESTEDTESTMETHOD, testSuiteDefinition.getRequestedTestMethod() );
         }
 
         DirectoryScannerParameters directoryScannerParameters = booterConfiguration.getDirScannerParams();
@@ -128,7 +132,7 @@ class BooterSerializer
                                 String.valueOf( booterConfiguration.isFailIfNoTests() ) );
         properties.setProperty( BooterConstants.PROVIDER_CONFIGURATION, providerConfiguration.getProviderClassName() );
 
-        return SystemPropertyManager.writePropertiesFile( properties.getProperties(),
+        return SystemPropertyManager.writePropertiesFile( properties,
                                                           forkConfiguration.getTempDirectory(), "surefire",
                                                           forkConfiguration.isDebug() );
     }

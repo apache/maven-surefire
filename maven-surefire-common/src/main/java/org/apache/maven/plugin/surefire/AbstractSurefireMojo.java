@@ -69,6 +69,7 @@ import org.apache.maven.shared.utils.io.FileUtils;
 import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
 import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.ClasspathConfiguration;
+import org.apache.maven.surefire.booter.KeyValueSource;
 import org.apache.maven.surefire.booter.ProviderConfiguration;
 import org.apache.maven.surefire.booter.ProviderParameterNames;
 import org.apache.maven.surefire.booter.StartupConfiguration;
@@ -799,22 +800,52 @@ public abstract class AbstractSurefireMojo
 
     private SurefireProperties setupProperties()
     {
+        SurefireProperties sysProps = null;
+        try {
+            sysProps = SurefireProperties.loadProperties( systemPropertiesFile );
+        }
+        catch ( IOException e )
+        {
+            String msg = "The system property file '" + systemPropertiesFile.getAbsolutePath() + "' can't be read.";
+            if ( getLog().isDebugEnabled() )
+            {
+                getLog().warn( msg, e );
+            }
+            else
+            {
+                getLog().warn( msg );
+            }
+        }
+
         SurefireProperties result =
-            SurefireProperties.calculateEffectiveProperties( getSystemProperties(), getSystemPropertiesFile(),
-                                                             getSystemPropertyVariables(), getUserProperties(),
-                                                             getLog() );
+            SurefireProperties.calculateEffectiveProperties( getSystemProperties(), getSystemPropertyVariables(),
+                                                             getUserProperties(), sysProps );
 
         result.setProperty( "basedir", getBasedir().getAbsolutePath() );
         result.setProperty( "user.dir", getWorkingDirectory().getAbsolutePath() );
         result.setProperty( "localRepository", getLocalRepository().getBasedir() );
 
-        result.verifyLegalSystemProperties( getLog() );
+        for ( Object o : result.propertiesThatCannotBeSetASystemProperties() )
+        {
+            getLog().warn( o + " cannot be set as system property, use <argLine>-D" + o + "=...<argLine> instead" );
+
+        }
         if ( getLog().isDebugEnabled() )
         {
-            result.showToLog( getLog(), "system property" );
+            showToLog( result, getLog(), "system property" );
         }
         return result;
     }
+
+    public void showToLog( SurefireProperties props, org.apache.maven.plugin.logging.Log log, String setting )
+    {
+        for ( Object key : props.getStringKeySet() )
+        {
+            String value = props.getProperty( (String) key );
+            log.debug( "Setting " + setting + " [" + key + "]=[" + value + "]" );
+        }
+    }
+
 
     private RunResult executeProvider( ProviderInfo provider, DefaultScanResult scanResult )
         throws MojoExecutionException, MojoFailureException, SurefireExecutionException, SurefireBooterForkException,
@@ -864,7 +895,7 @@ public abstract class AbstractSurefireMojo
     public static SurefireProperties createCopyAndReplaceForkNumPlaceholder(
         SurefireProperties effectiveSystemProperties, int threadNumber )
     {
-        SurefireProperties filteredProperties = new SurefireProperties( effectiveSystemProperties );
+        SurefireProperties filteredProperties = new SurefireProperties( ( KeyValueSource) effectiveSystemProperties );
         String threadNumberString = String.valueOf( threadNumber );
         for ( Entry<Object, Object> entry : effectiveSystemProperties.entrySet() )
         {

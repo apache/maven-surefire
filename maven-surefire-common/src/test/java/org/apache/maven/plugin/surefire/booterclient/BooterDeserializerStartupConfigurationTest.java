@@ -70,16 +70,10 @@ public class BooterDeserializerStartupConfigurationTest
     {
         assertEquals( expectedConfiguration.getTestClasspath().getClassPath(),
                       actualConfiguration.getTestClasspath().getClassPath() );
-        Properties propertiesForExpectedConfiguration = getPropertiesForClasspathConfiguration( expectedConfiguration );
-        Properties propertiesForActualConfiguration = getPropertiesForClasspathConfiguration( actualConfiguration );
-        assertEquals( propertiesForExpectedConfiguration, propertiesForActualConfiguration );
-    }
-
-    private Properties getPropertiesForClasspathConfiguration( ClasspathConfiguration configuration )
-    {
-        Properties properties = new Properties();
-        configuration.addForkProperties( new PropertiesWrapper( properties ) );
-        return properties;
+        assertEquals( expectedConfiguration.isEnableAssertions(), actualConfiguration.isEnableAssertions() );
+        assertEquals(  expectedConfiguration.isChildDelegation(), actualConfiguration.isChildDelegation() );
+        assertEquals(  expectedConfiguration.getProviderClasspath(), actualConfiguration.getProviderClasspath() );
+        assertEquals(  expectedConfiguration.getTestClasspath(), actualConfiguration.getTestClasspath() );
     }
 
     public void testClassLoaderConfiguration()
@@ -99,8 +93,8 @@ public class BooterDeserializerStartupConfigurationTest
 
     private ClasspathConfiguration createClasspathConfiguration()
     {
-        Classpath testClassPath = new Classpath( Arrays.asList( new String[]{ "CP1", "CP2" } ) );
-        Classpath providerClasspath = new Classpath( Arrays.asList( new String[]{ "SP1", "SP2" } ) );
+        Classpath testClassPath = new Classpath( Arrays.asList( "CP1", "CP2" ) );
+        Classpath providerClasspath = new Classpath( Arrays.asList( "SP1", "SP2" ) );
         return new ClasspathConfiguration( testClassPath, providerClasspath, Classpath.emptyClasspath(), true, true );
     }
 
