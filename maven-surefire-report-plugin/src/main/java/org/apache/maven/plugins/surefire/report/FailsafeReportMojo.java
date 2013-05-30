@@ -22,6 +22,9 @@ package org.apache.maven.plugins.surefire.report;
 import java.io.File;
 import java.util.Locale;
 import java.util.ResourceBundle;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
 
@@ -31,10 +34,9 @@ import org.apache.maven.project.MavenProject;
  * See <a href="http://jira.codehaus.org/browse/SUREFIRE-257">http://jira.codehaus.org/browse/SUREFIRE-257</a>
  *
  * @author Stephen Connolly
- * @goal failsafe-report-only
- * @execute phase="validate" lifecycle="surefire"
  * @since 2.10
  */
+@Mojo(name = "failsafe-report-only")
 public class FailsafeReportMojo
     extends AbstractSurefireReportMojo
 {
@@ -42,29 +44,28 @@ public class FailsafeReportMojo
     /**
      * The filename to use for the report.
      *
-     * @parameter expression="${outputName}" default-value="failsafe-report"
-     * @required
      * @noinspection UnusedDeclaration
      */
+    @Parameter(defaultValue = "failsafe-report", property = "outputName", required = true)
     private String outputName;
 
     /**
      * If set to true the failsafe report will be generated even when there are no failsafe result files.
      * Defaults to <code>false</code> to preserve legacy behaviour pre 2.10
      *
-     * @parameter expression="${alwaysGenerateFailsafeReport}" default-value="false"
      * @noinspection UnusedDeclaration
      * @since 2.11
      */
+    @Parameter(defaultValue = "false", property = "alwaysGenerateFailsafeReport")
     private boolean alwaysGenerateFailsafeReport;
 
     /**
      * If set to true the failsafe report generation will be skipped.
      *
-     * @parameter expression="${skipFailsafeReport}" default-value="false"
      * @noinspection UnusedDeclaration
      * @since 2.11
      */
+    @Parameter(defaultValue = "false", property = "skipFailsafeReport")
     private boolean skipFailsafeReport;
 
     protected File getSurefireReportsDirectory( MavenProject subProject )

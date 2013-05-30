@@ -20,6 +20,10 @@ package org.apache.maven.plugins.surefire.report;
  */
 
 import java.io.File;
+import org.apache.maven.plugins.annotations.Execute;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
 
@@ -27,9 +31,9 @@ import org.apache.maven.project.MavenProject;
  * Creates a nicely formatted Surefire Test Report in html format.
  *
  * @author <a href="mailto:jruiz@exist.com">Johnny R. Ruiz III</a>
- * @goal report
- * @execute phase="test" lifecycle="surefire"
  */
+@Mojo(name = "report", inheritByDefault = false)
+@Execute(lifecycle = "surefire", phase = LifecyclePhase.TEST)
 public class SurefireReportMojo
     extends AbstractSurefireReportMojo
 {
@@ -37,29 +41,28 @@ public class SurefireReportMojo
     /**
      * The filename to use for the report.
      *
-     * @parameter expression="${outputName}" default-value="surefire-report"
-     * @required
      * @noinspection UnusedDeclaration
      */
+    @Parameter(defaultValue = "surefire-report", property = "outputName", required = true)
     private String outputName;
 
     /**
      * If set to true the surefire report will be generated even when there are no surefire result files.
      * Defaulyts to <code>true</code> to preserve legacy behaviour pre 2.10.
      *
-     * @parameter expression="${alwaysGenerateSurefireReport}" default-value="true"
      * @noinspection UnusedDeclaration
      * @since 2.11
      */
+    @Parameter(defaultValue = "true", property = "alwaysGenerateSurefireReport")
     private boolean alwaysGenerateSurefireReport;
 
     /**
      * If set to true the surefire report generation will be skipped.
      *
-     * @parameter expression="${skipSurefireReport}" default-value="false"
      * @noinspection UnusedDeclaration
      * @since 2.11
      */
+    @Parameter(defaultValue = "false", property = "skipSurefireReport")
     private boolean skipSurefireReport;
 
     protected File getSurefireReportsDirectory( MavenProject subProject )

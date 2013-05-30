@@ -28,6 +28,8 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 import org.apache.maven.doxia.siterenderer.Renderer;
 import org.apache.maven.model.ReportPlugin;
+import org.apache.maven.plugins.annotations.Component;
+import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.reporting.AbstractMavenReport;
 import org.apache.maven.reporting.MavenReportException;
@@ -45,85 +47,82 @@ public abstract class AbstractSurefireReportMojo
     /**
      * Location where generated html will be created.
      *
-     * @parameter expression="${project.reporting.outputDirectory}"
      * @noinspection UnusedDeclaration
      */
+    @Parameter(property = "project.reporting.outputDirectory")
     private File outputDirectory;
 
     /**
      * Doxia Site Renderer
      *
-     * @component
      * @noinspection UnusedDeclaration
      */
+    @Component
     private Renderer siteRenderer;
 
     /**
      * Maven Project
      *
-     * @parameter expression="${project}"
-     * @required @readonly
      * @noinspection UnusedDeclaration
      */
+    @Parameter(property = "project", required = true, readonly = true)
     private MavenProject project;
 
     /**
      * If set to false, only failures are shown.
      *
-     * @parameter expression="${showSuccess}" default-value="true"
-     * @required
      * @noinspection UnusedDeclaration
      */
+    @Parameter(defaultValue = "true", required = true, property = "showSuccess")
     private boolean showSuccess;
 
     /**
      * Directories containing the XML Report files that will be parsed and rendered to HTML format.
      *
-     * @parameter
      * @noinspection UnusedDeclaration
      */
+    @Parameter
     private File[] reportsDirectories;
 
     /**
      * (Deprecated, use reportsDirectories) This directory contains the XML Report files that will be parsed and rendered to HTML format.
      *
-     * @parameter
      * @noinspection UnusedDeclaration
-     * @deprecated
      */
+    @Deprecated
+    @Parameter
     private File reportsDirectory;
 
     /**
      * The projects in the reactor for aggregation report.
      *
-     * @parameter expression="${reactorProjects}"
-     * @readonly
      * @noinspection MismatchedQueryAndUpdateOfCollection, UnusedDeclaration
      */
+    @Parameter(property = "reactorProjects", readonly = true)
     private List<MavenProject> reactorProjects;
 
     /**
      * Location of the Xrefs to link.
      *
-     * @parameter default-value="${project.reporting.outputDirectory}/xref-test"
      * @noinspection UnusedDeclaration
      */
+    @Parameter(defaultValue = "${project.reporting.outputDirectory}/xref-test")
     private File xrefLocation;
 
     /**
      * Whether to link the XRef if found.
      *
-     * @parameter expression="${linkXRef}" default-value="true"
      * @noinspection UnusedDeclaration
      */
+    @Parameter(defaultValue = "true", property = "linkXRef")
     private boolean linkXRef;
 
     /**
      * Whether to build an aggregated report at the root, or build individual reports.
      *
-     * @parameter expression="${aggregate}" default-value="false"
      * @noinspection UnusedDeclaration
      */
+    @Parameter(defaultValue = "false", property = "aggregate")
     private boolean aggregate;
 
     /**
