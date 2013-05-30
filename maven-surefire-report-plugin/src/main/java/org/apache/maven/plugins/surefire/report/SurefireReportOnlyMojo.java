@@ -19,6 +19,10 @@ package org.apache.maven.plugins.surefire.report;
  * under the License.
  */
 
+import org.apache.maven.plugins.annotations.Execute;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
+
 /**
  * Creates a nicely formatted Surefire Test Report in html format.
  * This goal does not run the tests, it only builds the reports.
@@ -26,12 +30,11 @@ package org.apache.maven.plugins.surefire.report;
  * <a href="http://jira.codehaus.org/browse/SUREFIRE-257">http://jira.codehaus.org/browse/SUREFIRE-257</a>
  *
  * @author <a href="mailto:baerrach@gmail.com">Barrie Treloar</a>
- * @goal report-only
- * @execute phase="validate" lifecycle="surefire"
  * @since 2.3
  */
+@Mojo(name = "report-only")
+@Execute(phase = LifecyclePhase.NONE)
 public class SurefireReportOnlyMojo
     extends SurefireReportMojo
 {
-
 }
