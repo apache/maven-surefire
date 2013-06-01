@@ -61,7 +61,7 @@ public class SurefirePlugin
      * Specify this parameter to run individual tests by file name, overriding the <code>includes/excludes</code>
      * parameters. Each pattern you specify here will be used to create an include pattern formatted like
      * <code>**&#47;${test}.java</code>, so you can just type "-Dtest=MyTest" to run a single test called
-     * "foo/MyTest.java".<br/>
+     * "foo/MyTest.java". The test patterns prefixed with a <code>!</code> will be excluded.<br/>
      * This parameter overrides the <code>includes/excludes</code> parameters, and the TestNG <code>suiteXmlFiles</code>
      * parameter.
      * <p/>
