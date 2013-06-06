@@ -21,6 +21,8 @@ package org.apache.maven.surefire.common.junit48;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
@@ -169,12 +171,36 @@ public class FilterFactory
         @Override
         public boolean shouldRun( Description description )
         {
-            return shouldRun( description,
-                              ( ( description.getMethodName() == null || description.getTestClass() == null ) ? null
-                                              : Description.createSuiteDescription( description.getTestClass() ) ) );
+            if ( description.getMethodName() == null || description.getTestClass() == null )
+            {
+                return shouldRun( description, null, null );
+            }
+            else
+            {
+                return shouldRun( description, Description.createSuiteDescription( description.getTestClass() ),
+                                  description.getTestClass() );
+            }
         }
 
-        private boolean shouldRun( Description description, Description parent )
+        private Collection<Class<?>> findSuperclassCategories( Class<?> clazz )
+        {
+            if ( clazz != null && clazz.getSuperclass() != null )
+            {
+                Category cat = clazz.getSuperclass().getAnnotation( Category.class );
+                if ( cat != null )
+                {
+                    return new HashSet<Class<?>>( Arrays.asList( cat.value() ) );
+                }
+                else
+                {
+                    return findSuperclassCategories( clazz.getSuperclass() );
+                }
+            }
+
+            return Collections.emptySet();
+        }
+
+        private boolean shouldRun( Description description, Description parent, Class<?> parentClass )
         {
             if ( matcher == null )
             {
@@ -197,6 +223,11 @@ public class FilterFactory
                 }
             }
 
+            if ( parentClass != null )
+            {
+                cats.addAll( findSuperclassCategories( parentClass ) );
+            }
+
             boolean result = matcher.enabled( cats.toArray( new Class<?>[] {} ) );
 
             if ( parent == null )
@@ -212,7 +243,7 @@ public class FilterFactory
                     {
                         for ( Description child : children )
                         {
-                            if ( shouldRun( child, description ) )
+                            if ( shouldRun( child, description, null ) )
                             {
                                 result = true;
                                 break;

@@ -40,6 +40,7 @@ public class JUnit48ReflectorTest
     {
         JUnit48Reflector jUnit48Reflector = new JUnit48Reflector( this.getClass().getClassLoader() );
         assertTrue( jUnit48Reflector.isCategoryAnnotationPresent( Test1.class ) );
+        assertTrue( jUnit48Reflector.isCategoryAnnotationPresent( Test3.class ) );
         assertFalse( jUnit48Reflector.isCategoryAnnotationPresent( Test2.class ) );
     }
 
@@ -59,4 +60,9 @@ public class JUnit48ReflectorTest
 
     }
 
+    private class Test3
+        extends Test1
+    {
+
+    }
 }
