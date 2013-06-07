@@ -165,7 +165,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-plugin-plugin</artifactId>
-        <version>2.7</version>
+        <version>${mavenPluginPluginVersion}</version>
         <configuration>
           <requirements>
             <jdk>1.4</jdk>
