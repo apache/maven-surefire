@@ -124,7 +124,7 @@ public class SurefirePlugin
      * A list of &lt;include> elements specifying the tests (by pattern) that should be included in testing. When not
      * specified and when the <code>test</code> parameter is not specified, the default includes will be <code><br/>
      * &lt;includes><br/>
-     * &nbsp;&lt;include>**&#47;*Test*.java&lt;/include><br/>
+     * &nbsp;&lt;include>**&#47;Test*.java&lt;/include><br/>
      * &nbsp;&lt;include>**&#47;*Test.java&lt;/include><br/>
      * &nbsp;&lt;include>**&#47;*TestCase.java&lt;/include><br/>
      * &lt;/includes><br/>
