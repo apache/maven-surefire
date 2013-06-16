@@ -36,6 +36,8 @@ final class ScannerUtil {
     private static final String JAVA_SOURCE_FILE_EXTENSION = ".java";
 
     private static final String JAVA_CLASS_FILE_EXTENSION = ".class";
+    
+    private static final boolean IS_NON_UNIX_FS = (!FS.equals( "/" ));
 
     public static @Nonnull String convertToJavaClassName( @Nonnull String test )
     {
@@ -45,6 +47,11 @@ final class ScannerUtil {
     public static @Nonnull String convertJarFileResourceToJavaClassName( @Nonnull String test )
     {
         return StringUtils.removeEnd( test, ".class" ).replace( "/", "." );
+    }
+
+    public static @Nonnull String convertJarFileResourceToSystemFileSeparator( @Nonnull String path )
+    {
+        return ( IS_NON_UNIX_FS ? path.replace( "/", FS ) : path );
     }
 
     public static @Nonnull String stripBaseDir( String basedir, String test )

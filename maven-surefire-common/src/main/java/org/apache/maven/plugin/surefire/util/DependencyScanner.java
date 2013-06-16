@@ -39,137 +39,146 @@ import javax.annotation.Nullable;
 
 /**
  * Scans dependencies looking for tests.
- *
+ * 
  * @author Aslak Knutsen
  */
-public class DependencyScanner {
+public class DependencyScanner
+{
 
-	private final List<File> dependenciesToScan;
+    private final List<File> dependenciesToScan;
 
-	protected final List<String> includes;
+    protected final List<String> includes;
 
-	protected final @Nonnull List<String> excludes;
+    protected final @Nonnull List<String> excludes;
 
-	protected final List<String> specificTests;
+    protected final List<String> specificTests;
 
-	public DependencyScanner(List<File> dependenciesToScan, List<String> includes, @Nonnull List<String> excludes, List<String> specificTests)
-	{
-		this.dependenciesToScan = dependenciesToScan;
+    public DependencyScanner( List<File> dependenciesToScan, List<String> includes, @Nonnull List<String> excludes, List<String> specificTests )
+    {
+        this.dependenciesToScan = dependenciesToScan;
         this.includes = includes;
         this.excludes = excludes;
         this.specificTests = specificTests;
-	}
+    }
 
-	public DefaultScanResult scan() throws MojoExecutionException
-	{
-		Matcher matcher = new Matcher(includes, excludes, specificTests);
-		List<String> found = new ArrayList<String>();
-		for(File artifact : dependenciesToScan)
-		{
-			try
-			{
-				found.addAll(scanArtifact(artifact, matcher));
-			}
-			catch (IOException e)
-			{
-				throw new MojoExecutionException("Could not scan dependency " + artifact.toString(), e);
-			}
-		}
-		return new DefaultScanResult(found);
-	}
+    public DefaultScanResult scan()
+        throws MojoExecutionException
+    {
+        Matcher matcher = new Matcher( includes, excludes, specificTests );
+        List<String> found = new ArrayList<String>();
+        for ( File artifact : dependenciesToScan )
+        {
+            try
+            {
+                found.addAll( scanArtifact( artifact, matcher ) );
+            }
+            catch ( IOException e )
+            {
+                throw new MojoExecutionException( "Could not scan dependency " + artifact.toString(), e );
+            }
+        }
+        return new DefaultScanResult( found );
+    }
 
-	private List<String> scanArtifact(File artifact, Matcher matcher) throws IOException
-	{
-		List<String> found = new ArrayList<String>();
+    private List<String> scanArtifact( File artifact, Matcher matcher )
+        throws IOException
+    {
+        List<String> found = new ArrayList<String>();
 
-		if(artifact != null) {
-			if(artifact.isFile()) {
-				JarFile jar = null;
-				try {
-					jar = new JarFile(artifact);
-					Enumeration<JarEntry> entries = jar.entries();
-					while(entries.hasMoreElements())
-					{
-						JarEntry entry = entries.nextElement();
-						if(matcher.shouldInclude(entry.getName()))
-						{
-							found.add(convertJarFileResourceToJavaClassName( entry.getName() ));
-						}
-					}
-				}
-				finally
-				{
-					if(jar != null)
-					{
-						jar.close();
-					}
-				}
-			}
-		}
-		return found;
-	}
+        if ( artifact != null )
+        {
+            if ( artifact.isFile() )
+            {
+                JarFile jar = null;
+                try
+                {
+                    jar = new JarFile( artifact );
+                    Enumeration<JarEntry> entries = jar.entries();
+                    while ( entries.hasMoreElements() )
+                    {
+                        JarEntry entry = entries.nextElement();
+                        if ( matcher.shouldInclude( entry.getName() ) )
+                        {
+                            found.add( convertJarFileResourceToJavaClassName( entry.getName() ) );
+                        }
+                    }
+                }
+                finally
+                {
+                    if ( jar != null )
+                    {
+                        jar.close();
+                    }
+                }
+            }
+        }
+        return found;
+    }
 
-	public static List<File> filter(List<Artifact> artifacts, List<String> groupArtifactIds)
-	{
-		List<File> matches = new ArrayList<File>();
-		if(groupArtifactIds == null || artifacts == null)
-		{
-			return matches;
-		}
-		for(Artifact artifact : artifacts)
-		{
-			for(String groups : groupArtifactIds)
-			{
-				String[] groupArtifact = groups.split(":");
-				if(groupArtifact.length != 2)
-				{
-					throw new IllegalArgumentException(
-							"dependencyToScan argument should be in format 'groupid:artifactid': " + groups);
-				}
-				if(
-						artifact.getGroupId().matches(groupArtifact[0]) &&
-						artifact.getArtifactId().matches(groupArtifact[1]))
-				{
-					matches.add(artifact.getFile());
-				}
-			}
-		}
-		return matches;
-	}
+    public static List<File> filter( List<Artifact> artifacts, List<String> groupArtifactIds )
+    {
+        List<File> matches = new ArrayList<File>();
+        if ( groupArtifactIds == null || artifacts == null )
+        {
+            return matches;
+        }
+        for ( Artifact artifact : artifacts )
+        {
+            for ( String groups : groupArtifactIds )
+            {
+                String[] groupArtifact = groups.split( ":" );
+                if ( groupArtifact.length != 2 )
+                {
+                    throw new IllegalArgumentException(
+                                                        "dependencyToScan argument should be in format 'groupid:artifactid': "
+                                                            + groups );
+                }
+                if ( artifact.getGroupId().matches( groupArtifact[0] )
+                    && artifact.getArtifactId().matches( groupArtifact[1] ) )
+                {
+                    matches.add( artifact.getFile() );
+                }
+            }
+        }
+        return matches;
+    }
 
-	private class Matcher {
+    private class Matcher
+    {
 
-		private MatchPatterns includes;
-		private MatchPatterns excludes;
+        private MatchPatterns includes;
 
-		private SpecificFileFilter specificTestFilter;
+        private MatchPatterns excludes;
 
-		public Matcher(@Nullable List<String> includes, @Nonnull List<String> excludes, @Nullable List<String> specificTests)
-		{
-			String[] specific = specificTests == null ? new String[0] : processIncludesExcludes( specificTests );
-			specificTestFilter = new SpecificFileFilter( specific );
+        private SpecificFileFilter specificTestFilter;
 
-			if(includes != null && includes.size() > 0)
-			{
-				this.includes = MatchPatterns.from(processIncludesExcludes(includes));
-			}
-			else
-			{
-				this.includes = MatchPatterns.from("**");
-			}
-			this.excludes = MatchPatterns.from(processIncludesExcludes(excludes));
-		}
+        public Matcher( @Nullable List<String> includes, @Nonnull List<String> excludes, @Nullable List<String> specificTests )
+        {
+            String[] specific = specificTests == null ? new String[0] : processIncludesExcludes( specificTests );
+            specificTestFilter = new SpecificFileFilter( specific );
 
-		public boolean shouldInclude(String name)
-		{
-			if(!name.endsWith(".class"))
-			{
-				return false;
-			}
-			boolean isIncluded = includes.matches(name, false);
-			boolean isExcluded = excludes.matches(name, false);
+            if ( includes != null && includes.size() > 0 )
+            {
+                this.includes = MatchPatterns.from( processIncludesExcludes( includes ) );
+            }
+            else
+            {
+                this.includes = MatchPatterns.from( "**" );
+            }
+            this.excludes = MatchPatterns.from( processIncludesExcludes( excludes ) );
+        }
 
-			return isIncluded && !isExcluded && specificTestFilter.accept(name);
-		}
-	}
+        public boolean shouldInclude( String name )
+        {
+            if ( !name.endsWith( ".class" ) )
+            {
+                return false;
+            }
+            name = ScannerUtil.convertJarFileResourceToSystemFileSeparator( name );
+            boolean isIncluded = includes.matches( name, false );
+            boolean isExcluded = excludes.matches( name, false );
+
+            return isIncluded && !isExcluded && specificTestFilter.accept( name );
+        }
+    }
 }

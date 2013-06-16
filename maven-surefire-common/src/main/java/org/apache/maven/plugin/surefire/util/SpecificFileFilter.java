@@ -19,17 +19,15 @@ package org.apache.maven.plugin.surefire.util;
  * under the License.
  */
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import org.apache.maven.shared.utils.io.SelectorUtils;
 
 import javax.annotation.Nullable;
 
+import org.apache.maven.shared.utils.io.SelectorUtils;
+
 public class SpecificFileFilter
 {
-
-    private static final char FS = System.getProperty( "file.separator" ).charAt( 0 );
 
     private Set<String> names;
 
@@ -38,12 +36,10 @@ public class SpecificFileFilter
         if ( classNames != null && classNames.length > 0 )
         {
             this.names = new HashSet<String>();
-            boolean isBackslashFs = '\\' == FS;
             for ( String name : classNames )
             {
-                names.add( isBackslashFs ? name.replace( '/', FS ) : name );
+                names.add( ScannerUtil.convertJarFileResourceToSystemFileSeparator( name ) );
             }
-            Collections.addAll( names, classNames );
         }
     }
 
