@@ -19,6 +19,7 @@ package org.apache.maven.plugin.surefire.util;
  * under the License.
  */
 import static org.apache.maven.plugin.surefire.util.ScannerUtil.convertJarFileResourceToJavaClassName;
+import static org.apache.maven.plugin.surefire.util.ScannerUtil.convertSlashToSystemFileSeparator;
 import static org.apache.maven.plugin.surefire.util.ScannerUtil.processIncludesExcludes;
 
 import java.io.File;
@@ -174,7 +175,7 @@ public class DependencyScanner
             {
                 return false;
             }
-            name = ScannerUtil.convertJarFileResourceToSystemFileSeparator( name );
+            name = convertSlashToSystemFileSeparator( name );
             boolean isIncluded = includes.matches( name, false );
             boolean isExcluded = excludes.matches( name, false );
 

@@ -18,6 +18,7 @@ package org.apache.maven.plugin.surefire.util;
  * specific language governing permissions and limitations
  * under the License.
  */
+import static org.apache.maven.plugin.surefire.util.ScannerUtil.convertSlashToSystemFileSeparator;
 import static org.apache.maven.plugin.surefire.util.ScannerUtil.convertToJavaClassName;
 import static org.apache.maven.plugin.surefire.util.ScannerUtil.processIncludesExcludes;
 import static org.apache.maven.plugin.surefire.util.ScannerUtil.stripBaseDir;
@@ -78,7 +79,7 @@ public class DirectoryScanner
             scanner.scan();
             for ( String test : scanner.getIncludedFiles() )
             {
-                if ( specificTestFilter.accept( stripBaseDir( basedir.getAbsolutePath(), test ) ) )
+                if ( specificTestFilter.accept( convertSlashToSystemFileSeparator( stripBaseDir( basedir.getAbsolutePath(), test ) ) ) )
                 {
                     result.add( convertToJavaClassName( test ) );
                 }

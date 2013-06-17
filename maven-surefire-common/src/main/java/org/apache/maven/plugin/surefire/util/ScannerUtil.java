@@ -49,7 +49,7 @@ final class ScannerUtil {
         return StringUtils.removeEnd( test, ".class" ).replace( "/", "." );
     }
 
-    public static @Nonnull String convertJarFileResourceToSystemFileSeparator( @Nonnull String path )
+    public static @Nonnull String convertSlashToSystemFileSeparator( @Nonnull String path )
     {
         return ( IS_NON_UNIX_FS ? path.replace( "/", FS ) : path );
     }
@@ -78,7 +78,7 @@ final class ScannerUtil {
             {
                 inc = StringUtils.removeEnd( inc, JAVA_SOURCE_FILE_EXTENSION ) + JAVA_CLASS_FILE_EXTENSION;
             }
-            incs[i] = inc;
+            incs[i] = convertSlashToSystemFileSeparator( inc );
 
         }
         return incs;
