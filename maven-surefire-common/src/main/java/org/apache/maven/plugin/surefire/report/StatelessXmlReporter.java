@@ -290,7 +290,9 @@ public class StatelessXmlReporter
                 xmlWriter.writeText( "" ); // Cheat sax to emit element
                 outputStreamWriter.flush();
                 stdOut.close();
+                eos.getUnderlying().write( "<![CDATA[".getBytes() ); // emit cdata
                 stdOut.writeTo( eos );
+                eos.getUnderlying().write( "]]>".getBytes() );
                 eos.flush();
             }
             catch ( IOException e )
@@ -361,17 +363,36 @@ public class StatelessXmlReporter
     private static class EncodingOutputStream
         extends FilterOutputStream
     {
+        private int c1;
+
+        private int c2;
+
+        private static final byte[] cdataEscapeString = "]]><![CDATA[>".getBytes();
 
         public EncodingOutputStream( OutputStream out )
         {
             super( out );
         }
 
+        public OutputStream getUnderlying()
+        {
+            return out;
+        }
+
+        private boolean isCdataEndBlock( int c )
+        {
+            return c1 == ']' && c2 == ']' && c == '>';
+        }
+
         @Override
         public void write( int b )
             throws IOException
         {
-            if ( isIllegalEscape( b ) )
+            if ( isCdataEndBlock( b ) )
+            {
+                out.write( cdataEscapeString );
+            }
+            else if ( isIllegalEscape( b ) )
             {
                 // uh-oh!  This character is illegal in XML 1.0!
                 // http://www.w3.org/TR/1998/REC-xml-19980210#charsets
@@ -382,32 +403,12 @@ public class StatelessXmlReporter
                 out.write( b );
                 out.write( ';' ); // & Will be encoded to amp inside xml encodingSHO
             }
-            else if ( '<' == b )
-            {
-                out.write( '&' );
-                out.write( 'l' );
-                out.write( 't' );
-                out.write( ';' ); // & Will be encoded to amp inside xml encodingSHO
-            }
-            else if ( '>' == b )
-            {
-                out.write( '&' );
-                out.write( 'g' );
-                out.write( 't' );
-                out.write( ';' ); // & Will be encoded to amp inside xml encodingSHO
-            }
-            else if ( '&' == b )
-            {
-                out.write( '&' );
-                out.write( 'a' );
-                out.write( 'm' );
-                out.write( 'p' );
-                out.write( ';' ); // & Will be encoded to amp inside xml encodingSHO
-            }
             else
             {
                 out.write( b );    //To change body of overridden methods use File | Settings | File Templates.
             }
+            c1 = c2;
+            c2 = b;
         }
     }
 

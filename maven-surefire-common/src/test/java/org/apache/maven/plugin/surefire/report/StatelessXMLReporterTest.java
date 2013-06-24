@@ -89,7 +89,8 @@ public class StatelessXMLReporterTest
         stats.testSucceeded( testSetReportEntry );
         StackTraceWriter stackTraceWriter = new DeserializedStacktraceWriter( "A fud msg", "trimmed", "fail at foo" );
         DeferredFileOutputStream s = new DeferredFileOutputStream( 1000000, "fds", "fdx", new File( "" ) );
-        s.write( "std-o\u00DCt<null>!".getBytes("UTF-8") );
+        String expected = "st]]>d-o\u00DCt<null>!";
+        s.write( expected.getBytes( "UTF-8" ) );
         DeferredFileOutputStream s1 = new DeferredFileOutputStream( 1000000, "fds", "fdx", new File( "" ) );
         byte[] bytes = "std-\u0115rr?&-&amp;&#163;".getBytes("UTF-8");
         s1.write( bytes );
@@ -125,7 +126,7 @@ public class StatelessXMLReporterTest
         assertNotNull( errorNode );
         assertEquals( "A fud msg", errorNode.getAttribute( "message" ) );
         assertEquals( "fail at foo", errorNode.getAttribute( "type" ) );
-        assertEquals( "std-o\u00DCt<null>!", tcb.getChild( "system-out" ).getValue() );
+        assertEquals( expected, tcb.getChild( "system-out" ).getValue() );
         assertEquals( "std-\u0115rr?&-&amp;&#163;", tcb.getChild( "system-err" ).getValue() );
 
         expectedReportFile.delete();
