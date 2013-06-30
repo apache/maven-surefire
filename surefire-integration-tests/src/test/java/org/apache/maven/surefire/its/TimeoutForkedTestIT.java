@@ -19,7 +19,8 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.junit.Test;
 
 /**
  * Test
@@ -27,13 +28,14 @@ import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
 public class TimeoutForkedTestIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
+    @Test
     public void testTimeoutForked()
         throws Exception
     {
         unpack( "/timeout-forked" ).addGoal( "-DsleepLength=10000" ).addGoal(
-            "-DforkTimeout=1" ).executeTestWithFailure();
+            "-DforkTimeout=1" ).maven().withFailure().executeTest();
         // SUREFIRE-468 test that had to be reverted due to SUREFIRE-705
         //assertFalse( getSurefireReportsFile( "TEST-timeoutForked.BasicTest.xml" ).exists() );
         // assertFalse( getSurefireReportsFile( "timeoutForked.BasicTest.txt" ).exists() );

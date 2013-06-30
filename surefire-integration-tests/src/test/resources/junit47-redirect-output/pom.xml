@@ -43,6 +43,7 @@
              <redirectTestOutputToFile>${redirect.to.file}</redirectTestOutputToFile>
              <threadCount>2</threadCount>
              <parallel>${parallel}</parallel>
+             <runOrder>alphabetical</runOrder>
              <includes>
                 <include>**/Test*.java</include>
              </includes>

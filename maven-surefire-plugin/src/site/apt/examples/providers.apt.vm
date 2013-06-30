@@ -1,65 +1,64 @@
-------
-Selecting providers
-------
-Kristian Rosenvold
-<krosenvold@apache.org>
-------
-2010-12-04
-------
+ ------
+ Selecting providers
+ ------
+ Kristian Rosenvold <krosenvold@apache.org>
+ ------
+ 2010-12-04
+ ------
+ 
+ ~~ Licensed to the Apache Software Foundation (ASF) under one
+ ~~ or more contributor license agreements.  See the NOTICE file
+ ~~ distributed with this work for additional information
+ ~~ regarding copyright ownership.  The ASF licenses this file
+ ~~ to you under the Apache License, Version 2.0 (the
+ ~~ "License"); you may not use this file except in compliance
+ ~~ with the License.  You may obtain a copy of the License at
+ ~~
+ ~~   http://www.apache.org/licenses/LICENSE-2.0
+ ~~
+ ~~ Unless required by applicable law or agreed to in writing,
+ ~~ software distributed under the License is distributed on an
+ ~~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ ~~ KIND, either express or implied.  See the License for the
+ ~~ specific language governing permissions and limitations
+ ~~ under the License.
 
-~~ Licensed to the Apache Software Foundation (ASF) under one
-~~ or more contributor license agreements.  See the NOTICE file
-~~ distributed with this work for additional information
-~~ regarding copyright ownership.  The ASF licenses this file
-~~ to you under the Apache License, Version 2.0 (the
-~~ "License"); you may not use this file except in compliance
-~~ with the License.  You may obtain a copy of the License at
-~~
-~~   http://www.apache.org/licenses/LICENSE-2.0
-~~
-~~ Unless required by applicable law or agreed to in writing,
-~~ software distributed under the License is distributed on an
-~~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-~~ KIND, either express or implied.  See the License for the
-~~ specific language governing permissions and limitations
-~~ under the License.
-
-~~ NOTE: For help with the syntax of this file, see:
-~~ http://maven.apache.org/doxia/references/apt-format.html
+ ~~ NOTE: For help with the syntax of this file, see:
+ ~~ http://maven.apache.org/doxia/references/apt-format.html 
 
 Selecting providers
 
 * Selecting a provider
 
-Surefire normally automatically selects which test-framework provider to use based on the version of
-TestNG/JUnit present in your project's classpath. In some cases it may be desirable to manually
-override such a selection. This can be done by adding the required provider as a dependency to
-the surefire-plugin.
+  Surefire normally automatically selects which test-framework provider to use based on the version of
+  TestNG/JUnit present in your project's classpath. In some cases it may be desirable to manually
+  override such a selection. This can be done by adding the required provider as a dependency to
+  the surefire-plugin.
 
-The following example shows how to force the junit 4.7 provider:
+  The following example shows how to force the junit 4.7 provider:
 
 +---+
 <plugins>
-    [...]
-    <plugin>
-        <groupId>${project.groupId}</groupId>
-        <artifactId>${project.artifactId}</artifactId>
+  [...]
+  <plugin>
+    <groupId>${project.groupId}</groupId>
+    <artifactId>${project.artifactId}</artifactId>
+    <version>${project.version}</version>
+    <dependencies>
+      <dependency>
+        <groupId>org.apache.maven.surefire</groupId>
+        <artifactId>surefire-junit47</artifactId>
         <version>${project.version}</version>
-        <dependencies>
-            <dependency>
-                <groupId>org.apache.maven.surefire</groupId>
-                <artifactId>surefire-junit47</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-        </dependencies>
-    </plugin>
-    [...]
+      </dependency>
+    </dependencies>
+  </plugin>
+  [...]
 </plugins>
 +---+
 
-The providers supplied with surefire are surefire-junit3, surefire-junit4, surefire-junit47 and surefire-testng.
-Please note that forcing a provider still requires that the test framework is properly set up on your project classpath.
+  The providers supplied with surefire are surefire-junit3, surefire-junit4, surefire-junit47 and surefire-testng.
+  Please note that forcing a provider still requires that the test framework is properly set up on your project classpath.
 
-You can also specify multiple providers as dependencies, and they will all be run and produce a common report.
-This may be especially handy with external providers, since there are few use-cases for combining the included providers.
+  You can also specify multiple providers as dependencies, and they will all be run and produce a common report.
+  This may be especially handy with external providers, since there are few use-cases for combining the included providers.
 

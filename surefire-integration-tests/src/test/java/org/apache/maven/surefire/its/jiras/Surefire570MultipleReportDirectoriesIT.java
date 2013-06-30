@@ -19,10 +19,8 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
-import org.apache.maven.surefire.its.fixture.SurefireLauncher;
-import org.apache.maven.surefire.its.fixture.TestFile;
+import org.apache.maven.surefire.its.fixture.*;
+import org.junit.Test;
 
 /**
  * Test Surefire-570 Multiple report directories
@@ -30,9 +28,10 @@ import org.apache.maven.surefire.its.fixture.TestFile;
  * @author Kristian Rosenvold
  */
 public class Surefire570MultipleReportDirectoriesIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
 
+    @Test
     public void testReportWithAggregate()
         throws Exception
     {
@@ -40,20 +39,21 @@ public class Surefire570MultipleReportDirectoriesIT
         SurefireLauncher surefireLauncher = unpack().failNever();
         surefireLauncher.executeTest();
         surefireLauncher.addGoal( "-Daggregate=true" );
-        OutputValidator validator = surefireLauncher.execute( "surefire-report:report" );
+        OutputValidator validator = surefireLauncher.executeSurefireReport( );
         TestFile siteFile = validator.getSiteFile( "surefire-report.html" );
         siteFile.assertContainsText( "MyModule1ClassTest" );
         siteFile.assertContainsText( "MyModule2ClassTest" );
         siteFile.assertContainsText( "MyDummyClassM1Test" );
     }
 
+    @Test
     public void testReportWithoutAggregate()
         throws Exception
     {
         SurefireLauncher surefireLauncher = unpack().failNever();
         surefireLauncher.executeTest();
         surefireLauncher.reset();
-        surefireLauncher.execute( "surefire-report:report" );
+        surefireLauncher.executeSurefireReport( );
         OutputValidator module1 = surefireLauncher.getSubProjectValidator( "module1" );
         TestFile siteFile = module1.getSiteFile( "surefire-report.html" );
         siteFile.assertContainsText( "MyModule1ClassTest" );

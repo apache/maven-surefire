@@ -44,14 +44,14 @@ import org.apache.maven.surefire.util.internal.StringUtils;
 
 /**
  * Knows how to reconstruct *all* the state transmitted over stdout by the forked process.
- *
+ * 
  * @author Kristian Rosenvold
  */
 public class ForkClient
     implements StreamConsumer
 {
 
-    private final DefaultReporterFactory providerReporterFactory;
+    private final DefaultReporterFactory defaultReporterFactory;
 
     private final TestProvidingInputStream testProvidingInputStream;
 
@@ -64,15 +64,15 @@ public class ForkClient
 
     private volatile StackTraceWriter errorInFork = null;
 
-    public ForkClient( DefaultReporterFactory providerReporterFactory, Properties testVmSystemProperties )
+    public ForkClient( DefaultReporterFactory defaultReporterFactory, Properties testVmSystemProperties )
     {
-        this( providerReporterFactory, testVmSystemProperties, null );
+        this( defaultReporterFactory, testVmSystemProperties, null );
     }
 
-    public ForkClient( DefaultReporterFactory providerReporterFactory, Properties testVmSystemProperties,
+    public ForkClient( DefaultReporterFactory defaultReporterFactory, Properties testVmSystemProperties,
                        TestProvidingInputStream testProvidingInputStream )
     {
-        this.providerReporterFactory = providerReporterFactory;
+        this.defaultReporterFactory = defaultReporterFactory;
         this.testVmSystemProperties = testVmSystemProperties;
         this.testProvidingInputStream = testProvidingInputStream;
     }
@@ -215,9 +215,11 @@ public class ForkClient
     {
         StackTraceWriter stackTraceWriter;
         String stackTraceMessage = nullableCsv( tokens.nextToken() );
+        String smartStackTrace = nullableCsv( tokens.nextToken() );
         String stackTrace = tokens.hasMoreTokens() ? nullableCsv( tokens.nextToken() ) : null;
         stackTraceWriter =
-            stackTrace != null ? new DeserializedStacktraceWriter( stackTraceMessage, stackTrace ) : null;
+            stackTrace != null ? new DeserializedStacktraceWriter( stackTraceMessage, smartStackTrace, stackTrace )
+                            : null;
         return stackTraceWriter;
     }
 
@@ -240,7 +242,7 @@ public class ForkClient
 
     /**
      * Used when getting reporters on the plugin side of a fork.
-     *
+     * 
      * @param channelNumber The logical channel number
      * @return A mock provider reporter
      */
@@ -254,7 +256,7 @@ public class ForkClient
         RunListener reporter = testSetReporters.get( channelNumber );
         if ( reporter == null )
         {
-            reporter = providerReporterFactory.createReporter();
+            reporter = defaultReporterFactory.createReporter();
             testSetReporters.put( channelNumber, reporter );
         }
         return reporter;

@@ -64,6 +64,8 @@ under the License.
             <configuration>
               <excludes>
                 <exclude>**/DontRunTest.*</exclude>
+                <exclude></exclude>
+                <exclude />
               </excludes>
               <includes>
                 <include>**/NotIncludedByDefault.java</include>

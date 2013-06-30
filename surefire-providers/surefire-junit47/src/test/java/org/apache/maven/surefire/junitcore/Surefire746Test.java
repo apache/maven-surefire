@@ -95,9 +95,9 @@ public class Surefire746Test
         final Map<String, TestSet> testSetMap = new ConcurrentHashMap<String, TestSet>();
 
         RunListener listener =
-            ConcurrentReporterManager.createInstance( testSetMap, reporterFactory, false, false, consoleLogger );
+            ConcurrentRunListener.createInstance( testSetMap, reporterFactory, false, false, consoleLogger );
 
-        TestsToRun testsToRun = new TestsToRun( Arrays.<Class<?>>asList( TestClassTest.class ) );
+        TestsToRun testsToRun = new TestsToRun( Arrays.<Class>asList( TestClassTest.class ) );
 
         org.junit.runner.notification.RunListener jUnit4RunListener = new JUnitCoreRunListener( listener, testSetMap );
 

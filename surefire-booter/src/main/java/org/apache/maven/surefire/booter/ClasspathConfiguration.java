@@ -29,13 +29,13 @@ package org.apache.maven.surefire.booter;
  */
 public class ClasspathConfiguration
 {
-    private static final String CHILD_DELEGATION = "childDelegation";
+    public static final String CHILD_DELEGATION = "childDelegation";
 
-    private static final String ENABLE_ASSERTIONS = "enableAssertions";
+    public static final String ENABLE_ASSERTIONS = "enableAssertions";
 
-    private static final String CLASSPATH = "classPathUrl.";
+    public static final String CLASSPATH = "classPathUrl.";
 
-    private static final String SUREFIRE_CLASSPATH = "surefireClassPathUrl.";
+    public static final String SUREFIRE_CLASSPATH = "surefireClassPathUrl.";
 
     private final Classpath classpathUrls;
 
@@ -57,12 +57,13 @@ public class ClasspathConfiguration
 
     public ClasspathConfiguration( boolean enableAssertions, boolean childDelegation )
     {
-        this( new Classpath(), new Classpath(), new Classpath(), enableAssertions, childDelegation );
+        this( Classpath.emptyClasspath(), Classpath.emptyClasspath(), Classpath.emptyClasspath(), enableAssertions, childDelegation );
     }
 
     ClasspathConfiguration( PropertiesWrapper properties )
     {
-        this( properties.getClasspath( CLASSPATH ), properties.getClasspath( SUREFIRE_CLASSPATH ), new Classpath(),
+        this( properties.getClasspath( CLASSPATH ), properties.getClasspath( SUREFIRE_CLASSPATH ),
+              Classpath.emptyClasspath(),
               properties.getBooleanProperty( ENABLE_ASSERTIONS ), properties.getBooleanProperty( CHILD_DELEGATION ) );
     }
 
@@ -76,58 +77,38 @@ public class ClasspathConfiguration
         this.surefireClasspathUrls = surefireClassPathUrls;
     }
 
-    public void addForkProperties( PropertiesWrapper properties )
-    {
-        properties.setClasspath( CLASSPATH, classpathUrls );
-        properties.setClasspath( SUREFIRE_CLASSPATH, surefireClasspathUrls );
-        properties.setProperty( ENABLE_ASSERTIONS, String.valueOf( enableAssertions ) );
-        properties.setProperty( CHILD_DELEGATION, String.valueOf( childDelegation ) );
-    }
-
-    public ClassLoader createTestClassLoader( boolean childDelegation )
+    public ClassLoader createMergedClassLoader()
         throws SurefireExecutionException
     {
-        return classpathUrls.createClassLoader( null, childDelegation, enableAssertions, "test" );
+        return Classpath.join( inprocClasspath, classpathUrls)
+            .createClassLoader( null, this.childDelegation, enableAssertions, "test" );
     }
 
-    public ClassLoader createTestClassLoader()
-        throws SurefireExecutionException
+    public Classpath getProviderClasspath()
     {
-        return classpathUrls.createClassLoader( null, this.childDelegation, enableAssertions, "test" );
+        return surefireClasspathUrls;
     }
 
-    public ClassLoader createSurefireClassLoader( ClassLoader parent )
-        throws SurefireExecutionException
-    {
-        return surefireClasspathUrls.createClassLoader( parent, false, enableAssertions, "provider" );
-    }
 
-    public ClassLoader createInprocSurefireClassLoader( ClassLoader parent )
-        throws SurefireExecutionException
-    {
-        return inprocClasspath.createClassLoader( parent, false, enableAssertions, "provider" );
-    }
-
-    public Classpath getTestClasspath()
+        public Classpath getTestClasspath()
     {
         return classpathUrls;
     }
 
-    public ClassLoader createForkingTestClassLoader( boolean manifestOnlyJarRequestedAndUsable )
+    public void trickClassPathWhenManifestOnlyClasspath()
         throws SurefireExecutionException
     {
-        if ( manifestOnlyJarRequestedAndUsable )
-        {
             System.setProperty( "surefire.real.class.path", System.getProperty( "java.class.path" ) );
             getTestClasspath().writeToSystemProperty( "java.class.path" );
-            // this.getClass.getClassLoader() is always loaded in system classloader if forking
-            // this.getClass().getClassLoader() is plugin classloder if in-process
-            // "this" must refer to a class within the booter module
-            return this.getClass().getClassLoader();   // SUREFIRE-459, trick the app under test into thinking its classpath was conventional;
-        }
-        else
-        {
-            return createTestClassLoader();
-        }
+    }
+
+    public boolean isEnableAssertions()
+    {
+        return enableAssertions;
+    }
+
+    public boolean isChildDelegation()
+    {
+        return childDelegation;
     }
 }

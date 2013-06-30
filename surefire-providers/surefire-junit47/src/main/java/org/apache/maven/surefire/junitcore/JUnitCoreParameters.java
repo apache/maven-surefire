@@ -43,7 +43,6 @@ class JUnitCoreParameters
 
     public static final String USEUNLIMITEDTHREADS_KEY = "useUnlimitedThreads";
 
-
     public JUnitCoreParameters( Properties properties )
     {
         this.parallel = properties.getProperty( PARALLEL_KEY, "none" ).toLowerCase();

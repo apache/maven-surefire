@@ -20,15 +20,16 @@ package consoleoutput_noisy;
  */
 
 import junit.framework.TestCase;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 
 public class Test1
     extends TestCase
 {
+
+    public static final int thousand = Integer.parseInt( System.getProperty( "thousand", "1000" ) );
+
     public void test1MillionBytes()
     {
-        for ( int i = 0; i < 10000; i++ )
+        for ( int i = 0; i < ( 10 * thousand ); i++ )
         {
             System.out.println(
                 "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789" );
@@ -37,7 +38,7 @@ public class Test1
 
     public static void testHundredThousand()
     {
-        for ( int i = 0; i < 1000; i++ )
+        for ( int i = 0; i < thousand; i++ )
         {
             System.out.println(
                 "AAAAAAAAAABBBBBBBBBBCCCCCCCCCCDDDDDDDDDDEEEEEEEEEEFFFFFFFFFFGGGGGGGGGGHHHHHHHHHHIIIIIIIIIIJJJJJJJJJJ" );
@@ -46,7 +47,7 @@ public class Test1
 
     public static void testAnotherHundredThousand()
     {
-        for ( int i = 0; i < 1000; i++ )
+        for ( int i = 0; i < thousand; i++ )
         {
             System.out.println(
                 "AAAAAAAAAABBBBBBBBBBCCCCCCCCCCDDDDDDDDDDEEEEEEEEEEFFFFFFFFFFGGGGGGGGGGHHHHHHHHHHIIIIIIIIIIJJJJJJJJJJ" );

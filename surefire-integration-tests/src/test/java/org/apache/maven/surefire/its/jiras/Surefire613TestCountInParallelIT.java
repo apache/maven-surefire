@@ -20,7 +20,8 @@ package org.apache.maven.surefire.its.jiras;
  */
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.junit.Test;
 
 /**
  * SUREFIRE-613 Asserts proper test counts when running in parallel
@@ -28,9 +29,10 @@ import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
  * @author Kristian Rosenvold
  */
 public class Surefire613TestCountInParallelIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
-    public void testPaallelBuildResultCount()
+    @Test
+    public void testParallelBuildResultCount()
     {
         OutputValidator validator = unpack( "/surefire-613-testCount-in-parallel" ).failNever().executeTest();
 

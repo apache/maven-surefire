@@ -19,56 +19,150 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.fail;
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.apache.maven.surefire.its.fixture.TestFile;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  * Test forkMode
- *
+ * 
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
 public class ForkModeIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
+
+    private OutputValidator outputValidator;
+
+    @BeforeClass
+    public static void installDumpPidPlugin()
+        throws Exception
+    {
+        unpack( ForkModeIT.class, "test-helper-dump-pid-plugin", "plugin" ).executeInstall();
+    }
+
+    @Test
     public void testForkModeAlways()
     {
-        String[] pids = doTest( unpack( getProject() ).debugLogging().forkAlways() );
+        String[] pids = doTest( unpack( getProject() ).setForkJvm().forkAlways() );
         assertDifferentPids( pids );
+        assertEndWith( pids, "_1_1", 3 );
+        assertFalse( "pid 1 is not the same as the main process' pid", pids[0].equals( getMainPID() ) );
     }
 
+    @Test
     public void testForkModePerTest()
     {
-        String[] pids = doTest( unpack( getProject() ).debugLogging().forkPerTest() );
+        String[] pids = doTest( unpack( getProject() ).setForkJvm().forkPerTest() );
         assertDifferentPids( pids );
+        assertEndWith( pids, "_1_1", 3 );
+        assertFalse( "pid 1 is not the same as the main process' pid", pids[0].equals( getMainPID() ) );
     }
 
+    @Test
     public void testForkModeNever()
     {
-        String[] pids = doTest( unpack( getProject() ).debugLogging().forkNever() );
+        String[] pids = doTest( unpack( getProject() ).forkNever() );
         assertSamePids( pids );
+        assertEndWith( pids, "_1_1", 3 );
+        assertEquals( "my pid is equal to pid 1 of the test", getMainPID(), pids[0] );
     }
 
+    @Test
     public void testForkModeNone()
     {
-        String[] pids = doTest( unpack( getProject() ).debugLogging().forkMode( "none" ) );
+        String[] pids = doTest( unpack( getProject() ).forkMode( "none" ) );
         assertSamePids( pids );
+        assertEndWith( pids, "_1_1", 3 );
+        assertEquals( "my pid is equal to pid 1 of the test", getMainPID(), pids[0] );
     }
 
+    @Test
     public void testForkModeOncePerThreadSingleThread()
     {
-        String[] pids = doTest( unpack( getProject() ).debugLogging().forkOncePerThread().threadCount( 1 ) );
+        String[] pids = doTest( unpack( getProject() ).setForkJvm().forkOncePerThread().threadCount( 1 ) );
         assertSamePids( pids );
+        assertEndWith( pids, "_1_1", 3 );
+        assertFalse( "pid 1 is not the same as the main process' pid", pids[0].equals( getMainPID() ) );
     }
 
+    @Test
     public void testForkModeOncePerThreadTwoThreads()
     {
-        String[] pids = doTest( unpack( getProject() ).debugLogging().forkOncePerThread().threadCount( 2 ) );
+        String[] pids =
+            doTest( unpack( getProject() ).forkOncePerThread().threadCount( 2 ).addGoal( "-DsleepLength=1200" ) );
         assertDifferentPids( pids, 2 );
+        assertFalse( "pid 1 is not the same as the main process' pid", pids[0].equals( getMainPID() ) );
+    }
+
+    @Test
+    public void testForkCountZero()
+    {
+        String[] pids = doTest( unpack( getProject() ).forkCount( 0 ) );
+        assertSamePids( pids );
+        assertEndWith( pids, "_1_1", 3 );
+        assertEquals( "my pid is equal to pid 1 of the test", getMainPID(), pids[0] );
+    }
+
+    @Test
+    public void testForkCountOneNoReuse()
+    {
+        String[] pids = doTest( unpack( getProject() ).setForkJvm().forkCount( 1 ).reuseForks( false ) );
+        assertDifferentPids( pids );
+        assertEndWith( pids, "_1_1", 3 );
+        assertFalse( "pid 1 is not the same as the main process' pid", pids[0].equals( getMainPID() ) );
+    }
+
+    @Test
+    public void testForkCountOneReuse()
+    {
+        String[] pids = doTest( unpack( getProject() ).setForkJvm().forkCount( 1 ).reuseForks( true ) );
+        assertSamePids( pids );
+        assertEndWith( pids, "_1_1", 3 );
+        assertFalse( "pid 1 is not the same as the main process' pid", pids[0].equals( getMainPID() ) );
+    }
+
+    @Test
+    public void testForkCountTwoNoReuse()
+    {
+        String[] pids =
+            doTest( unpack( getProject() ).forkCount( 2 ).reuseForks( false ).addGoal( "-DsleepLength=1200" ) );
+        assertDifferentPids( pids );
+        assertFalse( "pid 1 is not the same as the main process' pid", pids[0].equals( getMainPID() ) );
+    }
+
+    @Test
+    public void testForkCountTwoReuse()
+    {
+        String[] pids =
+            doTest( unpack( getProject() ).forkCount( 2 ).reuseForks( true ).addGoal( "-DsleepLength=1200" ) );
+        assertDifferentPids( pids, 2 );
+        assertFalse( "pid 1 is not the same as the main process' pid", pids[0].equals( getMainPID() ) );
+    }
+
+    private void assertEndWith( String[] pids, String suffix, int expectedMatches )
+    {
+        int matches = 0;
+        for ( String pid : pids )
+        {
+            if ( pid.endsWith( suffix ) )
+            {
+                matches++;
+            }
+        }
+
+        assertEquals( "suffix " + suffix + " matched the correct number of pids", expectedMatches, matches );
     }
 
     private void assertDifferentPids( String[] pids, int numOfDifferentPids )
@@ -77,14 +171,19 @@ public class ForkModeIT
         assertEquals( "number of different pids is not as expected", numOfDifferentPids, pidSet.size() );
     }
 
+    @Test
     public void testForkModeOnce()
     {
         String[] pids = doTest( unpack( getProject() ).forkOnce() );
-        // DGF It would be nice to assert that "once" was different
-        // from "never" ... but there's no way to check the PID of
-        // Maven itself.  No matter, "once" is tested by setting
-        // argLine, which can't be done except by forking.
         assertSamePids( pids );
+        assertFalse( "pid 1 is not the same as the main process' pid", pids[0].equals( getMainPID() ) );
+    }
+
+    private String getMainPID()
+    {
+        final TestFile targetFile = outputValidator.getTargetFile( "maven.pid" );
+        String pid = targetFile.slurpFile();
+        return pid + " testValue_1_1";
     }
 
     private void assertSamePids( String[] pids )
@@ -113,8 +212,9 @@ public class ForkModeIT
 
     private String[] doTest( SurefireLauncher forkMode )
     {
-        forkMode.addD( "testProperty", "testValue_${surefire.threadNumber}" );
-        final OutputValidator outputValidator = forkMode.executeTest();
+        forkMode.sysProp( "testProperty", "testValue_${surefire.threadNumber}_${surefire.forkNumber}" );
+        forkMode.addGoal( "org.apache.maven.plugins.surefire:maven-dump-pid-plugin:dump-pid" );
+        outputValidator = forkMode.executeTest();
         outputValidator.verifyErrorFreeLog().assertTestSuiteResults( 3, 0, 0, 0 );
         String[] pids = new String[3];
         for ( int i = 1; i <= pids.length; i++ )

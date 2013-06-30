@@ -19,7 +19,8 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.junit.Test;
 
 /**
  * Test TestNG running in the JDK 1.4 JavaDoc style
@@ -27,15 +28,11 @@ import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
 public class CheckTestNgJdk14IT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
 
-    public CheckTestNgJdk14IT()
-    {
-        unpack( "/testng-jdk14" );
-    }
-
-    public void testTestNgJdk14()
+    @Test
+    public void TestNgJdk14()
         throws Exception
     {
         unpack( "/testng-jdk14" ).executeTest().verifyErrorFree( 1 );

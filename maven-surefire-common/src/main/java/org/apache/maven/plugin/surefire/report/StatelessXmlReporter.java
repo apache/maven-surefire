@@ -19,22 +19,24 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
-import java.util.Enumeration;
-import java.util.Properties;
-import java.util.StringTokenizer;
+import org.apache.commons.io.output.DeferredFileOutputStream;
 import org.apache.maven.shared.utils.io.IOUtil;
-import org.apache.maven.shared.utils.xml.Xpp3Dom;
-import org.apache.maven.shared.utils.xml.Xpp3DomWriter;
+import org.apache.maven.shared.utils.xml.XMLWriter;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.SafeThrowable;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FilterOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.util.Enumeration;
+import java.util.Properties;
+import java.util.StringTokenizer;
+
+import static org.apache.maven.plugin.surefire.report.FileReporterUtils.stripIllegalFilenameChars;
 
 /**
  * XML format reporter writing to <code>TEST-<i>reportName</i>[-<i>suffix</i>].xml</code> file like written and read
@@ -64,20 +66,22 @@ import org.apache.maven.surefire.report.SafeThrowable;
  *  &lt;/testcase>
  *  [...]</pre>
  *
- * @author <a href="mailto:jruiz@exist.com">Johnny R. Ruiz III</a>
  * @author Kristian Rosenvold
  * @see <a href="http://wiki.apache.org/ant/Proposals/EnhancedTestReports">Ant's format enhancement proposal</a>
  *      (not yet implemented by Ant 1.8.2)
  */
 public class StatelessXmlReporter
 {
-    private static final String LS = System.getProperty( "line.separator" );
+
+    private static final byte[] ampBytes = "&amp#".getBytes();
 
     private final File reportsDirectory;
 
     private final String reportNameSuffix;
 
     private final boolean trimStackTrace;
+
+    private final String encoding = "UTF-8";
 
     public StatelessXmlReporter( File reportsDirectory, String reportNameSuffix, boolean trimStackTrace )
     {
@@ -90,31 +94,56 @@ public class StatelessXmlReporter
         throws ReporterException
     {
 
-        Xpp3Dom testSuite = createTestSuiteElement( testSetReportEntry, testSetStats, reportNameSuffix );
-
-        showProperties( testSuite );
-
-        testSuite.setAttribute( "tests", String.valueOf( testSetStats.getCompletedCount() ) );
-
-        testSuite.setAttribute( "errors", String.valueOf( testSetStats.getErrors() ) );
-
-        testSuite.setAttribute( "skipped", String.valueOf( testSetStats.getSkipped() ) );
-
-        testSuite.setAttribute( "failures", String.valueOf( testSetStats.getFailures() ) );
-
-        for ( WrappedReportEntry entry : testSetStats.getReportEntries() )
+        FileOutputStream outputStream = getOutputStream( testSetReportEntry );
+        OutputStreamWriter fw = getWriter( outputStream );
+        try
         {
-            if ( ReportEntryType.success.equals( entry.getReportEntryType() ) )
+
+            org.apache.maven.shared.utils.xml.XMLWriter ppw =
+                new org.apache.maven.shared.utils.xml.PrettyPrintXMLWriter( fw );
+            ppw.setEncoding( encoding );
+
+            createTestSuiteElement( ppw, testSetReportEntry, testSetStats, reportNameSuffix );
+
+            showProperties( ppw );
+
+            for ( WrappedReportEntry entry : testSetStats.getReportEntries() )
             {
-                testSuite.addChild( createTestElement( entry, reportNameSuffix ) );
+                if ( ReportEntryType.success.equals( entry.getReportEntryType() ) )
+                {
+                    startTestElement( ppw, entry, reportNameSuffix );
+                    ppw.endElement();
+                }
+                else
+                {
+                    getTestProblems( fw, ppw, entry, trimStackTrace, reportNameSuffix, outputStream );
+                }
+
             }
-            else
-            {
-                testSuite.addChild( getTestProblems( entry, trimStackTrace, reportNameSuffix ) );
-            }
+            ppw.endElement(); // TestSuite
 
         }
+        finally
+        {
+            IOUtil.close( fw );
+        }
+    }
 
+    private OutputStreamWriter getWriter( FileOutputStream fos )
+    {
+        try
+        {
+
+            return new OutputStreamWriter( fos, encoding );
+        }
+        catch ( IOException e )
+        {
+            throw new ReporterException( "When writing report", e );
+        }
+    }
+
+    private FileOutputStream getOutputStream( WrappedReportEntry testSetReportEntry )
+    {
         File reportFile = getReportFile( testSetReportEntry, reportsDirectory, reportNameSuffix );
 
         File reportDir = reportFile.getParentFile();
@@ -122,29 +151,14 @@ public class StatelessXmlReporter
         //noinspection ResultOfMethodCallIgnored
         reportDir.mkdirs();
 
-        PrintWriter writer = null;
-
         try
         {
-            writer = new PrintWriter(
-                new BufferedWriter( new OutputStreamWriter( new FileOutputStream( reportFile ), "UTF-8" ) ) );
 
-            writer.write( "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>" + LS );
-
-            Xpp3DomWriter.write( new PrettyPrintXMLWriter( writer ), testSuite );
+            return new FileOutputStream( reportFile );
         }
-        catch ( UnsupportedEncodingException e )
+        catch ( Exception e )
         {
-            throw new ReporterException( "Unable to use UTF-8 encoding", e );
-        }
-        catch ( FileNotFoundException e )
-        {
-            throw new ReporterException( "Unable to create file: " + e.getMessage(), e );
-        }
-
-        finally
-        {
-            IOUtil.close( writer );
+            throw new ReporterException( "When writing report", e );
         }
     }
 
@@ -154,67 +168,77 @@ public class StatelessXmlReporter
 
         if ( reportNameSuffix != null && reportNameSuffix.length() > 0 )
         {
-            reportFile = new File( reportsDirectory, "TEST-" + report.getName() + "-" + reportNameSuffix + ".xml" );
+            reportFile = new File( reportsDirectory, stripIllegalFilenameChars(
+                "TEST-" + report.getName() + "-" + reportNameSuffix + ".xml" ) );
         }
         else
         {
-            reportFile = new File( reportsDirectory, "TEST-" + report.getName() + ".xml" );
+            reportFile = new File( reportsDirectory, stripIllegalFilenameChars( "TEST-" + report.getName() + ".xml" ) );
         }
 
         return reportFile;
     }
 
-    private static Xpp3Dom createTestElement( WrappedReportEntry report, String reportNameSuffix )
+    private static void startTestElement( XMLWriter ppw, WrappedReportEntry report, String reportNameSuffix )
     {
-        Xpp3Dom testCase = new Xpp3Dom( "testcase" );
-        testCase.setAttribute( "name", report.getReportName() );
+        ppw.startElement( "testcase" );
+        ppw.addAttribute( "name", report.getReportName() );
         if ( report.getGroup() != null )
         {
-            testCase.setAttribute( "group", report.getGroup() );
+            ppw.addAttribute( "group", report.getGroup() );
         }
         if ( report.getSourceName() != null )
         {
             if ( reportNameSuffix != null && reportNameSuffix.length() > 0 )
             {
-                testCase.setAttribute( "classname", report.getSourceName() + "(" + reportNameSuffix + ")" );
+                ppw.addAttribute( "classname", report.getSourceName() + "(" + reportNameSuffix + ")" );
             }
             else
             {
-                testCase.setAttribute( "classname", report.getSourceName() );
+                ppw.addAttribute( "classname", report.getSourceName() );
             }
         }
-        testCase.setAttribute( "time", report.elapsedTimeAsString() );
-        return testCase;
+        ppw.addAttribute( "time", report.elapsedTimeAsString() );
     }
 
-    private static Xpp3Dom createTestSuiteElement( WrappedReportEntry report, TestSetStats testSetStats,
-                                                   String reportNameSuffix1 )
+    private static void createTestSuiteElement( XMLWriter ppw, WrappedReportEntry report, TestSetStats testSetStats,
+                                                String reportNameSuffix1 )
     {
-        Xpp3Dom testCase = new Xpp3Dom( "testsuite" );
+        ppw.startElement( "testsuite" );
 
-        testCase.setAttribute( "name", report.getReportName( reportNameSuffix1 ) );
+        ppw.addAttribute( "name", report.getReportName( reportNameSuffix1 ) );
 
         if ( report.getGroup() != null )
         {
-            testCase.setAttribute( "group", report.getGroup() );
+            ppw.addAttribute( "group", report.getGroup() );
         }
-        testCase.setAttribute( "time", testSetStats.getElapsedForTestSet() );
-        return testCase;
+
+        ppw.addAttribute( "time", testSetStats.getElapsedForTestSet() );
+
+        ppw.addAttribute( "tests", String.valueOf( testSetStats.getCompletedCount() ) );
+
+        ppw.addAttribute( "errors", String.valueOf( testSetStats.getErrors() ) );
+
+        ppw.addAttribute( "skipped", String.valueOf( testSetStats.getSkipped() ) );
+
+        ppw.addAttribute( "failures", String.valueOf( testSetStats.getFailures() ) );
+
     }
 
 
-    private Xpp3Dom getTestProblems( WrappedReportEntry report, boolean trimStackTrace, String reportNameSuffix )
+    private void getTestProblems( OutputStreamWriter outputStreamWriter, XMLWriter ppw, WrappedReportEntry report,
+                                  boolean trimStackTrace, String reportNameSuffix, FileOutputStream fw )
     {
 
-        Xpp3Dom testCase = createTestElement( report, reportNameSuffix );
+        startTestElement( ppw, report, reportNameSuffix );
 
-        Xpp3Dom element = createElement( testCase, report.getReportEntryType().name() );
+        ppw.startElement( report.getReportEntryType().name() );
 
         String stackTrace = report.getStackTrace( trimStackTrace );
 
         if ( report.getMessage() != null && report.getMessage().length() > 0 )
         {
-            element.setAttribute( "message", report.getMessage() );
+            ppw.addAttribute( "message", extraEscape( report.getMessage(), true ) );
         }
 
         if ( report.getStackTraceWriter() != null )
@@ -225,55 +249,69 @@ public class StatelessXmlReporter
             {
                 if ( t.getMessage() != null )
                 {
-                    element.setAttribute( "type", ( stackTrace.contains( ":" )
+                    ppw.addAttribute( "type", ( stackTrace.contains( ":" )
                         ? stackTrace.substring( 0, stackTrace.indexOf( ":" ) )
                         : stackTrace ) );
                 }
                 else
                 {
-                    element.setAttribute( "type", new StringTokenizer( stackTrace ).nextToken() );
+                    ppw.addAttribute( "type", new StringTokenizer( stackTrace ).nextToken() );
                 }
             }
         }
 
         if ( stackTrace != null )
         {
-            element.setValue( stackTrace );
+            ppw.writeText( extraEscape( stackTrace, false ) );
         }
 
-        addOutputStreamElement( report.getStdout(), "system-out", testCase );
+        ppw.endElement(); // entry type
 
-        addOutputStreamElement( report.getStdErr(), "system-err", testCase );
+        EncodingOutputStream eos = new EncodingOutputStream( fw );
 
-        return testCase;
+        addOutputStreamElement( outputStreamWriter, fw, eos, ppw, report.getStdout(), "system-out" );
+
+        addOutputStreamElement( outputStreamWriter, fw, eos, ppw, report.getStdErr(), "system-err" );
+
+        ppw.endElement(); // test element
     }
 
-    private void addOutputStreamElement( String stdOut, String name, Xpp3Dom testCase )
+    private void addOutputStreamElement( OutputStreamWriter outputStreamWriter, OutputStream fw,
+                                         EncodingOutputStream eos, XMLWriter xmlWriter, DeferredFileOutputStream stdOut,
+                                         String name )
     {
-        if ( stdOut != null && stdOut.trim().length() > 0 )
+        if ( stdOut != null && stdOut.getByteCount() > 0 )
         {
-            createElement( testCase, name ).setValue( stdOut );
+
+            xmlWriter.startElement( name );
+
+            try
+            {
+                xmlWriter.writeText( "" ); // Cheat sax to emit element
+                outputStreamWriter.flush();
+                stdOut.close();
+                eos.getUnderlying().write( "<![CDATA[".getBytes() ); // emit cdata
+                stdOut.writeTo( eos );
+                eos.getUnderlying().write( "]]>".getBytes() );
+                eos.flush();
+            }
+            catch ( IOException e )
+            {
+                throw new ReporterException( "When writing xml report stdout/stderr", e );
+            }
+            xmlWriter.endElement();
         }
-    }
-
-    private Xpp3Dom createElement( Xpp3Dom element, String name )
-    {
-        Xpp3Dom component = new Xpp3Dom( name );
-
-        element.addChild( component );
-
-        return component;
     }
 
     /**
      * Adds system properties to the XML report.
      * <p/>
      *
-     * @param testSuite The test suite to report to
+     * @param xmlWriter The test suite to report to
      */
-    private void showProperties( Xpp3Dom testSuite )
+    private void showProperties( XMLWriter xmlWriter )
     {
-        Xpp3Dom properties = createElement( testSuite, "properties" );
+        xmlWriter.startElement( "properties" );
 
         Properties systemProperties = System.getProperties();
 
@@ -292,13 +330,134 @@ public class StatelessXmlReporter
                     value = "null";
                 }
 
-                Xpp3Dom property = createElement( properties, "property" );
+                xmlWriter.startElement( "property" );
 
-                property.setAttribute( "name", key );
+                xmlWriter.addAttribute( "name", key );
 
-                property.setAttribute( "value", value );
+                xmlWriter.addAttribute( "value", extraEscape( value, true ) );
+
+                xmlWriter.endElement();
 
             }
         }
+        xmlWriter.endElement();
     }
+
+    /**
+     * Handle stuff that may pop up in java that is not legal in xml
+     *
+     * @param message   The string
+     * @param attribute true if the escaped value is inside an attribute
+     * @return The escaped string
+     */
+    private static String extraEscape( String message, boolean attribute )
+    {
+        // Someday convert to xml 1.1 which handles everything but 0 inside string
+        if ( !containsEscapesIllegalnXml10( message ) )
+        {
+            return message;
+        }
+        return escapeXml( message, attribute );
+    }
+
+    private static class EncodingOutputStream
+        extends FilterOutputStream
+    {
+        private int c1;
+
+        private int c2;
+
+        private static final byte[] cdataEscapeString = "]]><![CDATA[>".getBytes();
+
+        public EncodingOutputStream( OutputStream out )
+        {
+            super( out );
+        }
+
+        public OutputStream getUnderlying()
+        {
+            return out;
+        }
+
+        private boolean isCdataEndBlock( int c )
+        {
+            return c1 == ']' && c2 == ']' && c == '>';
+        }
+
+        @Override
+        public void write( int b )
+            throws IOException
+        {
+            if ( isCdataEndBlock( b ) )
+            {
+                out.write( cdataEscapeString );
+            }
+            else if ( isIllegalEscape( b ) )
+            {
+                // uh-oh!  This character is illegal in XML 1.0!
+                // http://www.w3.org/TR/1998/REC-xml-19980210#charsets
+                // we're going to deliberately doubly-XML escape it...
+                // there's nothing better we can do! :-(
+                // SUREFIRE-456
+                out.write( ampBytes );
+                out.write( b );
+                out.write( ';' ); // & Will be encoded to amp inside xml encodingSHO
+            }
+            else
+            {
+                out.write( b );    //To change body of overridden methods use File | Settings | File Templates.
+            }
+            c1 = c2;
+            c2 = b;
+        }
+    }
+
+    private static boolean containsEscapesIllegalnXml10( String message )
+    {
+        int size = message.length();
+        for ( int i = 0; i < size; i++ )
+        {
+            if ( isIllegalEscape( message.charAt( i ) ) )
+            {
+                return true;
+            }
+
+        }
+        return false;
+    }
+
+    private static boolean isIllegalEscape( char c )
+    {
+        return c >= 0 && c < 32 && c != '\n' && c != '\r' && c != '\t';
+    }
+
+    private static boolean isIllegalEscape( int c )
+    {
+        return c >= 0 && c < 32 && c != '\n' && c != '\r' && c != '\t';
+    }
+
+    private static String escapeXml( String text, boolean attribute )
+    {
+        StringBuilder sb = new StringBuilder( text.length() * 2 );
+        for ( int i = 0; i < text.length(); i++ )
+        {
+            char c = text.charAt( i );
+            if ( isIllegalEscape( c ) )
+            {
+                // uh-oh!  This character is illegal in XML 1.0!
+                // http://www.w3.org/TR/1998/REC-xml-19980210#charsets
+                // we're going to deliberately doubly-XML escape it...
+                // there's nothing better we can do! :-(
+                // SUREFIRE-456
+                sb.append( attribute ? "&#" : "&amp#" ).append( (int) c ).append(
+                    ';' ); // & Will be encoded to amp inside xml encodingSHO
+            }
+            else
+            {
+                sb.append( c );
+            }
+        }
+        return sb.toString();
+    }
+
 }

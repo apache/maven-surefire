@@ -53,4 +53,9 @@ public class SafeThrowable
             return t.getMessage();
         }
     }
+
+    public Throwable getTarget()
+    {
+        return target;
+    }
 }

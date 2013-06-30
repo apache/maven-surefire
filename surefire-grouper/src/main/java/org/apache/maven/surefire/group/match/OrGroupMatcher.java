@@ -113,10 +113,6 @@ public class OrGroupMatcher
             return false;
         }
         AndGroupMatcher other = (AndGroupMatcher) obj;
-        if ( !getMatchers().equals( other.getMatchers() ) )
-        {
-            return false;
-        }
-        return true;
+        return getMatchers().equals( other.getMatchers() );
     }
 }

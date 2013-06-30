@@ -19,8 +19,9 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+import org.junit.Test;
 
 /**
  * SUREFIRE-621 Asserts proper test counts when running junit 3 tests in parallel
@@ -28,14 +29,16 @@ import org.apache.maven.surefire.its.fixture.SurefireLauncher;
  * @author Kristian Rosenvold
  */
 public class Surefire34SecurityManagerIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
+    @Test
     public void testSecurityManager()
     {
         SurefireLauncher surefireLauncher = unpack( "surefire-34-securityManager" ).failNever();
         surefireLauncher.executeTest().assertTestSuiteResults( 2, 1, 0, 0 );
     }
 
+    @Test
     public void testSecurityManagerSuccessful()
     {
         SurefireLauncher surefireLauncher = unpack( "surefire-34-securityManager-success" );

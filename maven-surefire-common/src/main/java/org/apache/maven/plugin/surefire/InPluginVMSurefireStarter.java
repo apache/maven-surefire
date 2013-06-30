@@ -29,6 +29,8 @@ import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.DefaultScanResult;
 
+import javax.annotation.Nonnull;
+
 /**
  * Starts the provider in the same VM as the surefire plugin.
  * <p/>
@@ -50,16 +52,16 @@ public class InPluginVMSurefireStarter
 
     private final ProviderConfiguration providerConfiguration;
 
-    public InPluginVMSurefireStarter( StartupConfiguration startupConfiguration,
-                                      ProviderConfiguration providerConfiguration,
-                                      StartupReportConfiguration startupReportConfiguration )
+    public InPluginVMSurefireStarter( @Nonnull StartupConfiguration startupConfiguration,
+                                      @Nonnull ProviderConfiguration providerConfiguration,
+                                      @Nonnull StartupReportConfiguration startupReportConfiguration )
     {
         this.startupConfiguration = startupConfiguration;
         this.startupReportConfiguration = startupReportConfiguration;
         this.providerConfiguration = providerConfiguration;
     }
 
-    public RunResult runSuitesInProcess( DefaultScanResult scanResult )
+    public RunResult runSuitesInProcess( @Nonnull DefaultScanResult scanResult )
         throws SurefireExecutionException, TestSetFailedException
     {
         // The test classloader must be constructed first to avoid issues with commons-logging until we properly
@@ -69,18 +71,15 @@ public class InPluginVMSurefireStarter
         scanResult.writeTo( providerProperties );
 
         startupConfiguration.writeSurefireTestClasspathProperty();
-        ClassLoader testsClassLoader = startupConfiguration.getClasspathConfiguration().createTestClassLoader();
+        ClassLoader testsClassLoader = startupConfiguration.getClasspathConfiguration().createMergedClassLoader();
 
-        ClassLoader surefireClassLoader =
-            startupConfiguration.getClasspathConfiguration().createInprocSurefireClassLoader( testsClassLoader );
-
-        CommonReflector surefireReflector = new CommonReflector( surefireClassLoader );
+        CommonReflector surefireReflector = new CommonReflector( testsClassLoader );
 
         final Object factory = surefireReflector.createReportingReporterFactory( startupReportConfiguration );
 
         try
         {
-            return ProviderFactory.invokeProvider( null, testsClassLoader, surefireClassLoader, factory,
+            return ProviderFactory.invokeProvider( null, testsClassLoader, factory,
                                                    providerConfiguration, false, startupConfiguration, true );
         }
         catch ( InvocationTargetException e )

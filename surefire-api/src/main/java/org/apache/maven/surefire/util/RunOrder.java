@@ -54,7 +54,7 @@ public class RunOrder
      */
     public static RunOrder[] valueOfMulti( String values )
     {
-        List result = new ArrayList();
+        List<RunOrder> result = new ArrayList<RunOrder>();
         if ( values != null )
         {
             StringTokenizer stringTokenizer = new StringTokenizer( values, "," );
@@ -63,7 +63,7 @@ public class RunOrder
                 result.add( valueOf( stringTokenizer.nextToken() ) );
             }
         }
-        return (RunOrder[]) result.toArray( new RunOrder[result.size()] );
+        return result.toArray( new RunOrder[result.size()] );
     }
 
     public static RunOrder valueOf( String name )
@@ -75,11 +75,11 @@ public class RunOrder
         else
         {
             RunOrder[] runOrders = values();
-            for ( int i = 0; i < runOrders.length; i++ )
+            for ( RunOrder runOrder : runOrders )
             {
-                if ( runOrders[i].matches( name ) )
+                if ( runOrder.matches( name ) )
                 {
-                    return runOrders[i];
+                    return runOrder;
                 }
             }
 
@@ -114,7 +114,7 @@ public class RunOrder
 
     public static String asString( RunOrder[] runOrder )
     {
-        StringBuffer stringBuffer = new StringBuffer();
+        StringBuilder stringBuffer = new StringBuilder();
         for ( int i = 0; i < runOrder.length; i++ )
         {
             stringBuffer.append( runOrder[i].name );

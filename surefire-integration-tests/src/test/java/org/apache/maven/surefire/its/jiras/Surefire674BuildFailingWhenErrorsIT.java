@@ -19,7 +19,8 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.junit.Test;
 
 /**
  * SUREFIRE-674 Asserts that the build fails when tests have errors
@@ -27,10 +28,12 @@ import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
  * @author Kristian Rosenvold
  */
 public class Surefire674BuildFailingWhenErrorsIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
+    @Test
     public void testBuildFailingWhenErrors()
     {
-        unpack( "/surefire-674-buildFailingWhenErrors" ).executeTestWithFailure().verifyTextInLog( "BUILD FAILURE" );
+        unpack( "/surefire-674-buildFailingWhenErrors" ).maven().withFailure().executeTest().verifyTextInLog(
+            "BUILD FAILURE" );
     }
 }

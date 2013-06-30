@@ -19,7 +19,8 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.junit.Test;
 
 /**
  * Test files with "Abstract" in their name that aren't really abstract,
@@ -29,10 +30,10 @@ import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
  * @author <a href="mailto:krosenvold@apache.org">Kristian Rosenvold</a>
  */
 public class AbstractTestCaseIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
-
-    public void testAbstractTestCase()
+    @Test
+    public void abstractTestCase()
     {
         unpack( "/default-configuration-abstract" ).executeTest().verifyErrorFree( 1 );
     }

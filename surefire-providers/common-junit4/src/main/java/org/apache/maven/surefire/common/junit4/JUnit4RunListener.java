@@ -19,16 +19,17 @@ package org.apache.maven.surefire.common.junit4;
  * under the License.
  */
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.SimpleReportEntry;
+import org.apache.maven.surefire.report.StackTraceWriter;
 import org.apache.maven.surefire.testset.TestSetFailedException;
-
 import org.junit.runner.Description;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class JUnit4RunListener
     extends org.junit.runner.notification.RunListener
@@ -38,7 +39,6 @@ public class JUnit4RunListener
                                                                // then an open-paren (start matching a group)
                                                                + "[^\\\\(\\\\)]+" //non-parens
                                                                + ")\\)" + "$" );
-    // then a close-paren (end group match)
 
     protected final RunListener reporter;
 
@@ -72,7 +72,7 @@ public class JUnit4RunListener
     {
         final String reason = jUnit4Reflector.getAnnotatedIgnoreValue( description );
         final SimpleReportEntry report =
-            SimpleReportEntry.ignored( extractClassName( description ), description.getDisplayName(), reason );
+            SimpleReportEntry.ignored( getClassName( description ), description.getDisplayName(), reason );
         reporter.testSkipped( report );
     }
 
@@ -97,9 +97,13 @@ public class JUnit4RunListener
     public void testFailure( Failure failure )
         throws Exception
     {
-        ReportEntry report =
-            SimpleReportEntry.withException( extractClassName( failure.getDescription() ), failure.getTestHeader(),
-                                             new JUnit4StackTraceWriter( failure ) );
+        String testHeader = failure.getTestHeader();
+        if ( isInsaneJunitNullString( testHeader ) )
+        {
+            testHeader = "Failure when constructing test";
+        }
+        ReportEntry report = SimpleReportEntry.withException( getClassName( failure.getDescription() ), testHeader,
+                                                              createStackTraceWriter( failure ) );
 
         if ( failure.getException() instanceof AssertionError )
         {
@@ -110,6 +114,11 @@ public class JUnit4RunListener
             this.reporter.testError( report );
         }
         failureFlag.set( Boolean.TRUE );
+    }
+
+    protected StackTraceWriter createStackTraceWriter( Failure failure )
+    {
+        return new JUnit4StackTraceWriter( failure );
     }
 
     @SuppressWarnings( { "UnusedDeclaration" } )
@@ -135,13 +144,36 @@ public class JUnit4RunListener
         }
     }
 
-    private SimpleReportEntry createReportEntry( Description description )
+    protected SimpleReportEntry createReportEntry( Description description )
     {
-        return new SimpleReportEntry( extractClassName( description ), description.getDisplayName() );
+        return new SimpleReportEntry( getClassName( description ), description.getDisplayName() );
     }
 
+    public String getClassName( Description description )
+    {
+        String name = extractClassName( description );
+        if ( name == null || isInsaneJunitNullString( name ) )
+        {
+            // This can happen upon early failures (class instantiation error etc)
+            Description subDescription = description.getChildren().get( 0 );
+            if ( subDescription != null )
+            {
+                name = extractClassName( subDescription );
+            }
+            if ( name == null )
+            {
+                name = "Test Instantiation Error";
+            }
+        }
+        return name;
+    }
 
-    String extractClassName( Description description )
+    private boolean isInsaneJunitNullString( String value )
+    {
+        return "null".equals( value );
+    }
+
+    public static String extractClassName( Description description )
     {
         String displayName = description.getDisplayName();
         Matcher m = PARENS.matcher( displayName );
@@ -150,6 +182,14 @@ public class JUnit4RunListener
             return displayName;
         }
         return m.group( 1 );
+    }
+
+    public static String extractMethodName( Description description )
+    {
+        String displayName = description.getDisplayName();
+        int i = displayName.indexOf( "(" );
+        if (i >= 0 ) return displayName.substring( 0, i );
+        return displayName;
     }
 
 

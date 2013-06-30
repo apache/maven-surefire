@@ -15,8 +15,10 @@ public class Test1
     private static final Random RANDOM = new Random();
 
     public void test1()
-        throws IOException
+        throws IOException, InterruptedException
     {
+        int sleepLength = Integer.valueOf( System.getProperty( "sleepLength", "750" ));
+        Thread.sleep(sleepLength);
         dumpPidFile( this );
     }
 

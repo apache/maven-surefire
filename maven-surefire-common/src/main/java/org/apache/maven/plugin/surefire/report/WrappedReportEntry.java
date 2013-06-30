@@ -19,10 +19,12 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
-import java.text.NumberFormat;
-import java.util.Locale;
+import org.apache.commons.io.output.DeferredFileOutputStream;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.StackTraceWriter;
+
+import java.text.NumberFormat;
+import java.util.Locale;
 
 /**
  * @author Kristian Rosenvold
@@ -36,9 +38,9 @@ public class WrappedReportEntry
 
     private final Integer elapsed;
 
-    private final String stdout;
+    private final DeferredFileOutputStream stdout;
 
-    private final String stdErr;
+    private final DeferredFileOutputStream stdErr;
 
     private final NumberFormat numberFormat = NumberFormat.getInstance( Locale.ENGLISH );
 
@@ -47,7 +49,7 @@ public class WrappedReportEntry
     static final String NL = System.getProperty( "line.separator" );
 
     public WrappedReportEntry( ReportEntry original, ReportEntryType reportEntryType, Integer estimatedElapsed,
-                               String stdout, String stdErr )
+                               DeferredFileOutputStream stdout, DeferredFileOutputStream stdErr )
     {
         this.original = original;
         this.reportEntryType = reportEntryType;
@@ -58,21 +60,20 @@ public class WrappedReportEntry
 
     public Integer getElapsed()
     {
-        return original.getElapsed() != null ? original.getElapsed() : elapsed;
+        return elapsed;
     }
-
 
     public ReportEntryType getReportEntryType()
     {
         return reportEntryType;
     }
 
-    public String getStdout()
+    public DeferredFileOutputStream getStdout()
     {
         return stdout;
     }
 
-    public String getStdErr()
+    public DeferredFileOutputStream getStdErr()
     {
         return stdErr;
     }
@@ -171,5 +172,10 @@ public class WrappedReportEntry
     public boolean isSucceeded()
     {
         return ReportEntryType.success == getReportEntryType();
+    }
+
+    public String getNameWithGroup()
+    {
+        return original.getNameWithGroup();
     }
 }

@@ -19,8 +19,9 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+import org.junit.Test;
 
 /**
  * Test simple TestNG listener and reporter
@@ -29,9 +30,10 @@ import org.apache.maven.surefire.its.fixture.SurefireLauncher;
  * @author <a href="mailto:krosenvold@apache.org">Kristian Rosenvold</a>
  */
 public class CheckTestNgListenerReporterIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
-    public void testTestNgListenerReporter()
+    @Test
+    public void TestNgListenerReporter()
     {
         final SurefireLauncher verifierStarter = unpack( "testng-listener-reporter" );
         verifierStarter.executeTest().verifyErrorFree( 1 ).getTargetFile(

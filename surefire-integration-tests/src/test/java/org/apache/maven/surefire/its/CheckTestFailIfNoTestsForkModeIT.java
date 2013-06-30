@@ -19,8 +19,9 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+import org.junit.Test;
 
 /**
  * Test failIfNoTests with various forkModes.
@@ -29,48 +30,47 @@ import org.apache.maven.surefire.its.fixture.SurefireLauncher;
  * @author <a href="mailto:krosenvold@apache.org">Kristian Rosenvold</a>
  */
 public class CheckTestFailIfNoTestsForkModeIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
-    public void testFailIfNoTestsForkModeAlways()
+    @Test
+    public void failIfNoTestsForkModeAlways()
     {
-        doTest( unpack().forkAlways().failIfNoTests( true ) );
+        unpack().forkAlways().failIfNoTests( true ).maven().withFailure().executeTest();
     }
 
-    public void testFailIfNoTestsForkModeNever()
+    @Test
+    public void failIfNoTestsForkModeNever()
     {
-        doTest( unpack().forkNever().failIfNoTests( true ) );
+        unpack().forkNever().failIfNoTests( true ).maven().withFailure().executeTest();
     }
 
-    public void testFailIfNoTestsForkModeOnce()
+    @Test
+    public void failIfNoTestsForkModeOnce()
     {
-        doTest( unpack().forkOnce().failIfNoTests( true ) );
+        unpack().forkOnce().failIfNoTests( true ).maven().withFailure().executeTest();
     }
 
-    public void testDontFailIfNoTestsForkModeAlways()
+    @Test
+    public void dontFailIfNoTestsForkModeAlways()
     {
         doTest( unpack().forkAlways().failIfNoTests( false ) );
     }
 
-    public void testDontFailIfNoTestsForkModeNever()
+    @Test
+    public void dontFailIfNoTestsForkModeNever()
     {
         doTest( unpack().forkNever().failIfNoTests( false ) );
     }
 
-    public void testDontFailIfNoTestsForkModeOnce()
+    @Test
+    public void dontFailIfNoTestsForkModeOnce()
     {
         doTest( unpack().forkOnce().failIfNoTests( false ) );
     }
 
     private void doTest( SurefireLauncher launcher )
     {
-        if ( launcher.isFailIfNoTests() )
-        {
-            launcher.executeTestWithFailure();
-        }
-        else
-        {
             launcher.executeTest().verifyErrorFreeLog().assertTestSuiteResults( 0, 0, 0, 0 );
-        }
     }
 
     private SurefireLauncher unpack()

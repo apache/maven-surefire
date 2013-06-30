@@ -81,6 +81,7 @@ public class ForkingRunListener
 
     public static final byte BOOTERCODE_BYE = (byte) 'Z';
 
+
     private final PrintStream target;
 
     private final Integer testSetChannelId;
@@ -94,7 +95,7 @@ public class ForkingRunListener
     public ForkingRunListener( PrintStream target, int testSetChannelId, boolean trimStackTraces )
     {
         this.target = target;
-        this.testSetChannelId = new Integer( testSetChannelId );
+        this.testSetChannelId = testSetChannelId;
         this.trimStackTraces = trimStackTraces;
         stdOutHeader = createHeader( BOOTERCODE_STDOUT, testSetChannelId );
         stdErrHeader = createHeader( BOOTERCODE_STDERR, testSetChannelId );
@@ -130,7 +131,6 @@ public class ForkingRunListener
     {
         target.print( toString( BOOTERCODE_TEST_ERROR, report, testSetChannelId ) );
     }
-
 
     public void testFailed( ReportEntry report )
     {
@@ -232,8 +232,10 @@ public class ForkingRunListener
     private String toPropertyString( String key, String value )
     {
         StringBuffer stringBuffer = new StringBuffer();
-        append( stringBuffer, BOOTERCODE_SYSPROPS ).comma( stringBuffer );
-        append( stringBuffer, Integer.toHexString( testSetChannelId.intValue() ) ).comma( stringBuffer );
+
+        append( stringBuffer, BOOTERCODE_SYSPROPS );comma( stringBuffer );
+        append( stringBuffer, Integer.toHexString( testSetChannelId ) );comma( stringBuffer );
+
         StringUtils.escapeJavaStyleString( stringBuffer, key );
         append( stringBuffer, "," );
         StringUtils.escapeJavaStyleString( stringBuffer, value );
@@ -244,8 +246,9 @@ public class ForkingRunListener
     private String toString( byte operationCode, ReportEntry reportEntry, Integer testSetChannelId )
     {
         StringBuffer stringBuffer = new StringBuffer();
-        append( stringBuffer, operationCode ).comma( stringBuffer );
-        append( stringBuffer, Integer.toHexString( testSetChannelId.intValue() ) ).comma( stringBuffer );
+        append( stringBuffer, operationCode ); comma( stringBuffer );
+        append( stringBuffer, Integer.toHexString( testSetChannelId ) );comma( stringBuffer );
+
         nullableEncoding( stringBuffer, reportEntry.getSourceName() );
         comma( stringBuffer );
         nullableEncoding( stringBuffer, reportEntry.getName() );
@@ -325,7 +328,8 @@ public class ForkingRunListener
                 nullableEncoding( stringBuffer, message );
             }
             comma( stringBuffer );
-
+            nullableEncoding( stringBuffer, stackTraceWriter.smartTrimmedStackTrace() );
+            comma( stringBuffer );
             nullableEncoding( stringBuffer, trimStackTraces
                 ? stackTraceWriter.writeTrimmedTraceToString()
                 : stackTraceWriter.writeTraceToString() );

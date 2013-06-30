@@ -65,7 +65,7 @@ public class ByteBuffer
 
     public void append( Integer integer )
     {
-        toHex( integer.intValue() );
+        toHex( integer );
     }
 
     /**

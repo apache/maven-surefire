@@ -77,9 +77,9 @@ under the License.
         <code>
         <![CDATA[ <useSystemClassLoader>true</useSystemClassLoader>]]><br/>
         <![CDATA[ <useManifestOnlyJar>false</useManifestOnlyJar>]]><br/>
-        <![CDATA[ <forkMode>once</forkMode>]]><br/>
+        <![CDATA[ <forkCount>1</forkCount>]]><br/>
         </code>
-        forkMode at least once, always if not enough
+        try reuseForks=true and if it doesn't work, fall back to reuseForks=false
         </p>
       </answer>
     </faq>

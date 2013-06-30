@@ -23,10 +23,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
 import org.apache.maven.surefire.common.junit4.JUnit4RunListenerFactory;
-import org.apache.maven.surefire.common.junit4.JUnit4TestChecker;
 import org.apache.maven.surefire.common.junit48.FilterFactory;
 import org.apache.maven.surefire.common.junit48.JUnit48Reflector;
+import org.apache.maven.surefire.common.junit48.JUnit48TestChecker;
 import org.apache.maven.surefire.providerapi.AbstractProvider;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.report.ConsoleLogger;
@@ -42,7 +43,6 @@ import org.apache.maven.surefire.util.ScanResult;
 import org.apache.maven.surefire.util.ScannerFilter;
 import org.apache.maven.surefire.util.TestsToRun;
 import org.apache.maven.surefire.util.internal.StringUtils;
-
 import org.junit.runner.manipulation.Filter;
 
 /**
@@ -62,7 +62,6 @@ public class JUnitCoreProvider
 
     private final ProviderParameters providerParameters;
 
-
     private TestsToRun testsToRun;
 
     private JUnit48Reflector jUnit48Reflector;
@@ -80,11 +79,11 @@ public class JUnitCoreProvider
         this.scanResult = providerParameters.getScanResult();
         this.runOrderCalculator = providerParameters.getRunOrderCalculator();
         this.jUnitCoreParameters = new JUnitCoreParameters( providerParameters.getProviderProperties() );
-        this.scannerFilter = new JUnit4TestChecker( testClassLoader );
+        this.scannerFilter = new JUnit48TestChecker( testClassLoader );
         this.requestedTestMethod = providerParameters.getTestRequest().getRequestedTestMethod();
 
-        customRunListeners = JUnit4RunListenerFactory.
-            createCustomListeners( providerParameters.getProviderProperties().getProperty( "listener" ) );
+        customRunListeners =
+            JUnit4RunListenerFactory.createCustomListeners( providerParameters.getProviderProperties().getProperty( "listener" ) );
         jUnit48Reflector = new JUnit48Reflector( testClassLoader );
     }
 
@@ -95,19 +94,22 @@ public class JUnitCoreProvider
 
     public Iterator getSuites()
     {
-        final Filter filter = jUnit48Reflector.isJUnit48Available() ? createJUnit48Filter() : null;
         testsToRun = scanClassPath();
         return testsToRun.iterator();
+    }
+
+    private boolean isSingleThreaded()
+    {
+        return !jUnitCoreParameters.isAnyParallelitySelected()
+            || ( testsToRun.containsExactly( 1 ) && !jUnitCoreParameters.isParallelMethod() );
     }
 
     public RunResult invoke( Object forkTestSet )
         throws TestSetFailedException, ReporterException
     {
-        final String message = "Concurrency config is " + jUnitCoreParameters.toString() + "\n";
         final ReporterFactory reporterFactory = providerParameters.getReporterFactory();
 
         final ConsoleLogger consoleLogger = providerParameters.getConsoleLogger();
-        consoleLogger.info( message );
 
         Filter filter = jUnit48Reflector.isJUnit48Available() ? createJUnit48Filter() : null;
 
@@ -128,28 +130,45 @@ public class JUnitCoreProvider
             }
         }
 
-        final Map<String, TestSet> testSetMap = new ConcurrentHashMap<String, TestSet>();
-
-        RunListener listener = ConcurrentReporterManager.createInstance( testSetMap, reporterFactory,
-                                                                         jUnitCoreParameters.isParallelClasses(),
-                                                                         jUnitCoreParameters.isParallelBoth(),
-                                                                         consoleLogger );
-
-        ConsoleOutputCapture.startCapture( (ConsoleOutputReceiver) listener );
-
-        org.junit.runner.notification.RunListener jUnit4RunListener = new JUnitCoreRunListener( listener, testSetMap );
+        org.junit.runner.notification.RunListener jUnit4RunListener = getRunListener( reporterFactory, consoleLogger );
         customRunListeners.add( 0, jUnit4RunListener );
-
         JUnitCoreWrapper.execute( testsToRun, jUnitCoreParameters, customRunListeners, filter );
         return reporterFactory.close();
+    }
+
+    private org.junit.runner.notification.RunListener getRunListener( ReporterFactory reporterFactory,
+                                                                      ConsoleLogger consoleLogger )
+        throws TestSetFailedException
+    {
+        org.junit.runner.notification.RunListener jUnit4RunListener;
+        if ( isSingleThreaded() )
+        {
+            NonConcurrentRunListener rm = new NonConcurrentRunListener( reporterFactory.createReporter() );
+            ConsoleOutputCapture.startCapture( rm );
+            jUnit4RunListener = rm;
+        }
+        else
+        {
+            final Map<String, TestSet> testSetMap = new ConcurrentHashMap<String, TestSet>();
+
+            RunListener listener =
+                ConcurrentRunListener.createInstance( testSetMap, reporterFactory,
+                                                      jUnitCoreParameters.isParallelClasses(),
+                                                      jUnitCoreParameters.isParallelBoth(), consoleLogger );
+            ConsoleOutputCapture.startCapture( (ConsoleOutputReceiver) listener );
+
+            jUnit4RunListener = new JUnitCoreRunListener( listener, testSetMap );
+        }
+        return jUnit4RunListener;
     }
 
     private Filter createJUnit48Filter()
     {
         final FilterFactory filterFactory = new FilterFactory( testClassLoader );
-        return isMethodFilterSpecified()
-            ? filterFactory.createMethodFilter( requestedTestMethod )
-            : filterFactory.createGroupFilter( providerParameters.getProviderProperties() );
+        Filter groupFilter = filterFactory.createGroupFilter( providerParameters.getProviderProperties() );
+        return isMethodFilterSpecified() ? filterFactory.and( groupFilter,
+                                                              filterFactory.createMethodFilter( requestedTestMethod ) )
+                        : groupFilter;
     }
 
     private TestsToRun scanClassPath()

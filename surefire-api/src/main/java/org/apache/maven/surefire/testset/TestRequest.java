@@ -30,7 +30,7 @@ import java.util.List;
  */
 public class TestRequest
 {
-    private final List suiteXmlFiles;
+    private final List<File> suiteXmlFiles;
 
     private final File testSourceDirectory;
 
@@ -62,7 +62,7 @@ public class TestRequest
      *
      * @return A list of java.io.File objects.
      */
-    public List getSuiteXmlFiles()
+    public List<File> getSuiteXmlFiles()
     {
         return suiteXmlFiles;
     }
@@ -98,15 +98,15 @@ public class TestRequest
         return requestedTestMethod;
     }
 
-    private static List createFiles( List suiteXmlFiles )
+    private static List<File> createFiles( List suiteXmlFiles )
     {
         if ( suiteXmlFiles != null )
         {
-            List files = new ArrayList();
+            List<File> files = new ArrayList<File>();
             Object element;
-            for ( int i = 0; i < suiteXmlFiles.size(); i++ )
+            for ( Object suiteXmlFile : suiteXmlFiles )
             {
-                element = suiteXmlFiles.get( i );
+                element = suiteXmlFile;
                 files.add( element instanceof String ? new File( (String) element ) : (File) element );
             }
             return files;

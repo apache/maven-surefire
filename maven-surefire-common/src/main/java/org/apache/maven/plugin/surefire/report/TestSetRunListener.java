@@ -19,16 +19,18 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import org.apache.commons.io.output.DeferredFileOutputStream;
 import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
 import org.apache.maven.surefire.report.ConsoleLogger;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.RunStatistics;
-import org.apache.maven.surefire.util.internal.ByteBuffer;
+import org.apache.maven.surefire.util.NestedRuntimeException;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
 
 /**
  * Reports data for a single test set.
@@ -43,14 +45,15 @@ public class TestSetRunListener
 
     private final TestSetStats detailsForThis;
 
-    static
+    private DeferredFileOutputStream testStdOut = initDeferred( "stdout" );
+
+    private DeferredFileOutputStream testStdErr = initDeferred( "stderr" );
+
+    private DeferredFileOutputStream initDeferred( String channel )
     {
-        System.out.println( "static = " + true );
+        return new DeferredFileOutputStream( 1000000, channel , "deferred", null );
     }
 
-    private final List<ByteBuffer> testStdOut = Collections.synchronizedList( new ArrayList<ByteBuffer>() );
-
-    private final List<ByteBuffer> testStdErr = Collections.synchronizedList( new ArrayList<ByteBuffer>() );
 
     private final TestcycleConsoleOutputReceiver consoleOutputReceiver;
 
@@ -90,14 +93,20 @@ public class TestSetRunListener
 
     public void writeTestOutput( byte[] buf, int off, int len, boolean stdout )
     {
-        ByteBuffer byteBuffer = new ByteBuffer( buf, off, len );
-        if ( stdout )
+        try
         {
-            testStdOut.add( byteBuffer );
+            if ( stdout )
+            {
+                testStdOut.write( buf, off, len );
+            }
+            else
+            {
+                testStdErr.write( buf, off, len );
+            }
         }
-        else
+        catch ( IOException e )
         {
-            testStdErr.add( byteBuffer );
+            throw new NestedRuntimeException( e );
         }
         consoleOutputReceiver.writeTestOutput( buf, off, len, stdout );
     }
@@ -114,13 +123,13 @@ public class TestSetRunListener
 
     public void clearCapture()
     {
-        testStdErr.clear();
-        testStdOut.clear();
+        testStdOut = initDeferred( "stdout" );
+        testStdErr = initDeferred( "stderr" );
     }
 
     public void testSetCompleted( ReportEntry report )
     {
-        WrappedReportEntry wrap = wrapTestSet( report, null );
+        WrappedReportEntry wrap = wrapTestSet( report );
         List<String> testResults = briefOrPlainFormat ? detailsForThis.getTestResults() : null;
         if ( consoleReporter != null )
         {
@@ -178,7 +187,7 @@ public class TestSetRunListener
         {
             statisticsReporter.testError( reportEntry );
         }
-        globalStatistics.addErrorSource( reportEntry.getName(), reportEntry.getStackTraceWriter() );
+        globalStatistics.addErrorSource( reportEntry.getStackTraceWriter() );
         clearCapture();
     }
 
@@ -190,7 +199,7 @@ public class TestSetRunListener
         {
             statisticsReporter.testFailed( reportEntry );
         }
-        globalStatistics.addFailureSource( reportEntry.getName(), reportEntry.getStackTraceWriter() );
+        globalStatistics.addFailureSource( reportEntry.getStackTraceWriter() );
         clearCapture();
     }
 
@@ -200,7 +209,6 @@ public class TestSetRunListener
 
     public void testSkipped( ReportEntry reportEntry )
     {
-
         WrappedReportEntry wrapped = wrap( reportEntry, ReportEntryType.skipped );
         detailsForThis.testSkipped( wrapped );
         if ( statisticsReporter != null )
@@ -215,31 +223,33 @@ public class TestSetRunListener
         testSkipped( report );
     }
 
-    public String getAsString( List<ByteBuffer> byteBufferList )
-    {
-        StringBuilder stringBuffer = new StringBuilder();
-        // To avoid getting a java.util.ConcurrentModificationException while iterating (see SUREFIRE-879) we need to
-        // iterate over a copy or the elements array. Since the passed in byteBufferList is always wrapped with
-        // Collections.synchronizedList( ) we are guaranteed toArray() is going to be atomic, so we are safe.
-        for ( Object byteBuffer : byteBufferList.toArray() )
-        {
-            stringBuffer.append( byteBuffer.toString() );
-        }
-        return stringBuffer.toString();
-    }
-
     private WrappedReportEntry wrap( ReportEntry other, ReportEntryType reportEntryType )
     {
-        return new WrappedReportEntry( other, reportEntryType, other.getElapsed() != null
-            ? other.getElapsed()
-            : detailsForThis.getElapsedSinceLastStart(), getAsString( testStdOut ), getAsString( testStdErr ) );
+        final int estimatedElapsed;
+        if ( reportEntryType != ReportEntryType.skipped )
+        {
+            if ( other.getElapsed() != null )
+            {
+                estimatedElapsed = other.getElapsed();
+            }
+            else
+            {
+                estimatedElapsed = detailsForThis.getElapsedSinceLastStart();
+            }
+        }
+        else
+        {
+            estimatedElapsed = 0;
+        }
+
+        return new WrappedReportEntry( other, reportEntryType, estimatedElapsed, testStdOut, testStdErr );
     }
 
-    private WrappedReportEntry wrapTestSet( ReportEntry other, ReportEntryType reportEntryType )
+    private WrappedReportEntry wrapTestSet( ReportEntry other )
     {
-        return new WrappedReportEntry( other, reportEntryType, other.getElapsed() != null
+        return new WrappedReportEntry( other, null, other.getElapsed() != null
             ? other.getElapsed()
-            : detailsForThis.getElapsedSinceTestSetStart(), getAsString( testStdOut ), getAsString( testStdErr ) );
+            : detailsForThis.getElapsedSinceTestSetStart(), testStdOut, testStdErr );
     }
 
     public void close()

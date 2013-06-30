@@ -23,20 +23,8 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/DECORATION/1.0.0 http://maven.apache.org/xsd/decoration-1.0.0.xsd">
 
-  <bannerLeft>
-    <name>${project.name}</name>
-    <src>http://maven.apache.org/images/apache-maven-project.png</src>
-    <href>http://maven.apache.org/</href>
-  </bannerLeft>
-  <bannerRight>
-    <src>http://maven.apache.org/images/maventxt_logo_200.gif</src>
-  </bannerRight>
 
-  <skin>
-    <groupId>org.apache.maven.skins</groupId>
-    <artifactId>maven-fluido-skin</artifactId>
-    <version>1.0</version>
-  </skin>
+
 
   <body>
     <menu name="Overview">
@@ -46,6 +34,7 @@
       <item name="Feature matrix" href="featurematrix.html"/>
       <item name="API" href="api.html"/>
       <item name="FAQ" href="faq.html"/>
+      <item name="Developing" href="developing.html"/>
     </menu>
     <menu name="Examples">
       <item name="Using TestNG" href="examples/testng.html"/>
@@ -58,9 +47,8 @@
       <item name="System Properties" href="examples/system-properties.html"/>
       <item name="Configuring the Classpath" href="examples/configuring-classpath.html"/>
       <item name="Selecting providers" href="examples/providers.html"/>
-    </menu>
-    <menu name="Developer Center">
-      <item name="Developing" href="developing.html"/>
+      <item name="New error summary" href="newerrorsummary.html"/>
+      <item name="Fork Options and Parallel Test Execution" href="examples/fork-options-and-parallel-execution.html"/>
     </menu>
   </body>
 </project>

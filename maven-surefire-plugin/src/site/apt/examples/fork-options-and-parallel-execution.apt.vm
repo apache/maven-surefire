@@ -1,0 +1,197 @@
+ ------
+ Fork Options and Parallel Test Execution
+ ------
+ Andreas Gudian
+ ------
+ 2013-01-03
+ ------
+
+ ~~ Licensed to the Apache Software Foundation (ASF) under one
+ ~~ or more contributor license agreements.  See the NOTICE file
+ ~~ distributed with this work for additional information
+ ~~ regarding copyright ownership.  The ASF licenses this file
+ ~~ to you under the Apache License, Version 2.0 (the
+ ~~ "License"); you may not use this file except in compliance
+ ~~ with the License.  You may obtain a copy of the License at
+ ~~
+ ~~   http://www.apache.org/licenses/LICENSE-2.0
+ ~~
+ ~~ Unless required by applicable law or agreed to in writing,
+ ~~ software distributed under the License is distributed on an
+ ~~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ ~~ KIND, either express or implied.  See the License for the
+ ~~ specific language governing permissions and limitations
+ ~~ under the License.
+
+ ~~ NOTE: For help with the syntax of this file, see:
+ ~~ http://maven.apache.org/doxia/references/apt-format.html
+
+Fork Options and Parallel Test Execution
+
+  Choosing the right forking strategy and parallel execution settings can have
+  substantial impact on the memory requirements and the execution time of your
+  build system.
+
+  Surefire offers a variety of options to execute tests in parallel, allowing
+  you to make best use of the hardware at your disposal. But forking in
+  particular can also help keeping the memory requirements low.
+
+  This page shall give you some ideas of how you can configure the test
+  execution in a way best suitable for your environment.
+
+* Parallel Test Execution
+
+  Basically, there are two ways in Surefire to achieve parallel test execution.
+  The most obvious one is by using the <<<parallel>>> parameter. The possible
+  values depend on the test provider used. For JUnit 4.7 and onwards, this may
+  be <<<methods>>>, <<<classes>>>, or <<<both>>>.
+
+  See the example pages for {{{./junit.html#Running_tests_in_parallel}JUnit}}
+  and {{{./testng.html#Running_tests_in_parallel}TestNG}} for details.
+
+  The <extent> of the parallelism is configured using the parameters
+  <<<threadCount>>>, and optionally <<<perCoreThreadCount>>>, or
+  <<<useUnlimitedThreads>>>.
+
+  <<The important thing to remember>> with the <<<parallel>>> option is: the
+  concurrency happens within the same JVM process. That is efficient in terms of
+  memory and execution time, but you may be more vulnerable towards race
+  conditions or other unexpected and hard to reproduce behavior.
+
+  The other possibility for parallel test execution is setting the parameter 
+  <<<forkCount>>> to a value higher than 1. The next section covers the details 
+  about this and the related <<<reuseForks>>> property.
+
+* Parallel Surefire Execution in Multi-Module Maven Parallel Build
+
+  Maven core allows building modules of multi-module projects in parallel with
+  the command line option <<<-T>>>. This <multiplies> the extent of concurrency
+  configured directly in Surefire.
+
+* Forked Test Execution
+
+  The parameter <<<forkCount>>> defines the maximum number of JVM processes
+  that Surefire will spawn <concurrently> to execute the tests. It supports the
+  same syntax as <<<-T>>> in maven-core: if you termniate the value with a 'C',
+  that value will be multiplied with the number of available CPU cores in your
+  system. For example <<<forkCount=2.5C>>> on a Quad-Core system will result
+  in forking up to ten concurrent JVM processes that execute tests.
+
+  The parameter <<<reuseForks>>> is used to define whether to terminate the 
+  spawned process after one test class and to create a new process for the next 
+  test in line (<<<reuseForks=false>>>), or whether to reuse the processes to 
+  execute the next tests (<<<reuseForks=true>>>).
+
+  The <default setting> is <<<forkCount=1>>>/<<<reuseForks=true>>>, which means
+  that Surefire creates one new JVM process to execute all tests in one maven
+  module.
+
+  <<<forkMode=1>>>/<<<reuseForks=false>>> executes each test class in its own 
+  JVM process, one after another. It creates the highest level of separation for 
+  the test execution, but it would probably also give you the longest execution 
+  time of all the available options. Consider it as a last resort.
+
+  With the <<<argLine>>> property, you can specify additional parameters to be
+  passed to the forked JVM process, such as memory settings. System property
+  variables from the main maven process are passed to the forked process as
+  well. Additionally, you can use the element <<<systemPropertyVariables>>> to
+  specify variables and values to be added to the system properties during the
+  test execution.
+
+  You can use the place holder <<<$\{surefire.forkNumber\}>>> within 
+  <<<argLine>>>, or within the system properties (both those specified via 
+  <<<mvn test -D...>>> and via <<<systemPropertyVariables>>>). Before executing 
+  the tests, Surefire replaces that place holder by the number of the actually 
+  executing process, counting from 1 to the effective value of <<<forkCount>>> 
+  times the maximum number of parallel Surefire executions in maven parallel 
+  builds, i.e. the effective value of the <<<-T>>> command line argument of 
+  maven core.
+
+  In case forkig is disabled (<<<forkCount=0>>>), the place holder will be
+  replaced with <1>.
+
+  The following is an example configuration that makes use of up to three forked
+  processes that execute the tests and then terminate. A system property
+  <databaseSchema> is passed to the processes, that shall specify the database
+  schema to use during the tests. The values for that will be
+  <MY_TEST_SCHEMA_1>, <MY_TEST_SCHEMA_2>, and <MY_TEST_SCHEMA_3> for the three
+  processes.
+
++---+
+<plugins>
+[...]
+  <plugin>
+    <groupId>${project.groupId}</groupId>
+    <artifactId>${project.artifactId}</artifactId>
+    <version>${project.version}</version>
+    <configuration>
+        <forkCount>3</threadCount>
+        <reuseForks>true</reuseForks>
+        <argLine>-Xmx1024m -XX:MaxPermSize=256m</argLine>
+        <systemPropertyVariables>
+            <databaseSchema>MY_TEST_SCHEMA_${surefire.forkNumber}</databaseSchema>
+        </systemPropertyVariables>
+    </configuration>
+  </plugin>
+[...]
+</plugins>
++---+
+
+  In case of a multi module project with tests in different modules, you could 
+  also use, say, <<<mvn -T 2 ...>>> to start the build, yielding values for 
+  <<<$\{surefire.forkNumber\}>>> ranging from 1 to 6.
+
+  Imagine you execute some tests that use a JPA context, which has a notable
+  initial startup time. By setting <<<reuseForks=true>>>, you can reuse that
+  context for consecutive tests. And as many tests tend to use and access the
+  same test data, you can avoid database locks during the concurrent execution
+  by using distinct but uniform database schemas.
+
+  Port numbers and file names are other examples of resources for which it may
+  be hard or undesired to be shared among concurrent test executions.
+
+* Combining forkCount and parallel
+
+  The modes <<<forkCount=0>>> and <<<forkCount=1>>>/<<<reuseForks=true>>> can
+  be combined freely with the available settings for <<<parallel>>>.
+
+  As <<<reuseForks=false>>> creates a new JVM process for each test class,
+  using <<<parallel=classes>>> would have no effect. You can still use
+  <<<parallel=methods>>>, though.
+
+  When using <<<reuseForks=true>>> and a <<<forkCount>>> value larger than one,
+  test classes are handed over to the forked process one-by-one. Thus,
+  <<<parallel=classes>>> would not change anything. However, you can use
+  <<<parallel=methods>>>: classes are executed in <<<forkCount>>> concurrent
+  processes, each of the processes can then use <<<threadCount>>> threads to
+  execute the methods of one class in parallel.
+
+  Regarding the compatibility with multi-module parallel maven builds via 
+  <<<-T>>>, the only limitation is that you can not use it together with
+  <<<forkCount=0>>>.
+
+* Migrating the Deprecated forkMode Parameter to forkCount and reuseForks
+
+  Surefire versions prior 2.14 used the parameter <<<forkMode>>> to configure
+  forking. Although that parameter is still supported for backward
+  compatibility, users are strongly encouraged to migrate their configuration
+  and use <<<forkCount>>> and <<<reuseForks>>> instead.
+
+  The migration is quite simple, given the following mapping:
+
+*--------------------------+-------------------------------------------+
+ <<Old Setting>>           | <<New Setting>>                           |
+*--------------------------+-------------------------------------------+
+ <<<forkMode=once>>>       | <<<forkCount=1>>> (default),              |
+ (default)                 | <<<reuseForks=true>>> (default)           |
+*--------------------------+-------------------------------------------+
+ <<<forkMode=always>>>     | <<<forkCount=1>>> (default),              |
+                           | <<<reuseForks=false>>>                    |
+*--------------------------+-------------------------------------------+
+ <<<forkMode=never>>>      | <<<forkCount=0>>>                         |
+*--------------------------+-------------------------------------------+
+ <<<forkMode=perthread>>>, | <<<forkCount=N>>>,                        |
+ <<<threadCount=N>>>       | (<<<reuseForks=false>>>, if you did not   |
+                           | had that one set)                         |
+*--------------------------+-------------------------------------------+
+

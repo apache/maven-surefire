@@ -29,9 +29,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class MockReporter
     implements RunListener, ConsoleLogger
 {
-    private final List events = new ArrayList();
+    private final List<String> events = new ArrayList<String>();
 
-    private final List data = new ArrayList();
+    private final List<Object> data = new ArrayList<Object>();
 
     public static final String SET_STARTING = "SET_STARTED";
 
@@ -117,7 +117,7 @@ public class MockReporter
 
     public String getFirstEvent()
     {
-        return (String) events.get( 0 );
+        return events.get( 0 );
     }
 
     public ReportEntry getFirstData()

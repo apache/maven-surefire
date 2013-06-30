@@ -43,8 +43,6 @@ public class DefaultReporterFactory
 
     private final RunStatistics globalStats = new RunStatistics();
 
-    private final ConsoleReporter multicastingReporter;
-
     private final StartupReportConfiguration reportConfiguration;
 
     private final StatisticsReporter statisticsReporter;
@@ -55,12 +53,16 @@ public class DefaultReporterFactory
     public DefaultReporterFactory( StartupReportConfiguration reportConfiguration )
     {
         this.reportConfiguration = reportConfiguration;
-        multicastingReporter = reportConfiguration.instantiateConsoleReporter();
         this.statisticsReporter = reportConfiguration.instantiateStatisticsReporter();
         runStarting();
     }
 
     public RunListener createReporter()
+    {
+        return createTestSetRunListener();
+    }
+
+    public RunListener createTestSetRunListener()
     {
         TestSetRunListener testSetRunListener =
             new TestSetRunListener( reportConfiguration.instantiateConsoleReporter(),
@@ -101,12 +103,15 @@ public class DefaultReporterFactory
     private void runCompleted()
     {
         final DefaultDirectConsoleReporter logger = createConsoleLogger();
-        logger.info( "" );
-        logger.info( "Results :" );
-        logger.info( "" );
+        if ( reportConfiguration.isPrintSummary() )
+        {
+            logger.info( "" );
+            logger.info( "Results :" );
+            logger.info( "" );
+        }
         if ( globalStats.hadFailures() )
         {
-            multicastingReporter.writeMessage( "Failed tests: " );
+            logger.info( "Failed tests: " );
             for ( Object o : this.globalStats.getFailureSources() )
             {
                 logger.info( "  " + o );

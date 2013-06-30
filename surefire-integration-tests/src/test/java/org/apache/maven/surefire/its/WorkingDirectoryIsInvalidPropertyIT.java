@@ -18,7 +18,8 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.junit.Test;
 
 /**
  * Test when the configured working directory is an invalid property, SUREFIRE-715
@@ -26,12 +27,13 @@ import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
  * @author <a href="mailto:krosenvold@apache.org">Kristian Rosenvold</a>
  */
 public class WorkingDirectoryIsInvalidPropertyIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
+    @Test
     public void testWorkingDirectory()
         throws Exception
     {
-        unpack( "working-directory-is-invalid-property" ).executeTestWithFailure().verifyTextInLog(
+        unpack( "working-directory-is-invalid-property" ).maven().withFailure().executeTest().verifyTextInLog(
             "workingDirectory cannot be null" );
     }
 }

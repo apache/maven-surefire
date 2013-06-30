@@ -24,7 +24,6 @@ import java.util.Collection;
 import java.util.Collections;
 import org.apache.maven.plugin.surefire.report.TestSetStats;
 import org.apache.maven.surefire.suite.RunResult;
-import org.apache.maven.surefire.util.internal.StringUtils;
 
 /**
  * @author Kristian Rosenvold
@@ -50,14 +49,22 @@ public class RunStatistics
     private int skipped;
 
 
-    public void addErrorSource( String errorSource, StackTraceWriter stackTraceWriter )
+    public void addErrorSource( StackTraceWriter stackTraceWriter )
     {
-        errorSources.addSource( errorSource, stackTraceWriter );
+        if ( stackTraceWriter == null )
+        {
+            throw new IllegalArgumentException( "Cant be null" );
+        }
+        errorSources.addSource( stackTraceWriter );
     }
 
-    public void addFailureSource( String failureSource, StackTraceWriter stackTraceWriter )
+    public void addFailureSource( StackTraceWriter stackTraceWriter )
     {
-        failureSources.addSource( failureSource, stackTraceWriter );
+        if ( stackTraceWriter == null )
+        {
+            throw new IllegalArgumentException( "Cant be null" );
+        }
+        failureSources.addSource( stackTraceWriter );
     }
 
     public Collection<String> getErrorSources()
@@ -122,18 +129,9 @@ public class RunStatistics
             }
         }
 
-        void addSource( String source, StackTraceWriter stackTraceWriter )
+        void addSource( StackTraceWriter stackTraceWriter )
         {
-            String message = getMessageOfThrowable( stackTraceWriter );
-            String extendedSource =
-                StringUtils.isBlank( message ) ? source : source + ": " + trimToSingleLine( message );
-            addSource( extendedSource );
-        }
-
-        private String trimToSingleLine( String str )
-        {
-            int i = str.indexOf( "\n" );
-            return i >= 0 ? str.substring( 0, i ) + "(..)" : str;
+            addSource( stackTraceWriter.smartTrimmedStackTrace() );
         }
 
         Collection<String> getListOfSources()
@@ -142,17 +140,6 @@ public class RunStatistics
             {
                 return Collections.unmodifiableCollection( listOfSources );
             }
-        }
-
-        private String getMessageOfThrowable( StackTraceWriter stackTraceWriter )
-        {
-            //noinspection ThrowableResultOfMethodCallIgnored
-            return stackTraceWriter != null ? getMessageOfThrowable( stackTraceWriter.getThrowable() ) : "";
-        }
-
-        private String getMessageOfThrowable( SafeThrowable throwable )
-        {
-            return throwable != null ? throwable.getLocalizedMessage() : "";
         }
     }
 }

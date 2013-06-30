@@ -37,7 +37,7 @@ public class PropertiesWrapperTest
 
         Properties props = new Properties();
         PropertiesWrapper propertiesWrapper = new PropertiesWrapper( props );
-        List items = new ArrayList();
+        List<String> items = new ArrayList<String>();
         items.add( "String1" );
         items.add( "String2,String3" );
         items.add( "String4" );
@@ -99,10 +99,7 @@ public class PropertiesWrapperTest
 
     private Classpath createClasspathWithTwoElements()
     {
-        Classpath classpath = new Classpath();
-        classpath.addClassPathElementUrl( FIRST_ELEMENT );
-        classpath.addClassPathElementUrl( SECOND_ELEMENT );
-        return classpath;
+        return Classpath.emptyClasspath().addClassPathElementUrl( FIRST_ELEMENT ).addClassPathElementUrl( SECOND_ELEMENT );
     }
 
     private Classpath readClasspathFromProperties()

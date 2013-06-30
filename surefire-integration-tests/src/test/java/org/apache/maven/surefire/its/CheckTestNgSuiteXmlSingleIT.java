@@ -19,7 +19,8 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.junit.Test;
 
 /**
  * Use -Dtest to run a single TestNG test, overriding the suite XML parameter.
@@ -27,9 +28,10 @@ import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
 public class CheckTestNgSuiteXmlSingleIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
-    public void testTestNGSuite()
+    @Test
+    public void TestNgSuite()
     {
         unpack( "/testng-twoTestCaseSuite" ).setTestToRun( "TestNGTestTwo" ).executeTest().verifyErrorFree( 1 );
     }

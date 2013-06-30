@@ -20,7 +20,8 @@ package org.apache.maven.surefire.its;
  */
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.junit.Test;
 
 /**
  * Asserts proper behaviour of console output when forking
@@ -29,14 +30,15 @@ import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
  * @author Kristian Rosenvold
  */
 public class ReportersIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
+    @Test
     public void testRedirectOutputTestNg()
     {
         OutputValidator reporters = unpack( "reporters" ).redirectToFile( true ).printSummary( true ).executeTest();
 
         reporters.getSurefireReportsFile( "TestSuite-output.txt" ).assertFileExists();
-        reporters.getSurefireReportsFile( "TEST-TestSuite.xml" ).assertFileExists();
+        reporters.getSurefireReportsXmlFile( "TEST-TestSuite.xml" ).assertFileExists();
         reporters.getSurefireReportsFile( "TestSuite.txt" ).assertFileExists();
     }
 }

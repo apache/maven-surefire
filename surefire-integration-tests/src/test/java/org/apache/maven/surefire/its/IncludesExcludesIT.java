@@ -20,8 +20,9 @@ package org.apache.maven.surefire.its;
  */
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+import org.junit.Test;
 
 /**
  * Test include/exclude patterns.
@@ -29,7 +30,7 @@ import org.apache.maven.surefire.its.fixture.SurefireLauncher;
  * @author Benjamin Bentmann
  */
 public class IncludesExcludesIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
     private SurefireLauncher unpack()
     {
@@ -39,27 +40,29 @@ public class IncludesExcludesIT
     /**
      * Test surefire inclusions/exclusions
      */
+    @Test
     public void testIncludesExcludes()
     {
-        testWithProfile( "-Psimple" );
+        testWithProfile( "simple" );
     }
 
+    @Test
     public void testRegexIncludesExcludes()
     {
-        testWithProfile( "-Pregex" );
+        testWithProfile( "regex" );
     }
 
+    @Test
     public void testPathBasedIncludesExcludes()
     {
-        testWithProfile( "-Ppath" );
+        testWithProfile( "path" );
     }
 
     private void testWithProfile( String profile )
     {
         final OutputValidator outputValidator = unpack().
-            addGoal( profile ).executeTest().verifyErrorFree( 2 );
+            activateProfile( profile ).executeTest().verifyErrorFree( 2 );
         outputValidator.getTargetFile( "testTouchFile.txt" ).assertFileExists();
         outputValidator.getTargetFile( "defaultTestTouchFile.txt" ).assertFileExists();
     }
-
 }

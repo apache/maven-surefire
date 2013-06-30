@@ -19,8 +19,9 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+import org.junit.Test;
 
 /**
  * Test project using JUnit4.4 -dep.  junit-dep includes only junit.* classes, and depends explicitly on hamcrest-core
@@ -28,38 +29,42 @@ import org.apache.maven.surefire.its.fixture.SurefireLauncher;
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
 public class JUnitDepIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
     public SurefireLauncher unpack()
     {
         return unpack( "/junit44-dep" );
     }
 
+    @Test
     public void testJUnit44Dep()
         throws Exception
     {
-        unpack().debugLogging().addGoal( "-Djunit-dep.version=4.4" ).executeTest().verifyErrorFree( 1 ).verifyTextInLog(
+        unpack().debugLogging().sysProp( "junit-dep.version", "4.4" ).executeTest().verifyErrorFree( 1 ).verifyTextInLog(
             "surefire-junit4" ); // Ahem. Will match on the 4.7 provider too
     }
 
+    @Test
     public void testJUnit44DepWithSneaky381()
         throws Exception
     {
-        unpack().debugLogging().addGoal( "-Djunit-dep.version=4.4" ).activateProfile(
+        unpack().debugLogging().sysProp( "junit-dep.version", "4.4" ).activateProfile(
             "provided381" ).executeTest().verifyErrorFree( 1 );
     }
 
+    @Test
     public void testJUnit47Dep()
         throws Exception
     {
-        unpack().debugLogging().addGoal( "-Djunit-dep.version=4.7" ).executeTest().verifyErrorFree( 1 ).verifyTextInLog(
+        unpack().debugLogging().sysProp( "junit-dep.version", "4.7" ).executeTest().verifyErrorFree( 1 ).verifyTextInLog(
             "surefire-junit47" );
     }
 
+    @Test
     public void testJUnit48Dep()
         throws Exception
     {
-        unpack().debugLogging().addGoal( "-Djunit-dep.version=4.8" ).executeTest().verifyErrorFree( 1 ).verifyTextInLog(
+        unpack().debugLogging().sysProp( "junit-dep.version", "4.8" ).executeTest().verifyErrorFree( 1 ).verifyTextInLog(
             "surefire-junit47" );
     }
 }

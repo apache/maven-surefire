@@ -18,18 +18,23 @@ package org.apache.maven.plugin.surefire;
  * under the License.
  */
 
+import org.apache.maven.surefire.booter.Classpath;
+import org.apache.maven.surefire.booter.KeyValueSource;
+import org.apache.maven.surefire.util.internal.StringUtils;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import org.apache.maven.plugin.logging.Log;
-import org.apache.maven.surefire.booter.KeyValueSource;
+import java.util.Set;
 
 /**
  * A properties implementation that preserves insertion order.
@@ -49,6 +54,14 @@ public class SurefireProperties
         if ( source != null )
         {
             this.putAll( source );
+        }
+    }
+
+    public SurefireProperties( KeyValueSource source )
+    {
+        if ( source != null )
+        {
+            source.copyTo( this );
         }
     }
 
@@ -78,7 +91,7 @@ public class SurefireProperties
         return Collections.enumeration( items );
     }
 
-    public void copyProperties( Properties source )
+    public void copyPropertiesFrom( Properties source )
     {
         if ( source != null )
         {
@@ -91,32 +104,31 @@ public class SurefireProperties
         }
     }
 
-    private Iterable<Object> getStringKeySet()
+    public Iterable<Object> getStringKeySet()
     {
 
         //noinspection unchecked
         return keySet();
     }
 
-    public void showToLog( org.apache.maven.plugin.logging.Log log, String setting )
-    {
-        for ( Object key : getStringKeySet() )
-        {
-            String value = getProperty( (String) key );
-            log.debug( "Setting " + setting + " [" + key + "]=[" + value + "]" );
-        }
-    }
+    private static final Set<String> keysThatCannotBeUsedAsSystemProperties = new HashSet<String>()
+    {{
+            add( "java.library.path" );
+            add( "file.encoding" );
+            add( "jdk.map.althashing.threshold" );
+        }};
 
-    public void verifyLegalSystemProperties( org.apache.maven.plugin.logging.Log log )
+    public Set<Object> propertiesThatCannotBeSetASystemProperties()
     {
+        Set<Object> result = new HashSet<Object>();
         for ( Object key : getStringKeySet() )
         {
-            if ( "java.library.path".equals( key ) )
+            if ( keysThatCannotBeUsedAsSystemProperties.contains( key ) )
             {
-                log.warn(
-                    "java.library.path cannot be set as system property, use <argLine>-Djava.library.path=...<argLine> instead" );
+                result.add( key );
             }
         }
+        return result;
     }
 
 
@@ -133,37 +145,14 @@ public class SurefireProperties
         }
     }
 
-    static SurefireProperties calculateEffectiveProperties( Properties systemProperties, File systemPropertiesFile,
+    static SurefireProperties calculateEffectiveProperties( Properties systemProperties,
                                                             Map<String, String> systemPropertyVariables,
-                                                            Properties userProperties, Log log )
+                                                            Properties userProperties, SurefireProperties props )
     {
         SurefireProperties result = new SurefireProperties();
-        result.copyProperties( systemProperties );
+        result.copyPropertiesFrom( systemProperties );
 
-        if ( systemPropertiesFile != null )
-        {
-            Properties props = new SurefireProperties();
-            try
-            {
-                InputStream fis = new FileInputStream( systemPropertiesFile );
-                props.load( fis );
-                fis.close();
-            }
-            catch ( IOException e )
-            {
-                String msg = "The system property file '" + systemPropertiesFile.getAbsolutePath() + "' can't be read.";
-                if ( log.isDebugEnabled() )
-                {
-                    log.warn( msg, e );
-                }
-                else
-                {
-                    log.warn( msg );
-                }
-            }
-
-            result.copyProperties( props );
-        }
+        result.copyPropertiesFrom( props );
 
         copyProperties( result, systemPropertyVariables );
         copyProperties( result, systemPropertyVariables );
@@ -173,7 +162,7 @@ public class SurefireProperties
         // Not gonna do THAT any more... instead, we only propagate those system properties
         // that have been explicitly specified by the user via -Dkey=value on the CLI
 
-        result.copyProperties( userProperties );
+        result.copyPropertiesFrom( userProperties );
         return result;
     }
 
@@ -203,6 +192,111 @@ public class SurefireProperties
             //noinspection unchecked
             target.put( key, get( key ) );
         }
+    }
+
+    public void setProperty( String key, File file )
+    {
+        if ( file != null )
+        {
+            setProperty( key, file.toString() );
+        }
+    }
+
+    public void setProperty( String key, Boolean aBoolean )
+    {
+        if ( aBoolean != null )
+        {
+            setProperty( key, aBoolean.toString() );
+        }
+    }
+
+    public void addList( List items, String propertyPrefix )
+    {
+        if ( items == null || items.size() == 0 )
+        {
+            return;
+        }
+        int i = 0;
+        for ( Object item : items )
+        {
+            if ( item == null )
+            {
+                throw new NullPointerException( propertyPrefix + i + " has null value" );
+            }
+
+            String[] stringArray = StringUtils.split( item.toString(), "," );
+
+            for ( String aStringArray : stringArray )
+            {
+                setProperty( propertyPrefix + i, aStringArray );
+                i++;
+            }
+
+        }
+    }
+
+    public void setClasspath( String prefix, Classpath classpath )
+    {
+        List classpathElements = classpath.getClassPath();
+        for ( int i = 0; i < classpathElements.size(); ++i )
+        {
+            String element = (String) classpathElements.get( i );
+            setProperty( prefix + i, element );
+        }
+    }
+
+    private static SurefireProperties loadProperties( InputStream inStream )
+        throws IOException
+    {
+        Properties p = new Properties();
+
+        try
+        {
+            p.load( inStream );
+        }
+        finally
+        {
+            close( inStream );
+        }
+
+        return new SurefireProperties( p );
+    }
+
+    public static SurefireProperties loadProperties( File file )
+        throws IOException
+    {
+        if ( file != null )
+        {
+            return loadProperties( new FileInputStream( file ) );
+        }
+
+        return new SurefireProperties();
+    }
+
+    private static void close( InputStream inputStream )
+    {
+        if ( inputStream == null )
+        {
+            return;
+        }
+
+        try
+        {
+            inputStream.close();
+        }
+        catch ( IOException ex )
+        {
+            // ignore
+        }
+    }
+
+    public void setNullableProperty( String key, String value )
+    {
+        if ( value != null )
+        {
+            super.setProperty( key, value );
+        }
+
     }
 
 

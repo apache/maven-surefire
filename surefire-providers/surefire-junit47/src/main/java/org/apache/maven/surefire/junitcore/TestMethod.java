@@ -36,6 +36,8 @@ class TestMethod
 {
     private final ReportEntry description;
 
+    private final TestSet testSet;
+
     private final long startTime;
 
     private long endTime;
@@ -50,9 +52,10 @@ class TestMethod
 
     private volatile LogicalStream output;
 
-    public TestMethod( ReportEntry description )
+    public TestMethod( ReportEntry description, TestSet testSet )
     {
         this.description = description;
+        this.testSet = testSet;
         startTime = System.currentTimeMillis();
     }
 
@@ -86,7 +89,7 @@ class TestMethod
 
     public int getElapsed()
     {
-        return (int) ( endTime - startTime );
+        return endTime > 0 ? (int) ( endTime - startTime ) : 0;
     }
 
 
@@ -95,11 +98,12 @@ class TestMethod
 
         if ( ignored != null )
         {
-            reporter.testSkipped( createReportEntry() );
+            reporter.testSkipped( createReportEntry( ignored ) );
             return;
         }
 
-        reporter.testStarting( createReportEntry() );
+        ReportEntry descriptionReport = createReportEntry( description );
+        reporter.testStarting( descriptionReport );
         if ( output != null )
         {
             output.writeDetails( ( (ConsoleOutputReceiver) reporter ) );
@@ -107,23 +111,22 @@ class TestMethod
 
         if ( testFailure != null )
         {
-            reporter.testFailed( testFailure );
+            reporter.testFailed( createReportEntry( testFailure ) );
         }
         else if ( testError != null )
         {
-            reporter.testError( testError );
+            reporter.testError( createReportEntry( testError ) );
         }
         else
         {
-            reporter.testSucceeded( createReportEntry() );
+            reporter.testSucceeded( descriptionReport );
         }
     }
 
-    private ReportEntry createReportEntry()
+    private ReportEntry createReportEntry( ReportEntry reportEntry )
     {
-        int elapsed = (int) ( endTime - startTime );
-        return new CategorizedReportEntry( description.getSourceName(), description.getName(), description.getGroup(),
-                                           description.getStackTraceWriter(), elapsed, description.getMessage() );
+        return new CategorizedReportEntry( reportEntry.getSourceName(), reportEntry.getName(), reportEntry.getGroup(),
+                                           reportEntry.getStackTraceWriter(), getElapsed(), reportEntry.getMessage() );
     }
 
     public void attachToThread()
@@ -133,7 +136,7 @@ class TestMethod
 
     }
 
-    public static void detachFromCurrentThread()
+    public void detachFromCurrentThread()
     {
         TEST_METHOD.remove();
         ConsoleOutputReceiverForCurrentThread.remove();
@@ -158,4 +161,8 @@ class TestMethod
         getLogicalStream().write( stdout, buf, off, len );
     }
 
+    public TestSet getTestSet()
+    {
+        return testSet;
+    }
 }

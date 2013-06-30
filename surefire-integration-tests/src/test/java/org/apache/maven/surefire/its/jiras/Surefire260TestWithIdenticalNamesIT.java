@@ -21,15 +21,17 @@ package org.apache.maven.surefire.its.jiras;
 
 import java.io.IOException;
 import java.net.URI;
-import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
-import org.apache.maven.surefire.its.fixture.SurefireLauncher;
-import org.apache.maven.surefire.its.fixture.TestFile;
+
+import org.apache.maven.surefire.its.fixture.*;
 
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import com.gargoylesoftware.htmlunit.html.HtmlDivision;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import org.junit.Test;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Test Surefire-570 Multiple report directories
@@ -37,9 +39,10 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
  * @author Kristian Rosenvold
  */
 public class Surefire260TestWithIdenticalNamesIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
 
+    @Test
     public void testWithIdenticalNames()
         throws IOException
     {

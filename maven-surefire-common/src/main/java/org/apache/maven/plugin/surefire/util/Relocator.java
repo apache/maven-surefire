@@ -19,6 +19,10 @@ package org.apache.maven.plugin.surefire.util;
  * under the License.
  */
 
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 /**
  * Relocates class names when running with relocated provider
  *
@@ -26,12 +30,12 @@ package org.apache.maven.plugin.surefire.util;
  */
 public class Relocator
 {
-    private final String relocation;
+    private final @Nullable String relocation;
 
     private static final String relocationBase = "org.apache.maven.surefire.";
 
 
-    public Relocator( String relocation )
+    public Relocator( @Nullable String relocation )
     {
         this.relocation = relocation;
     }
@@ -41,12 +45,12 @@ public class Relocator
         relocation = "shadefire";
     }
 
-    private String getRelocation()
+    private @Nullable String getRelocation()
     {
         return relocation;
     }
 
-    public String relocate( String className )
+    public @Nonnull String relocate( @Nonnull String className )
     {
         if ( relocation == null )
         {

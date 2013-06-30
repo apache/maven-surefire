@@ -19,8 +19,9 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+import org.junit.Test;
 
 /**
  * Basic suite test using all known versions of JUnit 4.x
@@ -28,67 +29,71 @@ import org.apache.maven.surefire.its.fixture.SurefireLauncher;
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
 public class Junit4VersionsIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
-
-    public Junit4VersionsIT()
-    {
-        unpack();
-    }
 
     private SurefireLauncher unpack()
     {
         return unpack( "/junit4" );
     }
 
+    @Test
     public void test40()
         throws Exception
     {
         runJUnitTest( "4.0" );
     }
 
+    @Test
     public void test41()
         throws Exception
     {
         runJUnitTest( "4.1" );
     }
 
+    @Test
     public void test42()
         throws Exception
     {
         runJUnitTest( "4.2" );
     }
 
+    @Test
     public void test43()
         throws Exception
     {
         runJUnitTest( "4.3" );
     }
 
+    @Test
     public void test431()
         throws Exception
     {
         runJUnitTest( "4.3.1" );
     }
 
+    @Test
     public void test44()
         throws Exception
     {
         runJUnitTest( "4.4" );
     }
 
+    @Test
     public void test45()
         throws Exception
     {
         runJUnitTest( "4.5" );
     }
 
+    @Test
     public void test46()
         throws Exception
     {
         runJUnitTest( "4.6" );
     }
 
+    @Test
     public void test47()
         throws Exception
     {

@@ -20,8 +20,9 @@ package org.apache.maven.surefire.its;
  */
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.TestFile;
+import org.junit.Test;
 
 /**
  * Asserts proper behaviour of console output when forking
@@ -31,14 +32,15 @@ import org.apache.maven.surefire.its.fixture.TestFile;
  * @author Kristian Rosenvold
  */
 public class ForkConsoleOutputWithErrorsIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
-    public void testXmlFileContainsConsoleOutput()
+    @Test
+    public void xmlFileContainsConsoleOutput()
     {
         final OutputValidator outputValidator = unpack( "/fork-consoleOutputWithErrors" ).
             failNever().redirectToFile( true ).executeTest();
         final TestFile surefireReportsFile =
-            outputValidator.getSurefireReportsFile( "TEST-forkConsoleOutput.Test2.xml" );
+            outputValidator.getSurefireReportsXmlFile( "TEST-forkConsoleOutput.Test2.xml" );
         surefireReportsFile.assertContainsText( "sout: Will Fail soon" );
         surefireReportsFile.assertContainsText( "serr: Will Fail now" );
     }

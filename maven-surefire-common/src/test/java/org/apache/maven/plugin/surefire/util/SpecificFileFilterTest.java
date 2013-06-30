@@ -19,6 +19,7 @@ package org.apache.maven.plugin.surefire.util;
  * under the License.
  */
 
+import static org.apache.maven.plugin.surefire.util.ScannerUtil.convertSlashToSystemFileSeparator;
 import junit.framework.TestCase;
 
 /**
@@ -58,6 +59,6 @@ public class SpecificFileFilterTest
 
     private String getFile()
     {
-        return "org/apache/maven/surefire/SpecificTestClassFilter.class";
+        return convertSlashToSystemFileSeparator( "org/apache/maven/surefire/SpecificTestClassFilter.class" );
     }
 }

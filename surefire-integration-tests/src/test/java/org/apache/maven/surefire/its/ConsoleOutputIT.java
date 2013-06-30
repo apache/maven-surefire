@@ -20,8 +20,9 @@ package org.apache.maven.surefire.its;
  */
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.TestFile;
+import org.junit.Test;
 
 /**
  * Basic suite test using all known versions of JUnit 4.x
@@ -29,9 +30,10 @@ import org.apache.maven.surefire.its.fixture.TestFile;
  * @author Kristian Rosenvold
  */
 public class ConsoleOutputIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
-    public void testProperNewlines()
+    @Test
+    public void properNewlines()
     {
         final OutputValidator outputValidator =
             unpack( "/consoleOutput" ).redirectToFile( true ).setJUnitVersion( "4.7" ).executeTest();
@@ -39,5 +41,13 @@ public class ConsoleOutputIT
         surefireReportsFile.assertContainsText( "SoutAgain" );
         surefireReportsFile.assertContainsText( "Printline in shutdown hook" );
     }
+
+    @Test
+    public void largerSoutThanMemory()
+        throws Exception
+    {
+        unpack( "consoleoutput-noisy" ).setMavenOpts( "-Xmx64m" ).sysProp( "thousand", "100000" ).executeTest();
+    }
+
 
 }

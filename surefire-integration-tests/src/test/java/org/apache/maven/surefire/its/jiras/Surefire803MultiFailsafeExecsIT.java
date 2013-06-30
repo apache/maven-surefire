@@ -18,26 +18,30 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+import org.junit.Test;
 
 public class Surefire803MultiFailsafeExecsIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
 
+    @Test
     public void testSecondExecutionRunsAfterFirstExecutionFails()
     {
         unpack(
-            "/surefire-803-multiFailsafeExec-failureInFirst" ).executeVerifyWithFailure().assertIntegrationTestSuiteResults(
+            "/surefire-803-multiFailsafeExec-failureInFirst" ).maven().withFailure().executeVerify().assertIntegrationTestSuiteResults(
             4, 0, 2, 0 );
     }
 
+    @Test
     public void testOneExecutionRunInTwoBuilds()
     {
         SurefireLauncher launcher = unpack( "/surefire-803-multiFailsafeExec-rebuildOverwrites" );
-        launcher.addD( "success", "false" ).executeVerifyWithFailure().assertIntegrationTestSuiteResults( 1, 0, 1, 0 );
+        launcher.sysProp( "success", "false" ).maven().withFailure().executeVerify().assertIntegrationTestSuiteResults(
+            1, 0, 1, 0 );
         launcher.reset();
-        launcher.addD( "success", "true" ).executeVerify().assertIntegrationTestSuiteResults( 1, 0, 0, 0 );
+        launcher.sysProp( "success", "true" ).executeVerify().assertIntegrationTestSuiteResults( 1, 0, 0, 0 );
     }
 
 }

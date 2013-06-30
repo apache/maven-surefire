@@ -19,7 +19,8 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.junit.Test;
 
 /**
  * SUREFIRE-697 Asserts proper truncation of long exception messages Some say testing this is a bit over the top.
@@ -27,11 +28,12 @@ import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
  * @author Kristian Rosenvold
  */
 public class Surefire697NiceSummaryIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
+    @Test
     public void testBuildFailingWhenErrors()
     {
         unpack( "/surefire-697-niceSummary" ).failNever().executeTest().verifyTextInLog(
-            "testShortMultiline(junit.surefire697.BasicTest): A very short multiline message" );
+            "junit.surefire697.BasicTest#testShortMultiline RuntimeException A very short m" );
     }
 }

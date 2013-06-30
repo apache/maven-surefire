@@ -18,14 +18,13 @@
   ~ under the License.
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
     <groupId>org.apache.maven.surefire</groupId>
     <artifactId>surefire</artifactId>
-    <version>2.13-SNAPSHOT</version>
+    <version>2.16-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -34,80 +33,6 @@
   <packaging>maven-plugin</packaging>
 
   <name>Maven Failsafe Plugin</name>
-
-  <mailingLists>
-    <!-- duplication from maven-plugins pom - temporary until they inherit properly -->
-    <mailingList>
-      <name>Maven User List</name>
-      <subscribe>users-subscribe@maven.apache.org</subscribe>
-      <unsubscribe>users-unsubscribe@maven.apache.org</unsubscribe>
-      <post>users@maven.apache.org</post>
-      <archive>http://mail-archives.apache.org/mod_mbox/maven-users</archive>
-      <otherArchives>
-        <otherArchive>http://www.mail-archive.com/users@maven.apache.org/</otherArchive>
-        <otherArchive>http://old.nabble.com/Maven---Users-f178.html</otherArchive>
-        <otherArchive>http://markmail.org/list/org.apache.maven.users</otherArchive>
-      </otherArchives>
-    </mailingList>
-    <mailingList>
-      <name>Maven Developer List</name>
-      <subscribe>dev-subscribe@maven.apache.org</subscribe>
-      <unsubscribe>dev-unsubscribe@maven.apache.org</unsubscribe>
-      <post>dev@maven.apache.org</post>
-      <archive>http://mail-archives.apache.org/mod_mbox/maven-dev</archive>
-      <otherArchives>
-        <otherArchive>http://www.mail-archive.com/dev@maven.apache.org/</otherArchive>
-        <otherArchive>http://old.nabble.com/Maven-Developers-f179.html</otherArchive>
-        <otherArchive>http://markmail.org/list/org.apache.maven.dev</otherArchive>
-      </otherArchives>
-    </mailingList>
-    <mailingList>
-      <name>Maven Commits List</name>
-      <subscribe>commits-subscribe@maven.apache.org</subscribe>
-      <unsubscribe>commits-unsubscribe@maven.apache.org</unsubscribe>
-      <archive>http://mail-archives.apache.org/mod_mbox/maven-commits</archive>
-      <otherArchives>
-        <otherArchive>http://www.mail-archive.com/commits@maven.apache.org</otherArchive>
-        <otherArchive>http://old.nabble.com/Maven---Commits-f15575.html</otherArchive>
-        <otherArchive>http://markmail.org/list/org.apache.maven.commits</otherArchive>
-      </otherArchives>
-    </mailingList>
-    <!-- duplication from maven-parent pom - temporary until they inherit properly -->
-    <mailingList>
-      <name>Maven Announcements List</name>
-      <post>announce@maven.apache.org</post>
-      <subscribe>announce-subscribe@maven.apache.org</subscribe>
-      <unsubscribe>announce-unsubscribe@maven.apache.org</unsubscribe>
-      <archive>http://mail-archives.apache.org/mod_mbox/maven-announce/</archive>
-      <otherArchives>
-        <otherArchive>http://www.mail-archive.com/announce@maven.apache.org</otherArchive>
-        <otherArchive>http://old.nabble.com/Maven-Announcements-f15617.html</otherArchive>
-        <otherArchive>http://markmail.org/list/org.apache.maven.announce</otherArchive>
-      </otherArchives>
-    </mailingList>
-    <mailingList>
-      <name>Maven Issues List</name>
-      <subscribe>issues-subscribe@maven.apache.org</subscribe>
-      <unsubscribe>issues-unsubscribe@maven.apache.org</unsubscribe>
-      <archive>http://mail-archives.apache.org/mod_mbox/maven-issues/</archive>
-      <otherArchives>
-        <otherArchive>http://www.mail-archive.com/issues@maven.apache.org</otherArchive>
-        <otherArchive>http://old.nabble.com/Maven---Issues-f15573.html</otherArchive>
-        <otherArchive>http://markmail.org/list/org.apache.maven.issues</otherArchive>
-      </otherArchives>
-    </mailingList>
-    <mailingList>
-      <name>Maven Notifications List</name>
-      <subscribe>notifications-subscribe@maven.apache.org</subscribe>
-      <unsubscribe>notifications-unsubscribe@maven.apache.org</unsubscribe>
-      <archive>http://mail-archives.apache.org/mod_mbox/maven-notifications/</archive>
-      <otherArchives>
-        <otherArchive>http://www.mail-archive.com/notifications@maven.apache.org</otherArchive>
-        <otherArchive>http://old.nabble.com/Maven---Notifications-f15574.html</otherArchive>
-        <otherArchive>http://markmail.org/list/org.apache.maven.notifications</otherArchive>
-      </otherArchives>
-    </mailingList>
-  </mailingLists>
 
   <prerequisites>
     <maven>2.0.9</maven>
@@ -180,7 +105,7 @@
           <dependency>
             <groupId>org.apache.maven.surefire</groupId>
             <artifactId>surefire-shadefire</artifactId>
-            <version>${project.version}</version>
+            <version>${shadedVersion}</version>
           </dependency>
         </dependencies>
       </plugin>
@@ -225,6 +150,13 @@
             </configuration>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-site-plugin</artifactId>
+        <configuration>
+          <siteDirectory>${project.build.directory}/source-site</siteDirectory>
+        </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -282,7 +214,6 @@
               <artifactId>maven-compiler-plugin</artifactId>
               <configuration>
                 <fork>false</fork>
-                <compilerVersion>1.4</compilerVersion>
               </configuration>
             </plugin>
           </plugins>

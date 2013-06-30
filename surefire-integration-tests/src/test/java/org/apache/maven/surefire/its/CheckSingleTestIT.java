@@ -19,10 +19,10 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
-import org.apache.maven.surefire.its.fixture.SurefireLauncher;
-import org.apache.maven.surefire.its.fixture.TestFile;
+import org.apache.maven.surefire.its.fixture.*;
+import org.junit.Test;
+
+import static org.junit.Assert.assertFalse;
 
 /**
  * Test running a single test with -Dtest=BasicTest
@@ -31,26 +31,30 @@ import org.apache.maven.surefire.its.fixture.TestFile;
  * @author <a href="mailto:krosenvold@apache.org">Kristian Rosenvold</a>
  */
 public class CheckSingleTestIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
-    public void testSingleTest()
+    @Test
+    public void singleTest()
     {
         unpack().setTestToRun( "BasicTest" ).executeTest().verifyErrorFree( 1 );
     }
 
-    public void testSingleTestDotJava()
+    @Test
+    public void singleTestDotJava()
     {
         unpack().setTestToRun( "BasicTest.java" ).executeTest().verifyErrorFree( 1 );
     }
 
-    public void testSingleTestNonExistent()
+    @Test
+    public void singleTestNonExistent()
     {
-        final OutputValidator output = unpack().setTestToRun( "DoesNotExist" ).executeTestWithFailure();
+        final OutputValidator output = unpack().setTestToRun( "DoesNotExist" ).maven().withFailure().executeTest();
         TestFile reportsDir = output.getTargetFile( "surefire-reports" );
         assertFalse( "Unexpected reports directory", reportsDir.exists() );
     }
 
-    public void testSingleTestNonExistentOverride()
+    @Test
+    public void singleTestNonExistentOverride()
     {
         final OutputValidator output =
             unpack().setTestToRun( "DoesNotExist" ).failIfNoTests( false ).executeTest().verifyErrorFreeLog();

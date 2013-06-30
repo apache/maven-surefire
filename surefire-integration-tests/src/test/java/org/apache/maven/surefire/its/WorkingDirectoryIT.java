@@ -24,10 +24,12 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
 import org.apache.maven.it.VerificationException;
-import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
-import org.apache.maven.surefire.its.fixture.SurefireLauncher;
-import org.apache.maven.surefire.its.fixture.TestFile;
+import org.apache.maven.surefire.its.fixture.*;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Test working directory configuration, SUREFIRE-416
@@ -36,9 +38,10 @@ import org.apache.maven.surefire.its.fixture.TestFile;
  * @author <a href="mailto:krosenvold@apache.org">Kristian Rosenvold</a>
  */
 public class WorkingDirectoryIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
 
+    @Test
     public void testWorkingDirectory()
         throws Exception
     {
@@ -49,6 +52,7 @@ public class WorkingDirectoryIT
         verifyOutputDirectory( child );
     }
 
+    @Test
     public void testWorkingDirectoryNoFork()
         throws Exception
     {
@@ -59,6 +63,7 @@ public class WorkingDirectoryIT
         verifyOutputDirectory( child );
     }
 
+    @Test
     public void testWorkingDirectoryChildOnly()
         throws Exception
     {
@@ -69,6 +74,7 @@ public class WorkingDirectoryIT
         verifyOutputDirectory( outputValidator );
     }
 
+    @Test
     public void testWorkingDirectoryChildOnlyNoFork()
         throws Exception
     {

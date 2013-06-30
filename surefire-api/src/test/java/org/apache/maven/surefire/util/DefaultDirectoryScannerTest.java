@@ -39,7 +39,7 @@ public class DefaultDirectoryScannerTest
     {
         // use target as people can configure ide to compile in an other place than maven
         File baseDir = new File( new File( "target" ).getCanonicalPath() );
-        List include = new ArrayList();
+        List<String> include = new ArrayList<String>();
         include.add( "**/*ZT*A.java" );
         List exclude = new ArrayList();
 

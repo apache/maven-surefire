@@ -27,9 +27,11 @@ import java.util.List;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterException;
 
+import static org.apache.maven.plugin.surefire.report.FileReporterUtils.stripIllegalFilenameChars;
+
 /**
  * Base class for file reporters.
- *
+ * 
  * @author <a href="mailto:brett@apache.org">Brett Porter</a>
  * @author Kristian Rosenvold
  */
@@ -55,12 +57,12 @@ public class FileReporter
 
         File reportDir = reportFile.getParentFile();
 
-        //noinspection ResultOfMethodCallIgnored
+        // noinspection ResultOfMethodCallIgnored
         reportDir.mkdirs();
 
         if ( deleteOnStarting && reportFile.exists() )
         {
-            //noinspection ResultOfMethodCallIgnored
+            // noinspection ResultOfMethodCallIgnored
             reportFile.delete();
         }
 
@@ -89,11 +91,13 @@ public class FileReporter
 
         if ( reportNameSuffix != null && reportNameSuffix.length() > 0 )
         {
-            reportFile = new File( reportsDirectory, reportEntryName + "-" + reportNameSuffix + fileExtension );
+            reportFile =
+                new File( reportsDirectory, stripIllegalFilenameChars( reportEntryName + "-" + reportNameSuffix
+                    + fileExtension ) );
         }
         else
         {
-            reportFile = new File( reportsDirectory, reportEntryName + fileExtension );
+            reportFile = new File( reportsDirectory, stripIllegalFilenameChars( reportEntryName + fileExtension ) );
         }
         return reportFile;
     }

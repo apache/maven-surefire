@@ -20,6 +20,7 @@ package org.apache.maven.surefire.util;
  */
 
 import java.util.Arrays;
+import java.util.Iterator;
 
 import junit.framework.TestCase;
 
@@ -34,11 +35,34 @@ public class TestsToRunTest
         throws Exception
     {
         TestsToRun testsToRun = new TestsToRun( Arrays.asList( new Class[]{ T1.class, T2.class } ) );
-        assertEquals( 2, testsToRun.size() );
-        Class[] stringJUnitCoreTestSetMap = testsToRun.getLocatedClasses();
-        assertEquals( stringJUnitCoreTestSetMap[0], T1.class );
-        assertEquals( stringJUnitCoreTestSetMap[1], T2.class );
-        assertEquals( 2, stringJUnitCoreTestSetMap.length );
+        Iterator it = testsToRun.iterator();
+        assertTrue( it.hasNext() );
+        assertEquals( it.next(), T1.class );
+        assertTrue( it.hasNext() );
+        assertEquals( it.next(), T2.class );
+        assertFalse( it.hasNext() );
+    }
+
+    public void testContainsAtleast()
+    {
+        TestsToRun testsToRun = new TestsToRun( Arrays.asList( new Class[]{ T1.class, T2.class } ) );
+        assertTrue( testsToRun.containsAtLeast( 2 ) );
+        assertFalse( testsToRun.containsAtLeast( 3 ) );
+    }
+
+    public void testContainsExactly()
+    {
+        TestsToRun testsToRun = new TestsToRun( Arrays.asList( new Class[]{ T1.class, T2.class } ) );
+        assertFalse( testsToRun.containsExactly( 1 ) );
+        assertTrue( testsToRun.containsExactly( 2 ) );
+        assertFalse( testsToRun.containsExactly( 3 ) );
+    }
+
+    public void testToRunArray()
+    {
+        TestsToRun testsToRun = new TestsToRun( Arrays.asList( new Class[]{ T1.class, T2.class } ) );
+        Class[] locatedClasses = testsToRun.getLocatedClasses();
+        assertEquals( 2, locatedClasses.length );
     }
 
     class T1
@@ -51,3 +75,4 @@ public class TestsToRunTest
 
     }
 }
+

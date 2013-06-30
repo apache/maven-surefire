@@ -19,10 +19,10 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
-import org.apache.maven.surefire.its.fixture.SurefireLauncher;
-import org.apache.maven.surefire.its.fixture.TestFile;
+import org.apache.maven.surefire.its.fixture.*;
+import org.junit.Test;
+
+import static org.junit.Assert.assertFalse;
 
 /**
  * Test failIfNoTests
@@ -31,19 +31,21 @@ import org.apache.maven.surefire.its.fixture.TestFile;
  * @author <a href="mailto:krosenvold@apache.org">Kristian Rosenvold</a>
  */
 public class CheckTestFailIfNoTestsIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
     private SurefireLauncher unpack()
     {
         return unpack( "/default-configuration-noTests" );
     }
 
-    public void testFailIfNoTests()
+    @Test
+    public void failIfNoTests()
     {
-        unpack().failIfNoTests( true ).executeTestWithFailure();
+        unpack().failIfNoTests( true ).maven().withFailure().executeTest();
     }
 
-    public void testDontFailIfNoTests()
+    @Test
+    public void dontFailIfNoTests()
     {
         final OutputValidator outputValidator = unpack().failIfNoTests( false ).executeTest();
         outputValidator.verifyErrorFreeLog();
@@ -51,7 +53,8 @@ public class CheckTestFailIfNoTestsIT
         assertFalse( "Unexpected reports directory", reportsDir.exists() );
     }
 
-    public void test48CategoriesFailWhenNoTests()
+    @Test
+    public void jUnit48CategoriesFailWhenNoTests()
     {
         unpack().failIfNoTests( false ).activateProfile( "junit47" ).setJUnitVersion(
             "4.8.1" ).executeTest().verifyErrorFreeLog();

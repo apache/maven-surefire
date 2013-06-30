@@ -19,16 +19,18 @@ package org.apache.maven.surefire.its.jiras;
  */
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+import org.junit.Test;
 
 public class Surefire828EmptyGroupExprIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
     // !CategoryC
+    @Test
     public void testJUnitRunEmptyGroups()
     {
-        OutputValidator validator = unpackJUnit().addD( "profile", "emptyGroups" ).executeTest();
+        OutputValidator validator = unpackJUnit().sysProp( "profile", "emptyGroups" ).executeTest();
         validator.verifyErrorFreeLog();
         validator.assertTestSuiteResults( 5, 0, 0, 0 );
         validator.verifyTextInLog( "catA: 2" );
@@ -39,9 +41,10 @@ public class Surefire828EmptyGroupExprIT
     }
 
     // CategoryA && CategoryB
+    @Test
     public void testJUnitRunEmptyExcludeGroups()
     {
-        OutputValidator validator = unpackJUnit().addD( "profile", "emptyExcludedGroups" ).executeTest();
+        OutputValidator validator = unpackJUnit().sysProp( "profile", "emptyExcludedGroups" ).executeTest();
         validator.verifyErrorFreeLog();
         validator.assertTestSuiteResults( 2, 0, 0, 0 );
         validator.verifyTextInLog( "catA: 1" );
@@ -54,9 +57,10 @@ public class Surefire828EmptyGroupExprIT
     }
 
     // CategoryA && CategoryB
+    @Test
     public void testTestNGRunEmptyExcludeGroups()
     {
-        OutputValidator validator = unpackTestNG().addD( "profile", "emptyExcludedGroups" ).executeTest();
+        OutputValidator validator = unpackTestNG().sysProp( "profile", "emptyExcludedGroups" ).executeTest();
         validator.verifyErrorFreeLog();
         validator.assertTestSuiteResults( 2, 0, 0, 0 );
         validator.verifyTextInLog( "BasicTest.testInCategoriesAB()" );
@@ -64,9 +68,10 @@ public class Surefire828EmptyGroupExprIT
     }
 
     // !CategoryC
+    @Test
     public void testTestNGRunEmptyGroups()
     {
-        OutputValidator validator = unpackTestNG().addD( "profile", "emptyGroups" ).executeTest();
+        OutputValidator validator = unpackTestNG().sysProp( "profile", "emptyGroups" ).executeTest();
         validator.verifyErrorFreeLog();
         validator.assertTestSuiteResults( 8, 0, 0, 0 );
         validator.verifyTextInLog( "catA: 2" );

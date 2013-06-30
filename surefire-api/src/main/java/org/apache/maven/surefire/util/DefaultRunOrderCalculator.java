@@ -19,14 +19,14 @@ package org.apache.maven.surefire.util;
  * under the License.
  */
 
+import org.apache.maven.plugin.surefire.runorder.RunEntryStatisticsMap;
+import org.apache.maven.surefire.testset.RunOrderParameters;
+
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import org.apache.maven.plugin.surefire.runorder.RunEntryStatisticsMap;
-import org.apache.maven.surefire.testset.RunOrderParameters;
 
 /**
  * Applies the final runorder of the tests
@@ -36,7 +36,7 @@ import org.apache.maven.surefire.testset.RunOrderParameters;
 public class DefaultRunOrderCalculator
     implements RunOrderCalculator
 {
-    private final Comparator sortOrder;
+    private final Comparator<Class> sortOrder;
 
     private final RunOrder[] runOrder;
 
@@ -54,13 +54,19 @@ public class DefaultRunOrderCalculator
 
     public TestsToRun orderTestClasses( TestsToRun scannedClasses )
     {
-        List result = new ArrayList( Arrays.asList( scannedClasses.getLocatedClasses() ) );
+
+        List<Class> result = new ArrayList<Class>( 500 );
+
+        for ( Class scannedClass : scannedClasses )
+        {
+            result.add( scannedClass );
+        }
 
         orderTestClasses( result, runOrder.length != 0 ? runOrder[0] : null );
         return new TestsToRun( result );
     }
 
-    private void orderTestClasses( List testClasses, RunOrder runOrder )
+    private void orderTestClasses( List<Class> testClasses, RunOrder runOrder )
     {
         if ( RunOrder.RANDOM.equals( runOrder ) )
         {
@@ -70,7 +76,7 @@ public class DefaultRunOrderCalculator
         {
             RunEntryStatisticsMap runEntryStatisticsMap =
                 RunEntryStatisticsMap.fromFile( runOrderParameters.getRunStatisticsFile() );
-            final List prioritized = runEntryStatisticsMap.getPrioritizedTestsByFailureFirst( testClasses );
+            final List<Class> prioritized = runEntryStatisticsMap.getPrioritizedTestsByFailureFirst( testClasses );
             testClasses.clear();
             testClasses.addAll( prioritized );
 
@@ -79,7 +85,7 @@ public class DefaultRunOrderCalculator
         {
             RunEntryStatisticsMap runEntryStatisticsMap =
                 RunEntryStatisticsMap.fromFile( runOrderParameters.getRunStatisticsFile() );
-            final List prioritized = runEntryStatisticsMap.getPrioritizedTestsClassRunTime( testClasses, threadCount );
+            final List<Class> prioritized = runEntryStatisticsMap.getPrioritizedTestsClassRunTime( testClasses, threadCount );
             testClasses.clear();
             testClasses.addAll( prioritized );
 
@@ -90,7 +96,7 @@ public class DefaultRunOrderCalculator
         }
     }
 
-    private Comparator getSortOrderComparator( RunOrder runOrder )
+    private Comparator<Class> getSortOrderComparator( RunOrder runOrder )
     {
         if ( RunOrder.ALPHABETICAL.equals( runOrder ) )
         {
@@ -111,24 +117,24 @@ public class DefaultRunOrderCalculator
         }
     }
 
-    private Comparator getReverseAlphabeticalComparator()
+    private Comparator<Class> getReverseAlphabeticalComparator()
     {
-        return new Comparator()
+        return new Comparator<Class>()
         {
-            public int compare( Object o1, Object o2 )
+            public int compare( Class o1, Class o2 )
             {
-                return ( (Class) o2 ).getName().compareTo( ( (Class) o1 ).getName() );
+                return o2.getName().compareTo( o1.getName() );
             }
         };
     }
 
-    private Comparator getAlphabeticalComparator()
+    private Comparator<Class> getAlphabeticalComparator()
     {
-        return new Comparator()
+        return new Comparator<Class>()
         {
-            public int compare( Object o1, Object o2 )
+            public int compare( Class o1, Class o2 )
             {
-                return ( (Class) o1 ).getName().compareTo( ( (Class) o2 ).getName() );
+                return o1.getName().compareTo( o2.getName() );
             }
         };
     }

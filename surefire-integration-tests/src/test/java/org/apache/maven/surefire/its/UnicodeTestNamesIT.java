@@ -41,15 +41,15 @@ public class UnicodeTestNamesIT
     public void checkFileNamesWithUnicode()
     {
         SurefireLauncher unpacked = unpack( "unicode-testnames" );
-        File xxyz = new File( unpacked.getUnpackLocation(), "src/test/java/junit/twoTestCases/XXYZTest.java" );
+        File xxyz = new File( unpacked.getUnpackedAt(), "src/test/java/junit/twoTestCases/XXYZTest.java" );
 
-        File dest = new File( unpacked.getUnpackLocation(),
+        File dest = new File( unpacked.getUnpackedAt(),
                               "src/test/java/junit/twoTestCases/\u800C\u7D22\u5176\u60C5Test.java" );
 
         Assume.assumeTrue( xxyz.renameTo( dest ) );
         Assume.assumeTrue( dest.exists() );
         Assume.assumeTrue(
-            !new File( unpacked.getUnpackLocation(), "src/test/java/junit/twoTestCases/????Test.java" ).exists() );
+            !new File( unpacked.getUnpackedAt(), "src/test/java/junit/twoTestCases/????Test.java" ).exists() );
 
         OutputValidator outputValidator = unpacked.executeTest().assertTestSuiteResults( 2, 0, 0, 0 );
         TestFile surefireReportsFile = outputValidator.getSurefireReportsFile( "junit.twoTestCases.而索其情Test.txt" );

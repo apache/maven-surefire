@@ -19,14 +19,16 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.junit.Test;
 
 /**
  * @author Kristian Rosenvold
  */
 public class Surefire733AllOverrridesCapturedIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
+    @Test
     public void testLogOutput()
     {
         unpack( "surefire-733-allOverridesCaptured" ).executeTest().verifyTextInLog( "abc" );

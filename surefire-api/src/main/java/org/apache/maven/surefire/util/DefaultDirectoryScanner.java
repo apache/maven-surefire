@@ -19,11 +19,12 @@ package org.apache.maven.surefire.util;
  * under the License.
  */
 
+import org.apache.maven.surefire.SpecificTestClassFilter;
+
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Collections;
 import java.util.List;
-import org.apache.maven.surefire.SpecificTestClassFilter;
 
 /**
  * Scans directories looking for tests.
@@ -51,7 +52,7 @@ public class DefaultDirectoryScanner
 
     private final List specificTests;
 
-    private final List classesSkippedByValidation = new ArrayList();
+    private final List<Class> classesSkippedByValidation = new ArrayList<Class>();
 
     public DefaultDirectoryScanner( File basedir, List includes, List excludes, List specificTests )
     {
@@ -64,15 +65,13 @@ public class DefaultDirectoryScanner
     public TestsToRun locateTestClasses( ClassLoader classLoader, ScannerFilter scannerFilter )
     {
         String[] testClassNames = collectTests();
-        List result = new ArrayList();
+        List<Class> result = new ArrayList<Class>();
 
         String[] specific = specificTests == null ? new String[0] : processIncludesExcludes( specificTests );
         SpecificTestClassFilter specificTestFilter = new SpecificTestClassFilter( specific );
 
-        for ( int i = 0; i < testClassNames.length; i++ )
+        for ( String className : testClassNames )
         {
-            String className = testClassNames[i];
-
             Class testClass = loadClass( classLoader, className );
 
             if ( !specificTestFilter.accept( testClass ) )
@@ -143,39 +142,27 @@ public class DefaultDirectoryScanner
 
     private static String[] processIncludesExcludes( List list )
     {
-        List newList = new ArrayList();
-        Iterator iter = list.iterator();
-        while ( iter.hasNext() )
+        List<String> newList = new ArrayList<String>();
+        for ( Object aList : list )
         {
-            String include = (String) iter.next();
+            String include = (String) aList;
             String[] includes = include.split( "," );
-            for ( int i = 0; i < includes.length; ++i )
-            {
-                newList.add( includes[i] );
-            }
+            Collections.addAll( newList, includes );
         }
 
         String[] incs = new String[newList.size()];
 
         for ( int i = 0; i < incs.length; i++ )
         {
-            String inc = (String) newList.get( i );
+            String inc = newList.get( i );
             if ( inc.endsWith( JAVA_SOURCE_FILE_EXTENSION ) )
             {
-                inc = new StringBuffer(
-                    inc.length() - JAVA_SOURCE_FILE_EXTENSION.length() + JAVA_CLASS_FILE_EXTENSION.length() ).append(
-                    inc.substring( 0, inc.lastIndexOf( JAVA_SOURCE_FILE_EXTENSION ) ) ).append(
-                    JAVA_CLASS_FILE_EXTENSION ).toString();
+                inc = inc.substring( 0, inc.lastIndexOf( JAVA_SOURCE_FILE_EXTENSION ) ) + JAVA_CLASS_FILE_EXTENSION;
             }
             incs[i] = inc;
 
         }
         return incs;
-    }
-
-    public List getClassesSkippedByValidation()
-    {
-        return classesSkippedByValidation;
     }
 
 }

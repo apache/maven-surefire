@@ -64,4 +64,11 @@ public interface ReportEntry
      * @return A string that explains an anomaly
      */
     public String getMessage();
+
+    /**
+     * A name of the test case together with the group or category (if any exists).
+     *
+     * @return A string with the test case name and group/category, or just the name.
+     */
+    public String getNameWithGroup();
 }

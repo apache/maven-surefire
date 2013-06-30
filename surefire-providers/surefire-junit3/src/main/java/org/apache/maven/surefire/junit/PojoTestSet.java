@@ -24,7 +24,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.maven.surefire.report.PojoStackTraceWriter;
+import org.apache.maven.surefire.report.LegacyPojoStackTraceWriter;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.SimpleReportEntry;
@@ -40,7 +40,7 @@ public class PojoTestSet
 
     private final Object testObject;
 
-    private List testMethods;
+    private List<Method> testMethods;
 
     private Method setUpMethod;
 
@@ -99,7 +99,7 @@ public class PojoTestSet
 
         for ( int i = 0; i < testMethods.size() && !abort; ++i )
         {
-            abort = executeTestMethod( (Method) testMethods.get( i ), EMPTY_OBJECT_ARRAY, reportManager );
+            abort = executeTestMethod( testMethods.get( i ), EMPTY_OBJECT_ARRAY, reportManager );
         }
     }
 
@@ -132,8 +132,8 @@ public class PojoTestSet
         {
             report =
                 SimpleReportEntry.withException( testObject.getClass().getName(), getTestName( userFriendlyMethodName ),
-                                                 new PojoStackTraceWriter( testObject.getClass().getName(),
-                                                                           method.getName(), e ) );
+                                                 new LegacyPojoStackTraceWriter( testObject.getClass().getName(),
+                                                                                 method.getName(), e ) );
 
             reportManager.testFailed( report );
 
@@ -160,8 +160,8 @@ public class PojoTestSet
 
             report =
                 SimpleReportEntry.withException( testObject.getClass().getName(), getTestName( userFriendlyMethodName ),
-                                                 new PojoStackTraceWriter( testObject.getClass().getName(),
-                                                                           method.getName(), t ) );
+                                                 new LegacyPojoStackTraceWriter( testObject.getClass().getName(),
+                                                                                 method.getName(), t ) );
 
             reportManager.testFailed( report );
             // Don't return  here, because tearDownFixture should be called even
@@ -171,8 +171,8 @@ public class PojoTestSet
         {
             report =
                 SimpleReportEntry.withException( testObject.getClass().getName(), getTestName( userFriendlyMethodName ),
-                                                 new PojoStackTraceWriter( testObject.getClass().getName(),
-                                                                           method.getName(), t ) );
+                                                 new LegacyPojoStackTraceWriter( testObject.getClass().getName(),
+                                                                                 method.getName(), t ) );
 
             reportManager.testFailed( report );
             // Don't return  here, because tearDownFixture should be called even
@@ -188,8 +188,8 @@ public class PojoTestSet
             // Treat any exception from tearDownFixture as a failure of the test.
             report =
                 SimpleReportEntry.withException( testObject.getClass().getName(), getTestName( userFriendlyMethodName ),
-                                                 new PojoStackTraceWriter( testObject.getClass().getName(),
-                                                                           method.getName(), t ) );
+                                                 new LegacyPojoStackTraceWriter( testObject.getClass().getName(),
+                                                                                 method.getName(), t ) );
 
             reportManager.testFailed( report );
 
@@ -224,7 +224,7 @@ public class PojoTestSet
     {
         if ( setUpMethod != null )
         {
-            setUpMethod.invoke( testObject, new Object[0] );
+            setUpMethod.invoke( testObject );
         }
     }
 
@@ -233,7 +233,7 @@ public class PojoTestSet
     {
         if ( tearDownMethod != null )
         {
-            tearDownMethod.invoke( testObject, new Object[0] );
+            tearDownMethod.invoke( testObject );
         }
     }
 
@@ -241,14 +241,12 @@ public class PojoTestSet
     {
         if ( testMethods == null )
         {
-            testMethods = new ArrayList();
+            testMethods = new ArrayList<Method>();
 
             Method[] methods = getTestClass().getMethods();
 
-            for ( int i = 0; i < methods.length; ++i )
+            for ( Method m : methods )
             {
-                Method m = methods[i];
-
                 if ( isValidTestMethod( m ) )
                 {
                     String simpleName = m.getName();

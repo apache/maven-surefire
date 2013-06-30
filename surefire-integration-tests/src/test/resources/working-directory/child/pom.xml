@@ -23,9 +23,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>org.apache.maven.plugins.surefire</groupId>
+  <parent>
+    <groupId>org.apache.maven.plugins.surefire</groupId>
+    <artifactId>working-directory</artifactId>
+    <version>1.0-SNAPSHOT</version>
+  </parent>
+
   <artifactId>working-directory-child</artifactId>
-  <version>1.0-SNAPSHOT</version>
   <name>Test for working directory configuration</name>
 
   <dependencies>

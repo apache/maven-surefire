@@ -20,11 +20,11 @@ package org.apache.maven.surefire.its;
  */
 
 import java.io.File;
-import org.apache.maven.surefire.its.fixture.HelperAssertions;
-import org.apache.maven.surefire.its.fixture.IntegrationTestSuiteResults;
-import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
-import org.apache.maven.surefire.its.fixture.TestFile;
+
+import org.apache.maven.surefire.its.fixture.*;
+import org.junit.Test;
+
+import static org.junit.Assert.assertTrue;
 
 /**
  * Test report aggregation
@@ -33,10 +33,11 @@ import org.apache.maven.surefire.its.fixture.TestFile;
  * @author <a href="mailto:krosenvold@apache.org">Kristian Rosenvold</a>
  */
 public class AggregateReportIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
 
-    public void testAggregateReport()
+    @Test
+    public void aggregateReport()
     {
         final OutputValidator outputValidator =
             unpack( "/aggregate-report" ).addSurefireReportGoal().executeCurrentGoals();

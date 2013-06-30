@@ -19,7 +19,8 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.junit.Test;
 
 /**
  * Test Surefire-376 (TestNG @AfterSuite failures are ignored)
@@ -27,11 +28,12 @@ import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
 public class Surefire376TestNgAfterSuiteFailureIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
+    @Test
     public void testAfterSuiteFailure()
     {
-        unpack( "/testng-afterSuiteFailure" ).executeTestWithFailure().
+        unpack( "/testng-afterSuiteFailure" ).maven().withFailure().executeTest().
             assertTestSuiteResults( 2, 0, 1, 0 );
     }
 }

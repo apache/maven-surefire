@@ -23,6 +23,7 @@ import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.SimpleReportEntry;
 
 import junit.framework.TestCase;
+import org.junit.runner.Description;
 
 /**
  * @author Kristian Rosenvold
@@ -34,7 +35,8 @@ public class TestMethodTest
         throws Exception
     {
         ReportEntry reportEntry = new SimpleReportEntry( "a", "b" );
-        TestMethod testMethod = new TestMethod( reportEntry );
+        TestMethod testMethod = new TestMethod( reportEntry, new TestSet(
+            Description.createTestDescription( TestMethodTest.class, "testeEthodTest" ) ) );
         testMethod.testFailure( reportEntry );
         final int elapsed = testMethod.getElapsed();
         assertTrue( elapsed >= 0 );

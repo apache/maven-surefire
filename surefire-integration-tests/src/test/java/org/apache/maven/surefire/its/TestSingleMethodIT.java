@@ -19,7 +19,8 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.junit.Test;
 
 /**
  * Test project using -Dtest=mtClass#myMethod
@@ -27,7 +28,7 @@ import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
  * @author Olivier Lamy
  */
 public class TestSingleMethodIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
     public void singleMethod( String projectName )
         throws Exception
@@ -35,18 +36,21 @@ public class TestSingleMethodIT
         unpack( projectName ).executeTest().verifyErrorFreeLog().assertTestSuiteResults( 1, 0, 0, 0 );
     }
 
+    @Test
     public void testJunit44()
         throws Exception
     {
         singleMethod( "junit44-single-method" );
     }
 
+    @Test
     public void testJunit48()
         throws Exception
     {
         singleMethod( "junit48-single-method" );
     }
 
+    @Test
     public void testJunit48parallel()
         throws Exception
     {
@@ -54,12 +58,14 @@ public class TestSingleMethodIT
             1, 0, 0, 0 );
     }
 
+    @Test
     public void testTestNg()
         throws Exception
     {
         singleMethod( "testng-single-method" );
     }
 
+    @Test
     public void testTestNg5149()
         throws Exception
     {

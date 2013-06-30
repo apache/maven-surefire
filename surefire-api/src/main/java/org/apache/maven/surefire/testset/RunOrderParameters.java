@@ -43,11 +43,6 @@ public class RunOrderParameters
         this.runStatisticsFile = runStatisticsFile != null ? new File( runStatisticsFile ) : null;
     }
 
-    public static RunOrderParameters DEFAULT()
-    {
-        return new RunOrderParameters( RunOrder.DEFAULT, null );
-    }
-
     public static RunOrderParameters ALPHABETICAL()
     {
         return new RunOrderParameters( new RunOrder[]{ RunOrder.ALPHABETICAL }, null );
@@ -61,11 +56,6 @@ public class RunOrderParameters
     public File getRunStatisticsFile()
     {
         return runStatisticsFile;
-    }
-
-    public String getRunStatisticsFileName()
-    {
-        return runStatisticsFile != null ? runStatisticsFile.getAbsolutePath() : null;
     }
 
 }

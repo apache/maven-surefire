@@ -20,14 +20,13 @@ package org.apache.maven.surefire.its.fixture;
  */
 
 import org.apache.maven.it.VerificationException;
-import org.apache.maven.it.Verifier;
 
 public class FailsafeOutputValidator
     extends OutputValidator
 {
-    public FailsafeOutputValidator( Verifier verifier )
+    public FailsafeOutputValidator( OutputValidator source )
     {
-        super( verifier );
+        super( source.verifier );
     }
 
     public OutputValidator verifyErrorFree( int total )

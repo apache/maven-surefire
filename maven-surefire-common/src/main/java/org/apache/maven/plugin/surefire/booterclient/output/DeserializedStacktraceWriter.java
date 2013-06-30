@@ -37,10 +37,18 @@ public class DeserializedStacktraceWriter
 
     private final String stackTrace;
 
-    public DeserializedStacktraceWriter( String message, String stackTrace )
+    private final String smartTrimmed;
+
+    public DeserializedStacktraceWriter( String message, String smartTrimmed, String stackTrace )
     {
         this.message = message;
         this.stackTrace = stackTrace;
+        this.smartTrimmed = smartTrimmed;
+    }
+
+    public String smartTrimmedStackTrace()
+    {
+        return smartTrimmed;
     }
 
     // Trimming or not is decided on the forking side

@@ -20,7 +20,11 @@ package org.apache.maven.surefire.its.fixture;
  */
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.List;
+
+import org.apache.commons.io.FileUtils;
 import org.apache.maven.it.VerificationException;
 import org.apache.maven.it.Verifier;
 
@@ -83,33 +87,19 @@ public class OutputValidator
         }
     }
 
-    public OutputValidator verifyErrorFreeIntegrationTests( int total )
+    public List<String> loadFile( File file, Charset charset )
     {
+        //noinspection unchecked
         try
         {
-            verifier.verifyErrorFreeLog();
-            this.assertIntegrationTestSuiteResults( total, 0, 0, 0 );
-            return this;
+            return FileUtils.readLines( file, charset.name() );
         }
-        catch ( VerificationException e )
+        catch ( IOException e )
         {
             throw new SurefireVerifierException( e );
         }
     }
 
-    public List<String> loadFile( File file, boolean hasCommand )
-    {
-        //noinspection unchecked
-        try
-        {
-            //noinspection unchecked
-            return verifier.loadFile( file, hasCommand );
-        }
-        catch ( VerificationException e )
-        {
-            throw new SurefireVerifierException( e );
-        }
-    }
 
 
     public String getBasedir()
@@ -129,12 +119,6 @@ public class OutputValidator
     }
 
 
-    public String getArtifactPath( String org, String name, String version, String ext )
-    {
-        return verifier.getArtifactPath( org, name, version, ext );
-    }
-
-
     public OutputValidator assertTestSuiteResults( int total, int errors, int failures, int skipped )
     {
         HelperAssertions.assertTestSuiteResults( total, errors, failures, skipped, baseDir );
@@ -145,6 +129,12 @@ public class OutputValidator
     {
         HelperAssertions.assertIntegrationTestSuiteResults( total, errors, failures, skipped, baseDir );
         return this;
+    }
+
+    public TestFile getTargetFile( String modulePath, String fileName )
+    {
+        File targetDir = getSubFile( modulePath + "/target" );
+        return new TestFile( new File( targetDir, fileName ), this );
     }
 
     public TestFile getTargetFile( String fileName )
@@ -158,6 +148,12 @@ public class OutputValidator
     {
         File targetDir = getSubFile( "target/surefire-reports" );
         return new TestFile( new File( targetDir, fileName ), this );
+    }
+
+    public TestFile getSurefireReportsXmlFile( String fileName )
+    {
+        File targetDir = getSubFile( "target/surefire-reports" );
+        return new TestFile( new File( targetDir, fileName ), Charset.forName("UTF-8"), this );
     }
 
     public TestFile getSiteFile( String fileName )
@@ -195,10 +191,5 @@ public class OutputValidator
             }
         }
         return false;
-    }
-
-    Verifier getVerifier()
-    {
-        return verifier;
     }
 }

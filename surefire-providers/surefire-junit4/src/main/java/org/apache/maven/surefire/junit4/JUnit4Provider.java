@@ -22,6 +22,7 @@ package org.apache.maven.surefire.junit4;
 import java.lang.reflect.Method;
 import java.util.Iterator;
 import java.util.List;
+
 import org.apache.maven.shared.utils.io.SelectorUtils;
 import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
 import org.apache.maven.surefire.common.junit4.JUnit4RunListenerFactory;
@@ -118,9 +119,9 @@ public class JUnit4Provider
 
         runNotifer.fireTestRunStarted( null );
 
-        for ( Iterator<Class<?>> iter = testsToRun.iterator(); iter.hasNext(); )
+        for ( Class aTestsToRun : testsToRun )
         {
-            executeTestSet( iter.next(), reporter, runNotifer );
+            executeTestSet( aTestsToRun, reporter, runNotifer );
         }
 
         runNotifer.fireTestRunFinished( result );
@@ -206,23 +207,23 @@ public class JUnit4Provider
         return runOrderCalculator.orderTestClasses( scannedClasses );
     }
 
-    @SuppressWarnings( "unchecked" )
+    @SuppressWarnings("unchecked")
     private void upgradeCheck()
         throws TestSetFailedException
     {
         if ( isJunit4UpgradeCheck() )
         {
-            List<String> classesSkippedByValidation =
+            List<Class> classesSkippedByValidation =
                 scanResult.getClassesSkippedByValidation( jUnit4TestChecker, testClassLoader );
             if ( !classesSkippedByValidation.isEmpty() )
             {
                 StringBuilder reason = new StringBuilder();
                 reason.append( "Updated check failed\n" );
                 reason.append( "There are tests that would be run with junit4 / surefire 2.6 but not with [2.7,):\n" );
-                for ( String testClass : classesSkippedByValidation )
+                for ( Class testClass : classesSkippedByValidation )
                 {
                     reason.append( "   " );
-                    reason.append( testClass );
+                    reason.append( testClass.getName() );
                     reason.append( "\n" );
                 }
                 throw new TestSetFailedException( reason.toString() );

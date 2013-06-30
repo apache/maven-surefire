@@ -20,8 +20,9 @@ package org.apache.maven.surefire.its.jiras;
  */
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.TestFile;
+import org.junit.Test;
 
 /**
  * SUREFIRE-500 Asserts correct error handling for the "odd" surefire-500 (and 625) issues.
@@ -29,8 +30,9 @@ import org.apache.maven.surefire.its.fixture.TestFile;
  * @author Kristian Rosenvold
  */
 public class Surefire500PuzzlingErrorIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
+    @Test
     public void testBuildFailingWhenErrors()
     {
         OutputValidator outputValidator = unpack( "/surefire-500-puzzling-error" ).failNever().executeTest();

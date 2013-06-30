@@ -27,13 +27,14 @@ import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
+
 import org.apache.maven.plugin.surefire.AbstractSurefireMojo;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.OutputStreamFlushableCommandline;
 import org.apache.maven.plugin.surefire.util.Relocator;
 import org.apache.maven.shared.utils.StringUtils;
-import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
 import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.ForkedBooter;
+import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.apache.maven.surefire.util.UrlUtils;
 
@@ -54,9 +55,9 @@ public class ForkConfiguration
 
     public static final String FORK_PERTHREAD = "perthread";
 
-    public static final String FORK_ONCE_PERTHREAD = "onceperthread";
-
     private final int forkCount;
+
+    private final boolean reuseForks;
 
     private final Classpath bootClasspathConfiguration;
 
@@ -76,7 +77,7 @@ public class ForkConfiguration
 
     public ForkConfiguration( Classpath bootClasspathConfiguration, File tmpDir, String debugLine, String jvmExecutable,
                               File workingDirectory, String argLine, Map<String, String> environmentVariables,
-                              boolean debugEnabled, int forkCount )
+                              boolean debugEnabled, int forkCount, boolean reuseForks )
     {
         this.bootClasspathConfiguration = bootClasspathConfiguration;
         this.tempDirectory = tmpDir;
@@ -87,6 +88,7 @@ public class ForkConfiguration
         this.environmentVariables = environmentVariables;
         this.debug = debugEnabled;
         this.forkCount = forkCount;
+        this.reuseForks = reuseForks;
     }
 
     public Classpath getBootClasspath()
@@ -105,8 +107,7 @@ public class ForkConfiguration
             return FORK_NEVER;
         }
         else if ( forkMode.equals( FORK_NEVER ) || forkMode.equals( FORK_ONCE ) ||
-            forkMode.equals( FORK_ALWAYS ) || forkMode.equals( FORK_PERTHREAD ) ||
-            forkMode.equals( FORK_ONCE_PERTHREAD ) )
+            forkMode.equals( FORK_ALWAYS ) || forkMode.equals( FORK_PERTHREAD ) )
         {
             return forkMode;
         }
@@ -116,27 +117,27 @@ public class ForkConfiguration
         }
     }
 
-
     /**
-     * @param classPath              cla the classpath arguments
-     * @param classpathConfiguration the classpath configuration
-     * @param shadefire              true if running shadefire
-     * @param threadNumber           the thread number, to be the replacement in the argLine
-     * @return A commandline
+     * @param classPath            cla the classpath arguments
+     * @param startupConfiguration The startup configuration
+     * @param threadNumber         the thread number, to be the replacement in the argLine   @return A commandline
      * @throws org.apache.maven.surefire.booter.SurefireBooterForkException
      *          when unable to perform the fork
      */
     public OutputStreamFlushableCommandline createCommandLine( List<String> classPath,
-                                                               ClassLoaderConfiguration classpathConfiguration,
-                                                               boolean shadefire, int threadNumber )
+                                                               StartupConfiguration startupConfiguration,
+                                                               int threadNumber )
         throws SurefireBooterForkException
     {
-        return createCommandLine( classPath, classpathConfiguration.isManifestOnlyJarRequestedAndUsable(), shadefire,
-                                  threadNumber );
+        return createCommandLine( classPath,
+                                  startupConfiguration.getClassLoaderConfiguration().isManifestOnlyJarRequestedAndUsable(),
+                                  startupConfiguration.isShadefire(), startupConfiguration.isProviderMainClass()
+            ? startupConfiguration.getActualClassName()
+            : ForkedBooter.class.getName(), threadNumber );
     }
 
-    public OutputStreamFlushableCommandline createCommandLine( List<String> classPath, boolean useJar,
-                                                               boolean shadefire, int threadNumber )
+    OutputStreamFlushableCommandline createCommandLine( List<String> classPath, boolean useJar, boolean shadefire,
+                                                        String providerThatHasMainMethod, int threadNumber )
         throws SurefireBooterForkException
     {
         OutputStreamFlushableCommandline cli = new OutputStreamFlushableCommandline();
@@ -169,7 +170,7 @@ public class ForkConfiguration
             File jarFile;
             try
             {
-                jarFile = createJar( classPath );
+                jarFile = createJar( classPath, providerThatHasMainMethod );
             }
             catch ( IOException e )
             {
@@ -184,7 +185,8 @@ public class ForkConfiguration
         {
             cli.addEnvironment( "CLASSPATH", StringUtils.join( classPath.iterator(), File.pathSeparator ) );
 
-            final String forkedBooter = ForkedBooter.class.getName();
+            final String forkedBooter =
+                providerThatHasMainMethod != null ? providerThatHasMainMethod : ForkedBooter.class.getName();
 
             cli.createArg().setValue( shadefire ? new Relocator().relocate( forkedBooter ) : forkedBooter );
         }
@@ -196,18 +198,21 @@ public class ForkConfiguration
 
     private String replaceThreadNumberPlaceholder( String argLine, int threadNumber )
     {
-        return argLine.replace( AbstractSurefireMojo.THREAD_NUMBER_PLACEHOLDER, String.valueOf( threadNumber ) );
+        return argLine.replace( AbstractSurefireMojo.THREAD_NUMBER_PLACEHOLDER,
+                                String.valueOf( threadNumber ) ).replace( AbstractSurefireMojo.FORK_NUMBER_PLACEHOLDER,
+                                                                          String.valueOf( threadNumber ) );
     }
 
     /**
      * Create a jar with just a manifest containing a Main-Class entry for BooterConfiguration and a Class-Path entry
      * for all classpath elements.
      *
-     * @param classPath List&lt;String> of all classpath elements.
+     * @param classPath      List&lt;String> of all classpath elements.
+     * @param startClassName  The classname to start (main-class)
      * @return The file pointint to the jar
      * @throws java.io.IOException When a file operation fails.
      */
-    public File createJar( List<String> classPath )
+    private File createJar( List<String> classPath, String startClassName )
         throws IOException
     {
         File file = File.createTempFile( "surefirebooter", ".jar", tempDirectory );
@@ -234,7 +239,7 @@ public class ForkConfiguration
 
         man.getMainAttributes().putValue( "Manifest-Version", "1.0" );
         man.getMainAttributes().putValue( "Class-Path", cp.trim() );
-        man.getMainAttributes().putValue( "Main-Class", ForkedBooter.class.getName() );
+        man.getMainAttributes().putValue( "Main-Class", startClassName );
 
         man.write( jos );
         jos.close();
@@ -265,5 +270,11 @@ public class ForkConfiguration
     public int getForkCount()
     {
         return forkCount;
+    }
+
+
+    public boolean isReuseForks()
+    {
+        return reuseForks;
     }
 }

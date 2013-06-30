@@ -23,8 +23,9 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import org.apache.maven.surefire.NonAbstractClassFilter;
 import org.apache.maven.surefire.common.junit3.JUnit3TestChecker;
-import org.apache.maven.surefire.util.ReflectionUtils;
 import org.apache.maven.surefire.util.ScannerFilter;
+
+import static org.apache.maven.surefire.util.ReflectionUtils.tryLoadClass;
 
 /**
  * @author Kristian Rosenvold
@@ -42,7 +43,7 @@ public class JUnit4TestChecker
     public JUnit4TestChecker( ClassLoader testClassLoader )
     {
         this.jUnit3TestChecker = new JUnit3TestChecker( testClassLoader );
-        this.runWith = getJUnitClass( testClassLoader, org.junit.runner.RunWith.class.getName() );
+        this.runWith = tryLoadClass( testClassLoader, org.junit.runner.RunWith.class.getName() );
         this.nonAbstractClassFilter = new NonAbstractClassFilter();
     }
 
@@ -59,7 +60,7 @@ public class JUnit4TestChecker
             return false;
         }
 
-        if ( runWith != null )
+        if ( isRunWithPresentInClassLoader() )
         {
             Annotation runWithAnnotation = testClass.getAnnotation( runWith );
             if ( runWithAnnotation != null )
@@ -68,6 +69,11 @@ public class JUnit4TestChecker
             }
         }
 
+        return lookForTestAnnotatedMethods( testClass );
+    }
+
+    private boolean lookForTestAnnotatedMethods( Class testClass )
+    {
         Class classToCheck = testClass;
         while ( classToCheck != null )
         {
@@ -80,7 +86,7 @@ public class JUnit4TestChecker
         return false;
     }
 
-    private boolean checkforTestAnnotatedMethod( Class testClass )
+    public boolean checkforTestAnnotatedMethod( Class testClass )
     {
         for ( Method lMethod : testClass.getDeclaredMethods() )
         {
@@ -95,9 +101,8 @@ public class JUnit4TestChecker
         return false;
     }
 
-    private Class getJUnitClass( ClassLoader classLoader, String className )
+    public boolean isRunWithPresentInClassLoader()
     {
-        return ReflectionUtils.tryLoadClass( classLoader, className );
+        return runWith != null;
     }
-
 }

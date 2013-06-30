@@ -17,14 +17,13 @@
   ~ under the License.
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
     <groupId>org.apache.maven.surefire</groupId>
     <artifactId>surefire-providers</artifactId>
-    <version>2.13-SNAPSHOT</version>
+    <version>2.16-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -40,12 +39,6 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-all</artifactId>
-      <version>1.7</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>org.apache.maven.surefire</groupId>
       <artifactId>common-junit4</artifactId>
       <version>${project.version}</version>
@@ -58,6 +51,11 @@
     <dependency>
       <groupId>org.apache.maven.surefire</groupId>
       <artifactId>common-junit48</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.surefire</groupId>
+      <artifactId>common-java5</artifactId>
       <version>${project.version}</version>
     </dependency>
   </dependencies>
@@ -92,8 +90,19 @@
                 <includes>
                   <include>org.apache.maven.surefire:common-junit3</include>
                   <include>org.apache.maven.surefire:common-junit4</include>
+                  <include>org.apache.maven.surefire:common-java5</include>
                 </includes>
               </artifactSet>
+              <relocations>
+                <relocation>
+                  <pattern>javax.annotation</pattern>
+                  <shadedPattern>org.apache.maven.surefire.javax.annotation</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>org.apache.maven.shared</pattern>
+                  <shadedPattern>org.apache.maven.surefire.org.apache.maven.shared</shadedPattern>
+                </relocation>
+              </relocations>
             </configuration>
           </execution>
         </executions>

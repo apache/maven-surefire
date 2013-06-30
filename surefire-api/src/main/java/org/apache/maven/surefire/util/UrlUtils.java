@@ -48,9 +48,9 @@ public class UrlUtils
         {
             byte[] bytes =
                 "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.!~*'():/".getBytes( ENCODING );
-            for ( int i = 0; i < bytes.length; i++ )
+            for ( byte aByte : bytes )
             {
-                UNRESERVED.set( bytes[i] );
+                UNRESERVED.set( aByte );
             }
         }
         catch ( UnsupportedEncodingException e )
@@ -70,10 +70,9 @@ public class UrlUtils
         try
         {
             byte[] bytes = url.toString().getBytes( ENCODING );
-            StringBuffer buf = new StringBuffer( bytes.length );
-            for ( int i = 0; i < bytes.length; i++ )
+            StringBuilder buf = new StringBuilder( bytes.length );
+            for ( byte b : bytes )
             {
-                byte b = bytes[i];
                 if ( b > 0 && UNRESERVED.get( b ) )
                 {
                     buf.append( (char) b );

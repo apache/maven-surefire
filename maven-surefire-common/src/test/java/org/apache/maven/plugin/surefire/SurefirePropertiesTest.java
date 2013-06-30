@@ -22,6 +22,7 @@ import java.util.Enumeration;
 import java.util.Properties;
 
 import junit.framework.TestCase;
+import org.apache.maven.surefire.booter.KeyValueSource;
 
 /**
  * Tests the insertion-order preserving properties collection
@@ -33,7 +34,7 @@ public class SurefirePropertiesTest
     public void testKeys()
         throws Exception
     {
-        SurefireProperties orderedProperties = new SurefireProperties( null );
+        SurefireProperties orderedProperties = new SurefireProperties( (KeyValueSource) null );
         orderedProperties.setProperty( "abc", "1" );
         orderedProperties.setProperty( "xyz", "1" );
         orderedProperties.setProperty( "efg", "1" );
@@ -48,7 +49,7 @@ public class SurefirePropertiesTest
     public void testKeysReinsert()
         throws Exception
     {
-        SurefireProperties orderedProperties = new SurefireProperties( null );
+        SurefireProperties orderedProperties = new SurefireProperties( (KeyValueSource)null );
         orderedProperties.setProperty( "abc", "1" );
         orderedProperties.setProperty( "xyz", "1" );
         orderedProperties.setProperty( "efg", "1" );

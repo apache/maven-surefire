@@ -19,10 +19,11 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
-import org.apache.maven.surefire.its.fixture.SurefireLauncher;
-import org.apache.maven.surefire.its.fixture.TestFile;
+import org.apache.maven.surefire.its.fixture.*;
+import org.junit.Test;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Test Surefire-740 Truncated comma with non us locale
@@ -30,53 +31,52 @@ import org.apache.maven.surefire.its.fixture.TestFile;
  * @author Kristian Rosenvold
  */
 public class Surefire772SpecifiedReportsIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
+    @Test
     public void testReportGeneration()
     {
         OutputValidator validator =
             unpack().addFailsafeReportOnlyGoal().addSurefireReportOnlyGoal().executeCurrentGoals();
 
         TestFile siteFile = validator.getSiteFile( "surefire-report.html" );
-        System.out.println( "siteFile.getAbsolutePath() = " + siteFile.getAbsolutePath() );
         assertTrue( "Expecting surefire report file", siteFile.isFile() );
 
         siteFile = validator.getSiteFile( "failsafe-report.html" );
-        System.out.println( "siteFile.getAbsolutePath() = " + siteFile.getAbsolutePath() );
         assertTrue( "Expecting failsafe report file", siteFile.isFile() );
     }
 
+    @Test
     public void testSkippedFailsafeReportGeneration()
     {
         OutputValidator validator = unpack().activateProfile(
             "skipFailsafe" ).addFailsafeReportOnlyGoal().addSurefireReportOnlyGoal().executeCurrentGoals();
 
         TestFile siteFile = validator.getSiteFile( "surefire-report.html" );
-        System.out.println( "siteFile.getAbsolutePath() = " + siteFile.getAbsolutePath() );
         assertTrue( "Expecting surefire report file", siteFile.isFile() );
 
         siteFile = validator.getSiteFile( "failsafe-report.html" );
-        System.out.println( "siteFile.getAbsolutePath() = " + siteFile.getAbsolutePath() );
         assertFalse( "Expecting no failsafe report file", siteFile.isFile() );
     }
 
+    @Test
     public void testSkippedSurefireReportGeneration()
     {
         OutputValidator validator = unpack().activateProfile(
             "skipSurefire" ).addFailsafeReportOnlyGoal().addSurefireReportOnlyGoal().executeCurrentGoals();
 
         TestFile siteFile = validator.getSiteFile( "surefire-report.html" );
-        System.out.println( "siteFile.getAbsolutePath() = " + siteFile.getAbsolutePath() );
         assertFalse( "Expecting no surefire report file", siteFile.isFile() );
 
         siteFile = validator.getSiteFile( "failsafe-report.html" );
-        System.out.println( "siteFile.getAbsolutePath() = " + siteFile.getAbsolutePath() );
         assertTrue( "Expecting failsafe report file", siteFile.isFile() );
     }
 
     public SurefireLauncher unpack()
     {
-        return unpack( "/surefire-772-specified-reports" ).deleteSiteDir().addGoal( "-Dclean.skip=true" ).failNever();
+        SurefireLauncher unpack = unpack( "/surefire-772-specified-reports" );
+        unpack.maven().deleteSiteDir().skipClean().failNever();
+        return unpack;
     }
 
 }

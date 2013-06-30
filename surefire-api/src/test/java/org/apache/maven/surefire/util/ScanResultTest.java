@@ -34,7 +34,7 @@ public class ScanResultTest
     public void testWriteTo()
         throws Exception
     {
-        List files = Arrays.asList( new String[]{ "abc", "cde" } );
+        List<String> files = Arrays.asList( "abc", "cde" );
         DefaultScanResult scanResult = new DefaultScanResult( files );
         Properties serialized = new Properties();
         scanResult.writeTo( serialized );

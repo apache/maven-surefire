@@ -22,11 +22,23 @@ package org.apache.maven.surefire.junitcore;
 import java.util.ArrayList;
 import java.util.Map;
 import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
+import org.apache.maven.surefire.common.junit48.JUnit46StackTraceWriter;
 import org.apache.maven.surefire.report.RunListener;
+import org.apache.maven.surefire.report.StackTraceWriter;
 
 import org.junit.runner.Description;
 import org.junit.runner.Result;
+import org.junit.runner.notification.Failure;
 
+/**
+ * Noteworthy things about JUnit4 listening:
+ * <p/>
+ * A class that is annotated with @Ignore will have one invocation of "testSkipped" with source==name
+ * A method that is annotated with @Ignore will have a invocation of testSkipped with source and name distinct
+ * Methods annotated with @Ignore trigger no further events.
+ *
+ * @see org.apache.maven.surefire.junitcore.ConcurrentRunListener for details about parallel running
+ */
 public class JUnitCoreRunListener
     extends JUnit4RunListener
 {
@@ -69,21 +81,24 @@ public class JUnitCoreRunListener
         String itemTestClassName = null;
         for ( Description item : children )
         {
-            if ( item.isTest() && item.getMethodName() != null )
-            {
-                testSet.incrementTestMethodCount();
-                if ( itemTestClassName == null )
-                {
-                    itemTestClassName = item.getClassName();
-                }
-            }
-            else if ( item.getChildren().size() > 0 )
+            if ( !item.isTest() )
             {
                 fillTestCountMap( item );
             }
             else
             {
-                classMethodCounts.put( item.getClassName(), testSet );
+                if ( item.getMethodName() != null )
+                {
+                    testSet.incrementTestMethodCount();
+                    if ( itemTestClassName == null )
+                    {
+                        itemTestClassName = item.getClassName();
+                    }
+                }
+                else
+                {
+                    classMethodCounts.put( item.getClassName(), new TestSet( item ) );
+                }
             }
         }
         if ( itemTestClassName != null )
@@ -92,4 +107,9 @@ public class JUnitCoreRunListener
         }
     }
 
+    @Override
+    protected StackTraceWriter createStackTraceWriter( Failure failure )
+    {
+        return new JUnit46StackTraceWriter( failure );
+    }
 }

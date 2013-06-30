@@ -1,6 +1,7 @@
 package org.apache.maven.surefire.its;
 
-import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.junit.Test;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -27,7 +28,7 @@ import org.apache.maven.surefire.its.fixture.SurefireIntegrationTestCase;
  * @author <a href="mailto:ytsolar@gmail.com">rainLee</a>
  */
 public class TestMultipleMethodsIT
-    extends SurefireIntegrationTestCase
+    extends SurefireJUnit4IntegrationTestCase
 {
     public void multipleMethod( String projectName )
         throws Exception
@@ -35,12 +36,14 @@ public class TestMultipleMethodsIT
         unpack( projectName ).executeTest().verifyErrorFreeLog().assertTestSuiteResults( 3, 0, 0, 0 );
     }
 
+    @Test
     public void testJunit44()
         throws Exception
     {
         multipleMethod( "junit44-multiple-methods" );
     }
 
+    @Test
     public void testJunit48()
         throws Exception
     {
