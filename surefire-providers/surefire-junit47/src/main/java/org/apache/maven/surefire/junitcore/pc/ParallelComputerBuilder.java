@@ -36,6 +36,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -162,10 +163,10 @@ public class ParallelComputerBuilder {
     }
 
     public final class ParallelComputer extends Computer {
-        final Collection<Suite> suites = new ArrayList<Suite>();
-        final Collection<Suite> nestedSuites = new ArrayList<Suite>();
-        final Collection<ParentRunner> classes = new ArrayList<ParentRunner>();
-        final Collection<ParentRunner> nestedClasses = new ArrayList<ParentRunner>();
+        final Collection<Suite> suites = new LinkedHashSet<Suite>();
+        final Collection<Suite> nestedSuites = new LinkedHashSet<Suite>();
+        final Collection<ParentRunner> classes = new LinkedHashSet<ParentRunner>();
+        final Collection<ParentRunner> nestedClasses = new LinkedHashSet<ParentRunner>();
         final int poolCapacity;
         final boolean splitPool;
         private final Map<Type, Integer> allGroups;
