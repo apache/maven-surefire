@@ -301,6 +301,15 @@ public class ParallelComputerBuilderTest {
 
         result = core.run(builder.useOnePool(2).parallelSuites(1).parallelClasses().buildComputer(), classes);
         assertTrue(result.wasSuccessful());
+
+        classes = new Class<?>[]{NothingDoingSuite.class, NothingDoingSuite.class,
+                NothingDoingTest1.class, NothingDoingTest2.class, NothingDoingTest3.class};
+
+        result = core.run(builder.useOnePool(2).parallelSuites(1).parallelClasses(1).buildComputer(), classes);
+        assertTrue(result.wasSuccessful());
+
+        result = core.run(builder.useOnePool(2).parallelSuites(1).parallelClasses().buildComputer(), classes);
+        assertTrue(result.wasSuccessful());
     }
 
     private static void testKeepBeforeAfter(ParallelComputerBuilder builder, Class<?>... classes) {
