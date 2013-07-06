@@ -60,7 +60,10 @@ public class Junit47WithCucumberIT
 
     private void doTest( String parallel, int total )
     {
-        unpack( "junit47-cucumber" ).sysProp( "parallel", parallel ).executeTest().assertTestSuiteResults( total, 0, 2,
-                                                                                                           0 );
+        unpack( "junit47-cucumber" )
+                .sysProp( "parallel", parallel )
+                .sysProp( "threadCount", "2" )
+                .executeTest()
+                .assertTestSuiteResults( total, 0, 2, 0 );
     }
 }

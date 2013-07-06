@@ -54,8 +54,10 @@ public class TestSingleMethodIT
     public void testJunit48parallel()
         throws Exception
     {
-        unpack( "junit48-single-method" ).parallelClasses().executeTest().verifyErrorFreeLog().assertTestSuiteResults(
-            1, 0, 0, 0 );
+        unpack( "junit48-single-method" )
+                .executeTest()
+                .verifyErrorFreeLog()
+                .assertTestSuiteResults( 1, 0, 0, 0 );
     }
 
     @Test

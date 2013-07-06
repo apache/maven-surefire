@@ -34,6 +34,7 @@ public class BasicTest
     public void testSetUp()
     {
         Assert.assertTrue( "setUp was not called", setUpCalled );
+        Assert.assertFalse( "tearDown was called", tearDownCalled );
         Assert.assertThat( true, Is.is( true ) );
     }
 

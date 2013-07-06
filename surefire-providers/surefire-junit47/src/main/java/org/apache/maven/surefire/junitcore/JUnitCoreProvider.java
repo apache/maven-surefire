@@ -153,7 +153,8 @@ public class JUnitCoreProvider
 
             RunListener listener =
                 ConcurrentRunListener.createInstance( testSetMap, reporterFactory,
-                                                      jUnitCoreParameters.isParallelClasses(),
+                                                      jUnitCoreParameters.isParallelClasses()
+                                                              || jUnitCoreParameters.isParallelSuites(),
                                                       jUnitCoreParameters.isParallelBoth(), consoleLogger );
             ConsoleOutputCapture.startCapture( (ConsoleOutputReceiver) listener );
 

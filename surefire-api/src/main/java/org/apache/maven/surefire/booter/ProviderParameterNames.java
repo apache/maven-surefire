@@ -31,4 +31,10 @@ public class ProviderParameterNames
 
     public static final String PARALLEL_PROP = "parallel";
 
+    public static final String THREADCOUNTSUITES_PROP = "threadcountsuites";
+
+    public static final String THREADCOUNTCLASSES_PROP = "threadcountclasses";
+
+    public static final String THREADCOUNTMETHODS_PROP = "threadcountmethods";
+
 }
