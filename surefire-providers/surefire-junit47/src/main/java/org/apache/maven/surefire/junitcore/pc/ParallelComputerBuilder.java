@@ -282,7 +282,8 @@ public class ParallelComputerBuilder {
             // a scheduler for parallel suites
             final Scheduler suitesScheduler;
             if (commonPool != null && parallelSuites > 0) {
-                suitesScheduler = createScheduler(null, commonPool, true, new Balancer(parallelSuites, true));
+                Balancer balancer = BalancerFactory.createBalancerWithFairness(parallelSuites);
+                suitesScheduler = createScheduler(null, commonPool, true, balancer);
             } else {
                 suitesScheduler = createScheduler(parallelSuites);
             }
@@ -309,7 +310,7 @@ public class ParallelComputerBuilder {
 
         private void setSchedulers(Iterable<? extends ParentRunner> runners, int poolSize, ExecutorService commonPool) {
             if (commonPool != null) {
-                Balancer concurrencyLimit = new Balancer(poolSize, true);
+                Balancer concurrencyLimit = BalancerFactory.createBalancerWithFairness(poolSize);
                 boolean doParallel = poolSize > 0;
                 for (ParentRunner runner : runners) {
                     runner.setScheduler(createScheduler(runner.getDescription(), commonPool, doParallel, concurrencyLimit));
@@ -323,7 +324,8 @@ public class ParallelComputerBuilder {
                 }
                 boolean doParallel = pool != null;
                 for (ParentRunner runner : runners) {
-                    runner.setScheduler(createScheduler(runner.getDescription(), pool, doParallel, new Balancer()));
+                    runner.setScheduler(createScheduler(runner.getDescription(), pool, doParallel,
+                            BalancerFactory.createInfinitePermitsBalancer()));
                 }
             }
         }

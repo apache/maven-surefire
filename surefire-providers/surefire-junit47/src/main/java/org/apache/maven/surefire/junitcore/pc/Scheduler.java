@@ -75,7 +75,7 @@ public class Scheduler implements RunnerScheduler {
      * @throws NullPointerException if null <tt>strategy</tt>
      */
     public Scheduler(Description description, SchedulingStrategy strategy, int concurrency) {
-        this(description, strategy, new Balancer(concurrency));
+        this(description, strategy, BalancerFactory.createBalancer(concurrency));
     }
 
     /**
