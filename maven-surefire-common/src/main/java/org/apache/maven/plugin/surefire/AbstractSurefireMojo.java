@@ -511,6 +511,7 @@ public abstract class AbstractSurefireMojo
      *  <li>integer number which represents the weight in ratio between
      *      <em>threadCountSuites</em>:<code>threadCountClasses</code>:<code>threadCountMethods</code>.
      *      As an example 2 is 20% of <code>threadCount</code> if the ratio is <em>2</em>:3:5</li>
+     *  <li>You can impose limitation on parallel suites if <code>useUnlimitedThreads</code> is specified.</li>
      * </ul>
      *
      * Only makes sense to use in conjunction with the <code>parallel</code> parameter.
@@ -536,6 +537,7 @@ public abstract class AbstractSurefireMojo
      *  <li>integer number which represents the weight in ratio between
      *      <code>threadCountSuites</code>:<em>threadCountClasses</em>:<code>threadCountMethods</code>.
      *      As an example 3 is 30% of <code>threadCount</code> if the ratio is 2:<em>3</em>:5</li>
+     *  <li>You can impose limitation on parallel classes if <code>useUnlimitedThreads</code> is specified.</li>
      * </ul>
      *
      * Only makes sense to use in conjunction with the <code>parallel</code> parameter.
@@ -552,6 +554,7 @@ public abstract class AbstractSurefireMojo
      *  <li>number of threads executing JUnit test methods if <code>threadCount</code> is 0 or unspecified;</li>
      *  <li>integer number which represents the weight in ratio between <code>threadCountSuites</code>:<code>threadCountClasses</code>:<em>threadCountMethods</em>.
      *      As an example 5 is 50% of <code>threadCount</code> if the ratio is 2:3:<em>5</em>.</li>
+     *  <li>You can impose limitation on parallel methods if <code>useUnlimitedThreads</code> is specified.</li>
      * </ul>
      *
      * Only makes sense to use in conjunction with the <code>parallel</code> parameter.
