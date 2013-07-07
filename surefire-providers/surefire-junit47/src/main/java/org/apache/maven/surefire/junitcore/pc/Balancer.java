@@ -56,8 +56,8 @@ public class Balancer {
      * @param fair <tt>true</tt> guarantees the waiting schedulers to wake up in order they acquired a permit
      */
     public Balancer(int numPermits, boolean fair) {
-        boolean maintainTests = numPermits > 0 && numPermits < Integer.MAX_VALUE;
-        balancer = maintainTests ? new Semaphore(numPermits, fair) : null;
+        boolean shouldBalance = numPermits > 0 && numPermits < Integer.MAX_VALUE;
+        balancer = shouldBalance ? new Semaphore(numPermits, fair) : null;
         maxPermits = numPermits;
     }
 
@@ -68,7 +68,6 @@ public class Balancer {
      *         while waiting for a permit.
      */
     public boolean acquirePermit() {
-        Semaphore balancer = this.balancer;
         if (balancer != null) {
             try {
                 balancer.acquire();
@@ -83,14 +82,12 @@ public class Balancer {
      * Releases a permit, returning it to the balancer.
      */
     public void releasePermit() {
-        Semaphore balancer = this.balancer;
         if (balancer != null) {
             balancer.release();
         }
     }
 
     public void releaseAllPermits() {
-        Semaphore balancer = this.balancer;
         if (balancer != null) {
             balancer.release(maxPermits);
         }
