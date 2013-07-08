@@ -86,7 +86,7 @@ Fork Options and Parallel Test Execution
   that Surefire creates one new JVM process to execute all tests in one maven
   module.
 
-  <<<forkMode=1>>>/<<<reuseForks=false>>> executes each test class in its own 
+  <<<forkCount=1>>>/<<<reuseForks=false>>> executes each test class in its own 
   JVM process, one after another. It creates the highest level of separation for 
   the test execution, but it would probably also give you the longest execution 
   time of all the available options. Consider it as a last resort.
