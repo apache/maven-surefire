@@ -73,6 +73,7 @@
           <groups>nonexistent, functional</groups>
           <threadCount>3</threadCount>
           <parallel>methods</parallel>
+          <forkCount>0</forkCount>
         </configuration>
       </plugin>
       <plugin>

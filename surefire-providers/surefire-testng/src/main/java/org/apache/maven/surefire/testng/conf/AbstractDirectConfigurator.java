@@ -25,11 +25,12 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
 import org.apache.maven.surefire.booter.ProviderParameterNames;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.NestedRuntimeException;
-
 import org.testng.TestNG;
+import org.testng.xml.XmlSuite;
 
 public abstract class AbstractDirectConfigurator
     implements Configurator
@@ -57,6 +58,37 @@ public abstract class AbstractDirectConfigurator
         // DGF In 4.7, default listeners dump XML files in the surefire-reports directory,
         // confusing the report plugin.  This was fixed in later versions.
         testng.setUseDefaultListeners( false );
+        configureInstance( testng, options );
+        // TODO: we should have the Profile so that we can decide if this is needed or not
+        testng.setListenerClasses( loadListenerClasses( listeners ) );
+    }
+
+    public void configure( XmlSuite suite, Map options )
+        throws TestSetFailedException
+    {
+        Map filtered = filterForSuite( options );
+        configureInstance( suite, filtered );
+    }
+
+
+    protected Map filterForSuite( Map options )
+    {
+        Map result = new HashMap();
+        addPropIfNotNull( options, result, ProviderParameterNames.PARALLEL_PROP );
+        addPropIfNotNull( options, result, ProviderParameterNames.THREADCOUNT_PROP );
+        return result;
+    }
+
+    private void addPropIfNotNull( Map options, Map result, String prop )
+    {
+        if ( options.containsKey( prop ) )
+        {
+            result.put( prop, options.get( prop ) );
+        }
+    }
+
+    private void configureInstance( Object testngInstance, Map options )
+    {
         for ( Iterator it = options.entrySet().iterator(); it.hasNext(); )
         {
             Map.Entry entry = (Map.Entry) it.next();
@@ -68,7 +100,7 @@ public abstract class AbstractDirectConfigurator
             {
                 try
                 {
-                    setter.invoke( testng, val );
+                    setter.invoke( testngInstance, val );
                 }
                 catch ( Exception ex )
                 {
@@ -77,8 +109,6 @@ public abstract class AbstractDirectConfigurator
 
             }
         }
-        // TODO: we should have the Profile so that we can decide if this is needed or not
-        testng.setListenerClasses( loadListenerClasses( listeners ) );
     }
 
     public static List loadListenerClasses( String listenerClasses )

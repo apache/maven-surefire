@@ -24,10 +24,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+
 import org.apache.maven.surefire.booter.ProviderParameterNames;
 import org.apache.maven.surefire.testset.TestSetFailedException;
-
 import org.testng.TestNG;
+import org.testng.xml.XmlSuite;
 
 /**
  * TestNG configurator for 5.3+ versions. TestNG exposes a {@link org.testng.TestNG#configure(java.util.Map)} method.
@@ -50,6 +51,19 @@ public class TestNGMapConfigurator
     {
         Map convertedOptions = getConvertedOptions( options );
         testng.configure( convertedOptions );
+    }
+
+    public void configure( XmlSuite suite, Map options )
+        throws TestSetFailedException
+    {
+        String threadCountString = (String) options.get( ProviderParameterNames.THREADCOUNT_PROP );
+        int threadCount = ( null != threadCountString ) ? Integer.parseInt( threadCountString ) : 1;
+        suite.setThreadCount( threadCount );
+
+        String parallel = (String) options.get( ProviderParameterNames.PARALLEL_PROP );
+        if ( parallel != null ) {
+            suite.setParallel( parallel );
+        }
     }
 
     Map getConvertedOptions( Map options )

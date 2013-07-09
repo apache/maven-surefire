@@ -26,11 +26,17 @@ import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.NestedRuntimeException;
 import org.apache.maven.surefire.util.internal.StringUtils;
 import org.testng.TestNG;
+import org.testng.xml.XmlClass;
+import org.testng.xml.XmlMethodSelector;
+import org.testng.xml.XmlSuite;
+import org.testng.xml.XmlTest;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -43,7 +49,6 @@ import java.util.Map;
 public class TestNGExecutor
 {
 
-
     private TestNGExecutor()
     {
         // noop
@@ -55,32 +60,60 @@ public class TestNGExecutor
     {
         TestNG testng = new TestNG( true );
 
-        applyGroupMatching( testng, options );
-        if ( !StringUtils.isBlank( methodNamePattern ) )
+        Configurator configurator = getConfigurator( (String) options.get( "testng.configurator" ) );
+        System.out.println( "Configuring TestNG with: " + configurator.getClass().getSimpleName() );
+
+        XmlMethodSelector groupMatchingSelector = getGroupMatchingSelector( options );
+        XmlMethodSelector methodNameFilteringSelector = getMethodNameFilteringSelector( methodNamePattern );
+
+        List<XmlSuite> suites = new ArrayList<XmlSuite>( testClasses.length );
+        for ( Class testClass : testClasses )
         {
-            applyMethodNameFiltering( testng, methodNamePattern );
+            XmlSuite xmlSuite = new XmlSuite();
+
+            xmlSuite.setName( testClass.getName() );
+            configurator.configure( xmlSuite, options );
+
+            XmlTest xmlTest = new XmlTest( xmlSuite );
+            xmlTest.setXmlClasses( Arrays.asList( new XmlClass( testClass ) ) );
+
+            addSelector( xmlTest, groupMatchingSelector );
+            addSelector( xmlTest, methodNameFilteringSelector );
+
+            suites.add( xmlSuite );
         }
 
-        Configurator configurator = getConfigurator( (String) options.get("testng.configurator" ) );
-        System.out.println( "Configuring TestNG with: " + configurator.getClass().getSimpleName() );
+        testng.setXmlSuites( suites );
+
         configurator.configure( testng, options );
         postConfigure( testng, testSourceDirectory, reportManager, suite, reportsDirectory );
-        testng.setTestClasses( testClasses );
+
         testng.run();
     }
 
-    private static void applyMethodNameFiltering( TestNG testng, String methodNamePattern )
+    private static void addSelector( XmlTest xmlTest, XmlMethodSelector selector )
+    {
+        if ( selector != null )
+        {
+            xmlTest.getMethodSelectors().add( selector );
+        }
+    }
+
+    private static XmlMethodSelector getMethodNameFilteringSelector( String methodNamePattern )
         throws TestSetFailedException
     {
+        if ( StringUtils.isBlank( methodNamePattern ) )
+        {
+            return null;
+        }
+
         // the class is available in the testClassPath
         String clazzName = "org.apache.maven.surefire.testng.utils.MethodSelector";
-        // looks to need a high value 
-        testng.addMethodSelector( clazzName, 10000 );
         try
         {
             Class clazz = Class.forName( clazzName );
 
-            Method method = clazz.getMethod( "setMethodName", new Class[]{ String.class } );
+            Method method = clazz.getMethod( "setMethodName", new Class[] { String.class } );
             method.invoke( null, methodNamePattern );
         }
         catch ( ClassNotFoundException e )
@@ -107,9 +140,17 @@ public class TestNGExecutor
         {
             throw new TestSetFailedException( e.getMessage(), e );
         }
+
+        XmlMethodSelector xms = new XmlMethodSelector();
+
+        xms.setName( clazzName );
+        // looks to need a high value
+        xms.setPriority( 10000 );
+
+        return xms;
     }
 
-    private static void applyGroupMatching( TestNG testng, Map options )
+    private static XmlMethodSelector getGroupMatchingSelector( Map options )
         throws TestSetFailedException
     {
         String groups = (String) options.get( ProviderParameterNames.TESTNG_GROUPS_PROP );
@@ -117,19 +158,17 @@ public class TestNGExecutor
 
         if ( groups == null && excludedGroups == null )
         {
-            return;
+            return null;
         }
 
         // the class is available in the testClassPath
         String clazzName = "org.apache.maven.surefire.testng.utils.GroupMatcherMethodSelector";
-        // looks to need a high value
-        testng.addMethodSelector( clazzName, 9999 );
         try
         {
             Class clazz = Class.forName( clazzName );
 
             // HORRIBLE hack, but TNG doesn't allow us to setup a method selector instance directly.
-            Method method = clazz.getMethod( "setGroups", new Class[]{ String.class, String.class } );
+            Method method = clazz.getMethod( "setGroups", new Class[] { String.class, String.class } );
             method.invoke( null, groups, excludedGroups );
         }
         catch ( ClassNotFoundException e )
@@ -156,14 +195,22 @@ public class TestNGExecutor
         {
             throw new TestSetFailedException( e.getMessage(), e );
         }
+
+        XmlMethodSelector xms = new XmlMethodSelector();
+
+        xms.setName( clazzName );
+        // looks to need a high value
+        xms.setPriority( 9999 );
+
+        return xms;
     }
 
-    public static void run( List<String> suiteFiles, String testSourceDirectory, Map options, RunListener reportManager,
-                            TestNgTestSuite suite, File reportsDirectory )
+    public static void run( List<String> suiteFiles, String testSourceDirectory, Map options,
+                            RunListener reportManager, TestNgTestSuite suite, File reportsDirectory )
         throws TestSetFailedException
     {
         TestNG testng = new TestNG( true );
-        Configurator configurator = getConfigurator( (String) options.get("testng.configurator" ) );
+        Configurator configurator = getConfigurator( (String) options.get( "testng.configurator" ) );
         configurator.configure( testng, options );
         postConfigure( testng, testSourceDirectory, reportManager, suite, reportsDirectory );
         testng.setTestSuites( suiteFiles );
@@ -189,7 +236,6 @@ public class TestNGExecutor
             throw new RuntimeException( e );
         }
     }
-
 
     private static void postConfigure( TestNG testNG, String sourcePath, RunListener reportManager,
                                        TestNgTestSuite suite, File reportsDirectory )
@@ -220,7 +266,7 @@ public class TestNGExecutor
             Class c = Class.forName( "org.apache.maven.surefire.testng.ConfigurationAwareTestNGReporter" );
             try
             {
-                Constructor ctor = c.getConstructor( new Class[]{ RunListener.class, TestNgTestSuite.class } );
+                Constructor ctor = c.getConstructor( new Class[] { RunListener.class, TestNgTestSuite.class } );
                 return (TestNGReporter) ctor.newInstance( reportManager, suite );
             }
             catch ( Exception e )

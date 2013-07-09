@@ -36,7 +36,7 @@ public class CheckTestNgReportTestIT
         throws Exception
     {
         final OutputValidator outputValidator =
-            unpack( "/testng-simple" ).addSurefireReportGoal().executeCurrentGoals().verifyErrorFree( 1 );
+            unpack( "/testng-simple" ).addSurefireReportGoal().executeCurrentGoals().verifyErrorFree( 3 );
         outputValidator.getSiteFile( "surefire-report.html" ).assertFileExists();
     }
 }

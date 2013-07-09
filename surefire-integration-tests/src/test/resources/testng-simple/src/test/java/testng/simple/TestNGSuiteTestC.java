@@ -3,7 +3,7 @@ package testng.simple;
 import org.testng.annotations.Test;
 
 
-public class TestNGSuiteTest {
+public class TestNGSuiteTestC {
 
 	@Test
 	public void doNothing()

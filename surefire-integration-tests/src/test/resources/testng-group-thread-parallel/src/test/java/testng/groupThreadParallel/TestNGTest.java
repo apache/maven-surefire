@@ -13,7 +13,7 @@ import org.testng.annotations.Test;
 public class TestNGTest
 {
 
-    static int m_testCount = 0;
+    private static volatile int m_testCount = 0;
 
     /**
      * Sets up testObject
@@ -28,7 +28,7 @@ public class TestNGTest
     public void check_Test_Count()
     {
         System.out.println( "check_Test_Count(): " + m_testCount );
-        Assert.assertTrue( m_testCount == 3, "Expected 3 tests to be run but local count was " + m_testCount );
+        Assert.assertEquals( m_testCount, 3 );
     }
 
     Object testObject;
@@ -37,13 +37,19 @@ public class TestNGTest
     public void test1()
         throws InterruptedException
     {
+        doTest( "test1" );
+    }
+
+    private void doTest( String test )
+        throws InterruptedException
+    {
         incrementTestCount();
-        System.out.println( "running test" );
-        Assert.assertTrue( testObject != null, "testObject is null" );
+        System.out.println( "running " + test );
+        Assert.assertNotNull( testObject, "testObject" );
         waitForTestCountToBeThree();
     }
 
-    private synchronized void incrementTestCount()
+    private static synchronized void incrementTestCount()
     {
         m_testCount++;
     }
@@ -52,14 +58,14 @@ public class TestNGTest
     public void test2()
         throws InterruptedException
     {
-        test1();
+        doTest( "test2" );
     }
 
     @Test( groups = { "functional", "notincluded" } )
     public void test3()
         throws InterruptedException
     {
-        test1();
+        doTest( "test3" );
     }
 
     private void waitForTestCountToBeThree()
@@ -74,7 +80,7 @@ public class TestNGTest
         {
             Thread.sleep( 10 );
         }
-        Assert.assertTrue( m_testCount >= 3 );
+        Assert.assertTrue( m_testCount >= 3, "Expected TestCount >= 3, but was: " + m_testCount );
     }
 
     /**
