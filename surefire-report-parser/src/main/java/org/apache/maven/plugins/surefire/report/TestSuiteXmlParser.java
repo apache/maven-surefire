@@ -22,12 +22,10 @@ package org.apache.maven.plugins.surefire.report;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -53,7 +51,9 @@ public class TestSuiteXmlParser
 
     private ReportTestSuite currentSuite;
 
-    private Map<String, ReportTestSuite> classesToSuites;
+    private Map<String, Integer> classesToSuitesIndex;
+
+    private List<ReportTestSuite> suites;
 
     private final NumberFormat numberFormat = NumberFormat.getInstance( Locale.ENGLISH );
 
@@ -66,7 +66,7 @@ public class TestSuiteXmlParser
 
     private boolean valid;
 
-    public Collection<ReportTestSuite> parse( String xmlPath )
+    public List<ReportTestSuite> parse( String xmlPath )
         throws ParserConfigurationException, SAXException, IOException
     {
 
@@ -87,7 +87,7 @@ public class TestSuiteXmlParser
         }
     }
 
-    public Collection<ReportTestSuite> parse( InputStreamReader stream )
+    public List<ReportTestSuite> parse( InputStreamReader stream )
         throws ParserConfigurationException, SAXException, IOException
     {
         SAXParserFactory factory = SAXParserFactory.newInstance();
@@ -96,7 +96,8 @@ public class TestSuiteXmlParser
 
         valid = true;
 
-        classesToSuites = new HashMap<String, ReportTestSuite>();
+        classesToSuitesIndex = new HashMap<String, Integer>();
+        suites = new ArrayList<ReportTestSuite>();
 
         saxParser.parse( new InputSource( stream ), this );
 
@@ -104,11 +105,11 @@ public class TestSuiteXmlParser
         { // omit the defaultSuite if it's empty and there are alternatives
             if ( defaultSuite.getNumberOfTests() == 0 )
             {
-                classesToSuites.remove( defaultSuite.getFullClassName() );
+                suites.remove( classesToSuitesIndex.get( defaultSuite.getFullClassName() ).intValue() );
             }
         }
 
-        return classesToSuites.values();
+        return suites;
     }
 
     /**
@@ -152,7 +153,8 @@ public class TestSuiteXmlParser
                     defaultSuite.setFullClassName( fullClassName );
                 }
 
-                classesToSuites.put( defaultSuite.getFullClassName(), defaultSuite );
+                suites.add( defaultSuite );
+                classesToSuitesIndex.put( defaultSuite.getFullClassName(), suites.size() - 1 );
             }
             else if ( "testcase".equals( qName ) )
             {
@@ -167,12 +169,16 @@ public class TestSuiteXmlParser
                 // if the testcase declares its own classname, it may need to belong to its own suite
                 if ( fullClassName != null )
                 {
-                    currentSuite = classesToSuites.get( fullClassName );
-                    if ( currentSuite == null )
+                    Integer currentSuiteIndex = classesToSuitesIndex.get( fullClassName );
+                    if ( currentSuiteIndex == null )
                     {
                         currentSuite = new ReportTestSuite();
                         currentSuite.setFullClassName( fullClassName );
-                        classesToSuites.put( fullClassName, currentSuite );
+                        suites.add( currentSuite );
+                        classesToSuitesIndex.put( fullClassName, suites.size() - 1 );
+                    } else
+                    {
+                        currentSuite = suites.get( currentSuiteIndex );
                     }
                 }
 
