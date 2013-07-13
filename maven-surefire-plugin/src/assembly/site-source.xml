@@ -28,9 +28,6 @@
     <fileSet>
       <useDefaultExcludes>true</useDefaultExcludes>
       <directory>${basedir}/src/site</directory>
-      <excludes>
-        <exclude>site.xml</exclude>
-      </excludes>
       <filtered>false</filtered>
       <outputDirectory>/</outputDirectory>
     </fileSet>

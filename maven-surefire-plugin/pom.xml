@@ -102,22 +102,6 @@
         </dependencies>
       </plugin>
       <plugin>
-        <artifactId>maven-site-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>prepare-site-source</id>
-            <phase>pre-site</phase>
-            <goals>
-              <goal>effective-site</goal>
-            </goals>
-            <configuration>
-              <siteDirectory>${basedir}/src/site</siteDirectory>
-              <output>${project.build.directory}/source-site/site.xml</output>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
         <executions>
           <execution>
