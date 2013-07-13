@@ -118,20 +118,6 @@
               </descriptors>
             </configuration>
           </execution>
-          <execution>
-            <id>site-site</id>
-            <phase>pre-site</phase>
-            <goals>
-              <goal>single</goal>
-            </goals>
-            <configuration>
-              <attach>true</attach>
-              <classifier>site-source</classifier>
-              <descriptors>
-                <descriptor>src/assembly/site-source.xml</descriptor>
-              </descriptors>
-            </configuration>
-          </execution>
         </executions>
       </plugin>
     </plugins>

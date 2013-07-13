@@ -164,7 +164,7 @@
               <outputDirectory>${basedir}/../target/source-site</outputDirectory>
               <resources>
                 <resource>
-                  <directory>../src/site</directory>
+                  <directory>${basedir}/../src/site</directory>
                   <filtering>false</filtering>
                 </resource>
               </resources>
