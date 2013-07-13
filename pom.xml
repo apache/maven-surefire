@@ -98,9 +98,9 @@
   </modules>
 
   <scm>
-    <connection>scm:git:https://git-wip-us.apache.org/repos/asf/maven-surefire.git</connection>
-    <developerConnection>scm:git:https://git-wip-us.apache.org/repos/asf/maven-surefire.git</developerConnection>
-    <url>https://git-wip-us.apache.org/repos/asf?p=maven-surefire.git</url>
+    <connection>${maven.surefire.scm.devConnection}</connection>
+    <developerConnection>${maven.surefire.scm.devConnection}</developerConnection>
+    <url>${maven.surefire.scm.url}</url>
   </scm>
   <issueManagement>
     <system>jira</system>
@@ -116,6 +116,8 @@
     <shadedVersion>2.12.4</shadedVersion>
     <mavenPluginPluginVersion>3.2</mavenPluginPluginVersion>
 
+    <maven.surefire.scm.devConnection>scm:git:https://git-wip-us.apache.org/repos/asf/maven-surefire.git</maven.surefire.scm.devConnection>
+    <maven.surefire.scm.url>https://git-wip-us.apache.org/repos/asf?p=maven-surefire.git</maven.surefire.scm.url>
 
     <maven.site.cache>${user.home}/maven-sites</maven.site.cache>
     <maven.surefire.siteFilePath>${maven.site.cache}/surefire-${project.version}</maven.surefire.siteFilePath>
@@ -372,9 +374,13 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-project-info-reports-plugin</artifactId>
-        <version>2.6</version>
+        <version>2.7</version>
         <configuration>
           <dependencyLocationsEnabled>false</dependencyLocationsEnabled><!-- waiting for MPIR-267 -->
+          <!-- pin down urls to to avoid interpolation in the modules -->
+          <webAccessUrl>${maven.surefire.scm.url}</webAccessUrl>
+          <anonymousConnection>${maven.surefire.scm.devConnection}</anonymousConnection>
+          <developerConnection>${maven.surefire.scm.devConnection}</developerConnection>
         </configuration>
         <reportSets>
           <reportSet>
