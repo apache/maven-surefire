@@ -37,4 +37,8 @@ public class ProviderParameterNames
 
     public static final String THREADCOUNTMETHODS_PROP = "threadcountmethods";
 
+    public static final String PARALLEL_TIMEOUT_PROP = "paralleltimeout";
+
+    public static final String PARALLEL_TIMEOUTFORCED_PROP = "paralleltimeoutforced";
+
 }

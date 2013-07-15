@@ -1142,6 +1142,10 @@ public abstract class AbstractSurefireMojo
         getProperties().setProperty( ProviderParameterNames.THREADCOUNTSUITES_PROP, Integer.toString( getThreadCountSuites() ) );
         getProperties().setProperty( ProviderParameterNames.THREADCOUNTCLASSES_PROP, Integer.toString( getThreadCountClasses() ) );
         getProperties().setProperty( ProviderParameterNames.THREADCOUNTMETHODS_PROP, Integer.toString( getThreadCountMethods() ) );
+        getProperties().setProperty( ProviderParameterNames.PARALLEL_TIMEOUT_PROP,
+                Integer.toString( getParallelTestsTimeoutInSeconds() ) );
+        getProperties().setProperty( ProviderParameterNames.PARALLEL_TIMEOUTFORCED_PROP,
+                Integer.toString( getParallelTestsTimeoutForcedInSeconds() ) );
 
         String message =
             "parallel='" + usedParallel + '\'' + ", perCoreThreadCount=" + getPerCoreThreadCount() + ", threadCount="
@@ -1161,6 +1165,8 @@ public abstract class AbstractSurefireMojo
                 throw new MojoExecutionException( "Use threadCount or threadCountSuites > 0 or useUnlimitedThreads=true " +
                         "for parallel='suites'" );
             }
+            setThreadCountClasses( 0 );
+            setThreadCountMethods( 0 );
         }
         else if ( "classes".equals( parallel ) )
         {
@@ -1169,6 +1175,8 @@ public abstract class AbstractSurefireMojo
                 throw new MojoExecutionException( "Use threadCount or threadCountClasses > 0 or useUnlimitedThreads=true " +
                         "for parallel='classes'" );
             }
+            setThreadCountSuites( 0 );
+            setThreadCountMethods( 0 );
         }
         else if ( "methods".equals( parallel ) )
         {
@@ -1177,6 +1185,8 @@ public abstract class AbstractSurefireMojo
                 throw new MojoExecutionException( "Use threadCount or threadCountMethods > 0 or useUnlimitedThreads=true " +
                         "for parallel='methods'" );
             }
+            setThreadCountSuites( 0 );
+            setThreadCountClasses( 0 );
         }
         else if ( "suitesAndClasses".equals( parallel ) )
         {
@@ -1196,6 +1206,7 @@ public abstract class AbstractSurefireMojo
                         "or (threadCount > 0 and threadCountSuites > 0 and threadCount > threadCountSuites) " +
                         "for parallel='suitesAndClasses' or 'both'" );
             }
+            setThreadCountMethods( 0 );
         }
         else if ( "suitesAndMethods".equals( parallel ) )
         {
@@ -1215,6 +1226,7 @@ public abstract class AbstractSurefireMojo
                         "or (threadCount > 0 and threadCountSuites > 0 and threadCount > threadCountSuites) " +
                         "for parallel='suitesAndMethods'" );
             }
+            setThreadCountClasses( 0 );
         }
         else if ( "both".equals( parallel ) || "classesAndMethods".equals( parallel ) )
         {
@@ -1234,6 +1246,7 @@ public abstract class AbstractSurefireMojo
                         "or (threadCount > 0 and threadCountClasses > 0 and threadCount > threadCountClasses) " +
                         "for parallel='both' or parallel='classesAndMethods'" );
             }
+            setThreadCountSuites( 0 );
         }
         else if ( "all".equals( parallel ) )
         {
@@ -1878,6 +1891,8 @@ public abstract class AbstractSurefireMojo
         checksum.add( getArgLine() );
         checksum.add( getDebugForkedProcess() );
         checksum.add( getForkedProcessTimeoutInSeconds() );
+        checksum.add( getParallelTestsTimeoutInSeconds() );
+        checksum.add( getParallelTestsTimeoutForcedInSeconds() );
         checksum.add( getEnvironmentVariables() );
         checksum.add( getWorkingDirectory() );
         checksum.add( isChildDelegation() );

@@ -137,6 +137,27 @@ public class IntegrationTestMojo
      */
     @Parameter( property = "failsafe.timeout" )
     private int forkedProcessTimeoutInSeconds;
+
+    /**
+     * Stop executing queued parallel JUnit tests after a certain number of seconds.
+     * If set to 0, wait forever, never timing out.
+     * Makes sense with specified <code>parallel</code> different from "none".
+     *
+     * @since 2.16
+     */
+    @Parameter( property = "failsafe.parallel.timeout" )
+    private int parallelTestsTimeoutInSeconds;
+
+    /**
+     * Stop executing queued parallel JUnit tests
+     * and <em>interrupt</em> currently running tests after a certain number of seconds.
+     * If set to 0, wait forever, never timing out.
+     * Makes sense with specified <code>parallel</code> different from "none".
+     *
+     * @since 2.16
+     */
+    @Parameter( property = "failsafe.parallel.forcedTimeout" )
+    private int parallelTestsTimeoutForcedInSeconds;
     
     /**
      * A list of &lt;include> elements specifying the tests (by pattern) that should be included in testing. When not
@@ -431,6 +452,22 @@ public class IntegrationTestMojo
     public void setForkedProcessTimeoutInSeconds( int forkedProcessTimeoutInSeconds )
     {
         this.forkedProcessTimeoutInSeconds = forkedProcessTimeoutInSeconds;
+    }
+
+    public int getParallelTestsTimeoutInSeconds() {
+        return parallelTestsTimeoutInSeconds;
+    }
+
+    public void setParallelTestsTimeoutInSeconds( int parallelTestsTimeoutInSeconds ) {
+        this.parallelTestsTimeoutInSeconds = parallelTestsTimeoutInSeconds;
+    }
+
+    public int getParallelTestsTimeoutForcedInSeconds() {
+        return parallelTestsTimeoutForcedInSeconds;
+    }
+
+    public void setParallelTestsTimeoutForcedInSeconds( int parallelTestsTimeoutForcedInSeconds ) {
+        this.parallelTestsTimeoutForcedInSeconds = parallelTestsTimeoutForcedInSeconds;
     }
 
     public boolean isUseSystemClassLoader()

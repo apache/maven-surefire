@@ -100,8 +100,7 @@ public class JUnitCoreProvider
 
     private boolean isSingleThreaded()
     {
-        return !jUnitCoreParameters.isAnyParallelitySelected()
-            || ( testsToRun.containsExactly( 1 ) && !jUnitCoreParameters.isParallelMethod() );
+        return jUnitCoreParameters.isNoThreading();
     }
 
     public RunResult invoke( Object forkTestSet )
@@ -153,14 +152,23 @@ public class JUnitCoreProvider
 
             RunListener listener =
                 ConcurrentRunListener.createInstance( testSetMap, reporterFactory,
-                                                      jUnitCoreParameters.isParallelClasses()
-                                                              || jUnitCoreParameters.isParallelSuites(),
-                                                      jUnitCoreParameters.isParallelBoth(), consoleLogger );
+                                                      isParallelTypes(),
+                                                      isParallelMethodsAndTypes(), consoleLogger );
             ConsoleOutputCapture.startCapture( (ConsoleOutputReceiver) listener );
 
             jUnit4RunListener = new JUnitCoreRunListener( listener, testSetMap );
         }
         return jUnit4RunListener;
+    }
+
+    private boolean isParallelMethodsAndTypes()
+    {
+        return jUnitCoreParameters.isParallelMethod() && isParallelTypes();
+    }
+
+    private boolean isParallelTypes()
+    {
+        return jUnitCoreParameters.isParallelClasses() || jUnitCoreParameters.isParallelSuites();
     }
 
     private Filter createJUnit48Filter()
