@@ -33,10 +33,13 @@ import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.suite.RunResult;
+import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.TestsToRun;
 
 import junit.framework.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.Description;
 import org.junit.runner.RunWith;
 import org.junit.runner.notification.RunNotifier;
@@ -77,6 +80,8 @@ import org.junit.runners.model.InitializationError;
  */
 public class Surefire746Test
 {
+    @Rule
+    public final ExpectedException exception = ExpectedException.none();
 
     @Test
     public void surefireIsConfused_ByMultipleIgnore_OnClassLevel()
@@ -105,13 +110,19 @@ public class Surefire746Test
             new ArrayList<org.junit.runner.notification.RunListener>();
         customRunListeners.add( 0, jUnit4RunListener );
 
-        JUnitCoreWrapper.execute( testsToRun, jUnitCoreParameters, customRunListeners, null );
-
-        RunResult result = reporterFactory.close();
-
-        Assert.assertEquals( "JUnit should report correctly number of test ran(Finished)", 1,
-                             result.getCompletedCount() );
-
+        try
+        {
+            // JUnitCoreWrapper#execute() is calling JUnit4RunListener#rethrowAnyTestMechanismFailures()
+            // and rethrows a failure which happened in listener
+            exception.expect( TestSetFailedException.class );
+            JUnitCoreWrapper.execute( testsToRun, jUnitCoreParameters, customRunListeners, null );
+        }
+        finally
+        {
+            RunResult result = reporterFactory.close();
+            Assert.assertEquals( "JUnit should report correctly number of test ran(Finished)",
+                    1, result.getCompletedCount() );
+        }
     }
 
     @RunWith( TestCaseRunner.class )
