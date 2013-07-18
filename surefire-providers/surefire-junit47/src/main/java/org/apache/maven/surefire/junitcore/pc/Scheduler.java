@@ -180,7 +180,7 @@ public class Scheduler implements RunnerScheduler {
      * of descriptions of those tasks which have started prior to this call.
      * <p>
      * This scheduler and other registered schedulers will shutdown, see {@link #register(Scheduler)}.
-     * If <tt>shutdownNow</tt> is set, waiting methods will cancel via {@link Thread#interrupt}.
+     * If <tt>shutdownNow</tt> is set, waiting methods will be interrupted via {@link Thread#interrupt}.
      *
      * @param shutdownNow if <tt>true</tt> interrupts waiting methods
      * @return collection of descriptions started before shutting down

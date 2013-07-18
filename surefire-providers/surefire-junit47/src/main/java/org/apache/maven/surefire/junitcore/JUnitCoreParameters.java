@@ -19,7 +19,8 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Properties;
 import org.apache.maven.surefire.booter.ProviderParameterNames;
 
@@ -68,13 +69,23 @@ class JUnitCoreParameters
     {
         parallel = properties.getProperty( PARALLEL_KEY, "none" ).toLowerCase();
         perCoreThreadCount = Boolean.valueOf( properties.getProperty( PERCORETHREADCOUNT_KEY, "true" ) );
-        threadCount = Integer.valueOf( properties.getProperty( THREADCOUNT_KEY, "2" ) );
+        threadCount = Integer.valueOf( properties.getProperty( THREADCOUNT_KEY, "0" ) );
         threadCountMethods = Integer.valueOf( properties.getProperty( THREADCOUNTMETHODS_KEY, "0" ) );
         threadCountClasses = Integer.valueOf( properties.getProperty( THREADCOUNTCLASSES_KEY, "0" ) );
         threadCountSuites = Integer.valueOf( properties.getProperty( THREADCOUNTSUITES_KEY, "0" ) );
         useUnlimitedThreads = Boolean.valueOf( properties.getProperty( USEUNLIMITEDTHREADS_KEY, "false" ) );
         parallelTestsTimeoutInSeconds = Integer.valueOf( properties.getProperty( PARALLEL_TIMEOUT_KEY, "0" ) );
         parallelTestsTimeoutForcedInSeconds = Integer.valueOf( properties.getProperty( PARALLEL_TIMEOUTFORCED_KEY, "0" ) );
+    }
+
+    private static Collection<String> lowerCase( String... elements )
+    {
+        ArrayList<String> lowerCase = new ArrayList<String>();
+        for ( String element : elements )
+        {
+            lowerCase.add( element.toLowerCase() );
+        }
+        return lowerCase;
     }
 
     private boolean isAllParallel()
@@ -85,18 +96,18 @@ class JUnitCoreParameters
     public boolean isParallelMethod()
     {
         return isAllParallel()
-                || Arrays.asList( "both", "methods", "suitesAndMethods", "classesAndMethods" ).contains( parallel );
+                || lowerCase( "both", "methods", "suitesAndMethods", "classesAndMethods" ).contains( parallel );
     }
 
     public boolean isParallelClasses()
     {
         return isAllParallel()
-                || Arrays.asList( "both", "classes", "suitesAndClasses", "classesAndMethods" ).contains( parallel );
+                || lowerCase( "both", "classes", "suitesAndClasses", "classesAndMethods" ).contains( parallel );
     }
 
     public boolean isParallelSuites()
     {
-        return isAllParallel() || Arrays.asList( "suites", "suitesAndClasses", "suitesAndMethods" ).contains( parallel );
+        return isAllParallel() || lowerCase( "suites", "suitesAndClasses", "suitesAndMethods" ).contains( parallel );
     }
 
     /**
@@ -150,12 +161,12 @@ class JUnitCoreParameters
 
     public boolean isNoThreading()
     {
-        return !( isParallelSuites() || isParallelClasses() || isParallelMethod() );
+        return !isAnyParallelitySelected();
     }
 
     public boolean isAnyParallelitySelected()
     {
-        return !isNoThreading();
+        return isParallelSuites() || isParallelClasses() || isParallelMethod();
     }
 
     @Override

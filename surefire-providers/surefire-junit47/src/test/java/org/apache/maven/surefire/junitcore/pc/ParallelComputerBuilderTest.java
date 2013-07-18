@@ -74,7 +74,7 @@ public class ParallelComputerBuilderTest {
         // and next thread may be reused from finished class, however the capacity is 3.
         parallelComputerBuilder.parallelMethods(3);
 
-        ParallelComputerBuilder.ParallelComputer computer = parallelComputerBuilder.buildComputer();
+        ParallelComputerBuilder.PC computer = (ParallelComputerBuilder.PC) parallelComputerBuilder.buildComputer();
         Result result = new JUnitCore().run(computer, TestSuite.class);
         long timeSpent = runtime.stop();
 
@@ -102,7 +102,7 @@ public class ParallelComputerBuilderTest {
         parallelComputerBuilder.parallelClasses(5);
         parallelComputerBuilder.parallelMethods(3);
 
-        ParallelComputerBuilder.ParallelComputer computer = parallelComputerBuilder.buildComputer();
+        ParallelComputerBuilder.PC computer = (ParallelComputerBuilder.PC) parallelComputerBuilder.buildComputer();
         Result result = new JUnitCore().run(computer, TestSuite.class, Class1.class);
         long timeSpent = runtime.stop();
 
@@ -126,7 +126,7 @@ public class ParallelComputerBuilderTest {
         parallelComputerBuilder.parallelClasses(4);
         parallelComputerBuilder.parallelMethods();
 
-        ParallelComputerBuilder.ParallelComputer computer = parallelComputerBuilder.buildComputer();
+        ParallelComputerBuilder.PC computer = (ParallelComputerBuilder.PC) parallelComputerBuilder.buildComputer();
         Result result = new JUnitCore().run(computer, TestSuite.class, Class1.class);
         long timeSpent = runtime.stop();
 
@@ -142,32 +142,33 @@ public class ParallelComputerBuilderTest {
     }
 
     @Test
-    public void underflowParallelism() {
+    public void underflowParallelism()
+    {
         ParallelComputerBuilder parallelComputerBuilder = new ParallelComputerBuilder();
-        parallelComputerBuilder.useOnePool(3);
+        parallelComputerBuilder.useOnePool( 3 );
 
         // One thread because one suite: TestSuite.
-        parallelComputerBuilder.parallelSuites(5);
+        parallelComputerBuilder.parallelSuites( 5 );
 
         // One thread because of the limitation which is bottleneck.
-        parallelComputerBuilder.parallelClasses(1);
+        parallelComputerBuilder.parallelClasses( 1 );
 
         // One thread remains from '#useOnePool(3)'.
-        parallelComputerBuilder.parallelMethods(3);
+        parallelComputerBuilder.parallelMethods( 3 );
 
-        ParallelComputerBuilder.ParallelComputer computer = parallelComputerBuilder.buildComputer();
-        Result result = new JUnitCore().run(computer, TestSuite.class);
+        ParallelComputerBuilder.PC computer = ( ParallelComputerBuilder.PC ) parallelComputerBuilder.buildComputer();
+        Result result = new JUnitCore().run( computer, TestSuite.class );
         long timeSpent = runtime.stop();
 
-        assertThat(computer.suites.size(), is(1));
-        assertThat(computer.classes.size(), is(0));
-        assertThat(computer.nestedClasses.size(), is(2));
-        assertThat(computer.nestedSuites.size(), is(0));
-        assertFalse(computer.splitPool);
-        assertThat(computer.poolCapacity, is(3));
-        assertTrue(result.wasSuccessful());
-        assertThat(Class1.maxConcurrentMethods, is(1));
-        assertThat(timeSpent, between(1950, 2250));
+        assertThat( computer.suites.size(), is( 1 ) );
+        assertThat( computer.classes.size(), is( 0 ) );
+        assertThat( computer.nestedClasses.size(), is( 2 ) );
+        assertThat( computer.nestedSuites.size(), is( 0 ) );
+        assertFalse( computer.splitPool );
+        assertThat( computer.poolCapacity, is( 3 ) );
+        assertTrue( result.wasSuccessful() );
+        assertThat( Class1.maxConcurrentMethods, is( 1 ) );
+        assertThat( timeSpent, between( 1950, 2250 ) );
     }
 
     @Test
@@ -177,7 +178,7 @@ public class ParallelComputerBuilderTest {
         parallelComputerBuilder.parallelClasses(5);
         parallelComputerBuilder.parallelMethods(3);
 
-        ParallelComputerBuilder.ParallelComputer computer = parallelComputerBuilder.buildComputer();
+        ParallelComputerBuilder.PC computer = (ParallelComputerBuilder.PC) parallelComputerBuilder.buildComputer();
         Result result = new JUnitCore().run(computer, TestSuite.class);
         long timeSpent = runtime.stop();
 
@@ -202,7 +203,7 @@ public class ParallelComputerBuilderTest {
         // 6 methods altogether.
         // 2 groups with 3 threads.
         // Each group takes 0.5s.
-        ParallelComputerBuilder.ParallelComputer computer = parallelComputerBuilder.buildComputer();
+        ParallelComputerBuilder.PC computer = (ParallelComputerBuilder.PC) parallelComputerBuilder.buildComputer();
         Result result = new JUnitCore().run(computer, TestSuite.class, Class1.class);
         long timeSpent = runtime.stop();
 
@@ -224,7 +225,7 @@ public class ParallelComputerBuilderTest {
         parallelComputerBuilder.parallelClasses(1);
         parallelComputerBuilder.parallelMethods(3);
 
-        ParallelComputerBuilder.ParallelComputer computer = parallelComputerBuilder.buildComputer();
+        ParallelComputerBuilder.PC computer = (ParallelComputerBuilder.PC) parallelComputerBuilder.buildComputer();
         Result result = new JUnitCore().run(computer, TestSuite.class, Class1.class);
         long timeSpent = runtime.stop();
 
@@ -246,7 +247,7 @@ public class ParallelComputerBuilderTest {
             parallelComputerBuilder.parallelClasses(3);
             parallelComputerBuilder.parallelMethods(3);
 
-            final ParallelComputerBuilder.ParallelComputer computer = parallelComputerBuilder.buildComputer();
+            final ParallelComputerBuilder.PC computer = (ParallelComputerBuilder.PC) parallelComputerBuilder.buildComputer();
             shutdownTask = new Runnable() {
                 public void run() {
                     Collection<org.junit.runner.Description> startedTests = computer.shutdown(useInterrupt);

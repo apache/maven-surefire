@@ -20,18 +20,17 @@ package org.apache.maven.surefire.junitcore.pc;
  */
 
 import org.junit.internal.runners.ErrorReportingRunner;
-import org.junit.runner.Computer;
 import org.junit.runner.Description;
 import org.junit.runner.Runner;
 import org.junit.runner.manipulation.Filter;
 import org.junit.runner.manipulation.NoTestsRemainException;
+import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.ParentRunner;
 import org.junit.runners.Suite;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -96,6 +95,7 @@ public class ParallelComputerBuilder {
 
     /**
      * @param totalPoolSize Pool size where suites, classes and methods are executed in parallel.
+     *                      If the <tt>totalPoolSize</tt> is {@link Integer#MAX_VALUE}, the pool capacity is not limited.
      * @throws IllegalArgumentException If <tt>totalPoolSize</tt> is &lt; 1.
      */
     public ParallelComputerBuilder useOnePool(int totalPoolSize) {
@@ -149,35 +149,28 @@ public class ParallelComputerBuilder {
     }
 
     public ParallelComputer buildComputer() {
-        return new ParallelComputer();
+        return new PC();
     }
 
-    private static class RunnersSuite extends Suite {
-        protected RunnersSuite(Collection<? extends ParentRunner> runners) throws InitializationError {
-            super(null, new ArrayList<Runner>(runners));
-        }
-
-        protected RunnersSuite(Runner... runners) throws InitializationError {
-            super(null, Arrays.asList(runners));
-        }
-    }
-
-    public final class ParallelComputer extends Computer {
-        final Collection<Suite> suites = new LinkedHashSet<Suite>();
-        final Collection<Suite> nestedSuites = new LinkedHashSet<Suite>();
+    final class PC extends ParallelComputer
+    {
+        final Collection<ParentRunner> suites = new LinkedHashSet<ParentRunner>();
+        final Collection<ParentRunner> nestedSuites = new LinkedHashSet<ParentRunner>();
         final Collection<ParentRunner> classes = new LinkedHashSet<ParentRunner>();
         final Collection<ParentRunner> nestedClasses = new LinkedHashSet<ParentRunner>();
+        final Collection<Runner> unscheduledRunners = new LinkedHashSet<Runner>();
         final int poolCapacity;
         final boolean splitPool;
         private final Map<Type, Integer> allGroups;
         private volatile Scheduler master;
 
-        private ParallelComputer() {
+        private PC() {
             allGroups = new HashMap<Type, Integer>(ParallelComputerBuilder.this.parallelGroups);
             poolCapacity = ParallelComputerBuilder.this.totalPoolSize;
             splitPool = ParallelComputerBuilder.this.useSeparatePools;
         }
 
+        @Override
         public Collection<Description> shutdown(boolean shutdownNow) {
             final Scheduler master = this.master;
             return master == null ? Collections.<Description>emptyList() : master.shutdown(shutdownNow);
@@ -191,14 +184,23 @@ public class ParallelComputerBuilder {
         }
 
         @Override
-        protected Runner getRunner(RunnerBuilder builder, Class<?> testClass) throws Throwable {
-            Runner runner = super.getRunner(builder, testClass);
-            if (canUse(runner)) {
-                if (runner instanceof Suite) {
-                    suites.add((Suite) runner);
-                } else {
-                    classes.add((ParentRunner) runner);
+        protected Runner getRunner( RunnerBuilder builder, Class<?> testClass ) throws Throwable
+        {
+            Runner runner = super.getRunner( builder, testClass );
+            if ( canSchedule(runner) )
+            {
+                if ( runner instanceof Suite )
+                {
+                    suites.add( (Suite) runner );
                 }
+                else
+                {
+                    classes.add( (ParentRunner) runner );
+                }
+            }
+            else
+            {
+                unscheduledRunners.add( runner );
             }
             return runner;
         }
@@ -225,6 +227,26 @@ public class ParallelComputerBuilder {
             }
         }
 
+        private <T extends Runner> ParentRunner wrapRunners( Collection<T> runners ) throws InitializationError {
+            ArrayList<Runner> runs = new ArrayList<Runner>();
+            for ( T runner : runners )
+            {
+                if ( runner != null && hasChildren( runner ) )
+                {
+                    runs.add( runner );
+                }
+            }
+
+            return runs.isEmpty() ? null : new Suite( null, runs ) {};
+        }
+
+        private boolean hasChildren( Runner runner )
+        {
+            Description description = runner.getDescription();
+            Collection children = description == null ? null : description.getChildren();
+            return children != null && !children.isEmpty();
+        }
+
         private ExecutorService createPool(int poolSize) {
             return poolSize < Integer.MAX_VALUE ? Executors.newFixedThreadPool(poolSize) : Executors.newCachedThreadPool();
         }
@@ -245,8 +267,8 @@ public class ParallelComputerBuilder {
 
         private void populateChildrenFromSuites() {
             Filter filter = new SuiteFilter();
-            for (Iterator<Suite> it = suites.iterator(); it.hasNext();) {
-                Suite suite = it.next();
+            for (Iterator<ParentRunner> it = suites.iterator(); it.hasNext();) {
+                ParentRunner suite = it.next();
                 try {
                     suite.filter(filter);
                 } catch (NoTestsRemainException e) {
@@ -279,33 +301,74 @@ public class ParallelComputerBuilder {
             ExecutorService commonPool = splitPool || poolSize == 0 ? null : createPool(poolSize);
             master = createMaster(commonPool, poolSize);
 
-            // a scheduler for parallel suites
-            final Scheduler suitesScheduler;
-            if (commonPool != null && parallelSuites > 0) {
-                Balancer balancer = BalancerFactory.createBalancerWithFairness(parallelSuites);
-                suitesScheduler = createScheduler(null, commonPool, true, balancer);
-            } else {
-                suitesScheduler = createScheduler(parallelSuites);
+            ParentRunner suiteSuites = wrapRunners( suites );
+            if ( suiteSuites != null )
+            {
+                // a scheduler for parallel suites
+                if ( commonPool != null && parallelSuites > 0 )
+                {
+                    Balancer balancer = BalancerFactory.createBalancerWithFairness( parallelSuites );
+                    suiteSuites.setScheduler( createScheduler( null, commonPool, true, balancer ) );
+                }
+                else
+                {
+                    suiteSuites.setScheduler( createScheduler( parallelSuites ) );
+                }
             }
-            Suite suiteSuites = new RunnersSuite(suites);
-            suiteSuites.setScheduler(suitesScheduler);
 
             // schedulers for parallel classes
-            Suite suiteClasses = new RunnersSuite(classes);
-            ArrayList<Suite> allSuites = new ArrayList<Suite>(suites);
-            allSuites.addAll(nestedSuites);
-            allSuites.add(suiteClasses);
-            setSchedulers(allSuites, parallelClasses, commonPool);
+            ParentRunner suiteClasses = wrapRunners( classes );
+            ArrayList<ParentRunner> allSuites = new ArrayList<ParentRunner>( suites );
+            allSuites.addAll( nestedSuites );
+            if ( suiteClasses != null )
+            {
+                allSuites.add( suiteClasses );
+            }
+            if ( !allSuites.isEmpty() )
+            {
+                setSchedulers( allSuites, parallelClasses, commonPool );
+            }
 
             // schedulers for parallel methods
-            ArrayList<ParentRunner> allClasses = new ArrayList<ParentRunner>(classes);
-            allClasses.addAll(nestedClasses);
-            setSchedulers(allClasses, parallelMethods, commonPool);
+            ArrayList<ParentRunner> allClasses = new ArrayList<ParentRunner>( classes );
+            allClasses.addAll( nestedClasses );
+            if ( !allClasses.isEmpty() )
+            {
+                setSchedulers( allClasses, parallelMethods, commonPool );
+            }
 
             // resulting runner for Computer#getSuite() scheduled by master scheduler
-            Suite all = new RunnersSuite(suiteSuites, suiteClasses);
-            all.setScheduler(master);
+            ParentRunner all = createFinalRunner( suiteSuites, suiteClasses );
+            all.setScheduler( master );
             return all;
+        }
+
+        private ParentRunner createFinalRunner( Runner... runners ) throws InitializationError
+        {
+            ArrayList<Runner> all = new ArrayList<Runner>( unscheduledRunners );
+            for ( Runner runner : runners )
+            {
+                if ( runner != null )
+                {
+                    all.add( runner );
+                }
+            }
+
+            return new Suite( null, all )
+            {
+                @Override
+                public void run( RunNotifier notifier )
+                {
+                    try
+                    {
+                        super.run( notifier );
+                    }
+                    finally
+                    {
+                        afterRunQuietly();
+                    }
+                }
+            };
         }
 
         private void setSchedulers(Iterable<? extends ParentRunner> runners, int poolSize, ExecutorService commonPool) {
@@ -346,7 +409,7 @@ public class ParallelComputerBuilder {
             }
         }
 
-        private boolean canUse(Runner runner) {
+        private boolean canSchedule(Runner runner) {
             return !(runner instanceof ErrorReportingRunner) && runner instanceof ParentRunner;
         }
     }
