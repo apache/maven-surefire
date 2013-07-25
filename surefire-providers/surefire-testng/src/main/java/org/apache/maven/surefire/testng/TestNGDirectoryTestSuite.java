@@ -20,15 +20,17 @@ package org.apache.maven.surefire.testng;
  */
 
 import java.io.File;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.SortedMap;
 import java.util.TreeMap;
+
 import org.apache.maven.surefire.NonAbstractClassFilter;
 import org.apache.maven.surefire.report.ConsoleOutputCapture;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
@@ -70,6 +72,10 @@ public class TestNGDirectoryTestSuite
 
     private final Class junitTestClass;
 
+    private Class<? extends Annotation> junitRunWithAnnotation;
+
+    private Class<? extends Annotation> junitTestAnnotation;
+
     public TestNGDirectoryTestSuite( String testSourceDirectory, Properties confOptions, File reportsDirectory, String testMethodPattern,
                                      RunOrderCalculator runOrderCalculator, ScanResult scanResult )
     {
@@ -83,6 +89,8 @@ public class TestNGDirectoryTestSuite
         this.scanResult = scanResult;
         this.testMethodPattern = testMethodPattern;
         this.junitTestClass = findJUnitTestClass();
+        this.junitRunWithAnnotation = findJUnitRunWithAnnotation();
+        this.junitTestAnnotation = findJUnitTestAnnotation();
         this.junitOptions = createJUnitOptions();
     }
 
@@ -135,16 +143,31 @@ public class TestNGDirectoryTestSuite
 
     private Class findJUnitTestClass()
     {
-        Class junitTest;
+        return lookupClass( "junit.framework.Test" );
+    }
+
+    private Class findJUnitRunWithAnnotation()
+    {
+        return lookupClass( "org.junit.runner.RunWith" );
+    }
+
+    private Class findJUnitTestAnnotation()
+    {
+        return lookupClass( "org.junit.Test" );
+    }
+
+    private Class lookupClass( String className )
+    {
+        Class junitClass;
         try
         {
-            junitTest = Class.forName( "junit.framework.Test" );
+            junitClass = Class.forName( className );
         }
         catch ( ClassNotFoundException e )
         {
-            junitTest = null;
+            junitClass = null;
         }
-        return junitTest;
+        return junitClass;
     }
 
     public void executeMulti( TestsToRun testsToRun, ReporterFactory reporterFactory )
@@ -193,6 +216,37 @@ public class TestNGDirectoryTestSuite
     }
 
     private boolean isJUnitTest( Class c )
+    {
+        return isJunit3Test( c ) || isJunit4Test( c );
+    }
+
+    private boolean isJunit4Test( Class c )
+    {
+        return hasJunit4RunWithAnnotation( c ) || hasJunit4TestAnnotation( c );
+    }
+
+    private boolean hasJunit4RunWithAnnotation( Class c )
+    {
+        return junitRunWithAnnotation != null && c.getAnnotation( junitRunWithAnnotation ) != null;
+    }
+
+    private boolean hasJunit4TestAnnotation( Class c )
+    {
+        if ( junitTestAnnotation != null )
+        {
+            for ( Method m : c.getMethods() )
+            {
+                if ( m.getAnnotation( junitTestAnnotation ) != null )
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private boolean isJunit3Test( Class c )
     {
         return junitTestClass != null && junitTestClass.isAssignableFrom( c );
     }
