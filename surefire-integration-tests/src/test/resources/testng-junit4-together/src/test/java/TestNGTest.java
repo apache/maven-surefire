@@ -1,5 +1,3 @@
-package org.apache.maven.surefire.its.jiras;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -19,26 +17,34 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
-import org.junit.Test;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 
 /**
- * SUREFIRE-377 (When JUnit and TestNG tests are in same project, only one set gets run).
+ * Simple test
  *
- * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
+ * @author jkuhnert
  */
-public class Surefire377TestNgAndJUnitTogetherIT
-    extends SurefireJUnit4IntegrationTestCase
-{
-    @Test
-    public void testTestNgAndJUnitTogether()
-    {
-        executeErrorFreeTest( "/testng-junit-together", 2 );
-    }
+public class TestNGTest {
 
-    @Test
-    public void testTestNgAndJUnit4Together()
-    {
-        executeErrorFreeTest( "/testng-junit4-together", 3 );
-    }
+	/**
+	 * Sets up testObject
+	 */
+	@BeforeClass
+	public void configureTest()
+	{
+		testObject = new Object();
+	}
+
+	Object testObject;
+
+	/**
+	 * Tests reporting an error
+	 */
+	@Test
+	public void testNGTest()
+	{
+		assert testObject != null : "testObject is null";
+	}
 }

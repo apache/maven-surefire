@@ -1,5 +1,3 @@
-package org.apache.maven.surefire.its.jiras;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -19,26 +17,40 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import static org.junit.Assert.assertNotNull;
+
+import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 /**
- * SUREFIRE-377 (When JUnit and TestNG tests are in same project, only one set gets run).
+ * Provided to ensure both junit and testng tests can run together.
  *
- * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
+ * @author jkuhnert
+ * @author agudian
  */
-public class Surefire377TestNgAndJUnitTogetherIT
-    extends SurefireJUnit4IntegrationTestCase
-{
-    @Test
-    public void testTestNgAndJUnitTogether()
-    {
-        executeErrorFreeTest( "/testng-junit-together", 2 );
-    }
+@RunWith(JUnit4.class)
+public class Junit4SimpleRunWithTest {
 
-    @Test
-    public void testTestNgAndJUnit4Together()
-    {
-        executeErrorFreeTest( "/testng-junit4-together", 3 );
-    }
+	Object testObject;
+
+	/**
+	 * Creats an object instance
+	 */
+	@Before
+	public void setUp()
+	{
+		testObject = new Object();
+	}
+
+	/**
+	 * Tests that object created in setup
+	 * isn't null.
+	 */
+	@Test
+	public void isJunitObject()
+	{
+		assertNotNull(testObject);
+	}
 }
