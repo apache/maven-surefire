@@ -19,11 +19,10 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
+
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.util.NestedRuntimeException;
@@ -43,9 +42,9 @@ public class ConsoleOutputFileReporter
 
     private final String reportNameSuffix;
 
-    private PrintWriter printWriter = null;
-
     private String reportEntryName;
+
+    private FileOutputStream fileOutputStream;
 
     public ConsoleOutputFileReporter( File reportsDirectory, String reportNameSuffix )
     {
@@ -66,10 +65,18 @@ public class ConsoleOutputFileReporter
 
     public void close()
     {
-        if ( printWriter != null )
+        if ( fileOutputStream != null )
         {
-            printWriter.close();
-            printWriter = null;
+            try
+            {
+                fileOutputStream.flush();
+                fileOutputStream.close();
+            }
+            catch ( IOException e )
+            {
+                ;
+            }
+            fileOutputStream = null;
         }
     }
 
@@ -77,7 +84,7 @@ public class ConsoleOutputFileReporter
     {
         try
         {
-            if ( printWriter == null )
+            if ( fileOutputStream == null )
             {
                 if ( !reportsDirectory.exists() )
                 {
@@ -86,9 +93,9 @@ public class ConsoleOutputFileReporter
                 }
                 File file =
                     FileReporter.getReportFile( reportsDirectory, reportEntryName, reportNameSuffix, "-output.txt" );
-                printWriter = new PrintWriter( new BufferedWriter( new FileWriter( file ) ) );
+                fileOutputStream = new FileOutputStream( file );
             }
-            printWriter.write( new String( buf, off, len ) );
+            fileOutputStream.write( buf, off, len );
         }
         catch ( IOException e )
         {
