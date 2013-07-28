@@ -20,18 +20,20 @@ package org.apache.maven.surefire.util.internal;
  */
 
 import java.io.IOException;
-import java.io.PrintStream;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.StringTokenizer;
+
 import org.apache.maven.surefire.util.NestedRuntimeException;
 
 /**
- * <p>Common <code>String</code> manipulation routines.</p>
+ * <p>
+ * Common <code>String</code> manipulation routines.
+ * </p>
  * <p/>
- * <p>Originally from
- * <a href="http://jakarta.apache.org/turbine/">Turbine</a> and the
- * GenerationJavaCore library.</p>
+ * <p>
+ * Originally from <a href="http://jakarta.apache.org/turbine/">Turbine</a> and the GenerationJavaCore library.
+ * </p>
  *
  * @author <a href="mailto:jon@latchkey.com">Jon S. Stevens</a>
  * @author <a href="mailto:dlr@finemaltcoding.com">Daniel Rall</a>
@@ -46,18 +48,19 @@ import org.apache.maven.surefire.util.NestedRuntimeException;
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
  * @version $Id: StringUtils.java 8001 2009-01-03 13:17:09Z vsiveton $
  * @noinspection JavaDoc
- * <p/>
- * A quick borrow from plexus-utils by Kristian Rosenvold, to restore jdk1.3 compat
- * Threw away all the unused stuff.
- * <p/>
- * NOTE: This class is not part of any api and is public purely for technical reasons !
+ *               <p/>
+ *               A quick borrow from plexus-utils by Kristian Rosenvold, to restore jdk1.3 compat Threw away all the
+ *               unused stuff.
+ *               <p/>
+ *               NOTE: This class is not part of any api and is public purely for technical reasons !
  * @since 1.0
  */
 public class StringUtils
 {
+    private static final byte[] HEX_CHARS = new byte[] {
+        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+        'A', 'B', 'C', 'D', 'E', 'F' };
 
-    // Splitting
-    //--------------------------------------------------------------------------
 
     public static String[] split( String text, String separator )
     {
@@ -107,19 +110,18 @@ public class StringUtils
         return list;
     }
 
-
     /**
-     * <p>Checks if a (trimmed) String is <code>null</code> or blank.</p>
+     * <p>
+     * Checks if a (trimmed) String is <code>null</code> or blank.
+     * </p>
      *
      * @param str the String to check
-     * @return <code>true</code> if the String is <code>null</code>, or
-     *         length zero once trimmed
+     * @return <code>true</code> if the String is <code>null</code>, or length zero once trimmed
      */
     public static boolean isBlank( String str )
     {
         return ( ( str == null ) || ( str.trim().length() == 0 ) );
     }
-
 
     // Ripped from commons-lang StringEscapeUtils. Maybe Use dependency instead
     public static void unescapeJava( StringWriter out, String str )
@@ -220,113 +222,39 @@ public class StringUtils
         }
     }
 
-    // Ripped from commons-lang StringEscapeUtils. Maybe Use dependency instead
-    public static int unescapeJava( byte[] out, String str )
-    {
-        int outPos = 0;
-        if ( out == null )
-        {
-            throw new IllegalArgumentException( "The Writer must not be null" );
-        }
-        if ( str == null )
-        {
-            return 0;
-        }
-        int sz = str.length();
-        StringBuffer unicode = new StringBuffer( 4 );
-        boolean hadSlash = false;
-        boolean inUnicode = false;
-        for ( int i = 0; i < sz; i++ )
-        {
-            char ch = str.charAt( i );
-            if ( inUnicode )
-            {
-                // if in unicode, then we're reading unicode
-                // values in somehow
-                unicode.append( ch );
-                if ( unicode.length() == 4 )
-                {
-                    // unicode now contains the four hex digits
-                    // which represents our unicode character
-                    try
-                    {
-                        int value = Integer.parseInt( unicode.toString(), 16 );
-                        out[outPos++] = (byte) value;
-                        unicode.setLength( 0 );
-                        inUnicode = false;
-                        hadSlash = false;
-                    }
-                    catch ( NumberFormatException nfe )
-                    {
-                        throw new NestedRuntimeException( "Unable to parse unicode value: " + unicode, nfe );
-                    }
-                }
-                continue;
-            }
-            if ( hadSlash )
-            {
-                // handle an escaped value
-                hadSlash = false;
-                switch ( ch )
-                {
-                    case '\\':
-                        out[outPos++] = '\\';
-                        break;
-                    case '\'':
-                        out[outPos++] = '\'';
-                        break;
-                    case '\"':
-                        out[outPos++] = '"';
-                        break;
-                    case 'r':
-                        out[outPos++] = '\r';
-                        break;
-                    case 'f':
-                        out[outPos++] = '\f';
-                        break;
-                    case 't':
-                        out[outPos++] = '\t';
-                        break;
-                    case 'n':
-                        out[outPos++] = '\n';
-                        break;
-                    case 'b':
-                        out[outPos++] = '\b';
-                        break;
-                    case 'u':
-                    {
-                        // uh-oh, we're in unicode country....
-                        inUnicode = true;
-                        break;
-                    }
-                    default:
-                        out[outPos++] = (byte) ch;
-                        break;
-                }
-                continue;
-            }
-            else if ( ch == '\\' )
-            {
-                hadSlash = true;
-                continue;
-            }
-            out[outPos++] = (byte) ch;
-        }
-        if ( hadSlash )
-        {
-            // then we're in the weird case of a \ at the end of the
-            // string, let's output it anyway.
-            out[outPos++] = '\\';
-        }
-        return outPos;
-    }
+
 
     // Ripped from commons-lang StringEscapeUtils. With a minor modification, we unicode-quote commas
     // to avoid csv decoding problems ;)
 
     /**
-     * @param out               write to receieve the escaped string
-     * @param str               String to escape values in, may be null
+     * Courtesy of commons-lang StringEscapeUtils, slightly modified, see below
+     *
+     * @param str String to escape values in, may be null
+     * @return the escaped string
+     */
+    public static void escapeJavaStyleString( StringBuffer target, String str )
+    {
+        if ( str == null )
+        {
+            return;
+        }
+        try
+        {
+            StringWriter writer = new StringWriter( str.length() * 2 );
+            escapeJavaStyleString( writer, str, true );
+            target.append( writer.toString() ); // todo: be bit smarter
+        }
+        catch ( IOException ioe )
+        {
+            // this should never ever happen while writing to a StringWriter
+            ioe.printStackTrace();
+        }
+    }
+
+    /**
+     * @param out write to receieve the escaped string
+     * @param str String to escape values in, may be null
      * @param escapeSingleQuote escapes single quotes if <code>true</code>
      * @throws java.io.IOException if an IOException occurs
      */
@@ -357,7 +285,7 @@ public class StringUtils
                 out.write( "\\u0" + hex( ch ) );
             }
             else if ( ch > 0x7f || ch == ',' )
-            {    // Kr - this line modified from commons
+            { // Kr - this line modified from commons
                 out.write( "\\u00" + hex( ch ) );
             }
             else if ( ch < 32 )
@@ -427,202 +355,36 @@ public class StringUtils
         }
     }
 
-    public static void escapeJavaStyleString( ByteBuffer out, byte[] str, int off, int len )
-    {
-        if ( out == null )
-        {
-            throw new IllegalArgumentException( "The Writer must not be null" );
-        }
-        final int inputLength = str.length;
-        if ( str == null || inputLength == 0 )
-        {
-            return;
-        }
-        int outputPos = 0;
-        int end = off + len;
-        for ( int i = off; i < end; i++ )
-        {
-            char ch = (char) str[i];
 
-            // handle unicode
-            if ( ch > 0xfff )
-            {
-                outputPos = writeOut( out, outputPos, "\\u" + hex( ch ) );
-            }
-            else if ( ch > 0xff )
-            {
-                outputPos = writeOut( out, outputPos, "\\u0" + hex( ch ) );
-            }
-            else if ( ch > 0x7f || ch == ',' )
-            {    // Kr - this line modified from commons
-                outputPos = writeOut( out, outputPos, "\\u00" + hex( ch ) );
-            }
-            else if ( ch < 32 )
-            {
-                switch ( ch )
-                {
-                    case '\b':
-                        out.append( '\\' );
-                        out.append( 'b' );
-                        break;
-                    case '\n':
-                        out.append( '\\' );
-                        out.append( 'n' );
-                        break;
-                    case '\t':
-                        out.append( '\\' );
-                        out.append( 't' );
-                        break;
-                    case '\f':
-                        out.append( '\\' );
-                        out.append( 'f' );
-                        break;
-                    case '\r':
-                        out.append( '\\' );
-                        out.append( 'r' );
-                        break;
-                    default:
-                        if ( ch > 0xf )
-                        {
-                            outputPos = writeOut( out, outputPos, "\\u00" + hex( ch ) );
-                        }
-                        else
-                        {
-                            outputPos = writeOut( out, outputPos, "\\u000" + hex( ch ) );
-                        }
-                        break;
-                }
-            }
-            else
-            {
-                switch ( ch )
-                {
-                    case '\'':
-                        out.append( '\\' );
-                        out.append( '\'' );
-                        break;
-                    case '"':
-                        out.append( '\\' );
-                        out.append( '"' );
-                        break;
-                    case '\\':
-                        out.append( '\\' );
-                        out.append( '\\' );
-                        break;
-                    case '/':
-                        out.append( '\\' );
-                        out.append( '/' );
-                        break;
-                    default:
-                        out.append( ch );
-                        break;
-                }
-            }
-        }
+    public static String hex( char ch )
+    {
+        return Integer.toHexString( ch ).toUpperCase();
     }
 
-    public static void escapeJavaStyleString( PrintStream out, byte[] str, int off, int len )
+
+    /**
+     * Escapes the bytes in the array {@code str} to contain only 'printable' bytes.
+     * <p>
+     * Escaping is done by encoding the non-nicely printable bytes to {@code '\' + upperCaseHexBytes(byte)}.
+     * <p>
+     * A save length of {@code out} is {@code len * 3 + outoff}.
+     * <p>
+     * The reverse-method is {@link #unescapeBytes(byte[], String)}.
+     *
+     * @param out output buffer
+     * @param outoff offset in the output buffer
+     * @param input input buffer
+     * @param off offset in the input buffer
+     * @param len number of bytes to copy from the input buffer
+     * @return number of bytes written to {@code out}
+     */
+    public static int escapeBytesToPrintable( byte[] out, int outoff, byte[] input, int off, int len )
     {
         if ( out == null )
         {
-            throw new IllegalArgumentException( "The Writer must not be null" );
+            throw new IllegalArgumentException( "The output array must not be null" );
         }
-        final int inputLength = str.length;
-        if ( str == null || inputLength == 0 )
-        {
-            return;
-        }
-        int outputPos = 0;
-        int end = off + len;
-        for ( int i = off; i < end; i++ )
-        {
-            char ch = (char) str[i];
-
-            // handle unicode
-            if ( ch > 0xfff )
-            {
-                outputPos = writeOut( out, outputPos, "\\u" + hex( ch ) );
-            }
-            else if ( ch > 0xff )
-            {
-                outputPos = writeOut( out, outputPos, "\\u0" + hex( ch ) );
-            }
-            else if ( ch > 0x7f || ch == ',' )
-            {    // Kr - this line modified from commons
-                outputPos = writeOut( out, outputPos, "\\u00" + hex( ch ) );
-            }
-            else if ( ch < 32 )
-            {
-                switch ( ch )
-                {
-                    case '\b':
-                        out.append( '\\' );
-                        out.append( 'b' );
-                        break;
-                    case '\n':
-                        out.append( '\\' );
-                        out.append( 'n' );
-                        break;
-                    case '\t':
-                        out.append( '\\' );
-                        out.append( 't' );
-                        break;
-                    case '\f':
-                        out.append( '\\' );
-                        out.append( 'f' );
-                        break;
-                    case '\r':
-                        out.append( '\\' );
-                        out.append( 'r' );
-                        break;
-                    default:
-                        if ( ch > 0xf )
-                        {
-                            outputPos = writeOut( out, outputPos, "\\u00" + hex( ch ) );
-                        }
-                        else
-                        {
-                            outputPos = writeOut( out, outputPos, "\\u000" + hex( ch ) );
-                        }
-                        break;
-                }
-            }
-            else
-            {
-                switch ( ch )
-                {
-                    case '\'':
-                        out.append( '\\' );
-                        out.append( '\'' );
-                        break;
-                    case '"':
-                        out.append( '\\' );
-                        out.append( '"' );
-                        break;
-                    case '\\':
-                        out.append( '\\' );
-                        out.append( '\\' );
-                        break;
-                    case '/':
-                        out.append( '\\' );
-                        out.append( '/' );
-                        break;
-                    default:
-                        out.append( ch );
-                        break;
-                }
-            }
-        }
-    }
-
-    public static int escapeJavaStyleString( byte[] out, int outoff, byte[] str, int off, int len )
-    {
-        if ( out == null )
-        {
-            throw new IllegalArgumentException( "The Writer must not be null" );
-        }
-        final int inputLength = str.length;
-        if ( str == null || inputLength == 0 )
+        if ( input == null || input.length == 0 )
         {
             return 0;
         }
@@ -630,165 +392,69 @@ public class StringUtils
         int end = off + len;
         for ( int i = off; i < end; i++ )
         {
-            char ch = (char) str[i];
+            byte b = input[i];
 
-            // handle unicode
-            if ( ch > 0xfff )
+            // handle non-nicely printable bytes
+            if ( b < 32 || b > 126 || b == '\\' )
             {
-                outputPos = writeOut( out, outputPos, "\\u" + hex( ch ) );
-            }
-            else if ( ch > 0xff )
-            {
-                outputPos = writeOut( out, outputPos, "\\u0" + hex( ch ) );
-            }
-            else if ( ch > 0x7f || ch == ',' )
-            {    // Kr - this line modified from commons
-                outputPos = writeOut( out, outputPos, "\\u00" + hex( ch ) );
-            }
-            else if ( ch < 32 )
-            {
-                switch ( ch )
-                {
-                    case '\b':
-                        out[outputPos++] = '\\';
-                        out[outputPos++] = 'b';
-                        break;
-                    case '\n':
-                        out[outputPos++] = '\\';
-                        out[outputPos++] = 'n';
-                        break;
-                    case '\t':
-                        out[outputPos++] = '\\';
-                        out[outputPos++] = 't';
-                        break;
-                    case '\f':
-                        out[outputPos++] = '\\';
-                        out[outputPos++] = 'f';
-                        break;
-                    case '\r':
-                        out[outputPos++] = '\\';
-                        out[outputPos++] = 'r';
-                        break;
-                    default:
-                        if ( ch > 0xf )
-                        {
-                            outputPos = writeOut( out, outputPos, "\\u00" + hex( ch ) );
-                        }
-                        else
-                        {
-                            outputPos = writeOut( out, outputPos, "\\u000" + hex( ch ) );
-                        }
-                        break;
-                }
+                int upper = ( 0xF0 & b ) >> 4;
+                int lower = ( 0x0F & b );
+                out[outputPos++] = '\\';
+                out[outputPos++] = HEX_CHARS[upper];
+                out[outputPos++] = HEX_CHARS[lower];
             }
             else
             {
-                switch ( ch )
-                {
-                    case '\'':
-                        out[outputPos++] = '\\';
-                        out[outputPos++] = '\'';
-                        break;
-                    case '"':
-                        out[outputPos++] = '\\';
-                        out[outputPos++] = '"';
-                        break;
-                    case '\\':
-                        out[outputPos++] = '\\';
-                        out[outputPos++] = '\\';
-                        break;
-                    case '/':
-                        out[outputPos++] = '\\';
-                        out[outputPos++] = '/';
-                        break;
-                    default:
-                        out[outputPos++] = (byte) ch;
-                        break;
-                }
+                out[outputPos++] = b;
             }
         }
+
         return outputPos - outoff;
     }
 
-    private static int writeOut( ByteBuffer out, int outputPos, final String msg )
-    {
-        byte[] bytes = msg.getBytes();
-        for ( int cnt = 0; cnt < bytes.length; cnt++ )
-        {
-            out.append( bytes[cnt] );
-        }
-        return outputPos;
-    }
-
-    private static int writeOut( PrintStream out, int outputPos, final String msg )
-    {
-        byte[] bytes = msg.getBytes();
-        for ( int cnt = 0; cnt < bytes.length; cnt++ )
-        {
-            out.write( bytes[cnt] );
-        }
-        return outputPos;
-    }
-
-
-    private static int writeOut( byte[] out, int outputPos, final String msg )
-    {
-        byte[] bytes = msg.getBytes();
-        for ( int cnt = 0; cnt < bytes.length; cnt++ )
-        {
-            out[outputPos++] = bytes[cnt];
-        }
-        return outputPos;
-    }
-
-
-    public static String hex( char ch )
-    {
-        return Integer.toHexString( ch ).toUpperCase();
-    }
 
     /**
-     * Courtesy of commons-lang StringEscapeUtils, slightly modified, see below
+     * Reverses the effect of {@link #escapeBytesToPrintable(byte[], int, byte[], int, int)}.
+     * <p>
+     * A save length of {@code out} is {@code str.length()}
      *
-     * @param str String to escape values in, may be null
-     * @return the escaped string
+     * @param out the target byte array
+     * @param str the input String
+     * @return the number of bytes written to {@code out}
      */
-    public static void escapeJavaStyleString( StringBuffer target, String str )
+    public static int unescapeBytes( byte[] out, String str )
     {
+        int outPos = 0;
+        if ( out == null )
+        {
+            throw new IllegalArgumentException( "The output array must not be null" );
+        }
         if ( str == null )
         {
-            return;
+            return 0;
         }
-        try
+        for ( int i = 0; i < str.length(); i++ )
         {
-            StringWriter writer = new StringWriter( str.length() * 2 );
-            escapeJavaStyleString( writer, str, true );
-            target.append( writer.toString() ); // todo: be bit smarter
+            char ch = str.charAt( i );
+
+            if (ch == '\\') {
+                int upper = fromHex( str.charAt( ++i ));
+                int lower = fromHex( str.charAt( ++i ));
+                out[outPos++] = (byte) (upper << 4 | lower);
+            }
+            else {
+                out[outPos++] = (byte) ch;
+            }
         }
-        catch ( IOException ioe )
-        {
-            // this should never ever happen while writing to a StringWriter
-            ioe.printStackTrace();
-        }
+        return outPos;
     }
 
-    public static void escapeJavaStyleString( PrintStream target, String str )
+    private static int fromHex( char c )
     {
-        if ( str == null )
-        {
-            return;
-        }
-        try
-        {
-            StringWriter writer = new StringWriter( str.length() * 2 );
-            escapeJavaStyleString( writer, str, true );
-            target.append( writer.toString() ); // todo: be bit smarter
-        }
-        catch ( IOException ioe )
-        {
-            // this should never ever happen while writing to a StringWriter
-            ioe.printStackTrace();
+        if ( c <= '9' ) {
+            return c - '0';
+        } else{
+            return (c - 'A') + 10;
         }
     }
 }
-

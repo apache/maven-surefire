@@ -19,6 +19,8 @@ package org.apache.maven.surefire.util.internal;
  * under the License.
  */
 
+import java.util.Arrays;
+
 import junit.framework.TestCase;
 
 /**
@@ -30,26 +32,30 @@ public class StringUtilsTest
 
     public void testUnescape()
     {
-        byte[] buffer = new byte[80];
-        final int abc = StringUtils.unescapeJava( buffer, "ABC" );
-        assertEquals( 3, abc );
+        byte[] input = new byte[256];
+
+        for ( int i = 0; i <= 0xFF; i++ )
+        {
+            byte b = (byte) ( 0xFF & i );
+            input[i] = b;
+        }
+
+        byte[] escaped = new byte[input.length * 3];
+
+        int escapedBytes = StringUtils.escapeBytesToPrintable( escaped, 0, input, 0, input.length );
+
+        String escapedString = new String( escaped, 0, escapedBytes );
+        System.out.println( escapedString );
+
+        assertEquals( escapedBytes, escapedString.length() );
+
+        byte[] unescaped = new byte[input.length];
+        int unescapeBytes = StringUtils.unescapeBytes( unescaped, escapedString );
+
+        assertEquals( input.length, unescapeBytes );
+
+        for (int i = 0; i < input.length; i++) {
+            assertEquals("At position " + i, input[i], unescaped[i]);
+        }
     }
-
-    public void testUnescapeWithEscape()
-    {
-        byte[] buffer = new byte[80];
-        final int abc = StringUtils.unescapeJava( buffer, "AB\tC" );
-        assertEquals( 4, abc );
-    }
-
-    public void testEscape()
-    {
-        ByteBuffer buffer = new ByteBuffer( 80 );
-        StringUtils.escapeJavaStyleString( buffer, "AB\tC".getBytes(), 0, 4 );
-        assertEquals( 5, buffer.getlength() );
-        String temp = buffer.toString();
-        assertEquals( "AB\\tC", temp );
-
-    }
-
 }

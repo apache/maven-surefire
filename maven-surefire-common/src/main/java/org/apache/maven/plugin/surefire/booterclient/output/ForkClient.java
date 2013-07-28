@@ -44,7 +44,7 @@ import org.apache.maven.surefire.util.internal.StringUtils;
 
 /**
  * Knows how to reconstruct *all* the state transmitted over stdout by the forked process.
- * 
+ *
  * @author Kristian Rosenvold
  */
 public class ForkClient
@@ -135,13 +135,13 @@ public class ForkClient
                     }
                     break;
                 case ForkingRunListener.BOOTERCODE_STDOUT:
-                    byte[] bytes = new byte[remaining.length() * 2];
-                    int len = StringUtils.unescapeJava( bytes, remaining );
+                    byte[] bytes = new byte[remaining.length()];
+                    int len = StringUtils.unescapeBytes( bytes, remaining );
                     getOrCreateConsoleOutputReceiver( channelNumber ).writeTestOutput( bytes, 0, len, true );
                     break;
                 case ForkingRunListener.BOOTERCODE_STDERR:
-                    bytes = new byte[remaining.length() * 2];
-                    len = StringUtils.unescapeJava( bytes, remaining );
+                    bytes = new byte[remaining.length()];
+                    len = StringUtils.unescapeBytes( bytes, remaining );
                     getOrCreateConsoleOutputReceiver( channelNumber ).writeTestOutput( bytes, 0, len, false );
                     break;
                 case ForkingRunListener.BOOTERCODE_CONSOLE:
@@ -242,7 +242,7 @@ public class ForkClient
 
     /**
      * Used when getting reporters on the plugin side of a fork.
-     * 
+     *
      * @param channelNumber The logical channel number
      * @return A mock provider reporter
      */

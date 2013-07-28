@@ -169,8 +169,8 @@ public class ForkingRunListener
     {
         byte[] header = stdout ? stdOutHeader : stdErrHeader;
         byte[] content =
-            new byte[buf.length * 6 + 1]; // Unicode escapes can be up to 6 times length of regular char. Yuck.
-        int i = StringUtils.escapeJavaStyleString( content, 0, buf, off, len );
+            new byte[buf.length * 3 + 1]; // Hex-escaping can be up to 3 times length of a regular byte.
+        int i = StringUtils.escapeBytesToPrintable( content, 0, buf, off, len );
         content[i++] = (byte) '\n';
 
         synchronized ( target ) // See notes about synhronization/thread safety in class javadoc
@@ -219,7 +219,7 @@ public class ForkingRunListener
         byteBuffer.append( testSetChannelId );
         byteBuffer.comma();
         final int i =
-            StringUtils.escapeJavaStyleString( byteBuffer.getData(), byteBuffer.getlength(), buf, 0, buf.length );
+            StringUtils.escapeBytesToPrintable( byteBuffer.getData(), byteBuffer.getlength(), buf, 0, buf.length );
         byteBuffer.advance( i );
         byteBuffer.append( '\n' );
         synchronized ( target )
