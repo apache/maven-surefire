@@ -22,12 +22,12 @@ package org.apache.maven.plugin.surefire.booterclient.output;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
-import java.io.StringWriter;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
+
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.TestProvidingInputStream;
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
 import org.apache.maven.shared.utils.cli.StreamConsumer;
@@ -124,14 +124,14 @@ public class ForkClient
                     break;
                 case ForkingRunListener.BOOTERCODE_SYSPROPS:
                     int keyEnd = remaining.indexOf( "," );
-                    StringWriter key = new StringWriter();
-                    StringWriter value = new StringWriter();
-                    StringUtils.unescapeJava( key, remaining.substring( 0, keyEnd ) );
-                    StringUtils.unescapeJava( value, remaining.substring( keyEnd + 1 ) );
+                    StringBuilder key = new StringBuilder();
+                    StringBuilder value = new StringBuilder();
+                    StringUtils.unescapeString( key, remaining.substring( 0, keyEnd ) );
+                    StringUtils.unescapeString( value, remaining.substring( keyEnd + 1 ) );
 
                     synchronized ( testVmSystemProperties )
                     {
-                        testVmSystemProperties.put( key, value );
+                        testVmSystemProperties.put( key.toString(), value.toString() );
                     }
                     break;
                 case ForkingRunListener.BOOTERCODE_STDOUT:
@@ -234,10 +234,10 @@ public class ForkClient
 
     private String unescape( String source )
     {
-        StringWriter stringWriter = new StringWriter( source.length() );
+        StringBuilder stringBuffer = new StringBuilder( source.length() );
 
-        StringUtils.unescapeJava( stringWriter, source );
-        return stringWriter.getBuffer().toString();
+        StringUtils.unescapeString( stringBuffer, source );
+        return stringBuffer.toString();
     }
 
     /**

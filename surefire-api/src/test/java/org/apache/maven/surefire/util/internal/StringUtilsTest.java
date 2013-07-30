@@ -19,18 +19,37 @@ package org.apache.maven.surefire.util.internal;
  * under the License.
  */
 
-import java.util.Arrays;
-
 import junit.framework.TestCase;
 
 /**
- * @author Kristian Rosenvold
+ * @author Andreas Gudian
  */
 public class StringUtilsTest
     extends TestCase
 {
 
-    public void testUnescape()
+    public void testUnescapeString()
+    {
+        // not so easy to create an input string with lots of characters that is a valid char-sequence
+        StringBuilder sb = new StringBuilder();
+
+        for ( int i = 0; i < 0xD800; i++ )
+        {
+            sb.appendCodePoint( i );
+        }
+
+        String inputString = new String( sb );
+
+        StringBuilder escaped = new StringBuilder( inputString.length() * 6 );
+        StringUtils.escapeToPrintable( escaped, inputString );
+
+        StringBuilder unescaped = new StringBuilder( inputString.length() );
+        StringUtils.unescapeString( unescaped, escaped.toString() );
+
+        assertEquals(inputString, unescaped.toString());
+    }
+
+    public void testUnescapeBytes()
     {
         byte[] input = new byte[256];
 
@@ -45,7 +64,6 @@ public class StringUtilsTest
         int escapedBytes = StringUtils.escapeBytesToPrintable( escaped, 0, input, 0, input.length );
 
         String escapedString = new String( escaped, 0, escapedBytes );
-        System.out.println( escapedString );
 
         assertEquals( escapedBytes, escapedString.length() );
 
@@ -54,8 +72,9 @@ public class StringUtilsTest
 
         assertEquals( input.length, unescapeBytes );
 
-        for (int i = 0; i < input.length; i++) {
-            assertEquals("At position " + i, input[i], unescaped[i]);
+        for ( int i = 0; i < input.length; i++ )
+        {
+            assertEquals( "At position " + i, input[i], unescaped[i] );
         }
     }
 }

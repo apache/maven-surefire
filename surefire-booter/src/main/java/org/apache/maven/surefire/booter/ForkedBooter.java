@@ -107,16 +107,16 @@ public class ForkedBooter
 
                 LegacyPojoStackTraceWriter stackTraceWriter =
                     new LegacyPojoStackTraceWriter( "test subystem", "no method", t.getTargetException() );
-                StringBuffer stringBuffer = new StringBuffer();
-                ForkingRunListener.encode( stringBuffer, stackTraceWriter, false );
-                originalOut.println( ( (char) ForkingRunListener.BOOTERCODE_ERROR ) + ",0," + stringBuffer.toString() );
+                StringBuilder stringBuilder = new StringBuilder();
+                ForkingRunListener.encode( stringBuilder, stackTraceWriter, false );
+                originalOut.println( ( (char) ForkingRunListener.BOOTERCODE_ERROR ) + ",0," + stringBuilder.toString() );
             }
             catch ( Throwable t )
             {
                 StackTraceWriter stackTraceWriter = new LegacyPojoStackTraceWriter( "test subystem", "no method", t );
-                StringBuffer stringBuffer = new StringBuffer();
-                ForkingRunListener.encode( stringBuffer, stackTraceWriter, false );
-                originalOut.println( ( (char) ForkingRunListener.BOOTERCODE_ERROR ) + ",0," + stringBuffer.toString() );
+                StringBuilder stringBuilder = new StringBuilder();
+                ForkingRunListener.encode( stringBuilder, stackTraceWriter, false );
+                originalOut.println( ( (char) ForkingRunListener.BOOTERCODE_ERROR ) + ",0," + stringBuilder.toString() );
             }
             // Say bye.
             originalOut.println( ( (char) ForkingRunListener.BOOTERCODE_BYE ) + ",0,BYE!" );

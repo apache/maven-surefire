@@ -20,8 +20,10 @@ package org.apache.maven.surefire.booter;
  */
 
 import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
 import java.util.Enumeration;
 import java.util.Properties;
+
 import org.apache.maven.surefire.report.ConsoleLogger;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.ReportEntry;
@@ -212,8 +214,16 @@ public class ForkingRunListener
 
     public void info( String message )
     {
-        byte[] buf = message.getBytes();
-        ByteBuffer byteBuffer = new ByteBuffer( 7 + buf.length * 6 ); // 7 => Allow 3 digit testSetChannelId
+        byte[] buf;
+        try
+        {
+            buf = message.getBytes( "unicode" );
+        }
+        catch ( UnsupportedEncodingException e )
+        {
+            throw new RuntimeException( e );
+        }
+        ByteBuffer byteBuffer = new ByteBuffer( 7 + buf.length * 3 ); // 7 => Allow 3 digit testSetChannelId
         byteBuffer.append( BOOTERCODE_CONSOLE );
         byteBuffer.comma();
         byteBuffer.append( testSetChannelId );
@@ -231,64 +241,64 @@ public class ForkingRunListener
 
     private String toPropertyString( String key, String value )
     {
-        StringBuffer stringBuffer = new StringBuffer();
+        StringBuilder stringBuilder = new StringBuilder();
 
-        append( stringBuffer, BOOTERCODE_SYSPROPS );comma( stringBuffer );
-        append( stringBuffer, Integer.toHexString( testSetChannelId ) );comma( stringBuffer );
+        append( stringBuilder, BOOTERCODE_SYSPROPS );comma( stringBuilder );
+        append( stringBuilder, Integer.toHexString( testSetChannelId ) );comma( stringBuilder );
 
-        StringUtils.escapeJavaStyleString( stringBuffer, key );
-        append( stringBuffer, "," );
-        StringUtils.escapeJavaStyleString( stringBuffer, value );
-        stringBuffer.append( "\n" );
-        return stringBuffer.toString();
+        StringUtils.escapeToPrintable( stringBuilder, key );
+        append( stringBuilder, "," );
+        StringUtils.escapeToPrintable( stringBuilder, value );
+        stringBuilder.append( "\n" );
+        return stringBuilder.toString();
     }
 
     private String toString( byte operationCode, ReportEntry reportEntry, Integer testSetChannelId )
     {
-        StringBuffer stringBuffer = new StringBuffer();
-        append( stringBuffer, operationCode ); comma( stringBuffer );
-        append( stringBuffer, Integer.toHexString( testSetChannelId ) );comma( stringBuffer );
+        StringBuilder stringBuilder = new StringBuilder();
+        append( stringBuilder, operationCode ); comma( stringBuilder );
+        append( stringBuilder, Integer.toHexString( testSetChannelId ) );comma( stringBuilder );
 
-        nullableEncoding( stringBuffer, reportEntry.getSourceName() );
-        comma( stringBuffer );
-        nullableEncoding( stringBuffer, reportEntry.getName() );
-        comma( stringBuffer );
-        nullableEncoding( stringBuffer, reportEntry.getGroup() );
-        comma( stringBuffer );
-        nullableEncoding( stringBuffer, reportEntry.getMessage() );
-        comma( stringBuffer );
-        nullableEncoding( stringBuffer, reportEntry.getElapsed() );
-        encode( stringBuffer, reportEntry.getStackTraceWriter() );
-        stringBuffer.append( "\n" );
-        return stringBuffer.toString();
+        nullableEncoding( stringBuilder, reportEntry.getSourceName() );
+        comma( stringBuilder );
+        nullableEncoding( stringBuilder, reportEntry.getName() );
+        comma( stringBuilder );
+        nullableEncoding( stringBuilder, reportEntry.getGroup() );
+        comma( stringBuilder );
+        nullableEncoding( stringBuilder, reportEntry.getMessage() );
+        comma( stringBuilder );
+        nullableEncoding( stringBuilder, reportEntry.getElapsed() );
+        encode( stringBuilder, reportEntry.getStackTraceWriter() );
+        stringBuilder.append( "\n" );
+        return stringBuilder.toString();
     }
 
-    private static void comma( StringBuffer stringBuffer )
+    private static void comma( StringBuilder stringBuilder )
     {
-        stringBuffer.append( "," );
+        stringBuilder.append( "," );
     }
 
-    private ForkingRunListener append( StringBuffer stringBuffer, String message )
+    private ForkingRunListener append( StringBuilder stringBuilder, String message )
     {
-        stringBuffer.append( encode( message ) );
+        stringBuilder.append( encode( message ) );
         return this;
     }
 
-    private ForkingRunListener append( StringBuffer stringBuffer, byte b )
+    private ForkingRunListener append( StringBuilder stringBuilder, byte b )
     {
-        stringBuffer.append( (char) b );
+        stringBuilder.append( (char) b );
         return this;
     }
 
-    private void nullableEncoding( StringBuffer stringBuffer, Integer source )
+    private void nullableEncoding( StringBuilder stringBuilder, Integer source )
     {
         if ( source == null )
         {
-            stringBuffer.append( "null" );
+            stringBuilder.append( "null" );
         }
         else
         {
-            stringBuffer.append( source.toString() );
+            stringBuilder.append( source.toString() );
         }
     }
 
@@ -298,39 +308,39 @@ public class ForkingRunListener
     }
 
 
-    private static void nullableEncoding( StringBuffer stringBuffer, String source )
+    private static void nullableEncoding( StringBuilder stringBuilder, String source )
     {
         if ( source == null || source.length() == 0 )
         {
-            stringBuffer.append( "null" );
+            stringBuilder.append( "null" );
         }
         else
         {
-            StringUtils.escapeJavaStyleString( stringBuffer, source );
+            StringUtils.escapeToPrintable( stringBuilder, source );
         }
     }
 
-    private void encode( StringBuffer stringBuffer, StackTraceWriter stackTraceWriter )
+    private void encode( StringBuilder stringBuilder, StackTraceWriter stackTraceWriter )
     {
-        encode( stringBuffer, stackTraceWriter, trimStackTraces );
+        encode( stringBuilder, stackTraceWriter, trimStackTraces );
     }
 
-    public static void encode( StringBuffer stringBuffer, StackTraceWriter stackTraceWriter, boolean trimStackTraces )
+    public static void encode( StringBuilder stringBuilder, StackTraceWriter stackTraceWriter, boolean trimStackTraces )
     {
         if ( stackTraceWriter != null )
         {
-            comma( stringBuffer );
+            comma( stringBuilder );
             //noinspection ThrowableResultOfMethodCallIgnored
             final SafeThrowable throwable = stackTraceWriter.getThrowable();
             if ( throwable != null )
             {
                 String message = throwable.getLocalizedMessage();
-                nullableEncoding( stringBuffer, message );
+                nullableEncoding( stringBuilder, message );
             }
-            comma( stringBuffer );
-            nullableEncoding( stringBuffer, stackTraceWriter.smartTrimmedStackTrace() );
-            comma( stringBuffer );
-            nullableEncoding( stringBuffer, trimStackTraces
+            comma( stringBuilder );
+            nullableEncoding( stringBuilder, stackTraceWriter.smartTrimmedStackTrace() );
+            comma( stringBuilder );
+            nullableEncoding( stringBuilder, trimStackTraces
                 ? stackTraceWriter.writeTrimmedTraceToString()
                 : stackTraceWriter.writeTraceToString() );
         }

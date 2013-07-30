@@ -336,7 +336,7 @@ public class ForkingRunListenerTest
         {
             TestSetMockReporterFactory providerReporterFactory = new TestSetMockReporterFactory();
             final ForkClient forkStreamClient = new ForkClient( providerReporterFactory, new Properties() );
-            forkStreamClient.consumeMultiLineContent( content.toString( "utf-8" ) );
+            forkStreamClient.consumeMultiLineContent( content.toString( ) );
             reporter = (MockReporter) forkStreamClient.getReporter( defaultChannel );
         }
 
