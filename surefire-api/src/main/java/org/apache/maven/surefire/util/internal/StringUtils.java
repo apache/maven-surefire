@@ -53,6 +53,13 @@ import java.util.StringTokenizer;
  */
 public class StringUtils
 {
+    /*
+     * Uses "unicode" as encoding, as system default encodings might not be completely reversible or they might be
+     * different between main VM and forked VM. Downturn: they require a lot of bytes, most of them are not
+     * "pretty printable"
+     */
+    private static final String CHARSET_NAME = "unicode";
+
     private static final byte[] HEX_CHARS = new byte[] {
         '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
         'A', 'B', 'C', 'D', 'E', 'F' };
@@ -143,7 +150,7 @@ public class StringUtils
         byte[] inputBytes;
         try
         {
-            inputBytes = str.getBytes("unicode");
+            inputBytes = str.getBytes(CHARSET_NAME);
         }
         catch ( UnsupportedEncodingException e )
         {
@@ -182,7 +189,7 @@ public class StringUtils
 
         try
         {
-            target.append( new String( unescapedBytes, 0, unescaped, "unicode" ) );
+            target.append( new String( unescapedBytes, 0, unescaped, CHARSET_NAME ) );
         }
         catch ( UnsupportedEncodingException e )
         {
