@@ -19,7 +19,6 @@ package org.apache.maven.surefire.util.internal;
  * under the License.
  */
 
-import java.io.UnsupportedEncodingException;
 import java.util.StringTokenizer;
 
 /**
@@ -53,17 +52,9 @@ import java.util.StringTokenizer;
  */
 public class StringUtils
 {
-    /*
-     * Uses "unicode" as encoding, as system default encodings might not be completely reversible or they might be
-     * different between main VM and forked VM. Downturn: they require a lot of bytes, most of them are not
-     * "pretty printable"
-     */
-    private static final String CHARSET_NAME = "unicode";
-
     private static final byte[] HEX_CHARS = new byte[] {
         '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
         'A', 'B', 'C', 'D', 'E', 'F' };
-
 
     public static String[] split( String text, String separator )
     {
@@ -130,13 +121,12 @@ public class StringUtils
      * Escape the specified string to a representation that only consists of nicely printable characters, without any
      * newlines and without a comma.
      * <p>
-     * The reverse-method is {@link #unescapeString(StringBuilder, String)}.
+     * The reverse-method is {@link #unescapeString(StringBuilder, CharSequence)}.
      *
-     * @param target target string buffer. The required space depends on the encoding and will be up to
-     *            {@code str.getBytes().length * 3} chars.
-     * @param str String to escape values in, may be null
+     * @param target target string buffer. The required space will be up to {@code str.getBytes().length * 5} chars.
+     * @param str String to escape values in, may be {@code null}.
      */
-    public static void escapeToPrintable( StringBuilder target, String str )
+    public static void escapeToPrintable( StringBuilder target, CharSequence str )
     {
         if ( target == null )
         {
@@ -147,33 +137,32 @@ public class StringUtils
             return;
         }
 
-        byte[] inputBytes;
-        try
-        {
-            inputBytes = str.getBytes(CHARSET_NAME);
-        }
-        catch ( UnsupportedEncodingException e )
-        {
-            throw new RuntimeException( e );
-        }
+        for ( int i = 0; i < str.length(); i++ ) {
+            char c = str.charAt( i );
 
-        byte[] escapedBytes = new byte[inputBytes.length * 3];
-
-        int escaped = escapeBytesToPrintable( escapedBytes, 0, inputBytes, 0, inputBytes.length );
-
-        for ( int i = 0; i < escaped; i++ )
-        {
-            target.append( (char) escapedBytes[i] );
+            // handle non-nicely printable chars and the comma
+            if ( c < 32 || c > 126 || c == '\\' || c == ',' )
+            {
+                target.append( '\\' );
+                target.append( (char) HEX_CHARS[( 0xF000 & c ) >> 12] );
+                target.append( (char) HEX_CHARS[( 0x0F00 & c ) >> 8] );
+                target.append( (char) HEX_CHARS[( 0x00F0 & c ) >> 4] );
+                target.append( (char) HEX_CHARS[( 0x000F & c )] );
+            }
+            else
+            {
+                target.append( c );
+            }
         }
     }
 
     /**
-     * Reverses the effect of {@link #escapeToPrintable(StringBuilder, String)}.
+     * Reverses the effect of {@link #escapeToPrintable(StringBuilder, CharSequence)}.
      *
      * @param target target string buffer
-     * @param str the String to un-escape, as created by {@link #escapeToPrintable(StringBuilder, String)}
+     * @param str the String to un-escape, as created by {@link #escapeToPrintable(StringBuilder, CharSequence)}
      */
-    public static void unescapeString( StringBuilder target, String str )
+    public static void unescapeString( StringBuilder target, CharSequence str )
     {
         if ( target == null )
         {
@@ -184,16 +173,39 @@ public class StringUtils
             return;
         }
 
-        byte[] unescapedBytes = new byte[str.length()];
-        int unescaped = unescapeBytes( unescapedBytes, str );
+        for ( int i = 0; i < str.length(); i++ )
+        {
+            char ch = str.charAt( i );
 
-        try
-        {
-            target.append( new String( unescapedBytes, 0, unescaped, CHARSET_NAME ) );
+            if ( ch == '\\' )
+            {
+                target.append( (char) (
+                                  digit( str.charAt( ++i ) ) << 12
+                                | digit( str.charAt( ++i ) ) << 8
+                                | digit( str.charAt( ++i ) ) << 4
+                                | digit( str.charAt( ++i ) )
+                                ) );
+            }
+            else
+            {
+                target.append( ch );
+            }
         }
-        catch ( UnsupportedEncodingException e )
+    }
+
+    private static int digit( char ch )
+    {
+        if ( ch >= 'a' )
         {
-            throw new RuntimeException( e );
+            return 10 + ch - 'a';
+        }
+        else if ( ch >= 'A' )
+        {
+            return 10 + ch - 'A';
+        }
+        else
+        {
+            return ch - '0';
         }
     }
 
@@ -273,8 +285,8 @@ public class StringUtils
 
             if ( ch == '\\' )
             {
-                int upper = Character.digit( str.charAt( ++i ), 16 );
-                int lower = Character.digit( str.charAt( ++i ), 16 );
+                int upper = digit( str.charAt( ++i ) );
+                int lower = digit( str.charAt( ++i ) );
                 out[outPos++] = (byte) ( upper << 4 | lower );
             }
             else

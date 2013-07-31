@@ -30,23 +30,38 @@ public class StringUtilsTest
 
     public void testUnescapeString()
     {
-        // not so easy to create an input string with lots of characters that is a valid char-sequence
-        StringBuilder sb = new StringBuilder();
+        CharSequence inputString = createInputString();
 
-        for ( int i = 0; i < 0xD800; i++ )
+        StringBuilder escaped = new StringBuilder( inputString.length() * 5 );
+        int initialCapacity = escaped.capacity();
+
+        StringUtils.escapeToPrintable( escaped, inputString );
+
+        assertEquals( initialCapacity, escaped.capacity() );
+
+        StringBuilder unescaped = new StringBuilder( inputString.length() );
+        StringUtils.unescapeString( unescaped, escaped );
+
+        assertEquals( inputString.length(), unescaped.length() );
+
+        for ( int i = 0; i < inputString.length(); i++ )
+        {
+            if ( inputString.charAt( i ) != unescaped.charAt( i ) )
+            {
+                fail( "Input and Unescaped String are not equal at position " + i );
+            }
+        }
+    }
+
+    private CharSequence createInputString()
+    {
+        StringBuilder sb = new StringBuilder();
+        for ( int i = 0; i < Character.MAX_CODE_POINT; i++ )
         {
             sb.appendCodePoint( i );
         }
 
-        String inputString = new String( sb );
-
-        StringBuilder escaped = new StringBuilder( inputString.length() * 6 );
-        StringUtils.escapeToPrintable( escaped, inputString );
-
-        StringBuilder unescaped = new StringBuilder( inputString.length() );
-        StringUtils.unescapeString( unescaped, escaped.toString() );
-
-        assertEquals(inputString, unescaped.toString());
+        return sb;
     }
 
     public void testUnescapeBytes()

@@ -20,7 +20,6 @@ package org.apache.maven.surefire.booter;
  */
 
 import java.io.PrintStream;
-import java.io.UnsupportedEncodingException;
 import java.util.Enumeration;
 import java.util.Properties;
 
@@ -30,7 +29,6 @@ import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.SafeThrowable;
 import org.apache.maven.surefire.report.StackTraceWriter;
-import org.apache.maven.surefire.util.internal.ByteBuffer;
 import org.apache.maven.surefire.util.internal.StringUtils;
 
 /**
@@ -214,29 +212,18 @@ public class ForkingRunListener
 
     public void info( String message )
     {
-        byte[] buf;
-        try
+        if ( message == null )
         {
-            buf = message.getBytes( "unicode" );
+            return;
         }
-        catch ( UnsupportedEncodingException e )
-        {
-            throw new RuntimeException( e );
-        }
-        ByteBuffer byteBuffer = new ByteBuffer( 7 + buf.length * 3 ); // 7 => Allow 3 digit testSetChannelId
-        byteBuffer.append( BOOTERCODE_CONSOLE );
-        byteBuffer.comma();
-        byteBuffer.append( testSetChannelId );
-        byteBuffer.comma();
-        final int i =
-            StringUtils.escapeBytesToPrintable( byteBuffer.getData(), byteBuffer.getlength(), buf, 0, buf.length );
-        byteBuffer.advance( i );
-        byteBuffer.append( '\n' );
-        synchronized ( target )
-        {
-            target.write( byteBuffer.getData(), 0, byteBuffer.getlength() );
-            target.flush();
-        }
+
+        StringBuilder sb = new StringBuilder( 7 + message.length() * 5 );
+        append( sb, BOOTERCODE_CONSOLE );comma( sb );
+        append( sb, Integer.toHexString( testSetChannelId ) );comma( sb );
+        StringUtils.escapeToPrintable( sb, message );
+
+        sb.append( '\n' );
+        target.print( sb.toString() );
     }
 
     private String toPropertyString( String key, String value )
@@ -247,7 +234,7 @@ public class ForkingRunListener
         append( stringBuilder, Integer.toHexString( testSetChannelId ) );comma( stringBuilder );
 
         StringUtils.escapeToPrintable( stringBuilder, key );
-        append( stringBuilder, "," );
+        comma( stringBuilder );
         StringUtils.escapeToPrintable( stringBuilder, value );
         stringBuilder.append( "\n" );
         return stringBuilder.toString();
