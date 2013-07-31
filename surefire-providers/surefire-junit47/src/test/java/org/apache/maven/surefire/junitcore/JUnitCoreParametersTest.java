@@ -34,7 +34,7 @@ public class JUnitCoreParametersTest
     {
         assertFalse( getTestSetClasses().isParallelMethod() );
         assertTrue( getTestSetMethods().isParallelMethod() );
-        assertFalse( getTestSetBoth().isParallelMethod() );
+        assertTrue( getTestSetBoth().isParallelMethod() );
     }
 
     public void testIsParallelClasses()
@@ -42,15 +42,15 @@ public class JUnitCoreParametersTest
     {
         assertTrue( getTestSetClasses().isParallelClasses() );
         assertFalse( getTestSetMethods().isParallelClasses() );
-        assertFalse( getTestSetBoth().isParallelClasses() );
+        assertTrue( getTestSetBoth().isParallelClasses() );
     }
 
     public void testIsParallelBoth()
         throws Exception
     {
-        assertFalse( getTestSetClasses().isParallelBoth() );
-        assertFalse( getTestSetMethods().isParallelBoth() );
-        assertTrue( getTestSetBoth().isParallelBoth() );
+        assertFalse( isParallelMethodsAndClasses( getTestSetClasses() ) );
+        assertFalse( isParallelMethodsAndClasses( getTestSetMethods() ) );
+        assertTrue( isParallelMethodsAndClasses( getTestSetBoth() ) );
     }
 
     public void testIsPerCoreThreadCount()
@@ -144,5 +144,10 @@ public class JUnitCoreParametersTest
     private JUnitCoreParameters getTestSetMethods()
     {
         return new JUnitCoreParameters( getPropsetMethods() );
+    }
+
+    private boolean isParallelMethodsAndClasses( JUnitCoreParameters jUnitCoreParameters )
+    {
+        return jUnitCoreParameters.isParallelMethod() && jUnitCoreParameters.isParallelClasses();
     }
 }

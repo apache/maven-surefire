@@ -1,4 +1,5 @@
-package org.apache.maven.surefire.booter;
+package org.apache.maven.surefire.junitcore.pc;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -19,26 +20,25 @@ package org.apache.maven.surefire.booter;
  */
 
 /**
- * @author Kristian Rosenvold
+ * This balancer implements {@link Balancer} and does not do anything -no blocking operation.
+ *
+ * @author Tibor Digana (tibor17)
+ * @since 2.16
+ *
+ * @see Balancer
  */
-public class ProviderParameterNames
+final class NullBalancer implements Balancer
 {
-    public static final String TESTNG_EXCLUDEDGROUPS_PROP = "excludegroups";
+    public boolean acquirePermit()
+    {
+        return true;
+    }
 
-    public static final String TESTNG_GROUPS_PROP = "groups";
+    public void releasePermit()
+    {
+    }
 
-    public static final String THREADCOUNT_PROP = "threadcount";
-
-    public static final String PARALLEL_PROP = "parallel";
-
-    public static final String THREADCOUNTSUITES_PROP = "threadcountsuites";
-
-    public static final String THREADCOUNTCLASSES_PROP = "threadcountclasses";
-
-    public static final String THREADCOUNTMETHODS_PROP = "threadcountmethods";
-
-    public static final String PARALLEL_TIMEOUT_PROP = "paralleltimeout";
-
-    public static final String PARALLEL_TIMEOUTFORCED_PROP = "paralleltimeoutforced";
-
+    public void releaseAllPermits()
+    {
+    }
 }

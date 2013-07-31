@@ -49,8 +49,13 @@ public class Surefire943ReportContentIT
     private void doTest( String parallelMode )
         throws Exception
     {
-        OutputValidator validator =
-            unpack( "surefire-943-report-content" ).maven().sysProp( "parallel", parallelMode ).withFailure().executeTest();
+        OutputValidator validator = unpack( "surefire-943-report-content" )
+                .maven()
+                .sysProp( "parallel", parallelMode )
+                .sysProp( "threadCount", 4 )
+                .withFailure()
+                .executeTest();
+
         validator.assertTestSuiteResults( 9, 0, 3, 3 );
 
         validate( validator, "org.sample.module.My1Test", 1 );

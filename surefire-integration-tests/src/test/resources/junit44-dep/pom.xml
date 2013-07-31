@@ -66,6 +66,7 @@
         <version>${surefire.version}</version>
         <configuration>
           <parallel>classes</parallel>
+          <threadCount>1</threadCount>
         </configuration>
       </plugin>
     </plugins>

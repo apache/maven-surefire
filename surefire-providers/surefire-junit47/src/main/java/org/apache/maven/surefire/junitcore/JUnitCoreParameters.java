@@ -19,6 +19,8 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Properties;
 import org.apache.maven.surefire.booter.ProviderParameterNames;
 
@@ -33,6 +35,16 @@ class JUnitCoreParameters
 
     private final int threadCount;
 
+    private final int threadCountSuites;
+
+    private final int threadCountClasses;
+
+    private final int threadCountMethods;
+
+    private final int parallelTestsTimeoutInSeconds;
+
+    private final int parallelTestsTimeoutForcedInSeconds;
+
     private final Boolean useUnlimitedThreads;
 
     public static final String PARALLEL_KEY = ProviderParameterNames.PARALLEL_PROP;
@@ -41,29 +53,70 @@ class JUnitCoreParameters
 
     public static final String THREADCOUNT_KEY = ProviderParameterNames.THREADCOUNT_PROP;
 
+    public static final String THREADCOUNTSUITES_KEY = ProviderParameterNames.THREADCOUNTSUITES_PROP;
+
+    public static final String THREADCOUNTCLASSES_KEY = ProviderParameterNames.THREADCOUNTCLASSES_PROP;
+
+    public static final String THREADCOUNTMETHODS_KEY = ProviderParameterNames.THREADCOUNTMETHODS_PROP;
+
     public static final String USEUNLIMITEDTHREADS_KEY = "useUnlimitedThreads";
+
+    public static final String PARALLEL_TIMEOUT_KEY = ProviderParameterNames.PARALLEL_TIMEOUT_PROP;
+
+    public static final String PARALLEL_TIMEOUTFORCED_KEY = ProviderParameterNames.PARALLEL_TIMEOUTFORCED_PROP;
 
     public JUnitCoreParameters( Properties properties )
     {
-        this.parallel = properties.getProperty( PARALLEL_KEY, "none" ).toLowerCase();
-        this.perCoreThreadCount = Boolean.valueOf( properties.getProperty( PERCORETHREADCOUNT_KEY, "true" ) );
-        this.threadCount = Integer.valueOf( properties.getProperty( THREADCOUNT_KEY, "2" ) );
-        this.useUnlimitedThreads = Boolean.valueOf( properties.getProperty( USEUNLIMITEDTHREADS_KEY, "false" ) );
+        parallel = properties.getProperty( PARALLEL_KEY, "none" ).toLowerCase();
+        perCoreThreadCount = Boolean.valueOf( properties.getProperty( PERCORETHREADCOUNT_KEY, "true" ) );
+        threadCount = Integer.valueOf( properties.getProperty( THREADCOUNT_KEY, "0" ) );
+        threadCountMethods = Integer.valueOf( properties.getProperty( THREADCOUNTMETHODS_KEY, "0" ) );
+        threadCountClasses = Integer.valueOf( properties.getProperty( THREADCOUNTCLASSES_KEY, "0" ) );
+        threadCountSuites = Integer.valueOf( properties.getProperty( THREADCOUNTSUITES_KEY, "0" ) );
+        useUnlimitedThreads = Boolean.valueOf( properties.getProperty( USEUNLIMITEDTHREADS_KEY, "false" ) );
+        parallelTestsTimeoutInSeconds = Integer.valueOf( properties.getProperty( PARALLEL_TIMEOUT_KEY, "0" ) );
+        parallelTestsTimeoutForcedInSeconds = Integer.valueOf( properties.getProperty( PARALLEL_TIMEOUTFORCED_KEY, "0" ) );
+    }
+
+    private static Collection<String> lowerCase( String... elements )
+    {
+        ArrayList<String> lowerCase = new ArrayList<String>();
+        for ( String element : elements )
+        {
+            lowerCase.add( element.toLowerCase() );
+        }
+        return lowerCase;
+    }
+
+    private boolean isAllParallel()
+    {
+        return "all".equals( parallel );
     }
 
     public boolean isParallelMethod()
     {
-        return "methods".equals( parallel );
+        return isAllParallel()
+                || lowerCase( "both", "methods", "suitesAndMethods", "classesAndMethods" ).contains( parallel );
     }
 
     public boolean isParallelClasses()
     {
-        return "classes".equals( parallel );
+        return isAllParallel()
+                || lowerCase( "both", "classes", "suitesAndClasses", "classesAndMethods" ).contains( parallel );
     }
 
+    public boolean isParallelSuites()
+    {
+        return isAllParallel() || lowerCase( "suites", "suitesAndClasses", "suitesAndMethods" ).contains( parallel );
+    }
+
+    /**
+     * @deprecated Instead use the expression ( {@link #isParallelMethod()} && {@link #isParallelClasses()} ).
+     */
+    @Deprecated
     public boolean isParallelBoth()
     {
-        return "both".equals( parallel );
+        return isParallelMethod() && isParallelClasses();
     }
 
     public Boolean isPerCoreThreadCount()
@@ -76,25 +129,51 @@ class JUnitCoreParameters
         return threadCount;
     }
 
+    public int getThreadCountMethods()
+    {
+        return threadCountMethods;
+    }
+
+    public int getThreadCountClasses()
+    {
+        return threadCountClasses;
+    }
+
+    public int getThreadCountSuites()
+    {
+        return threadCountSuites;
+    }
+
     public Boolean isUseUnlimitedThreads()
     {
         return useUnlimitedThreads;
     }
 
+    public int getParallelTestsTimeoutInSeconds()
+    {
+        return parallelTestsTimeoutInSeconds;
+    }
+
+    public int getParallelTestsTimeoutForcedInSeconds()
+    {
+        return parallelTestsTimeoutForcedInSeconds;
+    }
+
     public boolean isNoThreading()
     {
-        return !( isParallelClasses() || isParallelMethod() || isParallelBoth() );
+        return !isAnyParallelitySelected();
     }
 
     public boolean isAnyParallelitySelected()
     {
-        return !isNoThreading();
+        return isParallelSuites() || isParallelClasses() || isParallelMethod();
     }
 
     @Override
     public String toString()
     {
         return "parallel='" + parallel + '\'' + ", perCoreThreadCount=" + perCoreThreadCount + ", threadCount="
-            + threadCount + ", useUnlimitedThreads=" + useUnlimitedThreads;
+            + threadCount + ", useUnlimitedThreads=" + useUnlimitedThreads + ", threadCountSuites=" + threadCountSuites
+                + ", threadCountClasses=" + threadCountClasses + ", threadCountMethods=" + threadCountMethods;
     }
 }

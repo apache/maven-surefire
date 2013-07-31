@@ -1,4 +1,5 @@
-package org.apache.maven.surefire.booter;
+package org.apache.maven.surefire.junitcore.pc;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -18,27 +19,38 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
+import org.hamcrest.BaseMatcher;
+import org.hamcrest.Description;
+import org.hamcrest.Matcher;
+
 /**
- * @author Kristian Rosenvold
+ * @author Tibor Digana (tibor17)
+ * @since 2.16
  */
-public class ProviderParameterNames
+final class RangeMatcher extends BaseMatcher<Long>
 {
-    public static final String TESTNG_EXCLUDEDGROUPS_PROP = "excludegroups";
+    private final long from;
+    private final long to;
 
-    public static final String TESTNG_GROUPS_PROP = "groups";
+    private RangeMatcher( long from, long to )
+    {
+        this.from = from;
+        this.to = to;
+    }
 
-    public static final String THREADCOUNT_PROP = "threadcount";
+    public void describeTo( Description description )
+    {
+        description.appendValueList( "between ", " and ", "", from, to );
+    }
 
-    public static final String PARALLEL_PROP = "parallel";
+    public static Matcher<Long> between( long from, long to )
+    {
+        return new RangeMatcher( from, to );
+    }
 
-    public static final String THREADCOUNTSUITES_PROP = "threadcountsuites";
-
-    public static final String THREADCOUNTCLASSES_PROP = "threadcountclasses";
-
-    public static final String THREADCOUNTMETHODS_PROP = "threadcountmethods";
-
-    public static final String PARALLEL_TIMEOUT_PROP = "paralleltimeout";
-
-    public static final String PARALLEL_TIMEOUTFORCED_PROP = "paralleltimeoutforced";
-
+    public boolean matches( Object o )
+    {
+        long actual = (Long) o;
+        return actual >= from && actual <= to;
+    }
 }

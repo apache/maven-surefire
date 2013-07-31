@@ -483,12 +483,87 @@ public abstract class AbstractSurefireMojo
      * respect their order of execution.
      * <p/>
      * (JUnit 4.7 provider) Supports values "classes"/"methods"/"both" to run in separate threads, as controlled by
-     * <code>threadCount</code>.
+     * <code>threadCount</code>.<br/>
+     * <br/>
+     * Since version 2.16 (JUnit 4.7 provider), the value "both" is <strong>DEPRECATED</strong>.
+     * Use <strong>"classesAndMethods"</strong> instead.<br/>
+     * <br/>
+     * Since version 2.16 (JUnit 4.7 provider), additional vales are available
+     * "suites"/"suitesAndClasses"/"suitesAndMethods"/"classesAndMethods"/"all".
      *
      * @since 2.2
      */
     @Parameter( property = "parallel" )
     protected String parallel;
+
+    /**
+     * (JUnit 4.7 provider) The attribute thread-count-suites allows you to specify the concurrency in test suites, i.e.:
+     * <ul>
+     *  <li>number of threads executing JUnit test suites if <code>threadCount</code> is 0 or unspecified</li>
+     *  <li>In a special case <code>threadCountSuites</code> and <code>threadCount</code> are specified
+     *      without <code>threadCountMethods</code> for <code>parallel</code>=<code>suitesAndMethods</code>.
+     *      <br/>Example1: threadCount=8 and threadCountSuites=3, the number of parallel methods is varying from 5 to 7 in your tests.
+     *      <br/>In another special case when <code>parallel</code>=<code>all</code> and the only <code>threadCountMethods</code>
+     *      is unspecified, then threads from suites and classes are reused in favor of methods.
+     *      <br/>Example2: parallel=all, threadCount=16 , threadCountSuites=2 , threadCountClasses=5,
+     *      the number of parallel methods is varying from 9 to 14 in your tests.
+     *  </li>
+     *  <li>integer number which represents the weight in ratio between
+     *      <em>threadCountSuites</em>:<code>threadCountClasses</code>:<code>threadCountMethods</code>.
+     *      As an example 2 is 20% of <code>threadCount</code> if the ratio is <em>2</em>:3:5</li>
+     *  <li>You can impose limitation on parallel suites if <code>useUnlimitedThreads</code> is specified.</li>
+     * </ul>
+     *
+     * Only makes sense to use in conjunction with the <code>parallel</code> parameter.
+     * The default value <code>0</code> behaves same as unspecified one.
+     *
+     * @since 2.16
+     */
+    @Parameter( property = "threadCountSuites", defaultValue = "0" )
+    protected int threadCountSuites;
+
+    /**
+     * (JUnit 4.7 provider) The attribute thread-count-classes allows you to specify the concurrency in test classes, i.e.:
+     * <ul>
+     *  <li>number of threads executing JUnit test classes if <code>threadCount</code> is 0 or unspecified</li>
+     *  <li>In a special case <code>threadCountClasses</code> and <code>threadCount</code> are specified
+     *      without <code>threadCountMethods</code> for <code>parallel</code>=<code>classesAndMethods</code>.
+     *      <br/>Example1: threadCount=8 and threadCountClasses=3, the number of parallel methods is varying from 5 to 7 in your tests.
+     *      <br/>In another special case when <code>parallel</code>=<code>all</code> and the only <code>threadCountMethods</code>
+     *      is unspecified, then threads from suites and classes are reused in favor of methods.
+     *      <br/>Example2: parallel=all, threadCount=16 , threadCountSuites=2 , threadCountClasses=5,
+     *      the number of parallel methods is varying from 9 to 14 in your tests.
+     *  </li>
+     *  <li>integer number which represents the weight in ratio between
+     *      <code>threadCountSuites</code>:<em>threadCountClasses</em>:<code>threadCountMethods</code>.
+     *      As an example 3 is 30% of <code>threadCount</code> if the ratio is 2:<em>3</em>:5</li>
+     *  <li>You can impose limitation on parallel classes if <code>useUnlimitedThreads</code> is specified.</li>
+     * </ul>
+     *
+     * Only makes sense to use in conjunction with the <code>parallel</code> parameter.
+     * The default value <code>0</code> behaves same as unspecified one.
+     *
+     * @since 2.16
+     */
+    @Parameter( property = "threadCountClasses", defaultValue = "0" )
+    protected int threadCountClasses;
+
+    /**
+     * (JUnit 4.7 provider) The attribute thread-count-methods allows you to specify the concurrency in test methods, i.e.:
+     * <ul>
+     *  <li>number of threads executing JUnit test methods if <code>threadCount</code> is 0 or unspecified;</li>
+     *  <li>integer number which represents the weight in ratio between <code>threadCountSuites</code>:<code>threadCountClasses</code>:<em>threadCountMethods</em>.
+     *      As an example 5 is 50% of <code>threadCount</code> if the ratio is 2:3:<em>5</em>.</li>
+     *  <li>You can impose limitation on parallel methods if <code>useUnlimitedThreads</code> is specified.</li>
+     * </ul>
+     *
+     * Only makes sense to use in conjunction with the <code>parallel</code> parameter.
+     * The default value <code>0</code> behaves same as unspecified one.
+     *
+     * @since 2.16
+     */
+    @Parameter( property = "threadCountMethods", defaultValue = "0" )
+    protected int threadCountMethods;
 
     /**
      * Whether to trim the stack trace in the reports to just the lines within the test, or show the full trace.
@@ -1046,21 +1121,169 @@ public abstract class AbstractSurefireMojo
      * Converts old JUnit configuration parameters over to new properties based configuration
      * method. (if any are defined the old way)
      */
-    private void convertJunitCoreParameters()
+    private void convertJunitCoreParameters() throws MojoExecutionException
     {
-        String usedParallel = ( getParallel() != null ) ? getParallel() : "none";
-        String usedThreadCount = ( getThreadCount() > 0 ) ? Integer.toString( getThreadCount() ) : "2";
+        checkThreadCountEntity( getThreadCountSuites(), "suites" );
+        checkThreadCountEntity( getThreadCountClasses(), "classes" );
+        checkThreadCountEntity( getThreadCountMethods(), "methods" );
 
+        String usedParallel = ( getParallel() != null ) ? getParallel() : "none";
+
+        if ( !"none".equals( usedParallel ))
+        {
+            checkNonForkedThreads( parallel );
+        }
+
+        String usedThreadCount = Integer.toString( getThreadCount() );
         getProperties().setProperty( ProviderParameterNames.PARALLEL_PROP, usedParallel );
         getProperties().setProperty( ProviderParameterNames.THREADCOUNT_PROP, usedThreadCount );
         getProperties().setProperty( "perCoreThreadCount", Boolean.toString( getPerCoreThreadCount() ) );
         getProperties().setProperty( "useUnlimitedThreads", Boolean.toString( getUseUnlimitedThreads() ) );
+        getProperties().setProperty( ProviderParameterNames.THREADCOUNTSUITES_PROP, Integer.toString( getThreadCountSuites() ) );
+        getProperties().setProperty( ProviderParameterNames.THREADCOUNTCLASSES_PROP, Integer.toString( getThreadCountClasses() ) );
+        getProperties().setProperty( ProviderParameterNames.THREADCOUNTMETHODS_PROP, Integer.toString( getThreadCountMethods() ) );
+        getProperties().setProperty( ProviderParameterNames.PARALLEL_TIMEOUT_PROP,
+                Integer.toString( getParallelTestsTimeoutInSeconds() ) );
+        getProperties().setProperty( ProviderParameterNames.PARALLEL_TIMEOUTFORCED_PROP,
+                Integer.toString( getParallelTestsTimeoutForcedInSeconds() ) );
 
         String message =
             "parallel='" + usedParallel + '\'' + ", perCoreThreadCount=" + getPerCoreThreadCount() + ", threadCount="
-                + usedThreadCount + ", useUnlimitedThreads=" + getUseUnlimitedThreads();
+                + usedThreadCount + ", useUnlimitedThreads=" + getUseUnlimitedThreads() +
+                    ", threadCountSuites=" + getThreadCountSuites() + ", threadCountClasses=" + getThreadCountClasses() +
+                    ", threadCountMethods=" + getThreadCountMethods();
 
         getLog().info( message );
+    }
+
+    private void checkNonForkedThreads( String parallel ) throws MojoExecutionException
+    {
+        if ( "suites".equals( parallel ) )
+        {
+            if ( !( getUseUnlimitedThreads() || getThreadCount() > 0 ^ getThreadCountSuites() > 0 ) )
+            {
+                throw new MojoExecutionException( "Use threadCount or threadCountSuites > 0 or useUnlimitedThreads=true " +
+                        "for parallel='suites'" );
+            }
+            setThreadCountClasses( 0 );
+            setThreadCountMethods( 0 );
+        }
+        else if ( "classes".equals( parallel ) )
+        {
+            if ( !( getUseUnlimitedThreads() || getThreadCount() > 0 ^ getThreadCountClasses() > 0 ) )
+            {
+                throw new MojoExecutionException( "Use threadCount or threadCountClasses > 0 or useUnlimitedThreads=true " +
+                        "for parallel='classes'" );
+            }
+            setThreadCountSuites( 0 );
+            setThreadCountMethods( 0 );
+        }
+        else if ( "methods".equals( parallel ) )
+        {
+            if ( !( getUseUnlimitedThreads() || getThreadCount() > 0 ^ getThreadCountMethods() > 0 ) )
+            {
+                throw new MojoExecutionException( "Use threadCount or threadCountMethods > 0 or useUnlimitedThreads=true " +
+                        "for parallel='methods'" );
+            }
+            setThreadCountSuites( 0 );
+            setThreadCountClasses( 0 );
+        }
+        else if ( "suitesAndClasses".equals( parallel ) )
+        {
+            if ( !( getUseUnlimitedThreads()
+                    || onlyThreadCount()
+                    || getThreadCountSuites() > 0 && getThreadCountClasses() > 0
+                        && getThreadCount() == 0 && getThreadCountMethods() == 0
+                    || getThreadCount() > 0 && getThreadCountSuites() > 0 && getThreadCountClasses() > 0
+                        && getThreadCountMethods() == 0
+                    || getThreadCount() > 0 && getThreadCountSuites() > 0 && getThreadCount() > getThreadCountSuites()
+                        && getThreadCountClasses() == 0 && getThreadCountMethods() == 0 ) )
+            {
+                throw new MojoExecutionException( "Use useUnlimitedThreads=true, " +
+                        "or only threadCount > 0, " +
+                        "or (threadCountSuites > 0 and threadCountClasses > 0), " +
+                        "or (threadCount > 0 and threadCountSuites > 0 and threadCountClasses > 0) " +
+                        "or (threadCount > 0 and threadCountSuites > 0 and threadCount > threadCountSuites) " +
+                        "for parallel='suitesAndClasses' or 'both'" );
+            }
+            setThreadCountMethods( 0 );
+        }
+        else if ( "suitesAndMethods".equals( parallel ) )
+        {
+            if ( !( getUseUnlimitedThreads()
+                    || onlyThreadCount()
+                    || getThreadCountSuites() > 0 && getThreadCountMethods() > 0
+                        && getThreadCount() == 0 && getThreadCountClasses() == 0
+                    || getThreadCount() > 0 && getThreadCountSuites() > 0 && getThreadCountMethods() > 0
+                        && getThreadCountClasses() == 0
+                    || getThreadCount() > 0 && getThreadCountSuites() > 0 && getThreadCount() > getThreadCountSuites()
+                        && getThreadCountClasses() == 0 && getThreadCountMethods() == 0 ) )
+            {
+                throw new MojoExecutionException( "Use useUnlimitedThreads=true, " +
+                        "or only threadCount > 0, " +
+                        "or (threadCountSuites > 0 and threadCountMethods > 0), " +
+                        "or (threadCount > 0 and threadCountSuites > 0 and threadCountMethods > 0), " +
+                        "or (threadCount > 0 and threadCountSuites > 0 and threadCount > threadCountSuites) " +
+                        "for parallel='suitesAndMethods'" );
+            }
+            setThreadCountClasses( 0 );
+        }
+        else if ( "both".equals( parallel ) || "classesAndMethods".equals( parallel ) )
+        {
+            if ( !( getUseUnlimitedThreads()
+                    || onlyThreadCount()
+                    || getThreadCountClasses() > 0 && getThreadCountMethods() > 0
+                        && getThreadCount() == 0 && getThreadCountSuites() == 0
+                    || getThreadCount() > 0 && getThreadCountClasses() > 0 && getThreadCountMethods() > 0
+                        && getThreadCountSuites() == 0
+                    || getThreadCount() > 0 && getThreadCountClasses() > 0 && getThreadCount() > getThreadCountClasses()
+                        && getThreadCountSuites() == 0 && getThreadCountMethods() == 0 ) )
+            {
+                throw new MojoExecutionException( "Use useUnlimitedThreads=true, " +
+                        "or only threadCount > 0, " +
+                        "or (threadCountClasses > 0 and threadCountMethods > 0), " +
+                        "or (threadCount > 0 and threadCountClasses > 0 and threadCountMethods > 0), " +
+                        "or (threadCount > 0 and threadCountClasses > 0 and threadCount > threadCountClasses) " +
+                        "for parallel='both' or parallel='classesAndMethods'" );
+            }
+            setThreadCountSuites( 0 );
+        }
+        else if ( "all".equals( parallel ) )
+        {
+            if ( !( getUseUnlimitedThreads()
+                    || onlyThreadCount()
+                    || getThreadCountSuites() > 0 && getThreadCountClasses() > 0 && getThreadCountMethods() > 0
+                    || getThreadCount() > 0 && getThreadCountSuites() > 0 && getThreadCountClasses() > 0
+                        && getThreadCountMethods() == 0
+                        && getThreadCount() > ( getThreadCountSuites() + getThreadCountClasses() ) ) )
+            {
+                throw new MojoExecutionException( "Use useUnlimitedThreads=true, " +
+                        "or only threadCount > 0, " +
+                        "or (threadCountSuites > 0 and threadCountClasses > 0 and threadCountMethods > 0), " +
+                        "or every thread-count is specified, " +
+                        "or (threadCount > 0 and threadCountSuites > 0 and threadCountClasses > 0 " +
+                            "and threadCount > threadCountSuites + threadCountClasses) " +
+                        "for parallel='all'" );
+            }
+        }
+        else
+        {
+            throw new MojoExecutionException( "Illegal parallel='" + parallel + "'" );
+        }
+    }
+
+    private boolean onlyThreadCount()
+    {
+        return getThreadCount() > 0 && getThreadCountSuites() == 0 && getThreadCountClasses() == 0
+                && getThreadCountMethods() == 0;
+    }
+
+    private static void checkThreadCountEntity(int count, String entity) throws MojoExecutionException
+    {
+        if ( count < 0 )
+        {
+            throw new MojoExecutionException("parallel maven execution does not allow negative thread-count" + entity);
+        }
     }
 
     private boolean isJunit47Compatible( Artifact artifact )
@@ -1668,6 +1891,8 @@ public abstract class AbstractSurefireMojo
         checksum.add( getArgLine() );
         checksum.add( getDebugForkedProcess() );
         checksum.add( getForkedProcessTimeoutInSeconds() );
+        checksum.add( getParallelTestsTimeoutInSeconds() );
+        checksum.add( getParallelTestsTimeoutForcedInSeconds() );
         checksum.add( getEnvironmentVariables() );
         checksum.add( getWorkingDirectory() );
         checksum.add( isChildDelegation() );
@@ -1677,6 +1902,9 @@ public abstract class AbstractSurefireMojo
         checksum.add( getJunitArtifact() );
         checksum.add( getTestNGArtifactName() );
         checksum.add( getThreadCount() );
+        checksum.add( getThreadCountSuites() );
+        checksum.add( getThreadCountClasses() );
+        checksum.add( getThreadCountMethods() );
         checksum.add( getPerCoreThreadCount() );
         checksum.add( getUseUnlimitedThreads() );
         checksum.add( getParallel() );
@@ -2054,7 +2282,7 @@ public abstract class AbstractSurefireMojo
             return true;
         }
 
-        public void addProviderProperties()
+        public void addProviderProperties() throws MojoExecutionException
         {
         }
 
@@ -2093,7 +2321,7 @@ public abstract class AbstractSurefireMojo
             return junitDepArtifact != null || isAnyJunit4( junitArtifact );
         }
 
-        public void addProviderProperties()
+        public void addProviderProperties() throws MojoExecutionException
         {
         }
 
@@ -2137,7 +2365,7 @@ public abstract class AbstractSurefireMojo
             return isAny47ProvidersForcers && ( isJunitArtifact47 || is47CompatibleJunitDep() );
         }
 
-        public void addProviderProperties()
+        public void addProviderProperties() throws MojoExecutionException
         {
             convertJunitCoreParameters();
             convertGroupParameters();
@@ -2492,6 +2720,39 @@ public abstract class AbstractSurefireMojo
     public void setParallel( String parallel )
     {
         this.parallel = parallel;
+    }
+
+    public int getThreadCountSuites()
+    {
+        return threadCountSuites;
+    }
+
+    @SuppressWarnings( "UnusedDeclaration" )
+    public void setThreadCountSuites( int threadCountSuites )
+    {
+        this.threadCountSuites = threadCountSuites;
+    }
+
+    public int getThreadCountClasses()
+    {
+        return threadCountClasses;
+    }
+
+    @SuppressWarnings( "UnusedDeclaration" )
+    public void setThreadCountClasses( int threadCountClasses )
+    {
+        this.threadCountClasses = threadCountClasses;
+    }
+
+    public int getThreadCountMethods()
+    {
+        return threadCountMethods;
+    }
+
+    @SuppressWarnings( "UnusedDeclaration" )
+    public void setThreadCountMethods( int threadCountMethods )
+    {
+        this.threadCountMethods = threadCountMethods;
     }
 
     public boolean isTrimStackTrace()

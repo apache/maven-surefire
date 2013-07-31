@@ -92,7 +92,7 @@ public class BaseProviderFactory
     private int getThreadCount()
     {
         final String threadcount = (String) providerProperties.get( ProviderParameterNames.THREADCOUNT_PROP );
-        return threadcount == null ? 1 : Integer.parseInt( threadcount );
+        return threadcount == null ? 1 : Math.max( Integer.parseInt( threadcount ), 1 );
     }
 
     public RunOrderCalculator getRunOrderCalculator()

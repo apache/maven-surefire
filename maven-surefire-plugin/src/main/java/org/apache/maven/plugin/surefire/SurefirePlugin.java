@@ -119,6 +119,27 @@ public class SurefirePlugin
      */
     @Parameter( property = "surefire.timeout" )
     private int forkedProcessTimeoutInSeconds;
+
+    /**
+     * Stop executing queued parallel JUnit tests after a certain number of seconds.
+     * If set to 0, wait forever, never timing out.
+     * Makes sense with specified <code>parallel</code> different from "none".
+     *
+     * @since 2.16
+     */
+    @Parameter( property = "surefire.parallel.timeout" )
+    private int parallelTestsTimeoutInSeconds;
+
+    /**
+     * Stop executing queued parallel JUnit tests
+     * and <em>interrupt</em> currently running tests after a certain number of seconds.
+     * If set to 0, wait forever, never timing out.
+     * Makes sense with specified <code>parallel</code> different from "none".
+     *
+     * @since 2.16
+     */
+    @Parameter( property = "surefire.parallel.forcedTimeout" )
+    private int parallelTestsTimeoutForcedInSeconds;
     
     /**
      * A list of &lt;include> elements specifying the tests (by pattern) that should be included in testing. When not
@@ -424,6 +445,22 @@ public class SurefirePlugin
     public void setForkedProcessTimeoutInSeconds( int forkedProcessTimeoutInSeconds )
     {
         this.forkedProcessTimeoutInSeconds = forkedProcessTimeoutInSeconds;
+    }
+
+    public int getParallelTestsTimeoutInSeconds() {
+        return parallelTestsTimeoutInSeconds;
+    }
+
+    public void setParallelTestsTimeoutInSeconds( int parallelTestsTimeoutInSeconds ) {
+        this.parallelTestsTimeoutInSeconds = parallelTestsTimeoutInSeconds;
+    }
+
+    public int getParallelTestsTimeoutForcedInSeconds() {
+        return parallelTestsTimeoutForcedInSeconds;
+    }
+
+    public void setParallelTestsTimeoutForcedInSeconds( int parallelTestsTimeoutForcedInSeconds ) {
+        this.parallelTestsTimeoutForcedInSeconds = parallelTestsTimeoutForcedInSeconds;
     }
 
     public void setTest( String test )

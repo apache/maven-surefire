@@ -1,4 +1,5 @@
-package org.apache.maven.surefire.booter;
+package org.apache.maven.surefire.junitcore.pc;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -18,27 +19,27 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
+import org.junit.rules.TestWatchman;
+import org.junit.runners.model.FrameworkMethod;
+
+import java.util.concurrent.TimeUnit;
+
 /**
- * @author Kristian Rosenvold
+ * @author Tibor Digana (tibor17)
+ * @since 2.16
  */
-public class ProviderParameterNames
+final class Stopwatch extends TestWatchman
 {
-    public static final String TESTNG_EXCLUDEDGROUPS_PROP = "excludegroups";
+    private long startNanos;
 
-    public static final String TESTNG_GROUPS_PROP = "groups";
+    long stop()
+    {
+        return TimeUnit.MILLISECONDS.convert(System.nanoTime() - startNanos, TimeUnit.NANOSECONDS);
+    }
 
-    public static final String THREADCOUNT_PROP = "threadcount";
-
-    public static final String PARALLEL_PROP = "parallel";
-
-    public static final String THREADCOUNTSUITES_PROP = "threadcountsuites";
-
-    public static final String THREADCOUNTCLASSES_PROP = "threadcountclasses";
-
-    public static final String THREADCOUNTMETHODS_PROP = "threadcountmethods";
-
-    public static final String PARALLEL_TIMEOUT_PROP = "paralleltimeout";
-
-    public static final String PARALLEL_TIMEOUTFORCED_PROP = "paralleltimeoutforced";
-
+    @Override
+    public void starting(FrameworkMethod method)
+    {
+        startNanos = System.nanoTime();
+    }
 }

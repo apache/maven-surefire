@@ -321,6 +321,11 @@ public class SurefireLauncher
     }
 
 
+    public SurefireLauncher parallelSuites()
+    {
+        return parallel( "suites" );
+    }
+
     public SurefireLauncher parallelClasses()
     {
         return parallel( "classes" );
