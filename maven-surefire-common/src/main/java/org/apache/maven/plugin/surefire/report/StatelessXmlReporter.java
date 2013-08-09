@@ -32,6 +32,7 @@ import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.Enumeration;
 import java.util.Properties;
 import java.util.StringTokenizer;
@@ -73,7 +74,7 @@ import static org.apache.maven.plugin.surefire.report.FileReporterUtils.stripIll
 public class StatelessXmlReporter
 {
 
-    private static final byte[] ampBytes = "&amp#".getBytes();
+    private static final String ENCODING = "UTF-8";
 
     private final File reportsDirectory;
 
@@ -81,7 +82,6 @@ public class StatelessXmlReporter
 
     private final boolean trimStackTrace;
 
-    private final String encoding = "UTF-8";
 
     public StatelessXmlReporter( File reportsDirectory, String reportNameSuffix, boolean trimStackTrace )
     {
@@ -101,7 +101,7 @@ public class StatelessXmlReporter
 
             org.apache.maven.shared.utils.xml.XMLWriter ppw =
                 new org.apache.maven.shared.utils.xml.PrettyPrintXMLWriter( fw );
-            ppw.setEncoding( encoding );
+            ppw.setEncoding( ENCODING );
 
             createTestSuiteElement( ppw, testSetReportEntry, testSetStats, reportNameSuffix );
 
@@ -134,7 +134,7 @@ public class StatelessXmlReporter
         try
         {
 
-            return new OutputStreamWriter( fos, encoding );
+            return new OutputStreamWriter( fos, ENCODING );
         }
         catch ( IOException e )
         {
@@ -290,9 +290,9 @@ public class StatelessXmlReporter
                 xmlWriter.writeText( "" ); // Cheat sax to emit element
                 outputStreamWriter.flush();
                 stdOut.close();
-                eos.getUnderlying().write( "<![CDATA[".getBytes() ); // emit cdata
+                eos.getUnderlying().write( ByteConstantsHolder.CDATA_START_BYTES ); // emit cdata
                 stdOut.writeTo( eos );
-                eos.getUnderlying().write( "]]>".getBytes() );
+                eos.getUnderlying().write( ByteConstantsHolder.CDATA_END_BYTES );
                 eos.flush();
             }
             catch ( IOException e )
@@ -367,8 +367,6 @@ public class StatelessXmlReporter
 
         private int c2;
 
-        private static final byte[] cdataEscapeString = "]]><![CDATA[>".getBytes();
-
         public EncodingOutputStream( OutputStream out )
         {
             super( out );
@@ -390,7 +388,7 @@ public class StatelessXmlReporter
         {
             if ( isCdataEndBlock( b ) )
             {
-                out.write( cdataEscapeString );
+                out.write( ByteConstantsHolder.CDATA_ESCAPE_STRING_BYTES );
             }
             else if ( isIllegalEscape( b ) )
             {
@@ -399,8 +397,8 @@ public class StatelessXmlReporter
                 // we're going to deliberately doubly-XML escape it...
                 // there's nothing better we can do! :-(
                 // SUREFIRE-456
-                out.write( ampBytes );
-                out.write( b );
+                out.write( ByteConstantsHolder.AMP_BYTES );
+                out.write( String.valueOf( b ).getBytes( ENCODING ) );
                 out.write( ';' ); // & Will be encoded to amp inside xml encodingSHO
             }
             else
@@ -428,7 +426,7 @@ public class StatelessXmlReporter
 
     private static boolean isIllegalEscape( char c )
     {
-        return c >= 0 && c < 32 && c != '\n' && c != '\r' && c != '\t';
+        return isIllegalEscape( (int) c );
     }
 
     private static boolean isIllegalEscape( int c )
@@ -460,4 +458,29 @@ public class StatelessXmlReporter
         return sb.toString();
     }
 
+    private static class ByteConstantsHolder
+    {
+        private static final byte[] CDATA_START_BYTES;
+
+        private static final byte[] CDATA_END_BYTES;
+
+        private static final byte[] CDATA_ESCAPE_STRING_BYTES;
+
+        private static final byte[] AMP_BYTES;
+
+        static
+        {
+            try
+            {
+                CDATA_START_BYTES = "<![CDATA[".getBytes( ENCODING );
+                CDATA_END_BYTES = "]]>".getBytes( ENCODING );
+                CDATA_ESCAPE_STRING_BYTES = "]]><![CDATA[>".getBytes( ENCODING );
+                AMP_BYTES = "&amp#".getBytes( ENCODING );
+            }
+            catch ( UnsupportedEncodingException e )
+            {
+                throw new RuntimeException( e );
+            }
+        }
+    }
 }
