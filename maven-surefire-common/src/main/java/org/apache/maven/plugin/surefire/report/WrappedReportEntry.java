@@ -19,12 +19,11 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
-import org.apache.commons.io.output.DeferredFileOutputStream;
-import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.report.StackTraceWriter;
-
 import java.text.NumberFormat;
 import java.util.Locale;
+
+import org.apache.maven.surefire.report.ReportEntry;
+import org.apache.maven.surefire.report.StackTraceWriter;
 
 /**
  * @author Kristian Rosenvold
@@ -38,9 +37,9 @@ public class WrappedReportEntry
 
     private final Integer elapsed;
 
-    private final DeferredFileOutputStream stdout;
+    private final Utf8RecodingDeferredFileOutputStream stdout;
 
-    private final DeferredFileOutputStream stdErr;
+    private final Utf8RecodingDeferredFileOutputStream stdErr;
 
     private final NumberFormat numberFormat = NumberFormat.getInstance( Locale.ENGLISH );
 
@@ -49,7 +48,7 @@ public class WrappedReportEntry
     static final String NL = System.getProperty( "line.separator" );
 
     public WrappedReportEntry( ReportEntry original, ReportEntryType reportEntryType, Integer estimatedElapsed,
-                               DeferredFileOutputStream stdout, DeferredFileOutputStream stdErr )
+                               Utf8RecodingDeferredFileOutputStream stdout, Utf8RecodingDeferredFileOutputStream stdErr )
     {
         this.original = original;
         this.reportEntryType = reportEntryType;
@@ -68,12 +67,12 @@ public class WrappedReportEntry
         return reportEntryType;
     }
 
-    public DeferredFileOutputStream getStdout()
+    public Utf8RecodingDeferredFileOutputStream getStdout()
     {
         return stdout;
     }
 
-    public DeferredFileOutputStream getStdErr()
+    public Utf8RecodingDeferredFileOutputStream getStdErr()
     {
         return stdErr;
     }

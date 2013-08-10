@@ -45,15 +45,14 @@ public class TestSetRunListener
 
     private final TestSetStats detailsForThis;
 
-    private DeferredFileOutputStream testStdOut = initDeferred( "stdout" );
+    private Utf8RecodingDeferredFileOutputStream testStdOut = initDeferred( "stdout" );
 
-    private DeferredFileOutputStream testStdErr = initDeferred( "stderr" );
+    private Utf8RecodingDeferredFileOutputStream testStdErr = initDeferred( "stderr" );
 
-    private DeferredFileOutputStream initDeferred( String channel )
+    private Utf8RecodingDeferredFileOutputStream initDeferred( String channel )
     {
-        return new DeferredFileOutputStream( 1000000, channel , "deferred", null );
+        return new Utf8RecodingDeferredFileOutputStream( channel );
     }
-
 
     private final TestcycleConsoleOutputReceiver consoleOutputReceiver;
 

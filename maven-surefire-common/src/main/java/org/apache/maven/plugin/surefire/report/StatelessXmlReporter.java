@@ -19,13 +19,6 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
-import org.apache.commons.io.output.DeferredFileOutputStream;
-import org.apache.maven.shared.utils.io.IOUtil;
-import org.apache.maven.shared.utils.xml.XMLWriter;
-import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.report.ReporterException;
-import org.apache.maven.surefire.report.SafeThrowable;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FilterOutputStream;
@@ -33,9 +26,16 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.util.Enumeration;
 import java.util.Properties;
 import java.util.StringTokenizer;
+
+import org.apache.maven.shared.utils.io.IOUtil;
+import org.apache.maven.shared.utils.xml.XMLWriter;
+import org.apache.maven.surefire.report.ReportEntry;
+import org.apache.maven.surefire.report.ReporterException;
+import org.apache.maven.surefire.report.SafeThrowable;
 
 import static org.apache.maven.plugin.surefire.report.FileReporterUtils.stripIllegalFilenameChars;
 
@@ -75,6 +75,8 @@ public class StatelessXmlReporter
 {
 
     private static final String ENCODING = "UTF-8";
+
+    private static final Charset ENCODING_CS = Charset.forName( ENCODING );
 
     private final File reportsDirectory;
 
@@ -131,15 +133,7 @@ public class StatelessXmlReporter
 
     private OutputStreamWriter getWriter( FileOutputStream fos )
     {
-        try
-        {
-
-            return new OutputStreamWriter( fos, ENCODING );
-        }
-        catch ( IOException e )
-        {
-            throw new ReporterException( "When writing report", e );
-        }
+        return new OutputStreamWriter( fos, ENCODING_CS );
     }
 
     private FileOutputStream getOutputStream( WrappedReportEntry testSetReportEntry )
@@ -277,10 +271,11 @@ public class StatelessXmlReporter
     }
 
     private void addOutputStreamElement( OutputStreamWriter outputStreamWriter, OutputStream fw,
-                                         EncodingOutputStream eos, XMLWriter xmlWriter, DeferredFileOutputStream stdOut,
+                                         EncodingOutputStream eos, XMLWriter xmlWriter,
+                                         Utf8RecodingDeferredFileOutputStream utf8RecodingDeferredFileOutputStream,
                                          String name )
     {
-        if ( stdOut != null && stdOut.getByteCount() > 0 )
+        if ( utf8RecodingDeferredFileOutputStream != null && utf8RecodingDeferredFileOutputStream.getByteCount() > 0 )
         {
 
             xmlWriter.startElement( name );
@@ -289,9 +284,9 @@ public class StatelessXmlReporter
             {
                 xmlWriter.writeText( "" ); // Cheat sax to emit element
                 outputStreamWriter.flush();
-                stdOut.close();
+                utf8RecodingDeferredFileOutputStream.close();
                 eos.getUnderlying().write( ByteConstantsHolder.CDATA_START_BYTES ); // emit cdata
-                stdOut.writeTo( eos );
+                utf8RecodingDeferredFileOutputStream.writeTo( eos );
                 eos.getUnderlying().write( ByteConstantsHolder.CDATA_END_BYTES );
                 eos.flush();
             }
@@ -403,7 +398,7 @@ public class StatelessXmlReporter
             }
             else
             {
-                out.write( b );    //To change body of overridden methods use File | Settings | File Templates.
+                out.write( b );
             }
             c1 = c2;
             c2 = b;

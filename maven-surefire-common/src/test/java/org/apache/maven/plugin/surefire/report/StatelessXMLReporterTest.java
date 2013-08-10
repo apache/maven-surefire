@@ -19,9 +19,15 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
+
 import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
-import org.apache.commons.io.output.DeferredFileOutputStream;
+
 import org.apache.maven.plugin.surefire.booterclient.output.DeserializedStacktraceWriter;
 import org.apache.maven.shared.utils.StringUtils;
 import org.apache.maven.shared.utils.xml.Xpp3Dom;
@@ -30,12 +36,6 @@ import org.apache.maven.surefire.report.LegacyPojoStackTraceWriter;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.SimpleReportEntry;
 import org.apache.maven.surefire.report.StackTraceWriter;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 
 @SuppressWarnings( "ResultOfMethodCallIgnored" )
 public class StatelessXMLReporterTest
@@ -88,15 +88,15 @@ public class StatelessXMLReporterTest
 
         stats.testSucceeded( testSetReportEntry );
         StackTraceWriter stackTraceWriter = new DeserializedStacktraceWriter( "A fud msg", "trimmed", "fail at foo" );
-        DeferredFileOutputStream s = new DeferredFileOutputStream( 1000000, "fds", "fdx", new File( "" ) );
-        String expected = "st]]>d-o\u00DCt<null>!\u0020\u0000\u001F";
-        s.write( expected.getBytes( "UTF-8" ) );
-        DeferredFileOutputStream s1 = new DeferredFileOutputStream( 1000000, "fds", "fdx", new File( "" ) );
-        byte[] bytes = "std-\u0115rr?&-&amp;&#163;\u0020\u0000\u001F".getBytes("UTF-8");
-        s1.write( bytes );
+        Utf8RecodingDeferredFileOutputStream stdOut = new Utf8RecodingDeferredFileOutputStream( "fds" );
+        byte[] stdOutBytes = "st]]>d-o\u00DCt<null>!\u0020\u0000\u001F".getBytes();
+        stdOut.write( stdOutBytes, 0, stdOutBytes.length );
+        Utf8RecodingDeferredFileOutputStream stdErr = new Utf8RecodingDeferredFileOutputStream( "fds" );
+        byte[] stdErrBytes = "std-örr?&-&amp;&#163;\u0020\u0000\u001F".getBytes();
+        stdErr.write( stdErrBytes, 0, stdErrBytes.length );
         WrappedReportEntry t2 =
             new WrappedReportEntry( new SimpleReportEntry( Inner.class.getName(), testName2, stackTraceWriter, 13 ),
-                                    ReportEntryType.error, 13, s, s1 );
+                                    ReportEntryType.error, 13, stdOut, stdErr );
 
         stats.testSucceeded( t2 );
         StatelessXmlReporter reporter = new StatelessXmlReporter( new File( "." ), null, false );
@@ -127,7 +127,7 @@ public class StatelessXMLReporterTest
         assertEquals( "A fud msg", errorNode.getAttribute( "message" ) );
         assertEquals( "fail at foo", errorNode.getAttribute( "type" ) );
         assertEquals( "st]]>d-o\u00DCt<null>! &amp#0;&amp#31;", tcb.getChild( "system-out" ).getValue() );
-        assertEquals( "std-\u0115rr?&-&amp;&#163; &amp#0;&amp#31;", tcb.getChild( "system-err" ).getValue() );
+        assertEquals( "std-örr?&-&amp;&#163; &amp#0;&amp#31;", tcb.getChild( "system-err" ).getValue() );
 
         expectedReportFile.delete();
     }
