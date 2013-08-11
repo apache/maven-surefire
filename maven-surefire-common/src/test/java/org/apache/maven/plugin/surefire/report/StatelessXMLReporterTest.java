@@ -99,20 +99,24 @@ public class StatelessXMLReporterTest
         stats.testSucceeded( testSetReportEntry );
         StackTraceWriter stackTraceWriter = new DeserializedStacktraceWriter( "A fud msg", "trimmed", "fail at foo" );
         Utf8RecodingDeferredFileOutputStream stdOut = new Utf8RecodingDeferredFileOutputStream( "fds" );
-        byte[] stdOutBytes = "st]]>d-o\u00DCt<null>!\u0020\u0000\u001F".getBytes();
-        stdOut.write( stdOutBytes, 0, stdOutBytes.length );
-
-        Utf8RecodingDeferredFileOutputStream stdErr = new Utf8RecodingDeferredFileOutputStream( "fds" );
-
+        String stdOutPrefix;
         String stdErrPrefix;
         if ( defaultCharsetSupportsSpecialChar() )
         {
             stdErrPrefix = "std-\u0115rr";
+            stdOutPrefix = "st]]>d-o\u00DCt";
         }
         else
         {
             stdErrPrefix = "std-err";
+            stdOutPrefix = "st]]>d-out";
         }
+
+        byte[] stdOutBytes = (stdOutPrefix + "<null>!\u0020\u0000\u001F").getBytes();
+        stdOut.write( stdOutBytes, 0, stdOutBytes.length );
+
+        Utf8RecodingDeferredFileOutputStream stdErr = new Utf8RecodingDeferredFileOutputStream( "fds" );
+
 
         byte[] stdErrBytes = (stdErrPrefix + "?&-&amp;&#163;\u0020\u0000\u001F").getBytes();
         stdErr.write( stdErrBytes, 0, stdErrBytes.length );
@@ -148,7 +152,7 @@ public class StatelessXMLReporterTest
         assertNotNull( errorNode );
         assertEquals( "A fud msg", errorNode.getAttribute( "message" ) );
         assertEquals( "fail at foo", errorNode.getAttribute( "type" ) );
-        assertEquals( "st]]>d-o\u00DCt<null>! &amp#0;&amp#31;", tcb.getChild( "system-out" ).getValue() );
+        assertEquals( stdOutPrefix + "<null>! &amp#0;&amp#31;", tcb.getChild( "system-out" ).getValue() );
 
 
         assertEquals( stdErrPrefix + "?&-&amp;&#163; &amp#0;&amp#31;", tcb.getChild( "system-err" ).getValue() );
@@ -157,7 +161,7 @@ public class StatelessXMLReporterTest
     private boolean defaultCharsetSupportsSpecialChar()
     {
         // some charsets are not able to deal with \u0115 on both ways of the conversion
-        return "\u0115".equals( new String( "\u0115".getBytes() ) );
+        return "\u0115\u00DC".equals( new String( "\u0115\u00DC".getBytes() ) );
     }
 
     class Inner
