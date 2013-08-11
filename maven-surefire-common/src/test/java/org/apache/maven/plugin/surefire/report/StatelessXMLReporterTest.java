@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 
 import junit.framework.AssertionFailedError;
@@ -48,6 +49,8 @@ public class StatelessXMLReporterTest
 
     private TestSetStats stats;
 
+    private File expectedReportFile;
+
     protected void setUp()
         throws Exception
     {
@@ -55,6 +58,17 @@ public class StatelessXMLReporterTest
         reportEntry = new SimpleReportEntry( this.getClass().getName(), "StatelessXMLReporterTest",
                                              new LegacyPojoStackTraceWriter( "", "", new AssertionFailedError() ), 17 );
         stats = new TestSetStats( false, true );
+    }
+
+    @Override protected void tearDown()
+        throws Exception
+    {
+        super.tearDown();
+
+        if ( expectedReportFile != null )
+        {
+            expectedReportFile.delete();
+        }
     }
 
     public void testFileNameWithoutSuffix()
@@ -67,11 +81,9 @@ public class StatelessXMLReporterTest
         stats.testSucceeded( testSetReportEntry );
         reporter.testSetCompleted( testSetReportEntry, stats );
 
-        File expectedReportFile = new File( reportDir, "TEST-" + testName + ".xml" );
+        expectedReportFile = new File( reportDir, "TEST-" + testName + ".xml" );
         assertTrue( "Report file (" + expectedReportFile.getAbsolutePath() + ") doesn't exist",
                     expectedReportFile.exists() );
-        //noinspection ResultOfMethodCallIgnored
-        expectedReportFile.delete();
     }
 
 
@@ -84,15 +96,27 @@ public class StatelessXMLReporterTest
         reportEntry = new SimpleReportEntry( this.getClass().getName(), testName, 12 );
         WrappedReportEntry testSetReportEntry =
             new WrappedReportEntry( reportEntry, ReportEntryType.success, 12, null, null );
-        File expectedReportFile = new File( reportDir, "TEST-" + testName + ".xml" );
+        expectedReportFile = new File( reportDir, "TEST-" + testName + ".xml" );
 
         stats.testSucceeded( testSetReportEntry );
         StackTraceWriter stackTraceWriter = new DeserializedStacktraceWriter( "A fud msg", "trimmed", "fail at foo" );
         Utf8RecodingDeferredFileOutputStream stdOut = new Utf8RecodingDeferredFileOutputStream( "fds" );
         byte[] stdOutBytes = "st]]>d-o\u00DCt<null>!\u0020\u0000\u001F".getBytes();
         stdOut.write( stdOutBytes, 0, stdOutBytes.length );
+
         Utf8RecodingDeferredFileOutputStream stdErr = new Utf8RecodingDeferredFileOutputStream( "fds" );
-        byte[] stdErrBytes = "std-örr?&-&amp;&#163;\u0020\u0000\u001F".getBytes();
+
+        String stdErrPrefix;
+        if ( defaultCharsetSupportsSpecialChar() )
+        {
+            stdErrPrefix = "std-\u0115rr";
+        }
+        else
+        {
+            stdErrPrefix = "std-err";
+        }
+
+        byte[] stdErrBytes = (stdErrPrefix + "?&-&amp;&#163;\u0020\u0000\u001F").getBytes();
         stdErr.write( stdErrBytes, 0, stdErrBytes.length );
         WrappedReportEntry t2 =
             new WrappedReportEntry( new SimpleReportEntry( Inner.class.getName(), testName2, stackTraceWriter, 13 ),
@@ -127,9 +151,15 @@ public class StatelessXMLReporterTest
         assertEquals( "A fud msg", errorNode.getAttribute( "message" ) );
         assertEquals( "fail at foo", errorNode.getAttribute( "type" ) );
         assertEquals( "st]]>d-o\u00DCt<null>! &amp#0;&amp#31;", tcb.getChild( "system-out" ).getValue() );
-        assertEquals( "std-örr?&-&amp;&#163; &amp#0;&amp#31;", tcb.getChild( "system-err" ).getValue() );
 
-        expectedReportFile.delete();
+
+        assertEquals( stdErrPrefix + "?&-&amp;&#163; &amp#0;&amp#31;", tcb.getChild( "system-err" ).getValue() );
+    }
+
+    private boolean defaultCharsetSupportsSpecialChar()
+    {
+        // some charsets are not able to deal with \u0115 on both ways of the conversion
+        return "\u0115".equals( new String( "\u0115".getBytes() ) );
     }
 
     class Inner
