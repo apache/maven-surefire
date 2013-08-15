@@ -140,24 +140,30 @@ public class IntegrationTestMojo
 
     /**
      * Stop executing queued parallel JUnit tests after a certain number of seconds.
+     * <br/>
+     * Example values: "3.5", "4"<br/>
+     * <br/>
      * If set to 0, wait forever, never timing out.
      * Makes sense with specified <code>parallel</code> different from "none".
      *
      * @since 2.16
      */
     @Parameter( property = "failsafe.parallel.timeout" )
-    private int parallelTestsTimeoutInSeconds;
+    private double parallelTestsTimeoutInSeconds;
 
     /**
      * Stop executing queued parallel JUnit tests
      * and <em>interrupt</em> currently running tests after a certain number of seconds.
+     * <br/>
+     * Example values: "3.5", "4"<br/>
+     * <br/>
      * If set to 0, wait forever, never timing out.
      * Makes sense with specified <code>parallel</code> different from "none".
      *
      * @since 2.16
      */
     @Parameter( property = "failsafe.parallel.forcedTimeout" )
-    private int parallelTestsTimeoutForcedInSeconds;
+    private double parallelTestsTimeoutForcedInSeconds;
     
     /**
      * A list of &lt;include> elements specifying the tests (by pattern) that should be included in testing. When not
@@ -454,19 +460,19 @@ public class IntegrationTestMojo
         this.forkedProcessTimeoutInSeconds = forkedProcessTimeoutInSeconds;
     }
 
-    public int getParallelTestsTimeoutInSeconds() {
+    public double getParallelTestsTimeoutInSeconds() {
         return parallelTestsTimeoutInSeconds;
     }
 
-    public void setParallelTestsTimeoutInSeconds( int parallelTestsTimeoutInSeconds ) {
+    public void setParallelTestsTimeoutInSeconds( double parallelTestsTimeoutInSeconds ) {
         this.parallelTestsTimeoutInSeconds = parallelTestsTimeoutInSeconds;
     }
 
-    public int getParallelTestsTimeoutForcedInSeconds() {
+    public double getParallelTestsTimeoutForcedInSeconds() {
         return parallelTestsTimeoutForcedInSeconds;
     }
 
-    public void setParallelTestsTimeoutForcedInSeconds( int parallelTestsTimeoutForcedInSeconds ) {
+    public void setParallelTestsTimeoutForcedInSeconds( double parallelTestsTimeoutForcedInSeconds ) {
         this.parallelTestsTimeoutForcedInSeconds = parallelTestsTimeoutForcedInSeconds;
     }
 

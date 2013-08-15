@@ -28,12 +28,14 @@ import java.util.concurrent.Executors;
  * @author Tibor Digana (tibor17)
  * @since 2.16
  */
-public class SchedulingStrategies {
+public class SchedulingStrategies
+{
 
     /**
      * @return sequentially executing strategy
      */
-    public static SchedulingStrategy createInvokerStrategy() {
+    public static SchedulingStrategy createInvokerStrategy()
+    {
         return new InvokerStrategy();
     }
 
@@ -41,20 +43,22 @@ public class SchedulingStrategies {
      * @param nThreads fixed pool capacity
      * @return parallel scheduling strategy
      */
-    public static SchedulingStrategy createParallelStrategy(int nThreads) {
-        return new NonSharedThreadPoolStrategy(Executors.newFixedThreadPool(nThreads));
+    public static SchedulingStrategy createParallelStrategy( int nThreads )
+    {
+        return new NonSharedThreadPoolStrategy( Executors.newFixedThreadPool( nThreads ) );
     }
 
     /**
      * @return parallel scheduling strategy with unbounded capacity
      */
-    public static SchedulingStrategy createParallelStrategyUnbounded() {
-        return new NonSharedThreadPoolStrategy(Executors.newCachedThreadPool());
+    public static SchedulingStrategy createParallelStrategyUnbounded()
+    {
+        return new NonSharedThreadPoolStrategy( Executors.newCachedThreadPool() );
     }
 
     /**
      * The <tt>threadPool</tt> passed to this strategy can be shared in other strategies.
-     * <p>
+     * <p/>
      * The call {@link SchedulingStrategy#finished()} is waiting until own tasks have finished.
      * New tasks will not be scheduled by this call in this strategy. This strategy is not
      * waiting for other strategies to finish. The {@link org.junit.runners.model.RunnerScheduler#finished()} may
@@ -64,10 +68,12 @@ public class SchedulingStrategies {
      * @return parallel strategy with shared thread pool
      * @throws NullPointerException if <tt>threadPool</tt> is null
      */
-    public static SchedulingStrategy createParallelSharedStrategy(ExecutorService threadPool) {
-        if (threadPool == null) {
-            throw new NullPointerException("null threadPool in #createParallelSharedStrategy");
+    public static SchedulingStrategy createParallelSharedStrategy( ExecutorService threadPool )
+    {
+        if ( threadPool == null )
+        {
+            throw new NullPointerException( "null threadPool in #createParallelSharedStrategy" );
         }
-        return new SharedThreadPoolStrategy(threadPool);
+        return new SharedThreadPoolStrategy( threadPool );
     }
 }

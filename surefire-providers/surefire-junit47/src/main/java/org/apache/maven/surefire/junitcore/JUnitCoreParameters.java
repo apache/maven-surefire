@@ -22,6 +22,7 @@ package org.apache.maven.surefire.junitcore;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Properties;
+
 import org.apache.maven.surefire.booter.ProviderParameterNames;
 
 /**
@@ -29,24 +30,6 @@ import org.apache.maven.surefire.booter.ProviderParameterNames;
  */
 class JUnitCoreParameters
 {
-    private final String parallel;
-
-    private final Boolean perCoreThreadCount;
-
-    private final int threadCount;
-
-    private final int threadCountSuites;
-
-    private final int threadCountClasses;
-
-    private final int threadCountMethods;
-
-    private final int parallelTestsTimeoutInSeconds;
-
-    private final int parallelTestsTimeoutForcedInSeconds;
-
-    private final Boolean useUnlimitedThreads;
-
     public static final String PARALLEL_KEY = ProviderParameterNames.PARALLEL_PROP;
 
     public static final String PERCORETHREADCOUNT_KEY = "perCoreThreadCount";
@@ -65,6 +48,24 @@ class JUnitCoreParameters
 
     public static final String PARALLEL_TIMEOUTFORCED_KEY = ProviderParameterNames.PARALLEL_TIMEOUTFORCED_PROP;
 
+    private final String parallel;
+
+    private final Boolean perCoreThreadCount;
+
+    private final int threadCount;
+
+    private final int threadCountSuites;
+
+    private final int threadCountClasses;
+
+    private final int threadCountMethods;
+
+    private final double parallelTestsTimeoutInSeconds;
+
+    private final double parallelTestsTimeoutForcedInSeconds;
+
+    private final Boolean useUnlimitedThreads;
+
     public JUnitCoreParameters( Properties properties )
     {
         parallel = properties.getProperty( PARALLEL_KEY, "none" ).toLowerCase();
@@ -74,8 +75,10 @@ class JUnitCoreParameters
         threadCountClasses = Integer.valueOf( properties.getProperty( THREADCOUNTCLASSES_KEY, "0" ) );
         threadCountSuites = Integer.valueOf( properties.getProperty( THREADCOUNTSUITES_KEY, "0" ) );
         useUnlimitedThreads = Boolean.valueOf( properties.getProperty( USEUNLIMITEDTHREADS_KEY, "false" ) );
-        parallelTestsTimeoutInSeconds = Integer.valueOf( properties.getProperty( PARALLEL_TIMEOUT_KEY, "0" ) );
-        parallelTestsTimeoutForcedInSeconds = Integer.valueOf( properties.getProperty( PARALLEL_TIMEOUTFORCED_KEY, "0" ) );
+        parallelTestsTimeoutInSeconds =
+            Math.max( Double.valueOf( properties.getProperty( PARALLEL_TIMEOUT_KEY, "0" ) ), 0 );
+        parallelTestsTimeoutForcedInSeconds =
+            Math.max( Double.valueOf( properties.getProperty( PARALLEL_TIMEOUTFORCED_KEY, "0" ) ), 0 );
     }
 
     private static Collection<String> lowerCase( String... elements )
@@ -95,14 +98,14 @@ class JUnitCoreParameters
 
     public boolean isParallelMethod()
     {
-        return isAllParallel()
-                || lowerCase( "both", "methods", "suitesAndMethods", "classesAndMethods" ).contains( parallel );
+        return isAllParallel() || lowerCase( "both", "methods", "suitesAndMethods", "classesAndMethods" ).contains(
+            parallel );
     }
 
     public boolean isParallelClasses()
     {
-        return isAllParallel()
-                || lowerCase( "both", "classes", "suitesAndClasses", "classesAndMethods" ).contains( parallel );
+        return isAllParallel() || lowerCase( "both", "classes", "suitesAndClasses", "classesAndMethods" ).contains(
+            parallel );
     }
 
     public boolean isParallelSuites()
@@ -149,12 +152,12 @@ class JUnitCoreParameters
         return useUnlimitedThreads;
     }
 
-    public int getParallelTestsTimeoutInSeconds()
+    public double getParallelTestsTimeoutInSeconds()
     {
         return parallelTestsTimeoutInSeconds;
     }
 
-    public int getParallelTestsTimeoutForcedInSeconds()
+    public double getParallelTestsTimeoutForcedInSeconds()
     {
         return parallelTestsTimeoutForcedInSeconds;
     }
@@ -174,6 +177,6 @@ class JUnitCoreParameters
     {
         return "parallel='" + parallel + '\'' + ", perCoreThreadCount=" + perCoreThreadCount + ", threadCount="
             + threadCount + ", useUnlimitedThreads=" + useUnlimitedThreads + ", threadCountSuites=" + threadCountSuites
-                + ", threadCountClasses=" + threadCountClasses + ", threadCountMethods=" + threadCountMethods;
+            + ", threadCountClasses=" + threadCountClasses + ", threadCountMethods=" + threadCountMethods;
     }
 }

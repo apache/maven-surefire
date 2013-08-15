@@ -27,9 +27,11 @@ import org.hamcrest.Matcher;
  * @author Tibor Digana (tibor17)
  * @since 2.16
  */
-final class RangeMatcher extends BaseMatcher<Long>
+final class RangeMatcher
+    extends BaseMatcher<Long>
 {
     private final long from;
+
     private final long to;
 
     private RangeMatcher( long from, long to )
@@ -38,14 +40,14 @@ final class RangeMatcher extends BaseMatcher<Long>
         this.to = to;
     }
 
-    public void describeTo( Description description )
-    {
-        description.appendValueList( "between ", " and ", "", from, to );
-    }
-
     public static Matcher<Long> between( long from, long to )
     {
         return new RangeMatcher( from, to );
+    }
+
+    public void describeTo( Description description )
+    {
+        description.appendValueList( "between ", " and ", "", from, to );
     }
 
     public boolean matches( Object o )

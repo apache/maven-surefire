@@ -1143,9 +1143,9 @@ public abstract class AbstractSurefireMojo
         getProperties().setProperty( ProviderParameterNames.THREADCOUNTCLASSES_PROP, Integer.toString( getThreadCountClasses() ) );
         getProperties().setProperty( ProviderParameterNames.THREADCOUNTMETHODS_PROP, Integer.toString( getThreadCountMethods() ) );
         getProperties().setProperty( ProviderParameterNames.PARALLEL_TIMEOUT_PROP,
-                Integer.toString( getParallelTestsTimeoutInSeconds() ) );
+                Double.toString( getParallelTestsTimeoutInSeconds() ) );
         getProperties().setProperty( ProviderParameterNames.PARALLEL_TIMEOUTFORCED_PROP,
-                Integer.toString( getParallelTestsTimeoutForcedInSeconds() ) );
+                Double.toString( getParallelTestsTimeoutForcedInSeconds() ) );
 
         String message =
             "parallel='" + usedParallel + '\'' + ", perCoreThreadCount=" + getPerCoreThreadCount() + ", threadCount="
@@ -2224,7 +2224,7 @@ public abstract class AbstractSurefireMojo
             {
                 return;
             }
-            if ( junitArtifact != null && !junit47Compatible )
+            if ( junitArtifact != null )
             {
                 throw new MojoFailureException( "groups/excludedGroups are specified but JUnit version on classpath"
                                                     + " is too old to support groups. Check your dependency:tree to see if your project is picking up an old junit version" );

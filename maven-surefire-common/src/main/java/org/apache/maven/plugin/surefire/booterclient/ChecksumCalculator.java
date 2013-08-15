@@ -54,6 +54,11 @@ public class ChecksumCalculator
         checksumItems.add( value );
     }
 
+    public void add( double value )
+    {
+        checksumItems.add( value );
+    }
+
     public void add( Map<?, ?> map )
     {
         if ( map != null )

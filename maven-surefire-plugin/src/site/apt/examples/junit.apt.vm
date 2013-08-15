@@ -142,6 +142,10 @@ else
   This is particularly useful for slow tests that can have high concurrency.
 
   As of surefire 2.7, no additional dependencies are needed to use the full set of options with parallel.
+  As of surefire 2.16, new thread-count attributes are introduced, namely <<<threadCountSuites>>>, <<<threadCountClasses>>> and
+  <<<threadCountMethods>>>. Additionally new attributes, <<<parallelTestsTimeoutInSeconds>>> and
+  <<<parallelTestsTimeoutForcedInSeconds>>>, are used to shutdown the parallel execution after an elapsed timeout, and 
+  the attribute "parallel" specifies new values.
   
   See also {{{./fork-options-and-parallel-execution.html}Fork Options and Parallel Test Execution}}.
 

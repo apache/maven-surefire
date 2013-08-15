@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.junitcore.pc;
+package surefireparallel;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,51 +19,35 @@ package org.apache.maven.surefire.junitcore.pc;
  * under the License.
  */
 
-import java.util.concurrent.atomic.AtomicBoolean;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.runners.BlockJUnit4ClassRunner;
 
 /**
- * The sequentially executing strategy in private package.
- *
  * @author Tibor Digana (tibor17)
- * @see SchedulingStrategy
  * @since 2.16
  */
-final class InvokerStrategy
-    extends SchedulingStrategy
+public class TestClass
 {
-    private final AtomicBoolean canSchedule = new AtomicBoolean( true );
-
-    @Override
-    public void schedule( Runnable task )
-    {
-        if ( canSchedule() )
-        {
-            task.run();
-        }
-    }
-
-    @Override
-    protected boolean stop()
-    {
-        return canSchedule.getAndSet( false );
-    }
-
-    @Override
-    public boolean hasSharedThreadPool()
-    {
-        return false;
-    }
-
-    @Override
-    public boolean canSchedule()
-    {
-        return canSchedule.get();
-    }
-
-    @Override
-    public boolean finished()
+    @Test
+    public void a()
         throws InterruptedException
     {
-        return stop();
+        Thread.sleep( 5000L );
+    }
+
+    @Test
+    public void b()
+        throws InterruptedException
+    {
+        Thread.sleep( 5000L );
+    }
+
+    @Test
+    public void c()
+        throws InterruptedException
+    {
+        Thread.sleep( 5000L );
     }
 }

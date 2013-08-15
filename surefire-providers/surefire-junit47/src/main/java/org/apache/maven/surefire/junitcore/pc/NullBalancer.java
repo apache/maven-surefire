@@ -23,11 +23,11 @@ package org.apache.maven.surefire.junitcore.pc;
  * This balancer implements {@link Balancer} and does not do anything -no blocking operation.
  *
  * @author Tibor Digana (tibor17)
- * @since 2.16
- *
  * @see Balancer
+ * @since 2.16
  */
-final class NullBalancer implements Balancer
+final class NullBalancer
+    implements Balancer
 {
     public boolean acquirePermit()
     {

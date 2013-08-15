@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.junitcore.pc;
+package org.apache.maven.surefire.junitcore;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,51 +19,28 @@ package org.apache.maven.surefire.junitcore.pc;
  * under the License.
  */
 
-import java.util.concurrent.atomic.AtomicBoolean;
+import org.junit.rules.TestWatchman;
+import org.junit.runners.model.FrameworkMethod;
+
+import java.util.concurrent.TimeUnit;
 
 /**
- * The sequentially executing strategy in private package.
- *
  * @author Tibor Digana (tibor17)
- * @see SchedulingStrategy
  * @since 2.16
  */
-final class InvokerStrategy
-    extends SchedulingStrategy
+public final class Stopwatch
+    extends TestWatchman
 {
-    private final AtomicBoolean canSchedule = new AtomicBoolean( true );
+    private long startNanos;
 
-    @Override
-    public void schedule( Runnable task )
+    public long stop()
     {
-        if ( canSchedule() )
-        {
-            task.run();
-        }
+        return TimeUnit.MILLISECONDS.convert( System.nanoTime() - startNanos, TimeUnit.NANOSECONDS );
     }
 
     @Override
-    protected boolean stop()
+    public void starting( FrameworkMethod method )
     {
-        return canSchedule.getAndSet( false );
-    }
-
-    @Override
-    public boolean hasSharedThreadPool()
-    {
-        return false;
-    }
-
-    @Override
-    public boolean canSchedule()
-    {
-        return canSchedule.get();
-    }
-
-    @Override
-    public boolean finished()
-        throws InterruptedException
-    {
-        return stop();
+        startNanos = System.nanoTime();
     }
 }

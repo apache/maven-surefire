@@ -26,28 +26,36 @@ import java.util.concurrent.TimeUnit;
  * Parallel strategy for non-shared thread pool in private package.
  *
  * @author Tibor Digana (tibor17)
- * @since 2.16
- *
  * @see AbstractThreadPoolStrategy
+ * @since 2.16
  */
-final class NonSharedThreadPoolStrategy extends AbstractThreadPoolStrategy {
-    NonSharedThreadPoolStrategy(ExecutorService threadPool) {
-        super(threadPool);
+final class NonSharedThreadPoolStrategy
+    extends AbstractThreadPoolStrategy
+{
+    NonSharedThreadPoolStrategy( ExecutorService threadPool )
+    {
+        super( threadPool );
     }
 
     @Override
-    public boolean hasSharedThreadPool() {
+    public boolean hasSharedThreadPool()
+    {
         return false;
     }
 
     @Override
-    public boolean finished() throws InterruptedException {
+    public boolean finished()
+        throws InterruptedException
+    {
         boolean wasRunning = canSchedule();
         getThreadPool().shutdown();
-        try {
-            getThreadPool().awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+        try
+        {
+            getThreadPool().awaitTermination( Long.MAX_VALUE, TimeUnit.NANOSECONDS );
             return wasRunning;
-        } finally {
+        }
+        finally
+        {
             disable();
         }
     }
