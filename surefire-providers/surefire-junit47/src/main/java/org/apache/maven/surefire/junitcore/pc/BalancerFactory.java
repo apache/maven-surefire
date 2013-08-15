@@ -21,11 +21,11 @@ package org.apache.maven.surefire.junitcore.pc;
 
 /**
  * @author Tibor Digana (tibor17)
- * @since 2.16
- *
  * @see Balancer
+ * @since 2.16
  */
-public class BalancerFactory {
+public class BalancerFactory
+{
     private BalancerFactory()
     {
     }

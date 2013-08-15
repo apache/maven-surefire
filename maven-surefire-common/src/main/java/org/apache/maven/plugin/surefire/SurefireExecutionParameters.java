@@ -101,13 +101,13 @@ public interface SurefireExecutionParameters
 
     void setForkedProcessTimeoutInSeconds( int forkedProcessTimeoutInSeconds );
 
-    int getParallelTestsTimeoutInSeconds();
+    double getParallelTestsTimeoutInSeconds();
 
-    void setParallelTestsTimeoutInSeconds( int parallelTestsTimeoutInSeconds );
+    void setParallelTestsTimeoutInSeconds( double parallelTestsTimeoutInSeconds );
 
-    int getParallelTestsTimeoutForcedInSeconds();
+    double getParallelTestsTimeoutForcedInSeconds();
 
-    void setParallelTestsTimeoutForcedInSeconds( int parallelTestsTimeoutForcedInSeconds );
+    void setParallelTestsTimeoutForcedInSeconds( double parallelTestsTimeoutForcedInSeconds );
 
     boolean isUseSystemClassLoader();
 

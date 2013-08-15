@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.junitcore.pc;
+package surefireparallel;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,27 +19,32 @@ package org.apache.maven.surefire.junitcore.pc;
  * under the License.
  */
 
-import org.junit.rules.TestWatchman;
-import org.junit.runners.model.FrameworkMethod;
-
-import java.util.concurrent.TimeUnit;
+import org.junit.Test;
 
 /**
  * @author Tibor Digana (tibor17)
  * @since 2.16
  */
-final class Stopwatch extends TestWatchman
+public class Waiting1Test
 {
-    private long startNanos;
-
-    long stop()
+    @Test
+    public void a()
+        throws InterruptedException
     {
-        return TimeUnit.MILLISECONDS.convert(System.nanoTime() - startNanos, TimeUnit.NANOSECONDS);
+        Thread.sleep( 300L );
     }
 
-    @Override
-    public void starting(FrameworkMethod method)
+    @Test
+    public void b()
+        throws InterruptedException
     {
-        startNanos = System.nanoTime();
+        Thread.sleep( 300L );
+    }
+
+    @Test
+    public void c()
+        throws InterruptedException
+    {
+        Thread.sleep( 300L );
     }
 }

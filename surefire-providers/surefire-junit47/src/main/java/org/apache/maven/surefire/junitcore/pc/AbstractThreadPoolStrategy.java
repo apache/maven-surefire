@@ -31,81 +31,103 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * depending if the thread pool is shared with other strategies or not.
  *
  * @author Tibor Digana (tibor17)
- * @since 2.16
- *
  * @see SchedulingStrategy
  * @see SharedThreadPoolStrategy
  * @see NonSharedThreadPoolStrategy
+ * @since 2.16
  */
-abstract class AbstractThreadPoolStrategy extends SchedulingStrategy {
+abstract class AbstractThreadPoolStrategy
+    extends SchedulingStrategy
+{
     private final ExecutorService threadPool;
-    private final Collection<Future<?>> futureResults;
-    private final AtomicBoolean canSchedule = new AtomicBoolean(true);
 
-    AbstractThreadPoolStrategy(ExecutorService threadPool) {
-        this(threadPool, null);
+    private final Collection<Future<?>> futureResults;
+
+    private final AtomicBoolean canSchedule = new AtomicBoolean( true );
+
+    AbstractThreadPoolStrategy( ExecutorService threadPool )
+    {
+        this( threadPool, null );
     }
 
-    AbstractThreadPoolStrategy(ExecutorService threadPool, Collection<Future<?>> futureResults) {
+    AbstractThreadPoolStrategy( ExecutorService threadPool, Collection<Future<?>> futureResults )
+    {
         this.threadPool = threadPool;
         this.futureResults = futureResults;
     }
 
-    protected final ExecutorService getThreadPool() {
+    protected final ExecutorService getThreadPool()
+    {
         return threadPool;
     }
 
-    protected final Collection<Future<?>> getFutureResults() {
+    protected final Collection<Future<?>> getFutureResults()
+    {
         return futureResults;
     }
 
-    protected final void disable() {
-        canSchedule.set(false);
+    protected final void disable()
+    {
+        canSchedule.set( false );
     }
 
     @Override
-    public void schedule(Runnable task) {
-        if (canSchedule()) {
-            Future<?> futureResult = threadPool.submit(task);
-            if (futureResults != null) {
-                futureResults.add(futureResult);
+    public void schedule( Runnable task )
+    {
+        if ( canSchedule() )
+        {
+            Future<?> futureResult = threadPool.submit( task );
+            if ( futureResults != null )
+            {
+                futureResults.add( futureResult );
             }
         }
     }
 
     @Override
-    protected boolean stop() {
-        boolean wasRunning = canSchedule.getAndSet(false);
-        if (threadPool.isShutdown()) {
+    protected boolean stop()
+    {
+        boolean wasRunning = canSchedule.getAndSet( false );
+        if ( threadPool.isShutdown() )
+        {
             wasRunning = false;
-        } else {
+        }
+        else
+        {
             threadPool.shutdown();
         }
         return wasRunning;
     }
 
     @Override
-    protected boolean stopNow() {
-        boolean wasRunning = canSchedule.getAndSet(false);
-        if (threadPool.isShutdown()) {
+    protected boolean stopNow()
+    {
+        boolean wasRunning = canSchedule.getAndSet( false );
+        if ( threadPool.isShutdown() )
+        {
             wasRunning = false;
-        } else {
+        }
+        else
+        {
             threadPool.shutdownNow();
         }
         return wasRunning;
     }
 
     @Override
-    protected void setDefaultShutdownHandler(Scheduler.ShutdownHandler handler) {
-        if (threadPool instanceof ThreadPoolExecutor) {
+    protected void setDefaultShutdownHandler( Scheduler.ShutdownHandler handler )
+    {
+        if ( threadPool instanceof ThreadPoolExecutor )
+        {
             ThreadPoolExecutor pool = (ThreadPoolExecutor) threadPool;
-            handler.setRejectedExecutionHandler(pool.getRejectedExecutionHandler());
-            pool.setRejectedExecutionHandler(handler);
+            handler.setRejectedExecutionHandler( pool.getRejectedExecutionHandler() );
+            pool.setRejectedExecutionHandler( handler );
         }
     }
 
     @Override
-    public final boolean canSchedule() {
+    public final boolean canSchedule()
+    {
         return canSchedule.get();
     }
 }

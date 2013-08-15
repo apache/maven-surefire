@@ -313,13 +313,17 @@ public class SurefireLauncher
         return surefireVersion;
     }
 
-    public SurefireLauncher parallel( String parallel )
+    public SurefireLauncher disablePerCoreThreadCount()
     {
-
-        mavenLauncher.sysProp( "parallel", parallel );
+        mavenLauncher.sysProp( "perCoreThreadCount", false );
         return this;
     }
 
+    public SurefireLauncher parallel( String parallel )
+    {
+        mavenLauncher.sysProp( "parallel", parallel );
+        return this;
+    }
 
     public SurefireLauncher parallelSuites()
     {
@@ -336,6 +340,66 @@ public class SurefireLauncher
         return parallel( "methods" );
     }
 
+    public SurefireLauncher parallelBoth()
+    {
+        return parallel( "both" );
+    }
+
+    public SurefireLauncher parallelSuitesAndClasses()
+    {
+        return parallel( "suitesAndClasses" );
+    }
+
+    public SurefireLauncher parallelSuitesAndMethods()
+    {
+        return parallel( "suitesAndMethods" );
+    }
+
+    public SurefireLauncher parallelClassesAndMethods()
+    {
+        return parallel( "classesAndMethods" );
+    }
+
+    public SurefireLauncher parallelAll()
+    {
+        return parallel( "all" );
+    }
+
+    public SurefireLauncher useUnlimitedThreads()
+    {
+        mavenLauncher.sysProp( "useUnlimitedThreads", true );
+        return this;
+    }
+
+    public SurefireLauncher threadCountSuites( int count )
+    {
+        mavenLauncher.sysProp( "threadCountSuites", count );
+        return this;
+    }
+
+    public SurefireLauncher threadCountClasses( int count )
+    {
+        mavenLauncher.sysProp( "threadCountClasses", count );
+        return this;
+    }
+
+    public SurefireLauncher threadCountMethods( int count )
+    {
+        mavenLauncher.sysProp( "threadCountMethods", count );
+        return this;
+    }
+
+    public SurefireLauncher parallelTestsTimeoutInSeconds( double timeout )
+    {
+        mavenLauncher.sysProp( "surefire.parallel.timeout", timeout );
+        return this;
+    }
+
+    public SurefireLauncher parallelTestsTimeoutForcedInSeconds( double timeout )
+    {
+        mavenLauncher.sysProp( "surefire.parallel.forcedTimeout", timeout );
+        return this;
+    }
 
     public SurefireLauncher sysProp( String variable, String value )
     {

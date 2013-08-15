@@ -19,6 +19,7 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
+import org.apache.maven.surefire.junitcore.pc.ParallelComputer;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -28,9 +29,12 @@ import org.junit.experimental.theories.DataPoint;
 import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
 import org.junit.rules.ExpectedException;
+import org.junit.runner.JUnitCore;
+import org.junit.runner.Result;
 import org.junit.runner.RunWith;
 
 import java.util.Properties;
+import java.util.concurrent.ExecutionException;
 
 import static org.apache.maven.surefire.junitcore.ParallelComputerFactory.*;
 import static org.apache.maven.surefire.junitcore.JUnitCoreParameters.*;
@@ -42,21 +46,23 @@ import static org.junit.Assert.*;
  * allocated thread resources in ParallelComputer by given {@link JUnitCoreParameters}.
  *
  * @author Tibor Digana (tibor17)
- * @since 2.16
- *
  * @see org.apache.maven.surefire.junitcore.ParallelComputerFactory
+ * @since 2.16
  */
-@RunWith(Theories.class)
+@RunWith( Theories.class )
 public final class ParallelComputerFactoryTest
 {
-    @Rule
-    public final ExpectedException exception = ExpectedException.none();
-
     @DataPoint
     public static final int CPU_1 = 1;
 
     @DataPoint
     public static final int CPU_4 = 4;
+
+    @Rule
+    public final ExpectedException exception = ExpectedException.none();
+
+    @Rule
+    public final Stopwatch runtime = new Stopwatch();
 
     @BeforeClass
     public static void beforeClass()
@@ -70,16 +76,25 @@ public final class ParallelComputerFactoryTest
         ParallelComputerFactory.setDefaultAvailableProcessors();
     }
 
-    @Test
-    public void unknownParallel() throws TestSetFailedException
+    private static Properties parallel( String parallel )
     {
         Properties properties = new Properties();
-        exception.expect( TestSetFailedException.class  );
+        properties.setProperty( PARALLEL_KEY, parallel );
+        return properties;
+    }
+
+    @Test
+    public void unknownParallel()
+        throws TestSetFailedException
+    {
+        Properties properties = new Properties();
+        exception.expect( TestSetFailedException.class );
         resolveConcurrency( new JUnitCoreParameters( properties ) );
     }
 
     @Test
-    public void unknownThreadCountSuites() throws TestSetFailedException
+    public void unknownThreadCountSuites()
+        throws TestSetFailedException
     {
         JUnitCoreParameters params = new JUnitCoreParameters( parallel( "suites" ) );
         assertTrue( params.isParallelSuites() );
@@ -90,7 +105,8 @@ public final class ParallelComputerFactoryTest
     }
 
     @Test
-    public void unknownThreadCountClasses() throws TestSetFailedException
+    public void unknownThreadCountClasses()
+        throws TestSetFailedException
     {
         JUnitCoreParameters params = new JUnitCoreParameters( parallel( "classes" ) );
         assertFalse( params.isParallelSuites() );
@@ -101,7 +117,8 @@ public final class ParallelComputerFactoryTest
     }
 
     @Test
-    public void unknownThreadCountMethods() throws TestSetFailedException
+    public void unknownThreadCountMethods()
+        throws TestSetFailedException
     {
         JUnitCoreParameters params = new JUnitCoreParameters( parallel( "methods" ) );
         assertFalse( params.isParallelSuites() );
@@ -112,7 +129,8 @@ public final class ParallelComputerFactoryTest
     }
 
     @Test
-    public void unknownThreadCountBoth() throws TestSetFailedException
+    public void unknownThreadCountBoth()
+        throws TestSetFailedException
     {
         JUnitCoreParameters params = new JUnitCoreParameters( parallel( "both" ) );
         assertFalse( params.isParallelSuites() );
@@ -123,7 +141,8 @@ public final class ParallelComputerFactoryTest
     }
 
     @Test
-    public void unknownThreadCountAll() throws TestSetFailedException
+    public void unknownThreadCountAll()
+        throws TestSetFailedException
     {
         JUnitCoreParameters params = new JUnitCoreParameters( parallel( "all" ) );
         assertTrue( params.isParallelSuites() );
@@ -134,7 +153,8 @@ public final class ParallelComputerFactoryTest
     }
 
     @Test
-    public void unknownThreadCountSuitesAndClasses() throws TestSetFailedException
+    public void unknownThreadCountSuitesAndClasses()
+        throws TestSetFailedException
     {
         JUnitCoreParameters params = new JUnitCoreParameters( parallel( "suitesAndClasses" ) );
         assertTrue( params.isParallelSuites() );
@@ -145,7 +165,8 @@ public final class ParallelComputerFactoryTest
     }
 
     @Test
-    public void unknownThreadCountSuitesAndMethods() throws TestSetFailedException
+    public void unknownThreadCountSuitesAndMethods()
+        throws TestSetFailedException
     {
         JUnitCoreParameters params = new JUnitCoreParameters( parallel( "suitesAndMethods" ) );
         assertTrue( params.isParallelSuites() );
@@ -156,7 +177,8 @@ public final class ParallelComputerFactoryTest
     }
 
     @Test
-    public void unknownThreadCountClassesAndMethods() throws TestSetFailedException
+    public void unknownThreadCountClassesAndMethods()
+        throws TestSetFailedException
     {
         JUnitCoreParameters params = new JUnitCoreParameters( parallel( "classesAndMethods" ) );
         assertFalse( params.isParallelSuites() );
@@ -167,7 +189,8 @@ public final class ParallelComputerFactoryTest
     }
 
     @Theory
-    public void useUnlimitedThreadsSuites( int cpu ) throws TestSetFailedException
+    public void useUnlimitedThreadsSuites( int cpu )
+        throws TestSetFailedException
     {
         ParallelComputerFactory.overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
@@ -196,7 +219,8 @@ public final class ParallelComputerFactoryTest
     }
 
     @Theory
-    public void useUnlimitedThreadsClasses( int cpu ) throws TestSetFailedException
+    public void useUnlimitedThreadsClasses( int cpu )
+        throws TestSetFailedException
     {
         ParallelComputerFactory.overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
@@ -225,7 +249,8 @@ public final class ParallelComputerFactoryTest
     }
 
     @Theory
-    public void unlimitedThreadsMethods( int cpu ) throws TestSetFailedException
+    public void unlimitedThreadsMethods( int cpu )
+        throws TestSetFailedException
     {
         ParallelComputerFactory.overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
@@ -254,7 +279,8 @@ public final class ParallelComputerFactoryTest
     }
 
     @Theory
-    public void unlimitedThreadsSuitesAndClasses( int cpu ) throws TestSetFailedException
+    public void unlimitedThreadsSuitesAndClasses( int cpu )
+        throws TestSetFailedException
     {
         ParallelComputerFactory.overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
@@ -284,7 +310,8 @@ public final class ParallelComputerFactoryTest
     }
 
     @Theory
-    public void unlimitedThreadsSuitesAndMethods( int cpu ) throws TestSetFailedException
+    public void unlimitedThreadsSuitesAndMethods( int cpu )
+        throws TestSetFailedException
     {
         ParallelComputerFactory.overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
@@ -314,7 +341,8 @@ public final class ParallelComputerFactoryTest
     }
 
     @Theory
-    public void unlimitedThreadsClassesAndMethods( int cpu ) throws TestSetFailedException
+    public void unlimitedThreadsClassesAndMethods( int cpu )
+        throws TestSetFailedException
     {
         ParallelComputerFactory.overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
@@ -344,7 +372,8 @@ public final class ParallelComputerFactoryTest
     }
 
     @Theory
-    public void unlimitedThreadsAll( int cpu ) throws TestSetFailedException
+    public void unlimitedThreadsAll( int cpu )
+        throws TestSetFailedException
     {
         ParallelComputerFactory.overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
@@ -375,7 +404,8 @@ public final class ParallelComputerFactoryTest
     }
 
     @Theory
-    public void threadCountSuites( int cpu ) throws TestSetFailedException
+    public void threadCountSuites( int cpu )
+        throws TestSetFailedException
     {
         ParallelComputerFactory.overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
@@ -393,7 +423,8 @@ public final class ParallelComputerFactoryTest
     }
 
     @Theory
-    public void threadCountClasses( int cpu ) throws TestSetFailedException
+    public void threadCountClasses( int cpu )
+        throws TestSetFailedException
     {
         ParallelComputerFactory.overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
@@ -411,7 +442,8 @@ public final class ParallelComputerFactoryTest
     }
 
     @Theory
-    public void threadCountMethods( int cpu ) throws TestSetFailedException
+    public void threadCountMethods( int cpu )
+        throws TestSetFailedException
     {
         ParallelComputerFactory.overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
@@ -429,7 +461,8 @@ public final class ParallelComputerFactoryTest
     }
 
     @Theory
-    public void threadCountBoth( int cpu ) throws TestSetFailedException
+    public void threadCountBoth( int cpu )
+        throws TestSetFailedException
     {
         ParallelComputerFactory.overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
@@ -447,7 +480,8 @@ public final class ParallelComputerFactoryTest
     }
 
     @Theory
-    public void threadCountClassesAndMethods( int cpu ) throws TestSetFailedException
+    public void threadCountClassesAndMethods( int cpu )
+        throws TestSetFailedException
     {
         ParallelComputerFactory.overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
@@ -465,7 +499,8 @@ public final class ParallelComputerFactoryTest
     }
 
     @Theory
-    public void threadCountSuitesAndMethods( int cpu ) throws TestSetFailedException
+    public void threadCountSuitesAndMethods( int cpu )
+        throws TestSetFailedException
     {
         ParallelComputerFactory.overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
@@ -483,7 +518,8 @@ public final class ParallelComputerFactoryTest
     }
 
     @Theory
-    public void threadCountSuitesAndClasses( int cpu ) throws TestSetFailedException
+    public void threadCountSuitesAndClasses( int cpu )
+        throws TestSetFailedException
     {
         ParallelComputerFactory.overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
@@ -501,7 +537,8 @@ public final class ParallelComputerFactoryTest
     }
 
     @Theory
-    public void threadCountAll( int cpu ) throws TestSetFailedException
+    public void threadCountAll( int cpu )
+        throws TestSetFailedException
     {
         ParallelComputerFactory.overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
@@ -519,7 +556,8 @@ public final class ParallelComputerFactoryTest
     }
 
     @Theory
-    public void everyThreadCountSuitesAndClasses( int cpu ) throws TestSetFailedException
+    public void everyThreadCountSuitesAndClasses( int cpu )
+        throws TestSetFailedException
     {
         ParallelComputerFactory.overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
@@ -533,7 +571,7 @@ public final class ParallelComputerFactoryTest
         assertTrue( params.isParallelSuites() );
         assertTrue( params.isParallelClasses() );
         assertFalse( params.isParallelMethod() );
-        assertThat( concurrency.capacity, is(3 * cpu) );
+        assertThat( concurrency.capacity, is( 3 * cpu ) );
         int concurrentSuites = (int) ( 0.34d * concurrency.capacity );
         assertThat( concurrency.suites, is( concurrentSuites ) );
         assertThat( concurrency.classes, is( concurrency.capacity - concurrentSuites ) );
@@ -541,7 +579,8 @@ public final class ParallelComputerFactoryTest
     }
 
     @Theory
-    public void everyThreadCountSuitesAndMethods( int cpu ) throws TestSetFailedException
+    public void everyThreadCountSuitesAndMethods( int cpu )
+        throws TestSetFailedException
     {
         ParallelComputerFactory.overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
@@ -563,7 +602,8 @@ public final class ParallelComputerFactoryTest
     }
 
     @Theory
-    public void everyThreadCountClassesAndMethods( int cpu ) throws TestSetFailedException
+    public void everyThreadCountClassesAndMethods( int cpu )
+        throws TestSetFailedException
     {
         ParallelComputerFactory.overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
@@ -585,7 +625,8 @@ public final class ParallelComputerFactoryTest
     }
 
     @Theory
-    public void everyThreadCountAll( int cpu ) throws TestSetFailedException
+    public void everyThreadCountAll( int cpu )
+        throws TestSetFailedException
     {
         ParallelComputerFactory.overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
@@ -609,7 +650,8 @@ public final class ParallelComputerFactoryTest
     }
 
     @Theory
-    public void reusableThreadCountSuitesAndClasses( int cpu ) throws TestSetFailedException
+    public void reusableThreadCountSuitesAndClasses( int cpu )
+        throws TestSetFailedException
     {
         // 4 * cpu to 5 * cpu threads to run test classes
         ParallelComputerFactory.overrideAvailableProcessors( cpu );
@@ -629,7 +671,8 @@ public final class ParallelComputerFactoryTest
     }
 
     @Theory
-    public void reusableThreadCountSuitesAndMethods( int cpu ) throws TestSetFailedException
+    public void reusableThreadCountSuitesAndMethods( int cpu )
+        throws TestSetFailedException
     {
         // 4 * cpu to 5 * cpu threads to run test methods
         ParallelComputerFactory.overrideAvailableProcessors( cpu );
@@ -649,7 +692,8 @@ public final class ParallelComputerFactoryTest
     }
 
     @Theory
-    public void reusableThreadCountClassesAndMethods( int cpu ) throws TestSetFailedException
+    public void reusableThreadCountClassesAndMethods( int cpu )
+        throws TestSetFailedException
     {
         // 4 * cpu to 5 * cpu threads to run test methods
         ParallelComputerFactory.overrideAvailableProcessors( cpu );
@@ -669,7 +713,8 @@ public final class ParallelComputerFactoryTest
     }
 
     @Theory
-    public void reusableThreadCountAll( int cpu ) throws TestSetFailedException
+    public void reusableThreadCountAll( int cpu )
+        throws TestSetFailedException
     {
         // 8 * cpu to 13 * cpu threads to run test methods
         ParallelComputerFactory.overrideAvailableProcessors( cpu );
@@ -690,7 +735,8 @@ public final class ParallelComputerFactoryTest
     }
 
     @Theory
-    public void suites( int cpu ) throws TestSetFailedException
+    public void suites( int cpu )
+        throws TestSetFailedException
     {
         ParallelComputerFactory.overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
@@ -708,7 +754,8 @@ public final class ParallelComputerFactoryTest
     }
 
     @Theory
-    public void classes( int cpu ) throws TestSetFailedException
+    public void classes( int cpu )
+        throws TestSetFailedException
     {
         ParallelComputerFactory.overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
@@ -726,7 +773,8 @@ public final class ParallelComputerFactoryTest
     }
 
     @Theory
-    public void methods( int cpu ) throws TestSetFailedException
+    public void methods( int cpu )
+        throws TestSetFailedException
     {
         ParallelComputerFactory.overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
@@ -744,7 +792,8 @@ public final class ParallelComputerFactoryTest
     }
 
     @Theory
-    public void suitesAndClasses( int cpu ) throws TestSetFailedException
+    public void suitesAndClasses( int cpu )
+        throws TestSetFailedException
     {
         ParallelComputerFactory.overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
@@ -779,7 +828,8 @@ public final class ParallelComputerFactoryTest
     }
 
     @Theory
-    public void suitesAndMethods( int cpu ) throws TestSetFailedException
+    public void suitesAndMethods( int cpu )
+        throws TestSetFailedException
     {
         ParallelComputerFactory.overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
@@ -814,7 +864,8 @@ public final class ParallelComputerFactoryTest
     }
 
     @Theory
-    public void classesAndMethods( int cpu ) throws TestSetFailedException
+    public void classesAndMethods( int cpu )
+        throws TestSetFailedException
     {
         ParallelComputerFactory.overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
@@ -849,7 +900,8 @@ public final class ParallelComputerFactoryTest
     }
 
     @Theory
-    public void all( int cpu ) throws TestSetFailedException
+    public void all( int cpu )
+        throws TestSetFailedException
     {
         ParallelComputerFactory.overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
@@ -898,10 +950,114 @@ public final class ParallelComputerFactoryTest
         assertThat( concurrency.methods, is( Integer.MAX_VALUE ) );
     }
 
-    private static Properties parallel( String parallel )
+    @Test
+    public void withoutShutdown()
+        throws TestSetFailedException, ExecutionException, InterruptedException
     {
         Properties properties = new Properties();
-        properties.setProperty( PARALLEL_KEY, parallel );
-        return properties;
+        properties.setProperty( PARALLEL_KEY, "methods" );
+        properties.setProperty( THREADCOUNTMETHODS_KEY, "2" );
+        JUnitCoreParameters params = new JUnitCoreParameters( properties );
+        ParallelComputer pc = createParallelComputer( params );
+
+        Result result = new JUnitCore().run( pc, TestClass.class );
+        long timeSpent = runtime.stop();
+        long deltaTime = 500L;
+
+        assertTrue( result.wasSuccessful() );
+        assertThat( result.getRunCount(), is( 3 ) );
+        assertThat( result.getFailureCount(), is( 0 ) );
+        assertThat( result.getIgnoreCount(), is( 0 ) );
+        assertEquals( 10000L, timeSpent, deltaTime );
+    }
+
+    @Test
+    public void shutdown()
+        throws TestSetFailedException, ExecutionException, InterruptedException
+    {
+        // The JUnitCore returns after 2.5s.
+        // The test-methods in TestClass are NOT interrupted, and return normally after 5s.
+        Properties properties = new Properties();
+        properties.setProperty( PARALLEL_KEY, "methods" );
+        properties.setProperty( THREADCOUNTMETHODS_KEY, "2" );
+        properties.setProperty( PARALLEL_TIMEOUT_KEY, Double.toString( 2.5d ) );
+        JUnitCoreParameters params = new JUnitCoreParameters( properties );
+        ParallelComputer pc = createParallelComputer( params );
+
+        new JUnitCore().run( pc, TestClass.class );
+        long timeSpent = runtime.stop();
+        long deltaTime = 500L;
+
+        assertEquals( 2500L, timeSpent, deltaTime );
+        assertTrue( pc.describeElapsedTimeout().contains(
+            "The test run has finished abruptly after timeout of 2.5 seconds." ) );
+        assertTrue( pc.describeElapsedTimeout().contains( TestClass.class.getName() ) );
+    }
+
+    @Test
+    public void forcedShutdown()
+        throws TestSetFailedException, ExecutionException, InterruptedException
+    {
+        // The JUnitCore returns after 2.5s, and the test-methods in TestClass are interrupted.
+        Properties properties = new Properties();
+        properties.setProperty( PARALLEL_KEY, "methods" );
+        properties.setProperty( THREADCOUNTMETHODS_KEY, "2" );
+        properties.setProperty( PARALLEL_TIMEOUTFORCED_KEY, Double.toString( 2.5d ) );
+        JUnitCoreParameters params = new JUnitCoreParameters( properties );
+        ParallelComputer pc = createParallelComputer( params );
+
+        new JUnitCore().run( pc, TestClass.class );
+        long timeSpent = runtime.stop();
+        long deltaTime = 500L;
+
+        assertEquals( 2500L, timeSpent, deltaTime );
+        assertTrue( pc.describeElapsedTimeout().contains(
+            "The test run has finished abruptly after timeout of 2.5 seconds." ) );
+        assertTrue( pc.describeElapsedTimeout().contains( TestClass.class.getName() ) );
+    }
+
+    public static class TestClass
+    {
+        @Test
+        public void a()
+            throws InterruptedException
+        {
+            long t1 = System.currentTimeMillis();
+            try{
+                Thread.sleep( 5000L );
+            }
+            finally
+            {
+                System.out.println( getClass().getSimpleName() + "#a() spent " + ( System.currentTimeMillis() - t1 ) );
+            }
+        }
+
+        @Test
+        public void b()
+            throws InterruptedException
+        {
+            long t1 = System.currentTimeMillis();
+            try{
+                Thread.sleep( 5000L );
+            }
+            finally
+            {
+                System.out.println( getClass().getSimpleName() + "#b() spent " + ( System.currentTimeMillis() - t1 ) );
+            }
+        }
+
+        @Test
+        public void c()
+            throws InterruptedException
+        {
+            long t1 = System.currentTimeMillis();
+            try{
+                Thread.sleep( 5000L );
+            }
+            finally
+            {
+                System.out.println( getClass().getSimpleName() + "#c() spent " + ( System.currentTimeMillis() - t1 ) );
+            }
+        }
     }
 }

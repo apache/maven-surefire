@@ -42,17 +42,58 @@ Fork Options and Parallel Test Execution
 * Parallel Test Execution
 
   Basically, there are two ways in Surefire to achieve parallel test execution.
+  
   The most obvious one is by using the <<<parallel>>> parameter. The possible
   values depend on the test provider used. For JUnit 4.7 and onwards, this may
-  be <<<methods>>>, <<<classes>>>, or <<<both>>>.
+  be <<<methods>>>, <<<classes>>>, <<<both>>>, <<<suites>>>,
+  <<<suitesAndClasses>>>, <<<suitesAndMethods>>>, <<<classesAndMethods>>>,
+  <<<all>>>.
+  As of surefire 2.16, the value "both" is deprecated but it still can be
+  used and behaves same as <<<classesAndMethods>>>.
 
   See the example pages for {{{./junit.html#Running_tests_in_parallel}JUnit}}
   and {{{./testng.html#Running_tests_in_parallel}TestNG}} for details.
 
-  The <extent> of the parallelism is configured using the parameters
-  <<<threadCount>>>, and optionally <<<perCoreThreadCount>>>, or
-  <<<useUnlimitedThreads>>>.
-
+  The <extent> of the parallelism is configured using the following parameters.
+  The parameter <<<useUnlimitedThreads>>> declares the unlimited number of
+  threads. Unless <<<useUnlimitedThreads>>> is set to "true", the parameter
+  <<<threadCount>>> can be used with the optional parameter
+  <<<perCoreThreadCount>>>.
+  The parameters <<<useUnlimitedThreads>>>, <<<threadCount>>> make sense with
+  thereinbefore value specified in the parameter <<<parallel>>>.
+  
+  You can impose thread-count limitations on suites, classes or methods if you
+  configure some of the parameters <<<threadCountSuites>>>,
+  <<<threadCountClasses>>> or <<<threadCountMethods>>>.
+  If the only <<<threadCount>>> is specified, the surefire attempts to estimate
+  thread-counts for suites, classes and methods and reuse the threads in favor
+  of parallel methods (possibly increasing concurrent methods).
+  
+  As an example with unlimited number of threads, there is maximum of three
+  concurrent threads to execute suites:
+  parallel = all, useUnlimitedThreads = true, threadCountSuites = 3.
+  
+  In the second example, the number of concurrent methods is not strictly
+  limited:
+  parallel = classesAndMethods, threadCount = 8, threadCountClasses = 3.
+  Here the number of parallel methods is varying from 5 to 7.
+  Similarily with parallel = all, but the sum of <<<threadCountSuites>>> and
+  <<<threadCountClasses>>> must not excit certain <<<threadCount>>> - 1.
+  Other combinations are possible with unspecified thread-count leaf. Make sure
+  that the leaf is last from the order suites-classes-methods in <<<parallel>>>.
+  
+  In the third example the thread-counts represent a ratio, e.g. for
+  parallel = all, threadCount = 16, threadCountSuites = 2,
+  threadCountClasses = 3, threadCountMethods = 5. Thus the concurrent suites
+  will be 20%, concurrent classes 30%, and concurrent methods 50%.
+  
+  Finally, the <<<threadCount>>> and <<<useUnlimitedThreads>>> may not be
+  necessarily configured if the equivalent thread-counts are specified for the
+  value in <<<parallel>>>.
+  
+  The surefire is always trying to reuse threads, optimize the thread-counts,
+  and prefers thread fairness.
+  
   <<The important thing to remember>> with the <<<parallel>>> option is: the
   concurrency happens within the same JVM process. That is efficient in terms of
   memory and execution time, but you may be more vulnerable towards race

@@ -23,13 +23,14 @@ import java.util.concurrent.Semaphore;
 
 /**
  * @author Tibor Digana (tibor17)
- * @since 2.16
- *
  * @see Balancer
+ * @since 2.16
  */
-final class ThreadResourcesBalancer implements Balancer
+final class ThreadResourcesBalancer
+    implements Balancer
 {
     private final Semaphore balancer;
+
     private final int numPermits;
 
     /**
@@ -37,7 +38,6 @@ final class ThreadResourcesBalancer implements Balancer
      *
      * @param numPermits number of permits to acquire when maintaining concurrency on tests.
      *                   Must be &gt;0 and &lt; {@link Integer#MAX_VALUE}.
-     *
      * @see #ThreadResourcesBalancer(int, boolean)
      */
     ThreadResourcesBalancer( int numPermits )
@@ -48,7 +48,7 @@ final class ThreadResourcesBalancer implements Balancer
     /**
      * @param numPermits number of permits to acquire when maintaining concurrency on tests.
      *                   Must be &gt;0 and &lt; {@link Integer#MAX_VALUE}.
-     * @param fair <tt>true</tt> guarantees the waiting schedulers to wake up in order they acquired a permit
+     * @param fair       <tt>true</tt> guarantees the waiting schedulers to wake up in order they acquired a permit
      */
     ThreadResourcesBalancer( int numPermits, boolean fair )
     {

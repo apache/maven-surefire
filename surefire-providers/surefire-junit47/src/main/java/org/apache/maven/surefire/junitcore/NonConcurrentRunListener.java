@@ -76,11 +76,11 @@ public class NonConcurrentRunListener
     public void testStarted( Description description )
         throws Exception
     {
-        finishLastTestSetIfNeccessary( description );
+        finishLastTestSetIfNecessary( description );
         super.testStarted( description );
     }
 
-    private void finishLastTestSetIfNeccessary( Description description )
+    private void finishLastTestSetIfNecessary( Description description )
     {
         if ( describesNewTestSet( description ) )
         {
@@ -125,7 +125,7 @@ public class NonConcurrentRunListener
     public void testIgnored( Description description )
         throws Exception
     {
-        finishLastTestSetIfNeccessary( description );
+        finishLastTestSetIfNecessary( description );
 
         super.testIgnored( description );
         this.lastFinishedDescription = description;

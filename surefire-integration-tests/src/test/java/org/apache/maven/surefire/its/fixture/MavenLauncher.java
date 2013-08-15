@@ -339,6 +339,11 @@ public class MavenLauncher
         return addGoal( "-D" + variable + "=" + value );
     }
 
+    public MavenLauncher sysProp( String variable, double value )
+    {
+        return addGoal( "-D" + variable + "=" + value );
+    }
+
     public MavenLauncher showExceptionMessages()
     {
         addCliOption( "-e" );
