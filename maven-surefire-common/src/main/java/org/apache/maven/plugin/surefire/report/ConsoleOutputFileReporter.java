@@ -25,7 +25,6 @@ import java.io.IOException;
 
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterException;
-import org.apache.maven.surefire.util.NestedRuntimeException;
 
 /**
  * Surefire output consumer proxy that writes test output to a {@link java.io.File} for each test suite.
@@ -99,7 +98,7 @@ public class ConsoleOutputFileReporter
         }
         catch ( IOException e )
         {
-            throw new NestedRuntimeException( e );
+            throw new RuntimeException( e );
         }
     }
 }

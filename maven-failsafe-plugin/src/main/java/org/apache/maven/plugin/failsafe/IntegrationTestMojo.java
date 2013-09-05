@@ -36,7 +36,6 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.shared.utils.ReaderFactory;
 import org.apache.maven.shared.utils.StringUtils;
 import org.apache.maven.surefire.suite.RunResult;
-import org.apache.maven.surefire.util.NestedCheckedException;
 
 import static org.apache.maven.shared.utils.io.IOUtil.close;
 
@@ -212,14 +211,14 @@ public class IntegrationTestMojo
     @Parameter( property = "encoding", defaultValue = "${project.reporting.outputEncoding}" )
     private String encoding;
 
-    protected void handleSummary( RunResult summary, NestedCheckedException firstForkException )
+    protected void handleSummary( RunResult summary, Exception firstForkException )
         throws MojoExecutionException, MojoFailureException
     {
         writeSummary( summary, firstForkException );
     }
 
     @SuppressWarnings( "unchecked" )
-    private void writeSummary( RunResult summary, NestedCheckedException firstForkException )
+    private void writeSummary( RunResult summary, Exception firstForkException )
         throws MojoExecutionException
     {
         File summaryFile = getSummaryFile();

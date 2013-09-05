@@ -39,7 +39,6 @@ import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.StackTraceWriter;
-import org.apache.maven.surefire.util.NestedRuntimeException;
 import org.apache.maven.surefire.util.internal.StringUtils;
 
 /**
@@ -169,7 +168,7 @@ public class ForkClient
         }
         catch ( ReporterException e )
         {
-            throw new NestedRuntimeException( e );
+            throw new RuntimeException( e );
         }
     }
 

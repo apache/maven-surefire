@@ -132,7 +132,7 @@ public class DefaultScanResult
         }
         catch ( ClassNotFoundException e )
         {
-            throw new NestedRuntimeException( "Unable to create test class '" + className + "'", e );
+            throw new RuntimeException( "Unable to create test class '" + className + "'", e );
         }
         return testClass;
     }

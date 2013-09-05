@@ -31,7 +31,6 @@ import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.RunOrderParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestRequest;
-import org.apache.maven.surefire.util.NestedRuntimeException;
 import org.apache.maven.surefire.util.RunOrder;
 
 import junit.framework.TestCase;
@@ -149,15 +148,15 @@ public class SurefireReflectorTest
         }
         catch ( IllegalAccessException e )
         {
-            throw new NestedRuntimeException( e );
+            throw new RuntimeException( e );
         }
         catch ( InvocationTargetException e )
         {
-            throw new NestedRuntimeException( e );
+            throw new RuntimeException( e );
         }
         catch ( NoSuchMethodException e )
         {
-            throw new NestedRuntimeException( e );
+            throw new RuntimeException( e );
         }
     }
 

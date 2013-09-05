@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.surefire.util.NestedRuntimeException;
 
 /**
  * @author Kristian Rosenvold
@@ -159,11 +158,11 @@ public class ChecksumCalculator
         }
         catch ( NoSuchAlgorithmException e )
         {
-            throw new NestedRuntimeException( e );
+            throw new RuntimeException( e );
         }
         catch ( UnsupportedEncodingException e )
         {
-            throw new NestedRuntimeException( e );
+            throw new RuntimeException( e );
         }
     }
 

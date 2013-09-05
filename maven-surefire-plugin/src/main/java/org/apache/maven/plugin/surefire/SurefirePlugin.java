@@ -28,7 +28,6 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.surefire.suite.RunResult;
-import org.apache.maven.surefire.util.NestedCheckedException;
 import org.apache.maven.surefire.util.internal.StringUtils;
 
 /**
@@ -188,7 +187,7 @@ public class SurefirePlugin
     @Parameter( property = "surefire.useManifestOnlyJar", defaultValue = "true" )
     private boolean useManifestOnlyJar;
 
-    protected void handleSummary( RunResult summary, NestedCheckedException firstForkException )
+    protected void handleSummary( RunResult summary, Exception firstForkException )
         throws MojoExecutionException, MojoFailureException
     {
         assertNoException( firstForkException );
@@ -196,7 +195,7 @@ public class SurefirePlugin
         SurefireHelper.reportExecution( this, summary, getLog() );
     }
 
-    private void assertNoException( NestedCheckedException firstForkException )
+    private void assertNoException( Exception firstForkException )
         throws MojoFailureException
     {
         if ( firstForkException != null )
@@ -205,7 +204,7 @@ public class SurefirePlugin
         }
     }
 
-    private void assertNoFailureOrTimeout( NestedCheckedException summary )
+    private void assertNoFailureOrTimeout( Exception summary )
         throws MojoFailureException
     {
         if ( summary != null )

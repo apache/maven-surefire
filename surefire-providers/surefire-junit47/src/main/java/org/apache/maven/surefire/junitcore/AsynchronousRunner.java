@@ -26,7 +26,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import org.apache.maven.surefire.util.NestedRuntimeException;
 
 import org.junit.runners.model.RunnerScheduler;
 
@@ -59,7 +58,7 @@ public class AsynchronousRunner
         }
         catch ( ExecutionException e )
         {
-            throw new NestedRuntimeException( e );
+            throw new RuntimeException( e );
         }
     }
 
@@ -74,7 +73,7 @@ public class AsynchronousRunner
             }
             catch ( InterruptedException e )
             {
-                throw new NestedRuntimeException( e );
+                throw new RuntimeException( e );
             }
         }
     }

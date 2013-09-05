@@ -27,7 +27,7 @@ package org.apache.maven.surefire.util;
  * @author Kristian Rosenvold
  */
 public class SurefireReflectionException
-    extends NestedRuntimeException
+    extends RuntimeException
 {
     /**
      * Create a <code>SurefireReflectionException</code> with the specified cause.  The
