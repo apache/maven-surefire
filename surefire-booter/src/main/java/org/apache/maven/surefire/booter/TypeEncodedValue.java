@@ -22,7 +22,6 @@ package org.apache.maven.surefire.booter;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.util.Properties;
-import org.apache.maven.surefire.util.NestedRuntimeException;
 import org.apache.maven.surefire.util.ReflectionUtils;
 
 /**
@@ -86,7 +85,7 @@ public class TypeEncodedValue
             }
             catch ( Exception e )
             {
-                throw new NestedRuntimeException( "bug in property conversion", e );
+                throw new RuntimeException( "bug in property conversion", e );
             }
             return result;
         }

@@ -22,7 +22,6 @@ package org.apache.maven.plugin.surefire.runorder;
 import java.io.File;
 import java.io.FileNotFoundException;
 import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.util.NestedRuntimeException;
 
 /**
  * @author Kristian Rosenvold
@@ -50,7 +49,7 @@ public class StatisticsReporter
         }
         catch ( FileNotFoundException e )
         {
-            throw new NestedRuntimeException( e );
+            throw new RuntimeException( e );
         }
     }
 

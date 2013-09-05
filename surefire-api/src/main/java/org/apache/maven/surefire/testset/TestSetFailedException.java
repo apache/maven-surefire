@@ -19,7 +19,6 @@ package org.apache.maven.surefire.testset;
  * under the License.
  */
 
-import org.apache.maven.surefire.util.NestedCheckedException;
 
 /**
  * Exception that indicates a test failed.
@@ -27,7 +26,7 @@ import org.apache.maven.surefire.util.NestedCheckedException;
  * @author Bill Venners
  */
 public class TestSetFailedException
-    extends NestedCheckedException
+    extends Exception
 {
 
     /**
