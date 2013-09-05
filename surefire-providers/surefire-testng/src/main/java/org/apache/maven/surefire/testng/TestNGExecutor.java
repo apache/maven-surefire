@@ -23,7 +23,6 @@ import org.apache.maven.surefire.booter.ProviderParameterNames;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.testng.conf.Configurator;
 import org.apache.maven.surefire.testset.TestSetFailedException;
-import org.apache.maven.surefire.util.NestedRuntimeException;
 import org.apache.maven.surefire.util.internal.StringUtils;
 import org.testng.TestNG;
 import org.testng.xml.XmlClass;
@@ -271,7 +270,7 @@ public class TestNGExecutor
             }
             catch ( Exception e )
             {
-                throw new NestedRuntimeException( "Bug in ConfigurationAwareTestNGReporter", e );
+                throw new RuntimeException( "Bug in ConfigurationAwareTestNGReporter", e );
             }
         }
         catch ( ClassNotFoundException e )

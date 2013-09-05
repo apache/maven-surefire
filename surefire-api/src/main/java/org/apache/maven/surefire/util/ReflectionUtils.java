@@ -46,7 +46,7 @@ public class ReflectionUtils
         }
         catch ( NoSuchMethodException e )
         {
-            throw new NestedRuntimeException( "When finding method " + methodName, e );
+            throw new RuntimeException( "When finding method " + methodName, e );
         }
     }
 

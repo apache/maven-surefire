@@ -19,7 +19,6 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import org.apache.maven.surefire.util.NestedCheckedException;
 
 /**
  * An error occurring during the invocation of Surefire via an alternate class loader.
@@ -27,7 +26,7 @@ import org.apache.maven.surefire.util.NestedCheckedException;
  * @author <a href="mailto:brett@apache.org">Brett Porter</a>
  */
 public class SurefireExecutionException
-    extends NestedCheckedException
+    extends Exception
 {
     public SurefireExecutionException( String message, Throwable nested )
     {

@@ -23,7 +23,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import org.apache.maven.surefire.util.NestedRuntimeException;
 import org.apache.maven.surefire.util.ReflectionUtils;
 
 public final class JUnit3Reflector
@@ -110,7 +109,7 @@ public final class JUnit3Reflector
         }
         catch ( NoSuchMethodException e )
         {
-            throw new NestedRuntimeException( "When finding method " + methodName, e );
+            throw new RuntimeException( "When finding method " + methodName, e );
         }
     }
 

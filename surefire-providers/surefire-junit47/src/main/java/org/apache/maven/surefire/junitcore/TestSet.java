@@ -28,7 +28,6 @@ import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.SimpleReportEntry;
-import org.apache.maven.surefire.util.NestedRuntimeException;
 
 import org.junit.runner.Description;
 
@@ -98,7 +97,7 @@ public class TestSet
         }
         catch ( Exception e )
         {
-            throw new NestedRuntimeException( e );
+            throw new RuntimeException( e );
         }
     }
 

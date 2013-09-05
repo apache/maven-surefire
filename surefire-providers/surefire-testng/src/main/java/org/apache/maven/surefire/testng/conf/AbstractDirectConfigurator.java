@@ -28,7 +28,6 @@ import java.util.Map;
 
 import org.apache.maven.surefire.booter.ProviderParameterNames;
 import org.apache.maven.surefire.testset.TestSetFailedException;
-import org.apache.maven.surefire.util.NestedRuntimeException;
 import org.testng.TestNG;
 import org.testng.xml.XmlSuite;
 
@@ -104,7 +103,7 @@ public abstract class AbstractDirectConfigurator
                 }
                 catch ( Exception ex )
                 {
-                    throw new NestedRuntimeException( "Cannot set option " + key + " with value " + val, ex );
+                    throw new RuntimeException( "Cannot set option " + key + " with value " + val, ex );
                 }
 
             }

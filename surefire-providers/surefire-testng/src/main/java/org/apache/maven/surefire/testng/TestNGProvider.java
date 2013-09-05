@@ -29,7 +29,6 @@ import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.testset.TestSetFailedException;
-import org.apache.maven.surefire.util.NestedRuntimeException;
 import org.apache.maven.surefire.util.RunOrderCalculator;
 import org.apache.maven.surefire.util.ScanResult;
 import org.apache.maven.surefire.util.TestsToRun;
@@ -149,7 +148,7 @@ public class TestNGProvider
             }
             catch ( TestSetFailedException e )
             {
-                throw new NestedRuntimeException( e );
+                throw new RuntimeException( e );
             }
         }
         else

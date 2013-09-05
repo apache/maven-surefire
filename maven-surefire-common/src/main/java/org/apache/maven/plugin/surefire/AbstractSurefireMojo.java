@@ -83,8 +83,6 @@ import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.DefaultScanResult;
-import org.apache.maven.surefire.util.NestedCheckedException;
-import org.apache.maven.surefire.util.NestedRuntimeException;
 import org.apache.maven.surefire.util.RunOrder;
 import org.apache.maven.toolchain.Toolchain;
 import org.apache.maven.toolchain.ToolchainManager;
@@ -814,7 +812,7 @@ public abstract class AbstractSurefireMojo
 
         RunResult current = RunResult.noTestsRun();
 
-        NestedCheckedException firstForkException = null;
+        Exception firstForkException = null;
         for ( ProviderInfo provider : providers )
         {
             try
@@ -1002,7 +1000,7 @@ public abstract class AbstractSurefireMojo
         }
     }
 
-    protected abstract void handleSummary( RunResult summary, NestedCheckedException firstForkException )
+    protected abstract void handleSummary( RunResult summary, Exception firstForkException )
         throws MojoExecutionException, MojoFailureException;
 
     protected void logReportsDirectory()
@@ -2093,11 +2091,11 @@ public abstract class AbstractSurefireMojo
         }
         catch ( ArtifactResolutionException e )
         {
-            throw new NestedRuntimeException( e );
+            throw new RuntimeException( e );
         }
         catch ( ArtifactNotFoundException e )
         {
-            throw new NestedRuntimeException( e );
+            throw new RuntimeException( e );
         }
     }
 

@@ -19,7 +19,6 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
-import org.apache.maven.surefire.util.NestedRuntimeException;
 
 /**
  * Exception occurring during report generation.
@@ -27,7 +26,7 @@ import org.apache.maven.surefire.util.NestedRuntimeException;
  * @author <a href="mailto:brett@apache.org">Brett Porter</a>
  */
 public class ReporterException
-    extends NestedRuntimeException
+    extends RuntimeException
 {
     public ReporterException( String message, Exception nested )
     {
