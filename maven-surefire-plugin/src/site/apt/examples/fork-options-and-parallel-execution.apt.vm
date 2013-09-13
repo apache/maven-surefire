@@ -166,7 +166,7 @@ Fork Options and Parallel Test Execution
     <artifactId>${project.artifactId}</artifactId>
     <version>${project.version}</version>
     <configuration>
-        <forkCount>3</threadCount>
+        <forkCount>3</forkCount>
         <reuseForks>true</reuseForks>
         <argLine>-Xmx1024m -XX:MaxPermSize=256m</argLine>
         <systemPropertyVariables>
