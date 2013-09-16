@@ -660,8 +660,12 @@ public abstract class AbstractSurefireMojo
     protected String runOrder;
 
     /**
-     * List of dependencies to scan for test classes to include in the test run. Each dependency string must follow the format
-     * <i>groupId:artifactId</i>. For example: <i>org.acme:project-a</i>
+     * List of dependencies to scan for test classes to include in the test run.
+     * The child elements of this element must be &lt;dependency&gt; elements, and the
+     * contents of each of these elements must be a string which follows the format:
+     *
+     * <i>groupId:artifactId</i>. For example: <i>org.acme:project-a</i> or
+     * <i>groupId:artifactId:classifier</i>. For example: <i>org.acme:project-a:classifier</i>
      *
      * @since 2.15
      */
