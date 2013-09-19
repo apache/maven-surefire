@@ -125,7 +125,7 @@
   <distributionManagement>
     <site>
       <id>apache.website</id>
-      <url>${maven.surefire.siteUrlDeployment}</url>
+      <url>scm:svn:https://svn.apache.org/repos/infra/websites/production/maven/content/${maven.site.path}</url>
     </site>
   </distributionManagement>
 
