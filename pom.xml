@@ -23,7 +23,7 @@
   <parent>
     <artifactId>maven-parent</artifactId>
     <groupId>org.apache.maven</groupId>
-    <version>22</version>
+    <version>23</version>
     <relativePath>../pom/maven/pom.xml</relativePath>
   </parent>
 
@@ -119,7 +119,6 @@
 
     <maven.surefire.scm.devConnection>scm:git:https://git-wip-us.apache.org/repos/asf/maven-surefire.git</maven.surefire.scm.devConnection>
 
-    <maven.site.cache>${user.home}/maven-sites</maven.site.cache>
     <maven.surefire.siteFilePath>${maven.site.cache}/surefire-${project.version}</maven.surefire.siteFilePath>
     <maven.surefire.siteUrlDeployment>file://${maven.surefire.siteFilePath}</maven.surefire.siteUrlDeployment>
     <maven.surefire.scmPubCheckoutDirectory>${maven.site.cache}/maven-surefire-site-content-${project.version}</maven.surefire.scmPubCheckoutDirectory>
@@ -303,7 +302,6 @@
           <artifactId>maven-release-plugin</artifactId>
           <version>2.2.1</version>
           <configuration>
-            <tagBase>https://svn.apache.org/repos/asf/maven/surefire/tags</tagBase>
             <autoVersionSubmodules>true</autoVersionSubmodules>
             <preparationGoals>clean install</preparationGoals>
           </configuration>
@@ -316,7 +314,6 @@
           <artifactId>maven-plugin-plugin</artifactId>
           <version>${mavenPluginPluginVersion}</version>
           <configuration>
-            <useJava5>true</useJava5>
             <skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
           </configuration>
         </plugin>
@@ -324,18 +321,10 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-site-plugin</artifactId>
           <version>3.3</version>
-          <dependencies>
-            <dependency>
-              <groupId>org.apache.maven.doxia</groupId>
-              <artifactId>doxia-module-markdown</artifactId>
-              <version>1.3</version>
-            </dependency>
-          </dependencies>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-scm-publish-plugin</artifactId>
-          <version>1.0-beta-2</version>
           <configuration>
             <checkoutDirectory>${maven.surefire.scmPubCheckoutDirectory}</checkoutDirectory>
             <pubScmUrl>scm:svn:${maven.surefire.scmPubUrl}</pubScmUrl>
@@ -378,7 +367,6 @@
         <configuration>
           <dependencyLocationsEnabled>false</dependencyLocationsEnabled><!-- waiting for MPIR-267 -->
           <!-- pin down urls to to avoid interpolation in the modules -->
-          <webAccessUrl>${maven.surefire.scm.url}</webAccessUrl>
           <anonymousConnection>${maven.surefire.scm.devConnection}</anonymousConnection>
           <developerConnection>${maven.surefire.scm.devConnection}</developerConnection>
         </configuration>
