@@ -78,8 +78,8 @@ public class IntegrationTestMojo
      * This parameter overrides the <code>includes/excludes</code> parameters, and the TestNG <code>suiteXmlFiles</code>
      * parameter.
      * <p/>
-     * since 2.7.3 You can execute a limited number of method in the test with adding #myMethod or #my*ethod. Si type
-     * "-Dtest=MyTest#myMethod" <b>supported for junit 4.x and testNg</b>
+     * since 2.7.3 You can execute a limited number of methods in the test with adding #myMethod or #my*ethod. E.g. type
+     * "-Dit.test=MyTest#myMethod" <b>supported for junit 4.x and testNg</b>
      */
     @Parameter( property = "it.test" )
     private String test;
