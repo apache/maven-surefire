@@ -65,24 +65,24 @@ public class TestNGExecutor
         XmlMethodSelector groupMatchingSelector = getGroupMatchingSelector( options );
         XmlMethodSelector methodNameFilteringSelector = getMethodNameFilteringSelector( methodNamePattern );
 
-        List<XmlSuite> suites = new ArrayList<XmlSuite>( testClasses.length );
+        XmlSuite xmlSuite = new XmlSuite();
+        xmlSuite.setName("Suite");
+        configurator.configure( xmlSuite, options );
+
+
+        XmlTest xmlTest = new XmlTest(xmlSuite);
+        xmlTest.setName("Test");
+        addSelector( xmlTest, groupMatchingSelector );
+        addSelector( xmlTest, methodNameFilteringSelector );
+
+
+        List<XmlClass> xmlClasses = new ArrayList<XmlClass>(testClasses.length);
         for ( Class testClass : testClasses )
         {
-            XmlSuite xmlSuite = new XmlSuite();
-
-            xmlSuite.setName( testClass.getName() );
-            configurator.configure( xmlSuite, options );
-
-            XmlTest xmlTest = new XmlTest( xmlSuite );
-            xmlTest.setXmlClasses( Arrays.asList( new XmlClass( testClass ) ) );
-
-            addSelector( xmlTest, groupMatchingSelector );
-            addSelector( xmlTest, methodNameFilteringSelector );
-
-            suites.add( xmlSuite );
+            xmlClasses.add(new XmlClass(testClass.getName()));
         }
-
-        testng.setXmlSuites( suites );
+        xmlTest.setXmlClasses(xmlClasses);
+        testng.setXmlSuites( Arrays.asList(xmlSuite));
 
         configurator.configure( testng, options );
         postConfigure( testng, testSourceDirectory, reportManager, suite, reportsDirectory );
