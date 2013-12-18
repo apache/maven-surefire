@@ -1433,7 +1433,9 @@ public abstract class AbstractSurefireMojo
 
             }
             Artifact surefireArtifact = getCommonArtifact();
-            Classpath inprocClassPath = providerClasspath.addClassPathElementUrl( surefireArtifact.getFile().getAbsolutePath() );
+            Classpath inprocClassPath = providerClasspath.
+                    addClassPathElementUrl( surefireArtifact.getFile().getAbsolutePath() )
+                    .addClassPathElementUrl( getApiArtifact().getFile().getAbsolutePath());
 
             final Classpath testClasspath = generateTestClasspath();
 
@@ -1468,6 +1470,11 @@ public abstract class AbstractSurefireMojo
     private Artifact getCommonArtifact()
     {
         return getPluginArtifactMap().get( "org.apache.maven.surefire:maven-surefire-common" );
+    }
+
+    private Artifact getApiArtifact()
+    {
+        return getPluginArtifactMap().get( "org.apache.maven.surefire:surefire-api" );
     }
 
     private StartupReportConfiguration getStartupReportConfiguration( String configChecksum )
