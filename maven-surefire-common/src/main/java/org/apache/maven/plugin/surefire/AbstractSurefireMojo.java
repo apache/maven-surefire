@@ -1738,6 +1738,7 @@ public abstract class AbstractSurefireMojo
         return new ForkConfiguration( bootClasspathConfiguration, tmpDir, getEffectiveDebugForkedProcess(),
                                       getEffectiveJvm(),
                                       getWorkingDirectory() != null ? getWorkingDirectory() : getBasedir(),
+                                      getProject().getModel().getProperties(),
                                       getArgLine(), getEnvironmentVariables(), getLog().isDebugEnabled(),
                                       getEffectiveForkCount(), reuseForks );
     }

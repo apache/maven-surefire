@@ -83,5 +83,19 @@ under the License.
         </p>
       </answer>
     </faq>
+    <faq id="late-property-evaluation">
+      <question>How do I use properties set by other plugins in argLine?</question>
+      <answer>
+        <p>
+          Maven does property replacement for <pre>${...}</pre> values in pom.xml before any
+          plugin is run. So surefire would never see the place-holders in its argLine property.
+        </p>
+        <p>
+          Using an alternate syntax for these properties, <pre>@{...}</pre> allows late replacement
+          of properties when the plugin is executed, so properties that have been modified by other
+          plugins will be picked up correctly.
+        </p>
+      </answer>
+    </faq>
   </part>
 </faqs>
