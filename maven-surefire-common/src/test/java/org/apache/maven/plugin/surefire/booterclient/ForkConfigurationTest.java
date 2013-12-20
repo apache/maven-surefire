@@ -22,6 +22,7 @@ package org.apache.maven.plugin.surefire.booterclient;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Properties;
 
 import org.apache.maven.shared.utils.StringUtils;
 import org.apache.maven.shared.utils.cli.Commandline;
@@ -71,7 +72,7 @@ public class ForkConfigurationTest
     public static ForkConfiguration getForkConfiguration( String argLine, String jvm )
         throws IOException
     {
-        return new ForkConfiguration( Classpath.emptyClasspath(), null, null, jvm, new File( "." ).getCanonicalFile(), argLine,
+        return new ForkConfiguration( Classpath.emptyClasspath(), null, null, jvm, new File( "." ).getCanonicalFile(), new Properties(), argLine,
                                       null, false, 1, false );
     }
 

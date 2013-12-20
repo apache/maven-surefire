@@ -22,8 +22,10 @@ package org.apache.maven.plugin.surefire.booterclient;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
@@ -63,6 +65,8 @@ public class ForkConfiguration
 
     private final String jvmExecutable;
 
+    private Properties modelProperties;
+
     private final String argLine;
 
     private final Map<String, String> environmentVariables;
@@ -76,7 +80,7 @@ public class ForkConfiguration
     private final String debugLine;
 
     public ForkConfiguration( Classpath bootClasspathConfiguration, File tmpDir, String debugLine, String jvmExecutable,
-                              File workingDirectory, String argLine, Map<String, String> environmentVariables,
+                              File workingDirectory, Properties modelProperties, String argLine, Map<String, String> environmentVariables,
                               boolean debugEnabled, int forkCount, boolean reuseForks )
     {
         this.bootClasspathConfiguration = bootClasspathConfiguration;
@@ -84,6 +88,7 @@ public class ForkConfiguration
         this.debugLine = debugLine;
         this.jvmExecutable = jvmExecutable;
         this.workingDirectory = workingDirectory;
+        this.modelProperties = modelProperties;
         this.argLine = argLine;
         this.environmentVariables = environmentVariables;
         this.debug = debugEnabled;
@@ -146,7 +151,7 @@ public class ForkConfiguration
 
         if ( argLine != null )
         {
-            cli.createArg().setLine( replaceThreadNumberPlaceholder( stripNewLines( argLine ), threadNumber ) );
+            cli.createArg().setLine( replaceThreadNumberPlaceholder( stripNewLines( replacePropertyExpressions( argLine ) ), threadNumber ) );
         }
 
         if ( environmentVariables != null )
@@ -201,6 +206,30 @@ public class ForkConfiguration
         return argLine.replace( AbstractSurefireMojo.THREAD_NUMBER_PLACEHOLDER,
                                 String.valueOf( threadNumber ) ).replace( AbstractSurefireMojo.FORK_NUMBER_PLACEHOLDER,
                                                                           String.valueOf( threadNumber ) );
+    }
+
+    /**
+     * Replaces expressions <pre>@{property-name}</pre> with the corresponding properties
+     * from the model. This allows late evaluation of property values when the plugin is exexcuted (as compared
+     * to evaluation when the pom is parsed as is done with <pre>${property-name}</pre> expressions).
+     *
+     * This allows other plugins to modify or set properties with the changes getting picked up by surefire.
+     */
+    private String replacePropertyExpressions( String argLine )
+    {
+        if ( argLine == null ) {
+            return null;
+        }
+
+        for ( Enumeration<?> e = modelProperties.propertyNames(); e.hasMoreElements(); ) {
+            String key = e.nextElement().toString();
+            String field = "@{" + key + "}";
+            if ( argLine.contains(field) ) {
+                argLine = argLine.replace(field, modelProperties.getProperty(key, ""));
+            }
+        }
+
+        return argLine;
     }
 
     /**
