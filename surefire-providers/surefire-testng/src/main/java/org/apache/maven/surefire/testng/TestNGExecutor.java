@@ -23,6 +23,7 @@ import org.apache.maven.surefire.booter.ProviderParameterNames;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.testng.conf.Configurator;
 import org.apache.maven.surefire.testset.TestSetFailedException;
+import org.apache.maven.surefire.util.ReflectionUtils;
 import org.apache.maven.surefire.util.internal.StringUtils;
 import org.testng.TestNG;
 import org.testng.annotations.Test;
@@ -32,6 +33,7 @@ import org.testng.xml.XmlSuite;
 import org.testng.xml.XmlTest;
 
 import java.io.File;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -54,6 +56,9 @@ public class TestNGExecutor
     /** The default name for a test launched from the maven surefire plugin */
     public static final String DEFAULT_SUREFIRE_TEST_NAME = "Surefire test";
 
+    private static final boolean HAS_TEST_ANNOTATION_ON_CLASSPATH =
+        null != ReflectionUtils.tryLoadClass( TestNGExecutor.class.getClassLoader(), "org.testng.annotations.Test" );
+
     private TestNGExecutor()
     {
         // noop
@@ -71,54 +76,95 @@ public class TestNGExecutor
         XmlMethodSelector groupMatchingSelector = getGroupMatchingSelector( options );
         XmlMethodSelector methodNameFilteringSelector = getMethodNameFilteringSelector( methodNamePattern );
 
-        Map<String, Map<String, List<XmlClass>>> suitesNames = new HashMap<String, Map<String, List<XmlClass>>>();
+        Map<String, SuiteAndNamedTests> suitesNames = new HashMap<String, SuiteAndNamedTests>();
 
-        for (Class testClass : testClasses) {
-            Test testAnnotation = (Test)testClass.getAnnotation(Test.class);
-            String suiteName = DEFAULT_SUREFIRE_SUITE_NAME;
-            String testName = DEFAULT_SUREFIRE_TEST_NAME;
-            if (testAnnotation != null) {
+        List<XmlSuite> xmlSuites = new ArrayList<XmlSuite>();
+        for ( Class testClass : testClasses )
+        {
+            TestMetadata metadata = findTestMetadata( testClass );
 
-                if (testAnnotation.suiteName() != null) {
-                    suiteName = testAnnotation.suiteName();
-                }
+            SuiteAndNamedTests suiteAndNamedTests = suitesNames.get( metadata.suiteName );
+            if ( suiteAndNamedTests == null )
+            {
+                suiteAndNamedTests = new SuiteAndNamedTests();
+                suiteAndNamedTests.xmlSuite.setName( metadata.suiteName );
+                configurator.configure( suiteAndNamedTests.xmlSuite, options );
+                xmlSuites.add( suiteAndNamedTests.xmlSuite );
 
-                if (testAnnotation.testName() != null) {
-                    testName = testAnnotation.testName();
-                }
+                suitesNames.put( metadata.suiteName, suiteAndNamedTests );
             }
-            Map<String, List<XmlClass>> testNames = suitesNames.get(suiteName);
-            if (testNames == null) {
-                testNames = new HashMap<String, List<XmlClass>>();
-                suitesNames.put(suiteName, testNames);
-            }
-            List<XmlClass> xmlTestClasses = testNames.get(testName);
-            if (xmlTestClasses == null) {
-                xmlTestClasses = new ArrayList<XmlClass>();
-                testNames.put(testName, xmlTestClasses);
-            }
-            xmlTestClasses.add(new XmlClass(testClass.getName()));
-        }
 
-        List<XmlSuite> xmlSuites = new ArrayList<XmlSuite>(suitesNames.size());
-        for (Map.Entry<String, Map<String, List<XmlClass>>> suit : suitesNames.entrySet()) {
-            XmlSuite xmlSuite = new XmlSuite();
-            xmlSuite.setName(suit.getKey());
-            configurator.configure( xmlSuite, options );
-            for (Map.Entry<String, List<XmlClass>> test : suit.getValue().entrySet()) {
-                XmlTest xmlTest = new XmlTest(xmlSuite);
-                xmlTest.setName(test.getKey());
+            XmlTest xmlTest = suiteAndNamedTests.testNameToTest.get( metadata.testName );
+            if ( xmlTest == null )
+            {
+                xmlTest = new XmlTest( suiteAndNamedTests.xmlSuite );
+                xmlTest.setName( metadata.testName );
                 addSelector( xmlTest, groupMatchingSelector );
                 addSelector( xmlTest, methodNameFilteringSelector );
-                xmlTest.setXmlClasses(test.getValue());
-            }
-            xmlSuites.add(xmlSuite);
+                xmlTest.setXmlClasses( new ArrayList<XmlClass>() );
 
+                suiteAndNamedTests.testNameToTest.put( metadata.testName, xmlTest );
+            }
+
+            xmlTest.getXmlClasses().add( new XmlClass( testClass.getName() ) );
         }
-        testng.setXmlSuites(xmlSuites);
+
+        testng.setXmlSuites( xmlSuites );
         configurator.configure( testng, options );
         postConfigure( testng, testSourceDirectory, reportManager, suite, reportsDirectory );
         testng.run();
+    }
+
+    private static TestMetadata findTestMetadata( Class testClass )
+    {
+        TestMetadata result = new TestMetadata();
+        if ( HAS_TEST_ANNOTATION_ON_CLASSPATH )
+        {
+            Test testAnnotation = findAnnotation( testClass, Test.class );
+            if ( null != testAnnotation )
+            {
+                if ( !StringUtils.isBlank( testAnnotation.suiteName() ) )
+                {
+                    result.suiteName = testAnnotation.suiteName();
+                }
+
+                if ( !StringUtils.isBlank( testAnnotation.testName() ) )
+                {
+                    result.testName = testAnnotation.testName();
+                }
+            }
+        }
+        return result;
+    }
+
+    private static <T extends Annotation> T findAnnotation( Class<?> clazz, Class<T> annotationType )
+    {
+        if ( clazz == null )
+        {
+            return null;
+        }
+
+        T result = clazz.getAnnotation( annotationType );
+        if ( result != null )
+        {
+            return result;
+        }
+
+        return findAnnotation( clazz.getSuperclass(), annotationType );
+    }
+
+    private static class TestMetadata
+    {
+        private String testName = DEFAULT_SUREFIRE_TEST_NAME;
+
+        private String suiteName = DEFAULT_SUREFIRE_SUITE_NAME;
+    }
+
+    private static class SuiteAndNamedTests
+    {
+        private XmlSuite xmlSuite = new XmlSuite();
+
+        private Map<String, XmlTest> testNameToTest = new HashMap<String, XmlTest>();
     }
 
     private static void addSelector( XmlTest xmlTest, XmlMethodSelector selector )

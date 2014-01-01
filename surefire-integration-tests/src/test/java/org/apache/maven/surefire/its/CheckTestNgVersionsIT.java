@@ -137,7 +137,7 @@ public class CheckTestNgVersionsIT
     @Test public void test514()
         throws Exception
     {
-        runTestNgTest( "5.14", false ); // runOrder is not working
+        runTestNgTest( "5.14" );
     }
 
     @Test public void test5141()
@@ -155,22 +155,28 @@ public class CheckTestNgVersionsIT
     @Test public void test60()
         throws Exception
     {
-        runTestNgTest( "6.0" );
+        runTestNgTest( "6.0", false );
     }
 
     @Test public void test685()
         throws Exception
     {
-        runTestNgTest( "6.8.5" );
+        runTestNgTestWithRunOrder( "6.8.5" );
     }
 
-    public void runTestNgTest( String version )
+    private void runTestNgTestWithRunOrder( String version )
         throws Exception
     {
         runTestNgTest( version, true );
     }
 
-    public void runTestNgTest( String version, boolean validateRunOrder )
+    private void runTestNgTest( String version )
+        throws Exception
+    {
+        runTestNgTest( version, false );
+    }
+
+    private void runTestNgTest( String version, boolean validateRunOrder )
         throws Exception
     {
 
