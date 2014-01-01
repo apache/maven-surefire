@@ -25,6 +25,7 @@ import org.apache.maven.surefire.testng.conf.Configurator;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.internal.StringUtils;
 import org.testng.TestNG;
+import org.testng.annotations.Test;
 import org.testng.xml.XmlClass;
 import org.testng.xml.XmlMethodSelector;
 import org.testng.xml.XmlSuite;
@@ -35,7 +36,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -47,6 +48,11 @@ import java.util.Map;
  */
 public class TestNGExecutor
 {
+    /** The default name for a suite launched from the maven surefire plugin */
+    public static final String DEFAULT_SUREFIRE_SUITE_NAME = "Surefire suite";
+
+    /** The default name for a test launched from the maven surefire plugin */
+    public static final String DEFAULT_SUREFIRE_TEST_NAME = "Surefire test";
 
     private TestNGExecutor()
     {
@@ -65,28 +71,53 @@ public class TestNGExecutor
         XmlMethodSelector groupMatchingSelector = getGroupMatchingSelector( options );
         XmlMethodSelector methodNameFilteringSelector = getMethodNameFilteringSelector( methodNamePattern );
 
-        XmlSuite xmlSuite = new XmlSuite();
-        xmlSuite.setName("Suite");
-        configurator.configure( xmlSuite, options );
+        Map<String, Map<String, List<XmlClass>>> suitesNames = new HashMap<String, Map<String, List<XmlClass>>>();
 
+        for (Class testClass : testClasses) {
+            Test testAnnotation = (Test)testClass.getAnnotation(Test.class);
+            String suiteName = DEFAULT_SUREFIRE_SUITE_NAME;
+            String testName = DEFAULT_SUREFIRE_TEST_NAME;
+            if (testAnnotation != null) {
 
-        XmlTest xmlTest = new XmlTest(xmlSuite);
-        xmlTest.setName("Test");
-        addSelector( xmlTest, groupMatchingSelector );
-        addSelector( xmlTest, methodNameFilteringSelector );
+                if (testAnnotation.suiteName() != null) {
+                    suiteName = testAnnotation.suiteName();
+                }
 
-
-        List<XmlClass> xmlClasses = new ArrayList<XmlClass>(testClasses.length);
-        for ( Class testClass : testClasses )
-        {
-            xmlClasses.add(new XmlClass(testClass.getName()));
+                if (testAnnotation.testName() != null) {
+                    testName = testAnnotation.testName();
+                }
+            }
+            Map<String, List<XmlClass>> testNames = suitesNames.get(suiteName);
+            if (testNames == null) {
+                testNames = new HashMap<String, List<XmlClass>>();
+                suitesNames.put(suiteName, testNames);
+            }
+            List<XmlClass> xmlTestClasses = testNames.get(testName);
+            if (xmlTestClasses == null) {
+                xmlTestClasses = new ArrayList<XmlClass>();
+                testNames.put(testName, xmlTestClasses);
+            }
+            xmlTestClasses.add(new XmlClass(testClass.getName()));
         }
-        xmlTest.setXmlClasses(xmlClasses);
-        testng.setXmlSuites( Arrays.asList(xmlSuite));
 
+        List<XmlSuite> xmlSuites = new ArrayList<XmlSuite>(suitesNames.size());
+        for (Map.Entry<String, Map<String, List<XmlClass>>> suit : suitesNames.entrySet()) {
+            XmlSuite xmlSuite = new XmlSuite();
+            xmlSuite.setName(suit.getKey());
+            configurator.configure( xmlSuite, options );
+            for (Map.Entry<String, List<XmlClass>> test : suit.getValue().entrySet()) {
+                XmlTest xmlTest = new XmlTest(xmlSuite);
+                xmlTest.setName(test.getKey());
+                addSelector( xmlTest, groupMatchingSelector );
+                addSelector( xmlTest, methodNameFilteringSelector );
+                xmlTest.setXmlClasses(test.getValue());
+            }
+            xmlSuites.add(xmlSuite);
+
+        }
+        testng.setXmlSuites(xmlSuites);
         configurator.configure( testng, options );
         postConfigure( testng, testSourceDirectory, reportManager, suite, reportsDirectory );
-
         testng.run();
     }
 
