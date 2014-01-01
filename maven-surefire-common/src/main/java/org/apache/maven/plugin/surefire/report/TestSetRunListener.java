@@ -129,11 +129,6 @@ public class TestSetRunListener
     {
         WrappedReportEntry wrap = wrapTestSet( report );
         List<String> testResults = briefOrPlainFormat ? detailsForThis.getTestResults() : null;
-        if ( consoleReporter != null )
-        {
-            consoleReporter.testSetCompleted( wrap, detailsForThis, testResults );
-        }
-        consoleOutputReceiver.testSetCompleted( wrap );
         if ( fileReporter != null )
         {
             fileReporter.testSetCompleted( wrap, detailsForThis, testResults );
@@ -146,6 +141,11 @@ public class TestSetRunListener
         {
             statisticsReporter.testSetCompleted();
         }
+        if ( consoleReporter != null )
+        {
+            consoleReporter.testSetCompleted( wrap, detailsForThis, testResults );
+        }
+        consoleOutputReceiver.testSetCompleted( wrap );
         if ( consoleReporter != null )
         {
             consoleReporter.reset();
