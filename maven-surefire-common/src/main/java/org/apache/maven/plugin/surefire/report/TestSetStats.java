@@ -124,6 +124,13 @@ public class TestSetStats
         failures = 0;
         skipped = 0;
         elapsedForTestSet = 0;
+
+        for ( WrappedReportEntry entry : reportEntries )
+        {
+            entry.getStdout().free();
+            entry.getStdErr().free();
+        }
+
         reportEntries.clear();
     }
 
@@ -188,7 +195,7 @@ public class TestSetStats
         {
             buf.append( " <<< FAILURE!" );
         }
-        
+
         buf.append( " - in " );
         buf.append( reportEntry.getNameWithGroup() );
 

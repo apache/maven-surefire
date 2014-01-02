@@ -151,6 +151,9 @@ public class TestSetRunListener
             consoleReporter.reset();
         }
 
+        wrap.getStdout().free();
+        wrap.getStdErr().free();
+
         globalStatistics.add( detailsForThis );
         detailsForThis.reset();
 

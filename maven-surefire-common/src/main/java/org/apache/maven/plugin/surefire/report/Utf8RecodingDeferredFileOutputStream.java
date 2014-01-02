@@ -88,4 +88,12 @@ class Utf8RecodingDeferredFileOutputStream
     {
         deferredFileOutputStream.writeTo( out );
     }
+
+    public void free()
+    {
+        if ( null != deferredFileOutputStream && null != deferredFileOutputStream.getFile() )
+        {
+            deferredFileOutputStream.getFile().deleteOnExit();
+        }
+    }
 }
