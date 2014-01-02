@@ -93,7 +93,19 @@ class Utf8RecodingDeferredFileOutputStream
     {
         if ( null != deferredFileOutputStream && null != deferredFileOutputStream.getFile() )
         {
-            deferredFileOutputStream.getFile().deleteOnExit();
+            try
+            {
+                deferredFileOutputStream.close();
+                if ( !deferredFileOutputStream.getFile().delete() )
+                {
+                    deferredFileOutputStream.getFile().deleteOnExit();
+                }
+            }
+            catch ( IOException ioe )
+            {
+                deferredFileOutputStream.getFile().deleteOnExit();
+
+            }
         }
     }
 }
