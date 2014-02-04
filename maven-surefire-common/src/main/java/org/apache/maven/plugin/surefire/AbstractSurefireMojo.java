@@ -1753,7 +1753,7 @@ public abstract class AbstractSurefireMojo
     private void convertDeprecatedForkMode()
     {
         String effectiveForkMode = getEffectiveForkMode();
-        // FORK_ONCE (default) is represented by the default values of forkCount and reuseForks 
+        // FORK_ONCE (default) is represented by the default values of forkCount and reuseForks
         if ( ForkConfiguration.FORK_PERTHREAD.equals( effectiveForkMode ) )
         {
             forkCount = String.valueOf( threadCount );
@@ -1802,7 +1802,16 @@ public abstract class AbstractSurefireMojo
         if ( trimmed.endsWith( "C" ) )
         {
             double multiplier = Double.parseDouble( trimmed.substring( 0, trimmed.length() - 1 ) );
-            return (int) ( multiplier * ( (double) Runtime.getRuntime().availableProcessors() ) );
+            double calculated = multiplier * ( (double) Runtime.getRuntime().availableProcessors() );
+
+            if ( calculated > 0d )
+            {
+                return Math.max( (int) calculated, 1 );
+            }
+            else
+            {
+                return 0;
+            }
         }
         else
         {
@@ -2970,7 +2979,7 @@ public abstract class AbstractSurefireMojo
     {
         this.classpathDependencyExcludes = classpathDependencyExcludes;
     }
-    
+
     public String getClasspathDependencyScopeExclude()
     {
         return classpathDependencyScopeExclude;

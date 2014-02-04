@@ -47,20 +47,22 @@ public class SurefirePluginTest
         assertConversionFails( surefirePlugin, "5.0" );
         assertConversionFails( surefirePlugin, "5,0C" );
         assertConversionFails( surefirePlugin, "5.0CC" );
-        
+
         assertForkCount( surefirePlugin, 5, "5" );
-        
+
         int availableProcessors = Runtime.getRuntime().availableProcessors();
         assertForkCount( surefirePlugin, 3*availableProcessors, "3C" );
         assertForkCount( surefirePlugin, (int) ( 2.5*availableProcessors ), "2.5C" );
         assertForkCount( surefirePlugin, availableProcessors, "1.0001 C" );
+        assertForkCount( surefirePlugin, 1, 1d / ( (double) availableProcessors + 1 ) + "C" );
+        assertForkCount( surefirePlugin, 0, "0 C" );
     }
 
     private void assertForkCount( SurefirePlugin surefirePlugin, int expected, String value )
     {
         assertEquals( expected, surefirePlugin.convertWithCoreCount( value ));
     }
-    
+
     private void assertConversionFails( SurefirePlugin surefirePlugin, String value )
     {
         try {
