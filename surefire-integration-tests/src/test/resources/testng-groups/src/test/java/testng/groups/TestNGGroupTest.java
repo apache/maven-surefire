@@ -1,4 +1,4 @@
-package testng.jdk14;
+package testng.groups;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -20,55 +20,57 @@ package testng.jdk14;
  */
 
 import org.testng.Assert;
-
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 
 /**
- * Tests that forcing testng to run tests via the <code>"${maven.test.forcetestng}"</code>
- * configuration option works.
- *
- * @author jkuhnert
+ * Tests grouping
  */
-public class TestNGJavadocTest
+public class TestNGGroupTest
 {
+    private Object testObject;
 
-    /**
-     * Sets up testObject
-     *
-     * @testng.configuration beforeTestClass = "true" groups = "functional"
-     */
+    @BeforeClass( groups = "functional" )
     public void configureTest()
     {
         testObject = new Object();
     }
 
-    Object testObject;
-
-    /**
-     * Tests reporting an error
-     *
-     * @testng.test groups = "functional, notincluded"
-     */
-    public void isTestObjectNull()
+    @Test( groups = { "functional" } )
+    public void isFunctional()
     {
         Assert.assertNotNull( testObject, "testObject is null" );
     }
 
-    /**
-     * Sample method that shouldn't be run by test suite.
-     *
-     * @testng.test groups = "notincluded"
-     */
-    public void shouldNotRun()
+    @Test( groups = { "functional", "notincluded" } )
+    public void isFunctionalAndNotincluded()
     {
-        Assert.assertTrue( false, "Group specified by test shouldnt be run." );
+        Assert.assertNotNull( testObject, "testObject is null" );
     }
 
-    /**
-     * Sample method that shouldn't be run by test suite.
-     * @testng.test groups = "functional"
-     */
+    @Test( groups = "notincluded" )
+    public void isNotIncluded()
+    {
+        Assert.assertTrue( false );
+    }
+
+    @Test( groups = "abc-def" )
+    public void isDashedGroup()
+    {
+    }
+
+    @Test( groups = "foo.bar" )
+    public void isFooBar()
+    {
+    }
+
+    @Test( groups = "foo.zap" )
+    public void isFooZap()
+    {
+    }
+
+    @Test
     public void noGroup()
     {
     }
-
 }

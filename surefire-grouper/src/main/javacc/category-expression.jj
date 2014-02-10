@@ -35,12 +35,12 @@ public class GroupMatcherParser
         }
         }
     }
-    
+
     public GroupMatcherParser( String expression )
     {
         this( (Reader)(new StringReader( expression ) ) );
     }
-    
+
     private GroupMatcher getMatcher( Op op, GroupMatcher...matchers )
     {
       GroupMatcher matcher = null;
@@ -52,10 +52,10 @@ public class GroupMatcherParser
       {
         matcher = new OrGroupMatcher( matchers );
       }
-      
+
       return matcher;
     }
-    
+
     public enum Op
     {
       AND, OR;
@@ -83,7 +83,7 @@ TOKEN:
 | <BANG:  "!">
 | <LPAREN: "(">
 | <RPAREN: ")">
-| <STRING: (["A"-"Z", "a"-"z", "-", "0"-"9", "_", "$", "#", "."])+ >
+| <STRING: (["A"-"Z", "a"-"z", "-", "0"-"9", "_", "$", "#", ".", "*", "\\"])+ >
 | <CLS:    ".class">
 }
 
@@ -122,7 +122,7 @@ Op op=null;
     {
       matcher = getMatcher( op, lhs, rhs );
     }
-    
+
     return matcher;
   }
 }
@@ -153,7 +153,7 @@ Op op=null;
     {
       matcher = getMatcher( op, lhs, rhs );
     }
-    
+
     return inverted ? new InverseGroupMatcher( matcher ) : matcher;
   }
 }
@@ -180,15 +180,15 @@ Op op() :
 (
   <AND>
   {o=Op.AND;}
-| <OR> 
+| <OR>
   {o=Op.OR;}
-| <AMP2> 
+| <AMP2>
   {o=Op.AND;}
 | <PIPE2>
   {o=Op.OR;}
 | <COMMA>
   {o=Op.OR;}
-)  
+)
   {return o;}
 }
 

@@ -1,4 +1,5 @@
 package org.apache.maven.surefire.group.match;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -17,7 +18,8 @@ package org.apache.maven.surefire.group.match;
  * specific language governing permissions and limitations
  * under the License.
  */
-
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 public class SingleGroupMatcher
     implements GroupMatcher
@@ -27,9 +29,20 @@ public class SingleGroupMatcher
 
     private Class<?> enabledClass;
 
+    private Pattern pattern;
+
     public SingleGroupMatcher( String enabled )
     {
         this.enabled = enabled.endsWith( ".class" ) ? enabled.substring( 0, enabled.length() - 6 ) : enabled;
+
+        try
+        {
+            this.pattern = Pattern.compile( enabled );
+        }
+        catch ( PatternSyntaxException pse )
+        {
+            // ignore
+        }
     }
 
     @Override
@@ -115,6 +128,11 @@ public class SingleGroupMatcher
 
             // System.out.println( cat + ".endsWith(" + enabled + ")? " + ( cat.endsWith( enabled ) ) );
             if ( cat.endsWith( enabled ) )
+            {
+                return true;
+            }
+
+            if ( pattern != null && pattern.matcher( cat ).matches() )
             {
                 return true;
             }
