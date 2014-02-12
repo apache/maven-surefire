@@ -82,6 +82,12 @@ the command line (you might have to do only the bits after &&).
 You can now paste this command on the command line and capture the output of the fork. This may help you
 determine if the problem is in the forked end or the receiving end.
 
+If investigating a particular class, you probably want to grep the output of this for the classname.
+Additionally the booter codes (first field) can be seen at
+https://git-wip-us.apache.org/repos/asf?p=maven-surefire.git;a=blob;f=surefire-api/src/main/java/org/apache/maven/surefire/booter/ForkingRunListener.java
+
+The second field in the output (after booter code) is the logical channel number, where differnt threads in the fork
+should come in different channels.
 
 * TestCases
 
