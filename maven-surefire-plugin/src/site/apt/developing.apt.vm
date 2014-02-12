@@ -65,6 +65,24 @@ mvn -Dsurefire.version=2.12 verify
   Load the source in your IDE, set a breakpoint at the start of ForkedBooter#main and attach
   a debugger to port 5005.
 
+* Tracing forked execution
+
+The forked surefire process uses stdio to communicate back to the source. Sometimes when tracking troubles
+it can be helpful to look at just the output of the fork.
+
+Ths can be done by running:
+
++---+
+mvn -e -X install | grep Forking
++---+
+
+If you copy the command part of the output, you should be able to re-run the command by just pasting it on
+the command line (you might have to do only the bits after &&).
+
+You can now paste this command on the command line and capture the output of the fork. This may help you
+determine if the problem is in the forked end or the receiving end.
+
+
 * TestCases
 
   All patches to surefire must contain test coverage, either as an integration test
