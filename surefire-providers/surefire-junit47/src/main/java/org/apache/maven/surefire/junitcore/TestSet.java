@@ -147,7 +147,7 @@ public class TestSet
 
     private boolean isAllTestsDone()
     {
-        return testMethods.size() == numberOfCompletedChildren.get();
+        return numberOfTests.get() == numberOfCompletedChildren.get();
     }
 
     public void attachToThread()
