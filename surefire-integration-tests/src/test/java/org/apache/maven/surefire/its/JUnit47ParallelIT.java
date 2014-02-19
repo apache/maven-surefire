@@ -120,8 +120,7 @@ public class JUnit47ParallelIT
     public void serial()
     {
         // takes 7.2 sec
-        unpack().setTestToRun( "Suite*Test" ).executeTest()//.verifyErrorFree( 24 )
-        ;
+        unpack().setTestToRun( "Suite*Test" ).executeTest().verifyErrorFree( 24 );
     }
 
     @Test
@@ -129,8 +128,7 @@ public class JUnit47ParallelIT
     {
         // takes 3.6 sec
         unpack().parallelSuites().useUnlimitedThreads().setTestToRun( "Suite*Test" ).executeTest()
-            //.verifyErrorFree( 24 )
-        ;
+            .verifyErrorFree( 24 );
     }
 
     @Test
@@ -138,8 +136,7 @@ public class JUnit47ParallelIT
     {
         // takes 3.6 sec
         unpack().parallelSuites().useUnlimitedThreads().threadCountSuites( 5 ).setTestToRun( "Suite*Test" )
-            .executeTest()//.verifyErrorFree( 24 )
-        ;
+            .executeTest().verifyErrorFree( 24 );
     }
 
     @Test
@@ -147,8 +144,7 @@ public class JUnit47ParallelIT
     {
         // takes 1.8 sec
         unpack().parallelClasses().useUnlimitedThreads().setTestToRun( "Suite*Test" ).executeTest()
-            //.verifyErrorFree( 24 )
-        ;
+            .verifyErrorFree( 24 );
     }
 
     @Test
@@ -156,8 +152,7 @@ public class JUnit47ParallelIT
     {
         // takes 1.8 sec
         unpack().parallelClasses().useUnlimitedThreads().threadCountClasses( 5 ).setTestToRun( "Suite*Test" )
-            .executeTest()//.verifyErrorFree( 24 )
-        ;
+            .executeTest().verifyErrorFree( 24 );
     }
 
     @Test
@@ -165,8 +160,7 @@ public class JUnit47ParallelIT
     {
         // takes 2.4 sec
         unpack().parallelMethods().useUnlimitedThreads().setTestToRun( "Suite*Test" ).executeTest()
-            //.verifyErrorFree( 24 )
-        ;
+            .verifyErrorFree( 24 );
     }
 
     @Test
@@ -174,8 +168,7 @@ public class JUnit47ParallelIT
     {
         // takes 2.4 sec
         unpack().parallelMethods().useUnlimitedThreads().threadCountMethods( 5 ).setTestToRun( "Suite*Test" )
-            .executeTest()//.verifyErrorFree( 24 )
-        ;
+            .executeTest().verifyErrorFree( 24 );
     }
 
     @Test
@@ -183,8 +176,7 @@ public class JUnit47ParallelIT
     {
         // takes 0.9 sec
         unpack().parallelSuitesAndClasses().useUnlimitedThreads().setTestToRun( "Suite*Test" ).executeTest()
-        //.verifyErrorFree( 24 )
-        ;
+        .verifyErrorFree( 24 );
     }
 
     @Test
@@ -193,8 +185,7 @@ public class JUnit47ParallelIT
         // takes 0.9 sec
         // 1.8 sec with 4 parallel classes
         unpack().parallelSuitesAndClasses().useUnlimitedThreads().threadCountSuites( 5 ).threadCountClasses( 15 )
-            .setTestToRun( "Suite*Test" ).executeTest()//.verifyErrorFree( 24 )
-        ;
+            .setTestToRun( "Suite*Test" ).executeTest().verifyErrorFree( 24 );
     }
 
     @Test
@@ -202,8 +193,7 @@ public class JUnit47ParallelIT
     {
         // takes 1.2 sec
         unpack().parallelSuitesAndMethods().useUnlimitedThreads().setTestToRun( "Suite*Test" ).executeTest()
-            //.verifyErrorFree( 24 )
-        ;
+            .verifyErrorFree( 24 );
     }
 
     @Test
@@ -211,8 +201,7 @@ public class JUnit47ParallelIT
     {
         // takes 1.2 sec
         unpack().parallelSuitesAndMethods().useUnlimitedThreads().threadCountSuites( 5 ).threadCountMethods( 15 )
-            .setTestToRun( "Suite*Test" ).executeTest()//.verifyErrorFree( 24 )
-        ;
+            .setTestToRun( "Suite*Test" ).executeTest().verifyErrorFree( 24 );
     }
 
     @Test
@@ -220,8 +209,7 @@ public class JUnit47ParallelIT
     {
         // takes 0.6 sec
         unpack().parallelClassesAndMethods().useUnlimitedThreads().setTestToRun( "Suite*Test" ).executeTest()
-            //.verifyErrorFree( 24 )
-        ;
+            .verifyErrorFree( 24 );
     }
 
     @Test
@@ -229,16 +217,14 @@ public class JUnit47ParallelIT
     {
         // takes 0.6 sec
         unpack().parallelClassesAndMethods().useUnlimitedThreads().threadCountClasses( 5 ).threadCountMethods( 15 )
-            .setTestToRun( "Suite*Test" ).executeTest()//.verifyErrorFree( 24 )
-        ;
+            .setTestToRun( "Suite*Test" ).executeTest().verifyErrorFree( 24 );
     }
 
     @Test
     public void unlimitedThreadsAll1()
     {
         // takes 0.3 sec
-        unpack().parallelAll().useUnlimitedThreads().setTestToRun( "Suite*Test" ).executeTest()//.verifyErrorFree( 24 )
-        ;
+        unpack().parallelAll().useUnlimitedThreads().setTestToRun( "Suite*Test" ).executeTest().verifyErrorFree( 24 );
     }
 
     @Test
@@ -246,17 +232,14 @@ public class JUnit47ParallelIT
     {
         // takes 0.3 sec
         unpack().parallelAll().useUnlimitedThreads().threadCountSuites( 5 ).threadCountClasses( 15 )
-            .threadCountMethods( 30 ).setTestToRun( "Suite*Test" ).executeTest()//.verifyErrorFree( 24 )
-        ;
+            .threadCountMethods( 30 ).setTestToRun( "Suite*Test" ).executeTest().verifyErrorFree( 24 );
     }
 
     @Test
     public void threadCountSuites()
     {
         // takes 3.6 sec
-        unpack().parallelSuites().threadCount( 3 ).setTestToRun( "Suite*Test" ).executeTest()
-            //.verifyErrorFree( 24 )
-        ;
+        unpack().parallelSuites().threadCount( 3 ).setTestToRun( "Suite*Test" ).executeTest().verifyErrorFree( 24 );
     }
 
     @Test
@@ -265,16 +248,14 @@ public class JUnit47ParallelIT
         // takes 3.6 sec for single core
         // takes 1.8 sec for double core
         unpack().parallelClasses().threadCount( 3 ).setTestToRun( "Suite*Test" ).executeTest()
-            //.verifyErrorFree( 24 )
-        ;
+            .verifyErrorFree( 24 );
     }
 
     @Test
     public void threadCountMethods()
     {
         // takes 2.4 sec
-        unpack().parallelMethods().threadCount( 3 ).setTestToRun( "Suite*Test" ).executeTest()//.verifyErrorFree( 24 )
-        ;
+        unpack().parallelMethods().threadCount( 3 ).setTestToRun( "Suite*Test" ).executeTest().verifyErrorFree( 24 );
     }
 
     @Test
@@ -282,8 +263,7 @@ public class JUnit47ParallelIT
     {
         // takes 4.8 sec
         unpack().disablePerCoreThreadCount().parallelClassesAndMethods().threadCount( 3 ).setTestToRun( "Suite*Test" )
-            .executeTest()//.verifyErrorFree( 24 )
-        ;
+            .executeTest().verifyErrorFree( 24 );
     }
 
     @Test
@@ -291,8 +271,7 @@ public class JUnit47ParallelIT
     {
         // takes 2.4 sec for double core CPU
         unpack().parallelClassesAndMethods().threadCount( 3 ).setTestToRun( "Suite*Test" ).executeTest()
-        //.verifyErrorFree( 24 )
-        ;
+        .verifyErrorFree( 24 );
     }
 
     @Test
@@ -301,23 +280,20 @@ public class JUnit47ParallelIT
         // usually 24 times 0.3 sec = 7.2 sec with one core CPU
         // takes 1.8 sec for double core CPU
         unpack().parallelSuitesAndMethods().threadCount( 3 ).setTestToRun( "Suite*Test" ).executeTest()
-            //.verifyErrorFree( 24 )
-        ;
+            .verifyErrorFree( 24 );
     }
 
     @Test
     public void threadCountSuitesAndClasses()
     {
         unpack().parallelSuitesAndClasses().threadCount( 3 ).setTestToRun( "Suite*Test" ).executeTest()
-            //.verifyErrorFree( 24 )
-        ;
+            .verifyErrorFree( 24 );
     }
 
     @Test
     public void threadCountAll()
     {
-        unpack().parallelAll().threadCount( 3 ).setTestToRun( "Suite*Test" ).executeTest()//.verifyErrorFree( 24 )
-        ;
+        unpack().parallelAll().threadCount( 3 ).setTestToRun( "Suite*Test" ).executeTest().verifyErrorFree( 24 );
     }
 
     @Test
@@ -326,8 +302,7 @@ public class JUnit47ParallelIT
         // takes 1.8 sec for double core CPU
         unpack().parallelSuitesAndClasses().threadCount( 3 ).threadCountSuites( 34 ).threadCountClasses( 66 )
             .setTestToRun( "Suite*Test" ).executeTest()
-            //.verifyErrorFree( 24 )
-        ;
+            .verifyErrorFree( 24 );
     }
 
     @Test
@@ -335,8 +310,7 @@ public class JUnit47ParallelIT
     {
         // takes 1.8 sec for double core CPU
         unpack().parallelSuitesAndMethods().threadCount( 3 ).threadCountSuites( 34 ).threadCountMethods( 66 )
-            .setTestToRun( "Suite*Test" ).executeTest()//.verifyErrorFree( 24 )
-        ;
+            .setTestToRun( "Suite*Test" ).executeTest().verifyErrorFree( 24 );
     }
 
     @Test
@@ -344,8 +318,7 @@ public class JUnit47ParallelIT
     {
         // takes 1.8 sec for double core CPU
         unpack().parallelClassesAndMethods().threadCount( 3 ).threadCountClasses( 34 ).threadCountMethods( 66 )
-            .setTestToRun( "Suite*Test" ).executeTest()//.verifyErrorFree( 24 )
-        ;
+            .setTestToRun( "Suite*Test" ).executeTest().verifyErrorFree( 24 );
     }
 
     @Test
@@ -353,8 +326,7 @@ public class JUnit47ParallelIT
     {
         // takes 2.4 sec for double core CPU
         unpack().parallelAll().threadCount( 3 ).threadCountSuites( 17 ).threadCountClasses( 34 ).threadCountMethods(
-            49 ).setTestToRun( "Suite*Test" ).executeTest()//.verifyErrorFree( 24 )
-        ;
+            49 ).setTestToRun( "Suite*Test" ).executeTest().verifyErrorFree( 24 );
     }
 
     @Test
@@ -363,8 +335,7 @@ public class JUnit47ParallelIT
         // 4 * cpu to 5 * cpu threads to run test classes
         // takes cca 1.8 sec
         unpack().parallelSuitesAndClasses().disablePerCoreThreadCount().threadCount( 6 ).threadCountSuites( 2 )
-            .setTestToRun( "Suite*Test" ).executeTest()//.verifyErrorFree( 24 )
-        ;
+            .setTestToRun( "Suite*Test" ).executeTest().verifyErrorFree( 24 );
     }
 
     @Test
@@ -373,8 +344,7 @@ public class JUnit47ParallelIT
         // 4 * cpu to 5 * cpu threads to run test methods
         // takes cca 1.8 sec
         unpack().parallelSuitesAndMethods().disablePerCoreThreadCount().threadCount( 6 ).threadCountSuites( 2 )
-            .setTestToRun( "Suite*Test" ).executeTest()//.verifyErrorFree( 24 )
-        ;
+            .setTestToRun( "Suite*Test" ).executeTest().verifyErrorFree( 24 );
     }
 
     @Test
@@ -383,8 +353,7 @@ public class JUnit47ParallelIT
         // 4 * cpu to 5 * cpu threads to run test methods
         // takes cca 1.8 sec
         unpack().parallelClassesAndMethods().disablePerCoreThreadCount().threadCount( 6 ).threadCountClasses( 2 )
-            .setTestToRun( "Suite*Test" ).executeTest()//.verifyErrorFree( 24 )
-        ;
+            .setTestToRun( "Suite*Test" ).executeTest().verifyErrorFree( 24 );
     }
 
     @Test
@@ -393,8 +362,7 @@ public class JUnit47ParallelIT
         // 8 * cpu to 13 * cpu threads to run test methods
         // takes 0.9 sec
         unpack().parallelAll().disablePerCoreThreadCount().threadCount( 14 ).threadCountSuites( 2 ).threadCountClasses(
-            4 ).setTestToRun( "Suite*Test" ).executeTest()//.verifyErrorFree( 24 )
-        ;
+            4 ).setTestToRun( "Suite*Test" ).executeTest().verifyErrorFree( 24 );
     }
 
     @Test
@@ -402,8 +370,7 @@ public class JUnit47ParallelIT
     {
         // takes 3.6 sec
         unpack().parallelSuites().threadCountSuites( 5 ).setTestToRun( "Suite*Test" ).executeTest()
-            //.verifyErrorFree( 24 )
-        ;
+            .verifyErrorFree( 24 );
     }
 
     @Test
@@ -411,8 +378,7 @@ public class JUnit47ParallelIT
     {
         // takes 1.8 sec on any CPU because the suites are running in a sequence
         unpack().parallelClasses().threadCountClasses( 5 ).setTestToRun( "Suite*Test" ).executeTest()
-            //.verifyErrorFree( 24 )
-        ;
+            .verifyErrorFree( 24 );
     }
 
     @Test
@@ -421,8 +387,7 @@ public class JUnit47ParallelIT
         // takes 2.4 sec on any CPU because every class has only three methods
         // and the suites and classes are running in a sequence
         unpack().parallelMethods().threadCountMethods( 5 ).setTestToRun( "Suite*Test" ).executeTest()
-            //.verifyErrorFree( 24 )
-        ;
+            .verifyErrorFree( 24 );
     }
 
     @Test
@@ -430,8 +395,7 @@ public class JUnit47ParallelIT
     {
         // takes 0.9 sec
         unpack().parallelSuitesAndClasses().threadCountSuites( 5 ).threadCountClasses( 15 ).setTestToRun(
-            "Suite*Test" ).executeTest()//.verifyErrorFree( 24 )
-        ;
+            "Suite*Test" ).executeTest().verifyErrorFree( 24 );
     }
 
     @Test
@@ -439,8 +403,7 @@ public class JUnit47ParallelIT
     {
         // takes 1.2 sec on any CPU
         unpack().parallelSuitesAndMethods().threadCountSuites( 5 ).threadCountMethods( 15 ).setTestToRun(
-            "Suite*Test" ).executeTest()//.verifyErrorFree( 24 )
-        ;
+            "Suite*Test" ).executeTest().verifyErrorFree( 24 );
     }
 
     @Test
@@ -448,8 +411,7 @@ public class JUnit47ParallelIT
     {
         // takes 0.6 sec on any CPU
         unpack().parallelClassesAndMethods().threadCountClasses( 5 ).threadCountMethods( 15 ).setTestToRun(
-            "Suite*Test" ).executeTest()//.verifyErrorFree( 24 )
-        ;
+            "Suite*Test" ).executeTest().verifyErrorFree( 24 );
     }
 
     @Test
@@ -457,8 +419,7 @@ public class JUnit47ParallelIT
     {
         // takes 0.3 sec on any CPU
         unpack().parallelAll().threadCountSuites( 5 ).threadCountClasses( 15 ).threadCountMethods( 30 ).setTestToRun(
-            "Suite*Test" ).executeTest()//.verifyErrorFree( 24 )
-        ;
+            "Suite*Test" ).executeTest().verifyErrorFree( 24 );
     }
 
     @Test
