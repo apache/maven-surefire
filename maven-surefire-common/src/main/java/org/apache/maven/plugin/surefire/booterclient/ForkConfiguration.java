@@ -210,7 +210,7 @@ public class ForkConfiguration
 
     /**
      * Replaces expressions <pre>@{property-name}</pre> with the corresponding properties
-     * from the model. This allows late evaluation of property values when the plugin is exexcuted (as compared
+     * from the model. This allows late evaluation of property values when the plugin is executed (as compared
      * to evaluation when the pom is parsed as is done with <pre>${property-name}</pre> expressions).
      *
      * This allows other plugins to modify or set properties with the changes getting picked up by surefire.

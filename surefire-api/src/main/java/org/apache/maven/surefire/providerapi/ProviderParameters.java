@@ -76,7 +76,7 @@ public interface ProviderParameters
     /**
      * Gets a logger intended for console output.
      * <p/>
-     * This output is inteded for provider-oriented messages that are not attached to a single test-set
+     * This output is intended for provider-oriented messages that are not attached to a single test-set
      * and will normally be written to something console-like immediately.
      *
      * @return A console logger

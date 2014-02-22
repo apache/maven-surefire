@@ -173,7 +173,7 @@ public class ForkingRunListener
         int i = StringUtils.escapeBytesToPrintable( content, 0, buf, off, len );
         content[i++] = (byte) '\n';
 
-        synchronized ( target ) // See notes about synhronization/thread safety in class javadoc
+        synchronized ( target ) // See notes about synchronization/thread safety in class javadoc
         {
             target.write( header, 0, header.length );
             target.write( content, 0, i );

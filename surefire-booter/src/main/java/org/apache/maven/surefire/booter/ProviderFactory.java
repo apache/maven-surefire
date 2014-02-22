@@ -69,7 +69,7 @@ public class ProviderFactory
     {
         final PrintStream orgSystemOut = System.out;
         final PrintStream orgSystemErr = System.err;
-        // Note that System.out/System.err are also read in the "ReporterConfiguration" instatiation
+        // Note that System.out/System.err are also read in the "ReporterConfiguration" instantiation
         // in createProvider below. These are the same values as here.
 
         ProviderFactory providerFactory =

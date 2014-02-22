@@ -51,7 +51,7 @@ under the License.
       </answer>
     </faq>
     <faq id="vm-termination">
-      <question>Surefire fails with the message "The forked VM terminated without saying properly goodbye"</question>
+      <question>Surefire fails with the message "The forked VM terminated without properly saying  goodbye"</question>
       <answer>
         <p>
         Surefire does not support tests or any referenced libraries calling System.exit() at any time. If
