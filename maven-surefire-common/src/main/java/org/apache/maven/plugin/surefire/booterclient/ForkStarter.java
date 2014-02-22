@@ -483,8 +483,8 @@ public class ForkStarter
                 {
                     // noinspection ThrowFromFinallyBlock
                     throw new RuntimeException(
-                        "The forked VM terminated without saying properly goodbye. VM crash or System.exit called ?"
-                            + "\nCommand was" + cli.toString() );
+                        "The forked VM terminated without properly saying goodbye. VM crash or System.exit called?"
+                            + "\nCommand was " + cli.toString() );
                 }
 
             }

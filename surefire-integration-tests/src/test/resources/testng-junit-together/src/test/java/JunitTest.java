@@ -29,7 +29,7 @@ public class JunitTest extends TestCase {
 	Object testObject;
 	
 	/**
-	 * Creats an object instance
+	 * Creates an object instance
 	 */
 	public void setUp()
 	{

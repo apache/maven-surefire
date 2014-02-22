@@ -33,7 +33,7 @@ public class Junit4NoRunWithTest {
 	Object testObject;
 
 	/**
-	 * Creats an object instance
+	 * Creates an object instance
 	 */
 	@Before
 	public void setUp()

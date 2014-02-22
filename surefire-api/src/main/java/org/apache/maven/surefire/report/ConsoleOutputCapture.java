@@ -84,7 +84,7 @@ public class ConsoleOutputCapture
         {
             if ( s == null )
             {
-                s = "null"; // Shamelessy taken from super.print
+                s = "null"; // Shamelessly taken from super.print
             }
             final byte[] bytes = s.getBytes();
             final byte[] join = ByteBuffer.join( bytes, 0, bytes.length, newline, 0, 1 );
