@@ -163,7 +163,7 @@ public class JUnitCoreProvider
 
     private boolean isParallelMethodsAndTypes()
     {
-        return jUnitCoreParameters.isParallelMethod() && isParallelTypes();
+        return jUnitCoreParameters.isParallelMethods() && isParallelTypes();
     }
 
     private boolean isParallelTypes()

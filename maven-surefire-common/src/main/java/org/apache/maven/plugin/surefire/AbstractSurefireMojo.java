@@ -495,6 +495,17 @@ public abstract class AbstractSurefireMojo
     protected String parallel;
 
     /**
+     * (JUnit 4.7 / provider only) The thread counts do not exceed the number of parallel suite, class runners and
+     * average number of methods per class if set to <strong>true</strong>.
+     * <p/>
+     * True by default.
+     *
+     * @since 2.17
+     */
+    @Parameter( property = "parallelOptimized", defaultValue = "true" )
+    protected boolean parallelOptimized;
+
+    /**
      * (JUnit 4.7 provider) The attribute thread-count-suites allows you to specify the concurrency in test suites, i.e.:
      * <ul>
      *  <li>number of threads executing JUnit test suites if <code>threadCount</code> is 0 or unspecified</li>
@@ -1147,12 +1158,14 @@ public abstract class AbstractSurefireMojo
                 Double.toString( getParallelTestsTimeoutInSeconds() ) );
         getProperties().setProperty( ProviderParameterNames.PARALLEL_TIMEOUTFORCED_PROP,
                 Double.toString( getParallelTestsTimeoutForcedInSeconds() ) );
+        getProperties().setProperty( ProviderParameterNames.PARALLEL_OPTIMIZE_PROP,
+                                     Boolean.toString( isParallelOptimized() ) );
 
         String message =
             "parallel='" + usedParallel + '\'' + ", perCoreThreadCount=" + getPerCoreThreadCount() + ", threadCount="
                 + usedThreadCount + ", useUnlimitedThreads=" + getUseUnlimitedThreads() +
                     ", threadCountSuites=" + getThreadCountSuites() + ", threadCountClasses=" + getThreadCountClasses() +
-                    ", threadCountMethods=" + getThreadCountMethods();
+                    ", threadCountMethods=" + getThreadCountMethods() + ", parallelOptimized=" + isParallelOptimized();
 
         getLog().info( message );
     }
@@ -1926,6 +1939,7 @@ public abstract class AbstractSurefireMojo
         checksum.add( getPerCoreThreadCount() );
         checksum.add( getUseUnlimitedThreads() );
         checksum.add( getParallel() );
+        checksum.add( isParallelOptimized() );
         checksum.add( isTrimStackTrace() );
         checksum.add( getRemoteRepositories() );
         checksum.add( isDisableXmlReport() );
@@ -2740,12 +2754,22 @@ public abstract class AbstractSurefireMojo
         this.parallel = parallel;
     }
 
+    public boolean isParallelOptimized()
+    {
+        return parallelOptimized;
+    }
+
+    @SuppressWarnings( "UnusedDeclaration" )
+    public void setParallelOptimized( boolean parallelOptimized )
+    {
+        this.parallelOptimized = parallelOptimized;
+    }
+
     public int getThreadCountSuites()
     {
         return threadCountSuites;
     }
 
-    @SuppressWarnings( "UnusedDeclaration" )
     public void setThreadCountSuites( int threadCountSuites )
     {
         this.threadCountSuites = threadCountSuites;
@@ -2756,7 +2780,6 @@ public abstract class AbstractSurefireMojo
         return threadCountClasses;
     }
 
-    @SuppressWarnings( "UnusedDeclaration" )
     public void setThreadCountClasses( int threadCountClasses )
     {
         this.threadCountClasses = threadCountClasses;
@@ -2767,7 +2790,6 @@ public abstract class AbstractSurefireMojo
         return threadCountMethods;
     }
 
-    @SuppressWarnings( "UnusedDeclaration" )
     public void setThreadCountMethods( int threadCountMethods )
     {
         this.threadCountMethods = threadCountMethods;
