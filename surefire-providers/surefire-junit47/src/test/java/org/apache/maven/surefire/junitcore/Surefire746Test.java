@@ -162,7 +162,7 @@ public class Surefire746Test
             throws Exception
         {
             throw new RuntimeException(
-                "This Exception will cause Surefire to receive a internal JUnit Description and fail" );
+                "This Exception will cause Surefire to receive an internal JUnit Description and fail." );
         }
     }
 }

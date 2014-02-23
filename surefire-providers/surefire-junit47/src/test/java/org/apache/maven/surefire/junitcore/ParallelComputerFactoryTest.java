@@ -89,7 +89,7 @@ public final class ParallelComputerFactoryTest
     {
         Properties properties = new Properties();
         exception.expect( TestSetFailedException.class );
-        resolveConcurrency( new JUnitCoreParameters( properties ) );
+        resolveConcurrency( new JUnitCoreParameters( properties ), null );
     }
 
     @Test
@@ -99,9 +99,9 @@ public final class ParallelComputerFactoryTest
         JUnitCoreParameters params = new JUnitCoreParameters( parallel( "suites" ) );
         assertTrue( params.isParallelSuites() );
         assertFalse( params.isParallelClasses() );
-        assertFalse( params.isParallelMethod() );
+        assertFalse( params.isParallelMethods() );
         exception.expect( TestSetFailedException.class );
-        resolveConcurrency( params );
+        resolveConcurrency( params, null );
     }
 
     @Test
@@ -111,9 +111,9 @@ public final class ParallelComputerFactoryTest
         JUnitCoreParameters params = new JUnitCoreParameters( parallel( "classes" ) );
         assertFalse( params.isParallelSuites() );
         assertTrue( params.isParallelClasses() );
-        assertFalse( params.isParallelMethod() );
+        assertFalse( params.isParallelMethods() );
         exception.expect( TestSetFailedException.class );
-        resolveConcurrency( params );
+        resolveConcurrency( params, null );
     }
 
     @Test
@@ -123,9 +123,9 @@ public final class ParallelComputerFactoryTest
         JUnitCoreParameters params = new JUnitCoreParameters( parallel( "methods" ) );
         assertFalse( params.isParallelSuites() );
         assertFalse( params.isParallelClasses() );
-        assertTrue( params.isParallelMethod() );
+        assertTrue( params.isParallelMethods() );
         exception.expect( TestSetFailedException.class );
-        resolveConcurrency( params );
+        resolveConcurrency( params, null );
     }
 
     @Test
@@ -135,9 +135,9 @@ public final class ParallelComputerFactoryTest
         JUnitCoreParameters params = new JUnitCoreParameters( parallel( "both" ) );
         assertFalse( params.isParallelSuites() );
         assertTrue( params.isParallelClasses() );
-        assertTrue( params.isParallelMethod() );
+        assertTrue( params.isParallelMethods() );
         exception.expect( TestSetFailedException.class );
-        resolveConcurrency( params );
+        resolveConcurrency( params, null );
     }
 
     @Test
@@ -147,9 +147,9 @@ public final class ParallelComputerFactoryTest
         JUnitCoreParameters params = new JUnitCoreParameters( parallel( "all" ) );
         assertTrue( params.isParallelSuites() );
         assertTrue( params.isParallelClasses() );
-        assertTrue( params.isParallelMethod() );
+        assertTrue( params.isParallelMethods() );
         exception.expect( TestSetFailedException.class );
-        resolveConcurrency( params );
+        resolveConcurrency( params, null );
     }
 
     @Test
@@ -159,9 +159,9 @@ public final class ParallelComputerFactoryTest
         JUnitCoreParameters params = new JUnitCoreParameters( parallel( "suitesAndClasses" ) );
         assertTrue( params.isParallelSuites() );
         assertTrue( params.isParallelClasses() );
-        assertFalse( params.isParallelMethod() );
+        assertFalse( params.isParallelMethods() );
         exception.expect( TestSetFailedException.class );
-        resolveConcurrency( params );
+        resolveConcurrency( params, null );
     }
 
     @Test
@@ -171,9 +171,9 @@ public final class ParallelComputerFactoryTest
         JUnitCoreParameters params = new JUnitCoreParameters( parallel( "suitesAndMethods" ) );
         assertTrue( params.isParallelSuites() );
         assertFalse( params.isParallelClasses() );
-        assertTrue( params.isParallelMethod() );
+        assertTrue( params.isParallelMethods() );
         exception.expect( TestSetFailedException.class );
-        resolveConcurrency( params );
+        resolveConcurrency( params, null );
     }
 
     @Test
@@ -183,9 +183,9 @@ public final class ParallelComputerFactoryTest
         JUnitCoreParameters params = new JUnitCoreParameters( parallel( "classesAndMethods" ) );
         assertFalse( params.isParallelSuites() );
         assertTrue( params.isParallelClasses() );
-        assertTrue( params.isParallelMethod() );
+        assertTrue( params.isParallelMethods() );
         exception.expect( TestSetFailedException.class );
-        resolveConcurrency( params );
+        resolveConcurrency( params, null );
     }
 
     @Theory
@@ -197,10 +197,10 @@ public final class ParallelComputerFactoryTest
         properties.setProperty( PARALLEL_KEY, "suites" );
         properties.setProperty( USEUNLIMITEDTHREADS_KEY, "true" );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
-        Concurrency concurrency = resolveConcurrency( params );
+        Concurrency concurrency = resolveConcurrency( params, null );
         assertTrue( params.isParallelSuites() );
         assertFalse( params.isParallelClasses() );
-        assertFalse( params.isParallelMethod() );
+        assertFalse( params.isParallelMethods() );
         assertThat( concurrency.capacity, is( Integer.MAX_VALUE ) );
         assertThat( concurrency.suites, is( Integer.MAX_VALUE ) );
         assertThat( concurrency.classes, is( 0 ) );
@@ -208,10 +208,10 @@ public final class ParallelComputerFactoryTest
 
         properties.setProperty( THREADCOUNTSUITES_KEY, "5" );
         params = new JUnitCoreParameters( properties );
-        concurrency = resolveConcurrency( params );
+        concurrency = resolveConcurrency( params, null );
         assertTrue( params.isParallelSuites() );
         assertFalse( params.isParallelClasses() );
-        assertFalse( params.isParallelMethod() );
+        assertFalse( params.isParallelMethods() );
         assertThat( concurrency.capacity, is( Integer.MAX_VALUE ) );
         assertThat( concurrency.suites, is( 5 * cpu ) );
         assertThat( concurrency.classes, is( 0 ) );
@@ -227,10 +227,10 @@ public final class ParallelComputerFactoryTest
         properties.setProperty( PARALLEL_KEY, "classes" );
         properties.setProperty( USEUNLIMITEDTHREADS_KEY, "true" );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
-        Concurrency concurrency = resolveConcurrency( params );
+        Concurrency concurrency = resolveConcurrency( params, null );
         assertFalse( params.isParallelSuites() );
         assertTrue( params.isParallelClasses() );
-        assertFalse( params.isParallelMethod() );
+        assertFalse( params.isParallelMethods() );
         assertThat( concurrency.capacity, is( Integer.MAX_VALUE ) );
         assertThat( concurrency.suites, is( 0 ) );
         assertThat( concurrency.classes, is( Integer.MAX_VALUE ) );
@@ -238,10 +238,10 @@ public final class ParallelComputerFactoryTest
 
         properties.setProperty( THREADCOUNTCLASSES_KEY, "5" );
         params = new JUnitCoreParameters( properties );
-        concurrency = resolveConcurrency( params );
+        concurrency = resolveConcurrency( params, null );
         assertFalse( params.isParallelSuites() );
         assertTrue( params.isParallelClasses() );
-        assertFalse( params.isParallelMethod() );
+        assertFalse( params.isParallelMethods() );
         assertThat( concurrency.capacity, is( Integer.MAX_VALUE ) );
         assertThat( concurrency.suites, is( 0 ) );
         assertThat( concurrency.classes, is( 5 * cpu ) );
@@ -257,10 +257,10 @@ public final class ParallelComputerFactoryTest
         properties.setProperty( PARALLEL_KEY, "methods" );
         properties.setProperty( USEUNLIMITEDTHREADS_KEY, "true" );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
-        Concurrency concurrency = resolveConcurrency( params );
+        Concurrency concurrency = resolveConcurrency( params, null );
         assertFalse( params.isParallelSuites() );
         assertFalse( params.isParallelClasses() );
-        assertTrue( params.isParallelMethod() );
+        assertTrue( params.isParallelMethods() );
         assertThat( concurrency.capacity, is( Integer.MAX_VALUE ) );
         assertThat( concurrency.suites, is( 0 ) );
         assertThat( concurrency.classes, is( 0 ) );
@@ -268,10 +268,10 @@ public final class ParallelComputerFactoryTest
 
         properties.setProperty( THREADCOUNTMETHODS_KEY, "5" );
         params = new JUnitCoreParameters( properties );
-        concurrency = resolveConcurrency( params );
+        concurrency = resolveConcurrency( params, null );
         assertFalse( params.isParallelSuites() );
         assertFalse( params.isParallelClasses() );
-        assertTrue( params.isParallelMethod() );
+        assertTrue( params.isParallelMethods() );
         assertThat( concurrency.capacity, is( Integer.MAX_VALUE ) );
         assertThat( concurrency.suites, is( 0 ) );
         assertThat( concurrency.classes, is( 0 ) );
@@ -287,10 +287,10 @@ public final class ParallelComputerFactoryTest
         properties.setProperty( PARALLEL_KEY, "suitesAndClasses" );
         properties.setProperty( USEUNLIMITEDTHREADS_KEY, "true" );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
-        Concurrency concurrency = resolveConcurrency( params );
+        Concurrency concurrency = resolveConcurrency( params, null );
         assertTrue( params.isParallelSuites() );
         assertTrue( params.isParallelClasses() );
-        assertFalse( params.isParallelMethod() );
+        assertFalse( params.isParallelMethods() );
         assertThat( concurrency.capacity, is( Integer.MAX_VALUE ) );
         assertThat( concurrency.suites, is( Integer.MAX_VALUE ) );
         assertThat( concurrency.classes, is( Integer.MAX_VALUE ) );
@@ -299,10 +299,10 @@ public final class ParallelComputerFactoryTest
         properties.setProperty( THREADCOUNTSUITES_KEY, "5" );
         properties.setProperty( THREADCOUNTCLASSES_KEY, "15" );
         params = new JUnitCoreParameters( properties );
-        concurrency = resolveConcurrency( params );
+        concurrency = resolveConcurrency( params, null );
         assertTrue( params.isParallelSuites() );
         assertTrue( params.isParallelClasses() );
-        assertFalse( params.isParallelMethod() );
+        assertFalse( params.isParallelMethods() );
         assertThat( concurrency.capacity, is( Integer.MAX_VALUE ) );
         assertThat( concurrency.suites, is( 5 * cpu ) );
         assertThat( concurrency.classes, is( 15 * cpu ) );
@@ -318,10 +318,10 @@ public final class ParallelComputerFactoryTest
         properties.setProperty( PARALLEL_KEY, "suitesAndMethods" );
         properties.setProperty( USEUNLIMITEDTHREADS_KEY, "true" );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
-        Concurrency concurrency = resolveConcurrency( params );
+        Concurrency concurrency = resolveConcurrency( params, null );
         assertTrue( params.isParallelSuites() );
         assertFalse( params.isParallelClasses() );
-        assertTrue( params.isParallelMethod() );
+        assertTrue( params.isParallelMethods() );
         assertThat( concurrency.capacity, is( Integer.MAX_VALUE ) );
         assertThat( concurrency.suites, is( Integer.MAX_VALUE ) );
         assertThat( concurrency.classes, is( 0 ) );
@@ -330,10 +330,10 @@ public final class ParallelComputerFactoryTest
         properties.setProperty( THREADCOUNTSUITES_KEY, "5" );
         properties.setProperty( THREADCOUNTMETHODS_KEY, "15" );
         params = new JUnitCoreParameters( properties );
-        concurrency = resolveConcurrency( params );
+        concurrency = resolveConcurrency( params, null );
         assertTrue( params.isParallelSuites() );
         assertFalse( params.isParallelClasses() );
-        assertTrue( params.isParallelMethod() );
+        assertTrue( params.isParallelMethods() );
         assertThat( concurrency.capacity, is( Integer.MAX_VALUE ) );
         assertThat( concurrency.suites, is( 5 * cpu ) );
         assertThat( concurrency.classes, is( 0 ) );
@@ -349,10 +349,10 @@ public final class ParallelComputerFactoryTest
         properties.setProperty( PARALLEL_KEY, "classesAndMethods" );
         properties.setProperty( USEUNLIMITEDTHREADS_KEY, "true" );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
-        Concurrency concurrency = resolveConcurrency( params );
+        Concurrency concurrency = resolveConcurrency( params, null );
         assertFalse( params.isParallelSuites() );
         assertTrue( params.isParallelClasses() );
-        assertTrue( params.isParallelMethod() );
+        assertTrue( params.isParallelMethods() );
         assertThat( concurrency.capacity, is( Integer.MAX_VALUE ) );
         assertThat( concurrency.suites, is( 0 ) );
         assertThat( concurrency.classes, is( Integer.MAX_VALUE ) );
@@ -361,10 +361,10 @@ public final class ParallelComputerFactoryTest
         properties.setProperty( THREADCOUNTCLASSES_KEY, "5" );
         properties.setProperty( THREADCOUNTMETHODS_KEY, "15" );
         params = new JUnitCoreParameters( properties );
-        concurrency = resolveConcurrency( params );
+        concurrency = resolveConcurrency( params, null );
         assertFalse( params.isParallelSuites() );
         assertTrue( params.isParallelClasses() );
-        assertTrue( params.isParallelMethod() );
+        assertTrue( params.isParallelMethods() );
         assertThat( concurrency.capacity, is( Integer.MAX_VALUE ) );
         assertThat( concurrency.suites, is( 0 ) );
         assertThat( concurrency.classes, is( 5 * cpu ) );
@@ -380,10 +380,10 @@ public final class ParallelComputerFactoryTest
         properties.setProperty( PARALLEL_KEY, "all" );
         properties.setProperty( USEUNLIMITEDTHREADS_KEY, "true" );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
-        Concurrency concurrency = resolveConcurrency( params );
+        Concurrency concurrency = resolveConcurrency( params, null );
         assertTrue( params.isParallelSuites() );
         assertTrue( params.isParallelClasses() );
-        assertTrue( params.isParallelMethod() );
+        assertTrue( params.isParallelMethods() );
         assertThat( concurrency.capacity, is( Integer.MAX_VALUE ) );
         assertThat( concurrency.suites, is( Integer.MAX_VALUE ) );
         assertThat( concurrency.classes, is( Integer.MAX_VALUE ) );
@@ -393,10 +393,10 @@ public final class ParallelComputerFactoryTest
         properties.setProperty( THREADCOUNTCLASSES_KEY, "15" );
         properties.setProperty( THREADCOUNTMETHODS_KEY, "30" );
         params = new JUnitCoreParameters( properties );
-        concurrency = resolveConcurrency( params );
+        concurrency = resolveConcurrency( params, null );
         assertTrue( params.isParallelSuites() );
         assertTrue( params.isParallelClasses() );
-        assertTrue( params.isParallelMethod() );
+        assertTrue( params.isParallelMethods() );
         assertThat( concurrency.capacity, is( Integer.MAX_VALUE ) );
         assertThat( concurrency.suites, is( 5 * cpu ) );
         assertThat( concurrency.classes, is( 15 * cpu ) );
@@ -412,10 +412,10 @@ public final class ParallelComputerFactoryTest
         properties.setProperty( PARALLEL_KEY, "suites" );
         properties.setProperty( THREADCOUNT_KEY, "3" );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
-        Concurrency concurrency = resolveConcurrency( params );
+        Concurrency concurrency = resolveConcurrency( params, null );
         assertTrue( params.isParallelSuites() );
         assertFalse( params.isParallelClasses() );
-        assertFalse( params.isParallelMethod() );
+        assertFalse( params.isParallelMethods() );
         assertThat( concurrency.capacity, is( 0 ) );
         assertThat( concurrency.suites, is( 3 * cpu ) );
         assertThat( concurrency.classes, is( 0 ) );
@@ -431,10 +431,10 @@ public final class ParallelComputerFactoryTest
         properties.setProperty( PARALLEL_KEY, "classes" );
         properties.setProperty( THREADCOUNT_KEY, "3" );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
-        Concurrency concurrency = resolveConcurrency( params );
+        Concurrency concurrency = resolveConcurrency( params, null );
         assertFalse( params.isParallelSuites() );
         assertTrue( params.isParallelClasses() );
-        assertFalse( params.isParallelMethod() );
+        assertFalse( params.isParallelMethods() );
         assertThat( concurrency.capacity, is( 0 ) );
         assertThat( concurrency.suites, is( 0 ) );
         assertThat( concurrency.classes, is( 3 * cpu ) );
@@ -450,10 +450,10 @@ public final class ParallelComputerFactoryTest
         properties.setProperty( PARALLEL_KEY, "methods" );
         properties.setProperty( THREADCOUNT_KEY, "3" );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
-        Concurrency concurrency = resolveConcurrency( params );
+        Concurrency concurrency = resolveConcurrency( params, null );
         assertFalse( params.isParallelSuites() );
         assertFalse( params.isParallelClasses() );
-        assertTrue( params.isParallelMethod() );
+        assertTrue( params.isParallelMethods() );
         assertThat( concurrency.capacity, is( 0 ) );
         assertThat( concurrency.suites, is( 0 ) );
         assertThat( concurrency.classes, is( 0 ) );
@@ -469,10 +469,10 @@ public final class ParallelComputerFactoryTest
         properties.setProperty( PARALLEL_KEY, "both" );
         properties.setProperty( THREADCOUNT_KEY, "3" );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
-        Concurrency concurrency = resolveConcurrency( params );
+        Concurrency concurrency = resolveConcurrency( params, null );
         assertFalse( params.isParallelSuites() );
         assertTrue( params.isParallelClasses() );
-        assertTrue( params.isParallelMethod() );
+        assertTrue( params.isParallelMethods() );
         assertThat( concurrency.capacity, is( 3 * cpu ) );
         assertThat( concurrency.suites, is( 0 ) );
         assertThat( concurrency.classes, is( (int) ( ( 3d / 2 ) * cpu ) ) );
@@ -488,10 +488,10 @@ public final class ParallelComputerFactoryTest
         properties.setProperty( PARALLEL_KEY, "classesAndMethods" );
         properties.setProperty( THREADCOUNT_KEY, "3" );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
-        Concurrency concurrency = resolveConcurrency( params );
+        Concurrency concurrency = resolveConcurrency( params, null );
         assertFalse( params.isParallelSuites() );
         assertTrue( params.isParallelClasses() );
-        assertTrue( params.isParallelMethod() );
+        assertTrue( params.isParallelMethods() );
         assertThat( concurrency.capacity, is( 3 * cpu ) );
         assertThat( concurrency.suites, is( 0 ) );
         assertThat( concurrency.classes, is( (int) ( ( 3d / 2 ) * cpu ) ) );
@@ -507,10 +507,10 @@ public final class ParallelComputerFactoryTest
         properties.setProperty( PARALLEL_KEY, "suitesAndMethods" );
         properties.setProperty( THREADCOUNT_KEY, "3" );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
-        Concurrency concurrency = resolveConcurrency( params );
+        Concurrency concurrency = resolveConcurrency( params, null );
         assertTrue( params.isParallelSuites() );
         assertFalse( params.isParallelClasses() );
-        assertTrue( params.isParallelMethod() );
+        assertTrue( params.isParallelMethods() );
         assertThat( concurrency.capacity, is( 3 * cpu ) );
         assertThat( concurrency.suites, is( (int) ( ( 3d / 2 ) * cpu ) ) );
         assertThat( concurrency.classes, is( 0 ) );
@@ -526,10 +526,10 @@ public final class ParallelComputerFactoryTest
         properties.setProperty( PARALLEL_KEY, "suitesAndClasses" );
         properties.setProperty( THREADCOUNT_KEY, "3" );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
-        Concurrency concurrency = resolveConcurrency( params );
+        Concurrency concurrency = resolveConcurrency( params, null );
         assertTrue( params.isParallelSuites() );
         assertTrue( params.isParallelClasses() );
-        assertFalse( params.isParallelMethod() );
+        assertFalse( params.isParallelMethods() );
         assertThat( concurrency.capacity, is( 3 * cpu ) );
         assertThat( concurrency.suites, is( (int) ( ( 3d / 2 ) * cpu ) ) );
         assertThat( concurrency.classes, is( Integer.MAX_VALUE ) );
@@ -545,10 +545,10 @@ public final class ParallelComputerFactoryTest
         properties.setProperty( PARALLEL_KEY, "all" );
         properties.setProperty( THREADCOUNT_KEY, "3" );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
-        Concurrency concurrency = resolveConcurrency( params );
+        Concurrency concurrency = resolveConcurrency( params, null );
         assertTrue( params.isParallelSuites() );
         assertTrue( params.isParallelClasses() );
-        assertTrue( params.isParallelMethod() );
+        assertTrue( params.isParallelMethods() );
         assertThat( concurrency.capacity, is( 3 * cpu ) );
         assertThat( concurrency.suites, is( cpu ) );
         assertThat( concurrency.classes, is( cpu ) );
@@ -567,10 +567,10 @@ public final class ParallelComputerFactoryTest
         properties.setProperty( THREADCOUNTSUITES_KEY, "34" );
         properties.setProperty( THREADCOUNTCLASSES_KEY, "66" );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
-        Concurrency concurrency = resolveConcurrency( params );
+        Concurrency concurrency = resolveConcurrency( params, null );
         assertTrue( params.isParallelSuites() );
         assertTrue( params.isParallelClasses() );
-        assertFalse( params.isParallelMethod() );
+        assertFalse( params.isParallelMethods() );
         assertThat( concurrency.capacity, is( 3 * cpu ) );
         int concurrentSuites = (int) ( 0.34d * concurrency.capacity );
         assertThat( concurrency.suites, is( concurrentSuites ) );
@@ -590,10 +590,10 @@ public final class ParallelComputerFactoryTest
         properties.setProperty( THREADCOUNTSUITES_KEY, "34" );
         properties.setProperty( THREADCOUNTMETHODS_KEY, "66" );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
-        Concurrency concurrency = resolveConcurrency( params );
+        Concurrency concurrency = resolveConcurrency( params, null );
         assertTrue( params.isParallelSuites() );
         assertFalse( params.isParallelClasses() );
-        assertTrue( params.isParallelMethod() );
+        assertTrue( params.isParallelMethods() );
         assertThat( concurrency.capacity, is( 3 * cpu ) );
         int concurrentSuites = (int) ( 0.34d * concurrency.capacity );
         assertThat( concurrency.suites, is( concurrentSuites ) );
@@ -613,10 +613,10 @@ public final class ParallelComputerFactoryTest
         properties.setProperty( THREADCOUNTCLASSES_KEY, "34" );
         properties.setProperty( THREADCOUNTMETHODS_KEY, "66" );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
-        Concurrency concurrency = resolveConcurrency( params );
+        Concurrency concurrency = resolveConcurrency( params, null );
         assertFalse( params.isParallelSuites() );
         assertTrue( params.isParallelClasses() );
-        assertTrue( params.isParallelMethod() );
+        assertTrue( params.isParallelMethods() );
         assertThat( concurrency.capacity, is( 3 * cpu ) );
         assertThat( concurrency.suites, is( 0 ) );
         int concurrentClasses = (int) ( 0.34d * concurrency.capacity );
@@ -637,10 +637,10 @@ public final class ParallelComputerFactoryTest
         properties.setProperty( THREADCOUNTCLASSES_KEY, "34" );
         properties.setProperty( THREADCOUNTMETHODS_KEY, "49" );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
-        Concurrency concurrency = resolveConcurrency( params );
+        Concurrency concurrency = resolveConcurrency( params, null );
         assertTrue( params.isParallelSuites() );
         assertTrue( params.isParallelClasses() );
-        assertTrue( params.isParallelMethod() );
+        assertTrue( params.isParallelMethods() );
         assertThat( concurrency.capacity, is( 3 * cpu ) );
         int concurrentSuites = (int) ( 0.17d * concurrency.capacity );
         int concurrentClasses = (int) ( 0.34d * concurrency.capacity );
@@ -660,10 +660,10 @@ public final class ParallelComputerFactoryTest
         properties.setProperty( THREADCOUNT_KEY, "6" );
         properties.setProperty( THREADCOUNTSUITES_KEY, "2" );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
-        Concurrency concurrency = resolveConcurrency( params );
+        Concurrency concurrency = resolveConcurrency( params, null );
         assertTrue( params.isParallelSuites() );
         assertTrue( params.isParallelClasses() );
-        assertFalse( params.isParallelMethod() );
+        assertFalse( params.isParallelMethods() );
         assertThat( concurrency.capacity, is( 6 * cpu ) );
         assertThat( concurrency.suites, is( 2 * cpu ) );
         assertThat( concurrency.classes, is( Integer.MAX_VALUE ) );
@@ -681,10 +681,10 @@ public final class ParallelComputerFactoryTest
         properties.setProperty( THREADCOUNT_KEY, "6" );
         properties.setProperty( THREADCOUNTSUITES_KEY, "2" );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
-        Concurrency concurrency = resolveConcurrency( params );
+        Concurrency concurrency = resolveConcurrency( params, null );
         assertTrue( params.isParallelSuites() );
         assertFalse( params.isParallelClasses() );
-        assertTrue( params.isParallelMethod() );
+        assertTrue( params.isParallelMethods() );
         assertThat( concurrency.capacity, is( 6 * cpu ) );
         assertThat( concurrency.suites, is( 2 * cpu ) );
         assertThat( concurrency.classes, is( 0 ) );
@@ -702,10 +702,10 @@ public final class ParallelComputerFactoryTest
         properties.setProperty( THREADCOUNT_KEY, "6" );
         properties.setProperty( THREADCOUNTCLASSES_KEY, "2" );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
-        Concurrency concurrency = resolveConcurrency( params );
+        Concurrency concurrency = resolveConcurrency( params, null );
         assertFalse( params.isParallelSuites() );
         assertTrue( params.isParallelClasses() );
-        assertTrue( params.isParallelMethod() );
+        assertTrue( params.isParallelMethods() );
         assertThat( concurrency.capacity, is( 6 * cpu ) );
         assertThat( concurrency.suites, is( 0 ) );
         assertThat( concurrency.classes, is( 2 * cpu ) );
@@ -724,10 +724,10 @@ public final class ParallelComputerFactoryTest
         properties.setProperty( THREADCOUNTSUITES_KEY, "2" );
         properties.setProperty( THREADCOUNTCLASSES_KEY, "4" );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
-        Concurrency concurrency = resolveConcurrency( params );
+        Concurrency concurrency = resolveConcurrency( params, null );
         assertTrue( params.isParallelSuites() );
         assertTrue( params.isParallelClasses() );
-        assertTrue( params.isParallelMethod() );
+        assertTrue( params.isParallelMethods() );
         assertThat( concurrency.capacity, is( 14 * cpu ) );
         assertThat( concurrency.suites, is( 2 * cpu ) );
         assertThat( concurrency.classes, is( 4 * cpu ) );
@@ -743,10 +743,10 @@ public final class ParallelComputerFactoryTest
         properties.setProperty( PARALLEL_KEY, "suites" );
         properties.setProperty( THREADCOUNTSUITES_KEY, "5" );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
-        Concurrency concurrency = resolveConcurrency( params );
+        Concurrency concurrency = resolveConcurrency( params, null );
         assertTrue( params.isParallelSuites() );
         assertFalse( params.isParallelClasses() );
-        assertFalse( params.isParallelMethod() );
+        assertFalse( params.isParallelMethods() );
         assertThat( concurrency.capacity, is( 5 * cpu ) );
         assertThat( concurrency.suites, is( 5 * cpu ) );
         assertThat( concurrency.classes, is( 0 ) );
@@ -762,10 +762,10 @@ public final class ParallelComputerFactoryTest
         properties.setProperty( PARALLEL_KEY, "classes" );
         properties.setProperty( THREADCOUNTCLASSES_KEY, "5" );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
-        Concurrency concurrency = resolveConcurrency( params );
+        Concurrency concurrency = resolveConcurrency( params, null );
         assertFalse( params.isParallelSuites() );
         assertTrue( params.isParallelClasses() );
-        assertFalse( params.isParallelMethod() );
+        assertFalse( params.isParallelMethods() );
         assertThat( concurrency.capacity, is( 5 * cpu ) );
         assertThat( concurrency.suites, is( 0 ) );
         assertThat( concurrency.classes, is( 5 * cpu ) );
@@ -781,10 +781,10 @@ public final class ParallelComputerFactoryTest
         properties.setProperty( PARALLEL_KEY, "methods" );
         properties.setProperty( THREADCOUNTMETHODS_KEY, "5" );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
-        Concurrency concurrency = resolveConcurrency( params );
+        Concurrency concurrency = resolveConcurrency( params, null );
         assertFalse( params.isParallelSuites() );
         assertFalse( params.isParallelClasses() );
-        assertTrue( params.isParallelMethod() );
+        assertTrue( params.isParallelMethods() );
         assertThat( concurrency.capacity, is( 5 * cpu ) );
         assertThat( concurrency.suites, is( 0 ) );
         assertThat( concurrency.classes, is( 0 ) );
@@ -802,10 +802,10 @@ public final class ParallelComputerFactoryTest
         properties.setProperty( THREADCOUNTSUITES_KEY, "5" );
         properties.setProperty( THREADCOUNTCLASSES_KEY, "15" );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
-        Concurrency concurrency = resolveConcurrency( params );
+        Concurrency concurrency = resolveConcurrency( params, null );
         assertTrue( params.isParallelSuites() );
         assertTrue( params.isParallelClasses() );
-        assertFalse( params.isParallelMethod() );
+        assertFalse( params.isParallelMethods() );
         assertThat( concurrency.capacity, is( 20 * cpu ) );
         assertThat( concurrency.suites, is( 5 * cpu ) );
         assertThat( concurrency.classes, is( 15 * cpu ) );
@@ -817,10 +817,10 @@ public final class ParallelComputerFactoryTest
         properties.setProperty( PARALLEL_KEY, "suitesAndClasses" );
         properties.setProperty( THREADCOUNTSUITES_KEY, "5" );
         params = new JUnitCoreParameters( properties );
-        concurrency = resolveConcurrency( params );
+        concurrency = resolveConcurrency( params, null );
         assertTrue( params.isParallelSuites() );
         assertTrue( params.isParallelClasses() );
-        assertFalse( params.isParallelMethod() );
+        assertFalse( params.isParallelMethods() );
         assertThat( concurrency.capacity, is( Integer.MAX_VALUE ) );
         assertThat( concurrency.suites, is( 5 * cpu ) );
         assertThat( concurrency.classes, is( Integer.MAX_VALUE ) );
@@ -838,10 +838,10 @@ public final class ParallelComputerFactoryTest
         properties.setProperty( THREADCOUNTSUITES_KEY, "5" );
         properties.setProperty( THREADCOUNTMETHODS_KEY, "15" );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
-        Concurrency concurrency = resolveConcurrency( params );
+        Concurrency concurrency = resolveConcurrency( params, null );
         assertTrue( params.isParallelSuites() );
         assertFalse( params.isParallelClasses() );
-        assertTrue( params.isParallelMethod() );
+        assertTrue( params.isParallelMethods() );
         assertThat( concurrency.capacity, is( 20 * cpu ) );
         assertThat( concurrency.suites, is( 5 * cpu ) );
         assertThat( concurrency.classes, is( 0 ) );
@@ -853,10 +853,10 @@ public final class ParallelComputerFactoryTest
         properties.setProperty( PARALLEL_KEY, "suitesAndMethods" );
         properties.setProperty( THREADCOUNTSUITES_KEY, "5" );
         params = new JUnitCoreParameters( properties );
-        concurrency = resolveConcurrency( params );
+        concurrency = resolveConcurrency( params, null );
         assertTrue( params.isParallelSuites() );
         assertFalse( params.isParallelClasses() );
-        assertTrue( params.isParallelMethod() );
+        assertTrue( params.isParallelMethods() );
         assertThat( concurrency.capacity, is( Integer.MAX_VALUE ) );
         assertThat( concurrency.suites, is( 5 * cpu ) );
         assertThat( concurrency.classes, is( 0 ) );
@@ -874,10 +874,10 @@ public final class ParallelComputerFactoryTest
         properties.setProperty( THREADCOUNTCLASSES_KEY, "5" );
         properties.setProperty( THREADCOUNTMETHODS_KEY, "15" );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
-        Concurrency concurrency = resolveConcurrency( params );
+        Concurrency concurrency = resolveConcurrency( params, null );
         assertFalse( params.isParallelSuites() );
         assertTrue( params.isParallelClasses() );
-        assertTrue( params.isParallelMethod() );
+        assertTrue( params.isParallelMethods() );
         assertThat( concurrency.capacity, is( 20 * cpu ) );
         assertThat( concurrency.suites, is( 0 ) );
         assertThat( concurrency.classes, is( 5 * cpu ) );
@@ -889,10 +889,10 @@ public final class ParallelComputerFactoryTest
         properties.setProperty( PARALLEL_KEY, "classesAndMethods" );
         properties.setProperty( THREADCOUNTCLASSES_KEY, "5" );
         params = new JUnitCoreParameters( properties );
-        concurrency = resolveConcurrency( params );
+        concurrency = resolveConcurrency( params, null );
         assertFalse( params.isParallelSuites() );
         assertTrue( params.isParallelClasses() );
-        assertTrue( params.isParallelMethod() );
+        assertTrue( params.isParallelMethods() );
         assertThat( concurrency.capacity, is( Integer.MAX_VALUE ) );
         assertThat( concurrency.suites, is( 0 ) );
         assertThat( concurrency.classes, is( 5 * cpu ) );
@@ -911,10 +911,10 @@ public final class ParallelComputerFactoryTest
         properties.setProperty( THREADCOUNTCLASSES_KEY, "15" );
         properties.setProperty( THREADCOUNTMETHODS_KEY, "30" );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
-        Concurrency concurrency = resolveConcurrency( params );
+        Concurrency concurrency = resolveConcurrency( params, null );
         assertTrue( params.isParallelSuites() );
         assertTrue( params.isParallelClasses() );
-        assertTrue( params.isParallelMethod() );
+        assertTrue( params.isParallelMethods() );
         assertThat( concurrency.capacity, is( 50 * cpu ) );
         assertThat( concurrency.suites, is( 5 * cpu ) );
         assertThat( concurrency.classes, is( 15 * cpu ) );
@@ -927,10 +927,10 @@ public final class ParallelComputerFactoryTest
         properties.setProperty( THREADCOUNTSUITES_KEY, "5" );
         properties.setProperty( THREADCOUNTCLASSES_KEY, "15" );
         params = new JUnitCoreParameters( properties );
-        concurrency = resolveConcurrency( params );
+        concurrency = resolveConcurrency( params, null );
         assertTrue( params.isParallelSuites() );
         assertTrue( params.isParallelClasses() );
-        assertTrue( params.isParallelMethod() );
+        assertTrue( params.isParallelMethods() );
         assertThat( concurrency.capacity, is( Integer.MAX_VALUE ) );
         assertThat( concurrency.suites, is( 5 * cpu ) );
         assertThat( concurrency.classes, is( 15 * cpu ) );
@@ -940,10 +940,10 @@ public final class ParallelComputerFactoryTest
         properties.setProperty( PARALLEL_KEY, "all" );
         properties.setProperty( THREADCOUNTCLASSES_KEY, "15" );
         params = new JUnitCoreParameters( properties );
-        concurrency = resolveConcurrency( params );
+        concurrency = resolveConcurrency( params, null );
         assertTrue( params.isParallelSuites() );
         assertTrue( params.isParallelClasses() );
-        assertTrue( params.isParallelMethod() );
+        assertTrue( params.isParallelMethods() );
         assertThat( concurrency.capacity, is( Integer.MAX_VALUE ) );
         assertThat( concurrency.suites, is( Integer.MAX_VALUE ) );
         assertThat( concurrency.classes, is( 15 * cpu ) );
@@ -958,7 +958,7 @@ public final class ParallelComputerFactoryTest
         properties.setProperty( PARALLEL_KEY, "methods" );
         properties.setProperty( THREADCOUNTMETHODS_KEY, "2" );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
-        ParallelComputer pc = createParallelComputer( params );
+        ParallelComputer pc = createParallelComputer( params, null );
 
         Result result = new JUnitCore().run( pc, TestClass.class );
         long timeSpent = runtime.stop();
@@ -982,7 +982,7 @@ public final class ParallelComputerFactoryTest
         properties.setProperty( THREADCOUNTMETHODS_KEY, "2" );
         properties.setProperty( PARALLEL_TIMEOUT_KEY, Double.toString( 2.5d ) );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
-        ParallelComputer pc = createParallelComputer( params );
+        ParallelComputer pc = createParallelComputer( params, null );
 
         new JUnitCore().run( pc, TestClass.class );
         long timeSpent = runtime.stop();
@@ -1004,7 +1004,7 @@ public final class ParallelComputerFactoryTest
         properties.setProperty( THREADCOUNTMETHODS_KEY, "2" );
         properties.setProperty( PARALLEL_TIMEOUTFORCED_KEY, Double.toString( 2.5d ) );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
-        ParallelComputer pc = createParallelComputer( params );
+        ParallelComputer pc = createParallelComputer( params, null );
 
         new JUnitCore().run( pc, TestClass.class );
         long timeSpent = runtime.stop();

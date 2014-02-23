@@ -21,6 +21,7 @@ package org.apache.maven.surefire.junitcore;
 
 import org.apache.maven.surefire.junitcore.pc.ParallelComputer;
 import org.apache.maven.surefire.junitcore.pc.ParallelComputerBuilder;
+import org.apache.maven.surefire.junitcore.pc.RunnerCounter;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
 import java.util.concurrent.TimeUnit;
@@ -59,10 +60,10 @@ final class ParallelComputerFactory
         ParallelComputerFactory.availableProcessors = Runtime.getRuntime().availableProcessors();
     }
 
-    static ParallelComputer createParallelComputer( JUnitCoreParameters params )
+    static ParallelComputer createParallelComputer( JUnitCoreParameters params, RunnerCounter counts )
         throws TestSetFailedException
     {
-        Concurrency concurrency = resolveConcurrency( params );
+        Concurrency concurrency = resolveConcurrency( params, counts );
         ParallelComputerBuilder builder = new ParallelComputerBuilder();
 
         if ( params.isParallelSuites() )
@@ -75,7 +76,7 @@ final class ParallelComputerFactory
             resolveClassesConcurrency( builder, concurrency.classes );
         }
 
-        if ( params.isParallelMethod() )
+        if ( params.isParallelMethods() )
         {
             resolveMethodsConcurrency( builder, concurrency.methods );
         }
@@ -86,7 +87,7 @@ final class ParallelComputerFactory
         return builder.buildComputer( timeout, timeoutForced, TimeUnit.NANOSECONDS );
     }
 
-    static Concurrency resolveConcurrency( JUnitCoreParameters params )
+    static Concurrency resolveConcurrency( JUnitCoreParameters params, RunnerCounter counts )
         throws TestSetFailedException
     {
         if ( !params.isAnyParallelitySelected() )
@@ -108,25 +109,22 @@ final class ParallelComputerFactory
         {
             return concurrencyForUnlimitedThreads( params );
         }
-        else
+        else if ( hasThreadCount( params ) )
         {
-            if ( hasThreadCount( params ) )
+            if ( hasThreadCounts( params ) )
             {
-                if ( hasThreadCounts( params ) )
-                {
-                    return isLeafUnspecified( params )
-                        ? concurrencyFromAllThreadCountsButUnspecifiedLeafCount( params )
-                        : concurrencyFromAllThreadCounts( params );
-                }
-                else
-                {
-                    return estimateConcurrency( params );
-                }
+                return isLeafUnspecified( params )
+                    ? concurrencyFromAllThreadCountsButUnspecifiedLeafCount( params, counts )
+                    : concurrencyFromAllThreadCounts( params );
             }
             else
             {
-                return concurrencyFromThreadCounts( params );
+                return estimateConcurrency( params, counts );
             }
+        }
+        else
+        {
+            return concurrencyFromThreadCounts( params );
         }
     }
 
@@ -194,50 +192,74 @@ final class ParallelComputerFactory
         Concurrency concurrency = new Concurrency();
         concurrency.suites = params.isParallelSuites() ? threadCountSuites( params ) : 0;
         concurrency.classes = params.isParallelClasses() ? threadCountClasses( params ) : 0;
-        concurrency.methods = params.isParallelMethod() ? threadCountMethods( params ) : 0;
+        concurrency.methods = params.isParallelMethods() ? threadCountMethods( params ) : 0;
         concurrency.capacity = Integer.MAX_VALUE;
         return concurrency;
     }
 
-    private static Concurrency estimateConcurrency( JUnitCoreParameters params )
+    private static Concurrency estimateConcurrency( JUnitCoreParameters params, RunnerCounter counts )
     {
-        Concurrency concurrency = new Concurrency();
-        concurrency.suites = params.isParallelSuites() ? params.getThreadCountSuites() : 0;
-        concurrency.classes = params.isParallelClasses() ? params.getThreadCountClasses() : 0;
-        concurrency.methods = params.isParallelMethod() ? params.getThreadCountMethods() : 0;
-        concurrency.capacity = params.getThreadCount();
-
-        // estimate parallel thread counts
-        double ratio = 1d / countParallelEntities( params );
-        int threads = multiplyByCoreCount( params, ratio * concurrency.capacity );
-        concurrency.suites = params.isParallelSuites() ? threads : 0;
-        concurrency.classes = params.isParallelClasses() ? threads : 0;
-        concurrency.methods = params.isParallelMethod() ? threads : 0;
-        if ( countParallelEntities( params ) == 1 )
+        final Concurrency concurrency = new Concurrency();
+        final int parallelEntities = countParallelEntities( params );
+        concurrency.capacity = multiplyByCoreCount( params, params.getThreadCount() );
+        if ( parallelEntities == 1 || counts == null || counts.classes == 0 )
         {
-            concurrency.capacity = 0;
+            // Estimate parallel thread counts.
+            double ratio = 1d / parallelEntities;
+            int threads = multiplyByCoreCount( params, ratio * params.getThreadCount() );
+            concurrency.suites = params.isParallelSuites() ? threads : 0;
+            concurrency.classes = params.isParallelClasses() ? threads : 0;
+            concurrency.methods = params.isParallelMethods() ? threads : 0;
+            if ( parallelEntities == 1 )
+            {
+                concurrency.capacity = 0;
+            }
+            else
+            {
+                adjustLeaf( params, concurrency );
+            }
         }
         else
         {
-            concurrency.capacity = multiplyByCoreCount( params, concurrency.capacity );
+            // Try to allocate suites+classes+methods within threadCount,
+            concurrency.suites = params.isParallelSuites() ? multiplyByCoreCount( params, counts.suites ) : 0;
+            concurrency.classes = params.isParallelClasses() ? multiplyByCoreCount( params, counts.classes ) : 0;
+            concurrency.methods =
+                params.isParallelMethods() ? multiplyByCoreCount( params, counts.methods / counts.classes ) : 0;
+            double sum = (double) concurrency.suites + concurrency.classes + concurrency.methods;
+            if ( concurrency.capacity < sum && sum != 0 )
+            {
+                // otherwise allocate them using the weighting factor < 1.
+                double weight = concurrency.capacity / sum;
+                concurrency.suites *= weight;
+                concurrency.classes *= weight;
+                concurrency.methods *= weight;
+                adjustPrecisionInLeaf( params, concurrency );
+            }
             adjustLeaf( params, concurrency );
         }
         return concurrency;
     }
 
-    private static Concurrency concurrencyFromAllThreadCountsButUnspecifiedLeafCount( JUnitCoreParameters params )
+    private static Concurrency concurrencyFromAllThreadCountsButUnspecifiedLeafCount( JUnitCoreParameters params,
+                                                                                      RunnerCounter counts )
     {
         Concurrency concurrency = new Concurrency();
         concurrency.suites = params.isParallelSuites() ? params.getThreadCountSuites() : 0;
+        concurrency.suites = params.isParallelSuites() ? multiplyByCoreCount( params, concurrency.suites ) : 0;
         concurrency.classes = params.isParallelClasses() ? params.getThreadCountClasses() : 0;
-        concurrency.methods = params.isParallelMethod() ? params.getThreadCountMethods() : 0;
-        concurrency.capacity = params.getThreadCount();
+        concurrency.classes = params.isParallelClasses() ? multiplyByCoreCount( params, concurrency.classes ) : 0;
+        concurrency.methods = params.isParallelMethods() ? params.getThreadCountMethods() : 0;
+        concurrency.methods = params.isParallelMethods() ? multiplyByCoreCount( params, concurrency.methods ) : 0;
+        concurrency.capacity = multiplyByCoreCount( params, params.getThreadCount() );
+
+        if ( counts != null )
+        {
+            concurrency.suites = (int) Math.min( Math.min( concurrency.suites, counts.suites ), Integer.MAX_VALUE );
+            concurrency.classes = (int) Math.min( Math.min( concurrency.classes, counts.classes ), Integer.MAX_VALUE );
+        }
 
         setLeafInfinite( params, concurrency );
-        concurrency.suites = params.isParallelSuites() ? multiplyByCoreCount( params, concurrency.suites ) : 0;
-        concurrency.classes = params.isParallelClasses() ? multiplyByCoreCount( params, concurrency.classes ) : 0;
-        concurrency.methods = params.isParallelMethod() ? multiplyByCoreCount( params, concurrency.methods ) : 0;
-        concurrency.capacity = multiplyByCoreCount( params, concurrency.capacity );
 
         return concurrency;
     }
@@ -247,7 +269,7 @@ final class ParallelComputerFactory
         Concurrency concurrency = new Concurrency();
         concurrency.suites = params.isParallelSuites() ? params.getThreadCountSuites() : 0;
         concurrency.classes = params.isParallelClasses() ? params.getThreadCountClasses() : 0;
-        concurrency.methods = params.isParallelMethod() ? params.getThreadCountMethods() : 0;
+        concurrency.methods = params.isParallelMethods() ? params.getThreadCountMethods() : 0;
         concurrency.capacity = params.getThreadCount();
         double all = sumThreadCounts( concurrency );
 
@@ -257,7 +279,7 @@ final class ParallelComputerFactory
         concurrency.classes = params.isParallelClasses() ? multiplyByCoreCount( params, concurrency.capacity * (
             concurrency.classes / all ) ) : 0;
 
-        concurrency.methods = params.isParallelMethod() ? multiplyByCoreCount( params, concurrency.capacity * (
+        concurrency.methods = params.isParallelMethods() ? multiplyByCoreCount( params, concurrency.capacity * (
             concurrency.methods / all ) ) : 0;
 
         concurrency.capacity = multiplyByCoreCount( params, concurrency.capacity );
@@ -270,7 +292,7 @@ final class ParallelComputerFactory
         Concurrency concurrency = new Concurrency();
         concurrency.suites = params.isParallelSuites() ? threadCountSuites( params ) : 0;
         concurrency.classes = params.isParallelClasses() ? threadCountClasses( params ) : 0;
-        concurrency.methods = params.isParallelMethod() ? threadCountMethods( params ) : 0;
+        concurrency.methods = params.isParallelMethods() ? threadCountMethods( params ) : 0;
         concurrency.capacity = (int) Math.min( sumThreadCounts( concurrency ), Integer.MAX_VALUE );
         return concurrency;
     }
@@ -288,7 +310,7 @@ final class ParallelComputerFactory
             count++;
         }
 
-        if ( params.isParallelMethod() )
+        if ( params.isParallelMethods() )
         {
             count++;
         }
@@ -297,7 +319,7 @@ final class ParallelComputerFactory
 
     private static void adjustPrecisionInLeaf( JUnitCoreParameters params, Concurrency concurrency )
     {
-        if ( params.isParallelMethod() )
+        if ( params.isParallelMethods() )
         {
             concurrency.methods = concurrency.capacity - concurrency.suites - concurrency.classes;
         }
@@ -309,7 +331,7 @@ final class ParallelComputerFactory
 
     private static void adjustLeaf( JUnitCoreParameters params, Concurrency concurrency )
     {
-        if ( params.isParallelMethod() )
+        if ( params.isParallelMethods() )
         {
             concurrency.methods = Integer.MAX_VALUE;
         }
@@ -321,7 +343,7 @@ final class ParallelComputerFactory
 
     private static void setLeafInfinite( JUnitCoreParameters params, Concurrency concurrency )
     {
-        if ( params.isParallelMethod() )
+        if ( params.isParallelMethods() )
         {
             concurrency.methods = Integer.MAX_VALUE;
         }
@@ -339,7 +361,7 @@ final class ParallelComputerFactory
     {
         int maskOfParallel = params.isParallelSuites() ? 4 : 0;
         maskOfParallel |= params.isParallelClasses() ? 2 : 0;
-        maskOfParallel |= params.isParallelMethod() ? 1 : 0;
+        maskOfParallel |= params.isParallelMethods() ? 1 : 0;
 
         int maskOfConcurrency = params.getThreadCountSuites() > 0 ? 4 : 0;
         maskOfConcurrency |= params.getThreadCountClasses() > 0 ? 2 : 0;
@@ -361,9 +383,9 @@ final class ParallelComputerFactory
 
     private static boolean hasThreadCounts( JUnitCoreParameters jUnitCoreParameters )
     {
-        return jUnitCoreParameters.getThreadCountSuites() > 0 ||
-            jUnitCoreParameters.getThreadCountClasses() > 0 ||
-            jUnitCoreParameters.getThreadCountMethods() > 0;
+        return jUnitCoreParameters.isParallelSuites() && jUnitCoreParameters.getThreadCountSuites() > 0 ||
+            jUnitCoreParameters.isParallelClasses() && jUnitCoreParameters.getThreadCountClasses() > 0 ||
+            jUnitCoreParameters.isParallelMethods() && jUnitCoreParameters.getThreadCountMethods() > 0;
     }
 
     private static boolean hasThreadCount( JUnitCoreParameters jUnitCoreParameters )

@@ -32,9 +32,9 @@ public class JUnitCoreParametersTest
     public void testIsParallelMethod()
         throws Exception
     {
-        assertFalse( getTestSetClasses().isParallelMethod() );
-        assertTrue( getTestSetMethods().isParallelMethod() );
-        assertTrue( getTestSetBoth().isParallelMethod() );
+        assertFalse( getTestSetClasses().isParallelMethods() );
+        assertTrue( getTestSetMethods().isParallelMethods() );
+        assertTrue( getTestSetBoth().isParallelMethods() );
     }
 
     public void testIsParallelClasses()
@@ -148,6 +148,6 @@ public class JUnitCoreParametersTest
 
     private boolean isParallelMethodsAndClasses( JUnitCoreParameters jUnitCoreParameters )
     {
-        return jUnitCoreParameters.isParallelMethod() && jUnitCoreParameters.isParallelClasses();
+        return jUnitCoreParameters.isParallelMethods() && jUnitCoreParameters.isParallelClasses();
     }
 }

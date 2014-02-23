@@ -41,4 +41,6 @@ public class ProviderParameterNames
 
     public static final String PARALLEL_TIMEOUTFORCED_PROP = "paralleltimeoutforced";
 
+    public static final String PARALLEL_OPTIMIZE_PROP = "paralleloptimization";
+
 }

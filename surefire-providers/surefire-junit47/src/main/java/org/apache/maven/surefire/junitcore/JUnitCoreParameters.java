@@ -28,7 +28,7 @@ import org.apache.maven.surefire.booter.ProviderParameterNames;
 /**
  * @author Kristian Rosenvold
  */
-class JUnitCoreParameters
+public final class JUnitCoreParameters
 {
     public static final String PARALLEL_KEY = ProviderParameterNames.PARALLEL_PROP;
 
@@ -48,6 +48,8 @@ class JUnitCoreParameters
 
     public static final String PARALLEL_TIMEOUTFORCED_KEY = ProviderParameterNames.PARALLEL_TIMEOUTFORCED_PROP;
 
+    public static final String PARALLEL_OPTIMIZE = ProviderParameterNames.PARALLEL_OPTIMIZE_PROP;
+
     private final String parallel;
 
     private final Boolean perCoreThreadCount;
@@ -66,6 +68,8 @@ class JUnitCoreParameters
 
     private final Boolean useUnlimitedThreads;
 
+    private final boolean parallelOptimization;
+
     public JUnitCoreParameters( Properties properties )
     {
         parallel = properties.getProperty( PARALLEL_KEY, "none" ).toLowerCase();
@@ -79,6 +83,7 @@ class JUnitCoreParameters
             Math.max( Double.valueOf( properties.getProperty( PARALLEL_TIMEOUT_KEY, "0" ) ), 0 );
         parallelTestsTimeoutForcedInSeconds =
             Math.max( Double.valueOf( properties.getProperty( PARALLEL_TIMEOUTFORCED_KEY, "0" ) ), 0 );
+        parallelOptimization = Boolean.valueOf( properties.getProperty( PARALLEL_OPTIMIZE, "true" ) );
     }
 
     private static Collection<String> lowerCase( String... elements )
@@ -96,7 +101,7 @@ class JUnitCoreParameters
         return "all".equals( parallel );
     }
 
-    public boolean isParallelMethod()
+    public boolean isParallelMethods()
     {
         return isAllParallel() || lowerCase( "both", "methods", "suitesAndMethods", "classesAndMethods" ).contains(
             parallel );
@@ -114,12 +119,12 @@ class JUnitCoreParameters
     }
 
     /**
-     * @deprecated Instead use the expression ( {@link #isParallelMethod()} && {@link #isParallelClasses()} ).
+     * @deprecated Instead use the expression ( {@link #isParallelMethods()} && {@link #isParallelClasses()} ).
      */
     @Deprecated
     public boolean isParallelBoth()
     {
-        return isParallelMethod() && isParallelClasses();
+        return isParallelMethods() && isParallelClasses();
     }
 
     public Boolean isPerCoreThreadCount()
@@ -169,7 +174,12 @@ class JUnitCoreParameters
 
     public boolean isAnyParallelitySelected()
     {
-        return isParallelSuites() || isParallelClasses() || isParallelMethod();
+        return isParallelSuites() || isParallelClasses() || isParallelMethods();
+    }
+
+    public boolean isParallelOptimization()
+    {
+        return parallelOptimization;
     }
 
     @Override
@@ -177,6 +187,7 @@ class JUnitCoreParameters
     {
         return "parallel='" + parallel + '\'' + ", perCoreThreadCount=" + perCoreThreadCount + ", threadCount="
             + threadCount + ", useUnlimitedThreads=" + useUnlimitedThreads + ", threadCountSuites=" + threadCountSuites
-            + ", threadCountClasses=" + threadCountClasses + ", threadCountMethods=" + threadCountMethods;
+            + ", threadCountClasses=" + threadCountClasses + ", threadCountMethods=" + threadCountMethods
+            + ", parallelOptimization=" + parallelOptimization;
     }
 }

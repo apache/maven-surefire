@@ -55,7 +55,7 @@ class JUnitCoreWrapper
         }
         else
         {
-            exeuteLazy( testsToRun, filter, computer, junitCore );
+            executeLazy( testsToRun, filter, computer, junitCore );
         }
 
         if ( computer instanceof ParallelComputer )
@@ -85,7 +85,7 @@ class JUnitCoreWrapper
         createRequestAndRun( filter, computer, junitCore, tests );
     }
 
-    private static void exeuteLazy( TestsToRun testsToRun, Filter filter, Computer computer, JUnitCore junitCore )
+    private static void executeLazy( TestsToRun testsToRun, Filter filter, Computer computer, JUnitCore junitCore )
         throws TestSetFailedException
     {
         // in order to support LazyTestsToRun, the iterator must be used
@@ -119,7 +119,7 @@ class JUnitCoreWrapper
     {
         return parameters.isNoThreading()
             ? Computer.serial()
-            : ParallelComputerFactory.createParallelComputer( parameters );
+            : ParallelComputerFactory.createParallelComputer( parameters, parameters.isParallelOptimization() ? null : null );//todo resolve
     }
 
     private static class FilteringRequest
