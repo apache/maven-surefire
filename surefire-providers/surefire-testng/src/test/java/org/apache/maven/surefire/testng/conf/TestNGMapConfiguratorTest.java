@@ -20,7 +20,9 @@ package org.apache.maven.surefire.testng.conf;
  */
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
 import junit.framework.TestCase;
@@ -31,12 +33,36 @@ import junit.framework.TestCase;
 public class TestNGMapConfiguratorTest
     extends TestCase
 {
+    private static final String FIRST_LISTENER = "org.testng.TestListenerAdapter";
+    private static final String SECOND_LISTENER = "org.testng.reporters.ExitCodeListener";
+    public static final String LISTENER_PROP = "listener";
+
     public void testGetConvertedOptions()
         throws Exception
     {
         Map convertedOptions = getConvertedOptions( "mixed", "true" );
         Boolean bool = (Boolean) convertedOptions.get( "-mixed" );
         assertTrue( bool.booleanValue() );
+    }
+
+    public void testListenersOnSeparateLines()
+        throws Exception
+    {
+        String listenersOnSeveralLines = String.format( "%s , %n %s",
+                FIRST_LISTENER, SECOND_LISTENER);
+        Map convertedOptions = getConvertedOptions(LISTENER_PROP, listenersOnSeveralLines);
+        List listeners = (List) convertedOptions.get( String.format("-%s", LISTENER_PROP));
+        assertEquals(2, listeners.size());
+    }
+
+    public void testListenersOnTheSameLine()
+        throws Exception
+    {
+        String listenersOnSeveralLines = String.format( "%s,%s",
+                FIRST_LISTENER, SECOND_LISTENER);
+        Map convertedOptions = getConvertedOptions( LISTENER_PROP, listenersOnSeveralLines);
+        List listeners = (List) convertedOptions.get( String.format("-%s", LISTENER_PROP));
+        assertEquals(2, listeners.size());
     }
 
     public void testGroupByInstances()
