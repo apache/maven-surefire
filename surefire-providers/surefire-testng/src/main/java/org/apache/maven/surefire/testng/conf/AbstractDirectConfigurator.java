@@ -119,7 +119,7 @@ public abstract class AbstractDirectConfigurator
         }
 
         List classes = new ArrayList();
-        String[] classNames = listenerClasses.split( " *, *" );
+        String[] classNames = listenerClasses.split( "\\s*,\\s*(\\r?\\n)?\\s*" );
         for ( int i = 0; i < classNames.length; i++ )
         {
             String className = classNames[i];
