@@ -34,7 +34,7 @@ final public class RunnerCounter//todo needs refactoring, remove public
 
     public final long methods;
 
-    RunnerCounter( long suites, long classes, long methods )
+    public RunnerCounter( long suites, long classes, long methods )
     {
         this.suites = suites;
         this.classes = classes;
