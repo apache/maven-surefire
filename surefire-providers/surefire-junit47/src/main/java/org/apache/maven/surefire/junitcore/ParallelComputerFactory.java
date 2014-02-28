@@ -207,9 +207,9 @@ final class ParallelComputerFactory
             // Estimate parallel thread counts.
             double ratio = 1d / parallelEntities;
             int threads = multiplyByCoreCount( params, ratio * params.getThreadCount() );
-            concurrency.suites = params.isParallelSuites() ? threads : 0;
-            concurrency.classes = params.isParallelClasses() ? threads : 0;
-            concurrency.methods = params.isParallelMethods() ? threads : 0;
+            concurrency.suites = params.isParallelSuites() ? minSuites( threads, counts ) : 0;
+            concurrency.classes = params.isParallelClasses() ? minClasses( threads, counts ) : 0;
+            concurrency.methods = params.isParallelMethods() ? minMethods( threads, counts ) : 0;
             if ( parallelEntities == 1 )
             {
                 concurrency.capacity = 0;
@@ -222,11 +222,11 @@ final class ParallelComputerFactory
         else
         {
             // Try to allocate suites+classes+methods within threadCount,
-            concurrency.suites = params.isParallelSuites() ? multiplyByCoreCount( params, counts.suites ) : 0;
-            concurrency.classes = params.isParallelClasses() ? multiplyByCoreCount( params, counts.classes ) : 0;
+            concurrency.suites = params.isParallelSuites() ? toNonNegative( counts.suites ) : 0;
+            concurrency.classes = params.isParallelClasses() ? toNonNegative( counts.classes ) : 0;
             concurrency.methods =
-                params.isParallelMethods() ? multiplyByCoreCount( params, counts.methods / counts.classes ) : 0;
-            double sum = (double) concurrency.suites + concurrency.classes + concurrency.methods;
+                params.isParallelMethods() ? toNonNegative( Math.ceil( counts.methods / (double) counts.classes ) ) : 0;
+            double sum = toNonNegative( concurrency.suites + concurrency.classes + concurrency.methods );
             if ( concurrency.capacity < sum && sum != 0 )
             {
                 // otherwise allocate them using the weighting factor < 1.
@@ -234,7 +234,6 @@ final class ParallelComputerFactory
                 concurrency.suites *= weight;
                 concurrency.classes *= weight;
                 concurrency.methods *= weight;
-                adjustPrecisionInLeaf( params, concurrency );
             }
             adjustLeaf( params, concurrency );
         }
@@ -255,8 +254,8 @@ final class ParallelComputerFactory
 
         if ( counts != null )
         {
-            concurrency.suites = (int) Math.min( Math.min( concurrency.suites, counts.suites ), Integer.MAX_VALUE );
-            concurrency.classes = (int) Math.min( Math.min( concurrency.classes, counts.classes ), Integer.MAX_VALUE );
+            concurrency.suites = toNonNegative( Math.min( concurrency.suites, counts.suites ) );
+            concurrency.classes = toNonNegative( Math.min( concurrency.classes, counts.classes ) );
         }
 
         setLeafInfinite( params, concurrency );
@@ -293,7 +292,7 @@ final class ParallelComputerFactory
         concurrency.suites = params.isParallelSuites() ? threadCountSuites( params ) : 0;
         concurrency.classes = params.isParallelClasses() ? threadCountClasses( params ) : 0;
         concurrency.methods = params.isParallelMethods() ? threadCountMethods( params ) : 0;
-        concurrency.capacity = (int) Math.min( sumThreadCounts( concurrency ), Integer.MAX_VALUE );
+        concurrency.capacity = toNonNegative( sumThreadCounts( concurrency ) );
         return concurrency;
     }
 
@@ -413,7 +412,35 @@ final class ParallelComputerFactory
         double numberOfThreads =
             jUnitCoreParameters.isPerCoreThreadCount() ? threadsPerCore * (double) availableProcessors : threadsPerCore;
 
-        return numberOfThreads > 0 ? (int) Math.min( numberOfThreads, Integer.MAX_VALUE ) : Integer.MAX_VALUE;
+        return numberOfThreads > 0 ? toNonNegative( numberOfThreads ) : Integer.MAX_VALUE;
+    }
+
+    private static int minSuites( int threads, RunnerCounter counts )
+    {
+        long count = counts == null ? Integer.MAX_VALUE : counts.suites;
+        return Math.min( threads, toNonNegative( count ) );
+    }
+
+    private static int minClasses( int threads, RunnerCounter counts )
+    {
+        long count = counts == null ? Integer.MAX_VALUE : counts.classes;
+        return Math.min( threads, toNonNegative( count ) );
+    }
+
+    private static int minMethods( int threads, RunnerCounter counts )
+    {
+        long count = counts == null ? Integer.MAX_VALUE : counts.methods;
+        return Math.min( threads, toNonNegative( count ) );
+    }
+
+    private static int toNonNegative( long num )
+    {
+        return (int) Math.min( num > 0 ? num : 0, Integer.MAX_VALUE );
+    }
+
+    private static int toNonNegative( double num )
+    {
+        return (int) Math.min( num > 0 ? num : 0, Integer.MAX_VALUE );
     }
 
     static class Concurrency
