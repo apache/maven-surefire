@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.junitcore;
+package org.apache.maven.surefire.junitcore.pc;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,28 +19,13 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
-import org.junit.rules.TestWatchman;
-import org.junit.runners.model.FrameworkMethod;
-
-import java.util.concurrent.TimeUnit;
-
 /**
- * @author Tibor Digana (tibor17)
- * @since 2.16
+ * @author tibor17 (Tibor Digana)
+ * @since 2.17
  */
-public final class Stopwatch
-    extends TestWatchman
+enum Type
 {
-    private long startNanos;
-
-    public long stop()
-    {
-        return TimeUnit.MILLISECONDS.convert( System.nanoTime() - startNanos, TimeUnit.NANOSECONDS );
-    }
-
-    @Override
-    public void starting( FrameworkMethod method )
-    {
-        startNanos = System.nanoTime();
-    }
+    SUITES,
+    CLASSES,
+    METHODS
 }

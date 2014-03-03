@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.junitcore;
+package org.apache.maven.surefire.junitcore.pc;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,7 +19,7 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
-import org.apache.maven.surefire.junitcore.pc.ParallelComputer;
+import org.apache.maven.surefire.junitcore.JUnitCoreParameters;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -36,21 +36,21 @@ import org.junit.runner.RunWith;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 
-import static org.apache.maven.surefire.junitcore.ParallelComputerFactory.*;
+import static org.apache.maven.surefire.junitcore.pc.ParallelComputerUtil.*;
 import static org.apache.maven.surefire.junitcore.JUnitCoreParameters.*;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.*;
 
 /**
- * Testing an algorithm in {@link ParallelComputerFactory} which configures
- * allocated thread resources in ParallelComputer by given {@link JUnitCoreParameters}.
+ * Testing an algorithm in {@link ParallelComputerUtil} which configures
+ * allocated thread resources in ParallelComputer by given {@link org.apache.maven.surefire.junitcore.JUnitCoreParameters}.
  *
  * @author Tibor Digana (tibor17)
- * @see org.apache.maven.surefire.junitcore.ParallelComputerFactory
+ * @see ParallelComputerUtil
  * @since 2.16
  */
 @RunWith( Theories.class )
-public final class ParallelComputerFactoryTest
+public final class ParallelComputerUtilTest
 {
     @DataPoint
     public static final int CPU_1 = 1;
@@ -67,13 +67,13 @@ public final class ParallelComputerFactoryTest
     @BeforeClass
     public static void beforeClass()
     {
-        ParallelComputerFactory.overrideAvailableProcessors( 1 );
+        ParallelComputerUtil.overrideAvailableProcessors( 1 );
     }
 
     @AfterClass
     public static void afterClass()
     {
-        ParallelComputerFactory.setDefaultAvailableProcessors();
+        ParallelComputerUtil.setDefaultAvailableProcessors();
     }
 
     private static Properties parallel( String parallel )
@@ -192,7 +192,7 @@ public final class ParallelComputerFactoryTest
     public void useUnlimitedThreadsSuites( int cpu )
         throws TestSetFailedException
     {
-        ParallelComputerFactory.overrideAvailableProcessors( cpu );
+        ParallelComputerUtil.overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
         properties.setProperty( PARALLEL_KEY, "suites" );
         properties.setProperty( USEUNLIMITEDTHREADS_KEY, "true" );
@@ -222,7 +222,7 @@ public final class ParallelComputerFactoryTest
     public void useUnlimitedThreadsClasses( int cpu )
         throws TestSetFailedException
     {
-        ParallelComputerFactory.overrideAvailableProcessors( cpu );
+        ParallelComputerUtil.overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
         properties.setProperty( PARALLEL_KEY, "classes" );
         properties.setProperty( USEUNLIMITEDTHREADS_KEY, "true" );
@@ -252,7 +252,7 @@ public final class ParallelComputerFactoryTest
     public void unlimitedThreadsMethods( int cpu )
         throws TestSetFailedException
     {
-        ParallelComputerFactory.overrideAvailableProcessors( cpu );
+        ParallelComputerUtil.overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
         properties.setProperty( PARALLEL_KEY, "methods" );
         properties.setProperty( USEUNLIMITEDTHREADS_KEY, "true" );
@@ -282,7 +282,7 @@ public final class ParallelComputerFactoryTest
     public void unlimitedThreadsSuitesAndClasses( int cpu )
         throws TestSetFailedException
     {
-        ParallelComputerFactory.overrideAvailableProcessors( cpu );
+        ParallelComputerUtil.overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
         properties.setProperty( PARALLEL_KEY, "suitesAndClasses" );
         properties.setProperty( USEUNLIMITEDTHREADS_KEY, "true" );
@@ -313,7 +313,7 @@ public final class ParallelComputerFactoryTest
     public void unlimitedThreadsSuitesAndMethods( int cpu )
         throws TestSetFailedException
     {
-        ParallelComputerFactory.overrideAvailableProcessors( cpu );
+        ParallelComputerUtil.overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
         properties.setProperty( PARALLEL_KEY, "suitesAndMethods" );
         properties.setProperty( USEUNLIMITEDTHREADS_KEY, "true" );
@@ -344,7 +344,7 @@ public final class ParallelComputerFactoryTest
     public void unlimitedThreadsClassesAndMethods( int cpu )
         throws TestSetFailedException
     {
-        ParallelComputerFactory.overrideAvailableProcessors( cpu );
+        ParallelComputerUtil.overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
         properties.setProperty( PARALLEL_KEY, "classesAndMethods" );
         properties.setProperty( USEUNLIMITEDTHREADS_KEY, "true" );
@@ -375,7 +375,7 @@ public final class ParallelComputerFactoryTest
     public void unlimitedThreadsAll( int cpu )
         throws TestSetFailedException
     {
-        ParallelComputerFactory.overrideAvailableProcessors( cpu );
+        ParallelComputerUtil.overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
         properties.setProperty( PARALLEL_KEY, "all" );
         properties.setProperty( USEUNLIMITEDTHREADS_KEY, "true" );
@@ -407,7 +407,7 @@ public final class ParallelComputerFactoryTest
     public void threadCountSuites( int cpu )
         throws TestSetFailedException
     {
-        ParallelComputerFactory.overrideAvailableProcessors( cpu );
+        ParallelComputerUtil.overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
         properties.setProperty( PARALLEL_KEY, "suites" );
         properties.setProperty( THREADCOUNT_KEY, "3" );
@@ -426,7 +426,7 @@ public final class ParallelComputerFactoryTest
     public void threadCountClasses( int cpu )
         throws TestSetFailedException
     {
-        ParallelComputerFactory.overrideAvailableProcessors( cpu );
+        ParallelComputerUtil.overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
         properties.setProperty( PARALLEL_KEY, "classes" );
         properties.setProperty( THREADCOUNT_KEY, "3" );
@@ -445,7 +445,7 @@ public final class ParallelComputerFactoryTest
     public void threadCountMethods( int cpu )
         throws TestSetFailedException
     {
-        ParallelComputerFactory.overrideAvailableProcessors( cpu );
+        ParallelComputerUtil.overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
         properties.setProperty( PARALLEL_KEY, "methods" );
         properties.setProperty( THREADCOUNT_KEY, "3" );
@@ -464,7 +464,7 @@ public final class ParallelComputerFactoryTest
     public void threadCountBoth( int cpu )
         throws TestSetFailedException
     {
-        ParallelComputerFactory.overrideAvailableProcessors( cpu );
+        ParallelComputerUtil.overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
         properties.setProperty( PARALLEL_KEY, "both" );
         properties.setProperty( THREADCOUNT_KEY, "3" );
@@ -483,7 +483,7 @@ public final class ParallelComputerFactoryTest
     public void threadCountClassesAndMethods( int cpu )
         throws TestSetFailedException
     {
-        ParallelComputerFactory.overrideAvailableProcessors( cpu );
+        ParallelComputerUtil.overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
         properties.setProperty( PARALLEL_KEY, "classesAndMethods" );
         properties.setProperty( THREADCOUNT_KEY, "3" );
@@ -502,7 +502,7 @@ public final class ParallelComputerFactoryTest
     public void threadCountSuitesAndMethods( int cpu )
         throws TestSetFailedException
     {
-        ParallelComputerFactory.overrideAvailableProcessors( cpu );
+        ParallelComputerUtil.overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
         properties.setProperty( PARALLEL_KEY, "suitesAndMethods" );
         properties.setProperty( THREADCOUNT_KEY, "3" );
@@ -521,7 +521,7 @@ public final class ParallelComputerFactoryTest
     public void threadCountSuitesAndClasses( int cpu )
         throws TestSetFailedException
     {
-        ParallelComputerFactory.overrideAvailableProcessors( cpu );
+        ParallelComputerUtil.overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
         properties.setProperty( PARALLEL_KEY, "suitesAndClasses" );
         properties.setProperty( THREADCOUNT_KEY, "3" );
@@ -540,7 +540,7 @@ public final class ParallelComputerFactoryTest
     public void threadCountAll( int cpu )
         throws TestSetFailedException
     {
-        ParallelComputerFactory.overrideAvailableProcessors( cpu );
+        ParallelComputerUtil.overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
         properties.setProperty( PARALLEL_KEY, "all" );
         properties.setProperty( THREADCOUNT_KEY, "3" );
@@ -559,7 +559,7 @@ public final class ParallelComputerFactoryTest
     public void everyThreadCountSuitesAndClasses( int cpu )
         throws TestSetFailedException
     {
-        ParallelComputerFactory.overrideAvailableProcessors( cpu );
+        ParallelComputerUtil.overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
         properties.setProperty( PARALLEL_KEY, "suitesAndClasses" );
         properties.setProperty( THREADCOUNT_KEY, "3" );
@@ -582,7 +582,7 @@ public final class ParallelComputerFactoryTest
     public void everyThreadCountSuitesAndMethods( int cpu )
         throws TestSetFailedException
     {
-        ParallelComputerFactory.overrideAvailableProcessors( cpu );
+        ParallelComputerUtil.overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
         properties.setProperty( PARALLEL_KEY, "suitesAndMethods" );
         properties.setProperty( THREADCOUNT_KEY, "3" );
@@ -605,7 +605,7 @@ public final class ParallelComputerFactoryTest
     public void everyThreadCountClassesAndMethods( int cpu )
         throws TestSetFailedException
     {
-        ParallelComputerFactory.overrideAvailableProcessors( cpu );
+        ParallelComputerUtil.overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
         properties.setProperty( PARALLEL_KEY, "classesAndMethods" );
         properties.setProperty( THREADCOUNT_KEY, "3" );
@@ -628,7 +628,7 @@ public final class ParallelComputerFactoryTest
     public void everyThreadCountAll( int cpu )
         throws TestSetFailedException
     {
-        ParallelComputerFactory.overrideAvailableProcessors( cpu );
+        ParallelComputerUtil.overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
         properties.setProperty( PARALLEL_KEY, "all" );
         properties.setProperty( THREADCOUNT_KEY, "3" );
@@ -654,7 +654,7 @@ public final class ParallelComputerFactoryTest
         throws TestSetFailedException
     {
         // 4 * cpu to 5 * cpu threads to run test classes
-        ParallelComputerFactory.overrideAvailableProcessors( cpu );
+        ParallelComputerUtil.overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
         properties.setProperty( PARALLEL_KEY, "suitesAndClasses" );
         properties.setProperty( THREADCOUNT_KEY, "6" );
@@ -675,7 +675,7 @@ public final class ParallelComputerFactoryTest
         throws TestSetFailedException
     {
         // 4 * cpu to 5 * cpu threads to run test methods
-        ParallelComputerFactory.overrideAvailableProcessors( cpu );
+        ParallelComputerUtil.overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
         properties.setProperty( PARALLEL_KEY, "suitesAndMethods" );
         properties.setProperty( THREADCOUNT_KEY, "6" );
@@ -696,7 +696,7 @@ public final class ParallelComputerFactoryTest
         throws TestSetFailedException
     {
         // 4 * cpu to 5 * cpu threads to run test methods
-        ParallelComputerFactory.overrideAvailableProcessors( cpu );
+        ParallelComputerUtil.overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
         properties.setProperty( PARALLEL_KEY, "classesAndMethods" );
         properties.setProperty( THREADCOUNT_KEY, "6" );
@@ -717,7 +717,7 @@ public final class ParallelComputerFactoryTest
         throws TestSetFailedException
     {
         // 8 * cpu to 13 * cpu threads to run test methods
-        ParallelComputerFactory.overrideAvailableProcessors( cpu );
+        ParallelComputerUtil.overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
         properties.setProperty( PARALLEL_KEY, "all" );
         properties.setProperty( THREADCOUNT_KEY, "14" );
@@ -738,7 +738,7 @@ public final class ParallelComputerFactoryTest
     public void suites( int cpu )
         throws TestSetFailedException
     {
-        ParallelComputerFactory.overrideAvailableProcessors( cpu );
+        ParallelComputerUtil.overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
         properties.setProperty( PARALLEL_KEY, "suites" );
         properties.setProperty( THREADCOUNTSUITES_KEY, "5" );
@@ -757,7 +757,7 @@ public final class ParallelComputerFactoryTest
     public void classes( int cpu )
         throws TestSetFailedException
     {
-        ParallelComputerFactory.overrideAvailableProcessors( cpu );
+        ParallelComputerUtil.overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
         properties.setProperty( PARALLEL_KEY, "classes" );
         properties.setProperty( THREADCOUNTCLASSES_KEY, "5" );
@@ -776,7 +776,7 @@ public final class ParallelComputerFactoryTest
     public void methods( int cpu )
         throws TestSetFailedException
     {
-        ParallelComputerFactory.overrideAvailableProcessors( cpu );
+        ParallelComputerUtil.overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
         properties.setProperty( PARALLEL_KEY, "methods" );
         properties.setProperty( THREADCOUNTMETHODS_KEY, "5" );
@@ -795,7 +795,7 @@ public final class ParallelComputerFactoryTest
     public void suitesAndClasses( int cpu )
         throws TestSetFailedException
     {
-        ParallelComputerFactory.overrideAvailableProcessors( cpu );
+        ParallelComputerUtil.overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
 
         properties.setProperty( PARALLEL_KEY, "suitesAndClasses" );
@@ -831,7 +831,7 @@ public final class ParallelComputerFactoryTest
     public void suitesAndMethods( int cpu )
         throws TestSetFailedException
     {
-        ParallelComputerFactory.overrideAvailableProcessors( cpu );
+        ParallelComputerUtil.overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
 
         properties.setProperty( PARALLEL_KEY, "suitesAndMethods" );
@@ -867,7 +867,7 @@ public final class ParallelComputerFactoryTest
     public void classesAndMethods( int cpu )
         throws TestSetFailedException
     {
-        ParallelComputerFactory.overrideAvailableProcessors( cpu );
+        ParallelComputerUtil.overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
 
         properties.setProperty( PARALLEL_KEY, "classesAndMethods" );
@@ -903,7 +903,7 @@ public final class ParallelComputerFactoryTest
     public void all( int cpu )
         throws TestSetFailedException
     {
-        ParallelComputerFactory.overrideAvailableProcessors( cpu );
+        ParallelComputerUtil.overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
 
         properties.setProperty( PARALLEL_KEY, "all" );
@@ -958,8 +958,8 @@ public final class ParallelComputerFactoryTest
         properties.setProperty( PARALLEL_KEY, "methods" );
         properties.setProperty( THREADCOUNTMETHODS_KEY, "2" );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
-        ParallelComputer pc = createParallelComputer( params, null );
-
+        ParallelComputerBuilder pcBuilder = new ParallelComputerBuilder( params );
+        ParallelComputer pc = pcBuilder.buildComputer();
         Result result = new JUnitCore().run( pc, TestClass.class );
         long timeSpent = runtime.stop();
         long deltaTime = 500L;
@@ -982,8 +982,8 @@ public final class ParallelComputerFactoryTest
         properties.setProperty( THREADCOUNTMETHODS_KEY, "2" );
         properties.setProperty( PARALLEL_TIMEOUT_KEY, Double.toString( 2.5d ) );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
-        ParallelComputer pc = createParallelComputer( params, null );
-
+        ParallelComputerBuilder pcBuilder = new ParallelComputerBuilder( params );
+        ParallelComputer pc = pcBuilder.buildComputer();
         new JUnitCore().run( pc, TestClass.class );
         long timeSpent = runtime.stop();
         long deltaTime = 500L;
@@ -1004,8 +1004,8 @@ public final class ParallelComputerFactoryTest
         properties.setProperty( THREADCOUNTMETHODS_KEY, "2" );
         properties.setProperty( PARALLEL_TIMEOUTFORCED_KEY, Double.toString( 2.5d ) );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
-        ParallelComputer pc = createParallelComputer( params, null );
-
+        ParallelComputerBuilder pcBuilder = new ParallelComputerBuilder( params );
+        ParallelComputer pc = pcBuilder.buildComputer();
         new JUnitCore().run( pc, TestClass.class );
         long timeSpent = runtime.stop();
         long deltaTime = 500L;

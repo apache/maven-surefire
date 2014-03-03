@@ -21,7 +21,9 @@ package org.apache.maven.surefire.junitcore;
 
 import junit.framework.JUnit4TestAdapter;
 import junit.framework.Test;
+import org.apache.maven.surefire.junitcore.pc.OptimizedParallelComputerTest;
 import org.apache.maven.surefire.junitcore.pc.ParallelComputerBuilderTest;
+import org.apache.maven.surefire.junitcore.pc.ParallelComputerUtilTest;
 import org.apache.maven.surefire.junitcore.pc.SchedulingStrategiesTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
@@ -35,9 +37,11 @@ import org.junit.runners.Suite;
 @Suite.SuiteClasses( {
         Surefire746Test.class,
         Surefire813IncorrectResultTest.class,
-        ParallelComputerFactoryTest.class,
+        ParallelComputerUtilTest.class,
         ParallelComputerBuilderTest.class,
-        SchedulingStrategiesTest.class
+        SchedulingStrategiesTest.class,
+        JUnitCoreParametersTest.class,
+        OptimizedParallelComputerTest.class
 } )
 @RunWith( Suite.class )
 public class JUnit4SuiteTest

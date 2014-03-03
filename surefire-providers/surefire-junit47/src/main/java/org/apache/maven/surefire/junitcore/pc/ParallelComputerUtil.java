@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.junitcore;
+package org.apache.maven.surefire.junitcore.pc;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,27 +19,23 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
-import org.apache.maven.surefire.junitcore.pc.ParallelComputer;
-import org.apache.maven.surefire.junitcore.pc.ParallelComputerBuilder;
-import org.apache.maven.surefire.junitcore.pc.RunnerCounter;
+import org.apache.maven.surefire.junitcore.JUnitCoreParameters;
 import org.apache.maven.surefire.testset.TestSetFailedException;
-
-import java.util.concurrent.TimeUnit;
 
 /**
  * An algorithm which configures {@link ParallelComputer} with allocated thread resources by given
- * {@link JUnitCoreParameters}.
+ * {@link org.apache.maven.surefire.junitcore.JUnitCoreParameters}.
  * The <code>AbstractSurefireMojo</code> has to provide correct combinations of thread-counts and <em>parallel</em>.
  *
  * @author Tibor Digana (tibor17)
  * @see org.apache.maven.surefire.junitcore.pc.ParallelComputerBuilder
  * @since 2.16
  */
-final class ParallelComputerFactory
+final class ParallelComputerUtil
 {
     private static int availableProcessors = Runtime.getRuntime().availableProcessors();
 
-    private ParallelComputerFactory()
+    private ParallelComputerUtil()
     {
         throw new IllegalStateException( "Suppresses calling constructor, ensuring non-instantiability." );
     }
@@ -49,7 +45,7 @@ final class ParallelComputerFactory
     */
     static void overrideAvailableProcessors( int availableProcessors )
     {
-        ParallelComputerFactory.availableProcessors = availableProcessors;
+        ParallelComputerUtil.availableProcessors = availableProcessors;
     }
 
     /*
@@ -57,40 +53,13 @@ final class ParallelComputerFactory
     */
     static void setDefaultAvailableProcessors()
     {
-        ParallelComputerFactory.availableProcessors = Runtime.getRuntime().availableProcessors();
-    }
-
-    static ParallelComputer createParallelComputer( JUnitCoreParameters params, RunnerCounter counts )
-        throws TestSetFailedException
-    {
-        Concurrency concurrency = resolveConcurrency( params, counts );
-        ParallelComputerBuilder builder = new ParallelComputerBuilder();
-
-        if ( params.isParallelSuites() )
-        {
-            resolveSuitesConcurrency( builder, concurrency.suites );
-        }
-
-        if ( params.isParallelClasses() )
-        {
-            resolveClassesConcurrency( builder, concurrency.classes );
-        }
-
-        if ( params.isParallelMethods() )
-        {
-            resolveMethodsConcurrency( builder, concurrency.methods );
-        }
-
-        long timeout = secondsToNanos( params.getParallelTestsTimeoutInSeconds() );
-        long timeoutForced = secondsToNanos( params.getParallelTestsTimeoutForcedInSeconds() );
-        resolveCapacity( builder, concurrency.capacity );
-        return builder.buildComputer( timeout, timeoutForced, TimeUnit.NANOSECONDS );
+        ParallelComputerUtil.availableProcessors = Runtime.getRuntime().availableProcessors();
     }
 
     static Concurrency resolveConcurrency( JUnitCoreParameters params, RunnerCounter counts )
         throws TestSetFailedException
     {
-        if ( !params.isAnyParallelitySelected() )
+        if ( !params.isParallelismSelected() )
         {
             throw new TestSetFailedException( "Unspecified parameter '" + JUnitCoreParameters.PARALLEL_KEY + "'." );
         }
@@ -125,65 +94,6 @@ final class ParallelComputerFactory
         else
         {
             return concurrencyFromThreadCounts( params );
-        }
-    }
-
-    private static long secondsToNanos( double seconds )
-    {
-        double nanos = seconds > 0 ? seconds * 1E9 : 0;
-        return Double.isInfinite( nanos ) || nanos >= Long.MAX_VALUE ? 0 : (long) nanos;
-    }
-
-    private static void resolveSuitesConcurrency( ParallelComputerBuilder builder, int concurrency )
-    {
-        if ( concurrency > 0 )
-        {
-            if ( concurrency == Integer.MAX_VALUE )
-            {
-                builder.parallelSuites();
-            }
-            else
-            {
-                builder.parallelSuites( concurrency );
-            }
-        }
-    }
-
-    private static void resolveClassesConcurrency( ParallelComputerBuilder builder, int concurrency )
-    {
-        if ( concurrency > 0 )
-        {
-            if ( concurrency == Integer.MAX_VALUE )
-            {
-                builder.parallelClasses();
-            }
-            else
-            {
-                builder.parallelClasses( concurrency );
-            }
-        }
-    }
-
-    private static void resolveMethodsConcurrency( ParallelComputerBuilder builder, int concurrency )
-    {
-        if ( concurrency > 0 )
-        {
-            if ( concurrency == Integer.MAX_VALUE )
-            {
-                builder.parallelMethods();
-            }
-            else
-            {
-                builder.parallelMethods( concurrency );
-            }
-        }
-    }
-
-    private static void resolveCapacity( ParallelComputerBuilder builder, int capacity )
-    {
-        if ( capacity > 0 )
-        {
-            builder.useOnePool( capacity );
         }
     }
 
@@ -441,10 +351,5 @@ final class ParallelComputerFactory
     private static int toNonNegative( double num )
     {
         return (int) Math.min( num > 0 ? num : 0, Integer.MAX_VALUE );
-    }
-
-    static class Concurrency
-    {
-        int suites, classes, methods, capacity;
     }
 }

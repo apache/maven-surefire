@@ -21,87 +21,116 @@ package org.apache.maven.surefire.junitcore;
 
 import java.util.Properties;
 
-import junit.framework.TestCase;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+import static org.hamcrest.core.Is.is;
 
 /*
  * @author Kristian Rosenvold, kristian.rosenvold@gmail com
  */
 public class JUnitCoreParametersTest
-    extends TestCase
 {
-    public void testIsParallelMethod()
-        throws Exception
+    @Test
+    public void defaultParameters()
     {
-        assertFalse( getTestSetClasses().isParallelMethods() );
-        assertTrue( getTestSetMethods().isParallelMethods() );
-        assertTrue( getTestSetBoth().isParallelMethods() );
+        assertFalse( newTestSetDefault().isParallelismSelected() );
+        assertTrue( newTestSetDefault().isPerCoreThreadCount() );
+        assertThat( newTestSetDefault().getThreadCount(), is( 0 ) );
+        assertThat( newTestSetDefault().getThreadCountMethods(), is( 0 ) );
+        assertThat( newTestSetDefault().getThreadCountClasses(), is( 0 ) );
+        assertThat( newTestSetDefault().getThreadCountSuites(), is( 0 ) );
+        assertFalse( newTestSetDefault().isUseUnlimitedThreads() );
+        assertThat( newTestSetDefault().getParallelTestsTimeoutInSeconds(), is( 0d ) );
+        assertThat( newTestSetDefault().getParallelTestsTimeoutForcedInSeconds(), is( 0d ) );
+        assertTrue( newTestSetDefault().isParallelOptimization() );
     }
 
-    public void testIsParallelClasses()
-        throws Exception
+    @Test
+    public void optimizationParameter()
     {
-        assertTrue( getTestSetClasses().isParallelClasses() );
-        assertFalse( getTestSetMethods().isParallelClasses() );
-        assertTrue( getTestSetBoth().isParallelClasses() );
+        assertFalse( newTestSetOptimization( false ).isParallelOptimization() );
     }
 
-    public void testIsParallelBoth()
-        throws Exception
+    @Test
+    public void timeoutParameters()
     {
-        assertFalse( isParallelMethodsAndClasses( getTestSetClasses() ) );
-        assertFalse( isParallelMethodsAndClasses( getTestSetMethods() ) );
-        assertTrue( isParallelMethodsAndClasses( getTestSetBoth() ) );
+        JUnitCoreParameters parameters = newTestSetTimeouts( 5.5d, 11.1d );
+        assertThat( parameters.getParallelTestsTimeoutInSeconds(), is( 5.5d ) );
+        assertThat( parameters.getParallelTestsTimeoutForcedInSeconds(), is( 11.1d ) );
     }
 
-    public void testIsPerCoreThreadCount()
-        throws Exception
+    @Test
+    public void isParallelMethod()
     {
-        assertFalse( getTestSetClasses().isPerCoreThreadCount() );
-        assertFalse( getTestSetMethods().isPerCoreThreadCount() );
-        assertTrue( getTestSetBoth().isPerCoreThreadCount() );
+        assertFalse( newTestSetClasses().isParallelMethods() );
+        assertTrue( newTestSetMethods().isParallelMethods() );
+        assertTrue( newTestSetBoth().isParallelMethods() );
     }
 
-    public void testGetThreadCount()
-        throws Exception
+    @Test
+    public void isParallelClasses()
     {
-        assertFalse( getTestSetClasses().isPerCoreThreadCount() );
-        assertFalse( getTestSetMethods().isPerCoreThreadCount() );
-        assertTrue( getTestSetBoth().isPerCoreThreadCount() );
+        assertTrue( newTestSetClasses().isParallelClasses() );
+        assertFalse( newTestSetMethods().isParallelClasses() );
+        assertTrue( newTestSetBoth().isParallelClasses() );
     }
 
-    public void testIsUseUnlimitedThreads()
-        throws Exception
+    @Test
+    public void isParallelBoth()
     {
-        assertFalse( getTestSetClasses().isUseUnlimitedThreads() );
-        assertTrue( getTestSetMethods().isUseUnlimitedThreads() );
-        assertFalse( getTestSetBoth().isUseUnlimitedThreads() );
+        assertFalse( isParallelMethodsAndClasses( newTestSetClasses() ) );
+        assertFalse( isParallelMethodsAndClasses( newTestSetMethods() ) );
+        assertTrue( isParallelMethodsAndClasses( newTestSetBoth() ) );
     }
 
-    public void testIsNoThreading()
-        throws Exception
+    @Test
+    public void isPerCoreThreadCount()
     {
-        assertFalse( getTestSetClasses().isNoThreading() );
-        assertFalse( getTestSetMethods().isNoThreading() );
-        assertFalse( getTestSetBoth().isNoThreading() );
+        assertFalse( newTestSetClasses().isPerCoreThreadCount() );
+        assertFalse( newTestSetMethods().isPerCoreThreadCount() );
+        assertTrue( newTestSetBoth().isPerCoreThreadCount() );
     }
 
-    public void testIsAnyParallelitySelected()
-        throws Exception
+    @Test
+    public void getThreadCount()
     {
-        assertTrue( getTestSetClasses().isAnyParallelitySelected() );
-        assertTrue( getTestSetMethods().isAnyParallelitySelected() );
-        assertTrue( getTestSetBoth().isAnyParallelitySelected() );
+        assertFalse( newTestSetClasses().isPerCoreThreadCount() );
+        assertFalse( newTestSetMethods().isPerCoreThreadCount() );
+        assertTrue( newTestSetBoth().isPerCoreThreadCount() );
+    }
+
+    @Test
+    public void isUseUnlimitedThreads()
+    {
+        assertFalse( newTestSetClasses().isUseUnlimitedThreads() );
+        assertTrue( newTestSetMethods().isUseUnlimitedThreads() );
+        assertFalse( newTestSetBoth().isUseUnlimitedThreads() );
+    }
+
+    @Test
+    public void isNoThreading()
+    {
+        assertFalse( newTestSetClasses().isNoThreading() );
+        assertFalse( newTestSetMethods().isNoThreading() );
+        assertFalse( newTestSetBoth().isNoThreading() );
+    }
+
+    @Test
+    public void isAnyParallelismSelected()
+    {
+        assertTrue( newTestSetClasses().isParallelismSelected() );
+        assertTrue( newTestSetMethods().isParallelismSelected() );
+        assertTrue( newTestSetBoth().isParallelismSelected() );
+    }
+
+    private Properties newDefaultProperties()
+    {
+        return new Properties();
     }
 
 
-    public void testToString()
-        throws Exception
-    {
-        assertNotNull( getTestSetBoth().toString() );
-    }
-
-
-    public Properties getPropsetClasses()
+    private Properties newPropertiesClasses()
     {
         Properties props = new Properties();
         props.setProperty( JUnitCoreParameters.PARALLEL_KEY, "classes" );
@@ -111,7 +140,7 @@ public class JUnitCoreParametersTest
         return props;
     }
 
-    public Properties getPropsetMethods()
+    private Properties newPropertiesMethods()
     {
         Properties props = new Properties();
         props.setProperty( JUnitCoreParameters.PARALLEL_KEY, "methods" );
@@ -121,7 +150,7 @@ public class JUnitCoreParametersTest
         return props;
     }
 
-    public Properties getPropsetBoth()
+    private Properties newPropertiesBoth()
     {
         Properties props = new Properties();
         props.setProperty( JUnitCoreParameters.PARALLEL_KEY, "both" );
@@ -131,19 +160,49 @@ public class JUnitCoreParametersTest
         return props;
     }
 
-    private JUnitCoreParameters getTestSetBoth()
+    private Properties newPropertiesTimeouts( double timeout, double forcedTimeout )
     {
-        return new JUnitCoreParameters( getPropsetBoth() );
+        Properties props = new Properties();
+        props.setProperty( JUnitCoreParameters.PARALLEL_TIMEOUT_KEY, Double.toString( timeout ) );
+        props.setProperty( JUnitCoreParameters.PARALLEL_TIMEOUTFORCED_KEY, Double.toString( forcedTimeout ) );
+        return props;
     }
 
-    private JUnitCoreParameters getTestSetClasses()
+    private Properties newPropertiesOptimization( boolean optimize )
     {
-        return new JUnitCoreParameters( getPropsetClasses() );
+        Properties props = new Properties();
+        props.setProperty( JUnitCoreParameters.PARALLEL_OPTIMIZE_KEY, Boolean.toString( optimize ) );
+        return props;
     }
 
-    private JUnitCoreParameters getTestSetMethods()
+    private JUnitCoreParameters newTestSetDefault()
     {
-        return new JUnitCoreParameters( getPropsetMethods() );
+        return new JUnitCoreParameters( newDefaultProperties() );
+    }
+
+    private JUnitCoreParameters newTestSetBoth()
+    {
+        return new JUnitCoreParameters( newPropertiesBoth() );
+    }
+
+    private JUnitCoreParameters newTestSetClasses()
+    {
+        return new JUnitCoreParameters( newPropertiesClasses() );
+    }
+
+    private JUnitCoreParameters newTestSetMethods()
+    {
+        return new JUnitCoreParameters( newPropertiesMethods() );
+    }
+
+    private JUnitCoreParameters newTestSetOptimization( boolean optimize )
+    {
+        return new JUnitCoreParameters( newPropertiesOptimization( optimize ) );
+    }
+
+    private JUnitCoreParameters newTestSetTimeouts( double timeout, double forcedTimeout )
+    {
+        return new JUnitCoreParameters( newPropertiesTimeouts( timeout, forcedTimeout ) );
     }
 
     private boolean isParallelMethodsAndClasses( JUnitCoreParameters jUnitCoreParameters )

@@ -19,13 +19,11 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
-import java.util.List;
-
 import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
 import org.apache.maven.surefire.junitcore.pc.ParallelComputer;
+import org.apache.maven.surefire.junitcore.pc.ParallelComputerBuilder;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.TestsToRun;
-
 import org.junit.runner.Computer;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Request;
@@ -34,6 +32,8 @@ import org.junit.runner.Runner;
 import org.junit.runner.manipulation.Filter;
 import org.junit.runner.manipulation.NoTestsRemainException;
 import org.junit.runner.notification.RunListener;
+
+import java.util.List;
 
 /**
  * Encapsulates access to JUnitCore
@@ -119,7 +119,7 @@ class JUnitCoreWrapper
     {
         return parameters.isNoThreading()
             ? Computer.serial()
-            : ParallelComputerFactory.createParallelComputer( parameters, parameters.isParallelOptimization() ? null : null );//todo resolve
+            : new ParallelComputerBuilder( parameters ).buildComputer();
     }
 
     private static class FilteringRequest

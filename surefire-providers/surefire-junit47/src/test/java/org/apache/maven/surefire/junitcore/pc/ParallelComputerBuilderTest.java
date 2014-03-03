@@ -19,7 +19,6 @@ package org.apache.maven.surefire.junitcore.pc;
  * under the License.
  */
 
-import org.apache.maven.surefire.junitcore.Stopwatch;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -103,6 +102,8 @@ public class ParallelComputerBuilderTest
         // and next thread may be reused from finished class, however the capacity is 3.
         parallelComputerBuilder.parallelMethods( 3 );
 
+        assertFalse( parallelComputerBuilder.isOptimized() );
+
         ParallelComputerBuilder.PC computer = (ParallelComputerBuilder.PC) parallelComputerBuilder.buildComputer();
         Result result = new JUnitCore().run( computer, TestSuite.class );
         long timeSpent = runtime.stop();
@@ -136,6 +137,7 @@ public class ParallelComputerBuilderTest
         parallelComputerBuilder.parallelSuites( 5 );
         parallelComputerBuilder.parallelClasses( 5 );
         parallelComputerBuilder.parallelMethods( 3 );
+        assertFalse( parallelComputerBuilder.isOptimized() );
 
         ParallelComputerBuilder.PC computer = (ParallelComputerBuilder.PC) parallelComputerBuilder.buildComputer();
         Result result = new JUnitCore().run( computer, TestSuite.class, Class1.class );
@@ -161,6 +163,7 @@ public class ParallelComputerBuilderTest
         parallelComputerBuilder.parallelSuites( 2 );
         parallelComputerBuilder.parallelClasses( 4 );
         parallelComputerBuilder.parallelMethods();
+        assertFalse( parallelComputerBuilder.isOptimized() );
 
         ParallelComputerBuilder.PC computer = (ParallelComputerBuilder.PC) parallelComputerBuilder.buildComputer();
         Result result = new JUnitCore().run( computer, TestSuite.class, Class1.class );
@@ -192,6 +195,8 @@ public class ParallelComputerBuilderTest
         // One thread remains from '#useOnePool(3)'.
         parallelComputerBuilder.parallelMethods( 3 );
 
+        assertFalse( parallelComputerBuilder.isOptimized() );
+
         ParallelComputerBuilder.PC computer = (ParallelComputerBuilder.PC) parallelComputerBuilder.buildComputer();
         Result result = new JUnitCore().run( computer, TestSuite.class );
         long timeSpent = runtime.stop();
@@ -214,6 +219,7 @@ public class ParallelComputerBuilderTest
         parallelComputerBuilder.parallelSuites( 5 );
         parallelComputerBuilder.parallelClasses( 5 );
         parallelComputerBuilder.parallelMethods( 3 );
+        assertFalse( parallelComputerBuilder.isOptimized() );
 
         ParallelComputerBuilder.PC computer = (ParallelComputerBuilder.PC) parallelComputerBuilder.buildComputer();
         Result result = new JUnitCore().run( computer, TestSuite.class );
@@ -237,6 +243,7 @@ public class ParallelComputerBuilderTest
         parallelComputerBuilder.parallelSuites( 5 );
         parallelComputerBuilder.parallelClasses( 5 );
         parallelComputerBuilder.parallelMethods( 3 );
+        assertFalse( parallelComputerBuilder.isOptimized() );
 
         // 6 methods altogether.
         // 2 groups with 3 threads.
@@ -263,6 +270,7 @@ public class ParallelComputerBuilderTest
         parallelComputerBuilder.parallelSuites( 5 );
         parallelComputerBuilder.parallelClasses( 1 );
         parallelComputerBuilder.parallelMethods( 3 );
+        assertFalse( parallelComputerBuilder.isOptimized() );
 
         ParallelComputerBuilder.PC computer = (ParallelComputerBuilder.PC) parallelComputerBuilder.buildComputer();
         Result result = new JUnitCore().run( computer, TestSuite.class, Class1.class );
@@ -303,6 +311,7 @@ public class ParallelComputerBuilderTest
     {
         JUnitCore core = new JUnitCore();
         ParallelComputerBuilder builder = new ParallelComputerBuilder();
+        assertFalse( builder.isOptimized() );
 
         Result result = core.run( builder.buildComputer(), NothingDoingTest1.class, NothingDoingTest2.class );
         assertTrue( result.wasSuccessful() );
@@ -310,30 +319,44 @@ public class ParallelComputerBuilderTest
         result = core.run( builder.buildComputer(), NothingDoingTest1.class, NothingDoingSuite.class );
         assertTrue( result.wasSuccessful() );
 
-        result = core.run( builder.useOnePool( 1 ).buildComputer(), NothingDoingTest1.class, NothingDoingTest2.class );
+        builder.useOnePool( 1 );
+        assertFalse( builder.isOptimized() );
+        result = core.run( builder.buildComputer(), NothingDoingTest1.class, NothingDoingTest2.class );
         assertTrue( result.wasSuccessful() );
 
-        result = core.run( builder.useOnePool( 1 ).buildComputer(), NothingDoingTest1.class, NothingDoingSuite.class );
+        builder.useOnePool( 1 );
+        assertFalse( builder.isOptimized() );
+        result = core.run( builder.buildComputer(), NothingDoingTest1.class, NothingDoingSuite.class );
         assertTrue( result.wasSuccessful() );
 
-        result = core.run( builder.useOnePool( 2 ).buildComputer(), NothingDoingTest1.class, NothingDoingSuite.class );
+        builder.useOnePool( 2 );
+        assertFalse( builder.isOptimized() );
+        result = core.run( builder.buildComputer(), NothingDoingTest1.class, NothingDoingSuite.class );
         assertTrue( result.wasSuccessful() );
 
         Class<?>[] classes = { NothingDoingTest1.class, NothingDoingSuite.class };
 
-        result = core.run( builder.useOnePool( 2 ).parallelSuites( 1 ).parallelClasses( 1 ).buildComputer(), classes );
+        builder.useOnePool( 2 ).parallelSuites( 1 ).parallelClasses( 1 );
+        assertFalse( builder.isOptimized() );
+        result = core.run( builder.buildComputer(), classes );
         assertTrue( result.wasSuccessful() );
 
-        result = core.run( builder.useOnePool( 2 ).parallelSuites( 1 ).parallelClasses().buildComputer(), classes );
+        builder.useOnePool( 2 ).parallelSuites( 1 ).parallelClasses();
+        assertFalse( builder.isOptimized() );
+        result = core.run( builder.buildComputer(), classes );
         assertTrue( result.wasSuccessful() );
 
         classes = new Class<?>[]{ NothingDoingSuite.class, NothingDoingSuite.class, NothingDoingTest1.class,
             NothingDoingTest2.class, NothingDoingTest3.class };
 
-        result = core.run( builder.useOnePool( 2 ).parallelSuites( 1 ).parallelClasses( 1 ).buildComputer(), classes );
+        builder.useOnePool( 2 ).parallelSuites( 1 ).parallelClasses( 1 );
+        assertFalse( builder.isOptimized() );
+        result = core.run( builder.buildComputer(), classes );
         assertTrue( result.wasSuccessful() );
 
-        result = core.run( builder.useOnePool( 2 ).parallelSuites( 1 ).parallelClasses().buildComputer(), classes );
+        builder.useOnePool( 2 ).parallelSuites( 1 ).parallelClasses();
+        assertFalse( builder.isOptimized() );
+        result = core.run( builder.buildComputer(), classes );
         assertTrue( result.wasSuccessful() );
     }
 
@@ -342,6 +365,7 @@ public class ParallelComputerBuilderTest
     {
         ParallelComputerBuilder builder = new ParallelComputerBuilder();
         builder.parallelMethods();
+        assertFalse( builder.isOptimized() );
         testKeepBeforeAfter( builder, NothingDoingTest1.class );
     }
 
@@ -350,6 +374,7 @@ public class ParallelComputerBuilderTest
     {
         ParallelComputerBuilder builder = new ParallelComputerBuilder();
         builder.useOnePool( 5 ).parallelClasses( 1 ).parallelMethods( 2 );
+        assertFalse( builder.isOptimized() );
         testKeepBeforeAfter( builder, NothingDoingTest1.class, NothingDoingTest2.class );
     }
 
@@ -358,6 +383,7 @@ public class ParallelComputerBuilderTest
     {
         ParallelComputerBuilder builder = new ParallelComputerBuilder();
         builder.useOnePool( 8 ).parallelClasses( 2 ).parallelMethods( 2 );
+        assertFalse( builder.isOptimized() );
         JUnitCore core = new JUnitCore();
         NothingDoingTest1.methods.clear();
         Class<?>[] classes = { NothingDoingTest1.class, NothingDoingTest2.class, NothingDoingTest3.class };
@@ -376,6 +402,7 @@ public class ParallelComputerBuilderTest
             parallelComputerBuilder.parallelSuites( 2 );
             parallelComputerBuilder.parallelClasses( 3 );
             parallelComputerBuilder.parallelMethods( 3 );
+            assertFalse( parallelComputerBuilder.isOptimized() );
 
             final ParallelComputerBuilder.PC computer =
                 (ParallelComputerBuilder.PC) parallelComputerBuilder.buildComputer();
