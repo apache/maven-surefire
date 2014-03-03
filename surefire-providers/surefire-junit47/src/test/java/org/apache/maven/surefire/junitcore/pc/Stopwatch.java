@@ -19,25 +19,28 @@ package org.apache.maven.surefire.junitcore.pc;
  * under the License.
  */
 
+import org.junit.rules.TestWatchman;
+import org.junit.runners.model.FrameworkMethod;
+
+import java.util.concurrent.TimeUnit;
+
 /**
- * Counts number of JUnit suites, classes and methods.
- *
- * @author tibor17 (Tibor Digana)
- * @see ParallelComputerBuilder
- * @since 2.17
+ * @author Tibor Digana (tibor17)
+ * @since 2.16
  */
-final class RunnerCounter
+public final class Stopwatch
+    extends TestWatchman
 {
-    final long suites;
+    private long startNanos;
 
-    final long classes;
-
-    final long methods;
-
-    RunnerCounter( long suites, long classes, long methods )
+    public long stop()
     {
-        this.suites = suites;
-        this.classes = classes;
-        this.methods = methods;
+        return TimeUnit.MILLISECONDS.convert( System.nanoTime() - startNanos, TimeUnit.NANOSECONDS );
+    }
+
+    @Override
+    public void starting( FrameworkMethod method )
+    {
+        startNanos = System.nanoTime();
     }
 }

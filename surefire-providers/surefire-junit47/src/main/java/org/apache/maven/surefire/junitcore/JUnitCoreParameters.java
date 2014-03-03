@@ -48,7 +48,7 @@ public final class JUnitCoreParameters
 
     public static final String PARALLEL_TIMEOUTFORCED_KEY = ProviderParameterNames.PARALLEL_TIMEOUTFORCED_PROP;
 
-    public static final String PARALLEL_OPTIMIZE = ProviderParameterNames.PARALLEL_OPTIMIZE_PROP;
+    public static final String PARALLEL_OPTIMIZE_KEY = ProviderParameterNames.PARALLEL_OPTIMIZE_PROP;
 
     private final String parallel;
 
@@ -83,7 +83,7 @@ public final class JUnitCoreParameters
             Math.max( Double.valueOf( properties.getProperty( PARALLEL_TIMEOUT_KEY, "0" ) ), 0 );
         parallelTestsTimeoutForcedInSeconds =
             Math.max( Double.valueOf( properties.getProperty( PARALLEL_TIMEOUTFORCED_KEY, "0" ) ), 0 );
-        parallelOptimization = Boolean.valueOf( properties.getProperty( PARALLEL_OPTIMIZE, "true" ) );
+        parallelOptimization = Boolean.valueOf( properties.getProperty( PARALLEL_OPTIMIZE_KEY, "true" ) );
     }
 
     private static Collection<String> lowerCase( String... elements )
@@ -169,10 +169,10 @@ public final class JUnitCoreParameters
 
     public boolean isNoThreading()
     {
-        return !isAnyParallelitySelected();
+        return !isParallelismSelected();
     }
 
-    public boolean isAnyParallelitySelected()
+    public boolean isParallelismSelected()
     {
         return isParallelSuites() || isParallelClasses() || isParallelMethods();
     }

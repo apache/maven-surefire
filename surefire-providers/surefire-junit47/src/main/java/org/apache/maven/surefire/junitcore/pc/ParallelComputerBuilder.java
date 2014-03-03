@@ -20,6 +20,7 @@ package org.apache.maven.surefire.junitcore.pc;
  */
 
 import org.apache.maven.surefire.junitcore.JUnitCoreParameters;
+import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.junit.internal.runners.ErrorReportingRunner;
 import org.junit.runner.Description;
 import org.junit.runner.Runner;
@@ -40,13 +41,16 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+
+import static org.apache.maven.surefire.junitcore.pc.ParallelComputerUtil.*;
+import static org.apache.maven.surefire.junitcore.pc.Type.*;
 
 /**
  * Executing suites, classes and methods with defined concurrency. In this example the threads which completed
  * the suites and classes can be reused in parallel methods.
  * <pre>
- * ParallelComputerBuilder builder = new ParallelComputerBuilder();
+ * JUnitCoreParameters parameters = ...;
+ * ParallelComputerBuilder builder = new ParallelComputerBuilder(parameters);
  * builder.useOnePool(8).parallelSuites(2).parallelClasses(4).parallelMethods();
  * ParallelComputerBuilder.ParallelComputer computer = builder.buildComputer();
  * Class<?>[] tests = {...};
@@ -79,31 +83,42 @@ public final class ParallelComputerBuilder
 
     private boolean optimize;
 
+    private boolean runningInTests;
+
     /**
      * Calling {@link #useSeparatePools()}.
+     * Can be used only in unit tests.
+     * Do NOT call this constructor in production.
      */
-    public ParallelComputerBuilder()
+    ParallelComputerBuilder()
     {
+        runningInTests = true;
         useSeparatePools();
-        parallelGroups.put( Type.SUITES, 0 );
-        parallelGroups.put( Type.CLASSES, 0 );
-        parallelGroups.put( Type.METHODS, 0 );
+        parallelGroups.put( SUITES, 0 );
+        parallelGroups.put( CLASSES, 0 );
+        parallelGroups.put( METHODS, 0 );
     }
 
     public ParallelComputerBuilder( JUnitCoreParameters parameters )
     {
         this();
+        runningInTests = false;
         this.parameters = parameters;
     }
 
-    public ParallelComputerBuilder useSeparatePools()
+    public ParallelComputer buildComputer()
+    {
+        return new PC();
+    }
+
+    ParallelComputerBuilder useSeparatePools()
     {
         totalPoolSize = TOTAL_POOL_SIZE_UNDEFINED;
         useSeparatePools = true;
         return this;
     }
 
-    public ParallelComputerBuilder useOnePool()
+    ParallelComputerBuilder useOnePool()
     {
         totalPoolSize = TOTAL_POOL_SIZE_UNDEFINED;
         useSeparatePools = false;
@@ -116,7 +131,7 @@ public final class ParallelComputerBuilder
      *                      limited.
      * @throws IllegalArgumentException If <tt>totalPoolSize</tt> is &lt; 1.
      */
-    public ParallelComputerBuilder useOnePool( int totalPoolSize )
+    ParallelComputerBuilder useOnePool( int totalPoolSize )
     {
         if ( totalPoolSize < 1 )
         {
@@ -127,40 +142,45 @@ public final class ParallelComputerBuilder
         return this;
     }
 
-    public ParallelComputerBuilder optimize( boolean optimize )
+    boolean isOptimized()
+    {
+        return optimize;
+    }
+
+    ParallelComputerBuilder optimize( boolean optimize )
     {
         this.optimize = optimize;
         return this;
     }
 
-    public ParallelComputerBuilder parallelSuites()
+    ParallelComputerBuilder parallelSuites()
     {
-        return parallel( Type.SUITES );
+        return parallel( SUITES );
     }
 
-    public ParallelComputerBuilder parallelSuites( int nThreads )
+    ParallelComputerBuilder parallelSuites( int nThreads )
     {
-        return parallel( nThreads, Type.SUITES );
+        return parallel( nThreads, SUITES );
     }
 
-    public ParallelComputerBuilder parallelClasses()
+    ParallelComputerBuilder parallelClasses()
     {
-        return parallel( Type.CLASSES );
+        return parallel( CLASSES );
     }
 
-    public ParallelComputerBuilder parallelClasses( int nThreads )
+    ParallelComputerBuilder parallelClasses( int nThreads )
     {
-        return parallel( nThreads, Type.CLASSES );
+        return parallel( nThreads, CLASSES );
     }
 
-    public ParallelComputerBuilder parallelMethods()
+    ParallelComputerBuilder parallelMethods()
     {
-        return parallel( Type.METHODS );
+        return parallel( METHODS );
     }
 
-    public ParallelComputerBuilder parallelMethods( int nThreads )
+    ParallelComputerBuilder parallelMethods( int nThreads )
     {
-        return parallel( nThreads, Type.METHODS );
+        return parallel( nThreads, METHODS );
     }
 
     private ParallelComputerBuilder parallel( int nThreads, Type parallelType )
@@ -184,21 +204,14 @@ public final class ParallelComputerBuilder
         return parallel( Integer.MAX_VALUE, parallelType );
     }
 
-    public ParallelComputer buildComputer()
+    private double parallelTestsTimeoutInSeconds()
     {
-        return buildComputer( 0, 0, TimeUnit.NANOSECONDS );
+        return parameters == null ? 0d : parameters.getParallelTestsTimeoutInSeconds();
     }
 
-    public ParallelComputer buildComputer( long timeout, long timeoutForced, TimeUnit timeUnit )
+    private double parallelTestsTimeoutForcedInSeconds()
     {
-        return new PC( timeout, timeoutForced, timeUnit );
-    }
-
-    private static enum Type
-    {
-        SUITES,
-        CLASSES,
-        METHODS
+        return parameters == null ? 0d : parameters.getParallelTestsTimeoutForcedInSeconds();
     }
 
     final class PC
@@ -214,9 +227,9 @@ public final class ParallelComputerBuilder
 
         final Collection<Runner> unscheduledRunners = new LinkedHashSet<Runner>();
 
-        final int poolCapacity;
+        int poolCapacity;
 
-        final boolean splitPool;
+        boolean splitPool;
 
         private final Map<Type, Integer> allGroups;
 
@@ -224,9 +237,9 @@ public final class ParallelComputerBuilder
 
         private volatile Scheduler master;
 
-        private PC( long timeout, long timeoutForced, TimeUnit timeoutUnit )
+        private PC()
         {
-            super( timeout, timeoutForced, timeoutUnit );
+            super( parallelTestsTimeoutInSeconds(), parallelTestsTimeoutForcedInSeconds() );
             allGroups = new EnumMap<Type, Integer>( ParallelComputerBuilder.this.parallelGroups );
             poolCapacity = ParallelComputerBuilder.this.totalPoolSize;
             splitPool = ParallelComputerBuilder.this.useSeparatePools;
@@ -243,18 +256,28 @@ public final class ParallelComputerBuilder
         public Runner getSuite( RunnerBuilder builder, Class<?>[] cls )
             throws InitializationError
         {
-            super.getSuite( builder, cls );
-            populateChildrenFromSuites();
+            try
+            {
+                super.getSuite( builder, cls );
+                populateChildrenFromSuites();
 
-            WrappedRunners suiteSuites = wrapRunners( suites );
-            WrappedRunners suiteClasses = wrapRunners( classes );
+                WrappedRunners suiteSuites = wrapRunners( suites );
+                WrappedRunners suiteClasses = wrapRunners( classes );
 
-            long suitesCount = suites.size();
-            long classesCount = classes.size() + nestedClasses.size();
-            long methodsCount = suiteClasses.embeddedChildrenCount + nestedClassesChildren;
-            tryOptimize( suitesCount, classesCount, methodsCount );
+                long suitesCount = suites.size();
+                long classesCount = classes.size() + nestedClasses.size();
+                long methodsCount = suiteClasses.embeddedChildrenCount + nestedClassesChildren;
+                if (!ParallelComputerBuilder.this.runningInTests)
+                {
+                    determineThreadCounts( suitesCount, classesCount, methodsCount );
+                }
 
-            return setSchedulers( suiteSuites.wrappingSuite, suiteClasses.wrappingSuite );
+                return setSchedulers( suiteSuites.wrappingSuite, suiteClasses.wrappingSuite );
+            }
+            catch ( TestSetFailedException e )
+            {
+                throw new InitializationError( e );
+            }
         }
 
         @Override
@@ -280,19 +303,24 @@ public final class ParallelComputerBuilder
             return runner;
         }
 
-        private void tryOptimize( long suites, long classes, long methods )
+        private void determineThreadCounts( long suites, long classes, long methods )
+            throws TestSetFailedException
         {
-            //todo remove statement, we will rely on single non-default constructor. Final class.
             final JUnitCoreParameters parameters = ParallelComputerBuilder.this.parameters;
-            if ( ParallelComputerBuilder.this.optimize && parameters != null )
-            {
-                ;//todo
-            }
+            final boolean optimize = ParallelComputerBuilder.this.optimize;
+            RunnerCounter counts = new RunnerCounter( suites, classes, methods );
+            Concurrency concurrency = resolveConcurrency( parameters, optimize ? counts : null );
+            allGroups.put( SUITES, concurrency.suites );
+            allGroups.put( CLASSES, concurrency.classes );
+            allGroups.put( METHODS, concurrency.methods );
+            poolCapacity = concurrency.capacity;
+            splitPool &= concurrency.capacity <= 0;//fault if negative; should not happen
         }
 
         private <T extends Runner> WrappedRunners wrapRunners( Collection<T> runners )
             throws InitializationError
         {
+            // Do NOT use allGroups here.
             long childrenCounter = 0;
             ArrayList<Runner> runs = new ArrayList<Runner>();
             for ( T runner : runners )
@@ -346,12 +374,13 @@ public final class ParallelComputerBuilder
 
         private boolean areSuitesAndClassesParallel()
         {
-            return !suites.isEmpty() && allGroups.get( Type.SUITES ) > 0 && !classes.isEmpty()
-                && allGroups.get( Type.CLASSES ) > 0;
+            return !suites.isEmpty() && allGroups.get( SUITES ) > 0 && !classes.isEmpty()
+                && allGroups.get( CLASSES ) > 0;
         }
 
         private void populateChildrenFromSuites()
         {
+            // Do NOT use allGroups here.
             Filter filter = new SuiteFilter();
             for ( Iterator<ParentRunner> it = suites.iterator(); it.hasNext(); )
             {
@@ -392,9 +421,9 @@ public final class ParallelComputerBuilder
         private Runner setSchedulers( ParentRunner suiteSuites, ParentRunner suiteClasses )
             throws InitializationError
         {
-            int parallelSuites = allGroups.get( Type.SUITES );
-            int parallelClasses = allGroups.get( Type.CLASSES );
-            int parallelMethods = allGroups.get( Type.METHODS );
+            int parallelSuites = allGroups.get( SUITES );
+            int parallelClasses = allGroups.get( CLASSES );
+            int parallelMethods = allGroups.get( METHODS );
             int poolSize = totalPoolSize();
             ExecutorService commonPool = splitPool || poolSize == 0 ? null : createPool( poolSize );
             master = createMaster( commonPool, poolSize );
@@ -533,6 +562,8 @@ public final class ParallelComputerBuilder
         private class SuiteFilter
             extends Filter
         {
+            // Do NOT use allGroups in SuiteFilter.
+
             @Override
             public boolean shouldRun( Description description )
             {

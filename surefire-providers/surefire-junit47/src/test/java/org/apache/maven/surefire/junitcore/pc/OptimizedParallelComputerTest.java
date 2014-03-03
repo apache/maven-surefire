@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.junitcore;
+package org.apache.maven.surefire.junitcore.pc;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,7 +19,7 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
-import org.apache.maven.surefire.junitcore.pc.RunnerCounter;
+import org.apache.maven.surefire.junitcore.JUnitCoreParameters;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -33,16 +33,16 @@ import org.junit.runner.RunWith;
 import java.util.Properties;
 
 import static org.apache.maven.surefire.junitcore.JUnitCoreParameters.*;
-import static org.apache.maven.surefire.junitcore.ParallelComputerFactory.resolveConcurrency;
+import static org.apache.maven.surefire.junitcore.pc.ParallelComputerUtil.*;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.*;
 
 /**
- * Testing an algorithm in {@link ParallelComputerFactory} which configures
- * optimized thread resources in ParallelComputer by given {@link JUnitCoreParameters}.
+ * Testing an algorithm in {@link ParallelComputerUtil} which configures
+ * optimized thread resources in ParallelComputer by given {@link org.apache.maven.surefire.junitcore.JUnitCoreParameters}.
  *
  * @author Tibor Digana (tibor17)
- * @see org.apache.maven.surefire.junitcore.ParallelComputerFactory
+ * @see ParallelComputerUtil
  * @since 2.17
  */
 @RunWith( Theories.class )
@@ -63,26 +63,26 @@ public final class OptimizedParallelComputerTest
     @BeforeClass
     public static void beforeClass()
     {
-        ParallelComputerFactory.overrideAvailableProcessors( 1 );
+        overrideAvailableProcessors( 1 );
     }
 
     @AfterClass
     public static void afterClass()
     {
-        ParallelComputerFactory.setDefaultAvailableProcessors();
+        setDefaultAvailableProcessors();
     }
 
     @Theory
     public void threadCountSuites( int cpu )
         throws TestSetFailedException
     {
-        ParallelComputerFactory.overrideAvailableProcessors( cpu );
+        overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
         properties.setProperty( PARALLEL_KEY, "suites" );
         properties.setProperty( THREADCOUNT_KEY, "3" );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         RunnerCounter counter = new RunnerCounter( 5, 10, 20 );
-        ParallelComputerFactory.Concurrency concurrency = resolveConcurrency( params, counter );
+        Concurrency concurrency = resolveConcurrency( params, counter );
         assertTrue( params.isParallelSuites() );
         assertFalse( params.isParallelClasses() );
         assertFalse( params.isParallelMethods() );
@@ -96,13 +96,13 @@ public final class OptimizedParallelComputerTest
     public void threadCountClasses( int cpu )
         throws TestSetFailedException
     {
-        ParallelComputerFactory.overrideAvailableProcessors( cpu );
+        overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
         properties.setProperty( PARALLEL_KEY, "classes" );
         properties.setProperty( THREADCOUNT_KEY, "3" );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         RunnerCounter counter = new RunnerCounter( 1, 5, 10 );
-        ParallelComputerFactory.Concurrency concurrency = resolveConcurrency( params, counter );
+        Concurrency concurrency = resolveConcurrency( params, counter );
         assertFalse( params.isParallelSuites() );
         assertTrue( params.isParallelClasses() );
         assertFalse( params.isParallelMethods() );
@@ -116,13 +116,13 @@ public final class OptimizedParallelComputerTest
     public void threadCountMethods( int cpu )
         throws TestSetFailedException
     {
-        ParallelComputerFactory.overrideAvailableProcessors( cpu );
+        overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
         properties.setProperty( PARALLEL_KEY, "methods" );
         properties.setProperty( THREADCOUNT_KEY, "3" );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         RunnerCounter counter = new RunnerCounter( 1, 2, 5 );
-        ParallelComputerFactory.Concurrency concurrency = resolveConcurrency( params, counter );
+        Concurrency concurrency = resolveConcurrency( params, counter );
         assertFalse( params.isParallelSuites() );
         assertFalse( params.isParallelClasses() );
         assertTrue( params.isParallelMethods() );
@@ -136,13 +136,13 @@ public final class OptimizedParallelComputerTest
     public void threadCountBoth( int cpu )
         throws TestSetFailedException
     {
-        ParallelComputerFactory.overrideAvailableProcessors( cpu );
+        overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
         properties.setProperty( PARALLEL_KEY, "both" );
         properties.setProperty( THREADCOUNT_KEY, "3" );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         RunnerCounter counter = new RunnerCounter( 1, 2, 5 );
-        ParallelComputerFactory.Concurrency concurrency = resolveConcurrency( params, counter );
+        Concurrency concurrency = resolveConcurrency( params, counter );
         assertFalse( params.isParallelSuites() );
         assertTrue( params.isParallelClasses() );
         assertTrue( params.isParallelMethods() );
@@ -156,13 +156,13 @@ public final class OptimizedParallelComputerTest
     public void threadCountClassesAndMethods( int cpu )
         throws TestSetFailedException
     {
-        ParallelComputerFactory.overrideAvailableProcessors( cpu );
+        overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
         properties.setProperty( PARALLEL_KEY, "classesAndMethods" );
         properties.setProperty( THREADCOUNT_KEY, "3" );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         RunnerCounter counter = new RunnerCounter( 1, 2, 5 );
-        ParallelComputerFactory.Concurrency concurrency = resolveConcurrency( params, counter );
+        Concurrency concurrency = resolveConcurrency( params, counter );
         assertFalse( params.isParallelSuites() );
         assertTrue( params.isParallelClasses() );
         assertTrue( params.isParallelMethods() );
@@ -176,13 +176,13 @@ public final class OptimizedParallelComputerTest
     public void threadCountSuitesAndMethods( int cpu )
         throws TestSetFailedException
     {
-        ParallelComputerFactory.overrideAvailableProcessors( cpu );
+        overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
         properties.setProperty( PARALLEL_KEY, "suitesAndMethods" );
         properties.setProperty( THREADCOUNT_KEY, "3" );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         RunnerCounter counter = new RunnerCounter( 2, 3, 5 );
-        ParallelComputerFactory.Concurrency concurrency = resolveConcurrency( params, counter );
+        Concurrency concurrency = resolveConcurrency( params, counter );
         assertTrue( params.isParallelSuites() );
         assertFalse( params.isParallelClasses() );
         assertTrue( params.isParallelMethods() );
@@ -196,13 +196,13 @@ public final class OptimizedParallelComputerTest
     public void threadCountSuitesAndClasses( int cpu )
         throws TestSetFailedException
     {
-        ParallelComputerFactory.overrideAvailableProcessors( cpu );
+        overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
         properties.setProperty( PARALLEL_KEY, "suitesAndClasses" );
         properties.setProperty( THREADCOUNT_KEY, "3" );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         RunnerCounter counter = new RunnerCounter( 2, 5, 20 );
-        ParallelComputerFactory.Concurrency concurrency = resolveConcurrency( params, counter );
+        Concurrency concurrency = resolveConcurrency( params, counter );
         assertTrue( params.isParallelSuites() );
         assertTrue( params.isParallelClasses() );
         assertFalse( params.isParallelMethods() );
@@ -216,13 +216,13 @@ public final class OptimizedParallelComputerTest
     public void threadCountAll( int cpu )
         throws TestSetFailedException
     {
-        ParallelComputerFactory.overrideAvailableProcessors( cpu );
+        overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
         properties.setProperty( PARALLEL_KEY, "all" );
         properties.setProperty( THREADCOUNT_KEY, "3" );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         RunnerCounter counter = new RunnerCounter( 2, 5, 20 );
-        ParallelComputerFactory.Concurrency concurrency = resolveConcurrency( params, counter );
+        Concurrency concurrency = resolveConcurrency( params, counter );
         assertTrue( params.isParallelSuites() );
         assertTrue( params.isParallelClasses() );
         assertTrue( params.isParallelMethods() );
@@ -237,14 +237,14 @@ public final class OptimizedParallelComputerTest
         throws TestSetFailedException
     {
         // 4 * cpu to 5 * cpu threads to run test classes
-        ParallelComputerFactory.overrideAvailableProcessors( cpu );
+        overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
         properties.setProperty( PARALLEL_KEY, "suitesAndClasses" );
         properties.setProperty( THREADCOUNT_KEY, "6" );
         properties.setProperty( THREADCOUNTSUITES_KEY, "2" );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         RunnerCounter counter = new RunnerCounter( 3, 5, 20 );
-        ParallelComputerFactory.Concurrency concurrency = resolveConcurrency( params, counter );
+        Concurrency concurrency = resolveConcurrency( params, counter );
         assertTrue( params.isParallelSuites() );
         assertTrue( params.isParallelClasses() );
         assertFalse( params.isParallelMethods() );
@@ -259,14 +259,14 @@ public final class OptimizedParallelComputerTest
         throws TestSetFailedException
     {
         // 4 * cpu to 5 * cpu threads to run test methods
-        ParallelComputerFactory.overrideAvailableProcessors( cpu );
+        overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
         properties.setProperty( PARALLEL_KEY, "suitesAndMethods" );
         properties.setProperty( THREADCOUNT_KEY, "6" );
         properties.setProperty( THREADCOUNTSUITES_KEY, "2" );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         RunnerCounter counter = new RunnerCounter( 3, 5, 20 );
-        ParallelComputerFactory.Concurrency concurrency = resolveConcurrency( params, counter );
+        Concurrency concurrency = resolveConcurrency( params, counter );
         assertTrue( params.isParallelSuites() );
         assertFalse( params.isParallelClasses() );
         assertTrue( params.isParallelMethods() );
@@ -281,14 +281,14 @@ public final class OptimizedParallelComputerTest
         throws TestSetFailedException
     {
         // 4 * cpu to 5 * cpu threads to run test methods
-        ParallelComputerFactory.overrideAvailableProcessors( cpu );
+        overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
         properties.setProperty( PARALLEL_KEY, "classesAndMethods" );
         properties.setProperty( THREADCOUNT_KEY, "6" );
         properties.setProperty( THREADCOUNTCLASSES_KEY, "2" );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         RunnerCounter counter = new RunnerCounter( 3, 5, 20 );
-        ParallelComputerFactory.Concurrency concurrency = resolveConcurrency( params, counter );
+        Concurrency concurrency = resolveConcurrency( params, counter );
         assertFalse( params.isParallelSuites() );
         assertTrue( params.isParallelClasses() );
         assertTrue( params.isParallelMethods() );
@@ -303,7 +303,7 @@ public final class OptimizedParallelComputerTest
         throws TestSetFailedException
     {
         // 8 * cpu to 13 * cpu threads to run test methods
-        ParallelComputerFactory.overrideAvailableProcessors( cpu );
+        overrideAvailableProcessors( cpu );
         Properties properties = new Properties();
         properties.setProperty( PARALLEL_KEY, "all" );
         properties.setProperty( THREADCOUNT_KEY, "14" );
@@ -311,7 +311,7 @@ public final class OptimizedParallelComputerTest
         properties.setProperty( THREADCOUNTCLASSES_KEY, "4" );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         RunnerCounter counter = new RunnerCounter( 3, 5, 20 );
-        ParallelComputerFactory.Concurrency concurrency = resolveConcurrency( params, counter );
+        Concurrency concurrency = resolveConcurrency( params, counter );
         assertTrue( params.isParallelSuites() );
         assertTrue( params.isParallelClasses() );
         assertTrue( params.isParallelMethods() );

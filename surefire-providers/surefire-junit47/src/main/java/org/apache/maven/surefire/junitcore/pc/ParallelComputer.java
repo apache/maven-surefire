@@ -30,7 +30,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+
+import static java.util.concurrent.TimeUnit.*;
 
 /**
  * ParallelComputer extends JUnit {@link Computer} and has a shutdown functionality.
@@ -52,10 +53,16 @@ public abstract class ParallelComputer
 
     private Future<Collection<Description>> testsBeforeForcedShutdown;
 
-    public ParallelComputer( long timeout, long timeoutForced, TimeUnit timeoutUnit )
+    public ParallelComputer( double timeoutInSeconds, double timeoutForcedInSeconds  )
     {
-        this.timeoutNanos = timeoutUnit.toNanos( timeout );
-        this.timeoutForcedNanos = timeoutUnit.toNanos( timeoutForced );
+        this.timeoutNanos = secondsToNanos( timeoutInSeconds );
+        this.timeoutForcedNanos = secondsToNanos( timeoutForcedInSeconds );
+    }
+
+    private static long secondsToNanos( double seconds )
+    {
+        double nanos = seconds > 0 ? seconds * 1E9 : 0;
+        return Double.isInfinite( nanos ) || nanos >= Long.MAX_VALUE ? 0 : (long) nanos;
     }
 
     private static long minTimeout( long timeout1, long timeout2 )
@@ -146,12 +153,12 @@ public abstract class ParallelComputer
 
     private Future<Collection<Description>> scheduleShutdown()
     {
-        return getShutdownScheduler().schedule( createShutdownTask( false ), timeoutNanos, TimeUnit.NANOSECONDS );
+        return getShutdownScheduler().schedule( createShutdownTask( false ), timeoutNanos, NANOSECONDS );
     }
 
     private Future<Collection<Description>> scheduleForcedShutdown()
     {
-        return getShutdownScheduler().schedule( createShutdownTask( true ), timeoutForcedNanos, TimeUnit.NANOSECONDS );
+        return getShutdownScheduler().schedule( createShutdownTask( true ), timeoutForcedNanos, NANOSECONDS );
     }
 
     private ScheduledExecutorService getShutdownScheduler()

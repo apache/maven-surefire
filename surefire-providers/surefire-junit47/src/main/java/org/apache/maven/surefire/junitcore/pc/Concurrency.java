@@ -20,24 +20,10 @@ package org.apache.maven.surefire.junitcore.pc;
  */
 
 /**
- * Counts number of JUnit suites, classes and methods.
- *
  * @author tibor17 (Tibor Digana)
- * @see ParallelComputerBuilder
  * @since 2.17
  */
-final class RunnerCounter
+final class Concurrency
 {
-    final long suites;
-
-    final long classes;
-
-    final long methods;
-
-    RunnerCounter( long suites, long classes, long methods )
-    {
-        this.suites = suites;
-        this.classes = classes;
-        this.methods = methods;
-    }
+    int suites, classes, methods, capacity;
 }
