@@ -55,11 +55,11 @@ public class SimpleReportEntry
     {
         if ( source == null )
         {
-            throw new NullPointerException( "source is null" );
+            source = "null";
         }
         if ( name == null )
         {
-            throw new NullPointerException( "name is null" );
+            name = "null";
         }
 
         this.source = source;
