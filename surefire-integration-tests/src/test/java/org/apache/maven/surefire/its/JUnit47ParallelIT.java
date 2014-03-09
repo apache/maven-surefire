@@ -26,7 +26,7 @@ import org.junit.Test;
 /**
  * Testing JUnitCoreWrapper with ParallelComputerBuilder.
  *
- * @author Tibor Digana (tibor17)
+ * @author <a href="mailto:tibor.digana@gmail.com">Tibor Digana (tibor17)</a>
  * @since 2.16
  */
 public class JUnit47ParallelIT
@@ -124,59 +124,59 @@ public class JUnit47ParallelIT
     }
 
     @Test
-    public void useUnlimitedThreadsSuites1()
+    public void unlimitedThreadsSuites1()
     {
         // takes 3.6 sec
-        unpack().parallelSuites().useUnlimitedThreads().setTestToRun( "Suite*Test" ).executeTest()
-            .verifyErrorFree( 24 );
+        unpack().parallelSuites().useUnlimitedThreads().setTestToRun( "Suite*Test" ).executeTest().verifyErrorFree(
+            24 );
     }
 
     @Test
-    public void useUnlimitedThreadsSuites2()
+    public void unlimitedThreadsSuites2()
     {
         // takes 3.6 sec
-        unpack().parallelSuites().useUnlimitedThreads().threadCountSuites( 5 ).setTestToRun( "Suite*Test" )
-            .executeTest().verifyErrorFree( 24 );
+        unpack().parallelSuites().useUnlimitedThreads().threadCountSuites( 5 ).setTestToRun(
+            "Suite*Test" ).executeTest().verifyErrorFree( 24 );
     }
 
     @Test
-    public void useUnlimitedThreadsClasses1()
+    public void unlimitedThreadsClasses1()
     {
         // takes 1.8 sec
-        unpack().parallelClasses().useUnlimitedThreads().setTestToRun( "Suite*Test" ).executeTest()
-            .verifyErrorFree( 24 );
+        unpack().parallelClasses().useUnlimitedThreads().setTestToRun( "Suite*Test" ).executeTest().verifyErrorFree(
+            24 );
     }
 
     @Test
-    public void useUnlimitedThreadsClasses2()
+    public void unlimitedThreadsClasses2()
     {
         // takes 1.8 sec
-        unpack().parallelClasses().useUnlimitedThreads().threadCountClasses( 5 ).setTestToRun( "Suite*Test" )
-            .executeTest().verifyErrorFree( 24 );
+        unpack().parallelClasses().useUnlimitedThreads().threadCountClasses( 5 ).setTestToRun(
+            "Suite*Test" ).executeTest().verifyErrorFree( 24 );
     }
 
     @Test
-    public void useUnlimitedThreadsMethods1()
+    public void unlimitedThreadsMethods1()
     {
         // takes 2.4 sec
-        unpack().parallelMethods().useUnlimitedThreads().setTestToRun( "Suite*Test" ).executeTest()
-            .verifyErrorFree( 24 );
+        unpack().parallelMethods().useUnlimitedThreads().setTestToRun( "Suite*Test" ).executeTest().verifyErrorFree(
+            24 );
     }
 
     @Test
-    public void useUnlimitedThreadsMethods2()
+    public void unlimitedThreadsMethods2()
     {
         // takes 2.4 sec
-        unpack().parallelMethods().useUnlimitedThreads().threadCountMethods( 5 ).setTestToRun( "Suite*Test" )
-            .executeTest().verifyErrorFree( 24 );
+        unpack().parallelMethods().useUnlimitedThreads().threadCountMethods( 5 ).setTestToRun(
+            "Suite*Test" ).executeTest().verifyErrorFree( 24 );
     }
 
     @Test
     public void unlimitedThreadsSuitesAndClasses1()
     {
         // takes 0.9 sec
-        unpack().parallelSuitesAndClasses().useUnlimitedThreads().setTestToRun( "Suite*Test" ).executeTest()
-        .verifyErrorFree( 24 );
+        unpack().parallelSuitesAndClasses().useUnlimitedThreads().setTestToRun(
+            "Suite*Test" ).executeTest().verifyErrorFree( 24 );
     }
 
     @Test
@@ -184,40 +184,40 @@ public class JUnit47ParallelIT
     {
         // takes 0.9 sec
         // 1.8 sec with 4 parallel classes
-        unpack().parallelSuitesAndClasses().useUnlimitedThreads().threadCountSuites( 5 ).threadCountClasses( 15 )
-            .setTestToRun( "Suite*Test" ).executeTest().verifyErrorFree( 24 );
+        unpack().parallelSuitesAndClasses().useUnlimitedThreads().threadCountSuites( 5 ).threadCountClasses(
+            15 ).setTestToRun( "Suite*Test" ).executeTest().verifyErrorFree( 24 );
     }
 
     @Test
     public void unlimitedThreadsSuitesAndMethods1()
     {
         // takes 1.2 sec
-        unpack().parallelSuitesAndMethods().useUnlimitedThreads().setTestToRun( "Suite*Test" ).executeTest()
-            .verifyErrorFree( 24 );
+        unpack().parallelSuitesAndMethods().useUnlimitedThreads().setTestToRun(
+            "Suite*Test" ).executeTest().verifyErrorFree( 24 );
     }
 
     @Test
     public void unlimitedThreadsSuitesAndMethods2()
     {
         // takes 1.2 sec
-        unpack().parallelSuitesAndMethods().useUnlimitedThreads().threadCountSuites( 5 ).threadCountMethods( 15 )
-            .setTestToRun( "Suite*Test" ).executeTest().verifyErrorFree( 24 );
+        unpack().parallelSuitesAndMethods().useUnlimitedThreads().threadCountSuites( 5 ).threadCountMethods(
+            15 ).setTestToRun( "Suite*Test" ).executeTest().verifyErrorFree( 24 );
     }
 
     @Test
     public void unlimitedThreadsClassesAndMethods1()
     {
         // takes 0.6 sec
-        unpack().parallelClassesAndMethods().useUnlimitedThreads().setTestToRun( "Suite*Test" ).executeTest()
-            .verifyErrorFree( 24 );
+        unpack().parallelClassesAndMethods().useUnlimitedThreads().setTestToRun(
+            "Suite*Test" ).executeTest().verifyErrorFree( 24 );
     }
 
     @Test
     public void unlimitedThreadsClassesAndMethods2()
     {
         // takes 0.6 sec
-        unpack().parallelClassesAndMethods().useUnlimitedThreads().threadCountClasses( 5 ).threadCountMethods( 15 )
-            .setTestToRun( "Suite*Test" ).executeTest().verifyErrorFree( 24 );
+        unpack().parallelClassesAndMethods().useUnlimitedThreads().threadCountClasses( 5 ).threadCountMethods(
+            15 ).setTestToRun( "Suite*Test" ).executeTest().verifyErrorFree( 24 );
     }
 
     @Test
@@ -231,8 +231,8 @@ public class JUnit47ParallelIT
     public void unlimitedThreadsAll2()
     {
         // takes 0.3 sec
-        unpack().parallelAll().useUnlimitedThreads().threadCountSuites( 5 ).threadCountClasses( 15 )
-            .threadCountMethods( 30 ).setTestToRun( "Suite*Test" ).executeTest().verifyErrorFree( 24 );
+        unpack().parallelAll().useUnlimitedThreads().threadCountSuites( 5 ).threadCountClasses( 15 ).threadCountMethods(
+            30 ).setTestToRun( "Suite*Test" ).executeTest().verifyErrorFree( 24 );
     }
 
     @Test
@@ -247,8 +247,7 @@ public class JUnit47ParallelIT
     {
         // takes 3.6 sec for single core
         // takes 1.8 sec for double core
-        unpack().parallelClasses().threadCount( 3 ).setTestToRun( "Suite*Test" ).executeTest()
-            .verifyErrorFree( 24 );
+        unpack().parallelClasses().threadCount( 3 ).setTestToRun( "Suite*Test" ).executeTest().verifyErrorFree( 24 );
     }
 
     @Test
@@ -262,16 +261,32 @@ public class JUnit47ParallelIT
     public void threadCountClassesAndMethodsOneCore()
     {
         // takes 4.8 sec
-        unpack().disablePerCoreThreadCount().parallelClassesAndMethods().threadCount( 3 ).setTestToRun( "Suite*Test" )
-            .executeTest().verifyErrorFree( 24 );
+        unpack().disablePerCoreThreadCount().disableParallelOptimization().parallelClassesAndMethods().threadCount(
+            3 ).setTestToRun( "Suite*Test" ).executeTest().verifyErrorFree( 24 );
+    }
+
+    @Test
+    public void threadCountClassesAndMethodsOneCoreOptimized()
+    {
+        // the number of reused threads in leafs depends on the number of runners and CPU
+        unpack().disablePerCoreThreadCount().parallelClassesAndMethods().threadCount( 3 ).setTestToRun(
+            "Suite*Test" ).executeTest().verifyErrorFree( 24 );
     }
 
     @Test
     public void threadCountClassesAndMethods()
     {
         // takes 2.4 sec for double core CPU
-        unpack().parallelClassesAndMethods().threadCount( 3 ).setTestToRun( "Suite*Test" ).executeTest()
-        .verifyErrorFree( 24 );
+        unpack().disableParallelOptimization().parallelClassesAndMethods().threadCount( 3 ).setTestToRun(
+            "Suite*Test" ).executeTest().verifyErrorFree( 24 );
+    }
+
+    @Test
+    public void threadCountClassesAndMethodsOptimized()
+    {
+        // the number of reused threads in leafs depends on the number of runners and CPU
+        unpack().parallelClassesAndMethods().threadCount( 3 ).setTestToRun(
+            "Suite*Test" ).executeTest().verifyErrorFree( 24 );
     }
 
     @Test
@@ -279,20 +294,44 @@ public class JUnit47ParallelIT
     {
         // usually 24 times 0.3 sec = 7.2 sec with one core CPU
         // takes 1.8 sec for double core CPU
-        unpack().parallelSuitesAndMethods().threadCount( 3 ).setTestToRun( "Suite*Test" ).executeTest()
-            .verifyErrorFree( 24 );
+        unpack().disableParallelOptimization().parallelSuitesAndMethods().threadCount( 3 ).setTestToRun(
+            "Suite*Test" ).executeTest().verifyErrorFree( 24 );
+    }
+
+    @Test
+    public void threadCountSuitesAndMethodsOptimized()
+    {
+        // the number of reused threads in leafs depends on the number of runners and CPU
+        unpack().parallelSuitesAndMethods().threadCount( 3 ).setTestToRun( "Suite*Test" ).executeTest().verifyErrorFree(
+            24 );
     }
 
     @Test
     public void threadCountSuitesAndClasses()
     {
-        unpack().parallelSuitesAndClasses().threadCount( 3 ).setTestToRun( "Suite*Test" ).executeTest()
-            .verifyErrorFree( 24 );
+        unpack().disableParallelOptimization().parallelSuitesAndClasses().threadCount( 3 ).setTestToRun(
+            "Suite*Test" ).executeTest().verifyErrorFree( 24 );
+    }
+
+    @Test
+    public void threadCountSuitesAndClassesOptimized()
+    {
+        // the number of reused threads in leafs depends on the number of runners and CPU
+        unpack().parallelSuitesAndClasses().threadCount( 3 ).setTestToRun( "Suite*Test" ).executeTest().verifyErrorFree(
+            24 );
     }
 
     @Test
     public void threadCountAll()
     {
+        unpack().disableParallelOptimization().parallelAll().threadCount( 3 ).setTestToRun(
+            "Suite*Test" ).executeTest().verifyErrorFree( 24 );
+    }
+
+    @Test
+    public void threadCountAllOptimized()
+    {
+        // the number of reused threads in leafs depends on the number of runners and CPU
         unpack().parallelAll().threadCount( 3 ).setTestToRun( "Suite*Test" ).executeTest().verifyErrorFree( 24 );
     }
 
@@ -300,25 +339,24 @@ public class JUnit47ParallelIT
     public void everyThreadCountSuitesAndClasses()
     {
         // takes 1.8 sec for double core CPU
-        unpack().parallelSuitesAndClasses().threadCount( 3 ).threadCountSuites( 34 ).threadCountClasses( 66 )
-            .setTestToRun( "Suite*Test" ).executeTest()
-            .verifyErrorFree( 24 );
+        unpack().parallelSuitesAndClasses().threadCount( 3 ).threadCountSuites( 34 ).threadCountClasses(
+            66 ).setTestToRun( "Suite*Test" ).executeTest().verifyErrorFree( 24 );
     }
 
     @Test
     public void everyThreadCountSuitesAndMethods()
     {
         // takes 1.8 sec for double core CPU
-        unpack().parallelSuitesAndMethods().threadCount( 3 ).threadCountSuites( 34 ).threadCountMethods( 66 )
-            .setTestToRun( "Suite*Test" ).executeTest().verifyErrorFree( 24 );
+        unpack().parallelSuitesAndMethods().threadCount( 3 ).threadCountSuites( 34 ).threadCountMethods(
+            66 ).setTestToRun( "Suite*Test" ).executeTest().verifyErrorFree( 24 );
     }
 
     @Test
     public void everyThreadCountClassesAndMethods()
     {
         // takes 1.8 sec for double core CPU
-        unpack().parallelClassesAndMethods().threadCount( 3 ).threadCountClasses( 34 ).threadCountMethods( 66 )
-            .setTestToRun( "Suite*Test" ).executeTest().verifyErrorFree( 24 );
+        unpack().parallelClassesAndMethods().threadCount( 3 ).threadCountClasses( 34 ).threadCountMethods(
+            66 ).setTestToRun( "Suite*Test" ).executeTest().verifyErrorFree( 24 );
     }
 
     @Test
@@ -334,8 +372,16 @@ public class JUnit47ParallelIT
     {
         // 4 * cpu to 5 * cpu threads to run test classes
         // takes cca 1.8 sec
-        unpack().parallelSuitesAndClasses().disablePerCoreThreadCount().threadCount( 6 ).threadCountSuites( 2 )
-            .setTestToRun( "Suite*Test" ).executeTest().verifyErrorFree( 24 );
+        unpack().disableParallelOptimization().parallelSuitesAndClasses().disablePerCoreThreadCount().threadCount(
+            6 ).threadCountSuites( 2 ).setTestToRun( "Suite*Test" ).executeTest().verifyErrorFree( 24 );
+    }
+
+    @Test
+    public void reusableThreadCountSuitesAndClassesOptimized()
+    {
+        // the number of reused threads in leafs depends on the number of runners and CPU
+        unpack().parallelSuitesAndClasses().disablePerCoreThreadCount().threadCount( 6 ).threadCountSuites(
+            2 ).setTestToRun( "Suite*Test" ).executeTest().verifyErrorFree( 24 );
     }
 
     @Test
@@ -343,8 +389,16 @@ public class JUnit47ParallelIT
     {
         // 4 * cpu to 5 * cpu threads to run test methods
         // takes cca 1.8 sec
-        unpack().parallelSuitesAndMethods().disablePerCoreThreadCount().threadCount( 6 ).threadCountSuites( 2 )
-            .setTestToRun( "Suite*Test" ).executeTest().verifyErrorFree( 24 );
+        unpack().disableParallelOptimization().parallelSuitesAndMethods().disablePerCoreThreadCount().threadCount(
+            6 ).threadCountSuites( 2 ).setTestToRun( "Suite*Test" ).executeTest().verifyErrorFree( 24 );
+    }
+
+    @Test
+    public void reusableThreadCountSuitesAndMethodsOptimized()
+    {
+        // the number of reused threads in leafs depends on the number of runners and CPU
+        unpack().parallelSuitesAndMethods().disablePerCoreThreadCount().threadCount( 6 ).threadCountSuites(
+            2 ).setTestToRun( "Suite*Test" ).executeTest().verifyErrorFree( 24 );
     }
 
     @Test
@@ -352,8 +406,16 @@ public class JUnit47ParallelIT
     {
         // 4 * cpu to 5 * cpu threads to run test methods
         // takes cca 1.8 sec
-        unpack().parallelClassesAndMethods().disablePerCoreThreadCount().threadCount( 6 ).threadCountClasses( 2 )
-            .setTestToRun( "Suite*Test" ).executeTest().verifyErrorFree( 24 );
+        unpack().disableParallelOptimization().parallelClassesAndMethods().disablePerCoreThreadCount().threadCount(
+            6 ).threadCountClasses( 2 ).setTestToRun( "Suite*Test" ).executeTest().verifyErrorFree( 24 );
+    }
+
+    @Test
+    public void reusableThreadCountClassesAndMethodsOptimized()
+    {
+        // the number of reused threads in leafs depends on the number of runners and CPU
+        unpack().parallelClassesAndMethods().disablePerCoreThreadCount().threadCount( 6 ).threadCountClasses(
+            2 ).setTestToRun( "Suite*Test" ).executeTest().verifyErrorFree( 24 );
     }
 
     @Test
@@ -361,6 +423,15 @@ public class JUnit47ParallelIT
     {
         // 8 * cpu to 13 * cpu threads to run test methods
         // takes 0.9 sec
+        unpack().disableParallelOptimization().parallelAll().disablePerCoreThreadCount().threadCount(
+            14 ).threadCountSuites( 2 ).threadCountClasses( 4 ).setTestToRun(
+            "Suite*Test" ).executeTest().verifyErrorFree( 24 );
+    }
+
+    @Test
+    public void reusableThreadCountAllOptimized()
+    {
+        // the number of reused threads in leafs depends on the number of runners and CPU
         unpack().parallelAll().disablePerCoreThreadCount().threadCount( 14 ).threadCountSuites( 2 ).threadCountClasses(
             4 ).setTestToRun( "Suite*Test" ).executeTest().verifyErrorFree( 24 );
     }
@@ -369,16 +440,16 @@ public class JUnit47ParallelIT
     public void suites()
     {
         // takes 3.6 sec
-        unpack().parallelSuites().threadCountSuites( 5 ).setTestToRun( "Suite*Test" ).executeTest()
-            .verifyErrorFree( 24 );
+        unpack().parallelSuites().threadCountSuites( 5 ).setTestToRun( "Suite*Test" ).executeTest().verifyErrorFree(
+            24 );
     }
 
     @Test
     public void classes()
     {
         // takes 1.8 sec on any CPU because the suites are running in a sequence
-        unpack().parallelClasses().threadCountClasses( 5 ).setTestToRun( "Suite*Test" ).executeTest()
-            .verifyErrorFree( 24 );
+        unpack().parallelClasses().threadCountClasses( 5 ).setTestToRun( "Suite*Test" ).executeTest().verifyErrorFree(
+            24 );
     }
 
     @Test
@@ -386,8 +457,8 @@ public class JUnit47ParallelIT
     {
         // takes 2.4 sec on any CPU because every class has only three methods
         // and the suites and classes are running in a sequence
-        unpack().parallelMethods().threadCountMethods( 5 ).setTestToRun( "Suite*Test" ).executeTest()
-            .verifyErrorFree( 24 );
+        unpack().parallelMethods().threadCountMethods( 5 ).setTestToRun( "Suite*Test" ).executeTest().verifyErrorFree(
+            24 );
     }
 
     @Test
@@ -444,9 +515,10 @@ public class JUnit47ParallelIT
     public void timeoutAndForcedShutdown()
     {
         // executes for one sec until timeout has elapsed
-        unpack().parallelMethods().threadCountMethods( 2 ).parallelTestsTimeoutInSeconds( 1 )
-            .parallelTestsTimeoutForcedInSeconds( 2.5d ).setTestToRun( "TestClass" ).failNever().executeTest()
-            .verifyTextInLog( "The test run has finished abruptly after timeout of 1.0 seconds." );
+        unpack().parallelMethods().threadCountMethods( 2 ).parallelTestsTimeoutInSeconds(
+            1 ).parallelTestsTimeoutForcedInSeconds( 2.5d ).setTestToRun(
+            "TestClass" ).failNever().executeTest().verifyTextInLog(
+            "The test run has finished abruptly after timeout of 1.0 seconds." );
     }
 
     private SurefireLauncher unpack()
