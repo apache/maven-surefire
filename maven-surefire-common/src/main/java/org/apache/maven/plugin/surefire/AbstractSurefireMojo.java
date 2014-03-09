@@ -458,7 +458,8 @@ public abstract class AbstractSurefireMojo
     private boolean reuseForks;
 
     /**
-     * (JUnit 4.7 provider) Indicates that threadCount is per cpu core.
+     * (JUnit 4.7 provider) Indicates that threadCount, threadCountSuites, threadCountClasses, threadCountMethods
+     * are per cpu core.
      *
      * @since 2.5
      */
@@ -506,21 +507,14 @@ public abstract class AbstractSurefireMojo
     protected boolean parallelOptimized;
 
     /**
-     * (JUnit 4.7 provider) The attribute thread-count-suites allows you to specify the concurrency in test suites, i.e.:
+     * (JUnit 4.7 provider) This attribute allows you to specify the concurrency in test suites, i.e.:
      * <ul>
-     *  <li>number of threads executing JUnit test suites if <code>threadCount</code> is 0 or unspecified</li>
-     *  <li>In a special case <code>threadCountSuites</code> and <code>threadCount</code> are specified
-     *      without <code>threadCountMethods</code> for <code>parallel</code>=<code>suitesAndMethods</code>.
-     *      <br/>Example1: threadCount=8 and threadCountSuites=3, the number of parallel methods is varying from 5 to 7 in your tests.
-     *      <br/>In another special case when <code>parallel</code>=<code>all</code> and the only <code>threadCountMethods</code>
-     *      is unspecified, then threads from suites and classes are reused in favor of methods.
-     *      <br/>Example2: parallel=all, threadCount=16 , threadCountSuites=2 , threadCountClasses=5,
-     *      the number of parallel methods is varying from 9 to 14 in your tests.
-     *  </li>
-     *  <li>integer number which represents the weight in ratio between
-     *      <em>threadCountSuites</em>:<code>threadCountClasses</code>:<code>threadCountMethods</code>.
-     *      As an example 2 is 20% of <code>threadCount</code> if the ratio is <em>2</em>:3:5</li>
-     *  <li>You can impose limitation on parallel suites if <code>useUnlimitedThreads</code> is specified.</li>
+     *  <li>number of concurrent suites if <code>threadCount</code> is 0 or unspecified</li>
+     *  <li>limited suites concurrency if <code>useUnlimitedThreads</code> is set to <strong>true</strong></li>
+     *  <li>if <code>threadCount</code> and certain thread-count parameters are &gt; 0 for <code>parallel</code>, the
+     *  concurrency is computed from ratio. For instance parallel=all and the ratio between
+     *      <em>threadCountSuites</em>:<code>threadCountClasses</code>:<code>threadCountMethods</code> is
+     *      <em>2</em>:3:5, there is 20% of <code>threadCount</code> in concurrent suites.</li>
      * </ul>
      *
      * Only makes sense to use in conjunction with the <code>parallel</code> parameter.
@@ -532,21 +526,18 @@ public abstract class AbstractSurefireMojo
     protected int threadCountSuites;
 
     /**
-     * (JUnit 4.7 provider) The attribute thread-count-classes allows you to specify the concurrency in test classes, i.e.:
+     * (JUnit 4.7 provider) This attribute allows you to specify the concurrency in test classes, i.e.:
      * <ul>
-     *  <li>number of threads executing JUnit test classes if <code>threadCount</code> is 0 or unspecified</li>
-     *  <li>In a special case <code>threadCountClasses</code> and <code>threadCount</code> are specified
-     *      without <code>threadCountMethods</code> for <code>parallel</code>=<code>classesAndMethods</code>.
-     *      <br/>Example1: threadCount=8 and threadCountClasses=3, the number of parallel methods is varying from 5 to 7 in your tests.
-     *      <br/>In another special case when <code>parallel</code>=<code>all</code> and the only <code>threadCountMethods</code>
-     *      is unspecified, then threads from suites and classes are reused in favor of methods.
-     *      <br/>Example2: parallel=all, threadCount=16 , threadCountSuites=2 , threadCountClasses=5,
-     *      the number of parallel methods is varying from 9 to 14 in your tests.
+     *  <li>number of concurrent classes if <code>threadCount</code> is 0 or unspecified</li>
+     *  <li>limited classes concurrency if <code>useUnlimitedThreads</code> is set to <strong>true</strong></li>
+     *  <li>if <code>threadCount</code> and certain thread-count parameters are &gt; 0 for <code>parallel</code>, the
+     *  concurrency is computed from ratio. For instance parallel=all and the ratio between
+     *      <code>threadCountSuites</code>:<em>threadCountClasses</em>:<code>threadCountMethods</code> is
+     *      2:<em>3</em>:5, there is 30% of <code>threadCount</code> in concurrent classes.</li>
+     *  <li>as in the previous case but without this leaf thread-count. Example: parallel=suitesAndClasses,
+     *  threadCount=16, threadCountSuites=5, threadCountClasses is unspecified leaf, the number of concurrent classes
+     *  is varying from &gt;= 11 to 14 or 15. The threadCountSuites become number of threads.
      *  </li>
-     *  <li>integer number which represents the weight in ratio between
-     *      <code>threadCountSuites</code>:<em>threadCountClasses</em>:<code>threadCountMethods</code>.
-     *      As an example 3 is 30% of <code>threadCount</code> if the ratio is 2:<em>3</em>:5</li>
-     *  <li>You can impose limitation on parallel classes if <code>useUnlimitedThreads</code> is specified.</li>
      * </ul>
      *
      * Only makes sense to use in conjunction with the <code>parallel</code> parameter.
@@ -558,12 +549,18 @@ public abstract class AbstractSurefireMojo
     protected int threadCountClasses;
 
     /**
-     * (JUnit 4.7 provider) The attribute thread-count-methods allows you to specify the concurrency in test methods, i.e.:
+     * (JUnit 4.7 provider) This attribute allows you to specify the concurrency in test methods, i.e.:
      * <ul>
-     *  <li>number of threads executing JUnit test methods if <code>threadCount</code> is 0 or unspecified;</li>
-     *  <li>integer number which represents the weight in ratio between <code>threadCountSuites</code>:<code>threadCountClasses</code>:<em>threadCountMethods</em>.
-     *      As an example 5 is 50% of <code>threadCount</code> if the ratio is 2:3:<em>5</em>.</li>
-     *  <li>You can impose limitation on parallel methods if <code>useUnlimitedThreads</code> is specified.</li>
+     *  <li>number of concurrent methods if <code>threadCount</code> is 0 or unspecified</li>
+     *  <li>limited concurrency of methods if <code>useUnlimitedThreads</code> is set to <strong>true</strong></li>
+     *  <li>if <code>threadCount</code> and certain thread-count parameters are &gt; 0 for <code>parallel</code>, the
+     *  concurrency is computed from ratio. For instance parallel=all and the ratio between
+     *      <code>threadCountSuites</code>:<code>threadCountClasses</code>:<em>threadCountMethods</em> is
+     *      2:3:<em>5</em>, there is 50% of <code>threadCount</code> in concurrent methods.</li>
+     *  <li>as in the previous case but without this leaf thread-count. Example: parallel=all, threadCount=16,
+     *  threadCountSuites=2, threadCountClasses=3, but threadCountMethods is unspecified leaf, the number of concurrent
+     *  methods is varying from &gt;= 11 to 14 or 15. The threadCountSuites and threadCountClasses become number of threads.
+     *  </li>
      * </ul>
      *
      * Only makes sense to use in conjunction with the <code>parallel</code> parameter.
