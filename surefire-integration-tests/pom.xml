@@ -96,7 +96,8 @@
         <artifactId>maven-failsafe-plugin</artifactId>
         <version>${shadedVersion}</version>
         <configuration>
-          <threadCount>1</threadCount>
+          <threadCount>2</threadCount>
+          <parallel>methods</parallel>
           <perCoreThreadCount>false</perCoreThreadCount>
           <forkMode>never</forkMode>
           <argLine>-Xmx512m -XX:MaxPermSize=356m</argLine>
