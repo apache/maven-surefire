@@ -130,7 +130,6 @@ public class SurefireLauncher
         return this;
     }
 
-
     public SurefireLauncher showErrorStackTraces()
     {
         mavenLauncher.showErrorStackTraces();
@@ -161,7 +160,6 @@ public class SurefireLauncher
         mavenLauncher.sysProp( "groups", groups );
         return this;
     }
-
 
     public SurefireLauncher addGoal( String goal )
     {
@@ -316,6 +314,12 @@ public class SurefireLauncher
     public SurefireLauncher disablePerCoreThreadCount()
     {
         mavenLauncher.sysProp( "perCoreThreadCount", false );
+        return this;
+    }
+
+    public SurefireLauncher disableParallelOptimization()
+    {
+        mavenLauncher.sysProp( "parallelOptimized", "false" );
         return this;
     }
 

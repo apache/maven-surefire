@@ -19,13 +19,10 @@ package surefireparallel;
  * under the License.
  */
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runners.BlockJUnit4ClassRunner;
 
 /**
- * @author Tibor Digana (tibor17)
+ * @author <a href="mailto:tibor.digana@gmail.com">Tibor Digana (tibor17)</a>
  * @since 2.16
  */
 public class TestClass
