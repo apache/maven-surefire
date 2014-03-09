@@ -33,11 +33,6 @@
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>${surefire.version}</version>
-        <configuration>
-          <perCoreThreadCount>false</perCoreThreadCount>
-          <threadCount>4</threadCount>
-          <parallel>methods</parallel>
-        </configuration>
       </plugin>
     </plugins>
   </build>
