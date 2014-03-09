@@ -67,7 +67,7 @@ Fork Options and Parallel Test Execution
   <<<threadCountClasses>>> or <<<threadCountMethods>>>.
   If the only <<<threadCount>>> is specified, the surefire attempts to estimate
   thread-counts for suites, classes and methods and reuse the threads in favor
-  of parallel methods (possibly increasing concurrent methods).
+  of a leaf, e.g. parallel methods (possibly increasing concurrent methods).
   
   As an example with unlimited number of threads, there is maximum of three
   concurrent threads to execute suites:
@@ -77,8 +77,8 @@ Fork Options and Parallel Test Execution
   limited:
   parallel = classesAndMethods, threadCount = 8, threadCountClasses = 3.
   Here the number of parallel methods is varying from 5 to 7.
-  Similarily with parallel = all, but the sum of <<<threadCountSuites>>> and
-  <<<threadCountClasses>>> must not excit certain <<<threadCount>>> - 1.
+  Accordingly parallel = all, but the sum of <<<threadCountSuites>>> and
+  <<<threadCountClasses>>> must not exceed certain (<<<threadCount>>> - 1).
   Other combinations are possible with unspecified thread-count leaf. Make sure
   that the leaf is last from the order suites-classes-methods in <<<parallel>>>.
   
@@ -148,7 +148,7 @@ Fork Options and Parallel Test Execution
   builds, i.e. the effective value of the <<<-T>>> command line argument of 
   maven core.
 
-  In case forkig is disabled (<<<forkCount=0>>>), the place holder will be
+  In case of disabled forking (<<<forkCount=0>>>), the place holder will be
   replaced with <1>.
 
   The following is an example configuration that makes use of up to three forked
