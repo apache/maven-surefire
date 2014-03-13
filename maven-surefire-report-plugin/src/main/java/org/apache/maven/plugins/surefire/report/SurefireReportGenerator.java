@@ -31,6 +31,7 @@ import org.apache.maven.doxia.markup.HtmlMarkup;
 import org.apache.maven.doxia.sink.Sink;
 import org.apache.maven.doxia.sink.SinkEventAttributeSet;
 import org.apache.maven.doxia.sink.SinkEventAttributes;
+import org.apache.maven.doxia.util.DoxiaUtils;
 import org.apache.maven.reporting.MavenReportException;
 
 /**
@@ -425,7 +426,7 @@ public class SurefireReportGenerator
 
                             if ( failure != null )
                             {
-                                sink.link( "#" + testCase.getFullName() );
+                                sink.link( "#" + toHtmlId( testCase.getFullName() ) );
 
                                 sinkIcon( (String) failure.get( "type" ), sink );
 
@@ -442,7 +443,7 @@ public class SurefireReportGenerator
                             {
                                 sink.tableCell();
 
-                                sinkLink( sink, testCase.getName(), "#" + testCase.getFullName() );
+                                sinkLink( sink, testCase.getName(), "#" + toHtmlId( testCase.getFullName() ) );
 
                                 SinkEventAttributeSet atts = new SinkEventAttributeSet();
                                 atts.addAttribute( SinkEventAttributes.CLASS, "detailToggle" );
@@ -540,7 +541,14 @@ public class SurefireReportGenerator
 
     private String toHtmlId( String id )
     {
-        return id.replace( ".", "_" );
+        if ( DoxiaUtils.isValidId(id) )
+        {
+            return id;
+        }
+        else
+        {
+            return DoxiaUtils.encodeId( id, true );
+        }
     }
 
     private void constructFailureDetails( Sink sink, ResourceBundle bundle, List<ReportTestCase> failureList )
@@ -579,7 +587,7 @@ public class SurefireReportGenerator
 
                 sink.tableCell_();
 
-                sinkCellAnchor( sink, tCase.getName(), tCase.getFullName() );
+                sinkCellAnchor( sink, tCase.getName(), toHtmlId( tCase.getFullName() ) );
 
                 sink.tableRow_();
 
