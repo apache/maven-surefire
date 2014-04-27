@@ -23,7 +23,7 @@
   <parent>
     <artifactId>maven-parent</artifactId>
     <groupId>org.apache.maven</groupId>
-    <version>23</version>
+    <version>24</version>
     <relativePath>../pom/maven/pom.xml</relativePath>
   </parent>
 
@@ -111,23 +111,20 @@
     <system>Jenkins</system>
     <url>https://builds.apache.org/job/maven-surefire/</url>
   </ciManagement>
-
-  <properties>
-    <mavenVersion>2.0.9</mavenVersion>
-    <shadedVersion>2.12.4</shadedVersion>
-    <mavenPluginPluginVersion>3.2</mavenPluginPluginVersion>
-
-    <maven.surefire.scm.devConnection>scm:git:https://git-wip-us.apache.org/repos/asf/maven-surefire.git</maven.surefire.scm.devConnection>
-
-    <maven.site.path>surefire-archives/surefire-LATEST</maven.site.path>
-  </properties>
-
   <distributionManagement>
     <site>
       <id>apache.website</id>
       <url>scm:svn:https://svn.apache.org/repos/infra/websites/production/maven/content/${maven.site.path}</url>
     </site>
   </distributionManagement>
+
+  <properties>
+    <mavenVersion>2.0.9</mavenVersion>
+    <shadedVersion>2.12.4</shadedVersion>
+    <mavenPluginPluginVersion>3.2</mavenPluginPluginVersion>
+    <maven.surefire.scm.devConnection>scm:git:https://git-wip-us.apache.org/repos/asf/maven-surefire.git</maven.surefire.scm.devConnection>
+    <maven.site.path>surefire-archives/surefire-LATEST</maven.site.path>
+  </properties>
 
   <dependencyManagement>
     <dependencies>
@@ -314,18 +311,11 @@
             <skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
           </configuration>
         </plugin>
-        <plugin>
+        <plugin><!-- TODO remove when upgrading maven-parent to 25 -->
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-site-plugin</artifactId>
-          <version>3.3</version>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-scm-publish-plugin</artifactId>
           <configuration>
-            <content>${project.build.directory}/staging/${maven.site.path}</content>
-            <checkoutDirectory>${maven.site.cache}/${maven.site.path}</checkoutDirectory>
-            <tryUpdate>true</tryUpdate>
+            <topSiteURL>scm:svn:https://svn.apache.org/repos/infra/websites/production/maven/content/${maven.site.path}</topSiteURL>
           </configuration>
         </plugin>
         <plugin>
@@ -358,7 +348,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-project-info-reports-plugin</artifactId>
-        <version>2.7</version>
         <configuration>
           <dependencyLocationsEnabled>false</dependencyLocationsEnabled><!-- waiting for MPIR-267 -->
           <!-- pin down urls to to avoid interpolation in the modules -->
@@ -392,11 +381,6 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-report-plugin</artifactId>
         <version>${shadedVersion}</version>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-javadoc-plugin</artifactId>
-        <version>2.9.1</version>
       </plugin>
       <!-- plugin>
         <groupId>org.apache.maven.plugins</groupId>
