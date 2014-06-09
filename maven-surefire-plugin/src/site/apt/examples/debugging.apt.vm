@@ -64,7 +64,7 @@ mvn -Dmaven.${thisPlugin.toLowerCase()}.debug="-Xdebug -Xrunjdwp:transport=dt_so
 
 Non-forked Tests
 
-  You can force Maven not to fork tests by setting the configuration parameter <<<forkCount>>> to <0>.
+  You can force Maven not to fork tests by setting the configuration parameter <<<forkCount>>> to 0.
 
 #{if}(${project.artifactId}=="maven-surefire-plugin")
 +---+
@@ -76,7 +76,7 @@ mvn -DforkCount=0 verify
 +---+
 #{end}
 
-  Then all you need to do is debug Maven itself.  Since Maven 2.0.8, Maven has shipped with a "mvnDebug" shell script that you can
+  Then all you need to do is debug Maven itself.  Since Maven 2.0.8, Maven ships with a <<<mvnDebug>>> shell script that you can
   use to launch Maven with convenient debugging options:
 
 #{if}(${project.artifactId}=="maven-surefire-plugin")

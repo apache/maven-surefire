@@ -1,5 +1,5 @@
   ------
-  Classloading and Forking
+  Class Loading and Forking
   ------
   Dan Fabulich
   ------
@@ -26,16 +26,16 @@
  ~~ NOTE: For help with the syntax of this file, see:
  ~~ http://maven.apache.org/doxia/references/apt-format.html
 
-Classloading and Forking in Maven Surefire
+Class Loading and Forking in Maven Surefire
 
- This page discusses classloading and forking under Maven Surefire which is a shared component used by both
+ This page discusses class loading and forking under Maven Surefire which is a shared component used by both
  the Surefire and Failsafe Maven plugins, with an eye towards troubleshooting problems.
 
 * Executive Summary
 
  If you're having problems, you'll probably want to tinker with these three settings: <<<forkCount>>>, <<<useSystemClassLoader>>>, and <<<useManifestOnlyJar>>>.
 
-* What problem does the Maven Surefire project solve?
+* What Problem does the Maven Surefire Project Solve?
 
  Initially, the problem seems simple enough. Just launch Java with a classpath, like this:
  
@@ -54,64 +54,64 @@ java -classpath foo.jar:bar.jar MyApp
  practical length limitations, as documented in {{{http://jira.codehaus.org/browse/SUREFIRE-727}SUREFIRE-727}}.
  This means most of the length-related problems in this article may be outdated.
 
-* How do people solve this problem in general?
+* Generic Solutions
 
  There are two "tricks" you can use to workaround this problem; both of them can cause other problems in some cases.
 
- 1. <<Isolated Classloader>>: One workaround is to use an isolated classloader.
- Instead of launching MyApp directly, we can launch some other app (a "booter")
+ 1. <<Isolated Class Loader>>: One workaround is to use an isolated class loader.
+ Instead of launching <MyApp> directly, we can launch some other application (a "booter")
  with a much shorter classpath. We can then create a new java.lang.ClassLoader
- (usually a java.net.URLClassLoader) with your classpath configured. The booter
- can then load up MyApp from the classloader; when MyApp refers to other classes,
- they will be automatically loaded from our isolated classloader.
+ (usually a <<<java.net.URLClassLoader>>>) with the desired classpath configured. The booter
+ can then load up <MyApp> from the class loader; when <MyApp> refers to other classes,
+ they will be automatically loaded from our isolated class loader.
  
- The problem with using an isolated classloader is that your classpath isn't
- <really> correct, and some apps can detect this and object. For example, the
- system property <<<java.class.path>>> won't include your jars; if your app notices
+ The problem with using an isolated class loader is that your classpath isn't
+ <really> correct, and some applications can detect this and object. For example, the
+ system property <<<java.class.path>>> won't include your jars; if your application notices
  this, it could cause a problem.
  
- There's another similar problem with using an isolated classloader: any class
+ There's another similar problem with using an isolated class loader: any class
  may call the static method <<<ClassLoader.getSystemClassLoader()>>> and attempt to
- load classes out of that classloader, instead of using the default classloader.
- Classes often do this if they need to create classloaders of their own.
+ load classes out of that class loader, instead of using the default class loader.
+ Classes often do this if they need to create class loaders of their own.
  Unfortunately, Java-based web application servers like Jetty, Tomcat, BEA
  WebLogic and IBM WebSphere are very likely to try to escape the confines of an
- isolated classloader.
+ isolated class loader.
  
- 2. <<Manifest-Only JAR>>: Another workaround is to use a "manifest-only jar." In
- this case, you create a temporary jar that's almost completely empty, except for
- a META-INF/MANIFEST.MF file. Java manifests can contain attributes that the Java
- VM will honor as directives; for example, you can have a "Class-Path" attribute,
- which contains a list of other jars to add to the classpath. So then you can run
+ 2. <<Manifest-Only JAR>>: Another workaround is to use a "manifest-only JAR." In
+ this case, you create a temporary JAR that's almost completely empty, except for
+ a <<<META-INF/MANIFEST.MF>>> file. Java manifests can contain attributes that the Java
+ virtual machine will honor as directives. For example, you can have a <<<Class-Path>>> attribute,
+ which specifies a list of other JARs to add to the classpath. So then you can run
  your code like this:
  
 +---+
 java -classpath booter.jar MyApp
 +---+
   
- This is a bit more realistic, because in this case the system classloader, the
- thread context classloader and the default classloader are all the same; there's
- no possibility of "escaping" the classloader. But this is still a weird
+ This is a bit more realistic, because in this case the system class loader, the
+ thread context class loader and the default class loader are all the same; there's
+ no possibility of "escaping" the class loader. But this is still a weird
  simulation of a "normal" classpath, and it's still possible for apps to notice
  this. Again, <<<java.class.path>>> may not be what you'd expect ("why does it contain
- only one jar?"). Additionally, it's possible to query the system classloader to
- get the list of jars back out of it; your app may be confused if it finds only
+ only one jar?"). Additionally, it's possible to query the system class loader to
+ get the list of jars back out of it; your application may be confused if it finds only
  our <<<booter.jar>>> there!
 
-* Advantages/Disadvantages of each solution
+* Advantages/Disadvantages of each Solution
 
- If your app tries to interrogate its own classloader for a list of jars, it may
- work better under an isolated classloader than it would with a manifest-only
- jar.  However, if your app tries to escape its default classloader, it may not
- work under an isolated classloader at all.
+ If your application tries to interrogate its own class loader for a list of JARs, it may
+ work better under an isolated class loader than it would with a manifest-only
+ JAR.  However, if your application tries to escape its default class loader, it may not
+ work under an isolated class loader at all.
 
- One advantage of using an isolated classloader is that it's the only way to use
- an isolated classloader without forking a separate process, running all of the
+ One advantage of using an isolated class loader is that it's the only way to use
+ an isolated class loader without forking a separate process, running all of the
  tests in the same process as Maven itself.  But that itself can be pretty risky,
  especially if Maven is running embedded in your IDE!
  
  Finally, of course, you could just try to wire up a plain old Java classpath and hope
- it's short enough.  The worst case there is that your classpath might work
+ it's short enough.  In the worst case your classpath might work
  on some machines and not others.  Windows boxes would behave differently from
  Linux boxes; users with short user names might have more success than users
  with long user names, etc.  For this reason, we chose not to make the basic
@@ -123,19 +123,19 @@ java -classpath booter.jar MyApp
  Surefire provides a mechanism for using multiple strategies.  The main parameter that
  determines this is called <<<useSystemClassLoader>>>.  If <<<useSystemClassLoader>>> is
  <<<true>>>, then we use a manifest-only JAR; otherwise, we use an isolated
- classloader.  If you want to use a basic plain old Java classpath, you can set
+ class loader.  If you want to use a basic plain old Java classpath, you can set
  <<<useManifestOnlyJar=false>>> which only has an effect when <<<useSystemClassLoader=true>>>.
 
  The default value for <<<useSystemClassLoader>>> changed between Surefire 2.3 and
  Surefire 2.4, which was a pretty significant change.  In Surefire 2.3,
- <<<useSystemClassLoader>>> was <<<false>>> by default, and we used an isolated classloader.
+ <<<useSystemClassLoader>>> was <<<false>>> by default, and we used an isolated class loader.
  In Surefire 2.4, <<<useSystemClassLoader>>> is <<<true>>> by default.  No value works for
  everyone, but we think this default is an improvement; a bunch of
  hard-to-diagnose bugs get better when we <<<useSystemClassLoader=true>>>.
 
- Unfortunately, if <<<useSystemClassLoader>>> is set incorrectly for your app, you're going to
+ Unfortunately, if <<<useSystemClassLoader>>> is set incorrectly for your application, you're going to
  have a problem on your hands that can be quite difficult to diagnose.  You might
- even be forced to read a long doc page like this one.  ;-)
+ even be forced to read a long documentation page like this one.  ;-)
 
  If you're having problems loading classes, try setting <<<useSystemClassLoader=false>>>
  to see if that helps.  You can do that with the POM snippet below, or by setting
@@ -163,12 +163,12 @@ java -classpath booter.jar MyApp
 
 * Debugging Classpath Problems
 
- If you've read this far, you're probably fully equipped to diagnose problems that may occur during classloading.  Here's some general tips to try:
+ If you've read this far, you're probably fully equipped to diagnose problems that may occur during class loading.  Here's some general tips to try:
 
- * Run mvn with --debug (aka -X) to get more detailed output
+ * Run Maven with <<<--debug>>> (or equivalently, <<<-X>>>) to get more detailed output
 
- * Check your <<<forkCount>>>.  If <<<forkCount=0>>> (or <<<forkMode=never>>>, the deprecated version of that), it's impossible to use the system classloader or a plain old Java classpath; we have to use an isolated classloader.
+ * Check your <<<forkCount>>>.  If <<<forkCount=0>>> (or <<<forkMode=never>>>, the deprecated version of that), it's impossible to use the system class loader or a plain old Java classpath; we have to use an isolated class loader.
 
  * If you're using the defaults, <<<useSystemClassLoader=true>>> and <<<useManifestOnlyJar=false>>>.  In that case, look at the generated manifest-only Surefire booter JAR.  Open it up (it's just a zip) and read its manifest.
 
- * Run mvn with -Dmaven.${thisPlugin.toLowerCase()}.debug, and attach to the running process with a debugger.
+ * Run Maven with <<<-Dmaven.${thisPlugin.toLowerCase()}.debug>>>, and attach to the running process with a debugger.

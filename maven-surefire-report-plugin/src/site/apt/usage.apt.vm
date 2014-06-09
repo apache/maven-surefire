@@ -25,10 +25,10 @@
 
 Usage
 
-* Generate the report as part of Project Reports
+* Generate the Report as Part of Project Reports
 
   To generate the Surefire report as part of the site generation, add the following in
-  the \<reporting\> section of your POM:
+  the <<<\<reporting\>>>> section of your POM:
 
 +---+
 <project>
@@ -46,14 +46,14 @@ Usage
 </project>
 +---+
 
-  When the <<<mvn site>>> is invoked, the report will be automatically
+  When <<<mvn site>>> is invoked, the report will automatically be
   included in the Project Reports menu as shown in the figure below.
 
 [images/surefire-sample1.PNG] Sample Surefire Report
 
-* Generate the report as standalone
+* Generate the Report in a Standalone Fashion
 
-  The Surefire report can also generate the report using its standalone goal:
+  The plugin can also generate the report using its standalone goal:
 
 +---+
 mvn surefire-report:report  

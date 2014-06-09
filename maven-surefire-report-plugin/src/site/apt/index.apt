@@ -26,12 +26,12 @@
 Maven Surefire Report Plugin
 
   The Surefire Report Plugin parses the generated <<<TEST-*.xml>>> files under
-  <<<$\{basedir\}/target/surefire-reports>>> and renders them to DOXIA
+  <<<$\{basedir\}/target/surefire-reports>>> and renders them using DOXIA,
   which creates the web interface version of the test results.
 
 * Goals Overview
 
-  Surefire Report Plugin only has one goal (the other is a workaround):
+  The Surefire Report Plugin only has one goal (the other is a workaround):
 
   * {{{./report-mojo.html}surefire-report:report}} Generates the test
   results report into HTML format.
@@ -40,15 +40,15 @@ Maven Surefire Report Plugin
   not run the tests, it only builds the reports. It is provided as a work 
   around for {{{http://jira.codehaus.org/browse/SUREFIRE-257}SUREFIRE-257}}
 
-  <Note:> As of version 2.8 this plugin requires Maven Site Plugin 2.1 or higher to work properly. Version 2.7.2 and
-  older are still compatible with newer surefire versions, so mixing is possible.
-
   []
+
+  <Note:> As of version 2.8 this plugin requires Maven Site Plugin 2.1 or newer to work properly. Version 2.7.2 and
+  older are still compatible with newer Surefire versions, so mixing is possible.
 
 * Usage
 
   General instructions on how to use the Surefire Report Plugin can be found on the {{{./usage.html}usage page}}. Some more
-  specific use cases are described in the examples given below. Last but not least, users occasionally contribute
+  specific use cases are described in the examples listed below. Last but not least, users occasionally contribute
   additional examples, tips or errata to the
   {{{http://docs.codehaus.org/display/MAVENUSER/Surefire+Report+Plugin}plugin's wiki page}}.
 
@@ -57,7 +57,7 @@ Maven Surefire Report Plugin
   already contain the answer to your question as part of an older thread. Hence, it is also worth browsing/searching
   the {{{./mail-lists.html}mail archive}}.
 
-  If you feel like the plugin is missing a feature or has a defect, you can fill a feature request or bug report in our
+  If you feel like the plugin is missing a feature or has a defect, you can file a feature request or bug report in our
   {{{./issue-tracking.html}issue tracker}}. When creating a new issue, please provide a comprehensive description of your
   concern. Especially for fixing bugs it is crucial that the developers can reproduce your problem. For this reason,
   entire debug logs, POMs or most preferably little demo projects attached to the issue are very much appreciated.
@@ -67,11 +67,11 @@ Maven Surefire Report Plugin
 
 * Examples
 
-  The following examples show how to use the Surefire Report Plugin in more advanced usecases:
+  The following examples show how to use the Surefire Report Plugin in more advanced use cases:
 
-  * {{{./examples/show-failures.html}Showing Failure Tests}}
+  * {{{./examples/show-failures.html}Showing Only Failed Tests}}
 
-  * {{{./examples/changing-report-name.html}Changing Report Name}}
+  * {{{./examples/changing-report-name.html}Changing the Report Name}}
 
   * {{{./examples/report-custom-location.html}Configuring the Output Location of the Report}}
 

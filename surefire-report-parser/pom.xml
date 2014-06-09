@@ -31,7 +31,7 @@
   <artifactId>surefire-report-parser</artifactId>
 
   <name>Surefire Report Parser</name>
-  <description>Parses report output files from surefire</description>
+  <description>Parses report output files from surefire.</description>
 
   <prerequisites>
     <maven>2.0.9</maven>

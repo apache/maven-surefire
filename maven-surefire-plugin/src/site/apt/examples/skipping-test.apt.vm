@@ -1,5 +1,5 @@
   ------
-  Skipping Test
+  Skipping Tests
   ------
   Johnny Ruiz
   Brett Porter
@@ -52,16 +52,16 @@ Skipping Tests
 </project>
 +---+
 
- You can also skip the tests via command line by executing the following command:
+ You can also skip the tests via the command line by executing the following command:
 
 +---+
 mvn install -DskipTests
 +---+
 
 #{if}(${project.artifactId}=="maven-failsafe-plugin")
- Since <<<skipTests>>> is also followed by the ${thatPlugin} Plugin, this will have the effect
+ Since <<<skipTests>>> is also supported by the ${thatPlugin} Plugin, this will have the effect
  of not running any tests.  If, instead, you want to skip only the integration tests
- being run by the ${thisPlugin} Plugin, you would use the <<<skipITs>>> property
+ being run by the ${thisPlugin} Plugin, you would use the <<<skipITs>>> property instead:
 
 +---+
 mvn install -DskipITs
@@ -75,7 +75,7 @@ mvn install -DskipITs
 mvn install -Dmaven.test.skip=true
 +---+
 
-Skipping by default
+Skipping by Default
 
    If you want to skip tests by default but want the ability to re-enable tests from the
    command line, you need to go via a properties section in the pom:
@@ -109,4 +109,4 @@ Skipping by default
 mvn install -DskipTests=false
 +---+
 
-   The same can be done with the "skip" parameter and other booleans on the plugin.
+   The same can be done with the <<<skip>>> parameter and other boolean properties of the plugin.

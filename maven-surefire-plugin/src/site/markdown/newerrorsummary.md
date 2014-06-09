@@ -19,9 +19,10 @@ report of the run or the files on disk.
       Test2.test6281:33 Runtime FailHere
 
 The main rules of the format are:
- * Assertion failures only show the message
- * Exception/Error is stripped from the Exception name to save space.
+
+ * Assertion failures only show the message.
+ * An Exception/Error is stripped from the Exception name to save space.
  * The exception message is trimmed to an approximate 80 chars.
- * The » symbol means that the exception happened below the method shown (in library code called by test)
- * Methods in superclasses are normally shown as SuperClassName.methodName
- * If the first method in the stacktrace is in a a superclass it will be show as this: TestClass>Superclass.method
+ * The » symbol means that the exception happened below the method shown (in library code called by test).
+ * Methods in superclasses are normally shown as `SuperClassName.methodName`.
+ * If the first method in the stacktrace is in a superclass it will be show as `TestClass>Superclass.method`.

@@ -33,9 +33,9 @@ Maven ${thisPlugin} Plugin
 #{if}(${project.artifactId}=="maven-surefire-plugin")
   The Surefire Plugin is used during the <<<test>>> phase of the build
   lifecycle to execute the unit tests of an application. It generates reports
-  in 2 different file formats:
+  in two different file formats:
 #{else}
-  The Failsafe Plugin is designed to run integration tests while the Surefire Plugins is designed to run unit tests.
+  The Failsafe Plugin is designed to run integration tests while the Surefire Plugin is designed to run unit tests.
   The name (failsafe) was chosen both because it is a synonym of surefire and because it implies that when it fails, it
   does so in a safe way.
 
@@ -56,9 +56,9 @@ Maven ${thisPlugin} Plugin
 
   The Failsafe Plugin is used during the <<<integration-test>>> and <<<verify>>> phases of the build
   lifecycle to execute the integration tests of an application. The Failsafe Plugin will not fail the build during
-  the <<<integration-test>>> phase thus enabling the <<<post-integration-test>>> phase to execute.
+  the <<<integration-test>>> phase, thus enabling the <<<post-integration-test>>> phase to execute.
 
-  NOTE: when running integration tests, you should invoke maven with the (shorter to type too)
+  NOTE: when running integration tests, you should invoke Maven with the (shorter to type too)
 
 +---+
 mvn verify
@@ -67,7 +67,7 @@ mvn verify
   rather than trying to invoke the <<<integration-test>>> phase directly, as otherwise the <<<post-integration-test>>>
   phase will not be executed.
 
-  The Failsafe Plugin generates reports in 2 different file formats:
+  The Failsafe Plugin generates reports in two different file formats:
 
 #{end}
 
@@ -85,14 +85,14 @@ mvn verify
 * Goals Overview
 
 #{if}(${project.artifactId}=="maven-surefire-plugin")
-  The Surefire Plugin has only 1 goal:
+  The Surefire Plugin has only one goal:
 
   * {{{./test-mojo.html}surefire:test}} runs the unit tests of an application.
 
   []
 
 #{else}
-  The Failsafe Plugin has only 2 goals:
+  The Failsafe Plugin has only two goals:
 
   * {{{./integration-test-mojo.html}failsafe:integration-test}} runs the integration tests of an application.
 
@@ -105,7 +105,7 @@ mvn verify
 * Usage
 
   General instructions on how to use the ${thisPlugin} Plugin can be found on the {{{./usage.html}usage page}}. Some more
-  specific use cases are described in the examples given below.
+  specific use cases are described in the examples listed below.
   #{if}(${project.artifactId}=="maven-surefire-plugin") Last but not least, users occasionally contribute
   additional examples, tips or errata to the
   {{{http://docs.codehaus.org/display/MAVENUSER/Surefire+Plugin}plugin's wiki page}}.#{end}
@@ -115,7 +115,7 @@ mvn verify
   already contain the answer to your question as part of an older thread. Hence, it is also worth browsing/searching
   the {{{./mail-lists.html}mail archive}}.
 
-  If you feel like the plugin is missing a feature or has a defect, you can fill a feature request or bug report in our
+  If you feel like the plugin is missing a feature or has a defect, you can file a feature request or bug report in our
   {{{./issue-tracking.html}issue tracker}}. When creating a new issue, please provide a comprehensive description of your
   concern. Especially for fixing bugs it is crucial that the developers can reproduce your problem. For this reason,
   entire debug logs, POMs or most preferably little demo projects attached to the issue are very much appreciated.
@@ -125,7 +125,7 @@ mvn verify
 
 * Examples
 
-  The following examples show how to use the ${thisPlugin} Plugin in more advanced use-cases:
+  The following examples show how to use the ${thisPlugin} Plugin in more advanced use cases:
 
   * {{{./examples/testng.html}Using TestNG}}
 
@@ -139,7 +139,7 @@ mvn verify
 
   * {{{./examples/single-test.html}Running a Single Test}}
 
-  * {{{./examples/class-loading.html}Class Loading Issues}}
+  * {{{./examples/class-loading.html}Class Loading and Forking}}
 
   * {{{./examples/debugging.html}Debugging Tests}}
 
@@ -147,6 +147,8 @@ mvn verify
 
   * {{{./examples/configuring-classpath.html}Configuring the Classpath}}
 
-  * {{{./examples/providers.html}Selecting providers}}
+  * {{{./examples/providers.html}Selecting Providers}}
+
+  * {{{./examples/fork-options-and-parallel-execution.html}Fork Options and Parallel Test Execution}}
 
   []

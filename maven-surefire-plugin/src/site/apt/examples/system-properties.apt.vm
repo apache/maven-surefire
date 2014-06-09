@@ -34,7 +34,7 @@ Using System Properties
 * systemPropertyVariables
 
   This configuration is the replacement of the deprecated <<<systemProperties>>>.  It can accept any value
-  from Maven's properties that can be converted <<to String value>>.
+  from Maven's properties that can be converted <<to a String value>>.
 
 +---+
 <project>
@@ -60,7 +60,7 @@ Using System Properties
 +---+
 
 
-* systemProperties ( deprecated )
+* systemProperties ( Deprecated )
 
 +---+
 <project>
@@ -87,10 +87,10 @@ Using System Properties
 </project>
 +---+
 
-  Take note that only <<String valued>> properties can be passed as system
-  properties. Any attempt to pass any other Maven variable type (i.e. <<<List>>>
+  Take note that only <<String typed>> properties can be passed as system
+  properties. Any attempt to pass any other Maven variable type (e.g. a <<<List>>>
   or a <<<URL>>> variable) will cause the variable expression to be passed
-  literally (unevaluated). So having the example below:
+  literally (unevaluated). So given the example below:
 
 +---+
 <project>
@@ -116,11 +116,11 @@ Using System Properties
 </project>
 +---+
 
-  will literally pass <<$\{project.build.outputDirectory\}>> because the value
+  The string <<$\{project.build.outputDirectory\}>> will be passed on literally because the type
   of that expression is a <<<File>>>, not a <<<String>>>.
 
-  To inherit the "systemProperties" collection from the parent configuration,
-  you will need to specify combine.children="append" on the systemProperties node in the child pom:
+  To inherit the <<<systemProperties>>> collection from the parent configuration,
+  you will need to specify <<<combine.children="append">>> on the <<<systemProperties>>> node in the child pom:
 
 +---+
   <systemProperties combine.children="append">
@@ -130,10 +130,10 @@ Using System Properties
    </systemProperties>
 +---+
 
-Special VM properties
+Special VM Properties
 
   Some system properties must be set on the command line of the forked VM, and cannot be set after the
-  VM has been started. These properties must be added to the argLine parameter of the surefire plugin.
+  VM has been started. These properties must be added to the <<<argLine>>> parameter of the Surefire plugin. E.g.,
 
 +---+
   <argLine>-Djava.endorsed.dirs=...</argLine>

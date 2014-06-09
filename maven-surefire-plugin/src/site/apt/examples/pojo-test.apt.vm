@@ -1,5 +1,5 @@
-   ------
-  Using POJO tests
+  ------
+  Using POJO Tests
   ------
   Christian Gruber
   ------
@@ -26,19 +26,19 @@
  ~~ NOTE: For help with the syntax of this file, see:
  ~~ http://maven.apache.org/doxia/references/apt-format.html  
 
-Defining a POJO Test
+Using POJO Tests
 
   POJO tests look very much like JUnit or TestNG tests, though they do not
   require dependencies on these artifacts.  A test class should be named
   <<<**/*Test>>> and should contain <<<test*>>> methods which will each be 
-  executed by surefire.  
+  executed by Surefire.
   
   Validating assertions can be done using the JDK 1.4 <<<assert>>> keyword.
   Simultaneous test execution is not possible with POJO tests.
   
-  Fixture can be setup before and after each <<<test*>>> method by implementing
-  a set-up and a tear-down method.  These methods must match these signatures 
-  to be recognized and executed before and after each test method.
+  Fixtures can be setup before and after each <<<test*>>> method by implementing
+  a set-up and a tear-down methods.  These methods must match the following signatures
+  to be recognized and executed before and after each test method:
      
 +---+
 public void setUp();
@@ -47,4 +47,3 @@ public void tearDown();
 
   These fixture methods can also throw any exception and will still be valid.
 
-  

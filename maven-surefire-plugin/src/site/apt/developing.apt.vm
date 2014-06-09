@@ -1,5 +1,5 @@
   ------
-  Developing surefire
+  Developing Surefire
   ------
   Kristian Rosenvold
   ------
@@ -28,23 +28,23 @@
 
 Developer Center
 
-  When working with surefire, it is necessary to understand a few things:
+  When working with Surefire, it is necessary to understand a few things:
 
-* Multi-Module project
+* Multi-module Project
 
   The plugin is built as part of a multi-module plugin. The generated
-  'project information' will suggest that you check out (e.g.) 
-  http://svn.apache.org/repos/asf/maven/surefire/trunk/${project.artifactId}.
+  "project information" will suggest that you check out (e.g.)
+  {{http://svn.apache.org/repos/asf/maven/surefire/trunk/${project.artifactId}}}.
   In fact, you need to check out (e.g.)
-  http://svn.apache.org/repos/asf/maven/surefire/trunk and
+  {{http://svn.apache.org/repos/asf/maven/surefire/trunk}} and
   build from there.
 
-* Making testcases for demonstrating problems
+* Making Test Cases for Demonstrating Problems
 
   When reporting an issue, it is immensely useful to create a small sample project
   that demonstrates the problem. Surefire already contains a large number of such
   projects, and they can be found at
-  https://svn.apache.org/repos/asf/maven/surefire/trunk/surefire-integration-tests/src/test/resources/
+  {{https://svn.apache.org/repos/asf/maven/surefire/trunk/surefire-integration-tests/src/test/resources/}}.
   Typically you can check out one of the pre-existing projects and run it like this:
 
 +---+
@@ -53,59 +53,58 @@ cd failsafe-buildfail
 mvn -Dsurefire.version=2.12 verify
 +---+
 
-* Attaching a debugger
+* Attaching a Debugger
 
-  Sometimes it's appropriate to attach a remote debugger to the surefire fork to try to determine what
-  is /really/ going on. If you checkout & build trunk, you'd usually do something like this:
+  Sometimes it's appropriate to attach a remote debugger to the Surefire fork to try to determine what
+  is <really> going on. If you checkout and build trunk, you'd usually do something like this:
 
 +---+
   mvn -Dmaven.surefire.debug=true install
 +---+
 
-  Load the source in your IDE, set a breakpoint at the start of ForkedBooter#main and attach
+  Load the source in your IDE, set a breakpoint at the start of <<<ForkedBooter#main>>> and attach
   a debugger to port 5005.
 
-* Tracing forked execution
+* Tracing a Forked Execution
 
-The forked surefire process uses stdio to communicate back to the source. Sometimes when tracking troubles
-it can be helpful to look at just the output of the fork.
+  The forked Surefire process uses standard input and output to communicate back to the source. Sometimes when tracking troubles
+  it can be helpful to look at just the output of the fork.
 
-Ths can be done by running:
+  This can be done by running:
 
 +---+
 mvn -e -X install | grep Forking
 +---+
 
-If you copy the command part of the output, you should be able to re-run the command by just pasting it on
-the command line (you might have to do only the bits after &&).
+  If you copy the command part of the output, you should be able to re-run the command by just pasting it on
+  the command line (you might have to do only the bits after <<<&&>>>).
 
-You can now paste this command on the command line and capture the output of the fork. This may help you
-determine if the problem is in the forked end or the receiving end.
+  You can now paste this command on the command line and capture the output of the fork. This may help you
+  determine if the problem is in the forked end or the receiving end.
 
-If investigating a particular class, you probably want to grep the output of this for the classname.
-Additionally the booter codes (first field) can be seen at
-https://git-wip-us.apache.org/repos/asf?p=maven-surefire.git;a=blob;f=surefire-api/src/main/java/org/apache/maven/surefire/booter/ForkingRunListener.java
+  When investigating a particular class, you probably want to <<<grep>>> the output for the class name.
+  Additionally the booter code (first field) can be seen at
+  {{https://git-wip-us.apache.org/repos/asf?p=maven-surefire.git;a=blob;f=surefire-api/src/main/java/org/apache/maven/surefire/booter/ForkingRunListener.java}}
 
-The second field in the output (after booter code) is the logical channel number, where differnt threads in the fork
-should come in different channels.
+  The second field in the output (after the booter code) is the logical channel number, where different threads in the fork
+  should come in different channels.
 
-* TestCases
+* Test Cases
 
-  All patches to surefire must contain test coverage, either as an integration test
+  All patches to Surefire must contain test coverage, either as an integration test
   or a unit test. All new features (changed/added plugin options) must be covered by
-  and end-to-end integration test.
+  an end-to-end integration test.
 
   There are
-  numerous other integration tests that all operate upon small sample projects in
-  surefire-integration-tests/src/test/resources
+  numerous other integration tests that all operate on small sample projects in
+  <<<surefire-integration-tests/src/test/resources>>>.
 
-  Example integration tests are Surefire141PluggableProvidersIT and the corresponding
-  surefire-integration-tests/src/test/resources/surefire-141-pluggableproviders.
+  Example integration tests are <<<Surefire141PluggableProvidersIT>>> and the corresponding
+  <<<surefire-integration-tests/src/test/resources/surefire-141-pluggableproviders>>>.
 
+* Essential Source Code Reading List
 
-* Essential source code reading list
-
-  Some methods/classes reveal more about the basic working of a piece of code than others. The enclosed classes/methods
+  Some methods/classes reveal more about the basic working of a piece of code than others. The following classes/methods
   are a "reading list" for getting quickly acquainted with the code:
 
 +---+
@@ -117,35 +116,34 @@ ForkedBooter#main
 * JDK Versions
 
   The surefire booter is capable of booting all the way back to jdk1.3. Specifically
-  this means surefire-api, surefire-booter, common-junit3 and surefire-junit3 are
+  this means <<<surefire-api>>>, <<<surefire-booter>>>, <<<common-junit3>>> and <<<surefire-junit3>>> are
   source/target 1.3. The plugin and several providers are 1.5.
-
 
 * Provider Isolation
 
-  Classes in the SUT (Subject Under Test), override any classes within the
-  surefire providers. This means providers using any
-  third party dependencies (other than the test framework itself), should
+  Classes in the SUT (<Subject Under Test>) override any classes within the
+  Surefire providers. This means providers using any
+  third party dependencies (other than the test framework itself) should
   shade these classes to a different package.
 
-* Common provider modules
+* Common Provider Modules
 
-  The surefire-providers module contains common-junitXX modules. These modules
-  depend on the XX version of JUnit and can access the JUnit API's at the correct
+  The <<<surefire-providers>>> module contains <<<common-junitXX>>> modules. These modules
+  depend on the <<<XX>>> version of JUnit and can access the JUnit APIs at the correct
   JUnit version level. Unit tests can also be written that will run with the
   correct JUnit version. At build time, all of the relevant parts of these "common"
-  modules are just shaded into the providers jar files.
+  modules are just shaded into the provider jar files.
 
 * Shadefire
 
   "Shadefire" is the first module to be run in the
-  surefire build. This creates as shaded version of the JUnit provider, and this provider
-  is thereafter used to build surefire itself (As of any release after 2.8). This is
-  because the SUT overrides the provider, and the shadefire provider has been
-  relocated to avoid this overriding when surefire is building itself.
+  Surefire build. This creates as shaded version of the JUnit provider, and this provider
+  is thereafter used to build Surefire itself (as of Surefire 2.8). This is
+  because the SUT overrides the provider, and the Shadefire provider has been
+  relocated to avoid this overriding when Surefire is building itself.
 
-* Deploying/releasing surefire
+* Deploying and Releasing Surefire
 
   Surefire depends on a previous version of itself, which
-  is too advanced for maven 2.2.x dependency resolution, and maven 3.x is
-  required to build surefire
+  is too advanced for the Maven 2.2.x dependency resolution. Thus Maven 3.x is
+  required to build Surefire.

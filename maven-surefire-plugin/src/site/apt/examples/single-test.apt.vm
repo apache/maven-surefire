@@ -73,13 +73,13 @@ mvn -Dit.test=ITSquare,ITCi*le verify
 +---+
 #{end}
 
-Running a set of methods in a Single Test Class
+Running a Set of Methods in a Single Test Class
 
-  With version 2.7.3, you can run only n tests in a single Test Class.
+  As of Surefire 2.7.3, you can also run only a subset of the tests in a test class.
   
-  << NOTE : it's supported for junit 4.x and TestNG. >>
+  << NOTE : This feature is supported only for Junit 4.x and TestNG. >>
   
-  You must use the following syntax
+  You must use the following syntax:
   
 #{if}(${project.artifactId}=="maven-surefire-plugin")
 +---+
@@ -103,7 +103,7 @@ mvn -Dit.test=ITCircle#test* verify
 +---+
 #{end}
 
-  As of surefire 2.12.1, you can select multiple methods (JUnit4X only at this time, patches welcome)
+  As of Surefire 2.12.1, you can select multiple methods (JUnit 4.x only at this time; patches welcome!):
 
 #{if}(${project.artifactId}=="maven-surefire-plugin")
 +---+

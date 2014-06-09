@@ -1,5 +1,5 @@
   ------
-  Changing Report Name
+  Changing the Report Name
   ------
   Allan Ramirez
   ------
@@ -23,11 +23,11 @@
 ~~ NOTE: For help with the syntax of this file, see:
 ~~ http://maven.apache.org/doxia/references/apt-format.html
 
-Changing Report Name
+Changing the Report Name
 
   In order to configure the file name of the generated report (which is
-  <"surefire-report"> by default), the <<outputName>> property should
-  be set to its new name.
+  "<surefire-report>" by default), the <<outputName>> property should
+  be set to the desired name.
 
 +----+
 <project>
@@ -39,7 +39,7 @@ Changing Report Name
         <artifactId>maven-surefire-report-plugin</artifactId>
         <version>${project.version}</version>
         <configuration>
-          <outputName>newname</outputName>
+          <outputName>desired_name</outputName>
         </configuration>
       </plugin>
     </plugins>
@@ -48,5 +48,5 @@ Changing Report Name
 </project>
 +----+
 
-  And after executing the <<<mvn site>>>, the generated report file is named
-  to <<newname.html>>.
+  And after executing <<<mvn site>>>, the generated report file is named
+  <<desired_name.html>>.

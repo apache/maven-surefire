@@ -31,8 +31,8 @@
 Usage
 
 #{if}(${project.artifactId}=="maven-surefire-plugin")
-  Best practice is to define the version of the Surefire plugin that you want to use in either your <<<pom.xml>>>
-  or a parent <<<pom.xml>>>
+  Best practice is to define the version of the Surefire Plugin that you want to use in either your <<<pom.xml>>>
+  or a parent <<<pom.xml>>>:
 
 +---+
 <project>
@@ -54,7 +54,7 @@ Usage
 
 #{else}
   To use the ${thisPlugin} Plugin, you need to add the following configuration to
-  your <<<pom.xml>>>
+  your <<<pom.xml>>>:
 
 +---+
 <project>
@@ -98,7 +98,7 @@ mvn verify
 +---+
 #{end}
 
-* Using different testing providers
+* Using Different Testing Providers
 
   Tests in your test source directory can be any combination of the following:
 
@@ -109,7 +109,7 @@ mvn verify
    * POJO
 
   Which providers are available is controlled simply by the inclusion of the
-  appropriate dependencies (ie, junit:junit for JUnit, org.testng:testng 4.7+
+  appropriate dependencies (i.e., <<<junit:junit>>> or <<<junit:junit-dep>>> for JUnit and <<<org.testng:testng>>> 4.7+
   for TestNG). Since this is required to compile the test classes anyway, no
   additional configuration is required.
 
@@ -118,11 +118,11 @@ mvn verify
   Surefire results report on your project web site for your TestNG tests,
   for example.
 
-  The POJO provider above allows you to write tests that do not depend on
-  JUnit. They behave in the same way, running all <<<test*>>> methods that are
+  The POJO provider above allows you to write tests that do not depend on either of
+  JUnit and TestNG. It behaves in the same way, running all <<<test*>>> methods that are
   public in the class, but the API dependency is not required. To perform
   assertions, the JDK 1.4 <<<assert>>> keyword can be used.
-  See {{{./examples/pojo-test.html} using POJO tests}} for more information.
+  See {{{./examples/pojo-test.html} Using POJO Tests}} for more information.
 
   All of the providers support the Surefire Plugin parameter configurations.
   However, there are additional options available if you are running TestNG
@@ -135,7 +135,7 @@ mvn verify
 * Using jetty and ${project.artifactId}
 
   You need to bind one of <<<jetty:run>>>, <<<jetty:run-exploded>>> or <<<jetty:run-war>>>
-  to the <<<pre-integration-test>>> phase with <<<deamon>>> set to true, bind
+  to the <<<pre-integration-test>>> phase with <<<daemon>>> set to true, bind
   <<<failsafe:integration-test>>> to the <<<integration-test>>> phase, bind <<<jetty:stop>>>
   to the <<<post-integration-test>>> phase and finally bind <<<failsafe:verify>>> to
   the <<<verify>>> phase.  Here is an example:
@@ -212,8 +212,8 @@ mvn verify
 </project>
 +---+
 
-  You then invoke maven with a phase of <<<verify>>> or later in order to run
-  the integration tests.  DO NOT directly invoke any of the phases:
+  You then invoke Maven with a phase of <<<verify>>> or later in order to run
+  the integration tests.  <<DO NOT>> directly invoke any of the phases
   <<<pre-integration-test>>>, <<<integration-test>>>, or <<<post-integration-test>>> as
   these are too long to type and they will likely leave a jetty container running.
 
@@ -350,12 +350,12 @@ mvn verify
 </project>
 +---+
 
-* Using in multi-module projects
+* Usage in multi-module projects
 
   The recommendations for using the ${thisPlugin} Plugin listed at the top of this page are fine for 95% of use cases.
   When you are defining a shared definition of the ${thisPlugin} Plugin in a parent pom, it is considered best practice
   to define an execution id in order to allow child projects to override the configuration. Thus you might have the
-  following in your parent <<<pom.xml>>>
+  following in your parent <<<pom.xml>>>:
 
 +---+
 <project>

@@ -51,27 +51,27 @@ under the License.
       </answer>
     </faq>
     <faq id="vm-termination">
-      <question>Surefire fails with the message "The forked VM terminated without properly saying  goodbye"</question>
+      <question>Surefire fails with the message "The forked VM terminated without properly saying goodbye".</question>
       <answer>
         <p>
-        Surefire does not support tests or any referenced libraries calling System.exit() at any time. If
-        they do so, they are incompatible with surefire and you should probably file an issue with the library/vendor.
+        Surefire does not support tests or any referenced libraries calling <code>System.exit()</code> at any time. If
+        they do so, they are incompatible with Surefire and you should probably file an issue with the library/vendor.
 
-        Alternatively the forked VM could also crash for a number of reasons, which can also make this issue happen.
-        Look for the classical "hs_err*" files indicating VM crashes or examine the log output from running maven
+        Alternatively the forked VM could also have crashed for a number of reasons.
+        Look for the classical "<code>hs_err*</code>" files indicating VM crashes or examine the Maven log output
         when the tests execute. Some "extraordinary" output from crashing processes may be dumped to the console/log.
 
-        If this happens on a CI environment and only after some time runs there is a fair chance your test suite is
-        leaking some kind of OS-level resource that makes things worse for every run. Regular os-level monitoring tools
+        If this happens on a CI environment and only after it runs for some time, there is a fair chance your test suite is
+        leaking some kind of OS-level resource that makes things worse at every run. Regular OS-level monitoring tools
         may give you some indication.
         </p>
       </answer>
     </faq>
     <faq id="GWT">
-      <question>How can I run GWT tests ?</question>
+      <question>How can I run GWT tests?</question>
       <answer>
         There is a specific gwt-maven-plugin at codehaus, but if you want to run
-        with surefire, you need the following settings:
+        with Surefire, you need the following settings:
         <p>
         Use the following configuration:<br/>
         <code>
@@ -79,16 +79,16 @@ under the License.
         <![CDATA[ <useManifestOnlyJar>false</useManifestOnlyJar>]]><br/>
         <![CDATA[ <forkCount>1</forkCount>]]><br/>
         </code>
-        try reuseForks=true and if it doesn't work, fall back to reuseForks=false
+        Try <code>reuseForks=true</code> and if it doesn't work, fall back to <code>reuseForks=false</code>
         </p>
       </answer>
     </faq>
     <faq id="late-property-evaluation">
-      <question>How do I use properties set by other plugins in argLine?</question>
+      <question>How do I use properties set by other plugins in <code>argLine</code>?</question>
       <answer>
         <p>
           Maven does property replacement for <pre>${...}</pre> values in pom.xml before any
-          plugin is run. So surefire would never see the place-holders in its argLine property.
+          plugin is run. So Surefire would never see the place-holders in its argLine property.
         </p>
         <p>
           Using an alternate syntax for these properties, <pre>@{...}</pre> allows late replacement

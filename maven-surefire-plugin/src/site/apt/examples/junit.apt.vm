@@ -38,7 +38,7 @@ Using JUnit
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.8.1</version>
+      <version>4.11</version>
       <scope>test</scope>
     </dependency>
   [...]
@@ -47,28 +47,28 @@ Using JUnit
 
 
   This is the only step that is required to get started - you can now create tests in your test source directory
-  (eg, <<<src/test/java>>>).
+  (e.g., <<<src/test/java>>>).
 
 * Different Generations of JUnit support
 
   Surefire supports three different generations of JUnit: JUnit 3.8.x, JUnit 4.x (serial provider) and JUnit 4.7 (junit-core provider
   with parallel support). The provider is selected based on the JUnit version in your project and the configuration parameters (for parallel).
 
-* Upgrade check for JUnit 4.x
+* Upgrade Check for JUnit 4.x
 
   As of Surefire version 2.7, the algorithm for choosing which tests to run
   has changed. From 2.7 and on, only valid JUnit tests are run for all versions of JUnit, where older versions
   of the plugin would also run invalid tests that satisfied the naming convention.
 
   When upgrading from a Surefire version prior to 2.7, the build can be run with
-  the flag -Dsurefire.junit4.upgradecheck. This will perform a check and notify you of any invalid tests that
+  the flag <<<-Dsurefire.junit4.upgradecheck>>>. This will perform a check and notify you of any invalid tests that
   will not be run with this version of Surefire (and the build fails). This is only meant to be used as a tool
   when upgrading to check that all expected tests will be run. It is a transitional
   feature that will be removed in a future version of surefire.
 
-* How is the provider chosen ?
+* Provider Selection
 
-   If nothing is configured, surefire detects which junit version to use by the following algorithm:
+   If nothing is configured, Surefire detects which JUnit version to use by the following algorithm:
 
 +---+
 if the JUnit version in the project >= 4.7 and the parallel attribute has ANY value
@@ -81,13 +81,13 @@ else
 
     Please note that the "else" part of this algorithm is also a FAQ response:
 
-    You depend on the appropriate version of JUnit being present in the project dependencies, or surefire may choose the wrong
+    You depend on the appropriate version of JUnit being present in the project dependencies, or Surefire may choose the wrong
     provider. If, for instance, one of your dependencies pulls in JUnit 3.8.1 you risk that surefire chooses the
     3.8.1 provider, which will not support annotations or any of the 4.x features.
 
-    Use mvn dependency:tree, pom dependency ordering and/or and exclusion of transitive dependencies to fix this problem.
+    Use <<<mvn dependency:tree>>>, POM dependency ordering and/or exclusion of transitive dependencies to fix this problem.
 
-** Manually specifying a provider
+** Manually Specifying a Provider
 
    You can also manually force a specific provider by adding it as a dependency to ${thisPlugin} itself:
 
@@ -113,9 +113,9 @@ else
   When using this technique there  is no check that the proper test-frameworks are present on your project's
   classpath. Failing to add the proper test-frameworks will result in a build failure.
 
-* Running tests in parallel
+* Running Tests in Parallel
 
-  From JUnit 4.7 and onwards you can run your tests in parallel. To do this, you must set the
+  From JUnit 4.7 onwards you can run your tests in parallel. To do this, you must set the
   <<<parallel>>> parameter, and may change the <<<threadCount>>> or <<<useUnlimitedThreads>>> attribute.
   For example:
 
@@ -136,22 +136,22 @@ else
 +---+
 
 
-  If your tests specify any value for the "parallel" attribute and your project uses JUnit 4.7+, your request will be routed to
-  the concurrent JUnit provider, which uses the JUnit JUnitCore testrunner.
+  If your tests specify any value for the <<<parallel>>> attribute and your project uses JUnit 4.7+, your request will be routed to
+  the concurrent JUnit provider, which uses the JUnit JUnitCore test runner.
 
   This is particularly useful for slow tests that can have high concurrency.
 
-  As of surefire 2.7, no additional dependencies are needed to use the full set of options with parallel.
-  As of surefire 2.16, new thread-count attributes are introduced, namely <<<threadCountSuites>>>, <<<threadCountClasses>>> and
-  <<<threadCountMethods>>>. Additionally new attributes, <<<parallelTestsTimeoutInSeconds>>> and
-  <<<parallelTestsTimeoutForcedInSeconds>>>, are used to shutdown the parallel execution after an elapsed timeout, and 
-  the attribute "parallel" specifies new values.
+  As of Surefire 2.7, no additional dependencies are needed to use the full set of options with parallel.
+  As of Surefire 2.16, new thread-count attributes are introduced, namely <<<threadCountSuites>>>, <<<threadCountClasses>>> and
+  <<<threadCountMethods>>>. Additionally, the new attributes <<<parallelTestsTimeoutInSeconds>>> and
+  <<<parallelTestsTimeoutForcedInSeconds>>> are used to shut down the parallel execution after an elapsed timeout, and
+  the attribute <<<parallel>>> specifies new values.
   
   See also {{{./fork-options-and-parallel-execution.html}Fork Options and Parallel Test Execution}}.
 
-* Using custom listeners and reporters
+* Using Custom Listeners and Reporters
 
-  JUnit4/4.7 provider provides support for attaching custom RunListeners to your tests.
+  The junit4 and junit47 providers provide support for attaching custom <<<RunListeners>>> to your tests.
 
   You can configure multiple custom listeners like this:
 
@@ -174,13 +174,14 @@ else
 </plugins>
 +---+
 
-* Using a security manager (JUnit3 only)
+* Using a Security Manager (JUnit3 only)
 
-   As long as forkCount!=0 and you use JUnit3, you can run your tests with a java security manager active.
-   The classname of the security manager must be sent as a system property variable to the JUnit3 provider.
+   As long as <<<forkCount>>> is not 0 and you use JUnit3, you can run your tests with a Java security manager enabled.
+   The class name of the security manager must be sent as a system property variable to the JUnit3 provider.
 
-   JUnit4 uses mechanisms internally that are not compatible with the tested security managers and is not supported
-   by surefire.
+   JUnit4 uses mechanisms internally that are not compatible with the tested
+   security managers and thus this means of configuring a security manager with JUnit4 is not supported
+   by Surefire.
 
 +---+
 <plugins>
@@ -199,10 +200,10 @@ else
 </plugins>
 +---+
 
-* Using a security manager (All providers)
+* Using a Security Manager (All providers)
 
-    Alternatively you can define a policy file that allows all providers to run with surefire
-    and send them using the argLine parameter and two system properties;
+    Alternatively you can define a policy file that allows all providers to run with Surefire
+    and configure it using the <<<argLine>>> parameter and two system properties:
 
 +---+
 <plugins>
@@ -225,7 +226,7 @@ else
 * Using JUnit Categories
 
     JUnit 4.8 introduced the notion of Categories. You can use JUnit categories by using the <<<groups>>> parameter. As long as 
-    the JUnit version in the project is 4.8 or higher, the presence of the "groups" parameter will automatically make surefire select 
+    the JUnit version in the project is 4.8 or higher, the presence of the "groups" parameter will automatically make Surefire select
     the junit47 provider, which supports groups.
 
 +---+
@@ -272,6 +273,6 @@ else
     }
 +---+
 
-  The @Category annotation can also be applied at class-level.
+  The <<<@Category>>> annotation can also be applied at class-level.
 	
   For more information on JUnit, see the {{{http://www.junit.org}JUnit web site}}.

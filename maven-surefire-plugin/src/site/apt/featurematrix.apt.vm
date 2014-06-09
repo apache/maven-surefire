@@ -1,3 +1,7 @@
+  ------
+  Feature Matrix
+  ------
+
 ~~ Licensed to the Apache Software Foundation (ASF) under one
 ~~ or more contributor license agreements.  See the NOTICE file
 ~~ distributed with this work for additional information
@@ -18,13 +22,13 @@
 ~~ NOTE: For help with the syntax of this file, see:
 ~~ http://maven.apache.org/doxia/references/apt-format.html
 
-Feature matrix
+Feature Matrix
 
     Not all features are supported for all test frameworks, and the following table gives a brief overview
     of support status:
 
 *---------------------------------------------+-----------+-----------+------------+-----------+----------+
-|| <<Feature>>                                ||<<JUnit3>>||<<JUnit4>>||<<Junit47>>||<<TestNG>>||<<Pojo>> |
+|| <<Feature>>                                ||<<JUnit3>>||<<JUnit4>>||<<Junit47>>||<<TestNG>>||<<POJO>> |
 *---------------------------------------------+------------+----------+------------+-----------+----------+
 | groups/category support                     |     N      |    N     |      Y     |    Y      |  N       |
 *---------------------------------------------+------------+----------+------------+-----------+----------+
@@ -38,9 +42,9 @@ Feature matrix
 *---------------------------------------------+------------+----------+------------+-----------+----------+
 
 
-    Legend: Y means supported, N means not supported. ? means not tested.
+    Legend: "Y" means supported, "N" means not supported. "?" means not tested.
 
     If you would like to implement support for
-    a given provider with an N or a ? (or create tests for it), you should create a patch and mark the issue is an
-    improvement. If there is something wrong with an implementation marked with "Y" it's a bug.
+    a given provider with an "N" or a "?" (or create tests for it), you should create a patch and mark the issue as an
+    improvement. If there is something wrong with an implementation marked with "Y" that is considered a bug.
 

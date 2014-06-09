@@ -46,30 +46,30 @@ Fork Options and Parallel Test Execution
   The most obvious one is by using the <<<parallel>>> parameter. The possible
   values depend on the test provider used. For JUnit 4.7 and onwards, this may
   be <<<methods>>>, <<<classes>>>, <<<both>>>, <<<suites>>>,
-  <<<suitesAndClasses>>>, <<<suitesAndMethods>>>, <<<classesAndMethods>>>,
+  <<<suitesAndClasses>>>, <<<suitesAndMethods>>>, <<<classesAndMethods>>> or
   <<<all>>>.
-  As of surefire 2.16, the value "both" is deprecated but it still can be
+  As of Surefire 2.16, the value "<<<both>>>" is deprecated but it still can be
   used and behaves same as <<<classesAndMethods>>>.
 
   See the example pages for {{{./junit.html#Running_tests_in_parallel}JUnit}}
   and {{{./testng.html#Running_tests_in_parallel}TestNG}} for details.
 
   The <extent> of the parallelism is configured using the following parameters.
-  The parameter <<<useUnlimitedThreads>>> declares the unlimited number of
-  threads. Unless <<<useUnlimitedThreads>>> is set to "true", the parameter
+  The parameter <<<useUnlimitedThreads>>> allows for an unlimited number of
+  threads. Unless <<<useUnlimitedThreads>>> is set to "<<<true>>>", the parameter
   <<<threadCount>>> can be used with the optional parameter
   <<<perCoreThreadCount>>>.
-  The parameters <<<useUnlimitedThreads>>>, <<<threadCount>>> make sense with
-  thereinbefore value specified in the parameter <<<parallel>>>.
+  The parameters <<<useUnlimitedThreads>>> and <<<threadCount>>> are to be interpreted
+  in the context of the value specified for the <<<parallel>>> parameter.
   
-  You can impose thread-count limitations on suites, classes or methods if you
-  configure some of the parameters <<<threadCountSuites>>>,
-  <<<threadCountClasses>>> or <<<threadCountMethods>>>.
-  If the only <<<threadCount>>> is specified, the surefire attempts to estimate
-  thread-counts for suites, classes and methods and reuse the threads in favor
+  One can impose thread-count limitations on suites, classes or methods
+  using one or more of the parameters <<<threadCountSuites>>>,
+  <<<threadCountClasses>>> and <<<threadCountMethods>>>.
+  If only <<<threadCount>>> is specified, Surefire attempts to estimate the
+  thread counts for suites, classes and methods and reuses the threads in favor
   of a leaf, e.g. parallel methods (possibly increasing concurrent methods).
   
-  As an example with unlimited number of threads, there is maximum of three
+  As an example with an unlimited number of threads, there is maximum of three
   concurrent threads to execute suites:
   parallel = all, useUnlimitedThreads = true, threadCountSuites = 3.
   

@@ -38,7 +38,7 @@ Using TestNG
     <dependency>
       <groupId>org.testng</groupId>
       <artifactId>testng</artifactId>
-      <version>6.3.1</version>
+      <version>6.8.8</version>
       <scope>test</scope>
     </dependency>
   [...]
@@ -65,11 +65,11 @@ Using TestNG
 
 #{if}(${project.artifactId}=="maven-surefire-plugin")
   This is the only step that is required to get started - you can now create tests in your test source directory
-  (eg, <<<src/test/java>>>. As long as they are named using the defaults such as <<<*Test.java>>> they will be run
+  (e.g., <<<src/test/java>>>). As long as they are named in accordance with the defaults such as <<<*Test.java>>> they will be run
   by ${thisPlugin} as TestNG tests.
 #{else}
   This is the only step that is required to get started - you can now create tests in your test source directory
-  (eg, <<<src/test/java>>>. As long as they are named using the defaults such as <<<*IT.java>>> they will be run
+  (e,g., <<<src/test/java>>>). As long as they are named in accordance with the defaults such as <<<*IT.java>>> they will be run
   by ${thisPlugin} as TestNG tests.
 #{end}
 
@@ -102,7 +102,7 @@ Using TestNG
 
 * Specifying Test Parameters
 
-  Your TestNG test can accept parameters with the @Parameters annotation.  You can also pass parameters from Maven
+  Your TestNG test can accept parameters with the <<<@Parameters>>> annotation.  You can also pass parameters from Maven
   into your TestNG test, by specifying them as system properties, like this:
 
 +---+
@@ -146,7 +146,7 @@ Using TestNG
 
   Likewise, the <<<excludedGroups>>> parameter can be used to run all but a certain set of groups.
 
-* Running tests in parallel
+* Running Tests in Parallel
 
   TestNG allows you to run your tests in parallel, including JUnit tests. To do this, you must set the
   <<<parallel>>> parameter, and may change the <<<threadCount>>> parameter if the default of 5 is not sufficient.
@@ -168,12 +168,12 @@ Using TestNG
 </plugins>
 +---+
 
-  This is particularly useful for slow tests that can have high concurrency, or to quickly and roughly assess the independance
+  This is particularly useful for slow tests that can have high concurrency, or to quickly and roughly assess the independence
   and thread safety of your tests and code.
 
   See also {{{./fork-options-and-parallel-execution.html}Fork Options and Parallel Test Execution}}.
 
-* Using custom listeners and reporters
+* Using Custom Listeners and Reporters
 
   TestNG provides support for attaching custom listeners, reporters, annotation transformers and method interceptors to your tests.
   By default, TestNG attaches a few basic listeners to generate HTML and XML reports.

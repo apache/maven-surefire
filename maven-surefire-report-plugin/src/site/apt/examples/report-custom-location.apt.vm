@@ -1,5 +1,5 @@
   ------
-  Custom Location of the Surefire Report
+  Configuring the Output Location of the Report
   ------
   Allan Ramirez
   ------
@@ -23,12 +23,12 @@
 ~~ NOTE: For help with the syntax of this file, see:
 ~~ http://maven.apache.org/doxia/references/apt-format.html
 
-Configuring the Output Location as part of the Project Reports
+Configuring the Output Location of the Report
 
   To change the location of the generated output report along with other
-  project reports. The <<outputDirectory>> property of both
+  project reports the <<outputDirectory>> property of both the
   <<<maven-site-plugin>>> and <<<maven-surefire-report-plugin>>> should be set to the
-  new path. For more information, see the documentation of the
+  desired alternative location. For more information, see the documentation of the
   {{{http://maven.apache.org/plugins/maven-site-plugin/}Maven Site Plugin}}.
 
 +----+
@@ -62,10 +62,10 @@ Configuring the Output Location as part of the Project Reports
   is not configured, the output location of the Surefire report will still
   be the default.
 
-* Configuring the Output Location using Standalone Goal
+* Configuring the Output Location using the Standalone Goal
 
   To change the location of the generated output report using the standalone
-  goal, the <<outputDirectory>> property should be set to the new path.
+  goal, the <<outputDirectory>> property should be set to the new path:
 
 +---+
 mvn surefire-report:report -DoutputDirectory=newpath

@@ -31,7 +31,7 @@
       <item name="Introduction" href="index.html"/>
       <item name="Goals" href="plugin-info.html"/>
       <item name="Usage" href="usage.html"/>
-      <item name="Feature matrix" href="featurematrix.html"/>
+      <item name="Feature Matrix" href="featurematrix.html"/>
       <item name="API" href="api.html"/>
       <item name="FAQ" href="faq.html"/>
       <item name="Developing" href="developing.html"/>
@@ -39,15 +39,16 @@
     <menu name="Examples">
       <item name="Using TestNG" href="examples/testng.html"/>
       <item name="Using JUnit" href="examples/junit.html"/>
+      <item name="Using POJO Tests" href="examples/pojo-test.html"/>
       <item name="Skipping Tests" href="examples/skipping-test.html"/>
       <item name="Inclusions and Exclusions of Tests" href="examples/inclusion-exclusion.html"/>
       <item name="Running a Single Test" href="examples/single-test.html"/>
-      <item name="Class Loading Issues" href="examples/class-loading.html"/>
+      <item name="Class Loading and Forking" href="examples/class-loading.html"/>
       <item name="Debugging Tests" href="examples/debugging.html"/>
-      <item name="System Properties" href="examples/system-properties.html"/>
+      <item name="Using System Properties" href="examples/system-properties.html"/>
       <item name="Configuring the Classpath" href="examples/configuring-classpath.html"/>
-      <item name="Selecting providers" href="examples/providers.html"/>
-      <item name="New error summary" href="newerrorsummary.html"/>
+      <item name="Selecting Providers" href="examples/providers.html"/>
+      <item name="New Error Summary" href="newerrorsummary.html"/>
       <item name="Fork Options and Parallel Test Execution" href="examples/fork-options-and-parallel-execution.html"/>
     </menu>
   </body>

@@ -28,7 +28,7 @@ Surefire API
 * Definitions
 
 *-------------+-----------------------------------------------+
-| test method | individual test method within a class         |
+| test method | Individual test method within a class         |
 *-------------+-----------------------------------------------+
 | test        | 1..N test methods in 1 or more classes.       |
 *-------------+-----------------------------------------------+
@@ -39,11 +39,13 @@ Surefire API
 
   How each definition is applied depends on the provider, and the test suite being used.
 
-  Directory test suite: this constructs a single suite from a directory file set. Each discovered class is treated as a test.
+  * Directory test suite: this constructs a single suite from a directory file set. Each discovered class is treated as a test.
 
-  TestNG XML test suite: this constructs a single suite from a testng.xml file. The definitions inside the file will match those above. 
+  * TestNG XML test suite: this constructs a single suite from a <<<testng.xml>>> file. The definitions inside the file will match those above.
 
-  JUnit 3.x: Groups are not supported.
+  * JUnit 3.x: Groups are not supported.
+
+  []
 
   See {{{../surefire-providers/index.html}Surefire Providers}} for more information on specific providers.
 
