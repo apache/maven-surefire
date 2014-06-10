@@ -32,25 +32,24 @@ Developer Center
 
 * Multi-module Project
 
-  The plugin is built as part of a multi-module plugin. The generated
-  "project information" will suggest that you check out (e.g.)
-  {{http://svn.apache.org/repos/asf/maven/surefire/trunk/${project.artifactId}}}.
-  In fact, you need to check out (e.g.)
-  {{http://svn.apache.org/repos/asf/maven/surefire/trunk}} and
-  build from there.
+  The plugin is built as part of a multi-module plugin. You need to check out 
+  the complete module and build from there:
+
++---+
+  git clone https://git-wip-us.apache.org/repos/asf/maven-surefire.git
++---+
 
 * Making Test Cases for Demonstrating Problems
 
   When reporting an issue, it is immensely useful to create a small sample project
   that demonstrates the problem. Surefire already contains a large number of such
   projects, and they can be found at
-  {{https://svn.apache.org/repos/asf/maven/surefire/trunk/surefire-integration-tests/src/test/resources/}}.
+  {{surefire-integration-tests/src/test/resources/}}.
   Typically you can check out one of the pre-existing projects and run it like this:
 
 +---+
-svn co https://svn.apache.org/repos/asf/maven/surefire/trunk/surefire-integration-tests/src/test/resources/failsafe-buildfail
-cd failsafe-buildfail
-mvn -Dsurefire.version=2.12 verify
+  cd surefire-integration-tests/src/test/resources/failsafe-buildfail
+  mvn -Dsurefire.version=2.12 verify
 +---+
 
 * Attaching a Debugger
