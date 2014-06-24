@@ -128,6 +128,8 @@ public class ForkStarter
 
     private final DefaultReporterFactory defaultReporterFactory;
 
+    private final List<DefaultReporterFactory> defaultReporterFactoryList;
+
     private static volatile int systemPropertiesFileCounter = 0;
 
     public ForkStarter( ProviderConfiguration providerConfiguration, StartupConfiguration startupConfiguration,
@@ -141,6 +143,7 @@ public class ForkStarter
         this.startupReportConfiguration = startupReportConfiguration;
         this.log = log;
         defaultReporterFactory = new DefaultReporterFactory( startupReportConfiguration );
+        defaultReporterFactoryList = new ArrayList<DefaultReporterFactory>();
     }
 
     public RunResult run( SurefireProperties effectiveSystemProperties, DefaultScanResult scanResult )
@@ -153,8 +156,10 @@ public class ForkStarter
             scanResult.writeTo( providerProperties );
             if ( isForkOnce() )
             {
+                DefaultReporterFactory forkedReporterFactory = new DefaultReporterFactory( startupReportConfiguration );
+                defaultReporterFactoryList.add( forkedReporterFactory );
                 final ForkClient forkClient =
-                    new ForkClient( defaultReporterFactory, startupReportConfiguration.getTestVmSystemProperties() );
+                    new ForkClient( forkedReporterFactory, startupReportConfiguration.getTestVmSystemProperties() );
                 result = fork( null, new PropertiesWrapper( providerProperties ), forkClient, effectiveSystemProperties,
                                null );
             }
@@ -172,6 +177,7 @@ public class ForkStarter
         }
         finally
         {
+            defaultReporterFactory.mergeFromOtherFactories(defaultReporterFactoryList);
             defaultReporterFactory.close();
         }
         return result;
@@ -207,6 +213,7 @@ public class ForkStarter
                 messageQueue.add( clazz.getName() );
             }
 
+
             for ( int forkNum = 0; forkNum < forkCount && forkNum < suites.size(); forkNum++ )
             {
                 Callable<RunResult> pf = new Callable<RunResult>()
@@ -217,7 +224,10 @@ public class ForkStarter
                         TestProvidingInputStream testProvidingInputStream =
                             new TestProvidingInputStream( messageQueue );
 
-                        ForkClient forkClient = new ForkClient( defaultReporterFactory,
+                        DefaultReporterFactory forkedReporterFactory =
+                            new DefaultReporterFactory( startupReportConfiguration );
+                        defaultReporterFactoryList.add( forkedReporterFactory );
+                        ForkClient forkClient = new ForkClient( forkedReporterFactory,
                                                                 startupReportConfiguration.getTestVmSystemProperties(),
                                                                 testProvidingInputStream );
 
@@ -283,7 +293,10 @@ public class ForkStarter
                     public RunResult call()
                         throws Exception
                     {
-                        ForkClient forkClient = new ForkClient( defaultReporterFactory,
+                        DefaultReporterFactory forkedReporterFactory =
+                            new DefaultReporterFactory( startupReportConfiguration );
+                        defaultReporterFactoryList.add( forkedReporterFactory );
+                        ForkClient forkClient = new ForkClient( forkedReporterFactory,
                                                                 startupReportConfiguration.getTestVmSystemProperties() );
                         return fork( testSet, new PropertiesWrapper( providerConfiguration.getProviderProperties() ),
                                      forkClient, effectiveSystemProperties, null );
@@ -451,11 +464,12 @@ public class ForkStarter
         }
         catch ( CommandLineTimeOutException e )
         {
-            runResult = RunResult.timeout( defaultReporterFactory.getGlobalRunStatistics().getRunResult() );
+            runResult = RunResult.timeout(
+                forkClient.getDefaultReporterFactory().getGlobalRunStatistics().getRunResult() );
         }
         catch ( CommandLineException e )
         {
-            runResult = RunResult.failure( defaultReporterFactory.getGlobalRunStatistics().getRunResult(), e );
+            runResult = RunResult.failure( forkClient.getDefaultReporterFactory().getGlobalRunStatistics().getRunResult(), e );
             throw new SurefireBooterForkException( "Error while executing forked tests.", e.getCause() );
         }
         finally
@@ -468,7 +482,7 @@ public class ForkStarter
             }
             if ( runResult == null )
             {
-                runResult = defaultReporterFactory.getGlobalRunStatistics().getRunResult();
+                runResult = forkClient.getDefaultReporterFactory().getGlobalRunStatistics().getRunResult();
             }
             if ( !runResult.isTimeout() )
             {

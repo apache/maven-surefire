@@ -22,7 +22,7 @@ package org.apache.maven.surefire.its.fixture;
 
 public class IntegrationTestSuiteResults
 {
-    private int total, errors, failures, skipped;
+    private int total, errors, failures, skipped, flakes;
 
     public IntegrationTestSuiteResults( int total, int errors, int failures, int skipped )
     {
@@ -30,6 +30,12 @@ public class IntegrationTestSuiteResults
         this.errors = errors;
         this.failures = failures;
         this.skipped = skipped;
+    }
+
+    public IntegrationTestSuiteResults( int total, int errors, int failures, int skipped, int flakes )
+    {
+        this(total, errors, failures, skipped);
+        this.flakes = flakes;
     }
 
     public int getTotal()
@@ -70,6 +76,16 @@ public class IntegrationTestSuiteResults
     public void setSkipped( int skipped )
     {
         this.skipped = skipped;
+    }
+
+    public int getFlakes()
+    {
+        return flakes;
+    }
+
+    public void setFlakes( int flakes )
+    {
+        this.flakes = flakes;
     }
 
 }

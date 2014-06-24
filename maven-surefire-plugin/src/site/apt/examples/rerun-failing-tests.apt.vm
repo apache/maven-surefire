@@ -1,0 +1,139 @@
+  ------
+  Rerun failing tests
+  ------
+  Qingzhou Luo
+  ------
+  2014-06-27
+  ------
+
+ ~~ Licensed to the Apache Software Foundation (ASF) under one
+ ~~ or more contributor license agreements.  See the NOTICE file
+ ~~ distributed with this work for additional information
+ ~~ regarding copyright ownership.  The ASF licenses this file
+ ~~ to you under the Apache License, Version 2.0 (the
+ ~~ "License"); you may not use this file except in compliance
+ ~~ with the License.  You may obtain a copy of the License at
+ ~~
+ ~~   http://www.apache.org/licenses/LICENSE-2.0
+ ~~
+ ~~ Unless required by applicable law or agreed to in writing,
+ ~~ software distributed under the License is distributed on an
+ ~~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ ~~ KIND, either express or implied.  See the License for the
+ ~~ specific language governing permissions and limitations
+ ~~ under the License.
+
+ ~~ NOTE: For help with the syntax of this file, see:
+ ~~ http://maven.apache.org/doxia/references/apt-format.html
+
+Rerun Failing Tests
+
+#{if}(${project.artifactId}=="maven-surefire-plugin")
+  During development, you may re-run failing tests because they are flaky.
+  To use this feature through Maven surefire, set the <<<rerunFailingTestsCount>>> property to be a value larger than 0.
+  Tests will be run until they pass or the number of reruns has been exhausted.
+
+  << NOTE : This feature is supported only for JUnit 4.x. >>
+
+
++---+
+mvn -DrerunFailingTestsCount=2 test
++---+
+
+  If <<<rerunFailingTestsCount>>> is set to a value smaller than or euqal to 0, then it will be ignored.
+
+* Output flaky re-run information on the screen
+
+  When <<<rerunFailingTestsCount>>> is set to a value larger than 0 and the test fails,
+  then it will be re-run and each run information will also be output. Each run with its number and trimmed stack trace
+  will be output.
+
+  If the test passes in its first run, then the output on the screen will be identical to the case where
+  <<<rerunFailingTestsCount>>> is not used.
+
+  It the test fails in the first run, then there are two possible cases:
+
+  1) The test passes in one of its re-runs: the last run will be marked as PASS
+
+  For example, a test passed in its second run will output on the screen:
+
++---+
+  Run 1: ...
+  Run 2: PASS
++---+
+
+  Then this test will be counted as a flaky test. The build will be successful, but in the end of the summary of all
+  tests run, the number of flaky tests will be output on the screen, for example:
+
++---+
+  Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Flakes: 1
++---+
+
+  2) The test fails in all of the re-runs:
+
+  For example, a test failied in all the three runs, then all the runs will be output on the screen:
+
++---+
+  Run 1: ...
+  Run 2: ...
+  Run 3: ...
++---+
+
+  Then this build will be marked as failure. The type of the failure (failed test or test in error) of this test
+  depends on its first failure.
+
+* Output flaky re-run information in test report xml
+
+  When <<<rerunFailingTestsCount>>> is set to a value larger than 0, the output xml of test report will also be extended
+  to include information of each re-run.
+
+  If the test passes in its first run, then the output xml report will be identical to the case where
+  <<<rerunFailingTestsCount>>> is not used.
+
+  It the test fails in the first run, then there are also two possible cases.
+
+  1) The test passes in one of its re-runs:
+
+  <<<flakyFailure>>> and <<<flakyError>>> elements will be used in the generated xml report to include information
+  of each failing re-runs. <<<system-out>>> and <<<system-err>>> will also be used inside each <<<flakyFailure>>>
+  or <<<flakyError>>> to include information of System.out and System.err output. The original <<<system-out>>>
+  and <<<system-err>>> elements will be retained on the top level under <<<testcase>>> for the last successful run.
+
+  For example:
+
++---+
+<testcase name=".." classname=".." time="0.1">
+  <flakyFailure message="" type=""> flaky failure stack trace
+    <system-out> flaky failure </system-out>
+  </flakyFailure>
+  <system-out> success </system-out>
+</testcase>
++---+
+
+  In the xml report, the running time of a flaky test will be the running time of the <<last successful run>>.
+
+  2) The test fails in all of the re-runs:
+
+  <<<failure>>> and <<<error>>> elements will still be used in the generated xml report to include information
+  for the first failing run, the same as without using <<<rerunFailingTests>>>. <<<rerunFailure>>> and <<<rerunError>>>
+  elements will be used in the generated xml report to include information of each <<subsequent>> failing re-runs.
+  <<<system-out>>> and <<<system-err>>> will also be used inside each <<<flakyFailure>>> or <<<flakyError>>> to include
+  information of System.out and System.err output. The original <<<system-out>>> and <<<system-err>>> elements will be
+  retained on the top level under <<<testcase>>> for the first original failing run.
+
+  For example:
+
++---+
+<testcase name=".." classname=".." time="0.1">
+  <failure message="" type=""> first failure stack trace </failure>
+  <system-out> first failure </system-out>
+  <rerunFailure message="" type=""> rerun failure stack trace
+    <system-out> rerun failure </system-out>
+  </rerunFailure>
+</testcase>
++---+
+
+  In the xml report, the running time of a failing test with re-runs will be the running time of the
+  <<first failing run>>.
+
+#{end}

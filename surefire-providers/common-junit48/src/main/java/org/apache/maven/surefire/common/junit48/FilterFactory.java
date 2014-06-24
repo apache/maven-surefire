@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -38,6 +39,7 @@ import org.apache.maven.surefire.group.parse.ParseException;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.Description;
 import org.junit.runner.manipulation.Filter;
+import sun.security.krb5.internal.crypto.Des;
 
 /**
  * @author Todd Lipcon
@@ -102,6 +104,11 @@ public class FilterFactory
         return new MethodFilter( requestedTestMethod );
     }
 
+    public Filter createFailingMethodFilter( Map<Class<?>, Set<String>> failingClassMethodMap )
+    {
+        return new FailingMethodFilter( failingClassMethodMap );
+    }
+
     public Filter and( Filter filter1, Filter filter2 )
     {
         return new AndFilter( filter1, filter2 );
@@ -141,6 +148,56 @@ public class FilterFactory
         public String describe()
         {
             return "By method" + requestedTestMethod;
+        }
+    }
+
+    // Only run test methods in the given input map, indexed by test class
+    private static class FailingMethodFilter
+        extends Filter
+    {
+        // Map from Class -> List of method names. Are the method names hashed to include the signature?
+        private final Map<Class<?>, Set<String>> failingClassMethodMap;
+
+        public FailingMethodFilter( Map<Class<?>, Set<String>> failingClassMethodMap )
+        {
+            this.failingClassMethodMap = failingClassMethodMap;
+        }
+
+        @Override
+        public boolean shouldRun( Description description )
+        {
+            return isDescriptionMatch( description );
+        }
+
+        private boolean isDescriptionMatch( Description description )
+        {
+            if ( description.getTestClass() == null || description.getMethodName() == null )
+            {
+                for ( Description childrenDescription : description.getChildren() )
+                {
+                    if ( isDescriptionMatch( childrenDescription ) )
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            Set<String> testMethods = failingClassMethodMap.get( description.getTestClass() );
+            if ( testMethods == null )
+            {
+                return false;
+            }
+            else
+            {
+                return testMethods.contains( description.getMethodName() );
+            }
+        }
+
+        @Override
+        public String describe()
+        {
+            return "By failing class method";
         }
     }
 

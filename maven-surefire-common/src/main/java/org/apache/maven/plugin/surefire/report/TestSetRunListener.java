@@ -19,16 +19,14 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
-import org.apache.commons.io.output.DeferredFileOutputStream;
 import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
 import org.apache.maven.surefire.report.ConsoleLogger;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.RunListener;
-import org.apache.maven.surefire.report.RunStatistics;
 
-import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -40,9 +38,9 @@ import java.util.List;
 public class TestSetRunListener
     implements RunListener, ConsoleOutputReceiver, ConsoleLogger
 {
-    private final RunStatistics globalStatistics;
-
     private final TestSetStats detailsForThis;
+
+    private List<TestMethodStats> testMethodStats;
 
     private Utf8RecodingDeferredFileOutputStream testStdOut = initDeferred( "stdout" );
 
@@ -68,7 +66,7 @@ public class TestSetRunListener
     public TestSetRunListener( ConsoleReporter consoleReporter, FileReporter fileReporter,
                                StatelessXmlReporter simpleXMLReporter,
                                TestcycleConsoleOutputReceiver consoleOutputReceiver,
-                               StatisticsReporter statisticsReporter, RunStatistics globalStats, boolean trimStackTrace,
+                               StatisticsReporter statisticsReporter, boolean trimStackTrace,
                                boolean isPlainFormat, boolean briefOrPlainFormat )
     {
         this.consoleReporter = consoleReporter;
@@ -78,7 +76,7 @@ public class TestSetRunListener
         this.consoleOutputReceiver = consoleOutputReceiver;
         this.briefOrPlainFormat = briefOrPlainFormat;
         this.detailsForThis = new TestSetStats( trimStackTrace, isPlainFormat );
-        this.globalStatistics = globalStats;
+        this.testMethodStats = new ArrayList<TestMethodStats>(  );
     }
 
     public void info( String message )
@@ -154,7 +152,7 @@ public class TestSetRunListener
         wrap.getStdout().free();
         wrap.getStdErr().free();
 
-        globalStatistics.add( detailsForThis );
+        addTestMethodStats();
         detailsForThis.reset();
 
     }
@@ -188,7 +186,6 @@ public class TestSetRunListener
         {
             statisticsReporter.testError( reportEntry );
         }
-        globalStatistics.addErrorSource( reportEntry.getStackTraceWriter() );
         clearCapture();
     }
 
@@ -200,7 +197,6 @@ public class TestSetRunListener
         {
             statisticsReporter.testFailed( reportEntry );
         }
-        globalStatistics.addFailureSource( reportEntry.getStackTraceWriter() );
         clearCapture();
     }
 
@@ -259,5 +255,21 @@ public class TestSetRunListener
         {
             consoleOutputReceiver.close();
         }
+    }
+
+    public void  addTestMethodStats()
+    {
+        for (WrappedReportEntry reportEntry : detailsForThis.getReportEntries())
+        {
+            TestMethodStats methodStats =
+                new TestMethodStats( reportEntry.getClassMethodName(), reportEntry.getReportEntryType(),
+                                     reportEntry.getStackTraceWriter() );
+            testMethodStats.add( methodStats );
+        }
+    }
+
+    public List<TestMethodStats> getTestMethodStats()
+    {
+        return testMethodStats;
     }
 }

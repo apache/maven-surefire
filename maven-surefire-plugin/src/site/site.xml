@@ -43,6 +43,7 @@
       <item name="Skipping Tests" href="examples/skipping-test.html"/>
       <item name="Inclusions and Exclusions of Tests" href="examples/inclusion-exclusion.html"/>
       <item name="Running a Single Test" href="examples/single-test.html"/>
+      <item name="Re-run Failing Tests" href="examples/rerun-failing-tests.html"/>
       <item name="Class Loading and Forking" href="examples/class-loading.html"/>
       <item name="Debugging Tests" href="examples/debugging.html"/>
       <item name="Using System Properties" href="examples/system-properties.html"/>

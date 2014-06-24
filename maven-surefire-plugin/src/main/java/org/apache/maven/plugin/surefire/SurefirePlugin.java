@@ -187,6 +187,18 @@ public class SurefirePlugin
     @Parameter( property = "surefire.useManifestOnlyJar", defaultValue = "true" )
     private boolean useManifestOnlyJar;
 
+    /**
+     * The number of times each failing test will be rerun. If set larger than 0, rerun failing tests immediately after
+     * they fail. If a failing test passes in any of those reruns, it will be marked as pass and reported as a "flake".
+     * However, all the failing attempts will be recorded.
+     */
+    @Parameter( property = "surefire.rerunFailingTestsCount", defaultValue = "0" )
+    protected int rerunFailingTestsCount;
+
+    protected int getRerunFailingTestsCount() {
+        return rerunFailingTestsCount;
+    }
+
     protected void handleSummary( RunResult summary, Exception firstForkException )
         throws MojoExecutionException, MojoFailureException
     {

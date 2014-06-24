@@ -218,6 +218,10 @@ public class TestSuiteXmlParser
                 testCase.addFailure( message != null ? message : "skipped", "skipped" );
                 currentSuite.setNumberOfSkipped( 1 + currentSuite.getNumberOfSkipped() );
             }
+            else if ( "flakyFailure".equals( qName ) || "flakyError".equals( qName ) )
+            {
+                currentSuite.setNumberOfFlakes( 1 + currentSuite.getNumberOfFlakes() );
+            }
             else if ( "failsafe-summary".equals( qName ) )
             {
                 valid = false;

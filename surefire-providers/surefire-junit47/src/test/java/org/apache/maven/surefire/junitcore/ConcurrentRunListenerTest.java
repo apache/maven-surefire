@@ -338,7 +338,7 @@ public class ConcurrentRunListenerTest
             TestSuite suite = new TestSuite();
 
             suite.addTest( new Junit3OddTest1( "testMe" ) );
-            suite.addTest( new Junit3OddTest1( "testMe" ) );
+            suite.addTest( new Junit3OddTest1( "testMe2" ) );
 
             return suite;
         }
@@ -361,7 +361,7 @@ public class ConcurrentRunListenerTest
         {
             TestSuite suite = new TestSuite();
 
-            suite.addTest( new Junit3WithNestedSuite( "testMe2" ) );
+            suite.addTest( new Junit3WithNestedSuite( "testMe" ) );
             suite.addTest( new Junit3WithNestedSuite( "testMe2" ) );
             suite.addTestSuite( Junit3Tc2.class );
             return suite;
@@ -388,7 +388,6 @@ public class ConcurrentRunListenerTest
     private void assertReporter( RunStatistics result, int success, int ignored, int failure, String message )
     {
         assertEquals( message, success, result.getCompletedCount() );
-        assertEquals( message, failure, result.getFailureSources().size() );
         assertEquals( message, ignored, result.getSkipped() );
     }
 

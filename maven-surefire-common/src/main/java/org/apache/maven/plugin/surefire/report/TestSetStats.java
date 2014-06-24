@@ -154,16 +154,16 @@ public class TestSetStats
         return skipped;
     }
 
+    public String elapsedTimeAsString( long runTime )
+    {
+        return numberFormat.format( (double) runTime / MS_PER_SEC );
+    }
+
     private static final String TEST_SET_COMPLETED_PREFIX = "Tests run: ";
 
     private final NumberFormat numberFormat = NumberFormat.getInstance( Locale.ENGLISH );
 
     private static final int MS_PER_SEC = 1000;
-
-    String elapsedTimeAsString( long runTime )
-    {
-        return numberFormat.format( (double) runTime / MS_PER_SEC );
-    }
 
     public String getElapsedForTestSet()
     {

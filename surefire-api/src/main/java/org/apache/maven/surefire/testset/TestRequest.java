@@ -36,6 +36,8 @@ public class TestRequest
 
     private final String requestedTest;
 
+    private final int rerunFailingTestsCount;
+
     /**
      * @since 2.7.3
      */
@@ -51,10 +53,17 @@ public class TestRequest
      */
     public TestRequest( List suiteXmlFiles, File testSourceDirectory, String requestedTest, String requestedTestMethod )
     {
+        this( createFiles( suiteXmlFiles ), testSourceDirectory, requestedTest, requestedTestMethod, 0 );
+    }
+
+    public TestRequest( List suiteXmlFiles, File testSourceDirectory, String requestedTest, String requestedTestMethod,
+                        int rerunFailingTestsCount )
+    {
         this.suiteXmlFiles = createFiles( suiteXmlFiles );
         this.testSourceDirectory = testSourceDirectory;
         this.requestedTest = requestedTest;
         this.requestedTestMethod = requestedTestMethod;
+        this.rerunFailingTestsCount = rerunFailingTestsCount;
     }
 
     /**
@@ -96,6 +105,16 @@ public class TestRequest
     public String getRequestedTestMethod()
     {
         return requestedTestMethod;
+    }
+
+    /**
+     * How many times to rerun failing tests, issued with -Dsurefire.rerunFailingTestsCount from the command line.
+     *
+     * @return The int parameter to indicate how many times to rerun failing tests
+     */
+    public int getRerunFailingTestsCount()
+    {
+        return this.rerunFailingTestsCount;
     }
 
     private static List<File> createFiles( List suiteXmlFiles )

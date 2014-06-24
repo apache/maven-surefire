@@ -125,6 +125,12 @@ public class OutputValidator
         return this;
     }
 
+    public OutputValidator assertTestSuiteResults( int total, int errors, int failures, int skipped, int flakes )
+    {
+        HelperAssertions.assertTestSuiteResults( total, errors, failures, skipped, flakes, baseDir );
+        return this;
+    }
+
     public OutputValidator assertIntegrationTestSuiteResults( int total, int errors, int failures, int skipped )
     {
         HelperAssertions.assertIntegrationTestSuiteResults( total, errors, failures, skipped, baseDir );

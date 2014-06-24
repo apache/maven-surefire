@@ -40,6 +40,12 @@ public class HelperAssertions
         assertTestSuiteResults( total, errors, failures, skipped, suite );
     }
 
+    public static void assertTestSuiteResults( int total, int errors, int failures, int skipped, int flakes, File testDir )
+    {
+        IntegrationTestSuiteResults suite = parseTestResults( new File[]{ testDir } );
+        assertTestSuiteResults( total, errors, failures, skipped, flakes, suite );
+    }
+
     /**
      * assert that the reports in the specified testDir have the right summary statistics
      */
@@ -57,6 +63,13 @@ public class HelperAssertions
         Assert.assertEquals( "wrong number of errors", errors, actualSuite.getErrors() );
         Assert.assertEquals( "wrong number of failures", failures, actualSuite.getFailures() );
         Assert.assertEquals( "wrong number of skipped", skipped, actualSuite.getSkipped() );
+    }
+
+    public static void assertTestSuiteResults( int total, int errors, int failures, int skipped, int flakes,
+                                               IntegrationTestSuiteResults actualSuite )
+    {
+        assertTestSuiteResults(total, errors, failures, skipped, actualSuite);
+        Assert.assertEquals( "wrong number of flaky tests", flakes, actualSuite.getFlakes() );
     }
 
     public static IntegrationTestSuiteResults parseTestResults( File[] testDirs )
@@ -77,15 +90,16 @@ public class HelperAssertions
     public static IntegrationTestSuiteResults parseReportList( List<ReportTestSuite> reports )
     {
         Assert.assertTrue( "No reports!", reports.size() > 0 );
-        int total = 0, errors = 0, failures = 0, skipped = 0;
+        int total = 0, errors = 0, failures = 0, skipped = 0, flakes = 0;
         for ( ReportTestSuite report : reports )
         {
             total += report.getNumberOfTests();
             errors += report.getNumberOfErrors();
             failures += report.getNumberOfFailures();
             skipped += report.getNumberOfSkipped();
+            flakes += report.getNumberOfFlakes();
         }
-        return new IntegrationTestSuiteResults( total, errors, failures, skipped );
+        return new IntegrationTestSuiteResults( total, errors, failures, skipped, flakes );
     }
 
     public static List<ReportTestSuite> extractReports( File[] testDirs )

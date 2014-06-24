@@ -65,6 +65,14 @@ public class TestsToRunTest
         assertEquals( 2, locatedClasses.length );
     }
 
+    public void testGetClassByName()
+    {
+        TestsToRun testsToRun = new TestsToRun( Arrays.asList( new Class[]{ T1.class, T2.class } ) );
+        assertEquals( T1.class, testsToRun.getClassByName( "org.apache.maven.surefire.util.TestsToRunTest$T1" ) );
+        assertEquals( T2.class, testsToRun.getClassByName( "org.apache.maven.surefire.util.TestsToRunTest$T2" ) );
+        assertEquals( null, testsToRun.getClassByName( "org.apache.maven.surefire.util.TestsToRunTest$T3" ) );
+    }
+
     class T1
     {
 

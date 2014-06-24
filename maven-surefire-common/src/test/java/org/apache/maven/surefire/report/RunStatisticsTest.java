@@ -1,7 +1,5 @@
 package org.apache.maven.surefire.report;
 
-import java.util.Collection;
-
 import junit.framework.TestCase;
 
 /*
@@ -24,85 +22,14 @@ import junit.framework.TestCase;
 public class RunStatisticsTest
     extends TestCase
 {
-    private static final String Method = "AClass#AMethod";
-
-    private static final String DUMMY_ERROR_SOURCE = Method + " RuntimeException";
-
-    private static final String DUMMY_FAILURE_SOURCE = "dummy failure source";
-
-    private static final String DUMMY_MESSAGE = "foo";
-
-    public void testAddErrorSourceWithThrowableMessage()
+    public void testSetRunStatistics()
     {
-        RuntimeException throwable = new RuntimeException( DUMMY_MESSAGE );
-        RunStatistics statistics = createRunStatisticsAndAddErrorSourceWithThrowable( throwable );
-        assertRunStatisticsHasErrorSource( statistics, DUMMY_ERROR_SOURCE + " " + DUMMY_MESSAGE );
-    }
-
-    public void testAddErrorSourceWithoutThrowable()
-    {
-        RunStatistics statistics = createRunStatisticsAndAddErrorSourceWithThrowable( null );
-        assertRunStatisticsHasErrorSource( statistics, Method );
-    }
-
-    public void testAddErrorSourceWithThrowableWithoutMessage()
-    {
-        RuntimeException throwable = new RuntimeException();
-        RunStatistics statistics = createRunStatisticsAndAddErrorSourceWithThrowable( throwable );
-        assertRunStatisticsHasErrorSource( statistics, DUMMY_ERROR_SOURCE );
-    }
-
-    public void testAddFailureSourceWithThrowableMessage()
-    {
-        RuntimeException throwable = new RuntimeException( DUMMY_MESSAGE );
-        RunStatistics statistics = createRunStatisticsAndAddFailureSourceWithThrowable( throwable );
-        assertRunStatisticsHasFailureSource( statistics, DUMMY_ERROR_SOURCE + " " + DUMMY_MESSAGE );
-    }
-
-    public void testAddFailureSourceWithoutThrowable()
-    {
-        RunStatistics statistics = createRunStatisticsAndAddFailureSourceWithThrowable( null );
-        assertRunStatisticsHasFailureSource( statistics, Method );
-    }
-
-    public void testAddFailureSourceWithThrowableWithoutMessage()
-    {
-        RuntimeException throwable = new RuntimeException();
-        RunStatistics statistics = createRunStatisticsAndAddFailureSourceWithThrowable( throwable );
-        assertRunStatisticsHasFailureSource( statistics, DUMMY_ERROR_SOURCE );
-    }
-
-    private RunStatistics createRunStatisticsAndAddErrorSourceWithThrowable( Throwable throwable )
-    {
-        StackTraceWriter stackTraceWriter = new LegacyPojoStackTraceWriter( "AClass", "AMethod", throwable );
         RunStatistics statistics = new RunStatistics();
-        statistics.addErrorSource( stackTraceWriter );
-
-        return statistics;
-    }
-
-    private RunStatistics createRunStatisticsAndAddFailureSourceWithThrowable( Throwable throwable )
-    {
-        StackTraceWriter stackTraceWriter = new LegacyPojoStackTraceWriter( "AClass", "AMethod", throwable );
-        RunStatistics statistics = new RunStatistics();
-        statistics.addFailureSource( stackTraceWriter );
-
-        return statistics;
-    }
-
-    private void assertRunStatisticsHasErrorSource( RunStatistics statistics, String expectedErrorSource )
-    {
-        Collection errorSources = statistics.getErrorSources();
-        assertNotNull( "No error sources.", errorSources );
-        assertEquals( "Wrong number of error sources.", 1, errorSources.size() );
-        assertEquals( "Wrong error sources.", expectedErrorSource, errorSources.iterator().next() );
-    }
-
-    private void assertRunStatisticsHasFailureSource( RunStatistics statistics, String expectedFailureSource )
-    {
-        Collection failureSources = statistics.getFailureSources();
-        assertNotNull( "No failure sources.", failureSources );
-        assertEquals( "Wrong number of failure sources.", 1, failureSources.size() );
-        assertEquals( "Wrong failure sources.", expectedFailureSource, failureSources.iterator().next() );
+        statistics.set( 10, 5, 2, 1, 2 );
+        assertEquals( 10, statistics.getCompletedCount() );
+        assertEquals( 5, statistics.getErrors() );
+        assertEquals( 2, statistics.getFailures() );
+        assertEquals( 1, statistics.getSkipped() );
+        assertEquals( 2, statistics.getFlakes() );
     }
 }

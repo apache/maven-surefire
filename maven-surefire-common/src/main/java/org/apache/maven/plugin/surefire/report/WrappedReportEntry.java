@@ -87,6 +87,11 @@ public class WrappedReportEntry
         return original.getName();
     }
 
+    public String getClassMethodName()
+    {
+        return getSourceName() + "." + getName();
+    }
+
     public String getGroup()
     {
         return original.getGroup();

@@ -138,4 +138,22 @@ public class TestsToRun implements Iterable<Class>
         }
         return result.toArray( new Class[result.size()] );
     }
+
+    /**
+     * Get test class which matches className
+     *
+     * @param className string used to find the test class
+     * @return Class object with the matching name, null if could not find a class with the matching name
+     */
+    public Class getClassByName( String className )
+    {
+        for ( Class clazz : this )
+        {
+            if ( clazz.getName().equals( className ) )
+            {
+                return clazz;
+            }
+        }
+        return null;
+    }
 }

@@ -58,6 +58,7 @@ public class RunResultTest
         assertEquals( 3, simple.getErrors() );
         assertEquals( 7, simple.getFailures() );
         assertEquals( 4, simple.getSkipped() );
+        assertEquals( 2, simple.getFlakes() );
 
     }
 
@@ -116,8 +117,8 @@ public class RunResultTest
 
     private RunResult getSimpleAggregate()
     {
-        RunResult resultOne = new RunResult( 10, 1, 3, 2 );
-        RunResult resultTwo = new RunResult( 10, 2, 4, 2 );
+        RunResult resultOne = new RunResult( 10, 1, 3, 2, 1 );
+        RunResult resultTwo = new RunResult( 10, 2, 4, 2, 1 );
         return resultOne.aggregate( resultTwo );
     }
 }

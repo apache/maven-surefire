@@ -19,27 +19,21 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
+import org.apache.maven.plugin.surefire.report.TestSetStats;
+import org.apache.maven.surefire.suite.RunResult;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import org.apache.maven.plugin.surefire.report.TestSetStats;
-import org.apache.maven.surefire.suite.RunResult;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Kristian Rosenvold
  */
 public class RunStatistics
 {
-    /**
-     * Holds the source(s) that causes the error(s).
-     */
-    private final Sources errorSources = new Sources();
-
-    /**
-     * Holds the source(s) that causes the failure(s).
-     */
-    private final Sources failureSources = new Sources();
-
     private int completedCount;
 
     private int errors;
@@ -48,33 +42,10 @@ public class RunStatistics
 
     private int skipped;
 
+    private int flakes;
 
-    public void addErrorSource( StackTraceWriter stackTraceWriter )
+    public RunStatistics()
     {
-        if ( stackTraceWriter == null )
-        {
-            throw new IllegalArgumentException( "Cant be null" );
-        }
-        errorSources.addSource( stackTraceWriter );
-    }
-
-    public void addFailureSource( StackTraceWriter stackTraceWriter )
-    {
-        if ( stackTraceWriter == null )
-        {
-            throw new IllegalArgumentException( "Cant be null" );
-        }
-        failureSources.addSource( stackTraceWriter );
-    }
-
-    public Collection<String> getErrorSources()
-    {
-        return errorSources.getListOfSources();
-    }
-
-    public Collection<String> getFailureSources()
-    {
-        return failureSources.getListOfSources();
     }
 
     public synchronized boolean hadFailures()
@@ -97,6 +68,21 @@ public class RunStatistics
         return skipped;
     }
 
+    public synchronized int getFailures()
+    {
+        return failures;
+    }
+
+    public synchronized int getErrors()
+    {
+        return errors;
+    }
+
+    public synchronized int getFlakes()
+    {
+        return flakes;
+    }
+
     public synchronized void add( TestSetStats testSetStats )
     {
         this.completedCount += testSetStats.getCompletedCount();
@@ -105,41 +91,29 @@ public class RunStatistics
         this.skipped += testSetStats.getSkipped();
     }
 
+    public synchronized void set( int completedCount, int errors, int failures, int skipped, int flakes )
+    {
+        this.completedCount = completedCount;
+        this.errors = errors;
+        this.failures = failures;
+        this.skipped = skipped;
+        this.flakes = flakes;
+    }
+
     public synchronized RunResult getRunResult()
     {
-        return new RunResult( completedCount, errors, failures, skipped );
+        return new RunResult( completedCount, errors, failures, skipped, flakes );
     }
 
     public synchronized String getSummary()
     {
-        return "Tests run: " + completedCount + ", Failures: " + failures + ", Errors: " + errors + ", Skipped: "
-            + skipped;
-    }
-
-
-    private static class Sources
-    {
-        private final Collection<String> listOfSources = new ArrayList<String>();
-
-        void addSource( String source )
+        String summary =
+            "Tests run: " + completedCount + ", Failures: " + failures + ", Errors: " + errors + ", Skipped: "
+                + skipped;
+        if ( flakes > 0 )
         {
-            synchronized ( listOfSources )
-            {
-                listOfSources.add( source );
-            }
+            summary += ", Flakes: " + flakes;
         }
-
-        void addSource( StackTraceWriter stackTraceWriter )
-        {
-            addSource( stackTraceWriter.smartTrimmedStackTrace() );
-        }
-
-        Collection<String> getListOfSources()
-        {
-            synchronized ( listOfSources )
-            {
-                return Collections.unmodifiableCollection( listOfSources );
-            }
-        }
+        return summary;
     }
 }

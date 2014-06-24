@@ -19,39 +19,42 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
-public enum ReportEntryType
+import org.apache.maven.surefire.report.StackTraceWriter;
+
+/**
+ *
+ * Maintains per-thread test result state for a single test method.
+ *
+ * @author Qingzhou Luo
+ *
+ */
+public class TestMethodStats
 {
+    private final String testClassMethodName;
 
-    error( "error", "flakyError", "rerunError" ),
-    failure( "failure", "flakyFailure", "rerunFailure" ),
-    skipped( "skipped", "", "" ),
-    success( "", "", "" );
+    private final ReportEntryType resultType;
 
-    private final String xmlTag;
+    private final StackTraceWriter stackTraceWriter;
 
-    private final String flakyXmlTag;
-
-    private final String rerunXmlTag;
-
-    private ReportEntryType( String xmlTag, String flakyXmlTag, String rerunXmlTag )
+    public TestMethodStats( String testClassMethodName, ReportEntryType resultType, StackTraceWriter stackTraceWriter )
     {
-        this.xmlTag = xmlTag;
-        this.flakyXmlTag = flakyXmlTag;
-        this.rerunXmlTag = rerunXmlTag;
+        this.testClassMethodName = testClassMethodName;
+        this.resultType = resultType;
+        this.stackTraceWriter = stackTraceWriter;
     }
 
-    public String getXmlTag()
+    public String getTestClassMethodName()
     {
-        return xmlTag;
+        return testClassMethodName;
     }
 
-    public String getFlakyXmlTag()
+    public ReportEntryType getResultType()
     {
-        return flakyXmlTag;
+        return resultType;
     }
 
-    public String getRerunXmlTag()
+    public StackTraceWriter getStackTraceWriter()
     {
-        return rerunXmlTag;
+        return stackTraceWriter;
     }
 }

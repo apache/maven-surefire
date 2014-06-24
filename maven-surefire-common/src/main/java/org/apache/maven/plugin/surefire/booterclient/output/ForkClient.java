@@ -76,6 +76,11 @@ public class ForkClient
         this.testProvidingInputStream = testProvidingInputStream;
     }
 
+    public DefaultReporterFactory getDefaultReporterFactory()
+    {
+        return defaultReporterFactory;
+    }
+
     public void consumeLine( String s )
     {
         try

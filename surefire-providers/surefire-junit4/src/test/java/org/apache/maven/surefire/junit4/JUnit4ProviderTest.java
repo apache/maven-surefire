@@ -19,11 +19,18 @@ package org.apache.maven.surefire.junit4;
  * under the License.
  */
 
-import java.util.Properties;
+import junit.framework.TestCase;
 import org.apache.maven.surefire.booter.BaseProviderFactory;
 import org.apache.maven.surefire.testset.TestRequest;
+import org.apache.maven.surefire.util.TestsToRun;
+import org.junit.runner.Description;
+import org.junit.runner.notification.Failure;
 
-import junit.framework.TestCase;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * @author Kristian Rosenvold
@@ -33,10 +40,15 @@ public class JUnit4ProviderTest
 {
     public void testCreateProvider()
     {
+        assertNotNull( getJUnit4Provider() );
+    }
+
+    private JUnit4Provider getJUnit4Provider()
+    {
         BaseProviderFactory providerParameters = new BaseProviderFactory( null, Boolean.TRUE );
         providerParameters.setProviderProperties( new Properties() );
         providerParameters.setClassLoaders( this.getClass().getClassLoader() );
         providerParameters.setTestRequest( new TestRequest( null, null, null ) );
-        assertNotNull( new JUnit4Provider( providerParameters ) );
+        return new JUnit4Provider( providerParameters );
     }
 }

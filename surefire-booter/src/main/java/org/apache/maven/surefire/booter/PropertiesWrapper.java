@@ -76,6 +76,11 @@ public class PropertiesWrapper
         return Boolean.valueOf( properties.getProperty( propertyName ) );
     }
 
+    public int getIntProperty( String propertyName )
+    {
+        return Integer.parseInt( properties.getProperty( propertyName ) );
+    }
+
     public File getFileProperty( String key )
     {
         final String property = getProperty( key );

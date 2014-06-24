@@ -53,6 +53,8 @@ public class RunResult
 
     private final int skipped;
 
+    private final int flakes;
+
     private final String failure;
 
     private final boolean timeout;
@@ -85,7 +87,18 @@ public class RunResult
         this( completedCount, errors, failures, skipped, null, false );
     }
 
+    public RunResult( int completedCount, int errors, int failures, int skipped, int flakes )
+    {
+        this( completedCount, errors, failures, skipped, flakes, null, false );
+    }
+
     public RunResult( int completedCount, int errors, int failures, int skipped, String failure, boolean timeout )
+    {
+        this( completedCount, errors, failures, skipped, 0, failure, timeout );
+    }
+
+    public RunResult( int completedCount, int errors, int failures, int skipped, int flakes, String failure,
+                      boolean timeout )
     {
         this.completedCount = completedCount;
         this.errors = errors;
@@ -93,6 +106,7 @@ public class RunResult
         this.skipped = skipped;
         this.failure = failure;
         this.timeout = timeout;
+        this.flakes = flakes;
     }
 
     private static String getStackTrace( Exception e )
@@ -115,6 +129,11 @@ public class RunResult
     public int getErrors()
     {
         return errors;
+    }
+
+    public int getFlakes()
+    {
+        return flakes;
     }
 
     public int getFailures()
@@ -176,7 +195,8 @@ public class RunResult
         int fail = getFailures() + other.getFailures();
         int ign = getSkipped() + other.getSkipped();
         int err = getErrors() + other.getErrors();
-        return new RunResult( completed, err, fail, ign, failureMessage, timeout );
+        int flakes = getFlakes() + other.getFlakes();
+        return new RunResult( completed, err, fail, ign, flakes, failureMessage, timeout );
     }
 
     public static RunResult noTestsRun()

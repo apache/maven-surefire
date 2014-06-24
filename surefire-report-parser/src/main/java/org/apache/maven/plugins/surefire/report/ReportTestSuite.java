@@ -35,6 +35,8 @@ public class ReportTestSuite
 
     private int numberOfSkipped;
 
+    private int numberOfFlakes;
+
     private Integer numberOfTests;
 
     private String name;
@@ -78,6 +80,16 @@ public class ReportTestSuite
     public void setNumberOfSkipped( int numberOfSkipped )
     {
         this.numberOfSkipped = numberOfSkipped;
+    }
+
+    public int getNumberOfFlakes()
+    {
+        return numberOfFlakes;
+    }
+
+    public void setNumberOfFlakes( int numberOfFlakes )
+    {
+        this.numberOfFlakes = numberOfFlakes;
     }
 
     public int getNumberOfTests()

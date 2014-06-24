@@ -429,7 +429,6 @@ public abstract class AbstractSurefireMojo
     @Parameter( property = "threadCount" )
     protected int threadCount;
 
-
     /**
      * Option to specify the number of VMs to fork in parallel in order to execute the tests.
      * When terminated with "C", the number part is multiplied with the number of CPU cores. Floating point value are only accepted together with "C".
@@ -703,6 +702,8 @@ public abstract class AbstractSurefireMojo
     public static final String FORK_NUMBER_PLACEHOLDER = "${surefire.forkNumber}";
 
     protected abstract String getPluginName();
+
+    protected abstract int getRerunFailingTestsCount();
 
     private SurefireDependencyResolver dependencyResolver;
 
@@ -1380,7 +1381,8 @@ public abstract class AbstractSurefireMojo
             isTestNg ? new TestArtifactInfo( testNgArtifact.getVersion(), testNgArtifact.getClassifier() ) : null;
         List<File> testXml = getSuiteXmlFiles() != null ? Arrays.asList( getSuiteXmlFiles() ) : null;
         TestRequest testSuiteDefinition =
-            new TestRequest( testXml, getTestSourceDirectory(), getTest(), getTestMethod() );
+            new TestRequest(testXml, getTestSourceDirectory(), getTest(), getTestMethod(),
+                             getRerunFailingTestsCount());
         final boolean failIfNoTests;
 
         if ( isValidSuiteXmlFileConfig() && getTest() == null )
@@ -1492,7 +1494,7 @@ public abstract class AbstractSurefireMojo
         return new StartupReportConfiguration( isUseFile(), isPrintSummary(), getReportFormat(),
                                                isRedirectTestOutputToFile(), isDisableXmlReport(),
                                                getReportsDirectory(), isTrimStackTrace(), getReportNameSuffix(),
-                                               configChecksum, requiresRunHistory() );
+                                               configChecksum, requiresRunHistory(), getRerunFailingTestsCount() );
     }
 
     private boolean isSpecificTestSpecified()

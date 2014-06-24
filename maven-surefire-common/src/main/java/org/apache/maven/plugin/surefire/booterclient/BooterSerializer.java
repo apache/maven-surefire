@@ -95,6 +95,8 @@ class BooterSerializer
             properties.addList( testSuiteDefinition.getSuiteXmlFiles(), BooterConstants.TEST_SUITE_XML_FILES );
             properties.setNullableProperty( BooterConstants.REQUESTEDTEST, testSuiteDefinition.getRequestedTest() );
             properties.setNullableProperty( BooterConstants.REQUESTEDTESTMETHOD, testSuiteDefinition.getRequestedTestMethod() );
+            properties.setNullableProperty( BooterConstants.RERUN_FAILING_TESTS_COUNT,
+                                            String.valueOf( testSuiteDefinition.getRerunFailingTestsCount() ) );
         }
 
         DirectoryScannerParameters directoryScannerParameters = booterConfiguration.getDirScannerParams();

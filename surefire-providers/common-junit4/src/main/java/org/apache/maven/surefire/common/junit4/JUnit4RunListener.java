@@ -209,7 +209,7 @@ public class JUnit4RunListener
         }
     }
 
-    private static boolean isFailureInsideJUnitItself( Failure failure )
+    public static boolean isFailureInsideJUnitItself( Failure failure )
     {
         return failure.getDescription().getDisplayName().equals( "Test mechanism" );
     }

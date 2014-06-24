@@ -1,4 +1,4 @@
-package org.apache.maven.plugin.surefire.report;
+package junit4;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,39 +19,21 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
-public enum ReportEntryType
+import org.junit.Assert;
+import org.junit.Test;
+
+
+public class PassingTest
 {
-
-    error( "error", "flakyError", "rerunError" ),
-    failure( "failure", "flakyFailure", "rerunFailure" ),
-    skipped( "skipped", "", "" ),
-    success( "", "", "" );
-
-    private final String xmlTag;
-
-    private final String flakyXmlTag;
-
-    private final String rerunXmlTag;
-
-    private ReportEntryType( String xmlTag, String flakyXmlTag, String rerunXmlTag )
+    @Test
+    public void testPassingTestOne()
     {
-        this.xmlTag = xmlTag;
-        this.flakyXmlTag = flakyXmlTag;
-        this.rerunXmlTag = rerunXmlTag;
+        System.out.println( "Passing test one" );
     }
 
-    public String getXmlTag()
+    @Test
+    public void testPassingTestTwo() throws Exception
     {
-        return xmlTag;
-    }
-
-    public String getFlakyXmlTag()
-    {
-        return flakyXmlTag;
-    }
-
-    public String getRerunXmlTag()
-    {
-        return rerunXmlTag;
+        System.out.println( "Passing test two" );
     }
 }

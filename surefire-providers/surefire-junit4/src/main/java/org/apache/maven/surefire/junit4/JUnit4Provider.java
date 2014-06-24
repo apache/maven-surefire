@@ -19,14 +19,12 @@ package org.apache.maven.surefire.junit4;
  * under the License.
  */
 
-import java.lang.reflect.Method;
-import java.util.Iterator;
-import java.util.List;
-
 import org.apache.maven.shared.utils.io.SelectorUtils;
+import org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil;
 import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
 import org.apache.maven.surefire.common.junit4.JUnit4RunListenerFactory;
 import org.apache.maven.surefire.common.junit4.JUnit4TestChecker;
+import org.apache.maven.surefire.common.junit4.JUnitTestFailureListener;
 import org.apache.maven.surefire.providerapi.AbstractProvider;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.report.ConsoleOutputCapture;
@@ -43,11 +41,18 @@ import org.apache.maven.surefire.util.RunOrderCalculator;
 import org.apache.maven.surefire.util.ScanResult;
 import org.apache.maven.surefire.util.TestsToRun;
 import org.apache.maven.surefire.util.internal.StringUtils;
-
 import org.junit.runner.Request;
 import org.junit.runner.Result;
 import org.junit.runner.Runner;
+import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunNotifier;
+
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Kristian Rosenvold
@@ -71,6 +76,8 @@ public class JUnit4Provider
 
     private final ScanResult scanResult;
 
+    private final int rerunFailingTestsCount;
+
 
     public JUnit4Provider( ProviderParameters booterParameters )
     {
@@ -82,7 +89,7 @@ public class JUnit4Provider
             createCustomListeners( booterParameters.getProviderProperties().getProperty( "listener" ) );
         jUnit4TestChecker = new JUnit4TestChecker( testClassLoader );
         requestedTestMethod = booterParameters.getTestRequest().getRequestedTestMethod();
-
+        rerunFailingTestsCount = booterParameters.getTestRequest().getRerunFailingTestsCount();
     }
 
     public RunResult invoke( Object forkTestSet )
@@ -108,7 +115,7 @@ public class JUnit4Provider
 
         final ReporterFactory reporterFactory = providerParameters.getReporterFactory();
 
-        final RunListener reporter = reporterFactory.createReporter();
+        RunListener reporter = reporterFactory.createReporter();
 
         ConsoleOutputCapture.startCapture( (ConsoleOutputReceiver) reporter );
 
@@ -121,7 +128,7 @@ public class JUnit4Provider
 
         for ( Class aTestsToRun : testsToRun )
         {
-            executeTestSet( aTestsToRun, reporter, runNotifer );
+            executeTestSet( aTestsToRun, reporter, runNotifer, null );
         }
 
         runNotifer.fireTestRunFinished( result );
@@ -129,16 +136,18 @@ public class JUnit4Provider
         JUnit4RunListener.rethrowAnyTestMechanismFailures( result );
 
         closeRunNotifer( jUnit4TestSetReporter, customRunListeners );
-
         return reporterFactory.close();
     }
 
-    private void executeTestSet( Class<?> clazz, RunListener reporter, RunNotifier listeners )
+    private void executeTestSet( Class<?> clazz, RunListener reporter, RunNotifier listeners,
+                                 String[] failingTestMethods )
         throws ReporterException, TestSetFailedException
     {
         final ReportEntry report = new SimpleReportEntry( this.getClass().getName(), clazz.getName() );
 
         reporter.testSetStarting( report );
+
+
 
         try
         {
@@ -146,11 +155,11 @@ public class JUnit4Provider
             {
                 String actualTestMethod = getMethod( clazz, this.requestedTestMethod );//add by rainLee
                 String[] testMethods = StringUtils.split( actualTestMethod, "+" );
-                execute( clazz, listeners, testMethods );
+                executeWithRerun( clazz, listeners, testMethods );
             }
             else
             {//the original way
-                execute( clazz, listeners, null );
+                executeWithRerun( clazz, listeners, failingTestMethods );
             }
         }
         catch ( TestSetFailedException e )
@@ -166,6 +175,34 @@ public class JUnit4Provider
         finally
         {
             reporter.testSetCompleted( report );
+        }
+    }
+
+    private void executeWithRerun( Class<?> clazz, RunNotifier listeners, String[] testMethods )
+        throws TestSetFailedException
+    {
+        JUnitTestFailureListener failureListener = new JUnitTestFailureListener();
+        listeners.addListener( failureListener );
+
+        execute( clazz, listeners, testMethods );
+
+        // Rerun failing tests if rerunFailingTestsCount is larger than 0
+        int rerunCount = this.rerunFailingTestsCount;
+        if ( rerunCount > 0 )
+        {
+            for ( int i = 0; i < rerunCount; i++ )
+            {
+                List<Failure> failures = failureListener.getAllFailures();
+                if ( failures.size() == 0 )
+                {
+                    break;
+                }
+
+                Set<String> methodsSet = JUnit4ProviderUtil.generateFailingTests( failureListener.getAllFailures() );
+                String[] methods = methodsSet.toArray(new String[methodsSet.size()]);
+                failureListener.reset();
+                execute( clazz, listeners, methods );
+            }
         }
     }
 

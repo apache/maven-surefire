@@ -57,6 +57,8 @@ public class BooterDeserializerProviderConfigurationTest
 
     private final String aUserRequestedTest = "aUserRequestedTest";
 
+    private final int rerunFailingTestsCount = 3;
+
     private static ClassLoaderConfiguration getForkConfiguration()
     {
         return new ClassLoaderConfiguration( true, false );
@@ -124,6 +126,7 @@ public class BooterDeserializerProviderConfigurationTest
         Assert.assertEquals( expected[1], suiteXmlFiles.get( 1 ) );
         Assert.assertEquals( getTestSourceDirectory(), testSuiteDefinition.getTestSourceDirectory() );
         Assert.assertEquals( aUserRequestedTest, testSuiteDefinition.getRequestedTest() );
+        Assert.assertEquals( rerunFailingTestsCount, testSuiteDefinition.getRerunFailingTestsCount() );
     }
 
     public void testTestForFork()
@@ -220,7 +223,7 @@ public class BooterDeserializerProviderConfigurationTest
         String aUserRequestedTestMethod = "aUserRequestedTestMethod";
         TestRequest testSuiteDefinition =
             new TestRequest( getSuiteXmlFileStrings(), getTestSourceDirectory(), aUserRequestedTest,
-                             aUserRequestedTestMethod );
+                             aUserRequestedTestMethod, rerunFailingTestsCount );
         RunOrderParameters runOrderParameters = new RunOrderParameters( RunOrder.DEFAULT, null );
         return new ProviderConfiguration( directoryScannerParameters, runOrderParameters, true, reporterConfiguration,
                                           new TestArtifactInfo( "5.0", "ABC" ), testSuiteDefinition, new Properties(),
