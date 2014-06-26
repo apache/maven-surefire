@@ -27,6 +27,7 @@ import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.junit.runner.Description;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
+import org.junit.runner.notification.RunNotifier;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -50,6 +51,8 @@ public class JUnit4RunListener
 
     private final JUnit4Reflector jUnit4Reflector = new JUnit4Reflector();
 
+    private RunNotifier runNotifier;
+
     /**
      * Constructor.
      *
@@ -58,6 +61,11 @@ public class JUnit4RunListener
     public JUnit4RunListener( RunListener reporter )
     {
         this.reporter = reporter;
+    }
+
+    public void setNotifier( RunNotifier notifer )
+    {
+        this.runNotifier = notifer;
     }
 
     // Testrun methods are not invoked when using the runner
@@ -114,6 +122,11 @@ public class JUnit4RunListener
             this.reporter.testError( report );
         }
         failureFlag.set( Boolean.TRUE );
+
+        if ( this.runNotifier != null )
+        {
+            this.runNotifier.pleaseStop();
+        }
     }
 
     protected StackTraceWriter createStackTraceWriter( Failure failure )

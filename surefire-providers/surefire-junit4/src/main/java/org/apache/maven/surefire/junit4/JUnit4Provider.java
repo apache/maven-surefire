@@ -48,6 +48,7 @@ import org.junit.runner.Request;
 import org.junit.runner.Result;
 import org.junit.runner.Runner;
 import org.junit.runner.notification.RunNotifier;
+import org.junit.runner.notification.StoppedByUserException;
 
 /**
  * @author Kristian Rosenvold
@@ -71,6 +72,10 @@ public class JUnit4Provider
 
     private final ScanResult scanResult;
 
+    private final boolean fastFail;
+
+    private boolean testFailed;
+
 
     public JUnit4Provider( ProviderParameters booterParameters )
     {
@@ -82,6 +87,7 @@ public class JUnit4Provider
             createCustomListeners( booterParameters.getProviderProperties().getProperty( "listener" ) );
         jUnit4TestChecker = new JUnit4TestChecker( testClassLoader );
         requestedTestMethod = booterParameters.getTestRequest().getRequestedTestMethod();
+        fastFail = Boolean.parseBoolean( booterParameters.getProviderProperties().getProperty( "fastFail" ) );
 
     }
 
@@ -117,11 +123,22 @@ public class JUnit4Provider
         Result result = new Result();
         RunNotifier runNotifer = getRunNotifer( jUnit4TestSetReporter, result, customRunListeners );
 
+        if ( fastFail )
+        {
+            jUnit4TestSetReporter.setNotifier( runNotifer );
+        }
+
         runNotifer.fireTestRunStarted( null );
+
+        testFailed = false;
 
         for ( Class aTestsToRun : testsToRun )
         {
             executeTestSet( aTestsToRun, reporter, runNotifer );
+            if ( testFailed && fastFail )
+            {
+                break;
+            }
         }
 
         runNotifer.fireTestRunFinished( result );
@@ -157,11 +174,17 @@ public class JUnit4Provider
         {
             throw e;
         }
+        catch ( StoppedByUserException e )
+        {
+            reporter.testSkipped( SimpleReportEntry.ignored( report.getSourceName(), report.getName(), e.getClass().getName() ) );
+            testFailed = true;
+        }
         catch ( Throwable e )
         {
             reporter.testError( SimpleReportEntry.withException( report.getSourceName(), report.getName(),
                                                                  new PojoStackTraceWriter( report.getSourceName(),
                                                                                            report.getName(), e ) ) );
+            testFailed = true;
         }
         finally
         {
