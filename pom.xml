@@ -47,41 +47,6 @@
     </contributor>
   </contributors>
 
-  <mailingLists>
-    <mailingList>
-      <name>Surefire User List</name>
-      <post>surefire-users@maven.apache.org</post>
-      <subscribe>surefire-users-subscribe@maven.apache.org</subscribe>
-      <unsubscribe>surefire-users-unsubscribe@maven.apache.org</unsubscribe>
-      <archive>http://mail-archives.apache.org/mod_mbox/maven-surefire-users/</archive>
-      <otherArchives>
-        <otherArchive>http://www.mail-archive.com/surefire-users@maven.apache.org</otherArchive>
-        <otherArchive>http://markmail.org/list/org.apache.maven.surefire-users</otherArchive>
-      </otherArchives>
-    </mailingList>
-    <mailingList>
-      <name>Surefire Developer List</name>
-      <post>surefire-dev@maven.apache.org</post>
-      <subscribe>surefire-dev-subscribe@maven.apache.org</subscribe>
-      <unsubscribe>surefire-dev-unsubscribe@maven.apache.org</unsubscribe>
-      <archive>http://mail-archives.apache.org/mod_mbox/maven-surefire-dev/</archive>
-      <otherArchives>
-        <otherArchive>http://www.mail-archive.com/surefire-dev@maven.apache.org</otherArchive>
-        <otherArchive>http://markmail.org/list/org.apache.maven.surefire-dev</otherArchive>
-      </otherArchives>
-    </mailingList>
-    <mailingList>
-      <name>Surefire Commits List</name>
-      <subscribe>surefire-commits-subscribe@maven.apache.org</subscribe>
-      <unsubscribe>surefire-commits-unsubscribe@maven.apache.org</unsubscribe>
-      <archive>http://mail-archives.apache.org/mod_mbox/maven-surefire-commits/</archive>
-      <otherArchives>
-        <otherArchive>http://www.mail-archive.com/surefire-commits@maven.apache.org</otherArchive>
-        <otherArchive>http://markmail.org/list/org.apache.maven.surefire-commits</otherArchive>
-      </otherArchives>
-    </mailingList>
-  </mailingLists>
-
   <modules>
     <module>surefire-shadefire</module>
     <module>surefire-api</module>
