@@ -28,7 +28,6 @@
 
 Rerun Failing Tests
 
-#{if}(${project.artifactId}=="maven-surefire-plugin")
   During development, you may re-run failing tests because they are flaky.
   To use this feature through Maven surefire, set the <<<rerunFailingTestsCount>>> property to be a value larger than 0.
   Tests will be run until they pass or the number of reruns has been exhausted.
@@ -37,7 +36,7 @@ Rerun Failing Tests
 
 
 +---+
-mvn -DrerunFailingTestsCount=2 test
+mvn -D${thisPlugin.toLowerCase()}.rerunFailingTestsCount=2 test
 +---+
 
   If <<<rerunFailingTestsCount>>> is set to a value smaller than or euqal to 0, then it will be ignored.
@@ -115,7 +114,7 @@ mvn -DrerunFailingTestsCount=2 test
   2) The test fails in all of the re-runs:
 
   <<<failure>>> and <<<error>>> elements will still be used in the generated xml report to include information
-  for the first failing run, the same as without using <<<rerunFailingTests>>>. <<<rerunFailure>>> and <<<rerunError>>>
+  for the first failing run, the same as without using <<<rerunFailingTestsCount>>>. <<<rerunFailure>>> and <<<rerunError>>>
   elements will be used in the generated xml report to include information of each <<subsequent>> failing re-runs.
   <<<system-out>>> and <<<system-err>>> will also be used inside each <<<flakyFailure>>> or <<<flakyError>>> to include
   information of System.out and System.err output. The original <<<system-out>>> and <<<system-err>>> elements will be
@@ -135,5 +134,3 @@ mvn -DrerunFailingTestsCount=2 test
 
   In the xml report, the running time of a failing test with re-runs will be the running time of the
   <<first failing run>>.
-
-#{end}
