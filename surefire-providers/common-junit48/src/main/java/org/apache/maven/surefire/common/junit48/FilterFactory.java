@@ -39,7 +39,6 @@ import org.apache.maven.surefire.group.parse.ParseException;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.Description;
 import org.junit.runner.manipulation.Filter;
-import sun.security.krb5.internal.crypto.Des;
 
 /**
  * @author Todd Lipcon
