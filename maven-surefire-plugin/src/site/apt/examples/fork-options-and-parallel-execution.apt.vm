@@ -93,6 +93,12 @@ Fork Options and Parallel Test Execution
   
   The surefire is always trying to reuse threads, optimize the thread-counts,
   and prefers thread fairness.
+
+  Since of Surefire 2.18, you can apply the JSR-305 annotation
+  <<<@javax.annotation.concurrent.NotThreadSafe>>> on the type of a test class
+  or suite in order to execute them in single Thread instance.
+  Just use the dependency Artifact com.google.code.findbugs:jsr305:2.0.1.
+  This way you can deselect parallel execution in some tests.
   
   <<The important thing to remember>> with the <<<parallel>>> option is: the
   concurrency happens within the same JVM process. That is efficient in terms of
