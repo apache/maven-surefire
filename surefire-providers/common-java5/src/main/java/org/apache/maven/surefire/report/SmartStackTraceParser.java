@@ -64,7 +64,8 @@ public class SmartStackTraceParser
     {
         try
         {
-            return Thread.currentThread().getContextClassLoader().loadClass( name );
+            ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+            return classLoader != null ? classLoader.loadClass( name ) : null;
         }
         catch ( ClassNotFoundException e )
         {
