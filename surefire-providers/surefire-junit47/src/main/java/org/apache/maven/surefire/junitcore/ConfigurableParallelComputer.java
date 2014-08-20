@@ -89,7 +89,10 @@ public class ConfigurableParallelComputer
         fService.shutdown();
         try
         {
-            fService.awaitTermination( 10, java.util.concurrent.TimeUnit.SECONDS );
+            if ( !fService.awaitTermination( 10, java.util.concurrent.TimeUnit.SECONDS ) )
+            {
+                throw new RuntimeException( "Executor did not shut down within timeout" );
+            }
         }
         catch ( InterruptedException e )
         {
