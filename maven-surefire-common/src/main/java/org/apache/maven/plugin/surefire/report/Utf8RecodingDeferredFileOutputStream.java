@@ -37,6 +37,8 @@ class Utf8RecodingDeferredFileOutputStream
 {
     private DeferredFileOutputStream deferredFileOutputStream;
 
+    private boolean closed = false;
+
     private static final Charset UTF8 = Charset.forName( "UTF-8" );
 
     public Utf8RecodingDeferredFileOutputStream( String channel )
@@ -44,9 +46,14 @@ class Utf8RecodingDeferredFileOutputStream
         this.deferredFileOutputStream = new DeferredFileOutputStream( 1000000, channel, "deferred", null );
     }
 
-    public void write( byte[] buf, int off, int len )
+    public synchronized void write( byte[] buf, int off, int len )
         throws IOException
     {
+        if ( closed )
+        {
+            return;
+        }
+
         if ( !Charset.defaultCharset().equals( UTF8 ) )
         {
             CharBuffer decodedFromDefaultCharset = Charset.defaultCharset().decode( ByteBuffer.wrap( buf, off, len ) );
@@ -77,24 +84,29 @@ class Utf8RecodingDeferredFileOutputStream
         return deferredFileOutputStream.getByteCount();
     }
 
-    public void close()
+    public synchronized void close()
         throws IOException
     {
+        closed = true;
         deferredFileOutputStream.close();
     }
 
-    public void writeTo( OutputStream out )
+    public synchronized void writeTo( OutputStream out )
         throws IOException
     {
-        deferredFileOutputStream.writeTo( out );
+        if ( closed )
+        {
+            deferredFileOutputStream.writeTo( out );
+        }
     }
 
-    public void free()
+    public synchronized void free()
     {
         if ( null != deferredFileOutputStream && null != deferredFileOutputStream.getFile() )
         {
             try
             {
+                closed = true;
                 deferredFileOutputStream.close();
                 if ( !deferredFileOutputStream.getFile().delete() )
                 {
