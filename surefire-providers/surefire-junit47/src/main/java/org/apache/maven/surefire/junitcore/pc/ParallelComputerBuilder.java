@@ -32,12 +32,15 @@ import org.junit.runners.Suite;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 
+import javax.annotation.concurrent.NotThreadSafe;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -225,7 +228,7 @@ public final class ParallelComputerBuilder
 
         final Collection<ParentRunner> nestedClasses = new LinkedHashSet<ParentRunner>();
 
-        final Collection<Runner> unscheduledRunners = new LinkedHashSet<Runner>();
+        final Collection<Runner> notParallelRunners = new LinkedHashSet<Runner>();
 
         int poolCapacity;
 
@@ -298,7 +301,7 @@ public final class ParallelComputerBuilder
             }
             else
             {
-                unscheduledRunners.add( runner );
+                notParallelRunners.add( runner );
             }
             return runner;
         }
@@ -336,9 +339,7 @@ public final class ParallelComputerBuilder
                 }
             }
 
-            Suite wrapper = runs.isEmpty() ? null : new Suite( null, runs )
-            {
-            };
+            Suite wrapper = runs.isEmpty() ? null : createSuite( runs );
             return new WrappedRunners( wrapper, childrenCounter );
         }
 
@@ -358,7 +359,7 @@ public final class ParallelComputerBuilder
 
         private Scheduler createMaster( ExecutorService pool, int poolSize )
         {
-            if ( !areSuitesAndClassesParallel() || poolSize <= 1 )
+            if ( !(areSuitesAndClassesParallel() || !notParallelRunners.isEmpty() ) || poolSize <= 1 )
             {
                 return new Scheduler( null, new InvokerStrategy() );
             }
@@ -368,7 +369,7 @@ public final class ParallelComputerBuilder
             }
             else
             {
-                return new Scheduler( null, SchedulingStrategies.createParallelStrategy( 2 ) );
+                return new Scheduler( null, SchedulingStrategies.createParallelStrategy( 3 ) );
             }
         }
 
@@ -463,24 +464,17 @@ public final class ParallelComputerBuilder
             }
 
             // resulting runner for Computer#getSuite() scheduled by master scheduler
-            ParentRunner all = createFinalRunner( suiteSuites, suiteClasses );
+            ParentRunner all = createFinalRunner( removeNullRunners(
+                Arrays.<Runner>asList( suiteSuites, suiteClasses, createSuite( notParallelRunners ) )
+            ) );
             all.setScheduler( master );
             return all;
         }
 
-        private ParentRunner createFinalRunner( Runner... runners )
+        private ParentRunner createFinalRunner( List<Runner> runners )
             throws InitializationError
         {
-            ArrayList<Runner> all = new ArrayList<Runner>( unscheduledRunners );
-            for ( Runner runner : runners )
-            {
-                if ( runner != null )
-                {
-                    all.add( runner );
-                }
-            }
-
-            return new Suite( null, all )
+            return new Suite( null, runners )
             {
                 @Override
                 public void run( RunNotifier notifier )
@@ -556,7 +550,12 @@ public final class ParallelComputerBuilder
 
         private boolean canSchedule( Runner runner )
         {
-            return !( runner instanceof ErrorReportingRunner ) && runner instanceof ParentRunner;
+            return isThreadSafe( runner ) && !( runner instanceof ErrorReportingRunner ) && runner instanceof ParentRunner;
+        }
+
+        private boolean isThreadSafe( Runner runner )
+        {
+            return runner.getDescription().getAnnotation( NotThreadSafe.class ) == null;
         }
 
         private class SuiteFilter
@@ -593,5 +592,20 @@ public final class ParallelComputerBuilder
                 return "";
             }
         }
+    }
+
+    private static Suite createSuite( Collection<Runner> runners )
+        throws InitializationError
+    {
+        return new Suite( null, removeNullRunners( runners ) )
+        {
+        };
+    }
+
+    private static List<Runner> removeNullRunners( Collection<Runner> runners )
+    {
+        List<Runner> onlyRunners = new ArrayList<Runner>( runners );
+        onlyRunners.removeAll( Collections.singleton( null ) );
+        return onlyRunners;
     }
 }
