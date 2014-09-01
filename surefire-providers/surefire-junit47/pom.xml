@@ -33,6 +33,11 @@
 
   <dependencies>
     <dependency>
+      <groupId>com.github.stephenc.jcip</groupId>
+      <artifactId>jcip-annotations</artifactId>
+      <version>1.0-1</version>
+    </dependency>
+    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>4.8.1</version>
@@ -74,6 +79,7 @@
         <configuration>
           <jvm>${java.home}/bin/java</jvm>
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
+          <argLine>-server -Xmx128m -XX:+UseParallelGC -XX:+UseNUMA -XX:MaxGCPauseMillis=50</argLine>
         </configuration>
       </plugin>
       <plugin>

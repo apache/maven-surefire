@@ -93,7 +93,7 @@ Fork Options and Parallel Test Execution
   
   The surefire is always trying to reuse threads, optimize the thread-counts,
   and prefers thread fairness.
-  
+
   <<The important thing to remember>> with the <<<parallel>>> option is: the
   concurrency happens within the same JVM process. That is efficient in terms of
   memory and execution time, but you may be more vulnerable towards race
@@ -102,6 +102,25 @@ Fork Options and Parallel Test Execution
   The other possibility for parallel test execution is setting the parameter 
   <<<forkCount>>> to a value higher than 1. The next section covers the details 
   about this and the related <<<reuseForks>>> property.
+
+  * Parallel Test Execution and Single Thread Execution
+
+  As mentioned above the <<<parallel>>> test execution is used with specific
+  thread count. Since of Surefire 2.18, you can apply the JCIP annotation
+  <<<@net.jcip.annotations.NotThreadSafe>>> on the Java class of JUnit test
+  (test class, Suite, Parameterized, etc.) in order to execute it in single
+  Thread instance. The Thread has name "maven-surefire-plugin@NotThreadSafe".
+  Just use the dependency net.jcip:jcip-annotations:1.0, or another Artifact
+  with Apache License com.github.stephenc.jcip:jcip-annotations:1.0-1. This
+  way parallel execution of tests classes annotated with <<<@NotThreadSafe>>>
+  are forked in single thread instance (don't mean forked JVM process).
+  If the Suite or Parameterized is annotated with @NotThreadSafe, the
+  suite classes are executed in single thread.
+  You can also annotate test class referenced by Suite, and the other
+  unannotated test classes in the Suite can be subject to run in parallel.
+  Note: As designed by JUnit runners, the static methods annotated with
+  @BeforeClass and @AfterClass are called in parent thread. Assign classes
+  to the @NotThreadSafe Suite to prevent from this trouble.
 
 * Parallel Surefire Execution in Multi-Module Maven Parallel Build
 
@@ -113,7 +132,7 @@ Fork Options and Parallel Test Execution
 
   The parameter <<<forkCount>>> defines the maximum number of JVM processes
   that Surefire will spawn <concurrently> to execute the tests. It supports the
-  same syntax as <<<-T>>> in maven-core: if you termniate the value with a 'C',
+  same syntax as <<<-T>>> in maven-core: if you terminate the value with a 'C',
   that value will be multiplied with the number of available CPU cores in your
   system. For example <<<forkCount=2.5C>>> on a Quad-Core system will result
   in forking up to ten concurrent JVM processes that execute tests.

@@ -23,6 +23,7 @@ import org.apache.maven.surefire.junitcore.JUnitCoreParameters;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.theories.DataPoint;
@@ -74,6 +75,12 @@ public final class ParallelComputerUtilTest
     public static void afterClass()
     {
         ParallelComputerUtil.setDefaultAvailableProcessors();
+    }
+
+    @Before
+    public void beforeTest()
+    {
+        assertFalse( Thread.currentThread().isInterrupted() );
     }
 
     private static Properties parallel( String parallel )
@@ -989,9 +996,10 @@ public final class ParallelComputerUtilTest
         long deltaTime = 500L;
 
         assertEquals( 2500L, timeSpent, deltaTime );
-        assertTrue( pc.describeElapsedTimeout().contains(
-            "The test run has finished abruptly after timeout of 2.5 seconds." ) );
-        assertTrue( pc.describeElapsedTimeout().contains( TestClass.class.getName() ) );
+        String description = pc.describeElapsedTimeout();
+        assertTrue( description.contains( "The test run has finished abruptly after timeout of 2.5 seconds.") );
+        assertTrue( description.contains( "These tests were executed in prior to the shutdown operation:\n"
+                + TestClass.class.getName() ) );
     }
 
     @Test
@@ -1011,9 +1019,34 @@ public final class ParallelComputerUtilTest
         long deltaTime = 500L;
 
         assertEquals( 2500L, timeSpent, deltaTime );
-        assertTrue( pc.describeElapsedTimeout().contains(
-            "The test run has finished abruptly after timeout of 2.5 seconds." ) );
-        assertTrue( pc.describeElapsedTimeout().contains( TestClass.class.getName() ) );
+        String description = pc.describeElapsedTimeout();
+        assertTrue( description.contains( "The test run has finished abruptly after timeout of 2.5 seconds.") );
+        assertTrue( description.contains( "These tests were executed in prior to the shutdown operation:\n"
+                + TestClass.class.getName() ) );
+    }
+
+    @Test
+    public void timeoutAndForcedShutdown()
+        throws TestSetFailedException, ExecutionException, InterruptedException
+    {
+        // The JUnitCore returns after 2.5s and the test-methods in TestClass are interrupted after 3.5s.
+        Properties properties = new Properties();
+        properties.setProperty( PARALLEL_KEY, "methods" );
+        properties.setProperty( THREADCOUNTMETHODS_KEY, "2" );
+        properties.setProperty( PARALLEL_TIMEOUT_KEY, Double.toString( 2.5d ) );
+        properties.setProperty( PARALLEL_TIMEOUTFORCED_KEY, Double.toString( 3.5d ) );
+        JUnitCoreParameters params = new JUnitCoreParameters( properties );
+        ParallelComputerBuilder pcBuilder = new ParallelComputerBuilder( params );
+        ParallelComputer pc = pcBuilder.buildComputer();
+        new JUnitCore().run( pc, TestClass.class );
+        long timeSpent = runtime.stop();
+        long deltaTime = 500L;
+
+        assertEquals( 2500L, timeSpent, deltaTime );
+        String description = pc.describeElapsedTimeout();
+        assertTrue( description.contains( "The test run has finished abruptly after timeout of 2.5 seconds.") );
+        assertTrue( description.contains( "These tests were executed in prior to the shutdown operation:\n"
+                                              + TestClass.class.getName() ) );
     }
 
     public static class TestClass
@@ -1023,7 +1056,8 @@ public final class ParallelComputerUtilTest
             throws InterruptedException
         {
             long t1 = System.currentTimeMillis();
-            try{
+            try
+            {
                 Thread.sleep( 5000L );
             }
             finally
@@ -1037,7 +1071,8 @@ public final class ParallelComputerUtilTest
             throws InterruptedException
         {
             long t1 = System.currentTimeMillis();
-            try{
+            try
+            {
                 Thread.sleep( 5000L );
             }
             finally
@@ -1051,7 +1086,8 @@ public final class ParallelComputerUtilTest
             throws InterruptedException
         {
             long t1 = System.currentTimeMillis();
-            try{
+            try
+            {
                 Thread.sleep( 5000L );
             }
             finally

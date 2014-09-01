@@ -22,9 +22,9 @@ package org.apache.maven.surefire.junitcore.pc;
 import org.junit.runner.Description;
 import org.junit.runners.model.RunnerScheduler;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.RejectedExecutionHandler;
@@ -190,12 +190,12 @@ public class Scheduler
 
     protected void logQuietly( Throwable t )
     {
-        t.printStackTrace( System.err );
+        t.printStackTrace( System.out );
     }
 
     protected void logQuietly( String msg )
     {
-        System.err.println( msg );
+        System.out.println( msg );
     }
 
     /**
@@ -211,7 +211,7 @@ public class Scheduler
     public Collection<Description> shutdown( boolean shutdownNow )
     {
         shutdown = true;
-        ArrayList<Description> activeChildren = new ArrayList<Description>();
+        Collection<Description> activeChildren = new ConcurrentLinkedQueue<Description>();
 
         if ( started && description != null )
         {
