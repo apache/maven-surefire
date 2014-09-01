@@ -19,33 +19,17 @@ package org.apache.maven.surefire.junitcore.pc;
  * under the License.
  */
 
-import org.junit.runners.ParentRunner;
-
 /**
- * We need to wrap runners in a suite and count children of these runners.
- * <p/>
- * Old JUnit versions do not cache children after the first call of
- * {@link org.junit.runners.ParentRunner#getChildren()}.
- * Due to performance reasons, the children have to be observed just once.
+ * Status of {@link ParallelComputer ParallelComputer runtime}.<p/>
+ * Used together with shutdown hook.
  *
- * @author tibor17 (Tibor Digana)
- * @see ParallelComputerBuilder
- * @since 2.17
+ * @author <a href="mailto:tibor.digana@gmail.com">Tibor Digana (tibor17)</a>
+ * @see ParallelComputer
+ * @since 2.18
  */
-final class WrappedRunners
+enum ExecutionStatus
 {
-    final ParentRunner wrappingSuite;
-
-    final long embeddedChildrenCount;
-
-    WrappedRunners( ParentRunner wrappingSuite, long embeddedChildrenCount )
-    {
-        this.wrappingSuite = wrappingSuite;
-        this.embeddedChildrenCount = embeddedChildrenCount;
-    }
-
-    WrappedRunners()
-    {
-        this( null, 0 );
-    }
+    STARTED,
+    FINISHED,
+    TIMEOUT
 }

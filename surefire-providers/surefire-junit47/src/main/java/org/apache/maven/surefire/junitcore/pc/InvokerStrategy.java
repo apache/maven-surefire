@@ -19,6 +19,8 @@ package org.apache.maven.surefire.junitcore.pc;
  * under the License.
  */
 
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -33,12 +35,23 @@ final class InvokerStrategy
 {
     private final AtomicBoolean canSchedule = new AtomicBoolean( true );
 
+    private final Queue<Thread> activeThreads = new ConcurrentLinkedQueue<Thread>();
+
     @Override
     public void schedule( Runnable task )
     {
         if ( canSchedule() )
         {
-            task.run();
+            final Thread currentThread = Thread.currentThread();
+            try
+            {
+                activeThreads.add( currentThread );
+                task.run();
+            }
+            finally
+            {
+                activeThreads.remove( currentThread );
+            }
         }
     }
 
@@ -46,6 +59,17 @@ final class InvokerStrategy
     protected boolean stop()
     {
         return canSchedule.getAndSet( false );
+    }
+
+    @Override
+    protected boolean stopNow()
+    {
+        final boolean stopped = stop();
+        for ( Thread activeThread; ( activeThread = activeThreads.poll() ) != null; )
+        {
+            activeThread.interrupt();
+        }
+        return stopped;
     }
 
     @Override

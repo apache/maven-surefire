@@ -24,14 +24,14 @@ import org.junit.runner.Computer;
 import org.junit.runner.Description;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 
-import static java.util.concurrent.TimeUnit.*;
+import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 /**
  * ParallelComputer extends JUnit {@link Computer} and has a shutdown functionality.
@@ -43,17 +43,17 @@ import static java.util.concurrent.TimeUnit.*;
 public abstract class ParallelComputer
     extends Computer
 {
+    private final ShutdownStatus shutdownStatus = new ShutdownStatus();
+
+    private final ShutdownStatus forcedShutdownStatus = new ShutdownStatus();
+
     private final long timeoutNanos;
 
     private final long timeoutForcedNanos;
 
     private ScheduledExecutorService shutdownScheduler;
 
-    private Future<Collection<Description>> testsBeforeShutdown;
-
-    private Future<Collection<Description>> testsBeforeForcedShutdown;
-
-    public ParallelComputer( double timeoutInSeconds, double timeoutForcedInSeconds  )
+    public ParallelComputer( double timeoutInSeconds, double timeoutForcedInSeconds )
     {
         this.timeoutNanos = secondsToNanos( timeoutInSeconds );
         this.timeoutForcedNanos = secondsToNanos( timeoutForcedInSeconds );
@@ -81,71 +81,96 @@ public abstract class ParallelComputer
         }
     }
 
-    private static Collection<String> printShutdownHook( Future<Collection<Description>> future )
-        throws TestSetFailedException
+    private static void printShutdownHook( Collection<String> executedTests,
+                                           Future<Collection<Description>> testsBeforeShutdown )
+        throws ExecutionException, InterruptedException
     {
-        if ( !future.isCancelled() && future.isDone() )
+        if ( testsBeforeShutdown != null )
         {
-            try
+            for ( final Description executedTest : testsBeforeShutdown.get() )
             {
-                TreeSet<String> executedTests = new TreeSet<String>();
-                for ( Description executedTest : future.get() )
+                if ( executedTest != null && executedTest.getDisplayName() != null )
                 {
-                    if ( executedTest != null && executedTest.getDisplayName() != null )
-                    {
-                        executedTests.add( executedTest.getDisplayName() );
-                    }
+                    executedTests.add( executedTest.getDisplayName() );
                 }
-                return executedTests;
-            }
-            catch ( Exception e )
-            {
-                throw new TestSetFailedException( e );
             }
         }
-        return Collections.emptySet();
     }
 
     public abstract Collection<Description> shutdown( boolean shutdownNow );
 
     protected final void beforeRunQuietly()
     {
-        testsBeforeShutdown = timeoutNanos > 0 ? scheduleShutdown() : null;
-        testsBeforeForcedShutdown = timeoutForcedNanos > 0 ? scheduleForcedShutdown() : null;
+        shutdownStatus.setDescriptionsBeforeShutdown( hasTimeout() ? scheduleShutdown() : null );
+        forcedShutdownStatus.setDescriptionsBeforeShutdown( hasTimeoutForced() ? scheduleForcedShutdown() : null );
     }
 
-    protected final void afterRunQuietly()
+    protected final boolean afterRunQuietly()
     {
+        shutdownStatus.tryFinish();
+        forcedShutdownStatus.tryFinish();
         if ( shutdownScheduler != null )
         {
             shutdownScheduler.shutdownNow();
+            /**
+             * Clear <i>interrupted status</i> of the (main) Thread.
+             * Could be previously interrupted by {@link InvokerStrategy} after triggering immediate shutdown.
+             */
+            Thread.interrupted();
+            try
+            {
+                shutdownScheduler.awaitTermination( Long.MAX_VALUE, NANOSECONDS );
+            }
+            catch ( InterruptedException e )
+            {
+                return false;
+            }
         }
+        return true;
     }
 
     public String describeElapsedTimeout()
         throws TestSetFailedException
     {
-        TreeSet<String> executedTests = new TreeSet<String>();
-        if ( testsBeforeShutdown != null )
-        {
-            executedTests.addAll( printShutdownHook( testsBeforeShutdown ) );
-        }
-
-        if ( testsBeforeForcedShutdown != null )
-        {
-            executedTests.addAll( printShutdownHook( testsBeforeForcedShutdown ) );
-        }
-
-        StringBuilder msg = new StringBuilder();
-        if ( !executedTests.isEmpty() )
+        final StringBuilder msg = new StringBuilder();
+        final boolean isShutdownTimeout = shutdownStatus.isTimeoutElapsed();
+        final boolean isForcedShutdownTimeout = forcedShutdownStatus.isTimeoutElapsed();
+        if ( isShutdownTimeout || isForcedShutdownTimeout )
         {
             msg.append( "The test run has finished abruptly after timeout of " );
             msg.append( nanosToSeconds( minTimeout( timeoutNanos, timeoutForcedNanos ) ) );
             msg.append( " seconds.\n" );
-            msg.append( "These tests were executed in prior of the shutdown operation:\n" );
-            for ( String executedTest : executedTests )
+
+            try
             {
-                msg.append( executedTest ).append( '\n' );
+                final TreeSet<String> executedTests = new TreeSet<String>();
+
+                if ( isShutdownTimeout )
+                {
+                    printShutdownHook( executedTests, shutdownStatus.getDescriptionsBeforeShutdown() );
+                }
+
+                if ( isForcedShutdownTimeout )
+                {
+                    printShutdownHook( executedTests, forcedShutdownStatus.getDescriptionsBeforeShutdown() );
+                }
+
+                if ( !executedTests.isEmpty() )
+                {
+                    msg.append( "These tests were executed in prior to the shutdown operation:\n" );
+                    for ( String executedTest : executedTests )
+                    {
+                        msg.append( executedTest ).append( '\n' );
+                    }
+                }
+            }
+            catch ( InterruptedException e )
+            {
+                throw new TestSetFailedException( "Timed termination was interrupted.", e );
+            }
+            catch ( ExecutionException e )
+            {
+                throw new TestSetFailedException( e.getLocalizedMessage(), e.getCause() );
             }
         }
         return msg.toString();
@@ -153,12 +178,12 @@ public abstract class ParallelComputer
 
     private Future<Collection<Description>> scheduleShutdown()
     {
-        return getShutdownScheduler().schedule( createShutdownTask( false ), timeoutNanos, NANOSECONDS );
+        return getShutdownScheduler().schedule( createShutdownTask(), timeoutNanos, NANOSECONDS );
     }
 
     private Future<Collection<Description>> scheduleForcedShutdown()
     {
-        return getShutdownScheduler().schedule( createShutdownTask( true ), timeoutForcedNanos, NANOSECONDS );
+        return getShutdownScheduler().schedule( createForcedShutdownTask(), timeoutForcedNanos, NANOSECONDS );
     }
 
     private ScheduledExecutorService getShutdownScheduler()
@@ -170,14 +195,28 @@ public abstract class ParallelComputer
         return shutdownScheduler;
     }
 
-    private Callable<Collection<Description>> createShutdownTask( final boolean isForced )
+    private Callable<Collection<Description>> createShutdownTask()
     {
         return new Callable<Collection<Description>>()
         {
             public Collection<Description> call()
                 throws Exception
             {
-                return ParallelComputer.this.shutdown( isForced );
+                boolean stampedStatusWithTimeout = ParallelComputer.this.shutdownStatus.tryTimeout();
+                return stampedStatusWithTimeout ? ParallelComputer.this.shutdown( false ) : null;
+            }
+        };
+    }
+
+    private Callable<Collection<Description>> createForcedShutdownTask()
+    {
+        return new Callable<Collection<Description>>()
+        {
+            public Collection<Description> call()
+                throws Exception
+            {
+                boolean stampedStatusWithTimeout = ParallelComputer.this.forcedShutdownStatus.tryTimeout();
+                return stampedStatusWithTimeout ? ParallelComputer.this.shutdown( true ) : null;
             }
         };
     }
@@ -185,5 +224,15 @@ public abstract class ParallelComputer
     private double nanosToSeconds( long nanos )
     {
         return (double) nanos / 1E9;
+    }
+
+    private boolean hasTimeout()
+    {
+        return timeoutNanos > 0;
+    }
+
+    private boolean hasTimeoutForced()
+    {
+        return timeoutForcedNanos > 0;
     }
 }
