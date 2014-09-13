@@ -128,7 +128,7 @@ public class FilterFactory
         {
             for ( Description o : description.getChildren() )
             {
-                if ( isDescriptionMatch( o ) )
+                if ( isDescriptionMatch( o ) || shouldRun( o ) )
                 {
                     return true;
                 }
