@@ -1908,7 +1908,6 @@ public abstract class AbstractSurefireMojo
         checksum.add( getSystemProperties() );
         checksum.add( getSystemPropertyVariables() );
         checksum.add( getSystemPropertiesFile() );
-        checksum.add( getProperties() );
         checksum.add( isPrintSummary() );
         checksum.add( getReportFormat() );
         checksum.add( getReportNameSuffix() );
