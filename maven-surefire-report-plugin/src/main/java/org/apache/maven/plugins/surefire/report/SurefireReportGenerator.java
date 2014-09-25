@@ -666,19 +666,24 @@ public class SurefireReportGenerator
     {
         StringTokenizer tokenizer = new StringTokenizer( source );
 
-        String lineNo = "";
-
         while ( tokenizer.hasMoreTokens() )
         {
             String token = tokenizer.nextToken();
             if ( token.startsWith( className ) )
             {
                 int idx = token.indexOf( ":" );
-                lineNo = token.substring( idx + 1, token.indexOf( ")" ) );
-                break;
+                if ( idx >= 0 )
+                {
+                    int closeIdx = token.lastIndexOf( ")" );
+
+                    if ( closeIdx > idx + 1 )
+                    {
+                        return token.substring( idx + 1, closeIdx );
+                    }
+                }
             }
         }
-        return lineNo;
+        return "";
     }
 
     private void constructHotLinks( Sink sink, ResourceBundle bundle )
