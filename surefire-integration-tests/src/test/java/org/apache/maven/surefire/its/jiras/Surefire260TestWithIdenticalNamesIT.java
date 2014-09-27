@@ -59,8 +59,8 @@ public class Surefire260TestWithIdenticalNamesIT
         final HtmlPage page = webClient.getPage( uri.toURL() );
 
         final HtmlAnchor a =
-            (HtmlAnchor) page.getByXPath( "//a[contains(@href, 'surefire260_TestB_testDup')]" ).get( 0 );
-        final HtmlDivision content = (HtmlDivision) page.getElementById( "surefire260_TestB_testDuperror" );
+            (HtmlAnchor) page.getByXPath( "//a[@href = \"javascript:toggleDisplay('surefire260.TestB.testDup');\"]" ).get( 0 );
+        final HtmlDivision content = (HtmlDivision) page.getElementById( "surefire260.TestB.testDuperror" );
         assertTrue( content.getAttribute( "style" ).contains( "none" ) );
         a.click();
         assertFalse( content.getAttribute( "style" ).contains( "none" ) );
