@@ -111,6 +111,6 @@ mvn -Dtest=TestCircle#testOne+testTwo test
 +---+
 #{else}
 +---+
-mvn -Dit.test=ITCircle#test* verify
+mvn -Dit.test=ITCircle#testOne+testTwo verify
 +---+
 #{end}
