@@ -57,17 +57,31 @@ public class PojoStackTraceWriter
 
     public String smartTrimmedStackTrace()
     {
+        if ( t == null )
+        {
+            return "";
+        }
+
         SmartStackTraceParser parser = new SmartStackTraceParser( testClass, t, testMethod );
         return parser.getString();
     }
 
     public String writeTrimmedTraceToString()
     {
+        if ( t == null )
+        {
+            return "";
+        }
+
         return SmartStackTraceParser.innerMostWithFocusOnClass( t, testClass );
     }
 
     public SafeThrowable getThrowable()
     {
+        if ( t == null ) {
+            return null;
+        }
+
         return new SafeThrowable( t );
     }
 }
