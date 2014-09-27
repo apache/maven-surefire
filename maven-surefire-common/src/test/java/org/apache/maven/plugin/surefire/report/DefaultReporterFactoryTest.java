@@ -179,25 +179,21 @@ public class DefaultReporterFactoryTest
             this.stackTrace = stackTrace;
         }
 
-        @Override
         public String writeTraceToString()
         {
             return "";
         }
 
-        @Override
         public String writeTrimmedTraceToString()
         {
             return "";
         }
 
-        @Override
         public String smartTrimmedStackTrace()
         {
             return stackTrace;
         }
 
-        @Override
         public SafeThrowable getThrowable()
         {
             return null;
