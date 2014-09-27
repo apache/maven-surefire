@@ -64,6 +64,7 @@ import org.apache.maven.surefire.booter.SystemPropertyManager;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
 import org.apache.maven.surefire.report.StackTraceWriter;
 import org.apache.maven.surefire.suite.RunResult;
+import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.util.DefaultScanResult;
 
 import static org.apache.maven.surefire.booter.Classpath.join;
@@ -185,7 +186,14 @@ public class ForkStarter
 
     private boolean isForkOnce()
     {
-        return forkConfiguration.isReuseForks() && 1 == forkConfiguration.getForkCount();
+        return forkConfiguration.isReuseForks() && ( 1 == forkConfiguration.getForkCount() || hasSuiteXmlFiles() );
+    }
+
+    private boolean hasSuiteXmlFiles()
+    {
+        TestRequest testSuiteDefinition = providerConfiguration.getTestSuiteDefinition();
+        return testSuiteDefinition != null && testSuiteDefinition.getSuiteXmlFiles() != null
+            && !testSuiteDefinition.getSuiteXmlFiles().isEmpty();
     }
 
     private RunResult runSuitesForkOnceMultiple( final SurefireProperties effectiveSystemProperties, int forkCount )

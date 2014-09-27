@@ -71,7 +71,8 @@
         <version>${surefire.version}</version>
         <configuration>
           <suiteXmlFiles>
-            <file>src/test-data/testng.xml</file>
+            <file>src/test-data/testng1.xml</file>
+            <file>src/test-data/testng2.xml</file>
           </suiteXmlFiles>
         </configuration>
       </plugin>
