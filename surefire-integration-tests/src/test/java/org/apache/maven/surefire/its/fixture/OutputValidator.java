@@ -22,6 +22,7 @@ package org.apache.maven.surefire.its.fixture;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.Collection;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
@@ -85,6 +86,12 @@ public class OutputValidator
         {
             throw new SurefireVerifierException( e );
         }
+    }
+
+    public Collection<String> loadLogLines()
+        throws VerificationException
+    {
+        return verifier.loadFile( verifier.getBasedir(), verifier.getLogFileName(), false );
     }
 
     public List<String> loadFile( File file, Charset charset )

@@ -651,8 +651,8 @@ public abstract class AbstractSurefireMojo
      * <p/>
      * Failed first will run tests that failed on previous run first, as well as new tests for this run.
      * <p/>
-     * Balanced is only relevant with parallel=classes, and will try to optimize the run-order of the tests to
-     * make all tests complete at the same time, reducing the overall execution time.
+     * Balanced is only relevant with parallel=classes, and will try to optimize the run-order of the tests reducing
+     * the overall execution time. Initially a statistics file is created and every next test run will reorder classes.
      * <p/>
      * Note that the statistics are stored in a file named .surefire-XXXXXXXXX beside pom.xml, and should not
      * be checked into version control. The "XXXXX" is the SHA1 checksum of the entire surefire configuration,
@@ -938,18 +938,17 @@ public abstract class AbstractSurefireMojo
     {
         SurefireProperties effectiveProperties = setupProperties();
         ClassLoaderConfiguration classLoaderConfiguration = getClassLoaderConfiguration( isForking() );
-
+        provider.addProviderProperties();
         RunOrderParameters runOrderParameters =
             new RunOrderParameters( getRunOrder(), getStatisticsFileName( getConfigChecksum() ) );
 
-        final RunResult result;
         if ( isNotForking() )
         {
             createCopyAndReplaceForkNumPlaceholder( effectiveProperties, 1 ).copyToSystemProperties();
 
             InPluginVMSurefireStarter surefireStarter =
                 createInprocessStarter( provider, classLoaderConfiguration, runOrderParameters );
-            result = surefireStarter.runSuitesInProcess( scanResult );
+            return surefireStarter.runSuitesInProcess( scanResult );
         }
         else
         {
@@ -965,7 +964,7 @@ public abstract class AbstractSurefireMojo
                 ForkStarter forkStarter =
                     createForkStarter( provider, forkConfiguration, classLoaderConfiguration, runOrderParameters,
                                        getLog() );
-                result = forkStarter.run( effectiveProperties, scanResult );
+                return forkStarter.run( effectiveProperties, scanResult );
             }
             finally
             {
@@ -973,7 +972,6 @@ public abstract class AbstractSurefireMojo
                 cleanupForkConfiguration( forkConfiguration );
             }
         }
-        return result;
     }
 
 
@@ -1434,7 +1432,6 @@ public abstract class AbstractSurefireMojo
 
         try
         {
-            provider.addProviderProperties();
             // cache the provider lookup
             String providerName = provider.getProviderName();
             Classpath providerClasspath = ClasspathCache.getCachedClassPath( providerName );
