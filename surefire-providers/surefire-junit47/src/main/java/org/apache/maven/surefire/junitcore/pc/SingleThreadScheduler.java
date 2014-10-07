@@ -22,7 +22,9 @@ package org.apache.maven.surefire.junitcore.pc;
 import org.junit.runner.Description;
 import org.junit.runners.model.RunnerScheduler;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
@@ -39,22 +41,12 @@ import java.util.concurrent.TimeUnit;
  */
 final class SingleThreadScheduler
 {
+    private static final Collection<Description> UNUSED_DESCRIPTIONS =
+        Arrays.asList( null, Description.TEST_MECHANISM, Description.EMPTY );
+
     private final ExecutorService pool = newPool();
 
     private final Scheduler master = new Scheduler( null, SchedulingStrategies.createParallelSharedStrategy( pool ) );
-
-    RunnerScheduler newRunnerScheduler()
-    {
-        return new Scheduler( null, master, SchedulingStrategies.createParallelSharedStrategy( pool ) );
-    }
-
-    /**
-     * @see Scheduler#shutdown(boolean)
-     */
-    Collection<Description> shutdown( boolean shutdownNow )
-    {
-        return master.shutdown( shutdownNow );
-    }
 
     private static ExecutorService newPool()
     {
@@ -65,6 +57,30 @@ final class SingleThreadScheduler
                 return new Thread( r, "maven-surefire-plugin@NotThreadSafe" );
             }
         };
-        return new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(), factory);
+        return new ThreadPoolExecutor( 1, 1, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(), factory );
+    }
+
+    RunnerScheduler newRunnerScheduler()
+    {
+        return new Scheduler( null, master, SchedulingStrategies.createParallelSharedStrategy( pool ) );
+    }
+
+    /**
+     * @see Scheduler#describeStopped(boolean)
+     */
+    Collection<Description> describeStopped( boolean shutdownNow )
+    {
+        Collection<Description> activeChildren =
+            new ConcurrentLinkedQueue<Description>( master.describeStopped( shutdownNow ) );
+        activeChildren.removeAll( UNUSED_DESCRIPTIONS );
+        return activeChildren;
+    }
+
+    /**
+     * @see Scheduler#shutdownThreadPoolsAwaitingKilled()
+     */
+    boolean shutdownThreadPoolsAwaitingKilled()
+    {
+        return master.shutdownThreadPoolsAwaitingKilled();
     }
 }

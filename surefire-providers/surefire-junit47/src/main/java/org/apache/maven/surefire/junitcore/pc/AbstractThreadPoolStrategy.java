@@ -23,7 +23,7 @@ import java.util.Collection;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Abstract parallel scheduling strategy in private package.
@@ -43,7 +43,7 @@ abstract class AbstractThreadPoolStrategy
 
     private final Collection<Future<?>> futureResults;
 
-    private final AtomicBoolean canSchedule = new AtomicBoolean( true );
+    private volatile boolean isDestroyed;
 
     AbstractThreadPoolStrategy( ExecutorService threadPool )
     {
@@ -66,11 +66,6 @@ abstract class AbstractThreadPoolStrategy
         return futureResults;
     }
 
-    protected final void disable()
-    {
-        canSchedule.set( false );
-    }
-
     @Override
     public void schedule( Runnable task )
     {
@@ -87,7 +82,7 @@ abstract class AbstractThreadPoolStrategy
     @Override
     protected boolean stop()
     {
-        boolean wasRunning = canSchedule.getAndSet( false );
+        boolean wasRunning = disable();
         if ( threadPool.isShutdown() )
         {
             wasRunning = false;
@@ -102,7 +97,7 @@ abstract class AbstractThreadPoolStrategy
     @Override
     protected boolean stopNow()
     {
-        boolean wasRunning = canSchedule.getAndSet( false );
+        boolean wasRunning = disable();
         if ( threadPool.isShutdown() )
         {
             wasRunning = false;
@@ -114,6 +109,9 @@ abstract class AbstractThreadPoolStrategy
         return wasRunning;
     }
 
+    /**
+     * @see Scheduler.ShutdownHandler
+     */
     @Override
     protected void setDefaultShutdownHandler( Scheduler.ShutdownHandler handler )
     {
@@ -125,9 +123,21 @@ abstract class AbstractThreadPoolStrategy
         }
     }
 
-    @Override
-    public final boolean canSchedule()
+    public boolean destroy()
     {
-        return canSchedule.get();
+        try
+        {
+            if ( !isDestroyed )//just an optimization
+            {
+                disable();
+                threadPool.shutdown();
+                this.isDestroyed |= threadPool.awaitTermination( Long.MAX_VALUE, TimeUnit.NANOSECONDS );
+            }
+            return isDestroyed;
+        }
+        catch ( InterruptedException e )
+        {
+            return false;
+        }
     }
 }

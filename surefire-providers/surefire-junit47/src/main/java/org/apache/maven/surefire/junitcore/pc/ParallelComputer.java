@@ -59,45 +59,8 @@ public abstract class ParallelComputer
         this.timeoutForcedNanos = secondsToNanos( timeoutForcedInSeconds );
     }
 
-    private static long secondsToNanos( double seconds )
-    {
-        double nanos = seconds > 0 ? seconds * 1E9 : 0;
-        return Double.isInfinite( nanos ) || nanos >= Long.MAX_VALUE ? 0 : (long) nanos;
-    }
-
-    private static long minTimeout( long timeout1, long timeout2 )
-    {
-        if ( timeout1 == 0 )
-        {
-            return timeout2;
-        }
-        else if ( timeout2 == 0 )
-        {
-            return timeout1;
-        }
-        else
-        {
-            return Math.min( timeout1, timeout2 );
-        }
-    }
-
-    private static void printShutdownHook( Collection<String> executedTests,
-                                           Future<Collection<Description>> testsBeforeShutdown )
-        throws ExecutionException, InterruptedException
-    {
-        if ( testsBeforeShutdown != null )
-        {
-            for ( final Description executedTest : testsBeforeShutdown.get() )
-            {
-                if ( executedTest != null && executedTest.getDisplayName() != null )
-                {
-                    executedTests.add( executedTest.getDisplayName() );
-                }
-            }
-        }
-    }
-
-    public abstract Collection<Description> shutdown( boolean shutdownNow );
+    protected abstract Collection<Description> describeStopped( boolean shutdownNow );
+    abstract boolean shutdownThreadPoolsAwaitingKilled();
 
     protected final void beforeRunQuietly()
     {
@@ -109,6 +72,7 @@ public abstract class ParallelComputer
     {
         shutdownStatus.tryFinish();
         forcedShutdownStatus.tryFinish();
+        boolean notInterrupted = true;
         if ( shutdownScheduler != null )
         {
             shutdownScheduler.shutdownNow();
@@ -123,10 +87,11 @@ public abstract class ParallelComputer
             }
             catch ( InterruptedException e )
             {
-                return false;
+                notInterrupted = false;
             }
         }
-        return true;
+        notInterrupted &= shutdownThreadPoolsAwaitingKilled();
+        return notInterrupted;
     }
 
     public String describeElapsedTimeout()
@@ -203,7 +168,7 @@ public abstract class ParallelComputer
                 throws Exception
             {
                 boolean stampedStatusWithTimeout = ParallelComputer.this.shutdownStatus.tryTimeout();
-                return stampedStatusWithTimeout ? ParallelComputer.this.shutdown( false ) : null;
+                return stampedStatusWithTimeout ? ParallelComputer.this.describeStopped( false ) : null;
             }
         };
     }
@@ -216,7 +181,7 @@ public abstract class ParallelComputer
                 throws Exception
             {
                 boolean stampedStatusWithTimeout = ParallelComputer.this.forcedShutdownStatus.tryTimeout();
-                return stampedStatusWithTimeout ? ParallelComputer.this.shutdown( true ) : null;
+                return stampedStatusWithTimeout ? ParallelComputer.this.describeStopped( true ) : null;
             }
         };
     }
@@ -234,5 +199,43 @@ public abstract class ParallelComputer
     private boolean hasTimeoutForced()
     {
         return timeoutForcedNanos > 0;
+    }
+
+    private static long secondsToNanos( double seconds )
+    {
+        double nanos = seconds > 0 ? seconds * 1E9 : 0;
+        return Double.isInfinite( nanos ) || nanos >= Long.MAX_VALUE ? 0 : (long) nanos;
+    }
+
+    private static long minTimeout( long timeout1, long timeout2 )
+    {
+        if ( timeout1 == 0 )
+        {
+            return timeout2;
+        }
+        else if ( timeout2 == 0 )
+        {
+            return timeout1;
+        }
+        else
+        {
+            return Math.min( timeout1, timeout2 );
+        }
+    }
+
+    private static void printShutdownHook( Collection<String> executedTests,
+                                           Future<Collection<Description>> testsBeforeShutdown )
+        throws ExecutionException, InterruptedException
+    {
+        if ( testsBeforeShutdown != null )
+        {
+            for ( final Description executedTest : testsBeforeShutdown.get() )
+            {
+                if ( executedTest != null && executedTest.getDisplayName() != null )
+                {
+                    executedTests.add( executedTest.getDisplayName() );
+                }
+            }
+        }
     }
 }

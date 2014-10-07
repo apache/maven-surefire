@@ -995,7 +995,7 @@ public final class ParallelComputerUtilTest
         long timeSpent = runtime.stop();
         long deltaTime = 500L;
 
-        assertEquals( 2500L, timeSpent, deltaTime );
+        assertEquals( 5000L, timeSpent, deltaTime );
         String description = pc.describeElapsedTimeout();
         assertTrue( description.contains( "The test run has finished abruptly after timeout of 2.5 seconds.") );
         assertTrue( description.contains( "These tests were executed in prior to the shutdown operation:\n"
@@ -1029,7 +1029,9 @@ public final class ParallelComputerUtilTest
     public void timeoutAndForcedShutdown()
         throws TestSetFailedException, ExecutionException, InterruptedException
     {
-        // The JUnitCore returns after 2.5s and the test-methods in TestClass are interrupted after 3.5s.
+        // The JUnitCore returns after 3.5s and the test-methods in TestClass are timed out after 2.5s.
+        // No new test methods are scheduled for execution after 2.5s.
+        // Interruption of test methods after 3.5s.
         Properties properties = new Properties();
         properties.setProperty( PARALLEL_KEY, "methods" );
         properties.setProperty( THREADCOUNTMETHODS_KEY, "2" );
@@ -1042,9 +1044,33 @@ public final class ParallelComputerUtilTest
         long timeSpent = runtime.stop();
         long deltaTime = 500L;
 
-        assertEquals( 2500L, timeSpent, deltaTime );
+        assertEquals( 3500L, timeSpent, deltaTime );
         String description = pc.describeElapsedTimeout();
         assertTrue( description.contains( "The test run has finished abruptly after timeout of 2.5 seconds.") );
+        assertTrue( description.contains( "These tests were executed in prior to the shutdown operation:\n"
+                                              + TestClass.class.getName() ) );
+    }
+
+    @Test
+    public void forcedTimeoutAndShutdown()
+        throws TestSetFailedException, ExecutionException, InterruptedException
+    {
+        // The JUnitCore returns after 3.5s and the test-methods in TestClass are interrupted after 3.5s.
+        Properties properties = new Properties();
+        properties.setProperty( PARALLEL_KEY, "methods" );
+        properties.setProperty( THREADCOUNTMETHODS_KEY, "2" );
+        properties.setProperty( PARALLEL_TIMEOUTFORCED_KEY, Double.toString( 3.5d ) );
+        properties.setProperty( PARALLEL_TIMEOUT_KEY, Double.toString( 4.0d ) );
+        JUnitCoreParameters params = new JUnitCoreParameters( properties );
+        ParallelComputerBuilder pcBuilder = new ParallelComputerBuilder( params );
+        ParallelComputer pc = pcBuilder.buildComputer();
+        new JUnitCore().run( pc, TestClass.class );
+        long timeSpent = runtime.stop();
+        long deltaTime = 500L;
+
+        assertEquals( 3500L, timeSpent, deltaTime );
+        String description = pc.describeElapsedTimeout();
+        assertTrue( description.contains( "The test run has finished abruptly after timeout of 3.5 seconds.") );
         assertTrue( description.contains( "These tests were executed in prior to the shutdown operation:\n"
                                               + TestClass.class.getName() ) );
     }

@@ -49,9 +49,15 @@ final class ThreadResourcesBalancer
      * @param numPermits number of permits to acquire when maintaining concurrency on tests.
      *                   Must be &gt;0 and &lt; {@link Integer#MAX_VALUE}.
      * @param fair       <tt>true</tt> guarantees the waiting schedulers to wake up in order they acquired a permit
+     * @throws IllegalArgumentException if <tt>numPermits</tt> is not positive number
      */
     ThreadResourcesBalancer( int numPermits, boolean fair )
     {
+        if ( numPermits <= 0 )
+        {
+            throw new IllegalArgumentException(
+                String.format( "numPermits=%d should be positive number", numPermits ) );
+        }
         balancer = new Semaphore( numPermits, fair );
         this.numPermits = numPermits;
     }
