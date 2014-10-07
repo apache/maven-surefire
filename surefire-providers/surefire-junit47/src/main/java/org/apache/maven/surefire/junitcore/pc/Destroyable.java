@@ -19,37 +19,20 @@ package org.apache.maven.surefire.junitcore.pc;
  * under the License.
  */
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
-
 /**
- * Parallel strategy for non-shared thread pool in private package.
+ * Destroys the embedded thread-pool.
  *
- * @author Tibor Digana (tibor17)
- * @see AbstractThreadPoolStrategy
- * @since 2.16
+ * @author <a href="mailto:tibor.digana@gmail.com">Tibor Digana (tibor17)</a>
+ * @see ParallelComputerBuilder
+ * @since 2.18
  */
-final class NonSharedThreadPoolStrategy
-    extends AbstractThreadPoolStrategy
+public interface Destroyable
 {
-    NonSharedThreadPoolStrategy( ExecutorService threadPool )
-    {
-        super( threadPool );
-    }
-
-    @Override
-    public boolean hasSharedThreadPool()
-    {
-        return false;
-    }
-
-    @Override
-    public boolean finished()
-        throws InterruptedException
-    {
-        boolean wasRunning = disable();
-        getThreadPool().shutdown();
-        getThreadPool().awaitTermination( Long.MAX_VALUE, TimeUnit.NANOSECONDS );
-        return wasRunning;
-    }
+    /**
+     * Calling {@link java.util.concurrent.ThreadPoolExecutor#shutdown()}
+     * and {@link java.util.concurrent.ThreadPoolExecutor#awaitTermination(long, java.util.concurrent.TimeUnit)}.
+     *
+     * @return {@code true} if not interrupted in current thread
+     */
+    boolean destroy();
 }

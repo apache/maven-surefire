@@ -22,6 +22,7 @@ package org.apache.maven.surefire.junitcore.pc;
 import org.junit.runners.model.RunnerScheduler;
 
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Specifies the strategy of scheduling whether sequential, or parallel.
@@ -36,7 +37,10 @@ import java.util.concurrent.RejectedExecutionException;
  * @since 2.16
  */
 public abstract class SchedulingStrategy
+    implements Destroyable
 {
+
+    private final AtomicBoolean canSchedule = new AtomicBoolean( true );
 
     /**
      * Schedules tasks if {@link #canSchedule()}.
@@ -92,6 +96,16 @@ public abstract class SchedulingStrategy
         return stop();
     }
 
+    /**
+     * Persistently disables this strategy. Atomically ignores {@link Balancer} to acquire a new permit.<p/>
+     * The method {@link #canSchedule()} atomically returns {@code false}.
+     * @return {@code true} if {@link #canSchedule()} has return {@code true} on the beginning of this method call.
+     */
+    protected boolean disable()
+    {
+        return canSchedule.getAndSet( false );
+    }
+
     protected void setDefaultShutdownHandler( Scheduler.ShutdownHandler handler )
     {
     }
@@ -103,7 +117,15 @@ public abstract class SchedulingStrategy
     protected abstract boolean hasSharedThreadPool();
 
     /**
-     * @return <tt>true</tt> unless stopped or finished.
+     * @return <tt>true</tt> unless stopped, finished or disabled.
      */
-    protected abstract boolean canSchedule();
+    protected boolean canSchedule()
+    {
+        return canSchedule.get();
+    }
+
+    protected void logQuietly( Throwable t )
+    {
+        t.printStackTrace( System.out );
+    }
 }

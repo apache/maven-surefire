@@ -22,6 +22,7 @@ package org.apache.maven.surefire.junitcore.pc;
 import org.junit.runner.Description;
 import org.junit.runners.model.RunnerScheduler;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -45,6 +46,9 @@ import java.util.concurrent.ThreadPoolExecutor;
 public class Scheduler
     implements RunnerScheduler
 {
+    private static final Collection<Description> UNUSED_DESCRIPTIONS =
+        Arrays.asList( null, Description.TEST_MECHANISM, Description.EMPTY );
+
     private final Balancer balancer;
 
     private final SchedulingStrategy strategy;
@@ -202,51 +206,93 @@ public class Scheduler
      * Attempts to stop all actively executing tasks and immediately returns a collection
      * of descriptions of those tasks which have started prior to this call.
      * <p/>
-     * This scheduler and other registered schedulers will shutdown, see {@link #register(Scheduler)}.
+     * This scheduler and other registered schedulers will stop, see {@link #register(Scheduler)}.
      * If <tt>shutdownNow</tt> is set, waiting methods will be interrupted via {@link Thread#interrupt}.
      *
-     * @param shutdownNow if <tt>true</tt> interrupts waiting methods
+     * @param stopNow if <tt>true</tt> interrupts waiting test methods
      * @return collection of descriptions started before shutting down
      */
-    public Collection<Description> shutdown( boolean shutdownNow )
+    protected Collection<Description> describeStopped( boolean stopNow )
+    {
+        Collection<Description> executedTests = new ConcurrentLinkedQueue<Description>();
+        stop( executedTests, false, stopNow );
+        return executedTests;
+    }
+
+    /**
+     * Stop/Shutdown/Interrupt scheduler and its children (if any).
+     *
+     * @param executedTests       Started tests which have finished normally or abruptly till called this method.
+     * @param tryCancelFutures    Useful to set to {@code false} if a timeout is specified in plugin config.
+     *                            When the runner of
+     *                            {@link ParallelComputer#getSuite(org.junit.runners.model.RunnerBuilder, Class[])}
+     *                            is finished in
+     *                            {@link org.junit.runners.Suite#run(org.junit.runner.notification.RunNotifier)}
+     *                            all the thread-pools created by {@link ParallelComputerBuilder.PC} are already dead.
+     *                            See the unit test <em>ParallelComputerBuilder#timeoutAndForcedShutdown()</em>.
+     * @param stopNow             Interrupting tests by {@link java.util.concurrent.ExecutorService#shutdownNow()} or
+     *                            {@link java.util.concurrent.Future#cancel(boolean) Future#cancel(true)} or
+     *                            {@link Thread#interrupt()}.
+     */
+    private void stop( Collection<Description> executedTests, boolean tryCancelFutures, boolean stopNow )
     {
         shutdown = true;
-        Collection<Description> activeChildren = new ConcurrentLinkedQueue<Description>();
-
-        if ( started && description != null )
-        {
-            activeChildren.add( description );
-        }
-
-        for ( Controller slave : slaves )
-        {
-            try
-            {
-                activeChildren.addAll( slave.shutdown( shutdownNow ) );
-            }
-            catch ( Throwable t )
-            {
-                logQuietly( t );
-            }
-        }
-
         try
         {
-            balancer.releaseAllPermits();
+            if ( executedTests != null && started && !UNUSED_DESCRIPTIONS.contains( description ) )
+            {
+                executedTests.add( description );
+            }
+
+            for ( Controller slave : slaves )
+            {
+                slave.stop( executedTests, tryCancelFutures, stopNow );
+            }
         }
         finally
         {
-            if ( shutdownNow )
+            try
             {
-                strategy.stopNow();
+                balancer.releaseAllPermits();
             }
-            else
+            finally
             {
-                strategy.stop();
+                if ( stopNow )
+                {
+                    strategy.stopNow();
+                }
+                else if ( tryCancelFutures )
+                {
+                    strategy.stop();
+                }
+                else
+                {
+                    strategy.disable();
+                }
             }
         }
+    }
 
-        return activeChildren;
+    protected boolean shutdownThreadPoolsAwaitingKilled()
+    {
+        if ( masterController == null )
+        {
+            stop( null, true, false );
+            boolean isNotInterrupted = true;
+            if ( strategy != null )
+            {
+                isNotInterrupted = strategy.destroy();
+            }
+            for ( Controller slave : slaves )
+            {
+                isNotInterrupted &= slave.destroy();
+            }
+            return isNotInterrupted;
+        }
+        else
+        {
+            throw new UnsupportedOperationException( "cannot call this method if this is not a master scheduler" );
+        }
     }
 
     protected void beforeExecute()
@@ -277,7 +323,7 @@ public class Scheduler
             }
             catch ( RejectedExecutionException e )
             {
-                shutdown( false );
+                stop( null, true, false );
             }
             catch ( Throwable t )
             {
@@ -296,13 +342,6 @@ public class Scheduler
         catch ( InterruptedException e )
         {
             logQuietly( e );
-        }
-        finally
-        {
-            for ( Controller slave : slaves )
-            {
-                slave.awaitFinishedQuietly();
-            }
         }
     }
 
@@ -357,21 +396,17 @@ public class Scheduler
             return Scheduler.this.canSchedule();
         }
 
-        void awaitFinishedQuietly()
+        void stop( Collection<Description> executedTests, boolean tryCancelFutures, boolean shutdownNow )
         {
-            try
-            {
-                slave.finished();
-            }
-            catch ( Throwable t )
-            {
-                slave.logQuietly( t );
-            }
+            slave.stop( executedTests, tryCancelFutures, shutdownNow );
         }
 
-        Collection<Description> shutdown( boolean shutdownNow )
+        /**
+         * @see org.apache.maven.surefire.junitcore.pc.Destroyable#destroy()
+         */
+        boolean destroy()
         {
-            return slave.shutdown( shutdownNow );
+            return slave.strategy.destroy();
         }
 
         @Override
@@ -387,6 +422,14 @@ public class Scheduler
         }
     }
 
+    /**
+     * There is a way to shutdown the hierarchy of schedulers. You can do it in master scheduler via
+     * {@link #shutdownThreadPoolsAwaitingKilled()} which kills the current master and children recursively.
+     * If alternatively a shared {@link java.util.concurrent.ExecutorService} used by the master and children
+     * schedulers is shutdown from outside, then the {@link ShutdownHandler} is a hook calling current
+     * {@link #describeStopped(boolean)}. The method {@link #describeStopped(boolean)} is again shutting down children
+     * schedulers recursively as well.
+     */
     public class ShutdownHandler
         implements RejectedExecutionHandler
     {
@@ -406,7 +449,7 @@ public class Scheduler
         {
             if ( executor.isShutdown() )
             {
-                shutdown( false );
+                Scheduler.this.stop( null, true, false );
             }
             final RejectedExecutionHandler poolHandler = this.poolHandler;
             if ( poolHandler != null )

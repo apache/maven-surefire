@@ -21,7 +21,6 @@ package org.apache.maven.surefire.junitcore.pc;
 
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * The sequentially executing strategy in private package.
@@ -33,7 +32,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 final class InvokerStrategy
     extends SchedulingStrategy
 {
-    private final AtomicBoolean canSchedule = new AtomicBoolean( true );
 
     private final Queue<Thread> activeThreads = new ConcurrentLinkedQueue<Thread>();
 
@@ -58,13 +56,13 @@ final class InvokerStrategy
     @Override
     protected boolean stop()
     {
-        return canSchedule.getAndSet( false );
+        return disable();
     }
 
     @Override
     protected boolean stopNow()
     {
-        final boolean stopped = stop();
+        final boolean stopped = disable();
         for ( Thread activeThread; ( activeThread = activeThreads.poll() ) != null; )
         {
             activeThread.interrupt();
@@ -79,14 +77,13 @@ final class InvokerStrategy
     }
 
     @Override
-    public boolean canSchedule()
-    {
-        return canSchedule.get();
-    }
-
-    @Override
     public boolean finished()
         throws InterruptedException
+    {
+        return disable();
+    }
+
+    public boolean destroy()
     {
         return stop();
     }

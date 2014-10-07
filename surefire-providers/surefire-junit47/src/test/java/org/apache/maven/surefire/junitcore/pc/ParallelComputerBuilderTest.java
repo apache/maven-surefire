@@ -20,11 +20,13 @@ package org.apache.maven.surefire.junitcore.pc;
  */
 
 import net.jcip.annotations.NotThreadSafe;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.Description;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
 import org.junit.runner.RunWith;
@@ -33,8 +35,12 @@ import org.junit.runners.Suite;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.core.AnyOf.anyOf;
 import static org.hamcrest.core.Is.is;
@@ -48,6 +54,8 @@ import static org.junit.Assert.*;
  */
 public class ParallelComputerBuilderTest
 {
+    private static final Object class1Lock = new Object();
+
     private static volatile boolean beforeShutdown;
 
     private static volatile Runnable shutdownTask;
@@ -506,6 +514,37 @@ public class ParallelComputerBuilderTest
         assertThat( computer.poolCapacity, is( 10 ) );
     }
 
+    @Test
+    public void beforeAfterThreadChanges()
+        throws InterruptedException
+    {
+        Collection<Thread> expectedThreads = jvmThreads();
+        ParallelComputerBuilder parallelComputerBuilder = new ParallelComputerBuilder();
+        parallelComputerBuilder.parallelMethods( 3 );
+        ParallelComputer computer = parallelComputerBuilder.buildComputer();
+        Result result = new JUnitCore().run( computer, TestWithBeforeAfter.class );
+        System.out.println( new Date() + " finished test run" );
+        assertTrue( result.wasSuccessful() );
+        assertThat( jvmThreads(), is( expectedThreads ) );
+    }
+
+    private static Collection<Thread> jvmThreads()
+    {
+        Thread[] t = new Thread[1000];
+        Thread.enumerate( t );
+        ArrayList<Thread> appThreads = new ArrayList<Thread>( t.length );
+        Collections.addAll( appThreads, t );
+        appThreads.removeAll( Collections.singleton( null ) );
+        Collections.sort( appThreads, new Comparator<Thread>()
+        {
+            public int compare( Thread t1, Thread t2 )
+            {
+                return (int) Math.signum( t1.getId() - t2.getId() );
+            }
+        } );
+        return appThreads;
+    }
+
     private static class ShutdownTest
     {
         Result run( final boolean useInterrupt )
@@ -522,7 +561,7 @@ public class ParallelComputerBuilderTest
             {
                 public void run()
                 {
-                    Collection<org.junit.runner.Description> startedTests = computer.shutdown( useInterrupt );
+                    Collection<Description> startedTests = computer.describeStopped( useInterrupt );
                     assertThat( startedTests.size(), is( not( 0 ) ) );
                 }
             };
@@ -540,10 +579,10 @@ public class ParallelComputerBuilderTest
         public void test1()
             throws InterruptedException
         {
-            synchronized ( Class1.class )
+            synchronized ( class1Lock )
             {
                 ++concurrentMethods;
-                Class1.class.wait( 500 );
+                class1Lock.wait( 500 );
                 maxConcurrentMethods = Math.max( maxConcurrentMethods, concurrentMethods-- );
             }
         }
@@ -762,6 +801,54 @@ public class ParallelComputerBuilderTest
         public static void afterSuite()
         {
             assertThat( Thread.currentThread().getName(), is( not( "maven-surefire-plugin@NotThreadSafe" ) ) );
+        }
+    }
+
+    public static class TestWithBeforeAfter
+    {
+        @BeforeClass
+        public static void beforeClass()
+            throws InterruptedException
+        {
+            System.out.println( new Date() + " BEG: beforeClass" );
+            TimeUnit.SECONDS.sleep( 1 );
+            System.out.println( new Date() + " END: beforeClass" );
+        }
+
+        @Before
+        public void before()
+            throws InterruptedException
+        {
+            System.out.println( new Date() + " BEG: before" );
+            TimeUnit.SECONDS.sleep( 1 );
+            System.out.println( new Date() + " END: before" );
+        }
+
+        @Test
+        public void test()
+            throws InterruptedException
+        {
+            System.out.println( new Date() + " BEG: test" );
+            TimeUnit.SECONDS.sleep( 1 );
+            System.out.println( new Date() + " END: test" );
+        }
+
+        @After
+        public void after()
+            throws InterruptedException
+        {
+            System.out.println( new Date() + " BEG: after" );
+            TimeUnit.SECONDS.sleep( 1 );
+            System.out.println( new Date() + " END: after" );
+        }
+
+        @AfterClass
+        public static void afterClass()
+            throws InterruptedException
+        {
+            System.out.println( new Date() + " BEG: afterClass" );
+            TimeUnit.SECONDS.sleep( 1 );
+            System.out.println( new Date() + " END: afterClass" );
         }
     }
 }

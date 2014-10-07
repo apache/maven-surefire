@@ -64,10 +64,10 @@ import static org.apache.maven.surefire.junitcore.pc.Type.*;
  * {@link ParallelComputerBuilder#useOnePool(int)} must be greater than the number of concurrent suites and classes
  * altogether.
  * <p/>
- * The Computer can be shutdown in a separate thread. Pending tests will be interrupted if the argument is
+ * The Computer can be stopped in a separate thread. Pending tests will be interrupted if the argument is
  * <tt>true</tt>.
  * <pre>
- * computer.shutdown(true);
+ * computer.describeStopped(true);
  * </pre>
  *
  * @author Tibor Digana (tibor17)
@@ -254,15 +254,27 @@ public final class ParallelComputerBuilder
         }
 
         @Override
-        public Collection<Description> shutdown( boolean shutdownNow )
+        protected Collection<Description> describeStopped( boolean shutdownNow )
         {
-            Collection<Description> startedTests = notThreadSafeTests.shutdown( shutdownNow );
-            final Scheduler m = this.master;
+            Collection<Description> startedTests = notThreadSafeTests.describeStopped( shutdownNow );
+            final Scheduler m = master;
             if ( m != null )
             {
-                startedTests.addAll( m.shutdown( shutdownNow ) );
+                startedTests.addAll( m.describeStopped( shutdownNow ) );
             }
             return startedTests;
+        }
+
+        @Override
+        boolean shutdownThreadPoolsAwaitingKilled()
+        {
+            boolean notInterrupted = notThreadSafeTests.shutdownThreadPoolsAwaitingKilled();
+            final Scheduler m = master;
+            if ( m != null )
+            {
+                notInterrupted &= m.shutdownThreadPoolsAwaitingKilled();
+            }
+            return notInterrupted;
         }
 
         @Override
