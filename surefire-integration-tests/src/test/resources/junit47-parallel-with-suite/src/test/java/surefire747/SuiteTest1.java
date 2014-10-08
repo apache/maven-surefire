@@ -20,7 +20,9 @@ package surefire747;
  */
 
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -28,9 +30,24 @@ import org.junit.Test;
  */
 public class SuiteTest1
 {
+    private static long startedAt;
+
     public SuiteTest1()
     {
         System.out.println( "SuiteTest1.constructor" );
+    }
+
+    @BeforeClass
+    public static void beforeClass()
+    {
+        startedAt = System.currentTimeMillis();
+    }
+
+    @AfterClass
+    public static void afterClass()
+    {
+        System.out.println( String.format( "%s test finished after duration=%d", SuiteTest1.class.getSimpleName(),
+                                           System.currentTimeMillis() - startedAt ) );
     }
 
     @Before
@@ -50,7 +67,7 @@ public class SuiteTest1
         throws InterruptedException
     {
         System.out.println( "begin SuiteTest1.first" );
-        Thread.sleep( 300 );
+        Thread.sleep( 500 );
         System.out.println( "end SuiteTest1.first" );
     }
 
@@ -59,7 +76,7 @@ public class SuiteTest1
         throws InterruptedException
     {
         System.out.println( "begin SuiteTest1.second" );
-        Thread.sleep( 300 );
+        Thread.sleep( 500 );
         System.out.println( "end SuiteTest1.second" );
     }
 
@@ -68,7 +85,7 @@ public class SuiteTest1
         throws InterruptedException
     {
         System.out.println( "begin SuiteTest1.third" );
-        Thread.sleep( 300 );
+        Thread.sleep( 500 );
         System.out.println( "end SuiteTest1.third" );
     }
 }
