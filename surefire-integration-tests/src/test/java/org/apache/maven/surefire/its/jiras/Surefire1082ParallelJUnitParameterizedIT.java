@@ -23,14 +23,17 @@ import org.apache.maven.it.VerificationException;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+import org.hamcrest.BaseMatcher;
+import org.hamcrest.Description;
+import org.hamcrest.Matcher;
 import org.junit.Test;
 
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 
-import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.AnyOf.anyOf;
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -41,6 +44,26 @@ import static org.junit.Assert.assertThat;
 public class Surefire1082ParallelJUnitParameterizedIT
     extends SurefireJUnit4IntegrationTestCase
 {
+
+    private static Set<String> printOnlyTestLines( OutputValidator validator )
+        throws VerificationException
+    {
+        Set<String> log = new TreeSet<String>( validator.loadLogLines() );
+        for ( Iterator<String> it = log.iterator(); it.hasNext(); )
+        {
+            String line = it.next();
+            if ( !line.startsWith( "class jiras.surefire1082." ) )
+            {
+                it.remove();
+            }
+        }
+        return log;
+    }
+
+    private static Matcher<Set<String>> regex( Set<String> r )
+    {
+        return new IsRegex( r );
+    }
 
     @Test
     public void test()
@@ -53,18 +76,18 @@ public class Surefire1082ParallelJUnitParameterizedIT
         assertThat( log.size(), is( 4 ) );
 
         Set<String> expectedLogs1 = new TreeSet<String>();
-        expectedLogs1.add( "class jiras.surefire1082.Jira1082Test a 0 pool-1-thread-1" );
-        expectedLogs1.add( "class jiras.surefire1082.Jira1082Test b 0 pool-1-thread-1" );
-        expectedLogs1.add( "class jiras.surefire1082.Jira1082Test a 1 pool-1-thread-2" );
-        expectedLogs1.add( "class jiras.surefire1082.Jira1082Test b 1 pool-1-thread-2" );
+        expectedLogs1.add( "class jiras.surefire1082.Jira1082Test a 0 pool-[\\d]+-thread-1" );
+        expectedLogs1.add( "class jiras.surefire1082.Jira1082Test b 0 pool-[\\d]+-thread-1" );
+        expectedLogs1.add( "class jiras.surefire1082.Jira1082Test a 1 pool-[\\d]+-thread-2" );
+        expectedLogs1.add( "class jiras.surefire1082.Jira1082Test b 1 pool-[\\d]+-thread-2" );
 
         Set<String> expectedLogs2 = new TreeSet<String>();
-        expectedLogs2.add( "class jiras.surefire1082.Jira1082Test a 1 pool-1-thread-1" );
-        expectedLogs2.add( "class jiras.surefire1082.Jira1082Test b 1 pool-1-thread-1" );
-        expectedLogs2.add( "class jiras.surefire1082.Jira1082Test a 0 pool-1-thread-2" );
-        expectedLogs2.add( "class jiras.surefire1082.Jira1082Test b 0 pool-1-thread-2" );
+        expectedLogs2.add( "class jiras.surefire1082.Jira1082Test a 1 pool-[\\d]+-thread-1" );
+        expectedLogs2.add( "class jiras.surefire1082.Jira1082Test b 1 pool-[\\d]+-thread-1" );
+        expectedLogs2.add( "class jiras.surefire1082.Jira1082Test a 0 pool-[\\d]+-thread-2" );
+        expectedLogs2.add( "class jiras.surefire1082.Jira1082Test b 0 pool-[\\d]+-thread-2" );
 
-        assertThat( log, anyOf( is( expectedLogs1 ), is( expectedLogs2 ) ) );
+        assertThat( log, anyOf( regex( expectedLogs1 ), regex( expectedLogs2 ) ) );
     }
 
     private SurefireLauncher unpack()
@@ -72,16 +95,41 @@ public class Surefire1082ParallelJUnitParameterizedIT
         return unpack( "surefire-1082-parallel-junit-parameterized" );
     }
 
-    private static Set<String> printOnlyTestLines( OutputValidator validator )
-        throws VerificationException
+    private static class IsRegex
+        extends BaseMatcher<Set<String>>
     {
-        Set<String> log = new TreeSet<String>( validator.loadLogLines() );
-        for ( Iterator<String> it = log.iterator(); it.hasNext(); ) {
-            String line = it.next();
-            if ( !line.startsWith( "class jiras.surefire1082." ) ) {
-                it.remove();
+        private final Set<String> expectedRegex;
+
+        IsRegex( Set<String> expectedRegex )
+        {
+            this.expectedRegex = expectedRegex;
+        }
+
+        public boolean matches( Object o )
+        {
+            if ( o != null && o instanceof Set )
+            {
+                Set<String> actual = (Set<String>) o;
+                boolean matches = actual.size() == expectedRegex.size();
+                Iterator<String> regex = expectedRegex.iterator();
+                for ( String s : actual )
+                {
+                    if ( s == null || !regex.hasNext() || !s.matches( regex.next() ) )
+                    {
+                        matches = false;
+                    }
+                }
+                return matches;
+            }
+            else
+            {
+                return false;
             }
         }
-        return log;
+
+        public void describeTo( Description description )
+        {
+            description.appendValue( expectedRegex );
+        }
     }
 }
