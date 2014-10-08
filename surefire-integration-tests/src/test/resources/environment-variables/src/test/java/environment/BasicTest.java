@@ -35,6 +35,8 @@ public class BasicTest
     {
         Assert.assertThat( System.getenv( "PATH" ), notNullValue() );
         Assert.assertThat( System.getenv( "DUMMY_ENV_VAR" ), is( "foo" ) );
+        Assert.assertThat( System.getenv( "EMPTY_VAR" ), is( "" ) );
+        Assert.assertThat( System.getenv( "UNSET_VAR" ), is( "" ) );
     }
 
 
