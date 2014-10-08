@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.its.jiras;
+package org.apache.maven.surefire;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -23,11 +23,13 @@ import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.junit.Test;
 
 /**
- * SUREFIRE-674 Asserts that the build fails when tests have errors
- *
+ * SUREFIRE-763 Asserts that environment variables are correctly populated using "useSystemClassLoader=false"
+ * SUREFIRE-963 Asserts that empty environment variables are read as "".
+ * 
  * @author Kristian Rosenvold
+ * @author Christophe Deneux
  */
-public class Surefire763EnvironmentForkModeIT
+public class EnvironmentVariablesIT
     extends SurefireJUnit4IntegrationTestCase
 {
     @Test
