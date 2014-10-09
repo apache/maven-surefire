@@ -161,7 +161,7 @@ public class ForkConfiguration
             {
                 String value = environmentVariables.get( key );
 
-                cli.addEnvironment( key, value );
+                cli.addEnvironment(key, value == null ? "" : value);
             }
         }
 
