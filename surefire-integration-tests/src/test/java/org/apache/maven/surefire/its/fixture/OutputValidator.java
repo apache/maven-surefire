@@ -125,7 +125,6 @@ public class OutputValidator
         return new File( getBasedir(), path );
     }
 
-
     public OutputValidator assertTestSuiteResults( int total, int errors, int failures, int skipped )
     {
         HelperAssertions.assertTestSuiteResults( total, errors, failures, skipped, baseDir );
@@ -138,9 +137,21 @@ public class OutputValidator
         return this;
     }
 
+    public OutputValidator assertTestSuiteResults( int total )
+    {
+        HelperAssertions.assertTestSuiteResults( total, baseDir );
+        return this;
+    }
+
     public OutputValidator assertIntegrationTestSuiteResults( int total, int errors, int failures, int skipped )
     {
         HelperAssertions.assertIntegrationTestSuiteResults( total, errors, failures, skipped, baseDir );
+        return this;
+    }
+
+    public OutputValidator assertIntegrationTestSuiteResults( int total )
+    {
+        HelperAssertions.assertIntegrationTestSuiteResults( total, baseDir );
         return this;
     }
 

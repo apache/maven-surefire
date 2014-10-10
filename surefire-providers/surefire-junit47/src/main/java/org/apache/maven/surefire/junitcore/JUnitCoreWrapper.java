@@ -47,24 +47,14 @@ class JUnitCoreWrapper
                                 List<RunListener> listeners, Filter filter )
         throws TestSetFailedException
     {
-        Computer computer = createComputer( jUnitCoreParameters );
         JUnitCore junitCore = createJUnitCore( listeners );
         if ( testsToRun.allowEagerReading() )
         {
-            executeEager( testsToRun, filter, computer, junitCore );
+            executeEager( testsToRun, filter, jUnitCoreParameters, junitCore );
         }
         else
         {
-            executeLazy( testsToRun, filter, computer, junitCore );
-        }
-
-        if ( computer instanceof ParallelComputer )
-        {
-            String timeoutMessage = ( (ParallelComputer) computer ).describeElapsedTimeout();
-            if ( timeoutMessage.length() != 0 )
-            {
-                throw new TestSetFailedException( timeoutMessage );
-            }
+            executeLazy( testsToRun, filter, jUnitCoreParameters, junitCore );
         }
     }
 
@@ -78,19 +68,23 @@ class JUnitCoreWrapper
         return junitCore;
     }
 
-    private static void executeEager( TestsToRun testsToRun, Filter filter, Computer computer, JUnitCore junitCore )
+    private static void executeEager( TestsToRun testsToRun, Filter filter, JUnitCoreParameters jUnitCoreParameters,
+                                      JUnitCore junitCore )
         throws TestSetFailedException
     {
         Class[] tests = testsToRun.getLocatedClasses();
+        Computer computer = createComputer( jUnitCoreParameters );
         createRequestAndRun( filter, computer, junitCore, tests );
     }
 
-    private static void executeLazy( TestsToRun testsToRun, Filter filter, Computer computer, JUnitCore junitCore )
+    private static void executeLazy( TestsToRun testsToRun, Filter filter, JUnitCoreParameters jUnitCoreParameters,
+                                     JUnitCore junitCore )
         throws TestSetFailedException
     {
         // in order to support LazyTestsToRun, the iterator must be used
         for ( Class clazz : testsToRun )
         {
+            Computer computer = createComputer( jUnitCoreParameters );
             createRequestAndRun( filter, computer, junitCore, clazz );
         }
     }
@@ -110,8 +104,17 @@ class JUnitCoreWrapper
             }
         }
 
-        final Result run = junitCore.run( req );
+        Result run = junitCore.run( req );
         JUnit4RunListener.rethrowAnyTestMechanismFailures( run );
+
+        if ( computer instanceof ParallelComputer )
+        {
+            String timeoutMessage = ( (ParallelComputer) computer ).describeElapsedTimeout();
+            if ( timeoutMessage.length() != 0 )
+            {
+                throw new TestSetFailedException( timeoutMessage );
+            }
+        }
     }
 
     private static Computer createComputer( JUnitCoreParameters parameters )

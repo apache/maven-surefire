@@ -46,6 +46,12 @@ public class HelperAssertions
         assertTestSuiteResults( total, errors, failures, skipped, flakes, suite );
     }
 
+    public static void assertTestSuiteResults( int total, File testDir )
+    {
+        IntegrationTestSuiteResults suite = parseTestResults( new File[]{ testDir } );
+        assertTestSuiteResults( total, suite );
+    }
+
     /**
      * assert that the reports in the specified testDir have the right summary statistics
      */
@@ -56,6 +62,12 @@ public class HelperAssertions
         assertTestSuiteResults( total, errors, failures, skipped, suite );
     }
 
+    public static void assertIntegrationTestSuiteResults( int total, File testDir )
+    {
+        IntegrationTestSuiteResults suite = parseIntegrationTestResults( new File[]{ testDir } );
+        assertTestSuiteResults( total, suite );
+    }
+
     public static void assertTestSuiteResults( int total, int errors, int failures, int skipped,
                                                IntegrationTestSuiteResults actualSuite )
     {
@@ -63,6 +75,11 @@ public class HelperAssertions
         Assert.assertEquals( "wrong number of errors", errors, actualSuite.getErrors() );
         Assert.assertEquals( "wrong number of failures", failures, actualSuite.getFailures() );
         Assert.assertEquals( "wrong number of skipped", skipped, actualSuite.getSkipped() );
+    }
+
+    public static void assertTestSuiteResults( int total, IntegrationTestSuiteResults actualSuite )
+    {
+        Assert.assertEquals( "wrong number of tests", total, actualSuite.getTotal() );
     }
 
     public static void assertTestSuiteResults( int total, int errors, int failures, int skipped, int flakes,
