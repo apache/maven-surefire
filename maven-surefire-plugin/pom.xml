@@ -35,7 +35,7 @@
   <name>Maven Surefire Plugin</name>
 
   <prerequisites>
-    <maven>2.0.9</maven>
+    <maven>2.2.1</maven>
   </prerequisites>
 
   <properties>

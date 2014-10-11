@@ -34,7 +34,7 @@
   <description>Parses report output files from surefire.</description>
 
   <prerequisites>
-    <maven>2.0.9</maven>
+    <maven>2.2.1</maven>
   </prerequisites>
 
   <dependencies>

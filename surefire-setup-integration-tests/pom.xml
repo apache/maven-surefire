@@ -169,7 +169,7 @@
             <extraArtifact>org.apache.maven.plugins:maven-jar-plugin:2.3.2</extraArtifact>
             <extraArtifact>org.apache.commons:commons-email:1.2</extraArtifact>
             <extraArtifact>org.codehaus.mojo:build-helper-maven-plugin:1.2</extraArtifact>
-            <extraArtifact>org.apache.maven.reporting:maven-reporting-api:2.0.9</extraArtifact>
+            <extraArtifact>org.apache.maven.reporting:maven-reporting-api:2.2.1</extraArtifact>
             <extraArtifact>commons-collections:commons-collections:3.2</extraArtifact>
             <extraArtifact>commons-logging:commons-logging:1.0.4</extraArtifact>
             <extraArtifact>xml-apis:xml-apis:1.0.b2</extraArtifact>

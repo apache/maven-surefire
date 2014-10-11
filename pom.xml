@@ -84,7 +84,7 @@
   </distributionManagement>
 
   <properties>
-    <mavenVersion>2.0.9</mavenVersion>
+    <mavenVersion>2.2.1</mavenVersion>
     <shadedVersion>2.12.4</shadedVersion>
     <mavenPluginPluginVersion>3.2</mavenPluginPluginVersion>
     <maven.surefire.scm.devConnection>scm:git:https://git-wip-us.apache.org/repos/asf/maven-surefire.git</maven.surefire.scm.devConnection>
