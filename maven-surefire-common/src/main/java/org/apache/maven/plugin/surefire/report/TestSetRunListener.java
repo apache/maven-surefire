@@ -19,15 +19,16 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
+import org.apache.maven.shared.utils.StringUtils;
 import org.apache.maven.surefire.report.ConsoleLogger;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.RunListener;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Reports data for a single test set.
@@ -39,6 +40,8 @@ public class TestSetRunListener
     implements RunListener, ConsoleOutputReceiver, ConsoleLogger
 {
     private final TestSetStats detailsForThis;
+
+    private ReportEntry lastSkipped;
 
     private List<TestMethodStats> testMethodStats;
 
@@ -109,6 +112,8 @@ public class TestSetRunListener
 
     public void testSetStarting( ReportEntry report )
     {
+        checkForUnfinishedTestSetDueToSkip( report );
+
         detailsForThis.testSetStart();
         if ( consoleReporter != null )
         {
@@ -180,6 +185,8 @@ public class TestSetRunListener
 
     public void testError( ReportEntry reportEntry )
     {
+        checkForUnfinishedTestSetDueToSkip( reportEntry );
+
         WrappedReportEntry wrapped = wrap( reportEntry, ReportEntryType.error );
         detailsForThis.testError( wrapped );
         if ( statisticsReporter != null )
@@ -191,6 +198,8 @@ public class TestSetRunListener
 
     public void testFailed( ReportEntry reportEntry )
     {
+        checkForUnfinishedTestSetDueToSkip( reportEntry );
+
         WrappedReportEntry wrapped = wrap( reportEntry, ReportEntryType.failure );
         detailsForThis.testFailure( wrapped );
         if ( statisticsReporter != null )
@@ -206,13 +215,27 @@ public class TestSetRunListener
 
     public void testSkipped( ReportEntry reportEntry )
     {
+        checkForUnfinishedTestSetDueToSkip( reportEntry );
+
+        lastSkipped = reportEntry;
+
         WrappedReportEntry wrapped = wrap( reportEntry, ReportEntryType.skipped );
+
         detailsForThis.testSkipped( wrapped );
         if ( statisticsReporter != null )
         {
             statisticsReporter.testSkipped( reportEntry );
         }
         clearCapture();
+    }
+
+    private void checkForUnfinishedTestSetDueToSkip( ReportEntry reportEntry )
+    {
+        if ( lastSkipped != null && !StringUtils.equals( lastSkipped.getSourceName(), reportEntry.getSourceName() ) ) {
+            // a new test class was started to be processed, but a skipped test class was not yet marked as completed
+            testSetCompleted( lastSkipped );
+            lastSkipped = null;
+        }
     }
 
     public void testAssumptionFailure( ReportEntry report )

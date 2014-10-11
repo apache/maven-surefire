@@ -19,23 +19,21 @@ package org.sample.module;
  * under the License.
  */
 
-import static org.junit.Assert.fail;
-
+import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class My3Test {
-    @Test
-    public void fails()
-        throws Exception
-    {
-        Thread.sleep( 100 );
-        fail( "Always fails" );
-    }
+public class My5Test {
 
+    @BeforeClass 
+    public static void failsOnBeforeClass()
+    {
+        throw new RuntimeException("always fails before class");
+    }
+    
     @Test
-    public void alwaysSuccessful()
+    public void neverExecuted()
         throws Exception
     {
-        Thread.sleep( 100 );
+        
     }
 }

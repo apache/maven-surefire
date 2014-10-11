@@ -58,12 +58,26 @@ public class TestSetStats
 
     public int getElapsedSinceTestSetStart()
     {
-        return (int) ( System.currentTimeMillis() - testSetStartAt );
+        if ( testSetStartAt > 0 )
+        {
+            return (int) ( System.currentTimeMillis() - testSetStartAt );
+        }
+        else
+        {
+            return 0;
+        }
     }
 
     public int getElapsedSinceLastStart()
     {
-        return (int) ( System.currentTimeMillis() - lastStartAt );
+        if ( lastStartAt > 0 )
+        {
+            return (int) ( System.currentTimeMillis() - lastStartAt );
+        }
+        else
+        {
+            return 0;
+        }
     }
 
     public void testSetStart()

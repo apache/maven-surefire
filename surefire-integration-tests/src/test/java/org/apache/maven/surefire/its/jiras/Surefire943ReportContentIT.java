@@ -20,11 +20,11 @@ package org.apache.maven.surefire.its.jiras;
  */
 
 import java.io.FileNotFoundException;
+
 import org.apache.maven.shared.utils.xml.Xpp3Dom;
 import org.apache.maven.shared.utils.xml.Xpp3DomBuilder;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
-
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -49,19 +49,40 @@ public class Surefire943ReportContentIT
     private void doTest( String parallelMode )
         throws Exception
     {
-        OutputValidator validator = unpack( "surefire-943-report-content" )
-                .maven()
-                .sysProp( "parallel", parallelMode )
-                .sysProp( "threadCount", 4 )
-                .withFailure()
-                .executeTest();
+        OutputValidator validator =
+            unpack( "surefire-943-report-content" ).maven().sysProp( "parallel", parallelMode ).sysProp( "threadCount",
+                                                                                                         4 ).withFailure().executeTest();
 
-        validator.assertTestSuiteResults( 9, 0, 3, 3 );
+        validator.assertTestSuiteResults( 10, 1, 3, 3 );
 
         validate( validator, "org.sample.module.My1Test", 1 );
         validate( validator, "org.sample.module.My2Test", 1 );
         validate( validator, "org.sample.module.My3Test", 0 );
         validateSkipped( validator, "org.sample.module.My4Test" );
+        validateFailInBeforeClass( validator, "org.sample.module.My5Test" );
+    }
+
+    private void validateFailInBeforeClass( OutputValidator validator, String className )
+        throws FileNotFoundException
+    {
+        Xpp3Dom[] children = readTests( validator, className );
+
+        Assert.assertEquals( 1, children.length );
+
+        Xpp3Dom child = children[0];
+
+        Assert.assertEquals( className, child.getAttribute( "classname" ) );
+        Assert.assertEquals( className, child.getAttribute( "name" ) );
+
+        Assert.assertEquals( "Expected error tag for failed BeforeClass method for " + className, 1,
+                             child.getChildren( "error" ).length );
+
+        Assert.assertTrue( "time for test failure in BeforeClass is expected to be positive",
+                           Double.compare( Double.parseDouble( child.getAttribute( "time" ) ), 0.0d ) >= 0 );
+
+        Assert.assertTrue( "time for test failure in BeforeClass is expected to be resonably low",
+                           Double.compare( Double.parseDouble( child.getAttribute( "time" ) ), 2.0d ) <= 0 );
+
     }
 
     private void validateSkipped( OutputValidator validator, String className )
