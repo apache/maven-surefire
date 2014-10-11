@@ -130,7 +130,7 @@ public class ForkModeMultiModuleIT
 
     private List<String> doTest( SurefireLauncher forkMode )
     {
-        forkMode.addGoal( "-T 2" );
+        forkMode.addGoal( "-T2" );
         forkMode.sysProp( "testProperty", "testValue_${surefire.threadNumber}_${surefire.forkNumber}" );
         final OutputValidator outputValidator = forkMode.setForkJvm().executeTest();
         List<String> pids = new ArrayList<String>( 6 );
