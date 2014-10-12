@@ -130,6 +130,8 @@ public class TestSetRunListener
 
     public void testSetCompleted( ReportEntry report )
     {
+        clearLastSkipMarker();
+
         WrappedReportEntry wrap = wrapTestSet( report );
         List<String> testResults = briefOrPlainFormat ? detailsForThis.getTestResults() : null;
         if ( fileReporter != null )
@@ -231,11 +233,16 @@ public class TestSetRunListener
 
     private void checkForUnfinishedTestSetDueToSkip( ReportEntry reportEntry )
     {
-        if ( lastSkipped != null && !StringUtils.equals( lastSkipped.getSourceName(), reportEntry.getSourceName() ) ) {
+        if ( lastSkipped != null && !StringUtils.equals( lastSkipped.getSourceName(), reportEntry.getSourceName() ) )
+        {
             // a new test class was started to be processed, but a skipped test class was not yet marked as completed
             testSetCompleted( lastSkipped );
-            lastSkipped = null;
         }
+    }
+
+    private void clearLastSkipMarker()
+    {
+        lastSkipped = null;
     }
 
     public void testAssumptionFailure( ReportEntry report )
