@@ -50,8 +50,17 @@ public class Surefire943ReportContentIT
         throws Exception
     {
         OutputValidator validator =
-            unpack( "surefire-943-report-content" ).maven().sysProp( "parallel", parallelMode ).sysProp( "threadCount",
-                                                                                                         4 ).withFailure().executeTest();
+            unpack( "surefire-943-report-content" ).maven()
+            .sysProp( "parallel", parallelMode )
+            .sysProp( "threadCount", 4 )
+            .withFailure().executeTest();
+
+        System.out.println("===== START EXECUTION LOG =====");
+        for ( String line : validator.loadLogLines() )
+        {
+            System.out.println( line );
+        }
+        System.out.println("===== END EXECUTION LOG =====");
 
         validator.assertTestSuiteResults( 10, 1, 3, 3 );
 
