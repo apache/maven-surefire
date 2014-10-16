@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.util;
+package jiras.surefire1095;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,25 +19,20 @@ package org.apache.maven.surefire.util;
  * under the License.
  */
 
-/**
- * Exception indicating that surefire had problems with reflection. This may be due
- * to programming errors, incorrect configuration or incorrect dependencies, but is
- * generally not recoverable and not relevant to handle.
- *
- * @author Kristian Rosenvold
- */
-public class SurefireReflectionException
-    extends RuntimeException
+import org.junit.runner.Description;
+import org.junit.runner.notification.RunListener;
+
+public class Listener
+    extends RunListener
 {
-    /**
-     * Create a <code>SurefireReflectionException</code> with the specified cause.  The
-     * <code>getMessage</code> method of this exception object will return
-     * <code>(cause == null ? "" : cause.toString())</code>.
-     *
-     * @param cause The cause of this exception
-     */
-    public SurefireReflectionException( Throwable cause )
+    @Override
+    public void testRunStarted( Description description )
+        throws Exception
     {
-        super( cause == null ? "" : cause.toString(), cause );
+        String described = description.getDisplayName();
+        System.out.println( "testRunStarted " +
+                                ( described == null || described.equals( "null" )
+                                    ? description.getChildren()
+                                    : description ) );
     }
 }

@@ -19,8 +19,6 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -48,11 +46,7 @@ import org.apache.maven.surefire.util.ScanResult;
 import org.apache.maven.surefire.util.ScannerFilter;
 import org.apache.maven.surefire.util.TestsToRun;
 import org.apache.maven.surefire.util.internal.StringUtils;
-import org.junit.internal.runners.statements.Fail;
 import org.junit.runner.manipulation.Filter;
-import org.junit.runner.notification.Failure;
-
-import static org.apache.maven.surefire.common.junit4.JUnit4RunListener.isFailureInsideJUnitItself;
 
 /**
  * @author Kristian Rosenvold
@@ -71,6 +65,10 @@ public class JUnitCoreProvider
 
     private final ProviderParameters providerParameters;
 
+    private final ScanResult scanResult;
+
+    private final int rerunFailingTestsCount;
+
     private TestsToRun testsToRun;
 
     private JUnit48Reflector jUnit48Reflector;
@@ -79,20 +77,16 @@ public class JUnitCoreProvider
 
     private String requestedTestMethod;
 
-    private final ScanResult scanResult;
-
-    private final int rerunFailingTestsCount;
-
     public JUnitCoreProvider( ProviderParameters providerParameters )
     {
         this.providerParameters = providerParameters;
-        this.testClassLoader = providerParameters.getTestClassLoader();
-        this.scanResult = providerParameters.getScanResult();
-        this.runOrderCalculator = providerParameters.getRunOrderCalculator();
-        this.jUnitCoreParameters = new JUnitCoreParameters( providerParameters.getProviderProperties() );
-        this.scannerFilter = new JUnit48TestChecker( testClassLoader );
-        this.requestedTestMethod = providerParameters.getTestRequest().getRequestedTestMethod();
-        this.rerunFailingTestsCount = providerParameters.getTestRequest().getRerunFailingTestsCount();
+        testClassLoader = providerParameters.getTestClassLoader();
+        scanResult = providerParameters.getScanResult();
+        runOrderCalculator = providerParameters.getRunOrderCalculator();
+        jUnitCoreParameters = new JUnitCoreParameters( providerParameters.getProviderProperties() );
+        scannerFilter = new JUnit48TestChecker( testClassLoader );
+        requestedTestMethod = providerParameters.getTestRequest().getRequestedTestMethod();
+        rerunFailingTestsCount = providerParameters.getTestRequest().getRerunFailingTestsCount();
 
         customRunListeners =
             JUnit4RunListenerFactory.createCustomListeners( providerParameters.getProviderProperties().getProperty( "listener" ) );
@@ -141,8 +135,7 @@ public class JUnitCoreProvider
             }
         }
 
-        org.junit.runner.notification.RunListener jUnit4RunListener = getRunListener( reporterFactory, consoleLogger );
-        customRunListeners.add( 0, jUnit4RunListener );
+        customRunListeners.add( 0, getRunListener( reporterFactory, consoleLogger ) );
 
         // Add test failure listener
         JUnitTestFailureListener testFailureListener = new JUnitTestFailureListener();
@@ -151,18 +144,12 @@ public class JUnitCoreProvider
         JUnitCoreWrapper.execute( testsToRun, jUnitCoreParameters, customRunListeners, filter );
 
         // Rerun failing tests if rerunFailingTestsCount is larger than 0
-        int rerunCount = this.rerunFailingTestsCount;
-        if ( rerunCount > 0 )
+        if ( rerunFailingTestsCount > 0 )
         {
-            for ( int i = 0; i < rerunCount; i++ )
+            for ( int i = 0; i < rerunFailingTestsCount && !testFailureListener.getAllFailures().isEmpty(); i++ )
             {
-                List<Failure> failures = testFailureListener.getAllFailures();
-                if ( failures.size() == 0 )
-                {
-                    break;
-                }
                 Map<Class<?>, Set<String>> failingTests =
-                    JUnit4ProviderUtil.generateFailingTests( failures, testsToRun );
+                    JUnit4ProviderUtil.generateFailingTests( testFailureListener.getAllFailures(), testsToRun );
                 testFailureListener.reset();
                 final FilterFactory filterFactory = new FilterFactory( testClassLoader );
                 Filter failingMethodsFilter = filterFactory.createFailingMethodFilter( failingTests );

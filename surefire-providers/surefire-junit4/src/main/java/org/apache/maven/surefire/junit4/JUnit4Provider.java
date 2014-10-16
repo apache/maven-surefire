@@ -41,17 +41,16 @@ import org.apache.maven.surefire.util.RunOrderCalculator;
 import org.apache.maven.surefire.util.ScanResult;
 import org.apache.maven.surefire.util.TestsToRun;
 import org.apache.maven.surefire.util.internal.StringUtils;
+import org.junit.runner.Description;
 import org.junit.runner.Request;
 import org.junit.runner.Result;
-import org.junit.runner.Runner;
-import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunNotifier;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -68,8 +67,6 @@ public class JUnit4Provider
 
     private final String requestedTestMethod;
 
-    private TestsToRun testsToRun;
-
     private final ProviderParameters providerParameters;
 
     private final RunOrderCalculator runOrderCalculator;
@@ -78,13 +75,14 @@ public class JUnit4Provider
 
     private final int rerunFailingTestsCount;
 
+    private TestsToRun testsToRun;
 
     public JUnit4Provider( ProviderParameters booterParameters )
     {
-        this.providerParameters = booterParameters;
-        this.testClassLoader = booterParameters.getTestClassLoader();
-        this.scanResult = booterParameters.getScanResult();
-        this.runOrderCalculator = booterParameters.getRunOrderCalculator();
+        providerParameters = booterParameters;
+        testClassLoader = booterParameters.getTestClassLoader();
+        scanResult = booterParameters.getScanResult();
+        runOrderCalculator = booterParameters.getRunOrderCalculator();
         customRunListeners = JUnit4RunListenerFactory.
             createCustomListeners( booterParameters.getProviderProperties().getProperty( "listener" ) );
         jUnit4TestChecker = new JUnit4TestChecker( testClassLoader );
@@ -122,49 +120,39 @@ public class JUnit4Provider
         JUnit4RunListener jUnit4TestSetReporter = new JUnit4RunListener( reporter );
 
         Result result = new Result();
-        RunNotifier runNotifer = getRunNotifer( jUnit4TestSetReporter, result, customRunListeners );
+        RunNotifier runNotifier = getRunNotifier( jUnit4TestSetReporter, result, customRunListeners );
 
-        runNotifer.fireTestRunStarted( null );
+        runNotifier.fireTestRunStarted( createTestsDescription() );
 
         for ( Class aTestsToRun : testsToRun )
         {
-            executeTestSet( aTestsToRun, reporter, runNotifer, null );
+            executeTestSet( aTestsToRun, reporter, runNotifier );
         }
 
-        runNotifer.fireTestRunFinished( result );
+        runNotifier.fireTestRunFinished( result );
 
         JUnit4RunListener.rethrowAnyTestMechanismFailures( result );
 
-        closeRunNotifer( jUnit4TestSetReporter, customRunListeners );
+        closeRunNotifier( jUnit4TestSetReporter, customRunListeners );
         return reporterFactory.close();
     }
 
-    private void executeTestSet( Class<?> clazz, RunListener reporter, RunNotifier listeners,
-                                 String[] failingTestMethods )
-        throws ReporterException, TestSetFailedException
+    private void executeTestSet( Class<?> clazz, RunListener reporter, RunNotifier listeners )
     {
-        final ReportEntry report = new SimpleReportEntry( this.getClass().getName(), clazz.getName() );
-
+        final ReportEntry report = new SimpleReportEntry( getClass().getName(), clazz.getName() );
         reporter.testSetStarting( report );
-
-
-
         try
         {
-            if ( !StringUtils.isBlank( this.requestedTestMethod ) )
+            if ( !StringUtils.isBlank( requestedTestMethod ) )
             {
-                String actualTestMethod = getMethod( clazz, this.requestedTestMethod );//add by rainLee
+                String actualTestMethod = getMethod( clazz, requestedTestMethod );//add by rainLee
                 String[] testMethods = StringUtils.split( actualTestMethod, "+" );
                 executeWithRerun( clazz, listeners, testMethods );
             }
             else
             {//the original way
-                executeWithRerun( clazz, listeners, failingTestMethods );
+                executeWithRerun( clazz, listeners, null );
             }
-        }
-        catch ( TestSetFailedException e )
-        {
-            throw e;
         }
         catch ( Throwable e )
         {
@@ -179,7 +167,6 @@ public class JUnit4Provider
     }
 
     private void executeWithRerun( Class<?> clazz, RunNotifier listeners, String[] testMethods )
-        throws TestSetFailedException
     {
         JUnitTestFailureListener failureListener = new JUnitTestFailureListener();
         listeners.addListener( failureListener );
@@ -187,27 +174,20 @@ public class JUnit4Provider
         execute( clazz, listeners, testMethods );
 
         // Rerun failing tests if rerunFailingTestsCount is larger than 0
-        int rerunCount = this.rerunFailingTestsCount;
-        if ( rerunCount > 0 )
+        if ( rerunFailingTestsCount > 0 )
         {
-            for ( int i = 0; i < rerunCount; i++ )
+            for ( int i = 0; i < rerunFailingTestsCount && !failureListener.getAllFailures().isEmpty(); i++ )
             {
-                List<Failure> failures = failureListener.getAllFailures();
-                if ( failures.size() == 0 )
-                {
-                    break;
-                }
-
                 Set<String> methodsSet = JUnit4ProviderUtil.generateFailingTests( failureListener.getAllFailures() );
-                String[] methods = methodsSet.toArray(new String[methodsSet.size()]);
+                String[] methods = methodsSet.toArray( new String[ methodsSet.size() ] );
                 failureListener.reset();
                 execute( clazz, listeners, methods );
             }
         }
     }
 
-    private RunNotifier getRunNotifer( org.junit.runner.notification.RunListener main, Result result,
-                                       List<org.junit.runner.notification.RunListener> others )
+    private RunNotifier getRunNotifier( org.junit.runner.notification.RunListener main, Result result,
+                                        List<org.junit.runner.notification.RunListener> others )
     {
         RunNotifier fNotifier = new RunNotifier();
         fNotifier.addListener( main );
@@ -219,10 +199,10 @@ public class JUnit4Provider
         return fNotifier;
     }
 
-    // I am not entierly sure as to why we do this explicit freeing, it's one of those
+    // I am not entirely sure as to why we do this explicit freeing, it's one of those
     // pieces of code that just seem to linger on in here ;)
-    private void closeRunNotifer( org.junit.runner.notification.RunListener main,
-                                  List<org.junit.runner.notification.RunListener> others )
+    private void closeRunNotifier( org.junit.runner.notification.RunListener main,
+                                   List<org.junit.runner.notification.RunListener> others )
     {
         RunNotifier fNotifier = new RunNotifier();
         fNotifier.removeListener( main );
@@ -248,7 +228,7 @@ public class JUnit4Provider
     private void upgradeCheck()
         throws TestSetFailedException
     {
-        if ( isJunit4UpgradeCheck() )
+        if ( isJUnit4UpgradeCheck() )
         {
             List<Class> classesSkippedByValidation =
                 scanResult.getClassesSkippedByValidation( jUnit4TestChecker, testClassLoader );
@@ -268,37 +248,41 @@ public class JUnit4Provider
         }
     }
 
-    private boolean isJunit4UpgradeCheck()
+    private Description createTestsDescription()
     {
-        final String property = System.getProperty( "surefire.junit4.upgradecheck" );
-        return property != null;
+        Collection<Class<?>> classes = new ArrayList<Class<?>>();
+        for ( Class<?> clazz : testsToRun )
+        {
+            classes.add( clazz );
+        }
+        return JUnit4ProviderUtil.createSuiteDescription( classes );
     }
 
+    private static boolean isJUnit4UpgradeCheck()
+    {
+        return System.getProperty( "surefire.junit4.upgradecheck" ) != null;
+    }
 
     private static void execute( Class<?> testClass, RunNotifier fNotifier, String[] testMethods )
-        throws TestSetFailedException
     {
-        if ( null != testMethods )
+        if ( testMethods != null )
         {
-            Method[] methods = testClass.getMethods();
-            for ( Method method : methods )
+            for ( final Method method : testClass.getMethods() )
             {
-                for ( String testMethod : testMethods )
+                for ( final String testMethod : testMethods )
                 {
                     if ( SelectorUtils.match( testMethod, method.getName() ) )
                     {
-                        Runner junitTestRunner = Request.method( testClass, method.getName() ).getRunner();
-                        junitTestRunner.run( fNotifier );
+                        Request.method( testClass, method.getName() ).getRunner().run( fNotifier );
                     }
 
                 }
             }
-            return;
         }
-
-        Runner junitTestRunner = Request.aClass( testClass ).getRunner();
-
-        junitTestRunner.run( fNotifier );
+        else
+        {
+            Request.aClass( testClass ).getRunner().run( fNotifier );
+        }
     }
 
     /**
@@ -312,23 +296,19 @@ public class JUnit4Provider
      */
     private static String getMethod( Class testClass, String testMethodStr )
     {
-        String className = testClass.getName();
+        final String className = testClass.getName();
 
         if ( !testMethodStr.contains( "#" ) && !testMethodStr.contains( "," ) )
         {//the original way
             return testMethodStr;
         }
         testMethodStr += ",";//for the bellow  split code
-        int beginIndex = testMethodStr.indexOf( className );
-        int endIndex = testMethodStr.indexOf( ",", beginIndex );
-        String classMethodStr =
+        final int beginIndex = testMethodStr.indexOf( className );
+        final int endIndex = testMethodStr.indexOf( ",", beginIndex );
+        final String classMethodStr =
             testMethodStr.substring( beginIndex, endIndex );//String like "StopWatchTest#testLang315"
 
-        int index = classMethodStr.indexOf( '#' );
-        if ( index >= 0 )
-        {
-            return classMethodStr.substring( index + 1, classMethodStr.length() );
-        }
-        return null;
+        final int index = classMethodStr.indexOf( '#' );
+        return index >= 0 ? classMethodStr.substring( index + 1, classMethodStr.length() ) : null;
     }
 }

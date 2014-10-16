@@ -19,11 +19,14 @@ package org.apache.maven.surefire.common.junit4;
  * under the License.
  */
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import org.apache.maven.surefire.util.ReflectionUtils;
 
+import org.apache.maven.surefire.util.SurefireReflectionException;
 import org.junit.Ignore;
 import org.junit.runner.Description;
+import org.junit.runner.Request;
 
 public final class JUnit4Reflector
 {
@@ -49,4 +52,24 @@ public final class JUnit4Reflector
         return ignore != null ? ignore.value() : null;
     }
 
+    public Request createRequest( Class<?>... classes )
+    {
+        try {
+            return (Request) Request.class.getDeclaredMethod( "classes", Class[].class )// Since of JUnit 4.5
+                .invoke( null, new Object[]{ classes } );
+        }
+        catch ( NoSuchMethodException e )
+        {
+            return Request.classes( null, classes );// Since of JUnit 4.0
+        }
+        catch ( InvocationTargetException e )
+        {
+            throw new SurefireReflectionException( e.getCause() );
+        }
+        catch ( IllegalAccessException e )
+        {
+            // probably JUnit 5.x
+            throw new SurefireReflectionException( e );
+        }
+    }
 }

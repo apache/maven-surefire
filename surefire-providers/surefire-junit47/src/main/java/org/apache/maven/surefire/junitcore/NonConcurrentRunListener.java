@@ -56,20 +56,12 @@ public class NonConcurrentRunListener
 
     protected SimpleReportEntry createReportEntry( Description description )
     {
-        return new SimpleReportEntry( description.getClassName(), description.getDisplayName()/*
-                                                                                               * , (int) (
-                                                                                               * System.currentTimeMillis
-                                                                                               * () - startTime )
-                                                                                               */);
+        return new SimpleReportEntry( description.getClassName(), description.getDisplayName() );
     }
 
     protected SimpleReportEntry createReportEntryForTestSet( Description description )
     {
-        return new SimpleReportEntry( description.getClassName(), description.getClassName() /*
-                                                                                              * , (int) (
-                                                                                              * System.currentTimeMillis
-                                                                                              * () - startTime )
-                                                                                              */);
+        return new SimpleReportEntry( description.getClassName(), description.getClassName() );
     }
 
     @Override

@@ -22,13 +22,14 @@ package org.apache.maven.surefire.common.junit4;
 import org.apache.maven.surefire.util.TestsToRun;
 import org.apache.maven.surefire.util.internal.StringUtils;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.junit.runner.Description;
 import org.junit.runner.notification.Failure;
 
 import static org.apache.maven.surefire.common.junit4.JUnit4RunListener.isFailureInsideJUnitItself;
@@ -104,6 +105,14 @@ public class JUnit4ProviderUtil
             }
         }
         return failingMethods;
+    }
+
+    public static Description createSuiteDescription( Collection<Class<?>> classes )
+    {
+        JUnit4Reflector reflector = new JUnit4Reflector();
+        return reflector.createRequest( classes.toArray( new Class[classes.size()] ) )
+                .getRunner()
+                .getDescription();
     }
 
 }
