@@ -35,7 +35,7 @@ import java.util.concurrent.TimeUnit;
  * Used to execute tests annotated with {@link net.jcip.annotations.NotThreadSafe}.
  * <p/>
  *
- * @author <a href="mailto:tibor.digana@gmail.com">Tibor Digana (tibor17)</a>
+ * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @see ParallelComputerBuilder
  * @since 2.18
  */

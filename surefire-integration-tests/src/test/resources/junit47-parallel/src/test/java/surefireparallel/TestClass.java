@@ -22,7 +22,7 @@ package surefireparallel;
 import org.junit.Test;
 
 /**
- * @author <a href="mailto:tibor.digana@gmail.com">Tibor Digana (tibor17)</a>
+ * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.16
  */
 public class TestClass

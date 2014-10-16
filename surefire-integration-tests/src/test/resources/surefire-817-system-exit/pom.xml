@@ -27,7 +27,7 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
   <groupId>org.apache.maven.plugins.surefire</groupId>
-  <artifactId>jiras-surefire-1095</artifactId>
+  <artifactId>jiras-surefire-817</artifactId>
   <version>1.0</version>
   <url>http://maven.apache.org</url>
   <developers>
@@ -45,7 +45,7 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>${junit.version}</version>
+      <version>4.7</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -61,16 +61,15 @@
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
-          <includes>
-            <include>**/SomeTest.java</include>
-          </includes>
-          <properties>
-            <property>
-              <name>listener</name>
-              <value>jiras.surefire1095.Listener</value>
-            </property>
-          </properties>
+          <forkMode>always</forkMode>
         </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>org.apache.maven.surefire</groupId>
+            <artifactId>surefire-junit47</artifactId>
+            <version>${surefire.version}</version>
+          </dependency>
+        </dependencies>
       </plugin>
     </plugins>
   </build>

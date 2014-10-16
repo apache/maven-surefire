@@ -31,7 +31,7 @@ import static org.apache.maven.surefire.junitcore.pc.ExecutionStatus.*;
  * Wrapper of {@link ParallelComputer ParallelComputer status information} and tests been populated before
  * a shutdown hook has been triggered.
  *
- * @author <a href="mailto:tibor.digana@gmail.com">Tibor Digana (tibor17)</a>
+ * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @see ParallelComputer
  * @since 2.18
  */

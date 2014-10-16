@@ -37,7 +37,7 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
 /**
- * @author <a href="mailto:tibor.digana@gmail.com">Tibor Digana (tibor17)</a>
+ * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @see {@linkplain https://jira.codehaus.org/browse/SUREFIRE-1082}
  * @since 2.18
  */

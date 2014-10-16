@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.junitcore.pc;
+package jiras.surefire817;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,17 +19,11 @@ package org.apache.maven.surefire.junitcore.pc;
  * under the License.
  */
 
-/**
- * Status of {@link ParallelComputer ParallelComputer runtime}.<p/>
- * Used together with shutdown hook.
- *
- * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
- * @see ParallelComputer
- * @since 2.18
- */
-enum ExecutionStatus
-{
-    STARTED,
-    FINISHED,
-    TIMEOUT
+public class Test {
+    @org.junit.Test
+    public void test()
+    {
+        System.out.println( getClass() + " " + Thread.currentThread().getName() );
+        System.exit( 1 );
+    }
 }

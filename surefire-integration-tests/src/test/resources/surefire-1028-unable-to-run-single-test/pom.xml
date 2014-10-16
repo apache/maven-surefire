@@ -31,13 +31,17 @@
   <version>1.0</version>
   <name>jiras-surefire-1028</name>
   <url>http://maven.apache.org</url>
-  <contributors>
-    <contributor>
-      <name>Tibor Digana (tibor17)</name>
-      <email>tibor.digana@gmail.com</email>
-      <timezone>+1</timezone>
-    </contributor>
-  </contributors>
+  <developers>
+    <developer>
+      <id>tibordigana</id>
+      <name>Tibor Digaňa (tibor17)</name>
+      <email>tibordigana@apache.org</email>
+      <roles>
+        <role>Committer</role>
+      </roles>
+      <timezone>Europe/Bratislava</timezone>
+    </developer>
+  </developers>
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
@@ -50,7 +54,6 @@
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>2.5.1</version>
         <configuration>
           <source>1.5</source>
           <target>1.5</target>

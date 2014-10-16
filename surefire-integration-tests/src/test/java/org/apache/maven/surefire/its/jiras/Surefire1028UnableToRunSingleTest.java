@@ -37,7 +37,7 @@ import org.junit.Test;
  * Results :
  * Tests run: 0, Failures: 0, Errors: 0, Skipped: 0
  *
- * @author <a href="mailto:tibor.digana@gmail.com">Tibor Digana (tibor17)</a>
+ * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @see {@linkplain https://jira.codehaus.org/browse/SUREFIRE-1028}
  * @since 2.18
  */

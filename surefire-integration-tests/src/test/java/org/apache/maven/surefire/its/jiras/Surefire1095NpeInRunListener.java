@@ -40,7 +40,7 @@ import org.junit.Test;
  * of a Description instance that "describes the tests to be run "
  * Note: other methods in the RunListener I tested seems fine (i.e., they get a valid Description object as input)
  *
- * @author <a href="mailto:tibor.digana@gmail.com">Tibor Digana (tibor17)</a>
+ * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @see {@linkplain https://jira.codehaus.org/browse/SUREFIRE-1095}
  * @since 2.18
  */
