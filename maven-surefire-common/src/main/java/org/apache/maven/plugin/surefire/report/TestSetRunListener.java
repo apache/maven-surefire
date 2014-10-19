@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
-import org.apache.maven.shared.utils.StringUtils;
 import org.apache.maven.surefire.report.ConsoleLogger;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.ReportEntry;
@@ -40,8 +39,6 @@ public class TestSetRunListener
     implements RunListener, ConsoleOutputReceiver, ConsoleLogger
 {
     private final TestSetStats detailsForThis;
-
-    private ReportEntry lastMarkedAsCompleteAfterSkipped;
 
     private List<TestMethodStats> testMethodStats;
 
@@ -128,12 +125,6 @@ public class TestSetRunListener
 
     public void testSetCompleted( ReportEntry report )
     {
-        if ( wasMarkedAsCompleteAfterSkipped( report ) )
-        {
-            lastMarkedAsCompleteAfterSkipped = null;
-            return;
-        }
-
         WrappedReportEntry wrap = wrapTestSet( report );
         List<String> testResults = briefOrPlainFormat ? detailsForThis.getTestResults() : null;
         if ( fileReporter != null )
@@ -164,13 +155,6 @@ public class TestSetRunListener
         addTestMethodStats();
         detailsForThis.reset();
 
-    }
-
-    private boolean wasMarkedAsCompleteAfterSkipped( ReportEntry report )
-    {
-        return null != lastMarkedAsCompleteAfterSkipped
-            && StringUtils.equals( lastMarkedAsCompleteAfterSkipped.getName(), report.getName() )
-            && StringUtils.equals( lastMarkedAsCompleteAfterSkipped.getSourceName(), report.getSourceName() );
     }
 
     // ----------------------------------------------------------------------
@@ -230,23 +214,6 @@ public class TestSetRunListener
             statisticsReporter.testSkipped( reportEntry );
         }
         clearCapture();
-
-        if ( looksLikeIgnoredTestSet( reportEntry ) )
-        {
-            // if a class is marked as @Ignored, the testSetCompleted method is not always called by the test provider,
-            // so we do that here.
-            testSetCompleted( reportEntry );
-            lastMarkedAsCompleteAfterSkipped = reportEntry;
-        }
-    }
-
-    /**
-     * @param reportEntry the report entry to check
-     * @return {@code true}, if the report entry looks like it belongs to an ignored test class
-     */
-    private boolean looksLikeIgnoredTestSet( ReportEntry reportEntry )
-    {
-        return StringUtils.equals( reportEntry.getName(), reportEntry.getSourceName() );
     }
 
     public void testAssumptionFailure( ReportEntry report )

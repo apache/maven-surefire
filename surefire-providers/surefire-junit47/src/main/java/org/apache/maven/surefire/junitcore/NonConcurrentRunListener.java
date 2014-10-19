@@ -98,7 +98,7 @@ public class NonConcurrentRunListener
             {
                 return description.getChildren().equals( currentTestSetDescription.getChildren() );
             }
-            
+
             return false;
         }
 
@@ -127,6 +127,8 @@ public class NonConcurrentRunListener
     public void testFailure( Failure failure )
         throws Exception
     {
+        finishLastTestSetIfNecessary( failure.getDescription() );
+
         super.testFailure( failure );
         this.lastFinishedDescription = failure.getDescription();
     }
