@@ -41,7 +41,7 @@ public class TestSetRunListener
 {
     private final TestSetStats detailsForThis;
 
-    private ReportEntry lastSkipped;
+    private ReportEntry lastMarkedAsCompleteAfterSkipped;
 
     private List<TestMethodStats> testMethodStats;
 
@@ -112,8 +112,6 @@ public class TestSetRunListener
 
     public void testSetStarting( ReportEntry report )
     {
-        checkForUnfinishedTestSetDueToSkip( report );
-
         detailsForThis.testSetStart();
         if ( consoleReporter != null )
         {
@@ -130,7 +128,11 @@ public class TestSetRunListener
 
     public void testSetCompleted( ReportEntry report )
     {
-        clearLastSkipMarker();
+        if ( wasMarkedAsCompleteAfterSkipped( report ) )
+        {
+            lastMarkedAsCompleteAfterSkipped = null;
+            return;
+        }
 
         WrappedReportEntry wrap = wrapTestSet( report );
         List<String> testResults = briefOrPlainFormat ? detailsForThis.getTestResults() : null;
@@ -164,6 +166,13 @@ public class TestSetRunListener
 
     }
 
+    private boolean wasMarkedAsCompleteAfterSkipped( ReportEntry report )
+    {
+        return null != lastMarkedAsCompleteAfterSkipped
+            && StringUtils.equals( lastMarkedAsCompleteAfterSkipped.getName(), report.getName() )
+            && StringUtils.equals( lastMarkedAsCompleteAfterSkipped.getSourceName(), report.getSourceName() );
+    }
+
     // ----------------------------------------------------------------------
     // Test
     // ----------------------------------------------------------------------
@@ -187,8 +196,6 @@ public class TestSetRunListener
 
     public void testError( ReportEntry reportEntry )
     {
-        checkForUnfinishedTestSetDueToSkip( reportEntry );
-
         WrappedReportEntry wrapped = wrap( reportEntry, ReportEntryType.error );
         detailsForThis.testError( wrapped );
         if ( statisticsReporter != null )
@@ -200,8 +207,6 @@ public class TestSetRunListener
 
     public void testFailed( ReportEntry reportEntry )
     {
-        checkForUnfinishedTestSetDueToSkip( reportEntry );
-
         WrappedReportEntry wrapped = wrap( reportEntry, ReportEntryType.failure );
         detailsForThis.testFailure( wrapped );
         if ( statisticsReporter != null )
@@ -217,10 +222,6 @@ public class TestSetRunListener
 
     public void testSkipped( ReportEntry reportEntry )
     {
-        checkForUnfinishedTestSetDueToSkip( reportEntry );
-
-        lastSkipped = reportEntry;
-
         WrappedReportEntry wrapped = wrap( reportEntry, ReportEntryType.skipped );
 
         detailsForThis.testSkipped( wrapped );
@@ -229,20 +230,23 @@ public class TestSetRunListener
             statisticsReporter.testSkipped( reportEntry );
         }
         clearCapture();
-    }
 
-    private void checkForUnfinishedTestSetDueToSkip( ReportEntry reportEntry )
-    {
-        if ( lastSkipped != null && !StringUtils.equals( lastSkipped.getSourceName(), reportEntry.getSourceName() ) )
+        if ( looksLikeIgnoredTestSet( reportEntry ) )
         {
-            // a new test class was started to be processed, but a skipped test class was not yet marked as completed
-            testSetCompleted( lastSkipped );
+            // if a class is marked as @Ignored, the testSetCompleted method is not always called by the test provider,
+            // so we do that here.
+            testSetCompleted( reportEntry );
+            lastMarkedAsCompleteAfterSkipped = reportEntry;
         }
     }
 
-    private void clearLastSkipMarker()
+    /**
+     * @param reportEntry the report entry to check
+     * @return {@code true}, if the report entry looks like it belongs to an ignored test class
+     */
+    private boolean looksLikeIgnoredTestSet( ReportEntry reportEntry )
     {
-        lastSkipped = null;
+        return StringUtils.equals( reportEntry.getName(), reportEntry.getSourceName() );
     }
 
     public void testAssumptionFailure( ReportEntry report )
