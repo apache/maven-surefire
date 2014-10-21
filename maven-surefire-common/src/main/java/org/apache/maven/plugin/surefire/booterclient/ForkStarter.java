@@ -144,6 +144,7 @@ public class ForkStarter
         this.startupReportConfiguration = startupReportConfiguration;
         this.log = log;
         defaultReporterFactory = new DefaultReporterFactory( startupReportConfiguration );
+        defaultReporterFactory.runStarting();
         defaultReporterFactoryList = new ArrayList<DefaultReporterFactory>();
     }
 

@@ -68,7 +68,6 @@ public class DefaultReporterFactory
     {
         this.reportConfiguration = reportConfiguration;
         this.statisticsReporter = reportConfiguration.instantiateStatisticsReporter();
-        runStarting();
     }
 
     public RunListener createReporter()
