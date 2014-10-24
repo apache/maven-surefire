@@ -509,6 +509,7 @@ public class SurefireReportGenerator
                                     for ( String line : detail )
                                     {
                                         sink.text( line );
+                                        sink.unknown( "br", new Object[]{ HtmlMarkup.TAG_TYPE_SIMPLE }, null );
                                         sink.lineBreak();
                                     }
                                     sink.verbatim_();
