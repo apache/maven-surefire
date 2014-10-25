@@ -34,7 +34,7 @@ import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 import org.junit.runners.model.RunnerScheduler;
 
-/*
+/**
  * @author Kristian Rosenvold
  */
 public class ConfigurableParallelComputer

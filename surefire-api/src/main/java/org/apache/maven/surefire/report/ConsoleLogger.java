@@ -29,5 +29,5 @@ package org.apache.maven.surefire.report;
  */
 public interface ConsoleLogger
 {
-    public void info( String message );
+    void info( String message );
 }

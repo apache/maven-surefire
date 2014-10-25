@@ -32,8 +32,8 @@ import org.apache.maven.plugins.annotations.Mojo;
  * @author <a href="mailto:baerrach@gmail.com">Barrie Treloar</a>
  * @since 2.3
  */
-@Mojo(name = "report-only")
-@Execute(phase = LifecyclePhase.NONE)
+@Mojo( name = "report-only" )
+@Execute( phase = LifecyclePhase.NONE )
 public class SurefireReportOnlyMojo
     extends SurefireReportMojo
 {

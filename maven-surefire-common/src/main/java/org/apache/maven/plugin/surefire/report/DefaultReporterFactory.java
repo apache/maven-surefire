@@ -175,12 +175,12 @@ public class DefaultReporterFactory
         boolean seenSuccess = false, seenFailure = false;
         for ( ReportEntryType resultType : reportEntryList )
         {
-            if ( resultType == ReportEntryType.success )
+            if ( resultType == ReportEntryType.SUCCESS )
             {
                 seenSuccess = true;
             }
-            else if ( resultType == ReportEntryType.failure
-                || resultType == ReportEntryType.error )
+            else if ( resultType == ReportEntryType.FAILURE
+                || resultType == ReportEntryType.ERROR )
             {
                 seenFailure = true;
             }
@@ -198,11 +198,11 @@ public class DefaultReporterFactory
 
         if ( !seenSuccess && seenFailure )
         {
-            if ( reportEntryList.get( 0 ) == ReportEntryType.failure )
+            if ( reportEntryList.get( 0 ) == ReportEntryType.FAILURE )
             {
                 return TestResultType.failure;
             }
-            else if ( reportEntryList.get( 0 ) == ReportEntryType.error )
+            else if ( reportEntryList.get( 0 ) == ReportEntryType.ERROR )
             {
                 return TestResultType.error;
             }
@@ -219,8 +219,8 @@ public class DefaultReporterFactory
     }
 
     /**
-     * Merge all the TestMethodStats in each TestRunListeners and put results into flakyTests, failedTests and errorTests,
-     * indexed by test class and method name. Update globalStatistics based on the result of the merge.
+     * Merge all the TestMethodStats in each TestRunListeners and put results into flakyTests, failedTests and
+     * errorTests, indexed by test class and method name. Update globalStatistics based on the result of the merge.
      */
     void mergeTestHistoryResult()
     {
@@ -261,7 +261,7 @@ public class DefaultReporterFactory
             completedCount++;
 
             List<ReportEntryType> resultTypeList = new ArrayList<ReportEntryType>();
-            for (TestMethodStats methodStats : testMethodStats)
+            for ( TestMethodStats methodStats : testMethodStats )
             {
                 resultTypeList.add( methodStats.getResultType() );
             }
@@ -273,8 +273,10 @@ public class DefaultReporterFactory
                 case success:
                     // If there are multiple successful runs of the same test, count all of them
                     int successCount = 0;
-                    for (ReportEntryType type : resultTypeList) {
-                        if (type == ReportEntryType.success) {
+                    for ( ReportEntryType type : resultTypeList )
+                    {
+                        if ( type == ReportEntryType.SUCCESS )
+                        {
                             successCount++;
                         }
                     }

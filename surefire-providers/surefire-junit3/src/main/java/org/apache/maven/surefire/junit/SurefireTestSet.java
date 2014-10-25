@@ -22,6 +22,10 @@ package org.apache.maven.surefire.junit;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
+/**
+ * Describes a single test set
+ *
+ */
 public interface SurefireTestSet
 {
     void execute( RunListener reportManager, ClassLoader loader )

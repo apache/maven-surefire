@@ -109,14 +109,16 @@ public class ForkedBooter
                     new LegacyPojoStackTraceWriter( "test subystem", "no method", t.getTargetException() );
                 StringBuilder stringBuilder = new StringBuilder();
                 ForkingRunListener.encode( stringBuilder, stackTraceWriter, false );
-                originalOut.println( ( (char) ForkingRunListener.BOOTERCODE_ERROR ) + ",0," + stringBuilder.toString() );
+                originalOut.println( ( (char) ForkingRunListener.BOOTERCODE_ERROR )
+                                     + ",0," + stringBuilder.toString() );
             }
             catch ( Throwable t )
             {
                 StackTraceWriter stackTraceWriter = new LegacyPojoStackTraceWriter( "test subystem", "no method", t );
                 StringBuilder stringBuilder = new StringBuilder();
                 ForkingRunListener.encode( stringBuilder, stackTraceWriter, false );
-                originalOut.println( ( (char) ForkingRunListener.BOOTERCODE_ERROR ) + ",0," + stringBuilder.toString() );
+                originalOut.println( ( (char) ForkingRunListener.BOOTERCODE_ERROR )
+                                     + ",0," + stringBuilder.toString() );
             }
             // Say bye.
             originalOut.println( ( (char) ForkingRunListener.BOOTERCODE_BYE ) + ",0,BYE!" );
@@ -134,7 +136,7 @@ public class ForkedBooter
         }
     }
 
-    private final static long SYSTEM_EXIT_TIMEOUT = 30 * 1000;
+    private static final long SYSTEM_EXIT_TIMEOUT = 30 * 1000;
 
     private static void exit( final int returnCode )
     {
@@ -161,6 +163,7 @@ public class ForkedBooter
         return SurefireReflector.createForkingReporterFactoryInCurrentClassLoader( trimStackTrace, originalSystemOut );
     }
 
+    @SuppressWarnings( "checkstyle:emptyblock" )
     private static void launchLastDitchDaemonShutdownThread( final int returnCode )
     {
         Thread lastExit = new Thread( new Runnable()

@@ -75,7 +75,7 @@ class BooterSerializer
         ClasspathConfiguration cp = providerConfiguration.getClasspathConfiguration();
         properties.setClasspath( ClasspathConfiguration.CLASSPATH, cp.getTestClasspath() );
         properties.setClasspath( ClasspathConfiguration.SUREFIRE_CLASSPATH, cp.getProviderClasspath() );
-        properties.setProperty( ClasspathConfiguration.ENABLE_ASSERTIONS, String.valueOf( cp.isEnableAssertions()) );
+        properties.setProperty( ClasspathConfiguration.ENABLE_ASSERTIONS, String.valueOf( cp.isEnableAssertions() ) );
         properties.setProperty( ClasspathConfiguration.CHILD_DELEGATION, String.valueOf( cp.isChildDelegation() ) );
 
         TestArtifactInfo testNg = booterConfiguration.getTestArtifact();
@@ -94,7 +94,8 @@ class BooterSerializer
             properties.setProperty( BooterConstants.SOURCE_DIRECTORY, testSuiteDefinition.getTestSourceDirectory() );
             properties.addList( testSuiteDefinition.getSuiteXmlFiles(), BooterConstants.TEST_SUITE_XML_FILES );
             properties.setNullableProperty( BooterConstants.REQUESTEDTEST, testSuiteDefinition.getRequestedTest() );
-            properties.setNullableProperty( BooterConstants.REQUESTEDTESTMETHOD, testSuiteDefinition.getRequestedTestMethod() );
+            properties.setNullableProperty( BooterConstants.REQUESTEDTESTMETHOD,
+                                            testSuiteDefinition.getRequestedTestMethod() );
             properties.setNullableProperty( BooterConstants.RERUN_FAILING_TESTS_COUNT,
                                             String.valueOf( testSuiteDefinition.getRerunFailingTestsCount() ) );
         }

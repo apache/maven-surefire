@@ -96,12 +96,19 @@ public class PropertiesWrapper
     {
         String value;
         List<String> result = new ArrayList<String>();
-        // Whoa, C !!
-        for ( int i = 0; ( value = getProperty( propertyPrefix + i ) ) != null; i++ )
+
+        int i = 0;
+        while ( true )
         {
+            value = getProperty( propertyPrefix + ( i++ ) );
+
+            if ( value == null )
+            {
+                return result;
+            }
+
             result.add( value );
         }
-        return result;
     }
 
     /**

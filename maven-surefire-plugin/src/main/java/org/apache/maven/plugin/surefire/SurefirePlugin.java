@@ -64,8 +64,8 @@ public class SurefirePlugin
      * This parameter overrides the <code>includes/excludes</code> parameters, and the TestNG <code>suiteXmlFiles</code>
      * parameter.
      * <p/>
-     * Since 2.7.3, you can execute a limited number of methods in the test by adding #myMethod or #my*ethod. For example,
-     * "-Dtest=MyTest#myMethod".  This is supported for junit 4.x and testNg.
+     * Since 2.7.3, you can execute a limited number of methods in the test by adding #myMethod or #my*ethod. For
+     * example, "-Dtest=MyTest#myMethod". This is supported for junit 4.x and testNg.
      */
     @Parameter( property = "test" )
     private String test;
@@ -145,7 +145,7 @@ public class SurefirePlugin
      */
     @Parameter( property = "surefire.parallel.forcedTimeout" )
     private double parallelTestsTimeoutForcedInSeconds;
-    
+
     /**
      * A list of &lt;include> elements specifying the tests (by pattern) that should be included in testing. When not
      * specified and when the <code>test</code> parameter is not specified, the default includes will be <code><br/>
@@ -195,7 +195,8 @@ public class SurefirePlugin
     @Parameter( property = "surefire.rerunFailingTestsCount", defaultValue = "0" )
     protected int rerunFailingTestsCount;
 
-    protected int getRerunFailingTestsCount() {
+    protected int getRerunFailingTestsCount()
+    {
         return rerunFailingTestsCount;
     }
 
@@ -341,7 +342,7 @@ public class SurefirePlugin
             String singleTest = aTestArray;
             int index = singleTest.indexOf( '#' );
             if ( index >= 0 )
-            {// the way version 2.7.3.  support single test method
+            { // the way version 2.7.3. support single test method
                 singleTest = singleTest.substring( 0, index );
             }
             tests.append( singleTest );
@@ -368,7 +369,7 @@ public class SurefirePlugin
             {
                 String testStrAfterFirstSharp = this.test.substring( index + 1, this.test.length() );
                 if ( !testStrAfterFirstSharp.contains( "+" ) )
-                {//the original way
+                { //the original way
                     return testStrAfterFirstSharp;
                 }
                 else
@@ -464,19 +465,23 @@ public class SurefirePlugin
         this.forkedProcessTimeoutInSeconds = forkedProcessTimeoutInSeconds;
     }
 
-    public double getParallelTestsTimeoutInSeconds() {
+    public double getParallelTestsTimeoutInSeconds()
+    {
         return parallelTestsTimeoutInSeconds;
     }
 
-    public void setParallelTestsTimeoutInSeconds( double parallelTestsTimeoutInSeconds ) {
+    public void setParallelTestsTimeoutInSeconds( double parallelTestsTimeoutInSeconds )
+    {
         this.parallelTestsTimeoutInSeconds = parallelTestsTimeoutInSeconds;
     }
 
-    public double getParallelTestsTimeoutForcedInSeconds() {
+    public double getParallelTestsTimeoutForcedInSeconds()
+    {
         return parallelTestsTimeoutForcedInSeconds;
     }
 
-    public void setParallelTestsTimeoutForcedInSeconds( double parallelTestsTimeoutForcedInSeconds ) {
+    public void setParallelTestsTimeoutForcedInSeconds( double parallelTestsTimeoutForcedInSeconds )
+    {
         this.parallelTestsTimeoutForcedInSeconds = parallelTestsTimeoutForcedInSeconds;
     }
 

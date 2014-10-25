@@ -99,7 +99,9 @@ public class PropertiesWrapperTest
 
     private Classpath createClasspathWithTwoElements()
     {
-        return Classpath.emptyClasspath().addClassPathElementUrl( FIRST_ELEMENT ).addClassPathElementUrl( SECOND_ELEMENT );
+        return Classpath.emptyClasspath()
+                        .addClassPathElementUrl( FIRST_ELEMENT )
+                        .addClassPathElementUrl( SECOND_ELEMENT );
     }
 
     private Classpath readClasspathFromProperties()

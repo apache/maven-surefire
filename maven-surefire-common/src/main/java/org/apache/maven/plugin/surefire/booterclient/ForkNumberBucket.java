@@ -1,5 +1,24 @@
 package org.apache.maven.plugin.surefire.booterclient;
 
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -7,7 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * A bucket from which fork numbers can be drawn. Any drawn number needs to be returned to the bucket, in order to keep
  * the range of provided values delivered as small as possible.
- * 
+ *
  * @author Andreas Gudian
  */
 public class ForkNumberBucket
@@ -32,7 +51,7 @@ public class ForkNumberBucket
      */
     public static int drawNumber()
     {
-        return getInstance()._drawNumber();
+        return getInstance().drawNumberInternal();
     }
 
     /**
@@ -40,7 +59,7 @@ public class ForkNumberBucket
      */
     public static void returnNumber( int number )
     {
-        getInstance()._returnNumber( number );
+        getInstance().returnNumberInternal( number );
     }
 
     /**
@@ -55,7 +74,7 @@ public class ForkNumberBucket
      * @return a fork number that is not currently in use. The value must be returned to the bucket using
      *         {@link #returnNumber(int)}.
      */
-    protected int _drawNumber()
+    protected int drawNumberInternal()
     {
         Integer nextFree = qFree.poll();
 
@@ -80,7 +99,7 @@ public class ForkNumberBucket
     /**
      * @param number the number to return to the bucket so that it can be reused.
      */
-    protected void _returnNumber( int number )
+    protected void returnNumberInternal( int number )
     {
         qFree.add( Integer.valueOf( number ) );
     }

@@ -154,9 +154,9 @@ public class SurefireReflector
         }
         Class[] arguments = { List.class, File.class, String.class, String.class, int.class };
         Constructor constructor = ReflectionUtils.getConstructor( this.testRequest, arguments );
-        return ReflectionUtils.newInstance(constructor, new Object[]{ suiteDefinition.getSuiteXmlFiles(),
+        return ReflectionUtils.newInstance( constructor, new Object[]{ suiteDefinition.getSuiteXmlFiles(),
             suiteDefinition.getTestSourceDirectory(), suiteDefinition.getRequestedTest(),
-            suiteDefinition.getRequestedTestMethod(), suiteDefinition.getRerunFailingTestsCount() });
+            suiteDefinition.getRequestedTestMethod(), suiteDefinition.getRerunFailingTestsCount() } );
     }
 
 
@@ -217,7 +217,8 @@ public class SurefireReflector
             reporterConfiguration.isTrimStackTrace() } );
     }
 
-    public static ReporterFactory createForkingReporterFactoryInCurrentClassLoader( Boolean trimStackTrace, PrintStream originalSystemOut )
+    public static ReporterFactory createForkingReporterFactoryInCurrentClassLoader( Boolean trimStackTrace,
+                                                                                    PrintStream originalSystemOut )
     {
         return new ForkingReporterFactory( trimStackTrace, originalSystemOut );
     }

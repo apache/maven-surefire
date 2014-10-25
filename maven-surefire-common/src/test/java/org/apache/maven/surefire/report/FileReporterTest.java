@@ -43,7 +43,7 @@ public class FileReporterTest
         File reportDir = new File( "target" );
         reportEntry = new SimpleReportEntry( this.getClass().getName(), testName );
         WrappedReportEntry wrappedReportEntry =
-            new WrappedReportEntry( reportEntry, ReportEntryType.success, 12, null, null );
+            new WrappedReportEntry( reportEntry, ReportEntryType.SUCCESS, 12, null, null );
         reporter = new FileReporter( reportDir, null );
         reporter.testSetCompleted( wrappedReportEntry, createTestSetStats(), new ArrayList<String>() );
 
@@ -64,7 +64,7 @@ public class FileReporterTest
         String suffixText = "sampleSuffixText";
         reportEntry = new SimpleReportEntry( this.getClass().getName(), testName );
         WrappedReportEntry wrappedReportEntry =
-            new WrappedReportEntry( reportEntry, ReportEntryType.success, 12, null, null );
+            new WrappedReportEntry( reportEntry, ReportEntryType.SUCCESS, 12, null, null );
         reporter = new FileReporter( reportDir, suffixText );
         reporter.testSetCompleted( wrappedReportEntry, createTestSetStats(), new ArrayList<String>() );
 

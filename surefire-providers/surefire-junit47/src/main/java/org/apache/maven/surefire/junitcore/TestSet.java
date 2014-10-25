@@ -47,7 +47,7 @@ public class TestSet
 
     private final List<TestMethod> testMethods = Collections.synchronizedList( new ArrayList<TestMethod>() );
 
-    private static final InheritableThreadLocal<TestSet> testSet = new InheritableThreadLocal<TestSet>();
+    private static final InheritableThreadLocal<TestSet> TEST_SET = new InheritableThreadLocal<TestSet>();
 
     private final AtomicBoolean allScheduled = new AtomicBoolean();
 
@@ -152,12 +152,12 @@ public class TestSet
 
     public void attachToThread()
     {
-        testSet.set( this );
+        TEST_SET.set( this );
     }
 
     public static TestSet getThreadTestSet()
     {
-        return testSet.get();
+        return TEST_SET.get();
     }
 
     public LogicalStream getClassLevelLogicalStream()

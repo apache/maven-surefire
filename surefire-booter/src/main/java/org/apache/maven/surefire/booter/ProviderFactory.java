@@ -25,7 +25,6 @@ import java.lang.reflect.Method;
 import java.util.Iterator;
 
 import org.apache.maven.surefire.providerapi.SurefireProvider;
-import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.ReflectionUtils;
@@ -49,7 +48,7 @@ public class ProviderFactory
 
     private final Object reporterManagerFactory;
 
-    private static final Class[] invokeParamaters = new Class[]{ Object.class };
+    private static final Class[] INVOKE_PARAMETERS = new Class[]{ Object.class };
 
 
     public ProviderFactory( StartupConfiguration startupConfiguration, ProviderConfiguration providerConfiguration,
@@ -117,7 +116,7 @@ public class ProviderFactory
     }
 
 
-    private class ProviderProxy
+    private final class ProviderProxy
         implements SurefireProvider
     {
         private final Object providerInOtherClassLoader;
@@ -145,13 +144,13 @@ public class ProviderFactory
         }
 
         public RunResult invoke( Object forkTestSet )
-            throws TestSetFailedException, ReporterException, InvocationTargetException
+            throws TestSetFailedException, InvocationTargetException
         {
             ClassLoader current = swapClassLoader( testsClassLoader );
             try
             {
                 final Method invoke =
-                    ReflectionUtils.getMethod( providerInOtherClassLoader.getClass(), "invoke", invokeParamaters );
+                    ReflectionUtils.getMethod( providerInOtherClassLoader.getClass(), "invoke", INVOKE_PARAMETERS );
 
                 final Object result = ReflectionUtils.invokeMethodWithArray2( providerInOtherClassLoader, invoke,
                                                                               new Object[]{ forkTestSet } );

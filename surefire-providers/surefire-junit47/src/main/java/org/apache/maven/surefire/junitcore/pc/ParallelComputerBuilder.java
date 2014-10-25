@@ -19,20 +19,6 @@ package org.apache.maven.surefire.junitcore.pc;
  * under the License.
  */
 
-import net.jcip.annotations.NotThreadSafe;
-import org.apache.maven.surefire.junitcore.JUnitCoreParameters;
-import org.apache.maven.surefire.testset.TestSetFailedException;
-import org.junit.internal.runners.ErrorReportingRunner;
-import org.junit.runner.Description;
-import org.junit.runner.Runner;
-import org.junit.runner.manipulation.Filter;
-import org.junit.runner.manipulation.NoTestsRemainException;
-import org.junit.runner.notification.RunNotifier;
-import org.junit.runners.ParentRunner;
-import org.junit.runners.Suite;
-import org.junit.runners.model.InitializationError;
-import org.junit.runners.model.RunnerBuilder;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -46,8 +32,25 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import static org.apache.maven.surefire.junitcore.pc.ParallelComputerUtil.*;
-import static org.apache.maven.surefire.junitcore.pc.Type.*;
+import net.jcip.annotations.NotThreadSafe;
+
+import org.apache.maven.surefire.junitcore.JUnitCoreParameters;
+import org.apache.maven.surefire.testset.TestSetFailedException;
+import org.junit.internal.runners.ErrorReportingRunner;
+import org.junit.runner.Description;
+import org.junit.runner.Runner;
+import org.junit.runner.manipulation.Filter;
+import org.junit.runner.manipulation.NoTestsRemainException;
+import org.junit.runner.notification.RunNotifier;
+import org.junit.runners.ParentRunner;
+import org.junit.runners.Suite;
+import org.junit.runners.model.InitializationError;
+import org.junit.runners.model.RunnerBuilder;
+
+import static org.apache.maven.surefire.junitcore.pc.ParallelComputerUtil.resolveConcurrency;
+import static org.apache.maven.surefire.junitcore.pc.Type.CLASSES;
+import static org.apache.maven.surefire.junitcore.pc.Type.METHODS;
+import static org.apache.maven.surefire.junitcore.pc.Type.SUITES;
 
 /**
  * Executing suites, classes and methods with defined concurrency. In this example the threads which completed
@@ -292,7 +295,7 @@ public final class ParallelComputerBuilder
                 long suitesCount = suites.size();
                 long classesCount = classes.size() + nestedClasses.size();
                 long methodsCount = suiteClasses.embeddedChildrenCount + nestedClassesChildren;
-                if (!ParallelComputerBuilder.this.runningInTests)
+                if ( !ParallelComputerBuilder.this.runningInTests )
                 {
                     determineThreadCounts( suitesCount, classesCount, methodsCount );
                 }
@@ -344,7 +347,7 @@ public final class ParallelComputerBuilder
             allGroups.put( CLASSES, concurrency.classes );
             allGroups.put( METHODS, concurrency.methods );
             poolCapacity = concurrency.capacity;
-            splitPool &= concurrency.capacity <= 0;//fault if negative; should not happen
+            splitPool &= concurrency.capacity <= 0; // fault if negative; should not happen
         }
 
         private <T extends Runner> WrappedRunners wrapRunners( Collection<T> runners )

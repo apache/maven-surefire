@@ -18,6 +18,7 @@ package org.apache.maven.plugin.surefire.util;
  * specific language governing permissions and limitations
  * under the License.
  */
+
 import static org.apache.maven.plugin.surefire.util.ScannerUtil.convertJarFileResourceToJavaClassName;
 import static org.apache.maven.plugin.surefire.util.ScannerUtil.convertSlashToSystemFileSeparator;
 import static org.apache.maven.plugin.surefire.util.ScannerUtil.processIncludesExcludes;
@@ -40,7 +41,7 @@ import javax.annotation.Nullable;
 
 /**
  * Scans dependencies looking for tests.
- * 
+ *
  * @author Aslak Knutsen
  */
 public class DependencyScanner
@@ -50,11 +51,13 @@ public class DependencyScanner
 
     protected final List<String> includes;
 
+    @SuppressWarnings( "checkstyle:modifierorder" )
     protected final @Nonnull List<String> excludes;
 
     protected final List<String> specificTests;
 
-    public DependencyScanner( List<File> dependenciesToScan, List<String> includes, @Nonnull List<String> excludes, List<String> specificTests )
+    public DependencyScanner( List<File> dependenciesToScan, List<String> includes, @Nonnull List<String> excludes,
+                              List<String> specificTests )
     {
         this.dependenciesToScan = dependenciesToScan;
         this.includes = includes;
@@ -130,9 +133,8 @@ public class DependencyScanner
                 String[] groupArtifact = groups.split( ":" );
                 if ( groupArtifact.length != 2 )
                 {
-                    throw new IllegalArgumentException(
-                                                        "dependencyToScan argument should be in format 'groupid:artifactid': "
-                                                            + groups );
+                    throw new IllegalArgumentException( "dependencyToScan argument should be in format"
+                        + " 'groupid:artifactid': " + groups );
                 }
                 if ( artifact.getGroupId().matches( groupArtifact[0] )
                     && artifact.getArtifactId().matches( groupArtifact[1] ) )
@@ -153,7 +155,8 @@ public class DependencyScanner
 
         private SpecificFileFilter specificTestFilter;
 
-        public Matcher( @Nullable List<String> includes, @Nonnull List<String> excludes, @Nullable List<String> specificTests )
+        public Matcher( @Nullable List<String> includes, @Nonnull List<String> excludes,
+                        @Nullable List<String> specificTests )
         {
             String[] specific = specificTests == null ? new String[0] : processIncludesExcludes( specificTests );
             specificTestFilter = new SpecificFileFilter( specific );

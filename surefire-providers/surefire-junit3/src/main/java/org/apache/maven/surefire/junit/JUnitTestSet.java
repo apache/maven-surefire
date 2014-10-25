@@ -26,6 +26,10 @@ import org.apache.maven.surefire.common.junit3.JUnit3Reflector;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
+/**
+ * JUnit3 test set
+ *
+ */
 public final class JUnitTestSet
     implements SurefireTestSet
 {

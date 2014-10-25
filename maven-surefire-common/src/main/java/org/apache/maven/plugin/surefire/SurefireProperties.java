@@ -1,4 +1,5 @@
 package org.apache.maven.plugin.surefire;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -18,14 +19,11 @@ package org.apache.maven.plugin.surefire;
  * under the License.
  */
 
-import org.apache.maven.surefire.booter.Classpath;
-import org.apache.maven.surefire.booter.KeyValueSource;
-import org.apache.maven.surefire.util.internal.StringUtils;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -35,6 +33,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+
+import org.apache.maven.surefire.booter.Classpath;
+import org.apache.maven.surefire.booter.KeyValueSource;
+import org.apache.maven.surefire.util.internal.StringUtils;
 
 /**
  * A properties implementation that preserves insertion order.
@@ -111,19 +113,15 @@ public class SurefireProperties
         return keySet();
     }
 
-    private static final Set<String> keysThatCannotBeUsedAsSystemProperties = new HashSet<String>()
-    {{
-            add( "java.library.path" );
-            add( "file.encoding" );
-            add( "jdk.map.althashing.threshold" );
-        }};
+    private static final Set<String> KEYS_THAT_CANNOT_BE_USED_AS_SYSTEM_PROPERTIES = new HashSet<String>(
+                    Arrays.asList( "java.library.path", "file.encoding", "jdk.map.althashing.threshold" ) );
 
     public Set<Object> propertiesThatCannotBeSetASystemProperties()
     {
         Set<Object> result = new HashSet<Object>();
         for ( Object key : getStringKeySet() )
         {
-            if ( keysThatCannotBeUsedAsSystemProperties.contains( key ) )
+            if ( KEYS_THAT_CANNOT_BE_USED_AS_SYSTEM_PROPERTIES.contains( key ) )
             {
                 result.add( key );
             }

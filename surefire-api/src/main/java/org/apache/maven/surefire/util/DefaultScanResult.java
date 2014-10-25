@@ -32,7 +32,7 @@ public class DefaultScanResult
 {
     private final List<String> files;
 
-    private static final String scanResultNo = "tc.";
+    private static final String SCAN_RESULT_NUMBER = "tc.";
 
     public DefaultScanResult( List<String> files )
     {
@@ -54,7 +54,7 @@ public class DefaultScanResult
         int size = files.size();
         for ( int i = 0; i < size; i++ )
         {
-            properties.setProperty( scanResultNo + i, files.get( i ) );
+            properties.setProperty( SCAN_RESULT_NUMBER + i, files.get( i ) );
         }
     }
 
@@ -64,7 +64,7 @@ public class DefaultScanResult
         int i = 0;
         while ( true )
         {
-            String item = properties.getProperty( scanResultNo + ( i++ ) );
+            String item = properties.getProperty( SCAN_RESULT_NUMBER + ( i++ ) );
             if ( item == null )
             {
                 return new DefaultScanResult( result );
@@ -137,7 +137,8 @@ public class DefaultScanResult
         return testClass;
     }
 
-    public DefaultScanResult append(DefaultScanResult other){
+    public DefaultScanResult append( DefaultScanResult other )
+    {
         if ( other != null )
         {
             List<String> src = new ArrayList<String>( files );
@@ -149,6 +150,5 @@ public class DefaultScanResult
             return this;
         }
     }
-
 
 }

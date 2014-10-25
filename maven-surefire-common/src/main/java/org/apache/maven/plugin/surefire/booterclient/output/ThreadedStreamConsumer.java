@@ -31,10 +31,10 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class ThreadedStreamConsumer
     implements StreamConsumer
 {
-
     private final java.util.concurrent.BlockingQueue<String> items = new LinkedBlockingQueue<String>();
 
-    private static final String poison = "Pioson";
+    private static final String POISON = "Pioson";
+    private static final int ITEM_LIMIT_BEFORE_SLEEP = 10000;
 
     private final Thread thread;
 
@@ -62,7 +62,7 @@ public class ThreadedStreamConsumer
             {
                 String item = queue.take();
                 //noinspection StringEquality
-                while ( item != poison )
+                while ( item != POISON )
                 {
                     target.consumeLine( item );
                     item = queue.take();
@@ -89,10 +89,11 @@ public class ThreadedStreamConsumer
         thread.start();
     }
 
+    @SuppressWarnings( "checkstyle:emptyblock" )
     public void consumeLine( String s )
     {
         items.add( s );
-        if ( items.size() > 10000 )
+        if ( items.size() > ITEM_LIMIT_BEFORE_SLEEP )
         {
             try
             {
@@ -109,7 +110,7 @@ public class ThreadedStreamConsumer
     {
         try
         {
-            items.add( poison );
+            items.add( POISON );
             thread.join();
         }
         catch ( InterruptedException e )

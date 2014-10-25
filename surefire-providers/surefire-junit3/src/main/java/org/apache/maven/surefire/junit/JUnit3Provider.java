@@ -27,7 +27,6 @@ import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.report.ConsoleOutputCapture;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.SimpleReportEntry;
@@ -72,7 +71,7 @@ public class JUnit3Provider
     }
 
     public RunResult invoke( Object forkTestSet )
-        throws TestSetFailedException, ReporterException
+        throws TestSetFailedException
     {
         if ( testsToRun == null )
         {
@@ -121,7 +120,7 @@ public class JUnit3Provider
     }
 
     private void executeTestSet( SurefireTestSet testSet, RunListener reporter, ClassLoader classLoader )
-        throws ReporterException, TestSetFailedException
+        throws TestSetFailedException
     {
 
         ReportEntry report = new SimpleReportEntry( this.getClass().getName(), testSet.getName() );

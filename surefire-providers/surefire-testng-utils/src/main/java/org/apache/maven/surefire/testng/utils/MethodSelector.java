@@ -37,11 +37,11 @@ public class MethodSelector
     implements IMethodSelector
 {
 
-    private static String METHOD_NAME = null;
+    private static String methodName = null;
 
     public void setTestMethods( List arg0 )
     {
-        // noop                    
+        // noop
     }
 
     public boolean includeMethod( IMethodSelectorContext context, ITestNGMethod testngMethod, boolean isTestMethod )
@@ -59,11 +59,11 @@ public class MethodSelector
             return true;
         }
 
-        return SelectorUtils.match( METHOD_NAME, testngMethod.getMethodName() );
+        return SelectorUtils.match( methodName, testngMethod.getMethodName() );
     }
 
     public static void setMethodName( String methodName )
     {
-        METHOD_NAME = methodName;
+        MethodSelector.methodName = methodName;
     }
 }

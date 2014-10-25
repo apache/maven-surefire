@@ -45,6 +45,7 @@ public class ProviderList
     }
 
 
+    @SuppressWarnings( "checkstyle:modifierorder" )
     public @Nonnull List<ProviderInfo> resolve( @Nonnull Log log )
     {
         List<ProviderInfo> providersToRun = new ArrayList<ProviderInfo>();
@@ -65,6 +66,7 @@ public class ProviderList
         return autoDetectOneProvider();
     }
 
+    @SuppressWarnings( "checkstyle:modifierorder" )
     private @Nonnull List<ProviderInfo> autoDetectOneProvider()
     {
         List<ProviderInfo> providersToRun = new ArrayList<ProviderInfo>();

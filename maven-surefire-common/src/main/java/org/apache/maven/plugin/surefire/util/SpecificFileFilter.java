@@ -28,6 +28,10 @@ import org.apache.maven.shared.utils.io.SelectorUtils;
 
 import static org.apache.maven.plugin.surefire.util.ScannerUtil.convertSlashToSystemFileSeparator;
 
+/**
+ * filters file names by a given collection of class name patterns
+ *
+ */
 public class SpecificFileFilter
 {
 

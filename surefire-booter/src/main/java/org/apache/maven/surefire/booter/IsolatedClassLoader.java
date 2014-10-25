@@ -102,8 +102,6 @@ public class IsolatedClassLoader
 
     public String toString()
     {
-        return "IsolatedClassLoader{" +
-            "roleName='" + roleName + '\'' +
-            '}';
+        return "IsolatedClassLoader{roleName='" + roleName + "'}";
     }
 }

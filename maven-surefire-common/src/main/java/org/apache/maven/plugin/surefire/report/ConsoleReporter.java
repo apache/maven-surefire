@@ -25,7 +25,6 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.List;
 import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.report.ReporterException;
 
 /**
  * Base class for console reporters.
@@ -53,7 +52,6 @@ public class ConsoleReporter
     }
 
     public void testSetStarting( ReportEntry report )
-        throws ReporterException
     {
         writeMessage( getTestSetStartingMessage( report ) );
     }
@@ -79,7 +77,6 @@ public class ConsoleReporter
     }
 
     public void testSetCompleted( WrappedReportEntry report, TestSetStats testSetStats, List<String> testResults )
-        throws ReporterException
     {
         writeMessage( testSetStats.getTestSetSummary( report ) );
 

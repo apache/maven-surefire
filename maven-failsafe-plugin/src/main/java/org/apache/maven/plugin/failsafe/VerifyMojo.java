@@ -60,8 +60,8 @@ public class VerifyMojo
     private boolean skipTests;
 
     /**
-     * Set this to 'true' to skip running integration tests, but still compile them. Its use is NOT RECOMMENDED, but quite
-     * convenient on occasion.
+     * Set this to 'true' to skip running integration tests, but still compile them. Its use is NOT RECOMMENDED, but
+     * quite convenient on occasion.
      *
      * @since 2.4.3-alpha-2
      */

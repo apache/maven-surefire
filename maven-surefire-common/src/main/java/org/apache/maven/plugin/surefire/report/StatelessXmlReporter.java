@@ -46,6 +46,7 @@ import java.util.StringTokenizer;
 import static org.apache.maven.plugin.surefire.report.DefaultReporterFactory.TestResultType;
 import static org.apache.maven.plugin.surefire.report.FileReporterUtils.stripIllegalFilenameChars;
 
+// CHECKSTYLE_OFF: LineLength
 /**
  * XML format reporter writing to <code>TEST-<i>reportName</i>[-<i>suffix</i>].xml</code> file like written and read
  * by Ant's <a href="http://ant.apache.org/manual/Tasks/junit.html"><code>&lt;junit&gt;</code></a> and
@@ -108,7 +109,6 @@ public class StatelessXmlReporter
     }
 
     public void testSetCompleted( WrappedReportEntry testSetReportEntry, TestSetStats testSetStats )
-        throws ReporterException
     {
         String testClassName = testSetReportEntry.getName();
 
@@ -154,7 +154,7 @@ public class StatelessXmlReporter
                         case success:
                             for ( WrappedReportEntry methodEntry : methodEntryList )
                             {
-                                if ( methodEntry.getReportEntryType() == ReportEntryType.success )
+                                if ( methodEntry.getReportEntryType() == ReportEntryType.SUCCESS )
                                 {
                                     startTestElement( ppw, methodEntry, reportNameSuffix,
                                                       methodEntryList.get( 0 ).elapsedTimeAsString() );
@@ -190,7 +190,7 @@ public class StatelessXmlReporter
                             // Get the run time of the first successful run
                             for ( WrappedReportEntry singleRunEntry : methodEntryList )
                             {
-                                if ( singleRunEntry.getReportEntryType() == ReportEntryType.success )
+                                if ( singleRunEntry.getReportEntryType() == ReportEntryType.SUCCESS )
                                 {
                                     runtime = singleRunEntry.elapsedTimeAsString();
                                     break;
@@ -199,7 +199,7 @@ public class StatelessXmlReporter
                             startTestElement( ppw, methodEntryList.get( 0 ), reportNameSuffix, runtime );
                             for ( WrappedReportEntry singleRunEntry : methodEntryList )
                             {
-                                if ( singleRunEntry.getReportEntryType() != ReportEntryType.success )
+                                if ( singleRunEntry.getReportEntryType() != ReportEntryType.SUCCESS )
                                 {
                                     getTestProblems( fw, ppw, singleRunEntry, trimStackTrace, outputStream,
                                                      singleRunEntry.getReportEntryType().getFlakyXmlTag(), true );
@@ -226,7 +226,7 @@ public class StatelessXmlReporter
                     for ( WrappedReportEntry methodEntry : methodEntryList )
                     {
                         startTestElement( ppw, methodEntry, reportNameSuffix, methodEntry.elapsedTimeAsString() );
-                        if ( methodEntry.getReportEntryType() != ReportEntryType.success )
+                        if ( methodEntry.getReportEntryType() != ReportEntryType.SUCCESS )
                         {
                             getTestProblems( fw, ppw, methodEntry, trimStackTrace, outputStream,
                                              methodEntry.getReportEntryType().getXmlTag(), false );
@@ -247,7 +247,8 @@ public class StatelessXmlReporter
     /**
      * Clean testClassMethodRunHistoryMap
      */
-    public void cleanTestHistoryMap() {
+    public void cleanTestHistoryMap()
+    {
         testClassMethodRunHistoryMap.clear();
     }
 
@@ -308,7 +309,7 @@ public class StatelessXmlReporter
                     // Get the first successful run's time for flaky runs
                     for ( WrappedReportEntry singleRunEntry : methodEntryList )
                     {
-                        if ( singleRunEntry.getReportEntryType() == ReportEntryType.success )
+                        if ( singleRunEntry.getReportEntryType() == ReportEntryType.SUCCESS )
                         {
                             totalTimeForSuite = totalTimeForSuite + singleRunEntry.getElapsed();
                             break;

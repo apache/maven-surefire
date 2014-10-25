@@ -71,9 +71,6 @@ public class OutputStreamFlushableCommandline
         return process;
     }
 
-    /* (non-Javadoc)
-      * @see org.apache.maven.plugin.surefire.booterclient.lazytestprovider.FlushReceiverProvider#getFlushReceiver()
-      */
     public FlushReceiver getFlushReceiver()
     {
         return flushReceiver;

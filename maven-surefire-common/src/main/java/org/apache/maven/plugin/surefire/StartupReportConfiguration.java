@@ -72,6 +72,7 @@ public class StartupReportConfiguration
 
     public static final String PLAIN_REPORT_FORMAT = ConsoleReporter.PLAIN;
 
+    @SuppressWarnings( "checkstyle:parameternumber" )
     public StartupReportConfiguration( boolean useFile, boolean printSummary, String reportFormat,
                                        boolean redirectTestOutputToFile, boolean disableXmlReport,
                                        @Nonnull File reportsDirectory, boolean trimStackTrace, String reportNameSuffix,
@@ -142,7 +143,8 @@ public class StartupReportConfiguration
         return reportsDirectory;
     }
 
-    public int getRerunFailingTestsCount() {
+    public int getRerunFailingTestsCount()
+    {
         return rerunFailingTestsCount;
     }
 

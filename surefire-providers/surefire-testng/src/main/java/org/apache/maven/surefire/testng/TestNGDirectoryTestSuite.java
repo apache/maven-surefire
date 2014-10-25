@@ -76,8 +76,9 @@ public class TestNGDirectoryTestSuite
 
     private Class<? extends Annotation> junitTestAnnotation;
 
-    public TestNGDirectoryTestSuite( String testSourceDirectory, Properties confOptions, File reportsDirectory, String testMethodPattern,
-                                     RunOrderCalculator runOrderCalculator, ScanResult scanResult )
+    public TestNGDirectoryTestSuite( String testSourceDirectory, Properties confOptions, File reportsDirectory,
+                                     String testMethodPattern, RunOrderCalculator runOrderCalculator,
+                                     ScanResult scanResult )
     {
 
         this.runOrderCalculator = runOrderCalculator;
@@ -95,7 +96,7 @@ public class TestNGDirectoryTestSuite
     }
 
     public void execute( TestsToRun testsToRun, ReporterFactory reporterManagerFactory )
-        throws ReporterException, TestSetFailedException
+        throws TestSetFailedException
     {
 
         if ( !testsToRun.allowEagerReading() )
@@ -132,7 +133,7 @@ public class TestNGDirectoryTestSuite
     }
 
     public void executeLazy( TestsToRun testsToRun, ReporterFactory reporterFactory )
-        throws ReporterException, TestSetFailedException
+        throws TestSetFailedException
     {
 
         for ( Class c : testsToRun )
@@ -171,7 +172,7 @@ public class TestNGDirectoryTestSuite
     }
 
     public void executeMulti( TestsToRun testsToRun, ReporterFactory reporterFactory )
-        throws ReporterException, TestSetFailedException
+        throws TestSetFailedException
     {
         List<Class> testNgTestClasses = new ArrayList<Class>();
         List<Class> junitTestClasses = new ArrayList<Class>();
@@ -260,7 +261,7 @@ public class TestNGDirectoryTestSuite
 
     // single class test
     public void execute( String testSetName, ReporterFactory reporterManagerFactory )
-        throws ReporterException, TestSetFailedException
+        throws TestSetFailedException
     {
         if ( testSets == null )
         {
@@ -278,7 +279,8 @@ public class TestNGDirectoryTestSuite
 
         startTestSuite( reporter, this );
 
-        TestNGExecutor.run( new Class[]{ testSet.getTestClass() }, this.testSourceDirectory, this.options, reporter, this, reportsDirectory, testMethodPattern );
+        TestNGExecutor.run( new Class[] { testSet.getTestClass() }, this.testSourceDirectory, this.options, reporter,
+                            this, reportsDirectory, testMethodPattern );
 
         finishTestSuite( reporter, this );
     }
@@ -298,7 +300,6 @@ public class TestNGDirectoryTestSuite
     }
 
     public static void finishTestSuite( RunListener reporterManager, Object suite )
-        throws ReporterException
     {
         ReportEntry report = new SimpleReportEntry( suite.getClass().getName(), getSuiteName( suite ) );
 

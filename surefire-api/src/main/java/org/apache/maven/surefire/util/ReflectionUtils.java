@@ -221,6 +221,7 @@ public class ReflectionUtils
         return newInstance( constructor, params );
     }
 
+    @SuppressWarnings( "checkstyle:emptyblock" )
     public static Class tryLoadClass( ClassLoader classLoader, String className )
     {
         try

@@ -39,12 +39,12 @@ public interface Balancer
      * @return <code>true</code> if current thread is <em>NOT</em> interrupted
      *         while waiting for a permit.
      */
-    public boolean acquirePermit();
+    boolean acquirePermit();
 
     /**
      * Releases a permit, returning it to the balancer.
      */
-    public void releasePermit();
+    void releasePermit();
 
-    public void releaseAllPermits();
+    void releaseAllPermits();
 }

@@ -58,7 +58,7 @@ public class BaseProviderFactory
 
     private TestArtifactInfo testArtifactInfo;
 
-    private static final Integer ROOT_CHANNEl = 0;
+    private static final Integer ROOT_CHANNEL = 0;
 
 
     private final ReporterFactory reporterFactory;
@@ -128,7 +128,7 @@ public class BaseProviderFactory
     {
         if ( insideFork )
         {
-            return new ForkingRunListener( reporterConfiguration.getOriginalSystemOut(), ROOT_CHANNEl,
+            return new ForkingRunListener( reporterConfiguration.getOriginalSystemOut(), ROOT_CHANNEL,
                                            reporterConfiguration.isTrimStackTrace() );
         }
         return new DefaultDirectConsoleReporter( reporterConfiguration.getOriginalSystemOut() );

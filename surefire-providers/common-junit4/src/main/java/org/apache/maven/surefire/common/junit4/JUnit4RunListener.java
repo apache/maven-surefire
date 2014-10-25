@@ -31,6 +31,10 @@ import org.junit.runner.notification.Failure;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * RunListener for JUnit4, delegates to our own RunListener
+ *
+ */
 public class JUnit4RunListener
     extends org.junit.runner.notification.RunListener
 {
@@ -188,7 +192,10 @@ public class JUnit4RunListener
     {
         String displayName = description.getDisplayName();
         int i = displayName.indexOf( "(" );
-        if (i >= 0 ) return displayName.substring( 0, i );
+        if ( i >= 0 )
+        {
+            return displayName.substring( 0, i );
+        }
         return displayName;
     }
 

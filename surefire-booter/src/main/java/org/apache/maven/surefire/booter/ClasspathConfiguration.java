@@ -57,7 +57,8 @@ public class ClasspathConfiguration
 
     public ClasspathConfiguration( boolean enableAssertions, boolean childDelegation )
     {
-        this( Classpath.emptyClasspath(), Classpath.emptyClasspath(), Classpath.emptyClasspath(), enableAssertions, childDelegation );
+        this( Classpath.emptyClasspath(), Classpath.emptyClasspath(), Classpath.emptyClasspath(), enableAssertions,
+              childDelegation );
     }
 
     ClasspathConfiguration( PropertiesWrapper properties )
@@ -80,7 +81,7 @@ public class ClasspathConfiguration
     public ClassLoader createMergedClassLoader()
         throws SurefireExecutionException
     {
-        return Classpath.join( inprocClasspath, classpathUrls)
+        return Classpath.join( inprocClasspath, classpathUrls )
             .createClassLoader( null, this.childDelegation, enableAssertions, "test" );
     }
 

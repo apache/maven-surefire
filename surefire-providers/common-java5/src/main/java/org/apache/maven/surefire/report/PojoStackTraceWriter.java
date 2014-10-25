@@ -78,7 +78,8 @@ public class PojoStackTraceWriter
 
     public SafeThrowable getThrowable()
     {
-        if ( t == null ) {
+        if ( t == null )
+        {
             return null;
         }
 

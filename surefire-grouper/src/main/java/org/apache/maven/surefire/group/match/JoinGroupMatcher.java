@@ -1,4 +1,5 @@
 package org.apache.maven.surefire.group.match;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -21,6 +22,10 @@ package org.apache.maven.surefire.group.match;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Joins several group matchers
+ *
+ */
 public abstract class JoinGroupMatcher
     implements GroupMatcher
 {

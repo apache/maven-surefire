@@ -81,13 +81,13 @@ final class SharedThreadPoolStrategy
     }
 
     @Override
-    protected final boolean stop()
+    protected boolean stop()
     {
         return stop( false );
     }
 
     @Override
-    protected final boolean stopNow()
+    protected boolean stopNow()
     {
         return stop( true );
     }

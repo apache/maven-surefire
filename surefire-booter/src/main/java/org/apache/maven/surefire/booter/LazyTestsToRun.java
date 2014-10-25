@@ -174,7 +174,8 @@ class LazyTestsToRun
     /* (non-Javadoc)
      * @see org.apache.maven.surefire.util.TestsToRun#allowEagerReading()
      */
-    public boolean allowEagerReading() {
+    public boolean allowEagerReading()
+    {
         return false;
     }
 

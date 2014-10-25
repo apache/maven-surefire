@@ -19,6 +19,13 @@ package org.apache.maven.surefire.junit4;
  * under the License.
  */
 
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
 import org.apache.maven.shared.utils.io.SelectorUtils;
 import org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil;
 import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
@@ -31,7 +38,6 @@ import org.apache.maven.surefire.report.ConsoleOutputCapture;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.PojoStackTraceWriter;
 import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.SimpleReportEntry;
@@ -45,13 +51,6 @@ import org.junit.runner.Description;
 import org.junit.runner.Request;
 import org.junit.runner.Result;
 import org.junit.runner.notification.RunNotifier;
-
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
 
 /**
  * @author Kristian Rosenvold
@@ -91,7 +90,7 @@ public class JUnit4Provider
     }
 
     public RunResult invoke( Object forkTestSet )
-        throws TestSetFailedException, ReporterException
+        throws TestSetFailedException
     {
         if ( testsToRun == null )
         {
@@ -145,12 +144,12 @@ public class JUnit4Provider
         {
             if ( !StringUtils.isBlank( requestedTestMethod ) )
             {
-                String actualTestMethod = getMethod( clazz, requestedTestMethod );//add by rainLee
+                String actualTestMethod = getMethod( clazz, requestedTestMethod );
                 String[] testMethods = StringUtils.split( actualTestMethod, "+" );
                 executeWithRerun( clazz, listeners, testMethods );
             }
             else
-            {//the original way
+            {
                 executeWithRerun( clazz, listeners, null );
             }
         }
@@ -224,7 +223,7 @@ public class JUnit4Provider
         return runOrderCalculator.orderTestClasses( scannedClasses );
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings( "unchecked" )
     private void upgradeCheck()
         throws TestSetFailedException
     {
@@ -286,11 +285,11 @@ public class JUnit4Provider
     }
 
     /**
-     * this method retrive  testMethods from String like "com.xx.ImmutablePairTest#testBasic,com.xx.StopWatchTest#testLang315+testStopWatchSimpleGet"
-     * <br>
+     * this method retrive testMethods from String like
+     * "com.xx.ImmutablePairTest#testBasic,com.xx.StopWatchTest#testLang315+testStopWatchSimpleGet" <br>
      * and we need to think about cases that 2 or more method in 1 class. we should choose the correct method
      *
-     * @param testClass     the testclass
+     * @param testClass the testclass
      * @param testMethodStr the test method string
      * @return a string ;)
      */
@@ -299,14 +298,14 @@ public class JUnit4Provider
         final String className = testClass.getName();
 
         if ( !testMethodStr.contains( "#" ) && !testMethodStr.contains( "," ) )
-        {//the original way
+        {
             return testMethodStr;
         }
-        testMethodStr += ",";//for the bellow  split code
+        testMethodStr += ","; // for the bellow  split code
         final int beginIndex = testMethodStr.indexOf( className );
         final int endIndex = testMethodStr.indexOf( ",", beginIndex );
         final String classMethodStr =
-            testMethodStr.substring( beginIndex, endIndex );//String like "StopWatchTest#testLang315"
+            testMethodStr.substring( beginIndex, endIndex ); // String like "StopWatchTest#testLang315"
 
         final int index = classMethodStr.indexOf( '#' );
         return index >= 0 ? classMethodStr.substring( index + 1, classMethodStr.length() ) : null;

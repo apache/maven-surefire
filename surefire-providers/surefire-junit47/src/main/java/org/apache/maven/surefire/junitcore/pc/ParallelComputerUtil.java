@@ -66,9 +66,10 @@ final class ParallelComputerUtil
 
         if ( !params.isUseUnlimitedThreads() && !hasThreadCount( params ) && !hasThreadCounts( params ) )
         {
-            throw new TestSetFailedException( "Unspecified thread-count(s). " +
-                                                  "See the parameters " + JUnitCoreParameters.USEUNLIMITEDTHREADS_KEY
-                                                  + ", " + JUnitCoreParameters.THREADCOUNT_KEY + ", "
+            throw new TestSetFailedException( "Unspecified thread-count(s). "
+                                                  + "See the parameters "
+                                                  + JUnitCoreParameters.USEUNLIMITEDTHREADS_KEY + ", "
+                                                  + JUnitCoreParameters.THREADCOUNT_KEY + ", "
                                                   + JUnitCoreParameters.THREADCOUNTSUITES_KEY + ", "
                                                   + JUnitCoreParameters.THREADCOUNTCLASSES_KEY + ", "
                                                   + JUnitCoreParameters.THREADCOUNTMETHODS_KEY + "." );
@@ -292,9 +293,9 @@ final class ParallelComputerUtil
 
     private static boolean hasThreadCounts( JUnitCoreParameters jUnitCoreParameters )
     {
-        return jUnitCoreParameters.isParallelSuites() && jUnitCoreParameters.getThreadCountSuites() > 0 ||
-            jUnitCoreParameters.isParallelClasses() && jUnitCoreParameters.getThreadCountClasses() > 0 ||
-            jUnitCoreParameters.isParallelMethods() && jUnitCoreParameters.getThreadCountMethods() > 0;
+        return ( jUnitCoreParameters.isParallelSuites() && jUnitCoreParameters.getThreadCountSuites() > 0 )
+            || ( jUnitCoreParameters.isParallelClasses() && jUnitCoreParameters.getThreadCountClasses() > 0 )
+            || ( jUnitCoreParameters.isParallelMethods() && jUnitCoreParameters.getThreadCountMethods() > 0 );
     }
 
     private static boolean hasThreadCount( JUnitCoreParameters jUnitCoreParameters )

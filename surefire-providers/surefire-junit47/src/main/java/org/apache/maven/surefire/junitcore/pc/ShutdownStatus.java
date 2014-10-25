@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
 
+// CHECKSTYLE_OFF: imports
 import static org.apache.maven.surefire.junitcore.pc.ExecutionStatus.*;
 
 /**

@@ -48,13 +48,20 @@ public class Classpath implements Iterable<String>
     public static Classpath join( Classpath firstClasspath, Classpath secondClasspath )
     {
         LinkedHashSet<String> accumulated =  new LinkedHashSet<String>(  );
-        if (firstClasspath != null) firstClasspath.addTo( accumulated );
-        if (secondClasspath != null) secondClasspath.addTo( accumulated );
+        if ( firstClasspath != null )
+        {
+            firstClasspath.addTo( accumulated );
+        }
+        if ( secondClasspath != null )
+        {
+            secondClasspath.addTo( accumulated );
+        }
         return new Classpath( accumulated );
     }
 
 
-    private void addTo(Collection<String> c){
+    private void addTo( Collection<String> c )
+    {
         c.addAll( unmodifiableElements );
     }
 
@@ -135,8 +142,9 @@ public class Classpath implements Iterable<String>
 
         Classpath classpath = (Classpath) o;
 
-        return !( unmodifiableElements
-            != null ? !unmodifiableElements.equals( classpath.unmodifiableElements ) : classpath.unmodifiableElements != null );
+        return !( unmodifiableElements != null
+                        ? !unmodifiableElements.equals( classpath.unmodifiableElements )
+                        : classpath.unmodifiableElements != null );
 
     }
 

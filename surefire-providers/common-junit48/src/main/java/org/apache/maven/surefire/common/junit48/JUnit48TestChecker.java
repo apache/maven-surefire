@@ -53,14 +53,16 @@ public class JUnit48TestChecker
     @SuppressWarnings( { "unchecked" } )
     private boolean isAbstractWithEnclosedRunner( Class testClass )
     {
-        return jUnit4TestChecker.isRunWithPresentInClassLoader() &&  isAbstract( testClass ) && isRunWithEnclosedRunner(testClass);
+        return jUnit4TestChecker.isRunWithPresentInClassLoader()
+                        &&  isAbstract( testClass )
+                        && isRunWithEnclosedRunner( testClass );
     }
 
-    private boolean isRunWithEnclosedRunner(Class testClass )
+    private boolean isRunWithEnclosedRunner( Class testClass )
     {
         @SuppressWarnings( "unchecked" ) org.junit.runner.RunWith runWithAnnotation =
             (org.junit.runner.RunWith) testClass.getAnnotation( org.junit.runner.RunWith.class );
-        return ( runWithAnnotation != null && Enclosed.class.equals( runWithAnnotation.value()));
+        return ( runWithAnnotation != null && Enclosed.class.equals( runWithAnnotation.value() ) );
     }
 
     private boolean isAbstract( Class testClass )

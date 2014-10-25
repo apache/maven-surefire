@@ -52,6 +52,7 @@ public class DefaultRunOrderCalculator
         this.sortOrder = this.runOrder.length > 0 ? getSortOrderComparator( this.runOrder[0] ) : null;
     }
 
+    @SuppressWarnings( "checkstyle:magicnumber" )
     public TestsToRun orderTestClasses( TestsToRun scannedClasses )
     {
 
@@ -85,7 +86,8 @@ public class DefaultRunOrderCalculator
         {
             RunEntryStatisticsMap runEntryStatisticsMap =
                 RunEntryStatisticsMap.fromFile( runOrderParameters.getRunStatisticsFile() );
-            final List<Class> prioritized = runEntryStatisticsMap.getPrioritizedTestsClassRunTime( testClasses, threadCount );
+            final List<Class> prioritized =
+                runEntryStatisticsMap.getPrioritizedTestsClassRunTime( testClasses, threadCount );
             testClasses.clear();
             testClasses.addAll( prioritized );
 

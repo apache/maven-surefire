@@ -175,6 +175,7 @@ public class TestNGExecutor
         }
     }
 
+    @SuppressWarnings( "checkstyle:magicnumber" )
     private static XmlMethodSelector getMethodNameFilteringSelector( String methodNamePattern )
         throws TestSetFailedException
     {
@@ -226,6 +227,7 @@ public class TestNGExecutor
         return xms;
     }
 
+    @SuppressWarnings( "checkstyle:magicnumber" )
     private static XmlMethodSelector getGroupMatchingSelector( Map options )
         throws TestSetFailedException
     {

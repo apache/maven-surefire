@@ -22,7 +22,6 @@ package org.apache.maven.plugins.surefire.report;
 import java.io.File;
 import java.util.Locale;
 import java.util.ResourceBundle;
-import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
@@ -36,7 +35,7 @@ import org.apache.maven.project.MavenProject;
  * @author Stephen Connolly
  * @since 2.10
  */
-@Mojo(name = "failsafe-report-only")
+@Mojo( name = "failsafe-report-only" )
 public class FailsafeReportMojo
     extends AbstractSurefireReportMojo
 {
@@ -46,7 +45,7 @@ public class FailsafeReportMojo
      *
      * @noinspection UnusedDeclaration
      */
-    @Parameter(defaultValue = "failsafe-report", property = "outputName", required = true)
+    @Parameter( defaultValue = "failsafe-report", property = "outputName", required = true )
     private String outputName;
 
     /**
@@ -56,7 +55,7 @@ public class FailsafeReportMojo
      * @noinspection UnusedDeclaration
      * @since 2.11
      */
-    @Parameter(defaultValue = "false", property = "alwaysGenerateFailsafeReport")
+    @Parameter( defaultValue = "false", property = "alwaysGenerateFailsafeReport" )
     private boolean alwaysGenerateFailsafeReport;
 
     /**
@@ -65,7 +64,7 @@ public class FailsafeReportMojo
      * @noinspection UnusedDeclaration
      * @since 2.11
      */
-    @Parameter(defaultValue = "false", property = "skipFailsafeReport")
+    @Parameter( defaultValue = "false", property = "skipFailsafeReport" )
     private boolean skipFailsafeReport;
 
     protected File getSurefireReportsDirectory( MavenProject subProject )

@@ -43,7 +43,7 @@ public class RunOrderParameters
         this.runStatisticsFile = runStatisticsFile != null ? new File( runStatisticsFile ) : null;
     }
 
-    public static RunOrderParameters ALPHABETICAL()
+    public static RunOrderParameters alphabetical()
     {
         return new RunOrderParameters( new RunOrder[]{ RunOrder.ALPHABETICAL }, null );
     }

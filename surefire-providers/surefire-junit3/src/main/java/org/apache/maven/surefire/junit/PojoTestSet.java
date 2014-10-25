@@ -30,6 +30,10 @@ import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.SimpleReportEntry;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
+/**
+ * Executes a JUnit3 test class
+ *
+ */
 public class PojoTestSet
     implements SurefireTestSet
 {

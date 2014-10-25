@@ -1,5 +1,24 @@
 package org.apache.maven.plugin.surefire.report;
 
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 import junit.framework.TestCase;
 import org.apache.maven.plugin.surefire.StartupReportConfiguration;
 import org.apache.maven.surefire.report.DefaultDirectConsoleReporter;
@@ -40,29 +59,29 @@ public class DefaultReporterFactoryTest
 
         // First run, four tests failed and one passed
         List<TestMethodStats> firstRunStats = new ArrayList<TestMethodStats>();
-        firstRunStats.add( new TestMethodStats( TEST_ONE, ReportEntryType.error, new DummyStackTraceWriter( ERROR ) ) );
-        firstRunStats.add( new TestMethodStats( TEST_TWO, ReportEntryType.error, new DummyStackTraceWriter( ERROR ) ) );
+        firstRunStats.add( new TestMethodStats( TEST_ONE, ReportEntryType.ERROR, new DummyStackTraceWriter( ERROR ) ) );
+        firstRunStats.add( new TestMethodStats( TEST_TWO, ReportEntryType.ERROR, new DummyStackTraceWriter( ERROR ) ) );
         firstRunStats.add(
-            new TestMethodStats( TEST_THREE, ReportEntryType.failure, new DummyStackTraceWriter( ASSERTION_FAIL ) ) );
+            new TestMethodStats( TEST_THREE, ReportEntryType.FAILURE, new DummyStackTraceWriter( ASSERTION_FAIL ) ) );
         firstRunStats.add(
-            new TestMethodStats( TEST_FOUR, ReportEntryType.failure, new DummyStackTraceWriter( ASSERTION_FAIL ) ) );
+            new TestMethodStats( TEST_FOUR, ReportEntryType.FAILURE, new DummyStackTraceWriter( ASSERTION_FAIL ) ) );
         firstRunStats.add(
-            new TestMethodStats( TEST_FIVE, ReportEntryType.success, null ) );
+            new TestMethodStats( TEST_FIVE, ReportEntryType.SUCCESS, null ) );
 
         // Second run, two tests passed
         List<TestMethodStats> secondRunStats = new ArrayList<TestMethodStats>();
         secondRunStats.add(
-            new TestMethodStats( TEST_ONE, ReportEntryType.failure, new DummyStackTraceWriter( ASSERTION_FAIL ) ) );
-        secondRunStats.add( new TestMethodStats( TEST_TWO, ReportEntryType.success, null ) );
+            new TestMethodStats( TEST_ONE, ReportEntryType.FAILURE, new DummyStackTraceWriter( ASSERTION_FAIL ) ) );
+        secondRunStats.add( new TestMethodStats( TEST_TWO, ReportEntryType.SUCCESS, null ) );
         secondRunStats.add(
-            new TestMethodStats( TEST_THREE, ReportEntryType.error, new DummyStackTraceWriter( ERROR ) ) );
-        secondRunStats.add( new TestMethodStats( TEST_FOUR, ReportEntryType.success, null ) );
+            new TestMethodStats( TEST_THREE, ReportEntryType.ERROR, new DummyStackTraceWriter( ERROR ) ) );
+        secondRunStats.add( new TestMethodStats( TEST_FOUR, ReportEntryType.SUCCESS, null ) );
 
         // Third run, another test passed
         List<TestMethodStats> thirdRunStats = new ArrayList<TestMethodStats>();
-        thirdRunStats.add( new TestMethodStats( TEST_ONE, ReportEntryType.success, null ) );
+        thirdRunStats.add( new TestMethodStats( TEST_ONE, ReportEntryType.SUCCESS, null ) );
         thirdRunStats.add(
-            new TestMethodStats( TEST_THREE, ReportEntryType.error, new DummyStackTraceWriter( ERROR ) ) );
+            new TestMethodStats( TEST_THREE, ReportEntryType.ERROR, new DummyStackTraceWriter( ERROR ) ) );
 
         TestSetRunListener firstRunListener = mock( TestSetRunListener.class );
         TestSetRunListener secondRunListener = mock( TestSetRunListener.class );
@@ -138,33 +157,33 @@ public class DefaultReporterFactoryTest
         assertEquals( unknown, factory.getTestResultType( emptyList ) );
 
         List<ReportEntryType> successList = new ArrayList<ReportEntryType>();
-        successList.add( ReportEntryType.success );
-        successList.add( ReportEntryType.success );
+        successList.add( ReportEntryType.SUCCESS );
+        successList.add( ReportEntryType.SUCCESS );
         assertEquals( success, factory.getTestResultType( successList ) );
 
         List<ReportEntryType> failureErrorList = new ArrayList<ReportEntryType>();
-        failureErrorList.add( ReportEntryType.failure );
-        failureErrorList.add( ReportEntryType.error );
+        failureErrorList.add( ReportEntryType.FAILURE );
+        failureErrorList.add( ReportEntryType.ERROR );
         assertEquals( failure, factory.getTestResultType( failureErrorList ) );
 
         List<ReportEntryType> errorFailureList = new ArrayList<ReportEntryType>();
-        errorFailureList.add( ReportEntryType.error );
-        errorFailureList.add( ReportEntryType.failure );
+        errorFailureList.add( ReportEntryType.ERROR );
+        errorFailureList.add( ReportEntryType.FAILURE );
         assertEquals( error, factory.getTestResultType( errorFailureList ) );
 
         List<ReportEntryType> flakeList = new ArrayList<ReportEntryType>();
-        flakeList.add( ReportEntryType.success );
-        flakeList.add( ReportEntryType.failure );
+        flakeList.add( ReportEntryType.SUCCESS );
+        flakeList.add( ReportEntryType.FAILURE );
         assertEquals( flake, factory.getTestResultType( flakeList ) );
 
         flakeList = new ArrayList<ReportEntryType>();
-        flakeList.add( ReportEntryType.error );
-        flakeList.add( ReportEntryType.success );
-        flakeList.add( ReportEntryType.failure );
+        flakeList.add( ReportEntryType.ERROR );
+        flakeList.add( ReportEntryType.SUCCESS );
+        flakeList.add( ReportEntryType.FAILURE );
         assertEquals( flake, factory.getTestResultType( flakeList ) );
 
         List<ReportEntryType> skippedList = new ArrayList<ReportEntryType>();
-        skippedList.add( ReportEntryType.skipped );
+        skippedList.add( ReportEntryType.SKIPPED );
         assertEquals( skipped, factory.getTestResultType( skippedList ) );
     }
 

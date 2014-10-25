@@ -18,9 +18,14 @@ package org.apache.maven.surefire.group.match;
  * specific language governing permissions and limitations
  * under the License.
  */
+
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+/**
+ * Single group matcher
+ *
+ */
 public class SingleGroupMatcher
     implements GroupMatcher
 {

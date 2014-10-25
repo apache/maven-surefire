@@ -179,7 +179,7 @@ public class ForkStarter
         }
         finally
         {
-            defaultReporterFactory.mergeFromOtherFactories(defaultReporterFactoryList);
+            defaultReporterFactory.mergeFromOtherFactories( defaultReporterFactoryList );
             defaultReporterFactory.close();
         }
         return result;
@@ -197,6 +197,7 @@ public class ForkStarter
             && !testSuiteDefinition.getSuiteXmlFiles().isEmpty();
     }
 
+    @SuppressWarnings( "checkstyle:magicnumber" )
     private RunResult runSuitesForkOnceMultiple( final SurefireProperties effectiveSystemProperties, int forkCount )
         throws SurefireBooterForkException
     {
@@ -281,6 +282,7 @@ public class ForkStarter
 
     }
 
+    @SuppressWarnings( "checkstyle:magicnumber" )
     private RunResult runSuitesForkPerTestSet( final SurefireProperties effectiveSystemProperties, final int forkCount )
         throws SurefireBooterForkException
     {
@@ -305,8 +307,9 @@ public class ForkStarter
                         DefaultReporterFactory forkedReporterFactory =
                             new DefaultReporterFactory( startupReportConfiguration );
                         defaultReporterFactoryList.add( forkedReporterFactory );
-                        ForkClient forkClient = new ForkClient( forkedReporterFactory,
-                                                                startupReportConfiguration.getTestVmSystemProperties() );
+                        ForkClient forkClient =
+                                        new ForkClient( forkedReporterFactory,
+                                                        startupReportConfiguration.getTestVmSystemProperties() );
                         return fork( testSet, new PropertiesWrapper( providerConfiguration.getProviderProperties() ),
                                      forkClient, effectiveSystemProperties, null );
                     }
@@ -348,6 +351,7 @@ public class ForkStarter
 
     }
 
+    @SuppressWarnings( "checkstyle:magicnumber" )
     private void closeExecutor( ExecutorService executorService )
         throws SurefireBooterForkException
     {
@@ -478,7 +482,8 @@ public class ForkStarter
         }
         catch ( CommandLineException e )
         {
-            runResult = RunResult.failure( forkClient.getDefaultReporterFactory().getGlobalRunStatistics().getRunResult(), e );
+            runResult =
+                RunResult.failure( forkClient.getDefaultReporterFactory().getGlobalRunStatistics().getRunResult(), e );
             throw new SurefireBooterForkException( "Error while executing forked tests.", e.getCause() );
         }
         finally

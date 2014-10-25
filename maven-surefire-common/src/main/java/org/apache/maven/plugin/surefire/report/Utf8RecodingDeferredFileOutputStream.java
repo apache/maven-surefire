@@ -41,6 +41,7 @@ class Utf8RecodingDeferredFileOutputStream
 
     private static final Charset UTF8 = Charset.forName( "UTF-8" );
 
+    @SuppressWarnings( "checkstyle:magicnumber" )
     public Utf8RecodingDeferredFileOutputStream( String channel )
     {
         this.deferredFileOutputStream = new DeferredFileOutputStream( 1000000, channel, "deferred", null );

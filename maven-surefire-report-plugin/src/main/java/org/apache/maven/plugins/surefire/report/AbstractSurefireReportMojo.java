@@ -49,7 +49,7 @@ public abstract class AbstractSurefireReportMojo
      *
      * @noinspection UnusedDeclaration
      */
-    @Parameter(property = "project.reporting.outputDirectory")
+    @Parameter( property = "project.reporting.outputDirectory" )
     private File outputDirectory;
 
     /**
@@ -65,7 +65,7 @@ public abstract class AbstractSurefireReportMojo
      *
      * @noinspection UnusedDeclaration
      */
-    @Parameter(property = "project", required = true, readonly = true)
+    @Parameter( property = "project", required = true, readonly = true )
     private MavenProject project;
 
     /**
@@ -73,7 +73,7 @@ public abstract class AbstractSurefireReportMojo
      *
      * @noinspection UnusedDeclaration
      */
-    @Parameter(defaultValue = "true", required = true, property = "showSuccess")
+    @Parameter( defaultValue = "true", required = true, property = "showSuccess" )
     private boolean showSuccess;
 
     /**
@@ -85,7 +85,8 @@ public abstract class AbstractSurefireReportMojo
     private File[] reportsDirectories;
 
     /**
-     * (Deprecated, use reportsDirectories) This directory contains the XML Report files that will be parsed and rendered to HTML format.
+     * (Deprecated, use reportsDirectories) This directory contains the XML Report files that will be parsed and
+     * rendered to HTML format.
      *
      * @noinspection UnusedDeclaration
      */
@@ -98,7 +99,7 @@ public abstract class AbstractSurefireReportMojo
      *
      * @noinspection MismatchedQueryAndUpdateOfCollection, UnusedDeclaration
      */
-    @Parameter(property = "reactorProjects", readonly = true)
+    @Parameter( property = "reactorProjects", readonly = true )
     private List<MavenProject> reactorProjects;
 
     /**
@@ -106,7 +107,7 @@ public abstract class AbstractSurefireReportMojo
      *
      * @noinspection UnusedDeclaration
      */
-    @Parameter(defaultValue = "${project.reporting.outputDirectory}/xref-test")
+    @Parameter( defaultValue = "${project.reporting.outputDirectory}/xref-test" )
     private File xrefLocation;
 
     /**
@@ -114,7 +115,7 @@ public abstract class AbstractSurefireReportMojo
      *
      * @noinspection UnusedDeclaration
      */
-    @Parameter(defaultValue = "true", property = "linkXRef")
+    @Parameter( defaultValue = "true", property = "linkXRef" )
     private boolean linkXRef;
 
     /**
@@ -122,7 +123,7 @@ public abstract class AbstractSurefireReportMojo
      *
      * @noinspection UnusedDeclaration
      */
-    @Parameter(defaultValue = "false", property = "aggregate")
+    @Parameter( defaultValue = "false", property = "aggregate" )
     private boolean aggregate;
 
     /**

@@ -33,6 +33,8 @@ import org.apache.maven.surefire.util.internal.StringUtils;
 public class LegacyPojoStackTraceWriter
     implements StackTraceWriter
 {
+    private static final int MAX_LINE_LENGTH = 77;
+
     private final Throwable t;
 
     private final String testClass;
@@ -67,7 +69,7 @@ public class LegacyPojoStackTraceWriter
         if ( throwable.getTarget() instanceof AssertionError )
         {
             result.append( " " );
-            result.append( getTruncatedMessage( throwable.getMessage(), 77 - result.length() ) );
+            result.append( getTruncatedMessage( throwable.getMessage(), MAX_LINE_LENGTH - result.length() ) );
         }
         else
         {
@@ -76,7 +78,7 @@ public class LegacyPojoStackTraceWriter
             {
                 result.append( " " );
                 result.append( target.getClass().getSimpleName() );
-                result.append( getTruncatedMessage( throwable.getMessage(), 77 - result.length() ) );
+                result.append( getTruncatedMessage( throwable.getMessage(), MAX_LINE_LENGTH - result.length() ) );
             }
         }
         return result.toString();

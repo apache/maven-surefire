@@ -1,4 +1,5 @@
 package org.apache.maven.plugin.surefire.report;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -82,12 +83,14 @@ public class TestSetStats
 
     public void testSetStart()
     {
-        lastStartAt = testSetStartAt = System.currentTimeMillis();
+        testSetStartAt = System.currentTimeMillis();
+        lastStartAt = testSetStartAt;
     }
 
     public void testStart()
     {
-        lastStartAt = testStartAt = System.currentTimeMillis();
+        testStartAt = System.currentTimeMillis();
+        lastStartAt = testStartAt;
     }
 
     private long finishTest( WrappedReportEntry reportEntry )

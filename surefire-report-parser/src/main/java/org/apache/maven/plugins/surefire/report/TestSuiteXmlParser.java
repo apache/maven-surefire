@@ -126,7 +126,8 @@ public class TestSuiteXmlParser
         {
             if ( "testsuite".equals( qName ) )
             {
-                currentSuite = defaultSuite = new ReportTestSuite();
+                defaultSuite = new ReportTestSuite();
+                currentSuite = defaultSuite;
 
                 try
                 {
@@ -176,7 +177,8 @@ public class TestSuiteXmlParser
                         currentSuite.setFullClassName( fullClassName );
                         suites.add( currentSuite );
                         classesToSuitesIndex.put( fullClassName, suites.size() - 1 );
-                    } else
+                    }
+                    else
                     {
                         currentSuite = suites.get( currentSuiteIndex );
                     }

@@ -78,7 +78,7 @@ public class ConsoleOutputCapture
             }
         }
 
-        static final byte[] newline = new byte[]{ (byte) '\n' };
+        static final byte[] NL = new byte[]{ (byte) '\n' };
 
         public void println( String s )
         {
@@ -87,7 +87,7 @@ public class ConsoleOutputCapture
                 s = "null"; // Shamelessly taken from super.print
             }
             final byte[] bytes = s.getBytes();
-            final byte[] join = ByteBuffer.join( bytes, 0, bytes.length, newline, 0, 1 );
+            final byte[] join = ByteBuffer.join( bytes, 0, bytes.length, NL, 0, 1 );
             target.writeTestOutput( join, 0, join.length, isStdout );
         }
 

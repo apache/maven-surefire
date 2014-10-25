@@ -1,4 +1,5 @@
 package org.apache.maven.plugin.surefire;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -28,16 +29,16 @@ import javax.annotation.Nonnull;
  */
 public class ClasspathCache
 {
-    private static final ConcurrentHashMap<String, Classpath> classpaths =
+    private static final ConcurrentHashMap<String, Classpath> CLASSPATHS =
         new ConcurrentHashMap<String, Classpath>( 4 );
 
     public static Classpath getCachedClassPath( @Nonnull String artifactId )
     {
-        return classpaths.get( artifactId );
+        return CLASSPATHS.get( artifactId );
     }
 
     public static void setCachedClasspath( @Nonnull String key, @Nonnull Classpath classpath )
     {
-        classpaths.put( key, classpath );
+        CLASSPATHS.put( key, classpath );
     }
 }

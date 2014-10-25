@@ -61,7 +61,8 @@ public class TestNGMapConfigurator
         suite.setThreadCount( threadCount );
 
         String parallel = (String) options.get( ProviderParameterNames.PARALLEL_PROP );
-        if ( parallel != null ) {
+        if ( parallel != null )
+        {
             suite.setParallel( parallel );
         }
     }

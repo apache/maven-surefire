@@ -29,6 +29,10 @@ import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.SimpleReportEntry;
 
+/**
+ * Invocation Handler for TestListener proxies to delegate to our {@link RunListener}
+ *
+ */
 public class TestListenerInvocationHandler
     implements InvocationHandler
 {

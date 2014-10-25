@@ -24,6 +24,10 @@ import java.util.LinkedList;
 
 import org.apache.maven.shared.utils.xml.XMLWriter;
 
+/**
+ * A pretty printing XML writer
+ *
+ */
 public class PrettyPrintXMLWriter
     implements XMLWriter
 {

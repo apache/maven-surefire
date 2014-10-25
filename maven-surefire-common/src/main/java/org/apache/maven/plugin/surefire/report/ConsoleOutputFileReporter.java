@@ -24,7 +24,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.report.ReporterException;
 
 /**
  * Surefire output consumer proxy that writes test output to a {@link java.io.File} for each test suite.
@@ -58,10 +57,10 @@ public class ConsoleOutputFileReporter
     }
 
     public void testSetCompleted( ReportEntry report )
-        throws ReporterException
     {
     }
 
+    @SuppressWarnings( "checkstyle:emptyblock" )
     public void close()
     {
         if ( fileOutputStream != null )
@@ -73,7 +72,6 @@ public class ConsoleOutputFileReporter
             }
             catch ( IOException e )
             {
-                ;
             }
             fileOutputStream = null;
         }

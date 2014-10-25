@@ -43,6 +43,8 @@ import static java.util.concurrent.TimeUnit.NANOSECONDS;
 public abstract class ParallelComputer
     extends Computer
 {
+    private static final double NANOS_IN_A_SECOND = 1E9;
+
     private final ShutdownStatus shutdownStatus = new ShutdownStatus();
 
     private final ShutdownStatus forcedShutdownStatus = new ShutdownStatus();
@@ -188,7 +190,7 @@ public abstract class ParallelComputer
 
     private double nanosToSeconds( long nanos )
     {
-        return (double) nanos / 1E9;
+        return (double) nanos / NANOS_IN_A_SECOND;
     }
 
     private boolean hasTimeout()
@@ -203,7 +205,7 @@ public abstract class ParallelComputer
 
     private static long secondsToNanos( double seconds )
     {
-        double nanos = seconds > 0 ? seconds * 1E9 : 0;
+        double nanos = seconds > 0 ? seconds * NANOS_IN_A_SECOND : 0;
         return Double.isInfinite( nanos ) || nanos >= Long.MAX_VALUE ? 0 : (long) nanos;
     }
 

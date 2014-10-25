@@ -28,22 +28,26 @@ import org.junit.Ignore;
 import org.junit.runner.Description;
 import org.junit.runner.Request;
 
+/**
+ * JUnit4 reflection helper
+ *
+ */
 public final class JUnit4Reflector
 {
-    private static final Class[] params = new Class[]{ Class.class };
+    private static final Class[] PARAMS = new Class[]{ Class.class };
 
-    private static final Class[] ignoreParams = new Class[]{ Ignore.class };
+    private static final Class[] IGNORE_PARAMS = new Class[]{ Ignore.class };
 
     public Ignore getAnnotatedIgnore( Description description )
     {
-        Method getAnnotation = ReflectionUtils.tryGetMethod( description.getClass(), "getAnnotation", params );
+        Method getAnnotation = ReflectionUtils.tryGetMethod( description.getClass(), "getAnnotation", PARAMS );
 
         if ( getAnnotation == null )
         {
             return null;
         }
 
-        return (Ignore) ReflectionUtils.invokeMethodWithArray( description, getAnnotation, ignoreParams );
+        return (Ignore) ReflectionUtils.invokeMethodWithArray( description, getAnnotation, IGNORE_PARAMS );
     }
 
     public String getAnnotatedIgnoreValue( Description description )
@@ -54,13 +58,14 @@ public final class JUnit4Reflector
 
     public Request createRequest( Class<?>... classes )
     {
-        try {
+        try
+        {
             return (Request) Request.class.getDeclaredMethod( "classes", Class[].class )// Since of JUnit 4.5
                 .invoke( null, new Object[]{ classes } );
         }
         catch ( NoSuchMethodException e )
         {
-            return Request.classes( null, classes );// Since of JUnit 4.0
+            return Request.classes( null, classes ); // Since of JUnit 4.0
         }
         catch ( InvocationTargetException e )
         {

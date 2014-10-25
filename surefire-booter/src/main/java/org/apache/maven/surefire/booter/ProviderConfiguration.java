@@ -62,6 +62,7 @@ public class ProviderConfiguration
 
     private final boolean readTestsFromInStream;
 
+    @SuppressWarnings( "checkstyle:parameternumber" )
     public ProviderConfiguration( DirectoryScannerParameters directoryScannerParameters,
                                   RunOrderParameters runOrderParameters, boolean failIfNoTests,
                                   ReporterConfiguration reporterConfiguration, TestArtifactInfo testArtifact,

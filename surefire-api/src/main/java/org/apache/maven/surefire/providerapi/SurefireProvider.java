@@ -66,7 +66,7 @@ public interface SurefireProvider
      * @throws org.apache.maven.surefire.testset.TestSetFailedException
      *          When testset fails
      */
-
+    @SuppressWarnings( "checkstyle:redundantthrows" )
     RunResult invoke( Object forkTestSet )
         throws TestSetFailedException, ReporterException, InvocationTargetException;
 

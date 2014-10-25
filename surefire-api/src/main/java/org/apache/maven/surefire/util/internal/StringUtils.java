@@ -126,6 +126,7 @@ public class StringUtils
      * @param target target string buffer. The required space will be up to {@code str.getBytes().length * 5} chars.
      * @param str String to escape values in, may be {@code null}.
      */
+    @SuppressWarnings( "checkstyle:magicnumber" )
     public static void escapeToPrintable( StringBuilder target, CharSequence str )
     {
         if ( target == null )
@@ -137,7 +138,8 @@ public class StringUtils
             return;
         }
 
-        for ( int i = 0; i < str.length(); i++ ) {
+        for ( int i = 0; i < str.length(); i++ )
+        {
             char c = str.charAt( i );
 
             // handle non-nicely printable chars and the comma
@@ -225,6 +227,7 @@ public class StringUtils
      * @param len number of bytes to copy from the input buffer
      * @return number of bytes written to {@code out}
      */
+    @SuppressWarnings( "checkstyle:magicnumber" )
     public static int escapeBytesToPrintable( byte[] out, int outoff, byte[] input, int off, int len )
     {
         if ( out == null )

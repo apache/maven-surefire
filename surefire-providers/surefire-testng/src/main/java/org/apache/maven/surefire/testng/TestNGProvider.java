@@ -24,7 +24,6 @@ import java.util.Properties;
 import org.apache.maven.surefire.providerapi.AbstractProvider;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.report.ReporterConfiguration;
-import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestRequest;
@@ -73,7 +72,7 @@ public class TestNGProvider
     }
 
     public RunResult invoke( Object forkTestSet )
-        throws TestSetFailedException, ReporterException
+        throws TestSetFailedException
     {
 
         final ReporterFactory reporterFactory = providerParameters.getReporterFactory();
@@ -117,8 +116,8 @@ public class TestNGProvider
 
     boolean isTestNGXmlTestSuite( TestRequest testSuiteDefinition )
     {
-        return testSuiteDefinition.getSuiteXmlFiles() != null && testSuiteDefinition.getSuiteXmlFiles().size() > 0 &&
-            testSuiteDefinition.getRequestedTest() == null;
+        return testSuiteDefinition.getSuiteXmlFiles() != null && testSuiteDefinition.getSuiteXmlFiles().size() > 0
+                        && testSuiteDefinition.getRequestedTest() == null;
 
     }
 

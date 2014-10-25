@@ -29,6 +29,9 @@ import org.apache.maven.surefire.testset.RunOrderParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestRequest;
 
+// CHECKSTYLE_OFF: imports
+import static org.apache.maven.surefire.booter.BooterConstants.*;
+
 /**
  * Knows how to serialize and deserialize the booter configuration.
  * <p/>
@@ -43,7 +46,6 @@ import org.apache.maven.surefire.testset.TestRequest;
  * @author Kristian Rosenvold
  */
 public class BooterDeserializer
-    implements BooterConstants
 {
 
 

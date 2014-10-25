@@ -22,7 +22,6 @@ package org.apache.maven.plugins.surefire.report;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -125,7 +124,8 @@ public class TestSuiteXmlParser
         {
             if ( "testsuite".equals( qName ) )
             {
-                currentSuite = defaultSuite = new ReportTestSuite();
+                defaultSuite = new ReportTestSuite();
+                currentSuite = defaultSuite;
 
                 try
                 {

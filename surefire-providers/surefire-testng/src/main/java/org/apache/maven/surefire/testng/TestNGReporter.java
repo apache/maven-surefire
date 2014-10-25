@@ -31,7 +31,6 @@ import org.testng.ISuiteListener;
 import org.testng.ITestContext;
 import org.testng.ITestListener;
 import org.testng.ITestResult;
-import org.testng.TestNG;
 
 /**
  * Listens for and provides and adaptor layer so that

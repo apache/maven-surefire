@@ -1,4 +1,5 @@
 package org.apache.maven.surefire;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -24,6 +25,10 @@ import java.util.Set;
 import org.apache.maven.shared.utils.io.SelectorUtils;
 import org.apache.maven.surefire.util.ScannerFilter;
 
+/**
+ * Filter for test class files
+ *
+ */
 public class SpecificTestClassFilter
     implements ScannerFilter
 {

@@ -193,7 +193,7 @@ public class ForkingRunListener
         int mask = radix - 1;
         do
         {
-            header[--charPos] = (byte) digits[i & mask];
+            header[--charPos] = (byte) DIGITS[i & mask];
             i >>>= 4;
         }
         while ( i != 0 );
@@ -205,7 +205,7 @@ public class ForkingRunListener
         return header;
     }
 
-    private final static char[] digits =
+    private static final char[] DIGITS =
         { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l',
             'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' };
 
@@ -218,8 +218,8 @@ public class ForkingRunListener
         }
 
         StringBuilder sb = new StringBuilder( 7 + message.length() * 5 );
-        append( sb, BOOTERCODE_CONSOLE );comma( sb );
-        append( sb, Integer.toHexString( testSetChannelId ) );comma( sb );
+        append( sb, BOOTERCODE_CONSOLE ); comma( sb );
+        append( sb, Integer.toHexString( testSetChannelId ) ); comma( sb );
         StringUtils.escapeToPrintable( sb, message );
 
         sb.append( '\n' );
@@ -230,8 +230,8 @@ public class ForkingRunListener
     {
         StringBuilder stringBuilder = new StringBuilder();
 
-        append( stringBuilder, BOOTERCODE_SYSPROPS );comma( stringBuilder );
-        append( stringBuilder, Integer.toHexString( testSetChannelId ) );comma( stringBuilder );
+        append( stringBuilder, BOOTERCODE_SYSPROPS ); comma( stringBuilder );
+        append( stringBuilder, Integer.toHexString( testSetChannelId ) ); comma( stringBuilder );
 
         StringUtils.escapeToPrintable( stringBuilder, key );
         comma( stringBuilder );
@@ -244,7 +244,7 @@ public class ForkingRunListener
     {
         StringBuilder stringBuilder = new StringBuilder();
         append( stringBuilder, operationCode ); comma( stringBuilder );
-        append( stringBuilder, Integer.toHexString( testSetChannelId ) );comma( stringBuilder );
+        append( stringBuilder, Integer.toHexString( testSetChannelId ) ); comma( stringBuilder );
 
         nullableEncoding( stringBuilder, reportEntry.getSourceName() );
         comma( stringBuilder );

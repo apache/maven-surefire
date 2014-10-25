@@ -44,7 +44,8 @@ public class SurefireReportParser
 {
     private static final String INCLUDES = "*.xml";
 
-    private static final String EXCLUDES = "*.txt, testng-failed.xml, testng-failures.xml, testng-results.xml, failsafe-summary*.xml";
+    private static final String EXCLUDES =
+                    "*.txt, testng-failed.xml, testng-failures.xml, testng-results.xml, failsafe-summary*.xml";
 
     private NumberFormat numberFormat = NumberFormat.getInstance();
 

@@ -48,7 +48,8 @@ public class WrappedReportEntry
     static final String NL = System.getProperty( "line.separator" );
 
     public WrappedReportEntry( ReportEntry original, ReportEntryType reportEntryType, Integer estimatedElapsed,
-                               Utf8RecodingDeferredFileOutputStream stdout, Utf8RecodingDeferredFileOutputStream stdErr )
+                               Utf8RecodingDeferredFileOutputStream stdout,
+                               Utf8RecodingDeferredFileOutputStream stdErr )
     {
         this.original = original;
         this.reportEntryType = reportEntryType;
@@ -165,17 +166,17 @@ public class WrappedReportEntry
     public boolean isErrorOrFailure()
     {
         ReportEntryType thisType = getReportEntryType();
-        return ReportEntryType.failure == thisType || ReportEntryType.error == thisType;
+        return ReportEntryType.FAILURE == thisType || ReportEntryType.ERROR == thisType;
     }
 
     public boolean isSkipped()
     {
-        return ReportEntryType.skipped == getReportEntryType();
+        return ReportEntryType.SKIPPED == getReportEntryType();
     }
 
     public boolean isSucceeded()
     {
-        return ReportEntryType.success == getReportEntryType();
+        return ReportEntryType.SUCCESS == getReportEntryType();
     }
 
     public String getNameWithGroup()

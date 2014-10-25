@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.Properties;
 import org.apache.maven.surefire.report.ConsoleOutputCapture;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
-import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.testset.TestSetFailedException;
@@ -52,13 +51,14 @@ public class TestNGXmlTestSuite
     private final File reportsDirectory;
 
     // Not really used
-    private Map<File,String> testSets;
+    private Map<File, String> testSets;
 
     /**
      * Creates a testng testset to be configured by the specified
      * xml file(s). The XML files are suite definitions files according to TestNG DTD.
      */
-    public TestNGXmlTestSuite( List<File> suiteFiles, String testSourceDirectory, Properties confOptions, File reportsDirectory )
+    public TestNGXmlTestSuite( List<File> suiteFiles, String testSourceDirectory, Properties confOptions,
+                               File reportsDirectory )
     {
         this.suiteFiles = suiteFiles;
 
@@ -70,7 +70,7 @@ public class TestNGXmlTestSuite
     }
 
     public void execute( ReporterFactory reporterManagerFactory )
-        throws ReporterException, TestSetFailedException
+        throws TestSetFailedException
     {
         if ( testSets == null )
         {
@@ -105,7 +105,7 @@ public class TestNGXmlTestSuite
             throw new IllegalStateException( "No suite files were specified" );
         }
 
-        this.testSets = new HashMap<File,String>();
+        this.testSets = new HashMap<File, String>();
         this.suiteFilePaths = new ArrayList<String>();
 
         for ( Object suiteFile : suiteFiles )

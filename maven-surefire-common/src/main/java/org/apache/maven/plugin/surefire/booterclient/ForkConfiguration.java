@@ -79,9 +79,11 @@ public class ForkConfiguration
 
     private final String debugLine;
 
-    public ForkConfiguration( Classpath bootClasspathConfiguration, File tmpDir, String debugLine, String jvmExecutable,
-                              File workingDirectory, Properties modelProperties, String argLine, Map<String, String> environmentVariables,
-                              boolean debugEnabled, int forkCount, boolean reuseForks )
+    @SuppressWarnings( "checkstyle:parameternumber" )
+    public ForkConfiguration( Classpath bootClasspathConfiguration, File tmpDir, String debugLine,
+                              String jvmExecutable, File workingDirectory, Properties modelProperties, String argLine,
+                              Map<String, String> environmentVariables, boolean debugEnabled, int forkCount,
+                              boolean reuseForks )
     {
         this.bootClasspathConfiguration = bootClasspathConfiguration;
         this.tempDirectory = tmpDir;
@@ -111,8 +113,8 @@ public class ForkConfiguration
         {
             return FORK_NEVER;
         }
-        else if ( forkMode.equals( FORK_NEVER ) || forkMode.equals( FORK_ONCE ) ||
-            forkMode.equals( FORK_ALWAYS ) || forkMode.equals( FORK_PERTHREAD ) )
+        else if ( forkMode.equals( FORK_NEVER ) || forkMode.equals( FORK_ONCE )
+               || forkMode.equals( FORK_ALWAYS ) || forkMode.equals( FORK_PERTHREAD ) )
         {
             return forkMode;
         }
@@ -135,7 +137,8 @@ public class ForkConfiguration
         throws SurefireBooterForkException
     {
         return createCommandLine( classPath,
-                                  startupConfiguration.getClassLoaderConfiguration().isManifestOnlyJarRequestedAndUsable(),
+                                  startupConfiguration.getClassLoaderConfiguration()
+                                      .isManifestOnlyJarRequestedAndUsable(),
                                   startupConfiguration.isShadefire(), startupConfiguration.isProviderMainClass()
             ? startupConfiguration.getActualClassName()
             : ForkedBooter.class.getName(), threadNumber );
@@ -151,7 +154,9 @@ public class ForkConfiguration
 
         if ( argLine != null )
         {
-            cli.createArg().setLine( replaceThreadNumberPlaceholder( stripNewLines( replacePropertyExpressions( argLine ) ), threadNumber ) );
+            cli.createArg().setLine(
+                   replaceThreadNumberPlaceholder( stripNewLines( replacePropertyExpressions( argLine ) ),
+                                                   threadNumber ) );
         }
 
         if ( environmentVariables != null )
@@ -217,15 +222,18 @@ public class ForkConfiguration
      */
     private String replacePropertyExpressions( String argLine )
     {
-        if ( argLine == null ) {
+        if ( argLine == null )
+        {
             return null;
         }
 
-        for ( Enumeration<?> e = modelProperties.propertyNames(); e.hasMoreElements(); ) {
+        for ( Enumeration<?> e = modelProperties.propertyNames(); e.hasMoreElements(); )
+        {
             String key = e.nextElement().toString();
             String field = "@{" + key + "}";
-            if ( argLine.contains(field) ) {
-                argLine = argLine.replace(field, modelProperties.getProperty(key, ""));
+            if ( argLine.contains( field ) )
+            {
+                argLine = argLine.replace( field, modelProperties.getProperty( key, "" ) );
             }
         }
 

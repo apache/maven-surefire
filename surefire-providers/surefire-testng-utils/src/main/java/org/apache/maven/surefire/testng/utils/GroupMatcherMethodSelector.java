@@ -1,4 +1,5 @@
 package org.apache.maven.surefire.testng.utils;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -31,6 +32,10 @@ import org.testng.IMethodSelector;
 import org.testng.IMethodSelectorContext;
 import org.testng.ITestNGMethod;
 
+/**
+ * Method selector delegating to {@link GroupMatcher} to decide if a method is included or not.
+ *
+ */
 public class GroupMatcherMethodSelector
     implements IMethodSelector
 {

@@ -63,7 +63,8 @@ final class InvokerStrategy
     protected boolean stopNow()
     {
         final boolean stopped = disable();
-        for ( Thread activeThread; ( activeThread = activeThreads.poll() ) != null; )
+
+        for ( Thread activeThread = activeThreads.poll(); activeThread != null; activeThread = activeThreads.poll() )
         {
             activeThread.interrupt();
         }

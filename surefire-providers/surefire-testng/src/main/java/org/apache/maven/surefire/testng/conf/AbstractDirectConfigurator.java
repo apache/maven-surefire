@@ -31,6 +31,10 @@ import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.testng.TestNG;
 import org.testng.xml.XmlSuite;
 
+/**
+ * Configurator that relies on reflection to set parameters in TestNG
+ *
+ */
 public abstract class AbstractDirectConfigurator
     implements Configurator
 {
@@ -143,6 +147,10 @@ public abstract class AbstractDirectConfigurator
         }
     }
 
+    /**
+     * Describes a property setter by method name and parameter class
+     *
+     */
     public static final class Setter
     {
         private final String setterName;

@@ -19,6 +19,10 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
+/**
+ * Describes a single entry for a test report
+ *
+ */
 public interface ReportEntry
 {
     /**
@@ -26,35 +30,35 @@ public interface ReportEntry
      *
      * @return A string with the class name
      */
-    public String getSourceName();
+    String getSourceName();
 
     /**
      * The name of the test case
      *
      * @return A string describing the test case
      */
-    public String getName();
+    String getName();
 
     /**
      * The group/category of the testcase
      *
      * @return A string
      */
-    public String getGroup();
+    String getGroup();
 
     /**
      * The group/category of the testcase
      *
      * @return A string
      */
-    public StackTraceWriter getStackTraceWriter();
+    StackTraceWriter getStackTraceWriter();
 
     /**
      * Gets the runtime for the item. Optional parameter. If the value is not set, it will be determined within
      * the reporting subsustem. Some providers like to calculate this value themselves, and it gets the
      * most accurate value.
      */
-    public Integer getElapsed();
+    Integer getElapsed();
 
 
     /**
@@ -63,12 +67,12 @@ public interface ReportEntry
      *
      * @return A string that explains an anomaly
      */
-    public String getMessage();
+    String getMessage();
 
     /**
      * A name of the test case together with the group or category (if any exists).
      *
      * @return A string with the test case name and group/category, or just the name.
      */
-    public String getNameWithGroup();
+    String getNameWithGroup();
 }

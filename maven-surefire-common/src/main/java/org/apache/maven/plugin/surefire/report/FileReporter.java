@@ -24,6 +24,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
+
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterException;
 
@@ -31,7 +32,7 @@ import static org.apache.maven.plugin.surefire.report.FileReporterUtils.stripIll
 
 /**
  * Base class for file reporters.
- * 
+ *
  * @author <a href="mailto:brett@apache.org">Brett Porter</a>
  * @author Kristian Rosenvold
  */
@@ -51,7 +52,6 @@ public class FileReporter
     }
 
     private PrintWriter testSetStarting( ReportEntry report )
-        throws ReporterException
     {
         File reportFile = getReportFile( reportsDirectory, report.getName(), reportNameSuffix, ".txt" );
 
@@ -103,7 +103,6 @@ public class FileReporter
     }
 
     public void testSetCompleted( WrappedReportEntry report, TestSetStats testSetStats, List<String> testResults )
-        throws ReporterException
     {
         PrintWriter writer = testSetStarting( report );
         writer.print( testSetStats.getTestSetSummary( report ) );

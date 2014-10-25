@@ -32,8 +32,8 @@ import org.apache.maven.project.MavenProject;
  *
  * @author <a href="mailto:jruiz@exist.com">Johnny R. Ruiz III</a>
  */
-@Mojo(name = "report", inheritByDefault = false)
-@Execute(lifecycle = "surefire", phase = LifecyclePhase.TEST)
+@Mojo( name = "report", inheritByDefault = false )
+@Execute( lifecycle = "surefire", phase = LifecyclePhase.TEST )
 public class SurefireReportMojo
     extends AbstractSurefireReportMojo
 {
@@ -43,7 +43,7 @@ public class SurefireReportMojo
      *
      * @noinspection UnusedDeclaration
      */
-    @Parameter(defaultValue = "surefire-report", property = "outputName", required = true)
+    @Parameter( defaultValue = "surefire-report", property = "outputName", required = true )
     private String outputName;
 
     /**
@@ -53,7 +53,7 @@ public class SurefireReportMojo
      * @noinspection UnusedDeclaration
      * @since 2.11
      */
-    @Parameter(defaultValue = "true", property = "alwaysGenerateSurefireReport")
+    @Parameter( defaultValue = "true", property = "alwaysGenerateSurefireReport" )
     private boolean alwaysGenerateSurefireReport;
 
     /**
@@ -62,7 +62,7 @@ public class SurefireReportMojo
      * @noinspection UnusedDeclaration
      * @since 2.11
      */
-    @Parameter(defaultValue = "false", property = "skipSurefireReport")
+    @Parameter( defaultValue = "false", property = "skipSurefireReport" )
     private boolean skipSurefireReport;
 
     protected File getSurefireReportsDirectory( MavenProject subProject )

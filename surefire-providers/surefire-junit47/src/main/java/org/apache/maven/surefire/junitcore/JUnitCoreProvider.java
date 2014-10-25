@@ -36,7 +36,6 @@ import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.report.ConsoleLogger;
 import org.apache.maven.surefire.report.ConsoleOutputCapture;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
-import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.suite.RunResult;
@@ -89,7 +88,8 @@ public class JUnitCoreProvider
         rerunFailingTestsCount = providerParameters.getTestRequest().getRerunFailingTestsCount();
 
         customRunListeners =
-            JUnit4RunListenerFactory.createCustomListeners( providerParameters.getProviderProperties().getProperty( "listener" ) );
+            JUnit4RunListenerFactory.createCustomListeners(
+                providerParameters.getProviderProperties().getProperty( "listener" ) );
         jUnit48Reflector = new JUnit48Reflector( testClassLoader );
     }
 
@@ -110,7 +110,7 @@ public class JUnitCoreProvider
     }
 
     public RunResult invoke( Object forkTestSet )
-        throws TestSetFailedException, ReporterException
+        throws TestSetFailedException
     {
         final ReporterFactory reporterFactory = providerParameters.getReporterFactory();
 

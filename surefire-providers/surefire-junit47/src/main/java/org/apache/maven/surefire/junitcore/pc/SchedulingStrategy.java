@@ -19,9 +19,6 @@ package org.apache.maven.surefire.junitcore.pc;
  * under the License.
  */
 
-import org.junit.runners.model.RunnerScheduler;
-
-import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**

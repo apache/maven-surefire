@@ -27,38 +27,46 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 
-final class ScannerUtil {
+final class ScannerUtil
+{
 
-	private ScannerUtil() {}
+    private ScannerUtil()
+    {
+    }
 
     private static final String FS = System.getProperty( "file.separator" );
 
     private static final String JAVA_SOURCE_FILE_EXTENSION = ".java";
 
     private static final String JAVA_CLASS_FILE_EXTENSION = ".class";
-    
-    private static final boolean IS_NON_UNIX_FS = (!FS.equals( "/" ));
 
+    private static final boolean IS_NON_UNIX_FS = ( !FS.equals( "/" ) );
+
+    @SuppressWarnings( "checkstyle:modifierorder" )
     public static @Nonnull String convertToJavaClassName( @Nonnull String test )
     {
         return StringUtils.removeEnd( test, ".class" ).replace( FS, "." );
     }
 
+    @SuppressWarnings( "checkstyle:modifierorder" )
     public static @Nonnull String convertJarFileResourceToJavaClassName( @Nonnull String test )
     {
         return StringUtils.removeEnd( test, ".class" ).replace( "/", "." );
     }
 
+    @SuppressWarnings( "checkstyle:modifierorder" )
     public static @Nonnull String convertSlashToSystemFileSeparator( @Nonnull String path )
     {
         return ( IS_NON_UNIX_FS ? path.replace( "/", FS ) : path );
     }
 
+    @SuppressWarnings( "checkstyle:modifierorder" )
     public static @Nonnull String stripBaseDir( String basedir, String test )
     {
         return StringUtils.removeStart( test, basedir );
     }
 
+    @SuppressWarnings( "checkstyle:modifierorder" )
     public static @Nonnull String[] processIncludesExcludes( @Nonnull List<String> list )
     {
         List<String> newList = new ArrayList<String>();

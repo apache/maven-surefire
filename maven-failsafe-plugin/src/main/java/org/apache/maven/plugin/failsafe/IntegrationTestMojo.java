@@ -163,7 +163,7 @@ public class IntegrationTestMojo
      */
     @Parameter( property = "failsafe.parallel.forcedTimeout" )
     private double parallelTestsTimeoutForcedInSeconds;
-    
+
     /**
      * A list of &lt;include> elements specifying the tests (by pattern) that should be included in testing. When not
      * specified and when the <code>test</code> parameter is not specified, the default includes will be <code><br/>
@@ -219,7 +219,8 @@ public class IntegrationTestMojo
     @Parameter( property = "failsafe.rerunFailingTestsCount", defaultValue = "0" )
     protected int rerunFailingTestsCount;
 
-    protected int getRerunFailingTestsCount() {
+    protected int getRerunFailingTestsCount()
+    {
         return rerunFailingTestsCount;
     }
 
@@ -264,8 +265,8 @@ public class IntegrationTestMojo
     {
         if ( StringUtils.isEmpty( encoding ) )
         {
-            getLog().warn( "File encoding has not been set, using platform encoding " + ReaderFactory.FILE_ENCODING +
-                               ", i.e. build is platform dependent!" );
+            getLog().warn( "File encoding has not been set, using platform encoding " + ReaderFactory.FILE_ENCODING
+                           + ", i.e. build is platform dependent!" );
             return ReaderFactory.FILE_ENCODING;
         }
         else
@@ -471,19 +472,23 @@ public class IntegrationTestMojo
         this.forkedProcessTimeoutInSeconds = forkedProcessTimeoutInSeconds;
     }
 
-    public double getParallelTestsTimeoutInSeconds() {
+    public double getParallelTestsTimeoutInSeconds()
+    {
         return parallelTestsTimeoutInSeconds;
     }
 
-    public void setParallelTestsTimeoutInSeconds( double parallelTestsTimeoutInSeconds ) {
+    public void setParallelTestsTimeoutInSeconds( double parallelTestsTimeoutInSeconds )
+    {
         this.parallelTestsTimeoutInSeconds = parallelTestsTimeoutInSeconds;
     }
 
-    public double getParallelTestsTimeoutForcedInSeconds() {
+    public double getParallelTestsTimeoutForcedInSeconds()
+    {
         return parallelTestsTimeoutForcedInSeconds;
     }
 
-    public void setParallelTestsTimeoutForcedInSeconds( double parallelTestsTimeoutForcedInSeconds ) {
+    public void setParallelTestsTimeoutForcedInSeconds( double parallelTestsTimeoutForcedInSeconds )
+    {
         this.parallelTestsTimeoutForcedInSeconds = parallelTestsTimeoutForcedInSeconds;
     }
 

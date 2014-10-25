@@ -32,7 +32,7 @@ import java.util.concurrent.Semaphore;
  * After providing each test class name, followed by a newline character, a flush is performed on the
  * {@link FlushReceiver} provided by the {@link FlushReceiverProvider} that can be set using
  * {@link #setFlushReceiverProvider(FlushReceiverProvider)}.
- * 
+ *
  * @author Andreas Gudian
  */
 public class TestProvidingInputStream
@@ -52,7 +52,7 @@ public class TestProvidingInputStream
 
     /**
      * C'tor
-     * 
+     *
      * @param testItemQueue source of the tests to be read from this stream
      */
     public TestProvidingInputStream( Queue<String> testItemQueue )
@@ -68,6 +68,7 @@ public class TestProvidingInputStream
         this.flushReceiverProvider = flushReceiverProvider;
     }
 
+    @SuppressWarnings( "checkstyle:magicnumber" )
     @Override
     public synchronized int read()
         throws IOException
@@ -117,6 +118,7 @@ public class TestProvidingInputStream
         semaphore.release();
     }
 
+    @Override
     public void close()
     {
         closed = true;

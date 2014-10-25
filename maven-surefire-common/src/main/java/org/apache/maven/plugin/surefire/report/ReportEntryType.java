@@ -19,13 +19,17 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
+/**
+ * Type of an entry in the report
+ *
+ */
 public enum ReportEntryType
 {
 
-    error( "error", "flakyError", "rerunError" ),
-    failure( "failure", "flakyFailure", "rerunFailure" ),
-    skipped( "skipped", "", "" ),
-    success( "", "", "" );
+    ERROR( "error", "flakyError", "rerunError" ),
+    FAILURE( "failure", "flakyFailure", "rerunFailure" ),
+    SKIPPED( "skipped", "", "" ),
+    SUCCESS( "", "", "" );
 
     private final String xmlTag;
 

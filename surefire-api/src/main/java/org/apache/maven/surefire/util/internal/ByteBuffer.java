@@ -50,11 +50,11 @@ public class ByteBuffer
         data[position++] = chararcter;
     }
 
-    private static final byte comma = (byte) ',';
+    private static final byte COMMA = (byte) ',';
 
     public void comma()
     {
-        data[position++] = comma;
+        data[position++] = COMMA;
     }
 
 
@@ -81,7 +81,7 @@ public class ByteBuffer
         int mask = radix - 1;
         do
         {
-            buf[--charPos] = (byte) digits[i & mask];
+            buf[--charPos] = (byte) DIGITS[i & mask];
             i >>>= 4;
         }
         while ( i != 0 );
@@ -89,7 +89,7 @@ public class ByteBuffer
         append( buf, charPos, ( 32 - charPos ) );
     }
 
-    private final static char[] digits =
+    private static final char[] DIGITS =
         { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l',
             'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' };
 

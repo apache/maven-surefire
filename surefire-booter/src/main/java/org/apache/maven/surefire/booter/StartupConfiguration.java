@@ -36,7 +36,7 @@ public class StartupConfiguration
 
     private final boolean isInForkedVm;
 
-    private final static String SUREFIRE_TEST_CLASSPATH = "surefire.test.class.path";
+    private static final String SUREFIRE_TEST_CLASSPATH = "surefire.test.class.path";
 
 
     public StartupConfiguration( String providerClassName, ClasspathConfiguration classpathConfiguration,

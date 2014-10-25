@@ -308,52 +308,7 @@ public class SurefireReportGenerator
                 {
                     if ( showSuccess || suite.getNumberOfErrors() != 0 || suite.getNumberOfFailures() != 0 )
                     {
-
-                        sink.tableRow();
-
-                        sink.tableCell();
-
-                        sink.link( "#" + suite.getPackageName() + suite.getName() );
-
-                        if ( suite.getNumberOfErrors() > 0 )
-                        {
-                            sinkIcon( "error", sink );
-                        }
-                        else if ( suite.getNumberOfFailures() > 0 )
-                        {
-                            sinkIcon( "junit.framework", sink );
-                        }
-                        else if ( suite.getNumberOfSkipped() > 0 )
-                        {
-                            sinkIcon( "skipped", sink );
-                        }
-                        else
-                        {
-                            sinkIcon( "success", sink );
-                        }
-
-                        sink.link_();
-
-                        sink.tableCell_();
-
-                        sinkCellLink( sink, suite.getName(), "#" + suite.getPackageName() + suite.getName() );
-
-                        sinkCell( sink, Integer.toString( suite.getNumberOfTests() ) );
-
-                        sinkCell( sink, Integer.toString( suite.getNumberOfErrors() ) );
-
-                        sinkCell( sink, Integer.toString( suite.getNumberOfFailures() ) );
-
-                        sinkCell( sink, Integer.toString( suite.getNumberOfSkipped() ) );
-
-                        String percentage =
-                            report.computePercentage( suite.getNumberOfTests(), suite.getNumberOfErrors(),
-                                                      suite.getNumberOfFailures(), suite.getNumberOfSkipped() );
-                        sinkCell( sink, percentage + "%" );
-
-                        sinkCell( sink, numberFormat.format( suite.getTimeElapsed() ) );
-
-                        sink.tableRow_();
+                        constructTestSuiteSection( sink, numberFormat, suite );
                     }
                 }
 
@@ -368,6 +323,55 @@ public class SurefireReportGenerator
         sinkLineBreak( sink );
 
         sink.section1_();
+    }
+
+    private void constructTestSuiteSection( Sink sink, NumberFormat numberFormat, ReportTestSuite suite )
+    {
+        sink.tableRow();
+
+        sink.tableCell();
+
+        sink.link( "#" + suite.getPackageName() + suite.getName() );
+
+        if ( suite.getNumberOfErrors() > 0 )
+        {
+            sinkIcon( "error", sink );
+        }
+        else if ( suite.getNumberOfFailures() > 0 )
+        {
+            sinkIcon( "junit.framework", sink );
+        }
+        else if ( suite.getNumberOfSkipped() > 0 )
+        {
+            sinkIcon( "skipped", sink );
+        }
+        else
+        {
+            sinkIcon( "success", sink );
+        }
+
+        sink.link_();
+
+        sink.tableCell_();
+
+        sinkCellLink( sink, suite.getName(), "#" + suite.getPackageName() + suite.getName() );
+
+        sinkCell( sink, Integer.toString( suite.getNumberOfTests() ) );
+
+        sinkCell( sink, Integer.toString( suite.getNumberOfErrors() ) );
+
+        sinkCell( sink, Integer.toString( suite.getNumberOfFailures() ) );
+
+        sinkCell( sink, Integer.toString( suite.getNumberOfSkipped() ) );
+
+        String percentage =
+            report.computePercentage( suite.getNumberOfTests(), suite.getNumberOfErrors(),
+                                      suite.getNumberOfFailures(), suite.getNumberOfSkipped() );
+        sinkCell( sink, percentage + "%" );
+
+        sinkCell( sink, numberFormat.format( suite.getTimeElapsed() ) );
+
+        sink.tableRow_();
     }
 
     private void constructTestCasesSection( ResourceBundle bundle, Sink sink )
@@ -418,109 +422,7 @@ public class SurefireReportGenerator
                     {
                         if ( testCase.getFailure() != null || showSuccess )
                         {
-                            sink.tableRow();
-
-                            sink.tableCell();
-
-                            Map<String, Object> failure = testCase.getFailure();
-
-                            if ( failure != null )
-                            {
-                                sink.link( "#" + toHtmlId( testCase.getFullName() ) );
-
-                                sinkIcon( (String) failure.get( "type" ), sink );
-
-                                sink.link_();
-                            }
-                            else
-                            {
-                                sinkIcon( "success", sink );
-                            }
-
-                            sink.tableCell_();
-
-                            if ( failure != null )
-                            {
-                                sink.tableCell();
-
-                                sinkLink( sink, testCase.getName(), "#" + toHtmlId( testCase.getFullName() ) );
-
-                                SinkEventAttributeSet atts = new SinkEventAttributeSet();
-                                atts.addAttribute( SinkEventAttributes.CLASS, "detailToggle" );
-                                atts.addAttribute( SinkEventAttributes.STYLE, "display:inline" );
-                                sink.unknown( "div", new Object[]{ HtmlMarkup.TAG_TYPE_START }, atts );
-
-                                sink.link( "javascript:toggleDisplay('" + toHtmlId( testCase.getFullName() ) + "');" );
-
-                                atts = new SinkEventAttributeSet();
-                                atts.addAttribute( SinkEventAttributes.STYLE, "display:inline;" );
-                                atts.addAttribute( SinkEventAttributes.ID, toHtmlId( testCase.getFullName() ) + "off" );
-                                sink.unknown( "span", new Object[]{ HtmlMarkup.TAG_TYPE_START }, atts );
-                                sink.text( " + " );
-                                sink.unknown( "span", new Object[]{ HtmlMarkup.TAG_TYPE_END }, null );
-
-                                atts = new SinkEventAttributeSet();
-                                atts.addAttribute( SinkEventAttributes.STYLE, "display:none;" );
-                                atts.addAttribute( SinkEventAttributes.ID, toHtmlId( testCase.getFullName() ) + "on" );
-                                sink.unknown( "span", new Object[]{ HtmlMarkup.TAG_TYPE_START }, atts );
-                                sink.text( " - " );
-                                sink.unknown( "span", new Object[]{ HtmlMarkup.TAG_TYPE_END }, null );
-
-                                sink.text( "[ Detail ]" );
-                                sink.link_();
-
-                                sink.unknown( "div", new Object[]{ HtmlMarkup.TAG_TYPE_END }, null );
-
-                                sink.tableCell_();
-                            }
-                            else
-                            {
-                                sinkCell( sink, testCase.getName() );
-                            }
-
-                            sinkCell( sink, numberFormat.format( testCase.getTime() ) );
-
-                            sink.tableRow_();
-
-                            if ( failure != null )
-                            {
-                                sink.tableRow();
-
-                                sinkCell( sink, "" );
-                                sinkCell( sink, (String) failure.get( "message" ) );
-                                sinkCell( sink, "" );
-                                sink.tableRow_();
-
-                                List<String> detail = (List<String>) failure.get( "detail" );
-                                if ( detail != null )
-                                {
-
-                                    sink.tableRow();
-                                    sinkCell( sink, "" );
-
-                                    sink.tableCell();
-                                    SinkEventAttributeSet atts = new SinkEventAttributeSet();
-                                    atts.addAttribute( SinkEventAttributes.ID,
-                                                       toHtmlId( testCase.getFullName() ) + "error" );
-                                    atts.addAttribute( SinkEventAttributes.STYLE, "display:none;" );
-                                    sink.unknown( "div", new Object[]{ HtmlMarkup.TAG_TYPE_START }, atts );
-
-                                    sink.verbatim( null );
-                                    for ( String line : detail )
-                                    {
-                                        sink.text( line );
-                                        sink.lineBreak();
-                                    }
-                                    sink.verbatim_();
-
-                                    sink.unknown( "div", new Object[]{ HtmlMarkup.TAG_TYPE_END }, null );
-                                    sink.tableCell_();
-
-                                    sinkCell( sink, "" );
-
-                                    sink.tableRow_();
-                                }
-                            }
+                            constructTestCaseSection( sink, numberFormat, testCase );
                         }
                     }
 
@@ -538,10 +440,117 @@ public class SurefireReportGenerator
         sink.section1_();
     }
 
+    private void constructTestCaseSection( Sink sink, NumberFormat numberFormat, ReportTestCase testCase )
+    {
+        sink.tableRow();
+
+        sink.tableCell();
+
+        Map<String, Object> failure = testCase.getFailure();
+
+        if ( failure != null )
+        {
+            sink.link( "#" + toHtmlId( testCase.getFullName() ) );
+
+            sinkIcon( (String) failure.get( "type" ), sink );
+
+            sink.link_();
+        }
+        else
+        {
+            sinkIcon( "success", sink );
+        }
+
+        sink.tableCell_();
+
+        if ( failure != null )
+        {
+            sink.tableCell();
+
+            sinkLink( sink, testCase.getName(), "#" + toHtmlId( testCase.getFullName() ) );
+
+            SinkEventAttributeSet atts = new SinkEventAttributeSet();
+            atts.addAttribute( SinkEventAttributes.CLASS, "detailToggle" );
+            atts.addAttribute( SinkEventAttributes.STYLE, "display:inline" );
+            sink.unknown( "div", new Object[]{ HtmlMarkup.TAG_TYPE_START }, atts );
+
+            sink.link( "javascript:toggleDisplay('" + toHtmlId( testCase.getFullName() ) + "');" );
+
+            atts = new SinkEventAttributeSet();
+            atts.addAttribute( SinkEventAttributes.STYLE, "display:inline;" );
+            atts.addAttribute( SinkEventAttributes.ID, toHtmlId( testCase.getFullName() ) + "off" );
+            sink.unknown( "span", new Object[]{ HtmlMarkup.TAG_TYPE_START }, atts );
+            sink.text( " + " );
+            sink.unknown( "span", new Object[]{ HtmlMarkup.TAG_TYPE_END }, null );
+
+            atts = new SinkEventAttributeSet();
+            atts.addAttribute( SinkEventAttributes.STYLE, "display:none;" );
+            atts.addAttribute( SinkEventAttributes.ID, toHtmlId( testCase.getFullName() ) + "on" );
+            sink.unknown( "span", new Object[]{ HtmlMarkup.TAG_TYPE_START }, atts );
+            sink.text( " - " );
+            sink.unknown( "span", new Object[]{ HtmlMarkup.TAG_TYPE_END }, null );
+
+            sink.text( "[ Detail ]" );
+            sink.link_();
+
+            sink.unknown( "div", new Object[]{ HtmlMarkup.TAG_TYPE_END }, null );
+
+            sink.tableCell_();
+        }
+        else
+        {
+            sinkCell( sink, testCase.getName() );
+        }
+
+        sinkCell( sink, numberFormat.format( testCase.getTime() ) );
+
+        sink.tableRow_();
+
+        if ( failure != null )
+        {
+            sink.tableRow();
+
+            sinkCell( sink, "" );
+            sinkCell( sink, (String) failure.get( "message" ) );
+            sinkCell( sink, "" );
+            sink.tableRow_();
+
+            List<String> detail = (List<String>) failure.get( "detail" );
+            if ( detail != null )
+            {
+
+                sink.tableRow();
+                sinkCell( sink, "" );
+
+                sink.tableCell();
+                SinkEventAttributeSet atts = new SinkEventAttributeSet();
+                atts.addAttribute( SinkEventAttributes.ID,
+                                   toHtmlId( testCase.getFullName() ) + "error" );
+                atts.addAttribute( SinkEventAttributes.STYLE, "display:none;" );
+                sink.unknown( "div", new Object[]{ HtmlMarkup.TAG_TYPE_START }, atts );
+
+                sink.verbatim( null );
+                for ( String line : detail )
+                {
+                    sink.text( line );
+                    sink.lineBreak();
+                }
+                sink.verbatim_();
+
+                sink.unknown( "div", new Object[]{ HtmlMarkup.TAG_TYPE_END }, null );
+                sink.tableCell_();
+
+                sinkCell( sink, "" );
+
+                sink.tableRow_();
+            }
+        }
+    }
+
 
     private String toHtmlId( String id )
     {
-        if ( DoxiaUtils.isValidId(id) )
+        if ( DoxiaUtils.isValidId( id ) )
         {
             return id;
         }
@@ -642,8 +651,8 @@ public class SurefireReportGenerator
                     {
                         String path = tCase.getFullClassName().replace( '.', '/' );
 
-                        sink.link( xrefLocation + "/" + path + ".html#" +
-                                       getErrorLineNumber( tCase.getFullName(), techMessage ) );
+                        sink.link( xrefLocation + "/" + path + ".html#"
+                                        + getErrorLineNumber( tCase.getFullName(), techMessage ) );
                     }
                     sink.text(
                         tCase.getFullClassName() + ":" + getErrorLineNumber( tCase.getFullName(), techMessage ) );

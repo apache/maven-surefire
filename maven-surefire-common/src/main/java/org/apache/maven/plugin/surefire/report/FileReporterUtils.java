@@ -21,7 +21,7 @@ package org.apache.maven.plugin.surefire.report;
 
 /**
  * Utils class for file-based reporters
- * 
+ *
  * @author Andreas Gudian
  */
 public class FileReporterUtils
@@ -31,7 +31,9 @@ public class FileReporterUtils
         String result = original;
         String illegalChars = getOSSpecificIllegalChars();
         for ( int i = 0; i < illegalChars.length(); i++ )
+        {
             result = result.replace( illegalChars.charAt( i ), '_' );
+        }
 
         return result;
     }

@@ -47,8 +47,7 @@ public final class JUnit48Reflector
 
     public boolean isCategoryAnnotationPresent( Class clazz )
     {
-        return ( category != null &&
-                        ( clazz.getAnnotation( category ) != null 
-                        || ( clazz.getSuperclass() != null && isCategoryAnnotationPresent( clazz.getSuperclass() ) ) ) );
+        return clazz != null && category != null
+               && ( clazz.getAnnotation( category ) != null || isCategoryAnnotationPresent( clazz.getSuperclass() ) );
     }
 }

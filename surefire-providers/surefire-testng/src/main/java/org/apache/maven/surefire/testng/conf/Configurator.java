@@ -25,6 +25,10 @@ import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.testng.TestNG;
 import org.testng.xml.XmlSuite;
 
+/**
+ * Configurator for passing configuration properties to TestNG
+ *
+ */
 public interface Configurator
 {
     void configure( TestNG testng, Map options )
