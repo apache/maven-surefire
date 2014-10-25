@@ -27,6 +27,7 @@
       <item name="Goals" href="plugin-info.html"/>
       <item name="Usage" href="usage.html"/>
       <item name="FAQ" href="faq.html"/>
+      <item name="Release Notes" href="jira-report.html"/>
       <!-- According to http://jira.codehaus.org/browse/MNGSITE-152 -->
       <item name="License" href="http://www.apache.org/licenses/"/>
       <item name="Download" href="../download.html"/>
