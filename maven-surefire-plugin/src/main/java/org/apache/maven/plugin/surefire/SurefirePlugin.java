@@ -159,7 +159,12 @@ public class SurefirePlugin
      * Each include item may also contain a comma-separated sublist of items, which will be treated as multiple
      * &nbsp;&lt;include> entries.<br/>
      * <p/>
-     * This parameter is ignored if the TestNG <code>suiteXmlFiles</code> parameter is specified.
+     * This parameter is ignored if the TestNG <code>suiteXmlFiles</code> parameter is specified.<br/>
+     * <br/>
+     * <em>Notice that</em> these values are relative to the directory containing generated test classes of the project
+     * being tested. This directory is declared by the parameter <code>testClassesDirectory</code> which defaults
+     * to the POM property <code>${project.build.testOutputDirectory}</code>, typically <em>src/test/java</em>
+     * unless overridden.
      */
     @Parameter
     private List<String> includes;

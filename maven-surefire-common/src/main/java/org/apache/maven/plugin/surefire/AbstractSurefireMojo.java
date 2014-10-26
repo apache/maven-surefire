@@ -225,6 +225,11 @@ public abstract class AbstractSurefireMojo
      * <p/>
      * Each exclude item may also contain a comma-separated sublist of items, which will be treated as multiple
      * &nbsp;&lt;exclude> entries.<br/>
+     * <br/>
+     * <em>Notice that</em> these values are relative to the directory containing generated test classes of the project
+     * being tested. This directory is declared by the parameter <code>testClassesDirectory</code> which defaults
+     * to the POM property <code>${project.build.testOutputDirectory}</code>, typically <em>src/test/java</em>
+     * unless overridden.
      */
     @Parameter
     protected List<String> excludes;
@@ -342,6 +347,15 @@ public abstract class AbstractSurefireMojo
 
     /**
      * Arbitrary JVM options to set on the command line.
+     * <br/>
+     * <br/>
+     * Using an alternate syntax for <em>argLine</em>, <pre>@{...}</pre> allows late replacement of properties when the
+     * plugin is executed, so properties that have been modified by other plugins will be picked up correctly.
+     * <br/>
+     * See the Frequently Asked Questions page with more details:<br/>
+     * http://maven.apache.org/surefire/maven-surefire-plugin/faq.html
+     * <br/>
+     * http://maven.apache.org/surefire/maven-failsafe-plugin/faq.html
      *
      * @since 2.1
      */
@@ -482,9 +496,9 @@ public abstract class AbstractSurefireMojo
     protected boolean useUnlimitedThreads;
 
     /**
-     * (TestNG only) When you use the <code>parallel</code> attribute, TestNG will try to run all your test methods in
-     * separate threads, except for methods that depend on each other, which will be run in the same thread in order to
-     * respect their order of execution.
+     * (TestNG provider) When you use the <code>parallel</code> attribute, TestNG will try to run all your test methods
+     * in separate threads, except for methods that depend on each other, which will be run in the same thread in order
+     * to respect their order of execution.
      * <p/>
      * (JUnit 4.7 provider) Supports values "classes"/"methods"/"both" to run in separate threads, as controlled by
      * <code>threadCount</code>.<br/>
