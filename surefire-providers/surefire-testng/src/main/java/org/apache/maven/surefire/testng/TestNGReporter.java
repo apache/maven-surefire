@@ -125,7 +125,7 @@ public class TestNGReporter
                                                                   result.getMethod().getMethodName(),
                                                                   result.getThrowable() ) );
 
-        reporter.testError( report );
+        reporter.testSucceeded( report );
     }
 
     public void onStart( ITestContext context )
