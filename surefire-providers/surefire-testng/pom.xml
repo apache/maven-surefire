@@ -43,6 +43,11 @@
       <artifactId>common-java5</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.maven.surefire</groupId>
+      <artifactId>surefire-testng-utils</artifactId>
+      <version>${project.version}</version>
+    </dependency>
   </dependencies>
 
   <build>

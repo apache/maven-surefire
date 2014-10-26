@@ -162,55 +162,59 @@ public class DefaultReporterFactory
      * if it only has errors or failures, then count its result based on its first run
      *
      * @param reportEntryList the list of test run report type for a given test
+     * @param rerunFailingTestsCount configured rerun count for failing tests
      * @return the type of test result
      */
     // Use default visibility for testing
-    static TestResultType getTestResultType( List<ReportEntryType> reportEntryList )
+    static TestResultType getTestResultType( List<ReportEntryType> reportEntryList, int rerunFailingTestsCount  )
     {
         if ( reportEntryList == null || reportEntryList.size() == 0 )
         {
             return TestResultType.unknown;
         }
 
-        boolean seenSuccess = false, seenFailure = false;
+        boolean seenSuccess = false, seenFailure = false, seenError = false;
         for ( ReportEntryType resultType : reportEntryList )
         {
             if ( resultType == ReportEntryType.SUCCESS )
             {
                 seenSuccess = true;
             }
-            else if ( resultType == ReportEntryType.FAILURE
-                || resultType == ReportEntryType.ERROR )
+            else if ( resultType == ReportEntryType.FAILURE )
             {
                 seenFailure = true;
             }
-        }
-
-        if ( seenSuccess && !seenFailure )
-        {
-            return TestResultType.success;
-        }
-
-        if ( seenSuccess && seenFailure )
-        {
-            return TestResultType.flake;
-        }
-
-        if ( !seenSuccess && seenFailure )
-        {
-            if ( reportEntryList.get( 0 ) == ReportEntryType.FAILURE )
+            else if ( resultType == ReportEntryType.ERROR )
             {
-                return TestResultType.failure;
+                seenError = true;
             }
-            else if ( reportEntryList.get( 0 ) == ReportEntryType.ERROR )
+        }
+
+        if ( seenFailure || seenError )
+        {
+            if ( seenSuccess && rerunFailingTestsCount > 0 )
             {
-                return TestResultType.error;
+                return TestResultType.flake;
             }
             else
             {
-                // Reach here if the first one is skipped but later ones have failure, should be impossible
-                return TestResultType.skipped;
+                if ( seenError )
+                {
+                    return TestResultType.error;
+                }
+                else if ( seenFailure )
+                {
+                    return TestResultType.failure;
+                }
+                else
+                {
+                    return TestResultType.skipped;
+                }
             }
+        }
+        else if ( seenSuccess )
+        {
+            return TestResultType.success;
         }
         else
         {
@@ -266,7 +270,8 @@ public class DefaultReporterFactory
                 resultTypeList.add( methodStats.getResultType() );
             }
 
-            TestResultType resultType = getTestResultType( resultTypeList );
+            TestResultType resultType = getTestResultType( resultTypeList,
+                                                           reportConfiguration.getRerunFailingTestsCount() );
 
             switch ( resultType )
             {

@@ -258,7 +258,7 @@ public class StatelessXmlReporter
      * @param methodEntryList the list of runs for a given test
      * @return the TestResultType for the given test
      */
-    private static TestResultType getTestResultType( List<WrappedReportEntry> methodEntryList )
+    private TestResultType getTestResultType( List<WrappedReportEntry> methodEntryList )
     {
         List<ReportEntryType> testResultTypeList = new ArrayList<ReportEntryType>();
         for ( WrappedReportEntry singleRunEntry : methodEntryList )
@@ -266,7 +266,7 @@ public class StatelessXmlReporter
             testResultTypeList.add( singleRunEntry.getReportEntryType() );
         }
 
-        return DefaultReporterFactory.getTestResultType( testResultTypeList );
+        return DefaultReporterFactory.getTestResultType( testResultTypeList, rerunFailingTestsCount );
     }
 
     /**
@@ -280,7 +280,7 @@ public class StatelessXmlReporter
      *                            in a given test class
      * @return the run time for the entire test class
      */
-    private static int getRunTimeForAllTests( Map<String, List<WrappedReportEntry>> methodRunHistoryMap )
+    private int getRunTimeForAllTests( Map<String, List<WrappedReportEntry>> methodRunHistoryMap )
     {
         int totalTimeForSuite = 0;
         for ( Map.Entry<String, List<WrappedReportEntry>> entry : methodRunHistoryMap.entrySet() )
