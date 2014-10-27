@@ -26,7 +26,9 @@ import java.io.Writer;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.Locale;
+
 import org.apache.maven.doxia.site.decoration.DecorationModel;
+import org.apache.maven.doxia.siterenderer.Renderer;
 import org.apache.maven.doxia.siterenderer.RendererException;
 import org.apache.maven.doxia.siterenderer.SiteRenderingContext;
 import org.apache.maven.doxia.siterenderer.sink.SiteRendererSink;
@@ -41,6 +43,16 @@ import org.apache.maven.shared.utils.io.IOUtil;
 public class SurefireReportMojoTest
     extends AbstractMojoTestCase
 {
+    private Renderer renderer;
+
+    @Override
+    protected void setUp()
+        throws Exception
+    {
+        super.setUp();
+        renderer = (Renderer) lookup( Renderer.ROLE );
+    }
+
     public void testBasicSurefireReport()
         throws Exception
     {
@@ -205,7 +217,7 @@ public class SurefireReportMojoTest
             outputHtml.getParentFile().mkdirs();
             writer = WriterFactory.newXmlWriter( outputHtml );
 
-            mojo.getSiteRenderer().generateDocument( writer, (SiteRendererSink) mojo.getSink(), context );
+            renderer.generateDocument( writer, (SiteRendererSink) mojo.getSink(), context );
         }
         finally
         {

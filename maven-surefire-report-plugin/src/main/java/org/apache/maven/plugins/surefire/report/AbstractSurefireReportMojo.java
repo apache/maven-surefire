@@ -26,9 +26,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
-import org.apache.maven.doxia.siterenderer.Renderer;
 import org.apache.maven.model.ReportPlugin;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.reporting.AbstractMavenReport;
@@ -44,30 +42,6 @@ import org.apache.maven.shared.utils.StringUtils;
 public abstract class AbstractSurefireReportMojo
     extends AbstractMavenReport
 {
-    /**
-     * Location where generated html will be created.
-     *
-     * @noinspection UnusedDeclaration
-     */
-    @Parameter( property = "project.reporting.outputDirectory" )
-    private File outputDirectory;
-
-    /**
-     * Doxia Site Renderer
-     *
-     * @noinspection UnusedDeclaration
-     */
-    @Component
-    private Renderer siteRenderer;
-
-    /**
-     * Maven Project
-     *
-     * @noinspection UnusedDeclaration
-     */
-    @Parameter( property = "project", required = true, readonly = true )
-    private MavenProject project;
-
     /**
      * If set to false, only failures are shown.
      *
@@ -359,31 +333,7 @@ public abstract class AbstractSurefireReportMojo
     /**
      * {@inheritDoc}
      */
-    protected Renderer getSiteRenderer()
-    {
-        return siteRenderer;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    protected MavenProject getProject()
-    {
-        return project;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     public abstract String getOutputName();
-
-    /**
-     * {@inheritDoc}
-     */
-    protected String getOutputDirectory()
-    {
-        return outputDirectory.getAbsolutePath();
-    }
 
     private ResourceBundle getBundle( Locale locale )
     {
