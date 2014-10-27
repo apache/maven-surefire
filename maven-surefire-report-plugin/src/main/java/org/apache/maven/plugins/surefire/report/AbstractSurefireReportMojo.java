@@ -73,7 +73,7 @@ public abstract class AbstractSurefireReportMojo
      *
      * @noinspection MismatchedQueryAndUpdateOfCollection, UnusedDeclaration
      */
-    @Parameter( property = "reactorProjects", readonly = true )
+    @Parameter( defaultValue = "${reactorProjects}", readonly = true )
     private List<MavenProject> reactorProjects;
 
     /**
