@@ -62,7 +62,9 @@ public class BasicTest
     public void testEmptySystemProperties()
     {
         assertNull( "Null property is not null", System.getProperty( "nullProperty" ) );
-        assertNull( "Blank property is not null", System.getProperty( "blankProperty" ) );
+        assertEquals( "Empty property is not empty", "", System.getProperty( "emptyProperty" ) );
+        assertNotNull( "Blank property is null", System.getProperty( "blankProperty" ) );
+        assertEquals( "Blank property is not trimmed", "", System.getProperty( "blankProperty" ) );
     }
 
     /**

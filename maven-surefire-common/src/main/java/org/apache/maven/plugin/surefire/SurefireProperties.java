@@ -171,11 +171,7 @@ public class SurefireProperties
             for ( String key : source.keySet() )
             {
                 String value = source.get( key );
-                //java Properties does not accept null value
-                if ( value != null )
-                {
-                    target.setProperty( key, value );
-                }
+                target.setProperty( key, value == null ? "" : value );
             }
         }
     }

@@ -66,7 +66,7 @@
             <buildDirectory>${project.build.directory}</buildDirectory>
             <reservedPort1>${reservedPort1}</reservedPort1>
             <reservedPort2>${reservedPort2}</reservedPort2>
-            <nullProperty></nullProperty>
+            <emptyProperty/>
             <blankProperty> </blankProperty>
             <!--  this is a work around for SUREFIRE-121 -->
             <setOnArgLineWorkAround>${setOnArgLineWorkAround}</setOnArgLineWorkAround>
