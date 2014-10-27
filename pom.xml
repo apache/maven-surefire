@@ -126,7 +126,7 @@
       <dependency>
         <groupId>org.apache.maven.reporting</groupId>
         <artifactId>maven-reporting-api</artifactId>
-        <version>${mavenVersion}</version>
+        <version>3.0</version>
       </dependency>
       <dependency>
         <groupId>org.apache.maven</groupId>
