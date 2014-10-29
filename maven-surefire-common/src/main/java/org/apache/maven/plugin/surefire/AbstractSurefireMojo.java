@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -930,17 +931,44 @@ public abstract class AbstractSurefireMojo
         result.setProperty( "basedir", getBasedir().getAbsolutePath() );
         result.setProperty( "user.dir", getWorkingDirectory().getAbsolutePath() );
         result.setProperty( "localRepository", getLocalRepository().getBasedir() );
-
-        for ( Object o : result.propertiesThatCannotBeSetASystemProperties() )
+        if ( isForking() )
         {
-            getLog().warn( o + " cannot be set as system property, use <argLine>-D" + o + "=...<argLine> instead" );
-
+            for ( Object o : result.propertiesThatCannotBeSetASystemProperties() )
+            {
+                if ( getArgLine() == null || !getArgLine().contains( "-D" + o + "=" ) )
+                {
+                    getLog().warn( o + " cannot be set as system property, use <argLine>-D"
+                                       + o + "=...<argLine> instead" );
+                }
+            }
+            for ( Object systemPropertyMatchingArgLine : systemPropertiesMatchingArgLine( result ) )
+            {
+                getLog().warn( "The system property " + systemPropertyMatchingArgLine + " is configured twice! "
+                                   + "The property appears in <argLine/> and any of <systemPropertyVariables/>, "
+                                   + "<systemProperties/> or user property." );
+            }
         }
         if ( getLog().isDebugEnabled() )
         {
             showToLog( result, getLog(), "system property" );
         }
         return result;
+    }
+
+    private Set<Object> systemPropertiesMatchingArgLine( SurefireProperties result )
+    {
+        Set<Object> intersection = new HashSet<Object>();
+        if ( StringUtils.isNotBlank( getArgLine() ) )
+        {
+            for ( Object systemProperty : result.getStringKeySet() )
+            {
+                if ( getArgLine().contains( "-D" + systemProperty + "=" ) )
+                {
+                    intersection.add( systemProperty );
+                }
+            }
+        }
+        return intersection;
     }
 
     public void showToLog( SurefireProperties props, org.apache.maven.plugin.logging.Log log, String setting )
@@ -1847,15 +1875,7 @@ public abstract class AbstractSurefireMojo
         {
             double multiplier = Double.parseDouble( trimmed.substring( 0, trimmed.length() - 1 ) );
             double calculated = multiplier * ( (double) Runtime.getRuntime().availableProcessors() );
-
-            if ( calculated > 0d )
-            {
-                return Math.max( (int) calculated, 1 );
-            }
-            else
-            {
-                return 0;
-            }
+            return calculated > 0d ? Math.max( (int) calculated, 1 ) : 0;
         }
         else
         {

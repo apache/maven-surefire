@@ -405,6 +405,12 @@ public class SurefireLauncher
         return this;
     }
 
+    public SurefireLauncher argLine( String value )
+    {
+        mavenLauncher.sysProp( "argLine", value );
+        return this;
+    }
+
     public SurefireLauncher sysProp( String variable, String value )
     {
         mavenLauncher.sysProp( variable, value );
