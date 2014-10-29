@@ -257,15 +257,17 @@ public final class ParallelComputerBuilder
         }
 
         @Override
-        protected Collection<Description> describeStopped( boolean shutdownNow )
+        protected ShutdownResult describeStopped( boolean shutdownNow )
         {
-            Collection<Description> startedTests = notThreadSafeTests.describeStopped( shutdownNow );
+            ShutdownResult shutdownResult = notThreadSafeTests.describeStopped( shutdownNow );
             final Scheduler m = master;
             if ( m != null )
             {
-                startedTests.addAll( m.describeStopped( shutdownNow ) );
+                ShutdownResult shutdownResultOfMaster = m.describeStopped( shutdownNow );
+                shutdownResult.getTriggeredTests().addAll( shutdownResultOfMaster.getTriggeredTests() );
+                shutdownResult.getIncompleteTests().addAll( shutdownResultOfMaster.getIncompleteTests() );
             }
-            return startedTests;
+            return shutdownResult;
         }
 
         @Override

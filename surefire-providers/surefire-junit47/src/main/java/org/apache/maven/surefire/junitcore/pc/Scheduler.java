@@ -61,6 +61,8 @@ public class Scheduler
 
     private volatile boolean started = false;
 
+    private volatile boolean finished = false;
+
     private volatile Controller masterController;
 
     /**
@@ -212,17 +214,19 @@ public class Scheduler
      * @param stopNow if <tt>true</tt> interrupts waiting test methods
      * @return collection of descriptions started before shutting down
      */
-    protected Collection<Description> describeStopped( boolean stopNow )
+    protected ShutdownResult describeStopped( boolean stopNow )
     {
         Collection<Description> executedTests = new ConcurrentLinkedQueue<Description>();
-        stop( executedTests, false, stopNow );
-        return executedTests;
+        Collection<Description> incompleteTests = new ConcurrentLinkedQueue<Description>();
+        stop( executedTests, incompleteTests, false, stopNow );
+        return new ShutdownResult( executedTests, incompleteTests );
     }
 
     /**
      * Stop/Shutdown/Interrupt scheduler and its children (if any).
      *
      * @param executedTests       Started tests which have finished normally or abruptly till called this method.
+     * @param incompleteTests     Started tests which have finished incomplete due to shutdown.
      * @param tryCancelFutures    Useful to set to {@code false} if a timeout is specified in plugin config.
      *                            When the runner of
      *                            {@link ParallelComputer#getSuite(org.junit.runners.model.RunnerBuilder, Class[])}
@@ -234,19 +238,28 @@ public class Scheduler
      *                            {@link java.util.concurrent.Future#cancel(boolean) Future#cancel(true)} or
      *                            {@link Thread#interrupt()}.
      */
-    private void stop( Collection<Description> executedTests, boolean tryCancelFutures, boolean stopNow )
+    private void stop( Collection<Description> executedTests, Collection<Description> incompleteTests,
+                       boolean tryCancelFutures, boolean stopNow )
     {
         shutdown = true;
         try
         {
-            if ( executedTests != null && started && !UNUSED_DESCRIPTIONS.contains( description ) )
+            if ( started && !UNUSED_DESCRIPTIONS.contains( description ) )
             {
-                executedTests.add( description );
+                if ( executedTests != null )
+                {
+                    executedTests.add( description );
+                }
+
+                if ( incompleteTests != null && !finished )
+                {
+                    incompleteTests.add( description );
+                }
             }
 
             for ( Controller slave : slaves )
             {
-                slave.stop( executedTests, tryCancelFutures, stopNow );
+                slave.stop( executedTests, incompleteTests, tryCancelFutures, stopNow );
             }
         }
         finally
@@ -277,7 +290,7 @@ public class Scheduler
     {
         if ( masterController == null )
         {
-            stop( null, true, false );
+            stop( null, null, true, false );
             boolean isNotInterrupted = true;
             if ( strategy != null )
             {
@@ -323,7 +336,7 @@ public class Scheduler
             }
             catch ( RejectedExecutionException e )
             {
-                stop( null, true, false );
+                stop( null, null, true, false );
             }
             catch ( Throwable t )
             {
@@ -342,6 +355,10 @@ public class Scheduler
         catch ( InterruptedException e )
         {
             logQuietly( e );
+        }
+        finally
+        {
+            finished = true;
         }
     }
 
@@ -396,9 +413,10 @@ public class Scheduler
             return Scheduler.this.canSchedule();
         }
 
-        void stop( Collection<Description> executedTests, boolean tryCancelFutures, boolean shutdownNow )
+        void stop( Collection<Description> executedTests, Collection<Description> incompleteTests,
+                   boolean tryCancelFutures, boolean shutdownNow )
         {
-            slave.stop( executedTests, tryCancelFutures, shutdownNow );
+            slave.stop( executedTests, incompleteTests, tryCancelFutures, shutdownNow );
         }
 
         /**
@@ -449,7 +467,7 @@ public class Scheduler
         {
             if ( executor.isShutdown() )
             {
-                Scheduler.this.stop( null, true, false );
+                Scheduler.this.stop( null, null, true, false );
             }
             final RejectedExecutionHandler poolHandler = this.poolHandler;
             if ( poolHandler != null )

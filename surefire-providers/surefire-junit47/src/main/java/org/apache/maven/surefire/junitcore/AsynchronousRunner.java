@@ -30,8 +30,12 @@ import java.util.concurrent.Future;
 import org.junit.runners.model.RunnerScheduler;
 
 /**
+ * Since SUREFIRE 2.18 this class is deprecated.
+ * Please use {@link org.apache.maven.surefire.junitcore.pc.ParallelComputerBuilder} instead.
+ *
  * @author <a href="mailto:kristian@zenior.no">Kristian Rosenvold</a>
  */
+@Deprecated
 public class AsynchronousRunner
     implements RunnerScheduler
 {

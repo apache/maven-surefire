@@ -35,8 +35,12 @@ import org.junit.runners.model.RunnerBuilder;
 import org.junit.runners.model.RunnerScheduler;
 
 /**
+ * Since SUREFIRE 2.18 this class is deprecated.
+ * Please use {@link org.apache.maven.surefire.junitcore.pc.ParallelComputerBuilder} instead.
+ *
  * @author Kristian Rosenvold
  */
+@Deprecated
 public class ConfigurableParallelComputer
     extends Computer
 {

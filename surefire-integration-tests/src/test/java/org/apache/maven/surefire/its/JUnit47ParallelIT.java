@@ -521,6 +521,17 @@ public class JUnit47ParallelIT
             "The test run has finished abruptly after timeout of 1.0 seconds." );
     }
 
+    @Test
+    public void forcedShutdownVerifyingLogs()
+    {
+        // executes for 2.5 sec until timeout has elapsed
+        unpack().parallelMethods().threadCountMethods( 3 ).disablePerCoreThreadCount()
+            .parallelTestsTimeoutForcedInSeconds( 1.05d ).setTestToRun( "Waiting*Test" ).failNever().executeTest()
+            .verifyTextInLog( "The test run has finished abruptly after timeout of 1.05 seconds." )
+            .verifyTextInLog( "These tests were executed in prior to the shutdown operation:" )
+            .verifyTextInLog( "These tests are incomplete:" );
+    }
+
     private SurefireLauncher unpack()
     {
         return unpack( "junit47-parallel" );
