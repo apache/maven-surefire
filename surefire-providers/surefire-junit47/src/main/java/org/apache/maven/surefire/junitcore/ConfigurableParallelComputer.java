@@ -37,6 +37,7 @@ import org.junit.runners.model.RunnerScheduler;
 /**
  * @author Kristian Rosenvold
  */
+@Deprecated
 public class ConfigurableParallelComputer
     extends Computer
 {

@@ -19,14 +19,8 @@ package org.apache.maven.surefire.junitcore.pc;
  * under the License.
  */
 
-import org.junit.runner.Description;
-
-import java.util.Collection;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
-
-// CHECKSTYLE_OFF: imports
-import static org.apache.maven.surefire.junitcore.pc.ExecutionStatus.*;
 
 /**
  * Wrapper of {@link ParallelComputer ParallelComputer status information} and tests been populated before
@@ -38,31 +32,32 @@ import static org.apache.maven.surefire.junitcore.pc.ExecutionStatus.*;
  */
 final class ShutdownStatus
 {
-    private final AtomicReference<ExecutionStatus> status = new AtomicReference<ExecutionStatus>( STARTED );
+    private final AtomicReference<ExecutionStatus> status =
+        new AtomicReference<ExecutionStatus>( ExecutionStatus.STARTED );
 
-    private Future<Collection<Description>> descriptionsBeforeShutdown;
+    private Future<ShutdownResult> descriptionsBeforeShutdown;
 
     boolean tryFinish()
     {
-        return status.compareAndSet( STARTED, FINISHED );
+        return status.compareAndSet( ExecutionStatus.STARTED, ExecutionStatus.FINISHED );
     }
 
     boolean tryTimeout()
     {
-        return status.compareAndSet( STARTED, TIMEOUT );
+        return status.compareAndSet( ExecutionStatus.STARTED, ExecutionStatus.TIMEOUT );
     }
 
     boolean isTimeoutElapsed()
     {
-        return status.get() == TIMEOUT;
+        return status.get() == ExecutionStatus.TIMEOUT;
     }
 
-    Future<Collection<Description>> getDescriptionsBeforeShutdown()
+    Future<ShutdownResult> getDescriptionsBeforeShutdown()
     {
         return descriptionsBeforeShutdown;
     }
 
-    void setDescriptionsBeforeShutdown( Future<Collection<Description>> descriptionsBeforeShutdown )
+    void setDescriptionsBeforeShutdown( Future<ShutdownResult> descriptionsBeforeShutdown )
     {
         this.descriptionsBeforeShutdown = descriptionsBeforeShutdown;
     }

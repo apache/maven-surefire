@@ -561,7 +561,7 @@ public class ParallelComputerBuilderTest
             {
                 public void run()
                 {
-                    Collection<Description> startedTests = computer.describeStopped( useInterrupt );
+                    Collection<Description> startedTests = computer.describeStopped( useInterrupt ).getTriggeredTests();
                     assertThat( startedTests.size(), is( not( 0 ) ) );
                 }
             };
