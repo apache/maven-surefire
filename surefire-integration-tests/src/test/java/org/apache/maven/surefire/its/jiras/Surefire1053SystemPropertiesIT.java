@@ -19,9 +19,12 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
+import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
+
+import static org.junit.Assert.assertFalse;
 
 /**
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
@@ -41,14 +44,24 @@ public class Surefire1053SystemPropertiesIT
                                   + "file.encoding=...<argLine> instead" );
     }
     @Test
-    public void checkWarningsSysPropTwice()
+    public void checkWarningsSysPropTwice() throws Exception
     {
-        unpack().argLine( "-DmyArg=myVal2" )
+        OutputValidator validator = unpack()
+            .argLine( "-DmyArg=myVal2 -Dfile.encoding=ISO-8859-1" )
+            .sysProp( "file.encoding", "ISO-8859-1" )
             .executeTest()
             .verifyErrorFree( 1 )
             .verifyTextInLog( "The system property myArg is configured twice! "
                                   + "The property appears in <argLine/> and any of <systemPropertyVariables/>, "
                                   + "<systemProperties/> or user property." );
+
+        for ( String line : validator.loadLogLines() )
+        {
+            assertFalse( "no warning for file.encoding not in argLine",
+                         line.contains( "file.encoding cannot be set as system property, use <argLine>" ) );
+            assertFalse( "no warning for double definition of file.encoding",
+                         line.contains( "The system property file.encoding is configured twice!" ) );
+        }
 
     }
 

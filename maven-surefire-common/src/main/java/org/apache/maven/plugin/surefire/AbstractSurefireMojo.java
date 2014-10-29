@@ -967,6 +967,9 @@ public abstract class AbstractSurefireMojo
                     intersection.add( systemProperty );
                 }
             }
+
+            Set<Object> ignored = result.propertiesThatCannotBeSetASystemProperties();
+            intersection.removeAll( ignored );
         }
         return intersection;
     }
