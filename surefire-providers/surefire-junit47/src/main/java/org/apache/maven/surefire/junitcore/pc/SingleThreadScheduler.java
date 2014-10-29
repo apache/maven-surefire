@@ -68,12 +68,11 @@ final class SingleThreadScheduler
     /**
      * @see Scheduler#describeStopped(boolean)
      */
-    Collection<Description> describeStopped( boolean shutdownNow )
+    ShutdownResult describeStopped( boolean shutdownNow )
     {
-        Collection<Description> activeChildren =
-            new ConcurrentLinkedQueue<Description>( master.describeStopped( shutdownNow ) );
-        activeChildren.removeAll( UNUSED_DESCRIPTIONS );
-        return activeChildren;
+        ShutdownResult shutdownResult = master.describeStopped( shutdownNow );
+        return new ShutdownResult( copyExisting( shutdownResult.getTriggeredTests() ),
+                                   copyExisting( shutdownResult.getIncompleteTests() ) );
     }
 
     /**
@@ -82,5 +81,12 @@ final class SingleThreadScheduler
     boolean shutdownThreadPoolsAwaitingKilled()
     {
         return master.shutdownThreadPoolsAwaitingKilled();
+    }
+
+    private Collection<Description> copyExisting( Collection<Description> descriptions )
+    {
+        Collection<Description> activeChildren = new ConcurrentLinkedQueue<Description>( descriptions );
+        activeChildren.removeAll( UNUSED_DESCRIPTIONS );
+        return activeChildren;
     }
 }

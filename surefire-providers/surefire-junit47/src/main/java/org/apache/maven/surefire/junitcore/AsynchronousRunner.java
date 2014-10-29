@@ -32,6 +32,7 @@ import org.junit.runners.model.RunnerScheduler;
 /**
  * @author <a href="mailto:kristian@zenior.no">Kristian Rosenvold</a>
  */
+@Deprecated
 public class AsynchronousRunner
     implements RunnerScheduler
 {
