@@ -94,6 +94,13 @@ Fork Options and Parallel Test Execution
   The surefire is always trying to reuse threads, optimize the thread-counts,
   and prefers thread fairness.
 
+  The parameters <<<parallelTestsTimeoutInSeconds>>> and
+  <<<parallelTestsTimeoutForcedInSeconds>>> are used to specify an optional
+  timeout in parallel execution. If the timeout is elapsed, the plugin prints
+  the summary log with ERROR lines:
+  <"These tests were executed in prior to the shutdown operation">, and
+  <"These tests are incomplete"> if the running Threads were <<interrupted>>.
+
   <<The important thing to remember>> with the <<<parallel>>> option is: the
   concurrency happens within the same JVM process. That is efficient in terms of
   memory and execution time, but you may be more vulnerable towards race
