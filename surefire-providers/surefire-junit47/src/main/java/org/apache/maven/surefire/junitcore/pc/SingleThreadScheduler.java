@@ -22,7 +22,6 @@ package org.apache.maven.surefire.junitcore.pc;
 import org.junit.runner.Description;
 import org.junit.runners.model.RunnerScheduler;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
@@ -41,9 +40,6 @@ import java.util.concurrent.TimeUnit;
  */
 final class SingleThreadScheduler
 {
-    private static final Collection<Description> UNUSED_DESCRIPTIONS =
-        Arrays.asList( null, Description.TEST_MECHANISM, Description.EMPTY );
-
     private final ExecutorService pool = newPool();
 
     private final Scheduler master = new Scheduler( null, SchedulingStrategies.createParallelSharedStrategy( pool ) );
@@ -86,7 +82,7 @@ final class SingleThreadScheduler
     private Collection<Description> copyExisting( Collection<Description> descriptions )
     {
         Collection<Description> activeChildren = new ConcurrentLinkedQueue<Description>( descriptions );
-        activeChildren.removeAll( UNUSED_DESCRIPTIONS );
+        ParallelComputerUtil.removeUnusedDescriptions( activeChildren );
         return activeChildren;
     }
 }

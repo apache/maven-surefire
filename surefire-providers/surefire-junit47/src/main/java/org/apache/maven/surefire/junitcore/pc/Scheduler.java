@@ -22,7 +22,6 @@ package org.apache.maven.surefire.junitcore.pc;
 import org.junit.runner.Description;
 import org.junit.runners.model.RunnerScheduler;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -46,9 +45,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 public class Scheduler
     implements RunnerScheduler
 {
-    private static final Collection<Description> UNUSED_DESCRIPTIONS =
-        Arrays.asList( null, Description.TEST_MECHANISM, Description.EMPTY );
-
     private final Balancer balancer;
 
     private final SchedulingStrategy strategy;
@@ -244,7 +240,7 @@ public class Scheduler
         shutdown = true;
         try
         {
-            if ( started && !UNUSED_DESCRIPTIONS.contains( description ) )
+            if ( started && !ParallelComputerUtil.isUnusedDescription( description ) )
             {
                 if ( executedTests != null )
                 {
