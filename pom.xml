@@ -88,7 +88,7 @@
     <shadedVersion>2.12.4</shadedVersion>
     <mavenPluginPluginVersion>3.3</mavenPluginPluginVersion>
     <maven.surefire.scm.devConnection>scm:git:https://git-wip-us.apache.org/repos/asf/maven-surefire.git</maven.surefire.scm.devConnection>
-    <maven.site.path>surefire-archives/surefire-LATEST</maven.site.path>
+    <maven.site.path>surefire-archives/surefire-${project.version}</maven.site.path>
   </properties>
 
   <dependencyManagement>
@@ -416,7 +416,7 @@
             <version>2.11</version>
             <configuration>
               <!-- For JIRA-report -->
-              <columnNames>Type,Priority,Key,Summary,Assignee,Resolution,Fix Version</columnNames>
+              <columnNames>Type,Priority,Key,Summary,Resolution</columnNames>
               <onlyCurrentVersion>true</onlyCurrentVersion>
               <resolutionIds>Fixed</resolutionIds>
               <sortColumnNames>type DESC,Priority DESC,Key</sortColumnNames>
