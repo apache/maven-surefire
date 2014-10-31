@@ -110,7 +110,7 @@ Fork Options and Parallel Test Execution
   <<<forkCount>>> to a value higher than 1. The next section covers the details 
   about this and the related <<<reuseForks>>> property.
 
-  * Parallel Test Execution and Single Thread Execution
+* Parallel Test Execution and Single Thread Execution
 
   As mentioned above the <<<parallel>>> test execution is used with specific
   thread count. Since of Surefire 2.18, you can apply the JCIP annotation
