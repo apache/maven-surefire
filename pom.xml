@@ -88,7 +88,7 @@
     <shadedVersion>2.12.4</shadedVersion>
     <mavenPluginPluginVersion>3.3</mavenPluginPluginVersion>
     <maven.surefire.scm.devConnection>scm:git:https://git-wip-us.apache.org/repos/asf/maven-surefire.git</maven.surefire.scm.devConnection>
-    <maven.site.path>surefire-archives/surefire-${project.version}</maven.site.path>
+    <maven.site.path>surefire-archives/surefire-LATEST</maven.site.path>
   </properties>
 
   <dependencyManagement>
@@ -320,6 +320,7 @@
               <exclude>**/*.versionsBackup</exclude>
               <exclude>**/dependency-reduced-pom.xml</exclude>
               <exclude>.gitignore</exclude>
+              <exclude>DEPENDENCIES</exclude>
               <exclude>src/main/resources/META-INF/services/org.apache.maven.surefire.providerapi.SurefireProvider
               </exclude>
             </excludes>
