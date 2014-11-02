@@ -807,7 +807,7 @@ public abstract class AbstractSurefireMojo
         String jvmToUse = getJvm();
         if ( toolchain != null )
         {
-            getLog().info( "Toolchain in " + getPluginName() + "-plugin: " + toolchain );
+            getLog().info( "Toolchain in maven-" + getPluginName() + "-plugin: " + toolchain );
             if ( jvmToUse != null )
             {
                 getLog().warn( "Toolchains are ignored, 'executable' parameter is set to " + jvmToUse );
