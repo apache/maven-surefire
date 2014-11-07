@@ -475,4 +475,16 @@ public class SurefireLauncher
         mavenLauncher.setForkJvm( true );
         return this;
     }
+
+    public SurefireLauncher useTestsFromExternalSource ()
+    {
+        mavenLauncher.sysProp( "testsFromExternalSource", true );
+        return this;
+    }
+
+    public SurefireLauncher externalSourceUrl ( String url )
+    {
+        mavenLauncher.sysProp( "testExternalSourceUrl", url );
+        return this;
+    }
 }

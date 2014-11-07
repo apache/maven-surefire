@@ -73,6 +73,7 @@ public class ForkedBooter
 
             TypeEncodedValue forkedTestSet = providerConfiguration.getTestForFork();
             boolean readTestsFromInputStream = providerConfiguration.isReadTestsFromInStream();
+            boolean readTestsFromExternalSource = providerConfiguration.isTestsFromExternalSource();
 
             final ClasspathConfiguration classpathConfiguration = startupConfiguration.getClasspathConfiguration();
             if ( startupConfiguration.isManifestOnlyJarRequestedAndUsable() )
@@ -92,6 +93,10 @@ public class ForkedBooter
             else if ( readTestsFromInputStream )
             {
                 testSet = new LazyTestsToRun( System.in, originalOut );
+            }
+            else if ( readTestsFromExternalSource )
+            {
+                testSet = ExternalTestToRunFactory.createTestToRun( providerConfiguration.getExternalSourceUrl() );
             }
             else
             {

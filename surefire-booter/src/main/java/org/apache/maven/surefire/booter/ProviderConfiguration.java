@@ -62,12 +62,17 @@ public class ProviderConfiguration
 
     private final boolean readTestsFromInStream;
 
+    private final boolean testsFromExternalSource;
+
+    private final String externalSourceUrl;
+
     @SuppressWarnings( "checkstyle:parameternumber" )
-    public ProviderConfiguration( DirectoryScannerParameters directoryScannerParameters,
-                                  RunOrderParameters runOrderParameters, boolean failIfNoTests,
-                                  ReporterConfiguration reporterConfiguration, TestArtifactInfo testArtifact,
-                                  TestRequest testSuiteDefinition, Properties providerProperties,
-                                  TypeEncodedValue typeEncodedTestSet, boolean readTestsFromInStream )
+    public ProviderConfiguration ( DirectoryScannerParameters directoryScannerParameters,
+                                   RunOrderParameters runOrderParameters, boolean failIfNoTests,
+                                   ReporterConfiguration reporterConfiguration, TestArtifactInfo testArtifact,
+                                   TestRequest testSuiteDefinition, Properties providerProperties,
+                                   TypeEncodedValue typeEncodedTestSet, boolean readTestsFromInStream,
+                                   boolean testsFromExternalSource, String externalSourceUrl )
     {
         this.runOrderParameters = runOrderParameters;
         this.providerProperties = providerProperties;
@@ -78,6 +83,8 @@ public class ProviderConfiguration
         this.failIfNoTests = failIfNoTests;
         this.forkTestSet = typeEncodedTestSet;
         this.readTestsFromInStream = readTestsFromInStream;
+        this.testsFromExternalSource = testsFromExternalSource;
+        this.externalSourceUrl = externalSourceUrl;
     }
 
 
@@ -142,5 +149,15 @@ public class ProviderConfiguration
     public boolean isReadTestsFromInStream()
     {
         return readTestsFromInStream;
+    }
+
+    public boolean isTestsFromExternalSource ()
+    {
+        return testsFromExternalSource;
+    }
+
+    public String getExternalSourceUrl ()
+    {
+        return externalSourceUrl;
     }
 }

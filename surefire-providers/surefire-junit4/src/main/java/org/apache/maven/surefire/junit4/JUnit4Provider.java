@@ -121,7 +121,10 @@ public class JUnit4Provider
         Result result = new Result();
         RunNotifier runNotifier = getRunNotifier( jUnit4TestSetReporter, result, customRunListeners );
 
-        runNotifier.fireTestRunStarted( createTestsDescription() );
+        if ( testsToRun.allowEagerReading() )
+        {
+            runNotifier.fireTestRunStarted( createTestsDescription() );
+        }
 
         for ( Class aTestsToRun : testsToRun )
         {

@@ -82,6 +82,9 @@ public class BooterDeserializer
 
         final int rerunFailingTestsCount = properties.getIntProperty( RERUN_FAILING_TESTS_COUNT );
 
+        final boolean testsFromExternalSource = properties.getBooleanProperty( RUN_TESTS_FROM_EXTERNAL_SOURCE );
+        final String externalSourceUrl = properties.getProperty( TESTS_FROM_EXTERNAL_SOURCE_URL );
+
         DirectoryScannerParameters dirScannerParams =
             new DirectoryScannerParameters( testClassesDirectory, includesList, excludesList, specificTestsList,
                                             properties.getBooleanObjectProperty( FAILIFNOTESTS ), runOrder );
@@ -99,7 +102,7 @@ public class BooterDeserializer
         return new ProviderConfiguration( dirScannerParams, runOrderParameters,
                                           properties.getBooleanProperty( FAILIFNOTESTS ), reporterConfiguration, testNg,
                                           testSuiteDefinition, properties.getProperties(), typeEncodedTestForFork,
-                                          preferTestsFromInStream );
+                                          preferTestsFromInStream, testsFromExternalSource, externalSourceUrl );
     }
 
     public StartupConfiguration getProviderConfiguration()

@@ -135,6 +135,15 @@ class BooterSerializer
                                 String.valueOf( booterConfiguration.isFailIfNoTests() ) );
         properties.setProperty( BooterConstants.PROVIDER_CONFIGURATION, providerConfiguration.getProviderClassName() );
 
+        properties.setProperty( BooterConstants.RUN_TESTS_FROM_EXTERNAL_SOURCE,
+                                booterConfiguration.isTestsFromExternalSource() );
+        String externalSourceUrl = booterConfiguration.getExternalSourceUrl();
+        if ( externalSourceUrl != null )
+        {
+            properties.setProperty( BooterConstants.TESTS_FROM_EXTERNAL_SOURCE_URL,
+                                    externalSourceUrl );
+        }
+
         return SystemPropertyManager.writePropertiesFile( properties,
                                                           forkConfiguration.getTempDirectory(), "surefire",
                                                           forkConfiguration.isDebug() );
