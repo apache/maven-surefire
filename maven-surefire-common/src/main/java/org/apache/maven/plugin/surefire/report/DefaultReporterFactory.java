@@ -56,13 +56,13 @@ public class DefaultReporterFactory
         Collections.synchronizedList( new ArrayList<TestSetRunListener>() );
 
     // from "<testclass>.<testmethod>" -> statistics about all the runs for flaky tests
-    private Map<String, List<TestMethodStats>> flakyTests = null;
+    private Map<String, List<TestMethodStats>> flakyTests;
 
     // from "<testclass>.<testmethod>" -> statistics about all the runs for failed tests
-    private Map<String, List<TestMethodStats>> failedTests = null;
+    private Map<String, List<TestMethodStats>> failedTests;
 
     // from "<testclass>.<testmethod>" -> statistics about all the runs for error tests
-    private Map<String, List<TestMethodStats>> errorTests = null;
+    private Map<String, List<TestMethodStats>> errorTests;
 
     public DefaultReporterFactory( StartupReportConfiguration reportConfiguration )
     {
@@ -139,9 +139,13 @@ public class DefaultReporterFactory
             logger.info( "Results :" );
             logger.info( "" );
         }
-        printTestFailures( logger, TestResultType.failure );
-        printTestFailures( logger, TestResultType.error );
-        printTestFailures( logger, TestResultType.flake );
+        boolean printedFailures = printTestFailures( logger, TestResultType.failure );
+        printedFailures |= printTestFailures( logger, TestResultType.error );
+        printedFailures |= printTestFailures( logger, TestResultType.flake );
+        if ( printedFailures )
+        {
+            logger.info( "" );
+        }
         logger.info( globalStats.getSummary() );
         logger.info( "" );
     }
@@ -168,7 +172,7 @@ public class DefaultReporterFactory
     // Use default visibility for testing
     static TestResultType getTestResultType( List<ReportEntryType> reportEntryList, int rerunFailingTestsCount  )
     {
-        if ( reportEntryList == null || reportEntryList.size() == 0 )
+        if ( reportEntryList == null || reportEntryList.isEmpty() )
         {
             return TestResultType.unknown;
         }
@@ -202,13 +206,9 @@ public class DefaultReporterFactory
                 {
                     return TestResultType.error;
                 }
-                else if ( seenFailure )
-                {
-                    return TestResultType.failure;
-                }
                 else
                 {
-                    return TestResultType.skipped;
+                    return TestResultType.failure;
                 }
             }
         }
@@ -313,61 +313,62 @@ public class DefaultReporterFactory
      *
      * @param logger the logger used to log information
      * @param type   the type of results to be printed, could be error, failure or flake
+     * @return {@code true} if printed some lines
      */
     // Use default visibility for testing
-    void printTestFailures( DefaultDirectConsoleReporter logger, TestResultType type )
+    boolean printTestFailures( DefaultDirectConsoleReporter logger, TestResultType type )
     {
-        Map<String, List<TestMethodStats>> testStats;
-        if ( type == TestResultType.failure )
+        boolean printed = false;
+        final Map<String, List<TestMethodStats>> testStats;
+        switch ( type )
         {
-            testStats = failedTests;
-        }
-        else if ( type == TestResultType.error )
-        {
-            testStats = errorTests;
-        }
-        else if ( type == TestResultType.flake )
-        {
-            testStats = flakyTests;
-        }
-        else
-        {
-            logger.info( "" );
-            return;
+            case failure:
+                testStats = failedTests;
+                break;
+            case error:
+                testStats = errorTests;
+                break;
+            case flake:
+                testStats = flakyTests;
+                break;
+            default:
+                return printed;
         }
 
-        if ( testStats.size() > 0 )
+        if ( !testStats.isEmpty() )
         {
             logger.info( type.getLogPrefix() );
+            printed = true;
         }
 
         for ( Map.Entry<String, List<TestMethodStats>> entry : testStats.entrySet() )
         {
+            printed = true;
             List<TestMethodStats> testMethodStats = entry.getValue();
             if ( testMethodStats.size() == 1 )
             {
                 // No rerun, follow the original output format
                 logger.info( "  " + testMethodStats.get( 0 ).getStackTraceWriter().smartTrimmedStackTrace() );
-                continue;
             }
-
-            logger.info( entry.getKey() );
-
-            for ( int i = 0; i < testMethodStats.size(); i++ )
+            else
             {
-                StackTraceWriter failureStackTrace = testMethodStats.get( i ).getStackTraceWriter();
-                if ( failureStackTrace == null )
+                logger.info( entry.getKey() );
+                for ( int i = 0; i < testMethodStats.size(); i++ )
                 {
-                    logger.info( "  Run " + ( i + 1 ) + ": PASS" );
+                    StackTraceWriter failureStackTrace = testMethodStats.get( i ).getStackTraceWriter();
+                    if ( failureStackTrace == null )
+                    {
+                        logger.info( "  Run " + ( i + 1 ) + ": PASS" );
+                    }
+                    else
+                    {
+                        logger.info( "  Run " + ( i + 1 ) + ": " + failureStackTrace.smartTrimmedStackTrace() );
+                    }
                 }
-                else
-                {
-                    logger.info( "  Run " + ( i + 1 ) + ": " + failureStackTrace.smartTrimmedStackTrace() );
-                }
+                logger.info( "" );
             }
-            logger.info( "" );
         }
-        logger.info( "" );
+        return printed;
     }
 
     // Describe the result of a given test

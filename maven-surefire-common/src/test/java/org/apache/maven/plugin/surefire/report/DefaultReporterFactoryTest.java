@@ -119,19 +119,19 @@ public class DefaultReporterFactoryTest
         String[] expectedFlakeOutput =
             { "Flaked tests: ", TEST_FOUR, "  Run 1: " + ASSERTION_FAIL, "  Run 2: PASS", "", TEST_ONE,
                 "  Run 1: " + ERROR, "  Run 2: " + ASSERTION_FAIL, "  Run 3: PASS", "", TEST_TWO, "  Run 1: " + ERROR,
-                "  Run 2: PASS", "", "" };
+                "  Run 2: PASS", "" };
         assertEquals( Arrays.asList( expectedFlakeOutput ), reporter.getMessages() );
 
         reporter = new DummyTestReporter();
         factory.printTestFailures( reporter, DefaultReporterFactory.TestResultType.error );
         String[] expectedFailureOutput =
-            { "Tests in error: ", TEST_THREE, "  Run 1: " + ASSERTION_FAIL, "  Run 2: " + ERROR, "  Run 3: " + ERROR, "",
-                "" };
+            { "Tests in error: ", TEST_THREE, "  Run 1: " + ASSERTION_FAIL, "  Run 2: " + ERROR, "  Run 3: " + ERROR, ""
+            };
         assertEquals( Arrays.asList( expectedFailureOutput ), reporter.getMessages() );
 
         reporter = new DummyTestReporter();
         factory.printTestFailures( reporter, DefaultReporterFactory.TestResultType.failure );
-        String[] expectedErrorOutput = { "" };
+        String[] expectedErrorOutput = { };
         assertEquals( Arrays.asList( expectedErrorOutput ), reporter.getMessages() );
     }
 
