@@ -28,7 +28,6 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <groupId>org.apache.maven.surefire</groupId>
   <artifactId>surefire-setup-integration-tests</artifactId>
 
   <name>Maven Surefire Integration Test Setup</name>
