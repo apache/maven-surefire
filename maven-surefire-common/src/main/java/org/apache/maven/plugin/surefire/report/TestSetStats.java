@@ -21,14 +21,19 @@ package org.apache.maven.plugin.surefire.report;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Maintains per-thread test result state. Not thread safe.
  */
 public class TestSetStats
 {
+    private final Queue<WrappedReportEntry> reportEntries = new ConcurrentLinkedQueue<WrappedReportEntry>();
+
     private final boolean trimStackTrace;
 
     private final boolean plainFormat;
@@ -48,8 +53,6 @@ public class TestSetStats
     private long lastStartAt;
 
     private long elapsedForTestSet;
-
-    private final List<WrappedReportEntry> reportEntries = new ArrayList<WrappedReportEntry>();
 
     public TestSetStats( boolean trimStackTrace, boolean plainFormat )
     {
@@ -242,7 +245,7 @@ public class TestSetStats
         return result;
     }
 
-    public List<WrappedReportEntry> getReportEntries()
+    public Collection<WrappedReportEntry> getReportEntries()
     {
         return reportEntries;
     }
