@@ -47,7 +47,10 @@ Fork Options and Parallel Test Execution
   values depend on the test provider used. For JUnit 4.7 and onwards, this may
   be <<<methods>>>, <<<classes>>>, <<<both>>>, <<<suites>>>,
   <<<suitesAndClasses>>>, <<<suitesAndMethods>>>, <<<classesAndMethods>>> or
-  <<<all>>>.
+  <<<all>>>. As a prerequisite in JUnit tests, the JUnit runner should extend
+  <<<org.junit.runners.ParentRunner>>>. If no runner is specified through the
+  annotation <<<@org.junit.runner.RunWith>>>, the prerequisite is accomplished.
+
   As of Surefire 2.16, the value "<<<both>>>" is deprecated but it still can be
   used and behaves same as <<<classesAndMethods>>>.
 
@@ -117,14 +120,19 @@ Fork Options and Parallel Test Execution
   <<<@net.jcip.annotations.NotThreadSafe>>> on the Java class of JUnit test
   (test class, Suite, Parameterized, etc.) in order to execute it in single
   Thread instance. The Thread has name "maven-surefire-plugin@NotThreadSafe".
+
   Just use the dependency net.jcip:jcip-annotations:1.0, or another Artifact
-  with Apache License com.github.stephenc.jcip:jcip-annotations:1.0-1. This
-  way parallel execution of tests classes annotated with <<<@NotThreadSafe>>>
-  are forked in single thread instance (don't mean forked JVM process).
+  with Apache License com.github.stephenc.jcip:jcip-annotations:1.0-1.
+
+  This way the parallel execution of tests classes annotated with
+  <<<@NotThreadSafe>>> are forked in single thread instance (don't mean
+  forked JVM process).
+
   If the Suite or Parameterized is annotated with @NotThreadSafe, the
   suite classes are executed in single thread.
-  You can also annotate test class referenced by Suite, and the other
+  You can also annotate individual test class referenced by Suite, and the other
   unannotated test classes in the Suite can be subject to run in parallel.
+
   Note: As designed by JUnit runners, the static methods annotated with
   @BeforeClass and @AfterClass are called in parent thread. Assign classes
   to the @NotThreadSafe Suite to prevent from this trouble.
