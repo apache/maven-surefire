@@ -413,18 +413,6 @@ public abstract class AbstractSurefireMojo
     protected String excludedGroups;
 
     /**
-     * (TestNG) List of &lt;suiteXmlFile> elements specifying TestNG suite xml file locations. Note that
-     * <code>suiteXmlFiles</code> is incompatible with several other parameters of this plugin, like
-     * <code>includes/excludes</code>.<br/>
-     * This parameter is ignored if the <code>test</code> parameter is specified (allowing you to run a single test
-     * instead of an entire suite).
-     *
-     * @since 2.2
-     */
-    @Parameter
-    protected File[] suiteXmlFiles;
-
-    /**
      * Allows you to specify the name of the JUnit artifact. If not set, <code>junit:junit</code> will be used.
      *
      * @since 2.3.1
@@ -660,30 +648,6 @@ public abstract class AbstractSurefireMojo
      */
     @Parameter( defaultValue = "${session.parallel}", readonly = true )
     protected Boolean parallelMavenExecution;
-
-    /**
-     * Defines the order the tests will be run in. Supported values are "alphabetical", "reversealphabetical", "random",
-     * "hourly" (alphabetical on even hours, reverse alphabetical on odd hours), "failedfirst", "balanced" and
-     * "filesystem".
-     * <p/>
-     * <p/>
-     * Odd/Even for hourly is determined at the time the of scanning the classpath, meaning it could change during a
-     * multi-module build.
-     * <p/>
-     * Failed first will run tests that failed on previous run first, as well as new tests for this run.
-     * <p/>
-     * Balanced is only relevant with parallel=classes, and will try to optimize the run-order of the tests reducing the
-     * overall execution time. Initially a statistics file is created and every next test run will reorder classes.
-     * <p/>
-     * Note that the statistics are stored in a file named .surefire-XXXXXXXXX beside pom.xml, and should not be checked
-     * into version control. The "XXXXX" is the SHA1 checksum of the entire surefire configuration, so different
-     * configurations will have different statistics files, meaning if you change any config settings you will re-run
-     * once before new statistics data can be established.
-     *
-     * @since 2.7
-     */
-    @Parameter( defaultValue = "filesystem" )
-    protected String runOrder;
 
     /**
      * List of dependencies to scan for test classes to include in the test run.
@@ -2518,7 +2482,6 @@ public abstract class AbstractSurefireMojo
 
     }
 
-
     public abstract List<String> getIncludes();
 
     public File getIncludesFile()
@@ -2739,16 +2702,9 @@ public abstract class AbstractSurefireMojo
         this.excludedGroups = excludedGroups;
     }
 
-    public File[] getSuiteXmlFiles()
-    {
-        return suiteXmlFiles;
-    }
+    public abstract File[] getSuiteXmlFiles();
 
-    @SuppressWarnings( "UnusedDeclaration" )
-    public void setSuiteXmlFiles( File[] suiteXmlFiles )
-    {
-        this.suiteXmlFiles = suiteXmlFiles;
-    }
+    public abstract void setSuiteXmlFiles( File[] suiteXmlFiles );
 
     public String getJunitArtifactName()
     {
@@ -2987,16 +2943,9 @@ public abstract class AbstractSurefireMojo
         return parallelMavenExecution != null && parallelMavenExecution;
     }
 
-    public String getRunOrder()
-    {
-        return runOrder;
-    }
+    public abstract String getRunOrder();
 
-    @SuppressWarnings( "UnusedDeclaration" )
-    public void setRunOrder( String runOrder )
-    {
-        this.runOrder = runOrder;
-    }
+    public abstract void setRunOrder( String runOrder );
 
     public String[] getDependenciesToScan()
     {

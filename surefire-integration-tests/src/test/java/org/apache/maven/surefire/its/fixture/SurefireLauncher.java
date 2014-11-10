@@ -270,7 +270,7 @@ public class SurefireLauncher
 
     public SurefireLauncher runOrder( String runOrder )
     {
-        mavenLauncher.sysProp( "runOrder", runOrder );
+        mavenLauncher.sysProp( "surefire.runOrder", runOrder );
         return this;
     }
 

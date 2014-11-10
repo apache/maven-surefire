@@ -45,14 +45,8 @@
         <version>${surefire.version}</version>
         <configuration>
           <forkMode>once</forkMode>
-          <runOrder>${runOrder}</runOrder>
         </configuration>
         <dependencies>
-          <!-- dependency>
-              <groupId>org.apache.maven.surefire</groupId>
-              <artifactId>${testProvider}</artifactId>
-              <version>${surefire.version}</version>
-          </dependency -->
         </dependencies>
       </plugin>
     </plugins>

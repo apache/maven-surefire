@@ -224,6 +224,41 @@ public class IntegrationTestMojo
     @Parameter( property = "failsafe.rerunFailingTestsCount", defaultValue = "0" )
     protected int rerunFailingTestsCount;
 
+    /**
+     * (TestNG) List of &lt;suiteXmlFile> elements specifying TestNG suite xml file locations. Note that
+     * <code>suiteXmlFiles</code> is incompatible with several other parameters of this plugin, like
+     * <code>includes/excludes</code>.<br/>
+     * This parameter is ignored if the <code>test</code> parameter is specified (allowing you to run a single test
+     * instead of an entire suite).
+     *
+     * @since 2.2
+     */
+    @Parameter( property = "failsafe.suiteXmlFiles" )
+    private File[] suiteXmlFiles;
+
+    /**
+     * Defines the order the tests will be run in. Supported values are "alphabetical", "reversealphabetical", "random",
+     * "hourly" (alphabetical on even hours, reverse alphabetical on odd hours), "failedfirst", "balanced" and
+     * "filesystem".<p/>
+     * <p/>
+     * Odd/Even for hourly is determined at the time the of scanning the classpath, meaning it could change during a
+     * multi-module build.<p/>
+     * <p/>
+     * Failed first will run tests that failed on previous run first, as well as new tests for this run.<p/>
+     * <p/>
+     * Balanced is only relevant with parallel=classes, and will try to optimize the run-order of the tests reducing the
+     * overall execution time. Initially a statistics file is created and every next test run will reorder classes.<p/>
+     * <p/>
+     * Note that the statistics are stored in a file named .surefire-XXXXXXXXX beside pom.xml, and should not be checked
+     * into version control. The "XXXXX" is the SHA1 checksum of the entire surefire configuration, so different
+     * configurations will have different statistics files, meaning if you change any config settings you will re-run
+     * once before new statistics data can be established.
+     *
+     * @since 2.7
+     */
+    @Parameter( property = "failsafe.runOrder", defaultValue = "filesystem" )
+    protected String runOrder;
+
     protected int getRerunFailingTestsCount()
     {
         return rerunFailingTestsCount;
@@ -555,5 +590,27 @@ public class IntegrationTestMojo
     public void setIncludes( List<String> includes )
     {
         this.includes = includes;
+    }
+
+    public File[] getSuiteXmlFiles()
+    {
+        return suiteXmlFiles;
+    }
+
+    @SuppressWarnings( "UnusedDeclaration" )
+    public void setSuiteXmlFiles( File[] suiteXmlFiles )
+    {
+        this.suiteXmlFiles = suiteXmlFiles;
+    }
+
+    public String getRunOrder()
+    {
+        return runOrder;
+    }
+
+    @SuppressWarnings( "UnusedDeclaration" )
+    public void setRunOrder( String runOrder )
+    {
+        this.runOrder = runOrder;
     }
 }
