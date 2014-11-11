@@ -19,6 +19,8 @@ package org.apache.maven.surefire.junitcore.pc;
  * under the License.
  */
 
+import org.apache.maven.surefire.report.ConsoleLogger;
+
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -32,28 +34,31 @@ public class SchedulingStrategies
 {
 
     /**
+     * @param logger current error logger
      * @return sequentially executing strategy
      */
-    public static SchedulingStrategy createInvokerStrategy()
+    public static SchedulingStrategy createInvokerStrategy( ConsoleLogger logger )
     {
-        return new InvokerStrategy();
+        return new InvokerStrategy( logger );
     }
 
     /**
+     * @param logger current error logger
      * @param nThreads fixed pool capacity
      * @return parallel scheduling strategy
      */
-    public static SchedulingStrategy createParallelStrategy( int nThreads )
+    public static SchedulingStrategy createParallelStrategy( ConsoleLogger logger, int nThreads )
     {
-        return new NonSharedThreadPoolStrategy( Executors.newFixedThreadPool( nThreads ) );
+        return new NonSharedThreadPoolStrategy( logger, Executors.newFixedThreadPool( nThreads ) );
     }
 
     /**
+     * @param logger current error logger
      * @return parallel scheduling strategy with unbounded capacity
      */
-    public static SchedulingStrategy createParallelStrategyUnbounded()
+    public static SchedulingStrategy createParallelStrategyUnbounded( ConsoleLogger logger )
     {
-        return new NonSharedThreadPoolStrategy( Executors.newCachedThreadPool() );
+        return new NonSharedThreadPoolStrategy( logger, Executors.newCachedThreadPool() );
     }
 
     /**
@@ -64,16 +69,17 @@ public class SchedulingStrategies
      * waiting for other strategies to finish. The {@link org.junit.runners.model.RunnerScheduler#finished()} may
      * freely use {@link SchedulingStrategy#finished()}.
      *
+     * @param logger current error logger
      * @param threadPool thread pool possibly shared with other strategies
      * @return parallel strategy with shared thread pool
      * @throws NullPointerException if <tt>threadPool</tt> is null
      */
-    public static SchedulingStrategy createParallelSharedStrategy( ExecutorService threadPool )
+    public static SchedulingStrategy createParallelSharedStrategy( ConsoleLogger logger, ExecutorService threadPool )
     {
         if ( threadPool == null )
         {
             throw new NullPointerException( "null threadPool in #createParallelSharedStrategy" );
         }
-        return new SharedThreadPoolStrategy( threadPool );
+        return new SharedThreadPoolStrategy( logger, threadPool );
     }
 }

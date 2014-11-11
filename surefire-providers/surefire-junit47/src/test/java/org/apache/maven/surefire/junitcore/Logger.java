@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.junitcore.pc;
+package org.apache.maven.surefire.junitcore;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -21,37 +21,10 @@ package org.apache.maven.surefire.junitcore.pc;
 
 import org.apache.maven.surefire.report.ConsoleLogger;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
-
-/**
- * Parallel strategy for non-shared thread pool in private package.
- *
- * @author Tibor Digana (tibor17)
- * @see AbstractThreadPoolStrategy
- * @since 2.16
- */
-final class NonSharedThreadPoolStrategy
-    extends AbstractThreadPoolStrategy
+public final class Logger implements ConsoleLogger
 {
-    NonSharedThreadPoolStrategy( ConsoleLogger logger, ExecutorService threadPool )
+    public void info( String message )
     {
-        super( logger, threadPool );
-    }
-
-    @Override
-    public boolean hasSharedThreadPool()
-    {
-        return false;
-    }
-
-    @Override
-    public boolean finished()
-        throws InterruptedException
-    {
-        boolean wasRunning = disable();
-        getThreadPool().shutdown();
-        getThreadPool().awaitTermination( Long.MAX_VALUE, TimeUnit.NANOSECONDS );
-        return wasRunning;
+        System.out.println( message );
     }
 }

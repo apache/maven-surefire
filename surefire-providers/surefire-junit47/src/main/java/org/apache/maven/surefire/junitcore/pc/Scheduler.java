@@ -19,9 +19,12 @@ package org.apache.maven.surefire.junitcore.pc;
  * under the License.
  */
 
+import org.apache.maven.surefire.report.ConsoleLogger;
 import org.junit.runner.Description;
 import org.junit.runners.model.RunnerScheduler;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.util.Collection;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -53,6 +56,8 @@ public class Scheduler
 
     private final Description description;
 
+    private final ConsoleLogger logger;
+
     private volatile boolean shutdown = false;
 
     private volatile boolean started = false;
@@ -67,44 +72,48 @@ public class Scheduler
      * You can use it with one infinite thread pool shared in strategies across all
      * suites, class runners, etc.
      */
-    public Scheduler( Description description, SchedulingStrategy strategy )
+    public Scheduler( ConsoleLogger logger, Description description, SchedulingStrategy strategy )
     {
-        this( description, strategy, -1 );
+        this( logger, description, strategy, -1 );
     }
 
     /**
      * Should be used if schedulers in parallel children and parent use one instance of bounded thread pool.
      * <p/>
      * Set this scheduler in a e.g. one suite of classes, then every individual class runner should reference
-     * {@link #Scheduler(org.junit.runner.Description, Scheduler, SchedulingStrategy)}
-     * or {@link #Scheduler(org.junit.runner.Description, Scheduler, SchedulingStrategy, int)}.
+     * {@link Scheduler(ConsoleLogger, org.junit.runner.Description, Scheduler, SchedulingStrategy)}
+     * or {@link Scheduler(ConsoleLogger, org.junit.runner.Description, Scheduler, SchedulingStrategy, int)}.
      *
+     * @param logger current logger implementation
      * @param description description of current runner
      * @param strategy    scheduling strategy with a shared thread pool
      * @param concurrency determines maximum concurrent children scheduled a time via {@link #schedule(Runnable)}
      * @throws NullPointerException if null <tt>strategy</tt>
      */
-    public Scheduler( Description description, SchedulingStrategy strategy, int concurrency )
+    public Scheduler( ConsoleLogger logger, Description description, SchedulingStrategy strategy, int concurrency )
     {
-        this( description, strategy, BalancerFactory.createBalancer( concurrency ) );
+        this( logger, description, strategy, BalancerFactory.createBalancer( concurrency ) );
     }
 
     /**
      * New instances should be used by schedulers with limited concurrency by <tt>balancer</tt>
      * against other groups of schedulers. The schedulers share one pool.
      * <p/>
-     * Unlike in {@link #Scheduler(org.junit.runner.Description, SchedulingStrategy, int)} which was limiting
-     * the <tt>concurrency</tt> of children of a runner where this scheduler was set, <em>this</em> <tt>balancer</tt>
-     * is limiting the concurrency of all children in runners having schedulers created by this constructor.
+     * Unlike in {@link Scheduler(ConsoleLogger, org.junit.runner.Description, SchedulingStrategy, int)} which was
+     * limiting the <tt>concurrency</tt> of children of a runner where this scheduler was set, <em>this</em>
+     * <tt>balancer</tt> is limiting the concurrency of all children in runners having schedulers created by this
+     * constructor.
      *
+     * @param logger current logger implementation
      * @param description description of current runner
      * @param strategy    scheduling strategy which may share threads with other strategy
      * @param balancer    determines maximum concurrent children scheduled a time via {@link #schedule(Runnable)}
      * @throws NullPointerException if null <tt>strategy</tt> or <tt>balancer</tt>
      */
-    public Scheduler( Description description, SchedulingStrategy strategy, Balancer balancer )
+    public Scheduler( ConsoleLogger logger, Description description, SchedulingStrategy strategy, Balancer balancer )
     {
         strategy.setDefaultShutdownHandler( newShutdownHandler() );
+        this.logger = logger;
         this.description = description;
         this.strategy = strategy;
         this.balancer = balancer;
@@ -115,29 +124,32 @@ public class Scheduler
      * Can be used by e.g. a runner having parallel classes in use case with parallel
      * suites, classes and methods sharing the same thread pool.
      *
+     * @param logger current logger implementation
      * @param description     description of current runner
      * @param masterScheduler scheduler sharing own threads with this slave
      * @param strategy        scheduling strategy for this scheduler
      * @param balancer        determines maximum concurrent children scheduled a time via {@link #schedule(Runnable)}
      * @throws NullPointerException if null <tt>masterScheduler</tt>, <tt>strategy</tt> or <tt>balancer</tt>
      */
-    public Scheduler( Description description, Scheduler masterScheduler, SchedulingStrategy strategy,
-                      Balancer balancer )
+    public Scheduler( ConsoleLogger logger, Description description, Scheduler masterScheduler,
+                      SchedulingStrategy strategy, Balancer balancer )
     {
-        this( description, strategy, balancer );
+        this( logger, description, strategy, balancer );
         strategy.setDefaultShutdownHandler( newShutdownHandler() );
         masterScheduler.register( this );
     }
 
     /**
-     * @param masterScheduler a reference to {@link #Scheduler(org.junit.runner.Description, SchedulingStrategy, int)}
-     *                        or {@link #Scheduler(org.junit.runner.Description, SchedulingStrategy)}
-     * @see #Scheduler(org.junit.runner.Description, SchedulingStrategy)
-     * @see #Scheduler(org.junit.runner.Description, SchedulingStrategy, int)
+     * @param masterScheduler a reference to
+     * {@link Scheduler(ConsoleLogger, org.junit.runner.Description, SchedulingStrategy, int)}
+     *                        or {@link Scheduler(ConsoleLogger, org.junit.runner.Description, SchedulingStrategy)}
+     * @see Scheduler(ConsoleLogger, org.junit.runner.Description, SchedulingStrategy)
+     * @see Scheduler(ConsoleLogger, org.junit.runner.Description, SchedulingStrategy, int)
      */
-    public Scheduler( Description description, Scheduler masterScheduler, SchedulingStrategy strategy, int concurrency )
+    public Scheduler( ConsoleLogger logger, Description description, Scheduler masterScheduler,
+                      SchedulingStrategy strategy, int concurrency )
     {
-        this( description, strategy, concurrency );
+        this( logger, description, strategy, concurrency );
         strategy.setDefaultShutdownHandler( newShutdownHandler() );
         masterScheduler.register( this );
     }
@@ -148,9 +160,10 @@ public class Scheduler
      * <p/>
      * Cached thread pool is infinite and can be always shared.
      */
-    public Scheduler( Description description, Scheduler masterScheduler, SchedulingStrategy strategy )
+    public Scheduler( ConsoleLogger logger, Description description, Scheduler masterScheduler,
+                      SchedulingStrategy strategy )
     {
-        this( description, masterScheduler, strategy, 0 );
+        this( logger, description, masterScheduler, strategy, 0 );
     }
 
     private void setController( Controller masterController )
@@ -192,12 +205,16 @@ public class Scheduler
 
     protected void logQuietly( Throwable t )
     {
-        t.printStackTrace( System.out );
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        PrintStream stream = new PrintStream( out );
+        t.printStackTrace( stream );
+        stream.close();
+        logger.info( out.toString() );
     }
 
     protected void logQuietly( String msg )
     {
-        System.out.println( msg );
+        logger.info( msg );
     }
 
     /**

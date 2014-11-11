@@ -20,6 +20,7 @@ package org.apache.maven.surefire.junitcore.pc;
  */
 
 import org.apache.maven.surefire.junitcore.JUnitCoreParameters;
+import org.apache.maven.surefire.junitcore.Logger;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -965,7 +966,7 @@ public final class ParallelComputerUtilTest
         properties.setProperty( PARALLEL_KEY, "methods" );
         properties.setProperty( THREADCOUNTMETHODS_KEY, "2" );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
-        ParallelComputerBuilder pcBuilder = new ParallelComputerBuilder( params );
+        ParallelComputerBuilder pcBuilder = new ParallelComputerBuilder( new Logger(), params );
         ParallelComputer pc = pcBuilder.buildComputer();
         Result result = new JUnitCore().run( pc, TestClass.class );
         long timeSpent = runtime.stop();
@@ -989,7 +990,7 @@ public final class ParallelComputerUtilTest
         properties.setProperty( THREADCOUNTMETHODS_KEY, "2" );
         properties.setProperty( PARALLEL_TIMEOUT_KEY, Double.toString( 2.5d ) );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
-        ParallelComputerBuilder pcBuilder = new ParallelComputerBuilder( params );
+        ParallelComputerBuilder pcBuilder = new ParallelComputerBuilder( new Logger(), params );
         ParallelComputer pc = pcBuilder.buildComputer();
         new JUnitCore().run( pc, TestClass.class );
         long timeSpent = runtime.stop();
@@ -1012,7 +1013,7 @@ public final class ParallelComputerUtilTest
         properties.setProperty( THREADCOUNTMETHODS_KEY, "2" );
         properties.setProperty( PARALLEL_TIMEOUTFORCED_KEY, Double.toString( 2.5d ) );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
-        ParallelComputerBuilder pcBuilder = new ParallelComputerBuilder( params );
+        ParallelComputerBuilder pcBuilder = new ParallelComputerBuilder( new Logger(), params );
         ParallelComputer pc = pcBuilder.buildComputer();
         new JUnitCore().run( pc, TestClass.class );
         long timeSpent = runtime.stop();
@@ -1038,7 +1039,7 @@ public final class ParallelComputerUtilTest
         properties.setProperty( PARALLEL_TIMEOUT_KEY, Double.toString( 2.5d ) );
         properties.setProperty( PARALLEL_TIMEOUTFORCED_KEY, Double.toString( 3.5d ) );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
-        ParallelComputerBuilder pcBuilder = new ParallelComputerBuilder( params );
+        ParallelComputerBuilder pcBuilder = new ParallelComputerBuilder( new Logger(), params );
         ParallelComputer pc = pcBuilder.buildComputer();
         new JUnitCore().run( pc, TestClass.class );
         long timeSpent = runtime.stop();
@@ -1062,7 +1063,7 @@ public final class ParallelComputerUtilTest
         properties.setProperty( PARALLEL_TIMEOUTFORCED_KEY, Double.toString( 3.5d ) );
         properties.setProperty( PARALLEL_TIMEOUT_KEY, Double.toString( 4.0d ) );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
-        ParallelComputerBuilder pcBuilder = new ParallelComputerBuilder( params );
+        ParallelComputerBuilder pcBuilder = new ParallelComputerBuilder( new Logger(), params );
         ParallelComputer pc = pcBuilder.buildComputer();
         new JUnitCore().run( pc, TestClass.class );
         long timeSpent = runtime.stop();

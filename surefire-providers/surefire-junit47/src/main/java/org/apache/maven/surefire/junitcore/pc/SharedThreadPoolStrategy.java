@@ -19,6 +19,8 @@ package org.apache.maven.surefire.junitcore.pc;
  * under the License.
  */
 
+import org.apache.maven.surefire.report.ConsoleLogger;
+
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutionException;
@@ -35,9 +37,9 @@ import java.util.concurrent.Future;
 final class SharedThreadPoolStrategy
     extends AbstractThreadPoolStrategy
 {
-    SharedThreadPoolStrategy( ExecutorService threadPool )
+    SharedThreadPoolStrategy( ConsoleLogger logger, ExecutorService threadPool )
     {
-        super( threadPool, new ConcurrentLinkedQueue<Future<?>>() );
+        super( logger, threadPool, new ConcurrentLinkedQueue<Future<?>>() );
     }
 
     @Override

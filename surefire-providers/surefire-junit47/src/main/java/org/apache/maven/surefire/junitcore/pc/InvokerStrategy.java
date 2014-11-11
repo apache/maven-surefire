@@ -19,6 +19,8 @@ package org.apache.maven.surefire.junitcore.pc;
  * under the License.
  */
 
+import org.apache.maven.surefire.report.ConsoleLogger;
+
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -34,6 +36,11 @@ final class InvokerStrategy
 {
 
     private final Queue<Thread> activeThreads = new ConcurrentLinkedQueue<Thread>();
+
+    protected InvokerStrategy( ConsoleLogger logger )
+    {
+        super( logger );
+    }
 
     @Override
     public void schedule( Runnable task )

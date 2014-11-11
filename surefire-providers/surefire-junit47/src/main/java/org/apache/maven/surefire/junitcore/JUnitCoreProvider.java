@@ -141,7 +141,7 @@ public class JUnitCoreProvider
         JUnitTestFailureListener testFailureListener = new JUnitTestFailureListener();
         customRunListeners.add( 0, testFailureListener );
 
-        JUnitCoreWrapper.execute( testsToRun, jUnitCoreParameters, customRunListeners, filter );
+        JUnitCoreWrapper.execute( consoleLogger, testsToRun, jUnitCoreParameters, customRunListeners, filter );
 
         // Rerun failing tests if rerunFailingTestsCount is larger than 0
         if ( rerunFailingTestsCount > 0 )
@@ -153,7 +153,7 @@ public class JUnitCoreProvider
                 testFailureListener.reset();
                 final FilterFactory filterFactory = new FilterFactory( testClassLoader );
                 Filter failingMethodsFilter = filterFactory.createFailingMethodFilter( failingTests );
-                JUnitCoreWrapper.execute( testsToRun, jUnitCoreParameters, customRunListeners,
+                JUnitCoreWrapper.execute( consoleLogger, testsToRun, jUnitCoreParameters, customRunListeners,
                                           filterFactory.and( filter, failingMethodsFilter ) );
             }
         }

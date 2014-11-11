@@ -20,6 +20,7 @@ package org.apache.maven.surefire.junitcore.pc;
  */
 
 import net.jcip.annotations.NotThreadSafe;
+import org.apache.maven.surefire.junitcore.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -100,7 +101,7 @@ public class ParallelComputerBuilderTest
     @Test
     public void parallelMethodsReuseOneOrTwoThreads()
     {
-        ParallelComputerBuilder parallelComputerBuilder = new ParallelComputerBuilder();
+        ParallelComputerBuilder parallelComputerBuilder = new ParallelComputerBuilder( new Logger() );
         parallelComputerBuilder.useOnePool( 4 );
 
         // One thread because one suite: TestSuite, however the capacity is 5.
@@ -143,7 +144,7 @@ public class ParallelComputerBuilderTest
     @Test
     public void suiteAndClassInOnePool()
     {
-        ParallelComputerBuilder parallelComputerBuilder = new ParallelComputerBuilder();
+        ParallelComputerBuilder parallelComputerBuilder = new ParallelComputerBuilder( new Logger() );
         parallelComputerBuilder.useOnePool( 5 );
         parallelComputerBuilder.parallelSuites( 5 );
         parallelComputerBuilder.parallelClasses( 5 );
@@ -169,7 +170,7 @@ public class ParallelComputerBuilderTest
     public void onePoolWithUnlimitedParallelMethods()
     {
         // see ParallelComputerBuilder Javadoc
-        ParallelComputerBuilder parallelComputerBuilder = new ParallelComputerBuilder();
+        ParallelComputerBuilder parallelComputerBuilder = new ParallelComputerBuilder( new Logger() );
         parallelComputerBuilder.useOnePool( 8 );
         parallelComputerBuilder.parallelSuites( 2 );
         parallelComputerBuilder.parallelClasses( 4 );
@@ -194,7 +195,7 @@ public class ParallelComputerBuilderTest
     @Test
     public void underflowParallelism()
     {
-        ParallelComputerBuilder parallelComputerBuilder = new ParallelComputerBuilder();
+        ParallelComputerBuilder parallelComputerBuilder = new ParallelComputerBuilder( new Logger() );
         parallelComputerBuilder.useOnePool( 3 );
 
         // One thread because one suite: TestSuite.
@@ -226,7 +227,7 @@ public class ParallelComputerBuilderTest
     @Test
     public void separatePoolsWithSuite()
     {
-        ParallelComputerBuilder parallelComputerBuilder = new ParallelComputerBuilder();
+        ParallelComputerBuilder parallelComputerBuilder = new ParallelComputerBuilder( new Logger() );
         parallelComputerBuilder.parallelSuites( 5 );
         parallelComputerBuilder.parallelClasses( 5 );
         parallelComputerBuilder.parallelMethods( 3 );
@@ -250,7 +251,7 @@ public class ParallelComputerBuilderTest
     @Test
     public void separatePoolsWithSuiteAndClass()
     {
-        ParallelComputerBuilder parallelComputerBuilder = new ParallelComputerBuilder();
+        ParallelComputerBuilder parallelComputerBuilder = new ParallelComputerBuilder( new Logger() );
         parallelComputerBuilder.parallelSuites( 5 );
         parallelComputerBuilder.parallelClasses( 5 );
         parallelComputerBuilder.parallelMethods( 3 );
@@ -277,7 +278,7 @@ public class ParallelComputerBuilderTest
     @Test
     public void separatePoolsWithSuiteAndSequentialClasses()
     {
-        ParallelComputerBuilder parallelComputerBuilder = new ParallelComputerBuilder();
+        ParallelComputerBuilder parallelComputerBuilder = new ParallelComputerBuilder( new Logger() );
         parallelComputerBuilder.parallelSuites( 5 );
         parallelComputerBuilder.parallelClasses( 1 );
         parallelComputerBuilder.parallelMethods( 3 );
@@ -321,7 +322,7 @@ public class ParallelComputerBuilderTest
     public void nothingParallel()
     {
         JUnitCore core = new JUnitCore();
-        ParallelComputerBuilder builder = new ParallelComputerBuilder();
+        ParallelComputerBuilder builder = new ParallelComputerBuilder( new Logger() );
         assertFalse( builder.isOptimized() );
 
         Result result = core.run( builder.buildComputer(), NothingDoingTest1.class, NothingDoingTest2.class );
@@ -374,7 +375,7 @@ public class ParallelComputerBuilderTest
     @Test
     public void keepBeforeAfterOneClass()
     {
-        ParallelComputerBuilder builder = new ParallelComputerBuilder();
+        ParallelComputerBuilder builder = new ParallelComputerBuilder( new Logger() );
         builder.parallelMethods();
         assertFalse( builder.isOptimized() );
         testKeepBeforeAfter( builder, NothingDoingTest1.class );
@@ -383,7 +384,7 @@ public class ParallelComputerBuilderTest
     @Test
     public void keepBeforeAfterTwoClasses()
     {
-        ParallelComputerBuilder builder = new ParallelComputerBuilder();
+        ParallelComputerBuilder builder = new ParallelComputerBuilder( new Logger() );
         builder.useOnePool( 5 ).parallelClasses( 1 ).parallelMethods( 2 );
         assertFalse( builder.isOptimized() );
         testKeepBeforeAfter( builder, NothingDoingTest1.class, NothingDoingTest2.class );
@@ -392,7 +393,7 @@ public class ParallelComputerBuilderTest
     @Test
     public void keepBeforeAfterTwoParallelClasses()
     {
-        ParallelComputerBuilder builder = new ParallelComputerBuilder();
+        ParallelComputerBuilder builder = new ParallelComputerBuilder( new Logger() );
         builder.useOnePool( 8 ).parallelClasses( 2 ).parallelMethods( 2 );
         assertFalse( builder.isOptimized() );
         JUnitCore core = new JUnitCore();
@@ -408,7 +409,7 @@ public class ParallelComputerBuilderTest
     @Test
     public void notThreadSafeTest()
     {
-        ParallelComputerBuilder builder = new ParallelComputerBuilder()
+        ParallelComputerBuilder builder = new ParallelComputerBuilder( new Logger() )
             .useOnePool( 6 ).optimize( true ).parallelClasses( 3 ).parallelMethods( 3 );
         ParallelComputerBuilder.PC computer = (ParallelComputerBuilder.PC) builder.buildComputer();
         Result result = new JUnitCore().run( computer, NotThreadSafeTest1.class, NotThreadSafeTest2.class );
@@ -429,7 +430,7 @@ public class ParallelComputerBuilderTest
     @Test
     public void mixedThreadSafety()
     {
-        ParallelComputerBuilder builder = new ParallelComputerBuilder()
+        ParallelComputerBuilder builder = new ParallelComputerBuilder( new Logger() )
             .useOnePool( 6 ).optimize( true ).parallelClasses( 3 ).parallelMethods( 3 );
         ParallelComputerBuilder.PC computer = (ParallelComputerBuilder.PC) builder.buildComputer();
         Result result = new JUnitCore().run( computer, NotThreadSafeTest1.class, NormalTest1.class );
@@ -451,7 +452,8 @@ public class ParallelComputerBuilderTest
     @Test
     public void notThreadSafeTestsInSuite()
     {
-        ParallelComputerBuilder builder = new ParallelComputerBuilder().useOnePool( 5 ).parallelMethods( 3 );
+        ParallelComputerBuilder builder = new ParallelComputerBuilder( new Logger() )
+            .useOnePool( 5 ).parallelMethods( 3 );
         assertFalse( builder.isOptimized() );
         ParallelComputerBuilder.PC computer = (ParallelComputerBuilder.PC) builder.buildComputer();
         Result result = new JUnitCore().run( computer, NotThreadSafeTestSuite.class );
@@ -473,7 +475,7 @@ public class ParallelComputerBuilderTest
     @Test
     public void mixedThreadSafetyInSuite()
     {
-        ParallelComputerBuilder builder = new ParallelComputerBuilder()
+        ParallelComputerBuilder builder = new ParallelComputerBuilder( new Logger() )
             .useOnePool( 10 ).optimize( true ).parallelSuites( 2 ).parallelClasses( 3 ).parallelMethods( 3 );
         ParallelComputerBuilder.PC computer = (ParallelComputerBuilder.PC) builder.buildComputer();
         Result result = new JUnitCore().run( computer, MixedSuite.class );
@@ -495,7 +497,7 @@ public class ParallelComputerBuilderTest
     @Test
     public void inheritanceWithNotThreadSafe()
     {
-        ParallelComputerBuilder builder = new ParallelComputerBuilder()
+        ParallelComputerBuilder builder = new ParallelComputerBuilder( new Logger() )
             .useOnePool( 10 ).optimize( true ).parallelSuites( 2 ).parallelClasses( 3 ).parallelMethods( 3 );
         ParallelComputerBuilder.PC computer = (ParallelComputerBuilder.PC) builder.buildComputer();
         Result result = new JUnitCore().run( computer, OverMixedSuite.class );
@@ -519,7 +521,7 @@ public class ParallelComputerBuilderTest
         throws InterruptedException
     {
         Collection<Thread> expectedThreads = jvmThreads();
-        ParallelComputerBuilder parallelComputerBuilder = new ParallelComputerBuilder();
+        ParallelComputerBuilder parallelComputerBuilder = new ParallelComputerBuilder( new Logger() );
         parallelComputerBuilder.parallelMethods( 3 );
         ParallelComputer computer = parallelComputerBuilder.buildComputer();
         Result result = new JUnitCore().run( computer, TestWithBeforeAfter.class );
@@ -549,10 +551,12 @@ public class ParallelComputerBuilderTest
     {
         Result run( final boolean useInterrupt )
         {
-            ParallelComputerBuilder parallelComputerBuilder = new ParallelComputerBuilder().useOnePool( 8 );
-            parallelComputerBuilder.parallelSuites( 2 );
-            parallelComputerBuilder.parallelClasses( 3 );
-            parallelComputerBuilder.parallelMethods( 3 );
+            ParallelComputerBuilder parallelComputerBuilder = new ParallelComputerBuilder( new Logger() )
+                .useOnePool( 8 )
+                .parallelSuites( 2 )
+                .parallelClasses( 3 )
+                .parallelMethods( 3 );
+
             assertFalse( parallelComputerBuilder.isOptimized() );
 
             final ParallelComputerBuilder.PC computer =

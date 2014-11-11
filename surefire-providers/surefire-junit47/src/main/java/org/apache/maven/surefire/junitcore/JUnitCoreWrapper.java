@@ -22,6 +22,7 @@ package org.apache.maven.surefire.junitcore;
 import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
 import org.apache.maven.surefire.junitcore.pc.ParallelComputer;
 import org.apache.maven.surefire.junitcore.pc.ParallelComputerBuilder;
+import org.apache.maven.surefire.report.ConsoleLogger;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.TestsToRun;
 import org.junit.runner.Computer;
@@ -43,18 +44,18 @@ import java.util.List;
 
 class JUnitCoreWrapper
 {
-    public static void execute( TestsToRun testsToRun, JUnitCoreParameters jUnitCoreParameters,
+    public static void execute( ConsoleLogger logger, TestsToRun testsToRun, JUnitCoreParameters jUnitCoreParameters,
                                 List<RunListener> listeners, Filter filter )
         throws TestSetFailedException
     {
         JUnitCore junitCore = createJUnitCore( listeners );
         if ( testsToRun.allowEagerReading() )
         {
-            executeEager( testsToRun, filter, jUnitCoreParameters, junitCore );
+            executeEager( logger, testsToRun, filter, jUnitCoreParameters, junitCore );
         }
         else
         {
-            executeLazy( testsToRun, filter, jUnitCoreParameters, junitCore );
+            executeLazy( logger, testsToRun, filter, jUnitCoreParameters, junitCore );
         }
     }
 
@@ -68,23 +69,23 @@ class JUnitCoreWrapper
         return junitCore;
     }
 
-    private static void executeEager( TestsToRun testsToRun, Filter filter, JUnitCoreParameters jUnitCoreParameters,
-                                      JUnitCore junitCore )
+    private static void executeEager( ConsoleLogger logger, TestsToRun testsToRun, Filter filter,
+                                      JUnitCoreParameters jUnitCoreParameters, JUnitCore junitCore )
         throws TestSetFailedException
     {
         Class[] tests = testsToRun.getLocatedClasses();
-        Computer computer = createComputer( jUnitCoreParameters );
+        Computer computer = createComputer( logger, jUnitCoreParameters );
         createRequestAndRun( filter, computer, junitCore, tests );
     }
 
-    private static void executeLazy( TestsToRun testsToRun, Filter filter, JUnitCoreParameters jUnitCoreParameters,
-                                     JUnitCore junitCore )
+    private static void executeLazy( ConsoleLogger logger, TestsToRun testsToRun, Filter filter,
+                                     JUnitCoreParameters jUnitCoreParameters, JUnitCore junitCore )
         throws TestSetFailedException
     {
         // in order to support LazyTestsToRun, the iterator must be used
         for ( Class clazz : testsToRun )
         {
-            Computer computer = createComputer( jUnitCoreParameters );
+            Computer computer = createComputer( logger, jUnitCoreParameters );
             createRequestAndRun( filter, computer, junitCore, clazz );
         }
     }
@@ -117,12 +118,12 @@ class JUnitCoreWrapper
         }
     }
 
-    private static Computer createComputer( JUnitCoreParameters parameters )
+    private static Computer createComputer( ConsoleLogger logger, JUnitCoreParameters parameters )
         throws TestSetFailedException
     {
         return parameters.isNoThreading()
             ? Computer.serial()
-            : new ParallelComputerBuilder( parameters ).buildComputer();
+            : new ParallelComputerBuilder( logger, parameters ).buildComputer();
     }
 
     private static class FilteringRequest

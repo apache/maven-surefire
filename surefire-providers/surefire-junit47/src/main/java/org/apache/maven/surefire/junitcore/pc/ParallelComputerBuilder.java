@@ -35,6 +35,7 @@ import java.util.concurrent.Executors;
 import net.jcip.annotations.NotThreadSafe;
 
 import org.apache.maven.surefire.junitcore.JUnitCoreParameters;
+import org.apache.maven.surefire.report.ConsoleLogger;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.junit.internal.runners.ErrorReportingRunner;
 import org.junit.runner.Description;
@@ -84,6 +85,8 @@ public final class ParallelComputerBuilder
 
     private final Map<Type, Integer> parallelGroups = new EnumMap<Type, Integer>( Type.class );
 
+    private final ConsoleLogger logger;
+
     private boolean useSeparatePools;
 
     private int totalPoolSize;
@@ -99,8 +102,9 @@ public final class ParallelComputerBuilder
      * Can be used only in unit tests.
      * Do NOT call this constructor in production.
      */
-    ParallelComputerBuilder()
+    ParallelComputerBuilder( ConsoleLogger logger )
     {
+        this.logger = logger;
         runningInTests = true;
         useSeparatePools();
         parallelGroups.put( SUITES, 0 );
@@ -108,9 +112,9 @@ public final class ParallelComputerBuilder
         parallelGroups.put( METHODS, 0 );
     }
 
-    public ParallelComputerBuilder( JUnitCoreParameters parameters )
+    public ParallelComputerBuilder( ConsoleLogger logger, JUnitCoreParameters parameters )
     {
-        this();
+        this( logger );
         runningInTests = false;
         this.parameters = parameters;
     }
@@ -226,7 +230,8 @@ public final class ParallelComputerBuilder
     final class PC
         extends ParallelComputer
     {
-        private final SingleThreadScheduler notThreadSafeTests = new SingleThreadScheduler();
+        private final SingleThreadScheduler notThreadSafeTests =
+            new SingleThreadScheduler( ParallelComputerBuilder.this.logger );
 
         final Collection<ParentRunner> suites = new LinkedHashSet<ParentRunner>();
 
@@ -390,18 +395,21 @@ public final class ParallelComputerBuilder
         private Scheduler createMaster( ExecutorService pool, int poolSize )
         {
             final int finalRunnersCounter = countFinalRunners(); // can be 0, 1, 2 or 3
+            final SchedulingStrategy strategy;
             if ( finalRunnersCounter <= 1 || poolSize <= 1 )
             {
-                return new Scheduler( null, new InvokerStrategy() );
+                strategy = new InvokerStrategy( ParallelComputerBuilder.this.logger );
             }
             else if ( pool != null && poolSize == Integer.MAX_VALUE )
             {
-                return new Scheduler( null, new SharedThreadPoolStrategy( pool ) );
+                strategy = new SharedThreadPoolStrategy( ParallelComputerBuilder.this.logger, pool );
             }
             else
             {
-                return new Scheduler( null, SchedulingStrategies.createParallelStrategy( finalRunnersCounter ) );
+                strategy = SchedulingStrategies.createParallelStrategy( ParallelComputerBuilder.this.logger,
+                                                                        finalRunnersCounter );
             }
+            return new Scheduler( ParallelComputerBuilder.this.logger, null, strategy );
         }
 
         private int countFinalRunners()
@@ -570,24 +578,28 @@ public final class ParallelComputerBuilder
                                            Balancer concurrency )
         {
             doParallel &= pool != null;
-            SchedulingStrategy strategy = doParallel ? new SharedThreadPoolStrategy( pool ) : new InvokerStrategy();
-            return new Scheduler( desc, master, strategy, concurrency );
+            SchedulingStrategy strategy = doParallel
+                    ? new SharedThreadPoolStrategy( ParallelComputerBuilder.this.logger, pool )
+                    : new InvokerStrategy( ParallelComputerBuilder.this.logger );
+            return new Scheduler( ParallelComputerBuilder.this.logger, desc, master, strategy, concurrency );
         }
 
         private Scheduler createScheduler( int poolSize )
         {
+            final SchedulingStrategy strategy;
             if ( poolSize == Integer.MAX_VALUE )
             {
-                return new Scheduler( null, master, SchedulingStrategies.createParallelStrategyUnbounded() );
+                strategy = SchedulingStrategies.createParallelStrategyUnbounded( ParallelComputerBuilder.this.logger );
             }
             else if ( poolSize == 0 )
             {
-                return new Scheduler( null, master, new InvokerStrategy() );
+                strategy = new InvokerStrategy( ParallelComputerBuilder.this.logger );
             }
             else
             {
-                return new Scheduler( null, master, SchedulingStrategies.createParallelStrategy( poolSize ) );
+                strategy = SchedulingStrategies.createParallelStrategy( ParallelComputerBuilder.this.logger, poolSize );
             }
+            return new Scheduler( ParallelComputerBuilder.this.logger, null, master, strategy );
         }
 
         private boolean canSchedule( Runner runner )

@@ -115,7 +115,7 @@ public class Surefire746Test
             // JUnitCoreWrapper#execute() is calling JUnit4RunListener#rethrowAnyTestMechanismFailures()
             // and rethrows a failure which happened in listener
             exception.expect( TestSetFailedException.class );
-            JUnitCoreWrapper.execute( testsToRun, jUnitCoreParameters, customRunListeners, null );
+            JUnitCoreWrapper.execute( new Logger(), testsToRun, jUnitCoreParameters, customRunListeners, null );
         }
         finally
         {
