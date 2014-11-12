@@ -25,6 +25,7 @@ import java.io.StringReader;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
@@ -169,7 +170,11 @@ public class ForkClient
         }
         catch ( NumberFormatException e )
         {
-            System.out.println( s );
+            System.out.println( "SUREFIRE-859: " + s );
+        }
+        catch ( NoSuchElementException e )
+        {
+            System.out.println( "SUREFIRE-859: " + s );
         }
         catch ( ReporterException e )
         {
