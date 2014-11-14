@@ -193,6 +193,7 @@ public class SurefirePlugin
     private boolean useManifestOnlyJar;
 
     /**
+     * (JUnit 4+ providers)
      * The number of times each failing test will be rerun. If set larger than 0, rerun failing tests immediately after
      * they fail. If a failing test passes in any of those reruns, it will be marked as pass and reported as a "flake".
      * However, all the failing attempts will be recorded.
