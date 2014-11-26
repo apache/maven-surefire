@@ -284,26 +284,29 @@ public class FilterFactory
                 cats.addAll( findSuperclassCategories( parentClass ) );
             }
 
+            Class<?> testClass = description.getTestClass();
+            if ( testClass != null )
+            {
+                cat = testClass.getAnnotation( Category.class );
+                if ( cat != null )
+                {
+                    cats.addAll( Arrays.asList( cat.value() ) );
+                }
+            }
+
             boolean result = matcher.enabled( cats.toArray( new Class<?>[] {} ) );
 
-            if ( parent == null )
+            if ( !result )
             {
-                if ( cats.size() == 0 )
+                ArrayList<Description> children = description.getChildren();
+                if ( children != null )
                 {
-                    result = true;
-                }
-                else if ( !result )
-                {
-                    ArrayList<Description> children = description.getChildren();
-                    if ( children != null )
+                    for ( Description child : children )
                     {
-                        for ( Description child : children )
+                        if ( shouldRun( child, description, null ) )
                         {
-                            if ( shouldRun( child, description, null ) )
-                            {
-                                result = true;
-                                break;
-                            }
+                            result = true;
+                            break;
                         }
                     }
                 }
