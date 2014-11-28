@@ -20,8 +20,6 @@ package org.apache.maven.surefire.common.junit48;
  */
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -183,14 +181,7 @@ public class FilterFactory
             }
 
             Set<String> testMethods = failingClassMethodMap.get( description.getTestClass() );
-            if ( testMethods == null )
-            {
-                return false;
-            }
-            else
-            {
-                return testMethods.contains( description.getMethodName() );
-            }
+            return testMethods != null && testMethods.contains( description.getMethodName() );
         }
 
         @Override
@@ -204,7 +195,7 @@ public class FilterFactory
         extends Filter
     {
 
-        private AndGroupMatcher matcher;
+        private final AndGroupMatcher matcher;
 
         public GroupMatcherCategoryFilter( GroupMatcher included, GroupMatcher excluded )
         {
@@ -222,6 +213,10 @@ public class FilterFactory
                     matcher.addMatcher( invertedExclude );
                 }
             }
+            else
+            {
+                matcher = null;
+            }
         }
 
         @Override
@@ -238,22 +233,20 @@ public class FilterFactory
             }
         }
 
-        private Collection<Class<?>> findSuperclassCategories( Class<?> clazz )
+        private static void findSuperclassCategories( Set<Class<?>> cats, Class<?> clazz )
         {
             if ( clazz != null && clazz.getSuperclass() != null )
             {
                 Category cat = clazz.getSuperclass().getAnnotation( Category.class );
                 if ( cat != null )
                 {
-                    return new HashSet<Class<?>>( Arrays.asList( cat.value() ) );
+                    Collections.addAll( cats, cat.value() );
                 }
                 else
                 {
-                    return findSuperclassCategories( clazz.getSuperclass() );
+                    findSuperclassCategories( cats, clazz.getSuperclass() );
                 }
             }
-
-            return Collections.emptySet();
         }
 
         private boolean shouldRun( Description description, Description parent, Class<?> parentClass )
@@ -262,57 +255,61 @@ public class FilterFactory
             {
                 return true;
             }
-
-            Set<Class<?>> cats = new HashSet<Class<?>>();
-            Category cat = description.getAnnotation( Category.class );
-            if ( cat != null )
+            else
             {
-                cats.addAll( Arrays.asList( cat.value() ) );
-            }
-
-            if ( parent != null )
-            {
-                cat = parent.getAnnotation( Category.class );
+                Set<Class<?>> cats = new HashSet<Class<?>>();
+                Category cat = description.getAnnotation( Category.class );
                 if ( cat != null )
                 {
-                    cats.addAll( Arrays.asList( cat.value() ) );
+                    Collections.addAll( cats, cat.value() );
                 }
-            }
 
-            if ( parentClass != null )
-            {
-                cats.addAll( findSuperclassCategories( parentClass ) );
-            }
-
-            Class<?> testClass = description.getTestClass();
-            if ( testClass != null )
-            {
-                cat = testClass.getAnnotation( Category.class );
-                if ( cat != null )
+                if ( parent != null )
                 {
-                    cats.addAll( Arrays.asList( cat.value() ) );
-                }
-            }
-
-            boolean result = matcher.enabled( cats.toArray( new Class<?>[] {} ) );
-
-            if ( !result )
-            {
-                ArrayList<Description> children = description.getChildren();
-                if ( children != null )
-                {
-                    for ( Description child : children )
+                    cat = parent.getAnnotation( Category.class );
+                    if ( cat != null )
                     {
-                        if ( shouldRun( child, description, null ) )
+                        Collections.addAll( cats, cat.value() );
+                    }
+                }
+
+                if ( parentClass != null )
+                {
+                    findSuperclassCategories( cats, parentClass );
+                }
+
+                Class<?> testClass = description.getTestClass();
+                if ( testClass != null )
+                {
+                    cat = testClass.getAnnotation( Category.class );
+                    if ( cat != null )
+                    {
+                        Collections.addAll( cats, cat.value() );
+                    }
+                }
+
+                cats.remove( null );
+
+                boolean result = matcher.enabled( cats.toArray( new Class<?>[cats.size()] ) );
+
+                if ( !result )
+                {
+                    ArrayList<Description> children = description.getChildren();
+                    if ( children != null )
+                    {
+                        for ( Description child : children )
                         {
-                            result = true;
-                            break;
+                            if ( shouldRun( child, description, null ) )
+                            {
+                                result = true;
+                                break;
+                            }
                         }
                     }
                 }
-            }
 
-            return result;
+                return result;
+            }
         }
 
         @Override
@@ -320,7 +317,6 @@ public class FilterFactory
         {
             return matcher == null ? "ANY" : matcher.toString();
         }
-
     }
 
     private static class AndFilter
@@ -408,18 +404,18 @@ public class FilterFactory
 
         private String joinFilters( List<Filter> filters, String sep )
         {
-            int i = 0;
+            boolean isFirst = true;
             StringBuilder sb = new StringBuilder();
             for ( Filter f : filters )
             {
-                if ( i++ > 0 )
+                if ( !isFirst )
                 {
                     sb.append( sep );
                 }
                 sb.append( f.describe() );
+                isFirst = false;
             }
             return sb.toString();
         }
     }
-
 }
