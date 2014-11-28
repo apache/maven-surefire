@@ -162,8 +162,8 @@ public class VerifyMojo
                 {
                     getLog().warn(
                         "File encoding has not been set, using platform encoding " + ReaderFactory.FILE_ENCODING
-                            + ", i.e. build is platform dependent! The character encoding for reports output files "
-                            + "should be referenced by POM property ${project.reporting.outputEncoding}." );
+                            + ", i.e. build is platform dependent! The file encoding for reports output files "
+                            + "should be provided by the POM property ${project.reporting.outputEncoding}." );
                     encoding = ReaderFactory.FILE_ENCODING;
                 }
                 else
