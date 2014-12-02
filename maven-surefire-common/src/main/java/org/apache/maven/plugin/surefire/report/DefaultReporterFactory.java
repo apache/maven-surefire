@@ -29,6 +29,7 @@ import org.apache.maven.surefire.report.StackTraceWriter;
 import org.apache.maven.surefire.suite.RunResult;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -75,7 +76,7 @@ public class DefaultReporterFactory
         return createTestSetRunListener();
     }
 
-    public void mergeFromOtherFactories( List<DefaultReporterFactory> factories )
+    public void mergeFromOtherFactories( Collection<DefaultReporterFactory> factories )
     {
         for ( DefaultReporterFactory factory : factories )
         {
