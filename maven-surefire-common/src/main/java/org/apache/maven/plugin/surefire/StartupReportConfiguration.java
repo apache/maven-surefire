@@ -21,13 +21,19 @@ package org.apache.maven.plugin.surefire;
 
 import java.io.File;
 import java.io.PrintStream;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+
 import org.apache.maven.plugin.surefire.report.ConsoleOutputFileReporter;
 import org.apache.maven.plugin.surefire.report.ConsoleReporter;
 import org.apache.maven.plugin.surefire.report.DirectConsoleOutput;
 import org.apache.maven.plugin.surefire.report.FileReporter;
 import org.apache.maven.plugin.surefire.report.StatelessXmlReporter;
 import org.apache.maven.plugin.surefire.report.TestcycleConsoleOutputReceiver;
+import org.apache.maven.plugin.surefire.report.WrappedReportEntry;
 import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
 
 import javax.annotation.Nonnull;
@@ -72,6 +78,8 @@ public class StartupReportConfiguration
 
     public static final String PLAIN_REPORT_FORMAT = ConsoleReporter.PLAIN;
 
+    private final Map<String, Map<String, List<WrappedReportEntry>>> testClassMethodRunHistoryMap;
+
     @SuppressWarnings( "checkstyle:parameternumber" )
     public StartupReportConfiguration( boolean useFile, boolean printSummary, String reportFormat,
                                        boolean redirectTestOutputToFile, boolean disableXmlReport,
@@ -92,6 +100,9 @@ public class StartupReportConfiguration
         this.originalSystemOut = System.out;
         this.originalSystemErr = System.err;
         this.rerunFailingTestsCount = rerunFailingTestsCount;
+        this.testClassMethodRunHistoryMap =
+                        Collections.synchronizedMap(
+                             new HashMap<String, Map<String, List<WrappedReportEntry>>>() );
     }
 
     public static StartupReportConfiguration defaultValue()
@@ -153,7 +164,7 @@ public class StartupReportConfiguration
         if ( !isDisableXmlReport() )
         {
             return new StatelessXmlReporter( reportsDirectory, reportNameSuffix, trimStackTrace,
-                                             rerunFailingTestsCount );
+                                             rerunFailingTestsCount, testClassMethodRunHistoryMap );
         }
         return null;
     }

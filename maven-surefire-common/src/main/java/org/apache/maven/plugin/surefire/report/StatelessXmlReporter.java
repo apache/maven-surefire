@@ -36,7 +36,6 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -96,16 +95,17 @@ public class StatelessXmlReporter
 
     // Map between test class name and a map between test method name
     // and the list of runs for each test method
-    private Map<String, Map<String, List<WrappedReportEntry>>> testClassMethodRunHistoryMap =
-        Collections.synchronizedMap( new HashMap<String, Map<String, List<WrappedReportEntry>>>() );
+    private final Map<String, Map<String, List<WrappedReportEntry>>> testClassMethodRunHistoryMap;
 
     public StatelessXmlReporter( File reportsDirectory, String reportNameSuffix, boolean trimStackTrace,
-                                 int rerunFailingTestsCount )
+                                 int rerunFailingTestsCount,
+                                 Map<String, Map<String, List<WrappedReportEntry>>> testClassMethodRunHistoryMap )
     {
         this.reportsDirectory = reportsDirectory;
         this.reportNameSuffix = reportNameSuffix;
         this.trimStackTrace = trimStackTrace;
         this.rerunFailingTestsCount = rerunFailingTestsCount;
+        this.testClassMethodRunHistoryMap = testClassMethodRunHistoryMap;
     }
 
     public void testSetCompleted( WrappedReportEntry testSetReportEntry, TestSetStats testSetStats )

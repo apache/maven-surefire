@@ -21,6 +21,7 @@ package org.apache.maven.plugin.surefire.report;
 
 import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
+
 import org.apache.maven.plugin.surefire.booterclient.output.DeserializedStacktraceWriter;
 import org.apache.maven.shared.utils.StringUtils;
 import org.apache.maven.shared.utils.xml.Xpp3Dom;
@@ -34,13 +35,18 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @SuppressWarnings( "ResultOfMethodCallIgnored" )
 public class StatelessXmlReporterTest
     extends TestCase
 {
 
-    private StatelessXmlReporter reporter = new StatelessXmlReporter( new File( "." ), null, false, 0 );
+    private StatelessXmlReporter reporter = new StatelessXmlReporter( new File( "." ), null, false, 0,
+                    Collections.synchronizedMap( new HashMap<String, Map<String, List<WrappedReportEntry>>>() ) );
 
     private ReportEntry reportEntry;
 
@@ -131,7 +137,8 @@ public class StatelessXmlReporterTest
                                     ReportEntryType.ERROR, 13, stdOut, stdErr );
 
         stats.testSucceeded( t2 );
-        StatelessXmlReporter reporter = new StatelessXmlReporter( new File( "." ), null, false, 0 );
+        StatelessXmlReporter reporter = new StatelessXmlReporter( new File( "." ), null, false, 0,
+                        Collections.synchronizedMap( new HashMap<String, Map<String, List<WrappedReportEntry>>>() ) );
         reporter.testSetCompleted( testSetReportEntry, stats );
 
         FileInputStream fileInputStream = new FileInputStream( expectedReportFile );
@@ -210,7 +217,14 @@ public class StatelessXmlReporterTest
         rerunStats.testSucceeded( testTwoSecondError );
         rerunStats.testSucceeded( testThreeSecondRun );
 
-        StatelessXmlReporter reporter = new StatelessXmlReporter( new File( "." ), null, false, 1 );
+        StatelessXmlReporter reporter =
+            new StatelessXmlReporter(
+                                      new File( "." ),
+                                      null,
+                                      false,
+                                      1,
+                                      new HashMap<String, Map<String, List<WrappedReportEntry>>>() );
+
         reporter.testSetCompleted( testSetReportEntry, stats );
         reporter.testSetCompleted( testSetReportEntry, rerunStats );
 
