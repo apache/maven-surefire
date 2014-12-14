@@ -394,7 +394,10 @@ public abstract class AbstractSurefireMojo
      * (TestNG/JUnit47 provider with JUnit4.8+ only) Groups for this test. Only classes/methods/etc decorated with one
      * of the groups specified here will be included in test run, if specified.<br/>
      * For JUnit, this parameter forces the use of the 4.7 provider<br/>
-     * This parameter is ignored if the <code>suiteXmlFiles</code> parameter is specified.
+     * This parameter is ignored if the <code>suiteXmlFiles</code> parameter is specified.<br/>
+     * Since version 2.18.1 and JUnit 4.12, the <em>@Category<em> annotation type is automatically inherited from
+     * superclasses, see <em>@java.lang.annotation.Inherited</em>. Make sure that test class inheritance still makes
+     * sense together with <em>@Category<em> annotation of the JUnit 4.12 or higher appeared in superclass.
      *
      * @since 2.2
      */
@@ -405,7 +408,10 @@ public abstract class AbstractSurefireMojo
      * (TestNG/JUnit47 provider with JUnit4.8+ only) Excluded groups. Any methods/classes/etc with one of the groups
      * specified in this list will specifically not be run.<br/>
      * For JUnit, this parameter forces the use of the 4.7 provider<br/>
-     * This parameter is ignored if the <code>suiteXmlFiles</code> parameter is specified.
+     * This parameter is ignored if the <code>suiteXmlFiles</code> parameter is specified.<br/>
+     * Since version 2.18.1 and JUnit 4.12, the <em>@Category<em> annotation type is automatically inherited from
+     * superclasses, see <em>@java.lang.annotation.Inherited</em>. Make sure that test class inheritance still makes
+     * sense together with <em>@Category<em> annotation of the JUnit 4.12 or higher appeared in superclass.
      *
      * @since 2.2
      */

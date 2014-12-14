@@ -288,7 +288,7 @@ public class FilterFactory
                     }
                 }
 
-                cats.remove( null );
+                cats.removeAll( Collections.<Class<?>>singleton( null ) );
 
                 boolean result = matcher.enabled( cats.toArray( new Class<?>[cats.size()] ) );
 
