@@ -131,10 +131,6 @@ public class FilterFactory
                 String describedClassName = description.getClassName();
                 String describedMethodName = description.getMethodName();
 
-                System.out.println( "current description " + describedClassName + " " + describedMethodName );
-                System.out.println( "trying to match against " + this.className + " "
-                        + this.methodName );
-
                 if ( describedClassName != null )
                 {
                     if ( this.className.indexOf( '*' ) < 0 && this.className.indexOf( '?' ) < 0 )
@@ -198,8 +194,6 @@ public class FilterFactory
                     }
                 }
             }
-            System.out.println( requestString );
-
             this.requestString = requestString;
             this.requestedTestMethods = requestedTestMethods;
         }
