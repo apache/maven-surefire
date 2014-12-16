@@ -19,14 +19,6 @@ package org.apache.maven.surefire.common.junit48;
  * under the License.
  */
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-
 import org.apache.maven.shared.utils.io.SelectorUtils;
 import org.apache.maven.surefire.booter.ProviderParameterNames;
 import org.apache.maven.surefire.group.match.AndGroupMatcher;
@@ -37,6 +29,14 @@ import org.apache.maven.surefire.group.parse.ParseException;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.Description;
 import org.junit.runner.manipulation.Filter;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * @author Todd Lipcon
@@ -114,11 +114,94 @@ public class FilterFactory
     private static class MethodFilter
         extends Filter
     {
-        private final String requestedTestMethod;
 
-        public MethodFilter( String requestedTestMethod )
+        private static class RequestedTestMethod
         {
-            this.requestedTestMethod = requestedTestMethod;
+            final String className;
+            final String methodName;
+
+            private RequestedTestMethod( String className, String methodName )
+            {
+                this.className = className;
+                this.methodName = methodName;
+            }
+
+            private boolean isDescriptionmatch( Description description )
+            {
+                String describedClassName = description.getClassName();
+                String describedMethodName = description.getMethodName();
+
+                System.out.println( "current description " + describedClassName + " " + describedMethodName );
+                System.out.println( "trying to match against " + this.className + " "
+                        + this.methodName );
+
+                if ( describedClassName != null )
+                {
+                    if ( this.className.indexOf( '*' ) < 0 && this.className.indexOf( '?' ) < 0 )
+                    {
+                        // existing implementation seems to be a simple contains check
+                        if ( !describedClassName.contains( this.className ) )
+                        {
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        if ( !SelectorUtils.match( this.className, describedClassName ) )
+                        {
+                            return false;
+                        }
+                    }
+                }
+
+                if ( describedMethodName != null && !SelectorUtils.match( this.methodName, describedMethodName ) )
+                {
+                    return false;
+                }
+
+                return true;
+            }
+        }
+
+        private final String requestString;
+        private final List<RequestedTestMethod> requestedTestMethods;
+
+        public MethodFilter( String requestString )
+        {
+            List<RequestedTestMethod> requestedTestMethods = new ArrayList<RequestedTestMethod>();
+
+            if ( requestString.indexOf( '#' ) < 0 )
+            {
+                // old way before SUREFIRE-745, filter only by method name
+                // class name filtering is done separately
+                requestedTestMethods.add( new RequestedTestMethod( null, requestString ) );
+            }
+            else
+            {
+                // possibly several classes and methods separated by comma
+                // several methods in the same class separated by plus
+
+                for ( String requestedTestMethod : requestString.split( "," ) )
+                {
+                    int index = requestedTestMethod.indexOf( '#' );
+                    if ( index < 0 )
+                    {
+                        requestedTestMethods.add( new RequestedTestMethod( null, requestedTestMethod ) );
+                    }
+                    else
+                    {
+                        String className = index == 0 ? null : requestedTestMethod.substring( 0, index );
+                        for ( String methodName : requestedTestMethod.substring( index + 1 ).split( "\\+" ) )
+                        {
+                            requestedTestMethods.add( new RequestedTestMethod( className, methodName ) );
+                        }
+                    }
+                }
+            }
+            System.out.println( requestString );
+
+            this.requestString = requestString;
+            this.requestedTestMethods = requestedTestMethods;
         }
 
         @Override
@@ -137,14 +220,20 @@ public class FilterFactory
 
         private boolean isDescriptionMatch( Description description )
         {
-            return description.getMethodName() != null
-                && SelectorUtils.match( requestedTestMethod, description.getMethodName() );
+            for ( RequestedTestMethod requestedTestMethod : requestedTestMethods )
+            {
+                if ( requestedTestMethod.isDescriptionmatch( description ) )
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         @Override
         public String describe()
         {
-            return "By method" + requestedTestMethod;
+            return "By method " + requestString;
         }
     }
 
