@@ -19,6 +19,7 @@ package org.apache.maven.surefire.common.junit48;
  * under the License.
  */
 
+import org.apache.maven.shared.utils.StringUtils;
 import org.apache.maven.shared.utils.io.SelectorUtils;
 import org.apache.maven.surefire.booter.ProviderParameterNames;
 import org.apache.maven.surefire.group.match.AndGroupMatcher;
@@ -31,6 +32,7 @@ import org.junit.runner.Description;
 import org.junit.runner.manipulation.Filter;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -126,47 +128,58 @@ public class FilterFactory
                 this.methodName = methodName;
             }
 
-            private boolean isDescriptionmatch( Description description )
+            private static boolean isSelectorPattern( String pattern )
+            {
+                return pattern.contains( "*" ) || pattern.contains( "?" );
+            }
+
+            public boolean isDescriptionmatch( Description description )
             {
                 String describedClassName = description.getClassName();
                 String describedMethodName = description.getMethodName();
 
-                if ( describedClassName != null )
+                if ( methodName != null )
                 {
-                    if ( this.className.indexOf( '*' ) < 0 && this.className.indexOf( '?' ) < 0 )
+                    if ( describedMethodName == null || !SelectorUtils.match( methodName, describedMethodName ) )
+                    {
+                        return false;
+                    }
+                }
+
+                if ( className != null && describedClassName != null )
+                {
+                    if ( !isSelectorPattern( className ) )
                     {
                         // existing implementation seems to be a simple contains check
-                        if ( !describedClassName.contains( this.className ) )
+                        if ( describedClassName.contains( className ) )
                         {
-                            return false;
+                            return true;
                         }
                     }
                     else
                     {
-                        if ( !SelectorUtils.match( this.className, describedClassName ) )
+                        if ( SelectorUtils.match( className, describedClassName ) )
                         {
-                            return false;
+                            return true;
                         }
                     }
-                }
 
-                if ( describedMethodName != null && !SelectorUtils.match( this.methodName, describedMethodName ) )
-                {
                     return false;
                 }
 
                 return true;
+
             }
         }
 
         private final String requestString;
-        private final List<RequestedTestMethod> requestedTestMethods;
+        private final Collection<RequestedTestMethod> requestedTestMethods;
 
         public MethodFilter( String requestString )
         {
-            List<RequestedTestMethod> requestedTestMethods = new ArrayList<RequestedTestMethod>();
+            Collection<RequestedTestMethod> requestedTestMethods = new ArrayList<RequestedTestMethod>();
 
-            if ( requestString.indexOf( '#' ) < 0 )
+            if ( !requestString.contains( "#" ) )
             {
                 // old way before SUREFIRE-745, filter only by method name
                 // class name filtering is done separately
@@ -177,23 +190,26 @@ public class FilterFactory
                 // possibly several classes and methods separated by comma
                 // several methods in the same class separated by plus
 
-                for ( String requestedTestMethod : requestString.split( "," ) )
+                for ( String request : StringUtils.split( requestString, "," ) )
                 {
-                    int index = requestedTestMethod.indexOf( '#' );
+                    int index = request.indexOf( '#' );
                     if ( index < 0 )
                     {
-                        requestedTestMethods.add( new RequestedTestMethod( null, requestedTestMethod ) );
+                        // request can also contain complete classes
+                        requestedTestMethods.add( new RequestedTestMethod( request, null ) );
                     }
                     else
                     {
-                        String className = index == 0 ? null : requestedTestMethod.substring( 0, index );
-                        for ( String methodName : requestedTestMethod.substring( index + 1 ).split( "\\+" ) )
+                        String className = index == 0 ? null : request.substring( 0, index );
+                        String methodNames = request.substring( index + 1 );
+                        for ( String methodName : StringUtils.split( methodNames, "+" ) )
                         {
                             requestedTestMethods.add( new RequestedTestMethod( className, methodName ) );
                         }
                     }
                 }
             }
+
             this.requestString = requestString;
             this.requestedTestMethods = requestedTestMethods;
         }
