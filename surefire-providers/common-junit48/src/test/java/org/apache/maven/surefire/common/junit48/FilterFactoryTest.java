@@ -112,17 +112,9 @@ public class FilterFactoryTest
     }
 
     @Test
-    public void shouldMatchEndOfClassNameWithMethod()
+    public void shouldMatchSimpleClassNameWithMethod()
     {
-        Filter exactFilter = createMethodFilter( "FirstClass#testMethod" );
-        assertTrue( "exact match on name should run", exactFilter.shouldRun( testMethod ) );
-        assertFalse( "other method should not match", exactFilter.shouldRun( otherMethod ) );
-    }
-
-    @Test
-    public void shouldMatchPartialClassNameWithMethod()
-    {
-        Filter exactFilter = createMethodFilter( "FirstClass#testMethod" );
+        Filter exactFilter = createMethodFilter( "FilterFactoryTest$FirstClass#testMethod" );
         assertTrue( "exact match on name should run", exactFilter.shouldRun( testMethod ) );
         assertFalse( "other method should not match", exactFilter.shouldRun( otherMethod ) );
     }

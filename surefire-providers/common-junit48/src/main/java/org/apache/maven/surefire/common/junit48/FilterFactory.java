@@ -119,18 +119,19 @@ public class FilterFactory
 
         private static class RequestedTestMethod
         {
-            final String className;
-            final String methodName;
+            final String classPattern;
+            final String methodPattern;
 
             private RequestedTestMethod( String className, String methodName )
             {
-                this.className = className;
-                this.methodName = methodName;
+                // convert to path pattern so we can use the same matching logic as in includes
+                this.classPattern = className == null ? null : "**/" + convertToPath( className );
+                this.methodPattern = methodName;
             }
 
-            private static boolean isSelectorPattern( String pattern )
+            private static String convertToPath( String className )
             {
-                return pattern.contains( "*" ) || pattern.contains( "?" );
+                return className.replace( '.', '/' );
             }
 
             public boolean isDescriptionmatch( Description description )
@@ -138,33 +139,18 @@ public class FilterFactory
                 String describedClassName = description.getClassName();
                 String describedMethodName = description.getMethodName();
 
-                if ( methodName != null )
+                if ( methodPattern != null )
                 {
-                    if ( describedMethodName == null || !SelectorUtils.match( methodName, describedMethodName ) )
+                    if ( describedMethodName == null || !SelectorUtils.match( methodPattern, describedMethodName ) )
                     {
                         return false;
                     }
                 }
 
-                if ( className != null && describedClassName != null )
+                if ( classPattern != null && describedClassName != null )
                 {
-                    if ( !isSelectorPattern( className ) )
-                    {
-                        // existing implementation seems to be a simple contains check
-                        if ( describedClassName.contains( className ) )
-                        {
-                            return true;
-                        }
-                    }
-                    else
-                    {
-                        if ( SelectorUtils.match( className, describedClassName ) )
-                        {
-                            return true;
-                        }
-                    }
-
-                    return false;
+                    String describedPath = convertToPath( describedClassName );
+                    return SelectorUtils.matchPath( classPattern, describedPath );
                 }
 
                 return true;
@@ -181,8 +167,9 @@ public class FilterFactory
 
             if ( !requestString.contains( "#" ) )
             {
-                // old way before SUREFIRE-745, filter only by method name
-                // class name filtering is done separately
+                // a single method was specified, the leading hash sign was split off by
+                // {@link org.apache.maven.plugin.surefire.SurefirePlugin#getTestMethod()}
+                // filtering by class name is done via modified includes also in SurefirePlugin
                 requestedTestMethods.add( new RequestedTestMethod( null, requestString ) );
             }
             else
