@@ -1,5 +1,6 @@
 package org.apache.maven.surefire.its;
 
+import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.junit.Test;
 /*
@@ -30,10 +31,13 @@ import org.junit.Test;
 public class TestMultipleMethodsIT
     extends SurefireJUnit4IntegrationTestCase
 {
-    public void multipleMethod( String projectName )
+
+    private static final String RUNNING_WITH_JUNIT48 = "parallel='none', perCoreThreadCount=true, threadCount=0";
+
+    public OutputValidator multipleMethod( String projectName )
         throws Exception
     {
-        unpack( projectName ).executeTest().verifyErrorFreeLog().assertTestSuiteResults( 3, 0, 0, 0 );
+        return unpack( projectName ).executeTest().verifyErrorFreeLog().assertTestSuiteResults( 3, 0, 0, 0 );
     }
 
     @Test
@@ -47,7 +51,7 @@ public class TestMultipleMethodsIT
     public void testJunit48()
         throws Exception
     {
-        multipleMethod( "junit48-multiple-methods" );
+        multipleMethod( "junit48-multiple-methods" ).verifyTextInLog( RUNNING_WITH_JUNIT48 );
     }
 
 }

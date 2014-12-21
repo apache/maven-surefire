@@ -19,6 +19,7 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
+import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.junit.Test;
 
@@ -30,10 +31,12 @@ import org.junit.Test;
 public class TestSingleMethodIT
     extends SurefireJUnit4IntegrationTestCase
 {
-    public void singleMethod( String projectName )
+    private static final String RUNNING_WITH_JUNIT48 = "parallel='none', perCoreThreadCount=true, threadCount=0";
+
+    public OutputValidator singleMethod( String projectName )
         throws Exception
     {
-        unpack( projectName ).executeTest().verifyErrorFreeLog().assertTestSuiteResults( 1, 0, 0, 0 );
+        return unpack( projectName ).executeTest().verifyErrorFreeLog().assertTestSuiteResults( 1, 0, 0, 0 );
     }
 
     @Test
@@ -47,7 +50,7 @@ public class TestSingleMethodIT
     public void testJunit48()
         throws Exception
     {
-        singleMethod( "junit48-single-method" );
+        singleMethod( "junit48-single-method" ).verifyTextInLog( RUNNING_WITH_JUNIT48 );
     }
 
     @Test
