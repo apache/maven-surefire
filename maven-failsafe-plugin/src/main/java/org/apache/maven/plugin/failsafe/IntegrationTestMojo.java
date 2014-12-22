@@ -199,7 +199,9 @@ public class IntegrationTestMojo
 
     /**
      * By default, Surefire forks your tests using a manifest-only JAR; set this parameter to "false" to force it to
-     * launch your tests with a plain old Java classpath. (See the <a href="examples/class-loading.html">examples</a>
+     * launch your tests with a plain old Java classpath. (See the
+     * <a href="http://maven.apache.org/plugins/maven-failsafe-plugin/examples/class-loading.html">
+     *     http://maven.apache.org/plugins/maven-failsafe-plugin/examples/class-loading.html</a>
      * for a more detailed explanation of manifest-only JARs and their benefits.)
      * <br/>
      * Beware, setting this to "false" may cause your tests to fail on Windows if your classpath is too long.

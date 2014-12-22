@@ -352,8 +352,12 @@ public abstract class AbstractSurefireMojo
      * <br/>
      * Using an alternate syntax for <em>argLine</em>, <pre>@{...}</pre> allows late replacement of properties when the
      * plugin is executed, so properties that have been modified by other plugins will be picked up correctly.
+     * See the Frequently Asked Questions page with more details:<br/>
+     * <a href="http://maven.apache.org/surefire/maven-surefire-plugin/faq.html">
+     *     http://maven.apache.org/surefire/maven-surefire-plugin/faq.html</a>
      * <br/>
-     * See the <a href="faq.html">Frequently Asked Questions</a> with more details.
+     * <a href="http://maven.apache.org/surefire/maven-failsafe-plugin/faq.html">
+     *     http://maven.apache.org/surefire/maven-failsafe-plugin/faq.html</a>
      *
      * @since 2.1
      */
