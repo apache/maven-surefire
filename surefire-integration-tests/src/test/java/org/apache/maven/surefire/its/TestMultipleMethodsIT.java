@@ -1,8 +1,5 @@
 package org.apache.maven.surefire.its;
 
-import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
-import org.junit.Test;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -21,6 +18,10 @@ import org.junit.Test;
  * specific language governing permissions and limitations
  * under the License.
  */
+
+import org.apache.maven.surefire.its.fixture.OutputValidator;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.junit.Test;
 
 
 /**
