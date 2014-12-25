@@ -25,9 +25,7 @@ import org.junit.Test;
 
 
 /**
- * Test project using -Dtest=mtClass#myMethod+myMethod2,secondClass#testMethod
- *
- * @author <a href="mailto:ytsolar@gmail.com">rainLee</a>
+ * Test project using multiple method patterns, including wildcards in class and method names.
  */
 public class TestMultipleMethodPatternsIT
     extends SurefireJUnit4IntegrationTestCase
