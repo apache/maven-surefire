@@ -31,12 +31,12 @@ import org.testng.ITestResult;
  */
 public class MarkAsFailureListener implements ITestListener, IInvokedMethodListener {
 
-    @Override
+    //todo add @Override in surefire 3.0 running on the top of JDK 6
     public void onTestStart(ITestResult result) {
 
     }
 
-    @Override
+    //todo add @Override in surefire 3.0 running on the top of JDK 6
     public void onTestSuccess(ITestResult result) {
 
     }
@@ -46,37 +46,37 @@ public class MarkAsFailureListener implements ITestListener, IInvokedMethodListe
      * I will be called twice in some condition!!!
      * @param result
      */
-    @Override
+    //todo add @Override in surefire 3.0 running on the top of JDK 6
     public void onTestFailure(ITestResult result) {
         System.out.println(++counter);
     }
 
-    @Override
+    //todo add @Override in surefire 3.0 running on the top of JDK 6
     public void onTestSkipped(ITestResult result) {
 
     }
 
-    @Override
+    //todo add @Override in surefire 3.0 running on the top of JDK 6
     public void onTestFailedButWithinSuccessPercentage(ITestResult result) {
 
     }
 
-    @Override
+    //todo add @Override in surefire 3.0 running on the top of JDK 6
     public void onStart(ITestContext context) {
 
     }
 
-    @Override
+    //todo add @Override in surefire 3.0 running on the top of JDK 6
     public void onFinish(ITestContext context) {
 
     }
 
-    @Override
+    //todo add @Override in surefire 3.0 running on the top of JDK 6
     public void beforeInvocation(IInvokedMethod method, ITestResult testResult) {
 
     }
 
-    @Override
+    //todo add @Override in surefire 3.0 running on the top of JDK 6
     public void afterInvocation(IInvokedMethod method, ITestResult testResult) {
         testResult.setStatus(ITestResult.FAILURE);
     }
