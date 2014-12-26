@@ -60,6 +60,7 @@ public class StatelessXmlReporterTest
     private final static String TEST_TWO = "bTestMethod";
     private final static String TEST_THREE = "cTestMethod";
 
+    @Override
     protected void setUp()
         throws Exception
     {
@@ -71,7 +72,8 @@ public class StatelessXmlReporterTest
         reporter.cleanTestHistoryMap();
     }
 
-    @Override protected void tearDown()
+    @Override
+    protected void tearDown()
         throws Exception
     {
         super.tearDown();
