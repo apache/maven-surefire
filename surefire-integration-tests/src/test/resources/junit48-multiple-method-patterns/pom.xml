@@ -57,7 +57,7 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <version>${surefire.version}</version>
         <configuration>
-          <test>junit4.BasicTest#testSuccessOne+testFailOne,junit4.TestThree#testSuccess*,junit4.TestFour#testSuccess???,junit4.*Five#test*One</test>
+          <test>junit4.BasicTest#testSuccessOne+testSuccessTwo,junit4.TestThree#testSuccess*,junit4.TestFour#testSuccess???,junit4.*Five#test*One</test>
         </configuration>
         <dependencies>
           <dependency>

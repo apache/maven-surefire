@@ -19,61 +19,25 @@ package junit4;
  * under the License.
  */
 
-import org.junit.*;
+import org.junit.Test;
 
 
 public class TestFive
 {
 
-    private boolean setUpCalled = false;
-
-    private static boolean tearDownCalled = false;
-
-    @Before
-    public void setUp()
-    {
-        setUpCalled = true;
-        tearDownCalled = false;
-        System.out.println( "Called setUp" );
-    }
-
-    @After
-    public void tearDown()
-    {
-        setUpCalled = false;
-        tearDownCalled = true;
-        System.out.println( "Called tearDown" );
-    }
-
-    @Test
-    public void testSetUp()
-    {
-        Assert.assertTrue( "setUp was not called", setUpCalled );
-    }
-
-
     @Test
     public void testSuccessOne()
     {
-        Assert.assertTrue( true );
     }
 
     @Test
     public void testSuccessTwo()
     {
-        Assert.assertTrue( true );
     }
 
     @Test
     public void testSuccessThree()
     {
-        Assert.assertTrue( true );
-    }
-
-    @AfterClass
-    public static void oneTimeTearDown()
-    {
-
     }
 
 }
