@@ -84,7 +84,7 @@ public class ForkingRunListener
 
     private final PrintStream target;
 
-    private final Integer testSetChannelId;
+    private final int testSetChannelId;
 
     private final boolean trimStackTraces;
 
@@ -212,18 +212,16 @@ public class ForkingRunListener
 
     public void info( String message )
     {
-        if ( message == null )
+        if ( message != null )
         {
-            return;
+            StringBuilder sb = new StringBuilder( 7 + message.length() * 5 );
+            append( sb, BOOTERCODE_CONSOLE ); comma( sb );
+            append( sb, Integer.toHexString( testSetChannelId ) ); comma( sb );
+            StringUtils.escapeToPrintable( sb, message );
+
+            sb.append( '\n' );
+            target.print( sb.toString() );
         }
-
-        StringBuilder sb = new StringBuilder( 7 + message.length() * 5 );
-        append( sb, BOOTERCODE_CONSOLE ); comma( sb );
-        append( sb, Integer.toHexString( testSetChannelId ) ); comma( sb );
-        StringUtils.escapeToPrintable( sb, message );
-
-        sb.append( '\n' );
-        target.print( sb.toString() );
     }
 
     private String toPropertyString( String key, String value )
@@ -240,7 +238,7 @@ public class ForkingRunListener
         return stringBuilder.toString();
     }
 
-    private String toString( byte operationCode, ReportEntry reportEntry, Integer testSetChannelId )
+    private String toString( byte operationCode, ReportEntry reportEntry, int testSetChannelId )
     {
         StringBuilder stringBuilder = new StringBuilder();
         append( stringBuilder, operationCode ); comma( stringBuilder );

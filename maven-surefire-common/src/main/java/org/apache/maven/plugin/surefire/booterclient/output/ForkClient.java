@@ -170,11 +170,13 @@ public class ForkClient
         }
         catch ( NumberFormatException e )
         {
-            System.out.println( "SUREFIRE-859: " + s );
+            // SUREFIRE-859
+            System.out.println( s );
         }
         catch ( NoSuchElementException e )
         {
-            System.out.println( "SUREFIRE-859: " + s );
+            // SUREFIRE-859
+            System.out.println( s );
         }
         catch ( ReporterException e )
         {

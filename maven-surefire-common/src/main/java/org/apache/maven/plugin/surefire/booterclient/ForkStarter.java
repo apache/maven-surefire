@@ -153,43 +153,40 @@ public class ForkStarter
     public RunResult run( SurefireProperties effectiveSystemProperties, DefaultScanResult scanResult )
         throws SurefireBooterForkException, SurefireExecutionException
     {
-        final RunResult result;
         try
         {
             Properties providerProperties = providerConfiguration.getProviderProperties();
             scanResult.writeTo( providerProperties );
-            if ( isForkOnce() )
-            {
-                DefaultReporterFactory forkedReporterFactory = new DefaultReporterFactory( startupReportConfiguration );
-                defaultReporterFactoryList.add( forkedReporterFactory );
-                final ForkClient forkClient =
-                    new ForkClient( forkedReporterFactory, startupReportConfiguration.getTestVmSystemProperties() );
-                result = fork( null, new PropertiesWrapper( providerProperties ), forkClient, effectiveSystemProperties,
-                               null );
-            }
-            else
-            {
-                if ( forkConfiguration.isReuseForks() )
-                {
-                    result = runSuitesForkOnceMultiple( effectiveSystemProperties, forkConfiguration.getForkCount() );
-                }
-                else
-                {
-                    result = runSuitesForkPerTestSet( effectiveSystemProperties, forkConfiguration.getForkCount() );
-                }
-            }
+            return isForkOnce()
+                    ? run( effectiveSystemProperties, providerProperties )
+                    : run( effectiveSystemProperties );
         }
         finally
         {
             defaultReporterFactory.mergeFromOtherFactories( defaultReporterFactoryList );
             defaultReporterFactory.close();
         }
-        return result;
+    }
+
+    private RunResult run( SurefireProperties effectiveSystemProperties, Properties providerProperties )
+            throws SurefireBooterForkException {
+        DefaultReporterFactory forkedReporterFactory = new DefaultReporterFactory( startupReportConfiguration );
+        defaultReporterFactoryList.add( forkedReporterFactory );
+        final ForkClient forkClient =
+                new ForkClient( forkedReporterFactory, startupReportConfiguration.getTestVmSystemProperties() );
+        return fork( null, new PropertiesWrapper( providerProperties ), forkClient, effectiveSystemProperties, null );
+    }
+
+    private RunResult run( SurefireProperties effectiveSystemProperties )
+            throws SurefireBooterForkException {
+        return forkConfiguration.isReuseForks()
+                ? runSuitesForkOnceMultiple( effectiveSystemProperties, forkConfiguration.getForkCount() )
+                : runSuitesForkPerTestSet( effectiveSystemProperties, forkConfiguration.getForkCount() );
     }
 
     private boolean isForkOnce()
     {
-        return forkConfiguration.isReuseForks() && ( 1 == forkConfiguration.getForkCount() || hasSuiteXmlFiles() );
+        return forkConfiguration.isReuseForks() && ( forkConfiguration.getForkCount() == 1 || hasSuiteXmlFiles() );
     }
 
     private boolean hasSuiteXmlFiles()
@@ -234,7 +231,7 @@ public class ForkStarter
                         throws Exception
                     {
                         TestProvidingInputStream testProvidingInputStream =
-                            new TestProvidingInputStream( messageQueue );
+                                new TestProvidingInputStream( messageQueue );
 
                         DefaultReporterFactory forkedReporterFactory =
                             new DefaultReporterFactory( startupReportConfiguration );
@@ -309,8 +306,7 @@ public class ForkStarter
                         DefaultReporterFactory forkedReporterFactory =
                             new DefaultReporterFactory( startupReportConfiguration );
                         defaultReporterFactoryList.add( forkedReporterFactory );
-                        ForkClient forkClient =
-                                        new ForkClient( forkedReporterFactory,
+                        ForkClient forkClient = new ForkClient( forkedReporterFactory,
                                                         startupReportConfiguration.getTestVmSystemProperties() );
                         return fork( testSet, new PropertiesWrapper( providerConfiguration.getProviderProperties() ),
                                      forkClient, effectiveSystemProperties, null );

@@ -46,11 +46,11 @@ class LazyTestsToRun
 {
     private final List<Class> workQueue = new ArrayList<Class>();
 
-    private BufferedReader inputReader;
+    private final BufferedReader inputReader;
+
+    private final PrintStream originalOutStream;
 
     private boolean streamClosed = false;
-
-    private PrintStream originalOutStream;
 
     /**
      * C'tor
@@ -77,9 +77,7 @@ class LazyTestsToRun
 
     protected void requestNextTest()
     {
-        StringBuilder sb = new StringBuilder();
-        sb.append( (char) ForkingRunListener.BOOTERCODE_NEXT_TEST ).append( ",0,want more!\n" );
-        originalOutStream.print( sb.toString() );
+        originalOutStream.print( ( (char) ForkingRunListener.BOOTERCODE_NEXT_TEST ) + ",0,want more!\n" );
     }
 
     private class BlockingIterator
@@ -106,24 +104,23 @@ class LazyTestsToRun
                         try
                         {
                             nextClassName = inputReader.readLine();
+                            if ( nextClassName == null )
+                            {
+                                streamClosed = true;
+                            }
+                            else
+                            {
+                                addWorkItem( nextClassName );
+                            }
                         }
                         catch ( IOException e )
                         {
                             streamClosed = true;
                             return false;
                         }
-
-                        if ( null == nextClassName )
-                        {
-                            streamClosed = true;
-                        }
-                        else
-                        {
-                            addWorkItem( nextClassName );
-                        }
                     }
 
-                    return ( workQueue.size() > nextPos );
+                    return workQueue.size() > nextPos;
                 }
             }
         }

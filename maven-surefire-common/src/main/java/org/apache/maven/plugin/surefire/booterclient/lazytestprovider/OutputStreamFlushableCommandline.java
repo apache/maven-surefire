@@ -55,7 +55,7 @@ public class OutputStreamFlushableCommandline
         }
     }
 
-    private FlushReceiver flushReceiver;
+    private volatile FlushReceiver flushReceiver;
 
     @Override
     public Process execute()

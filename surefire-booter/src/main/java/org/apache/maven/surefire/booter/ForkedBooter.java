@@ -80,14 +80,14 @@ public class ForkedBooter
                 classpathConfiguration.trickClassPathWhenManifestOnlyClasspath();
             }
 
-            Thread.currentThread().getContextClassLoader().setDefaultAssertionStatus(
-                classpathConfiguration.isEnableAssertions() );
+            ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+            classLoader.setDefaultAssertionStatus( classpathConfiguration.isEnableAssertions() );
             startupConfiguration.writeSurefireTestClasspathProperty();
 
-            Object testSet;
+            final Object testSet;
             if ( forkedTestSet != null )
             {
-                testSet = forkedTestSet.getDecodedValue( Thread.currentThread().getContextClassLoader() );
+                testSet = forkedTestSet.getDecodedValue( classLoader );
             }
             else if ( readTestsFromInputStream )
             {
