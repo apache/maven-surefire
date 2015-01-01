@@ -169,7 +169,8 @@ public class ForkStarter
     }
 
     private RunResult run( SurefireProperties effectiveSystemProperties, Properties providerProperties )
-            throws SurefireBooterForkException {
+            throws SurefireBooterForkException
+    {
         DefaultReporterFactory forkedReporterFactory = new DefaultReporterFactory( startupReportConfiguration );
         defaultReporterFactoryList.add( forkedReporterFactory );
         final ForkClient forkClient =
@@ -178,7 +179,8 @@ public class ForkStarter
     }
 
     private RunResult run( SurefireProperties effectiveSystemProperties )
-            throws SurefireBooterForkException {
+            throws SurefireBooterForkException
+    {
         return forkConfiguration.isReuseForks()
                 ? runSuitesForkOnceMultiple( effectiveSystemProperties, forkConfiguration.getForkCount() )
                 : runSuitesForkPerTestSet( effectiveSystemProperties, forkConfiguration.getForkCount() );
