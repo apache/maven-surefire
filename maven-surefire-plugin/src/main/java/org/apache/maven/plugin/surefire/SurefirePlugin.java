@@ -241,6 +241,26 @@ public class SurefirePlugin
     @Parameter( property = "surefire.runOrder", defaultValue = "filesystem" )
     protected String runOrder;
 
+    /**
+     * A file containing include patterns. Blank lines, or lines starting with # are ignored. If {@code includes} are
+     * also specified, these patterns are appended. Example with path, simple and regex includes:<br/>
+     * &#042;&#047;test/*<br/>
+     * &#042;&#042;&#047;NotIncludedByDefault.java<br/>
+     * %regex[.*Test.*|.*Not.*]<br/>
+     */
+    @Parameter( property = "surefire.includesFile" )
+    private File includesFile;
+
+    /**
+     * A file containing exclude patterns. Blank lines, or lines starting with # are ignored. If {@code excludes} are
+     * also specified, these patterns are appended. Example with path, simple and regex excludes:<br/>
+     * &#042;&#047;test/*<br/>
+     * &#042;&#042;&#047;DontRunTest.*<br/>
+     * %regex[.*Test.*|.*Not.*]<br/>
+     */
+    @Parameter( property = "surefire.excludesFile" )
+    private File excludesFile;
+
     protected int getRerunFailingTestsCount()
     {
         return rerunFailingTestsCount;
@@ -568,5 +588,17 @@ public class SurefirePlugin
     public void setRunOrder( String runOrder )
     {
         this.runOrder = runOrder;
+    }
+
+    @Override
+    public File getIncludesFile()
+    {
+        return includesFile;
+    }
+
+    @Override
+    public File getExcludesFile()
+    {
+        return excludesFile;
     }
 }

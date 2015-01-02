@@ -250,6 +250,10 @@
           or run integration tests: mvn -Prun-its
       -->
       <id>run-its</id>
+      <properties>
+        <!-- skip tests with -DskipTests -->
+        <skipTests>false</skipTests>
+      </properties>
       <build>
         <defaultGoal>verify</defaultGoal>
         <plugins>
@@ -258,6 +262,8 @@
             <artifactId>maven-invoker-plugin</artifactId>
             <configuration>
               <streamLogs>false</streamLogs>
+              <skipInstallation>${skipTests}</skipInstallation>
+              <skipInvocation>${skipTests}</skipInvocation>
             </configuration>
             <executions>
               <execution>

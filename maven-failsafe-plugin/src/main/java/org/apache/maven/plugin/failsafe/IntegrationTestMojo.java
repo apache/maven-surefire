@@ -265,6 +265,26 @@ public class IntegrationTestMojo
     @Parameter( property = "failsafe.runOrder", defaultValue = "filesystem" )
     protected String runOrder;
 
+    /**
+     * A file containing include patterns. Blank lines, or lines starting with # are ignored. If {@code includes} are
+     * also specified, these patterns are appended. Example with path, simple and regex includes:<br/>
+     * &#042;&#047;test/*<br/>
+     * &#042;&#042;&#047;NotIncludedByDefault.java<br/>
+     * %regex[.*Test.*|.*Not.*]<br/>
+     */
+    @Parameter( property = "failsafe.includesFile" )
+    private File includesFile;
+
+    /**
+     * A file containing exclude patterns. Blank lines, or lines starting with # are ignored. If {@code excludes} are
+     * also specified, these patterns are appended. Example with path, simple and regex excludes:<br/>
+     * &#042;&#047;test/*<br/>
+     * &#042;&#042;&#047;DontRunTest.*<br/>
+     * %regex[.*Test.*|.*Not.*]<br/>
+     */
+    @Parameter( property = "failsafe.excludesFile" )
+    private File excludesFile;
+
     protected int getRerunFailingTestsCount()
     {
         return rerunFailingTestsCount;
@@ -619,5 +639,17 @@ public class IntegrationTestMojo
     public void setRunOrder( String runOrder )
     {
         this.runOrder = runOrder;
+    }
+
+    @Override
+    public File getIncludesFile()
+    {
+        return includesFile;
+    }
+
+    @Override
+    public File getExcludesFile()
+    {
+        return excludesFile;
     }
 }

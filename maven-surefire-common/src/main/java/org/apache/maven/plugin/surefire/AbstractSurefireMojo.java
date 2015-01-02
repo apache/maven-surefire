@@ -209,13 +209,6 @@ public abstract class AbstractSurefireMojo
     protected File testSourceDirectory;
 
     /**
-     * A file containing include patterns. Blank lines, or lines starting with # are ignored. If {@code includes} are
-     * also specified these patterns are appended.
-     */
-    @Parameter
-    protected File includesFile;
-
-    /**
      * A list of &lt;exclude> elements specifying the tests (by pattern) that should be excluded in testing. When not
      * specified and when the <code>test</code> parameter is not specified, the default excludes will be <code><br/>
      * &lt;excludes><br/>
@@ -234,13 +227,6 @@ public abstract class AbstractSurefireMojo
      */
     @Parameter
     protected List<String> excludes;
-
-    /**
-     * A file containing exclude patterns. Blank lines, or lines starting with # are ignored. If {@code excludes} are
-     * also specified these patterns are appended.
-     */
-    @Parameter
-    protected File excludesFile;
 
     /**
      * ArtifactRepository of the localRepository. To obtain the directory of localRepository in unit tests use
@@ -2491,10 +2477,7 @@ public abstract class AbstractSurefireMojo
 
     public abstract List<String> getIncludes();
 
-    public File getIncludesFile()
-    {
-        return includesFile;
-    }
+    public abstract File getIncludesFile();
 
     public abstract void setIncludes( List<String> includes );
 
@@ -2503,10 +2486,7 @@ public abstract class AbstractSurefireMojo
         return excludes;
     }
 
-    public File getExcludesFile()
-    {
-        return excludesFile;
-    }
+    public abstract File getExcludesFile();
 
     public void setExcludes( List<String> excludes )
     {
