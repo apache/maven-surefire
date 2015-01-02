@@ -52,6 +52,7 @@ import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Plugin;
+import org.apache.maven.model.PluginExecution;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -1659,14 +1660,12 @@ public abstract class AbstractSurefireMojo
         {
             String key = getPluginDescriptor().getPluginLookupKey();
             Plugin plugin = (Plugin) project.getBuild().getPluginsAsMap().get( key );
-
             if ( plugin != null )
             {
-                @SuppressWarnings( "rawtypes" ) List executions = plugin.getExecutions();
+                List<PluginExecution> executions = plugin.getExecutions();
                 return executions != null && executions.size() > 1;
             }
         }
-
         return false;
     }
 
