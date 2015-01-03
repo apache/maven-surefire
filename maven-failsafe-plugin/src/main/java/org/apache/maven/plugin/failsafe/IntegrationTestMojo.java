@@ -25,6 +25,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
 
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.surefire.AbstractSurefireMojo;
@@ -53,6 +54,13 @@ public class IntegrationTestMojo
 {
 
     private static final String FAILSAFE_IN_PROGRESS_CONTEXT_KEY = "failsafe-in-progress";
+
+    /**
+     * The path representing project <em>jar</em> archive, if exists; Otherwise the directory containing generated
+     * classes of the project being tested. This will be included after the test classes in the test classpath.
+     */
+    @Parameter( defaultValue = "${project.build.outputDirectory}" )
+    private File classesDirectory;
 
     /**
      * Set this to "true" to skip running integration tests, but still compile them. Its use is NOT RECOMMENDED, but
@@ -422,9 +430,20 @@ public class IntegrationTestMojo
         this.testClassesDirectory = testClassesDirectory;
     }
 
+    /**
+     * @return Output directory, or artifact file if artifact type is "jar". If not forking the JVM, parameter
+     * {@link #useSystemClassLoader} is ignored and the {@link org.apache.maven.surefire.booter.IsolatedClassLoader} is
+     * used instead. See the resolution of {@link #getClassLoaderConfiguration() ClassLoaderConfiguration}.
+     */
     public File getClassesDirectory()
     {
-        return classesDirectory;
+        Artifact artifact = getProject().getArtifact();
+        File artifactFile = artifact.getFile();
+
+        boolean useArtifactFile = artifactFile != null && artifactFile.isFile()
+            && artifactFile.getName().toLowerCase().endsWith( ".jar" );
+
+        return useArtifactFile ? artifactFile : classesDirectory;
     }
 
     public void setClassesDirectory( File classesDirectory )

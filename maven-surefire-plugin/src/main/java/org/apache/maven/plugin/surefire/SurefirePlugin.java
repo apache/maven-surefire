@@ -44,6 +44,13 @@ public class SurefirePlugin
 {
 
     /**
+     * The directory containing generated classes of the project being tested. This will be included after the test
+     * classes in the test classpath.
+     */
+    @Parameter( defaultValue = "${project.build.outputDirectory}" )
+    private File classesDirectory;
+
+    /**
      * Set this to "true" to ignore a failure during testing. Its use is NOT RECOMMENDED, but quite convenient on
      * occasion.
      */

@@ -161,13 +161,6 @@ public abstract class AbstractSurefireMojo
     protected File testClassesDirectory;
 
     /**
-     * The directory containing generated classes of the project being tested. This will be included after the test
-     * classes in the test classpath.
-     */
-    @Parameter( defaultValue = "${project.build.outputDirectory}" )
-    protected File classesDirectory;
-
-    /**
      * List of dependencies to exclude from the test classpath. Each dependency string must follow the format
      * <i>groupId:artifactId</i>. For example: <i>org.acme:project-a</i>
      *
@@ -947,7 +940,7 @@ public abstract class AbstractSurefireMojo
         TestSetFailedException
     {
         SurefireProperties effectiveProperties = setupProperties();
-        ClassLoaderConfiguration classLoaderConfiguration = getClassLoaderConfiguration( isForking() );
+        ClassLoaderConfiguration classLoaderConfiguration = getClassLoaderConfiguration();
         provider.addProviderProperties();
         RunOrderParameters runOrderParameters =
             new RunOrderParameters( getRunOrder(), getStatisticsFileName( getConfigChecksum() ) );
@@ -1330,7 +1323,7 @@ public abstract class AbstractSurefireMojo
         return ForkConfiguration.FORK_NEVER.equals( forkMode );
     }
 
-    boolean isForking()
+    protected boolean isForking()
     {
         return 0 < getEffectiveForkCount();
     }
@@ -1493,7 +1486,6 @@ public abstract class AbstractSurefireMojo
         {
             throw new MojoExecutionException( "Unable to generate classpath: " + e, e );
         }
-
     }
 
     private Artifact getCommonArtifact()
@@ -1986,9 +1978,9 @@ public abstract class AbstractSurefireMojo
         return false;
     }
 
-    protected ClassLoaderConfiguration getClassLoaderConfiguration( boolean isForking )
+    protected ClassLoaderConfiguration getClassLoaderConfiguration()
     {
-        return isForking
+        return isForking()
             ? new ClassLoaderConfiguration( isUseSystemClassLoader(), isUseManifestOnlyJar() )
             : new ClassLoaderConfiguration( false, false );
     }
