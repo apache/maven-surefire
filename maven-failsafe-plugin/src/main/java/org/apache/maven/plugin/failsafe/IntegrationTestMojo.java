@@ -56,7 +56,7 @@ public class IntegrationTestMojo
     private static final String FAILSAFE_IN_PROGRESS_CONTEXT_KEY = "failsafe-in-progress";
 
     /**
-     * The path representing project <em>jar</em> archive, if exists; Otherwise the directory containing generated
+     * The path representing project <em>JAR</em> file, if exists; Otherwise the directory containing generated
      * classes of the project being tested. This will be included after the test classes in the test classpath.
      */
     @Parameter( defaultValue = "${project.build.outputDirectory}" )
