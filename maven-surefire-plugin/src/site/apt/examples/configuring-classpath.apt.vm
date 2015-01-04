@@ -38,7 +38,7 @@ The Default Classpath
 #{else}
   [[1]] The {{{../integration-test-mojo.html#testClassesDirectory}test-classes}} directory
 
-  [[2]] The {{{../integration-test-mojo.html#classesDirectory}classes}} jar archive or directory
+  [[2]] The {{{../integration-test-mojo.html#classesDirectory}classes}} JAR file or directory
 
 #{end}
   [[3]] The project dependencies
@@ -47,7 +47,7 @@ The Default Classpath
 
 
 #{if}(${project.artifactId}=="maven-failsafe-plugin")
-  Notice that loading jar archive is preferable over the output classes directory in the maven-failsafe-plugin.
+  Notice that loading JAR file is preferable over the output classes directory in the maven-failsafe-plugin.
 #{end}
 
 
