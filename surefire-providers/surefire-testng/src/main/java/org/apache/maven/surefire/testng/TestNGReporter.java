@@ -112,8 +112,12 @@ public class TestNGReporter
 
     public void onTestSkipped( ITestResult result )
     {
-        ReportEntry report = new SimpleReportEntry( getSource( result ), getUserFriendlyTestName( result ) );
-
+        ReportEntry report = SimpleReportEntry.withException( getSource( result ), getUserFriendlyTestName( result ),
+                                                              new PojoStackTraceWriter(
+                                                                  result.getTestClass().getRealClass().getName(),
+                                                                  result.getMethod().getMethodName(),
+                                                                  result.getThrowable() ) );
+        
         reporter.testSkipped( report );
     }
 
