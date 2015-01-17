@@ -48,7 +48,6 @@
       <artifactId>common-java5</artifactId>
       <version>${project.version}</version>
     </dependency>
-
   </dependencies>
 
   <build>
