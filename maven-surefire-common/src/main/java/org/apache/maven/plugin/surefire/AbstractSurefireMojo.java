@@ -2199,6 +2199,13 @@ public abstract class AbstractSurefireMojo
             throw new MojoFailureException( "workingDirectory cannot be null" );
         }
 
+        if ( isForking() )
+        {
+            // Postpone directory creation till forked JVM creation
+            // see ForkConfiguration.createCommandLine
+            return;
+        }
+
         if ( !getWorkingDirectory().exists() )
         {
             if ( !getWorkingDirectory().mkdirs() )

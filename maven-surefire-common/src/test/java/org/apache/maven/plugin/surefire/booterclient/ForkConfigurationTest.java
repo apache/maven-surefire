@@ -21,9 +21,11 @@ package org.apache.maven.plugin.surefire.booterclient;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Collections;
 import java.util.Properties;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.maven.shared.utils.StringUtils;
 import org.apache.maven.shared.utils.cli.Commandline;
 import org.apache.maven.surefire.booter.Classpath;
@@ -61,6 +63,75 @@ public class ForkConfigurationTest
         assertTrue( commandLine.toString().contains( "abc def" ) );
     }
 
+    public void testCurrentWorkingDirectoryPropagationIncludingForkNumberExpansion()
+        throws IOException, SurefireBooterForkException
+    {
+        // SUREFIRE-1136
+        File baseDir = Files.createTempDirectory( "SUREFIRE-1136-" ).toFile();
+        baseDir.deleteOnExit();
+
+        File cwd = new File( baseDir, "fork_${surefire.forkNumber}" );
+
+        ForkConfiguration config = getForkConfiguration( null, "java", cwd.getCanonicalFile() );
+        Commandline commandLine = config.createCommandLine( Collections.<String>emptyList(), true, false, null, 1 );
+
+        File forkDirectory = new File( baseDir, "fork_1" );
+        forkDirectory.deleteOnExit();
+        assertTrue( forkDirectory.getCanonicalPath().equals(
+            commandLine.getShell().getWorkingDirectory().getCanonicalPath() ) );
+    }
+
+    public void testExceptionWhenCurrentDirectoryIsNotRealDirectory()
+        throws IOException, SurefireBooterForkException
+    {
+        // SUREFIRE-1136
+        File baseDir = Files.createTempDirectory( "SUREFIRE-1136-" ).toFile();
+        baseDir.deleteOnExit();
+
+        File cwd = new File( baseDir, "cwd.txt" );
+        FileUtils.touch( cwd );
+        cwd.deleteOnExit();
+
+        ForkConfiguration config = getForkConfiguration( null, "java", cwd.getCanonicalFile() );
+
+        try
+        {
+            config.createCommandLine( Collections.<String>emptyList(), true, false, null, 1 );
+        }
+        catch ( SurefireBooterForkException sbfe )
+        {
+            // To handle issue with ~ expansion on Windows
+            String absolutePath = cwd.getCanonicalPath();
+            assertEquals( "WorkingDirectory " + absolutePath + " exists and is not a directory", sbfe.getMessage() );
+            return;
+        }
+
+        fail();
+    }
+
+    public void testExceptionWhenCurrentDirectoryCannotBeCreated()
+        throws IOException, SurefireBooterForkException
+    {
+        // SUREFIRE-1136
+        File baseDir = Files.createTempDirectory( "SUREFIRE-1136-" ).toFile();
+        baseDir.deleteOnExit();
+
+        File cwd = new File( baseDir, "\0?InvalidDirectoryName" );
+        ForkConfiguration config = getForkConfiguration( null, "java", cwd.getAbsoluteFile() );
+
+        try
+        {
+            config.createCommandLine( Collections.<String>emptyList(), true, false, null, 1 );
+        }
+        catch ( SurefireBooterForkException sbfe )
+        {
+            assertEquals( "Cannot create workingDirectory " + cwd.getAbsolutePath(), sbfe.getMessage() );
+            return;
+        }
+
+        fail();
+    }
+
     private File getTempClasspathFile()
         throws IOException
     {
@@ -70,10 +141,16 @@ public class ForkConfigurationTest
     }
 
     public static ForkConfiguration getForkConfiguration( String argLine, String jvm )
+    throws IOException
+{
+    return getForkConfiguration( argLine, jvm, new File( "." ).getCanonicalFile() );
+}
+
+    public static ForkConfiguration getForkConfiguration( String argLine, String jvm, File cwd )
         throws IOException
     {
-        return new ForkConfiguration( Classpath.emptyClasspath(), null, null, jvm, new File( "." ).getCanonicalFile(), new Properties(), argLine,
-                                      null, false, 1, false );
+        return new ForkConfiguration( Classpath.emptyClasspath(), null, null, jvm, cwd, new Properties(), argLine, null,
+                                      false, 1, false );
     }
 
 }
