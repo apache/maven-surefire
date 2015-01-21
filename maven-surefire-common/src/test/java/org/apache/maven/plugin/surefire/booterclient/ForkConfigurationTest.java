@@ -21,11 +21,11 @@ package org.apache.maven.plugin.surefire.booterclient;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.Collections;
 import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.maven.shared.utils.StringUtils;
 import org.apache.maven.shared.utils.cli.Commandline;
 import org.apache.maven.surefire.booter.Classpath;
@@ -67,7 +67,9 @@ public class ForkConfigurationTest
         throws IOException, SurefireBooterForkException
     {
         // SUREFIRE-1136
-        File baseDir = Files.createTempDirectory( "SUREFIRE-1136-" ).toFile();
+        File baseDir =
+            new File( FileUtils.getTempDirectory(), "SUREFIRE-1136-" + RandomStringUtils.randomAlphabetic( 3 ) );
+        baseDir.mkdirs();
         baseDir.deleteOnExit();
 
         File cwd = new File( baseDir, "fork_${surefire.forkNumber}" );
@@ -85,7 +87,9 @@ public class ForkConfigurationTest
         throws IOException, SurefireBooterForkException
     {
         // SUREFIRE-1136
-        File baseDir = Files.createTempDirectory( "SUREFIRE-1136-" ).toFile();
+        File baseDir =
+            new File( FileUtils.getTempDirectory(), "SUREFIRE-1136-" + RandomStringUtils.randomAlphabetic( 3 ) );
+        baseDir.mkdirs();
         baseDir.deleteOnExit();
 
         File cwd = new File( baseDir, "cwd.txt" );
@@ -113,10 +117,12 @@ public class ForkConfigurationTest
         throws IOException, SurefireBooterForkException
     {
         // SUREFIRE-1136
-        File baseDir = Files.createTempDirectory( "SUREFIRE-1136-" ).toFile();
+        File baseDir =
+            new File( FileUtils.getTempDirectory(), "SUREFIRE-1136-" + RandomStringUtils.randomAlphabetic( 3 ) );
+        baseDir.mkdirs();
         baseDir.deleteOnExit();
 
-        File cwd = new File( baseDir, "\0?InvalidDirectoryName" );
+        File cwd = new File( baseDir, "?\0InvalidDirectoryName" );
         ForkConfiguration config = getForkConfiguration( null, "java", cwd.getAbsoluteFile() );
 
         try
