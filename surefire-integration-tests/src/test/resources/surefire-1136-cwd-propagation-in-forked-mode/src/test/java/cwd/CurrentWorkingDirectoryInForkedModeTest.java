@@ -23,7 +23,8 @@ import org.junit.Test;
 
 import java.io.File;
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 public class CurrentWorkingDirectoryInForkedModeTest
 {
@@ -38,12 +39,12 @@ public class CurrentWorkingDirectoryInForkedModeTest
         forkDirectory.deleteOnExit();
 
         // user.dir and current working directory must be aligned, base directory is not affected
-        assertThat( System.getProperty( "basedir" ) ).isEqualTo( projectDirectory.getCanonicalPath() );
-        assertThat( System.getProperty( "user.dir" ) ).isEqualTo( forkDirectory.getCanonicalPath() );
-        assertThat( new File( "." ).getCanonicalPath() ).isEqualTo( forkDirectory.getCanonicalPath() );
+        assertEquals( System.getProperty( "basedir" ), projectDirectory.getCanonicalPath() );
+        assertEquals( System.getProperty( "user.dir" ), forkDirectory.getCanonicalPath() );
+        assertEquals( new File( "." ).getCanonicalPath(), forkDirectory.getCanonicalPath() );
 
         // original working directory (before variable expansion) should not be created
-        assertThat( new File( "cwd_${surefire.forkNumber}" ) ).doesNotExist();
+        assertFalse( new File( "cwd_${surefire.forkNumber}" ).exists() );
 
     }
 
