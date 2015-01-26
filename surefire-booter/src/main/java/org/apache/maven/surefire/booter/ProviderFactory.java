@@ -72,16 +72,19 @@ public class ProviderFactory
         // in createProvider below. These are the same values as here.
 
         ProviderFactory providerFactory =
-            new ProviderFactory( startupConfiguration1, providerConfiguration, testsClassLoader,
-                                 factory );
+            new ProviderFactory( startupConfiguration1, providerConfiguration, testsClassLoader, factory );
         final SurefireProvider provider = providerFactory.createProvider( insideFork );
-
         try
         {
             return provider.invoke( testSet );
         }
         finally
         {
+            System.out.println( "TIBOR providerConfiguration: " + providerConfiguration );
+            System.out.println( "TIBOR providerConfiguration.getTestSuiteDefinition(): "
+                                    + providerConfiguration.getTestSuiteDefinition() );
+            System.out.println( "TIBOR providerConfiguration.getTestSuiteDefinition().getTestListResolver(): "
+                                    + providerConfiguration.getTestSuiteDefinition().getTestListResolver() );
             if ( restoreStreams && System.getSecurityManager() == null )
             {
                 System.setOut( orgSystemOut );
@@ -93,14 +96,11 @@ public class ProviderFactory
 
     public SurefireProvider createProvider( boolean isInsideFork )
     {
-        ClassLoader systemClassLoader = java.lang.Thread.currentThread().getContextClassLoader();
-        Thread.currentThread().setContextClassLoader( classLoader );
-
-        StartupConfiguration starterConfiguration = startupConfiguration;
-
+        final Thread currentThread = Thread.currentThread();
+        final ClassLoader systemClassLoader = currentThread.getContextClassLoader();
+        currentThread.setContextClassLoader( classLoader );
         // Note: Duplicated in ForkedBooter#createProviderInCurrentClassloader
-        final Object o =
-            surefireReflector.createBooterConfiguration( classLoader, reporterManagerFactory, isInsideFork );
+        Object o = surefireReflector.createBooterConfiguration( classLoader, reporterManagerFactory, isInsideFork );
         surefireReflector.setTestSuiteDefinitionAware( o, providerConfiguration.getTestSuiteDefinition() );
         surefireReflector.setProviderPropertiesAware( o, providerConfiguration.getProviderProperties() );
         surefireReflector.setReporterConfigurationAware( o, providerConfiguration.getReporterConfiguration() );
@@ -109,8 +109,8 @@ public class ProviderFactory
         surefireReflector.setRunOrderParameters( o, providerConfiguration.getRunOrderParameters() );
         surefireReflector.setIfDirScannerAware( o, providerConfiguration.getDirScannerParams() );
 
-        Object provider = surefireReflector.instantiateProvider( starterConfiguration.getActualClassName(), o );
-        Thread.currentThread().setContextClassLoader( systemClassLoader );
+        Object provider = surefireReflector.instantiateProvider( startupConfiguration.getActualClassName(), o );
+        currentThread.setContextClassLoader( systemClassLoader );
 
         return new ProviderProxy( provider, classLoader );
     }

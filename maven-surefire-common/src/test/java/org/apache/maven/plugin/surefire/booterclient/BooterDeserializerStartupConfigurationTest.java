@@ -36,6 +36,7 @@ import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.RunOrderParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
+import org.apache.maven.surefire.testset.TestListResolver;
 import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.util.RunOrder;
 
@@ -137,11 +138,9 @@ public class BooterDeserializerStartupConfigurationTest
             new DirectoryScannerParameters( cwd, new ArrayList<String>(), new ArrayList<String>(),
                                             new ArrayList<String>(), Boolean.TRUE, "hourly" );
         ReporterConfiguration reporterConfiguration = new ReporterConfiguration( cwd, Boolean.TRUE );
-        String aUserRequestedTest = "aUserRequestedTest";
-        String aUserRequestedTestMethod = "aUserRequestedTestMethod";
         TestRequest testSuiteDefinition =
-            new TestRequest( Arrays.asList( getSuiteXmlFileStrings() ), getTestSourceDirectory(), aUserRequestedTest,
-                             aUserRequestedTestMethod );
+            new TestRequest( Arrays.asList( getSuiteXmlFileStrings() ), getTestSourceDirectory(),
+                             new TestListResolver( "aUserRequestedTest#aUserRequestedTestMethod" ));
 
         RunOrderParameters runOrderParameters = new RunOrderParameters( RunOrder.DEFAULT, null );
         return new ProviderConfiguration( directoryScannerParameters, runOrderParameters, true, reporterConfiguration,

@@ -117,7 +117,7 @@ public class TestNGProvider
     boolean isTestNGXmlTestSuite( TestRequest testSuiteDefinition )
     {
         return testSuiteDefinition.getSuiteXmlFiles() != null && testSuiteDefinition.getSuiteXmlFiles().size() > 0
-                        && testSuiteDefinition.getRequestedTest() == null;
+                        && testSuiteDefinition.getTestListResolver() == null;
 
     }
 
@@ -126,7 +126,7 @@ public class TestNGProvider
     {
         return new TestNGDirectoryTestSuite( testRequest.getTestSourceDirectory().toString(), providerProperties,
                                              reporterConfiguration.getReportsDirectory(),
-                                             testRequest.getRequestedTestMethod(), runOrderCalculator, scanResult );
+                                             testRequest.getTestListResolver(), runOrderCalculator, scanResult );
     }
 
     private TestNGXmlTestSuite getXmlSuite()

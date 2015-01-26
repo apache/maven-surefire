@@ -161,7 +161,7 @@ public class DependencyScanner
             String[] specific = specificTests == null ? new String[0] : processIncludesExcludes( specificTests );
             specificTestFilter = new SpecificFileFilter( specific );
 
-            if ( includes != null && includes.size() > 0 )
+            if ( includes != null && !includes.isEmpty() )
             {
                 this.includes = MatchPatterns.from( processIncludesExcludes( includes ) );
             }

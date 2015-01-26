@@ -39,12 +39,12 @@ import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.suite.RunResult;
+import org.apache.maven.surefire.testset.TestListResolver;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.RunOrderCalculator;
 import org.apache.maven.surefire.util.ScanResult;
 import org.apache.maven.surefire.util.ScannerFilter;
 import org.apache.maven.surefire.util.TestsToRun;
-import org.apache.maven.surefire.util.internal.StringUtils;
 import org.junit.runner.manipulation.Filter;
 
 /**
@@ -74,7 +74,7 @@ public class JUnitCoreProvider
 
     private RunOrderCalculator runOrderCalculator;
 
-    private String requestedTestMethod;
+    private TestListResolver testResolver;
 
     public JUnitCoreProvider( ProviderParameters providerParameters )
     {
@@ -84,7 +84,18 @@ public class JUnitCoreProvider
         runOrderCalculator = providerParameters.getRunOrderCalculator();
         jUnitCoreParameters = new JUnitCoreParameters( providerParameters.getProviderProperties() );
         scannerFilter = new JUnit48TestChecker( testClassLoader );
-        requestedTestMethod = providerParameters.getTestRequest().getRequestedTestMethod();
+        System.out.println( "TIBOR providerParameters=" + providerParameters );
+        System.out.println( "TIBOR providerParameters.getTestRequest()=" + providerParameters.getTestRequest() );
+        System.out.println( "TIBOR providerParameters.getTestRequest().getTestListResolver().getPluginParameterTest()="
+                                + providerParameters.getTestRequest().getTestListResolver().getPluginParameterTest() );
+        System.out.println( "TIBOR includes: "
+                                + providerParameters.getTestRequest().getTestListResolver().getIncludedFilters() );
+        System.out.println( "TIBOR excludes: "
+                                + providerParameters.getTestRequest().getTestListResolver().getExcludedFilters() );
+        System.out.println( "TIBOR includes: "
+                                + providerParameters.getTestRequest().getTestListResolver().getIncludedFilters()
+            .iterator().next() );
+        testResolver = providerParameters.getTestRequest().getTestListResolver();
         rerunFailingTestsCount = providerParameters.getTestRequest().getRerunFailingTestsCount();
 
         customRunListeners =
@@ -198,21 +209,15 @@ public class JUnitCoreProvider
 
     private Filter createJUnit48Filter()
     {
-        final FilterFactory filterFactory = new FilterFactory( testClassLoader );
-        Filter groupFilter = filterFactory.createGroupFilter( providerParameters.getProviderProperties() );
-        return isMethodFilterSpecified() ? filterFactory.and( groupFilter,
-                                                              filterFactory.createMethodFilter( requestedTestMethod ) )
-                        : groupFilter;
+        final FilterFactory factory = new FilterFactory( testClassLoader );
+        Filter groupFilter = factory.createGroupFilter( providerParameters.getProviderProperties() );
+        boolean onlyGroups = testResolver.isEmpty();
+        return onlyGroups ? groupFilter : factory.and( groupFilter, factory.createMethodFilter( testResolver ) );
     }
 
     private TestsToRun scanClassPath()
     {
-        final TestsToRun scanned = scanResult.applyFilter( scannerFilter, testClassLoader );
+        TestsToRun scanned = scanResult.applyFilter( scannerFilter, testClassLoader );
         return runOrderCalculator.orderTestClasses( scanned );
-    }
-
-    private boolean isMethodFilterSpecified()
-    {
-        return !StringUtils.isBlank( requestedTestMethod );
     }
 }

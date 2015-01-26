@@ -27,6 +27,7 @@ import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.RunOrderParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
+import org.apache.maven.surefire.testset.TestListResolver;
 import org.apache.maven.surefire.testset.TestRequest;
 
 // CHECKSTYLE_OFF: imports
@@ -68,7 +69,6 @@ public class BooterDeserializer
             properties.getBooleanProperty( FORKTESTSET_PREFER_TESTS_FROM_IN_STREAM );
 
         final String requestedTest = properties.getProperty( REQUESTEDTEST );
-        final String requestedTestMethod = properties.getProperty( REQUESTEDTESTMETHOD );
         final File sourceDirectory = properties.getFileProperty( SOURCE_DIRECTORY );
 
         final List excludesList = properties.getStringList( EXCLUDES_PROPERTY_PREFIX );
@@ -90,7 +90,7 @@ public class BooterDeserializer
 
         TestArtifactInfo testNg = new TestArtifactInfo( testNgVersion, testArtifactClassifier );
         TestRequest testSuiteDefinition =
-            new TestRequest( testSuiteXmlFiles, sourceDirectory, requestedTest, requestedTestMethod,
+            new TestRequest( testSuiteXmlFiles, sourceDirectory, new TestListResolver( requestedTest ),
                              rerunFailingTestsCount );
 
         ReporterConfiguration reporterConfiguration =

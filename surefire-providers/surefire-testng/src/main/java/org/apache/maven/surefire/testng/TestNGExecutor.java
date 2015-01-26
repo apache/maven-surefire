@@ -22,6 +22,7 @@ package org.apache.maven.surefire.testng;
 import org.apache.maven.surefire.booter.ProviderParameterNames;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.testng.conf.Configurator;
+import org.apache.maven.surefire.testset.TestListResolver;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.ReflectionUtils;
 import org.apache.maven.surefire.util.internal.StringUtils;
@@ -35,7 +36,6 @@ import org.testng.xml.XmlTest;
 import java.io.File;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -65,7 +65,7 @@ public class TestNGExecutor
     }
 
     public static void run( Class[] testClasses, String testSourceDirectory, Map options, RunListener reportManager,
-                            TestNgTestSuite suite, File reportsDirectory, final String methodNamePattern )
+                            TestNgTestSuite suite, File reportsDirectory, TestListResolver testListResolver )
         throws TestSetFailedException
     {
         TestNG testng = new TestNG( true );
@@ -73,8 +73,8 @@ public class TestNGExecutor
         Configurator configurator = getConfigurator( (String) options.get( "testng.configurator" ) );
         System.out.println( "Configuring TestNG with: " + configurator.getClass().getSimpleName() );
 
-        XmlMethodSelector groupMatchingSelector = getGroupMatchingSelector( options );
-        XmlMethodSelector methodNameFilteringSelector = getMethodNameFilteringSelector( methodNamePattern );
+        XmlMethodSelector groupMatchingSelector = createGroupMatchingSelector( options );
+        XmlMethodSelector methodNameFilteringSelector = createMethodNameFilteringSelector( testListResolver );
 
         Map<String, SuiteAndNamedTests> suitesNames = new HashMap<String, SuiteAndNamedTests>();
 
@@ -176,59 +176,40 @@ public class TestNGExecutor
     }
 
     @SuppressWarnings( "checkstyle:magicnumber" )
-    private static XmlMethodSelector getMethodNameFilteringSelector( String methodNamePattern )
+    private static XmlMethodSelector createMethodNameFilteringSelector( TestListResolver testListResolver )
         throws TestSetFailedException
     {
-        if ( StringUtils.isBlank( methodNamePattern ) )
+        if ( testListResolver != null && !testListResolver.isEmpty() )
+        {
+            // the class is available in the testClassPath
+            String clazzName = "org.apache.maven.surefire.testng.utils.MethodSelector";
+            try
+            {
+                Class<?> clazz = Class.forName( clazzName );
+                Method method = clazz.getMethod( "setTestListResolver", TestListResolver.class );
+                method.invoke( null, testListResolver );
+            }
+            catch ( Exception e )
+            {
+                throw new TestSetFailedException( e.getMessage(), e );
+            }
+
+            XmlMethodSelector xms = new XmlMethodSelector();
+
+            xms.setName( clazzName );
+            // looks to need a high value
+            xms.setPriority( 10000 );
+
+            return xms;
+        }
+        else
         {
             return null;
         }
-
-        // the class is available in the testClassPath
-        String clazzName = "org.apache.maven.surefire.testng.utils.MethodSelector";
-        try
-        {
-            Class clazz = Class.forName( clazzName );
-
-            Method method = clazz.getMethod( "setMethodName", new Class[] { String.class } );
-            method.invoke( null, methodNamePattern );
-        }
-        catch ( ClassNotFoundException e )
-        {
-            throw new TestSetFailedException( e.getMessage(), e );
-        }
-        catch ( SecurityException e )
-        {
-            throw new TestSetFailedException( e.getMessage(), e );
-        }
-        catch ( NoSuchMethodException e )
-        {
-            throw new TestSetFailedException( e.getMessage(), e );
-        }
-        catch ( IllegalArgumentException e )
-        {
-            throw new TestSetFailedException( e.getMessage(), e );
-        }
-        catch ( IllegalAccessException e )
-        {
-            throw new TestSetFailedException( e.getMessage(), e );
-        }
-        catch ( InvocationTargetException e )
-        {
-            throw new TestSetFailedException( e.getMessage(), e );
-        }
-
-        XmlMethodSelector xms = new XmlMethodSelector();
-
-        xms.setName( clazzName );
-        // looks to need a high value
-        xms.setPriority( 10000 );
-
-        return xms;
     }
 
     @SuppressWarnings( "checkstyle:magicnumber" )
-    private static XmlMethodSelector getGroupMatchingSelector( Map options )
+    private static XmlMethodSelector createGroupMatchingSelector( Map options )
         throws TestSetFailedException
     {
         String groups = (String) options.get( ProviderParameterNames.TESTNG_GROUPS_PROP );
@@ -249,27 +230,7 @@ public class TestNGExecutor
             Method method = clazz.getMethod( "setGroups", new Class[] { String.class, String.class } );
             method.invoke( null, groups, excludedGroups );
         }
-        catch ( ClassNotFoundException e )
-        {
-            throw new TestSetFailedException( e.getMessage(), e );
-        }
-        catch ( SecurityException e )
-        {
-            throw new TestSetFailedException( e.getMessage(), e );
-        }
-        catch ( NoSuchMethodException e )
-        {
-            throw new TestSetFailedException( e.getMessage(), e );
-        }
-        catch ( IllegalArgumentException e )
-        {
-            throw new TestSetFailedException( e.getMessage(), e );
-        }
-        catch ( IllegalAccessException e )
-        {
-            throw new TestSetFailedException( e.getMessage(), e );
-        }
-        catch ( InvocationTargetException e )
+        catch ( Exception e )
         {
             throw new TestSetFailedException( e.getMessage(), e );
         }

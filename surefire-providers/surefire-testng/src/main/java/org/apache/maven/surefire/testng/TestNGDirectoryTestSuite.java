@@ -39,6 +39,7 @@ import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.SimpleReportEntry;
+import org.apache.maven.surefire.testset.TestListResolver;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.RunOrderCalculator;
 import org.apache.maven.surefire.util.ScanResult;
@@ -66,7 +67,7 @@ public class TestNGDirectoryTestSuite
 
     private final ScanResult scanResult;
 
-    private final String testMethodPattern;
+    private final TestListResolver testListResolver;
 
     private final RunOrderCalculator runOrderCalculator;
 
@@ -77,7 +78,7 @@ public class TestNGDirectoryTestSuite
     private Class<? extends Annotation> junitTestAnnotation;
 
     public TestNGDirectoryTestSuite( String testSourceDirectory, Properties confOptions, File reportsDirectory,
-                                     String testMethodPattern, RunOrderCalculator runOrderCalculator,
+                                     TestListResolver testListResolver, RunOrderCalculator runOrderCalculator,
                                      ScanResult scanResult )
     {
 
@@ -88,7 +89,7 @@ public class TestNGDirectoryTestSuite
         this.testSourceDirectory = testSourceDirectory;
         this.reportsDirectory = reportsDirectory;
         this.scanResult = scanResult;
-        this.testMethodPattern = testMethodPattern;
+        this.testListResolver = testListResolver;
         this.junitTestClass = findJUnitTestClass();
         this.junitRunWithAnnotation = findJUnitRunWithAnnotation();
         this.junitTestAnnotation = findJUnitTestAnnotation();
@@ -127,7 +128,7 @@ public class TestNGDirectoryTestSuite
         final Map optionsToUse = isJUnitTest( testClass ) ? junitOptions : options;
 
         TestNGExecutor.run( new Class[]{ testClass }, testSourceDirectory, optionsToUse, reporter, this,
-                            reportsDirectory, testMethodPattern );
+                            reportsDirectory, testListResolver );
 
         finishTestSuite( reporter, this );
     }
@@ -203,14 +204,14 @@ public class TestNGDirectoryTestSuite
         Class[] testClasses = testNgTestClasses.toArray( new Class[testNgTestClasses.size()] );
 
         TestNGExecutor.run( testClasses, this.testSourceDirectory, options, reporterManager, this,
-                            testNgReportsDirectory, testMethodPattern );
+                            testNgReportsDirectory, testListResolver );
 
         if ( junitTestClasses.size() > 0 )
         {
             testClasses = junitTestClasses.toArray( new Class[junitTestClasses.size()] );
 
             TestNGExecutor.run( testClasses, testSourceDirectory, junitOptions, reporterManager, this,
-                                junitReportsDirectory, testMethodPattern );
+                                junitReportsDirectory, testListResolver );
         }
 
         finishTestSuite( reporterManager, this );
@@ -280,7 +281,7 @@ public class TestNGDirectoryTestSuite
         startTestSuite( reporter, this );
 
         TestNGExecutor.run( new Class[] { testSet.getTestClass() }, this.testSourceDirectory, this.options, reporter,
-                            this, reportsDirectory, testMethodPattern );
+                            this, reportsDirectory, testListResolver );
 
         finishTestSuite( reporter, this );
     }

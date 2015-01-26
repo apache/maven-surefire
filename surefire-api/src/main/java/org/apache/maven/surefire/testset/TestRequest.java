@@ -34,35 +34,21 @@ public class TestRequest
 
     private final File testSourceDirectory;
 
-    private final String requestedTest;
+    private final TestListResolver requestedTests;
 
     private final int rerunFailingTestsCount;
 
-    /**
-     * @since 2.7.3
-     */
-    private final String requestedTestMethod;
-
-    public TestRequest( List suiteXmlFiles, File testSourceDirectory, String requestedTest )
+    public TestRequest( List suiteXmlFiles, File testSourceDirectory, TestListResolver requestedTests )
     {
-        this( suiteXmlFiles, testSourceDirectory, requestedTest, null );
+        this( createFiles( suiteXmlFiles ), testSourceDirectory, requestedTests, 0 );
     }
 
-    /**
-     * @since 2.7.3
-     */
-    public TestRequest( List suiteXmlFiles, File testSourceDirectory, String requestedTest, String requestedTestMethod )
-    {
-        this( createFiles( suiteXmlFiles ), testSourceDirectory, requestedTest, requestedTestMethod, 0 );
-    }
-
-    public TestRequest( List suiteXmlFiles, File testSourceDirectory, String requestedTest, String requestedTestMethod,
+    public TestRequest( List suiteXmlFiles, File testSourceDirectory, TestListResolver requestedTests,
                         int rerunFailingTestsCount )
     {
         this.suiteXmlFiles = createFiles( suiteXmlFiles );
         this.testSourceDirectory = testSourceDirectory;
-        this.requestedTest = requestedTest;
-        this.requestedTestMethod = requestedTestMethod;
+        this.requestedTests = requestedTests;
         this.rerunFailingTestsCount = rerunFailingTestsCount;
     }
 
@@ -88,23 +74,10 @@ public class TestRequest
 
     /**
      * A specific test request issued with -Dtest= from the command line.
-     *
-     * @return The string specified at the command line
      */
-    public String getRequestedTest()
+    public TestListResolver getTestListResolver()
     {
-        return requestedTest;
-    }
-
-    /**
-     * A specific test request method issued with -Dtest=class#method from the command line.
-     *
-     * @return The string specified at the command line
-     * @since 2.7.3
-     */
-    public String getRequestedTestMethod()
-    {
-        return requestedTestMethod;
+        return requestedTests;
     }
 
     /**

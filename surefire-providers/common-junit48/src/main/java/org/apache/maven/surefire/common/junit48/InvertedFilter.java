@@ -1,4 +1,4 @@
-package junit4;
+package org.apache.maven.surefire.common.junit48;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,25 +19,28 @@ package junit4;
  * under the License.
  */
 
-import org.junit.Test;
+import org.junit.runner.Description;
+import org.junit.runner.manipulation.Filter;
 
-
-public class TestFive
+final class InvertedFilter
+    extends Filter
 {
+    private final Filter filter;
 
-    @Test
-    public void testSuccessOne()
+    InvertedFilter( Filter filter )
     {
+        this.filter = filter;
     }
 
-    @Test
-    public void testSuccessTwo()
+    @Override
+    public boolean shouldRun( Description description )
     {
+        return !filter.shouldRun( description );
     }
 
-    @Test
-    public void testSuccessThree()
+    @Override
+    public String describe()
     {
+        return filter.describe();
     }
-
 }

@@ -36,6 +36,7 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.shared.utils.ReaderFactory;
 import org.apache.maven.shared.utils.StringUtils;
 import org.apache.maven.surefire.suite.RunResult;
+import org.apache.maven.surefire.testset.TestListResolver;
 
 import static org.apache.maven.shared.utils.io.IOUtil.close;
 
@@ -260,6 +261,8 @@ public class IntegrationTestMojo
     @Parameter( property = "failsafe.runOrder", defaultValue = "filesystem" )
     protected String runOrder;
 
+    private TestListResolver testListResolver;
+
     protected int getRerunFailingTestsCount()
     {
         return rerunFailingTestsCount;
@@ -417,42 +420,19 @@ public class IntegrationTestMojo
         this.reportsDirectory = reportsDirectory;
     }
 
-    public String getTest()
+    public TestListResolver getTest()
     {
-        if ( StringUtils.isBlank( test ) )
+        if ( testListResolver == null && test != null )
         {
-            return null;
+            testListResolver = new TestListResolver( test );
         }
-        int index = test.indexOf( '#' );
-        if ( index >= 0 )
-        {
-            return test.substring( 0, index );
-        }
-        return test;
+        return testListResolver;
     }
 
     public void setTest( String test )
     {
         this.test = test;
     }
-
-    /**
-     * @since 2.7.3
-     */
-    public String getTestMethod()
-    {
-        if ( StringUtils.isBlank( test ) )
-        {
-            return null;
-        }
-        int index = this.test.indexOf( '#' );
-        if ( index >= 0 )
-        {
-            return this.test.substring( index + 1, this.test.length() );
-        }
-        return null;
-    }
-
 
     public File getSummaryFile()
     {

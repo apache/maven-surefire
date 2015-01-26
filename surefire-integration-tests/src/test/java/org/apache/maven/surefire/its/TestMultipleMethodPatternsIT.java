@@ -21,6 +21,7 @@ package org.apache.maven.surefire.its;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
 
@@ -33,18 +34,142 @@ public class TestMultipleMethodPatternsIT
 
     private static final String RUNNING_WITH_JUNIT48 = "parallel='none', perCoreThreadCount=true, threadCount=0";
 
-    public OutputValidator multipleMethod( String projectName )
+    /*public OutputValidator multipleMethod( String projectName )
         throws Exception
     {
         return unpack( projectName ).executeTest().verifyErrorFreeLog().assertTestSuiteResults( 7, 0, 0, 0 );
+    }*/
+
+    public SurefireLauncher multipleMethod( String projectName )
+        throws Exception
+    {
+        return unpack( projectName );
     }
 
 
-    @Test
+    /*@Test
     public void testJunit48()
         throws Exception
     {
         multipleMethod( "junit48-multiple-method-patterns" ).verifyTextInLog( RUNNING_WITH_JUNIT48 );
+    }*/
+
+    @Test
+    public void shouldMatchExactClassAndMethod()
+        throws Exception
+    {
+        multipleMethod( "junit48-multiple-method-patterns" )
+            .setTestToRun( "BasicTest#testSuccessTwo" )
+            .executeTest()
+            .verifyErrorFree( 1 )
+            .verifyErrorFreeLog()
+            .verifyTextInLog( "jiras.surefire745.BasicTest#testSuccessTwo" );
+    }
+
+    @Test
+    public void shouldMatchWildcardPackageAndExactClassAndMethod()
+        throws Exception
+    {
+        multipleMethod( "junit48-multiple-method-patterns" )
+            .setTestToRun( "jiras.**.BasicTest#testSuccessTwo" )
+            .executeTest()
+            .verifyErrorFree( 1 )
+            .verifyErrorFreeLog()
+            .verifyTextInLog( "jiras.surefire745.BasicTest#testSuccessTwo" );
+    }
+
+    @Test
+    public void shouldMatchExactClassAndMethodWildcard()
+        throws Exception
+    {
+        multipleMethod( "junit48-multiple-method-patterns" )
+            .maven()
+            .addGoal( "-e" ).addGoal( "-X" )
+            .debugLogging().sysProp( "test", "BasicTest#test*One" )
+            .executeTest()
+            .verifyErrorFree( 1 )
+            .verifyErrorFreeLog()
+            .verifyTextInLog( "jiras.surefire745.BasicTest#testSuccessOne" );
+    }
+
+    @Test
+    public void shouldMatchExactClassAndMethodsWildcard()
+        throws Exception
+    {
+        multipleMethod( "junit48-multiple-method-patterns" )
+            .setTestToRun( "BasicTest#testSuccess*" )
+            .executeTest()
+            .verifyErrorFree( 2 )
+            .verifyErrorFreeLog()
+            .verifyTextInLog( "jiras.surefire745.BasicTest#testSuccessOne" )
+            .verifyTextInLog( "jiras.surefire745.BasicTest#testSuccessTwo" );
+    }
+
+    @Test
+    public void shouldMatchExactClassAndMethodCharacters()
+        throws Exception
+    {
+        multipleMethod( "junit48-multiple-method-patterns" )
+            .setTestToRun( "BasicTest#test???????One" )
+            .executeTest()
+            .verifyErrorFree( 1 )
+            .verifyErrorFreeLog()
+            .verifyTextInLog( "jiras.surefire745.BasicTest#testSuccessOne" );
+    }
+
+    @Test
+    public void shouldMatchExactClassAndMethodsPostfix()
+        throws Exception
+    {
+        multipleMethod( "junit48-multiple-method-patterns" )
+            .setTestToRun( "TestFive#testSuccess???" )
+            .executeTest()
+            .verifyErrorFree( 2 )
+            .verifyErrorFreeLog()
+            .verifyTextInLog( "jiras.surefire745.TestFive#testSuccessOne" )
+            .verifyTextInLog( "jiras.surefire745.TestFive#testSuccessTwo" );
+    }
+
+    @Test
+    public void shouldMatchExactClassAndMethodPostfix()
+        throws Exception
+    {
+        multipleMethod( "junit48-multiple-method-patterns" )
+            .setTestToRun( "TestFive#testSuccess?????" )
+            .executeTest()
+            .verifyErrorFree( 1 )
+            .verifyErrorFreeLog()
+            .verifyTextInLog( "jiras.surefire745.TestFive#testSuccessThree" );
+    }
+
+    @Test
+    public void shouldMatchExactClassAndMultipleMethods()
+        throws Exception
+    {
+        multipleMethod( "junit48-multiple-method-patterns" )
+            .setTestToRun( "TestFive#testSuccessOne+testSuccessThree" )
+            .executeTest()
+            .verifyErrorFree( 2 )
+            .verifyErrorFreeLog()
+            .verifyTextInLog( "jiras.surefire745.TestFive#testSuccessOne" )
+            .verifyTextInLog( "jiras.surefire745.TestFive#testSuccessThree" );
+    }
+
+    @Test
+    public void shouldMatchMultiplePatterns()
+        throws Exception
+    {
+        String test = "jiras.surefire745.BasicTest#testSuccessOne+testSuccessTwo"//2
+                + ',' + "jiras.**.TestTwo"//2
+                + ',' + "jiras.surefire745.TestThree#testSuccess*"//2
+                + ',' + "jiras.surefire745.TestFour#testSuccess???"//2
+                + ',' + "jiras.surefire745.*Five#test*One";//1
+
+        multipleMethod( "junit48-multiple-method-patterns" )
+            .setTestToRun( test )
+            .executeTest()
+            .verifyErrorFree( 9 )
+            .verifyErrorFreeLog();
     }
 
 }

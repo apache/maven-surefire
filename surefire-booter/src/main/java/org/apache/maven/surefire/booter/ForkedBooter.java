@@ -221,13 +221,13 @@ public class ForkedBooter
         BaseProviderFactory bpf = new BaseProviderFactory( (ReporterFactory) reporterManagerFactory1, isInsideFork );
         bpf.setTestRequest( providerConfiguration.getTestSuiteDefinition() );
         bpf.setReporterConfiguration( providerConfiguration.getReporterConfiguration() );
-        ClassLoader clasLoader = Thread.currentThread().getContextClassLoader();
-        bpf.setClassLoaders( clasLoader );
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        bpf.setClassLoaders( classLoader );
         bpf.setTestArtifactInfo( providerConfiguration.getTestArtifact() );
         bpf.setProviderProperties( providerConfiguration.getProviderProperties() );
         bpf.setRunOrderParameters( providerConfiguration.getRunOrderParameters() );
         bpf.setDirectoryScannerParameters( providerConfiguration.getDirScannerParams() );
-        return (SurefireProvider) ReflectionUtils.instantiateOneArg( clasLoader,
+        return (SurefireProvider) ReflectionUtils.instantiateOneArg( classLoader,
                                                                      startupConfiguration1.getActualClassName(),
                                                                      ProviderParameters.class, bpf );
     }

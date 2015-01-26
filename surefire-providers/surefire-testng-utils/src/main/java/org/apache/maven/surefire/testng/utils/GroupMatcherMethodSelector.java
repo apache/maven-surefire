@@ -48,26 +48,20 @@ public class GroupMatcherMethodSelector
 
     public boolean includeMethod( IMethodSelectorContext context, ITestNGMethod method, boolean isTestMethod )
     {
-        // System.out.println( "Checking: " + method + " vs. matcher: " + matcher );
         Boolean result = (Boolean) answers.get( method );
         if ( result != null )
         {
-            // System.out.println( "Enabled? " + result );
             return result;
         }
 
         if ( matcher == null )
         {
-            // System.out.println( "No matcher, enable by default" );
             return true;
         }
 
         String[] groups = method.getGroups();
-        result = Boolean.valueOf( matcher.enabled( groups ) );
-
+        result = matcher.enabled( groups );
         answers.put( method, result );
-
-        // System.out.println( "Enabled? " + result );
         return result;
     }
 

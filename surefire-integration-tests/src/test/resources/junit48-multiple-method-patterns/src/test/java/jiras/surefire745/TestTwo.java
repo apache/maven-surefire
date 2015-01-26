@@ -1,4 +1,4 @@
-package junit4;
+package jiras.surefire745;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,23 +19,24 @@ package junit4;
  * under the License.
  */
 
-import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
-
+import org.junit.rules.TestName;
 
 public class TestTwo
 {
+    @Rule
+    public final TestName testName = new TestName();
 
     @Test
     public void testSuccessOne()
     {
-        Assert.assertTrue( true );
+        System.out.println( getClass() + "#" + testName.getMethodName() );
     }
 
     @Test
     public void testSuccessTwo()
     {
-        Assert.assertTrue( true );
+        System.out.println( getClass() + "#" + testName.getMethodName() );
     }
-
 }

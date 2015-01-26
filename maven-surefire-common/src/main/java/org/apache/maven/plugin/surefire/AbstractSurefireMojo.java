@@ -686,6 +686,8 @@ public abstract class AbstractSurefireMojo
      */
     public static final String FORK_NUMBER_PLACEHOLDER = "${surefire.forkNumber}";
 
+    private static final String JAVA_EXTENSION = ".java";
+
     protected abstract String getPluginName();
 
     protected abstract int getRerunFailingTestsCount();
@@ -700,10 +702,10 @@ public abstract class AbstractSurefireMojo
 
         if ( verifyParameters() && !hasExecutedBefore() )
         {
-            DefaultScanResult scan = scanForTestClasses();
+            DefaultScanResult scan = scanForTestClasses();//!
             if ( !isValidSuiteXmlFileConfig() && scan.isEmpty() )
             {
-                if ( getEffectiveFailIfNoTests() )
+                if ( getEffectiveFailIfNoTests() )//! isSpecificTestSpecified
                 {
                     throw new MojoFailureException(
                         "No tests were executed!  (Set -DfailIfNoTests=false to ignore this error.)" );
@@ -712,7 +714,7 @@ public abstract class AbstractSurefireMojo
                 return;
             }
             logReportsDirectory();
-            executeAfterPreconditionsChecked( scan );
+            executeAfterPreconditionsChecked( scan );//! getTest providers
         }
     }
 
@@ -723,17 +725,18 @@ public abstract class AbstractSurefireMojo
         toolchain = getToolchain();
     }
 
-    private DefaultScanResult scanForTestClasses()
+    private DefaultScanResult scanForTestClasses()//! execute()
     {
-        DefaultScanResult scan = scanDirectories();
-        DefaultScanResult scanDeps = scanDependencies();
+        DefaultScanResult scan = scanDirectories();//! 1
+        DefaultScanResult scanDeps = scanDependencies();//!
         return scan.append( scanDeps );
     }
 
-    private DefaultScanResult scanDirectories()
+    private DefaultScanResult scanDirectories()//!
     {
-        return new DirectoryScanner( getTestClassesDirectory(), getIncludeList(), getExcludeList(),
-                                     getSpecificTests() ).scan();
+        DirectoryScanner scanner =
+            new DirectoryScanner( getTestClassesDirectory(), getIncludeList(), getExcludeList(), getSpecificTests() );//!
+        return scanner.scan();
     }
 
     private DefaultScanResult scanDependencies()
@@ -749,7 +752,7 @@ public abstract class AbstractSurefireMojo
                 // noinspection unchecked
                 return new DependencyScanner( DependencyScanner.filter( project.getTestArtifacts(),
                                                                         Arrays.asList( getDependenciesToScan() ) ),
-                                              getIncludeList(), getExcludeList(), getSpecificTests() ).scan();
+                                              getIncludeList(), getExcludeList(), getSpecificTests() ).scan();//!
             }
             catch ( Exception e )
             {
@@ -801,7 +804,7 @@ public abstract class AbstractSurefireMojo
 
     protected abstract boolean isSkipExecution();
 
-    protected void executeAfterPreconditionsChecked( DefaultScanResult scanResult )
+    private void executeAfterPreconditionsChecked( DefaultScanResult scanResult )
         throws MojoExecutionException, MojoFailureException
     {
 
@@ -814,7 +817,7 @@ public abstract class AbstractSurefireMojo
         {
             try
             {
-                current = current.aggregate( executeProvider( provider, scanResult ) );
+                current = current.aggregate( executeProvider( provider, scanResult ) );//! getTest
             }
             catch ( SurefireBooterForkException e )
             {
@@ -963,7 +966,7 @@ public abstract class AbstractSurefireMojo
             createCopyAndReplaceForkNumPlaceholder( effectiveProperties, 1 ).copyToSystemProperties();
 
             InPluginVMSurefireStarter surefireStarter =
-                createInprocessStarter( provider, classLoaderConfiguration, runOrderParameters );
+                createInprocessStarter( provider, classLoaderConfiguration, runOrderParameters );//! getTest
             return surefireStarter.runSuitesInProcess( scanResult );
         }
         else
@@ -978,7 +981,7 @@ public abstract class AbstractSurefireMojo
             try
             {
                 ForkStarter forkStarter =
-                    createForkStarter( provider, forkConfiguration, classLoaderConfiguration, runOrderParameters,
+                    createForkStarter( provider, forkConfiguration, classLoaderConfiguration, runOrderParameters,//! getTest
                                        getLog() );
                 return forkStarter.run( effectiveProperties, scanResult );
             }
@@ -1021,7 +1024,7 @@ public abstract class AbstractSurefireMojo
             }
             catch ( IOException ioe )
             {
-                getLog().warn( "Could not delete temp direcotry " + tempDirectory + " because " + ioe.getMessage() );
+                getLog().warn( "Could not delete temp directory " + tempDirectory + " because " + ioe.getMessage() );
             }
         }
     }
@@ -1368,7 +1371,7 @@ public abstract class AbstractSurefireMojo
 
     private boolean getEffectiveFailIfNoTests()
     {
-        if ( isSpecificTestSpecified() )
+        if ( isSpecificTestSpecified() )//!
         {
             if ( getFailIfNoSpecifiedTests() != null )
             {
@@ -1395,21 +1398,19 @@ public abstract class AbstractSurefireMojo
         ReporterConfiguration reporterConfiguration =
             new ReporterConfiguration( getReportsDirectory(), isTrimStackTrace() );
 
-        Artifact testNgArtifact;
-        testNgArtifact = getTestNgArtifact();
-
+        Artifact testNgArtifact = getTestNgArtifact();
         DirectoryScannerParameters directoryScannerParameters = null;
         final boolean isTestNg = testNgArtifact != null;
         TestArtifactInfo testNg =
             isTestNg ? new TestArtifactInfo( testNgArtifact.getVersion(), testNgArtifact.getClassifier() ) : null;
         List<File> testXml = getSuiteXmlFiles() != null ? Arrays.asList( getSuiteXmlFiles() ) : null;
         TestRequest testSuiteDefinition =
-            new TestRequest( testXml, getTestSourceDirectory(), getTest(), getTestMethod(),
-                             getRerunFailingTestsCount() );
+            new TestRequest( testXml, getTestSourceDirectory(), getTest().onlyMethodFilters(),
+                             getRerunFailingTestsCount() );//!
 
         final boolean actualFailIfNoTests;
 
-        if ( isValidSuiteXmlFileConfig() && getTest() == null )
+        if ( isValidSuiteXmlFileConfig() && !isSpecificTestSpecified() )
         {
             actualFailIfNoTests = getFailIfNoTests() != null && getFailIfNoTests();
             if ( !isTestNg )
@@ -1419,9 +1420,9 @@ public abstract class AbstractSurefireMojo
         }
         else
         {
-            if ( isSpecificTestSpecified() )
+            if ( isSpecificTestSpecified() )//!
             {
-                actualFailIfNoTests = getEffectiveFailIfNoTests();
+                actualFailIfNoTests = getEffectiveFailIfNoTests();//! isSpecificTestSpecified
                 setFailIfNoTests( actualFailIfNoTests );
             }
             else
@@ -1429,9 +1430,9 @@ public abstract class AbstractSurefireMojo
                 actualFailIfNoTests = getFailIfNoTests() != null && getFailIfNoTests();
             }
 
-            List<String> actualIncludes = getIncludeList();
-            List<String> actualExcludes = getExcludeList();
-            List<String> specificTests = getSpecificTests();
+            List<String> actualIncludes = getIncludeList();//!
+            List<String> actualExcludes = getExcludeList();//!
+            List<String> specificTests = getSpecificTests();//!
             directoryScannerParameters =
                 new DirectoryScannerParameters( getTestClassesDirectory(), actualIncludes, actualExcludes,
                                                 specificTests, actualFailIfNoTests, getRunOrder() );
@@ -1522,19 +1523,17 @@ public abstract class AbstractSurefireMojo
 
     private boolean isSpecificTestSpecified()
     {
-        return getTest() != null;
+        return getTest() != null;//!
     }
 
     private boolean isValidSuiteXmlFileConfig()
     {
-        return getSuiteXmlFiles() != null && getSuiteXmlFiles().length > 0;
+        return getSuiteXmlFiles() != null && getSuiteXmlFiles().length != 0;
     }
 
     @SuppressWarnings( "checkstyle:modifierorder" )
     private @Nonnull List<String> readListFromFile( @Nonnull final File file )
     {
-        List<String> list;
-
         getLog().debug( "Reading list from: " + file );
 
         if ( !file.exists() )
@@ -1544,25 +1543,25 @@ public abstract class AbstractSurefireMojo
 
         try
         {
-            list = FileUtils.loadFile( file );
+            List<String> list = FileUtils.loadFile( file );
+
+            if ( getLog().isDebugEnabled() )
+            {
+                getLog().debug( "List contents:" );
+                for ( String entry : list )
+                {
+                    getLog().debug( "  " + entry );
+                }
+            }
+            return list;
         }
         catch ( IOException e )
         {
             throw new RuntimeException( "Failed to load list from file: " + file, e );
         }
-
-        if ( getLog().isDebugEnabled() )
-        {
-            getLog().debug( "List contents:" );
-            for ( String entry : list )
-            {
-                getLog().debug( "  " + entry );
-            }
-        }
-        return list;
     }
 
-    private void maybeAppendList( final List<String> base, final List<String> list )
+    private void maybeAppendList( List<String> base, List<String> list )
     {
         if ( list != null )
         {
@@ -1574,7 +1573,7 @@ public abstract class AbstractSurefireMojo
     private @Nonnull List<String> getExcludeList()
     {
         List<String> actualExcludes = null;
-        if ( isSpecificTestSpecified() )
+        if ( isSpecificTestSpecified() )//!
         {
             // Check to see if we are running a single test. The raw parameter will
             // come through if it has not been set.
@@ -1584,24 +1583,24 @@ public abstract class AbstractSurefireMojo
         }
         else
         {
-            if ( getExcludesFile() != null )
+            if ( getExcludesFile() != null )//!
             {
-                actualExcludes = readListFromFile( getExcludesFile() );
+                actualExcludes = readListFromFile( getExcludesFile() );//!
             }
 
             // If we have excludesFile, and we have excludes, then append excludes to excludesFile content
             if ( actualExcludes == null )
             {
-                actualExcludes = this.getExcludes();
+                actualExcludes = getExcludes();//!
             }
             else
             {
-                maybeAppendList( actualExcludes, this.getExcludes() );
+                maybeAppendList( actualExcludes, getExcludes() );//!
             }
 
             // defaults here, qdox doesn't like the end javadoc value
             // Have to wrap in an ArrayList as surefire expects an ArrayList instead of a List for some reason
-            if ( actualExcludes == null || actualExcludes.size() == 0 )
+            if ( actualExcludes == null || actualExcludes.isEmpty() )
             {
                 actualExcludes = Arrays.asList( "**/*$*" );
             }
@@ -1612,33 +1611,33 @@ public abstract class AbstractSurefireMojo
     private List<String> getIncludeList()
     {
         List<String> includes = null;
-        if ( isSpecificTestSpecified() && !isMultipleExecutionBlocksDetected() )
+        if ( isSpecificTestSpecified() && !isMultipleExecutionBlocksDetected() )//!
         {
-            includes = getSpecificTests();
+            includes = getSpecificTests();//!
         }
         else
         {
-            if ( getIncludesFile() != null )
+            if ( getIncludesFile() != null )//!
             {
-                includes = readListFromFile( getIncludesFile() );
+                includes = readListFromFile( getIncludesFile() );//!
             }
 
             // If we have includesFile, and we have includes, then append includes to includesFile content
             if ( includes == null )
             {
-                includes = this.getIncludes();
+                includes = getIncludes();//!
             }
             else
             {
-                maybeAppendList( includes, this.getIncludes() );
+                maybeAppendList( includes, getIncludes() );//!
             }
         }
 
         // defaults here, qdox doesn't like the end javadoc value
         // Have to wrap in an ArrayList as surefire expects an ArrayList instead of a List for some reason
-        if ( includes == null || includes.size() == 0 )
+        if ( includes == null || includes.isEmpty() )
         {
-            includes = Arrays.asList( getDefaultIncludes() );
+            includes = Arrays.asList( getDefaultIncludes() );//!
         }
 
         return filterNulls( includes );
@@ -1679,27 +1678,24 @@ public abstract class AbstractSurefireMojo
 
     private List<String> getSpecificTests()
     {
-        if ( !isSpecificTestSpecified() )
+        if ( isSpecificTestSpecified() )//!
+        {
+            List<String> specificTests = new ArrayList<String>();
+            for ( String testRegex : getTest().getTestSpecificClasses() )//!
+            {
+                if ( testRegex.endsWith( JAVA_EXTENSION ) )
+                {
+                    testRegex = testRegex.substring( 0, testRegex.length() - JAVA_EXTENSION.length() );
+                }
+                testRegex = testRegex.replace( '.', '/' );
+                specificTests.add( "**/" + testRegex + JAVA_EXTENSION );
+            }
+            return specificTests;
+        }
+        else
         {
             return Collections.emptyList();
         }
-
-        List<String> specificTests = new ArrayList<String>();
-        String[] testRegexes = StringUtils.split( getTest(), "," );
-
-        for ( String testRegexe : testRegexes )
-        {
-            String testRegex = testRegexe;
-            if ( testRegex.endsWith( ".java" ) )
-            {
-                testRegex = testRegex.substring( 0, testRegex.length() - 5 );
-            }
-            // Allow paths delimited by '.' or '/'
-            testRegex = testRegex.replace( '.', '/' );
-            specificTests.add( "**/" + testRegex + ".java" );
-        }
-
-        return specificTests;
     }
 
     private Artifact getTestNgArtifact()
@@ -1751,7 +1747,7 @@ public abstract class AbstractSurefireMojo
         StartupConfiguration startupConfiguration = createStartupConfiguration( provider, classLoaderConfiguration );
         String configChecksum = getConfigChecksum();
         StartupReportConfiguration startupReportConfiguration = getStartupReportConfiguration( configChecksum );
-        ProviderConfiguration providerConfiguration = createProviderConfiguration( runOrderParameters );
+        ProviderConfiguration providerConfiguration = createProviderConfiguration( runOrderParameters );//! getTest
         return new ForkStarter( providerConfiguration, startupConfiguration, forkConfiguration,
                                 getForkedProcessTimeoutInSeconds(), startupReportConfiguration, log );
     }
@@ -1764,7 +1760,7 @@ public abstract class AbstractSurefireMojo
         StartupConfiguration startupConfiguration = createStartupConfiguration( provider, classLoaderConfiguration );
         String configChecksum = getConfigChecksum();
         StartupReportConfiguration startupReportConfiguration = getStartupReportConfiguration( configChecksum );
-        ProviderConfiguration providerConfiguration = createProviderConfiguration( runOrderParameters );
+        ProviderConfiguration providerConfiguration = createProviderConfiguration( runOrderParameters );//! getTest
         return new InPluginVMSurefireStarter( startupConfiguration, providerConfiguration, startupReportConfiguration );
 
     }
@@ -1921,9 +1917,9 @@ public abstract class AbstractSurefireMojo
         checksum.add( getAdditionalClasspathElements() );
         checksum.add( getReportsDirectory() );
         checksum.add( getTestSourceDirectory() );
-        checksum.add( getTest() );
-        checksum.add( getIncludes() );
-        checksum.add( getExcludes() );
+        checksum.add( isSpecificTestSpecified() ? getTest().getPluginParameterTest() : null );//!
+        checksum.add( getIncludes() );//!
+        checksum.add( getExcludes() );//!
         checksum.add( getLocalRepository() );
         checksum.add( getSystemProperties() );
         checksum.add( getSystemPropertyVariables() );

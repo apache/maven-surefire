@@ -20,8 +20,8 @@ package org.apache.maven.surefire.testng.utils;
  */
 
 import java.util.List;
-import org.apache.maven.shared.utils.io.SelectorUtils;
 
+import org.apache.maven.surefire.testset.TestListResolver;
 import org.testng.IMethodSelector;
 import org.testng.IMethodSelectorContext;
 import org.testng.ITestNGMethod;
@@ -37,33 +37,31 @@ public class MethodSelector
     implements IMethodSelector
 {
 
-    private static String methodName = null;
+    private static TestListResolver testListResolver = null;
 
     public void setTestMethods( List arg0 )
     {
-        // noop
     }
 
     public boolean includeMethod( IMethodSelectorContext context, ITestNGMethod testngMethod, boolean isTestMethod )
     {
-        if ( testngMethod.isBeforeClassConfiguration() || testngMethod.isBeforeGroupsConfiguration()
+        return testngMethod.isBeforeClassConfiguration() || testngMethod.isBeforeGroupsConfiguration()
             || testngMethod.isBeforeMethodConfiguration() || testngMethod.isBeforeSuiteConfiguration()
-            || testngMethod.isBeforeTestConfiguration() )
-        {
-            return true;
-        }
-        if ( testngMethod.isAfterClassConfiguration() || testngMethod.isAfterGroupsConfiguration()
-            || testngMethod.isAfterMethodConfiguration() || testngMethod.isAfterSuiteConfiguration()
-            || testngMethod.isAfterTestConfiguration() )
-        {
-            return true;
-        }
+            || testngMethod.isBeforeTestConfiguration() || testngMethod.isAfterClassConfiguration()
+            || testngMethod.isAfterGroupsConfiguration() || testngMethod.isAfterMethodConfiguration()
+            || testngMethod.isAfterSuiteConfiguration() || testngMethod.isAfterTestConfiguration()
+            || shouldRun( testngMethod );
 
-        return SelectorUtils.match( methodName, testngMethod.getMethodName() );
     }
 
-    public static void setMethodName( String methodName )
+    public static void setTestListResolver( TestListResolver testListResolver )
     {
-        MethodSelector.methodName = methodName;
+        MethodSelector.testListResolver = testListResolver;
+    }
+
+    private static boolean shouldRun( ITestNGMethod test )
+    {
+        TestListResolver resolver = MethodSelector.testListResolver;
+        return resolver != null && resolver.shouldRun( test.getRealClass(), test.getMethodName() );
     }
 }

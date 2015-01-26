@@ -33,6 +33,7 @@ import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.RunOrderParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
+import org.apache.maven.surefire.testset.TestListResolver;
 import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.util.ReflectionUtils;
 import org.apache.maven.surefire.util.RunOrder;
@@ -77,6 +78,8 @@ public class SurefireReflector
 
     private final Class reporterFactory;
 
+    private final Class testListResolver;
+
 
     public SurefireReflector( ClassLoader surefireClassLoader )
     {
@@ -98,6 +101,7 @@ public class SurefireReflector
             reporterFactory = surefireClassLoader.loadClass( ReporterFactory.class.getName() );
             runResult = surefireClassLoader.loadClass( RunResult.class.getName() );
             booterParameters = surefireClassLoader.loadClass( ProviderParameters.class.getName() );
+            testListResolver = surefireClassLoader.loadClass( TestListResolver.class.getName() );
         }
         catch ( ClassNotFoundException e )
         {
@@ -152,13 +156,28 @@ public class SurefireReflector
         {
             return null;
         }
-        Class[] arguments = { List.class, File.class, String.class, String.class, int.class };
-        Constructor constructor = ReflectionUtils.getConstructor( this.testRequest, arguments );
-        return ReflectionUtils.newInstance( constructor, new Object[]{ suiteDefinition.getSuiteXmlFiles(),
-            suiteDefinition.getTestSourceDirectory(), suiteDefinition.getRequestedTest(),
-            suiteDefinition.getRequestedTestMethod(), suiteDefinition.getRerunFailingTestsCount() } );
+        else
+        {
+            Object resolver = createTestListResolver( suiteDefinition.getTestListResolver() );
+            Class[] arguments = { List.class, File.class, testListResolver, int.class };
+            Constructor constructor = ReflectionUtils.getConstructor( testRequest, arguments );
+            return ReflectionUtils.newInstance( constructor, new Object[]{ suiteDefinition.getSuiteXmlFiles(),
+                suiteDefinition.getTestSourceDirectory(), resolver, suiteDefinition.getRerunFailingTestsCount() } );
+        }
     }
 
+    Object createTestListResolver( TestListResolver resolver )
+    {
+        if ( resolver == null )
+        {
+            return null;
+        }
+        else
+        {
+            Constructor constructor = ReflectionUtils.getConstructor( testListResolver, new Class[] { String.class } );
+            return ReflectionUtils.newInstance( constructor, new Object[] { resolver.getPluginParameterTest() } );
+        }
+    }
 
     Object createDirectoryScannerParameters( DirectoryScannerParameters directoryScannerParameters )
     {
@@ -269,7 +288,7 @@ public class SurefireReflector
     void setTestSuiteDefinition( Object o, TestRequest testSuiteDefinition1 )
     {
         final Object param = createTestRequest( testSuiteDefinition1 );
-        ReflectionUtils.invokeSetter( o, "setTestRequest", this.testRequest, param );
+        ReflectionUtils.invokeSetter( o, "setTestRequest", testRequest, param );
     }
 
     public void setProviderPropertiesAware( Object o, Properties properties )

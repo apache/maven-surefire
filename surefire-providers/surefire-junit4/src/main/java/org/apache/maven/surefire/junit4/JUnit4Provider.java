@@ -20,7 +20,9 @@ package org.apache.maven.surefire.junit4;
  */
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -42,11 +44,11 @@ import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.SimpleReportEntry;
 import org.apache.maven.surefire.suite.RunResult;
+import org.apache.maven.surefire.testset.TestListResolver;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.RunOrderCalculator;
 import org.apache.maven.surefire.util.ScanResult;
 import org.apache.maven.surefire.util.TestsToRun;
-import org.apache.maven.surefire.util.internal.StringUtils;
 import org.junit.runner.Description;
 import org.junit.runner.Request;
 import org.junit.runner.Result;
@@ -58,13 +60,15 @@ import org.junit.runner.notification.RunNotifier;
 public class JUnit4Provider
     extends AbstractProvider
 {
+    private static final Collection<Method> JAVA_LANG_OBJECT_METHODS = Arrays.asList( Object.class.getMethods() );
+
     private final ClassLoader testClassLoader;
 
     private final List<org.junit.runner.notification.RunListener> customRunListeners;
 
     private final JUnit4TestChecker jUnit4TestChecker;
 
-    private final String requestedTestMethod;
+    private final TestListResolver testResolver;
 
     private final ProviderParameters providerParameters;
 
@@ -85,7 +89,7 @@ public class JUnit4Provider
         customRunListeners = JUnit4RunListenerFactory.
             createCustomListeners( booterParameters.getProviderProperties().getProperty( "listener" ) );
         jUnit4TestChecker = new JUnit4TestChecker( testClassLoader );
-        requestedTestMethod = booterParameters.getTestRequest().getRequestedTestMethod();
+        testResolver = booterParameters.getTestRequest().getTestListResolver();
         rerunFailingTestsCount = booterParameters.getTestRequest().getRerunFailingTestsCount();
     }
 
@@ -142,16 +146,7 @@ public class JUnit4Provider
         reporter.testSetStarting( report );
         try
         {
-            if ( !StringUtils.isBlank( requestedTestMethod ) )
-            {
-                String actualTestMethod = getMethod( clazz, requestedTestMethod );
-                String[] testMethods = StringUtils.split( actualTestMethod, "+" );
-                executeWithRerun( clazz, listeners, testMethods );
-            }
-            else
-            {
-                executeWithRerun( clazz, listeners, null );
-            }
+            executeWithRerun( clazz, listeners );
         }
         catch ( Throwable e )
         {
@@ -165,12 +160,11 @@ public class JUnit4Provider
         }
     }
 
-    private void executeWithRerun( Class<?> clazz, RunNotifier listeners, String[] testMethods )
+    private void executeWithRerun( Class<?> clazz, RunNotifier listeners )
     {
         JUnitTestFailureListener failureListener = new JUnitTestFailureListener();
         listeners.addListener( failureListener );
-
-        execute( clazz, listeners, testMethods );
+        execute( clazz, listeners, testResolver.isEmpty() ? null : new TestResolverFilter() );
 
         // Rerun failing tests if rerunFailingTestsCount is larger than 0
         if ( rerunFailingTestsCount > 0 )
@@ -180,7 +174,10 @@ public class JUnit4Provider
                 Set<String> methodsSet = JUnit4ProviderUtil.generateFailingTests( failureListener.getAllFailures() );
                 String[] methods = methodsSet.toArray( new String[ methodsSet.size() ] );
                 failureListener.reset();
-                execute( clazz, listeners, methods );
+                if ( methods.length != 0 )
+                {
+                    execute( clazz, listeners, new FailedMethodFilter( methods ) );
+                }
             }
         }
     }
@@ -262,52 +259,63 @@ public class JUnit4Provider
         return System.getProperty( "surefire.junit4.upgradecheck" ) != null;
     }
 
-    private static void execute( Class<?> testClass, RunNotifier fNotifier, String[] testMethods )
+    private void execute( Class<?> testClass, RunNotifier fNotifier, Filter filter )
     {
-        if ( testMethods != null )
+        if ( !Modifier.isInterface( testClass.getModifiers() ) )
         {
-            for ( final Method method : testClass.getMethods() )
+            if ( filter != null )
             {
-                for ( final String testMethod : testMethods )
+                for ( Method testMethod : testClass.getMethods() )
                 {
-                    if ( SelectorUtils.match( testMethod, method.getName() ) )
+                    if ( !JAVA_LANG_OBJECT_METHODS.contains( testMethod ) )
                     {
-                        Request.method( testClass, method.getName() ).getRunner().run( fNotifier );
+                        String methodName = testMethod.getName();
+                        boolean accessible = !Modifier.isStatic( testMethod.getModifiers() );
+                        if ( accessible && filter.shouldRun( testClass, testMethod ) )
+                        {
+                            Request.method( testClass, methodName ).getRunner().run( fNotifier );
+                        }
                     }
-
                 }
             }
-        }
-        else
-        {
-            Request.aClass( testClass ).getRunner().run( fNotifier );
+            else
+            {
+                Request.aClass( testClass ).getRunner().run( fNotifier );
+            }
         }
     }
 
-    /**
-     * this method retrive testMethods from String like
-     * "com.xx.ImmutablePairTest#testBasic,com.xx.StopWatchTest#testLang315+testStopWatchSimpleGet" <br>
-     * and we need to think about cases that 2 or more method in 1 class. we should choose the correct method
-     *
-     * @param testClass the testclass
-     * @param testMethodStr the test method string
-     * @return a string ;)
-     */
-    private static String getMethod( Class testClass, String testMethodStr )
+    private final class TestResolverFilter
+        implements Filter
     {
-        final String className = testClass.getName();
 
-        if ( !testMethodStr.contains( "#" ) && !testMethodStr.contains( "," ) )
+        public boolean shouldRun( Class<?> testClass, Method testMethod )
         {
-            return testMethodStr;
+            return testResolver.shouldRun( testClass, testMethod.getName() );
         }
-        testMethodStr += ","; // for the bellow  split code
-        final int beginIndex = testMethodStr.indexOf( className );
-        final int endIndex = testMethodStr.indexOf( ",", beginIndex );
-        final String classMethodStr =
-            testMethodStr.substring( beginIndex, endIndex ); // String like "StopWatchTest#testLang315"
+    }
 
-        final int index = classMethodStr.indexOf( '#' );
-        return index >= 0 ? classMethodStr.substring( index + 1, classMethodStr.length() ) : null;
+    private static class FailedMethodFilter
+        implements Filter
+    {
+
+        private final String[] methodPatterns;
+
+        private FailedMethodFilter( String[] methodPatterns )
+        {
+            this.methodPatterns = methodPatterns;
+        }
+
+        public boolean shouldRun( Class<?> clazz, Method method )
+        {
+            for ( String methodPattern : methodPatterns )
+            {
+                if ( SelectorUtils.match( methodPattern, method.getName() ) )
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 }

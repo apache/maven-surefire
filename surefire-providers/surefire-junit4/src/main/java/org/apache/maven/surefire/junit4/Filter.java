@@ -1,4 +1,4 @@
-package junit4;
+package org.apache.maven.surefire.junit4;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,27 +19,9 @@ package junit4;
  * under the License.
  */
 
-import org.junit.Assert;
-import org.junit.Test;
+import java.lang.reflect.Method;
 
-
-public class TestThree
+interface Filter
 {
-
-    @Test
-    public void testSuccessOne()
-    {
-    }
-
-    @Test
-    public void testSuccessTwo()
-    {
-    }
-
-    @Test
-    public void testFailOne()
-    {
-        Assert.fail();
-    }
-
+    boolean shouldRun( Class<?> clazz, Method method );
 }

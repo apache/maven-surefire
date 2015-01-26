@@ -28,7 +28,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.surefire.suite.RunResult;
-import org.apache.maven.surefire.util.internal.StringUtils;
+import org.apache.maven.surefire.testset.TestListResolver;
 
 /**
  * Run tests using Surefire.
@@ -236,6 +236,8 @@ public class SurefirePlugin
     @Parameter( property = "surefire.runOrder", defaultValue = "filesystem" )
     protected String runOrder;
 
+    private TestListResolver testListResolver;
+
     protected int getRerunFailingTestsCount()
     {
         return rerunFailingTestsCount;
@@ -370,60 +372,13 @@ public class SurefirePlugin
         this.reportsDirectory = reportsDirectory;
     }
 
-    public String getTest()
+    public TestListResolver getTest()
     {
-        if ( StringUtils.isBlank( test ) )
+        if ( testListResolver == null && test != null )
         {
-            return null;
+            testListResolver = new TestListResolver( test );
         }
-        String[] testArray = StringUtils.split( test, "," );
-        StringBuilder tests = new StringBuilder();
-        for ( String aTestArray : testArray )
-        {
-            String singleTest = aTestArray;
-            int index = singleTest.indexOf( '#' );
-            if ( index >= 0 )
-            { // the way version 2.7.3. support single test method
-                singleTest = singleTest.substring( 0, index );
-            }
-            tests.append( singleTest );
-            tests.append( "," );
-        }
-        return tests.toString();
-    }
-
-    /**
-     * @since 2.7.3
-     */
-    public String getTestMethod()
-    {
-        if ( StringUtils.isBlank( test ) )
-        {
-            return null;
-        }
-        //modified by rainLee, see http://jira.codehaus.org/browse/SUREFIRE-745
-        int index = this.test.indexOf( '#' );
-        int index2 = this.test.indexOf( "," );
-        if ( index >= 0 )
-        {
-            if ( index2 < 0 )
-            {
-                String testStrAfterFirstSharp = this.test.substring( index + 1, this.test.length() );
-                if ( !testStrAfterFirstSharp.contains( "+" ) )
-                { //the original way
-                    return testStrAfterFirstSharp;
-                }
-                else
-                {
-                    return this.test;
-                }
-            }
-            else
-            {
-                return this.test;
-            }
-        }
-        return null;
+        return testListResolver;
     }
 
     public boolean isUseSystemClassLoader()

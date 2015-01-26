@@ -36,8 +36,10 @@ import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.TypeEncodedValue;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
+import org.apache.maven.surefire.testset.ResolvedTest;
 import org.apache.maven.surefire.testset.RunOrderParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
+import org.apache.maven.surefire.testset.TestListResolver;
 import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.util.RunOrder;
 
@@ -55,9 +57,11 @@ public class BooterDeserializerProviderConfigurationTest
 
     public static final TypeEncodedValue aTestTyped = new TypeEncodedValue( String.class.getName(), "aTest" );
 
-    private final String aUserRequestedTest = "aUserRequestedTest";
+    private static final String aUserRequestedTest = "aUserRequestedTest";
 
-    private final int rerunFailingTestsCount = 3;
+    private static final String aUserRequestedTestMethod = "aUserRequestedTestMethod";
+
+    private static final int rerunFailingTestsCount = 3;
 
     private static ClassLoaderConfiguration getForkConfiguration()
     {
@@ -101,7 +105,7 @@ public class BooterDeserializerProviderConfigurationTest
         final StartupConfiguration testProviderConfiguration = getTestStartupConfiguration( forkConfiguration );
         ProviderConfiguration reloaded = saveAndReload( providerConfiguration, testProviderConfiguration, false );
 
-        assertTrue( reloaded.getReporterConfiguration().isTrimStackTrace().booleanValue() );
+        assertTrue( reloaded.getReporterConfiguration().isTrimStackTrace() );
         assertNotNull( reloaded.getReporterConfiguration().getReportsDirectory() );
     }
 
@@ -125,7 +129,17 @@ public class BooterDeserializerProviderConfigurationTest
         Assert.assertEquals( expected[0], suiteXmlFiles.get( 0 ) );
         Assert.assertEquals( expected[1], suiteXmlFiles.get( 1 ) );
         Assert.assertEquals( getTestSourceDirectory(), testSuiteDefinition.getTestSourceDirectory() );
-        Assert.assertEquals( aUserRequestedTest, testSuiteDefinition.getRequestedTest() );
+        TestListResolver resolver = testSuiteDefinition.getTestListResolver();
+        Assert.assertNotNull( resolver );
+        Assert.assertFalse( resolver.isEmpty() );
+        Assert.assertEquals( aUserRequestedTest + "#" + aUserRequestedTestMethod, resolver.getPluginParameterTest() );
+        Assert.assertFalse( resolver.getIncludedFilters().isEmpty() );
+        Assert.assertTrue( resolver.getExcludedFilters().isEmpty() );
+        Assert.assertEquals( 1, resolver.getIncludedFilters().size() );
+        ResolvedTest filter = resolver.getIncludedFilters().iterator().next();
+        Assert.assertNotNull( filter );
+        Assert.assertEquals( aUserRequestedTest + ".class", filter.getTestClassPattern() );
+        Assert.assertEquals( aUserRequestedTestMethod, filter.getTestMethodPattern() );
         Assert.assertEquals( rerunFailingTestsCount, testSuiteDefinition.getRerunFailingTestsCount() );
     }
 
@@ -150,7 +164,7 @@ public class BooterDeserializerProviderConfigurationTest
         throws IOException
     {
         ProviderConfiguration reloaded = getReloadedProviderConfiguration();
-        assertTrue( reloaded.isFailIfNoTests().booleanValue() );
+        assertTrue( reloaded.isFailIfNoTests() );
 
     }
 
@@ -217,13 +231,12 @@ public class BooterDeserializerProviderConfigurationTest
     private ProviderConfiguration getTestProviderConfiguration( DirectoryScannerParameters directoryScannerParameters,
                                                                 boolean readTestsFromInStream )
     {
-
         File cwd = new File( "." );
-        ReporterConfiguration reporterConfiguration = new ReporterConfiguration( cwd, Boolean.TRUE );
-        String aUserRequestedTestMethod = "aUserRequestedTestMethod";
+        ReporterConfiguration reporterConfiguration = new ReporterConfiguration( cwd, true );
         TestRequest testSuiteDefinition =
-            new TestRequest( getSuiteXmlFileStrings(), getTestSourceDirectory(), aUserRequestedTest,
-                             aUserRequestedTestMethod, rerunFailingTestsCount );
+            new TestRequest( getSuiteXmlFileStrings(), getTestSourceDirectory(),
+                             new TestListResolver( aUserRequestedTest + "#aUserRequestedTestMethod" ),
+                             rerunFailingTestsCount );
         RunOrderParameters runOrderParameters = new RunOrderParameters( RunOrder.DEFAULT, null );
         return new ProviderConfiguration( directoryScannerParameters, runOrderParameters, true, reporterConfiguration,
                                           new TestArtifactInfo( "5.0", "ABC" ), testSuiteDefinition, new Properties(),
@@ -250,6 +263,6 @@ public class BooterDeserializerProviderConfigurationTest
 
     private List<String> getSuiteXmlFileStrings()
     {
-        return Arrays.asList( new String[]{ "A1", "A2" } );
+        return Arrays.asList( "A1", "A2" );
     }
 }

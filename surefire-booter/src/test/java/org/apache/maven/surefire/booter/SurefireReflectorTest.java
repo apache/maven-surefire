@@ -29,6 +29,7 @@ import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.RunOrderParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
+import org.apache.maven.surefire.testset.TestListResolver;
 import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.util.RunOrder;
 
@@ -74,7 +75,7 @@ public class SurefireReflectorTest
 
         TestRequest testSuiteDefinition =
             new TestRequest( Arrays.asList( new File( "file1" ), new File( "file2" ) ),
-                             new File( "TestSOurce" ), "aUserRequestedTest", "aMethodRequested" );
+                             new File( "TestSOurce" ), new TestListResolver( "aUserRequestedTest#aMethodRequested" ) );
         surefireReflector.setTestSuiteDefinition( foo, testSuiteDefinition );
         assertTrue( isCalled( foo ) );
     }
