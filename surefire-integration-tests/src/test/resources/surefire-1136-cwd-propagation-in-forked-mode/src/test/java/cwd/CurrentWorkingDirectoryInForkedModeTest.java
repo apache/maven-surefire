@@ -39,9 +39,9 @@ public class CurrentWorkingDirectoryInForkedModeTest
         forkDirectory.deleteOnExit();
 
         // user.dir and current working directory must be aligned, base directory is not affected
-        assertEquals( System.getProperty( "basedir" ), projectDirectory.getCanonicalPath() );
-        assertEquals( System.getProperty( "user.dir" ), forkDirectory.getCanonicalPath() );
-        assertEquals( new File( "." ).getCanonicalPath(), forkDirectory.getCanonicalPath() );
+        assertEquals( projectDirectory.getCanonicalPath(), System.getProperty( "basedir" ) );
+        assertEquals( forkDirectory.getCanonicalPath(), System.getProperty( "user.dir" ) );
+        assertEquals( forkDirectory.getCanonicalPath(), new File( "." ).getCanonicalPath() );
 
         // original working directory (before variable expansion) should not be created
         assertFalse( new File( "cwd_${surefire.forkNumber}" ).exists() );
