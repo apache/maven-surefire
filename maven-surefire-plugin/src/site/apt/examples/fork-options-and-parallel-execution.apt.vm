@@ -190,7 +190,8 @@ Fork Options and Parallel Test Execution
   <databaseSchema> is passed to the processes, that shall specify the database
   schema to use during the tests. The values for that will be
   <MY_TEST_SCHEMA_1>, <MY_TEST_SCHEMA_2>, and <MY_TEST_SCHEMA_3> for the three
-  processes.
+  processes. Additionaly by specifying custom <workingDirectory> each of processes
+  will be executed in a separate working directory to ensure isolation on file system level.
 
 +---+
 <plugins>
@@ -206,6 +207,7 @@ Fork Options and Parallel Test Execution
         <systemPropertyVariables>
             <databaseSchema>MY_TEST_SCHEMA_${surefire.forkNumber}</databaseSchema>
         </systemPropertyVariables>
+        <workingDirectory>FORK_DIRECTORY_${surefire.forkNumber}</workingDirectory>
     </configuration>
   </plugin>
 [...]
@@ -270,3 +272,10 @@ Fork Options and Parallel Test Execution
                            | had that one set)                         |
 *--------------------------+-------------------------------------------+
 
+* Known issues and limitations
+
+ * <<<$\{surefire.forkNumber\}>>> propagation is not supported on Maven 2.x
+   (the variable will be resolved to null value all the time)
+
+ * <<<$\{surefire.forkNumber\}>>> is properly propagated within <<<workingDirectory>>> since Surefire 2.19,
+   more details in {{{https://jira.codehaus.org/browse/SUREFIRE-1136}SUREFIRE-1136}}
