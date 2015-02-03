@@ -24,6 +24,8 @@ import java.io.InputStream;
 import java.util.Queue;
 import java.util.concurrent.Semaphore;
 
+import static org.apache.maven.surefire.util.internal.StringUtils.encodeStringForForkCommunication;
+
 /**
  * An {@link InputStream} that, when read, provides test class names out of a queue.
  * <p/>
@@ -90,7 +92,7 @@ public class TestProvidingInputStream
             String currentElement = testItemQueue.poll();
             if ( currentElement != null )
             {
-                currentBuffer = currentElement.getBytes();
+                currentBuffer = encodeStringForForkCommunication( currentElement );
                 currentPos = 0;
             }
             else

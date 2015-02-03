@@ -22,6 +22,7 @@ package org.apache.maven.plugin.surefire.booterclient.output;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
+import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -140,14 +141,10 @@ public class ForkClient
                     }
                     break;
                 case ForkingRunListener.BOOTERCODE_STDOUT:
-                    byte[] bytes = new byte[remaining.length()];
-                    int len = StringUtils.unescapeBytes( bytes, remaining );
-                    getOrCreateConsoleOutputReceiver( channelNumber ).writeTestOutput( bytes, 0, len, true );
+                    writeTestOutput( channelNumber, remaining, true );
                     break;
                 case ForkingRunListener.BOOTERCODE_STDERR:
-                    bytes = new byte[remaining.length()];
-                    len = StringUtils.unescapeBytes( bytes, remaining );
-                    getOrCreateConsoleOutputReceiver( channelNumber ).writeTestOutput( bytes, 0, len, false );
+                    writeTestOutput( channelNumber, remaining, false );
                     break;
                 case ForkingRunListener.BOOTERCODE_CONSOLE:
                     getOrCreateConsoleLogger( channelNumber ).info( createConsoleMessage( remaining ) );
@@ -181,6 +178,30 @@ public class ForkClient
         catch ( ReporterException e )
         {
             throw new RuntimeException( e );
+        }
+    }
+
+    private void writeTestOutput( final Integer channelNumber, final String remaining, boolean isStdout )
+    {
+        int csNameEnd = remaining.indexOf( ',' );
+        String charsetName = remaining.substring( 0, csNameEnd );
+        String byteEncoded = remaining.substring( csNameEnd + 1 );
+        ByteBuffer unescaped = StringUtils.unescapeBytes( byteEncoded, charsetName );
+
+        if ( unescaped.hasArray() )
+        {
+            byte[] convertedBytes = unescaped.array();
+
+            getOrCreateConsoleOutputReceiver( channelNumber )
+                .writeTestOutput( convertedBytes, unescaped.position(), unescaped.remaining(), isStdout );
+        }
+        else
+        {
+            byte[] convertedBytes = new byte[unescaped.remaining()];
+            unescaped.get( convertedBytes, 0, unescaped.remaining() );
+
+            getOrCreateConsoleOutputReceiver( channelNumber )
+                .writeTestOutput( convertedBytes, 0, convertedBytes.length, isStdout );
         }
     }
 

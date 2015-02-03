@@ -23,6 +23,8 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import static org.junit.Assert.fail;
+
 public class Test1
 {
     static
@@ -47,32 +49,33 @@ public class Test1
     public Test1(){
        System.out.println("In constructor");
     }
-    @Test
-    public void testSystemOut()
-    {
 
+    @Test
+    public void testStdOut()
+    {
         char c = 'C';
         System.out.print( "Sout" );
         System.out.print( "Again" );
         System.out.print( "\n" );
         System.out.print( c );
         System.out.println( "SoutLine" );
-        System.out.println( "A" );
+        System.out.println( "äöüß" );
         System.out.println( "" );
         System.out.println( "==END==" );
-    }
 
+        fail( "failing with ü" );
+    }
+        
     @Test
-    public void testSystemErr()
+    public void testStdErr()
     {
         char e = 'E';
         System.err.print( "Serr" );
         System.err.print( "\n" );
         System.err.print( e );
         System.err.println( "SerrLine" );
-        System.err.println( "A" );
+        System.err.println( "äöüß" );
         System.err.println( "" );
         System.err.println( "==END==" );
     }
-
 }

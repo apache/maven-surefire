@@ -22,9 +22,11 @@ package org.apache.maven.plugin.surefire.booterclient;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
+
 import org.apache.maven.plugin.surefire.booterclient.output.ForkClient;
 import org.apache.maven.surefire.booter.ForkingRunListener;
 import org.apache.maven.surefire.report.CategorizedReportEntry;
@@ -72,14 +74,14 @@ public class ForkingRunListenerTest
     {
         final byte[] header = ForkingRunListener.createHeader( (byte) 'F', 0xCAFE );
         String asString = new String( header );
-        assertEquals( "F,cafe,", asString );
+        assertEquals( "F,cafe," + Charset.defaultCharset().name() + ",", asString );
     }
 
     public void testHeaderCreationShort()
     {
         final byte[] header = ForkingRunListener.createHeader( (byte) 'F', 0xE );
         String asString = new String( header );
-        assertEquals( "F,000e,", asString );
+        assertEquals( "F,e," + Charset.defaultCharset().name() + ",", asString );
     }
 
     public void testSetStarting()

@@ -20,6 +20,11 @@ package org.apache.maven.plugin.surefire.report;
  */
 
 import java.io.PrintStream;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.Charset;
+
 import org.apache.maven.surefire.report.ReportEntry;
 
 /**
@@ -47,7 +52,16 @@ public class DirectConsoleOutput
     public void writeTestOutput( byte[] buf, int off, int len, boolean stdout )
     {
         PrintStream stream = stdout ? sout : serr;
-        stream.write( buf, off, len );
+
+        try
+        {
+            CharBuffer decode = Charset.defaultCharset().newDecoder().decode( ByteBuffer.wrap( buf, off, len ) );
+            stream.append( decode );
+        }
+        catch ( CharacterCodingException e )
+        {
+            stream.write( buf, off, len );
+        }
     }
 
     public void testSetStarting( ReportEntry reportEntry )

@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -31,6 +32,9 @@ import java.util.List;
 
 import org.apache.maven.surefire.util.ReflectionUtils;
 import org.apache.maven.surefire.util.TestsToRun;
+
+import static org.apache.maven.surefire.util.internal.StringUtils.FORK_STREAM_CHARSET_NAME;
+import static org.apache.maven.surefire.util.internal.StringUtils.encodeStringForForkCommunication;
 
 /**
  * A variant of TestsToRun that is provided with test class names
@@ -64,7 +68,14 @@ class LazyTestsToRun
 
         this.originalOutStream = originalOutStream;
 
-        inputReader = new BufferedReader( new InputStreamReader( testSource ) );
+        try
+        {
+            inputReader = new BufferedReader( new InputStreamReader( testSource, FORK_STREAM_CHARSET_NAME ) );
+        }
+        catch ( UnsupportedEncodingException e )
+        {
+            throw new RuntimeException( "The JVM must support Charset " + FORK_STREAM_CHARSET_NAME, e );
+        }
     }
 
     protected void addWorkItem( String className )
@@ -77,7 +88,9 @@ class LazyTestsToRun
 
     protected void requestNextTest()
     {
-        originalOutStream.print( ( (char) ForkingRunListener.BOOTERCODE_NEXT_TEST ) + ",0,want more!\n" );
+        byte[] encoded =
+            encodeStringForForkCommunication( ( (char) ForkingRunListener.BOOTERCODE_NEXT_TEST ) + ",0,want more!\n" );
+        originalOutStream.write( encoded, 0, encoded.length );
     }
 
     private class BlockingIterator

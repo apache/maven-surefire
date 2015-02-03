@@ -20,7 +20,7 @@
       <dependency>
           <groupId>junit</groupId>
           <artifactId>junit</artifactId>
-          <version>${junit.version}</version>
+          <version>4.7</version>
       </dependency>
   </dependencies>
   <build>
@@ -29,23 +29,18 @@
            <groupId>org.apache.maven.plugins</groupId>
            <artifactId>maven-surefire-plugin</artifactId>
            <configuration>
+             <redirectTestOutputToFile>true</redirectTestOutputToFile>
+             <testFailureIgnore>true</testFailureIgnore>
              <forkMode>${forkMode}</forkMode>
-             <printSummary>${printSummary}</printSummary>
-             <reportFormat>${reportFormat}</reportFormat>
              <includes>
                 <include>**/Test*.java</include>
              </includes>
            </configuration>
         </plugin>
      </plugins>
-
   </build>
 
-    <properties>
-      <junit.version>4.8.1</junit.version>
-      <forkMode>once</forkMode>
-      <printSummary>true</printSummary>
-      <reportFormat>brief</reportFormat>
-    </properties>
-
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
 </project>
