@@ -65,13 +65,13 @@ public class ConsoleOutputIT
     {
         TestFile xmlReportFile = outputValidator.getSurefireReportsXmlFile( "TEST-consoleOutput.Test1.xml" );
         xmlReportFile.assertContainsText( "SoutLine" );
-        xmlReportFile.assertContainsText( "äöüß" );
-        xmlReportFile.assertContainsText( "failing with ü" );
+        xmlReportFile.assertContainsText( normalizeToDefaultCharset( "äöüß" ) );
+        xmlReportFile.assertContainsText( normalizeToDefaultCharset( "failing with ü" ) );
 
         TestFile outputFile = outputValidator.getSurefireReportsFile( "consoleOutput.Test1-output.txt" );
         outputFile.assertContainsText( "SoutAgain" );
         outputFile.assertContainsText( "SoutLine" );
-        outputFile.assertContainsText( "äöüß" );
+        outputFile.assertContainsText( normalizeToDefaultCharset( "äöüß" ) );
 
         if ( includeShutdownHook )
         {
@@ -79,11 +79,27 @@ public class ConsoleOutputIT
         }
     }
 
+    /**
+     * @param string the string to normalize
+     * @return the string with all characters not available in the current charset being replaced, e.g. for US-ASCII,
+     *         German umlauts would be replaced to ?
+     */
+    private String normalizeToDefaultCharset( String string )
+    {
+        Charset cs = Charset.defaultCharset();
+        if ( cs.canEncode() )
+        {
+            string = cs.decode( cs.encode( string ) ).toString();
+        }
+
+        return string;
+    }
+
     @Test
     public void largerSoutThanMemory()
         throws Exception
     {
-        unpack( "consoleoutput-noisy" ).setMavenOpts( "-Xmx64m" ).sysProp( "thousand", "100000" ).executeTest();
+        unpack( "consoleoutput-noisy" ).setMavenOpts( "-Xmx64m" ).sysProp( "thousand", "32000" ).executeTest();
     }
 
 
