@@ -51,6 +51,14 @@ public abstract class AbstractSurefireReportMojo
     private boolean showSuccess;
 
     /**
+     * If set to true, an anchor is created for each test case name.
+     * 
+     * @noinspection UnusedDeclaration
+     */
+    @Parameter( defaultValue = "false", property = "anchorTestCaseNames" )
+    private boolean anchorTestCaseNames;
+
+    /**
      * Directories containing the XML Report files that will be parsed and rendered to HTML format.
      *
      * @noinspection UnusedDeclaration
@@ -154,7 +162,8 @@ public abstract class AbstractSurefireReportMojo
         }
 
         SurefireReportGenerator report =
-            new SurefireReportGenerator( reportsDirectoryList, locale, showSuccess, determineXrefLocation() );
+            new SurefireReportGenerator( reportsDirectoryList, locale, showSuccess, determineXrefLocation(),
+                anchorTestCaseNames );
 
         report.doGenerateReport( getBundle( locale ), getSink() );
     }
