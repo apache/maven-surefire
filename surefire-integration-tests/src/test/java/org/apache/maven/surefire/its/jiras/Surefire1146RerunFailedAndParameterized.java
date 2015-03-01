@@ -1,0 +1,94 @@
+package org.apache.maven.surefire.its.jiras;
+
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+import org.apache.maven.surefire.its.fixture.OutputValidator;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.junit.Test;
+
+/**
+ * @see {@linkplain https://jira.codehaus.org/browse/SUREFIRE-1146}
+ */
+public class Surefire1146RerunFailedAndParameterized
+    extends SurefireJUnit4IntegrationTestCase
+{
+//    @Test
+//    public void testsAreRerunJUnit40()
+//    {
+//        OutputValidator outputValidator = unpack( "surefire-1146-rerunFailingTests-with-Parameterized" )
+//            .setJUnitVersion( "4.0" ).executeTest();
+//        verify(outputValidator, 8, 0, 0, 5);
+//        outputValidator.assertTestSuiteResults( 8, 0, 0, 0, 5 );
+//    }
+    
+    @Test
+    public void testsAreRerun()
+    {
+        OutputValidator outputValidator = unpack( "surefire-1146-rerunFailingTests-with-Parameterized" )
+            .setJUnitVersion( "${version.junit}" ).executeTest();
+        verify(outputValidator, 8, 0, 0, 5);
+        outputValidator.assertTestSuiteResults( 8, 0, 0, 0, 5 );
+    }
+
+    private void verify( OutputValidator outputValidator, int run, int failures, int errors,
+                                         int flakes )
+    {
+        outputValidator.verifyTextInLog( "Flaked tests" );
+        outputValidator.verifyTextInLog( "CustomDescriptionParameterizedTest.flakyTest[0: (Test11); Test12; Test13;](CustomDescriptionParameterizedTest)" );
+        outputValidator.verifyTextInLog( "Run 1: CustomDescriptionParameterizedTest.flakyTest" );
+        outputValidator.verifyTextInLog( "Run 2: CustomDescriptionParameterizedTest.flakyTest" );
+        outputValidator.verifyTextInLog( "Run 3: PASS" );
+
+        outputValidator.verifyTextInLog( "CustomDescriptionWithCommaParameterizedTest.flakyTest[0: (Test11), Test12, Test13;](CustomDescriptionWithCommaParameterizedTest)" );
+        outputValidator.verifyTextInLog( "Run 1: CustomDescriptionWithCommaParameterizedTest.flakyTest" );
+        outputValidator.verifyTextInLog( "Run 2: CustomDescriptionWithCommaParameterizedTest.flakyTest" );
+        outputValidator.verifyTextInLog( "Run 3: PASS" );
+        
+        outputValidator.verifyTextInLog( "CustomDescriptionWithCommaParameterizedTest.flakyTest[2: (Test31), Test32, Test33;](CustomDescriptionWithCommaParameterizedTest)" );
+        outputValidator.verifyTextInLog( "Run 1: CustomDescriptionWithCommaParameterizedTest.flakyTest" );
+        outputValidator.verifyTextInLog( "Run 2: PASS" );
+        
+        outputValidator.verifyTextInLog( "SimpleParameterizedTest.flakyTest[0](SimpleParameterizedTest)" );
+        outputValidator.verifyTextInLog( "Run 1: SimpleParameterizedTest.flakyTest" );
+        outputValidator.verifyTextInLog( "Run 2: SimpleParameterizedTest.flakyTest" );
+        outputValidator.verifyTextInLog( "Run 3: PASS" );
+        
+        outputValidator.verifyTextInLog( "StandardTest.flakyTest(StandardTest)" );
+        outputValidator.verifyTextInLog( "Run 1: StandardTest.flakyTest" );
+        outputValidator.verifyTextInLog( "Run 2: PASS" );
+
+        verifyStatistics( outputValidator, run, failures, errors, flakes );
+    }
+    
+    private void verifyStatistics( OutputValidator outputValidator, int run, int failures, int errors, int flakes )
+    {
+        if ( flakes > 0 )
+        {
+            outputValidator.verifyTextInLog(
+                "Tests run: " + run + ", Failures: " + failures + ", Errors: " + errors + ", Skipped: 0, Flakes: "
+                    + flakes );
+        }
+        else
+        {
+            outputValidator.verifyTextInLog(
+                "Tests run: " + run + ", Failures: " + failures + ", Errors: " + errors + ", Skipped: 0" );
+        }
+    }
+}
