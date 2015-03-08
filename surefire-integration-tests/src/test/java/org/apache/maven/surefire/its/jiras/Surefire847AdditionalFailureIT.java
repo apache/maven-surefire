@@ -28,6 +28,6 @@ public class Surefire847AdditionalFailureIT
     public void testJUnitRunCategoryAB()
     {
         unpack( "surefire-847-testngfail" ).setTestToRun(
-            "org.codehaus.SomePassedTest" ).executeTest().verifyErrorFreeLog();
+            "org/codehaus/SomePassedTest" ).executeTest().verifyErrorFreeLog();
     }
 }

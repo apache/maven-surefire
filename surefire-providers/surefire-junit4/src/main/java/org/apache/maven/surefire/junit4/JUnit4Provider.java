@@ -285,9 +285,9 @@ public class JUnit4Provider
     }
 
     /**
-     * this method retrive testMethods from String like
-     * "com.xx.ImmutablePairTest#testBasic,com.xx.StopWatchTest#testLang315+testStopWatchSimpleGet" <br>
-     * and we need to think about cases that 2 or more method in 1 class. we should choose the correct method
+     * Return testMethods from String like
+     * "com/xx/ImmutablePairTest#testBasic,com/xx/StopWatchTest#testLang315+testStopWatchSimpleGet" <br>
+     * and we need to think about cases that 2 or more method in 1 class. We should choose the correct method
      *
      * @param testClass the testclass
      * @param testMethodStr the test method string
@@ -295,7 +295,7 @@ public class JUnit4Provider
      */
     private static String getMethod( Class testClass, String testMethodStr )
     {
-        final String className = testClass.getName();
+        final String className = testClass.getName().replace( '.', '/' );
 
         if ( !testMethodStr.contains( "#" ) && !testMethodStr.contains( "," ) )
         {

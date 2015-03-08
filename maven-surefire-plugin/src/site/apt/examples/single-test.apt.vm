@@ -73,11 +73,15 @@ mvn -Dit.test=ITSquare,ITCi*le verify
 +---+
 #{end}
 
+  << NOTE: Use syntax e.g. "foo/MyTest.java", "**/MyTest.java", "MyTest" for "test" parameter (see includes/excludes)
+  instead of fully qualified Java class names. >>
+
 Running a Set of Methods in a Single Test Class
 
   As of Surefire 2.7.3, you can also run only a subset of the tests in a test class.
   
-  << NOTE : This feature is supported only for Junit 4.x and TestNG. >>
+  << NOTE : This feature is supported only for Junit 4.x and TestNG. Use syntax e.g. "foo/MyTest.java",
+  "**/MyTest.java", "MyTest" for "test" parameter (see includes/excludes) instead of fully qualified Java class names. >>
   
   You must use the following syntax:
   
