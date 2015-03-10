@@ -19,14 +19,12 @@ package org.apache.maven.surefire.junit4;
  * under the License.
  */
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.maven.shared.utils.io.SelectorUtils;
 import org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil;
 import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
 import org.apache.maven.surefire.common.junit4.JUnit4RunListenerFactory;
@@ -266,16 +264,9 @@ public class JUnit4Provider
     {
         if ( testMethods != null )
         {
-            for ( final Method method : testClass.getMethods() )
+            for ( final String testMethod : testMethods )
             {
-                for ( final String testMethod : testMethods )
-                {
-                    if ( SelectorUtils.match( testMethod, method.getName() ) )
-                    {
-                        Request.method( testClass, method.getName() ).getRunner().run( fNotifier );
-                    }
-
-                }
+                Request.method( testClass, testMethod ).getRunner().run( fNotifier );
             }
         }
         else

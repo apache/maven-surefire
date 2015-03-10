@@ -28,6 +28,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.junit.runner.Description;
 import org.junit.runner.notification.Failure;
@@ -43,6 +45,10 @@ import static org.apache.maven.surefire.common.junit4.JUnit4RunListener.isFailur
  */
 public class JUnit4ProviderUtil
 {
+    
+    private static final Pattern METHOD_AND_CLASS_NAME_PATTERN = Pattern
+            .compile( "([\\s\\S]*)\\((.*)\\)" );
+    
     /**
      * Organize all the failures in previous run into a map between test classes and corresponding failing test methods
      *
@@ -100,7 +106,8 @@ public class JUnit4ProviderUtil
             if ( !isFailureInsideJUnitItself( failure ) )
             {
                 // failure.getTestHeader() is in the format: method(class)
-                String testMethod = StringUtils.split( failure.getTestHeader(), "(" )[0];
+                String displayName = failure.getDescription().getDisplayName();
+                String testMethod = getMethodName( displayName );
                 failingMethods.add( testMethod );
             }
         }
@@ -113,6 +120,23 @@ public class JUnit4ProviderUtil
         return reflector.createRequest( classes.toArray( new Class[classes.size()] ) )
                 .getRunner()
                 .getDescription();
+    }
+    
+    /**
+     * @param displayName
+     * @return If this describes a method invocation,
+     *         the name of the method (or null if not)
+     */
+    public static String getMethodName( String displayName ) 
+    {
+        return methodAndClassNamePatternGroupOrDefault( displayName, 1, null );
+    }
+
+    private static String methodAndClassNamePatternGroupOrDefault( String displayName, int group,
+            String defaultString ) 
+    {
+        Matcher matcher = METHOD_AND_CLASS_NAME_PATTERN.matcher( displayName );
+        return matcher.matches() ? matcher.group( group ) : defaultString;
     }
 
 }
