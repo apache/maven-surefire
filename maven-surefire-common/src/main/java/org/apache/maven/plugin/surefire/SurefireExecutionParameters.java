@@ -22,7 +22,6 @@ package org.apache.maven.plugin.surefire;
 import java.io.File;
 import java.util.List;
 import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.surefire.testset.TestListResolver;
 
 /**
  * This interface contains all the common parameters that have different implementations in Surefire vs IntegrationTest
@@ -64,7 +63,7 @@ public interface SurefireExecutionParameters
 
     void setTestSourceDirectory( File testSourceDirectory );
 
-    TestListResolver getTest();
+    String getTest();
 
     void setTest( String test );
 

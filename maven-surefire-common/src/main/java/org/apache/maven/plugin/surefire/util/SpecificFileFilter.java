@@ -32,6 +32,7 @@ import static org.apache.maven.plugin.surefire.util.ScannerUtil.convertSlashToSy
  * filters file names by a given collection of class name patterns
  *
  */
+@Deprecated
 public class SpecificFileFilter
 {
 

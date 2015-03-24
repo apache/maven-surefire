@@ -34,6 +34,7 @@ import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.RunOrderParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
+import org.apache.maven.surefire.testset.TestListResolver;
 import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.util.RunOrder;
 
@@ -93,8 +94,10 @@ class BooterSerializer
         {
             properties.setProperty( BooterConstants.SOURCE_DIRECTORY, testSuiteDefinition.getTestSourceDirectory() );
             properties.addList( testSuiteDefinition.getSuiteXmlFiles(), BooterConstants.TEST_SUITE_XML_FILES );
-            properties.setNullableProperty( BooterConstants.REQUESTEDTEST,
-                                            testSuiteDefinition.getTestListResolver().getPluginParameterTest() );
+            TestListResolver methodFilter = testSuiteDefinition.getTestListResolver();
+            String requestedTest =
+                methodFilter == null || methodFilter.isEmpty() ? null : methodFilter.getPluginParameterTest();
+            properties.setNullableProperty( BooterConstants.REQUESTEDTEST, requestedTest );
             properties.setNullableProperty( BooterConstants.RERUN_FAILING_TESTS_COUNT,
                                             String.valueOf( testSuiteDefinition.getRerunFailingTestsCount() ) );
         }

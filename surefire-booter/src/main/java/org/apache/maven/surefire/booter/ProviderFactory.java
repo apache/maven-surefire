@@ -80,11 +80,6 @@ public class ProviderFactory
         }
         finally
         {
-            System.out.println( "TIBOR providerConfiguration: " + providerConfiguration );
-            System.out.println( "TIBOR providerConfiguration.getTestSuiteDefinition(): "
-                                    + providerConfiguration.getTestSuiteDefinition() );
-            System.out.println( "TIBOR providerConfiguration.getTestSuiteDefinition().getTestListResolver(): "
-                                    + providerConfiguration.getTestSuiteDefinition().getTestListResolver() );
             if ( restoreStreams && System.getSecurityManager() == null )
             {
                 System.setOut( orgSystemOut );
@@ -92,7 +87,6 @@ public class ProviderFactory
             }
         }
     }
-
 
     public SurefireProvider createProvider( boolean isInsideFork )
     {

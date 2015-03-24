@@ -133,12 +133,12 @@ public class BooterDeserializerProviderConfigurationTest
         Assert.assertNotNull( resolver );
         Assert.assertFalse( resolver.isEmpty() );
         Assert.assertEquals( aUserRequestedTest + "#" + aUserRequestedTestMethod, resolver.getPluginParameterTest() );
-        Assert.assertFalse( resolver.getIncludedFilters().isEmpty() );
-        Assert.assertTrue( resolver.getExcludedFilters().isEmpty() );
-        Assert.assertEquals( 1, resolver.getIncludedFilters().size() );
-        ResolvedTest filter = resolver.getIncludedFilters().iterator().next();
+        Assert.assertFalse( resolver.getIncludedPatterns().isEmpty() );
+        Assert.assertTrue( resolver.getExcludedPatterns().isEmpty() );
+        Assert.assertEquals( 1, resolver.getIncludedPatterns().size() );
+        ResolvedTest filter = resolver.getIncludedPatterns().iterator().next();
         Assert.assertNotNull( filter );
-        Assert.assertEquals( aUserRequestedTest + ".class", filter.getTestClassPattern() );
+        Assert.assertEquals( "**/" + aUserRequestedTest, filter.getTestClassPattern() );
         Assert.assertEquals( aUserRequestedTestMethod, filter.getTestMethodPattern() );
         Assert.assertEquals( rerunFailingTestsCount, testSuiteDefinition.getRerunFailingTestsCount() );
     }

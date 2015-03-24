@@ -19,12 +19,7 @@ package org.apache.maven.plugin.surefire.util;
  * under the License.
  */
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import org.apache.commons.lang3.StringUtils;
-
 import javax.annotation.Nonnull;
 
 final class ScannerUtil
@@ -36,17 +31,7 @@ final class ScannerUtil
 
     private static final String FS = System.getProperty( "file.separator" );
 
-    private static final String JAVA_SOURCE_FILE_EXTENSION = ".java";
-
-    private static final String JAVA_CLASS_FILE_EXTENSION = ".class";
-
     private static final boolean IS_NON_UNIX_FS = ( !FS.equals( "/" ) );
-
-    @SuppressWarnings( "checkstyle:modifierorder" )
-    public static @Nonnull String convertToJavaClassName( @Nonnull String test )
-    {
-        return StringUtils.removeEnd( test, ".class" ).replace( FS, "." );
-    }
 
     @SuppressWarnings( "checkstyle:modifierorder" )
     public static @Nonnull String convertJarFileResourceToJavaClassName( @Nonnull String test )
@@ -58,37 +43,5 @@ final class ScannerUtil
     public static @Nonnull String convertSlashToSystemFileSeparator( @Nonnull String path )
     {
         return ( IS_NON_UNIX_FS ? path.replace( "/", FS ) : path );
-    }
-
-    @SuppressWarnings( "checkstyle:modifierorder" )
-    public static @Nonnull String stripBaseDir( String basedir, String test )
-    {
-        return StringUtils.removeStart( test, basedir );
-    }
-
-    @SuppressWarnings( "checkstyle:modifierorder" )
-    public static @Nonnull String[] processIncludesExcludes( @Nonnull List<String> list )
-    {
-        List<String> newList = new ArrayList<String>();
-        for ( Object aList : list )
-        {
-            String include = (String) aList;
-            String[] includes = include.split( "," );
-            Collections.addAll( newList, includes );
-        }
-
-        String[] incs = new String[newList.size()];
-
-        for ( int i = 0; i < incs.length; i++ )
-        {
-            String inc = newList.get( i );
-            if ( inc.endsWith( JAVA_SOURCE_FILE_EXTENSION ) )
-            {
-                inc = StringUtils.removeEnd( inc, JAVA_SOURCE_FILE_EXTENSION ) + JAVA_CLASS_FILE_EXTENSION;
-            }
-            incs[i] = convertSlashToSystemFileSeparator( inc );
-
-        }
-        return incs;
     }
 }

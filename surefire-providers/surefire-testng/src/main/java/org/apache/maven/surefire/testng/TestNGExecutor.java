@@ -65,7 +65,7 @@ public class TestNGExecutor
     }
 
     public static void run( Class[] testClasses, String testSourceDirectory, Map options, RunListener reportManager,
-                            TestNgTestSuite suite, File reportsDirectory, TestListResolver testListResolver )
+                            TestNgTestSuite suite, File reportsDirectory, TestListResolver methodFilter )
         throws TestSetFailedException
     {
         TestNG testng = new TestNG( true );
@@ -74,7 +74,7 @@ public class TestNGExecutor
         System.out.println( "Configuring TestNG with: " + configurator.getClass().getSimpleName() );
 
         XmlMethodSelector groupMatchingSelector = createGroupMatchingSelector( options );
-        XmlMethodSelector methodNameFilteringSelector = createMethodNameFilteringSelector( testListResolver );
+        XmlMethodSelector methodNameFilteringSelector = createMethodNameFilteringSelector( methodFilter );
 
         Map<String, SuiteAndNamedTests> suitesNames = new HashMap<String, SuiteAndNamedTests>();
 
@@ -176,10 +176,10 @@ public class TestNGExecutor
     }
 
     @SuppressWarnings( "checkstyle:magicnumber" )
-    private static XmlMethodSelector createMethodNameFilteringSelector( TestListResolver testListResolver )
+    private static XmlMethodSelector createMethodNameFilteringSelector( TestListResolver methodFilter )
         throws TestSetFailedException
     {
-        if ( testListResolver != null && !testListResolver.isEmpty() )
+        if ( methodFilter != null && !methodFilter.isEmpty() )
         {
             // the class is available in the testClassPath
             String clazzName = "org.apache.maven.surefire.testng.utils.MethodSelector";
@@ -187,7 +187,7 @@ public class TestNGExecutor
             {
                 Class<?> clazz = Class.forName( clazzName );
                 Method method = clazz.getMethod( "setTestListResolver", TestListResolver.class );
-                method.invoke( null, testListResolver );
+                method.invoke( null, methodFilter );
             }
             catch ( Exception e )
             {

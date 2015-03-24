@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+
+import org.apache.maven.surefire.testset.TestListResolver;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.ScanResult;
 
@@ -37,7 +39,7 @@ public class DirectoryScannerTest
     extends TestCase
 {
     public void testLocateTestClasses()
-        throws IOException, TestSetFailedException
+        throws Exception
     {
         // use target as people can configure ide to compile in an other place than maven
         File baseDir = new File( new File( "target/test-classes" ).getCanonicalPath() );
@@ -46,7 +48,7 @@ public class DirectoryScannerTest
         List<String> exclude = new ArrayList<String>();
 
         DirectoryScanner surefireDirectoryScanner =
-            new DirectoryScanner( baseDir, include, exclude, new ArrayList<String>() );
+            new DirectoryScanner( baseDir, new TestListResolver( include, exclude ), new TestListResolver( "" ) );
 
         ScanResult classNames = surefireDirectoryScanner.scan();
         assertNotNull( classNames );

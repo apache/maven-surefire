@@ -84,7 +84,7 @@ public class ForkedBooter
                 classpathConfiguration.isEnableAssertions() );
             startupConfiguration.writeSurefireTestClasspathProperty();
 
-            Object testSet;
+            final Object testSet;
             if ( forkedTestSet != null )
             {
                 testSet = forkedTestSet.getDecodedValue( Thread.currentThread().getContextClassLoader() );

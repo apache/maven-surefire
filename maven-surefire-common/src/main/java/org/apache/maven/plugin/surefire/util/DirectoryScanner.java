@@ -19,15 +19,11 @@ package org.apache.maven.plugin.surefire.util;
  * under the License.
  */
 
-import static org.apache.maven.plugin.surefire.util.ScannerUtil.convertSlashToSystemFileSeparator;
-import static org.apache.maven.plugin.surefire.util.ScannerUtil.convertToJavaClassName;
-import static org.apache.maven.plugin.surefire.util.ScannerUtil.processIncludesExcludes;
-import static org.apache.maven.plugin.surefire.util.ScannerUtil.stripBaseDir;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.maven.surefire.testset.TestListResolver;
 import org.apache.maven.surefire.util.DefaultScanResult;
 
 /**
@@ -40,54 +36,24 @@ public class DirectoryScanner
 {
     private final File basedir;
 
-    private final List<String> includes;
+    private final TestListResolver includedAndExcludedTests;
 
-    private final List<String> excludes;
+    private final TestListResolver specificTests;
 
-    private final List<String> specificTests;
-
-    public DirectoryScanner( File basedir, List<String> includes, List<String> excludes, List<String> specificTests )
+    public DirectoryScanner( File basedir, TestListResolver includedAndExcludedTests, TestListResolver specificTests )
     {
         this.basedir = basedir;
-        this.includes = includes;
-        this.excludes = excludes;
+        this.includedAndExcludedTests = includedAndExcludedTests;
         this.specificTests = specificTests;
     }
 
     public DefaultScanResult scan()
     {
-        String[] specific = specificTests == null ? new String[0] : processIncludesExcludes( specificTests );
-        SpecificFileFilter specificTestFilter = new SpecificFileFilter( specific );
-
+        FileScanner scanner = new FileScanner( basedir, "class" );
         List<String> result = new ArrayList<String>();
-        if ( basedir.exists() )
-        {
-            org.apache.maven.shared.utils.io.DirectoryScanner scanner =
-                new org.apache.maven.shared.utils.io.DirectoryScanner();
-
-            scanner.setBasedir( basedir );
-
-            if ( includes != null )
-            {
-                scanner.setIncludes( processIncludesExcludes( includes ) );
-            }
-
-            if ( excludes != null )
-            {
-                scanner.setExcludes( processIncludesExcludes( excludes ) );
-            }
-
-            scanner.scan();
-            for ( String test : scanner.getIncludedFiles() )
-            {
-                if ( specificTestFilter.accept(
-                         convertSlashToSystemFileSeparator(
-                              stripBaseDir( basedir.getAbsolutePath(), test ) ) ) )
-                {
-                    result.add( convertToJavaClassName( test ) );
-                }
-            }
-        }
+        TestListResolver includedExcludedClasses = includedAndExcludedTests.createClassFilters();
+        TestListResolver specificClasses = specificTests.createClassFilters();
+        scanner.scanTo( result, includedExcludedClasses.and( specificClasses ) );
         return new DefaultScanResult( result );
     }
 }

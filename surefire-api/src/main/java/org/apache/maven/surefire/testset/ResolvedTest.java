@@ -19,47 +19,91 @@ package org.apache.maven.surefire.testset;
  * under the License.
  */
 
+import org.apache.maven.shared.utils.StringUtils;
+import org.apache.maven.shared.utils.io.MatchPatterns;
 import org.apache.maven.shared.utils.io.SelectorUtils;
 
-import java.util.Map;
+import java.io.File;
 
 /**
  * Single pattern test filter resolved from multi pattern filter -Dtest=MyTest#test,AnotherTest#otherTest.
  */
 public final class ResolvedTest
 {
+    /**
+     * Type of patterns in ResolvedTest constructor.
+     */
+    public static enum Type
+    {
+        CLASS, METHOD
+    }
+
     private static final String CLASS_FILE_EXTENSION = ".class";
 
     private static final String JAVA_FILE_EXTENSION = ".java";
+
+    private static final String WILDCARD_PATH_PREFIX = "**/";
+
+    private static final String WILDCARD_FILENAME_POSTFIX = ".*";
 
     private final String classPattern;
 
     private final String methodPattern;
 
-    private final Map<Class<?>, String> classConversion;
-
     private final boolean isRegexTestClassPattern;
 
     private final boolean isRegexTestMethodPattern;
 
+    private final String description;
+
     /**
      * '*' means zero or more characters<br>
      * '?' means one and only one character
-     * The %ant[] expression is substituted by %regex[].
+     * The pattern %regex[] prefix and suffix does not appear. The regex <code>pattern</code> is always
+     * unwrapped by the caller.
      *
      * @param classPattern     test class file pattern
      * @param methodPattern    test method
-     * @throws IllegalArgumentException if regex not finished with ']'
+     * @param isRegex          {@code true} if regex
      */
-    ResolvedTest( String classPattern, String methodPattern, Map<Class<?>, String> classConversion )
+    public ResolvedTest( String classPattern, String methodPattern, boolean isRegex )
     {
-        this.classPattern = reformatPattern( classPattern, true );
-        this.methodPattern = reformatPattern( methodPattern, false );
-        this.classConversion = classConversion;
-        isRegexTestClassPattern =
-            this.classPattern != null && this.classPattern.startsWith( SelectorUtils.REGEX_HANDLER_PREFIX );
-        isRegexTestMethodPattern =
-            this.methodPattern != null && this.methodPattern.startsWith( SelectorUtils.REGEX_HANDLER_PREFIX );
+        classPattern = tryBlank( classPattern );
+        methodPattern = tryBlank( methodPattern );
+        description = description( classPattern, methodPattern, isRegex );
+
+        if ( isRegex && classPattern != null )
+        {
+            classPattern = wrapRegex( classPattern );
+        }
+
+        if ( isRegex && methodPattern != null )
+        {
+            methodPattern = wrapRegex( methodPattern );
+        }
+
+        this.classPattern = reformatClassPattern( classPattern, isRegex );
+        this.methodPattern = methodPattern;
+        isRegexTestClassPattern = isRegex;
+        isRegexTestMethodPattern = isRegex;
+    }
+
+    /**
+     * The regex <code>pattern</code> is always unwrapped.
+     */
+    public ResolvedTest( Type type, String pattern, boolean isRegex )
+    {
+        pattern = tryBlank( pattern );
+        final boolean isClass = type == Type.CLASS;
+        description = description( isClass ? pattern : null, !isClass ? pattern : null, isRegex );
+        if ( isRegex && pattern != null )
+        {
+            pattern = wrapRegex( pattern );
+        }
+        classPattern = isClass ? reformatClassPattern( pattern, isRegex ) : null;
+        methodPattern = !isClass ? pattern : null;
+        isRegexTestClassPattern = isRegex && isClass;
+        isRegexTestMethodPattern = isRegex && !isClass;
     }
 
     /**
@@ -74,6 +118,11 @@ public final class ResolvedTest
         return classPattern;
     }
 
+    public boolean hasTestClassPattern()
+    {
+        return classPattern != null;
+    }
+
     /**
      * Test method, e.g. "realTestMethod".<br/>
      * Other examples: test* or testSomethin? or %regex[testOne|testTwo] or %ant[testOne|testTwo]<br/>
@@ -84,6 +133,11 @@ public final class ResolvedTest
     public String getTestMethodPattern()
     {
         return methodPattern;
+    }
+
+    public boolean hasTestMethodPattern()
+    {
+        return methodPattern != null;
     }
 
     public boolean isRegexTestClassPattern()
@@ -101,42 +155,34 @@ public final class ResolvedTest
         return classPattern == null && methodPattern == null;
     }
 
-    public boolean shouldRun( Class<?> realTestClass, String methodName )
+    public boolean shouldRun( String testClassFile, String methodName )
     {
-        if ( methodPattern != null )
+        if ( isEmpty() )
         {
-            if ( methodName != null && !SelectorUtils.matchPath( methodPattern, methodName ) )
+            return true;
+        }
+
+        boolean matchedMethodPattern = false;
+
+        if ( methodPattern != null && methodName != null )
+        {
+            if ( SelectorUtils.matchPath( methodPattern, methodName ) )
+            {
+                matchedMethodPattern = true;
+            }
+            else
             {
                 return false;
             }
         }
 
-        if ( classPattern == null )
+        if ( classPattern != null )
         {
-            return methodName != null;
+            return isRegexTestClassPattern ? matchClassRegexPatter( testClassFile ) : matchClassPatter( testClassFile );
         }
         else
         {
-            String classFile = classFile( realTestClass );
-            if ( isRegexTestClassPattern() )
-            {
-                String pattern = classPattern.indexOf( '$' ) == -1 ? classPattern : classPattern.replace( "$", "\\$" );
-                return SelectorUtils.matchPath( pattern, classFile );
-            }
-            else
-            {
-                if ( SelectorUtils.matchPath( classPattern, classFile ) )
-                {
-                    // match class pattern with package
-                    return true;
-                }
-                else
-                {
-                    int indexOfSimpleName = classFile.lastIndexOf( '/' );
-                    return indexOfSimpleName != -1
-                        && SelectorUtils.matchPath( classPattern, classFile.substring( 1 + indexOfSimpleName ) );
-                }
-            }
+            return matchedMethodPattern;
         }
     }
 
@@ -156,7 +202,6 @@ public final class ResolvedTest
 
         return ( classPattern == null ? that.classPattern == null : classPattern.equals( that.classPattern ) )
             && ( methodPattern == null ? that.methodPattern == null : methodPattern.equals( that.methodPattern ) );
-
     }
 
     @Override
@@ -170,27 +215,59 @@ public final class ResolvedTest
     @Override
     public String toString()
     {
-        return "ResolvedTest{classPattern='" + classPattern + "', methodPattern='" + methodPattern + "'}";
+        return isEmpty() ? null : description;
     }
 
-    private String classFile( Class<?> realTestClass )
+    private static String description( String clazz, String method, boolean isRegex )
     {
-        String classFile = classConversion.get( realTestClass );
-        if ( classFile == null )
+        String description;
+        if ( clazz == null && method == null )
         {
-            classFile = realTestClass.getName().replace( '.', '/' ) + CLASS_FILE_EXTENSION;
-            classConversion.put( realTestClass, classFile );
+            description = null;
         }
-        return classFile;
+        else if ( clazz == null )
+        {
+            description = "#" + method;
+        }
+        else if ( method == null )
+        {
+            description = clazz;
+        }
+        else
+        {
+            description = clazz + "#" + method;
+        }
+        return isRegex && description != null ? wrapRegex( description ) : description;
     }
 
-    /**
-     * {@link Class#getSimpleName()} does not return this format with nested classes FirstClass$NestedTest.
-     */
-    private static String simpleClassFileName( String classFile )
+    private boolean matchClassPatter( String testClassFile )
     {
-        int indexOfSimpleName = classFile.lastIndexOf( '/' );
-        return indexOfSimpleName == -1 ? classFile : classFile.substring( 1 + indexOfSimpleName );
+        //@todo We have to use File.separator only because the MatchPatterns is using it internally - cannot override.
+        String classPattern = this.classPattern;
+        if ( File.separatorChar != '/' )
+        {
+            testClassFile = testClassFile.replace( '/', File.separatorChar );
+            classPattern = classPattern.replace( '/', File.separatorChar );
+        }
+
+        if ( classPattern.endsWith( WILDCARD_FILENAME_POSTFIX ) || classPattern.endsWith( CLASS_FILE_EXTENSION ) )
+        {
+            return MatchPatterns.from( classPattern ).matches( testClassFile, true );
+        }
+        else
+        {
+            String[] classPatterns = { classPattern + CLASS_FILE_EXTENSION, classPattern };
+            return MatchPatterns.from( classPatterns ).matches( testClassFile, true );
+        }
+    }
+
+    private boolean matchClassRegexPatter( String testClassFile )
+    {
+        if ( File.separatorChar != '/' )
+        {
+            testClassFile = testClassFile.replace( '/', File.separatorChar );
+        }
+        return MatchPatterns.from( classPattern ).matches( testClassFile, true );
     }
 
     private static String tryBlank( String s )
@@ -202,60 +279,42 @@ public final class ResolvedTest
         else
         {
             s = s.trim();
-            return s.length() == 0 ? null : s;
+            return StringUtils.isEmpty( s ) ? null : s;
         }
     }
 
-    private static String reformatPattern( String s, boolean isTestClass )
+    private static String reformatClassPattern( String s, boolean isRegex )
     {
-        s = tryBlank( s );
-        if ( s == null )
-        {
-            return null;
-        }
-        else if ( s.startsWith( SelectorUtils.REGEX_HANDLER_PREFIX ) )
-        {
-            if ( !s.endsWith( SelectorUtils.PATTERN_HANDLER_SUFFIX ) )
-            {
-                throw new IllegalArgumentException( s + " enclosed regex does not finish with ']'" );
-            }
-        }
-        else if ( s.startsWith( SelectorUtils.ANT_HANDLER_PREFIX ) )
-        {
-            if ( s.endsWith( SelectorUtils.PATTERN_HANDLER_SUFFIX ) )
-            {
-                s = SelectorUtils.REGEX_HANDLER_PREFIX + s.substring( SelectorUtils.ANT_HANDLER_PREFIX.length() );
-            }
-            else
-            {
-                throw new IllegalArgumentException( s + " enclosed regex does not finish with ']'" );
-            }
-        }
-        else if ( isTestClass )
+        if ( s != null && !isRegex )
         {
             s = convertToPath( s );
+            if ( s != null && !s.startsWith( WILDCARD_PATH_PREFIX ) )
+            {
+                s = WILDCARD_PATH_PREFIX + s;
+            }
         }
         return s;
     }
 
     private static String convertToPath( String className )
     {
-        if ( className == null || className.trim().length() == 0 )
+        if ( StringUtils.isBlank( className ) )
         {
-            return className;
+            return null;
         }
         else
         {
             if ( className.endsWith( JAVA_FILE_EXTENSION ) )
             {
                 className = className.substring( 0, className.length() - JAVA_FILE_EXTENSION.length() );
+                className += CLASS_FILE_EXTENSION;
             }
-            else if ( className.endsWith( CLASS_FILE_EXTENSION ) )
-            {
-                className = className.substring( 0, className.length() - CLASS_FILE_EXTENSION.length() );
-            }
-            className = className.replace( '.', '/' );
-            return className + CLASS_FILE_EXTENSION;
+            return className;
         }
+    }
+
+    static String wrapRegex( String unwrapped )
+    {
+        return SelectorUtils.REGEX_HANDLER_PREFIX + unwrapped + SelectorUtils.PATTERN_HANDLER_SUFFIX;
     }
 }

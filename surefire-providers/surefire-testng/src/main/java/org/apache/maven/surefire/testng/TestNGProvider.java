@@ -19,6 +19,8 @@ package org.apache.maven.surefire.testng;
  * under the License.
  */
 
+import java.io.File;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Properties;
 import org.apache.maven.surefire.providerapi.AbstractProvider;
@@ -26,6 +28,7 @@ import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.suite.RunResult;
+import org.apache.maven.surefire.testset.TestListResolver;
 import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.RunOrderCalculator;
@@ -116,17 +119,15 @@ public class TestNGProvider
 
     boolean isTestNGXmlTestSuite( TestRequest testSuiteDefinition )
     {
-        return testSuiteDefinition.getSuiteXmlFiles() != null && testSuiteDefinition.getSuiteXmlFiles().size() > 0
-                        && testSuiteDefinition.getTestListResolver() == null;
-
+        Collection<File> suiteXmlFiles = testSuiteDefinition.getSuiteXmlFiles();
+        return suiteXmlFiles != null && !suiteXmlFiles.isEmpty() && !hasSpecificTests();
     }
-
 
     private TestNGDirectoryTestSuite getDirectorySuite()
     {
         return new TestNGDirectoryTestSuite( testRequest.getTestSourceDirectory().toString(), providerProperties,
-                                             reporterConfiguration.getReportsDirectory(),
-                                             testRequest.getTestListResolver(), runOrderCalculator, scanResult );
+                                             reporterConfiguration.getReportsDirectory(), createMethodFilter(),
+                                             runOrderCalculator, scanResult );
     }
 
     private TestNGXmlTestSuite getXmlSuite()
@@ -163,5 +164,15 @@ public class TestNGProvider
         return runOrderCalculator.orderTestClasses( scanned );
     }
 
+    private boolean hasSpecificTests()
+    {
+        TestListResolver tests = testRequest.getTestListResolver();
+        return tests != null && !tests.isEmpty();
+    }
 
+    private TestListResolver createMethodFilter()
+    {
+        TestListResolver tests = testRequest.getTestListResolver();
+        return tests == null ? null : tests.createMethodFilters();
+    }
 }

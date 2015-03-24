@@ -28,7 +28,6 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.surefire.suite.RunResult;
-import org.apache.maven.surefire.testset.TestListResolver;
 
 /**
  * Run tests using Surefire.
@@ -65,7 +64,15 @@ public class SurefirePlugin
      * parameter.
      * <p/>
      * Since 2.7.3, you can execute a limited number of methods in the test by adding #myMethod or #my*ethod. For
-     * example, "-Dtest=MyTest#myMethod". This is supported for junit 4.x and testNg.
+     * example, "-Dtest=MyTest#myMethod". This is supported for junit 4.x and testNg.<br/>
+     * <br/>
+     * Since 2.19 a complex syntax is supported in one parameter (JUnit 4, JUnit 4.7+, TestNG):<br/>
+     * "-Dtest=???Test, !Unstable*, pkg&#47;**&#47;Ci*leTest.java, *Test#test*One+testTwo?????, #fast*+slowTest"<br/>
+     * "-Dtest=Basic*, !%regex[.*.Unstable.*], !%regex[.*.MyTest.class#one.*|two.*], %regex[#fast.*|slow.*]"<br/>
+     * <br/>
+     * The Parameterized JUnit runner <em>describes</em> test methods using an index in brackets, so the non-regex
+     * method pattern would become: <em>#testMethod[*]</em>.
+     * <br/>
      */
     @Parameter( property = "test" )
     private String test;
@@ -158,6 +165,8 @@ public class SurefirePlugin
      * <p/>
      * Each include item may also contain a comma-separated sublist of items, which will be treated as multiple
      * &nbsp;&lt;include> entries.<br/>
+     * Since 2.19 a complex syntax is supported in one parameter (JUnit 4, JUnit 4.7+, TestNG):<br/>
+     * &nbsp;&lt;include>%regex[.*[Cat|Dog].*], !%regex[pkg.*Slow.*.class], pkg&#47;**&#47;*Fast*.java, Basic????, !Unstable*&lt;/include><br/>
      * <p/>
      * This parameter is ignored if the TestNG <code>suiteXmlFiles</code> parameter is specified.<br/>
      * <br/>
@@ -235,8 +244,6 @@ public class SurefirePlugin
      */
     @Parameter( property = "surefire.runOrder", defaultValue = "filesystem" )
     protected String runOrder;
-
-    private TestListResolver testListResolver;
 
     protected int getRerunFailingTestsCount()
     {
@@ -372,13 +379,9 @@ public class SurefirePlugin
         this.reportsDirectory = reportsDirectory;
     }
 
-    public TestListResolver getTest()
+    public String getTest()
     {
-        if ( testListResolver == null && test != null )
-        {
-            testListResolver = new TestListResolver( test );
-        }
-        return testListResolver;
+        return test;
     }
 
     public boolean isUseSystemClassLoader()

@@ -36,7 +36,6 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.shared.utils.ReaderFactory;
 import org.apache.maven.shared.utils.StringUtils;
 import org.apache.maven.surefire.suite.RunResult;
-import org.apache.maven.surefire.testset.TestListResolver;
 
 import static org.apache.maven.shared.utils.io.IOUtil.close;
 
@@ -78,8 +77,16 @@ public class IntegrationTestMojo
      * This parameter overrides the <code>includes/excludes</code> parameters, and the TestNG <code>suiteXmlFiles</code>
      * parameter.
      * <p/>
-     * since 2.7.3 You can execute a limited number of methods in the test with adding #myMethod or #my*ethod. E.g. type
+     * Since 2.7.3 You can execute a limited number of methods in the test with adding #myMethod or #my*ethod. E.g. type
      * "-Dit.test=MyTest#myMethod" <b>supported for junit 4.x and testNg</b>
+     * <br/>
+     * Since 2.19 a complex syntax is supported in one parameter (JUnit 4, JUnit 4.7+, TestNG):<br/>
+     * "-Dit.test=???IT, !Unstable*, pkg&#47;**&#47;Ci*leIT.java, *IT#test*One+testTwo?????, #fast*+slowTest"<br/>
+     * "-Dit.test=Basic*, !%regex[.*.Unstable.*], !%regex[.*.MyIT.class#one.*|two.*], %regex[#fast.*|slow.*]"<br/>
+     * <br/>
+     * The Parameterized JUnit runner <em>describes</em> test methods using an index in brackets, so the non-regex
+     * method pattern would become: <em>#testMethod[*]</em>.
+     * <br/>
      */
     @Parameter( property = "it.test" )
     private String test;
@@ -177,6 +184,8 @@ public class IntegrationTestMojo
      * <p/>
      * Each include item may also contain a comma-separated sublist of items, which will be treated as multiple
      * &nbsp;&lt;include> entries.<br/>
+     * Since 2.19 a complex syntax is supported in one parameter (JUnit 4, JUnit 4.7+, TestNG):<br/>
+     * &nbsp;&lt;include>%regex[.*[Cat|Dog].*], !%regex[pkg.*Slow.*.class], pkg&#47;**&#47;*Fast*.java, Basic????, !Unstable*&lt;/include><br/>
      * <p/>
      * This parameter is ignored if the TestNG <code>suiteXmlFiles</code> parameter is specified.<br/>
      * <br/>
@@ -260,8 +269,6 @@ public class IntegrationTestMojo
      */
     @Parameter( property = "failsafe.runOrder", defaultValue = "filesystem" )
     protected String runOrder;
-
-    private TestListResolver testListResolver;
 
     protected int getRerunFailingTestsCount()
     {
@@ -420,13 +427,9 @@ public class IntegrationTestMojo
         this.reportsDirectory = reportsDirectory;
     }
 
-    public TestListResolver getTest()
+    public String getTest()
     {
-        if ( testListResolver == null && test != null )
-        {
-            testListResolver = new TestListResolver( test );
-        }
-        return testListResolver;
+        return test;
     }
 
     public void setTest( String test )

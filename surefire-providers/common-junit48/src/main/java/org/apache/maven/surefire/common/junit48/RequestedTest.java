@@ -26,6 +26,8 @@ import org.junit.runner.manipulation.Filter;
 final class RequestedTest
     extends Filter
 {
+    private static final String CLASS_FILE_EXTENSION = ".class";
+
     private final ResolvedTest test;
 
     RequestedTest( ResolvedTest test )
@@ -38,7 +40,7 @@ final class RequestedTest
     {
         Class<?> realTestClass = description.getTestClass();
         String methodName = description.getMethodName();
-        return realTestClass == null && methodName == null || test.shouldRun( realTestClass, methodName );
+        return realTestClass == null && methodName == null || test.shouldRun( classFile( realTestClass ), methodName );
     }
 
     @Override
@@ -64,5 +66,10 @@ final class RequestedTest
     public int hashCode()
     {
         return test.hashCode();
+    }
+
+    private String classFile( Class<?> realTestClass )
+    {
+        return realTestClass.getName().replace( '.', '/' ) + CLASS_FILE_EXTENSION;
     }
 }

@@ -164,7 +164,8 @@ public class JUnit4Provider
     {
         JUnitTestFailureListener failureListener = new JUnitTestFailureListener();
         listeners.addListener( failureListener );
-        execute( clazz, listeners, testResolver.isEmpty() ? null : new TestResolverFilter() );
+        boolean hasMethodFilter = testResolver != null && testResolver.hasMethodPatterns();
+        execute( clazz, listeners, hasMethodFilter ? new TestResolverFilter() : null );
 
         // Rerun failing tests if rerunFailingTestsCount is larger than 0
         if ( rerunFailingTestsCount > 0 )
@@ -288,10 +289,11 @@ public class JUnit4Provider
     private final class TestResolverFilter
         implements Filter
     {
+        private final TestListResolver methodFilter = JUnit4Provider.this.testResolver.createMethodFilters();
 
         public boolean shouldRun( Class<?> testClass, Method testMethod )
         {
-            return testResolver.shouldRun( testClass, testMethod.getName() );
+            return methodFilter.shouldRun( testClass, testMethod.getName() );
         }
     }
 

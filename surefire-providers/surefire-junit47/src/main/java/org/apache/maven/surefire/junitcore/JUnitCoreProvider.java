@@ -70,11 +70,11 @@ public class JUnitCoreProvider
 
     private TestsToRun testsToRun;
 
-    private JUnit48Reflector jUnit48Reflector;
+    private final JUnit48Reflector jUnit48Reflector;
 
-    private RunOrderCalculator runOrderCalculator;
+    private final RunOrderCalculator runOrderCalculator;
 
-    private TestListResolver testResolver;
+    private final TestListResolver testResolver;
 
     public JUnitCoreProvider( ProviderParameters providerParameters )
     {
@@ -84,23 +84,10 @@ public class JUnitCoreProvider
         runOrderCalculator = providerParameters.getRunOrderCalculator();
         jUnitCoreParameters = new JUnitCoreParameters( providerParameters.getProviderProperties() );
         scannerFilter = new JUnit48TestChecker( testClassLoader );
-        System.out.println( "TIBOR providerParameters=" + providerParameters );
-        System.out.println( "TIBOR providerParameters.getTestRequest()=" + providerParameters.getTestRequest() );
-        System.out.println( "TIBOR providerParameters.getTestRequest().getTestListResolver().getPluginParameterTest()="
-                                + providerParameters.getTestRequest().getTestListResolver().getPluginParameterTest() );
-        System.out.println( "TIBOR includes: "
-                                + providerParameters.getTestRequest().getTestListResolver().getIncludedFilters() );
-        System.out.println( "TIBOR excludes: "
-                                + providerParameters.getTestRequest().getTestListResolver().getExcludedFilters() );
-        System.out.println( "TIBOR includes: "
-                                + providerParameters.getTestRequest().getTestListResolver().getIncludedFilters()
-            .iterator().next() );
         testResolver = providerParameters.getTestRequest().getTestListResolver();
         rerunFailingTestsCount = providerParameters.getTestRequest().getRerunFailingTestsCount();
-
-        customRunListeners =
-            JUnit4RunListenerFactory.createCustomListeners(
-                providerParameters.getProviderProperties().getProperty( "listener" ) );
+        customRunListeners = JUnit4RunListenerFactory.createCustomListeners(
+            providerParameters.getProviderProperties().getProperty( "listener" ) );
         jUnit48Reflector = new JUnit48Reflector( testClassLoader );
     }
 
@@ -211,13 +198,19 @@ public class JUnitCoreProvider
     {
         final FilterFactory factory = new FilterFactory( testClassLoader );
         Filter groupFilter = factory.createGroupFilter( providerParameters.getProviderProperties() );
-        boolean onlyGroups = testResolver.isEmpty();
-        return onlyGroups ? groupFilter : factory.and( groupFilter, factory.createMethodFilter( testResolver ) );
+        TestListResolver methodFilter = createMethodFilter();
+        boolean onlyGroups = methodFilter == null || methodFilter.isEmpty();
+        return onlyGroups ? groupFilter : factory.and( groupFilter, factory.createMethodFilter( methodFilter ) );
     }
 
     private TestsToRun scanClassPath()
     {
         TestsToRun scanned = scanResult.applyFilter( scannerFilter, testClassLoader );
         return runOrderCalculator.orderTestClasses( scanned );
+    }
+
+    private TestListResolver createMethodFilter()
+    {
+        return testResolver == null ? null : testResolver.createMethodFilters();
     }
 }

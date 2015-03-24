@@ -103,7 +103,7 @@ mvn -Dit.test=ITCircle#test* verify
 +---+
 #{end}
 
-  As of Surefire 2.12.1, you can select multiple methods (JUnit 4.x only at this time; patches welcome!):
+  Since of ${thisPlugin} Plugin 2.19 you can select multiple methods (JUnit 4, JUnit 4.7+ and TestNG):
 
 #{if}(${project.artifactId}=="maven-surefire-plugin")
 +---+
@@ -114,3 +114,27 @@ mvn -Dtest=TestCircle#testOne+testTwo test
 mvn -Dit.test=ITCircle#testOne+testTwo verify
 +---+
 #{end}
+
+  Note this feature was available in JUnit 4 provider only since of ${thisPlugin} Plugin 2.12.1.
+
+
+  As of ${thisPlugin} Plugin 2.19 multiple formats are supported in one pattern (JUnit 4, JUnit 4.7+, TestNG):
+
+#{if}(${project.artifactId}=="maven-surefire-plugin")
++---+
+mvn "-Dtest=???Test, !Unstable*, pkg/**/Ci*leTest.java, *Test#test*One+testTwo?????, #fast*+slowTest" test
+mvn "-Dtest=Basic*, !%regex[.*.Unstable.*], !%regex[.*.MyTest.class#one.*|two.*], %regex[#fast.*|slow.*]"
++---+
+#{else}
++---+
+mvn "-Dit.test=???IT, !Unstable*, pkg/**/Ci*leIT.java, *IT#test*One+testTwo?????, #fast*+slowTest" verify
+mvn "-Dit.test=Basic*, !%regex[.*.Unstable.*], !%regex[.*.MyIT.class#one.*|two.*], %regex[#fast.*|slow.*]" verify
++---+
+#{end}
+
+  The exclamation mark (!) excludes tests. The character (?) within non-regex pattern replaces one character in file
+  name or path. The file extensions are not mandatory in non-regex patterns, and packages with slash can be used.
+  The regex validates fully qualified class file, and validates test methods separately after (#) however class
+  is optional. The regex supports '.class' file extension only. Note the regex comments, marked by (#)
+  character, are unsupported. The Parameterized JUnit runner describes test methods using an index in brackets, so the
+  non-regex method pattern would become: <<<#testMethod[*]>>>.

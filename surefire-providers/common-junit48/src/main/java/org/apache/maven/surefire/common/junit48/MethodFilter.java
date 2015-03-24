@@ -41,11 +41,11 @@ final class MethodFilter
     {
         Collection<Filter> includedFilters = new LinkedHashSet<Filter>();
         Collection<Filter> excludedFilters = new LinkedHashSet<Filter>();
-        for ( ResolvedTest test : testResolver.getIncludedFilters() )
+        for ( ResolvedTest test : testResolver.getIncludedPatterns() )
         {
             includedFilters.add( new RequestedTest( test ) );
         }
-        for ( ResolvedTest test : testResolver.getExcludedFilters() )
+        for ( ResolvedTest test : testResolver.getExcludedPatterns() )
         {
             excludedFilters.add( new RequestedTest( test ) );
         }
@@ -62,11 +62,6 @@ final class MethodFilter
         else if ( description.isTest() )
         {
             return combinedFilter.shouldRun( description );
-        }
-        else if ( combinedFilter.shouldRun( description ) )
-        {
-            //pribudlo - daj do JUnit4Provider
-            return true;
         }
         else
         {

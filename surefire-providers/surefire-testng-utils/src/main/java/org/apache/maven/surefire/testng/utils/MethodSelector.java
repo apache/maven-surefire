@@ -36,7 +36,6 @@ import org.testng.ITestNGMethod;
 public class MethodSelector
     implements IMethodSelector
 {
-
     private static TestListResolver testListResolver = null;
 
     public void setTestMethods( List arg0 )
@@ -51,7 +50,6 @@ public class MethodSelector
             || testngMethod.isAfterGroupsConfiguration() || testngMethod.isAfterMethodConfiguration()
             || testngMethod.isAfterSuiteConfiguration() || testngMethod.isAfterTestConfiguration()
             || shouldRun( testngMethod );
-
     }
 
     public static void setTestListResolver( TestListResolver testListResolver )
@@ -62,6 +60,7 @@ public class MethodSelector
     private static boolean shouldRun( ITestNGMethod test )
     {
         TestListResolver resolver = MethodSelector.testListResolver;
-        return resolver != null && resolver.shouldRun( test.getRealClass(), test.getMethodName() );
+        boolean hasTestResolver = resolver != null && !resolver.isEmpty();
+        return hasTestResolver && resolver.shouldRun( test.getRealClass(), test.getMethodName() );
     }
 }

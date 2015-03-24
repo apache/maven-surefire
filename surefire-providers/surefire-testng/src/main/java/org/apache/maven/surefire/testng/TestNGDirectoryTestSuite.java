@@ -67,7 +67,7 @@ public class TestNGDirectoryTestSuite
 
     private final ScanResult scanResult;
 
-    private final TestListResolver testListResolver;
+    private final TestListResolver methodFilter;
 
     private final RunOrderCalculator runOrderCalculator;
 
@@ -78,7 +78,7 @@ public class TestNGDirectoryTestSuite
     private Class<? extends Annotation> junitTestAnnotation;
 
     public TestNGDirectoryTestSuite( String testSourceDirectory, Properties confOptions, File reportsDirectory,
-                                     TestListResolver testListResolver, RunOrderCalculator runOrderCalculator,
+                                     TestListResolver methodFilter, RunOrderCalculator runOrderCalculator,
                                      ScanResult scanResult )
     {
 
@@ -89,7 +89,7 @@ public class TestNGDirectoryTestSuite
         this.testSourceDirectory = testSourceDirectory;
         this.reportsDirectory = reportsDirectory;
         this.scanResult = scanResult;
-        this.testListResolver = testListResolver;
+        this.methodFilter = methodFilter;
         this.junitTestClass = findJUnitTestClass();
         this.junitRunWithAnnotation = findJUnitRunWithAnnotation();
         this.junitTestAnnotation = findJUnitTestAnnotation();
@@ -128,7 +128,7 @@ public class TestNGDirectoryTestSuite
         final Map optionsToUse = isJUnitTest( testClass ) ? junitOptions : options;
 
         TestNGExecutor.run( new Class[]{ testClass }, testSourceDirectory, optionsToUse, reporter, this,
-                            reportsDirectory, testListResolver );
+                            reportsDirectory, methodFilter );
 
         finishTestSuite( reporter, this );
     }
@@ -204,14 +204,14 @@ public class TestNGDirectoryTestSuite
         Class[] testClasses = testNgTestClasses.toArray( new Class[testNgTestClasses.size()] );
 
         TestNGExecutor.run( testClasses, this.testSourceDirectory, options, reporterManager, this,
-                            testNgReportsDirectory, testListResolver );
+                            testNgReportsDirectory, methodFilter );
 
         if ( junitTestClasses.size() > 0 )
         {
             testClasses = junitTestClasses.toArray( new Class[junitTestClasses.size()] );
 
             TestNGExecutor.run( testClasses, testSourceDirectory, junitOptions, reporterManager, this,
-                                junitReportsDirectory, testListResolver );
+                                junitReportsDirectory, methodFilter );
         }
 
         finishTestSuite( reporterManager, this );
@@ -281,7 +281,7 @@ public class TestNGDirectoryTestSuite
         startTestSuite( reporter, this );
 
         TestNGExecutor.run( new Class[] { testSet.getTestClass() }, this.testSourceDirectory, this.options, reporter,
-                            this, reportsDirectory, testListResolver );
+                            this, reportsDirectory, methodFilter );
 
         finishTestSuite( reporter, this );
     }

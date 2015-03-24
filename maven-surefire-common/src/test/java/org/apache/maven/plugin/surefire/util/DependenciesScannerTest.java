@@ -36,6 +36,7 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.surefire.testset.TestListResolver;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.ScanResult;
 
@@ -65,7 +66,7 @@ public class DependenciesScannerTest
 
         DependencyScanner scanner = new DependencyScanner(
                 DependencyScanner.filter(Arrays.asList(artifact), scanDependencies),
-                include, exclude, new ArrayList<String>() );
+                new TestListResolver( include, exclude ), new TestListResolver( "" ) );
 
         ScanResult classNames = scanner.scan();
         assertNotNull( classNames );

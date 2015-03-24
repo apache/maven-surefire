@@ -19,31 +19,27 @@ package org.apache.maven.surefire.common.junit48;
  * under the License.
  */
 
-import junit.framework.TestCase;
+import org.apache.maven.shared.utils.io.MatchPatterns;
+import org.apache.maven.surefire.common.junit48.tests.pt.PT;
+import org.apache.maven.surefire.testset.ResolvedTest;
+import org.apache.maven.surefire.testset.TestListResolver;
 import org.junit.Test;
-import org.junit.internal.builders.AllDefaultPossibilitiesBuilder;
-import org.junit.runner.Computer;
 import org.junit.runner.Description;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Request;
 import org.junit.runner.Result;
 import org.junit.runner.RunWith;
-import org.junit.runner.Runner;
 import org.junit.runner.manipulation.Filter;
-import org.junit.runner.manipulation.NoTestsRemainException;
-import org.junit.runners.Suite;
-import org.junit.runners.model.InitializationError;
-import org.junit.runners.model.RunnerBuilder;
 
-import java.util.ArrayList;
+import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 
+import static org.junit.runner.Description.createSuiteDescription;
 import static org.junit.runner.Description.createTestDescription;
+import static org.junit.Assert.*;
 
 public class FilterFactoryTest
-    extends TestCase
 {
     @RunWith( org.junit.runners.Suite.class )
     @org.junit.runners.Suite.SuiteClasses( { FirstClass.class, SecondClass.class } )
@@ -57,19 +53,19 @@ public class FilterFactoryTest
         @Test
         public void testMethod()
         {
-            System.out.println( "FirstClass#testMethod" );
+            //System.out.println( "FirstClass#testMethod" );
         }
 
         @Test
         public void secondTestMethod()
         {
-            System.out.println( "FirstClass#secondTestMethod" );
+            //System.out.println( "FirstClass#secondTestMethod" );
         }
 
         @Test
         public void otherMethod()
         {
-            System.out.println( "FirstClass#otherMethod" );
+            //System.out.println( "FirstClass#otherMethod" );
         }
     }
 
@@ -78,13 +74,13 @@ public class FilterFactoryTest
         @Test
         public void testMethod()
         {
-            System.out.println( "SecondClass#testMethod" );
+            //System.out.println( "SecondClass#testMethod" );
         }
 
         @Test
         public void secondTestMethod()
         {
-            System.out.println( "SecondClass#secondTestMethod" );
+            //System.out.println( "SecondClass#secondTestMethod" );
         }
     }
 
@@ -93,13 +89,13 @@ public class FilterFactoryTest
         @Test
         public void testMethod()
         {
-            System.out.println( "ThirdClass#testMethod" );
+            //System.out.println( "ThirdClass#testMethod" );
         }
 
         @Test
         public void secondTestMethod()
         {
-            System.out.println( "ThirdClass#secondTestMethod" );
+            //System.out.println( "ThirdClass#secondTestMethod" );
         }
     }
 
@@ -114,15 +110,121 @@ public class FilterFactoryTest
     private static final Description secondTestMethodInSecondClass =
         createTestDescription( SecondClass.class, "secondTestMethod" );
 
-    private static final String firstClassName = FirstClass.class.getName();
+    private static final String firstClassName = FirstClass.class.getName().replace( '.', '/' );
 
-    private static final String secondClassName = SecondClass.class.getName();
+    private static final String secondClassName = SecondClass.class.getName().replace( '.', '/' );
+
+    private static final String firstClassRegex = FirstClass.class.getName().replace( "$", "\\$" );
+
+    private static final String secondClassRegex = SecondClass.class.getName().replace( "$", "\\$" );
 
     private Filter createMethodFilter( String requestString )
     {
         return new FilterFactory( getClass().getClassLoader() ).createMethodFilter( requestString );
     }
 
+    @Test
+    public void testSanity()
+    {
+        ResolvedTest test = new ResolvedTest( ResolvedTest.Type.CLASS, "  \t \n   ", true );
+        assertNull( test.getTestClassPattern() );
+        assertNull( test.getTestMethodPattern() );
+        assertFalse( test.hasTestClassPattern() );
+        assertFalse( test.hasTestMethodPattern() );
+        assertTrue( test.isEmpty() );
+        assertTrue( test.isRegexTestClassPattern() );
+        assertFalse( test.isRegexTestMethodPattern() );
+        test = new ResolvedTest( ResolvedTest.Type.METHOD, "   \n  \t   ", true );
+        assertNull( test.getTestClassPattern() );
+        assertNull( test.getTestMethodPattern() );
+        assertFalse( test.hasTestClassPattern() );
+        assertFalse( test.hasTestMethodPattern() );
+        assertTrue( test.isEmpty() );
+        assertFalse( test.isRegexTestClassPattern() );
+        assertTrue( test.isRegexTestMethodPattern() );
+        test = new ResolvedTest( ResolvedTest.Type.METHOD, "  \n   ", false );
+        assertNull( test.getTestClassPattern() );
+        assertNull( test.getTestMethodPattern() );
+        assertFalse( test.hasTestClassPattern() );
+        assertFalse( test.hasTestMethodPattern() );
+        assertTrue( test.isEmpty() );
+        assertFalse( test.isRegexTestClassPattern() );
+        assertFalse( test.isRegexTestMethodPattern() );
+        test = new ResolvedTest( "  \n  \t ", "  \n  \t ", false );
+        assertNull( test.getTestClassPattern() );
+        assertNull( test.getTestMethodPattern() );
+        assertFalse( test.hasTestClassPattern() );
+        assertFalse( test.hasTestMethodPattern() );
+        assertTrue( test.isEmpty() );
+        assertFalse( test.isRegexTestClassPattern() );
+        assertFalse( test.isRegexTestMethodPattern() );
+    }
+
+    @Test
+    public void testNegativeIllegalRegex()
+    {
+        try {
+            new TestListResolver( "#%regex[.*.Test.class]" );
+        }
+        catch ( IllegalArgumentException e )
+        {
+            // expected in junit 3.x
+        }
+    }
+
+    @Test
+    public void testNegativeIllegalRegex2()
+    {
+        try {
+            new TestListResolver( "%regex[.*.Test.class]#" );
+        }
+        catch ( IllegalArgumentException e )
+        {
+            // expected in junit 3.x
+        }
+    }
+
+    @Test
+    public void testNegativeEmptyRegex()
+    {
+        TestListResolver resolver = new TestListResolver( "%regex[ ]" );
+        assertTrue( resolver.getExcludedPatterns().isEmpty() );
+        assertTrue( resolver.getIncludedPatterns().isEmpty() );
+        assertTrue( resolver.isEmpty() );
+        assertNull( resolver.getPluginParameterTest() );
+        assertFalse( resolver.hasExcludedMethodPatterns() );
+        assertFalse( resolver.hasIncludedMethodPatterns() );
+        assertFalse( resolver.hasMethodPatterns() );
+    }
+
+    @Test
+    public void testNegativeEmptyRegexWithHash()
+    {
+        TestListResolver resolver = new TestListResolver( "%regex[# ]" );
+        assertTrue( resolver.getExcludedPatterns().isEmpty() );
+        assertTrue( resolver.getIncludedPatterns().isEmpty() );
+        assertTrue( resolver.isEmpty() );
+        assertNull( resolver.getPluginParameterTest() );
+        assertFalse( resolver.hasExcludedMethodPatterns() );
+        assertFalse( resolver.hasIncludedMethodPatterns() );
+        assertFalse( resolver.hasMethodPatterns() );
+    }
+
+    @Test
+    public void testNegativeRegexWithEmptyMethod()
+    {
+        TestListResolver resolver = new TestListResolver( "%regex[.*.Test.class# ]" );
+        assertFalse( resolver.isEmpty() );
+        assertTrue( resolver.getExcludedPatterns().isEmpty() );
+        assertFalse( resolver.getIncludedPatterns().isEmpty() );
+        assertEquals( 1, resolver.getIncludedPatterns().size() );
+        assertEquals( "%regex[.*.Test.class]", resolver.getPluginParameterTest() );
+        assertFalse( resolver.hasExcludedMethodPatterns() );
+        assertFalse( resolver.hasIncludedMethodPatterns() );
+        assertFalse( resolver.hasMethodPatterns() );
+    }
+
+    @Test
     public void testBackwardsCompatibilityNullMethodFilter()
     {
         Filter filter = createMethodFilter( null );
@@ -134,6 +236,7 @@ public class FilterFactoryTest
         assertEquals( 0, result.getIgnoreCount() );
     }
 
+    @Test
     public void testBackwardsCompatibilityEmptyMethodFilter()
     {
         Filter filter = createMethodFilter( "" );
@@ -145,6 +248,7 @@ public class FilterFactoryTest
         assertEquals( 0, result.getIgnoreCount() );
     }
 
+    @Test
     public void testBackwardsCompatibilityBlankMethodFilter()
     {
         Filter filter = createMethodFilter( "    \n" );
@@ -156,8 +260,9 @@ public class FilterFactoryTest
         assertEquals( 0, result.getIgnoreCount() );
     }
 
+    @Test
     public void testBackwardsCompatibilityTestParameterClass() {
-        Filter filter = createMethodFilter( FirstClass.class.getName() );
+        Filter filter = createMethodFilter( firstClassName );
         JUnitCore core = new JUnitCore();
         Result result = core.run( Request.classes( FirstClass.class, SecondClass.class ).filterWith( filter ) );
         assertTrue( result.wasSuccessful() );
@@ -166,8 +271,9 @@ public class FilterFactoryTest
         assertEquals( 0, result.getIgnoreCount() );
     }
 
+    @Test
     public void testBackwardsCompatibilityTestParameterJavaClass() {
-        Filter filter = createMethodFilter( FirstClass.class.getName() + ".java" );
+        Filter filter = createMethodFilter( firstClassName + ".java" );
         JUnitCore core = new JUnitCore();
         Result result = core.run( Request.classes( FirstClass.class, SecondClass.class ).filterWith( filter ) );
         assertTrue( result.wasSuccessful() );
@@ -176,8 +282,9 @@ public class FilterFactoryTest
         assertEquals( 0, result.getIgnoreCount() );
     }
 
+    @Test
     public void testBackwardsCompatibilityTestParameterMethod1() {
-        Filter filter = createMethodFilter( FirstClass.class.getName().replace( '.', '/' ) + ".java#testMethod"  );
+        Filter filter = createMethodFilter( firstClassName + ".java#testMethod"  );
         JUnitCore core = new JUnitCore();
         Result result = core.run( Request.classes( FirstClass.class, SecondClass.class ).filterWith( filter ) );
         assertTrue( result.wasSuccessful() );
@@ -186,8 +293,9 @@ public class FilterFactoryTest
         assertEquals( 0, result.getIgnoreCount() );
     }
 
+    @Test
     public void testBackwardsCompatibilityTestParameterMethod2() {
-        Filter filter = createMethodFilter( FirstClass.class.getName().replace( '.', '/' ) + "#testMethod"  );
+        Filter filter = createMethodFilter( firstClassName + "#testMethod"  );
         JUnitCore core = new JUnitCore();
         Result result = core.run( Request.classes( FirstClass.class, SecondClass.class ).filterWith( filter ) );
         assertTrue( result.wasSuccessful() );
@@ -196,8 +304,9 @@ public class FilterFactoryTest
         assertEquals( 0, result.getIgnoreCount() );
     }
 
+    @Test
     public void testBackwardsCompatibilityTestParameterMethod3() {
-        Filter filter = createMethodFilter( FirstClass.class.getName() + "#testMethod"  );
+        Filter filter = createMethodFilter( firstClassName + "#testMethod"  );
         JUnitCore core = new JUnitCore();
         Result result = core.run( Request.classes( FirstClass.class, SecondClass.class ).filterWith( filter ) );
         assertTrue( result.wasSuccessful() );
@@ -206,8 +315,10 @@ public class FilterFactoryTest
         assertEquals( 0, result.getIgnoreCount() );
     }
 
+    @Test
     public void testRegexWithWildcard() {
-        Filter filter = createMethodFilter( "%regex[" + FirstClass.class.getName() + ".*]" );
+        Filter filter =
+            createMethodFilter( "%regex[" + firstClassRegex + ".*]" );
         JUnitCore core = new JUnitCore();
         Result result = core.run( Request.classes( FirstClass.class, SecondClass.class ).filterWith( filter ) );
         assertTrue( result.wasSuccessful() );
@@ -216,8 +327,10 @@ public class FilterFactoryTest
         assertEquals( 0, result.getIgnoreCount() );
     }
 
+    @Test
     public void testRegexWithWildcardClass() {
-        Filter filter = createMethodFilter( "%regex[" + FirstClass.class.getName() + ".*.class]" );
+        Filter filter =
+            createMethodFilter( "%regex[" + firstClassRegex + ".*.class]" );
         JUnitCore core = new JUnitCore();
         Result result = core.run( Request.classes( FirstClass.class, SecondClass.class ).filterWith( filter ) );
         assertTrue( result.wasSuccessful() );
@@ -226,8 +339,9 @@ public class FilterFactoryTest
         assertEquals( 0, result.getIgnoreCount() );
     }
 
+    @Test
     public void testRegexWithExactClass() {
-        Filter filter = createMethodFilter( "%regex[" + FirstClass.class.getName() + ".class]" );
+        Filter filter = createMethodFilter( "%regex[" + firstClassRegex + ".class]" );
         JUnitCore core = new JUnitCore();
         Result result = core.run( Request.classes( FirstClass.class, SecondClass.class ).filterWith( filter ) );
         assertTrue( result.wasSuccessful() );
@@ -236,16 +350,20 @@ public class FilterFactoryTest
         assertEquals( 0, result.getIgnoreCount() );
     }
 
+    @Test
     public void testRegexWithWildcardJavaClassNegativeTest() {
-        Filter filter = createMethodFilter( "%regex[" + FirstClass.class.getName().replace( '.', '/' ) + ".*.java]" );
+        Filter filter = createMethodFilter( "%regex[" + firstClassRegex + ".*.class]" );
         JUnitCore core = new JUnitCore();
         Result result = core.run( Request.classes( FirstClass.class, SecondClass.class ).filterWith( filter ) );
-        assertFalse( result.wasSuccessful() );
+        assertTrue( result.wasSuccessful() );
+        assertEquals( 3, result.getRunCount() );
+        assertEquals( 0, result.getFailureCount() );
+        assertEquals( 0, result.getIgnoreCount() );
     }
 
+    @Test
     public void testRegexWithTwoClasses() {
-        Filter filter = createMethodFilter( "%regex[" + FirstClass.class.getName() + ".*"
-                                                + "|" + SecondClass.class.getName() + ".*]" );
+        Filter filter = createMethodFilter( "%regex[" + firstClassRegex + ".*|" + secondClassRegex + ".*]" );
         JUnitCore core = new JUnitCore();
         Result result = core.run( Request.classes( FirstClass.class, SecondClass.class, ThirdClass.class )
                                       .filterWith( filter ) );
@@ -255,9 +373,9 @@ public class FilterFactoryTest
         assertEquals( 0, result.getIgnoreCount() );
     }
 
+    @Test
     public void testRegexWithTwoClassesComplement() {
-        Filter filter = createMethodFilter( "!%regex[" + FirstClass.class.getName() + ".*"
-                                                + "|" + SecondClass.class.getName() + ".*]" );
+        Filter filter = createMethodFilter( "!%regex[" + firstClassRegex + ".*|" + secondClassRegex + ".*]" );
         JUnitCore core = new JUnitCore();
         Result result = core.run( Request.classes( FirstClass.class, SecondClass.class, ThirdClass.class )
                                       .filterWith( filter ) );
@@ -267,9 +385,10 @@ public class FilterFactoryTest
         assertEquals( 0, result.getIgnoreCount() );
     }
 
+    @Test
     public void testRegexWithTwoClassesAndOneMethod() {
-        Filter filter = createMethodFilter( "%regex[" + FirstClass.class.getName() + ".*"
-                                                + "|" + SecondClass.class.getName() + ".*]#otherMethod" );
+        Filter filter =
+            createMethodFilter( "%regex[" + firstClassRegex + ".*|" + secondClassRegex + ".* # otherMethod]" );
         JUnitCore core = new JUnitCore();
         Result result = core.run( Request.classes( FirstClass.class, SecondClass.class, ThirdClass.class )
                                       .filterWith( filter ) );
@@ -279,9 +398,10 @@ public class FilterFactoryTest
         assertEquals( 0, result.getIgnoreCount() );
     }
 
+    @Test
     public void testRegexWithTwoClassesAndOneMethodComplement() {
-        Filter filter = createMethodFilter( "!%regex[" + FirstClass.class.getName() + ".*"
-                                                + "|" + SecondClass.class.getName() + ".*]#otherMethod" );
+        Filter filter =
+            createMethodFilter( "!%regex[" + firstClassRegex + ".*|" + secondClassRegex + ".*# otherMethod]" );
         JUnitCore core = new JUnitCore();
         Result result = core.run( Request.classes( FirstClass.class, SecondClass.class, ThirdClass.class )
                                       .filterWith( filter ) );
@@ -291,9 +411,9 @@ public class FilterFactoryTest
         assertEquals( 0, result.getIgnoreCount() );
     }
 
+    @Test
     public void testRegexWithTwoClassesAndWildcardMethod() {
-        Filter filter = createMethodFilter( "%regex[" + FirstClass.class.getName() + ".*"
-                                                + "|" + SecondClass.class.getName() + ".*]#test*" );
+        Filter filter = createMethodFilter( "%regex[" + firstClassRegex + ".*|" + secondClassRegex + ".*#test.* ]" );
         JUnitCore core = new JUnitCore();
         Result result = core.run( Request.classes( FirstClass.class, SecondClass.class, ThirdClass.class )
                                       .filterWith( filter ) );
@@ -303,33 +423,9 @@ public class FilterFactoryTest
         assertEquals( 0, result.getIgnoreCount() );
     }
 
-    public void testRegexWithTwoClassesAndWildcardMethodComplement() {
-        Filter filter = createMethodFilter( "!%regex[" + FirstClass.class.getName() + ".*"
-                                                + "|" + SecondClass.class.getName() + ".*]#test*" );
-        JUnitCore core = new JUnitCore();
-        Result result = core.run( Request.classes( FirstClass.class, SecondClass.class, ThirdClass.class )
-                                      .filterWith( filter ) );
-        assertTrue( result.wasSuccessful() );
-        assertEquals( 5, result.getRunCount() );
-        assertEquals( 0, result.getFailureCount() );
-        assertEquals( 0, result.getIgnoreCount() );
-    }
-
-    public void testRegexWithTwoClassesAndRegexMethod() {
-        Filter filter = createMethodFilter( "%regex[" + FirstClass.class.getName() + ".*"
-                                                + "|" + SecondClass.class.getName() + ".*]#%regex[test.*]" );
-        JUnitCore core = new JUnitCore();
-        Result result = core.run( Request.classes( FirstClass.class, SecondClass.class, ThirdClass.class )
-                                      .filterWith( filter ) );
-        assertTrue( result.wasSuccessful() );
-        assertEquals( 2, result.getRunCount() );
-        assertEquals( 0, result.getFailureCount() );
-        assertEquals( 0, result.getIgnoreCount() );
-    }
-
+    @Test
     public void testRegexWithTwoClassesAndRegexMethodComplement() {
-        Filter filter = createMethodFilter( "!%regex[" + FirstClass.class.getName() + ".*"
-                                                + "|" + SecondClass.class.getName() + ".*]#%regex[test.*]" );
+        Filter filter = createMethodFilter( "!%regex[" + firstClassRegex + ".*|" + secondClassRegex + ".*#test.*]" );
         JUnitCore core = new JUnitCore();
         Result result = core.run( Request.classes( FirstClass.class, SecondClass.class, ThirdClass.class )
                                       .filterWith( filter ) );
@@ -339,9 +435,10 @@ public class FilterFactoryTest
         assertEquals( 0, result.getIgnoreCount() );
     }
 
+    @Test
     public void testRegexWithTwoClassesAndRegexMethods() {
-        Filter filter = createMethodFilter( "%regex[" + FirstClass.class.getName() + ".*"
-                                                + "|" + SecondClass.class.getName() + ".*]#%regex[test.*|other.*]" );
+        Filter filter =
+            createMethodFilter( "%regex[ " + firstClassRegex + ".*|" + secondClassRegex + ".* # test.*|other.* ]" );
         JUnitCore core = new JUnitCore();
         Result result = core.run( Request.classes( FirstClass.class, SecondClass.class, ThirdClass.class )
                                       .filterWith( filter ) );
@@ -351,9 +448,10 @@ public class FilterFactoryTest
         assertEquals( 0, result.getIgnoreCount() );
     }
 
+    @Test
     public void testRegexWithTwoClassesAndRegexMethodsComplement() {
-        Filter filter = createMethodFilter( "!%regex[" + FirstClass.class.getName() + ".*"
-                                                + "|" + SecondClass.class.getName() + ".*]#%regex[test.*|other.*]" );
+        Filter filter =
+            createMethodFilter( "!%regex[" + firstClassRegex + ".*|" + secondClassRegex + ".* # test.*|other.* ]" );
         JUnitCore core = new JUnitCore();
         Result result = core.run( Request.classes( FirstClass.class, SecondClass.class, ThirdClass.class )
                                       .filterWith( filter ) );
@@ -363,35 +461,10 @@ public class FilterFactoryTest
         assertEquals( 0, result.getIgnoreCount() );
     }
 
-    public void testRegexWithTwoClassesAndMultipleRegexMethods() {
-        Filter filter = createMethodFilter( "%regex[" + FirstClass.class.getName() + ".*"
-                                                + "|" + SecondClass.class.getName() + ".*]"
-                                                + "#%regex[test.*]+%regex[other.*]" );
-        JUnitCore core = new JUnitCore();
-        Result result = core.run( Request.classes( FirstClass.class, SecondClass.class, ThirdClass.class )
-                                      .filterWith( filter ) );
-        assertTrue( result.wasSuccessful() );
-        assertEquals( 3, result.getRunCount() );
-        assertEquals( 0, result.getFailureCount() );
-        assertEquals( 0, result.getIgnoreCount() );
-    }
-
-    public void testRegexWithTwoClassesAndMultipleRegexMethodsComplement() {
-        Filter filter = createMethodFilter( "!%regex[" + FirstClass.class.getName() + ".*"
-                                                + "|" + SecondClass.class.getName() + ".*]"
-                                                + "#%regex[test.*]+%regex[other.*]" );
-        JUnitCore core = new JUnitCore();
-        Result result = core.run( Request.classes( FirstClass.class, SecondClass.class, ThirdClass.class )
-                                      .filterWith( filter ) );
-        assertTrue( result.wasSuccessful() );
-        assertEquals( 4, result.getRunCount() );
-        assertEquals( 0, result.getFailureCount() );
-        assertEquals( 0, result.getIgnoreCount() );
-    }
-
+    @Test
     public void testMultipleRegexClasses() {
-        Filter filter = createMethodFilter( "%regex[" + FirstClass.class.getName() + ".*],"
-                                                + "%regex[" + SecondClass.class.getName() + ".*]" );
+        Filter filter =
+            createMethodFilter( "%regex[" + firstClassRegex + ".*], %regex[" + secondClassRegex + ".*]" );
         JUnitCore core = new JUnitCore();
         Result result = core.run( Request.classes( FirstClass.class, SecondClass.class, ThirdClass.class )
                                       .filterWith( filter ) );
@@ -401,9 +474,10 @@ public class FilterFactoryTest
         assertEquals( 0, result.getIgnoreCount() );
     }
 
+    @Test
     public void testMultipleRegexClassesComplement() {
-        Filter filter = createMethodFilter( "!%regex[" + FirstClass.class.getName() + ".*],"
-                                                + "!%regex[" + SecondClass.class.getName() + ".*]" );
+        Filter filter =
+            createMethodFilter( "!%regex[" + firstClassRegex + ".*] , !%regex[" + secondClassRegex + ".*]" );
         JUnitCore core = new JUnitCore();
         Result result = core.run( Request.classes( FirstClass.class, SecondClass.class, ThirdClass.class )
                                       .filterWith( filter ) );
@@ -413,8 +487,9 @@ public class FilterFactoryTest
         assertEquals( 0, result.getIgnoreCount() );
     }
 
+    @Test
     public void testMultipleClasses() {
-        Filter filter = createMethodFilter( FirstClass.class.getName() + "," + SecondClass.class.getName() );
+        Filter filter = createMethodFilter( firstClassName + "," + secondClassName );
         JUnitCore core = new JUnitCore();
         Result result = core.run( Request.classes( FirstClass.class, SecondClass.class, ThirdClass.class )
                                       .filterWith( filter ) );
@@ -424,9 +499,9 @@ public class FilterFactoryTest
         assertEquals( 0, result.getIgnoreCount() );
     }
 
+    @Test
     public void testMultipleClassesMethods() {
-        Filter filter = createMethodFilter( FirstClass.class.getName() + "#other*,"
-                                                + SecondClass.class.getName() + "#*TestMethod" );
+        Filter filter = createMethodFilter( firstClassName + "#other*," + secondClassName + "#*TestMethod" );
         JUnitCore core = new JUnitCore();
         Result result = core.run( Request.classes( FirstClass.class, SecondClass.class, ThirdClass.class )
                                       .filterWith( filter ) );
@@ -436,9 +511,10 @@ public class FilterFactoryTest
         assertEquals( 0, result.getIgnoreCount() );
     }
 
+    @Test
     public void testMultipleClassesAndMultipleMethodsWithWildcards() {
-        Filter filter = createMethodFilter( FirstClass.class.getName() + "#other*+second*Method,"
-                                                + SecondClass.class.getName() + "#*TestMethod" );
+        Filter filter = createMethodFilter( firstClassName + "#other*+second*Method,"
+                                                + secondClassName + "#*TestMethod" );
         JUnitCore core = new JUnitCore();
         Result result = core.run( Request.classes( FirstClass.class, SecondClass.class, ThirdClass.class )
                                       .filterWith( filter ) );
@@ -448,9 +524,10 @@ public class FilterFactoryTest
         assertEquals( 0, result.getIgnoreCount() );
     }
 
+    @Test
     public void testMultipleClassesAndMultipleMethodsWithRegex() {
-        Filter filter = createMethodFilter( FirstClass.class.getName() + "#%regex[other.*|second.*Method],"
-                                                + SecondClass.class.getName() + "#%regex[.*TestMethod]" );
+        Filter filter = createMethodFilter( "%regex[" + firstClassRegex + ".class#other.*|second.*Method],"
+                                                + "%regex[" + secondClassRegex + ".class#.*TestMethod]" );
         JUnitCore core = new JUnitCore();
         Result result = core.run( Request.classes( FirstClass.class, SecondClass.class, ThirdClass.class )
                                       .filterWith( filter ) );
@@ -460,9 +537,10 @@ public class FilterFactoryTest
         assertEquals( 0, result.getIgnoreCount() );
     }
 
+    @Test
     public void testMultipleClassesAndMultipleMethodsMix() {
-        Filter filter = createMethodFilter( FirstClass.class.getName() + "#%regex[other.*|second.*Method],"
-                                                + SecondClass.class.getName() + "#*TestMethod" );
+        Filter filter = createMethodFilter( "%regex[" + firstClassRegex + ".class # other.*|second.*Method],"
+                                                + secondClassName + "#*TestMethod" );
         JUnitCore core = new JUnitCore();
         Result result = core.run( Request.classes( FirstClass.class, SecondClass.class, ThirdClass.class )
                                       .filterWith( filter ) );
@@ -472,9 +550,10 @@ public class FilterFactoryTest
         assertEquals( 0, result.getIgnoreCount() );
     }
 
+    @Test
     public void testMultipleClassesAndMultipleMethods() {
-        Filter filter = createMethodFilter( FirstClass.class.getName() + "#other*+secondTestMethod,"
-                                                + SecondClass.class.getName() + "#*TestMethod" );
+        Filter filter = createMethodFilter( firstClassName + "#other*+secondTestMethod,"
+                                                + secondClassName + "#*TestMethod" );
         JUnitCore core = new JUnitCore();
         Result result = core.run( Request.classes( FirstClass.class, SecondClass.class, ThirdClass.class )
                                       .filterWith( filter ) );
@@ -484,8 +563,9 @@ public class FilterFactoryTest
         assertEquals( 0, result.getIgnoreCount() );
     }
 
+    @Test
     public void testMultipleClassesComplement() {
-        Filter filter = createMethodFilter( "!" + FirstClass.class.getName() + ",!" + SecondClass.class.getName() );
+        Filter filter = createMethodFilter( "!" + firstClassName + ",!" + secondClassName );
         JUnitCore core = new JUnitCore();
         Result result = core.run( Request.classes( FirstClass.class, SecondClass.class, ThirdClass.class )
                                       .filterWith( filter ) );
@@ -495,9 +575,11 @@ public class FilterFactoryTest
         assertEquals( 0, result.getIgnoreCount() );
     }
 
+    @Test
     public void testMultipleRegexClassesMethods() {
-        Filter filter = createMethodFilter( "%regex[" + FirstClass.class.getName() + ".*]#%regex[test.*]+%regex[other.*],"
-                                                + "%regex[" + SecondClass.class.getName() + ".*]#%regex[second.*]" );
+        Filter filter =
+            createMethodFilter( "%regex[" + firstClassRegex + ".* # test.*|other.*],"
+                                    + "%regex[" + secondClassRegex + ".*#second.*]" );
         JUnitCore core = new JUnitCore();
         Result result = core.run( Request.classes( FirstClass.class, SecondClass.class, ThirdClass.class )
                                       .filterWith( filter ) );
@@ -507,9 +589,11 @@ public class FilterFactoryTest
         assertEquals( 0, result.getIgnoreCount() );
     }
 
+    @Test
     public void testMultipleRegexClassesMethodsComplement() {
-        Filter filter = createMethodFilter( "!%regex[" + FirstClass.class.getName() + ".*]#%regex[test.*]+%regex[other.*],"
-                                                + "!%regex[" + SecondClass.class.getName() + ".*]#%regex[second.*]" );
+        Filter filter =
+            createMethodFilter( "!%regex[" + firstClassRegex + ".* # test.*|other.*],"
+                                    + "!%regex[" + secondClassRegex + ".*#second.*]" );
         JUnitCore core = new JUnitCore();
         Result result = core.run( Request.classes( FirstClass.class, SecondClass.class, ThirdClass.class )
                                       .filterWith( filter ) );
@@ -519,12 +603,14 @@ public class FilterFactoryTest
         assertEquals( 0, result.getIgnoreCount() );
     }
 
+    @Test
     public void testShouldMatchExactMethodName()
     {
         Filter exactFilter = createMethodFilter( "#testMethod" );
         assertTrue( "exact match on name should run", exactFilter.shouldRun( testMethod ) );
     }
 
+    @Test
     public void testShouldMatchExactMethodNameComplement()
     {
         Filter exactFilter = createMethodFilter( "!#testMethod" );
@@ -532,26 +618,59 @@ public class FilterFactoryTest
         assertTrue( "should run other than testMethod", exactFilter.shouldRun( secondTestMethod ) );
         assertFalse( "should not run testMethod", exactFilter.shouldRun( testMethodInSecondClass ) );
         assertTrue( "should run other than testMethod", exactFilter.shouldRun( secondTestMethodInSecondClass ) );
+
+        exactFilter = createMethodFilter( "!FilterFactoryTest$FirstClass#testMethod" );
+        assertFalse( "should not run testMethod", exactFilter.shouldRun( testMethod ) );
+        assertTrue( "should run other than testMethod", exactFilter.shouldRun( secondTestMethod ) );
+        assertTrue( "should not run testMethod", exactFilter.shouldRun( testMethodInSecondClass ) );
+        assertTrue( "should run other than testMethod", exactFilter.shouldRun( secondTestMethodInSecondClass ) );
+
+        exactFilter =
+            createMethodFilter( "!FilterFactoryTest$FirstClass#testMethod, !FilterFactoryTest$SecondClass#testMethod" );
+        assertFalse( "should not run testMethod", exactFilter.shouldRun( testMethod ) );
+        assertTrue( "should run other than testMethod", exactFilter.shouldRun( secondTestMethod ) );
+        assertFalse( "should not run testMethod", exactFilter.shouldRun( testMethodInSecondClass ) );
+        assertTrue( "should run other than testMethod", exactFilter.shouldRun( secondTestMethodInSecondClass ) );
     }
 
+    @Test
     public void testShouldMatchExactMethodNameWithHash()
     {
-        Filter exactFilter = createMethodFilter( "#testMethod" );
+        final Filter exactFilter = createMethodFilter( "#testMethod" );
         assertTrue( "exact match on name should run", exactFilter.shouldRun( testMethod ) );
     }
 
+    @Test
+    public void testShouldNotNonExistingMethod()
+    {
+        String sourceFile = "pkg" + File.separator + "XMyTest.class";
+        assertFalse( new TestListResolver( "#testMethod" ).shouldRun( sourceFile, null ) );
+    }
+
+    @Test
+    public void testShouldNotRunDifferentMethods()
+    {
+        final Filter exactFilter = createMethodFilter( "#testMethod" );
+        Description testCase = createSuiteDescription( FirstClass.class );
+        testCase.addChild( otherMethod );
+        assertFalse( "exact match test case", exactFilter.shouldRun( testCase ) );
+    }
+
+    @Test
     public void testShouldNotRunExactMethodWithoutClass()
     {
         Filter exactFilter = createMethodFilter( "#testMethod" );
         assertFalse( "should run containing matching method", exactFilter.shouldRun( secondTestMethod ) );
     }
 
+    @Test
     public void testShouldNotMatchExactOnOtherMethod()
     {
         Filter exactFilter = createMethodFilter( "#testMethod" );
         assertFalse( "should not run other methods", exactFilter.shouldRun( otherMethod ) );
     }
 
+    @Test
     public void testShouldMatchWildCardsInMethodName()
     {
         Filter starAtEnd = createMethodFilter( "#test*" );
@@ -576,12 +695,14 @@ public class FilterFactoryTest
         assertTrue( "match containing star and question mark should run", starAndQuestion.shouldRun( testMethod ) );
     }
 
+    @Test
     public void testShouldMatchExactClassAndMethod()
     {
         Filter exactFilter = createMethodFilter( firstClassName + "#testMethod" );
         assertTrue( "exact match on name should run", exactFilter.shouldRun( testMethod ) );
     }
 
+    @Test
     public void testShouldMatchSimpleClassNameWithMethod()
     {
         Filter exactFilter = createMethodFilter( "FilterFactoryTest$FirstClass#testMethod" );
@@ -589,6 +710,25 @@ public class FilterFactoryTest
         assertFalse( "other method should not match", exactFilter.shouldRun( otherMethod ) );
     }
 
+    @Test
+    public void testShouldMatchNestedClassAsRegexWithMethod()
+    {
+        Filter exactFilter =
+            createMethodFilter( "%regex[.*.common.junit48.FilterFactoryTest\\$FirstClass.class#testMethod]" );
+        assertTrue( "exact match on name should run", exactFilter.shouldRun( testMethod ) );
+        assertFalse( "other method should not match", exactFilter.shouldRun( otherMethod ) );
+    }
+
+    @Test
+    public void testShouldMatchNestedCanonicalClassAsRegexWithMethod()
+    {
+        Filter exactFilter =
+            createMethodFilter( "%regex[.*.common.junit48.FilterFactoryTest.FirstClass.class#testMethod]" );
+        assertTrue( "exact match on name should run", exactFilter.shouldRun( testMethod ) );
+        assertFalse( "other method should not match", exactFilter.shouldRun( otherMethod ) );
+    }
+
+    @Test
     public void testShouldMatchClassNameWithWildcardAndMethod()
     {
         Filter exactFilter = createMethodFilter( "*First*#testMethod" );
@@ -596,6 +736,7 @@ public class FilterFactoryTest
         assertFalse( "other method should not match", exactFilter.shouldRun( otherMethod ) );
     }
 
+    @Test
     public void testShouldMatchClassNameWithWildcardCompletely()
     {
         Filter exactFilter = createMethodFilter( "First*#testMethod" );
@@ -603,6 +744,7 @@ public class FilterFactoryTest
         assertFalse( "other method should not match", exactFilter.shouldRun( otherMethod ) );
     }
 
+    @Test
     public void testShouldMatchMultipleMethodsSeparatedByComma()
     {
         Filter exactFilter = createMethodFilter( firstClassName + "#testMethod,#secondTestMethod" );
@@ -614,9 +756,10 @@ public class FilterFactoryTest
         assertFalse( "other method should not match", exactFilter.shouldRun( otherMethod ) );
     }
 
+    @Test
     public void testShouldMatchMultipleMethodsInSameClassSeparatedByPlus()
     {
-        Filter exactFilter = createMethodFilter( FirstClass.class.getName() + "#testMethod+secondTestMethod" );
+        Filter exactFilter = createMethodFilter( firstClassName + "#testMethod+secondTestMethod" );
 
         assertTrue( "exact match on name should run", exactFilter.shouldRun( testMethod ) );
         assertTrue( "exact match on name should run", exactFilter.shouldRun( secondTestMethod ) );
@@ -627,6 +770,7 @@ public class FilterFactoryTest
         assertFalse( "other method should not match", exactFilter.shouldRun( otherMethod ) );
     }
 
+    @Test
     public void testShouldRunCompleteClassWhenSeparatedByCommaWithoutHash()
     {
         Filter exactFilter = createMethodFilter( firstClassName + "#testMethod," + secondClassName );
@@ -640,6 +784,7 @@ public class FilterFactoryTest
         assertTrue( "should run complete second class", exactFilter.shouldRun( secondTestMethodInSecondClass ) );
     }
 
+    @Test
     public void testShouldRunSuitesContainingExactMethodName()
     {
         Description suite = Description.createSuiteDescription( Suite.class );
@@ -650,6 +795,7 @@ public class FilterFactoryTest
         assertTrue( "should run suites containing matching method", exactFilter.shouldRun( suite ) );
     }
 
+    @Test
     public void testShouldSkipSuitesNotContainingExactMethodName()
     {
         Filter exactFilter = createMethodFilter( "#otherMethod" );
@@ -661,6 +807,7 @@ public class FilterFactoryTest
         assertFalse( "should not run suites containing no matches", exactFilter.shouldRun( suite ) );
     }
 
+    @Test
     public void testSingleMethodWithJUnitCoreSuite()
     {
         Filter filter = createMethodFilter( "#testMethod" );
@@ -672,67 +819,44 @@ public class FilterFactoryTest
         assertEquals( 0, result.getIgnoreCount() );
     }
 
-    /*public void testSuiteAggregator()
-        throws InitializationError
+    @Test
+    public void testShouldNotRunNonExistingMethodJUnitCoreSuite()
     {
-
-        class FilteringRequest
-            extends Request
-        {
-            private Runner filteredRunner;
-
-            public FilteringRequest( Request req, Filter filter )
-            {
-                try
-                {
-                    Runner runner = req.getRunner();
-                    filter.apply( runner );
-                    filteredRunner = runner;
-                }
-                catch ( NoTestsRemainException e )
-                {
-                    filteredRunner = null;
-                }
-            }
-
-            @Override
-            public Runner getRunner()
-            {
-                return filteredRunner;
-            }
-        }
-
-        Request req = Request.classes( new Computer()
-        {
-            private final List<Runner> runners = new ArrayList<Runner>();
-
-            @Override
-            public Runner getSuite( RunnerBuilder builder, Class<?>[] classes )
-                throws InitializationError
-            {
-                super.getSuite( builder, classes );
-                return new org.junit.runners.Suite( (Class<?>) null, runners ) {};
-            }
-
-            @Override
-            protected Runner getRunner( RunnerBuilder builder, Class<?> testClass )
-                throws Throwable
-            {
-                Runner runner = new org.junit.runners.Suite( (Class<?>) null, Arrays.asList( super.getRunner( builder, testClass ) ) ) {};
-                runners.add( runner );
-                return runner;
-            }
-        }, Suite.class );
-        Filter filter = createMethodFilter( "FilterFactoryTest$Suite" );
-        Request request = new FilteringRequest( req, filter );
+        Filter filter = createMethodFilter( "#nonExisting" );
         JUnitCore core = new JUnitCore();
-        Result result = core.run( request );
+        Result result = core.run( Request.classes( Suite.class ).filterWith( filter ) );
+        assertFalse( result.wasSuccessful() );
+        assertEquals( 1, result.getRunCount() );//running the Suite
+        assertEquals( 1, result.getFailureCount() );
+        assertEquals( 0, result.getIgnoreCount() );
+    }
+
+    @Test
+    public void testShouldRunNonExistingMethodJUnitCoreSuite()
+    {
+        Filter filter = createMethodFilter( "!#nonExisting" );
+        JUnitCore core = new JUnitCore();
+        Result result = core.run( Request.classes( Suite.class ).filterWith( filter ) );
+        assertTrue( result.wasSuccessful() );
+        assertEquals( 5, result.getRunCount() );
+        assertEquals( 0, result.getFailureCount() );
+        assertEquals( 0, result.getIgnoreCount() );
+    }
+
+    @Test
+    public void testClassAndMethodJUnitCoreSuite()
+    {
+        Filter filter = createMethodFilter( "FilterFactoryTest$FirstClass#testMethod" );
+        JUnitCore core = new JUnitCore();
+        Result result = core.run( Request.classes( Suite.class, FirstClass.class, SecondClass.class )
+                                      .filterWith( filter ) );
         assertTrue( result.wasSuccessful() );
         assertEquals( 2, result.getRunCount() );
         assertEquals( 0, result.getFailureCount() );
         assertEquals( 0, result.getIgnoreCount() );
-    }*/
+    }
 
+    @Test
     public void testSingleMethodWithJUnitCoreFirstClass()
     {
         Filter filter = createMethodFilter( "#testMethod" );
@@ -744,6 +868,7 @@ public class FilterFactoryTest
         assertEquals( 0, result.getIgnoreCount() );
     }
 
+    @Test
     public void testWithJUnitCoreFirstClassAndSingleMethod()
     {
         Filter filter = createMethodFilter( "FilterFactoryTest$FirstClass#testMethod" );
@@ -753,5 +878,127 @@ public class FilterFactoryTest
         assertEquals( 1, result.getRunCount() );
         assertEquals( 0, result.getFailureCount() );
         assertEquals( 0, result.getIgnoreCount() );
+    }
+
+    @Test
+    public void testShouldRunSuite()
+    {
+        TestListResolver filter = new TestListResolver( "Su?te" );
+        filter = filter.createMethodFilters();
+        JUnitCore core = new JUnitCore();
+        Result result = core.run( Request.classes( Suite.class ).filterWith( new MethodFilter( filter ) ) );
+        assertTrue( result.wasSuccessful() );
+        assertEquals( 5, result.getRunCount() );
+        assertEquals( 0, result.getFailureCount() );
+        assertEquals( 0, result.getIgnoreCount() );
+    }
+
+    @Test
+    public void testShouldRunParameterized()
+    {
+        TestListResolver filter =
+            new TestListResolver( "#testAA[?]+testB?[?], "
+                                      + "PT#testC*, "
+                                      + "!PT.java#testCY[?],"
+                                      + "%regex[.*.tests.pt.PT.class#w.*|x.*T.*]" );
+        filter = filter.createMethodFilters();
+        JUnitCore core = new JUnitCore();
+        Result result = core.run( Request.classes( PT.class ).filterWith( new MethodFilter( filter ) ) );
+        assertTrue( result.wasSuccessful() );
+        assertEquals( 12, result.getRunCount() );
+        assertEquals( 0, result.getFailureCount() );
+        assertEquals( 0, result.getIgnoreCount() );
+    }
+
+    @Test
+    public void testShouldRunParameterizedWithPlusDelimiter()
+    {
+        // Running parameterized tests: w12T34, x12T34 and x12T35.
+        // Two parameters "x" and "y" in the test case PT.java change the method descriptions to the following ones:
+        // w12T34[0], w12T34[1]
+        // x12T34[0], x12T34[1]
+        // x12T35[0], x12T35[1]
+        TestListResolver filter =
+            new TestListResolver( "%regex[.*.PT.* # w.*|x(\\d+)T(\\d+)\\[(\\d+)\\]]" );
+        filter = filter.createMethodFilters();
+        JUnitCore core = new JUnitCore();
+        Result result = core.run( Request.classes( PT.class ).filterWith( new MethodFilter( filter ) ) );
+        assertTrue( result.wasSuccessful() );
+        assertEquals( 6, result.getRunCount() );
+        assertEquals( 0, result.getFailureCount() );
+        assertEquals( 0, result.getIgnoreCount() );
+    }
+
+    @Test
+    public void testTestListResolver()
+    {
+        assertFalse( new TestListResolver( "b/ATest.java" ).shouldRun( "tests/a/ATest.class", null ) );
+        assertFalse( new TestListResolver( "b/Test.java" ).shouldRun( "a/ATest.class", null ) );
+        assertTrue( new TestListResolver( "ATest.java" ).shouldRun( "tests/a/ATest.class", null ) );
+        assertTrue( new TestListResolver( "a/ATest.java" ).shouldRun( "a/ATest.class", null ) );
+        assertTrue( new TestListResolver( "**/ATest.java" ).shouldRun( "a/ATest.class", null ) );
+        Class<?> testsATest = org.apache.maven.surefire.common.junit48.tests.ATest.class;
+        Class<?> aTest = org.apache.maven.surefire.common.junit48.tests.a.ATest.class;
+        assertFalse( new TestListResolver( "b/ATest.java" ).shouldRun( testsATest, null ) );
+        assertFalse( new TestListResolver( "b/ATest.java" ).shouldRun( aTest, null ) );
+        assertTrue( new TestListResolver( "ATest.java" ).shouldRun( testsATest, null ) );
+        assertTrue( new TestListResolver( "a/ATest.java" ).shouldRun( aTest, null ) );
+        assertTrue( new TestListResolver( "**/ATest.java" ).shouldRun( aTest, null ) );
+    }
+
+    @Test
+    public void testMatchPatterns()
+    {
+        String sourceFile = "pkg" + File.separator + "MyTest.class";
+        boolean matchPattern =
+            MatchPatterns.from( "**" + File.separator + "MyTest.class" ).matches( sourceFile, true );
+        assertTrue( matchPattern );
+
+        matchPattern = MatchPatterns.from( "MyTest.class" ).matches( sourceFile, true );
+        assertFalse( matchPattern );
+
+        matchPattern = MatchPatterns.from( "MyTest.class" ).matches( "MyTest.class", true );
+        assertTrue( matchPattern );
+
+        matchPattern = MatchPatterns.from( "**" + File.separator + "MyTest.class" ).matches( "MyTest.class", true );
+        assertTrue( matchPattern );
+    }
+
+    @Test
+    public void testNegativePatternOnPackageLessClass()
+    {
+        String sourceFile = "pkg" + File.separator + "XMyTest.class";
+        assertFalse( new TestListResolver( "**/MyTest.java" ).shouldRun( sourceFile, null ) );
+        assertFalse( new TestListResolver( "MyTest.java" ).shouldRun( sourceFile, null ) );
+        assertFalse( new TestListResolver( "MyTest.java" ).shouldRun( "XMyTest.class", null ) );
+        assertFalse( new TestListResolver( "**/MyTest.java" ).shouldRun( "XMyTest.class", null ) );
+    }
+
+    @Test
+    public void testPatternOnPackageLessClass()
+    {
+        String sourceFile = "pkg" + File.separator + "MyTest.class";
+        assertTrue( new TestListResolver( "**/MyTest.java" ).shouldRun( sourceFile, null ) );
+        assertTrue( new TestListResolver( "MyTest.java" ).shouldRun( sourceFile, null ) );
+        assertTrue( new TestListResolver( "MyTest.java" ).shouldRun( "MyTest.class", null ) );
+        assertTrue( new TestListResolver( "**/MyTest.java" ).shouldRun( "MyTest.class", null ) );
+    }
+
+    @Test
+    public void testIncludesExcludes()
+    {
+        Collection<String> inc = Arrays.asList( "**/NotIncludedByDefault.java", "**/*Test.java" );
+        Collection<String> exc = Arrays.asList( "**/DontRunTest.*" );
+        TestListResolver resolver = new TestListResolver( inc, exc );
+        assertFalse( resolver.shouldRun( "org/test/DontRunTest.class", null ) );
+        assertTrue( resolver.shouldRun( "org/test/DefaultTest.class", null ) );
+        assertTrue( resolver.shouldRun( "org/test/NotIncludedByDefault.class", null ) );
+    }
+
+    @Test
+    public void testSimple()
+    {
+        TestListResolver resolver = new TestListResolver( "NotIncludedByDefault" );
+        assertTrue( resolver.shouldRun( "org/test/NotIncludedByDefault.class", null ) );
     }
 }
