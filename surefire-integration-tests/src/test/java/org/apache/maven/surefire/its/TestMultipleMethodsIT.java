@@ -21,6 +21,7 @@ package org.apache.maven.surefire.its;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
 
@@ -35,10 +36,15 @@ public class TestMultipleMethodsIT
 
     private static final String RUNNING_WITH_JUNIT48 = "parallel='none', perCoreThreadCount=true, threadCount=0";
 
-    public OutputValidator multipleMethod( String projectName )
+    public OutputValidator multipleMethod( String projectName, String... goals )
         throws Exception
     {
-        return unpack( projectName ).executeTest().verifyErrorFreeLog().assertTestSuiteResults( 3, 0, 0, 0 );
+        SurefireLauncher launcher = unpack( projectName );
+        for ( String goal : goals )
+        {
+            launcher.addGoal( goal );
+        }
+        return launcher.executeTest().verifyErrorFreeLog().assertTestSuiteResults( 3, 0, 0, 0 );
     }
 
     @Test
@@ -49,10 +55,18 @@ public class TestMultipleMethodsIT
     }
 
     @Test
-    public void testJunit48()
+    public void testJunit48Provider4()
         throws Exception
     {
-        multipleMethod( "junit48-multiple-methods" ).verifyTextInLog( RUNNING_WITH_JUNIT48 );
+        multipleMethod( "junit48-multiple-methods", "-P surefire-junit4" );
+    }
+
+    @Test
+    public void testJunit48Provider47()
+        throws Exception
+    {
+        multipleMethod( "junit48-multiple-methods", "-P surefire-junit47" )
+            .verifyTextInLog( RUNNING_WITH_JUNIT48 );
     }
 
 }

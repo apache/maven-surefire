@@ -21,6 +21,7 @@ package org.apache.maven.surefire.its;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
 /**
@@ -33,10 +34,15 @@ public class TestSingleMethodIT
 {
     private static final String RUNNING_WITH_JUNIT48 = "parallel='none', perCoreThreadCount=true, threadCount=0";
 
-    public OutputValidator singleMethod( String projectName )
+    public OutputValidator singleMethod( String projectName, String... goals )
         throws Exception
     {
-        return unpack( projectName ).executeTest().verifyErrorFreeLog().assertTestSuiteResults( 1, 0, 0, 0 );
+        SurefireLauncher launcher = unpack( projectName );
+        for ( String goal : goals )
+        {
+            launcher.addGoal( goal );
+        }
+        return launcher.executeTest().verifyErrorFreeLog().assertTestSuiteResults( 1, 0, 0, 0 );
     }
 
     @Test
@@ -47,10 +53,18 @@ public class TestSingleMethodIT
     }
 
     @Test
-    public void testJunit48()
+    public void testJunit48Provider4()
         throws Exception
     {
-        singleMethod( "junit48-single-method" ).verifyTextInLog( RUNNING_WITH_JUNIT48 );
+        singleMethod( "junit48-single-method", "-P surefire-junit4" );
+    }
+
+    @Test
+    public void testJunit48Provider47()
+        throws Exception
+    {
+        singleMethod( "junit48-single-method", "-P surefire-junit47" )
+            .verifyTextInLog( RUNNING_WITH_JUNIT48 );
     }
 
     @Test
@@ -58,9 +72,11 @@ public class TestSingleMethodIT
         throws Exception
     {
         unpack( "junit48-single-method" )
-                .executeTest()
-                .verifyErrorFreeLog()
-                .assertTestSuiteResults( 1, 0, 0, 0 );
+            .parallel( "all" )
+            .useUnlimitedThreads()
+            .executeTest()
+            .verifyErrorFreeLog()
+            .assertTestSuiteResults( 1, 0, 0, 0 );
     }
 
     @Test

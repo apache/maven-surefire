@@ -21,6 +21,7 @@ package org.apache.maven.surefire.its;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
 /**
@@ -33,9 +34,14 @@ public class TestMethodPatternIT
 {
     private static final String RUNNING_WITH_JUNIT48 = "parallel='none', perCoreThreadCount=true, threadCount=0";
 
-    public OutputValidator runMethodPattern( String projectName )
+    public OutputValidator runMethodPattern( String projectName, String... goals )
     {
-        return unpack( projectName ).executeTest().assertTestSuiteResults( 2, 0, 0, 0 );
+        SurefireLauncher launcher = unpack( projectName );
+        for ( String goal : goals )
+        {
+            launcher.addGoal( goal );
+        }
+        return launcher.executeTest().assertTestSuiteResults( 2, 0, 0, 0 );
     }
 
     @Test
@@ -45,15 +51,25 @@ public class TestMethodPatternIT
     }
 
     @Test
-    public void testJUnit48()
+    public void testJUnit48Provider4()
     {
-        runMethodPattern( "junit48-method-pattern" ).verifyTextInLog( RUNNING_WITH_JUNIT48 );
+        runMethodPattern( "junit48-method-pattern", "-P surefire-junit4" );
+    }
+
+    @Test
+    public void testJUnit48Provider47()
+    {
+        runMethodPattern( "junit48-method-pattern", "-P surefire-junit47" )
+            .verifyTextInLog( RUNNING_WITH_JUNIT48 );
     }
 
     @Test
     public void testJUnit48WithCategoryFilter()
     {
-        unpack( "junit48-method-pattern" ).addGoal( "-Dgroups=junit4.SampleCategory" ).executeTest().assertTestSuiteResults( 1, 0, 0, 0 );;
+        unpack( "junit48-method-pattern" )
+            .addGoal( "-Dgroups=junit4.SampleCategory" )
+            .executeTest()
+            .assertTestSuiteResults( 1, 0, 0, 0 );;
     }
 
     @Test
@@ -71,7 +87,10 @@ public class TestMethodPatternIT
     @Test
     public void testMethodPatternAfter()
     {
-        unpack( "testng-method-pattern-after" ).executeTest().verifyErrorFree( 2 ).verifyTextInLog( "Called tearDown" );
+        unpack( "testng-method-pattern-after" )
+            .executeTest()
+            .verifyErrorFree( 2 )
+            .verifyTextInLog( "Called tearDown" );
     }
 
 }

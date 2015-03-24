@@ -185,7 +185,8 @@ public class IntegrationTestMojo
      * Each include item may also contain a comma-separated sublist of items, which will be treated as multiple
      * &nbsp;&lt;include> entries.<br/>
      * Since 2.19 a complex syntax is supported in one parameter (JUnit 4, JUnit 4.7+, TestNG):<br/>
-     * &nbsp;&lt;include>%regex[.*[Cat|Dog].*], !%regex[pkg.*Slow.*.class], pkg&#47;**&#47;*Fast*.java, Basic????, !Unstable*&lt;/include><br/>
+     * &nbsp;&lt;include>%regex[.*[Cat|Dog].*], Basic????, !Unstable*&lt;/include><br/>
+     * &nbsp;&lt;include>%regex[.*[Cat|Dog].*], !%regex[pkg.*Slow.*.class], pkg&#47;**&#47;*Fast*.java&lt;/include><br/>
      * <p/>
      * This parameter is ignored if the TestNG <code>suiteXmlFiles</code> parameter is specified.<br/>
      * <br/>
