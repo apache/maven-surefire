@@ -34,6 +34,8 @@ import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.ReflectionUtils;
 
+import static org.apache.maven.surefire.util.internal.StringUtils.encodeStringForForkCommunication;
+
 /**
  * The part of the booter that is unique to a forked vm.
  * <p/>
@@ -80,14 +82,14 @@ public class ForkedBooter
                 classpathConfiguration.trickClassPathWhenManifestOnlyClasspath();
             }
 
-            Thread.currentThread().getContextClassLoader().setDefaultAssertionStatus(
-                classpathConfiguration.isEnableAssertions() );
+            ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+            classLoader.setDefaultAssertionStatus( classpathConfiguration.isEnableAssertions() );
             startupConfiguration.writeSurefireTestClasspathProperty();
 
             final Object testSet;
             if ( forkedTestSet != null )
             {
-                testSet = forkedTestSet.getDecodedValue( Thread.currentThread().getContextClassLoader() );
+                testSet = forkedTestSet.getDecodedValue( classLoader );
             }
             else if ( readTestsFromInputStream )
             {
@@ -109,19 +111,19 @@ public class ForkedBooter
                     new LegacyPojoStackTraceWriter( "test subystem", "no method", t.getTargetException() );
                 StringBuilder stringBuilder = new StringBuilder();
                 ForkingRunListener.encode( stringBuilder, stackTraceWriter, false );
-                originalOut.println( ( (char) ForkingRunListener.BOOTERCODE_ERROR )
-                                     + ",0," + stringBuilder.toString() );
+                encodeAndWriteToOutput( ( (char) ForkingRunListener.BOOTERCODE_ERROR )
+                                     + ",0," + stringBuilder.toString() + "\n" , originalOut );
             }
             catch ( Throwable t )
             {
                 StackTraceWriter stackTraceWriter = new LegacyPojoStackTraceWriter( "test subystem", "no method", t );
                 StringBuilder stringBuilder = new StringBuilder();
                 ForkingRunListener.encode( stringBuilder, stackTraceWriter, false );
-                originalOut.println( ( (char) ForkingRunListener.BOOTERCODE_ERROR )
-                                     + ",0," + stringBuilder.toString() );
+                encodeAndWriteToOutput( ( (char) ForkingRunListener.BOOTERCODE_ERROR )
+                                     + ",0," + stringBuilder.toString() + "\n", originalOut );
             }
             // Say bye.
-            originalOut.println( ( (char) ForkingRunListener.BOOTERCODE_BYE ) + ",0,BYE!" );
+            encodeAndWriteToOutput( ( (char) ForkingRunListener.BOOTERCODE_BYE ) + ",0,BYE!\n", originalOut );
             originalOut.flush();
             // noinspection CallToSystemExit
             exit( 0 );
@@ -134,6 +136,12 @@ public class ForkedBooter
             // noinspection ProhibitedExceptionThrown,CallToSystemExit
             exit( 1 );
         }
+    }
+
+    private static void encodeAndWriteToOutput( String string, PrintStream out )
+    {
+        byte[] encodeBytes = encodeStringForForkCommunication( string );
+        out.write( encodeBytes, 0, encodeBytes.length );
     }
 
     private static final long SYSTEM_EXIT_TIMEOUT = 30 * 1000;

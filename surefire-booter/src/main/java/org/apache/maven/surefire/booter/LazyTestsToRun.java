@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -31,6 +32,9 @@ import java.util.List;
 
 import org.apache.maven.surefire.util.ReflectionUtils;
 import org.apache.maven.surefire.util.TestsToRun;
+
+import static org.apache.maven.surefire.util.internal.StringUtils.FORK_STREAM_CHARSET_NAME;
+import static org.apache.maven.surefire.util.internal.StringUtils.encodeStringForForkCommunication;
 
 /**
  * A variant of TestsToRun that is provided with test class names
@@ -46,11 +50,11 @@ class LazyTestsToRun
 {
     private final List<Class> workQueue = new ArrayList<Class>();
 
-    private BufferedReader inputReader;
+    private final BufferedReader inputReader;
+
+    private final PrintStream originalOutStream;
 
     private boolean streamClosed = false;
-
-    private PrintStream originalOutStream;
 
     /**
      * C'tor
@@ -64,7 +68,14 @@ class LazyTestsToRun
 
         this.originalOutStream = originalOutStream;
 
-        inputReader = new BufferedReader( new InputStreamReader( testSource ) );
+        try
+        {
+            inputReader = new BufferedReader( new InputStreamReader( testSource, FORK_STREAM_CHARSET_NAME ) );
+        }
+        catch ( UnsupportedEncodingException e )
+        {
+            throw new RuntimeException( "The JVM must support Charset " + FORK_STREAM_CHARSET_NAME, e );
+        }
     }
 
     protected void addWorkItem( String className )
@@ -77,9 +88,9 @@ class LazyTestsToRun
 
     protected void requestNextTest()
     {
-        StringBuilder sb = new StringBuilder();
-        sb.append( (char) ForkingRunListener.BOOTERCODE_NEXT_TEST ).append( ",0,want more!\n" );
-        originalOutStream.print( sb.toString() );
+        byte[] encoded =
+            encodeStringForForkCommunication( ( (char) ForkingRunListener.BOOTERCODE_NEXT_TEST ) + ",0,want more!\n" );
+        originalOutStream.write( encoded, 0, encoded.length );
     }
 
     private class BlockingIterator
@@ -106,24 +117,23 @@ class LazyTestsToRun
                         try
                         {
                             nextClassName = inputReader.readLine();
+                            if ( nextClassName == null )
+                            {
+                                streamClosed = true;
+                            }
+                            else
+                            {
+                                addWorkItem( nextClassName );
+                            }
                         }
                         catch ( IOException e )
                         {
                             streamClosed = true;
                             return false;
                         }
-
-                        if ( null == nextClassName )
-                        {
-                            streamClosed = true;
-                        }
-                        else
-                        {
-                            addWorkItem( nextClassName );
-                        }
                     }
 
-                    return ( workQueue.size() > nextPos );
+                    return workQueue.size() > nextPos;
                 }
             }
         }

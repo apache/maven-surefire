@@ -276,3 +276,7 @@ else
   The <<<@Category>>> annotation can also be applied at class-level.
 	
   For more information on JUnit, see the {{{http://www.junit.org}JUnit web site}}.
+
+  Since version 2.18.1 and JUnit 4.12, the <<<@Category>>> annotation type is automatically inherited from
+  superclasses, see <<<@java.lang.annotation.Inherited>>>. Make sure that test class inheritance still makes sense
+  together with <<<@Category>>> annotation of the JUnit 4.12 or higher appeared in superclass.

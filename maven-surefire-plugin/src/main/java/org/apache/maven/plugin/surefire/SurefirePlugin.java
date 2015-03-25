@@ -43,6 +43,13 @@ public class SurefirePlugin
 {
 
     /**
+     * The directory containing generated classes of the project being tested. This will be included after the test
+     * classes in the test classpath.
+     */
+    @Parameter( defaultValue = "${project.build.outputDirectory}" )
+    private File classesDirectory;
+
+    /**
      * Set this to "true" to ignore a failure during testing. Its use is NOT RECOMMENDED, but quite convenient on
      * occasion.
      */
@@ -191,10 +198,11 @@ public class SurefirePlugin
 
     /**
      * By default, Surefire forks your tests using a manifest-only JAR; set this parameter to "false" to force it to
-     * launch your tests with a plain old Java classpath. (See
-     * http://maven.apache.org/plugins/maven-surefire-plugin/examples/class-loading.html for a more detailed explanation
-     * of manifest-only JARs and their benefits.)
-     * <p/>
+     * launch your tests with a plain old Java classpath. (See the
+     * <a href="http://maven.apache.org/plugins/maven-surefire-plugin/examples/class-loading.html">
+     *     http://maven.apache.org/plugins/maven-surefire-plugin/examples/class-loading.html</a>
+     * for a more detailed explanation of manifest-only JARs and their benefits.)
+     * <br/>
      * Beware, setting this to "false" may cause your tests to fail on Windows if your classpath is too long.
      *
      * @since 2.4.3
@@ -226,16 +234,20 @@ public class SurefirePlugin
     /**
      * Defines the order the tests will be run in. Supported values are "alphabetical", "reversealphabetical", "random",
      * "hourly" (alphabetical on even hours, reverse alphabetical on odd hours), "failedfirst", "balanced" and
-     * "filesystem".<p/>
-     * <p/>
+     * "filesystem".
+     * <br/>
+     * <br/>
      * Odd/Even for hourly is determined at the time the of scanning the classpath, meaning it could change during a
-     * multi-module build.<p/>
-     * <p/>
-     * Failed first will run tests that failed on previous run first, as well as new tests for this run.<p/>
-     * <p/>
+     * multi-module build.
+     * <br/>
+     * <br/>
+     * Failed first will run tests that failed on previous run first, as well as new tests for this run.
+     * <br/>
+     * <br/>
      * Balanced is only relevant with parallel=classes, and will try to optimize the run-order of the tests reducing the
-     * overall execution time. Initially a statistics file is created and every next test run will reorder classes.<p/>
-     * <p/>
+     * overall execution time. Initially a statistics file is created and every next test run will reorder classes.
+     * <br/>
+     * <br/>
      * Note that the statistics are stored in a file named .surefire-XXXXXXXXX beside pom.xml, and should not be checked
      * into version control. The "XXXXX" is the SHA1 checksum of the entire surefire configuration, so different
      * configurations will have different statistics files, meaning if you change any config settings you will re-run
@@ -245,6 +257,26 @@ public class SurefirePlugin
      */
     @Parameter( property = "surefire.runOrder", defaultValue = "filesystem" )
     protected String runOrder;
+
+    /**
+     * A file containing include patterns. Blank lines, or lines starting with # are ignored. If {@code includes} are
+     * also specified, these patterns are appended. Example with path, simple and regex includes:<br/>
+     * &#042;&#047;test/*<br/>
+     * &#042;&#042;&#047;NotIncludedByDefault.java<br/>
+     * %regex[.*Test.*|.*Not.*]<br/>
+     */
+    @Parameter( property = "surefire.includesFile" )
+    private File includesFile;
+
+    /**
+     * A file containing exclude patterns. Blank lines, or lines starting with # are ignored. If {@code excludes} are
+     * also specified, these patterns are appended. Example with path, simple and regex excludes:<br/>
+     * &#042;&#047;test/*<br/>
+     * &#042;&#042;&#047;DontRunTest.*<br/>
+     * %regex[.*Test.*|.*Not.*]<br/>
+     */
+    @Parameter( property = "surefire.excludesFile" )
+    private File excludesFile;
 
     protected int getRerunFailingTestsCount()
     {
@@ -522,5 +554,17 @@ public class SurefirePlugin
     public void setRunOrder( String runOrder )
     {
         this.runOrder = runOrder;
+    }
+
+    @Override
+    public File getIncludesFile()
+    {
+        return includesFile;
+    }
+
+    @Override
+    public File getExcludesFile()
+    {
+        return excludesFile;
     }
 }

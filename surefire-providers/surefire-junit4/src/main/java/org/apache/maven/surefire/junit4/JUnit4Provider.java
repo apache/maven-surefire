@@ -300,7 +300,6 @@ public class JUnit4Provider
     private static class FailedMethodFilter
         implements Filter
     {
-
         private final String[] methodPatterns;
 
         private FailedMethodFilter( String[] methodPatterns )

@@ -19,6 +19,8 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
+import java.nio.charset.Charset;
+
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.TestFile;
@@ -33,20 +35,71 @@ public class ConsoleOutputIT
     extends SurefireJUnit4IntegrationTestCase
 {
     @Test
-    public void properNewlines()
+    public void properNewlinesAndEncodingWithDefaultEncodings()
     {
         final OutputValidator outputValidator =
-            unpack( "/consoleOutput" ).redirectToFile( true ).setJUnitVersion( "4.7" ).executeTest();
-        TestFile surefireReportsFile = outputValidator.getSurefireReportsFile( "consoleOutput.Test1-output.txt" );
-        surefireReportsFile.assertContainsText( "SoutAgain" );
-        surefireReportsFile.assertContainsText( "Printline in shutdown hook" );
+            unpack( "/consoleOutput" ).forkOnce().executeTest();
+
+        validate( outputValidator, true );
+    }
+
+    @Test
+    public void properNewlinesAndEncodingWithDifferentEncoding()
+    {
+        final OutputValidator outputValidator =
+            unpack( "/consoleOutput" ).forkOnce().argLine( "-Dfile.encoding=UTF-16" ).executeTest();
+
+        validate( outputValidator, true );
+    }
+
+    @Test
+    public void properNewlinesAndEncodingWithoutFork()
+    {
+        final OutputValidator outputValidator =
+            unpack( "/consoleOutput" ).forkNever().executeTest();
+
+        validate( outputValidator, false );
+    }
+
+    private void validate( final OutputValidator outputValidator, boolean includeShutdownHook )
+    {
+        TestFile xmlReportFile = outputValidator.getSurefireReportsXmlFile( "TEST-consoleOutput.Test1.xml" );
+        xmlReportFile.assertContainsText( "SoutLine" );
+        xmlReportFile.assertContainsText( normalizeToDefaultCharset( "äöüß" ) );
+        xmlReportFile.assertContainsText( normalizeToDefaultCharset( "failing with ü" ) );
+
+        TestFile outputFile = outputValidator.getSurefireReportsFile( "consoleOutput.Test1-output.txt" );
+        outputFile.assertContainsText( "SoutAgain" );
+        outputFile.assertContainsText( "SoutLine" );
+        outputFile.assertContainsText( normalizeToDefaultCharset( "äöüß" ) );
+
+        if ( includeShutdownHook )
+        {
+            outputFile.assertContainsText( "Printline in shutdown hook" );
+        }
+    }
+
+    /**
+     * @param string the string to normalize
+     * @return the string with all characters not available in the current charset being replaced, e.g. for US-ASCII,
+     *         German umlauts would be replaced to ?
+     */
+    private String normalizeToDefaultCharset( String string )
+    {
+        Charset cs = Charset.defaultCharset();
+        if ( cs.canEncode() )
+        {
+            string = cs.decode( cs.encode( string ) ).toString();
+        }
+
+        return string;
     }
 
     @Test
     public void largerSoutThanMemory()
         throws Exception
     {
-        unpack( "consoleoutput-noisy" ).setMavenOpts( "-Xmx64m" ).sysProp( "thousand", "100000" ).executeTest();
+        unpack( "consoleoutput-noisy" ).setMavenOpts( "-Xmx64m" ).sysProp( "thousand", "32000" ).executeTest();
     }
 
 

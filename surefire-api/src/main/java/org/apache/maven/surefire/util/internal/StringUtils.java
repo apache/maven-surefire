@@ -19,6 +19,11 @@ package org.apache.maven.surefire.util.internal;
  * under the License.
  */
 
+import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.Charset;
 import java.util.StringTokenizer;
 
 /**
@@ -55,6 +60,11 @@ public class StringUtils
     private static final byte[] HEX_CHARS = new byte[] {
         '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
         'A', 'B', 'C', 'D', 'E', 'F' };
+
+    private static final Charset DEFAULT_CHARSET = Charset.defaultCharset();
+
+    // 8-bit charset Latin-1
+    public static final String FORK_STREAM_CHARSET_NAME = "ISO-8859-1";
 
     public static String[] split( String text, String separator )
     {
@@ -264,24 +274,21 @@ public class StringUtils
 
     /**
      * Reverses the effect of {@link #escapeBytesToPrintable(byte[], int, byte[], int, int)}.
-     * <p>
-     * A save length of {@code out} is {@code str.length()}
      *
-     * @param out the target byte array
      * @param str the input String
+     * @param charsetName the charset name
      * @return the number of bytes written to {@code out}
      */
-    public static int unescapeBytes( byte[] out, String str )
+    public static ByteBuffer unescapeBytes( String str, String charsetName  )
     {
         int outPos = 0;
-        if ( out == null )
-        {
-            throw new IllegalArgumentException( "The output array must not be null" );
-        }
+
         if ( str == null )
         {
-            return 0;
+            return ByteBuffer.wrap( new byte[0] );
         }
+
+        byte[] out = new byte[str.length()];
         for ( int i = 0; i < str.length(); i++ )
         {
             char ch = str.charAt( i );
@@ -297,6 +304,36 @@ public class StringUtils
                 out[outPos++] = (byte) ch;
             }
         }
-        return outPos;
+
+        Charset sourceCharset = Charset.forName( charsetName );
+        if ( !DEFAULT_CHARSET.equals( sourceCharset ) )
+        {
+            CharBuffer decodedFromSourceCharset;
+            try
+            {
+                decodedFromSourceCharset = sourceCharset.newDecoder().decode( ByteBuffer.wrap( out, 0, outPos ) );
+                ByteBuffer defaultEncoded = DEFAULT_CHARSET.encode( decodedFromSourceCharset );
+
+                return defaultEncoded;
+            }
+            catch ( CharacterCodingException e )
+            {
+                // ignore and fall through to the non-recoded version
+            }
+        }
+
+        return ByteBuffer.wrap( out, 0, outPos );
+    }
+
+    public static byte[] encodeStringForForkCommunication( String string )
+    {
+        try
+        {
+            return string.getBytes( FORK_STREAM_CHARSET_NAME );
+        }
+        catch ( UnsupportedEncodingException e )
+        {
+           throw new RuntimeException( "The JVM must support Charset " + FORK_STREAM_CHARSET_NAME, e );
+        }
     }
 }

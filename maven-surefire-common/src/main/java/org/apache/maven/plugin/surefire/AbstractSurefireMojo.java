@@ -52,6 +52,7 @@ import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Plugin;
+import org.apache.maven.model.PluginExecution;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -161,13 +162,6 @@ public abstract class AbstractSurefireMojo
     protected File testClassesDirectory;
 
     /**
-     * The directory containing generated classes of the project being tested. This will be included after the test
-     * classes in the test classpath.
-     */
-    @Parameter( defaultValue = "${project.build.outputDirectory}" )
-    protected File classesDirectory;
-
-    /**
      * List of dependencies to exclude from the test classpath. Each dependency string must follow the format
      * <i>groupId:artifactId</i>. For example: <i>org.acme:project-a</i>
      *
@@ -210,13 +204,6 @@ public abstract class AbstractSurefireMojo
     protected File testSourceDirectory;
 
     /**
-     * A file containing include patterns. Blank lines, or lines starting with # are ignored. If {@code includes} are
-     * also specified, these patterns are appended.
-     */
-    @Parameter
-    protected File includesFile;
-
-    /**
      * A list of &lt;exclude> elements specifying the tests (by pattern) that should be excluded in testing. When not
      * specified and when the <code>test</code> parameter is not specified, the default excludes will be <code><br/>
      * &lt;excludes><br/>
@@ -237,13 +224,6 @@ public abstract class AbstractSurefireMojo
      */
     @Parameter
     protected List<String> excludes;
-
-    /**
-     * A file containing exclude patterns. Blank lines, or lines starting with # are ignored. If {@code excludes} are
-     * also specified, these patterns are appended.
-     */
-    @Parameter
-    protected File excludesFile;
 
     /**
      * ArtifactRepository of the localRepository. To obtain the directory of localRepository in unit tests use
@@ -355,11 +335,12 @@ public abstract class AbstractSurefireMojo
      * <br/>
      * Using an alternate syntax for <em>argLine</em>, <pre>@{...}</pre> allows late replacement of properties when the
      * plugin is executed, so properties that have been modified by other plugins will be picked up correctly.
-     * <br/>
      * See the Frequently Asked Questions page with more details:<br/>
-     * http://maven.apache.org/surefire/maven-surefire-plugin/faq.html
+     * <a href="http://maven.apache.org/surefire/maven-surefire-plugin/faq.html">
+     *     http://maven.apache.org/surefire/maven-surefire-plugin/faq.html</a>
      * <br/>
-     * http://maven.apache.org/surefire/maven-failsafe-plugin/faq.html
+     * <a href="http://maven.apache.org/surefire/maven-failsafe-plugin/faq.html">
+     *     http://maven.apache.org/surefire/maven-failsafe-plugin/faq.html</a>
      *
      * @since 2.1
      */
@@ -397,7 +378,10 @@ public abstract class AbstractSurefireMojo
      * (TestNG/JUnit47 provider with JUnit4.8+ only) Groups for this test. Only classes/methods/etc decorated with one
      * of the groups specified here will be included in test run, if specified.<br/>
      * For JUnit, this parameter forces the use of the 4.7 provider<br/>
-     * This parameter is ignored if the <code>suiteXmlFiles</code> parameter is specified.
+     * This parameter is ignored if the <code>suiteXmlFiles</code> parameter is specified.<br/>
+     * Since version 2.18.1 and JUnit 4.12, the <em>@Category<em> annotation type is automatically inherited from
+     * superclasses, see <em>@java.lang.annotation.Inherited</em>. Make sure that test class inheritance still makes
+     * sense together with <em>@Category<em> annotation of the JUnit 4.12 or higher appeared in superclass.
      *
      * @since 2.2
      */
@@ -408,7 +392,10 @@ public abstract class AbstractSurefireMojo
      * (TestNG/JUnit47 provider with JUnit4.8+ only) Excluded groups. Any methods/classes/etc with one of the groups
      * specified in this list will specifically not be run.<br/>
      * For JUnit, this parameter forces the use of the 4.7 provider<br/>
-     * This parameter is ignored if the <code>suiteXmlFiles</code> parameter is specified.
+     * This parameter is ignored if the <code>suiteXmlFiles</code> parameter is specified.<br/>
+     * Since version 2.18.1 and JUnit 4.12, the <em>@Category<em> annotation type is automatically inherited from
+     * superclasses, see <em>@java.lang.annotation.Inherited</em>. Make sure that test class inheritance still makes
+     * sense together with <em>@Category<em> annotation of the JUnit 4.12 or higher appeared in superclass.
      *
      * @since 2.2
      */
@@ -968,7 +955,7 @@ public abstract class AbstractSurefireMojo
         TestSetFailedException
     {
         SurefireProperties effectiveProperties = setupProperties();
-        ClassLoaderConfiguration classLoaderConfiguration = getClassLoaderConfiguration( isForking() );
+        ClassLoaderConfiguration classLoaderConfiguration = getClassLoaderConfiguration();
         provider.addProviderProperties();
         RunOrderParameters runOrderParameters =
             new RunOrderParameters( getRunOrder(), getStatisticsFileName( getConfigChecksum() ) );
@@ -1351,7 +1338,7 @@ public abstract class AbstractSurefireMojo
         return ForkConfiguration.FORK_NEVER.equals( forkMode );
     }
 
-    boolean isForking()
+    protected boolean isForking()
     {
         return 0 < getEffectiveForkCount();
     }
@@ -1515,7 +1502,6 @@ public abstract class AbstractSurefireMojo
         {
             throw new MojoExecutionException( "Unable to generate classpath: " + e, e );
         }
-
     }
 
     private Artifact getCommonArtifact()
@@ -1722,14 +1708,12 @@ public abstract class AbstractSurefireMojo
         {
             String key = getPluginDescriptor().getPluginLookupKey();
             Plugin plugin = (Plugin) project.getBuild().getPluginsAsMap().get( key );
-
             if ( plugin != null )
             {
-                @SuppressWarnings( "rawtypes" ) List executions = plugin.getExecutions();
+                List<PluginExecution> executions = plugin.getExecutions();
                 return executions != null && executions.size() > 1;
             }
         }
-
         return false;
     }
 
@@ -2025,9 +2009,9 @@ public abstract class AbstractSurefireMojo
         return false;
     }
 
-    protected ClassLoaderConfiguration getClassLoaderConfiguration( boolean isForking )
+    protected ClassLoaderConfiguration getClassLoaderConfiguration()
     {
-        return isForking
+        return isForking()
             ? new ClassLoaderConfiguration( isUseSystemClassLoader(), isUseManifestOnlyJar() )
             : new ClassLoaderConfiguration( false, false );
     }
@@ -2244,6 +2228,13 @@ public abstract class AbstractSurefireMojo
         if ( getWorkingDirectory() == null )
         {
             throw new MojoFailureException( "workingDirectory cannot be null" );
+        }
+
+        if ( isForking() )
+        {
+            // Postpone directory creation till forked JVM creation
+            // see ForkConfiguration.createCommandLine
+            return;
         }
 
         if ( !getWorkingDirectory().exists() )
@@ -2515,10 +2506,7 @@ public abstract class AbstractSurefireMojo
 
     public abstract List<String> getIncludes();
 
-    public File getIncludesFile()
-    {
-        return includesFile;
-    }
+    public abstract File getIncludesFile();
 
     public abstract void setIncludes( List<String> includes );
 
@@ -2527,10 +2515,7 @@ public abstract class AbstractSurefireMojo
         return excludes;
     }
 
-    public File getExcludesFile()
-    {
-        return excludesFile;
-    }
+    public abstract File getExcludesFile();
 
     public void setExcludes( List<String> excludes )
     {

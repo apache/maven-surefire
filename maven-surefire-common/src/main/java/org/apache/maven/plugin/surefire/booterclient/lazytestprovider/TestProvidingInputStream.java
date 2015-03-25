@@ -24,6 +24,8 @@ import java.io.InputStream;
 import java.util.Queue;
 import java.util.concurrent.Semaphore;
 
+import static org.apache.maven.surefire.util.internal.StringUtils.encodeStringForForkCommunication;
+
 /**
  * An {@link InputStream} that, when read, provides test class names out of a queue.
  * <p/>
@@ -44,11 +46,11 @@ public class TestProvidingInputStream
 
     private int currentPos;
 
-    private Semaphore semaphore = new Semaphore( 0 );
+    private final Semaphore semaphore = new Semaphore( 0 );
 
     private FlushReceiverProvider flushReceiverProvider;
 
-    private boolean closed = false;
+    private volatile boolean closed = false;
 
     /**
      * C'tor
@@ -88,9 +90,9 @@ public class TestProvidingInputStream
             }
 
             String currentElement = testItemQueue.poll();
-            if ( null != currentElement )
+            if ( currentElement != null )
             {
-                currentBuffer = currentElement.getBytes();
+                currentBuffer = encodeStringForForkCommunication( currentElement );
                 currentPos = 0;
             }
             else
@@ -101,12 +103,12 @@ public class TestProvidingInputStream
 
         if ( currentPos < currentBuffer.length )
         {
-            return ( currentBuffer[currentPos++] & 0xff );
+            return currentBuffer[currentPos++] & 0xff;
         }
         else
         {
             currentBuffer = null;
-            return ( '\n' & 0xff );
+            return '\n' & 0xff;
         }
     }
 

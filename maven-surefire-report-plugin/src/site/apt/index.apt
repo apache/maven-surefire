@@ -33,6 +33,9 @@ Maven Surefire Report Plugin
 
   The Surefire Report Plugin only has one goal (the other is a workaround):
 
+  * {{{./failsafe-report-only-mojo.html}surefire-report:failsafe-report-only}} This goal does not
+  run the tests, it only builds the IT reports. See {{{http://jira.codehaus.org/browse/SUREFIRE-257}SUREFIRE-257}}
+
   * {{{./report-mojo.html}surefire-report:report}} Generates the test
   results report into HTML format.
 

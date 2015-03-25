@@ -44,7 +44,6 @@ public class OutputValidator
     {
         this.verifier = verifier;
         this.baseDir = new File( verifier.getBasedir() );
-
     }
 
     public OutputValidator verifyTextInLog( String text )
@@ -107,8 +106,6 @@ public class OutputValidator
         }
     }
 
-
-
     public String getBasedir()
     {
         return verifier.getBasedir();
@@ -167,7 +164,6 @@ public class OutputValidator
         return new TestFile( new File( targetDir, fileName ), this );
     }
 
-
     public TestFile getSurefireReportsFile( String fileName )
     {
         File targetDir = getSubFile( "target/surefire-reports" );
@@ -186,24 +182,16 @@ public class OutputValidator
         return new TestFile( new File( targetDir, fileName ), this );
     }
 
-
     public File getBaseDir()
     {
         return baseDir;
-    }
-
-    @SuppressWarnings( "unchecked" )
-    private List<String> getLog()
-        throws VerificationException
-    {
-        return verifier.loadFile( verifier.getBasedir(), verifier.getLogFileName(), false );
     }
 
     public boolean stringsAppearInSpecificOrderInLog( String[] strings )
         throws VerificationException
     {
         int i = 0;
-        for ( String line : getLog() )
+        for ( String line : loadLogLines() )
         {
             if ( line.startsWith( strings[i] ) )
             {

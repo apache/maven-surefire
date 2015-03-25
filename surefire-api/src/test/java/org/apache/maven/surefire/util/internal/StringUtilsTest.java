@@ -19,6 +19,8 @@ package org.apache.maven.surefire.util.internal;
  * under the License.
  */
 
+import java.nio.charset.Charset;
+
 import junit.framework.TestCase;
 
 /**
@@ -82,14 +84,13 @@ public class StringUtilsTest
 
         assertEquals( escapedBytes, escapedString.length() );
 
-        byte[] unescaped = new byte[input.length];
-        int unescapeBytes = StringUtils.unescapeBytes( unescaped, escapedString );
+        java.nio.ByteBuffer unescaped = StringUtils.unescapeBytes( escapedString, Charset.defaultCharset().name() );
 
-        assertEquals( input.length, unescapeBytes );
+        assertEquals( input.length, unescaped.remaining() - unescaped.position() );
 
         for ( int i = 0; i < input.length; i++ )
         {
-            assertEquals( "At position " + i, input[i], unescaped[i] );
+            assertEquals( "At position " + i, input[i], unescaped.get() );
         }
     }
 }

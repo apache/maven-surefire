@@ -201,9 +201,25 @@ public class ForkConfiguration
             cli.createArg().setValue( shadefire ? new Relocator().relocate( forkedBooter ) : forkedBooter );
         }
 
-        cli.setWorkingDirectory( workingDirectory.getAbsolutePath() );
+        cli.setWorkingDirectory( getWorkingDirectory( threadNumber ).getAbsolutePath() );
 
         return cli;
+    }
+
+    private File getWorkingDirectory( int threadNumber )
+        throws SurefireBooterForkException
+    {
+        File cwd = new File( replaceThreadNumberPlaceholder( workingDirectory.getAbsolutePath(), threadNumber ) );
+        if ( !cwd.exists() && !cwd.mkdirs() )
+        {
+            throw new SurefireBooterForkException( "Cannot create workingDirectory " + cwd.getAbsolutePath() );
+        }
+        if ( !cwd.isDirectory() )
+        {
+            throw new SurefireBooterForkException(
+                "WorkingDirectory " + cwd.getAbsolutePath() + " exists and is not a directory" );
+        }
+        return cwd;
     }
 
     private String replaceThreadNumberPlaceholder( String argLine, int threadNumber )

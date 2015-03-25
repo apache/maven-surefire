@@ -51,7 +51,7 @@ public class TestFile
         this( file, Charset.defaultCharset(), surefireVerifier);
     }
 
-    public TestFile( File file, Charset charset,OutputValidator surefireVerifier )
+    public TestFile( File file, Charset charset, OutputValidator surefireVerifier )
     {
         this.file = file;
         this.encoding = charset;

@@ -20,6 +20,7 @@ package org.apache.maven.surefire.booter;
  */
 
 import java.io.PrintStream;
+import java.nio.charset.Charset;
 import java.util.Enumeration;
 import java.util.Properties;
 
@@ -30,6 +31,8 @@ import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.SafeThrowable;
 import org.apache.maven.surefire.report.StackTraceWriter;
 import org.apache.maven.surefire.util.internal.StringUtils;
+
+import static org.apache.maven.surefire.util.internal.StringUtils.encodeStringForForkCommunication;
 
 /**
  * Encodes the full output of the test run to the stdout stream.
@@ -81,10 +84,9 @@ public class ForkingRunListener
 
     public static final byte BOOTERCODE_BYE = (byte) 'Z';
 
-
     private final PrintStream target;
 
-    private final Integer testSetChannelId;
+    private final int testSetChannelId;
 
     private final boolean trimStackTraces;
 
@@ -104,42 +106,42 @@ public class ForkingRunListener
 
     public void testSetStarting( ReportEntry report )
     {
-        target.print( toString( BOOTERCODE_TESTSET_STARTING, report, testSetChannelId ) );
+        encodeAndWriteToTarget( toString( BOOTERCODE_TESTSET_STARTING, report, testSetChannelId ) );
     }
 
     public void testSetCompleted( ReportEntry report )
     {
-        target.print( toString( BOOTERCODE_TESTSET_COMPLETED, report, testSetChannelId ) );
+        encodeAndWriteToTarget( toString( BOOTERCODE_TESTSET_COMPLETED, report, testSetChannelId ) );
     }
 
     public void testStarting( ReportEntry report )
     {
-        target.print( toString( BOOTERCODE_TEST_STARTING, report, testSetChannelId ) );
+        encodeAndWriteToTarget( toString( BOOTERCODE_TEST_STARTING, report, testSetChannelId ) );
     }
 
     public void testSucceeded( ReportEntry report )
     {
-        target.print( toString( BOOTERCODE_TEST_SUCCEEDED, report, testSetChannelId ) );
+        encodeAndWriteToTarget( toString( BOOTERCODE_TEST_SUCCEEDED, report, testSetChannelId ) );
     }
 
     public void testAssumptionFailure( ReportEntry report )
     {
-        target.print( toString( BOOTERCODE_TEST_ASSUMPTIONFAILURE, report, testSetChannelId ) );
+        encodeAndWriteToTarget( toString( BOOTERCODE_TEST_ASSUMPTIONFAILURE, report, testSetChannelId ) );
     }
 
     public void testError( ReportEntry report )
     {
-        target.print( toString( BOOTERCODE_TEST_ERROR, report, testSetChannelId ) );
+        encodeAndWriteToTarget( toString( BOOTERCODE_TEST_ERROR, report, testSetChannelId ) );
     }
 
     public void testFailed( ReportEntry report )
     {
-        target.print( toString( BOOTERCODE_TEST_FAILED, report, testSetChannelId ) );
+        encodeAndWriteToTarget( toString( BOOTERCODE_TEST_FAILED, report, testSetChannelId ) );
     }
 
     public void testSkipped( ReportEntry report )
     {
-        target.print( toString( BOOTERCODE_TEST_SKIPPED, report, testSetChannelId ) );
+        encodeAndWriteToTarget( toString( BOOTERCODE_TEST_SKIPPED, report, testSetChannelId ) );
     }
 
     void sendProps()
@@ -148,7 +150,7 @@ public class ForkingRunListener
 
         if ( systemProperties != null )
         {
-            Enumeration propertyKeys = systemProperties.propertyNames();
+            Enumeration<?> propertyKeys = systemProperties.propertyNames();
 
             while ( propertyKeys.hasMoreElements() )
             {
@@ -160,7 +162,7 @@ public class ForkingRunListener
                 {
                     value = "null";
                 }
-                target.print( toPropertyString( key, value ) );
+                encodeAndWriteToTarget( toPropertyString( key, value ) );
             }
         }
     }
@@ -182,48 +184,32 @@ public class ForkingRunListener
 
     public static byte[] createHeader( byte booterCode, int testSetChannel )
     {
-        byte[] header = new byte[7];
-        header[0] = booterCode;
-        header[1] = (byte) ',';
-        header[6] = (byte) ',';
+        StringBuilder sb = new StringBuilder();
+        sb.append( (char) booterCode ).append( ',' );
+        sb.append( Integer.toString( testSetChannel, 16 ) ).append( ',' );
+        sb.append( Charset.defaultCharset().name() ).append( ',' );
 
-        int i = testSetChannel;
-        int charPos = 6;
-        int radix = 1 << 4;
-        int mask = radix - 1;
-        do
-        {
-            header[--charPos] = (byte) DIGITS[i & mask];
-            i >>>= 4;
-        }
-        while ( i != 0 );
-
-        while ( charPos > 2 )
-        {
-            header[--charPos] = (byte) '0';
-        }
-        return header;
+        return encodeStringForForkCommunication( sb.toString() );
     }
-
-    private static final char[] DIGITS =
-        { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l',
-            'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' };
-
 
     public void info( String message )
     {
-        if ( message == null )
+        if ( message != null )
         {
-            return;
+            StringBuilder sb = new StringBuilder( 7 + message.length() * 5 );
+            append( sb, BOOTERCODE_CONSOLE ); comma( sb );
+            append( sb, Integer.toHexString( testSetChannelId ) ); comma( sb );
+            StringUtils.escapeToPrintable( sb, message );
+
+            sb.append( '\n' );
+            encodeAndWriteToTarget( sb.toString() );
         }
+    }
 
-        StringBuilder sb = new StringBuilder( 7 + message.length() * 5 );
-        append( sb, BOOTERCODE_CONSOLE ); comma( sb );
-        append( sb, Integer.toHexString( testSetChannelId ) ); comma( sb );
-        StringUtils.escapeToPrintable( sb, message );
-
-        sb.append( '\n' );
-        target.print( sb.toString() );
+    private void encodeAndWriteToTarget( String string )
+    {
+        byte[] encodeBytes = encodeStringForForkCommunication( string );
+        target.write( encodeBytes, 0, encodeBytes.length );
     }
 
     private String toPropertyString( String key, String value )
@@ -240,7 +226,7 @@ public class ForkingRunListener
         return stringBuilder.toString();
     }
 
-    private String toString( byte operationCode, ReportEntry reportEntry, Integer testSetChannelId )
+    private String toString( byte operationCode, ReportEntry reportEntry, int testSetChannelId )
     {
         StringBuilder stringBuilder = new StringBuilder();
         append( stringBuilder, operationCode ); comma( stringBuilder );
