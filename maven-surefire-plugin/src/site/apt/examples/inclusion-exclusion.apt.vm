@@ -166,6 +166,7 @@ Inclusions and Exclusions of Tests
 * Multiple Formats in One
 
   As of ${thisPlugin} Plugin 2.19, a complex syntax is supported in one parameter (JUnit 4, JUnit 4.7+, TestNG):
+
 +---+
   [...]
           <include>%regex[.*[Cat|Dog].*], !%regex[pkg.*Slow.*.class], pkg/**/*Fast*.java, Basic????, !Unstable*</include>
@@ -173,6 +174,7 @@ Inclusions and Exclusions of Tests
           <exclude>%regex[pkg.*Slow.*.class], Unstable*</exclude>
   [...]
 +---+
+
   This syntax can be used in parameters: test, includes, excludes, includesFile, excludesFile.
   Exclamation mark (!) excludes tests. The syntax in excludes and excludesFile should not use (!). The character (?)
   within non-regex pattern replaces one character in file name or path. The file extensions are not mandatory in

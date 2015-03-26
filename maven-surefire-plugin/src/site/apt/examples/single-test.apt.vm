@@ -121,13 +121,14 @@ mvn -Dit.test=ITCircle#testOne+testTwo verify
 
   Note this feature was available in JUnit 4 provider only since of ${thisPlugin} Plugin 2.12.1.
 
+Multiple Formats in One
 
   As of ${thisPlugin} Plugin 2.19 multiple formats are supported in one pattern (JUnit 4, JUnit 4.7+, TestNG):
 
 #{if}(${project.artifactId}=="maven-surefire-plugin")
 +---+
 mvn "-Dtest=???Test, !Unstable*, pkg/**/Ci*leTest.java, *Test#test*One+testTwo?????, #fast*+slowTest" test
-mvn "-Dtest=Basic*, !%regex[.*.Unstable.*], !%regex[.*.MyTest.class#one.*|two.*], %regex[#fast.*|slow.*]"
+mvn "-Dtest=Basic*, !%regex[.*.Unstable.*], !%regex[.*.MyTest.class#one.*|two.*], %regex[#fast.*|slow.*]" test
 +---+
 #{else}
 +---+
@@ -141,4 +142,4 @@ mvn "-Dit.test=Basic*, !%regex[.*.Unstable.*], !%regex[.*.MyIT.class#one.*|two.*
   The regex validates fully qualified class file, and validates test methods separately after (#) however class
   is optional. The regex supports '.class' file extension only. Note the regex comments, marked by (#)
   character, are unsupported. The Parameterized JUnit runner describes test methods using an index in brackets, so the
-  non-regex method pattern would become: <<<#testMethod[*]>>>.
+  non-regex method pattern would become <<<#testMethod[*]>>>.
