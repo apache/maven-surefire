@@ -61,7 +61,7 @@ public abstract class AbstractTestMultipleMethodPatterns
         return launcher;
     }
 
-    private String[] splitIncludesExcludes( String patterns )
+    private static String[] splitIncludesExcludes( String patterns )
     {
         String included = "";
         String excluded = "";
@@ -79,7 +79,13 @@ public abstract class AbstractTestMultipleMethodPatterns
                 included += ", ";
             }
         }
-        return new String[]{ included, excluded.endsWith( ", " ) ? excluded.substring( 0, excluded.length() - 2 ) : excluded };
+        return new String[]{ trimEndComma( included ), trimEndComma( excluded ) };
+    }
+
+    private static String trimEndComma( String pattern )
+    {
+        pattern = pattern.trim();
+        return pattern.endsWith( "," ) ? pattern.substring( 0, pattern.length() - 1 ) : pattern;
     }
 
     @Test
