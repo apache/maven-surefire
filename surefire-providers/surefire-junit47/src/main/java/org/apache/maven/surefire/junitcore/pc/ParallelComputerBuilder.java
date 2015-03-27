@@ -19,6 +19,7 @@ package org.apache.maven.surefire.junitcore.pc;
  * under the License.
  */
 
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -31,8 +32,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import net.jcip.annotations.NotThreadSafe;
 
 import org.apache.maven.surefire.junitcore.JUnitCoreParameters;
 import org.apache.maven.surefire.report.ConsoleLogger;
@@ -79,6 +78,8 @@ import static org.apache.maven.surefire.junitcore.pc.Type.SUITES;
  */
 public final class ParallelComputerBuilder
 {
+    private static final Class<? extends Annotation> JCIP_NOT_THREAD_SAFE = loadNotThreadSafeAnnotations();
+
     private static final Set<?> NULL_SINGLETON = Collections.singleton( null );
 
     static final int TOTAL_POOL_SIZE_UNDEFINED = 0;
@@ -225,6 +226,20 @@ public final class ParallelComputerBuilder
     private double parallelTestsTimeoutForcedInSeconds()
     {
         return parameters == null ? 0d : parameters.getParallelTestsTimeoutForcedInSeconds();
+    }
+
+    @SuppressWarnings( "unchecked" )
+    private static Class<? extends Annotation> loadNotThreadSafeAnnotations()
+    {
+        try
+        {
+            Class c = Class.forName( "net.jcip.annotations.NotThreadSafe" );
+            return c.isAnnotation() ? (Class<? extends Annotation>) c : null;
+        }
+        catch ( ClassNotFoundException e )
+        {
+            return null;
+        }
     }
 
     final class PC
@@ -609,7 +624,7 @@ public final class ParallelComputerBuilder
 
         private boolean isThreadSafe( Runner runner )
         {
-            return runner.getDescription().getAnnotation( NotThreadSafe.class ) == null;
+            return runner.getDescription().getAnnotation( JCIP_NOT_THREAD_SAFE ) == null;
         }
 
         private class SuiteFilter
