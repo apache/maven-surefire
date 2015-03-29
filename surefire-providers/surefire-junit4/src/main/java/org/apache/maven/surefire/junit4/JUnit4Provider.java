@@ -19,16 +19,14 @@ package org.apache.maven.surefire.junit4;
  * under the License.
  */
 
-import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.maven.shared.utils.io.SelectorUtils;
+import org.apache.maven.surefire.common.junit4.ClassMethod;
 import org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil;
 import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
 import org.apache.maven.surefire.common.junit4.JUnit4RunListenerFactory;
@@ -52,6 +50,8 @@ import org.apache.maven.surefire.util.TestsToRun;
 import org.junit.runner.Description;
 import org.junit.runner.Request;
 import org.junit.runner.Result;
+import org.junit.runner.Runner;
+import org.junit.runner.manipulation.Filter;
 import org.junit.runner.notification.RunNotifier;
 
 /**
@@ -60,8 +60,6 @@ import org.junit.runner.notification.RunNotifier;
 public class JUnit4Provider
     extends AbstractProvider
 {
-    private static final Collection<Method> JAVA_LANG_OBJECT_METHODS = Arrays.asList( Object.class.getMethods() );
-
     private final ClassLoader testClassLoader;
 
     private final List<org.junit.runner.notification.RunListener> customRunListeners;
@@ -150,9 +148,10 @@ public class JUnit4Provider
         }
         catch ( Throwable e )
         {
-            reporter.testError( SimpleReportEntry.withException( report.getSourceName(), report.getName(),
-                                                                 new PojoStackTraceWriter( report.getSourceName(),
-                                                                                           report.getName(), e ) ) );
+            String reportName = report.getName();
+            String reportSourceName = report.getSourceName();
+            PojoStackTraceWriter stackWriter = new PojoStackTraceWriter( reportSourceName, reportName, e );
+            reporter.testError( SimpleReportEntry.withException( reportSourceName, reportName, stackWriter ) );
         }
         finally
         {
@@ -165,47 +164,46 @@ public class JUnit4Provider
         JUnitTestFailureListener failureListener = new JUnitTestFailureListener();
         listeners.addListener( failureListener );
         boolean hasMethodFilter = testResolver != null && testResolver.hasMethodPatterns();
-        execute( clazz, listeners, hasMethodFilter ? new TestResolverFilter() : null );
+        execute( clazz, listeners, hasMethodFilter ? new TestResolverFilter() : new NullFilter() );
 
         // Rerun failing tests if rerunFailingTestsCount is larger than 0
         if ( rerunFailingTestsCount > 0 )
         {
             for ( int i = 0; i < rerunFailingTestsCount && !failureListener.getAllFailures().isEmpty(); i++ )
             {
-                Set<String> methodsSet = JUnit4ProviderUtil.generateFailingTests( failureListener.getAllFailures() );
-                String[] methods = methodsSet.toArray( new String[ methodsSet.size() ] );
+                Set<String> failedTests = JUnit4ProviderUtil.generateFailingTests( failureListener.getAllFailures() );
                 failureListener.reset();
-                if ( methods.length != 0 )
+                if ( !failedTests.isEmpty() )
                 {
-                    execute( clazz, listeners, new FailedMethodFilter( methods ) );
+                    executeFailedMethod( clazz, listeners, failedTests );
                 }
             }
         }
     }
 
-    private RunNotifier getRunNotifier( org.junit.runner.notification.RunListener main, Result result,
+    private static RunNotifier getRunNotifier( org.junit.runner.notification.RunListener main, Result result,
                                         List<org.junit.runner.notification.RunListener> others )
     {
-        RunNotifier fNotifier = new RunNotifier();
-        fNotifier.addListener( main );
-        fNotifier.addListener( result.createListener() );
+        RunNotifier notifier = new RunNotifier();
+        notifier.addListener( main );
+        notifier.addListener( result.createListener() );
         for ( org.junit.runner.notification.RunListener listener : others )
         {
-            fNotifier.addListener( listener );
+            notifier.addListener( listener );
         }
-        return fNotifier;
+        return notifier;
     }
 
     // I am not entirely sure as to why we do this explicit freeing, it's one of those
     // pieces of code that just seem to linger on in here ;)
-    private void closeRunNotifier( org.junit.runner.notification.RunListener main,
+    private static void closeRunNotifier( org.junit.runner.notification.RunListener main,
                                    List<org.junit.runner.notification.RunListener> others )
     {
-        RunNotifier fNotifier = new RunNotifier();
-        fNotifier.removeListener( main );
+        RunNotifier notifier = new RunNotifier();
+        notifier.removeListener( main );
         for ( org.junit.runner.notification.RunListener listener : others )
         {
-            fNotifier.removeListener( listener );
+            notifier.removeListener( listener );
         }
     }
 
@@ -260,63 +258,116 @@ public class JUnit4Provider
         return System.getProperty( "surefire.junit4.upgradecheck" ) != null;
     }
 
-    private void execute( Class<?> testClass, RunNotifier fNotifier, Filter filter )
+    private static void execute( Class<?> testClass, RunNotifier notifier, Filter filter )
     {
-        if ( !Modifier.isInterface( testClass.getModifiers() ) )
+        final int classModifiers = testClass.getModifiers();
+
+        // filter.shouldRunClass( testClass )
+        if ( !Modifier.isAbstract( classModifiers ) && !Modifier.isInterface( classModifiers ) )
         {
-            if ( filter != null )
+            Runner runner = Request.aClass( testClass ).filterWith( filter ).getRunner();
+            if ( countTestsInRunner( runner.getDescription() ) != 0 )
             {
-                for ( Method testMethod : testClass.getMethods() )
-                {
-                    if ( !JAVA_LANG_OBJECT_METHODS.contains( testMethod ) )
-                    {
-                        String methodName = testMethod.getName();
-                        boolean accessible = !Modifier.isStatic( testMethod.getModifiers() );
-                        if ( accessible && filter.shouldRun( testClass, testMethod ) )
-                        {
-                            Request.method( testClass, methodName ).getRunner().run( fNotifier );
-                        }
-                    }
-                }
-            }
-            else
-            {
-                Request.aClass( testClass ).getRunner().run( fNotifier );
+                runner.run( notifier );
             }
         }
     }
 
-    private final class TestResolverFilter
-        implements Filter
+    private static void executeFailedMethod( Class<?> testClass, RunNotifier notifier, Set<String> failedMethods )
+    {
+        for ( String failedMethod : failedMethods )
+        {
+            Request.method( testClass, failedMethod ).getRunner().run( notifier );
+        }
+    }
+
+    /**
+     * JUnit error: test count includes one test-class as a suite which has filtered out all children.
+     * Then the child test has a description "initializationError0(org.junit.runner.manipulation.Filter)"
+     * for JUnit 4.0 or "initializationError(org.junit.runner.manipulation.Filter)" for JUnit 4.12
+     * and Description#isTest() returns true, but this description is not a real test
+     * and therefore it should not be included in the entire test count.
+     */
+    private static int countTestsInRunner( Description description )
+    {
+        if ( description.isSuite() )
+        {
+            int count = 0;
+            for ( Description child : description.getChildren() )
+            {
+                if ( !hasFilteredOutAllChildren( child ) )
+                {
+                    count += countTestsInRunner( child );
+                }
+            }
+            return count;
+        }
+        else if ( description.isTest() )
+        {
+            return hasFilteredOutAllChildren( description ) ? 0 : 1;
+        }
+        else
+        {
+            return 0;
+        }
+    }
+
+    private static boolean hasFilteredOutAllChildren( Description description )
+    {
+        String name = description.getDisplayName();
+        // JUnit 4.0: initializationError0; JUnit 4.12: initializationError.
+        if ( name == null )
+        {
+            return true;
+        }
+        else
+        {
+            name = name.trim();
+            return name.startsWith( "initializationError0(org.junit.runner.manipulation.Filter)" )
+                || name.startsWith( "initializationError(org.junit.runner.manipulation.Filter)" );
+        }
+    }
+
+    private class TestResolverFilter
+        extends Filter
     {
         private final TestListResolver methodFilter = JUnit4Provider.this.testResolver.createMethodFilters();
 
-        public boolean shouldRun( Class<?> testClass, Method testMethod )
+        private final TestsToRun testsToRun = JUnit4Provider.this.testsToRun;
+
+        @Override
+        public boolean shouldRun( Description description )
         {
-            return methodFilter.shouldRun( testClass, testMethod.getName() );
+            // class: Java class name; method: 1. "testMethod" or 2. "testMethod[5+whatever]" in @Parameterized
+            final ClassMethod cm = JUnit4ProviderUtil.cutTestClassAndMethod( description );
+            final boolean isSuite = description.isSuite();
+            final boolean isValidTest = description.isTest() && cm.isValid();
+            final String clazz = cm.getClazz();
+            final String method = cm.getMethod();
+            return isSuite || isValidTest && methodFilter.shouldRun( testsToRun.getClassByName( clazz ), method );
+        }
+
+        @Override
+        public String describe()
+        {
+            return methodFilter.toString();
         }
     }
 
-    private static class FailedMethodFilter
-        implements Filter
+    private final class NullFilter
+        extends TestResolverFilter
     {
-        private final String[] methodPatterns;
 
-        private FailedMethodFilter( String[] methodPatterns )
+        @Override
+        public boolean shouldRun( Description description )
         {
-            this.methodPatterns = methodPatterns;
+            return true;
         }
 
-        public boolean shouldRun( Class<?> clazz, Method method )
+        @Override
+        public String describe()
         {
-            for ( String methodPattern : methodPatterns )
-            {
-                if ( SelectorUtils.match( methodPattern, method.getName() ) )
-                {
-                    return true;
-                }
-            }
-            return false;
+            return "";
         }
     }
 }

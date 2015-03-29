@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.junit4;
+package org.apache.maven.surefire.common.junit4;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,9 +19,35 @@ package org.apache.maven.surefire.junit4;
  * under the License.
  */
 
-import java.lang.reflect.Method;
+import org.apache.maven.surefire.util.internal.StringUtils;
 
-interface Filter
+/**
+ * Data transfer object of class and method literals.
+ */
+public final class ClassMethod
 {
-    boolean shouldRun( Class<?> clazz, Method method );
+    private final String clazz;
+
+    private final String method;
+
+    public ClassMethod( String clazz, String method )
+    {
+        this.clazz = clazz;
+        this.method = method;
+    }
+
+    public boolean isValid()
+    {
+        return !StringUtils.isBlank( clazz ) && !StringUtils.isBlank( method );
+    }
+
+    public String getClazz()
+    {
+        return clazz;
+    }
+
+    public String getMethod()
+    {
+        return method;
+    }
 }

@@ -93,7 +93,8 @@ public class IntegrationTestMojo
      * "-Dit.test=Basic*, !%regex[.*.Unstable.*], !%regex[.*.MyIT.class#one.*|two.*], %regex[#fast.*|slow.*]"<br/>
      * <br/>
      * The Parameterized JUnit runner <em>describes</em> test methods using an index in brackets, so the non-regex
-     * method pattern would become: <em>#testMethod[*]</em>.
+     * method pattern would become: <em>#testMethod[*]</em>. If using <em>@Parameters(name="{index}: fib({0})={1}")</em>
+     * and selecting the index e.g. 5 in pattern, the non-regex method pattern would become <em>#testMethod[5:*]</em>.
      * <br/>
      */
     @Parameter( property = "it.test" )

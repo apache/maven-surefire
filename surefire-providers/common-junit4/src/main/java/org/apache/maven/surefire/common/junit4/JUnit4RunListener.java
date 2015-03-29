@@ -207,17 +207,13 @@ public class JUnit4RunListener
         {
             for ( Failure failure : run.getFailures() )
             {
-                if ( isFailureInsideJUnitItself( failure ) )
+                Description description = failure.getDescription();
+                if ( JUnit4ProviderUtil.isFailureInsideJUnitItself( description ) )
                 {
                     final Throwable exception = failure.getException();
                     throw new TestSetFailedException( exception );
                 }
             }
         }
-    }
-
-    public static boolean isFailureInsideJUnitItself( Failure failure )
-    {
-        return Description.TEST_MECHANISM.equals( failure.getDescription() );
     }
 }

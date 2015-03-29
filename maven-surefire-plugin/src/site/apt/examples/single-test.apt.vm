@@ -142,4 +142,6 @@ mvn "-Dit.test=Basic*, !%regex[.*.Unstable.*], !%regex[.*.MyIT.class#one.*|two.*
   The regex validates fully qualified class file, and validates test methods separately after (#) however class
   is optional. The regex supports '.class' file extension only. Note the regex comments, marked by (#)
   character, are unsupported. The Parameterized JUnit runner describes test methods using an index in brackets, so the
-  non-regex method pattern would become <<<#testMethod[*]>>>.
+  non-regex method pattern would become <<<#testMethod[*]>>>. If using the JUnit annotation
+  <<<@Parameters(name="\{index\}: fib(\{0\})=\{1\}")>>> and selecting the index e.g. 5 in pattern, the non-regex
+  method pattern would become <<<#testMethod[5:*]>>>.

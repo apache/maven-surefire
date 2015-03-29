@@ -947,6 +947,16 @@ public class FilterFactoryTest
     }
 
     @Test
+    public void testShouldRunClassOnly()
+    {
+        Class<?> testsATest = org.apache.maven.surefire.common.junit48.tests.ATest.class;
+        TestListResolver resolver = new TestListResolver( "**/ATest.java#testSuccessTwo" );
+        assertTrue( resolver.shouldRun( testsATest, null ) );
+        resolver = new TestListResolver( "**/BTest.java#testSuccessTwo" );
+        assertFalse( resolver.shouldRun( testsATest, null ) );
+    }
+
+    @Test
     public void testMatchPatterns()
     {
         String sourceFile = "pkg" + File.separator + "MyTest.class";

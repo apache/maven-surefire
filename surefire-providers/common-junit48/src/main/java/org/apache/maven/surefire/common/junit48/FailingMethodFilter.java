@@ -19,6 +19,7 @@ package org.apache.maven.surefire.common.junit48;
  * under the License.
  */
 
+import org.apache.maven.shared.utils.io.SelectorUtils;
 import org.junit.runner.Description;
 import org.junit.runner.manipulation.Filter;
 
@@ -32,11 +33,11 @@ final class FailingMethodFilter
     extends Filter
 {
     // Map from Class -> List of method names. Are the method names hashed to include the signature?
-    private final Map<Class<?>, Set<String>> failingClassMethodMap;
+    private final Map<Class<?>, Set<String>> failingClassMethodPatterns;
 
-    public FailingMethodFilter( Map<Class<?>, Set<String>> failingClassMethodMap )
+    public FailingMethodFilter( Map<Class<?>, Set<String>> failingClassMethodPatterns )
     {
-        this.failingClassMethodMap = failingClassMethodMap;
+        this.failingClassMethodPatterns = failingClassMethodPatterns;
     }
 
     @Override
@@ -59,8 +60,21 @@ final class FailingMethodFilter
             return false;
         }
 
-        Set<String> testMethods = failingClassMethodMap.get( description.getTestClass() );
-        return testMethods != null && testMethods.contains( description.getMethodName() );
+        Set<String> testMethodPatterns = failingClassMethodPatterns.get( description.getTestClass() );
+        String testMethod = description.getMethodName();
+        return testMethodPatterns != null && matchMethod( testMethodPatterns, testMethod );
+    }
+
+    private static boolean matchMethod( Set<String> patterns, String methodName )
+    {
+        for ( String pattern : patterns )
+        {
+            if ( SelectorUtils.match( pattern, methodName ) )
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override

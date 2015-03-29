@@ -20,7 +20,6 @@ package org.apache.maven.surefire.common.junit4;
  */
 
 import org.apache.maven.surefire.util.TestsToRun;
-import org.apache.maven.surefire.util.internal.StringUtils;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -29,10 +28,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.maven.surefire.util.internal.StringUtils;
+
 import org.junit.runner.Description;
 import org.junit.runner.notification.Failure;
-
-import static org.apache.maven.surefire.common.junit4.JUnit4RunListener.isFailureInsideJUnitItself;
 
 /**
  *
@@ -41,8 +40,14 @@ import static org.apache.maven.surefire.common.junit4.JUnit4RunListener.isFailur
  * @author Qingzhou Luo
  *
  */
-public class JUnit4ProviderUtil
+public final class JUnit4ProviderUtil
 {
+
+    private JUnit4ProviderUtil()
+    {
+        throw new IllegalStateException( "Cannot instantiate." );
+    }
+
     /**
      * Organize all the failures in previous run into a map between test classes and corresponding failing test methods
      *
@@ -56,29 +61,28 @@ public class JUnit4ProviderUtil
 
         for ( Failure failure : allFailures )
         {
-            if ( !isFailureInsideJUnitItself( failure ) )
+            Description description = failure.getDescription();
+            if ( description.isTest() && !isFailureInsideJUnitItself( description ) )
             {
-                // failure.getTestHeader() is in the format: method(class)
-                String[] testMethodClass = StringUtils.split( failure.getTestHeader(), "(" );
-                String testMethod = testMethodClass[0];
-                String testClass = StringUtils.split( testMethodClass[1], ")" )[0];
-                Class testClassObj = testsToRun.getClassByName( testClass );
+                ClassMethod classMethod = cutTestClassAndMethod( description );
+                if ( classMethod.isValid() )
+                {
+                    Class testClassObj = testsToRun.getClassByName( classMethod.getClazz() );
 
-                if ( testClassObj == null )
-                {
-                    continue;
-                }
-
-                Set<String> failingMethods = testClassMethods.get( testClassObj );
-                if ( failingMethods == null )
-                {
-                    failingMethods = new HashSet<String>();
-                    failingMethods.add( testMethod );
-                    testClassMethods.put( testClassObj, failingMethods );
-                }
-                else
-                {
-                    failingMethods.add( testMethod );
+                    if ( testClassObj != null )
+                    {
+                        Set<String> failingMethods = testClassMethods.get( testClassObj );
+                        if ( failingMethods == null )
+                        {
+                            failingMethods = new HashSet<String>();
+                            failingMethods.add( classMethod.getMethod() );
+                            testClassMethods.put( testClassObj, failingMethods );
+                        }
+                        else
+                        {
+                            failingMethods.add( classMethod.getMethod() );
+                        }
+                    }
                 }
             }
         }
@@ -97,11 +101,14 @@ public class JUnit4ProviderUtil
 
         for ( Failure failure : allFailures )
         {
-            if ( !isFailureInsideJUnitItself( failure ) )
+            Description description = failure.getDescription();
+            if ( description.isTest() && !isFailureInsideJUnitItself( description ) )
             {
-                // failure.getTestHeader() is in the format: method(class)
-                String testMethod = StringUtils.split( failure.getTestHeader(), "(" )[0];
-                failingMethods.add( testMethod );
+                ClassMethod classMethod = cutTestClassAndMethod( description );
+                if ( classMethod.isValid() )
+                {
+                    failingMethods.add( classMethod.getMethod() );
+                }
             }
         }
         return failingMethods;
@@ -113,6 +120,45 @@ public class JUnit4ProviderUtil
         return reflector.createRequest( classes.toArray( new Class[classes.size()] ) )
                 .getRunner()
                 .getDescription();
+    }
+
+    public static boolean isFailureInsideJUnitItself( Description failure )
+    {
+        return Description.TEST_MECHANISM.equals( failure );
+    }
+
+    /**
+     * Java Patterns of regex is slower than cutting a substring.
+     * @param description method(class) or method[#](class) or method[#whatever-literals](class)
+     * @return method JUnit test method
+     */
+    public static ClassMethod cutTestClassAndMethod( Description description )
+    {
+        String name = description.getDisplayName();
+        String clazz = null;
+        String method = null;
+        if ( name != null )
+        {
+            // The order is : 1.method and then 2.class
+            // method(class)
+            name = name.trim();
+            if ( name.endsWith( ")" ) )
+            {
+                int classBracket = name.lastIndexOf( '(' );
+                if ( classBracket != -1 )
+                {
+                    clazz = tryBlank( name.substring( classBracket + 1, name.length() - 1 ) );
+                    method = tryBlank( name.substring( 0, classBracket ) );
+                }
+            }
+        }
+        return new ClassMethod( clazz, method );
+    }
+
+    private static String tryBlank( String s )
+    {
+        s = s.trim();
+        return StringUtils.isBlank( s ) ? null : s;
     }
 
 }

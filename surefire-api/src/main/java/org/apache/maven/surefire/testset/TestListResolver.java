@@ -279,6 +279,12 @@ public class TestListResolver
         return result;
     }
 
+    @Override
+    public String toString()
+    {
+        return getPluginParameterTest();
+    }
+
     static String removeExclamationMark( String s )
     {
         return s.length() != 0 && s.charAt( 0 ) == '!' ? s.substring( 1 ) : s;
