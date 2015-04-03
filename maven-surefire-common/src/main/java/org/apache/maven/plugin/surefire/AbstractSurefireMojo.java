@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -1606,7 +1607,7 @@ public abstract class AbstractSurefireMojo
             // Have to wrap in an ArrayList as surefire expects an ArrayList instead of a List for some reason
             if ( actualExcludes == null || actualExcludes.isEmpty() )
             {
-                actualExcludes = Arrays.asList( "**/*$*" );
+                actualExcludes = Collections.singletonList( "**/*$*" );
             }
         }
         return filterNulls( actualExcludes );
@@ -1618,7 +1619,7 @@ public abstract class AbstractSurefireMojo
         List<String> includes = null;
         if ( isSpecificTestSpecified() && !isMultipleExecutionBlocksDetected() )
         {
-            includes = Arrays.asList( getTest() );
+            includes = Collections.singletonList( getTest() );
         }
         else
         {
@@ -1710,7 +1711,7 @@ public abstract class AbstractSurefireMojo
             Plugin plugin = (Plugin) project.getBuild().getPluginsAsMap().get( key );
             if ( plugin != null )
             {
-                List<PluginExecution> executions = plugin.getExecutions();
+                Collection<PluginExecution> executions = plugin.getExecutions();
                 return executions != null && executions.size() > 1;
             }
         }
