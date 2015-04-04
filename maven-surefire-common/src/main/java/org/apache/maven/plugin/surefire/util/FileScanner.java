@@ -28,8 +28,6 @@ import static org.apache.maven.surefire.util.internal.StringUtils.isBlank;
 
 final class FileScanner
 {
-    private static final String CLASS_FILE_EXTENSION = ".class";
-
     private final File basedir;
 
     private final String ext;
@@ -117,10 +115,10 @@ final class FileScanner
         return pkg.toString();
     }
 
-    private static String toFile( String path, String fileNameWithoutExtension )
+    private String toFile( String path, String fileNameWithoutExtension )
     {
         String pathWithoutExtension =
             path.length() == 0 ? fileNameWithoutExtension : path + '/' + fileNameWithoutExtension;
-        return pathWithoutExtension + CLASS_FILE_EXTENSION;
+        return pathWithoutExtension + '.' + ext;
     }
 }
