@@ -51,8 +51,7 @@ public class DefaultScanResult
 
     public void writeTo( Properties properties )
     {
-        int size = files.size();
-        for ( int i = 0; i < size; i++ )
+        for ( int i = 0, size = files.size(); i < size; i++ )
         {
             properties.setProperty( SCAN_RESULT_NUMBER + i, files.get( i ) );
         }

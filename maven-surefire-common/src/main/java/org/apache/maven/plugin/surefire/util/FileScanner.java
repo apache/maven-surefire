@@ -35,8 +35,12 @@ final class FileScanner
     FileScanner( File basedir, String ext )
     {
         this.basedir = basedir;
-        ext = isBlank( ext ) ? null : ext.trim();
-        this.ext = ext == null || ext.startsWith( "." ) ? ext : "." + ext;
+        ext = ext.trim();
+        if ( isBlank( ext ) )
+        {
+            throw new IllegalArgumentException( "No file extension" );
+        }
+        this.ext = ext.startsWith( "." ) ? ext : "." + ext;
     }
 
     void scanTo( Collection<String> scannedJavaClassNames, TestFilter<String, String> filter )
@@ -119,6 +123,6 @@ final class FileScanner
     {
         String pathWithoutExtension =
             path.length() == 0 ? fileNameWithoutExtension : path + '/' + fileNameWithoutExtension;
-        return pathWithoutExtension + '.' + ext;
+        return pathWithoutExtension + ext;
     }
 }
