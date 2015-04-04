@@ -27,6 +27,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Stopwatch;
 import org.junit.runner.Description;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
@@ -48,6 +49,7 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.apache.maven.surefire.junitcore.pc.RangeMatcher.between;
 import static org.junit.Assert.*;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 /**
  * @author Tibor Digana (tibor17)
@@ -62,7 +64,7 @@ public class ParallelComputerBuilderTest
     private static volatile Runnable shutdownTask;
 
     @Rule
-    public final Stopwatch runtime = new Stopwatch();
+    public final Stopwatch stopwatch = new Stopwatch() {};
 
     private static void testKeepBeforeAfter( ParallelComputerBuilder builder, Class<?>... classes )
     {
@@ -118,7 +120,7 @@ public class ParallelComputerBuilderTest
 
         ParallelComputerBuilder.PC computer = (ParallelComputerBuilder.PC) parallelComputerBuilder.buildComputer();
         Result result = new JUnitCore().run( computer, TestSuite.class );
-        long timeSpent = runtime.stop();
+        long timeSpent = stopwatch.runtime( MILLISECONDS );
 
         assertThat( computer.suites.size(), is( 1 ) );
         assertThat( computer.classes.size(), is( 0 ) );
@@ -153,7 +155,7 @@ public class ParallelComputerBuilderTest
 
         ParallelComputerBuilder.PC computer = (ParallelComputerBuilder.PC) parallelComputerBuilder.buildComputer();
         Result result = new JUnitCore().run( computer, TestSuite.class, Class1.class );
-        long timeSpent = runtime.stop();
+        long timeSpent = stopwatch.runtime( MILLISECONDS );
 
         assertThat( computer.suites.size(), is( 1 ) );
         assertThat( computer.classes.size(), is( 1 ) );
@@ -179,7 +181,7 @@ public class ParallelComputerBuilderTest
 
         ParallelComputerBuilder.PC computer = (ParallelComputerBuilder.PC) parallelComputerBuilder.buildComputer();
         Result result = new JUnitCore().run( computer, TestSuite.class, Class1.class );
-        long timeSpent = runtime.stop();
+        long timeSpent = stopwatch.runtime( MILLISECONDS );
 
         assertThat( computer.suites.size(), is( 1 ) );
         assertThat( computer.classes.size(), is( 1 ) );
@@ -211,7 +213,7 @@ public class ParallelComputerBuilderTest
 
         ParallelComputerBuilder.PC computer = (ParallelComputerBuilder.PC) parallelComputerBuilder.buildComputer();
         Result result = new JUnitCore().run( computer, TestSuite.class );
-        long timeSpent = runtime.stop();
+        long timeSpent = stopwatch.runtime( MILLISECONDS );
 
         assertThat( computer.suites.size(), is( 1 ) );
         assertThat( computer.classes.size(), is( 0 ) );
@@ -235,7 +237,7 @@ public class ParallelComputerBuilderTest
 
         ParallelComputerBuilder.PC computer = (ParallelComputerBuilder.PC) parallelComputerBuilder.buildComputer();
         Result result = new JUnitCore().run( computer, TestSuite.class );
-        long timeSpent = runtime.stop();
+        long timeSpent = stopwatch.runtime( MILLISECONDS );
 
         assertThat( computer.suites.size(), is( 1 ) );
         assertThat( computer.classes.size(), is( 0 ) );
@@ -262,7 +264,7 @@ public class ParallelComputerBuilderTest
         // Each group takes 0.5s.
         ParallelComputerBuilder.PC computer = (ParallelComputerBuilder.PC) parallelComputerBuilder.buildComputer();
         Result result = new JUnitCore().run( computer, TestSuite.class, Class1.class );
-        long timeSpent = runtime.stop();
+        long timeSpent = stopwatch.runtime( MILLISECONDS );
 
         assertThat( computer.suites.size(), is( 1 ) );
         assertThat( computer.classes.size(), is( 1 ) );
@@ -286,7 +288,7 @@ public class ParallelComputerBuilderTest
 
         ParallelComputerBuilder.PC computer = (ParallelComputerBuilder.PC) parallelComputerBuilder.buildComputer();
         Result result = new JUnitCore().run( computer, TestSuite.class, Class1.class );
-        long timeSpent = runtime.stop();
+        long timeSpent = stopwatch.runtime( MILLISECONDS );
 
         assertThat( computer.suites.size(), is( 1 ) );
         assertThat( computer.classes.size(), is( 1 ) );
@@ -303,7 +305,7 @@ public class ParallelComputerBuilderTest
     public void shutdown()
     {
         Result result = new ShutdownTest().run( false );
-        long timeSpent = runtime.stop();
+        long timeSpent = stopwatch.runtime( MILLISECONDS );
         assertTrue( result.wasSuccessful() );
         assertTrue( beforeShutdown );
         assertThat( timeSpent, between( 450, 1250 ) );
@@ -313,7 +315,7 @@ public class ParallelComputerBuilderTest
     public void shutdownWithInterrupt()
     {
         new ShutdownTest().run( true );
-        long timeSpent = runtime.stop();
+        long timeSpent = stopwatch.runtime( MILLISECONDS );
         assertTrue( beforeShutdown );
         assertThat( timeSpent, between( 450, 1250 ) );
     }
@@ -536,7 +538,7 @@ public class ParallelComputerBuilderTest
         Thread.enumerate( t );
         ArrayList<Thread> appThreads = new ArrayList<Thread>( t.length );
         Collections.addAll( appThreads, t );
-        appThreads.removeAll( Collections.singleton( null ) );
+        appThreads.removeAll( Collections.singleton( (Thread) null ) );
         Collections.sort( appThreads, new Comparator<Thread>()
         {
             public int compare( Thread t1, Thread t2 )

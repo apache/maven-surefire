@@ -57,9 +57,6 @@ public final class OptimizedParallelComputerTest
     @Rule
     public final ExpectedException exception = ExpectedException.none();
 
-    @Rule
-    public final Stopwatch runtime = new Stopwatch();
-
     @BeforeClass
     public static void beforeClass()
     {

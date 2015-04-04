@@ -31,6 +31,7 @@ import org.junit.experimental.theories.DataPoint;
 import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
 import org.junit.rules.ExpectedException;
+import org.junit.rules.Stopwatch;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
 import org.junit.runner.RunWith;
@@ -42,6 +43,7 @@ import static org.apache.maven.surefire.junitcore.pc.ParallelComputerUtil.*;
 import static org.apache.maven.surefire.junitcore.JUnitCoreParameters.*;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.*;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 /**
  * Testing an algorithm in {@link ParallelComputerUtil} which configures
@@ -64,7 +66,7 @@ public final class ParallelComputerUtilTest
     public final ExpectedException exception = ExpectedException.none();
 
     @Rule
-    public final Stopwatch runtime = new Stopwatch();
+    public final Stopwatch stopwatch = new Stopwatch() {};
 
     @BeforeClass
     public static void beforeClass()
@@ -969,7 +971,7 @@ public final class ParallelComputerUtilTest
         ParallelComputerBuilder pcBuilder = new ParallelComputerBuilder( new Logger(), params );
         ParallelComputer pc = pcBuilder.buildComputer();
         Result result = new JUnitCore().run( pc, TestClass.class );
-        long timeSpent = runtime.stop();
+        long timeSpent = stopwatch.runtime( MILLISECONDS );
         long deltaTime = 500L;
 
         assertTrue( result.wasSuccessful() );
@@ -993,7 +995,7 @@ public final class ParallelComputerUtilTest
         ParallelComputerBuilder pcBuilder = new ParallelComputerBuilder( new Logger(), params );
         ParallelComputer pc = pcBuilder.buildComputer();
         new JUnitCore().run( pc, TestClass.class );
-        long timeSpent = runtime.stop();
+        long timeSpent = stopwatch.runtime( MILLISECONDS );
         long deltaTime = 500L;
 
         assertEquals( 5000L, timeSpent, deltaTime );
@@ -1016,7 +1018,7 @@ public final class ParallelComputerUtilTest
         ParallelComputerBuilder pcBuilder = new ParallelComputerBuilder( new Logger(), params );
         ParallelComputer pc = pcBuilder.buildComputer();
         new JUnitCore().run( pc, TestClass.class );
-        long timeSpent = runtime.stop();
+        long timeSpent = stopwatch.runtime( MILLISECONDS );
         long deltaTime = 500L;
 
         assertEquals( 2500L, timeSpent, deltaTime );
@@ -1042,7 +1044,7 @@ public final class ParallelComputerUtilTest
         ParallelComputerBuilder pcBuilder = new ParallelComputerBuilder( new Logger(), params );
         ParallelComputer pc = pcBuilder.buildComputer();
         new JUnitCore().run( pc, TestClass.class );
-        long timeSpent = runtime.stop();
+        long timeSpent = stopwatch.runtime( MILLISECONDS );
         long deltaTime = 500L;
 
         assertEquals( 3500L, timeSpent, deltaTime );
@@ -1066,7 +1068,7 @@ public final class ParallelComputerUtilTest
         ParallelComputerBuilder pcBuilder = new ParallelComputerBuilder( new Logger(), params );
         ParallelComputer pc = pcBuilder.buildComputer();
         new JUnitCore().run( pc, TestClass.class );
-        long timeSpent = runtime.stop();
+        long timeSpent = stopwatch.runtime( MILLISECONDS );
         long deltaTime = 500L;
 
         assertEquals( 3500L, timeSpent, deltaTime );
