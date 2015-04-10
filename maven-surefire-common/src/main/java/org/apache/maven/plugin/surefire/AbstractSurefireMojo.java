@@ -1634,39 +1634,39 @@ public abstract class AbstractSurefireMojo
     private List<String> getIncludeList()
         throws MojoFailureException
     {
-        List<String> includes = null;
+        List<String> actualIncludes = null;
         if ( isSpecificTestSpecified() && !isMultipleExecutionBlocksDetected() )
         {
-            includes = Collections.singletonList( getTest() );
+            actualIncludes = Collections.singletonList( "**/*" );
         }
         else
         {
             if ( getIncludesFile() != null )
             {
-                includes = readListFromFile( getIncludesFile() );
+                actualIncludes = readListFromFile( getIncludesFile() );
             }
 
             // If we have includesFile, and we have includes, then append includes to includesFile content
-            if ( includes == null )
+            if ( actualIncludes == null )
             {
-                includes = getIncludes();
+                actualIncludes = getIncludes();
             }
             else
             {
-                maybeAppendList( includes, getIncludes() );
+                maybeAppendList( actualIncludes, getIncludes() );
             }
 
-            checkMethodFilterInIncludesExcludes( includes );
+            checkMethodFilterInIncludesExcludes( actualIncludes );
+
+            // defaults here, qdox doesn't like the end javadoc value
+            // Have to wrap in an ArrayList as surefire expects an ArrayList instead of a List for some reason
+            if ( actualIncludes == null || actualIncludes.isEmpty() )
+            {
+                actualIncludes = Arrays.asList( getDefaultIncludes() );
+            }
         }
 
-        // defaults here, qdox doesn't like the end javadoc value
-        // Have to wrap in an ArrayList as surefire expects an ArrayList instead of a List for some reason
-        if ( includes == null || includes.isEmpty() )
-        {
-            includes = Arrays.asList( getDefaultIncludes() );
-        }
-
-        return filterNulls( includes );
+        return filterNulls( actualIncludes );
     }
 
     private void checkMethodFilterInIncludesExcludes( Iterable<String> patterns )
