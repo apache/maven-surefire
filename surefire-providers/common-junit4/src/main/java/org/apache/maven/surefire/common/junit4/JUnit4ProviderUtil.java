@@ -90,14 +90,14 @@ public final class JUnit4ProviderUtil
     }
 
     /**
-     * Get the name of all test methods from a list of Failures
+     * Get all test methods from a list of Failures
      *
      * @param allFailures the list of failures for a given test class
-     * @return the list of test method names
+     * @return the list of test methods
      */
-    public static Set<String> generateFailingTests( List<Failure> allFailures )
+    public static Set<ClassMethod> generateFailingTests( List<Failure> allFailures )
     {
-        Set<String> failingMethods = new HashSet<String>();
+        Set<ClassMethod> failingMethods = new HashSet<ClassMethod>();
 
         for ( Failure failure : allFailures )
         {
@@ -107,7 +107,7 @@ public final class JUnit4ProviderUtil
                 ClassMethod classMethod = cutTestClassAndMethod( description );
                 if ( classMethod.isValid() )
                 {
-                    failingMethods.add( classMethod.getMethod() );
+                    failingMethods.add( classMethod );
                 }
             }
         }

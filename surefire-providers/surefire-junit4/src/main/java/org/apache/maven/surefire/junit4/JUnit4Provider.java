@@ -171,11 +171,12 @@ public class JUnit4Provider
         {
             for ( int i = 0; i < rerunFailingTestsCount && !failureListener.getAllFailures().isEmpty(); i++ )
             {
-                Set<String> failedTests = JUnit4ProviderUtil.generateFailingTests( failureListener.getAllFailures() );
+                Set<ClassMethod> failedTests = JUnit4ProviderUtil.generateFailingTests(
+                        failureListener.getAllFailures( ) );
                 failureListener.reset();
                 if ( !failedTests.isEmpty() )
                 {
-                    executeFailedMethod( clazz, listeners, failedTests );
+                    executeFailedMethod( listeners, failedTests );
                 }
             }
         }
@@ -273,11 +274,20 @@ public class JUnit4Provider
         }
     }
 
-    private static void executeFailedMethod( Class<?> testClass, RunNotifier notifier, Set<String> failedMethods )
+    private void executeFailedMethod( RunNotifier notifier, Set<ClassMethod> failedMethods )
     {
-        for ( String failedMethod : failedMethods )
+        for ( ClassMethod failedMethod : failedMethods )
         {
-            Request.method( testClass, failedMethod ).getRunner().run( notifier );
+            try
+            {
+                Class<?> methodClass = Class.forName( failedMethod.getClazz(), true, testClassLoader );
+                String methodName = failedMethod.getMethod();
+                Request.method( methodClass, methodName ).getRunner().run( notifier );
+            }
+            catch ( ClassNotFoundException e )
+            {
+                throw new RuntimeException( "Unable to create test class '" + failedMethod.getClazz() + "'", e );
+            }
         }
     }
 
