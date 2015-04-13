@@ -26,7 +26,6 @@
     <groupId>org.apache.maven.surefire</groupId>
     <artifactId>it-parent</artifactId>
     <version>1.0</version>
-    <relativePath>../pom.xml</relativePath>
   </parent>
   <groupId>org.apache.maven.plugins.surefire</groupId>
   <artifactId>jiras-surefire-1152</artifactId>
@@ -53,7 +52,7 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <includes>
-            <include>**/FlakyTestSuite.java</include>
+            <include>FlakyTestSuite</include>
           </includes>
           <!--<skip>true</skip>-->
         </configuration>
@@ -72,7 +71,7 @@
         </executions>
         <configuration>
           <includes>
-            <include>**/FlakyITSuite.java</include>
+            <include>FlakyITSuite</include>
           </includes>
         </configuration>
       </plugin>

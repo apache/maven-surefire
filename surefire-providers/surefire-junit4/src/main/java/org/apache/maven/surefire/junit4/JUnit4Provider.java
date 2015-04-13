@@ -159,7 +159,7 @@ public class JUnit4Provider
         }
     }
 
-    private void executeWithRerun( Class<?> clazz, RunNotifier listeners )
+    private void executeWithRerun( Class<?> clazz, RunNotifier listeners ) throws TestSetFailedException
     {
         JUnitTestFailureListener failureListener = new JUnitTestFailureListener();
         listeners.addListener( failureListener );
@@ -275,6 +275,7 @@ public class JUnit4Provider
     }
 
     private void executeFailedMethod( RunNotifier notifier, Set<ClassMethod> failedMethods )
+        throws TestSetFailedException
     {
         for ( ClassMethod failedMethod : failedMethods )
         {
@@ -286,7 +287,7 @@ public class JUnit4Provider
             }
             catch ( ClassNotFoundException e )
             {
-                throw new RuntimeException( "Unable to create test class '" + failedMethod.getClazz() + "'", e );
+                throw new TestSetFailedException( "Unable to create test class '" + failedMethod.getClazz() + "'", e );
             }
         }
     }

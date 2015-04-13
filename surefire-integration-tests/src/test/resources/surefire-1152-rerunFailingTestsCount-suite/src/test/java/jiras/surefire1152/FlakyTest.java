@@ -21,14 +21,18 @@ package jiras.surefire1152;
 
 import org.junit.Test;
 
-public class FlakyTest {
+import static org.junit.Assert.fail;
 
-    static int n = 0;
+public class FlakyTest
+{
+    private static int n;
 
     @Test
-    public void testFlaky() {
-        if (n++ == 0) {
-            throw new AssertionError("deliberately flaky test (should pass the next time)");
+    public void testFlaky()
+    {
+        if ( n++ == 0 )
+        {
+            fail( "deliberately flaky test (should pass the next time)" );
         }
     }
 
