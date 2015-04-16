@@ -21,17 +21,23 @@ package jiras.surefire1152;
 
 import org.junit.Test;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import static org.junit.Assert.fail;
 
-public class FlakyTest extends FlakyParent
+public class FlakyParent
 {
-    private static int n;
+    // set of test classes which have previously invoked testFlakyParent
+    private static final Set<Class<?>> previouslyRun = new HashSet<Class<?>>();
 
     @Test
-    public void testFlaky()
+    public void testFlakyParent()
     {
-        if ( n++ == 0 )
+        Class<?> clazz = getClass();
+        if ( !previouslyRun.contains( clazz ) )
         {
+            previouslyRun.add( clazz );
             fail( "deliberately flaky test (should pass the next time)" );
         }
     }
