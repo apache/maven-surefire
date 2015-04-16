@@ -36,7 +36,7 @@ public class Surefire1152RerunFailingTestsInSuiteIT
     public void rerunsFailingTestInSuite()
     {
         OutputValidator outputValidator = unpack( "surefire-1152-rerunFailingTestsCount-suite" ).executeVerify();
-        outputValidator.assertTestSuiteResults( 1, 0, 0, 0 );
+        outputValidator.assertTestSuiteResults( 3, 0, 0, 0, 3 );
         outputValidator.assertIntegrationTestSuiteResults( 1, 0, 0, 0 );
     }
 }
