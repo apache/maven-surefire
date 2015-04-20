@@ -1733,6 +1733,11 @@ public abstract class AbstractSurefireMojo
                         + artifact.getVersion() );
             }
         }
+        else if ( getTestNGArtifactName().equals(
+            project.getArtifact().getGroupId() + ":" + project.getArtifact().getArtifactId() ) )
+        {
+            return project.getArtifact();
+        }
         return artifact;
 
     }
