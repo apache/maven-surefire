@@ -26,7 +26,7 @@ import java.util.Set;
 
 import static org.junit.Assert.fail;
 
-public abstract class FlakyParent
+public class FlakyParent
 {
     // set of test classes which have previously invoked testFlakyParent
     private static final Set<Class<?>> previouslyRun = new HashSet<Class<?>>();
