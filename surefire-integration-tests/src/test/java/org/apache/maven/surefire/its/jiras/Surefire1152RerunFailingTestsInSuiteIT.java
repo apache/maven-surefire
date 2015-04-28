@@ -21,6 +21,7 @@ package org.apache.maven.surefire.its.jiras;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
 /**
@@ -31,12 +32,32 @@ import org.junit.Test;
 public class Surefire1152RerunFailingTestsInSuiteIT
     extends SurefireJUnit4IntegrationTestCase
 {
+    private static final String RUNNING_WITH_JUNIT48 =
+        "Using configured provider org.apache.maven.surefire.junitcore.JUnitCoreProvider";
 
-    @Test
-    public void rerunsFailingTestInSuite()
+    public OutputValidator runMethodPattern( String projectName, String... goals )
     {
-        OutputValidator outputValidator = unpack( "surefire-1152-rerunFailingTestsCount-suite" ).executeVerify();
+        SurefireLauncher launcher = unpack( projectName );
+        for ( String goal : goals )
+        {
+            launcher.addGoal( goal );
+        }
+        OutputValidator outputValidator = launcher.executeTest();
         outputValidator.assertTestSuiteResults( 3, 0, 0, 0, 3 );
         outputValidator.assertIntegrationTestSuiteResults( 1, 0, 0, 0 );
+        return outputValidator;
     }
+
+    @Test
+    public void testJUnit48Provider4()
+    {
+        runMethodPattern( "surefire-1152-rerunFailingTestsCount-suite", "-P surefire-junit4" );
+    }
+
+    @Test
+    public void testJUnit48Provider47()
+    {
+        runMethodPattern( "surefire-1152-rerunFailingTestsCount-suite", "-P surefire-junit47" ).verifyTextInLog( RUNNING_WITH_JUNIT48 );
+    }
+
 }

@@ -20,6 +20,7 @@ package org.apache.maven.surefire.common.junit4;
  */
 
 import junit.framework.TestCase;
+import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.TestsToRun;
 import org.junit.runner.Description;
 import org.junit.runner.notification.Failure;
@@ -39,9 +40,8 @@ import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.*;
 public class JUnit4ProviderUtilTest
     extends TestCase
 {
-    public void testGenerateFailingTests()
+    public void testGenerateFailingTests() throws TestSetFailedException
     {
-        TestsToRun testsToRun = new TestsToRun( Arrays.asList( new Class[]{ T1.class, T2.class } ) );
         List<Failure> failures = new ArrayList<Failure>(  );
 
         Description test1Description = Description.createTestDescription( T1.class, "testOne" );
@@ -56,7 +56,7 @@ public class JUnit4ProviderUtilTest
         failures.add( new Failure( test4Description, new AssertionError() ) );
         failures.add( new Failure( test5Description, new RuntimeException() ) );
 
-        Map<Class<?>, Set<String>> result =  generateFailingTests( failures, testsToRun );
+        Map<Class<?>, Set<String>> result =  generateFailingTests( failures, getClass().getClassLoader() );
 
         assertEquals( 2, result.size() );
         Set<String> resultForT1 = result.get( T1.class );

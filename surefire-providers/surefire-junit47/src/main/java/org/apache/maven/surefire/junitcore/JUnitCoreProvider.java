@@ -147,7 +147,7 @@ public class JUnitCoreProvider
             for ( int i = 0; i < rerunFailingTestsCount && !testFailureListener.getAllFailures().isEmpty(); i++ )
             {
                 Map<Class<?>, Set<String>> failingTests =
-                    JUnit4ProviderUtil.generateFailingTests( testFailureListener.getAllFailures(), testsToRun );
+                    JUnit4ProviderUtil.generateFailingTests( testFailureListener.getAllFailures(), testClassLoader );
                 testFailureListener.reset();
                 final FilterFactory filterFactory = new FilterFactory( testClassLoader );
                 Filter failingMethodsFilter = filterFactory.createFailingMethodFilter( failingTests );
