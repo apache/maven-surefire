@@ -152,7 +152,7 @@ public class JUnitCoreProvider
                 final FilterFactory filterFactory = new FilterFactory( testClassLoader );
                 Filter failingMethodsFilter = filterFactory.createFailingMethodFilter( failingTests );
                 JUnitCoreWrapper.execute( consoleLogger, testsToRun, jUnitCoreParameters, customRunListeners,
-                                          filterFactory.and( filter, failingMethodsFilter ) );
+                                          failingMethodsFilter );
             }
         }
         return reporterFactory.close();

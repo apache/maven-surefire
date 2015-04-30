@@ -42,7 +42,7 @@ public class Surefire1152RerunFailingTestsInSuiteIT
         {
             launcher.addGoal( goal );
         }
-        OutputValidator outputValidator = launcher.executeTest();
+        OutputValidator outputValidator = launcher.executeVerify();
         outputValidator.assertTestSuiteResults( 3, 0, 0, 0, 3 );
         outputValidator.assertIntegrationTestSuiteResults( 1, 0, 0, 0 );
         return outputValidator;
