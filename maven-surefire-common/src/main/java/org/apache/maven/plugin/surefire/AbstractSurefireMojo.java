@@ -1446,7 +1446,7 @@ public abstract class AbstractSurefireMojo
 
         return new ProviderConfiguration( directoryScannerParameters, runOrderParameters, actualFailIfNoTests,
                                           reporterConfiguration,
-                                          testNg,// Not really used in provider. Limited to de/serializer.
+                                          testNg, // Not really used in provider. Limited to de/serializer.
                                           testSuiteDefinition, providerProperties, null,
                                           false );
     }
