@@ -64,7 +64,7 @@ public final class JUnit4ProviderUtil
         {
             try
             {
-                Class testClassObj = Class.forName( classMethod.getClazz(), true, testClassLoader );
+                Class testClassObj = Class.forName( classMethod.getClazz(), false, testClassLoader );
                 Set<String> failingMethods = testClassMethods.get( testClassObj );
                 if ( failingMethods == null )
                 {
