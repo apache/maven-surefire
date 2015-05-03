@@ -1723,6 +1723,8 @@ public abstract class AbstractSurefireMojo
         throws MojoExecutionException
     {
         Artifact artifact = getProjectArtifactMap().get( getTestNGArtifactName() );
+        Artifact projectArtifact = project.getArtifact();
+        String projectArtifactName = projectArtifact.getGroupId() + ":" + projectArtifact.getArtifactId();
 
         if ( artifact != null )
         {
@@ -1734,11 +1736,11 @@ public abstract class AbstractSurefireMojo
                         + artifact.getVersion() );
             }
         }
-        else if ( getTestNGArtifactName().equals(
-            project.getArtifact().getGroupId() + ":" + project.getArtifact().getArtifactId() ) )
+        else if ( projectArtifactName.equals( getTestNGArtifactName() ) )
         {
-            return project.getArtifact();
+            artifact = projectArtifact;
         }
+
         return artifact;
 
     }
@@ -1758,11 +1760,12 @@ public abstract class AbstractSurefireMojo
     private Artifact getJunitArtifact()
     {
         Artifact artifact = getProjectArtifactMap().get( getJunitArtifactName() );
+        Artifact projectArtifact = project.getArtifact();
+        String projectArtifactName = projectArtifact.getGroupId() + ":" + projectArtifact.getArtifactId();
 
-        if ( artifact == null && getJunitArtifactName().equals(
-            project.getArtifact().getGroupId() + ":" + project.getArtifact().getArtifactId() ) )
+        if ( artifact == null && projectArtifactName.equals( getJunitArtifactName() ) )
         {
-            return project.getArtifact();
+            artifact = projectArtifact;
         }
 
         return artifact;
