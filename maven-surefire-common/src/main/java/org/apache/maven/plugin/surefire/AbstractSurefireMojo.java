@@ -1757,7 +1757,15 @@ public abstract class AbstractSurefireMojo
 
     private Artifact getJunitArtifact()
     {
-        return getProjectArtifactMap().get( getJunitArtifactName() );
+        Artifact artifact = getProjectArtifactMap().get( getJunitArtifactName() );
+
+        if ( artifact == null && getJunitArtifactName().equals(
+            project.getArtifact().getGroupId() + ":" + project.getArtifact().getArtifactId() ) )
+        {
+            return project.getArtifact();
+        }
+
+        return artifact;
     }
 
     private Artifact getJunitDepArtifact()
