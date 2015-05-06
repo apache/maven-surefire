@@ -19,7 +19,7 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import java.util.Properties;
+import java.util.Map;
 
 /**
  * @author Kristian Rosenvold
@@ -27,5 +27,5 @@ import java.util.Properties;
  */
 interface ProviderPropertiesAware
 {
-    void setProviderProperties( Properties providerProperties );
+    void setProviderProperties( Map<String, String> providerProperties );
 }

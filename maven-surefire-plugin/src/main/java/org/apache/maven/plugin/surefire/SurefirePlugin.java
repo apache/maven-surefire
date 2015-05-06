@@ -443,7 +443,7 @@ public class SurefirePlugin
         return failIfNoSpecifiedTests;
     }
 
-    public void setFailIfNoSpecifiedTests( Boolean failIfNoSpecifiedTests )
+    public void setFailIfNoSpecifiedTests( boolean failIfNoSpecifiedTests )
     {
         this.failIfNoSpecifiedTests = failIfNoSpecifiedTests;
     }

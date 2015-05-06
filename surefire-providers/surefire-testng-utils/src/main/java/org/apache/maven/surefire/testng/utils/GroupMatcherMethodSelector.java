@@ -48,7 +48,7 @@ public class GroupMatcherMethodSelector
 
     public boolean includeMethod( IMethodSelectorContext context, ITestNGMethod method, boolean isTestMethod )
     {
-        Boolean result = (Boolean) answers.get( method );
+        Boolean result = answers.get( method );
         if ( result != null )
         {
             return result;

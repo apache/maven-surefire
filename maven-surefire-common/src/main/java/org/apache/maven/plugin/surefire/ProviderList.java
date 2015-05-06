@@ -51,7 +51,7 @@ public class ProviderList
         List<ProviderInfo> providersToRun = new ArrayList<ProviderInfo>();
 
         Set<String> manuallyConfiguredProviders = getManuallyConfiguredProviders();
-        if ( manuallyConfiguredProviders.size() > 0 )
+        if ( !manuallyConfiguredProviders.isEmpty() )
         {
             for ( String name : manuallyConfiguredProviders )
             {

@@ -87,13 +87,8 @@ public class JUnitCoreProvider
         testResolver = providerParameters.getTestRequest().getTestListResolver();
         rerunFailingTestsCount = providerParameters.getTestRequest().getRerunFailingTestsCount();
         customRunListeners = JUnit4RunListenerFactory.createCustomListeners(
-            providerParameters.getProviderProperties().getProperty( "listener" ) );
+            providerParameters.getProviderProperties().get( "listener" ) );
         jUnit48Reflector = new JUnit48Reflector( testClassLoader );
-    }
-
-    public Boolean isRunnable()
-    {
-        return Boolean.TRUE;
     }
 
     public Iterator getSuites()

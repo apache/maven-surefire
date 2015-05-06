@@ -36,12 +36,12 @@ public class DirectoryScannerParameters
 
     private final List specificTests;
 
-    private final Boolean failIfNoTests;
+    private final boolean failIfNoTests;
 
     private final RunOrder[] runOrder;
 
     private DirectoryScannerParameters( File testClassesDirectory, List includes, List excludes, List specificTests,
-                                        Boolean failIfNoTests, RunOrder[] runOrder )
+                                        boolean failIfNoTests, RunOrder[] runOrder )
     {
         this.testClassesDirectory = testClassesDirectory;
         this.includes = includes;
@@ -52,7 +52,7 @@ public class DirectoryScannerParameters
     }
 
     public DirectoryScannerParameters( File testClassesDirectory, List includes, List excludes, List specificTests,
-                                       Boolean failIfNoTests, String runOrder )
+                                       boolean failIfNoTests, String runOrder )
     {
         this( testClassesDirectory, includes, excludes, specificTests, failIfNoTests,
               runOrder == null ? RunOrder.DEFAULT : RunOrder.valueOfMulti( runOrder ) );
@@ -98,7 +98,7 @@ public class DirectoryScannerParameters
      *
      * @return true if no tests should fail the build
      */
-    public Boolean isFailIfNoTests()
+    public boolean isFailIfNoTests()
     {
         return failIfNoTests;
     }

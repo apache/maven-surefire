@@ -36,13 +36,13 @@ public class ForkingReporterFactory
     implements ReporterFactory
 {
 
-    private final Boolean isTrimstackTrace;
+    private final boolean isTrimstackTrace;
 
     private final PrintStream originalSystemOut;
 
     private volatile int testSetChannelId = 1;
 
-    public ForkingReporterFactory( Boolean trimstackTrace, PrintStream originalSystemOut )
+    public ForkingReporterFactory( boolean trimstackTrace, PrintStream originalSystemOut )
     {
         isTrimstackTrace = trimstackTrace;
         this.originalSystemOut = originalSystemOut;

@@ -31,9 +31,9 @@ import org.testng.xml.XmlSuite;
  */
 public interface Configurator
 {
-    void configure( TestNG testng, Map options )
+    void configure( TestNG testng, Map<String, String> options )
         throws TestSetFailedException;
 
-    void configure ( XmlSuite suite, Map options )
+    void configure ( XmlSuite suite, Map<String, String> options )
         throws TestSetFailedException;
 }

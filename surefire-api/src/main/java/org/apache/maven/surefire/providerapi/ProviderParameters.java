@@ -19,7 +19,6 @@ package org.apache.maven.surefire.providerapi;
  * under the License.
  */
 
-import java.util.Properties;
 import org.apache.maven.surefire.report.ConsoleLogger;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterFactory;
@@ -29,6 +28,8 @@ import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.util.DirectoryScanner;
 import org.apache.maven.surefire.util.RunOrderCalculator;
 import org.apache.maven.surefire.util.ScanResult;
+
+import java.util.Map;
 
 /**
  * Injected into the providers upon provider construction. Allows the provider to request services and data it needs.
@@ -119,7 +120,7 @@ public interface ProviderParameters
      *
      * @return the provider specific properties
      */
-    Properties getProviderProperties();
+    Map<String, String> getProviderProperties();
 
     /**
      * Artifact info about the artifact used to autodetect provider

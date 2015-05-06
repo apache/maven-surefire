@@ -22,7 +22,6 @@ package org.apache.maven.surefire.testng.conf;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.maven.surefire.booter.ProviderParameterNames;
@@ -46,53 +45,51 @@ import org.testng.xml.XmlSuite;
 public class TestNGMapConfigurator
     implements Configurator
 {
-    public void configure( TestNG testng, Map options )
+    public void configure( TestNG testng, Map<String, String> options )
         throws TestSetFailedException
     {
         Map convertedOptions = getConvertedOptions( options );
         testng.configure( convertedOptions );
     }
 
-    public void configure( XmlSuite suite, Map options )
+    public void configure( XmlSuite suite, Map<String, String> options )
         throws TestSetFailedException
     {
-        String threadCountString = (String) options.get( ProviderParameterNames.THREADCOUNT_PROP );
+        String threadCountString = options.get( ProviderParameterNames.THREADCOUNT_PROP );
         int threadCount = ( null != threadCountString ) ? Integer.parseInt( threadCountString ) : 1;
         suite.setThreadCount( threadCount );
 
-        String parallel = (String) options.get( ProviderParameterNames.PARALLEL_PROP );
+        String parallel = options.get( ProviderParameterNames.PARALLEL_PROP );
         if ( parallel != null )
         {
             suite.setParallel( parallel );
         }
     }
 
-    Map getConvertedOptions( Map options )
+    Map<String, Object> getConvertedOptions( Map<String, String> options )
         throws TestSetFailedException
     {
-        Map convertedOptions = new HashMap();
-        convertedOptions.put( "-mixed", Boolean.FALSE );
-        for ( Iterator it = options.entrySet().iterator(); it.hasNext(); )
+        Map<String, Object> convertedOptions = new HashMap<String, Object>();
+        convertedOptions.put( "-mixed", false );
+        for ( Map.Entry<String, String> entry : options.entrySet() )
         {
-            Map.Entry entry = (Map.Entry) it.next();
-            String key = (String) entry.getKey();
+            String key = entry.getKey();
             Object val = entry.getValue();
             if ( "listener".equals( key ) )
             {
-                val = AbstractDirectConfigurator.loadListenerClasses( (String) val );
+                val = AbstractDirectConfigurator.loadListenerClasses( entry.getValue() );
             }
-            if ( "objectfactory".equals( key ) )
+            else if ( "objectfactory".equals( key ) )
             {
-                val = AbstractDirectConfigurator.loadClass( (String) val );
+                val = AbstractDirectConfigurator.loadClass( entry.getValue() );
             }
-            if ( "reporter".equals( key ) )
+            else if ( "reporter".equals( key ) )
             {
                 // TODO support multiple reporters?
                 val = convertReporterConfig( val );
                 key = "reporterslist";
-
             }
-            if ( "junit".equals( key ) )
+            else if ( "junit".equals( key ) )
             {
                 val = convert( val, Boolean.class );
             }
@@ -114,7 +111,7 @@ public class TestNGMapConfigurator
             }
             else if ( ProviderParameterNames.THREADCOUNT_PROP.equals( key ) )
             {
-                val = convert( val, String.class );
+                val = convert ( val, String.class );
             }
             // TODO objectfactory... not even documented, does it work?
             if ( key.startsWith( "-" ) )
@@ -135,10 +132,10 @@ public class TestNGMapConfigurator
         final String reporterConfigClassName = "org.testng.ReporterConfig";
         try
         {
-            Class reporterConfig = Class.forName( reporterConfigClassName );
-            Method deserialize = reporterConfig.getMethod( "deserialize", new Class[]{ String.class } );
-            Object rc = deserialize.invoke( null, new Object[]{ val } );
-            ArrayList reportersList = new ArrayList();
+            Class<?> reporterConfig = Class.forName( reporterConfigClassName );
+            Method deserialize = reporterConfig.getMethod( "deserialize", String.class );
+            Object rc = deserialize.invoke( null, val );
+            ArrayList<Object> reportersList = new ArrayList<Object>();
             reportersList.add( rc );
             return reportersList;
         }
@@ -148,7 +145,7 @@ public class TestNGMapConfigurator
         }
     }
 
-    protected Object convert( Object val, Class type )
+    protected Object convert( Object val, Class<?> type )
     {
         if ( val == null )
         {

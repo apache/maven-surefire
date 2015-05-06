@@ -334,7 +334,7 @@ public class VerifyMojo
         return failIfNoTests;
     }
 
-    public void setFailIfNoTests( Boolean failIfNoTests )
+    public void setFailIfNoTests( boolean failIfNoTests )
     {
         this.failIfNoTests = failIfNoTests;
     }

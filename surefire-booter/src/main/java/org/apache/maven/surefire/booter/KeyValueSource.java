@@ -26,5 +26,5 @@ import java.util.Map;
  */
 public interface KeyValueSource
 {
-    void copyTo( Map target );
+    void copyTo( Map<Object, Object> target );
 }

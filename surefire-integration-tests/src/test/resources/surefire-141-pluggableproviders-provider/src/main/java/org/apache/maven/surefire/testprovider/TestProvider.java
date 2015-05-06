@@ -38,12 +38,6 @@ public class TestProvider
         invokeRuntimeExceptionIfSet( System.getProperty( "constructorCrash" ) );
     }
 
-
-    public Boolean isRunnable()
-    {
-        return Boolean.TRUE;
-    }
-
     public Iterator getSuites()
     {
         invokeRuntimeExceptionIfSet( System.getProperty( "getSuitesCrash" ) );

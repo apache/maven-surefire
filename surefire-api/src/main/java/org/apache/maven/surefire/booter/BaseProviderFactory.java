@@ -19,7 +19,6 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import java.util.Properties;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.report.ConsoleLogger;
 import org.apache.maven.surefire.report.DefaultDirectConsoleReporter;
@@ -36,6 +35,8 @@ import org.apache.maven.surefire.util.DirectoryScanner;
 import org.apache.maven.surefire.util.RunOrderCalculator;
 import org.apache.maven.surefire.util.ScanResult;
 
+import java.util.Map;
+
 /**
  * @author Kristian Rosenvold
  */
@@ -43,8 +44,9 @@ public class BaseProviderFactory
     implements DirectoryScannerParametersAware, ReporterConfigurationAware, SurefireClassLoadersAware, TestRequestAware,
     ProviderPropertiesAware, ProviderParameters, TestArtifactInfoAware, RunOrderParametersAware
 {
+    private static final int ROOT_CHANNEL = 0;
 
-    private Properties providerProperties;
+    private Map<String, String> providerProperties;
 
     private DirectoryScannerParameters directoryScannerParameters;
 
@@ -58,15 +60,11 @@ public class BaseProviderFactory
 
     private TestArtifactInfo testArtifactInfo;
 
-    private static final Integer ROOT_CHANNEL = 0;
-
-
     private final ReporterFactory reporterFactory;
 
     private final boolean insideFork;
 
-
-    public BaseProviderFactory( ReporterFactory reporterFactory, Boolean insideFork )
+    public BaseProviderFactory( ReporterFactory reporterFactory, boolean insideFork )
     {
         this.reporterFactory = reporterFactory;
         this.insideFork = insideFork;
@@ -74,11 +72,8 @@ public class BaseProviderFactory
 
     public DirectoryScanner getDirectoryScanner()
     {
-        if ( directoryScannerParameters == null )
-        {
-            return null;
-        }
-        return new DefaultDirectoryScanner( directoryScannerParameters.getTestClassesDirectory(),
+        return directoryScannerParameters == null
+                ? null : new DefaultDirectoryScanner( directoryScannerParameters.getTestClassesDirectory(),
                                             directoryScannerParameters.getIncludes(),
                                             directoryScannerParameters.getExcludes(),
                                             directoryScannerParameters.getSpecificTests() );
@@ -91,17 +86,14 @@ public class BaseProviderFactory
 
     private int getThreadCount()
     {
-        final String threadcount = (String) providerProperties.get( ProviderParameterNames.THREADCOUNT_PROP );
+        final String threadcount = providerProperties.get( ProviderParameterNames.THREADCOUNT_PROP );
         return threadcount == null ? 1 : Math.max( Integer.parseInt( threadcount ), 1 );
     }
 
     public RunOrderCalculator getRunOrderCalculator()
     {
-        if ( directoryScannerParameters == null )
-        {
-            return null;
-        }
-        return new DefaultRunOrderCalculator( runOrderParameters, getThreadCount() );
+        return directoryScannerParameters == null
+                ? null : new DefaultRunOrderCalculator( runOrderParameters, getThreadCount() );
     }
 
     public ReporterFactory getReporterFactory()
@@ -126,12 +118,10 @@ public class BaseProviderFactory
 
     public ConsoleLogger getConsoleLogger()
     {
-        if ( insideFork )
-        {
-            return new ForkingRunListener( reporterConfiguration.getOriginalSystemOut(), ROOT_CHANNEL,
-                                           reporterConfiguration.isTrimStackTrace() );
-        }
-        return new DefaultDirectConsoleReporter( reporterConfiguration.getOriginalSystemOut() );
+        return insideFork
+                ? new ForkingRunListener( reporterConfiguration.getOriginalSystemOut(), ROOT_CHANNEL,
+                                           reporterConfiguration.isTrimStackTrace() )
+                : new DefaultDirectConsoleReporter( reporterConfiguration.getOriginalSystemOut() );
     }
 
     public void setTestRequest( TestRequest testRequest )
@@ -159,12 +149,12 @@ public class BaseProviderFactory
         return testClassLoader;
     }
 
-    public void setProviderProperties( Properties providerProperties )
+    public void setProviderProperties( Map<String, String> providerProperties )
     {
         this.providerProperties = providerProperties;
     }
 
-    public Properties getProviderProperties()
+    public Map<String, String> getProviderProperties()
     {
         return providerProperties;
     }

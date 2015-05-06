@@ -45,7 +45,7 @@ public class ChecksumCalculator
 
     public void add( boolean value )
     {
-        checksumItems.add( value ? Boolean.TRUE : Boolean.FALSE );
+        checksumItems.add( value );
     }
 
     public void add( int value )

@@ -25,7 +25,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.List;
-import java.util.Properties;
+import java.util.Map;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterFactory;
@@ -50,35 +50,35 @@ public class SurefireReflector
 {
     private final ClassLoader surefireClassLoader;
 
-    private final Class reporterConfiguration;
+    private final Class<?> reporterConfiguration;
 
-    private final Class testRequest;
+    private final Class<?> testRequest;
 
-    private final Class testArtifactInfo;
+    private final Class<?> testArtifactInfo;
 
-    private final Class testArtifactInfoAware;
+    private final Class<?> testArtifactInfoAware;
 
-    private final Class directoryScannerParameters;
+    private final Class<?> directoryScannerParameters;
 
-    private final Class runOrderParameters;
+    private final Class<?> runOrderParameters;
 
-    private final Class directoryScannerParametersAware;
+    private final Class<?> directoryScannerParametersAware;
 
-    private final Class testSuiteDefinitionAware;
+    private final Class<?> testSuiteDefinitionAware;
 
-    private final Class testClassLoaderAware;
+    private final Class<?> testClassLoaderAware;
 
-    private final Class reporterConfigurationAware;
+    private final Class<?> reporterConfigurationAware;
 
-    private final Class providerPropertiesAware;
+    private final Class<?> providerPropertiesAware;
 
-    private final Class runResult;
+    private final Class<?> runResult;
 
-    private final Class booterParameters;
+    private final Class<?> booterParameters;
 
-    private final Class reporterFactory;
+    private final Class<?> reporterFactory;
 
-    private final Class testListResolver;
+    private final Class<?> testListResolver;
 
 
     public SurefireReflector( ClassLoader surefireClassLoader )
@@ -186,7 +186,7 @@ public class SurefireReflector
             return null;
         }
         //Can't use the constructor with the RunOrder parameter. Using it causes some integration tests to fail.
-        Class[] arguments = { File.class, List.class, List.class, List.class, Boolean.class, String.class };
+        Class[] arguments = { File.class, List.class, List.class, List.class, boolean.class, String.class };
         Constructor constructor = ReflectionUtils.getConstructor( this.directoryScannerParameters, arguments );
         return ReflectionUtils.newInstance( constructor,
                                             new Object[]{ directoryScannerParameters.getTestClassesDirectory(),
@@ -231,12 +231,12 @@ public class SurefireReflector
     Object createReporterConfiguration( ReporterConfiguration reporterConfiguration )
     {
         Constructor constructor =
-            ReflectionUtils.getConstructor( this.reporterConfiguration, new Class[]{ File.class, Boolean.class } );
+            ReflectionUtils.getConstructor( this.reporterConfiguration, new Class[]{ File.class, boolean.class } );
         return ReflectionUtils.newInstance( constructor, new Object[]{ reporterConfiguration.getReportsDirectory(),
             reporterConfiguration.isTrimStackTrace() } );
     }
 
-    public static ReporterFactory createForkingReporterFactoryInCurrentClassLoader( Boolean trimStackTrace,
+    public static ReporterFactory createForkingReporterFactoryInCurrentClassLoader( boolean trimStackTrace,
                                                                                     PrintStream originalSystemOut )
     {
         return new ForkingReporterFactory( trimStackTrace, originalSystemOut );
@@ -246,8 +246,7 @@ public class SurefireReflector
                                              boolean insideFork )
     {
         return ReflectionUtils.instantiateTwoArgs( surefireClassLoader, BaseProviderFactory.class.getName(),
-                                                   reporterFactory, factoryInstance, Boolean.class,
-                                                   insideFork ? Boolean.TRUE : Boolean.FALSE );
+                                                   reporterFactory, factoryInstance, boolean.class, insideFork );
     }
 
     public Object instantiateProvider( String providerClassName, Object booterParameters )
@@ -291,7 +290,7 @@ public class SurefireReflector
         ReflectionUtils.invokeSetter( o, "setTestRequest", testRequest, param );
     }
 
-    public void setProviderPropertiesAware( Object o, Properties properties )
+    public void setProviderPropertiesAware( Object o, Map<String, String> properties )
     {
         if ( providerPropertiesAware.isAssignableFrom( o.getClass() ) )
         {
@@ -299,9 +298,9 @@ public class SurefireReflector
         }
     }
 
-    void setProviderProperties( Object o, Properties providerProperties )
+    void setProviderProperties( Object o, Map<String, String> providerProperties )
     {
-        ReflectionUtils.invokeSetter( o, "setProviderProperties", Properties.class, providerProperties );
+        ReflectionUtils.invokeSetter( o, "setProviderProperties", Map.class, providerProperties );
     }
 
     public void setReporterConfigurationAware( Object o, ReporterConfiguration reporterConfiguration1 )

@@ -22,15 +22,8 @@ package org.apache.maven.surefire.junit4;
 import junit.framework.TestCase;
 import org.apache.maven.surefire.booter.BaseProviderFactory;
 import org.apache.maven.surefire.testset.TestRequest;
-import org.apache.maven.surefire.util.TestsToRun;
-import org.junit.runner.Description;
-import org.junit.runner.notification.Failure;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.HashMap;
 
 /**
  * @author Kristian Rosenvold
@@ -45,8 +38,8 @@ public class JUnit4ProviderTest
 
     private JUnit4Provider getJUnit4Provider()
     {
-        BaseProviderFactory providerParameters = new BaseProviderFactory( null, Boolean.TRUE );
-        providerParameters.setProviderProperties( new Properties() );
+        BaseProviderFactory providerParameters = new BaseProviderFactory( null, true );
+        providerParameters.setProviderProperties( new HashMap<String, String>() );
         providerParameters.setClassLoaders( getClass().getClassLoader() );
         providerParameters.setTestRequest( new TestRequest( null, null, null ) );
         return new JUnit4Provider( providerParameters );

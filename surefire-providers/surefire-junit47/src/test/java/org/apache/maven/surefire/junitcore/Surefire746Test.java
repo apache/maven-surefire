@@ -18,11 +18,7 @@ package org.apache.maven.surefire.junitcore;
  */
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
 import org.apache.maven.surefire.booter.BaseProviderFactory;
@@ -92,7 +88,7 @@ public class Surefire746Test
         ConsoleLogger consoleLogger = new DefaultConsoleReporter( System.out );
 
         providerParameters.setReporterConfiguration( new ReporterConfiguration( new File( "" ), false ) );
-        Properties junitProps = new Properties();
+        Map<String, String> junitProps = new HashMap<String, String>();
         junitProps.put( ProviderParameterNames.PARALLEL_PROP, "none" );
 
         JUnitCoreParameters jUnitCoreParameters = new JUnitCoreParameters( junitProps );
@@ -102,7 +98,7 @@ public class Surefire746Test
         RunListener listener =
             ConcurrentRunListener.createInstance( testSetMap, reporterFactory, false, false, consoleLogger );
 
-        TestsToRun testsToRun = new TestsToRun( Arrays.<Class>asList( TestClassTest.class ) );
+        TestsToRun testsToRun = new TestsToRun(Collections.<Class>singletonList( TestClassTest.class ) );
 
         org.junit.runner.notification.RunListener jUnit4RunListener = new JUnitCoreRunListener( listener, testSetMap );
 

@@ -22,7 +22,7 @@ package org.apache.maven.surefire.testng;
 import java.io.File;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.Properties;
+import java.util.Map;
 import org.apache.maven.surefire.providerapi.AbstractProvider;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.report.ReporterConfiguration;
@@ -42,7 +42,7 @@ import org.apache.maven.surefire.util.TestsToRun;
 public class TestNGProvider
     extends AbstractProvider
 {
-    private final Properties providerProperties;
+    private final Map<String, String> providerProperties;
 
     private final ReporterConfiguration reporterConfiguration;
 
@@ -54,24 +54,19 @@ public class TestNGProvider
 
     private final ProviderParameters providerParameters;
 
-    private TestsToRun testsToRun;
-
     private final RunOrderCalculator runOrderCalculator;
+
+    private TestsToRun testsToRun;
 
     public TestNGProvider( ProviderParameters booterParameters )
     {
-        this.providerParameters = booterParameters;
-        this.testClassLoader = booterParameters.getTestClassLoader();
-        this.runOrderCalculator = booterParameters.getRunOrderCalculator();
-        this.providerProperties = booterParameters.getProviderProperties();
-        this.testRequest = booterParameters.getTestRequest();
+        providerParameters = booterParameters;
+        testClassLoader = booterParameters.getTestClassLoader();
+        runOrderCalculator = booterParameters.getRunOrderCalculator();
+        providerProperties = booterParameters.getProviderProperties();
+        testRequest = booterParameters.getTestRequest();
         reporterConfiguration = booterParameters.getReporterConfiguration();
-        this.scanResult = booterParameters.getScanResult();
-    }
-
-    public Boolean isRunnable()
-    {
-        return Boolean.TRUE;
+        scanResult = booterParameters.getScanResult();
     }
 
     public RunResult invoke( Object forkTestSet )

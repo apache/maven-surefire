@@ -20,7 +20,7 @@ package org.apache.maven.surefire.util;
  */
 
 import java.util.List;
-import java.util.Properties;
+import java.util.Map;
 
 /**
  * @author Kristian Rosenvold
@@ -35,5 +35,5 @@ public interface ScanResult
 
     List getClassesSkippedByValidation( ScannerFilter scannerFilter, ClassLoader testClassLoader );
 
-    void writeTo( Properties properties );
+    void writeTo( Map<String, String> properties );
 }
