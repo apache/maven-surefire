@@ -19,7 +19,8 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
-import java.util.Properties;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.Test;
 
@@ -124,54 +125,54 @@ public class JUnitCoreParametersTest
         assertTrue( newTestSetBoth().isParallelismSelected() );
     }
 
-    private Properties newDefaultProperties()
+    private Map<String, String> newDefaultProperties()
     {
-        return new Properties();
+        return new HashMap<String, String>();
     }
 
 
-    private Properties newPropertiesClasses()
+    private Map<String, String> newPropertiesClasses()
     {
-        Properties props = new Properties();
-        props.setProperty( JUnitCoreParameters.PARALLEL_KEY, "classes" );
-        props.setProperty( JUnitCoreParameters.PERCORETHREADCOUNT_KEY, "false" );
-        props.setProperty( JUnitCoreParameters.THREADCOUNT_KEY, "2" );
-        props.setProperty( JUnitCoreParameters.USEUNLIMITEDTHREADS_KEY, "false" );
+        Map<String, String> props = new HashMap<String, String>();
+        props.put(JUnitCoreParameters.PARALLEL_KEY, "classes");
+        props.put(JUnitCoreParameters.PERCORETHREADCOUNT_KEY, "false");
+        props.put(JUnitCoreParameters.THREADCOUNT_KEY, "2");
+        props.put(JUnitCoreParameters.USEUNLIMITEDTHREADS_KEY, "false");
         return props;
     }
 
-    private Properties newPropertiesMethods()
+    private Map<String, String> newPropertiesMethods()
     {
-        Properties props = new Properties();
-        props.setProperty( JUnitCoreParameters.PARALLEL_KEY, "methods" );
-        props.setProperty( JUnitCoreParameters.PERCORETHREADCOUNT_KEY, "false" );
-        props.setProperty( JUnitCoreParameters.THREADCOUNT_KEY, "2" );
-        props.setProperty( JUnitCoreParameters.USEUNLIMITEDTHREADS_KEY, "true" );
+        Map<String, String> props = new HashMap<String, String>();
+        props.put(JUnitCoreParameters.PARALLEL_KEY, "methods");
+        props.put(JUnitCoreParameters.PERCORETHREADCOUNT_KEY, "false");
+        props.put(JUnitCoreParameters.THREADCOUNT_KEY, "2");
+        props.put(JUnitCoreParameters.USEUNLIMITEDTHREADS_KEY, "true");
         return props;
     }
 
-    private Properties newPropertiesBoth()
+    private Map<String, String> newPropertiesBoth()
     {
-        Properties props = new Properties();
-        props.setProperty( JUnitCoreParameters.PARALLEL_KEY, "both" );
-        props.setProperty( JUnitCoreParameters.PERCORETHREADCOUNT_KEY, "true" );
-        props.setProperty( JUnitCoreParameters.THREADCOUNT_KEY, "7" );
-        props.setProperty( JUnitCoreParameters.USEUNLIMITEDTHREADS_KEY, "false" );
+        Map<String, String> props = new HashMap<String, String>();
+        props.put(JUnitCoreParameters.PARALLEL_KEY, "both");
+        props.put(JUnitCoreParameters.PERCORETHREADCOUNT_KEY, "true");
+        props.put(JUnitCoreParameters.THREADCOUNT_KEY, "7");
+        props.put(JUnitCoreParameters.USEUNLIMITEDTHREADS_KEY, "false");
         return props;
     }
 
-    private Properties newPropertiesTimeouts( double timeout, double forcedTimeout )
+    private Map<String, String> newPropertiesTimeouts( double timeout, double forcedTimeout )
     {
-        Properties props = new Properties();
-        props.setProperty( JUnitCoreParameters.PARALLEL_TIMEOUT_KEY, Double.toString( timeout ) );
-        props.setProperty( JUnitCoreParameters.PARALLEL_TIMEOUTFORCED_KEY, Double.toString( forcedTimeout ) );
+        Map<String, String> props = new HashMap<String, String>();
+        props.put(JUnitCoreParameters.PARALLEL_TIMEOUT_KEY, Double.toString(timeout));
+        props.put(JUnitCoreParameters.PARALLEL_TIMEOUTFORCED_KEY, Double.toString(forcedTimeout));
         return props;
     }
 
-    private Properties newPropertiesOptimization( boolean optimize )
+    private Map<String, String> newPropertiesOptimization( boolean optimize )
     {
-        Properties props = new Properties();
-        props.setProperty( JUnitCoreParameters.PARALLEL_OPTIMIZE_KEY, Boolean.toString( optimize ) );
+        Map<String, String> props = new HashMap<String, String>();
+        props.put( JUnitCoreParameters.PARALLEL_OPTIMIZE_KEY, Boolean.toString( optimize ) );
         return props;
     }
 

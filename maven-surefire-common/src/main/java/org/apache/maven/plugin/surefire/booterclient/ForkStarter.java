@@ -19,27 +19,6 @@ package org.apache.maven.plugin.surefire.booterclient;
  * under the License.
  */
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-import java.util.Queue;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
-
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugin.surefire.AbstractSurefireMojo;
 import org.apache.maven.plugin.surefire.CommonReflector;
@@ -70,6 +49,27 @@ import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.util.DefaultScanResult;
 import org.apache.maven.surefire.util.internal.StringUtils;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.apache.maven.surefire.booter.Classpath.join;
 
@@ -157,7 +157,7 @@ public class ForkStarter
     {
         try
         {
-            Properties providerProperties = providerConfiguration.getProviderProperties();
+            Map<String, String> providerProperties = providerConfiguration.getProviderProperties();
             scanResult.writeTo( providerProperties );
             return isForkOnce()
                     ? run( effectiveSystemProperties, providerProperties )
@@ -170,7 +170,7 @@ public class ForkStarter
         }
     }
 
-    private RunResult run( SurefireProperties effectiveSystemProperties, Properties providerProperties )
+    private RunResult run( SurefireProperties effectiveSystemProperties, Map<String, String> providerProperties )
             throws SurefireBooterForkException
     {
         DefaultReporterFactory forkedReporterFactory = new DefaultReporterFactory( startupReportConfiguration );
@@ -215,8 +215,7 @@ public class ForkStarter
             RunResult globalResult = new RunResult( 0, 0, 0, 0 );
 
             List<Class<?>> suites = new ArrayList<Class<?>>();
-            Iterator<Class<?>> suitesIterator = getSuitesIterator();
-            while ( suitesIterator.hasNext() )
+            for ( Iterator<Class<?>> suitesIterator = getSuitesIterator(); suitesIterator.hasNext(); )
             {
                 suites.add( suitesIterator.next() );
             }
@@ -298,8 +297,8 @@ public class ForkStarter
         {
             // Ask to the executorService to run all tasks
             RunResult globalResult = new RunResult( 0, 0, 0, 0 );
-            final Iterator<Class<?>> suites = getSuitesIterator();
-            while ( suites.hasNext() )
+
+            for ( final Iterator<Class<?>> suites = getSuitesIterator(); suites.hasNext(); )
             {
                 final Object testSet = suites.next();
                 Callable<RunResult> pf = new Callable<RunResult>()

@@ -19,8 +19,6 @@ package org.apache.maven.plugin.surefire;
  * under the License.
  */
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.Properties;
 import org.apache.maven.surefire.booter.ProviderConfiguration;
 import org.apache.maven.surefire.booter.ProviderFactory;
 import org.apache.maven.surefire.booter.StartupConfiguration;
@@ -30,6 +28,8 @@ import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.DefaultScanResult;
 
 import javax.annotation.Nonnull;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Map;
 
 /**
  * Starts the provider in the same VM as the surefire plugin.
@@ -67,7 +67,7 @@ public class InPluginVMSurefireStarter
         // The test classloader must be constructed first to avoid issues with commons-logging until we properly
         // separate the TestNG classloader
 
-        Properties providerProperties = providerConfiguration.getProviderProperties();
+        Map<String, String> providerProperties = providerConfiguration.getProviderProperties();
         scanResult.writeTo( providerProperties );
 
         startupConfiguration.writeSurefireTestClasspathProperty();

@@ -19,7 +19,6 @@ package org.apache.maven.surefire.testng.conf;
  * under the License.
  */
 
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import org.apache.maven.surefire.testset.TestSetFailedException;
@@ -34,14 +33,13 @@ public class TestNG652Configurator
     extends TestNGMapConfigurator
 {
 
-    Map getConvertedOptions( Map options )
+    Map<String, Object> getConvertedOptions( Map<String, String> options )
         throws TestSetFailedException
     {
-        Map convertedOptions = super.getConvertedOptions( options );
-        for ( Iterator iterator = convertedOptions.entrySet().iterator(); iterator.hasNext(); )
+        Map<String, Object> convertedOptions = super.getConvertedOptions( options );
+        for ( Entry<String, Object> entry : convertedOptions.entrySet() )
         {
-            Entry entry = (Entry) iterator.next();
-            String key = (String) entry.getKey();
+            String key = entry.getKey();
             if ( "-objectfactory".equals( key ) )
             {
                 Class value = (Class) entry.getValue();

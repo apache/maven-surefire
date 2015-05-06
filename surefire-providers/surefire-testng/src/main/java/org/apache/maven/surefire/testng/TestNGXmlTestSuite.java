@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import org.apache.maven.surefire.report.ConsoleOutputCapture;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.ReporterFactory;
@@ -46,7 +45,7 @@ public class TestNGXmlTestSuite
 
     private final String testSourceDirectory;
 
-    private final Map options;
+    private final Map<String, String> options;
 
     private final File reportsDirectory;
 
@@ -57,7 +56,7 @@ public class TestNGXmlTestSuite
      * Creates a testng testset to be configured by the specified
      * xml file(s). The XML files are suite definitions files according to TestNG DTD.
      */
-    public TestNGXmlTestSuite( List<File> suiteFiles, String testSourceDirectory, Properties confOptions,
+    public TestNGXmlTestSuite( List<File> suiteFiles, String testSourceDirectory, Map<String, String> confOptions,
                                File reportsDirectory )
     {
         this.suiteFiles = suiteFiles;
@@ -124,11 +123,7 @@ public class TestNGXmlTestSuite
 
     public String getSuiteName()
     {
-        String result = (String) options.get( "suitename" );
-        if ( result == null )
-        {
-            result = "TestSuite";
-        }
-        return result;
+        String result = options.get( "suitename" );
+        return result == null ? "TestSuite" : result;
     }
 }

@@ -19,26 +19,18 @@ package org.apache.maven.plugin.surefire.util;
  * under the License.
  */
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
-import java.util.jar.JarFile;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
-
 import junit.framework.TestCase;
-
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.versioning.VersionRange;
-import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.surefire.testset.TestListResolver;
-import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.ScanResult;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
  * @author Aslak Knutsen
@@ -65,7 +57,7 @@ public class DependenciesScannerTest
         List<String> exclude = new ArrayList<String>();
 
         DependencyScanner scanner = new DependencyScanner(
-                DependencyScanner.filter(Arrays.asList(artifact), scanDependencies),
+                DependencyScanner.filter(Collections.singletonList(artifact), scanDependencies),
                 new TestListResolver( include, exclude ), new TestListResolver( "" ) );
 
         ScanResult classNames = scanner.scan();
@@ -74,7 +66,7 @@ public class DependenciesScannerTest
         assertEquals( 1, classNames.size() );
         System.out.println(classNames.getClassName(0));
 
-        Properties props = new Properties();
+        Map<String, String> props = new HashMap<String, String>();
         classNames.writeTo( props );
         assertEquals( 1, props.size() );
     }

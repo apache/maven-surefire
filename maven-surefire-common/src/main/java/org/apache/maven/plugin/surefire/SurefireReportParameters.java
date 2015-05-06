@@ -59,5 +59,5 @@ public interface SurefireReportParameters
 
     Boolean getFailIfNoTests();
 
-    void setFailIfNoTests( Boolean failIfNoTests );
+    void setFailIfNoTests( boolean failIfNoTests );
 }

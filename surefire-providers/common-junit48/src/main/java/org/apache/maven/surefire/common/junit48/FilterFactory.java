@@ -27,7 +27,6 @@ import org.apache.maven.surefire.testset.TestListResolver;
 import org.junit.runner.manipulation.Filter;
 
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 
 /**
@@ -42,10 +41,10 @@ public class FilterFactory
         this.testClassLoader = testClassLoader;
     }
 
-    public Filter createGroupFilter( Properties providerProperties )
+    public Filter createGroupFilter( Map<String, String> providerProperties )
     {
-        String groups = providerProperties.getProperty( ProviderParameterNames.TESTNG_GROUPS_PROP );
-        String excludedGroups = providerProperties.getProperty( ProviderParameterNames.TESTNG_EXCLUDEDGROUPS_PROP );
+        String groups = providerProperties.get( ProviderParameterNames.TESTNG_GROUPS_PROP );
+        String excludedGroups = providerProperties.get( ProviderParameterNames.TESTNG_EXCLUDEDGROUPS_PROP );
 
         GroupMatcher included = null;
         if ( groups != null && groups.trim().length() > 0 )

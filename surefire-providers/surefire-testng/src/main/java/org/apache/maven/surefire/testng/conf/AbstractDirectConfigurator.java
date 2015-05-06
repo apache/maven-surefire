@@ -22,7 +22,6 @@ package org.apache.maven.surefire.testng.conf;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -38,11 +37,11 @@ import org.testng.xml.XmlSuite;
 public abstract class AbstractDirectConfigurator
     implements Configurator
 {
-    final Map setters;
+    final Map<String, Setter> setters;
 
     AbstractDirectConfigurator()
     {
-        Map options = new HashMap();
+        Map<String, Setter> options = new HashMap<String, Setter>();
         // options.put( ProviderParameterNames.TESTNG_GROUPS_PROP, new Setter( "setGroups", String.class ) );
         // options.put( ProviderParameterNames.TESTNG_EXCLUDEDGROUPS_PROP, new Setter( "setExcludedGroups", String.class
         // ) );
@@ -52,12 +51,12 @@ public abstract class AbstractDirectConfigurator
         this.setters = options;
     }
 
-    public void configure( TestNG testng, Map options )
+    public void configure( TestNG testng, Map<String, String> options )
         throws TestSetFailedException
     {
         System.out.println( "\n\n\n\nCONFIGURING TESTNG\n\n\n\n" );
         // kind of ugly, but listeners are configured differently
-        final String listeners = (String) options.remove( "listener" );
+        final String listeners = options.remove( "listener" );
         // DGF In 4.7, default listeners dump XML files in the surefire-reports directory,
         // confusing the report plugin.  This was fixed in later versions.
         testng.setUseDefaultListeners( false );
@@ -66,23 +65,22 @@ public abstract class AbstractDirectConfigurator
         testng.setListenerClasses( loadListenerClasses( listeners ) );
     }
 
-    public void configure( XmlSuite suite, Map options )
+    public void configure( XmlSuite suite, Map<String, String> options )
         throws TestSetFailedException
     {
-        Map filtered = filterForSuite( options );
+        Map<String, String> filtered = filterForSuite( options );
         configureInstance( suite, filtered );
     }
 
-
-    protected Map filterForSuite( Map options )
+    protected Map<String, String> filterForSuite( Map<String, String> options )
     {
-        Map result = new HashMap();
+        Map<String, String> result = new HashMap<String, String>();
         addPropIfNotNull( options, result, ProviderParameterNames.PARALLEL_PROP );
         addPropIfNotNull( options, result, ProviderParameterNames.THREADCOUNT_PROP );
         return result;
     }
 
-    private void addPropIfNotNull( Map options, Map result, String prop )
+    private void addPropIfNotNull( Map<String, String> options, Map<String, String> result, String prop )
     {
         if ( options.containsKey( prop ) )
         {
@@ -90,51 +88,47 @@ public abstract class AbstractDirectConfigurator
         }
     }
 
-    private void configureInstance( Object testngInstance, Map options )
+    private void configureInstance( Object testngInstance, Map<String, String> options )
     {
-        for ( Iterator it = options.entrySet().iterator(); it.hasNext(); )
+        for ( Map.Entry<String, String> entry : options.entrySet() )
         {
-            Map.Entry entry = (Map.Entry) it.next();
-            String key = (String) entry.getKey();
-            Object val = entry.getValue();
-
-            Setter setter = (Setter) setters.get( key );
+            String key = entry.getKey();
+            String val = entry.getValue();
+            Setter setter = setters.get( key );
             if ( setter != null )
             {
                 try
                 {
                     setter.invoke( testngInstance, val );
                 }
-                catch ( Exception ex )
+                catch ( Exception e )
                 {
-                    throw new RuntimeException( "Cannot set option " + key + " with value " + val, ex );
+                    throw new RuntimeException( "Cannot set option " + key + " with value " + val, e );
                 }
-
             }
         }
     }
 
-    public static List loadListenerClasses( String listenerClasses )
+    static List<Class> loadListenerClasses( String listenerClasses )
         throws TestSetFailedException
     {
         if ( listenerClasses == null || "".equals( listenerClasses.trim() ) )
         {
-            return new ArrayList();
+            return new ArrayList<Class>();
         }
 
-        List classes = new ArrayList();
+        List<Class> classes = new ArrayList<Class>();
         String[] classNames = listenerClasses.split( "\\s*,\\s*(\\r?\\n)?\\s*" );
-        for ( int i = 0; i < classNames.length; i++ )
+        for ( String className : classNames )
         {
-            String className = classNames[i];
-            Class clazz = loadClass( className );
+            Class<?> clazz = loadClass( className );
             classes.add( clazz );
         }
 
         return classes;
     }
 
-    public static Class loadClass( String className )
+    static Class<?> loadClass( String className )
         throws TestSetFailedException
     {
         try
@@ -155,42 +149,42 @@ public abstract class AbstractDirectConfigurator
     {
         private final String setterName;
 
-        private final Class paramClass;
+        private final Class<?> paramClass;
 
-        public Setter( String name, Class clazz )
+        public Setter( String name, Class<?> clazz )
         {
-            this.setterName = name;
-            this.paramClass = clazz;
+            setterName = name;
+            paramClass = clazz;
         }
 
-        public void invoke( Object target, Object value )
+        public void invoke( Object target, String value )
             throws Exception
         {
-            Method setter = target.getClass().getMethod( this.setterName, new Class[]{ this.paramClass } );
+            Method setter = target.getClass().getMethod( setterName, paramClass );
             if ( setter != null )
             {
-                setter.invoke( target, new Object[]{ convertValue( value ) } );
+                setter.invoke( target, convertValue( value ) );
             }
         }
 
-        Object convertValue( Object value )
+        private Object convertValue( String value )
         {
             if ( value == null )
             {
-                return value;
+                return null;
             }
-            if ( this.paramClass.isAssignableFrom( value.getClass() ) )
+            if ( paramClass.isAssignableFrom( value.getClass() ) )
             {
                 return value;
             }
 
-            if ( Boolean.class.equals( this.paramClass ) || boolean.class.equals( this.paramClass ) )
+            if ( Boolean.class.equals( paramClass ) || boolean.class.equals( paramClass ) )
             {
-                return Boolean.valueOf( value.toString() );
+                return Boolean.valueOf( value );
             }
-            if ( Integer.class.equals( this.paramClass ) || int.class.equals( this.paramClass ) )
+            if ( Integer.class.equals( paramClass ) || int.class.equals( paramClass ) )
             {
-                return new Integer( value.toString() );
+                return new Integer( value );
             }
 
             return value;

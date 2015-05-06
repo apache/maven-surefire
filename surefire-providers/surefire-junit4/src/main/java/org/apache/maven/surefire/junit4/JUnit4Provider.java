@@ -85,7 +85,7 @@ public class JUnit4Provider
         scanResult = booterParameters.getScanResult();
         runOrderCalculator = booterParameters.getRunOrderCalculator();
         customRunListeners = JUnit4RunListenerFactory.
-            createCustomListeners( booterParameters.getProviderProperties().getProperty( "listener" ) );
+            createCustomListeners( booterParameters.getProviderProperties().get( "listener" ) );
         jUnit4TestChecker = new JUnit4TestChecker( testClassLoader );
         testResolver = booterParameters.getTestRequest().getTestListResolver();
         rerunFailingTestsCount = booterParameters.getTestRequest().getRerunFailingTestsCount();

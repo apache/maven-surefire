@@ -55,8 +55,7 @@ public class DefaultRunOrderCalculator
     @SuppressWarnings( "checkstyle:magicnumber" )
     public TestsToRun orderTestClasses( TestsToRun scannedClasses )
     {
-
-        List<Class> result = new ArrayList<Class>( 500 );
+        List<Class> result = new ArrayList<Class>( 512 );
 
         for ( Class scannedClass : scannedClasses )
         {
@@ -75,19 +74,16 @@ public class DefaultRunOrderCalculator
         }
         else if ( RunOrder.FAILEDFIRST.equals( runOrder ) )
         {
-            RunEntryStatisticsMap runEntryStatisticsMap =
-                RunEntryStatisticsMap.fromFile( runOrderParameters.getRunStatisticsFile() );
-            final List<Class> prioritized = runEntryStatisticsMap.getPrioritizedTestsByFailureFirst( testClasses );
+            RunEntryStatisticsMap stat = RunEntryStatisticsMap.fromFile( runOrderParameters.getRunStatisticsFile() );
+            List<Class> prioritized = stat.getPrioritizedTestsByFailureFirst( testClasses );
             testClasses.clear();
             testClasses.addAll( prioritized );
 
         }
         else if ( RunOrder.BALANCED.equals( runOrder ) )
         {
-            RunEntryStatisticsMap runEntryStatisticsMap =
-                RunEntryStatisticsMap.fromFile( runOrderParameters.getRunStatisticsFile() );
-            final List<Class> prioritized =
-                runEntryStatisticsMap.getPrioritizedTestsClassRunTime( testClasses, threadCount );
+            RunEntryStatisticsMap stat = RunEntryStatisticsMap.fromFile( runOrderParameters.getRunStatisticsFile() );
+            List<Class> prioritized = stat.getPrioritizedTestsClassRunTime( testClasses, threadCount );
             testClasses.clear();
             testClasses.addAll( prioritized );
 
@@ -140,5 +136,4 @@ public class DefaultRunOrderCalculator
             }
         };
     }
-
 }

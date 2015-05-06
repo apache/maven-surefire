@@ -117,7 +117,7 @@ public class JUnit4RunListener
         {
             this.reporter.testError( report );
         }
-        failureFlag.set( Boolean.TRUE );
+        failureFlag.set( true );
     }
 
     protected StackTraceWriter createStackTraceWriter( Failure failure )
@@ -129,7 +129,7 @@ public class JUnit4RunListener
     public void testAssumptionFailure( Failure failure )
     {
         this.reporter.testAssumptionFailure( createReportEntry( failure.getDescription() ) );
-        failureFlag.set( Boolean.TRUE );
+        failureFlag.set( true );
     }
 
 

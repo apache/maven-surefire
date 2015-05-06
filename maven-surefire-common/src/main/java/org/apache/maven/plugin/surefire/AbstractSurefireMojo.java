@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -35,6 +36,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
@@ -1442,13 +1444,28 @@ public abstract class AbstractSurefireMojo
                                                 specificTests, actualFailIfNoTests, getRunOrder() );
         }
 
-        Properties providerProperties = getProperties();
+        Map<String, String> providerProperties = toStringProperties( getProperties() );
 
         return new ProviderConfiguration( directoryScannerParameters, runOrderParameters, actualFailIfNoTests,
                                           reporterConfiguration,
                                           testNg, // Not really used in provider. Limited to de/serializer.
                                           testSuiteDefinition, providerProperties, null,
                                           false );
+    }
+
+    private static Map<String, String> toStringProperties( Properties properties )
+    {
+        Map<String, String> h = new ConcurrentHashMap<String, String>( properties.size() );
+        for ( Enumeration e = properties.keys() ; e.hasMoreElements() ; )
+        {
+            Object k = e.nextElement();
+            Object v = properties.get( k );
+            if ( k.getClass() == String.class && v.getClass() == String.class )
+            {
+                h.put( (String) k, (String) v );
+            }
+        }
+        return h;
     }
 
     public String getStatisticsFileName( String configurationHash )
@@ -2571,7 +2588,7 @@ public abstract class AbstractSurefireMojo
         this.systemPropertiesFile = systemPropertiesFile;
     }
 
-    public Properties getProperties()
+    private Properties getProperties()
     {
         return properties;
     }
@@ -2633,7 +2650,7 @@ public abstract class AbstractSurefireMojo
         return failIfNoTests;
     }
 
-    public void setFailIfNoTests( Boolean failIfNoTests )
+    public void setFailIfNoTests( boolean failIfNoTests )
     {
         this.failIfNoTests = failIfNoTests;
     }

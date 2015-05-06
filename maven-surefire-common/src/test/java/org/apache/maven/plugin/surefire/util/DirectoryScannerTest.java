@@ -19,18 +19,12 @@ package org.apache.maven.plugin.surefire.util;
  * under the License.
  */
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
-
+import junit.framework.TestCase;
 import org.apache.maven.surefire.testset.TestListResolver;
-import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.ScanResult;
 
-import junit.framework.TestCase;
+import java.io.File;
+import java.util.*;
 
 /**
  * @author Kristian Rosenvold
@@ -52,10 +46,10 @@ public class DirectoryScannerTest
 
         ScanResult classNames = surefireDirectoryScanner.scan();
         assertNotNull( classNames );
-        System.out.println( "classNames " + Arrays.asList( classNames ) );
+        System.out.println( "classNames " + Collections.singletonList(classNames));
         assertEquals( 3, classNames.size() );
 
-        Properties props = new Properties();
+        Map<String, String> props = new HashMap<String, String>();
         classNames.writeTo( props );
         assertEquals( 3, props.size() );
     }

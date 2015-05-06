@@ -125,7 +125,7 @@ class BooterSerializer
 
         ReporterConfiguration reporterConfiguration = booterConfiguration.getReporterConfiguration();
 
-        Boolean rep = reporterConfiguration.isTrimStackTrace();
+        boolean rep = reporterConfiguration.isTrimStackTrace();
         properties.setProperty( BooterConstants.ISTRIMSTACKTRACE, rep );
         properties.setProperty( BooterConstants.REPORTSDIRECTORY, reporterConfiguration.getReportsDirectory() );
         ClassLoaderConfiguration classLoaderConfiguration = providerConfiguration.getClassLoaderConfiguration();

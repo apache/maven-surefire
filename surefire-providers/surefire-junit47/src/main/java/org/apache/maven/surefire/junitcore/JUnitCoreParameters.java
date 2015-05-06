@@ -21,7 +21,7 @@ package org.apache.maven.surefire.junitcore;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Properties;
+import java.util.Map;
 
 import org.apache.maven.surefire.booter.ProviderParameterNames;
 
@@ -52,7 +52,7 @@ public final class JUnitCoreParameters
 
     private final String parallel;
 
-    private final Boolean perCoreThreadCount;
+    private final boolean perCoreThreadCount;
 
     private final int threadCount;
 
@@ -66,24 +66,22 @@ public final class JUnitCoreParameters
 
     private final double parallelTestsTimeoutForcedInSeconds;
 
-    private final Boolean useUnlimitedThreads;
+    private final boolean useUnlimitedThreads;
 
     private final boolean parallelOptimization;
 
-    public JUnitCoreParameters( Properties properties )
+    public JUnitCoreParameters( Map<String, String> properties )
     {
-        parallel = properties.getProperty( PARALLEL_KEY, "none" ).toLowerCase();
-        perCoreThreadCount = Boolean.valueOf( properties.getProperty( PERCORETHREADCOUNT_KEY, "true" ) );
-        threadCount = Integer.valueOf( properties.getProperty( THREADCOUNT_KEY, "0" ) );
-        threadCountMethods = Integer.valueOf( properties.getProperty( THREADCOUNTMETHODS_KEY, "0" ) );
-        threadCountClasses = Integer.valueOf( properties.getProperty( THREADCOUNTCLASSES_KEY, "0" ) );
-        threadCountSuites = Integer.valueOf( properties.getProperty( THREADCOUNTSUITES_KEY, "0" ) );
-        useUnlimitedThreads = Boolean.valueOf( properties.getProperty( USEUNLIMITEDTHREADS_KEY, "false" ) );
-        parallelTestsTimeoutInSeconds =
-            Math.max( Double.valueOf( properties.getProperty( PARALLEL_TIMEOUT_KEY, "0" ) ), 0 );
-        parallelTestsTimeoutForcedInSeconds =
-            Math.max( Double.valueOf( properties.getProperty( PARALLEL_TIMEOUTFORCED_KEY, "0" ) ), 0 );
-        parallelOptimization = Boolean.valueOf( properties.getProperty( PARALLEL_OPTIMIZE_KEY, "true" ) );
+        parallel = property( properties, PARALLEL_KEY, "none" ).toLowerCase();
+        perCoreThreadCount = property( properties, PERCORETHREADCOUNT_KEY, true );
+        threadCount = property( properties, THREADCOUNT_KEY, 0 );
+        threadCountMethods = property( properties, THREADCOUNTMETHODS_KEY, 0 );
+        threadCountClasses = property( properties, THREADCOUNTCLASSES_KEY, 0 );
+        threadCountSuites = property( properties, THREADCOUNTSUITES_KEY, 0 );
+        useUnlimitedThreads = property( properties, USEUNLIMITEDTHREADS_KEY, false );
+        parallelTestsTimeoutInSeconds = Math.max( property( properties, PARALLEL_TIMEOUT_KEY, 0d ), 0 );
+        parallelTestsTimeoutForcedInSeconds = Math.max( property( properties, PARALLEL_TIMEOUTFORCED_KEY, 0d ), 0 );
+        parallelOptimization = property( properties, PARALLEL_OPTIMIZE_KEY, true );
     }
 
     private static Collection<String> lowerCase( String... elements )
@@ -122,12 +120,13 @@ public final class JUnitCoreParameters
      * @deprecated Instead use the expression ( {@link #isParallelMethods()} && {@link #isParallelClasses()} ).
      */
     @Deprecated
+    @SuppressWarnings( { "unused", "deprecation" } )
     public boolean isParallelBoth()
     {
         return isParallelMethods() && isParallelClasses();
     }
 
-    public Boolean isPerCoreThreadCount()
+    public boolean isPerCoreThreadCount()
     {
         return perCoreThreadCount;
     }
@@ -152,7 +151,7 @@ public final class JUnitCoreParameters
         return threadCountSuites;
     }
 
-    public Boolean isUseUnlimitedThreads()
+    public boolean isUseUnlimitedThreads()
     {
         return useUnlimitedThreads;
     }
@@ -189,5 +188,25 @@ public final class JUnitCoreParameters
             + threadCount + ", useUnlimitedThreads=" + useUnlimitedThreads + ", threadCountSuites=" + threadCountSuites
             + ", threadCountClasses=" + threadCountClasses + ", threadCountMethods=" + threadCountMethods
             + ", parallelOptimization=" + parallelOptimization;
+    }
+
+    private static boolean property( Map<String, String> properties, String key, boolean fallback )
+    {
+        return properties.containsKey( key ) ? Boolean.valueOf( properties.get( key ) ) : fallback;
+    }
+
+    private static String property( Map<String, String> properties, String key, String fallback )
+    {
+        return properties.containsKey( key ) ? properties.get( key ) : fallback;
+    }
+
+    private static int property( Map<String, String> properties, String key, int fallback )
+    {
+        return properties.containsKey( key ) ? Integer.valueOf( properties.get( key ) ) : fallback;
+    }
+
+    private static double property( Map<String, String> properties, String key, double fallback )
+    {
+        return properties.containsKey( key ) ? Double.valueOf( properties.get( key ) ) : fallback;
     }
 }

@@ -27,7 +27,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -108,7 +107,6 @@ public class SurefireProperties
 
     public Iterable<Object> getStringKeySet()
     {
-
         //noinspection unchecked
         return keySet();
     }
@@ -176,16 +174,9 @@ public class SurefireProperties
         }
     }
 
-    public void copyTo( Map target )
+    public void copyTo( Map<Object, Object> target )
     {
-        Iterator iter = keySet().iterator();
-        Object key;
-        while ( iter.hasNext() )
-        {
-            key = iter.next();
-            //noinspection unchecked
-            target.put( key, get( key ) );
-        }
+        target.putAll( this );
     }
 
     public void setProperty( String key, File file )
@@ -206,7 +197,7 @@ public class SurefireProperties
 
     public void addList( List items, String propertyPrefix )
     {
-        if ( items == null || items.size() == 0 )
+        if ( items == null || items.isEmpty() )
         {
             return;
         }

@@ -243,7 +243,7 @@ public abstract class AbstractSurefireReportMojo
         }
         else
         {
-            if ( reportsDirectoryList.size() == 0 )
+            if ( reportsDirectoryList.isEmpty() )
             {
 
                 reportsDirectoryList.add( getSurefireReportsDirectory( project ) );

@@ -21,7 +21,7 @@ package org.apache.maven.surefire.booter;
 
 import java.io.File;
 import java.util.List;
-import java.util.Properties;
+import java.util.Map;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.RunOrderParameters;
@@ -54,7 +54,7 @@ public class ProviderConfiguration
 
     private final RunOrderParameters runOrderParameters;
 
-    private final Properties providerProperties;
+    private final Map<String, String> providerProperties;
 
     private final boolean failIfNoTests;
 
@@ -66,7 +66,7 @@ public class ProviderConfiguration
     public ProviderConfiguration( DirectoryScannerParameters directoryScannerParameters,
                                   RunOrderParameters runOrderParameters, boolean failIfNoTests,
                                   ReporterConfiguration reporterConfiguration, TestArtifactInfo testArtifact,
-                                  TestRequest testSuiteDefinition, Properties providerProperties,
+                                  TestRequest testSuiteDefinition, Map<String, String> providerProperties,
                                   TypeEncodedValue typeEncodedTestSet, boolean readTestsFromInStream )
     {
         this.runOrderParameters = runOrderParameters;
@@ -87,9 +87,9 @@ public class ProviderConfiguration
     }
 
 
-    public Boolean isFailIfNoTests()
+    public boolean isFailIfNoTests()
     {
-        return ( failIfNoTests ) ? Boolean.TRUE : Boolean.FALSE;
+        return failIfNoTests;
     }
 
     public File getBaseDir()
@@ -123,7 +123,7 @@ public class ProviderConfiguration
         return testSuiteDefinition;
     }
 
-    public Properties getProviderProperties()
+    public Map<String, String> getProviderProperties()
     {
         return providerProperties;
     }
@@ -137,7 +137,6 @@ public class ProviderConfiguration
     {
         return runOrderParameters;
     }
-
 
     public boolean isReadTestsFromInStream()
     {

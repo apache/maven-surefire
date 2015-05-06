@@ -71,7 +71,6 @@ public class RunEntryStatistics
         return runTime;
     }
 
-
     public int getSuccessfulBuilds()
     {
         return successfulBuilds;
@@ -86,15 +85,10 @@ public class RunEntryStatistics
         return new RunEntryStatistics( runTime, successfulBuilds, className );
     }
 
-    public String getAsString()
+    @Override
+    public String toString()
     {
-        StringBuilder stringBuffer = new StringBuilder();
-        stringBuffer.append( successfulBuilds );
-        stringBuffer.append( "," );
-        stringBuffer.append( runTime );
-        stringBuffer.append( "," );
-        stringBuffer.append( testName );
-        return stringBuffer.toString();
+        return successfulBuilds + "," + runTime + "," + testName;
     }
 
 }
