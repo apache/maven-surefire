@@ -250,8 +250,9 @@ public class StatelessXmlReporterTest
 
         Xpp3Dom testCaseTwo = testcase[1];
         assertEquals( TEST_TWO, testCaseTwo.getAttribute( "name" ) );
-        // Run time for a rerun failing test is the run time of the first run
-        assertEquals( "0.005", testCaseTwo.getAttribute( "time" ) );
+        // Run time for a rerun failing test is the sum of run time of the first run (0.005)
+        // and the run times of all reruns (only one rerun in this example, 0.013)
+        assertEquals( "0.018", testCaseTwo.getAttribute( "time" ) );
         assertEquals( Inner.class.getName(), testCaseTwo.getAttribute( "classname" ) );
         Xpp3Dom errorNode = testCaseTwo.getChild( "error" );
         Xpp3Dom rerunErrorNode = testCaseTwo.getChild( "rerunError" );
@@ -260,6 +261,7 @@ public class StatelessXmlReporterTest
 
         assertEquals( "A fud msg", errorNode.getAttribute( "message" ) );
         assertEquals( "fail at foo", errorNode.getAttribute( "type" ) );
+        assertEquals( "0.005", errorNode.getAttribute( "time" ) );
 
         // Check rerun error node contains all the information
         assertEquals( firstRunOut, testCaseTwo.getChild( "system-out" ).getValue() );
@@ -268,6 +270,7 @@ public class StatelessXmlReporterTest
         assertEquals( secondRunErr, rerunErrorNode.getChild( "system-err" ).getValue() );
         assertEquals( "A fud msg two", rerunErrorNode.getAttribute( "message" ) );
         assertEquals( "fail at foo two", rerunErrorNode.getAttribute( "type" ) );
+        assertEquals( "0.013", rerunErrorNode.getAttribute( "time" ) );
 
         // Check flaky failure node
         Xpp3Dom testCaseThree = testcase[2];
