@@ -19,8 +19,13 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
+import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.junit.Test;
+
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.*;
 
 /**
  * Basic suite test using all known versions of JUnit 4.x
@@ -34,9 +39,22 @@ public class Junit47concurrencyIT
     public void test47()
         throws Exception
     {
-        // todo: Align with others
-        unpack( "concurrentjunit47" ).sysProp( "junitVersion", "4.7" ).setJUnitVersion(
-            "4.7" ).executeTest().verifyErrorFree( 1 );
-
+        OutputValidator validator = unpack( "concurrentjunit47" )
+            .sysProp( "junitVersion", "4.7" )
+            .setJUnitVersion( "4.7" )
+            .executeTest()
+            .verifyErrorFree( 4 );
+        String result = null;
+        for ( String line : validator.loadLogLines() )
+        {
+            if ( line.startsWith( "Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed:" ) )
+            {
+                result = line;
+                break;
+            }
+        }
+        assertNotNull( result);
+        assertThat( result, anyOf( containsString( "Time elapsed: 1." ), containsString( "Time elapsed: 0.9" ) ) );
+        assertThat( result, endsWith( " sec - in concurrentjunit47.src.test.java.junit47.BasicTest" ) );
     }
 }
