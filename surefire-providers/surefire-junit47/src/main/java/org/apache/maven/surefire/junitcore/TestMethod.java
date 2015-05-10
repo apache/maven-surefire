@@ -142,7 +142,6 @@ class TestMethod
     {
         TEST_METHOD.set( this );
         ConsoleOutputReceiverForCurrentThread.set( this );
-
     }
 
     void detachFromCurrentThread()

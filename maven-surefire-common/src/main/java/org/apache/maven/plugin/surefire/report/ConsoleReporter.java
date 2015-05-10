@@ -58,22 +58,14 @@ public class ConsoleReporter
 
     public void writeMessage( String message )
     {
-        if ( writer != null )
-        {
-            writer.print( message );
-
-            writer.flush();
-        }
+        writer.print( message );
+        writer.flush();
     }
 
     public void writeLnMessage( String message )
     {
-        if ( writer != null )
-        {
-            writer.println( message );
-
-            writer.flush();
-        }
+        writer.println( message );
+        writer.flush();
     }
 
     public void testSetCompleted( WrappedReportEntry report, TestSetStats testSetStats, List<String> testResults )
@@ -92,10 +84,7 @@ public class ConsoleReporter
 
     public void reset()
     {
-        if ( writer != null )
-        {
-            writer.flush();
-        }
+        writer.flush();
     }
 
     /**
@@ -107,12 +96,7 @@ public class ConsoleReporter
      */
     static String getTestSetStartingMessage( ReportEntry report )
     {
-        StringBuilder message = new StringBuilder();
-        message.append( TEST_SET_STARTING_PREFIX );
-        message.append( report.getNameWithGroup() );
-
-        message.append( "\n" );
-        return message.toString();
+        return TEST_SET_STARTING_PREFIX + report.getNameWithGroup() + "\n";
     }
 
 
