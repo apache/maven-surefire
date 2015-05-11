@@ -32,14 +32,11 @@ import org.apache.maven.shared.utils.StringUtils;
 @SuppressWarnings( "ThrowableResultOfMethodCallIgnored" )
 public class SmartStackTraceParser
 {
-
     private static final int MAX_LINE_LENGTH = 77;
 
     private final SafeThrowable throwable;
 
     private final StackTraceElement[] stackTrace;
-
-    private final String simpleName;
 
     private String testClassName;
 
@@ -57,7 +54,6 @@ public class SmartStackTraceParser
         this.testMethodName = testMethodName;
         this.testClassName = testClassName;
         this.testClass = getClass( testClassName );
-        this.simpleName = this.testClassName.substring( this.testClassName.lastIndexOf( "." ) + 1 );
         this.throwable = new SafeThrowable( throwable );
         stackTrace = throwable.getStackTrace();
     }
@@ -94,7 +90,7 @@ public class SmartStackTraceParser
         Collections.reverse( stackTraceElements );
         if ( stackTraceElements.isEmpty() )
         {
-            result.append( simpleName );
+            result.append( testClassName );
             if ( StringUtils.isNotEmpty( testMethodName ) )
             {
                 result.append( "." ).append( testMethodName );
@@ -102,13 +98,14 @@ public class SmartStackTraceParser
         }
         else
         {
-            for ( int i = 0; i < stackTraceElements.size(); i++ )
+            for ( int i = 0, size = stackTraceElements.size(); i < size; i++ )
             {
                 final StackTraceElement stackTraceElement = stackTraceElements.get( i );
+                final boolean isTestClassName = stackTraceElement.getClassName().equals( testClassName );
                 if ( i == 0 )
                 {
-                    result.append( simpleName );
-                    if ( !stackTraceElement.getClassName().equals( testClassName ) )
+                    result.append( testClassName );
+                    if ( !isTestClassName )
                     {
                         result.append( ">" );
                     }
@@ -117,14 +114,15 @@ public class SmartStackTraceParser
                         result.append( "." );
                     }
                 }
-                if ( !stackTraceElement.getClassName().equals( testClassName ) )
+                if ( !isTestClassName )
                 {
-                    result.append( getSimpleName( stackTraceElement.getClassName() ) ); // Add the name of the superclas
+                    result.append( getSimpleName( stackTraceElement.getClassName() ) ); // Add the name of superclass
                     result.append( "." );
                 }
-                result.append( stackTraceElement.getMethodName() ).append( ":" ).append(
-                    stackTraceElement.getLineNumber() );
-                result.append( "->" );
+                result.append( stackTraceElement.getMethodName() )
+                        .append( ":" )
+                        .append( stackTraceElement.getLineNumber() )
+                        .append( "->" );
             }
 
             if ( result.length() >= 2 )
@@ -134,17 +132,17 @@ public class SmartStackTraceParser
             }
         }
 
-        Throwable target = throwable.getTarget();
-        if ( target instanceof AssertionError )
+        final Throwable target = throwable.getTarget();
+        if ( target instanceof AssertionError
+                || "junit.framework.AssertionFailedError".equals( target.getClass().getName() )
+                || "junit.framework.ComparisonFailure".equals( target.getClass().getName() ) )
         {
-            result.append( " " );
-            result.append( throwable.getMessage() );
-        }
-        else if ( "junit.framework.AssertionFailedError".equals( target.getClass().getName() )
-            || "junit.framework.ComparisonFailure".equals( target.getClass().getName() ) )
-        {
-            result.append( " " );
-            result.append( throwable.getMessage() );
+            String msg = throwable.getMessage();
+            if ( StringUtils.isNotBlank( msg ) )
+            {
+                result.append( " " );
+                result.append( msg );
+            }
         }
         else
         {
