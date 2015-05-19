@@ -39,7 +39,7 @@ Rerun Failing Tests
 mvn -D${thisPlugin.toLowerCase()}.rerunFailingTestsCount=2 test
 +---+
 
-  If <<<rerunFailingTestsCount>>> is set to a value smaller than or euqal to 0, then it will be ignored.
+  If <<<rerunFailingTestsCount>>> is set to a value smaller than or equal to 0, then it will be ignored.
 
 * Output flaky re-run information on the screen
 
@@ -70,7 +70,7 @@ mvn -D${thisPlugin.toLowerCase()}.rerunFailingTestsCount=2 test
 
   2) The test fails in all of the re-runs:
 
-  For example, a test failied in all the three runs, then all the runs will be output on the screen:
+  For example, a test failed in all the three runs, then all the runs will be output on the screen:
 
 +---+
   Run 1: ...
