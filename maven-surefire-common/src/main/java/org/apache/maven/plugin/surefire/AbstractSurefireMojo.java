@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -54,8 +53,6 @@ import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.execution.MavenSession;
-import org.apache.maven.model.Plugin;
-import org.apache.maven.model.PluginExecution;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -1634,39 +1631,39 @@ public abstract class AbstractSurefireMojo
     private List<String> getIncludeList()
         throws MojoFailureException
     {
-        List<String> actualIncludes = null;
-        if ( isSpecificTestSpecified() && !isMultipleExecutionBlocksDetected() )
+        List<String> includes = null;
+        if ( isSpecificTestSpecified() )
         {
-            actualIncludes = Collections.singletonList( "**/*" );
+            includes = Collections.singletonList( getTest() );
         }
         else
         {
             if ( getIncludesFile() != null )
             {
-                actualIncludes = readListFromFile( getIncludesFile() );
+                includes = readListFromFile( getIncludesFile() );
             }
 
             // If we have includesFile, and we have includes, then append includes to includesFile content
-            if ( actualIncludes == null )
+            if ( includes == null )
             {
-                actualIncludes = getIncludes();
+                includes = getIncludes();
             }
             else
             {
-                maybeAppendList( actualIncludes, getIncludes() );
+                maybeAppendList( includes, getIncludes() );
             }
 
-            checkMethodFilterInIncludesExcludes( actualIncludes );
+            checkMethodFilterInIncludesExcludes( includes );
 
             // defaults here, qdox doesn't like the end javadoc value
             // Have to wrap in an ArrayList as surefire expects an ArrayList instead of a List for some reason
-            if ( actualIncludes == null || actualIncludes.isEmpty() )
+            if ( includes == null || includes.isEmpty() )
             {
-                actualIncludes = Arrays.asList( getDefaultIncludes() );
+                includes = Arrays.asList( getDefaultIncludes() );
             }
         }
 
-        return filterNulls( actualIncludes );
+        return filterNulls( includes );
     }
 
     private void checkMethodFilterInIncludesExcludes( Iterable<String> patterns )
@@ -1718,22 +1715,6 @@ public abstract class AbstractSurefireMojo
         }
 
         return result;
-    }
-
-    private boolean isMultipleExecutionBlocksDetected()
-    {
-        MavenProject project = getProject();
-        if ( project != null )
-        {
-            String key = getPluginDescriptor().getPluginLookupKey();
-            Plugin plugin = (Plugin) project.getBuild().getPluginsAsMap().get( key );
-            if ( plugin != null )
-            {
-                Collection<PluginExecution> executions = plugin.getExecutions();
-                return executions != null && executions.size() > 1;
-            }
-        }
-        return false;
     }
 
     private Artifact getTestNgArtifact()

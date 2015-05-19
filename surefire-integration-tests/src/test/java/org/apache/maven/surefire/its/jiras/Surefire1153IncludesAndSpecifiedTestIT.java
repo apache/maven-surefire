@@ -29,12 +29,18 @@ public class Surefire1153IncludesAndSpecifiedTestIT
     @Test
     public void testSpecifiedTestInIncludes()
     {
-        unpack( "/surefire-1153-includesAndSpecifiedTest" ).setTestToRun( "#testIncluded" ).executeTest().verifyErrorFree( 1 );
+        unpack( "/surefire-1153-includesAndSpecifiedTest" )
+            .setTestToRun( "#testIncluded" )
+            .executeTest()
+            .verifyErrorFree( 1 );
     }
 
     @Test
     public void testSpecifiedTestNotInIncludes()
     {
-        unpack( "/surefire-1153-includesAndSpecifiedTest" ).setTestToRun( "#testNotIncluded" ).executeTest().verifyErrorFree( 1 );
+        unpack( "/surefire-1153-includesAndSpecifiedTest" )
+            .setTestToRun( "#testNotIncluded" )
+            .executeTest()
+            .verifyErrorFree( 1 );
     }
 }
