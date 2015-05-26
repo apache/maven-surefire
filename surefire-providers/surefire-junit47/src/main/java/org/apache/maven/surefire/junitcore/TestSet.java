@@ -107,9 +107,18 @@ public class TestSet
 
     private ReportEntry createReportEntry( Integer elapsed )
     {
-        boolean isJunit3 = testSetDescription.getTestClass() == null;
-        String classNameToUse =
-            isJunit3 ? testSetDescription.getChildren().get( 0 ).getClassName() : testSetDescription.getClassName();
+        final String className = testSetDescription.getClassName();
+        final boolean isJunit3 = className == null;
+        final String classNameToUse;
+        if ( isJunit3 )
+        {
+            List<Description> children = testSetDescription.getChildren();
+            classNameToUse = children.isEmpty() ? testSetDescription.toString() : children.get( 0 ).getClassName();
+        }
+        else
+        {
+            classNameToUse = className;
+        }
         return new SimpleReportEntry( classNameToUse, classNameToUse, elapsed );
     }
 
