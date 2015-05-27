@@ -37,6 +37,7 @@
       <item name="Changing the Report Name" href="examples/changing-report-name.html"/>
       <item name="Configuring the Output Location of the Report" href="examples/report-custom-location.html"/>
       <item name="Source Code Cross Reference" href="examples/cross-referencing.html"/>
+      <item name="Linking to Tests" href="examples/linking-to-tests.html"/>
     </menu>
   </body>
 </project>
