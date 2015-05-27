@@ -46,20 +46,16 @@ public class SurefireReportGenerator
 
     private final String xrefLocation;
     
-    private final boolean anchorTestCaseNames;
-
     private static final int LEFT = Sink.JUSTIFY_LEFT;
 
     public SurefireReportGenerator( List<File> reportsDirectories, Locale locale, boolean showSuccess,
-                                    String xrefLocation, boolean anchorTestCaseNames )
+                                    String xrefLocation )
     {
         report = new SurefireReportParser( reportsDirectories, locale );
 
         this.xrefLocation = xrefLocation;
 
         this.showSuccess = showSuccess;
-        
-        this.anchorTestCaseNames = anchorTestCaseNames;
     }
 
     public void doGenerateReport( ResourceBundle bundle, Sink sink )
@@ -470,10 +466,7 @@ public class SurefireReportGenerator
         {
             sink.tableCell();
 
-            if ( anchorTestCaseNames )
-            {
-                sinkAnchor( sink, "TC_" + toHtmlId( testCase.getFullName() ) );
-            }
+            sinkAnchor( sink, "TC_" + toHtmlId( testCase.getFullName() ) );
 
             sinkLink( sink, testCase.getName(), "#" + toHtmlId( testCase.getFullName() ) );
 
@@ -507,14 +500,7 @@ public class SurefireReportGenerator
         }
         else
         {
-            if ( anchorTestCaseNames )
-            {
-                sinkCellAnchor( sink, testCase.getName(), "TC_" + toHtmlId( testCase.getFullName() ) );
-            }
-            else
-            {
-                sinkCell( sink, testCase.getName() );
-            }
+            sinkCellAnchor( sink, testCase.getName(), "TC_" + toHtmlId( testCase.getFullName() ) );
         }
 
         sinkCell( sink, numberFormat.format( testCase.getTime() ) );

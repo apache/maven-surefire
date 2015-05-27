@@ -195,10 +195,10 @@ public class SurefireReportMojoTest
         assertTrue( idx < 0 );
     }
     
-    public void testBasicSurefireReportIfAnchorTestCasesIsTrue()
+    public void testBasicSurefireReport_AnchorTestCases()
         throws Exception
     {
-        File testPom = new File( getUnitBaseDir(), "basic-surefire-report-anchor-test-cases-true/plugin-config.xml" );
+        File testPom = new File( getUnitBaseDir(), "basic-surefire-report-anchor-test-cases/plugin-config.xml" );
 
         SurefireReportMojo mojo = (SurefireReportMojo) lookupMojo( "report", testPom );
 
@@ -207,7 +207,7 @@ public class SurefireReportMojoTest
         mojo.execute();
 
         File report =
-            new File( getBasedir(), "target/site/unit/basic-surefire-report-anchor-test-cases-true/surefire-report.html" );
+            new File( getBasedir(), "target/site/unit/basic-surefire-report-anchor-test-cases/surefire-report.html" );
 
         renderer( mojo, report );
 
@@ -219,33 +219,6 @@ public class SurefireReportMojoTest
         assertTrue( idx > 0 );
 
         idx = htmlContent.indexOf( "<td><a name=\"TC_com.shape.CircleTest.testRadius\"></a><a href=\"#com.shape.CircleTest.testRadius\">testRadius</a>" );
-        assertTrue( idx > 0 );
-    }
-
-    public void testBasicSurefireReportIfAnchorTestCasesIsFalse()
-        throws Exception
-    {
-        File testPom = new File( getUnitBaseDir(), "basic-surefire-report-anchor-test-cases-false/plugin-config.xml" );
-
-        SurefireReportMojo mojo = (SurefireReportMojo) lookupMojo( "report", testPom );
-
-        assertNotNull( mojo );
-
-        mojo.execute();
-
-        File report =
-            new File( getBasedir(), "target/site/unit/basic-surefire-report-anchor-test-cases-false/surefire-report.html" );
-
-        renderer( mojo, report );
-
-        assertTrue( report.exists() );
-
-        String htmlContent = FileUtils.fileRead( report );
-
-        int idx = htmlContent.indexOf( "<td>testX</td>" );
-        assertTrue( idx > 0 );
-
-        idx = htmlContent.indexOf( "<td><a href=\"#com.shape.CircleTest.testRadius\">testRadius</a>" );
         assertTrue( idx > 0 );
     }
 
