@@ -25,7 +25,8 @@
 
 Linking to Tests
 
-  Anchors surround the names of each test suite and test case in the report so that you can remotely link to them.
+  Anchors surround the names of each test suite and test case in the report so
+  that you can remotely link to them.
 
   The format of the anchor names for test suites is as follows:
 
@@ -51,4 +52,6 @@ TC_<package>.<suiteName>.<testName>
 
   []
 
-  The anchor name for the test suite would be "org.fooFooTest" and the anchor names for the test cases would be "TC_org.foo.FooTest.testFooWithBar" and "TC_org.foo.FooTest.testFooWithBaz".
+  The anchor name for the test suite would be "org.fooFooTest" and the anchor
+  names for the test cases would be "TC_org.foo.FooTest.testFooWithBar" and
+  "TC_org.foo.FooTest.testFooWithBaz".
