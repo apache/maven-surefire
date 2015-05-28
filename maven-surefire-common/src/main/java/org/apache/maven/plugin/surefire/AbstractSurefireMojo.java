@@ -1540,7 +1540,7 @@ public abstract class AbstractSurefireMojo
 
     private boolean isSpecificTestSpecified()
     {
-        return getTest() != null;
+        return StringUtils.isNotBlank( getTest() );
     }
 
     private boolean isValidSuiteXmlFileConfig()
