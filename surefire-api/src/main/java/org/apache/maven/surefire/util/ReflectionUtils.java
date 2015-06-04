@@ -38,7 +38,7 @@ public class ReflectionUtils
         return getMethod( instance.getClass(), methodName, parameters );
     }
 
-    public static Method getMethod( Class clazz, String methodName, Class[] parameters )
+    public static Method getMethod( Class<?> clazz, String methodName, Class[] parameters )
     {
         try
         {
@@ -50,7 +50,7 @@ public class ReflectionUtils
         }
     }
 
-    public static Method tryGetMethod( Class clazz, String methodName, Class[] parameters )
+    public static Method tryGetMethod( Class<?> clazz, String methodName, Class[] parameters )
     {
         try
         {
@@ -69,7 +69,7 @@ public class ReflectionUtils
         return invokeMethodWithArray( instance, method, NO_ARGS_VALUES );
     }
 
-    public static Constructor getConstructor( Class clazz, Class[] arguments )
+    public static Constructor getConstructor( Class<?> clazz, Class[] arguments )
     {
         try
         {

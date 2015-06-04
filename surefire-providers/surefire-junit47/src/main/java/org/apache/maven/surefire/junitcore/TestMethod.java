@@ -40,7 +40,7 @@ class TestMethod
 
     private final long startTime;
 
-    private long endTime;
+    private volatile long endTime;
 
     private volatile ReportEntry testFailure;
 
@@ -52,31 +52,31 @@ class TestMethod
 
     private volatile LogicalStream output;
 
-    public TestMethod( ReportEntry description, TestSet testSet )
+    TestMethod( ReportEntry description, TestSet testSet )
     {
         this.description = description;
         this.testSet = testSet;
         startTime = System.currentTimeMillis();
     }
 
-    public void testFinished()
+    void testFinished()
     {
         setEndTime();
     }
 
-    public void testIgnored( ReportEntry description )
+    void testIgnored( ReportEntry description )
     {
         ignored = description;
         setEndTime();
     }
 
-    public void testFailure( ReportEntry failure )
+    void testFailure( ReportEntry failure )
     {
         this.testFailure = failure;
         setEndTime();
     }
 
-    public void testError( ReportEntry failure )
+    void testError( ReportEntry failure )
     {
         this.testError = failure;
         setEndTime();
@@ -87,13 +87,22 @@ class TestMethod
         this.endTime = System.currentTimeMillis();
     }
 
-    public int getElapsed()
+    int getElapsed()
     {
         return endTime > 0 ? (int) ( endTime - startTime ) : 0;
     }
 
+    long getStartTime()
+    {
+        return startTime;
+    }
 
-    public void replay( RunListener reporter )
+    long getEndTime()
+    {
+        return endTime;
+    }
+
+    void replay( RunListener reporter )
     {
 
         if ( ignored != null )
@@ -129,25 +138,24 @@ class TestMethod
                                            reportEntry.getStackTraceWriter(), getElapsed(), reportEntry.getMessage() );
     }
 
-    public void attachToThread()
+    void attachToThread()
     {
         TEST_METHOD.set( this );
         ConsoleOutputReceiverForCurrentThread.set( this );
-
     }
 
-    public void detachFromCurrentThread()
+    void detachFromCurrentThread()
     {
         TEST_METHOD.remove();
         ConsoleOutputReceiverForCurrentThread.remove();
     }
 
-    public static TestMethod getThreadTestMethod()
+    static TestMethod getThreadTestMethod()
     {
         return TEST_METHOD.get();
     }
 
-    public LogicalStream getLogicalStream()
+    LogicalStream getLogicalStream()
     {
         if ( output == null )
         {

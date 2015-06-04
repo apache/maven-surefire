@@ -20,7 +20,6 @@ package org.apache.maven.surefire.util;
  */
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -61,7 +60,7 @@ public class TestsToRun implements Iterable<Class>
     public static TestsToRun fromClass( Class clazz )
         throws TestSetFailedException
     {
-        return new TestsToRun( Arrays.<Class>asList( clazz ) );
+        return new TestsToRun( Collections.singletonList( clazz ) );
     }
 
     /**
@@ -78,10 +77,8 @@ public class TestsToRun implements Iterable<Class>
     {
         StringBuilder sb = new StringBuilder();
         sb.append( "TestsToRun: [" );
-        Iterator it = iterator();
-        while ( it.hasNext() )
+        for ( Class clazz : this )
         {
-            Class clazz = (Class) it.next();
             sb.append( " " ).append( clazz.getName() );
         }
 
@@ -131,10 +128,9 @@ public class TestsToRun implements Iterable<Class>
             throw new IllegalStateException( "Cannot eagerly read" );
         }
         List<Class> result = new ArrayList<Class>();
-        Iterator<Class> it = iterator();
-        while ( it.hasNext() )
+        for ( Class clazz : this )
         {
-            result.add( it.next() );
+            result.add( clazz );
         }
         return result.toArray( new Class[result.size()] );
     }

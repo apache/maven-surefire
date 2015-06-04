@@ -19,8 +19,6 @@ package org.apache.maven.surefire.common.junit4;
  * under the License.
  */
 
-import org.apache.maven.surefire.util.TestsToRun;
-
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -28,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.internal.StringUtils;
 
 import org.junit.runner.Description;
@@ -52,52 +51,45 @@ public final class JUnit4ProviderUtil
      * Organize all the failures in previous run into a map between test classes and corresponding failing test methods
      *
      * @param allFailures all the failures in previous run
-     * @param testsToRun  all the test classes
+     * @param testClassLoader ClassLoader used for test classes
      * @return a map between failing test classes and their corresponding failing test methods
      */
-    public static Map<Class<?>, Set<String>> generateFailingTests( List<Failure> allFailures, TestsToRun testsToRun )
+    public static Map<Class<?>, Set<String>> generateFailingTests( List<Failure> allFailures,
+                                                                   ClassLoader testClassLoader )
+        throws TestSetFailedException
     {
         Map<Class<?>, Set<String>> testClassMethods = new HashMap<Class<?>, Set<String>>();
-
-        for ( Failure failure : allFailures )
+        Set<ClassMethod> failingTests = generateFailingTests( allFailures );
+        for ( ClassMethod classMethod: failingTests )
         {
-            Description description = failure.getDescription();
-            if ( description.isTest() && !isFailureInsideJUnitItself( description ) )
+            try
             {
-                ClassMethod classMethod = cutTestClassAndMethod( description );
-                if ( classMethod.isValid() )
+                Class testClassObj = Class.forName( classMethod.getClazz(), false, testClassLoader );
+                Set<String> failingMethods = testClassMethods.get( testClassObj );
+                if ( failingMethods == null )
                 {
-                    Class testClassObj = testsToRun.getClassByName( classMethod.getClazz() );
-
-                    if ( testClassObj != null )
-                    {
-                        Set<String> failingMethods = testClassMethods.get( testClassObj );
-                        if ( failingMethods == null )
-                        {
-                            failingMethods = new HashSet<String>();
-                            failingMethods.add( classMethod.getMethod() );
-                            testClassMethods.put( testClassObj, failingMethods );
-                        }
-                        else
-                        {
-                            failingMethods.add( classMethod.getMethod() );
-                        }
-                    }
+                    failingMethods = new HashSet<String>();
+                    testClassMethods.put( testClassObj, failingMethods );
                 }
+                failingMethods.add( classMethod.getMethod() );
+            }
+            catch ( ClassNotFoundException e )
+            {
+                throw new TestSetFailedException( "Unable to create test class '" + classMethod.getClazz() + "'", e );
             }
         }
         return testClassMethods;
     }
 
     /**
-     * Get the name of all test methods from a list of Failures
+     * Get all test methods from a list of Failures
      *
      * @param allFailures the list of failures for a given test class
-     * @return the list of test method names
+     * @return the list of test methods
      */
-    public static Set<String> generateFailingTests( List<Failure> allFailures )
+    public static Set<ClassMethod> generateFailingTests( List<Failure> allFailures )
     {
-        Set<String> failingMethods = new HashSet<String>();
+        Set<ClassMethod> failingMethods = new HashSet<ClassMethod>();
 
         for ( Failure failure : allFailures )
         {
@@ -107,7 +99,7 @@ public final class JUnit4ProviderUtil
                 ClassMethod classMethod = cutTestClassAndMethod( description );
                 if ( classMethod.isValid() )
                 {
-                    failingMethods.add( classMethod.getMethod() );
+                    failingMethods.add( classMethod );
                 }
             }
         }

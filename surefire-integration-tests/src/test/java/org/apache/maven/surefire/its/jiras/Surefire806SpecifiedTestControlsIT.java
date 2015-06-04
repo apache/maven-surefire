@@ -21,6 +21,7 @@ package org.apache.maven.surefire.its.jiras;
 import org.apache.maven.surefire.its.Not2xCompatible;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -30,6 +31,7 @@ public class Surefire806SpecifiedTestControlsIT
 {
 
     @Test
+    @Ignore( "since SUREFIRE-1153 the includes/excludes are overridden by -Dtest or it.test for whatever execution" )
     public void singleTestInOneExecutionOfMultiExecutionProject()
     {
         unpack( "/surefire-806-specifiedTests-multi" ).setTestToRun( "FirstTest" ).failIfNoSpecifiedTests(
@@ -37,6 +39,7 @@ public class Surefire806SpecifiedTestControlsIT
     }
 
     @Test
+    @Ignore( "since SUREFIRE-1153 the includes/excludes are overridden by -Dtest or it.test for whatever execution" )
     public void twoSpecifiedTestExecutionsInCorrectExecutionBlocks()
     {
         unpack( "/surefire-806-specifiedTests-multi" ).setTestToRun(

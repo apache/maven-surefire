@@ -19,9 +19,7 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 import junit.framework.TestCase;
 
@@ -34,9 +32,7 @@ public class PropertiesWrapperTest
     public void testAddList()
         throws Exception
     {
-
-        Properties props = new Properties();
-        PropertiesWrapper propertiesWrapper = new PropertiesWrapper( props );
+        PropertiesWrapper propertiesWrapper = new PropertiesWrapper( new HashMap<String, String>() );
         List<String> items = new ArrayList<String>();
         items.add( "String1" );
         items.add( "String2,String3" );
@@ -58,8 +54,7 @@ public class PropertiesWrapperTest
 
     private static final String SECOND_ELEMENT = "foo1";
 
-    private final Properties properties = new Properties();
-
+    private final Map<String, String> properties = new HashMap<String, String>();
 
     private final PropertiesWrapper mapper = new PropertiesWrapper( properties );
 

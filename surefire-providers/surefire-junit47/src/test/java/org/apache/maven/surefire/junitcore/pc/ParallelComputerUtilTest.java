@@ -36,7 +36,9 @@ import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
 import org.junit.runner.RunWith;
 
-import java.util.Properties;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import static org.apache.maven.surefire.junitcore.pc.ParallelComputerUtil.*;
@@ -86,18 +88,16 @@ public final class ParallelComputerUtilTest
         assertFalse( Thread.currentThread().isInterrupted() );
     }
 
-    private static Properties parallel( String parallel )
+    private static Map<String, String> parallel( String parallel )
     {
-        Properties properties = new Properties();
-        properties.setProperty( PARALLEL_KEY, parallel );
-        return properties;
+        return Collections.singletonMap( PARALLEL_KEY, parallel );
     }
 
     @Test
     public void unknownParallel()
         throws TestSetFailedException
     {
-        Properties properties = new Properties();
+        Map<String, String> properties = new HashMap<String, String>();
         exception.expect( TestSetFailedException.class );
         resolveConcurrency( new JUnitCoreParameters( properties ), null );
     }
@@ -203,9 +203,9 @@ public final class ParallelComputerUtilTest
         throws TestSetFailedException
     {
         ParallelComputerUtil.overrideAvailableProcessors( cpu );
-        Properties properties = new Properties();
-        properties.setProperty( PARALLEL_KEY, "suites" );
-        properties.setProperty( USEUNLIMITEDTHREADS_KEY, "true" );
+        Map<String, String> properties = new HashMap<String, String>();
+        properties.put(PARALLEL_KEY, "suites");
+        properties.put(USEUNLIMITEDTHREADS_KEY, "true");
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         Concurrency concurrency = resolveConcurrency( params, null );
         assertTrue( params.isParallelSuites() );
@@ -216,7 +216,7 @@ public final class ParallelComputerUtilTest
         assertThat( concurrency.classes, is( 0 ) );
         assertThat( concurrency.methods, is( 0 ) );
 
-        properties.setProperty( THREADCOUNTSUITES_KEY, "5" );
+        properties.put(THREADCOUNTSUITES_KEY, "5");
         params = new JUnitCoreParameters( properties );
         concurrency = resolveConcurrency( params, null );
         assertTrue( params.isParallelSuites() );
@@ -233,9 +233,9 @@ public final class ParallelComputerUtilTest
         throws TestSetFailedException
     {
         ParallelComputerUtil.overrideAvailableProcessors( cpu );
-        Properties properties = new Properties();
-        properties.setProperty( PARALLEL_KEY, "classes" );
-        properties.setProperty( USEUNLIMITEDTHREADS_KEY, "true" );
+        Map<String, String> properties = new HashMap<String, String>();
+        properties.put(PARALLEL_KEY, "classes");
+        properties.put(USEUNLIMITEDTHREADS_KEY, "true");
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         Concurrency concurrency = resolveConcurrency( params, null );
         assertFalse( params.isParallelSuites() );
@@ -246,7 +246,7 @@ public final class ParallelComputerUtilTest
         assertThat( concurrency.classes, is( Integer.MAX_VALUE ) );
         assertThat( concurrency.methods, is( 0 ) );
 
-        properties.setProperty( THREADCOUNTCLASSES_KEY, "5" );
+        properties.put(THREADCOUNTCLASSES_KEY, "5");
         params = new JUnitCoreParameters( properties );
         concurrency = resolveConcurrency( params, null );
         assertFalse( params.isParallelSuites() );
@@ -263,9 +263,9 @@ public final class ParallelComputerUtilTest
         throws TestSetFailedException
     {
         ParallelComputerUtil.overrideAvailableProcessors( cpu );
-        Properties properties = new Properties();
-        properties.setProperty( PARALLEL_KEY, "methods" );
-        properties.setProperty( USEUNLIMITEDTHREADS_KEY, "true" );
+        Map<String, String> properties = new HashMap<String, String>();
+        properties.put(PARALLEL_KEY, "methods");
+        properties.put(USEUNLIMITEDTHREADS_KEY, "true");
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         Concurrency concurrency = resolveConcurrency( params, null );
         assertFalse( params.isParallelSuites() );
@@ -276,7 +276,7 @@ public final class ParallelComputerUtilTest
         assertThat( concurrency.classes, is( 0 ) );
         assertThat( concurrency.methods, is( Integer.MAX_VALUE ) );
 
-        properties.setProperty( THREADCOUNTMETHODS_KEY, "5" );
+        properties.put(THREADCOUNTMETHODS_KEY, "5");
         params = new JUnitCoreParameters( properties );
         concurrency = resolveConcurrency( params, null );
         assertFalse( params.isParallelSuites() );
@@ -293,9 +293,9 @@ public final class ParallelComputerUtilTest
         throws TestSetFailedException
     {
         ParallelComputerUtil.overrideAvailableProcessors( cpu );
-        Properties properties = new Properties();
-        properties.setProperty( PARALLEL_KEY, "suitesAndClasses" );
-        properties.setProperty( USEUNLIMITEDTHREADS_KEY, "true" );
+        Map<String, String> properties = new HashMap<String, String>();
+        properties.put(PARALLEL_KEY, "suitesAndClasses");
+        properties.put(USEUNLIMITEDTHREADS_KEY, "true");
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         Concurrency concurrency = resolveConcurrency( params, null );
         assertTrue( params.isParallelSuites() );
@@ -306,8 +306,8 @@ public final class ParallelComputerUtilTest
         assertThat( concurrency.classes, is( Integer.MAX_VALUE ) );
         assertThat( concurrency.methods, is( 0 ) );
 
-        properties.setProperty( THREADCOUNTSUITES_KEY, "5" );
-        properties.setProperty( THREADCOUNTCLASSES_KEY, "15" );
+        properties.put(THREADCOUNTSUITES_KEY, "5");
+        properties.put(THREADCOUNTCLASSES_KEY, "15");
         params = new JUnitCoreParameters( properties );
         concurrency = resolveConcurrency( params, null );
         assertTrue( params.isParallelSuites() );
@@ -324,9 +324,9 @@ public final class ParallelComputerUtilTest
         throws TestSetFailedException
     {
         ParallelComputerUtil.overrideAvailableProcessors( cpu );
-        Properties properties = new Properties();
-        properties.setProperty( PARALLEL_KEY, "suitesAndMethods" );
-        properties.setProperty( USEUNLIMITEDTHREADS_KEY, "true" );
+        Map<String, String> properties = new HashMap<String, String>();
+        properties.put(PARALLEL_KEY, "suitesAndMethods");
+        properties.put(USEUNLIMITEDTHREADS_KEY, "true");
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         Concurrency concurrency = resolveConcurrency( params, null );
         assertTrue( params.isParallelSuites() );
@@ -337,8 +337,8 @@ public final class ParallelComputerUtilTest
         assertThat( concurrency.classes, is( 0 ) );
         assertThat( concurrency.methods, is( Integer.MAX_VALUE ) );
 
-        properties.setProperty( THREADCOUNTSUITES_KEY, "5" );
-        properties.setProperty( THREADCOUNTMETHODS_KEY, "15" );
+        properties.put(THREADCOUNTSUITES_KEY, "5");
+        properties.put(THREADCOUNTMETHODS_KEY, "15");
         params = new JUnitCoreParameters( properties );
         concurrency = resolveConcurrency( params, null );
         assertTrue( params.isParallelSuites() );
@@ -355,9 +355,9 @@ public final class ParallelComputerUtilTest
         throws TestSetFailedException
     {
         ParallelComputerUtil.overrideAvailableProcessors( cpu );
-        Properties properties = new Properties();
-        properties.setProperty( PARALLEL_KEY, "classesAndMethods" );
-        properties.setProperty( USEUNLIMITEDTHREADS_KEY, "true" );
+        Map<String, String> properties = new HashMap<String, String>();
+        properties.put(PARALLEL_KEY, "classesAndMethods");
+        properties.put(USEUNLIMITEDTHREADS_KEY, "true");
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         Concurrency concurrency = resolveConcurrency( params, null );
         assertFalse( params.isParallelSuites() );
@@ -368,8 +368,8 @@ public final class ParallelComputerUtilTest
         assertThat( concurrency.classes, is( Integer.MAX_VALUE ) );
         assertThat( concurrency.methods, is( Integer.MAX_VALUE ) );
 
-        properties.setProperty( THREADCOUNTCLASSES_KEY, "5" );
-        properties.setProperty( THREADCOUNTMETHODS_KEY, "15" );
+        properties.put(THREADCOUNTCLASSES_KEY, "5");
+        properties.put(THREADCOUNTMETHODS_KEY, "15");
         params = new JUnitCoreParameters( properties );
         concurrency = resolveConcurrency( params, null );
         assertFalse( params.isParallelSuites() );
@@ -386,9 +386,9 @@ public final class ParallelComputerUtilTest
         throws TestSetFailedException
     {
         ParallelComputerUtil.overrideAvailableProcessors( cpu );
-        Properties properties = new Properties();
-        properties.setProperty( PARALLEL_KEY, "all" );
-        properties.setProperty( USEUNLIMITEDTHREADS_KEY, "true" );
+        Map<String, String> properties = new HashMap<String, String>();
+        properties.put(PARALLEL_KEY, "all");
+        properties.put(USEUNLIMITEDTHREADS_KEY, "true");
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         Concurrency concurrency = resolveConcurrency( params, null );
         assertTrue( params.isParallelSuites() );
@@ -399,9 +399,9 @@ public final class ParallelComputerUtilTest
         assertThat( concurrency.classes, is( Integer.MAX_VALUE ) );
         assertThat( concurrency.methods, is( Integer.MAX_VALUE ) );
 
-        properties.setProperty( THREADCOUNTSUITES_KEY, "5" );
-        properties.setProperty( THREADCOUNTCLASSES_KEY, "15" );
-        properties.setProperty( THREADCOUNTMETHODS_KEY, "30" );
+        properties.put(THREADCOUNTSUITES_KEY, "5");
+        properties.put(THREADCOUNTCLASSES_KEY, "15");
+        properties.put(THREADCOUNTMETHODS_KEY, "30");
         params = new JUnitCoreParameters( properties );
         concurrency = resolveConcurrency( params, null );
         assertTrue( params.isParallelSuites() );
@@ -418,9 +418,9 @@ public final class ParallelComputerUtilTest
         throws TestSetFailedException
     {
         ParallelComputerUtil.overrideAvailableProcessors( cpu );
-        Properties properties = new Properties();
-        properties.setProperty( PARALLEL_KEY, "suites" );
-        properties.setProperty( THREADCOUNT_KEY, "3" );
+        Map<String, String> properties = new HashMap<String, String>();
+        properties.put(PARALLEL_KEY, "suites");
+        properties.put(THREADCOUNT_KEY, "3");
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         Concurrency concurrency = resolveConcurrency( params, null );
         assertTrue( params.isParallelSuites() );
@@ -437,9 +437,9 @@ public final class ParallelComputerUtilTest
         throws TestSetFailedException
     {
         ParallelComputerUtil.overrideAvailableProcessors( cpu );
-        Properties properties = new Properties();
-        properties.setProperty( PARALLEL_KEY, "classes" );
-        properties.setProperty( THREADCOUNT_KEY, "3" );
+        Map<String, String> properties = new HashMap<String, String>();
+        properties.put(PARALLEL_KEY, "classes");
+        properties.put(THREADCOUNT_KEY, "3");
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         Concurrency concurrency = resolveConcurrency( params, null );
         assertFalse( params.isParallelSuites() );
@@ -456,9 +456,9 @@ public final class ParallelComputerUtilTest
         throws TestSetFailedException
     {
         ParallelComputerUtil.overrideAvailableProcessors( cpu );
-        Properties properties = new Properties();
-        properties.setProperty( PARALLEL_KEY, "methods" );
-        properties.setProperty( THREADCOUNT_KEY, "3" );
+        Map<String, String> properties = new HashMap<String, String>();
+        properties.put(PARALLEL_KEY, "methods");
+        properties.put(THREADCOUNT_KEY, "3");
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         Concurrency concurrency = resolveConcurrency( params, null );
         assertFalse( params.isParallelSuites() );
@@ -475,9 +475,9 @@ public final class ParallelComputerUtilTest
         throws TestSetFailedException
     {
         ParallelComputerUtil.overrideAvailableProcessors( cpu );
-        Properties properties = new Properties();
-        properties.setProperty( PARALLEL_KEY, "both" );
-        properties.setProperty( THREADCOUNT_KEY, "3" );
+        Map<String, String> properties = new HashMap<String, String>();
+        properties.put(PARALLEL_KEY, "both");
+        properties.put(THREADCOUNT_KEY, "3");
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         Concurrency concurrency = resolveConcurrency( params, null );
         assertFalse( params.isParallelSuites() );
@@ -494,9 +494,9 @@ public final class ParallelComputerUtilTest
         throws TestSetFailedException
     {
         ParallelComputerUtil.overrideAvailableProcessors( cpu );
-        Properties properties = new Properties();
-        properties.setProperty( PARALLEL_KEY, "classesAndMethods" );
-        properties.setProperty( THREADCOUNT_KEY, "3" );
+        Map<String, String> properties = new HashMap<String, String>();
+        properties.put(PARALLEL_KEY, "classesAndMethods");
+        properties.put(THREADCOUNT_KEY, "3");
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         Concurrency concurrency = resolveConcurrency( params, null );
         assertFalse( params.isParallelSuites() );
@@ -513,9 +513,9 @@ public final class ParallelComputerUtilTest
         throws TestSetFailedException
     {
         ParallelComputerUtil.overrideAvailableProcessors( cpu );
-        Properties properties = new Properties();
-        properties.setProperty( PARALLEL_KEY, "suitesAndMethods" );
-        properties.setProperty( THREADCOUNT_KEY, "3" );
+        Map<String, String> properties = new HashMap<String, String>();
+        properties.put(PARALLEL_KEY, "suitesAndMethods");
+        properties.put(THREADCOUNT_KEY, "3");
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         Concurrency concurrency = resolveConcurrency( params, null );
         assertTrue( params.isParallelSuites() );
@@ -532,9 +532,9 @@ public final class ParallelComputerUtilTest
         throws TestSetFailedException
     {
         ParallelComputerUtil.overrideAvailableProcessors( cpu );
-        Properties properties = new Properties();
-        properties.setProperty( PARALLEL_KEY, "suitesAndClasses" );
-        properties.setProperty( THREADCOUNT_KEY, "3" );
+        Map<String, String> properties = new HashMap<String, String>();
+        properties.put(PARALLEL_KEY, "suitesAndClasses");
+        properties.put(THREADCOUNT_KEY, "3");
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         Concurrency concurrency = resolveConcurrency( params, null );
         assertTrue( params.isParallelSuites() );
@@ -551,9 +551,9 @@ public final class ParallelComputerUtilTest
         throws TestSetFailedException
     {
         ParallelComputerUtil.overrideAvailableProcessors( cpu );
-        Properties properties = new Properties();
-        properties.setProperty( PARALLEL_KEY, "all" );
-        properties.setProperty( THREADCOUNT_KEY, "3" );
+        Map<String, String> properties = new HashMap<String, String>();
+        properties.put(PARALLEL_KEY, "all");
+        properties.put(THREADCOUNT_KEY, "3");
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         Concurrency concurrency = resolveConcurrency( params, null );
         assertTrue( params.isParallelSuites() );
@@ -570,12 +570,12 @@ public final class ParallelComputerUtilTest
         throws TestSetFailedException
     {
         ParallelComputerUtil.overrideAvailableProcessors( cpu );
-        Properties properties = new Properties();
-        properties.setProperty( PARALLEL_KEY, "suitesAndClasses" );
-        properties.setProperty( THREADCOUNT_KEY, "3" );
+        Map<String, String> properties = new HashMap<String, String>();
+        properties.put(PARALLEL_KEY, "suitesAndClasses");
+        properties.put(THREADCOUNT_KEY, "3");
         // % percentage ratio
-        properties.setProperty( THREADCOUNTSUITES_KEY, "34" );
-        properties.setProperty( THREADCOUNTCLASSES_KEY, "66" );
+        properties.put(THREADCOUNTSUITES_KEY, "34");
+        properties.put(THREADCOUNTCLASSES_KEY, "66");
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         Concurrency concurrency = resolveConcurrency( params, null );
         assertTrue( params.isParallelSuites() );
@@ -593,12 +593,12 @@ public final class ParallelComputerUtilTest
         throws TestSetFailedException
     {
         ParallelComputerUtil.overrideAvailableProcessors( cpu );
-        Properties properties = new Properties();
-        properties.setProperty( PARALLEL_KEY, "suitesAndMethods" );
-        properties.setProperty( THREADCOUNT_KEY, "3" );
+        Map<String, String> properties = new HashMap<String, String>();
+        properties.put(PARALLEL_KEY, "suitesAndMethods");
+        properties.put(THREADCOUNT_KEY, "3");
         // % percentage ratio
-        properties.setProperty( THREADCOUNTSUITES_KEY, "34" );
-        properties.setProperty( THREADCOUNTMETHODS_KEY, "66" );
+        properties.put(THREADCOUNTSUITES_KEY, "34");
+        properties.put(THREADCOUNTMETHODS_KEY, "66");
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         Concurrency concurrency = resolveConcurrency( params, null );
         assertTrue( params.isParallelSuites() );
@@ -616,12 +616,12 @@ public final class ParallelComputerUtilTest
         throws TestSetFailedException
     {
         ParallelComputerUtil.overrideAvailableProcessors( cpu );
-        Properties properties = new Properties();
-        properties.setProperty( PARALLEL_KEY, "classesAndMethods" );
-        properties.setProperty( THREADCOUNT_KEY, "3" );
+        Map<String, String> properties = new HashMap<String, String>();
+        properties.put(PARALLEL_KEY, "classesAndMethods");
+        properties.put(THREADCOUNT_KEY, "3");
         // % percentage ratio
-        properties.setProperty( THREADCOUNTCLASSES_KEY, "34" );
-        properties.setProperty( THREADCOUNTMETHODS_KEY, "66" );
+        properties.put(THREADCOUNTCLASSES_KEY, "34");
+        properties.put(THREADCOUNTMETHODS_KEY, "66");
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         Concurrency concurrency = resolveConcurrency( params, null );
         assertFalse( params.isParallelSuites() );
@@ -639,13 +639,13 @@ public final class ParallelComputerUtilTest
         throws TestSetFailedException
     {
         ParallelComputerUtil.overrideAvailableProcessors( cpu );
-        Properties properties = new Properties();
-        properties.setProperty( PARALLEL_KEY, "all" );
-        properties.setProperty( THREADCOUNT_KEY, "3" );
+        Map<String, String> properties = new HashMap<String, String>();
+        properties.put(PARALLEL_KEY, "all");
+        properties.put(THREADCOUNT_KEY, "3");
         // % percentage ratio
-        properties.setProperty( THREADCOUNTSUITES_KEY, "17" );
-        properties.setProperty( THREADCOUNTCLASSES_KEY, "34" );
-        properties.setProperty( THREADCOUNTMETHODS_KEY, "49" );
+        properties.put(THREADCOUNTSUITES_KEY, "17");
+        properties.put(THREADCOUNTCLASSES_KEY, "34");
+        properties.put(THREADCOUNTMETHODS_KEY, "49");
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         Concurrency concurrency = resolveConcurrency( params, null );
         assertTrue( params.isParallelSuites() );
@@ -665,10 +665,10 @@ public final class ParallelComputerUtilTest
     {
         // 4 * cpu to 5 * cpu threads to run test classes
         ParallelComputerUtil.overrideAvailableProcessors( cpu );
-        Properties properties = new Properties();
-        properties.setProperty( PARALLEL_KEY, "suitesAndClasses" );
-        properties.setProperty( THREADCOUNT_KEY, "6" );
-        properties.setProperty( THREADCOUNTSUITES_KEY, "2" );
+        Map<String, String> properties = new HashMap<String, String>();
+        properties.put(PARALLEL_KEY, "suitesAndClasses");
+        properties.put(THREADCOUNT_KEY, "6");
+        properties.put(THREADCOUNTSUITES_KEY, "2");
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         Concurrency concurrency = resolveConcurrency( params, null );
         assertTrue( params.isParallelSuites() );
@@ -686,10 +686,10 @@ public final class ParallelComputerUtilTest
     {
         // 4 * cpu to 5 * cpu threads to run test methods
         ParallelComputerUtil.overrideAvailableProcessors( cpu );
-        Properties properties = new Properties();
-        properties.setProperty( PARALLEL_KEY, "suitesAndMethods" );
-        properties.setProperty( THREADCOUNT_KEY, "6" );
-        properties.setProperty( THREADCOUNTSUITES_KEY, "2" );
+        Map<String, String> properties = new HashMap<String, String>();
+        properties.put(PARALLEL_KEY, "suitesAndMethods");
+        properties.put(THREADCOUNT_KEY, "6");
+        properties.put(THREADCOUNTSUITES_KEY, "2");
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         Concurrency concurrency = resolveConcurrency( params, null );
         assertTrue( params.isParallelSuites() );
@@ -707,10 +707,10 @@ public final class ParallelComputerUtilTest
     {
         // 4 * cpu to 5 * cpu threads to run test methods
         ParallelComputerUtil.overrideAvailableProcessors( cpu );
-        Properties properties = new Properties();
-        properties.setProperty( PARALLEL_KEY, "classesAndMethods" );
-        properties.setProperty( THREADCOUNT_KEY, "6" );
-        properties.setProperty( THREADCOUNTCLASSES_KEY, "2" );
+        Map<String, String> properties = new HashMap<String, String>();
+        properties.put(PARALLEL_KEY, "classesAndMethods");
+        properties.put(THREADCOUNT_KEY, "6");
+        properties.put(THREADCOUNTCLASSES_KEY, "2");
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         Concurrency concurrency = resolveConcurrency( params, null );
         assertFalse( params.isParallelSuites() );
@@ -728,11 +728,11 @@ public final class ParallelComputerUtilTest
     {
         // 8 * cpu to 13 * cpu threads to run test methods
         ParallelComputerUtil.overrideAvailableProcessors( cpu );
-        Properties properties = new Properties();
-        properties.setProperty( PARALLEL_KEY, "all" );
-        properties.setProperty( THREADCOUNT_KEY, "14" );
-        properties.setProperty( THREADCOUNTSUITES_KEY, "2" );
-        properties.setProperty( THREADCOUNTCLASSES_KEY, "4" );
+        Map<String, String> properties = new HashMap<String, String>();
+        properties.put(PARALLEL_KEY, "all");
+        properties.put(THREADCOUNT_KEY, "14");
+        properties.put(THREADCOUNTSUITES_KEY, "2");
+        properties.put(THREADCOUNTCLASSES_KEY, "4");
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         Concurrency concurrency = resolveConcurrency( params, null );
         assertTrue( params.isParallelSuites() );
@@ -749,9 +749,9 @@ public final class ParallelComputerUtilTest
         throws TestSetFailedException
     {
         ParallelComputerUtil.overrideAvailableProcessors( cpu );
-        Properties properties = new Properties();
-        properties.setProperty( PARALLEL_KEY, "suites" );
-        properties.setProperty( THREADCOUNTSUITES_KEY, "5" );
+        Map<String, String> properties = new HashMap<String, String>();
+        properties.put(PARALLEL_KEY, "suites");
+        properties.put(THREADCOUNTSUITES_KEY, "5");
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         Concurrency concurrency = resolveConcurrency( params, null );
         assertTrue( params.isParallelSuites() );
@@ -768,9 +768,9 @@ public final class ParallelComputerUtilTest
         throws TestSetFailedException
     {
         ParallelComputerUtil.overrideAvailableProcessors( cpu );
-        Properties properties = new Properties();
-        properties.setProperty( PARALLEL_KEY, "classes" );
-        properties.setProperty( THREADCOUNTCLASSES_KEY, "5" );
+        Map<String, String> properties = new HashMap<String, String>();
+        properties.put(PARALLEL_KEY, "classes");
+        properties.put(THREADCOUNTCLASSES_KEY, "5");
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         Concurrency concurrency = resolveConcurrency( params, null );
         assertFalse( params.isParallelSuites() );
@@ -787,9 +787,9 @@ public final class ParallelComputerUtilTest
         throws TestSetFailedException
     {
         ParallelComputerUtil.overrideAvailableProcessors( cpu );
-        Properties properties = new Properties();
-        properties.setProperty( PARALLEL_KEY, "methods" );
-        properties.setProperty( THREADCOUNTMETHODS_KEY, "5" );
+        Map<String, String> properties = new HashMap<String, String>();
+        properties.put(PARALLEL_KEY, "methods");
+        properties.put(THREADCOUNTMETHODS_KEY, "5");
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         Concurrency concurrency = resolveConcurrency( params, null );
         assertFalse( params.isParallelSuites() );
@@ -806,11 +806,11 @@ public final class ParallelComputerUtilTest
         throws TestSetFailedException
     {
         ParallelComputerUtil.overrideAvailableProcessors( cpu );
-        Properties properties = new Properties();
+        Map<String, String> properties = new HashMap<String, String>();
 
-        properties.setProperty( PARALLEL_KEY, "suitesAndClasses" );
-        properties.setProperty( THREADCOUNTSUITES_KEY, "5" );
-        properties.setProperty( THREADCOUNTCLASSES_KEY, "15" );
+        properties.put(PARALLEL_KEY, "suitesAndClasses");
+        properties.put(THREADCOUNTSUITES_KEY, "5");
+        properties.put(THREADCOUNTCLASSES_KEY, "15");
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         Concurrency concurrency = resolveConcurrency( params, null );
         assertTrue( params.isParallelSuites() );
@@ -823,9 +823,9 @@ public final class ParallelComputerUtilTest
 
         // Warning: this case works but is not enabled in AbstractSurefireMojo
         // Instead use the 'useUnlimitedThreads' parameter.
-        properties = new Properties();
-        properties.setProperty( PARALLEL_KEY, "suitesAndClasses" );
-        properties.setProperty( THREADCOUNTSUITES_KEY, "5" );
+        properties = new HashMap<String, String>();
+        properties.put(PARALLEL_KEY, "suitesAndClasses");
+        properties.put(THREADCOUNTSUITES_KEY, "5");
         params = new JUnitCoreParameters( properties );
         concurrency = resolveConcurrency( params, null );
         assertTrue( params.isParallelSuites() );
@@ -842,11 +842,11 @@ public final class ParallelComputerUtilTest
         throws TestSetFailedException
     {
         ParallelComputerUtil.overrideAvailableProcessors( cpu );
-        Properties properties = new Properties();
+        Map<String, String> properties = new HashMap<String, String>();
 
-        properties.setProperty( PARALLEL_KEY, "suitesAndMethods" );
-        properties.setProperty( THREADCOUNTSUITES_KEY, "5" );
-        properties.setProperty( THREADCOUNTMETHODS_KEY, "15" );
+        properties.put(PARALLEL_KEY, "suitesAndMethods");
+        properties.put(THREADCOUNTSUITES_KEY, "5");
+        properties.put(THREADCOUNTMETHODS_KEY, "15");
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         Concurrency concurrency = resolveConcurrency( params, null );
         assertTrue( params.isParallelSuites() );
@@ -859,9 +859,9 @@ public final class ParallelComputerUtilTest
 
         // Warning: this case works but is not enabled in AbstractSurefireMojo
         // Instead use the 'useUnlimitedThreads' parameter.
-        properties = new Properties();
-        properties.setProperty( PARALLEL_KEY, "suitesAndMethods" );
-        properties.setProperty( THREADCOUNTSUITES_KEY, "5" );
+        properties = new HashMap<String, String>();
+        properties.put(PARALLEL_KEY, "suitesAndMethods");
+        properties.put(THREADCOUNTSUITES_KEY, "5");
         params = new JUnitCoreParameters( properties );
         concurrency = resolveConcurrency( params, null );
         assertTrue( params.isParallelSuites() );
@@ -878,11 +878,11 @@ public final class ParallelComputerUtilTest
         throws TestSetFailedException
     {
         ParallelComputerUtil.overrideAvailableProcessors( cpu );
-        Properties properties = new Properties();
+        Map<String, String> properties = new HashMap<String, String>();
 
-        properties.setProperty( PARALLEL_KEY, "classesAndMethods" );
-        properties.setProperty( THREADCOUNTCLASSES_KEY, "5" );
-        properties.setProperty( THREADCOUNTMETHODS_KEY, "15" );
+        properties.put(PARALLEL_KEY, "classesAndMethods");
+        properties.put(THREADCOUNTCLASSES_KEY, "5");
+        properties.put(THREADCOUNTMETHODS_KEY, "15");
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         Concurrency concurrency = resolveConcurrency( params, null );
         assertFalse( params.isParallelSuites() );
@@ -895,9 +895,9 @@ public final class ParallelComputerUtilTest
 
         // Warning: this case works but is not enabled in AbstractSurefireMojo
         // Instead use the 'useUnlimitedThreads' parameter.
-        properties = new Properties();
-        properties.setProperty( PARALLEL_KEY, "classesAndMethods" );
-        properties.setProperty( THREADCOUNTCLASSES_KEY, "5" );
+        properties = new HashMap<String, String>();
+        properties.put(PARALLEL_KEY, "classesAndMethods");
+        properties.put(THREADCOUNTCLASSES_KEY, "5");
         params = new JUnitCoreParameters( properties );
         concurrency = resolveConcurrency( params, null );
         assertFalse( params.isParallelSuites() );
@@ -914,12 +914,12 @@ public final class ParallelComputerUtilTest
         throws TestSetFailedException
     {
         ParallelComputerUtil.overrideAvailableProcessors( cpu );
-        Properties properties = new Properties();
+        Map<String, String> properties = new HashMap<String, String>();
 
-        properties.setProperty( PARALLEL_KEY, "all" );
-        properties.setProperty( THREADCOUNTSUITES_KEY, "5" );
-        properties.setProperty( THREADCOUNTCLASSES_KEY, "15" );
-        properties.setProperty( THREADCOUNTMETHODS_KEY, "30" );
+        properties.put(PARALLEL_KEY, "all");
+        properties.put(THREADCOUNTSUITES_KEY, "5");
+        properties.put(THREADCOUNTCLASSES_KEY, "15");
+        properties.put(THREADCOUNTMETHODS_KEY, "30");
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         Concurrency concurrency = resolveConcurrency( params, null );
         assertTrue( params.isParallelSuites() );
@@ -932,10 +932,10 @@ public final class ParallelComputerUtilTest
 
         // Warning: these cases work but they are not enabled in AbstractSurefireMojo
         // Instead use the 'useUnlimitedThreads' parameter.
-        properties = new Properties();
-        properties.setProperty( PARALLEL_KEY, "all" );
-        properties.setProperty( THREADCOUNTSUITES_KEY, "5" );
-        properties.setProperty( THREADCOUNTCLASSES_KEY, "15" );
+        properties = new HashMap<String, String>();
+        properties.put(PARALLEL_KEY, "all");
+        properties.put(THREADCOUNTSUITES_KEY, "5");
+        properties.put(THREADCOUNTCLASSES_KEY, "15");
         params = new JUnitCoreParameters( properties );
         concurrency = resolveConcurrency( params, null );
         assertTrue( params.isParallelSuites() );
@@ -946,9 +946,9 @@ public final class ParallelComputerUtilTest
         assertThat( concurrency.classes, is( 15 * cpu ) );
         assertThat( concurrency.methods, is( Integer.MAX_VALUE ) );
 
-        properties = new Properties();
-        properties.setProperty( PARALLEL_KEY, "all" );
-        properties.setProperty( THREADCOUNTCLASSES_KEY, "15" );
+        properties = new HashMap<String, String>();
+        properties.put(PARALLEL_KEY, "all");
+        properties.put(THREADCOUNTCLASSES_KEY, "15");
         params = new JUnitCoreParameters( properties );
         concurrency = resolveConcurrency( params, null );
         assertTrue( params.isParallelSuites() );
@@ -964,9 +964,9 @@ public final class ParallelComputerUtilTest
     public void withoutShutdown()
         throws TestSetFailedException, ExecutionException, InterruptedException
     {
-        Properties properties = new Properties();
-        properties.setProperty( PARALLEL_KEY, "methods" );
-        properties.setProperty( THREADCOUNTMETHODS_KEY, "2" );
+        Map<String, String> properties = new HashMap<String, String>();
+        properties.put(PARALLEL_KEY, "methods");
+        properties.put(THREADCOUNTMETHODS_KEY, "2");
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         ParallelComputerBuilder pcBuilder = new ParallelComputerBuilder( new Logger(), params );
         ParallelComputer pc = pcBuilder.buildComputer();
@@ -987,10 +987,10 @@ public final class ParallelComputerUtilTest
     {
         // The JUnitCore returns after 2.5s.
         // The test-methods in TestClass are NOT interrupted, and return normally after 5s.
-        Properties properties = new Properties();
-        properties.setProperty( PARALLEL_KEY, "methods" );
-        properties.setProperty( THREADCOUNTMETHODS_KEY, "2" );
-        properties.setProperty( PARALLEL_TIMEOUT_KEY, Double.toString( 2.5d ) );
+        Map<String, String> properties = new HashMap<String, String>();
+        properties.put(PARALLEL_KEY, "methods");
+        properties.put(THREADCOUNTMETHODS_KEY, "2");
+        properties.put(PARALLEL_TIMEOUT_KEY, Double.toString(2.5d));
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         ParallelComputerBuilder pcBuilder = new ParallelComputerBuilder( new Logger(), params );
         ParallelComputer pc = pcBuilder.buildComputer();
@@ -1010,10 +1010,10 @@ public final class ParallelComputerUtilTest
         throws TestSetFailedException, ExecutionException, InterruptedException
     {
         // The JUnitCore returns after 2.5s, and the test-methods in TestClass are interrupted.
-        Properties properties = new Properties();
-        properties.setProperty( PARALLEL_KEY, "methods" );
-        properties.setProperty( THREADCOUNTMETHODS_KEY, "2" );
-        properties.setProperty( PARALLEL_TIMEOUTFORCED_KEY, Double.toString( 2.5d ) );
+        Map<String, String> properties = new HashMap<String, String>();
+        properties.put(PARALLEL_KEY, "methods");
+        properties.put(THREADCOUNTMETHODS_KEY, "2");
+        properties.put(PARALLEL_TIMEOUTFORCED_KEY, Double.toString(2.5d));
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         ParallelComputerBuilder pcBuilder = new ParallelComputerBuilder( new Logger(), params );
         ParallelComputer pc = pcBuilder.buildComputer();
@@ -1035,11 +1035,11 @@ public final class ParallelComputerUtilTest
         // The JUnitCore returns after 3.5s and the test-methods in TestClass are timed out after 2.5s.
         // No new test methods are scheduled for execution after 2.5s.
         // Interruption of test methods after 3.5s.
-        Properties properties = new Properties();
-        properties.setProperty( PARALLEL_KEY, "methods" );
-        properties.setProperty( THREADCOUNTMETHODS_KEY, "2" );
-        properties.setProperty( PARALLEL_TIMEOUT_KEY, Double.toString( 2.5d ) );
-        properties.setProperty( PARALLEL_TIMEOUTFORCED_KEY, Double.toString( 3.5d ) );
+        Map<String, String> properties = new HashMap<String, String>();
+        properties.put(PARALLEL_KEY, "methods");
+        properties.put(THREADCOUNTMETHODS_KEY, "2");
+        properties.put(PARALLEL_TIMEOUT_KEY, Double.toString(2.5d));
+        properties.put(PARALLEL_TIMEOUTFORCED_KEY, Double.toString(3.5d));
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         ParallelComputerBuilder pcBuilder = new ParallelComputerBuilder( new Logger(), params );
         ParallelComputer pc = pcBuilder.buildComputer();
@@ -1059,11 +1059,11 @@ public final class ParallelComputerUtilTest
         throws TestSetFailedException, ExecutionException, InterruptedException
     {
         // The JUnitCore returns after 3.5s and the test-methods in TestClass are interrupted after 3.5s.
-        Properties properties = new Properties();
-        properties.setProperty( PARALLEL_KEY, "methods" );
-        properties.setProperty( THREADCOUNTMETHODS_KEY, "2" );
-        properties.setProperty( PARALLEL_TIMEOUTFORCED_KEY, Double.toString( 3.5d ) );
-        properties.setProperty( PARALLEL_TIMEOUT_KEY, Double.toString( 4.0d ) );
+        Map<String, String> properties = new HashMap<String, String>();
+        properties.put(PARALLEL_KEY, "methods");
+        properties.put(THREADCOUNTMETHODS_KEY, "2");
+        properties.put(PARALLEL_TIMEOUTFORCED_KEY, Double.toString(3.5d));
+        properties.put(PARALLEL_TIMEOUT_KEY, Double.toString(4.0d));
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         ParallelComputerBuilder pcBuilder = new ParallelComputerBuilder( new Logger(), params );
         ParallelComputer pc = pcBuilder.buildComputer();

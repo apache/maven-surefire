@@ -117,5 +117,5 @@ public interface SurefireExecutionParameters
 
     Boolean getFailIfNoSpecifiedTests();
 
-    void setFailIfNoSpecifiedTests( Boolean failIfNoSpecifiedTests );
+    void setFailIfNoSpecifiedTests( boolean failIfNoSpecifiedTests );
 }

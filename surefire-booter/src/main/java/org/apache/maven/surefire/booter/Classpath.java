@@ -142,10 +142,7 @@ public class Classpath implements Iterable<String>
 
         Classpath classpath = (Classpath) o;
 
-        return !( unmodifiableElements != null
-                        ? !unmodifiableElements.equals( classpath.unmodifiableElements )
-                        : classpath.unmodifiableElements != null );
-
+        return unmodifiableElements.equals( classpath.unmodifiableElements );
     }
 
     public ClassLoader createClassLoader( ClassLoader parent, boolean childDelegation, boolean enableAssertions,
@@ -177,7 +174,7 @@ public class Classpath implements Iterable<String>
 
     public int hashCode()
     {
-        return unmodifiableElements != null ? unmodifiableElements.hashCode() : 0;
+        return unmodifiableElements.hashCode();
     }
 
     public String getLogMessage( String descriptor )
@@ -213,7 +210,7 @@ public class Classpath implements Iterable<String>
             }
             else
             {
-                result.append( element );
+                result.append( (String) null );
             }
         }
         return result.toString();

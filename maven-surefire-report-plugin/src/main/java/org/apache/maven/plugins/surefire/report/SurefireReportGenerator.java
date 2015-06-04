@@ -21,7 +21,6 @@ package org.apache.maven.plugins.surefire.report;
 
 import java.io.File;
 import java.text.NumberFormat;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -515,7 +514,7 @@ public class SurefireReportGenerator
             sinkCell( sink, "" );
             sink.tableRow_();
 
-            List<String> detail = (List<String>) failure.get( "detail" );
+            @SuppressWarnings( "unchecked" ) List<String> detail = (List<String>) failure.get( "detail" );
             if ( detail != null )
             {
 
@@ -524,8 +523,7 @@ public class SurefireReportGenerator
 
                 sink.tableCell();
                 SinkEventAttributeSet atts = new SinkEventAttributeSet();
-                atts.addAttribute( SinkEventAttributes.ID,
-                                   toHtmlId( testCase.getFullName() ) + "error" );
+                atts.addAttribute( SinkEventAttributes.ID, toHtmlId( testCase.getFullName() ) + "error" );
                 atts.addAttribute( SinkEventAttributes.STYLE, "display:none;" );
                 sink.unknown( "div", new Object[]{ HtmlMarkup.TAG_TYPE_START }, atts );
 
@@ -560,119 +558,112 @@ public class SurefireReportGenerator
         }
     }
 
-    private void constructFailureDetails( Sink sink, ResourceBundle bundle, List<ReportTestCase> failureList )
+    private void constructFailureDetails( Sink sink, ResourceBundle bundle, List<ReportTestCase> failures )
     {
-        Iterator<ReportTestCase> failIter = failureList.iterator();
+        sink.section1();
+        sink.sectionTitle1();
+        sink.text( bundle.getString( "report.surefire.label.failuredetails" ) );
+        sink.sectionTitle1_();
 
-        if ( failIter != null )
+        sinkAnchor( sink, "Failure_Details" );
+
+        constructHotLinks( sink, bundle );
+
+        sinkLineBreak( sink );
+
+        sink.table();
+
+        sink.tableRows( new int[]{ LEFT, LEFT }, true );
+
+        for ( ReportTestCase tCase : failures )
         {
-            sink.section1();
-            sink.sectionTitle1();
-            sink.text( bundle.getString( "report.surefire.label.failuredetails" ) );
-            sink.sectionTitle1_();
+            Map<String, Object> failure = tCase.getFailure();
 
-            sinkAnchor( sink, "Failure_Details" );
+            sink.tableRow();
 
-            constructHotLinks( sink, bundle );
+            sink.tableCell();
 
-            sinkLineBreak( sink );
+            String type = (String) failure.get( "type" );
+            sinkIcon( type, sink );
 
-            sink.table();
+            sink.tableCell_();
 
-            sink.tableRows( new int[]{ LEFT, LEFT }, true );
+            sinkCellAnchor( sink, tCase.getName(), toHtmlId( tCase.getFullName() ) );
 
-            while ( failIter.hasNext() )
+            sink.tableRow_();
+
+            String message = (String) failure.get( "message" );
+
+            sink.tableRow();
+
+            sinkCell( sink, "" );
+
+            StringBuilder sb = new StringBuilder();
+            sb.append( type );
+
+            if ( message != null )
             {
-                ReportTestCase tCase = failIter.next();
+                sb.append( ": " );
+                sb.append( message );
+            }
 
-                Map<String, Object> failure = tCase.getFailure();
+            sinkCell( sink, sb.toString() );
 
-                sink.tableRow();
+            sink.tableRow_();
 
-                sink.tableCell();
+            @SuppressWarnings( "unchecked" ) List<String> detail = (List<String>) failure.get( "detail" );
+            if ( detail != null )
+            {
+                boolean firstLine = true;
 
-                String type = (String) failure.get( "type" );
-                sinkIcon( type, sink );
-
-                sink.tableCell_();
-
-                sinkCellAnchor( sink, tCase.getName(), toHtmlId( tCase.getFullName() ) );
-
-                sink.tableRow_();
-
-                String message = (String) failure.get( "message" );
+                String techMessage = "";
+                for ( String line : detail )
+                {
+                    techMessage = line;
+                    if ( firstLine )
+                    {
+                        firstLine = false;
+                    }
+                    else
+                    {
+                        sink.text( "    " );
+                    }
+                }
 
                 sink.tableRow();
 
                 sinkCell( sink, "" );
 
-                StringBuilder sb = new StringBuilder();
-                sb.append( type );
+                sink.tableCell();
+                SinkEventAttributeSet atts = new SinkEventAttributeSet();
+                atts.addAttribute( SinkEventAttributes.ID, tCase.getName() + "error" );
+                sink.unknown( "div", new Object[]{ HtmlMarkup.TAG_TYPE_START }, atts );
 
-                if ( message != null )
+                if ( xrefLocation != null )
                 {
-                    sb.append( ": " );
-                    sb.append( message );
-                }
+                    String path = tCase.getFullClassName().replace( '.', '/' );
 
-                sinkCell( sink, sb.toString() );
+                    sink.link( xrefLocation + "/" + path + ".html#"
+                                    + getErrorLineNumber( tCase.getFullName(), techMessage ) );
+                }
+                sink.text(
+                    tCase.getFullClassName() + ":" + getErrorLineNumber( tCase.getFullName(), techMessage ) );
+
+                if ( xrefLocation != null )
+                {
+                    sink.link_();
+                }
+                sink.unknown( "div", new Object[]{ HtmlMarkup.TAG_TYPE_END }, null );
+
+                sink.tableCell_();
 
                 sink.tableRow_();
-
-                List<String> detail = (List<String>) failure.get( "detail" );
-                if ( detail != null )
-                {
-                    boolean firstLine = true;
-
-                    String techMessage = "";
-                    for ( String line : detail )
-                    {
-                        techMessage = line;
-                        if ( firstLine )
-                        {
-                            firstLine = false;
-                        }
-                        else
-                        {
-                            sink.text( "    " );
-                        }
-                    }
-
-                    sink.tableRow();
-
-                    sinkCell( sink, "" );
-
-                    sink.tableCell();
-                    SinkEventAttributeSet atts = new SinkEventAttributeSet();
-                    atts.addAttribute( SinkEventAttributes.ID, tCase.getName() + "error" );
-                    sink.unknown( "div", new Object[]{ HtmlMarkup.TAG_TYPE_START }, atts );
-
-                    if ( xrefLocation != null )
-                    {
-                        String path = tCase.getFullClassName().replace( '.', '/' );
-
-                        sink.link( xrefLocation + "/" + path + ".html#"
-                                        + getErrorLineNumber( tCase.getFullName(), techMessage ) );
-                    }
-                    sink.text(
-                        tCase.getFullClassName() + ":" + getErrorLineNumber( tCase.getFullName(), techMessage ) );
-
-                    if ( xrefLocation != null )
-                    {
-                        sink.link_();
-                    }
-                    sink.unknown( "div", new Object[]{ HtmlMarkup.TAG_TYPE_END }, null );
-
-                    sink.tableCell_();
-
-                    sink.tableRow_();
-                }
             }
-
-            sink.tableRows_();
-
-            sink.table_();
         }
+
+        sink.tableRows_();
+
+        sink.table_();
 
         sinkLineBreak( sink );
 
@@ -794,28 +785,24 @@ public class SurefireReportGenerator
 
     private static String javascriptToggleDisplayCode()
     {
-        final StringBuilder str = new StringBuilder( 64 );
 
         // the javascript code is emitted within a commented CDATA section
         // so we have to start with a newline and comment the CDATA closing in the end
-        str.append( "\n" );
-        str.append( "function toggleDisplay(elementId) {\n" );
-        str.append( " var elm = document.getElementById(elementId + 'error');\n" );
-        str.append( " if (elm && typeof elm.style != \"undefined\") {\n" );
-        str.append( " if (elm.style.display == \"none\") {\n" );
-        str.append( " elm.style.display = \"\";\n" );
-        str.append( " document.getElementById(elementId + 'off').style.display = \"none\";\n" );
-        str.append( " document.getElementById(elementId + 'on').style.display = \"inline\";\n" );
-        str.append( " }" );
-        str.append( " else if (elm.style.display == \"\") {" );
-        str.append( " elm.style.display = \"none\";\n" );
-        str.append( " document.getElementById(elementId + 'off').style.display = \"inline\";\n" );
-        str.append( " document.getElementById(elementId + 'on').style.display = \"none\";\n" );
-        str.append( " } \n" );
-        str.append( " } \n" );
-        str.append( " }\n" );
-        str.append( "//" );
 
-        return str.toString();
+        return "\n" + "function toggleDisplay(elementId) {\n"
+                + " var elm = document.getElementById(elementId + 'error');\n"
+                + " if (elm && typeof elm.style != \"undefined\") {\n"
+                + " if (elm.style.display == \"none\") {\n"
+                + " elm.style.display = \"\";\n"
+                + " document.getElementById(elementId + 'off').style.display = \"none\";\n"
+                + " document.getElementById(elementId + 'on').style.display = \"inline\";\n"
+                + " }" + " else if (elm.style.display == \"\") {"
+                + " elm.style.display = \"none\";\n"
+                + " document.getElementById(elementId + 'off').style.display = \"inline\";\n"
+                + " document.getElementById(elementId + 'on').style.display = \"none\";\n"
+                + " } \n"
+                + " } \n"
+                + " }\n"
+                + "//";
     }
 }

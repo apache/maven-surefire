@@ -22,7 +22,7 @@ package org.apache.maven.surefire.util;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Properties;
+import java.util.Map;
 
 /**
  * @author Kristian Rosenvold
@@ -49,21 +49,21 @@ public class DefaultScanResult
         return files.get( index );
     }
 
-    public void writeTo( Properties properties )
+    public void writeTo( Map<String, String> properties )
     {
         for ( int i = 0, size = files.size(); i < size; i++ )
         {
-            properties.setProperty( SCAN_RESULT_NUMBER + i, files.get( i ) );
+            properties.put( SCAN_RESULT_NUMBER + i, files.get( i ) );
         }
     }
 
-    public static DefaultScanResult from( Properties properties )
+    public static DefaultScanResult from( Map<String, String> properties )
     {
         List<String> result = new ArrayList<String>();
         int i = 0;
         while ( true )
         {
-            String item = properties.getProperty( SCAN_RESULT_NUMBER + ( i++ ) );
+            String item = properties.get( SCAN_RESULT_NUMBER + ( i++ ) );
             if ( item == null )
             {
                 return new DefaultScanResult( result );

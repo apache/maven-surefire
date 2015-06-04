@@ -39,7 +39,8 @@ public class Test1
             do
             {
                 Thread.sleep( ms );
-            } while ( System.currentTimeMillis() < target);
+            }
+            while ( System.currentTimeMillis() < target );
         }
         catch ( InterruptedException e )
         {
@@ -50,21 +51,24 @@ public class Test1
     @Test
     public void testSleep200()
     {
-        System.out.println( Thread.currentThread().getName() + " Test1.sleep200 started @ " + System.currentTimeMillis() );
+        System.out.println(
+            Thread.currentThread().getName() + " Test1.sleep200 started @ " + System.currentTimeMillis() );
         sleep( 200 );
     }
 
     @Test
     public void testSleep400()
     {
-        System.out.println( Thread.currentThread().getName() + " Test1.sleep400 started @ " + System.currentTimeMillis() );
+        System.out.println(
+            Thread.currentThread().getName() + " Test1.sleep400 started @ " + System.currentTimeMillis() );
         sleep( 400 );
     }
 
     @Test
     public void testSleep600()
     {
-        System.out.println( Thread.currentThread().getName() + " Test1.sleep600 started @ " + System.currentTimeMillis() );
+        System.out.println(
+            Thread.currentThread().getName() + " Test1.sleep600 started @ " + System.currentTimeMillis() );
         sleep( 600 );
     }
 

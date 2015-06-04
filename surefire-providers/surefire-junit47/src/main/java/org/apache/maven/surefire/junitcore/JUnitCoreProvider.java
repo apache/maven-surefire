@@ -87,13 +87,8 @@ public class JUnitCoreProvider
         testResolver = providerParameters.getTestRequest().getTestListResolver();
         rerunFailingTestsCount = providerParameters.getTestRequest().getRerunFailingTestsCount();
         customRunListeners = JUnit4RunListenerFactory.createCustomListeners(
-            providerParameters.getProviderProperties().getProperty( "listener" ) );
+            providerParameters.getProviderProperties().get( "listener" ) );
         jUnit48Reflector = new JUnit48Reflector( testClassLoader );
-    }
-
-    public Boolean isRunnable()
-    {
-        return Boolean.TRUE;
     }
 
     public Iterator getSuites()
@@ -147,12 +142,12 @@ public class JUnitCoreProvider
             for ( int i = 0; i < rerunFailingTestsCount && !testFailureListener.getAllFailures().isEmpty(); i++ )
             {
                 Map<Class<?>, Set<String>> failingTests =
-                    JUnit4ProviderUtil.generateFailingTests( testFailureListener.getAllFailures(), testsToRun );
+                    JUnit4ProviderUtil.generateFailingTests( testFailureListener.getAllFailures(), testClassLoader );
                 testFailureListener.reset();
                 final FilterFactory filterFactory = new FilterFactory( testClassLoader );
                 Filter failingMethodsFilter = filterFactory.createFailingMethodFilter( failingTests );
                 JUnitCoreWrapper.execute( consoleLogger, testsToRun, jUnitCoreParameters, customRunListeners,
-                                          filterFactory.and( filter, failingMethodsFilter ) );
+                                          failingMethodsFilter );
             }
         }
         return reporterFactory.close();

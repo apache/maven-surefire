@@ -29,6 +29,9 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 
+import static org.hamcrest.CoreMatchers.anyOf;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.endsWith;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -80,6 +83,22 @@ public class Surefire747MethodParallelWithSuiteCountIT
         long min = 750, max = 1250;
         assertTrue( String.format( "duration %d should be between %d and %d millis", duration, min, max ),
                     duration > min && duration < max );
+
+        for ( String line : validator.loadLogLines() )
+        {
+            if ( line.startsWith( "Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed:" ) )
+            {
+                assertThat( line, anyOf( // 0.5 sec, the delta -1.0/+0.3 can be varying depending on CI jobs
+                        containsString( "Time elapsed: 0.4" ),
+                        containsString( "Time elapsed: 0.5" ),
+                        containsString( "Time elapsed: 0.6" ),
+                        containsString( "Time elapsed: 0.7" ),
+                        containsString( "Time elapsed: 0.8" ) ) );
+                assertThat( line, anyOf(
+                        endsWith(" sec - in surefire747.SuiteTest1" ),
+                        endsWith(" sec - in surefire747.SuiteTest2" ) ) );
+            }
+        }
     }
 
     @Test

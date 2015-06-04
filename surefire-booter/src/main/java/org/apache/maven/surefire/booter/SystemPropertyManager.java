@@ -24,7 +24,9 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author Kristian Rosenvold
@@ -42,18 +44,22 @@ public class SystemPropertyManager
     public static PropertiesWrapper loadProperties( InputStream inStream )
         throws IOException
     {
-        Properties p = new Properties();
-
         try
         {
+            Properties p = new Properties();
             p.load( inStream );
+            Map<String, String> map = new ConcurrentHashMap<String, String>( p.size() );
+            // @todo use .stringPropertyNames() JDK6 instead of .keySet()
+            for ( Map.Entry<?, ?> entry : p.entrySet() )
+            {
+                map.put( (String) entry.getKey(), (String) entry.getValue() );
+            }
+            return new PropertiesWrapper( map );
         }
         finally
         {
-            close( inStream );
+            close( inStream ); // @todo use try-with-resources JDK7, search in all code
         }
-
-        return new PropertiesWrapper( p );
     }
 
     private static PropertiesWrapper loadProperties( File file )

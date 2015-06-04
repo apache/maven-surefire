@@ -41,8 +41,8 @@ public class TestNGMapConfiguratorTest
         throws Exception
     {
         Map convertedOptions = getConvertedOptions( "mixed", "true" );
-        Boolean bool = (Boolean) convertedOptions.get( "-mixed" );
-        assertTrue( bool.booleanValue() );
+        boolean bool = (Boolean) convertedOptions.get( "-mixed" );
+        assertTrue( bool );
     }
 
     public void testListenersOnSeparateLines()
@@ -69,15 +69,15 @@ public class TestNGMapConfiguratorTest
         throws Exception
     {
         Map convertedOptions = getConvertedOptions( "group-by-instances", "true" );
-        Boolean bool = (Boolean) convertedOptions.get( "-group-by-instances" );
-        assertTrue( bool.booleanValue() );
+        boolean bool = (Boolean) convertedOptions.get( "-group-by-instances" );
+        assertTrue( bool );
     }
 
     private Map getConvertedOptions( String key, String value )
         throws TestSetFailedException
     {
         TestNGMapConfigurator testNGMapConfigurator = new TestNGMapConfigurator();
-        Map raw = new HashMap();
+        Map<String, String> raw = new HashMap<String, String>();
         raw.put( key, value );
         return testNGMapConfigurator.getConvertedOptions( raw );
     }

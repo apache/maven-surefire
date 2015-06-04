@@ -106,7 +106,7 @@ public class HelperAssertions
      */
     public static IntegrationTestSuiteResults parseReportList( List<ReportTestSuite> reports )
     {
-        Assert.assertTrue( "No reports!", reports.size() > 0 );
+        Assert.assertTrue( "No reports!", !reports.isEmpty() );
         int total = 0, errors = 0, failures = 0, skipped = 0, flakes = 0;
         for ( ReportTestSuite report : reports )
         {

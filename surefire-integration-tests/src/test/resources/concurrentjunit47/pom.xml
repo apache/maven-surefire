@@ -57,7 +57,8 @@
         <artifactId>maven-surefire-plugin</artifactId>
           <configuration>
               <parallel>methods</parallel>
-              <threadCount>2</threadCount>
+              <perCoreThreadCount>false</perCoreThreadCount>
+              <threadCount>3</threadCount>
           </configuration>
       </plugin>
     </plugins>

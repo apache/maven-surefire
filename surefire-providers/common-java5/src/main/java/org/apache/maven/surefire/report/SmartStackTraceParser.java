@@ -92,7 +92,6 @@ public class SmartStackTraceParser
         StringBuilder result = new StringBuilder();
         List<StackTraceElement> stackTraceElements = focusOnClass( stackTrace, testClass );
         Collections.reverse( stackTraceElements );
-        StackTraceElement stackTraceElement;
         if ( stackTraceElements.isEmpty() )
         {
             result.append( simpleName );
@@ -105,7 +104,7 @@ public class SmartStackTraceParser
         {
             for ( int i = 0; i < stackTraceElements.size(); i++ )
             {
-                stackTraceElement = stackTraceElements.get( i );
+                final StackTraceElement stackTraceElement = stackTraceElements.get( i );
                 if ( i == 0 )
                 {
                     result.append( simpleName );
@@ -117,7 +116,6 @@ public class SmartStackTraceParser
                     {
                         result.append( "." );
                     }
-
                 }
                 if ( !stackTraceElement.getClassName().equals( testClassName ) )
                 {

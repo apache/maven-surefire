@@ -36,6 +36,7 @@ import org.testng.xml.XmlTest;
 import java.io.File;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -64,13 +65,15 @@ public class TestNGExecutor
         // noop
     }
 
-    public static void run( Class[] testClasses, String testSourceDirectory, Map options, RunListener reportManager,
-                            TestNgTestSuite suite, File reportsDirectory, TestListResolver methodFilter )
+    public static void run( Class<?>[] testClasses, String testSourceDirectory,
+                            Map<String, String> options, // string,string because TestNGMapConfigurator#configure()
+                            RunListener reportManager, TestNgTestSuite suite, File reportsDirectory,
+                            TestListResolver methodFilter )
         throws TestSetFailedException
     {
         TestNG testng = new TestNG( true );
 
-        Configurator configurator = getConfigurator( (String) options.get( "testng.configurator" ) );
+        Configurator configurator = getConfigurator( options.get( "testng.configurator" ) );
         System.out.println( "Configuring TestNG with: " + configurator.getClass().getSimpleName() );
 
         XmlMethodSelector groupMatchingSelector = createGroupMatchingSelector( options );
@@ -79,7 +82,7 @@ public class TestNGExecutor
         Map<String, SuiteAndNamedTests> suitesNames = new HashMap<String, SuiteAndNamedTests>();
 
         List<XmlSuite> xmlSuites = new ArrayList<XmlSuite>();
-        for ( Class testClass : testClasses )
+        for ( Class<?> testClass : testClasses )
         {
             TestMetadata metadata = findTestMetadata( testClass );
 
@@ -115,7 +118,7 @@ public class TestNGExecutor
         testng.run();
     }
 
-    private static TestMetadata findTestMetadata( Class testClass )
+    private static TestMetadata findTestMetadata( Class<?> testClass )
     {
         TestMetadata result = new TestMetadata();
         if ( HAS_TEST_ANNOTATION_ON_CLASSPATH )
@@ -209,11 +212,11 @@ public class TestNGExecutor
     }
 
     @SuppressWarnings( "checkstyle:magicnumber" )
-    private static XmlMethodSelector createGroupMatchingSelector( Map options )
+    private static XmlMethodSelector createGroupMatchingSelector( Map<String, String> options )
         throws TestSetFailedException
     {
-        String groups = (String) options.get( ProviderParameterNames.TESTNG_GROUPS_PROP );
-        String excludedGroups = (String) options.get( ProviderParameterNames.TESTNG_EXCLUDEDGROUPS_PROP );
+        final String groups = options.get( ProviderParameterNames.TESTNG_GROUPS_PROP );
+        final String excludedGroups = options.get( ProviderParameterNames.TESTNG_EXCLUDEDGROUPS_PROP );
 
         if ( groups == null && excludedGroups == null )
         {
@@ -221,13 +224,13 @@ public class TestNGExecutor
         }
 
         // the class is available in the testClassPath
-        String clazzName = "org.apache.maven.surefire.testng.utils.GroupMatcherMethodSelector";
+        final String clazzName = "org.apache.maven.surefire.testng.utils.GroupMatcherMethodSelector";
         try
         {
-            Class clazz = Class.forName( clazzName );
+            Class<?> clazz = Class.forName( clazzName );
 
             // HORRIBLE hack, but TNG doesn't allow us to setup a method selector instance directly.
-            Method method = clazz.getMethod( "setGroups", new Class[] { String.class, String.class } );
+            Method method = clazz.getMethod( "setGroups", String.class, String.class );
             method.invoke( null, groups, excludedGroups );
         }
         catch ( Exception e )
@@ -244,12 +247,13 @@ public class TestNGExecutor
         return xms;
     }
 
-    public static void run( List<String> suiteFiles, String testSourceDirectory, Map options,
+    public static void run( List<String> suiteFiles, String testSourceDirectory,
+                            Map<String, String> options, // string,string because TestNGMapConfigurator#configure()
                             RunListener reportManager, TestNgTestSuite suite, File reportsDirectory )
         throws TestSetFailedException
     {
         TestNG testng = new TestNG( true );
-        Configurator configurator = getConfigurator( (String) options.get( "testng.configurator" ) );
+        Configurator configurator = getConfigurator( options.get( "testng.configurator" ) );
         configurator.configure( testng, options );
         postConfigure( testng, testSourceDirectory, reportManager, suite, reportsDirectory );
         testng.setTestSuites( suiteFiles );
@@ -303,19 +307,21 @@ public class TestNGExecutor
         {
             Class.forName( "org.testng.internal.IResultListener" );
             Class c = Class.forName( "org.apache.maven.surefire.testng.ConfigurationAwareTestNGReporter" );
-            try
-            {
-                Constructor ctor = c.getConstructor( new Class[] { RunListener.class, TestNgTestSuite.class } );
-                return (TestNGReporter) ctor.newInstance( reportManager, suite );
-            }
-            catch ( Exception e )
-            {
-                throw new RuntimeException( "Bug in ConfigurationAwareTestNGReporter", e );
-            }
+            @SuppressWarnings( "unchecked" ) Constructor<?> ctor =
+                    c.getConstructor( RunListener.class, TestNgTestSuite.class );
+            return (TestNGReporter) ctor.newInstance( reportManager, suite );
+        }
+        catch ( InvocationTargetException e )
+        {
+            throw new RuntimeException( "Bug in ConfigurationAwareTestNGReporter", e.getCause() );
         }
         catch ( ClassNotFoundException e )
         {
             return new TestNGReporter( reportManager );
+        }
+        catch ( Exception e )
+        {
+            throw new RuntimeException( "Bug in ConfigurationAwareTestNGReporter", e );
         }
     }
 

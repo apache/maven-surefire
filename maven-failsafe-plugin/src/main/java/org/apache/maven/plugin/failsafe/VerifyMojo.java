@@ -157,7 +157,7 @@ public class VerifyMojo
             RunResult summary;
             try
             {
-                String encoding;
+                final String encoding;
                 if ( StringUtils.isEmpty( this.encoding ) )
                 {
                     getLog().warn(
@@ -171,19 +171,13 @@ public class VerifyMojo
                     encoding = this.encoding;
                 }
 
-                if ( !summaryFile.isFile() && summaryFiles != null )
+                summary = existsSummaryFile() ? readSummary( encoding, summaryFile ) : RunResult.noTestsRun();
+
+                if ( existsSummaryFiles() )
                 {
-                    summary = RunResult.noTestsRun();
-                }
-                else
-                {
-                    summary = readSummary( encoding, summaryFile );
-                }
-                if ( summaryFiles != null )
-                {
-                    for ( File file : summaryFiles )
+                    for ( final File summaryFile : summaryFiles )
                     {
-                        summary = summary.aggregate( readSummary( encoding, file ) );
+                        summary = summary.aggregate( readSummary( encoding, summaryFile ) );
                     }
                 }
             }
@@ -232,6 +226,10 @@ public class VerifyMojo
             {
                 throw new MojoFailureException( "No tests to run!" );
             }
+        }
+
+        if ( !existsSummary() )
+        {
             getLog().info( "No tests to run." );
             return false;
         }
@@ -336,9 +334,24 @@ public class VerifyMojo
         return failIfNoTests;
     }
 
-    public void setFailIfNoTests( Boolean failIfNoTests )
+    public void setFailIfNoTests( boolean failIfNoTests )
     {
         this.failIfNoTests = failIfNoTests;
+    }
+
+    private boolean existsSummaryFile()
+    {
+        return summaryFile != null && summaryFile.isFile();
+    }
+
+    private boolean existsSummaryFiles()
+    {
+        return summaryFiles != null && summaryFiles.length != 0;
+    }
+
+    private boolean existsSummary()
+    {
+        return existsSummaryFile() || existsSummaryFiles();
     }
 
 }

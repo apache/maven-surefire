@@ -167,7 +167,7 @@ public class ForkedBooter
     private static ReporterFactory createForkingReporterFactory( ProviderConfiguration providerConfiguration,
                                                                  PrintStream originalSystemOut )
     {
-        final Boolean trimStackTrace = providerConfiguration.getReporterConfiguration().isTrimStackTrace();
+        final boolean trimStackTrace = providerConfiguration.getReporterConfiguration().isTrimStackTrace();
         return SurefireReflector.createForkingReporterFactoryInCurrentClassLoader( trimStackTrace, originalSystemOut );
     }
 

@@ -24,7 +24,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.SimpleReportEntry;
@@ -53,10 +52,6 @@ public class TestSet
 
     private final AtomicBoolean played = new AtomicBoolean();
 
-    private volatile LogicalStream beforeClass;
-
-    private volatile LogicalStream afterClass;
-
     public TestSet( Description testSetDescription )
     {
         this.testSetDescription = testSetDescription;
@@ -64,40 +59,41 @@ public class TestSet
 
     public void replay( RunListener target )
     {
-        if ( !played.compareAndSet( false, true ) )
+        if ( played.compareAndSet( false, true ) )
         {
-            return;
-        }
-
-        try
-        {
-            ReportEntry report = createReportEntry( null );
-
-            target.testSetStarting( report );
-
-            if ( beforeClass != null )
+            try
             {
-                beforeClass.writeDetails( ( (ConsoleOutputReceiver) target ) );
-            }
+                ReportEntry report = createReportEntry( null );
 
-            int elapsed = 0;
-            for ( TestMethod testMethod : testMethods )
+                target.testSetStarting( report );
+
+                long startTile = 0;
+                long endTime = 0;
+                for ( TestMethod testMethod : testMethods )
+                {
+                    if ( startTile == 0 || testMethod.getStartTime() < startTile )
+                    {
+                        startTile = testMethod.getStartTime();
+                    }
+
+                    if ( endTime == 0 || testMethod.getEndTime() > endTime )
+                    {
+                        endTime = testMethod.getEndTime();
+                    }
+
+                    testMethod.replay( target );
+                }
+
+                int elapsed = (int) ( endTime - startTile );
+
+                report = createReportEntry( elapsed );
+
+                target.testSetCompleted( report );
+            }
+            catch ( Exception e )
             {
-                elapsed += testMethod.getElapsed();
-                testMethod.replay( target );
+                throw new RuntimeException( e );
             }
-
-            report = createReportEntry( elapsed );
-
-            if ( afterClass != null )
-            {
-                afterClass.writeDetails( ( (ConsoleOutputReceiver) target ) );
-            }
-            target.testSetCompleted( report );
-        }
-        catch ( Exception e )
-        {
-            throw new RuntimeException( e );
         }
     }
 
@@ -111,9 +107,18 @@ public class TestSet
 
     private ReportEntry createReportEntry( Integer elapsed )
     {
-        boolean isJunit3 = testSetDescription.getTestClass() == null;
-        String classNameToUse =
-            isJunit3 ? testSetDescription.getChildren().get( 0 ).getClassName() : testSetDescription.getClassName();
+        final String className = testSetDescription.getClassName();
+        final boolean isJunit3 = className == null;
+        final String classNameToUse;
+        if ( isJunit3 )
+        {
+            List<Description> children = testSetDescription.getChildren();
+            classNameToUse = children.isEmpty() ? testSetDescription.toString() : children.get( 0 ).getClassName();
+        }
+        else
+        {
+            classNameToUse = className;
+        }
         return new SimpleReportEntry( classNameToUse, classNameToUse, elapsed );
     }
 
@@ -159,26 +164,4 @@ public class TestSet
     {
         return TEST_SET.get();
     }
-
-    public LogicalStream getClassLevelLogicalStream()
-    {
-        if ( numberOfCompletedChildren.get() > 0 )
-        {
-            if ( afterClass == null )
-            {
-                afterClass = new LogicalStream();
-            }
-            return afterClass;
-        }
-        else
-        {
-            if ( beforeClass == null )
-            {
-                beforeClass = new LogicalStream();
-            }
-            return beforeClass;
-        }
-    }
-
-
 }

@@ -20,7 +20,7 @@ package org.apache.maven.surefire.booter;
  */
 
 
-import java.util.Properties;
+import java.util.Map;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.RunOrderParameters;
@@ -36,7 +36,7 @@ public class Foo
 {
     DirectoryScannerParameters directoryScannerParameters;
 
-    Properties providerProperties;
+    Map<String, String> providerProperties;
 
     ReporterConfiguration reporterConfiguration;
 
@@ -68,7 +68,7 @@ public class Foo
         return called;
     }
 
-    public void setProviderProperties( Properties providerProperties )
+    public void setProviderProperties( Map<String, String> providerProperties )
     {
         this.providerProperties = providerProperties;
         this.called = true;

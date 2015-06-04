@@ -19,11 +19,12 @@ package org.apache.maven.surefire.util;
  * under the License.
  */
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
-
 import junit.framework.TestCase;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Kristian Rosenvold
@@ -36,7 +37,7 @@ public class ScanResultTest
     {
         List<String> files = Arrays.asList( "abc", "cde" );
         DefaultScanResult scanResult = new DefaultScanResult( files );
-        Properties serialized = new Properties();
+        Map<String, String> serialized = new HashMap<String, String>();
         scanResult.writeTo( serialized );
 
         DefaultScanResult read = DefaultScanResult.from( serialized );

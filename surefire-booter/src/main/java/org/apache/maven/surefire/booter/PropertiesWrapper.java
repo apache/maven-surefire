@@ -21,23 +21,19 @@ package org.apache.maven.surefire.booter;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import org.apache.maven.surefire.util.internal.StringUtils;
 
 /**
- * Makes java.util.Properties behave like it's 2013
- *
  * @author Kristian Rosenvold
  */
 public class PropertiesWrapper
     implements KeyValueSource
 {
-    private final Properties properties;
+    private final Map<String, String> properties;
 
-    public PropertiesWrapper( Properties properties )
+    public PropertiesWrapper( Map<String, String> properties )
     {
         if ( properties == null )
         {
@@ -46,39 +42,37 @@ public class PropertiesWrapper
         this.properties = properties;
     }
 
-    public Properties getProperties()
+    public Map<String, String> getProperties()
     {
         return properties;
     }
 
     public void setAsSystemProperties()
     {
-        for ( Object o : properties.keySet() )
+        for ( Map.Entry<String, String> entry : properties.entrySet() )
         {
-            String key = (String) o;
-
-            System.setProperty( key, properties.getProperty( key ) );
+            System.setProperty( entry.getKey(), entry.getValue() );
         }
     }
 
     public String getProperty( String key )
     {
-        return properties.getProperty( key );
+        return properties.get( key );
     }
 
     public boolean getBooleanProperty( String propertyName )
     {
-        return Boolean.valueOf( properties.getProperty( propertyName ) );
+        return Boolean.valueOf( properties.get( propertyName ) );
     }
 
-    public Boolean getBooleanObjectProperty( String propertyName )
+    public boolean getBooleanObjectProperty( String propertyName )
     {
-        return Boolean.valueOf( properties.getProperty( propertyName ) );
+        return Boolean.valueOf( properties.get( propertyName ) );
     }
 
     public int getIntProperty( String propertyName )
     {
-        return Integer.parseInt( properties.getProperty( propertyName ) );
+        return Integer.parseInt( properties.get( propertyName ) );
     }
 
     public File getFileProperty( String key )
@@ -94,13 +88,10 @@ public class PropertiesWrapper
 
     public List<String> getStringList( String propertyPrefix )
     {
-        String value;
         List<String> result = new ArrayList<String>();
-
-        int i = 0;
-        while ( true )
+        for ( int i = 0; ; i++ )
         {
-            value = getProperty( propertyPrefix + ( i++ ) );
+            String value = getProperty( propertyPrefix + i );
 
             if ( value == null )
             {
@@ -120,14 +111,17 @@ public class PropertiesWrapper
     public TypeEncodedValue getTypeEncodedValue( String key )
     {
         String typeEncoded = getProperty( key );
-        if ( typeEncoded == null )
+        if ( typeEncoded != null )
+        {
+            int typeSep = typeEncoded.indexOf( "|" );
+            String type = typeEncoded.substring( 0, typeSep );
+            String value = typeEncoded.substring( typeSep + 1 );
+            return new TypeEncodedValue( type, value );
+        }
+        else
         {
             return null;
         }
-        int typeSep = typeEncoded.indexOf( "|" );
-        String type = typeEncoded.substring( 0, typeSep );
-        String value = typeEncoded.substring( typeSep + 1 );
-        return new TypeEncodedValue( type, value );
     }
 
 
@@ -140,7 +134,7 @@ public class PropertiesWrapper
     public void setClasspath( String prefix, Classpath classpath )
     {
         List classpathElements = classpath.getClassPath();
-        for ( int i = 0; i < classpathElements.size(); ++i )
+        for ( int i = 0, size = classpathElements.size(); i < size; ++i )
         {
             String element = (String) classpathElements.get( i );
             setProperty( prefix + i, element );
@@ -152,44 +146,35 @@ public class PropertiesWrapper
     {
         if ( value != null )
         {
-            properties.setProperty( key, value );
+            properties.put( key, value );
         }
     }
 
     public void addList( List items, String propertyPrefix )
     {
-        if ( items == null || items.size() == 0 )
+        if ( items != null && !items.isEmpty() )
         {
-            return;
-        }
-        int i = 0;
-        for ( Object item : items )
-        {
-            if ( item == null )
+            int i = 0;
+            for ( Object item : items )
             {
-                throw new NullPointerException( propertyPrefix + i + " has null value" );
+                if ( item == null )
+                {
+                    throw new NullPointerException( propertyPrefix + i + " has null value" );
+                }
+
+                String[] stringArray = StringUtils.split( item.toString(), "," );
+
+                for ( String aStringArray : stringArray )
+                {
+                    properties.put( propertyPrefix + i, aStringArray );
+                    i++;
+                }
             }
-
-            String[] stringArray = StringUtils.split( item.toString(), "," );
-
-            for ( String aStringArray : stringArray )
-            {
-                properties.setProperty( propertyPrefix + i, aStringArray );
-                i++;
-            }
-
         }
     }
 
-    public void copyTo( Map target )
+    public void copyTo( Map<Object, Object> target )
     {
-        Iterator iter = properties.keySet().iterator();
-        Object key;
-        while ( iter.hasNext() )
-        {
-            key = iter.next();
-            //noinspection unchecked
-            target.put( key, properties.get( key ) );
-        }
+        target.putAll( properties );
     }
 }

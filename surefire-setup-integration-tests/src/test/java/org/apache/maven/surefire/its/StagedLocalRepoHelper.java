@@ -21,7 +21,6 @@ package org.apache.maven.surefire.its;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import org.apache.maven.settings.Profile;
@@ -116,9 +115,9 @@ public final class StagedLocalRepoHelper
             settings.addActiveProfile( profile.getId() );
             settings.setLocalRepository( stagedLocalRepo.getAbsolutePath() );
 
-            for ( Iterator<Profile> it = settings.getProfiles().iterator(); it.hasNext(); )
+            for ( Object o : settings.getProfiles() )
             {
-                profile = it.next();
+                profile = (Profile) o;
                 disableUpdates( profile.getRepositories() );
                 disableUpdates( profile.getPluginRepositories() );
             }
@@ -137,11 +136,9 @@ public final class StagedLocalRepoHelper
     {
         if ( repositories != null )
         {
-            for ( Iterator<Repository> it = repositories.iterator(); it.hasNext(); )
-            {
-                Repository repo = it.next();
-                repo.setReleases( disableUpdates( repo.getReleases() ) );
-                repo.setSnapshots( disableUpdates( repo.getSnapshots() ) );
+            for (Repository repo : repositories) {
+                repo.setReleases(disableUpdates(repo.getReleases()));
+                repo.setSnapshots(disableUpdates(repo.getSnapshots()));
             }
         }
     }

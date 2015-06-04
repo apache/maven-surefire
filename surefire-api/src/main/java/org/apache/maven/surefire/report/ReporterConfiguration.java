@@ -38,9 +38,9 @@ public class ReporterConfiguration
     /**
      * A non-null Boolean value
      */
-    private final Boolean trimStackTrace;
+    private final boolean trimStackTrace;
 
-    public ReporterConfiguration( File reportsDirectory, Boolean trimStackTrace )
+    public ReporterConfiguration( File reportsDirectory, boolean trimStackTrace )
     {
         this.reportsDirectory = reportsDirectory;
         this.trimStackTrace = trimStackTrace;
@@ -68,7 +68,7 @@ public class ReporterConfiguration
      *
      * @return true if stacktraces should be trimmed in reporting
      */
-    public Boolean isTrimStackTrace()
+    public boolean isTrimStackTrace()
     {
         return trimStackTrace;
     }

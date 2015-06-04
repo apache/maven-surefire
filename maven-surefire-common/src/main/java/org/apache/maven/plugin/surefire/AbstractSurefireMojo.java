@@ -25,8 +25,8 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
@@ -52,8 +53,6 @@ import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.execution.MavenSession;
-import org.apache.maven.model.Plugin;
-import org.apache.maven.model.PluginExecution;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -863,7 +862,8 @@ public abstract class AbstractSurefireMojo
     {
         final Artifact junitDepArtifact = getJunitDepArtifact();
         ProviderList wellKnownProviders =
-            new ProviderList( new DynamicProviderInfo( null ), new TestNgProviderInfo( getTestNgArtifact() ),
+            new ProviderList( new DynamicProviderInfo( null ),
+                              new TestNgProviderInfo( getTestNgArtifact() ),
                               new JUnitCoreProviderInfo( getJunitArtifact(), junitDepArtifact ),
                               new JUnit4ProviderInfo( getJunitArtifact(), junitDepArtifact ),
                               new JUnit3ProviderInfo() );
@@ -1083,8 +1083,6 @@ public abstract class AbstractSurefireMojo
             DefaultArtifactVersion defaultArtifactVersion = new DefaultArtifactVersion( testNgArtifact.getVersion() );
             getProperties().setProperty( "testng.configurator", getConfiguratorName( defaultArtifactVersion ) );
         }
-
-
     }
 
     private static String getConfiguratorName( ArtifactVersion version )
@@ -1443,11 +1441,28 @@ public abstract class AbstractSurefireMojo
                                                 specificTests, actualFailIfNoTests, getRunOrder() );
         }
 
-        Properties providerProperties = getProperties();
+        Map<String, String> providerProperties = toStringProperties( getProperties() );
 
         return new ProviderConfiguration( directoryScannerParameters, runOrderParameters, actualFailIfNoTests,
-                                          reporterConfiguration, testNg, testSuiteDefinition, providerProperties, null,
+                                          reporterConfiguration,
+                                          testNg, // Not really used in provider. Limited to de/serializer.
+                                          testSuiteDefinition, providerProperties, null,
                                           false );
+    }
+
+    private static Map<String, String> toStringProperties( Properties properties )
+    {
+        Map<String, String> h = new ConcurrentHashMap<String, String>( properties.size() );
+        for ( Enumeration e = properties.keys() ; e.hasMoreElements() ; )
+        {
+            Object k = e.nextElement();
+            Object v = properties.get( k );
+            if ( k.getClass() == String.class && v.getClass() == String.class )
+            {
+                h.put( (String) k, (String) v );
+            }
+        }
+        return h;
     }
 
     public String getStatisticsFileName( String configurationHash )
@@ -1525,7 +1540,7 @@ public abstract class AbstractSurefireMojo
 
     private boolean isSpecificTestSpecified()
     {
-        return getTest() != null;
+        return StringUtils.isNotBlank( getTest() );
     }
 
     private boolean isValidSuiteXmlFileConfig()
@@ -1617,7 +1632,7 @@ public abstract class AbstractSurefireMojo
         throws MojoFailureException
     {
         List<String> includes = null;
-        if ( isSpecificTestSpecified() && !isMultipleExecutionBlocksDetected() )
+        if ( isSpecificTestSpecified() )
         {
             includes = Collections.singletonList( getTest() );
         }
@@ -1639,13 +1654,13 @@ public abstract class AbstractSurefireMojo
             }
 
             checkMethodFilterInIncludesExcludes( includes );
-        }
 
-        // defaults here, qdox doesn't like the end javadoc value
-        // Have to wrap in an ArrayList as surefire expects an ArrayList instead of a List for some reason
-        if ( includes == null || includes.isEmpty() )
-        {
-            includes = Arrays.asList( getDefaultIncludes() );
+            // defaults here, qdox doesn't like the end javadoc value
+            // Have to wrap in an ArrayList as surefire expects an ArrayList instead of a List for some reason
+            if ( includes == null || includes.isEmpty() )
+            {
+                includes = Arrays.asList( getDefaultIncludes() );
+            }
         }
 
         return filterNulls( includes );
@@ -1702,26 +1717,12 @@ public abstract class AbstractSurefireMojo
         return result;
     }
 
-    private boolean isMultipleExecutionBlocksDetected()
-    {
-        MavenProject project = getProject();
-        if ( project != null )
-        {
-            String key = getPluginDescriptor().getPluginLookupKey();
-            Plugin plugin = (Plugin) project.getBuild().getPluginsAsMap().get( key );
-            if ( plugin != null )
-            {
-                Collection<PluginExecution> executions = plugin.getExecutions();
-                return executions != null && executions.size() > 1;
-            }
-        }
-        return false;
-    }
-
     private Artifact getTestNgArtifact()
         throws MojoExecutionException
     {
         Artifact artifact = getProjectArtifactMap().get( getTestNGArtifactName() );
+        Artifact projectArtifact = project.getArtifact();
+        String projectArtifactName = projectArtifact.getGroupId() + ":" + projectArtifact.getArtifactId();
 
         if ( artifact != null )
         {
@@ -1733,6 +1734,11 @@ public abstract class AbstractSurefireMojo
                         + artifact.getVersion() );
             }
         }
+        else if ( projectArtifactName.equals( getTestNGArtifactName() ) )
+        {
+            artifact = projectArtifact;
+        }
+
         return artifact;
 
     }
@@ -1751,7 +1757,16 @@ public abstract class AbstractSurefireMojo
 
     private Artifact getJunitArtifact()
     {
-        return getProjectArtifactMap().get( getJunitArtifactName() );
+        Artifact artifact = getProjectArtifactMap().get( getJunitArtifactName() );
+        Artifact projectArtifact = project.getArtifact();
+        String projectArtifactName = projectArtifact.getGroupId() + ":" + projectArtifact.getArtifactId();
+
+        if ( artifact == null && projectArtifactName.equals( getJunitArtifactName() ) )
+        {
+            artifact = projectArtifact;
+        }
+
+        return artifact;
     }
 
     private Artifact getJunitDepArtifact()
@@ -2029,7 +2044,7 @@ public abstract class AbstractSurefireMojo
      * @throws ArtifactNotFoundException   when it happens
      * @throws ArtifactResolutionException when it happens
      */
-    Classpath generateTestClasspath()
+    private Classpath generateTestClasspath()
         throws InvalidVersionSpecificationException, MojoFailureException, ArtifactResolutionException,
         ArtifactNotFoundException, MojoExecutionException
     {
@@ -2088,17 +2103,19 @@ public abstract class AbstractSurefireMojo
         return new Classpath( classpath );
     }
 
-    void addTestNgUtilsArtifacts( List<String> classpath )
+    private void addTestNgUtilsArtifacts( List<String> classpath )
         throws ArtifactResolutionException, ArtifactNotFoundException
     {
         Artifact surefireArtifact = getPluginArtifactMap().get( "org.apache.maven.surefire:surefire-booter" );
         String surefireVersion = surefireArtifact.getBaseVersion();
 
-        Artifact[] extraTestNgArtifacts =
-            { getArtifactFactory().createArtifact( "org.apache.maven.surefire", "surefire-testng-utils",
-                                                   surefireVersion, "runtime", "jar" ),
-                getArtifactFactory().createArtifact( "org.apache.maven.surefire", "surefire-grouper", surefireVersion,
-                                                     "runtime", "jar" ) };
+        Artifact[] extraTestNgArtifacts = {
+            getArtifactFactory().createArtifact( "org.apache.maven.surefire", "surefire-testng-utils", surefireVersion,
+                                                 "runtime", "jar" ),
+
+            getArtifactFactory().createArtifact( "org.apache.maven.surefire", "surefire-grouper", surefireVersion,
+                                                 "runtime", "jar" )
+        };
 
         for ( Artifact artifact : extraTestNgArtifacts )
         {
@@ -2289,24 +2306,23 @@ public abstract class AbstractSurefireMojo
     {
         if ( isAnyGroupsSelected() )
         {
-            if ( getTestNgArtifact() != null )
+            if ( getTestNgArtifact() == null )
             {
-                return;
+                Artifact junitArtifact = getJunitArtifact();
+                boolean junit47Compatible = isJunit47Compatible( junitArtifact );
+                if ( !junit47Compatible )
+                {
+                    if ( junitArtifact != null )
+                    {
+                        throw new MojoFailureException( "groups/excludedGroups are specified but JUnit version on "
+                                                            + "classpath is too old to support groups. "
+                                                            + "Check your dependency:tree to see if your project "
+                                                            + "is picking up an old junit version" );
+                    }
+                    throw new MojoFailureException( "groups/excludedGroups require TestNG or JUnit48+ on project test "
+                                                        + "classpath" );
+                }
             }
-            Artifact junitArtifact = getJunitArtifact();
-            boolean junit47Compatible = isJunit47Compatible( junitArtifact );
-            if ( junit47Compatible )
-            {
-                return;
-            }
-            if ( junitArtifact != null )
-            {
-                throw new MojoFailureException( "groups/excludedGroups are specified but JUnit version on classpath"
-                        + " is too old to support groups. Check your dependency:tree to see if your project"
-                        + " is picking up an old junit version" );
-            }
-            throw new MojoFailureException(
-                "groups/excludedGroups require TestNG or JUnit48+ on project test classpath" );
 
         }
     }
@@ -2569,7 +2585,7 @@ public abstract class AbstractSurefireMojo
         this.systemPropertiesFile = systemPropertiesFile;
     }
 
-    public Properties getProperties()
+    private Properties getProperties()
     {
         return properties;
     }
@@ -2631,7 +2647,7 @@ public abstract class AbstractSurefireMojo
         return failIfNoTests;
     }
 
-    public void setFailIfNoTests( Boolean failIfNoTests )
+    public void setFailIfNoTests( boolean failIfNoTests )
     {
         this.failIfNoTests = failIfNoTests;
     }

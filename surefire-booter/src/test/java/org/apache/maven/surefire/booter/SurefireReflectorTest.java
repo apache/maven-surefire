@@ -24,7 +24,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Properties;
+import java.util.HashMap;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.RunOrderParameters;
@@ -49,7 +49,7 @@ public class SurefireReflectorTest
 
         DirectoryScannerParameters directoryScannerParameters =
             new DirectoryScannerParameters( new File( "ABC" ), new ArrayList(), new ArrayList(), new ArrayList(),
-                                            Boolean.FALSE, "hourly" );
+                                            false, "hourly" );
         surefireReflector.setDirectoryScannerParameters( foo, directoryScannerParameters );
         assertTrue( isCalled( foo ) );
 
@@ -86,7 +86,7 @@ public class SurefireReflectorTest
         SurefireReflector surefireReflector = getReflector();
         Object foo = getFoo();
 
-        surefireReflector.setProviderProperties( foo, new Properties() );
+        surefireReflector.setProviderProperties( foo, new HashMap<String, String>() );
         assertTrue( isCalled( foo ) );
     }
 
@@ -103,7 +103,7 @@ public class SurefireReflectorTest
 
     private ReporterConfiguration getReporterConfiguration()
     {
-        return new ReporterConfiguration( new File( "CDE" ), Boolean.TRUE );
+        return new ReporterConfiguration( new File( "CDE" ), true );
     }
 
     public void testTestClassLoaderAware()
@@ -143,7 +143,7 @@ public class SurefireReflectorTest
         final Method isCalled;
         try
         {
-            isCalled = foo.getClass().getMethod( "isCalled", new Class[0] );
+            isCalled = foo.getClass().getMethod( "isCalled" );
             return (Boolean) isCalled.invoke( foo );
         }
         catch ( IllegalAccessException e )
