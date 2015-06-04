@@ -195,7 +195,7 @@ public class SurefireProperties
         }
     }
 
-    public void addList( List items, String propertyPrefix )
+    public void addList( List<?> items, String propertyPrefix )
     {
         if ( items == null || items.isEmpty() )
         {
@@ -216,7 +216,6 @@ public class SurefireProperties
                 setProperty( propertyPrefix + i, aStringArray );
                 i++;
             }
-
         }
     }
 

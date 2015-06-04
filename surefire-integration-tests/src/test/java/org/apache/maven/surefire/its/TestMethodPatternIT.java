@@ -32,7 +32,7 @@ import org.junit.Test;
 public class TestMethodPatternIT
     extends SurefireJUnit4IntegrationTestCase
 {
-    private static final String RUNNING_WITH_JUNIT48 = "parallel='none', perCoreThreadCount=true, threadCount=0";
+    private static final String RUNNING_WITH_PROVIDER47 = "parallel='none', perCoreThreadCount=true, threadCount=0";
 
     public OutputValidator runMethodPattern( String projectName, String... goals )
     {
@@ -41,7 +41,9 @@ public class TestMethodPatternIT
         {
             launcher.addGoal( goal );
         }
-        return launcher.executeTest().assertTestSuiteResults( 2, 0, 0, 0 );
+        return launcher.showErrorStackTraces().debugLogging()
+            .executeTest()
+            .assertTestSuiteResults( 2, 0, 0, 0 );
     }
 
     @Test
@@ -60,7 +62,7 @@ public class TestMethodPatternIT
     public void testJUnit48Provider47()
     {
         runMethodPattern( "junit48-method-pattern", "-P surefire-junit47" )
-            .verifyTextInLog( RUNNING_WITH_JUNIT48 );
+            .verifyTextInLog( RUNNING_WITH_PROVIDER47 );
     }
 
     @Test

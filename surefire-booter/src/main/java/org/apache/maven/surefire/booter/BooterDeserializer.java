@@ -22,6 +22,7 @@ package org.apache.maven.surefire.booter;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.List;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
@@ -32,6 +33,7 @@ import org.apache.maven.surefire.testset.TestRequest;
 
 // CHECKSTYLE_OFF: imports
 import static org.apache.maven.surefire.booter.BooterConstants.*;
+import static org.apache.maven.surefire.cli.CommandLineOption.*;
 
 /**
  * Knows how to serialize and deserialize the booter configuration.
@@ -96,10 +98,12 @@ public class BooterDeserializer
         ReporterConfiguration reporterConfiguration =
             new ReporterConfiguration( reportsDirectory, properties.getBooleanObjectProperty( ISTRIMSTACKTRACE ) );
 
+        Collection<String> cli = properties.getStringList( MAIN_CLI_OPTIONS );
+
         return new ProviderConfiguration( dirScannerParams, runOrderParameters,
                                           properties.getBooleanProperty( FAILIFNOTESTS ), reporterConfiguration, testNg,
                                           testSuiteDefinition, properties.getProperties(), typeEncodedTestForFork,
-                                          preferTestsFromInStream );
+                                          preferTestsFromInStream, fromStrings( cli ) );
     }
 
     public StartupConfiguration getProviderConfiguration()

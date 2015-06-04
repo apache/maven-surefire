@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.its.jiras;
+package jira1158;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,24 +19,13 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.junit.Test;
 
-/**
- * SUREFIRE-613 Asserts proper test counts when running in parallel
- *
- * @author Kristian Rosenvold
- */
-public class Surefire408ManualProviderSelectionIT
-    extends SurefireJUnit4IntegrationTestCase
-{
+public class JUnitTest {
+
     @Test
-    public void testParallelBuildResultCount()
+    public void doNothing()
     {
-        unpack( "/surefire-408-manual-provider-selection" )
-            .showErrorStackTraces()
-            .debugLogging()
-            .executeTest()
-            .verifyTextInLog( "Using configured provider org.apache.maven.surefire.junit.JUnit3Provider" );
+
     }
 }

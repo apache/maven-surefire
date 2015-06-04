@@ -235,6 +235,7 @@ public class ForkedBooter
         bpf.setProviderProperties( providerConfiguration.getProviderProperties() );
         bpf.setRunOrderParameters( providerConfiguration.getRunOrderParameters() );
         bpf.setDirectoryScannerParameters( providerConfiguration.getDirScannerParams() );
+        bpf.setMainCliOptions( providerConfiguration.getMainCliOptions() );
         return (SurefireProvider) ReflectionUtils.instantiateOneArg( classLoader,
                                                                      startupConfiguration1.getActualClassName(),
                                                                      ProviderParameters.class, bpf );

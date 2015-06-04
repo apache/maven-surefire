@@ -61,6 +61,7 @@ import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugin.surefire.booterclient.ChecksumCalculator;
 import org.apache.maven.plugin.surefire.booterclient.ForkConfiguration;
 import org.apache.maven.plugin.surefire.booterclient.ForkStarter;
+import org.apache.maven.plugin.surefire.booterclient.ProviderDetector;
 import org.apache.maven.plugin.surefire.util.DependencyScanner;
 import org.apache.maven.plugin.surefire.util.DirectoryScanner;
 import org.apache.maven.plugins.annotations.Component;
@@ -78,6 +79,8 @@ import org.apache.maven.surefire.booter.ProviderParameterNames;
 import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.apache.maven.surefire.booter.SurefireExecutionException;
+import org.apache.maven.surefire.cli.CommandLineOption;
+import org.apache.maven.surefire.providerapi.SurefireProvider;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
@@ -686,9 +689,12 @@ public abstract class AbstractSurefireMojo
 
     private TestListResolver includedExcludedTests;
 
+    private List<CommandLineOption> cli;
+
     public void execute()
         throws MojoExecutionException, MojoFailureException
     {
+        cli = commandLineOptions();
         // Stuff that should have been final
         setupStuff();
 
@@ -849,7 +855,6 @@ public abstract class AbstractSurefireMojo
         handleSummary( current, firstForkException );
     }
 
-
     private void createDependencyResolver()
     {
         dependencyResolver =
@@ -860,15 +865,13 @@ public abstract class AbstractSurefireMojo
     protected List<ProviderInfo> createProviders()
         throws MojoFailureException, MojoExecutionException
     {
-        final Artifact junitDepArtifact = getJunitDepArtifact();
-        ProviderList wellKnownProviders =
-            new ProviderList( new DynamicProviderInfo( null ),
+        Artifact junitDepArtifact = getJunitDepArtifact();
+        return new ProviderList( new DynamicProviderInfo( null ),
                               new TestNgProviderInfo( getTestNgArtifact() ),
                               new JUnitCoreProviderInfo( getJunitArtifact(), junitDepArtifact ),
                               new JUnit4ProviderInfo( getJunitArtifact(), junitDepArtifact ),
-                              new JUnit3ProviderInfo() );
-
-        return wellKnownProviders.resolve( getLog() );
+                              new JUnit3ProviderInfo() )
+            .resolve();
     }
 
     private SurefireProperties setupProperties()
@@ -993,7 +996,6 @@ public abstract class AbstractSurefireMojo
         }
     }
 
-
     public static SurefireProperties createCopyAndReplaceForkNumPlaceholder(
         SurefireProperties effectiveSystemProperties, int threadNumber )
     {
@@ -1034,10 +1036,9 @@ public abstract class AbstractSurefireMojo
 
     protected void logReportsDirectory()
     {
-        getLog().info(
+        logDebugOrCliShowErrors(
             StringUtils.capitalizeFirstLetter( getPluginName() ) + " report directory: " + getReportsDirectory() );
     }
-
 
     final Toolchain getToolchain()
     {
@@ -1159,9 +1160,8 @@ public abstract class AbstractSurefireMojo
             checkNonForkedThreads( parallel );
         }
 
-        String usedThreadCount = Integer.toString( getThreadCount() );
         getProperties().setProperty( ProviderParameterNames.PARALLEL_PROP, usedParallel );
-        getProperties().setProperty( ProviderParameterNames.THREADCOUNT_PROP, usedThreadCount );
+        getProperties().setProperty( ProviderParameterNames.THREADCOUNT_PROP, Integer.toString( getThreadCount() ) );
         getProperties().setProperty( "perCoreThreadCount", Boolean.toString( getPerCoreThreadCount() ) );
         getProperties().setProperty( "useUnlimitedThreads", Boolean.toString( getUseUnlimitedThreads() ) );
         getProperties().setProperty( ProviderParameterNames.THREADCOUNTSUITES_PROP,
@@ -1171,21 +1171,22 @@ public abstract class AbstractSurefireMojo
         getProperties().setProperty( ProviderParameterNames.THREADCOUNTMETHODS_PROP,
                                      Integer.toString( getThreadCountMethods() ) );
         getProperties().setProperty( ProviderParameterNames.PARALLEL_TIMEOUT_PROP,
-                Double.toString( getParallelTestsTimeoutInSeconds() ) );
+                                     Double.toString( getParallelTestsTimeoutInSeconds() ) );
         getProperties().setProperty( ProviderParameterNames.PARALLEL_TIMEOUTFORCED_PROP,
-                Double.toString( getParallelTestsTimeoutForcedInSeconds() ) );
+                                     Double.toString( getParallelTestsTimeoutForcedInSeconds() ) );
         getProperties().setProperty( ProviderParameterNames.PARALLEL_OPTIMIZE_PROP,
                                      Boolean.toString( isParallelOptimized() ) );
 
-        String message =
-            "parallel='" + usedParallel + '\'' + ", perCoreThreadCount=" + getPerCoreThreadCount() + ", threadCount="
-                + usedThreadCount + ", useUnlimitedThreads=" + getUseUnlimitedThreads()
-                + ", threadCountSuites=" + getThreadCountSuites()
-                + ", threadCountClasses=" + getThreadCountClasses()
-                + ", threadCountMethods=" + getThreadCountMethods()
-                + ", parallelOptimized=" + isParallelOptimized();
+        String message = "parallel='" + usedParallel + '\''
+            + ", perCoreThreadCount=" + getPerCoreThreadCount()
+            + ", threadCount=" + getThreadCount()
+            + ", useUnlimitedThreads=" + getUseUnlimitedThreads()
+            + ", threadCountSuites=" + getThreadCountSuites()
+            + ", threadCountClasses=" + getThreadCountClasses()
+            + ", threadCountMethods=" + getThreadCountMethods()
+            + ", parallelOptimized=" + isParallelOptimized();
 
-        getLog().info( message );
+        logDebugOrCliShowErrors( message );
     }
 
     private void checkNonForkedThreads( String parallel ) throws MojoExecutionException
@@ -1447,7 +1448,7 @@ public abstract class AbstractSurefireMojo
                                           reporterConfiguration,
                                           testNg, // Not really used in provider. Limited to de/serializer.
                                           testSuiteDefinition, providerProperties, null,
-                                          false );
+                                          false, cli );
     }
 
     private static Map<String, String> toStringProperties( Properties properties )
@@ -2301,6 +2302,11 @@ public abstract class AbstractSurefireMojo
         return !isForking();
     }
 
+    private List<CommandLineOption> commandLineOptions()
+    {
+        return SurefireHelper.commandLineOptions( getSession(), getLog() );
+    }
+
     void warnIfDefunctGroupsCombinations()
         throws MojoFailureException, MojoExecutionException
     {
@@ -2327,7 +2333,7 @@ public abstract class AbstractSurefireMojo
         }
     }
 
-    class TestNgProviderInfo
+    final class TestNgProviderInfo
         implements ProviderInfo
     {
         private final Artifact testNgArtifact;
@@ -2362,7 +2368,7 @@ public abstract class AbstractSurefireMojo
         }
     }
 
-    class JUnit3ProviderInfo
+    final class JUnit3ProviderInfo
         implements ProviderInfo
     {
         @Nonnull public String getProviderName()
@@ -2388,10 +2394,9 @@ public abstract class AbstractSurefireMojo
                                                             null );
 
         }
-
     }
 
-    class JUnit4ProviderInfo
+    final class JUnit4ProviderInfo
         implements ProviderInfo
     {
         private final Artifact junitArtifact;
@@ -2423,12 +2428,11 @@ public abstract class AbstractSurefireMojo
         {
             return dependencyResolver.getProviderClasspath( "surefire-junit4", surefireBooterArtifact.getBaseVersion(),
                                                             null );
-
         }
 
     }
 
-    class JUnitCoreProviderInfo
+    final class JUnitCoreProviderInfo
         implements ProviderInfo
     {
         private final Artifact junitArtifact;
@@ -2470,14 +2474,12 @@ public abstract class AbstractSurefireMojo
             return dependencyResolver.getProviderClasspath( "surefire-junit47", surefireBooterArtifact.getBaseVersion(),
                                                             null );
         }
-
     }
 
     /**
-     * Provides the Provider information for manually configured providers
-     *
+     * Provides the Provider information for manually configured providers.
      */
-    public class DynamicProviderInfo
+    final class DynamicProviderInfo
         implements ConfigurableProviderInfo
     {
         final String providerName;
@@ -2510,7 +2512,6 @@ public abstract class AbstractSurefireMojo
             convertTestNGParameters();
         }
 
-
         public Classpath getProviderClasspath()
             throws ArtifactResolutionException, ArtifactNotFoundException
         {
@@ -2518,7 +2519,77 @@ public abstract class AbstractSurefireMojo
             Artifact plugin = pluginArtifactMap.get( "org.apache.maven.plugins:maven-surefire-plugin" );
             return dependencyResolver.addProviderToClasspath( pluginArtifactMap, plugin );
         }
+    }
 
+    /**
+     * @author Kristian Rosenvold
+     */
+    final class ProviderList
+    {
+        private final ProviderInfo[] wellKnownProviders;
+
+        private final ConfigurableProviderInfo dynamicProvider;
+
+        ProviderList( ConfigurableProviderInfo dynamicProviderInfo, ProviderInfo... wellKnownProviders )
+        {
+            this.wellKnownProviders = wellKnownProviders;
+            this.dynamicProvider = dynamicProviderInfo;
+        }
+
+        @SuppressWarnings( "checkstyle:modifierorder" )
+        @Nonnull List<ProviderInfo> resolve()
+        {
+            List<ProviderInfo> providersToRun = new ArrayList<ProviderInfo>();
+            Set<String> manuallyConfiguredProviders = getManuallyConfiguredProviders();
+            for ( String name : manuallyConfiguredProviders )
+            {
+                ProviderInfo wellKnown = findByName( name );
+                ProviderInfo providerToAdd = wellKnown != null ? wellKnown : dynamicProvider.instantiate( name );
+                logDebugOrCliShowErrors( "Using configured provider " + providerToAdd.getProviderName() );
+                providersToRun.add( providerToAdd );
+            }
+            return manuallyConfiguredProviders.isEmpty() ? autoDetectOneProvider() : providersToRun;
+        }
+
+        @SuppressWarnings( "checkstyle:modifierorder" )
+        private @Nonnull List<ProviderInfo> autoDetectOneProvider()
+        {
+            List<ProviderInfo> providersToRun = new ArrayList<ProviderInfo>();
+            for ( ProviderInfo wellKnownProvider : wellKnownProviders )
+            {
+                if ( wellKnownProvider.isApplicable() )
+                {
+                    providersToRun.add( wellKnownProvider );
+                    return providersToRun;
+                }
+            }
+            return providersToRun;
+        }
+
+        private Set<String> getManuallyConfiguredProviders()
+        {
+            try
+            {
+                return ProviderDetector.getServiceNames( SurefireProvider.class,
+                                                         Thread.currentThread().getContextClassLoader() );
+            }
+            catch ( IOException e )
+            {
+                throw new RuntimeException( e );
+            }
+        }
+
+        private ProviderInfo findByName( String providerClassName )
+        {
+            for ( ProviderInfo wellKnownProvider : wellKnownProviders )
+            {
+                if ( wellKnownProvider.getProviderName().equals( providerClassName ) )
+                {
+                    return wellKnownProvider;
+                }
+            }
+            return null;
+        }
     }
 
     public abstract List<String> getIncludes();
@@ -3054,5 +3125,10 @@ public abstract class AbstractSurefireMojo
     public void setClasspathDependencyScopeExclude( String classpathDependencyScopeExclude )
     {
         this.classpathDependencyScopeExclude = classpathDependencyScopeExclude;
+    }
+
+    protected void logDebugOrCliShowErrors( CharSequence s )
+    {
+        SurefireHelper.logDebugOrCliShowErrors( s, getLog(), cli );
     }
 }

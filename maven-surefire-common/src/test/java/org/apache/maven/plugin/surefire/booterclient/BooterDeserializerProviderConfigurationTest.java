@@ -22,6 +22,7 @@ package org.apache.maven.plugin.surefire.booterclient;
 import junit.framework.Assert;
 import junit.framework.TestCase;
 import org.apache.maven.surefire.booter.*;
+import org.apache.maven.surefire.cli.CommandLineOption;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.testset.*;
 import org.apache.maven.surefire.util.RunOrder;
@@ -30,6 +31,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.*;
+
+import static org.apache.maven.surefire.cli.CommandLineOption.LOGGING_LEVEL_DEBUG;
+import static org.apache.maven.surefire.cli.CommandLineOption.REACTOR_FAIL_FAST;
+import static org.apache.maven.surefire.cli.CommandLineOption.SHOW_ERRORS;
 
 /**
  * Performs roundtrip testing of serialization/deserialization of the ProviderConfiguration
@@ -47,6 +52,9 @@ public class BooterDeserializerProviderConfigurationTest
     private static final String aUserRequestedTestMethod = "aUserRequestedTestMethod";
 
     private static final int rerunFailingTestsCount = 3;
+
+    private final List<CommandLineOption> cli =
+        Arrays.asList( LOGGING_LEVEL_DEBUG, SHOW_ERRORS, REACTOR_FAIL_FAST );
 
     private static ClassLoaderConfiguration getForkConfiguration()
     {
@@ -76,7 +84,7 @@ public class BooterDeserializerProviderConfigurationTest
         Assert.assertEquals( includes.get( 1 ), read.getIncludes().get( 1 ) );
         Assert.assertEquals( excludes.get( 0 ), read.getExcludes().get( 0 ) );
         Assert.assertEquals( excludes.get( 1 ), read.getExcludes().get( 1 ) );
-
+        assertEquals( cli, providerConfiguration.getMainCliOptions() );
     }
 
     public void testReporterConfiguration()
@@ -92,6 +100,7 @@ public class BooterDeserializerProviderConfigurationTest
 
         assertTrue( reloaded.getReporterConfiguration().isTrimStackTrace() );
         assertNotNull( reloaded.getReporterConfiguration().getReportsDirectory() );
+        assertEquals( cli, providerConfiguration.getMainCliOptions() );
     }
 
     public void testTestArtifact()
@@ -101,6 +110,7 @@ public class BooterDeserializerProviderConfigurationTest
 
         Assert.assertEquals( "5.0", reloaded.getTestArtifact().getVersion() );
         Assert.assertEquals( "ABC", reloaded.getTestArtifact().getClassifier() );
+        assertEquals( cli, reloaded.getMainCliOptions() );
     }
 
     public void testTestRequest()
@@ -126,6 +136,7 @@ public class BooterDeserializerProviderConfigurationTest
         Assert.assertEquals( "**/" + aUserRequestedTest, filter.getTestClassPattern() );
         Assert.assertEquals( aUserRequestedTestMethod, filter.getTestMethodPattern() );
         Assert.assertEquals( rerunFailingTestsCount, testSuiteDefinition.getRerunFailingTestsCount() );
+        assertEquals( cli, reloaded.getMainCliOptions() );
     }
 
     public void testTestForFork()
@@ -133,7 +144,7 @@ public class BooterDeserializerProviderConfigurationTest
     {
         final ProviderConfiguration reloaded = getReloadedProviderConfiguration();
         Assert.assertEquals( aTestTyped, reloaded.getTestForFork() );
-
+        assertEquals( cli, reloaded.getMainCliOptions() );
     }
 
     public void testTestForForkWithMultipleFiles()
@@ -142,7 +153,7 @@ public class BooterDeserializerProviderConfigurationTest
         final ProviderConfiguration reloaded = getReloadedProviderConfigurationForReadFromInStream();
         Assert.assertNull( reloaded.getTestForFork() );
         Assert.assertTrue( reloaded.isReadTestsFromInStream() );
-
+        assertEquals( cli, reloaded.getMainCliOptions() );
     }
 
     public void testFailIfNoTests()
@@ -150,7 +161,7 @@ public class BooterDeserializerProviderConfigurationTest
     {
         ProviderConfiguration reloaded = getReloadedProviderConfiguration();
         assertTrue( reloaded.isFailIfNoTests() );
-
+        assertEquals( cli, reloaded.getMainCliOptions() );
     }
 
     private ProviderConfiguration getReloadedProviderConfigurationForReadFromInStream()
@@ -172,6 +183,7 @@ public class BooterDeserializerProviderConfigurationTest
         ClassLoaderConfiguration forkConfiguration = getForkConfiguration();
         ProviderConfiguration booterConfiguration =
             getTestProviderConfiguration( directoryScannerParameters, readTestsFromInStream );
+        assertEquals( cli, booterConfiguration.getMainCliOptions() );
         final StartupConfiguration testProviderConfiguration = getTestStartupConfiguration( forkConfiguration );
         return saveAndReload( booterConfiguration, testProviderConfiguration, readTestsFromInStream );
     }
@@ -225,7 +237,7 @@ public class BooterDeserializerProviderConfigurationTest
         RunOrderParameters runOrderParameters = new RunOrderParameters( RunOrder.DEFAULT, null );
         return new ProviderConfiguration( directoryScannerParameters, runOrderParameters, true, reporterConfiguration,
                 new TestArtifactInfo( "5.0", "ABC" ), testSuiteDefinition, new HashMap<String, String>(), aTestTyped,
-                readTestsFromInStream );
+                readTestsFromInStream, cli );
     }
 
     private StartupConfiguration getTestStartupConfiguration( ClassLoaderConfiguration classLoaderConfiguration )

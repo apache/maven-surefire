@@ -534,6 +534,7 @@ public class JUnit47ParallelIT
 
     private SurefireLauncher unpack()
     {
-        return unpack( "junit47-parallel" );
+        return unpack( "junit47-parallel" )
+            .showErrorStackTraces();
     }
 }

@@ -19,6 +19,7 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
+import org.apache.maven.surefire.cli.CommandLineOption;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.report.ConsoleLogger;
 import org.apache.maven.surefire.report.DefaultDirectConsoleReporter;
@@ -35,6 +36,8 @@ import org.apache.maven.surefire.util.DirectoryScanner;
 import org.apache.maven.surefire.util.RunOrderCalculator;
 import org.apache.maven.surefire.util.ScanResult;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -45,6 +48,12 @@ public class BaseProviderFactory
     ProviderPropertiesAware, ProviderParameters, TestArtifactInfoAware, RunOrderParametersAware
 {
     private static final int ROOT_CHANNEL = 0;
+
+    private final ReporterFactory reporterFactory;
+
+    private final boolean insideFork;
+
+    private List<CommandLineOption> mainCliOptions = Collections.emptyList();
 
     private Map<String, String> providerProperties;
 
@@ -59,10 +68,6 @@ public class BaseProviderFactory
     private TestRequest testRequest;
 
     private TestArtifactInfo testArtifactInfo;
-
-    private final ReporterFactory reporterFactory;
-
-    private final boolean insideFork;
 
     public BaseProviderFactory( ReporterFactory reporterFactory, boolean insideFork )
     {
@@ -174,4 +179,13 @@ public class BaseProviderFactory
         this.runOrderParameters = runOrderParameters;
     }
 
+    public List<CommandLineOption> getMainCliOptions()
+    {
+        return mainCliOptions;
+    }
+
+    public void setMainCliOptions( List<CommandLineOption> mainCliOptions )
+    {
+        this.mainCliOptions = mainCliOptions == null ? Collections.<CommandLineOption>emptyList() : mainCliOptions;
+    }
 }

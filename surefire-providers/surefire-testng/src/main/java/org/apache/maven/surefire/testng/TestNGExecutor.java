@@ -20,6 +20,7 @@ package org.apache.maven.surefire.testng;
  */
 
 import org.apache.maven.surefire.booter.ProviderParameterNames;
+import org.apache.maven.surefire.cli.CommandLineOption;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.testng.conf.Configurator;
 import org.apache.maven.surefire.testset.TestListResolver;
@@ -68,13 +69,17 @@ public class TestNGExecutor
     public static void run( Class<?>[] testClasses, String testSourceDirectory,
                             Map<String, String> options, // string,string because TestNGMapConfigurator#configure()
                             RunListener reportManager, TestNgTestSuite suite, File reportsDirectory,
-                            TestListResolver methodFilter )
+                            TestListResolver methodFilter, List<CommandLineOption> mainCliOptions )
         throws TestSetFailedException
     {
         TestNG testng = new TestNG( true );
 
         Configurator configurator = getConfigurator( options.get( "testng.configurator" ) );
-        System.out.println( "Configuring TestNG with: " + configurator.getClass().getSimpleName() );
+
+        if ( isCliDebugOrShowErrors( mainCliOptions ) )
+        {
+            System.out.println( "Configuring TestNG with: " + configurator.getClass().getSimpleName() );
+        }
 
         XmlMethodSelector groupMatchingSelector = createGroupMatchingSelector( options );
         XmlMethodSelector methodNameFilteringSelector = createMethodNameFilteringSelector( methodFilter );
@@ -116,6 +121,12 @@ public class TestNGExecutor
         configurator.configure( testng, options );
         postConfigure( testng, testSourceDirectory, reportManager, suite, reportsDirectory );
         testng.run();
+    }
+
+    private static boolean isCliDebugOrShowErrors( List<CommandLineOption> mainCliOptions )
+    {
+        return mainCliOptions.contains( CommandLineOption.LOGGING_LEVEL_DEBUG )
+            || mainCliOptions.contains( CommandLineOption.SHOW_ERRORS );
     }
 
     private static TestMetadata findTestMetadata( Class<?> testClass )

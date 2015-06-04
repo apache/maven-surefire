@@ -31,6 +31,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.apache.maven.surefire.NonAbstractClassFilter;
+import org.apache.maven.surefire.cli.CommandLineOption;
 import org.apache.maven.surefire.report.ConsoleOutputCapture;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.ReportEntry;
@@ -72,13 +73,15 @@ public class TestNGDirectoryTestSuite
 
     private final Class<?> junitTestClass;
 
-    private Class<? extends Annotation> junitRunWithAnnotation;
+    private final Class<? extends Annotation> junitRunWithAnnotation;
 
-    private Class<? extends Annotation> junitTestAnnotation;
+    private final Class<? extends Annotation> junitTestAnnotation;
+
+    private final List<CommandLineOption> mainCliOptions;
 
     public TestNGDirectoryTestSuite( String testSourceDirectory, Map<String, String> confOptions, File reportsDirectory,
                                      TestListResolver methodFilter, RunOrderCalculator runOrderCalculator,
-                                     ScanResult scanResult )
+                                     ScanResult scanResult, List<CommandLineOption> mainCliOptions )
     {
         this.runOrderCalculator = runOrderCalculator;
         this.options = confOptions;
@@ -90,6 +93,7 @@ public class TestNGDirectoryTestSuite
         this.junitRunWithAnnotation = findJUnitRunWithAnnotation();
         this.junitTestAnnotation = findJUnitTestAnnotation();
         this.junitOptions = createJUnitOptions();
+        this.mainCliOptions = mainCliOptions;
     }
 
     public void execute( TestsToRun testsToRun, ReporterFactory reporterManagerFactory )
@@ -114,7 +118,7 @@ public class TestNGDirectoryTestSuite
     private void executeSingleClass( ReporterFactory reporterManagerFactory, Class<?> testClass )
         throws TestSetFailedException
     {
-        this.options.put( "suitename", testClass.getName() );
+        options.put( "suitename", testClass.getName() );
 
         RunListener reporter = reporterManagerFactory.createReporter();
         ConsoleOutputCapture.startCapture( (ConsoleOutputReceiver) reporter );
@@ -124,7 +128,7 @@ public class TestNGDirectoryTestSuite
         final Map<String, String> optionsToUse = isJUnitTest( testClass ) ? junitOptions : options;
 
         TestNGExecutor.run( new Class<?>[]{ testClass }, testSourceDirectory, optionsToUse, reporter, this,
-                            reportsDirectory, methodFilter );
+                            reportsDirectory, methodFilter, mainCliOptions );
 
         finishTestSuite( reporter, this );
     }
@@ -214,14 +218,14 @@ public class TestNGDirectoryTestSuite
         Class<?>[] testClasses = testNgTestClasses.toArray( new Class<?>[testNgTestClasses.size()] );
 
         TestNGExecutor.run( testClasses, testSourceDirectory, options, reporterManager, this,
-                            testNgReportsDirectory, methodFilter );
+                            testNgReportsDirectory, methodFilter, mainCliOptions );
 
         if ( !junitTestClasses.isEmpty() )
         {
             testClasses = junitTestClasses.toArray( new Class[junitTestClasses.size()] );
 
             TestNGExecutor.run( testClasses, testSourceDirectory, junitOptions, reporterManager, this,
-                                junitReportsDirectory, methodFilter );
+                                junitReportsDirectory, methodFilter, mainCliOptions );
         }
 
         finishTestSuite( reporterManager, this );
@@ -291,7 +295,7 @@ public class TestNGDirectoryTestSuite
         startTestSuite( reporter, this );
 
         TestNGExecutor.run( new Class<?>[] { testSet.getTestClass() }, testSourceDirectory, options, reporter,
-                            this, reportsDirectory, methodFilter );
+                            this, reportsDirectory, methodFilter, mainCliOptions );
 
         finishTestSuite( reporter, this );
     }

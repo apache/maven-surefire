@@ -32,7 +32,7 @@ import org.junit.Test;
 public class TestSingleMethodIT
     extends SurefireJUnit4IntegrationTestCase
 {
-    private static final String RUNNING_WITH_JUNIT48 = "parallel='none', perCoreThreadCount=true, threadCount=0";
+    private static final String RUNNING_WITH_PROVIDER47 = "parallel='none', perCoreThreadCount=true, threadCount=0";
 
     public OutputValidator singleMethod( String projectName, String... goals )
         throws Exception
@@ -42,7 +42,10 @@ public class TestSingleMethodIT
         {
             launcher.addGoal( goal );
         }
-        return launcher.executeTest().verifyErrorFreeLog().assertTestSuiteResults( 1, 0, 0, 0 );
+        return launcher.showErrorStackTraces().debugLogging()
+            .executeTest()
+            .verifyErrorFreeLog()
+            .assertTestSuiteResults( 1, 0, 0, 0 );
     }
 
     @Test
@@ -64,7 +67,7 @@ public class TestSingleMethodIT
         throws Exception
     {
         singleMethod( "junit48-single-method", "-P surefire-junit47" )
-            .verifyTextInLog( RUNNING_WITH_JUNIT48 );
+            .verifyTextInLog( RUNNING_WITH_PROVIDER47 );
     }
 
     @Test

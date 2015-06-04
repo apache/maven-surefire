@@ -25,17 +25,22 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.Collection;
+
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.surefire.SurefireHelper;
 import org.apache.maven.plugin.surefire.SurefireReportParameters;
+import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.shared.utils.ReaderFactory;
 import org.apache.maven.shared.utils.StringUtils;
 import org.apache.maven.shared.utils.io.IOUtil;
+import org.apache.maven.surefire.cli.CommandLineOption;
 import org.apache.maven.surefire.suite.RunResult;
 
 /**
@@ -145,13 +150,21 @@ public class VerifyMojo
     @Parameter( property = "encoding", defaultValue = "${project.reporting.outputEncoding}" )
     private String encoding;
 
+    /**
+     * The current build session instance.
+     */
+    @Component
+    protected MavenSession session;
+
+    private Collection<CommandLineOption> cli;
 
     public void execute()
         throws MojoExecutionException, MojoFailureException
     {
+        cli = commandLineOptions();
         if ( verifyParameters() )
         {
-            getLog().info(
+            logDebugOrCliShowErrors(
                 StringUtils.capitalizeFirstLetter( getPluginName() ) + " report directory: " + getReportsDirectory() );
 
             RunResult summary;
@@ -160,8 +173,8 @@ public class VerifyMojo
                 final String encoding;
                 if ( StringUtils.isEmpty( this.encoding ) )
                 {
-                    getLog().warn(
-                        "File encoding has not been set, using platform encoding " + ReaderFactory.FILE_ENCODING
+                    getLog().warn( "File encoding has not been set, using platform encoding "
+                            + ReaderFactory.FILE_ENCODING
                             + ", i.e. build is platform dependent! The file encoding for reports output files "
                             + "should be provided by the POM property ${project.reporting.outputEncoding}." );
                     encoding = ReaderFactory.FILE_ENCODING;
@@ -352,6 +365,16 @@ public class VerifyMojo
     private boolean existsSummary()
     {
         return existsSummaryFile() || existsSummaryFiles();
+    }
+
+    private Collection<CommandLineOption> commandLineOptions()
+    {
+        return SurefireHelper.commandLineOptions( session, getLog() );
+    }
+
+    private void logDebugOrCliShowErrors( CharSequence s )
+    {
+        SurefireHelper.logDebugOrCliShowErrors( s, getLog(), cli );
     }
 
 }

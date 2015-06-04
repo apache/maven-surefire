@@ -19,10 +19,20 @@ package org.apache.maven.plugin.surefire;
  * under the License.
  */
 
+import org.apache.maven.execution.MavenExecutionRequest;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
+import org.apache.maven.surefire.cli.CommandLineOption;
 import org.apache.maven.surefire.suite.RunResult;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Helper class for surefire plugins
@@ -41,7 +51,6 @@ public final class SurefireHelper
     public static void reportExecution( SurefireReportParameters reportParameters, RunResult result, Log log )
         throws MojoFailureException, MojoExecutionException
     {
-
         boolean timeoutOrOtherFailure = result.isFailureOrTimeout();
 
         if ( !timeoutOrOtherFailure )
@@ -81,6 +90,87 @@ public final class SurefireHelper
             {
                 throw new MojoFailureException( msg );
             }
+        }
+    }
+
+    public static List<CommandLineOption> commandLineOptions( MavenSession session, Log log )
+    {
+        List<CommandLineOption> cli = new ArrayList<CommandLineOption>();
+        if ( log.isErrorEnabled() )
+        {
+            cli.add( CommandLineOption.LOGGING_LEVEL_ERROR );
+        }
+
+        if ( log.isWarnEnabled() )
+        {
+            cli.add( CommandLineOption.LOGGING_LEVEL_WARN );
+        }
+
+        if ( log.isInfoEnabled() )
+        {
+            cli.add( CommandLineOption.LOGGING_LEVEL_INFO );
+        }
+
+        if ( log.isDebugEnabled() )
+        {
+            cli.add( CommandLineOption.LOGGING_LEVEL_DEBUG );
+        }
+
+        try
+        {
+            Method getRequestMethod = session.getClass().getMethod( "getRequest" );
+            MavenExecutionRequest request = (MavenExecutionRequest) getRequestMethod.invoke( session );
+
+            String f = getFailureBehavior( request );
+            if ( f != null )
+            {
+                // compatible with enums Maven 3.0
+                cli.add( CommandLineOption.valueOf( f.startsWith( "REACTOR_" ) ? f : "REACTOR_" + f ) );
+            }
+
+            if ( request.isShowErrors() )
+            {
+                cli.add( CommandLineOption.SHOW_ERRORS );
+            }
+        }
+        catch ( Exception e )
+        {
+            // don't need to log the exception that Maven 2 does not have getRequest() method in Maven Session
+        }
+        return Collections.unmodifiableList( cli );
+    }
+
+    public static void logDebugOrCliShowErrors( CharSequence s, Log log, Collection<CommandLineOption> cli )
+    {
+        if ( cli.contains( CommandLineOption.LOGGING_LEVEL_DEBUG ) )
+        {
+            log.debug( s );
+        }
+        else if ( cli.contains( CommandLineOption.SHOW_ERRORS ) )
+        {
+            if ( log.isDebugEnabled() )
+            {
+                log.debug( s );
+            }
+            else
+            {
+                log.info( s );
+            }
+        }
+    }
+
+    private static String getFailureBehavior( MavenExecutionRequest request )
+        throws NoSuchMethodException, InvocationTargetException, IllegalAccessException
+    {
+        try
+        {
+            return request.getFailureBehavior();
+        }
+        catch ( NoSuchMethodError e )
+        {
+            return (String) request.getClass()
+                .getMethod( "getReactorFailureBehavior" )
+                .invoke( request );
         }
     }
 

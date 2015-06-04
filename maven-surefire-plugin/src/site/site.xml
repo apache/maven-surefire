@@ -52,6 +52,7 @@
       <item name="Selecting Providers" href="examples/providers.html"/>
       <item name="New Error Summary" href="newerrorsummary.html"/>
       <item name="Fork Options and Parallel Test Execution" href="examples/fork-options-and-parallel-execution.html"/>
+      <item name="Using Console Logs" href="examples/logging.html"/>
     </menu>
   </body>
 </project>

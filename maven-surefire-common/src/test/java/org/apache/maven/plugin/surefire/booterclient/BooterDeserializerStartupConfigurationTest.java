@@ -21,6 +21,7 @@ package org.apache.maven.plugin.surefire.booterclient;
 
 import junit.framework.TestCase;
 import org.apache.maven.surefire.booter.*;
+import org.apache.maven.surefire.cli.CommandLineOption;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.testset.*;
 import org.apache.maven.surefire.util.RunOrder;
@@ -31,6 +32,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
+
+import static org.apache.maven.surefire.cli.CommandLineOption.LOGGING_LEVEL_DEBUG;
+import static org.apache.maven.surefire.cli.CommandLineOption.REACTOR_FAIL_FAST;
+import static org.apache.maven.surefire.cli.CommandLineOption.SHOW_ERRORS;
 
 /**
  * Performs roundtrip testing of serialization/deserialization of The StartupConfiguration
@@ -41,6 +47,9 @@ public class BooterDeserializerStartupConfigurationTest
     extends TestCase
 {
     private final ClasspathConfiguration classpathConfiguration = createClasspathConfiguration();
+
+    private final List<CommandLineOption> cli =
+        Arrays.asList( LOGGING_LEVEL_DEBUG, SHOW_ERRORS, REACTOR_FAIL_FAST );
 
     public void testProvider()
         throws IOException
@@ -135,7 +144,7 @@ public class BooterDeserializerStartupConfigurationTest
         RunOrderParameters runOrderParameters = new RunOrderParameters( RunOrder.DEFAULT, null );
         return new ProviderConfiguration( directoryScannerParameters, runOrderParameters, true, reporterConfiguration,
                 new TestArtifactInfo( "5.0", "ABC" ), testSuiteDefinition, new HashMap<String, String>(),
-                BooterDeserializerProviderConfigurationTest.aTestTyped, true );
+                BooterDeserializerProviderConfigurationTest.aTestTyped, true, cli );
     }
 
     private StartupConfiguration getTestStartupConfiguration( ClassLoaderConfiguration classLoaderConfiguration )

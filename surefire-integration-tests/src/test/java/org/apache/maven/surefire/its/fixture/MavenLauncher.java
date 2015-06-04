@@ -58,15 +58,23 @@ public class MavenLauncher
 
     private final String suffix;
 
+    private final String[] cli;
+
     private boolean expectFailure;
 
-    public MavenLauncher( Class testClass, String resourceName, String suffix )
+    public MavenLauncher( Class testClass, String resourceName, String suffix, String[] cli )
     {
         this.testCaseBeingRun = testClass;
         this.resourceName = resourceName;
         this.suffix = suffix != null ? suffix : "";
+        this.cli = cli == null ? null : cli.clone();
         resetGoals();
         resetCliOptions();
+    }
+
+    public MavenLauncher( Class testClass, String resourceName, String suffix )
+    {
+        this( testClass, resourceName, suffix, null );
     }
 
     public File getUnpackedAt()
@@ -144,7 +152,7 @@ public class MavenLauncher
         throws VerificationException
     {
         MavenLauncher mavenLauncher =
-            new MavenLauncher( testCaseBeingRun, resourceName + File.separator + subProject, suffix );
+            new MavenLauncher( testCaseBeingRun, resourceName + File.separator + subProject, suffix, cli );
         mavenLauncher.unpackedAt = new File( ensureUnpacked(), subProject );
         return mavenLauncher;
     }
@@ -382,7 +390,10 @@ public class MavenLauncher
         {
             try
             {
-                this.verifier = new Verifier( ensureUnpacked().getAbsolutePath() );
+                verifier =
+                    cli == null
+                    ? new Verifier( ensureUnpacked().getAbsolutePath(), null, false )
+                    : new Verifier( ensureUnpacked().getAbsolutePath(), null, false, cli );
             }
             catch ( VerificationException e )
             {

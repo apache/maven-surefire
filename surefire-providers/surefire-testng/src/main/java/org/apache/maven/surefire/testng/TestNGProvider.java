@@ -22,7 +22,10 @@ package org.apache.maven.surefire.testng;
 import java.io.File;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+
+import org.apache.maven.surefire.cli.CommandLineOption;
 import org.apache.maven.surefire.providerapi.AbstractProvider;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.report.ReporterConfiguration;
@@ -56,6 +59,8 @@ public class TestNGProvider
 
     private final RunOrderCalculator runOrderCalculator;
 
+    private List<CommandLineOption> mainCliOptions;
+
     private TestsToRun testsToRun;
 
     public TestNGProvider( ProviderParameters booterParameters )
@@ -67,6 +72,7 @@ public class TestNGProvider
         testRequest = booterParameters.getTestRequest();
         reporterConfiguration = booterParameters.getReporterConfiguration();
         scanResult = booterParameters.getScanResult();
+        mainCliOptions = booterParameters.getMainCliOptions();
     }
 
     public RunResult invoke( Object forkTestSet )
@@ -122,7 +128,7 @@ public class TestNGProvider
     {
         return new TestNGDirectoryTestSuite( testRequest.getTestSourceDirectory().toString(), providerProperties,
                                              reporterConfiguration.getReportsDirectory(), createMethodFilter(),
-                                             runOrderCalculator, scanResult );
+                                             runOrderCalculator, scanResult, mainCliOptions );
     }
 
     private TestNGXmlTestSuite getXmlSuite()

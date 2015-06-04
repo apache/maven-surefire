@@ -37,43 +37,58 @@ public class Surefire141PluggableProvidersIT
     public static void installProvider()
         throws VerificationException
     {
-        unpack( Surefire141PluggableProvidersIT.class, "surefire-141-pluggableproviders-provider", "prov" ).executeInstall();
+        unpack( Surefire141PluggableProvidersIT.class, "surefire-141-pluggableproviders-provider", "prov" )
+            .executeInstall();
     }
 
     @Test
     public void pluggableProviderPresent()
         throws Exception
     {
-        unpack( "surefire-141-pluggableproviders" ).maven().showExceptionMessages().executeTest().verifyTextInLog(
-            "Using configured provider org.apache.maven.surefire.testprovider.TestProvider" ).verifyTextInLog(
-            "Using configured provider org.apache.maven.surefire.junit.JUnit3Provider" ).verifyErrorFreeLog();
+        unpack( "surefire-141-pluggableproviders" )
+            .maven()
+            .showExceptionMessages()
+            .debugLogging()
+            .executeTest()
+            .verifyTextInLog( "Using configured provider org.apache.maven.surefire.testprovider.TestProvider" )
+            .verifyTextInLog( "Using configured provider org.apache.maven.surefire.junit.JUnit3Provider" )
+            .verifyErrorFreeLog();
     }
 
     @Test
     public void invokeRuntimeException()
         throws Exception
     {
-        unpack( "surefire-141-pluggableproviders" ).sysProp( "invokeCrash",
-                                                             "runtimeException" ).maven().withFailure().executeTest().verifyTextInLog(
-            "Let's fail with a runtimeException" );
+        unpack( "surefire-141-pluggableproviders" )
+            .sysProp( "invokeCrash", "runtimeException" )
+            .maven()
+            .withFailure()
+            .executeTest()
+            .verifyTextInLog( "Let's fail with a runtimeException" );
     }
 
     @Test
     public void invokeReporterException()
         throws Exception
     {
-        unpack( "surefire-141-pluggableproviders" ).sysProp( "invokeCrash",
-                                                             "reporterException" ).maven().withFailure().executeTest().verifyTextInLog(
-            "Let's fail with a reporterexception" );
+        unpack( "surefire-141-pluggableproviders" )
+            .sysProp( "invokeCrash", "reporterException" )
+            .maven()
+            .withFailure()
+            .executeTest()
+            .verifyTextInLog( "Let's fail with a reporterexception" );
     }
 
     @Test
-    public void constructorReuntimeException()
+    public void constructorRuntimeException()
         throws Exception
     {
-        unpack( "surefire-141-pluggableproviders" ).sysProp( "constructorCrash",
-                                                             "runtimeException" ).maven().withFailure().executeTest().verifyTextInLog(
-            "Let's fail with a runtimeException" );
+        unpack( "surefire-141-pluggableproviders" )
+            .sysProp( "constructorCrash", "runtimeException" )
+            .maven()
+            .withFailure()
+            .executeTest()
+            .verifyTextInLog( "Let's fail with a runtimeException" );
     }
 
 }

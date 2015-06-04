@@ -19,6 +19,7 @@ package org.apache.maven.surefire.providerapi;
  * under the License.
  */
 
+import org.apache.maven.surefire.cli.CommandLineOption;
 import org.apache.maven.surefire.report.ConsoleLogger;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterFactory;
@@ -29,6 +30,7 @@ import org.apache.maven.surefire.util.DirectoryScanner;
 import org.apache.maven.surefire.util.RunOrderCalculator;
 import org.apache.maven.surefire.util.ScanResult;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -129,4 +131,5 @@ public interface ProviderParameters
      */
     TestArtifactInfo getTestArtifactInfo();
 
+    List<CommandLineOption> getMainCliOptions();
 }
