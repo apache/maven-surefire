@@ -73,7 +73,7 @@ public class PojoStackTraceWriter
             return "";
         }
 
-        return SmartStackTraceParser.innerMostWithFocusOnClass( t, testClass );
+        return SmartStackTraceParser.stackTraceWithFocusOnClassAsString( t, testClass );
     }
 
     public SafeThrowable getThrowable()
