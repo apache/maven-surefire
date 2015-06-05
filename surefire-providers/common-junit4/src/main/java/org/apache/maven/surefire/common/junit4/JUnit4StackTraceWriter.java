@@ -74,8 +74,8 @@ public class JUnit4StackTraceWriter
         Throwable exception = junitFailure.getException();
         if ( exception != null )
         {
-            SmartStackTraceParser smartStackTraceParser = new SmartStackTraceParser( getTestClassName(), exception,
-                                                                                     getTestMethodName() );
+            SmartStackTraceParser smartStackTraceParser =
+                    new SmartStackTraceParser( getTestClassName(), exception, getTestMethodName() );
             return smartStackTraceParser.getString();
         }
         else
@@ -94,11 +94,12 @@ public class JUnit4StackTraceWriter
         String testClass = getTestClassName();
         try
         {
-            return SmartStackTraceParser.innerMostWithFocusOnClass( junitFailure.getException(), testClass );
+            Throwable e = junitFailure.getException();
+            return SmartStackTraceParser.stackTraceWithFocusOnClassAsString( e, testClass );
         }
         catch ( Throwable t )
         {
-            return SmartStackTraceParser.innerMostWithFocusOnClass( t, testClass );
+            return SmartStackTraceParser.stackTraceWithFocusOnClassAsString( t, testClass );
         }
     }
 
