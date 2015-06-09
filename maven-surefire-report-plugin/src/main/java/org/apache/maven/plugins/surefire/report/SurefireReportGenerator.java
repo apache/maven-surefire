@@ -532,7 +532,7 @@ public class SurefireReportGenerator
                 sink.verbatim( null );
                 for ( String line : detail )
                 {
-                    sink.text( line );
+                    sink.text( line + "\n" );
                     sink.lineBreak();
                 }
                 sink.verbatim_();

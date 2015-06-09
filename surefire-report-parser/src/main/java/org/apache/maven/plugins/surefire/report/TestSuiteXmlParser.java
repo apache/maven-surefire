@@ -19,10 +19,12 @@ package org.apache.maven.plugins.surefire.report;
  * under the License.
  */
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -30,12 +32,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.StringTokenizer;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.apache.maven.shared.utils.StringUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -278,41 +280,36 @@ public class TestSuiteXmlParser
     public void characters( char[] ch, int start, int length )
         throws SAXException
     {
-        if ( !valid )
+        if ( valid )
         {
-            return;
-        }
-        String s = new String( ch, start, length );
+            final String s = new String( ch, start, length );
 
-        if ( !"".equals( s.trim() ) )
-        {
-            currentElement.append( s );
-        }
-    }
-
-    private List<String> parseCause( String detail )
-    {
-        String fullName = testCase.getFullName();
-        String name = fullName.substring( fullName.lastIndexOf( "." ) + 1 );
-        return parseCause( detail, name );
-    }
-
-    private List<String> parseCause( String detail, String compareTo )
-    {
-        StringTokenizer stringTokenizer = new StringTokenizer( detail, "\n" );
-        List<String> parsedDetail = new ArrayList<String>( stringTokenizer.countTokens() );
-
-        while ( stringTokenizer.hasMoreTokens() )
-        {
-            String lineString = stringTokenizer.nextToken().trim();
-            parsedDetail.add( lineString );
-            if ( lineString.contains( compareTo ) )
+            if ( StringUtils.isNotBlank( s ) )
             {
-                break;
+                currentElement.append( s );
             }
         }
+    }
 
-        return parsedDetail;
+    @SuppressWarnings( "checkstyle:innerassignment" )
+    private List<String> parseCause( String detail )
+        throws SAXException
+    {
+        List<String> parsedDetail = new ArrayList<String>();
+        try
+        {
+            BufferedReader lines = new BufferedReader( new StringReader( detail ) );
+            for ( String line; ( line = lines.readLine() ) != null; )
+            {
+                parsedDetail.add( line );
+            }
+
+            return parsedDetail;
+        }
+        catch ( IOException e )
+        {
+            throw new SAXException( e );
+        }
     }
 
     public boolean isValid()
