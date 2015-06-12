@@ -127,6 +127,7 @@ public class TestSetRunListener
     public void testSetCompleted( ReportEntry report )
     {
         WrappedReportEntry wrap = wrapTestSet( report );
+        detailsForThis.testSetCompleted();
         List<String> testResults = briefOrPlainFormat ? detailsForThis.getTestResults() : null;
         if ( fileReporter != null )
         {

@@ -40,6 +40,8 @@ public class TestSetStats
 
     private long testSetStartAt;
 
+    private long testSetEndAt;
+
     private long testStartAt;
 
     private int completedCount;
@@ -90,6 +92,15 @@ public class TestSetStats
         lastStartAt = testSetStartAt;
     }
 
+    public void testSetCompleted()
+    {
+        testSetEndAt = System.currentTimeMillis();
+        if ( elapsedForTestSet < testSetEndAt - testSetStartAt )
+        {
+            elapsedForTestSet = testSetEndAt - testSetStartAt;
+        }
+    }
+    
     public void testStart()
     {
         testStartAt = System.currentTimeMillis();

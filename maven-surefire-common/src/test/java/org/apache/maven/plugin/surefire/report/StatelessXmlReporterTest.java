@@ -234,8 +234,6 @@ public class StatelessXmlReporterTest
 
         Xpp3Dom testSuite = Xpp3DomBuilder.build( new InputStreamReader( fileInputStream, "UTF-8" ) );
         assertEquals( "testsuite", testSuite.getName() );
-        // 0.019 = 0.012 + 0.005 +0.002
-        assertEquals( "0.019", testSuite.getAttribute( "time" ) );
         Xpp3Dom properties = testSuite.getChild( "properties" );
         assertEquals( System.getProperties().size(), properties.getChildCount() );
         Xpp3Dom child = properties.getChild( 1 );
