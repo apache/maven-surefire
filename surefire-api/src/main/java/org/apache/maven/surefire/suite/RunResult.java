@@ -118,6 +118,7 @@ public class RunResult
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         PrintWriter pw = new PrintWriter( out );
         e.printStackTrace( pw );
+        pw.close();
         return new String( out.toByteArray() );
     }
 
