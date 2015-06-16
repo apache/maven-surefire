@@ -167,15 +167,11 @@ public class StatelessXmlReporter
                         case error:
                         case failure:
                             // When rerunFailingTestsCount is set to larger than 0
-                            int totalTimeMS = 0;
-                            for ( WrappedReportEntry singleRunEntry : methodEntryList )
-                            {
-                                totalTimeMS += singleRunEntry.getElapsed();
-                            }
-                            String totalTimeS = NumberFormat.getInstance( Locale.ENGLISH ).format(
-                                                (double) totalTimeMS / 1000 );
+                            int lastRunTimeMS = methodEntryList.get( methodEntryList.size() - 1 ).getElapsed();
+                            String lastRunTimeS = NumberFormat.getInstance( Locale.ENGLISH ).format(
+                                                (double) lastRunTimeMS / 1000 );
                             startTestElement( ppw, methodEntryList.get( 0 ), reportNameSuffix,
-                                              totalTimeS );
+                                              lastRunTimeS );
                             boolean firstRun = true;
                             for ( WrappedReportEntry singleRunEntry : methodEntryList )
                             {
