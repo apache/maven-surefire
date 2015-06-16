@@ -129,7 +129,7 @@ public class StatelessXmlReporter
             ppw.setEncoding( ENCODING );
 
             createTestSuiteElement( ppw, testSetReportEntry, testSetStats, reportNameSuffix,
-                                    testSetStats.getElapsedForTestSet() );
+                                    testSetStats.getElapsedForTestSetAsString() );
 
             showProperties( ppw );
 
