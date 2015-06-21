@@ -156,6 +156,17 @@ else
   You can configure multiple custom listeners like this:
 
 +---+
+<dependencies>
+[...]
+  <dependency>
+    <groupId>your-junit-listener-artifact-groupid</groupId>
+    <artifactId>your-junit-listener-artifact-artifactid</artifactId>
+    <version>your-junit-listener-artifact-version</version>
+    <scope>test</scope>
+  </dependency>
+[...]
+</dependencies>
+[...]
 <plugins>
 [...]
   <plugin>
@@ -173,6 +184,14 @@ else
 [...]
 </plugins>
 +---+
+
+  For more information on JUnit, see the {{{http://www.junit.org}JUnit web site}}.
+
+  You can implement JUnit listener interface <<<org.junit.runner.notification.RunListener>>> in
+  a separate test artifact <<<your-junit-listener-artifact>>> with scope=test, or in project test source code
+  <<<src/test/java>>>. You can filter test artifacts by the parameter <<<dependenciesToScan>>> to load its classes
+  in current ClassLoader of surefire-junit* providers.
+
 
 * Using a Security Manager (JUnit3 only)
 
