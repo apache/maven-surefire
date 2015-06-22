@@ -225,3 +225,27 @@ Using TestNG
   a separate test artifact <<<your-testng-listener-artifact>>> with scope=test, or in project test source code
   <<<src/test/java>>>. You can filter test artifacts by the parameter <<<dependenciesToScan>>> to load its classes
   in current ClassLoader of surefire-testng provider.
+
+* Running TestNG and JUnit Tests
+
+  TestNG 6.5.1 and higher provides support to run TestNG and JUnit 4.x in current Maven project. All you need
+  is to introduce TestNG and JUnit dependency in POM.
+
++---+
+<dependencies>
+  [...]
+  <dependency>
+    <groupId>org.testng</groupId>
+    <artifactId>testng</artifactId>
+    <version>6.9.4</version>
+    <scope>test</scope>
+  </dependency>
+  <dependency>
+    <groupId>junit</groupId>
+    <artifactId>junit</artifactId>
+    <version>4.10</version>
+    <scope>test</scope>
+  </dependency>
+  [...]
+</dependencies>
++---+
