@@ -1476,7 +1476,6 @@ public abstract class AbstractSurefireMojo
                                                      ClassLoaderConfiguration classLoaderConfiguration )
         throws MojoExecutionException, MojoFailureException
     {
-
         try
         {
             // cache the provider lookup
@@ -2089,7 +2088,7 @@ public abstract class AbstractSurefireMojo
             {
                 if ( classpathElement != null )
                 {
-                    classpath.add( classpathElement );
+                    Collections.addAll( classpath, StringUtils.split( classpathElement, "," ) );
                 }
             }
         }
