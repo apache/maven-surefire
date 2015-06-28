@@ -29,6 +29,7 @@ import java.util.List;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeTrue;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -171,7 +172,7 @@ public class TestSuiteXmlParserTest
     {
         TestSuiteXmlParser parser = new TestSuiteXmlParser();
         File surefireReport = new File( "src/test/resources/junit-pathWithÜmlaut/TEST-umlautTest.BasicTest.xml" );
-        assertTrue( surefireReport.isFile() );
+        assumeTrue( surefireReport.isFile() );
         Collection<ReportTestSuite> suites = parser.parse( surefireReport.getCanonicalPath() );
         assertNotNull( suites );
         assertEquals( 1, suites.size() );
