@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="surefire.MyTest" time="0" tests="1" errors="1" skipped="0" failures="0">
+  <properties>
+    <property name="java.runtime.name" value="Java(TM) SE Runtime Environment"/>
+  </properties>
+  <testcase name="test" classname="surefire.MyTest" time="0">
+    <error message="java.lang.IndexOutOfBoundsException" type="java.lang.RuntimeException">java.lang.RuntimeException: java.lang.IndexOutOfBoundsException
+	at surefire.MyTest.rethrownDelegate(MyTest.java:24)
+	at surefire.MyTest.newRethrownDelegate(MyTest.java:17)
+	at surefire.MyTest.test(MyTest.java:13)
+	Caused by: java.lang.IndexOutOfBoundsException
+	at surefire.MyTest.failure(MyTest.java:33)
+	at surefire.MyTest.access$100(MyTest.java:9)
+	at surefire.MyTest$Nested.run(MyTest.java:38)
+	at surefire.MyTest.delegate(MyTest.java:29)
+	at surefire.MyTest.rethrownDelegate(MyTest.java:22)
+</error>
+  </testcase>
+</testsuite>

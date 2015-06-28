@@ -71,10 +71,10 @@ public class Surefire224WellFormedXmlFailuresIT
                 testU0000 = current;
             }
         }
-        assertEquals( "Wrong error message", "\"", testQuote.getFailure().get( "message" ) );
-        assertEquals( "Wrong error message", "<", testLower.getFailure().get( "message" ) );
-        assertEquals( "Wrong error message", ">", testGreater.getFailure().get( "message" ) );
+        assertEquals( "Wrong error message", "\"", testQuote.getFailureMessage() );
+        assertEquals( "Wrong error message", "<", testLower.getFailureMessage() );
+        assertEquals( "Wrong error message", ">", testGreater.getFailureMessage() );
         // SUREFIRE-456 we have to doubly-escape non-visible control characters like \u0000
-        assertEquals( "Wrong error message", "&#0;", testU0000.getFailure().get( "message" ) );
+        assertEquals( "Wrong error message", "&#0;", testU0000.getFailureMessage() );
     }
 }

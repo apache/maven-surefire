@@ -40,17 +40,6 @@ public class ReportTestCaseTest
         tCase = new ReportTestCase();
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    protected void tearDown()
-        throws Exception
-    {
-        super.tearDown();
-
-        tCase = null;
-    }
-
     public void testSetName()
     {
         tCase.setName( "Test Case Name" );
@@ -67,10 +56,10 @@ public class ReportTestCaseTest
 
     public void testSetFailure()
     {
-        tCase.addFailure( "messageVal", "typeVal" );
+        tCase.setFailure( "messageVal", "typeVal" );
 
-        assertEquals( "messageVal", tCase.getFailure().get( "message" ) );
-        assertEquals( "typeVal", tCase.getFailure().get( "type" ) );
+        assertEquals( "messageVal", tCase.getFailureMessage() );
+        assertEquals( "typeVal", tCase.getFailureType() );
     }
 
     public void testSetFullName()

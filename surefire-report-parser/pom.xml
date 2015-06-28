@@ -57,8 +57,8 @@
         <dependencies>
           <dependency>
             <groupId>org.apache.maven.surefire</groupId>
-            <artifactId>surefire-shadefire</artifactId>
-            <version>2.12.4</version> <!-- ${shadedVersion}, but resolved due to http://jira.codehaus.org/browse/MRELEASE-799 -->
+            <artifactId>surefire-junit47</artifactId>
+            <version>2.12.4</version>
           </dependency>
         </dependencies>
       </plugin>

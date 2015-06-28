@@ -150,7 +150,7 @@ public class SmartStackTraceParserTest
         {
             SmartStackTraceParser smartStackTraceParser = new SmartStackTraceParser( CaseThatWillFail.class, e );
             String res = smartStackTraceParser.getString();
-            assertEquals( "CaseThatWillFail.testThatWillFail:29 expected:<abc> but was:<def>", res );
+            assertEquals( "CaseThatWillFail.testThatWillFail:29 expected:<[abc]> but was:<[def]>", res );
         }
     }
 
@@ -190,7 +190,7 @@ public class SmartStackTraceParserTest
         {
             SmartStackTraceParser smartStackTraceParser = new SmartStackTraceParser( AssertionNoMessage.class, e );
             String res = smartStackTraceParser.getString();
-            assertEquals( "AssertionNoMessage.testThrowSomething:29 expected:<abc> but was:<xyz>", res );
+            assertEquals( "AssertionNoMessage.testThrowSomething:29 expected:<[abc]> but was:<[xyz]>", res );
         }
     }
 

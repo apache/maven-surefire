@@ -39,19 +39,7 @@ public class ReportTestSuiteTest
         throws Exception
     {
         super.setUp();
-
         tSuite = new ReportTestSuite();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    protected void tearDown()
-        throws Exception
-    {
-        super.tearDown();
-
-        tSuite = null;
     }
 
     public void testSetTestCases()
@@ -67,7 +55,7 @@ public class ReportTestSuiteTest
         assertEquals( tCase, tSuite.getTestCases().get( 0 ) );
     }
 
-    public void testSetNumberdOfErrors()
+    public void testSetNumberedOfErrors()
     {
         tSuite.setNumberOfErrors( 9 );
 
