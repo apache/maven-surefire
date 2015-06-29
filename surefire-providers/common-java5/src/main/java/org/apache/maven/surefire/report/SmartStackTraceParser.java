@@ -32,6 +32,7 @@ import org.apache.maven.shared.utils.StringUtils;
 @SuppressWarnings( "ThrowableResultOfMethodCallIgnored" )
 public class SmartStackTraceParser
 {
+    private static final StackTraceFilter EVERY_STACK_ELEMENT = new NullStackTraceFilter();
 
     private static final int MAX_LINE_LENGTH = 77;
 
@@ -56,8 +57,8 @@ public class SmartStackTraceParser
     {
         this.testMethodName = testMethodName;
         this.testClassName = testClassName;
-        this.testClass = getClass( testClassName );
-        this.simpleName = this.testClassName.substring( this.testClassName.lastIndexOf( "." ) + 1 );
+        testClass = getClass( testClassName );
+        simpleName = testClassName.substring( testClassName.lastIndexOf( "." ) + 1 );
         this.throwable = new SafeThrowable( throwable );
         stackTrace = throwable.getStackTrace();
     }
@@ -89,15 +90,16 @@ public class SmartStackTraceParser
             return throwable.getLocalizedMessage();
         }
 
-        StringBuilder result = new StringBuilder();
-        List<StackTraceElement> stackTraceElements = focusOnClass( stackTrace, testClass );
+        final StringBuilder result = new StringBuilder();
+        final List<StackTraceElement> stackTraceElements = focusOnClass( stackTrace, testClass );
         Collections.reverse( stackTraceElements );
         if ( stackTraceElements.isEmpty() )
         {
             result.append( simpleName );
             if ( StringUtils.isNotEmpty( testMethodName ) )
             {
-                result.append( "." ).append( testMethodName );
+                result.append( "." )
+                    .append( testMethodName );
             }
         }
         else
@@ -119,26 +121,27 @@ public class SmartStackTraceParser
                 }
                 if ( !stackTraceElement.getClassName().equals( testClassName ) )
                 {
-                    result.append( getSimpleName( stackTraceElement.getClassName() ) ); // Add the name of the superclas
-                    result.append( "." );
+                    result.append( getSimpleName( stackTraceElement.getClassName() ) ) // Add the name of the superclas
+                        .append( "." );
                 }
-                result.append( stackTraceElement.getMethodName() ).append( ":" ).append(
-                    stackTraceElement.getLineNumber() );
-                result.append( "->" );
+                result.append( stackTraceElement.getMethodName() )
+                    .append( ":" )
+                    .append( stackTraceElement.getLineNumber() )
+                    .append( "->" );
             }
 
             if ( result.length() >= 2 )
             {
-                result.deleteCharAt( result.length() - 1 );
-                result.deleteCharAt( result.length() - 1 );
+                result.deleteCharAt( result.length() - 1 )
+                    .deleteCharAt( result.length() - 1 );
             }
         }
 
         Throwable target = throwable.getTarget();
         if ( target instanceof AssertionError )
         {
-            result.append( " " );
-            result.append( throwable.getMessage() );
+            result.append( " " )
+                .append( throwable.getMessage() );
         }
         else if ( "junit.framework.AssertionFailedError".equals( target.getClass().getName() )
             || "junit.framework.ComparisonFailure".equals( target.getClass().getName() ) )
@@ -222,66 +225,50 @@ public class SmartStackTraceParser
         return testClass.getName().equals( lookFor );
     }
 
-    static Throwable findInnermostWithClass( Throwable t, String className )
+    static Throwable findTopmostWithClass( final Throwable t, StackTraceFilter filter )
     {
-        Throwable match = t;
+        Throwable n = t;
         do
         {
-            if ( containsClassName( t.getStackTrace(), className ) )
+            if ( containsClassName( n.getStackTrace(), filter ) )
             {
-                match = t;
+                return n;
             }
 
-            t = t.getCause();
+            n = n.getCause();
 
         }
-        while ( t != null );
-        return match;
+        while ( n != null );
+        return t;
     }
 
-    public static String innerMostWithFocusOnClass( Throwable t, String className )
+    public static String stackTraceWithFocusOnClassAsString( Throwable t, String className )
     {
-        Throwable innermost = findInnermostWithClass( t, className );
-        List<StackTraceElement> stackTraceElements = focusInsideClass( innermost.getStackTrace(), className );
-        String s = causeToString( innermost.getCause() );
-        return toString( t, stackTraceElements ) + s;
+        StackTraceFilter filter = new ClassNameStackTraceFilter( className );
+        Throwable topmost = findTopmostWithClass( t, filter );
+        List<StackTraceElement> stackTraceElements = focusInsideClass( topmost.getStackTrace(), filter );
+        String s = causeToString( topmost.getCause(), filter );
+        return toString( t, stackTraceElements, filter ) + s;
     }
 
-    static List<StackTraceElement> focusInsideClass( StackTraceElement[] stackTrace, String className )
+    static List<StackTraceElement> focusInsideClass( StackTraceElement[] stackTrace, StackTraceFilter filter )
     {
         List<StackTraceElement> result = new ArrayList<StackTraceElement>();
-        boolean found = false;
         for ( StackTraceElement element : stackTrace )
         {
-            if ( !found )
+            if ( filter.matches( element ) )
             {
                 result.add( element );
-            }
-
-            if ( className.equals( element.getClassName() ) )
-            {
-                if ( found )
-                {
-                    result.add( element );
-                }
-                found = true;
-            }
-            else
-            {
-                if ( found )
-                {
-                    break;
-                }
             }
         }
         return result;
     }
 
-    static boolean containsClassName( StackTraceElement[] stackTrace, String className )
+    static boolean containsClassName( StackTraceElement[] stackTrace, StackTraceFilter filter )
     {
         for ( StackTraceElement element : stackTrace )
         {
-            if ( className.equals( element.getClassName() ) )
+            if ( filter.matches( element ) )
             {
                 return true;
             }
@@ -289,31 +276,48 @@ public class SmartStackTraceParser
         return false;
     }
 
-    public static String causeToString( Throwable cause )
+    private static String causeToString( Throwable cause, StackTraceFilter filter )
     {
-        StringBuilder resp = new StringBuilder();
+        String resp = "";
         while ( cause != null )
         {
-            resp.append( "Caused by: " );
-            resp.append( toString( cause, Arrays.asList( cause.getStackTrace() ) ) );
+            resp += "Caused by: ";
+            resp += toString( cause, Arrays.asList( cause.getStackTrace() ), filter );
             cause = cause.getCause();
         }
-        return resp.toString();
+        return resp;
+    }
+
+    public static String causeToString( Throwable cause )
+    {
+        return causeToString( cause, EVERY_STACK_ELEMENT );
+    }
+
+    private static String toString( Throwable t, Iterable<StackTraceElement> elements, StackTraceFilter filter )
+    {
+        String result = "";
+        if ( t != null )
+        {
+            result += t.getClass().getName();
+            result += ": ";
+            result += t.getMessage();
+            result += "\n";
+        }
+
+        for ( StackTraceElement element : elements )
+        {
+            if ( filter.matches( element ) )
+            {
+                result += "\tat ";
+                result += element;
+                result += "\n";
+            }
+        }
+        return result;
     }
 
     public static String toString( Throwable t, Iterable<StackTraceElement> elements )
     {
-        StringBuilder result = new StringBuilder();
-        result.append( t.getClass().getName() );
-        result.append( ": " );
-        result.append( t.getMessage() );
-        result.append( "\n" );
-
-        for ( StackTraceElement element : elements )
-        {
-            result.append( "\tat " ).append( element.toString() );
-            result.append( "\n" );
-        }
-        return result.toString();
+        return toString( t, elements, EVERY_STACK_ELEMENT );
     }
 }
