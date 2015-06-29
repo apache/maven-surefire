@@ -257,47 +257,44 @@ public class SurefireReportMojoTest
                                         + "<td><a href=\"#surefireMyTest\">MyTest</a></td>"
                                         + "<td>1</td><td>1</td><td>0</td><td>0</td><td>0%</td><td>0</td>"
                                         + "</tr>" ) );
-        assertThat( htmlContent,
-                    containsString( ">surefire.MyTest:13</a>" ) );
+        assertThat( htmlContent, containsString( ">surefire.MyTest:13</a>" ) );
 
         assertThat( htmlContent, containsString( "./xref-test/surefire/MyTest.html#13" ) );
 
-        assertThat( htmlContent, containsString( "<pre>"
-        + "java.lang.RuntimeException: java.lang.IndexOutOfBoundsException\r\n"
-        + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:24)\r\n"
-        + "\tat surefire.MyTest.newRethrownDelegate(MyTest.java:17)\r\n"
-        + "\tat surefire.MyTest.test(MyTest.java:13)\r\n"
-        + "\tat sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\r\n"
-        + "\tat sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)\r\n"
-        + "\tat sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\r\n"
-        + "\tat java.lang.reflect.Method.invoke(Method.java:606)\r\n"
-        + "\tat org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)\r\n"
-        + "\tat org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)\r\n"
-        + "\tat org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)\r\n"
-        + "\tat org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)\r\n"
-        + "\tat org.junit.runners.ParentRunner.runLeaf(ParentRunner.java:325)\r\n"
-        + "\tat org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:78)\r\n"
-        + "\tat org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:57)\r\n"
-        + "\tat org.junit.runners.ParentRunner$3.run(ParentRunner.java:290)\r\n"
-        + "\tat org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:71)\r\n"
-        + "\tat org.junit.runners.ParentRunner.runChildren(ParentRunner.java:288)\r\n"
-        + "\tat org.junit.runners.ParentRunner.access$000(ParentRunner.java:58)\r\n"
-        + "\tat org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:268)\r\n"
-        + "\tat org.junit.runners.ParentRunner.run(ParentRunner.java:363)\r\n"
-        + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.execute(JUnit4Provider.java:272)\r\n"
-        + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.executeWithRerun(JUnit4Provider.java:167)\r\n"
-        + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.executeTestSet(JUnit4Provider.java:147)\r\n"
-        + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.invoke(JUnit4Provider.java:130)\r\n"
-        + "\tat org.apache.maven.surefire.booter.ForkedBooter.invokeProviderInSameClassLoader(ForkedBooter.java:211)\r\n"
-        + "\tat org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:163)\r\n"
-        + "\tat org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:105)\r\n"
-        + "\tCaused by: java.lang.IndexOutOfBoundsException\r\n"
-        + "\tat surefire.MyTest.failure(MyTest.java:33)\r\n"
-        + "\tat surefire.MyTest.access$100(MyTest.java:9)\r\n"
-        + "\tat surefire.MyTest$Nested.run(MyTest.java:38)\r\n"
-        + "\tat surefire.MyTest.delegate(MyTest.java:29)\r\n"
-        + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:22)"
-        + "</pre>" ) );
+        assertThat( htmlContent, containsString( toSystemNewLine( "<pre>"
+        + "java.lang.RuntimeException: java.lang.IndexOutOfBoundsException\n"
+        + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:24)\n"
+        + "\tat surefire.MyTest.newRethrownDelegate(MyTest.java:17)\n"
+        + "\tat surefire.MyTest.test(MyTest.java:13)\n"
+        + "\tat sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\n"
+        + "\tat sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)\n"
+        + "\tat sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\n"
+        + "\tat java.lang.reflect.Method.invoke(Method.java:606)\n"
+        + "\tat org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)\n"
+        + "\tat org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)\n"
+        + "\tat org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)\n"
+        + "\tat org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)\n"
+        + "\tat org.junit.runners.ParentRunner.runLeaf(ParentRunner.java:325)\n"
+        + "\tat org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:78)\n"
+        + "\tat org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:57)\n"
+        + "\tat org.junit.runners.ParentRunner$3.run(ParentRunner.java:290)\n"
+        + "\tat org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:71)\n"
+        + "\tat org.junit.runners.ParentRunner.runChildren(ParentRunner.java:288)\n"
+        + "\tat org.junit.runners.ParentRunner.access$000(ParentRunner.java:58)\n"
+        + "\tat org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:268)\n"
+        + "\tat org.junit.runners.ParentRunner.run(ParentRunner.java:363)\n"
+        + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.execute(JUnit4Provider.java:272)\n"
+        + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.executeWithRerun(JUnit4Provider.java:167)\n"
+        + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.executeTestSet(JUnit4Provider.java:147)\n"
+        + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.invoke(JUnit4Provider.java:130)\n"
+        + "\tat org.apache.maven.surefire.booter.ForkedBooter.invokeProviderInSameClassLoader(ForkedBooter.java:211)\n"
+        + "\tat org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:163)\n"
+        + "\tat org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:105)\n"
+        + "\tCaused by: java.lang.IndexOutOfBoundsException\n"
+        + "\tat surefire.MyTest.failure(MyTest.java:33)\n" + "\tat surefire.MyTest.access$100(MyTest.java:9)\n"
+        + "\tat surefire.MyTest$Nested.run(MyTest.java:38)\n"
+        + "\tat surefire.MyTest.delegate(MyTest.java:29)\n"
+        + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:22)" + "</pre>" ) ) );
     }
 
     public void testSurefireReportNestedClassTrimStackTrace()
@@ -336,18 +333,18 @@ public class SurefireReportMojoTest
 
         assertThat( htmlContent, containsString( "./xref-test/surefire/MyTest.html#13" ) );
 
-        assertThat( htmlContent, containsString( "<pre>"
-        + "java.lang.RuntimeException: java.lang.IndexOutOfBoundsException\r\n"
-        + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:24)\r\n"
-        + "\tat surefire.MyTest.newRethrownDelegate(MyTest.java:17)\r\n"
-        + "\tat surefire.MyTest.test(MyTest.java:13)\r\n"
-        + "\tCaused by: java.lang.IndexOutOfBoundsException\r\n"
-        + "\tat surefire.MyTest.failure(MyTest.java:33)\r\n"
-        + "\tat surefire.MyTest.access$100(MyTest.java:9)\r\n"
-        + "\tat surefire.MyTest$Nested.run(MyTest.java:38)\r\n"
-        + "\tat surefire.MyTest.delegate(MyTest.java:29)\r\n"
+        assertThat( htmlContent, containsString( toSystemNewLine( "<pre>"
+        + "java.lang.RuntimeException: java.lang.IndexOutOfBoundsException\n"
+        + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:24)\n"
+        + "\tat surefire.MyTest.newRethrownDelegate(MyTest.java:17)\n"
+        + "\tat surefire.MyTest.test(MyTest.java:13)\n"
+        + "\tCaused by: java.lang.IndexOutOfBoundsException\n"
+        + "\tat surefire.MyTest.failure(MyTest.java:33)\n"
+        + "\tat surefire.MyTest.access$100(MyTest.java:9)\n"
+        + "\tat surefire.MyTest$Nested.run(MyTest.java:38)\n"
+        + "\tat surefire.MyTest.delegate(MyTest.java:29)\n"
         + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:22)"
-        + "</pre>" ) );
+        + "</pre>" ) ) );
     }
 
     public void testSurefireReportNestedClass()
@@ -386,42 +383,42 @@ public class SurefireReportMojoTest
 
         assertThat( htmlContent, containsString( "./xref-test/surefire/MyTest.html#13" ) );
 
-        assertThat( htmlContent, containsString( "<pre>"
-        + "java.lang.RuntimeException: java.lang.IndexOutOfBoundsException\r\n"
-        + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:24)\r\n"
-        + "\tat surefire.MyTest.newRethrownDelegate(MyTest.java:17)\r\n"
-        + "\tat surefire.MyTest.test(MyTest.java:13)\r\n"
-        + "\tat sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\r\n"
-        + "\tat sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)\r\n"
-        + "\tat sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\r\n"
-        + "\tat java.lang.reflect.Method.invoke(Method.java:606)\r\n"
-        + "\tat org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)\r\n"
-        + "\tat org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)\r\n"
-        + "\tat org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)\r\n"
-        + "\tat org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)\r\n"
-        + "\tat org.junit.runners.ParentRunner.runLeaf(ParentRunner.java:325)\r\n"
-        + "\tat org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:78)\r\n"
-        + "\tat org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:57)\r\n"
-        + "\tat org.junit.runners.ParentRunner$3.run(ParentRunner.java:290)\r\n"
-        + "\tat org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:71)\r\n"
-        + "\tat org.junit.runners.ParentRunner.runChildren(ParentRunner.java:288)\r\n"
-        + "\tat org.junit.runners.ParentRunner.access$000(ParentRunner.java:58)\r\n"
-        + "\tat org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:268)\r\n"
-        + "\tat org.junit.runners.ParentRunner.run(ParentRunner.java:363)\r\n"
-        + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.execute(JUnit4Provider.java:272)\r\n"
-        + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.executeWithRerun(JUnit4Provider.java:167)\r\n"
-        + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.executeTestSet(JUnit4Provider.java:147)\r\n"
-        + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.invoke(JUnit4Provider.java:130)\r\n"
-        + "\tat org.apache.maven.surefire.booter.ForkedBooter.invokeProviderInSameClassLoader(ForkedBooter.java:211)\r\n"
-        + "\tat org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:163)\r\n"
-        + "\tat org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:105)\r\n"
-        + "\tCaused by: java.lang.IndexOutOfBoundsException\r\n"
-        + "\tat surefire.MyTest.failure(MyTest.java:33)\r\n"
-        + "\tat surefire.MyTest.access$100(MyTest.java:9)\r\n"
-        + "\tat surefire.MyTest$Nested.run(MyTest.java:38)\r\n"
-        + "\tat surefire.MyTest.delegate(MyTest.java:29)\r\n"
+        assertThat( htmlContent, containsString( toSystemNewLine( "<pre>"
+        + "java.lang.RuntimeException: java.lang.IndexOutOfBoundsException\n"
+        + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:24)\n"
+        + "\tat surefire.MyTest.newRethrownDelegate(MyTest.java:17)\n"
+        + "\tat surefire.MyTest.test(MyTest.java:13)\n"
+        + "\tat sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\n"
+        + "\tat sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)\n"
+        + "\tat sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\n"
+        + "\tat java.lang.reflect.Method.invoke(Method.java:606)\n"
+        + "\tat org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)\n"
+        + "\tat org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)\n"
+        + "\tat org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)\n"
+        + "\tat org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)\n"
+        + "\tat org.junit.runners.ParentRunner.runLeaf(ParentRunner.java:325)\n"
+        + "\tat org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:78)\n"
+        + "\tat org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:57)\n"
+        + "\tat org.junit.runners.ParentRunner$3.run(ParentRunner.java:290)\n"
+        + "\tat org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:71)\n"
+        + "\tat org.junit.runners.ParentRunner.runChildren(ParentRunner.java:288)\n"
+        + "\tat org.junit.runners.ParentRunner.access$000(ParentRunner.java:58)\n"
+        + "\tat org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:268)\n"
+        + "\tat org.junit.runners.ParentRunner.run(ParentRunner.java:363)\n"
+        + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.execute(JUnit4Provider.java:272)\n"
+        + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.executeWithRerun(JUnit4Provider.java:167)\n"
+        + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.executeTestSet(JUnit4Provider.java:147)\n"
+        + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.invoke(JUnit4Provider.java:130)\n"
+        + "\tat org.apache.maven.surefire.booter.ForkedBooter.invokeProviderInSameClassLoader(ForkedBooter.java:211)\n"
+        + "\tat org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:163)\n"
+        + "\tat org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:105)\n"
+        + "\tCaused by: java.lang.IndexOutOfBoundsException\n"
+        + "\tat surefire.MyTest.failure(MyTest.java:33)\n"
+        + "\tat surefire.MyTest.access$100(MyTest.java:9)\n"
+        + "\tat surefire.MyTest$Nested.run(MyTest.java:38)\n"
+        + "\tat surefire.MyTest.delegate(MyTest.java:29)\n"
         + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:22)"
-        + "</pre>" ) );
+        + "</pre>" ) ) );
     }
 
     public void testSurefireReportEnclosedTrimStackTrace()
@@ -460,17 +457,17 @@ public class SurefireReportMojoTest
 
         assertThat( htmlContent, containsString( "./xref-test/surefire/MyTest$A.html#45" ) );
 
-        assertThat( htmlContent, containsString( "<pre>"
-        + "java.lang.RuntimeException: java.lang.IndexOutOfBoundsException\r\n"
-        + "\tat surefire.MyTest.failure(MyTest.java:33)\r\n"
-        + "\tat surefire.MyTest.access$100(MyTest.java:9)\r\n"
-        + "\tat surefire.MyTest$Nested.run(MyTest.java:38)\r\n"
-        + "\tat surefire.MyTest.delegate(MyTest.java:29)\r\n"
-        + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:22)\r\n"
-        + "\tat surefire.MyTest.newRethrownDelegate(MyTest.java:17)\r\n"
-        + "\tat surefire.MyTest.access$200(MyTest.java:9)\r\n"
+        assertThat( htmlContent, containsString( toSystemNewLine( "<pre>"
+        + "java.lang.RuntimeException: java.lang.IndexOutOfBoundsException\n"
+        + "\tat surefire.MyTest.failure(MyTest.java:33)\n"
+        + "\tat surefire.MyTest.access$100(MyTest.java:9)\n"
+        + "\tat surefire.MyTest$Nested.run(MyTest.java:38)\n"
+        + "\tat surefire.MyTest.delegate(MyTest.java:29)\n"
+        + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:22)\n"
+        + "\tat surefire.MyTest.newRethrownDelegate(MyTest.java:17)\n"
+        + "\tat surefire.MyTest.access$200(MyTest.java:9)\n"
         + "\tat surefire.MyTest$A.t(MyTest.java:45)"
-        + "</pre>" ) );
+        + "</pre>" ) ) );
     }
 
     public void testSurefireReportEnclosed()
@@ -509,51 +506,51 @@ public class SurefireReportMojoTest
 
         assertThat( htmlContent, containsString( "./xref-test/surefire/MyTest$A.html#45" ) );
 
-        assertThat( htmlContent, containsString( "<pre>"
-        + "java.lang.RuntimeException: java.lang.IndexOutOfBoundsException\r\n"
-        + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:24)\r\n"
-        + "\tat surefire.MyTest.newRethrownDelegate(MyTest.java:17)\r\n"
-        + "\tat surefire.MyTest.access$200(MyTest.java:9)\r\n"
-        + "\tat surefire.MyTest$A.t(MyTest.java:45)\r\n"
-        + "\tat sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\r\n"
-        + "\tat sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)\r\n"
-        + "\tat sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\r\n"
-        + "\tat java.lang.reflect.Method.invoke(Method.java:606)\r\n"
-        + "\tat org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)\r\n"
-        + "\tat org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)\r\n"
-        + "\tat org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)\r\n"
-        + "\tat org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)\r\n"
-        + "\tat org.junit.runners.ParentRunner.runLeaf(ParentRunner.java:325)\r\n"
-        + "\tat org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:78)\r\n"
-        + "\tat org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:57)\r\n"
-        + "\tat org.junit.runners.ParentRunner$3.run(ParentRunner.java:290)\r\n"
-        + "\tat org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:71)\r\n"
-        + "\tat org.junit.runners.ParentRunner.runChildren(ParentRunner.java:288)\r\n"
-        + "\tat org.junit.runners.ParentRunner.access$000(ParentRunner.java:58)\r\n"
-        + "\tat org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:268)\r\n"
-        + "\tat org.junit.runners.ParentRunner.run(ParentRunner.java:363)\r\n"
-        + "\tat org.junit.runners.Suite.runChild(Suite.java:128)\r\n"
-        + "\tat org.junit.runners.Suite.runChild(Suite.java:27)\r\n"
-        + "\tat org.junit.runners.ParentRunner$3.run(ParentRunner.java:290)\r\n"
-        + "\tat org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:71)\r\n"
-        + "\tat org.junit.runners.ParentRunner.runChildren(ParentRunner.java:288)\r\n"
-        + "\tat org.junit.runners.ParentRunner.access$000(ParentRunner.java:58)\r\n"
-        + "\tat org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:268)\r\n"
-        + "\tat org.junit.runners.ParentRunner.run(ParentRunner.java:363)\r\n"
-        + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.execute(JUnit4Provider.java:272)\r\n"
-        + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.executeWithRerun(JUnit4Provider.java:167)\r\n"
-        + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.executeTestSet(JUnit4Provider.java:147)\r\n"
-        + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.invoke(JUnit4Provider.java:130)\r\n"
-        + "\tat org.apache.maven.surefire.booter.ForkedBooter.invokeProviderInSameClassLoader(ForkedBooter.java:211)\r\n"
-        + "\tat org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:163)\r\n"
-        + "\tat org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:105)\r\n"
-        + "\tCaused by: java.lang.IndexOutOfBoundsException\r\n"
-        + "\tat surefire.MyTest.failure(MyTest.java:33)\r\n"
-        + "\tat surefire.MyTest.access$100(MyTest.java:9)\r\n"
-        + "\tat surefire.MyTest$Nested.run(MyTest.java:38)\r\n"
-        + "\tat surefire.MyTest.delegate(MyTest.java:29)\r\n"
+        assertThat( htmlContent, containsString( toSystemNewLine( "<pre>"
+        + "java.lang.RuntimeException: java.lang.IndexOutOfBoundsException\n"
+        + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:24)\n"
+        + "\tat surefire.MyTest.newRethrownDelegate(MyTest.java:17)\n"
+        + "\tat surefire.MyTest.access$200(MyTest.java:9)\n"
+        + "\tat surefire.MyTest$A.t(MyTest.java:45)\n"
+        + "\tat sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\n"
+        + "\tat sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)\n"
+        + "\tat sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\n"
+        + "\tat java.lang.reflect.Method.invoke(Method.java:606)\n"
+        + "\tat org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)\n"
+        + "\tat org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)\n"
+        + "\tat org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)\n"
+        + "\tat org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)\n"
+        + "\tat org.junit.runners.ParentRunner.runLeaf(ParentRunner.java:325)\n"
+        + "\tat org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:78)\n"
+        + "\tat org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:57)\n"
+        + "\tat org.junit.runners.ParentRunner$3.run(ParentRunner.java:290)\n"
+        + "\tat org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:71)\n"
+        + "\tat org.junit.runners.ParentRunner.runChildren(ParentRunner.java:288)\n"
+        + "\tat org.junit.runners.ParentRunner.access$000(ParentRunner.java:58)\n"
+        + "\tat org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:268)\n"
+        + "\tat org.junit.runners.ParentRunner.run(ParentRunner.java:363)\n"
+        + "\tat org.junit.runners.Suite.runChild(Suite.java:128)\n"
+        + "\tat org.junit.runners.Suite.runChild(Suite.java:27)\n"
+        + "\tat org.junit.runners.ParentRunner$3.run(ParentRunner.java:290)\n"
+        + "\tat org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:71)\n"
+        + "\tat org.junit.runners.ParentRunner.runChildren(ParentRunner.java:288)\n"
+        + "\tat org.junit.runners.ParentRunner.access$000(ParentRunner.java:58)\n"
+        + "\tat org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:268)\n"
+        + "\tat org.junit.runners.ParentRunner.run(ParentRunner.java:363)\n"
+        + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.execute(JUnit4Provider.java:272)\n"
+        + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.executeWithRerun(JUnit4Provider.java:167)\n"
+        + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.executeTestSet(JUnit4Provider.java:147)\n"
+        + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.invoke(JUnit4Provider.java:130)\n"
+        + "\tat org.apache.maven.surefire.booter.ForkedBooter.invokeProviderInSameClassLoader(ForkedBooter.java:211)\n"
+        + "\tat org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:163)\n"
+        + "\tat org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:105)\n"
+        + "\tCaused by: java.lang.IndexOutOfBoundsException\n"
+        + "\tat surefire.MyTest.failure(MyTest.java:33)\n"
+        + "\tat surefire.MyTest.access$100(MyTest.java:9)\n"
+        + "\tat surefire.MyTest$Nested.run(MyTest.java:38)\n"
+        + "\tat surefire.MyTest.delegate(MyTest.java:29)\n"
         + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:22)"
-        + "</pre>" ) );
+        + "</pre>" ) ) );
     }
 
     /**
@@ -584,5 +581,20 @@ public class SurefireReportMojoTest
         {
             IOUtil.close( writer );
         }
+    }
+
+    private String toSystemNewLine( String s )
+    {
+        String newLine = System.getProperty("line.separator");
+        StringBuilder b = new StringBuilder( s );
+        for ( int i = 0; i < b.length(); i++ )
+        {
+            if ( b.charAt( i ) == '\n' )
+            {
+                b.deleteCharAt( i ).insert( i, newLine );
+                i += newLine.length() - 1;
+            }
+        }
+        return b.toString();
     }
 }
