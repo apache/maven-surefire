@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="testsuite">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="properties" minOccurs="0" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="property" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:attribute name="name" type="xs:string" />
+                  <xs:attribute name="value" type="xs:string" />
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="testcase" minOccurs="0" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="failure" nillable="true" minOccurs="0" maxOccurs="1">
+                <xs:complexType>
+                  <xs:simpleContent>
+                    <xs:extension base="xs:string">
+                      <xs:attribute name="type" type="xs:string" />
+                      <xs:attribute name="time" type="xs:string" />
+                    </xs:extension>
+                  </xs:simpleContent>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="rerunFailure" nillable="true" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:simpleContent>
+                    <xs:extension base="xs:string">
+                      <xs:attribute name="type" type="xs:string" />
+                      <xs:attribute name="time" type="xs:string" />
+                    </xs:extension>
+                  </xs:simpleContent>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+            <xs:attribute name="name" type="xs:string" />
+            <xs:attribute name="classname" type="xs:string" />
+            <xs:attribute name="time" type="xs:string" />
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+      <xs:attribute name="name" type="xs:string" />
+      <xs:attribute name="time" type="xs:string" />
+      <xs:attribute name="tests" type="xs:string" />
+      <xs:attribute name="errors" type="xs:string" />
+      <xs:attribute name="skipped" type="xs:string" />
+      <xs:attribute name="failures" type="xs:string" />
+    </xs:complexType>
+  </xs:element>
+</xs:schema>
