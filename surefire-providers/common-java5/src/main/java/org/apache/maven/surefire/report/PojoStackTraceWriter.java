@@ -33,9 +33,9 @@ public class PojoStackTraceWriter
 {
     private final Throwable t;
 
-    protected final String testClass;
+    private final String testClass;
 
-    protected final String testMethod;
+    private final String testMethod;
 
     public PojoStackTraceWriter( String testClass, String testMethod, Throwable t )
     {
@@ -46,43 +46,30 @@ public class PojoStackTraceWriter
 
     public String writeTraceToString()
     {
-        StringWriter w = new StringWriter();
         if ( t != null )
         {
-            t.printStackTrace( new PrintWriter( w ) );
+            StringWriter w = new StringWriter();
+            PrintWriter stackTrace = new PrintWriter( w );
+            t.printStackTrace( stackTrace );
+            stackTrace.close();
             w.flush();
+            return w.toString();
         }
-        return w.toString();
+        return "";
     }
 
     public String smartTrimmedStackTrace()
     {
-        if ( t == null )
-        {
-            return "";
-        }
-
-        SmartStackTraceParser parser = new SmartStackTraceParser( testClass, t, testMethod );
-        return parser.getString();
+        return t == null ? "" : new SmartStackTraceParser( testClass, t, testMethod ).getString();
     }
 
     public String writeTrimmedTraceToString()
     {
-        if ( t == null )
-        {
-            return "";
-        }
-
-        return SmartStackTraceParser.stackTraceWithFocusOnClassAsString( t, testClass );
+        return t == null ? "" : SmartStackTraceParser.stackTraceWithFocusOnClassAsString( t, testClass );
     }
 
     public SafeThrowable getThrowable()
     {
-        if ( t == null )
-        {
-            return null;
-        }
-
-        return new SafeThrowable( t );
+        return t == null ? null : new SafeThrowable( t );
     }
 }

@@ -72,16 +72,9 @@ public class JUnit4StackTraceWriter
     public String smartTrimmedStackTrace()
     {
         Throwable exception = junitFailure.getException();
-        if ( exception != null )
-        {
-            SmartStackTraceParser smartStackTraceParser =
-                    new SmartStackTraceParser( getTestClassName(), exception, getTestMethodName() );
-            return smartStackTraceParser.getString();
-        }
-        else
-        {
-            return junitFailure.getMessage();
-        }
+        return exception == null
+            ? junitFailure.getMessage()
+            : new SmartStackTraceParser( getTestClassName(), exception, getTestMethodName() ).getString();
     }
 
     /**
