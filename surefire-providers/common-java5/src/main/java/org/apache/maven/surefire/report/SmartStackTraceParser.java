@@ -32,8 +32,6 @@ import org.apache.maven.shared.utils.StringUtils;
 @SuppressWarnings( "ThrowableResultOfMethodCallIgnored" )
 public class SmartStackTraceParser
 {
-    private static final StackTraceFilter EVERY_STACK_ELEMENT = new NullStackTraceFilter();
-
     private static final int MAX_LINE_LENGTH = 77;
 
     private final SafeThrowable throwable;
@@ -288,11 +286,6 @@ public class SmartStackTraceParser
         return resp;
     }
 
-    public static String causeToString( Throwable cause )
-    {
-        return causeToString( cause, EVERY_STACK_ELEMENT );
-    }
-
     private static String toString( Throwable t, Iterable<StackTraceElement> elements, StackTraceFilter filter )
     {
         String result = "";
@@ -314,10 +307,5 @@ public class SmartStackTraceParser
             }
         }
         return result;
-    }
-
-    public static String toString( Throwable t, Iterable<StackTraceElement> elements )
-    {
-        return toString( t, elements, EVERY_STACK_ELEMENT );
     }
 }
