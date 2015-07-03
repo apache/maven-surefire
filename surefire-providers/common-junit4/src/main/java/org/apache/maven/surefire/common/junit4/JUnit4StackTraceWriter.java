@@ -54,7 +54,24 @@ public class JUnit4StackTraceWriter
       */
     public String writeTraceToString()
     {
-        return junitFailure.getTrace();
+        Throwable t = junitFailure.getException();
+        if ( t != null )
+        {
+            String originalTrace = junitFailure.getTrace();
+            if ( isMultiLineExceptionMessage( t ) )
+            {
+                // SUREFIRE-986
+                StringBuilder builder = new StringBuilder( originalTrace );
+                String exc = t.getClass().getName() + ": ";
+                if ( originalTrace.startsWith( exc ) )
+                {
+                    builder.insert( exc.length(), '\n' );
+                }
+                return builder.toString();
+            }
+            return originalTrace;
+        }
+        return "";
     }
 
 
@@ -104,6 +121,27 @@ public class JUnit4StackTraceWriter
     public SafeThrowable getThrowable()
     {
         return new SafeThrowable( junitFailure.getException() );
+    }
+
+    private static boolean isMultiLineExceptionMessage( Throwable t )
+    {
+        String msg = t.getLocalizedMessage();
+        if ( msg != null )
+        {
+            int countNewLines = 0;
+            for ( int i = 0, length = msg.length(); i < length; i++ )
+            {
+                if ( msg.charAt( i ) == '\n' )
+                {
+                    if ( ++countNewLines == 2 )
+                    {
+                        break;
+                    }
+                }
+            }
+            return countNewLines > 1 || countNewLines == 1 && !msg.trim().endsWith( "\n" );
+        }
+        return false;
     }
 
 }

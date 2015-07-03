@@ -142,4 +142,22 @@ public class LegacyPojoStackTraceWriterTest
         }
     }
 
+    public void testMultiLineMessage()
+    {
+        String msg =
+            "assert \"foo\" == \"bar\"\n"
+                + "             |\n"
+                + "             false";
+        try
+        {
+            throw new RuntimeException( msg );
+        }
+        catch ( Throwable t )
+        {
+            LegacyPojoStackTraceWriter writer = new LegacyPojoStackTraceWriter( null, null, t );
+            String stackTrace = writer.writeTraceToString();
+            assertTrue( stackTrace.startsWith( "java.lang.RuntimeException: \n" + msg ) );
+        }
+    }
+
 }

@@ -50,13 +50,26 @@ public class LegacyPojoStackTraceWriter
 
     public String writeTraceToString()
     {
-        StringWriter w = new StringWriter();
         if ( t != null )
         {
-            t.printStackTrace( new PrintWriter( w ) );
+            StringWriter w = new StringWriter();
+            PrintWriter stackTrace = new PrintWriter( w );
+            t.printStackTrace( stackTrace );
+            stackTrace.close();
             w.flush();
+            StringBuffer builder = w.getBuffer();
+            if ( isMultiLineExceptionMessage( t ) )
+            {
+                // SUREFIRE-986
+                String exc = t.getClass().getName() + ": ";
+                if ( builder.toString().startsWith( exc ) )
+                {
+                    builder.insert( exc.length(), '\n' );
+                }
+            }
+            return builder.toString();
         }
-        return w.toString();
+        return "";
     }
 
     public String smartTrimmedStackTrace()
@@ -82,6 +95,27 @@ public class LegacyPojoStackTraceWriter
             }
         }
         return result.toString();
+    }
+
+    private static boolean isMultiLineExceptionMessage( Throwable t )
+    {
+        String msg = t.getLocalizedMessage();
+        if ( msg != null )
+        {
+            int countNewLines = 0;
+            for ( int i = 0, length = msg.length(); i < length; i++ )
+            {
+                if ( msg.charAt( i ) == '\n' )
+                {
+                    if ( ++countNewLines == 2 )
+                    {
+                        break;
+                    }
+                }
+            }
+            return countNewLines > 1 || countNewLines == 1 && !msg.trim().endsWith( "\n" );
+        }
+        return false;
     }
 
     private static String getTruncatedMessage( String msg, int i )

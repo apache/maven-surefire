@@ -292,8 +292,17 @@ public class SmartStackTraceParser
         if ( t != null )
         {
             result += t.getClass().getName();
-            result += ": ";
-            result += t.getMessage();
+            String msg = t.getMessage();
+            if ( msg != null )
+            {
+                result += ": ";
+                if ( isMultiLine( msg ) )
+                {
+                    // SUREFIRE-986
+                    result += "\n";
+                }
+                result += msg;
+            }
             result += "\n";
         }
 
@@ -307,5 +316,21 @@ public class SmartStackTraceParser
             }
         }
         return result;
+    }
+
+    private static boolean isMultiLine( String msg )
+    {
+        int countNewLines = 0;
+        for ( int i = 0, length = msg.length(); i < length; i++ )
+        {
+            if ( msg.charAt( i ) == '\n' )
+            {
+                if ( ++countNewLines == 2 )
+                {
+                    break;
+                }
+            }
+        }
+        return countNewLines > 1 || countNewLines == 1 && !msg.trim().endsWith( "\n" );
     }
 }
