@@ -19,6 +19,7 @@ package org.apache.maven.surefire.common.junit4;
  * under the License.
  */
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import org.apache.maven.surefire.util.ReflectionUtils;
@@ -38,7 +39,12 @@ public final class JUnit4Reflector
 
     private static final Class[] IGNORE_PARAMS = new Class[]{ Ignore.class };
 
-    public Ignore getAnnotatedIgnore( Description description )
+    private JUnit4Reflector()
+    {
+        throw new IllegalStateException( "not instantiable constructor" );
+    }
+
+    public static Ignore getAnnotatedIgnore( Description description )
     {
         Method getAnnotation = ReflectionUtils.tryGetMethod( description.getClass(), "getAnnotation", PARAMS );
 
@@ -50,13 +56,13 @@ public final class JUnit4Reflector
         return (Ignore) ReflectionUtils.invokeMethodWithArray( description, getAnnotation, IGNORE_PARAMS );
     }
 
-    public String getAnnotatedIgnoreValue( Description description )
+    public static String getAnnotatedIgnoreValue( Description description )
     {
         final Ignore ignore = getAnnotatedIgnore( description );
         return ignore != null ? ignore.value() : null;
     }
 
-    public Request createRequest( Class<?>... classes )
+    public static Request createRequest( Class<?>... classes )
     {
         try
         {
@@ -75,6 +81,32 @@ public final class JUnit4Reflector
         {
             // probably JUnit 5.x
             throw new SurefireReflectionException( e );
+        }
+    }
+
+    public static Description createDescription( String description )
+    {
+        try
+        {
+            return Description.createSuiteDescription( description );
+        }
+        catch ( NoSuchMethodError e )
+        {
+            try
+            {
+                return (Description) Description.class.getDeclaredMethod( "createSuiteDescription",
+                                                                          String.class, Annotation[].class )
+                    .invoke( null, description, new Annotation[0] );
+            }
+            catch ( InvocationTargetException e1 )
+            {
+                throw new SurefireReflectionException( e1.getCause() );
+            }
+            catch ( Exception e1 )
+            {
+                // probably JUnit 5.x
+                throw new SurefireReflectionException( e1 );
+            }
         }
     }
 }

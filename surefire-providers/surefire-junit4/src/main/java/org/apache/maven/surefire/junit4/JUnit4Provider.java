@@ -28,6 +28,7 @@ import java.util.Set;
 
 import org.apache.maven.surefire.common.junit4.ClassMethod;
 import org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil;
+import org.apache.maven.surefire.common.junit4.JUnit4Reflector;
 import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
 import org.apache.maven.surefire.common.junit4.JUnit4RunListenerFactory;
 import org.apache.maven.surefire.common.junit4.JUnit4TestChecker;
@@ -60,6 +61,8 @@ import org.junit.runner.notification.RunNotifier;
 public class JUnit4Provider
     extends AbstractProvider
 {
+    private static final String UNDETERMINED_TESTS_DESCRIPTION = "cannot determine test in forked JVM with surefire";
+
     private final ClassLoader testClassLoader;
 
     private final List<org.junit.runner.notification.RunListener> customRunListeners;
@@ -123,7 +126,9 @@ public class JUnit4Provider
         Result result = new Result();
         RunNotifier runNotifier = getRunNotifier( jUnit4TestSetReporter, result, customRunListeners );
 
-        runNotifier.fireTestRunStarted( createTestsDescription() );
+        runNotifier.fireTestRunStarted( testsToRun.allowEagerReading()
+                                            ? createTestsDescription()
+                                            : JUnit4Reflector.createDescription( UNDETERMINED_TESTS_DESCRIPTION ) );
 
         for ( Class aTestsToRun : testsToRun )
         {

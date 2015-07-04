@@ -33,9 +33,8 @@ public class JUnit4Reflector40Test
     @Test
     public void testGetAnnotatedIgnore()
     {
-        JUnit4Reflector reflector = new JUnit4Reflector();
         Description desc = Description.createTestDescription( IgnoreWithDescription.class, "testSomething2" );
-        Ignore annotatedIgnore = reflector.getAnnotatedIgnore( desc );
+        Ignore annotatedIgnore = JUnit4Reflector.getAnnotatedIgnore( desc );
         Assert.assertNull( annotatedIgnore );
     }
 

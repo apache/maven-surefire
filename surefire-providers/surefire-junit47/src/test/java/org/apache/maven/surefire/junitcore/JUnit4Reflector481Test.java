@@ -24,10 +24,11 @@ import java.lang.reflect.Method;
 import org.apache.maven.surefire.common.junit4.JUnit4Reflector;
 import org.apache.maven.surefire.util.ReflectionUtils;
 
-import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.Description;
+
+import static org.junit.Assert.*;
 
 /**
  * Reflector Test with junit 4.8.1
@@ -41,14 +42,14 @@ public class JUnit4Reflector481Test
     @Test
     public void testGetAnnotatedIgnore()
     {
-        JUnit4Reflector reflector = new JUnit4Reflector();
         final Method testSomething2 =
             ReflectionUtils.getMethod( IgnoreWithDescription.class, "testSomething2", EMPTY_CLASS_ARRAY );
         final Annotation[] annotations = testSomething2.getAnnotations();
         Description desc =
             Description.createTestDescription( IgnoreWithDescription.class, "testSomething2", annotations );
-        Ignore annotatedIgnore = reflector.getAnnotatedIgnore( desc );
-        Assert.assertEquals( reason, annotatedIgnore.value() );
+        Ignore annotatedIgnore = JUnit4Reflector.getAnnotatedIgnore( desc );
+        assertNotNull( annotatedIgnore );
+        assertEquals( reason, annotatedIgnore.value() );
     }
 
     private static final String reason = "Ignorance is bliss";

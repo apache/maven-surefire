@@ -108,8 +108,7 @@ public final class JUnit4ProviderUtil
 
     public static Description createSuiteDescription( Collection<Class<?>> classes )
     {
-        JUnit4Reflector reflector = new JUnit4Reflector();
-        return reflector.createRequest( classes.toArray( new Class[classes.size()] ) )
+        return JUnit4Reflector.createRequest( classes.toArray( new Class[classes.size()] ) )
                 .getRunner()
                 .getDescription();
     }
