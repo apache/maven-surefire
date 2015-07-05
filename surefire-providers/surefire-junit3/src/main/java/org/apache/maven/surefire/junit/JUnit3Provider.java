@@ -97,7 +97,7 @@ public class JUnit3Provider
         if ( smClassName != null )
         {
             SecurityManager securityManager =
-                (SecurityManager) ReflectionUtils.instantiate( this.getClass().getClassLoader(), smClassName );
+                ReflectionUtils.instantiate( getClass().getClassLoader(), smClassName, SecurityManager.class );
             System.setSecurityManager( securityManager );
         }
 

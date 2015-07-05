@@ -209,8 +209,7 @@ public class ForkClient
         throws IOException
     {
         BufferedReader stringReader = new BufferedReader( new StringReader( s ) );
-        String s1;
-        while ( ( s1 = stringReader.readLine() ) != null )
+        for ( String s1 = stringReader.readLine(); s1 != null; s1 = stringReader.readLine() )
         {
             consumeLine( s1 );
         }

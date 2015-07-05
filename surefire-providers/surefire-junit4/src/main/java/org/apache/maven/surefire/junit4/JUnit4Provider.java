@@ -44,6 +44,7 @@ import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.SimpleReportEntry;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestListResolver;
+import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.RunOrderCalculator;
 import org.apache.maven.surefire.util.ScanResult;
@@ -87,11 +88,12 @@ public class JUnit4Provider
         testClassLoader = booterParameters.getTestClassLoader();
         scanResult = booterParameters.getScanResult();
         runOrderCalculator = booterParameters.getRunOrderCalculator();
-        customRunListeners = JUnit4RunListenerFactory.
-            createCustomListeners( booterParameters.getProviderProperties().get( "listener" ) );
+        String listeners = booterParameters.getProviderProperties().get( "listener" );
+        customRunListeners = JUnit4RunListenerFactory.createCustomListeners( listeners );
         jUnit4TestChecker = new JUnit4TestChecker( testClassLoader );
-        testResolver = booterParameters.getTestRequest().getTestListResolver();
-        rerunFailingTestsCount = booterParameters.getTestRequest().getRerunFailingTestsCount();
+        TestRequest testRequest = booterParameters.getTestRequest();
+        testResolver = testRequest.getTestListResolver();
+        rerunFailingTestsCount = testRequest.getRerunFailingTestsCount();
     }
 
     public RunResult invoke( Object forkTestSet )
@@ -176,8 +178,8 @@ public class JUnit4Provider
         {
             for ( int i = 0; i < rerunFailingTestsCount && !failureListener.getAllFailures().isEmpty(); i++ )
             {
-                Set<ClassMethod> failedTests = JUnit4ProviderUtil.generateFailingTests(
-                        failureListener.getAllFailures( ) );
+                Set<ClassMethod> failedTests =
+                    JUnit4ProviderUtil.generateFailingTests( failureListener.getAllFailures() );
                 failureListener.reset();
                 if ( !failedTests.isEmpty() )
                 {
@@ -203,7 +205,7 @@ public class JUnit4Provider
     // I am not entirely sure as to why we do this explicit freeing, it's one of those
     // pieces of code that just seem to linger on in here ;)
     private static void closeRunNotifier( org.junit.runner.notification.RunListener main,
-                                   List<org.junit.runner.notification.RunListener> others )
+                                   Iterable<org.junit.runner.notification.RunListener> others )
     {
         RunNotifier notifier = new RunNotifier();
         notifier.removeListener( main );
@@ -225,13 +227,12 @@ public class JUnit4Provider
         return runOrderCalculator.orderTestClasses( scannedClasses );
     }
 
-    @SuppressWarnings( "unchecked" )
     private void upgradeCheck()
         throws TestSetFailedException
     {
         if ( isJUnit4UpgradeCheck() )
         {
-            List<Class> classesSkippedByValidation =
+            Collection<Class<?>> classesSkippedByValidation =
                 scanResult.getClassesSkippedByValidation( jUnit4TestChecker, testClassLoader );
             if ( !classesSkippedByValidation.isEmpty() )
             {

@@ -102,16 +102,16 @@ public class DefaultScanResult
         return new TestsToRun( result );
     }
 
-    public List getClassesSkippedByValidation( ScannerFilter scannerFilter, ClassLoader testClassLoader )
+    public List<Class<?>> getClassesSkippedByValidation( ScannerFilter scannerFilter, ClassLoader testClassLoader )
     {
-        List<Class> result = new ArrayList<Class>();
+        List<Class<?>> result = new ArrayList<Class<?>>();
 
         int size = size();
         for ( int i = 0; i < size; i++ )
         {
             String className = getClassName( i );
 
-            Class testClass = loadClass( testClassLoader, className );
+            Class<?> testClass = loadClass( testClassLoader, className );
 
             if ( scannerFilter != null && !scannerFilter.accept( testClass ) )
             {
@@ -122,18 +122,16 @@ public class DefaultScanResult
         return result;
     }
 
-    private static Class loadClass( ClassLoader classLoader, String className )
+    private static Class<?> loadClass( ClassLoader classLoader, String className )
     {
-        Class testClass;
         try
         {
-            testClass = classLoader.loadClass( className );
+            return classLoader.loadClass( className );
         }
         catch ( ClassNotFoundException e )
         {
             throw new RuntimeException( "Unable to create test class '" + className + "'", e );
         }
-        return testClass;
     }
 
     public DefaultScanResult append( DefaultScanResult other )

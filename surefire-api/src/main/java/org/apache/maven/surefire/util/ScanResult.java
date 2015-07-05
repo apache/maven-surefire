@@ -33,7 +33,7 @@ public interface ScanResult
 
     TestsToRun applyFilter( ScannerFilter scannerFilter, ClassLoader testClassLoader );
 
-    List getClassesSkippedByValidation( ScannerFilter scannerFilter, ClassLoader testClassLoader );
+    List<Class<?>> getClassesSkippedByValidation( ScannerFilter scannerFilter, ClassLoader testClassLoader );
 
     void writeTo( Map<String, String> properties );
 }

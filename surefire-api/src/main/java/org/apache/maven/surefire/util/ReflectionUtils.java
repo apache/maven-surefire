@@ -101,13 +101,12 @@ public class ReflectionUtils
         }
     }
 
-    public static Object instantiate( ClassLoader classLoader, String classname )
+    public static <T> T instantiate( ClassLoader classLoader, String classname, Class<T> returnType )
     {
         try
         {
-
             Class clazz = loadClass( classLoader, classname );
-            return clazz.newInstance();
+            return returnType.cast( clazz.newInstance() );
         }
         catch ( InstantiationException e )
         {
