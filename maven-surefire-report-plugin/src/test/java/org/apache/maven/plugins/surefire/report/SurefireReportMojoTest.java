@@ -39,6 +39,7 @@ import org.apache.maven.shared.utils.io.IOUtil;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.CoreMatchers.containsString;
+import static org.apache.maven.plugins.surefire.report.Utils.toSystemNewLine;
 
 /**
  * @author <a href="mailto:aramirez@apache.org">Allan Ramirez</a>
@@ -239,24 +240,38 @@ public class SurefireReportMojoTest
         String htmlContent = FileUtils.fileRead( report );
 
         assertThat( htmlContent,
-                    containsString( "<tr class=\"b\">"
-                                        + "<td>1</td><td>1</td><td>0</td><td>0</td><td>0%</td><td>0</td>" ) );
+                    containsString( toSystemNewLine( "<tr class=\"b\">\n"
+                                                         + "<td>1</td>\n"
+                                                         + "<td>1</td>\n"
+                                                         + "<td>0</td>\n"
+                                                         + "<td>0</td>\n"
+                                                         + "<td>0%</td>\n"
+                                                         + "<td>0</td>" ) ) );
 
         assertThat( htmlContent,
-                    containsString( "<tr class=\"b\">"
-                                        + "<td><a href=\"#surefire\">surefire</a></td>"
-                                        + "<td>1</td><td>1</td><td>0</td><td>0</td><td>0%</td><td>0</td>"
-                                        + "</tr>" ) );
+                    containsString( toSystemNewLine( "<tr class=\"b\">\n"
+                                                         + "<td><a href=\"#surefire\">surefire</a></td>\n"
+                                                         + "<td>1</td>\n"
+                                                         + "<td>1</td>\n"
+                                                         + "<td>0</td>\n"
+                                                         + "<td>0</td>\n"
+                                                         + "<td>0%</td>\n"
+                                                         + "<td>0</td></tr>" ) ) );
         assertThat( htmlContent,
-                    containsString( "<tr class=\"b\">"
-                                        + "<td>"
-                                        + "<a href=\"#surefireMyTest\">"
-                                        + "<img src=\"images/icon_error_sml.gif\" alt=\"\" />"
-                                        + "</a>"
-                                        + "</td>"
-                                        + "<td><a href=\"#surefireMyTest\">MyTest</a></td>"
-                                        + "<td>1</td><td>1</td><td>0</td><td>0</td><td>0%</td><td>0</td>"
-                                        + "</tr>" ) );
+                    containsString( toSystemNewLine( "<tr class=\"b\">\n"
+                                                         + "<td>"
+                                                         + "<a href=\"#surefireMyTest\">"
+                                                         + "<img src=\"images/icon_error_sml.gif\" alt=\"\" />"
+                                                         + "</a>"
+                                                         + "</td>\n"
+                                                         + "<td><a href=\"#surefireMyTest\">MyTest</a></td>\n"
+                                                         + "<td>1</td>\n"
+                                                         + "<td>1</td>\n"
+                                                         + "<td>0</td>\n"
+                                                         + "<td>0</td>\n"
+                                                         + "<td>0%</td>\n"
+                                                         + "<td>0</td></tr>" ) ) );
+
         assertThat( htmlContent, containsString( ">surefire.MyTest:13</a>" ) );
 
         assertThat( htmlContent, containsString( "./xref-test/surefire/MyTest.html#13" ) );
@@ -310,24 +325,37 @@ public class SurefireReportMojoTest
         String htmlContent = FileUtils.fileRead( report );
 
         assertThat( htmlContent,
-                    containsString( "<tr class=\"b\">"
-                                        + "<td>1</td><td>1</td><td>0</td><td>0</td><td>0%</td><td>0</td>" ) );
+                    containsString( toSystemNewLine( "<tr class=\"b\">\n"
+                                                         + "<td>1</td>\n"
+                                                         + "<td>1</td>\n"
+                                                         + "<td>0</td>\n"
+                                                         + "<td>0</td>\n"
+                                                         + "<td>0%</td>\n"
+                                                         + "<td>0</td>" ) ) );
 
         assertThat( htmlContent,
-                    containsString( "<tr class=\"b\">"
-                                        + "<td><a href=\"#surefire\">surefire</a></td>"
-                                        + "<td>1</td><td>1</td><td>0</td><td>0</td><td>0%</td><td>0</td>"
-                                        + "</tr>" ) );
+                    containsString( toSystemNewLine( "<tr class=\"b\">\n"
+                                        + "<td><a href=\"#surefire\">surefire</a></td>\n"
+                                        + "<td>1</td>\n"
+                                        + "<td>1</td>\n"
+                                        + "<td>0</td>\n"
+                                        + "<td>0</td>\n"
+                                        + "<td>0%</td>\n"
+                                        + "<td>0</td></tr>" ) ) );
         assertThat( htmlContent,
-                    containsString( "<tr class=\"b\">"
-                                        + "<td>"
-                                        + "<a href=\"#surefireMyTest\">"
-                                        + "<img src=\"images/icon_error_sml.gif\" alt=\"\" />"
-                                        + "</a>"
-                                        + "</td>"
-                                        + "<td><a href=\"#surefireMyTest\">MyTest</a></td>"
-                                        + "<td>1</td><td>1</td><td>0</td><td>0</td><td>0%</td><td>0</td>"
-                                        + "</tr>" ) );
+                    containsString( toSystemNewLine( "<tr class=\"b\">\n"
+                                                         + "<td>"
+                                                         + "<a href=\"#surefireMyTest\">"
+                                                         + "<img src=\"images/icon_error_sml.gif\" alt=\"\" />"
+                                                         + "</a>"
+                                                         + "</td>\n"
+                                                         + "<td><a href=\"#surefireMyTest\">MyTest</a></td>\n"
+                                                         + "<td>1</td>\n"
+                                                         + "<td>1</td>\n"
+                                                         + "<td>0</td>\n"
+                                                         + "<td>0</td>\n"
+                                                         + "<td>0%</td>\n"
+                                                         + "<td>0</td></tr>" ) ) );
         assertThat( htmlContent,
                     containsString( ">surefire.MyTest:13</a>" ) );
 
@@ -360,24 +388,37 @@ public class SurefireReportMojoTest
         String htmlContent = FileUtils.fileRead( report );
 
         assertThat( htmlContent,
-                    containsString( "<tr class=\"b\">"
-                                        + "<td>1</td><td>1</td><td>0</td><td>0</td><td>0%</td><td>0</td>" ) );
+                    containsString( toSystemNewLine( "<tr class=\"b\">\n"
+                                                         + "<td>1</td>\n"
+                                                         + "<td>1</td>\n"
+                                                         + "<td>0</td>\n"
+                                                         + "<td>0</td>\n"
+                                                         + "<td>0%</td>\n"
+                                                         + "<td>0</td>" ) ) );
 
         assertThat( htmlContent,
-                    containsString( "<tr class=\"b\">"
-                                        + "<td><a href=\"#surefire\">surefire</a></td>"
-                                        + "<td>1</td><td>1</td><td>0</td><td>0</td><td>0%</td><td>0</td>"
-                                        + "</tr>" ) );
+                    containsString( toSystemNewLine( "<tr class=\"b\">\n"
+                                                         + "<td><a href=\"#surefire\">surefire</a></td>\n"
+                                                         + "<td>1</td>\n"
+                                                         + "<td>1</td>\n"
+                                                         + "<td>0</td>\n"
+                                                         + "<td>0</td>\n"
+                                                         + "<td>0%</td>\n"
+                                                         + "<td>0</td></tr>" ) ) );
         assertThat( htmlContent,
-                    containsString( "<tr class=\"b\">"
-                                        + "<td>"
-                                        + "<a href=\"#surefireMyTest\">"
-                                        + "<img src=\"images/icon_error_sml.gif\" alt=\"\" />"
-                                        + "</a>"
-                                        + "</td>"
-                                        + "<td><a href=\"#surefireMyTest\">MyTest</a></td>"
-                                        + "<td>1</td><td>1</td><td>0</td><td>0</td><td>0%</td><td>0</td>"
-                                        + "</tr>" ) );
+                    containsString( toSystemNewLine( "<tr class=\"b\">\n"
+                                                         + "<td>"
+                                                         + "<a href=\"#surefireMyTest\">"
+                                                         + "<img src=\"images/icon_error_sml.gif\" alt=\"\" />"
+                                                         + "</a>"
+                                                         + "</td>\n"
+                                                         + "<td><a href=\"#surefireMyTest\">MyTest</a></td>\n"
+                                                         + "<td>1</td>\n"
+                                                         + "<td>1</td>\n"
+                                                         + "<td>0</td>\n"
+                                                         + "<td>0</td>\n"
+                                                         + "<td>0%</td>\n"
+                                                         + "<td>0</td></tr>" ) ) );
         assertThat( htmlContent,
                     containsString( ">surefire.MyTest:13</a>" ) );
 
@@ -434,26 +475,39 @@ public class SurefireReportMojoTest
         String htmlContent = FileUtils.fileRead( report );
 
         assertThat( htmlContent,
-                    containsString( "<tr class=\"b\">"
-                                        + "<td>1</td><td>1</td><td>0</td><td>0</td><td>0%</td><td>0</td>" ) );
+                    containsString( toSystemNewLine( "<tr class=\"b\">\n"
+                                                         + "<td>1</td>\n"
+                                                         + "<td>1</td>\n"
+                                                         + "<td>0</td>\n"
+                                                         + "<td>0</td>\n"
+                                                         + "<td>0%</td>\n"
+                                                         + "<td>0</td>" ) ) );
 
         assertThat( htmlContent,
-                    containsString( "<tr class=\"b\">"
-                                        + "<td><a href=\"#surefire\">surefire</a></td>"
-                                        + "<td>1</td><td>1</td><td>0</td><td>0</td><td>0%</td><td>0</td>"
-                                        + "</tr>" ) );
+                    containsString( toSystemNewLine( "<tr class=\"b\">\n"
+                                                         + "<td><a href=\"#surefire\">surefire</a></td>\n"
+                                                         + "<td>1</td>\n"
+                                                         + "<td>1</td>\n"
+                                                         + "<td>0</td>\n"
+                                                         + "<td>0</td>\n"
+                                                         + "<td>0%</td>\n"
+                                                         + "<td>0</td></tr>" ) ) );
         assertThat( htmlContent,
-                    containsString( "<tr class=\"b\">"
-                                        + "<td>"
-                                        + "<a href=\"#surefireMyTest$A\">"
-                                        + "<img src=\"images/icon_error_sml.gif\" alt=\"\" />"
-                                        + "</a>"
-                                        + "</td>"
-                                        + "<td><a href=\"#surefireMyTest$A\">MyTest$A</a></td>"
-                                        + "<td>1</td><td>1</td><td>0</td><td>0</td><td>0%</td><td>0</td>"
-                                        + "</tr>" ) );
-        assertThat( htmlContent,
-                    containsString( ">surefire.MyTest$A:45</a>" ) );
+                    containsString( toSystemNewLine( "<tr class=\"b\">\n"
+                                                         + "<td>"
+                                                         + "<a href=\"#surefireMyTest$A\">"
+                                                         + "<img src=\"images/icon_error_sml.gif\" alt=\"\" />"
+                                                         + "</a>"
+                                                         + "</td>\n"
+                                                         + "<td><a href=\"#surefireMyTest$A\">MyTest$A</a></td>\n"
+                                                         + "<td>1</td>\n"
+                                                         + "<td>1</td>\n"
+                                                         + "<td>0</td>\n"
+                                                         + "<td>0</td>\n"
+                                                         + "<td>0%</td>\n"
+                                                         + "<td>0</td></tr>" ) ) );
+
+        assertThat( htmlContent, containsString( ">surefire.MyTest$A:45</a>" ) );
 
         assertThat( htmlContent, containsString( "./xref-test/surefire/MyTest$A.html#45" ) );
 
@@ -483,74 +537,84 @@ public class SurefireReportMojoTest
         String htmlContent = FileUtils.fileRead( report );
 
         assertThat( htmlContent,
-                    containsString( "<tr class=\"b\">"
-                                        + "<td>1</td><td>1</td><td>0</td><td>0</td><td>0%</td><td>0</td>" ) );
+                    containsString( toSystemNewLine( "<tr class=\"b\">\n"
+                                                         + "<td>1</td>\n"
+                                                         + "<td>1</td>\n"
+                                                         + "<td>0</td>\n"
+                                                         + "<td>0</td>\n"
+                                                         + "<td>0%</td>\n"
+                                                         + "<td>0</td>" ) ) );
 
         assertThat( htmlContent,
-                    containsString( "<tr class=\"b\">"
-                                        + "<td><a href=\"#surefire\">surefire</a></td>"
-                                        + "<td>1</td><td>1</td><td>0</td><td>0</td><td>0%</td><td>0</td>"
-                                        + "</tr>" ) );
+                    containsString( toSystemNewLine( "<tr class=\"b\">\n"
+                                                         + "<td><a href=\"#surefire\">surefire</a></td>\n"
+                                                         + "<td>1</td>\n"
+                                                         + "<td>1</td>\n"
+                                                         + "<td>0</td>\n"
+                                                         + "<td>0</td>\n"
+                                                         + "<td>0%</td>\n"
+                                                         + "<td>0</td></tr>" ) ) );
         assertThat( htmlContent,
-                    containsString( "<tr class=\"b\">"
+                    containsString( toSystemNewLine( "<tr class=\"b\">\n"
                                         + "<td>"
                                         + "<a href=\"#surefireMyTest$A\">"
                                         + "<img src=\"images/icon_error_sml.gif\" alt=\"\" />"
                                         + "</a>"
-                                        + "</td>"
-                                        + "<td><a href=\"#surefireMyTest$A\">MyTest$A</a></td>"
-                                        + "<td>1</td><td>1</td><td>0</td><td>0</td><td>0%</td><td>0</td>"
-                                        + "</tr>" ) );
+                                        + "</td>\n"
+                                        + "<td><a href=\"#surefireMyTest$A\">MyTest$A</a></td>\n"
+                                        + "<td>1</td>\n"
+                                        + "<td>1</td>\n"
+                                        + "<td>0</td>\n"
+                                        + "<td>0</td>\n"
+                                        + "<td>0%</td>\n"
+                                        + "<td>0</td></tr>" ) ) );
 
         assertThat( htmlContent, containsString( ">surefire.MyTest$A:45</a>" ) );
 
         assertThat( htmlContent, containsString( "./xref-test/surefire/MyTest$A.html#45" ) );
 
-        assertThat( htmlContent, containsString( toSystemNewLine( "<pre>"
-        + "java.lang.RuntimeException: java.lang.IndexOutOfBoundsException\n"
-        + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:24)\n"
-        + "\tat surefire.MyTest.newRethrownDelegate(MyTest.java:17)\n"
-        + "\tat surefire.MyTest.access$200(MyTest.java:9)\n"
-        + "\tat surefire.MyTest$A.t(MyTest.java:45)\n"
-        + "\tat sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\n"
-        + "\tat sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)\n"
-        + "\tat sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\n"
-        + "\tat java.lang.reflect.Method.invoke(Method.java:606)\n"
-        + "\tat org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)\n"
-        + "\tat org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)\n"
-        + "\tat org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)\n"
-        + "\tat org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)\n"
-        + "\tat org.junit.runners.ParentRunner.runLeaf(ParentRunner.java:325)\n"
-        + "\tat org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:78)\n"
-        + "\tat org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:57)\n"
-        + "\tat org.junit.runners.ParentRunner$3.run(ParentRunner.java:290)\n"
-        + "\tat org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:71)\n"
-        + "\tat org.junit.runners.ParentRunner.runChildren(ParentRunner.java:288)\n"
-        + "\tat org.junit.runners.ParentRunner.access$000(ParentRunner.java:58)\n"
-        + "\tat org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:268)\n"
-        + "\tat org.junit.runners.ParentRunner.run(ParentRunner.java:363)\n"
-        + "\tat org.junit.runners.Suite.runChild(Suite.java:128)\n"
-        + "\tat org.junit.runners.Suite.runChild(Suite.java:27)\n"
-        + "\tat org.junit.runners.ParentRunner$3.run(ParentRunner.java:290)\n"
-        + "\tat org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:71)\n"
-        + "\tat org.junit.runners.ParentRunner.runChildren(ParentRunner.java:288)\n"
-        + "\tat org.junit.runners.ParentRunner.access$000(ParentRunner.java:58)\n"
-        + "\tat org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:268)\n"
-        + "\tat org.junit.runners.ParentRunner.run(ParentRunner.java:363)\n"
-        + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.execute(JUnit4Provider.java:272)\n"
-        + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.executeWithRerun(JUnit4Provider.java:167)\n"
-        + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.executeTestSet(JUnit4Provider.java:147)\n"
-        + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.invoke(JUnit4Provider.java:130)\n"
-        + "\tat org.apache.maven.surefire.booter.ForkedBooter.invokeProviderInSameClassLoader(ForkedBooter.java:211)\n"
-        + "\tat org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:163)\n"
-        + "\tat org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:105)\n"
-        + "\tCaused by: java.lang.IndexOutOfBoundsException\n"
-        + "\tat surefire.MyTest.failure(MyTest.java:33)\n"
-        + "\tat surefire.MyTest.access$100(MyTest.java:9)\n"
-        + "\tat surefire.MyTest$Nested.run(MyTest.java:38)\n"
-        + "\tat surefire.MyTest.delegate(MyTest.java:29)\n"
-        + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:22)"
-        + "</pre>" ) ) );
+        assertThat( htmlContent, containsString( toSystemNewLine(
+            "<pre>" + "java.lang.RuntimeException: java.lang.IndexOutOfBoundsException\n"
+                + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:24)\n"
+                + "\tat surefire.MyTest.newRethrownDelegate(MyTest.java:17)\n"
+                + "\tat surefire.MyTest.access$200(MyTest.java:9)\n" + "\tat surefire.MyTest$A.t(MyTest.java:45)\n"
+                + "\tat sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\n"
+                + "\tat sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)\n"
+                + "\tat sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\n"
+                + "\tat java.lang.reflect.Method.invoke(Method.java:606)\n"
+                + "\tat org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)\n"
+                + "\tat org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)\n"
+                + "\tat org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)\n"
+                + "\tat org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)\n"
+                + "\tat org.junit.runners.ParentRunner.runLeaf(ParentRunner.java:325)\n"
+                + "\tat org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:78)\n"
+                + "\tat org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:57)\n"
+                + "\tat org.junit.runners.ParentRunner$3.run(ParentRunner.java:290)\n"
+                + "\tat org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:71)\n"
+                + "\tat org.junit.runners.ParentRunner.runChildren(ParentRunner.java:288)\n"
+                + "\tat org.junit.runners.ParentRunner.access$000(ParentRunner.java:58)\n"
+                + "\tat org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:268)\n"
+                + "\tat org.junit.runners.ParentRunner.run(ParentRunner.java:363)\n"
+                + "\tat org.junit.runners.Suite.runChild(Suite.java:128)\n"
+                + "\tat org.junit.runners.Suite.runChild(Suite.java:27)\n"
+                + "\tat org.junit.runners.ParentRunner$3.run(ParentRunner.java:290)\n"
+                + "\tat org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:71)\n"
+                + "\tat org.junit.runners.ParentRunner.runChildren(ParentRunner.java:288)\n"
+                + "\tat org.junit.runners.ParentRunner.access$000(ParentRunner.java:58)\n"
+                + "\tat org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:268)\n"
+                + "\tat org.junit.runners.ParentRunner.run(ParentRunner.java:363)\n"
+                + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.execute(JUnit4Provider.java:272)\n"
+                + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.executeWithRerun(JUnit4Provider.java:167)\n"
+                + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.executeTestSet(JUnit4Provider.java:147)\n"
+                + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.invoke(JUnit4Provider.java:130)\n"
+                + "\tat org.apache.maven.surefire.booter.ForkedBooter.invokeProviderInSameClassLoader(ForkedBooter.java:211)\n"
+                + "\tat org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:163)\n"
+                + "\tat org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:105)\n"
+                + "\tCaused by: java.lang.IndexOutOfBoundsException\n"
+                + "\tat surefire.MyTest.failure(MyTest.java:33)\n" + "\tat surefire.MyTest.access$100(MyTest.java:9)\n"
+                + "\tat surefire.MyTest$Nested.run(MyTest.java:38)\n"
+                + "\tat surefire.MyTest.delegate(MyTest.java:29)\n"
+                + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:22)" + "</pre>" ) ) );
     }
 
     /**
@@ -581,20 +645,5 @@ public class SurefireReportMojoTest
         {
             IOUtil.close( writer );
         }
-    }
-
-    private String toSystemNewLine( String s )
-    {
-        String newLine = System.getProperty("line.separator");
-        StringBuilder b = new StringBuilder( s );
-        for ( int i = 0; i < b.length(); i++ )
-        {
-            if ( b.charAt( i ) == '\n' )
-            {
-                b.deleteCharAt( i ).insert( i, newLine );
-                i += newLine.length() - 1;
-            }
-        }
-        return b.toString();
     }
 }

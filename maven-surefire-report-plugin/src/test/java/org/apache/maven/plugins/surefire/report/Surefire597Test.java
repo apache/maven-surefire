@@ -30,6 +30,7 @@ import static java.util.Collections.singletonList;
 import static java.util.Locale.ENGLISH;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.CoreMatchers.containsString;
+import static org.apache.maven.plugins.surefire.report.Utils.toSystemNewLine;
 
 /**
  * Prevent fom NPE if failure type and message is null however detail presents.
@@ -47,50 +48,74 @@ public class Surefire597Test
         StringWriter writer = new StringWriter();
         gen.doGenerateReport( resourceBundle, new XhtmlSink( writer ) {} );
         String xml = writer.toString();
-        assertThat( xml, containsString(
-            "<table border=\"1\" class=\"bodyTable\">"
-                + "<tr class=\"a\">"
-                + "<th>Tests</th><th>Errors </th><th>Failures</th><th>Skipped</th><th>Success Rate</th><th>Time</th>"
+        assertThat( xml, containsString( toSystemNewLine(
+            "<table border=\"1\" class=\"bodyTable\">\n"
+                + "<tr class=\"a\">\n"
+                + "<th>Tests</th>\n"
+                + "<th>Errors </th>\n"
+                + "<th>Failures</th>\n"
+                + "<th>Skipped</th>\n"
+                + "<th>Success Rate</th>\n"
+                + "<th>Time</th></tr>\n"
+                + "<tr class=\"b\">\n"
+                + "<td>1</td>\n"
+                + "<td>1</td>\n"
+                + "<td>0</td>\n"
+                + "<td>0</td>\n"
+                + "<td>0%</td>\n"
+                + "<td>0</td>"
                 + "</tr>"
-                + "<tr class=\"b\">"
-                + "<td>1</td><td>1</td><td>0</td><td>0</td><td>0%</td><td>0</td>"
-                + "</tr>"
-                + "</table>" ) );
-        assertThat( xml, containsString(
-            "<table border=\"1\" class=\"bodyTable\">"
-                + "<tr class=\"a\">"
-                + "<th>Package</th><th>Tests</th><th>Errors </th><th>Failures</th><th>Skipped</th>"
-                + "<th>Success Rate</th><th>Time</th>"
-                + "</tr>"
-                + "<tr class=\"b\">"
-                + "<td><a href=\"#surefire\">surefire</a></td><td>1</td><td>1</td><td>0</td><td>0</td>"
-                + "<td>0%</td><td>0</td>"
-                + "</tr>"
-                + "</table>" ) );
-        assertThat( xml, containsString(
-            "<table border=\"1\" class=\"bodyTable\">"
-                + "<tr class=\"a\">"
-                + "<th></th><th>Class</th><th>Tests</th><th>Errors </th><th>Failures</th><th>Skipped</th>"
-                + "<th>Success Rate</th><th>Time</th>"
-                + "</tr>"
-                + "<tr class=\"b\">"
-                + "<td><a href=\"#surefireMyTest\"><img src=\"images/icon_error_sml.gif\" alt=\"\" /></a></td>"
-                + "<td><a href=\"#surefireMyTest\">MyTest</a></td>"
-                + "<td>1</td><td>1</td><td>0</td><td>0</td><td>0%</td><td>0</td>"
-                + "</tr>"
-                + "</table>" ) );
-        assertThat( xml, containsString(
-            "<table border=\"1\" class=\"bodyTable\">"
-                + "<tr class=\"a\">"
-                + "<td><img src=\"images/icon_error_sml.gif\" alt=\"\" /></td>"
-                + "<td><a name=\"surefire.MyTest.test\"></a>test</td></tr>"
-                + "<tr class=\"b\">"
-                + "<td></td><td>java.lang.RuntimeException: java.lang.IndexOutOfBoundsException: msg</td>"
-                + "</tr>"
-                + "<tr class=\"a\">"
-                + "<td></td><td><div id=\"testerror\">surefire.MyTest:13</div></td>"
-                + "</tr>"
-                + "</table>" ) );
+                + "</table>" ) ) );
+        assertThat( xml, containsString( toSystemNewLine(
+            "<table border=\"1\" class=\"bodyTable\">\n"
+                + "<tr class=\"a\">\n"
+                + "<th>Package</th>\n"
+                + "<th>Tests</th>\n"
+                + "<th>Errors </th>\n"
+                + "<th>Failures</th>\n"
+                + "<th>Skipped</th>\n"
+                + "<th>Success Rate</th>\n"
+                + "<th>Time</th></tr>\n"
+                + "<tr class=\"b\">\n"
+                + "<td><a href=\"#surefire\">surefire</a></td>\n"
+                + "<td>1</td>\n"
+                + "<td>1</td>\n"
+                + "<td>0</td>\n"
+                + "<td>0</td>\n"
+                + "<td>0%</td>\n"
+                + "<td>0</td></tr></table>" ) ) );
+        assertThat( xml, containsString( toSystemNewLine(
+            "<table border=\"1\" class=\"bodyTable\">\n"
+                + "<tr class=\"a\">\n"
+                + "<th></th>\n"
+                + "<th>Class</th>\n"
+                + "<th>Tests</th>\n"
+                + "<th>Errors </th>\n"
+                + "<th>Failures</th>\n"
+                + "<th>Skipped</th>\n"
+                + "<th>Success Rate</th>\n"
+                + "<th>Time</th></tr>\n"
+                + "<tr class=\"b\">\n"
+                + "<td><a href=\"#surefireMyTest\"><img src=\"images/icon_error_sml.gif\" alt=\"\" /></a></td>\n"
+                + "<td><a href=\"#surefireMyTest\">MyTest</a></td>\n"
+                + "<td>1</td>\n"
+                + "<td>1</td>\n"
+                + "<td>0</td>\n"
+                + "<td>0</td>\n"
+                + "<td>0%</td>\n"
+                + "<td>0</td></tr></table>" ) ) );
+        assertThat( xml, containsString( toSystemNewLine(
+            "<table border=\"1\" class=\"bodyTable\">\n"
+                + "<tr class=\"a\">\n"
+                + "<td><img src=\"images/icon_error_sml.gif\" alt=\"\" /></td>\n"
+                + "<td><a name=\"surefire.MyTest.test\"></a>test</td></tr>\n"
+                + "<tr class=\"b\">\n"
+                + "<td></td>\n"
+                + "<td>java.lang.RuntimeException: java.lang.IndexOutOfBoundsException: msg</td></tr>\n"
+                + "<tr class=\"a\">\n"
+                + "<td></td>\n"
+                + "<td>\n"
+                + "<div id=\"testerror\">surefire.MyTest:13</div></td></tr></table>" ) ) );
 
     }
 }
