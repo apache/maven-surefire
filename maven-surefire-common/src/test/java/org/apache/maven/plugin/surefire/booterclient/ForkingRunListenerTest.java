@@ -53,9 +53,9 @@ public class ForkingRunListenerTest
 
     private final PrintStream printStream;
 
-    final Integer defaultChannel = 17;
+    final int defaultChannel = 17;
 
-    final Integer anotherChannel = 18;
+    final int anotherChannel = 18;
 
     public ForkingRunListenerTest()
     {

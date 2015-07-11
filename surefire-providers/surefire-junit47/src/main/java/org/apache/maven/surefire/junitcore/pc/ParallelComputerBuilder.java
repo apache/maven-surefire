@@ -32,10 +32,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 import org.apache.maven.surefire.junitcore.JUnitCoreParameters;
 import org.apache.maven.surefire.report.ConsoleLogger;
 import org.apache.maven.surefire.testset.TestSetFailedException;
+import org.apache.maven.surefire.util.internal.DaemonThreadFactory;
 import org.junit.internal.runners.ErrorReportingRunner;
 import org.junit.runner.Description;
 import org.junit.runner.Runner;
@@ -78,6 +80,8 @@ import static org.apache.maven.surefire.junitcore.pc.Type.SUITES;
  */
 public final class ParallelComputerBuilder
 {
+    private static final ThreadFactory DAEMON_THREAD_FACTORY = DaemonThreadFactory.newDaemonThreadFactory();
+
     private static final Class<? extends Annotation> JCIP_NOT_THREAD_SAFE = loadNotThreadSafeAnnotations();
 
     private static final Set<?> NULL_SINGLETON = Collections.singleton( null );
@@ -403,8 +407,8 @@ public final class ParallelComputerBuilder
         private ExecutorService createPool( int poolSize )
         {
             return poolSize < Integer.MAX_VALUE
-                ? Executors.newFixedThreadPool( poolSize )
-                : Executors.newCachedThreadPool();
+                ? Executors.newFixedThreadPool( poolSize, DAEMON_THREAD_FACTORY )
+                : Executors.newCachedThreadPool( DAEMON_THREAD_FACTORY );
         }
 
         private Scheduler createMaster( ExecutorService pool, int poolSize )
@@ -574,11 +578,11 @@ public final class ParallelComputerBuilder
                 ExecutorService pool = null;
                 if ( poolSize == Integer.MAX_VALUE )
                 {
-                    pool = Executors.newCachedThreadPool();
+                    pool = Executors.newCachedThreadPool( DAEMON_THREAD_FACTORY );
                 }
                 else if ( poolSize > 0 )
                 {
-                    pool = Executors.newFixedThreadPool( poolSize );
+                    pool = Executors.newFixedThreadPool( poolSize, DAEMON_THREAD_FACTORY );
                 }
                 boolean doParallel = pool != null;
                 for ( ParentRunner runner : runners )

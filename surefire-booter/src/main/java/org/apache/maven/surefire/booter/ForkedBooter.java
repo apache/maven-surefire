@@ -33,6 +33,7 @@ import org.apache.maven.surefire.report.StackTraceWriter;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.ReflectionUtils;
+import org.apache.maven.surefire.util.internal.DaemonThreadFactory;
 
 import static org.apache.maven.surefire.util.internal.StringUtils.encodeStringForForkCommunication;
 
@@ -48,7 +49,6 @@ import static org.apache.maven.surefire.util.internal.StringUtils.encodeStringFo
  */
 public class ForkedBooter
 {
-
     /**
      * This method is invoked when Surefire is forked - this method parses and organizes the arguments passed to it and
      * then calls the Surefire class' run method. <p/> The system exit code will be 1 if an exception is thrown.
@@ -174,7 +174,7 @@ public class ForkedBooter
     @SuppressWarnings( "checkstyle:emptyblock" )
     private static void launchLastDitchDaemonShutdownThread( final int returnCode )
     {
-        Thread lastExit = new Thread( new Runnable()
+        DaemonThreadFactory.newDaemonThread( new Runnable()
         {
             public void run()
             {
@@ -187,9 +187,7 @@ public class ForkedBooter
                 {
                 }
             }
-        } );
-        lastExit.setDaemon( true );
-        lastExit.start();
+        }, "last-ditch-daemon-shutdown-thread-" + SYSTEM_EXIT_TIMEOUT ).start();
     }
 
     public static RunResult invokeProviderInSameClassLoader( Object testSet, Object factory,

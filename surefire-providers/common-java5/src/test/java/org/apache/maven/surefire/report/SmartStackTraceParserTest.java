@@ -27,6 +27,7 @@ import java.util.concurrent.FutureTask;
 import junit.framework.AssertionFailedError;
 import junit.framework.ComparisonFailure;
 import junit.framework.TestCase;
+import org.apache.maven.surefire.util.internal.DaemonThreadFactory;
 
 import static org.apache.maven.surefire.report.SmartStackTraceParser.*;
 
@@ -34,7 +35,6 @@ import static org.apache.maven.surefire.report.SmartStackTraceParser.*;
 public class SmartStackTraceParserTest
     extends TestCase
 {
-
     public void testGetString()
         throws Exception
     {
@@ -306,7 +306,7 @@ public class SmartStackTraceParserTest
     public ExecutionException getSingleNested()
     {
         FutureTask<Object> futureTask = new FutureTask<Object>( new RunnableTestClass2() );
-        new Thread( futureTask ).start();
+        DaemonThreadFactory.newDaemonThread( futureTask ).start();
         try
         {
             futureTask.get();
@@ -326,7 +326,7 @@ public class SmartStackTraceParserTest
     private ExecutionException getDoubleNestedException()
     {
         FutureTask<Object> futureTask = new FutureTask<Object>( new RunnableTestClass1() );
-        new Thread( futureTask ).start();
+        DaemonThreadFactory.newDaemonThread( futureTask ).start();
         try
         {
             futureTask.get();

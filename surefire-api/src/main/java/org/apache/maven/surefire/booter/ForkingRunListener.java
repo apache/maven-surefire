@@ -155,14 +155,8 @@ public class ForkingRunListener
             while ( propertyKeys.hasMoreElements() )
             {
                 String key = (String) propertyKeys.nextElement();
-
                 String value = systemProperties.getProperty( key );
-
-                if ( value == null )
-                {
-                    value = "null";
-                }
-                encodeAndWriteToTarget( toPropertyString( key, value ) );
+                encodeAndWriteToTarget( toPropertyString( key, value == null ? "null" : value ) );
             }
         }
     }

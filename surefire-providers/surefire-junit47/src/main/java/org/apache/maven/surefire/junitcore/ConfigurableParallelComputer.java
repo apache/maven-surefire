@@ -25,7 +25,9 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
+import org.apache.maven.surefire.util.internal.DaemonThreadFactory;
 import org.junit.runner.Computer;
 import org.junit.runner.Runner;
 import org.junit.runners.ParentRunner;
@@ -44,6 +46,8 @@ import org.junit.runners.model.RunnerScheduler;
 public class ConfigurableParallelComputer
     extends Computer
 {
+    private static final ThreadFactory DAEMON_THREAD_FACTORY = DaemonThreadFactory.newDaemonThreadFactory();
+
     private final boolean fClasses;
 
     private final boolean fMethods;
@@ -58,18 +62,21 @@ public class ConfigurableParallelComputer
 
     public ConfigurableParallelComputer()
     {
-        this( true, true, Executors.newCachedThreadPool(), false );
+        this( true, true, Executors.newCachedThreadPool( DAEMON_THREAD_FACTORY ), false );
     }
 
     public ConfigurableParallelComputer( boolean fClasses, boolean fMethods )
     {
-        this( fClasses, fMethods, Executors.newCachedThreadPool(), false );
+        this( fClasses, fMethods, Executors.newCachedThreadPool( DAEMON_THREAD_FACTORY ), false );
     }
 
     public ConfigurableParallelComputer( boolean fClasses, boolean fMethods, Integer numberOfThreads, boolean perCore )
     {
-        this( fClasses, fMethods, Executors.newFixedThreadPool(
-            numberOfThreads * ( perCore ? Runtime.getRuntime().availableProcessors() : 1 ) ), true );
+        this( fClasses, fMethods,
+              Executors.newFixedThreadPool(
+                  numberOfThreads * ( perCore ? Runtime.getRuntime().availableProcessors() : 1 ),
+                  DAEMON_THREAD_FACTORY ),
+              true );
     }
 
     private ConfigurableParallelComputer( boolean fClasses, boolean fMethods, ExecutorService executorService,

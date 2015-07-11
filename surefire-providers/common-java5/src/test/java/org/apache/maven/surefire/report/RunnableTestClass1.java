@@ -1,5 +1,7 @@
 package org.apache.maven.surefire.report;
 
+import org.apache.maven.surefire.util.internal.DaemonThreadFactory;
+
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
@@ -24,7 +26,6 @@ import java.util.concurrent.FutureTask;
 */
 class RunnableTestClass1
     implements Callable<Object>
-
 {
     public Object call()
         throws Exception
@@ -38,7 +39,7 @@ class RunnableTestClass1
     {
         RunnableTestClass2 rt2 = new RunnableTestClass2();
         FutureTask<Object> futureTask = new FutureTask<Object>( rt2 );
-        new Thread( futureTask ).start();
+        DaemonThreadFactory.newDaemonThread( futureTask ).start();
         try
         {
             futureTask.get();

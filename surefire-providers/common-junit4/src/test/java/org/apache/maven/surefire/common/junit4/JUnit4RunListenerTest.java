@@ -23,6 +23,7 @@ import java.util.concurrent.CountDownLatch;
 import org.apache.maven.surefire.junit4.MockReporter;
 
 import junit.framework.Assert;
+import org.apache.maven.surefire.util.internal.DaemonThreadFactory;
 import org.junit.Test;
 import org.junit.runner.Description;
 import org.junit.runner.Request;
@@ -59,7 +60,7 @@ public class JUnit4RunListenerTest
 
         jUnit4TestSetReporter.testStarted( testSomething );
 
-        new Thread( new Runnable()
+        DaemonThreadFactory.newDaemonThread( new Runnable()
         {
             public void run()
             {

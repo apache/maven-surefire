@@ -48,6 +48,7 @@ import org.apache.maven.surefire.report.StackTraceWriter;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.util.DefaultScanResult;
+import org.apache.maven.surefire.util.internal.DaemonThreadFactory;
 import org.apache.maven.surefire.util.internal.StringUtils;
 
 import java.io.File;
@@ -66,6 +67,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -89,6 +91,8 @@ import static org.apache.maven.surefire.booter.Classpath.join;
  */
 public class ForkStarter
 {
+    private final ThreadFactory threadFactory = DaemonThreadFactory.newDaemonThreadFactory();
+
     /**
      * Closes an InputStream
      */
@@ -206,9 +210,9 @@ public class ForkStarter
     {
 
         ArrayList<Future<RunResult>> results = new ArrayList<Future<RunResult>>( forkCount );
-        ExecutorService executorService = new ThreadPoolExecutor( forkCount, forkCount, 60, TimeUnit.SECONDS,
+        ThreadPoolExecutor executorService = new ThreadPoolExecutor( forkCount, forkCount, 60, TimeUnit.SECONDS,
                                                                   new ArrayBlockingQueue<Runnable>( forkCount ) );
-
+        executorService.setThreadFactory( threadFactory );
         try
         {
             // Ask to the executorService to run all tasks
@@ -267,6 +271,8 @@ public class ForkStarter
                 }
                 catch ( InterruptedException e )
                 {
+                    executorService.shutdownNow();
+                    Thread.currentThread().interrupt();
                     throw new SurefireBooterForkException( "Interrupted", e );
                 }
                 catch ( ExecutionException e )
@@ -288,11 +294,10 @@ public class ForkStarter
     private RunResult runSuitesForkPerTestSet( final SurefireProperties effectiveSystemProperties, final int forkCount )
         throws SurefireBooterForkException
     {
-
         ArrayList<Future<RunResult>> results = new ArrayList<Future<RunResult>>( 500 );
-        ExecutorService executorService =
+        ThreadPoolExecutor executorService =
             new ThreadPoolExecutor( forkCount, forkCount, 60, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>() );
-
+        executorService.setThreadFactory( threadFactory );
         try
         {
             // Ask to the executorService to run all tasks
@@ -335,6 +340,8 @@ public class ForkStarter
                 }
                 catch ( InterruptedException e )
                 {
+                    executorService.shutdownNow();
+                    Thread.currentThread().interrupt();
                     throw new SurefireBooterForkException( "Interrupted", e );
                 }
                 catch ( ExecutionException e )
@@ -364,6 +371,7 @@ public class ForkStarter
         }
         catch ( InterruptedException e )
         {
+            Thread.currentThread().interrupt();
             throw new SurefireBooterForkException( "Interrupted", e );
         }
     }
@@ -439,7 +447,7 @@ public class ForkStarter
         {
             testProvidingInputStream.setFlushReceiverProvider( cli );
             inputStreamCloser = new InputStreamCloser( testProvidingInputStream );
-            inputStreamCloserHook = new Thread( inputStreamCloser );
+            inputStreamCloserHook = DaemonThreadFactory.newDaemonThread( inputStreamCloser, "input-stream-closer" );
             ShutdownHookUtils.addShutDownHook( inputStreamCloserHook );
         }
         else

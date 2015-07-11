@@ -19,10 +19,12 @@ package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
  * under the License.
  */
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Queue;
-import java.util.concurrent.Semaphore;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static org.apache.maven.surefire.util.internal.StringUtils.encodeStringForForkCommunication;
 
@@ -40,17 +42,19 @@ import static org.apache.maven.surefire.util.internal.StringUtils.encodeStringFo
 public class TestProvidingInputStream
     extends InputStream
 {
+    private final ReentrantLock lock = new ReentrantLock();
+
+    private final Condition lockCondition = lock.newCondition();
+
     private final Queue<String> testItemQueue;
 
     private byte[] currentBuffer;
 
     private int currentPos;
 
-    private final Semaphore semaphore = new Semaphore( 0 );
+    private volatile FlushReceiverProvider flushReceiverProvider;
 
-    private FlushReceiverProvider flushReceiverProvider;
-
-    private volatile boolean closed = false;
+    private volatile boolean closed;
 
     /**
      * C'tor
@@ -72,43 +76,58 @@ public class TestProvidingInputStream
 
     @SuppressWarnings( "checkstyle:magicnumber" )
     @Override
-    public synchronized int read()
+    public int read()
         throws IOException
     {
-        if ( null == currentBuffer )
+        lock.lock();
+        try
         {
-            if ( null != flushReceiverProvider && null != flushReceiverProvider.getFlushReceiver() )
-            {
-                flushReceiverProvider.getFlushReceiver().flush();
-            }
-
-            semaphore.acquireUninterruptibly();
-
             if ( closed )
             {
-                return -1;
-            }
-
-            String currentElement = testItemQueue.poll();
-            if ( currentElement != null )
-            {
-                currentBuffer = encodeStringForForkCommunication( currentElement );
-                currentPos = 0;
+                throw new EOFException( "closed unexpectedly" );
             }
             else
             {
-                return -1;
+                if ( null == currentBuffer )
+                {
+                    if ( null != flushReceiverProvider && null != flushReceiverProvider.getFlushReceiver() )
+                    {
+                        flushReceiverProvider.getFlushReceiver().flush();
+                    }
+
+                    lockCondition.awaitUninterruptibly();
+
+                    if ( closed )
+                    {
+                        throw new EOFException( "closed unexpectedly" );
+                    }
+
+                    String currentElement = testItemQueue.poll();
+                    if ( currentElement != null )
+                    {
+                        currentBuffer = encodeStringForForkCommunication( currentElement );
+                        currentPos = 0;
+                    }
+                    else
+                    {
+                        return -1;
+                    }
+                }
+
+                if ( currentPos < currentBuffer.length )
+                {
+                    return currentBuffer[currentPos++] & 0xff;
+                }
+                else
+                {
+                    currentBuffer = null;
+                    return '\n' & 0xff;
+                }
             }
         }
-
-        if ( currentPos < currentBuffer.length )
+        finally
         {
-            return currentBuffer[currentPos++] & 0xff;
-        }
-        else
-        {
-            currentBuffer = null;
-            return '\n' & 0xff;
+            lock.unlock();
         }
     }
 
@@ -117,13 +136,30 @@ public class TestProvidingInputStream
      */
     public void provideNewTest()
     {
-        semaphore.release();
+        lock.lock();
+        try
+        {
+            lockCondition.signalAll();
+        }
+        finally
+        {
+            lock.unlock();
+        }
     }
 
     @Override
     public void close()
     {
         closed = true;
-        semaphore.release();
+        lock.lock();
+        try
+        {
+            currentBuffer = null;
+            lockCondition.signalAll();
+        }
+        finally
+        {
+            lock.unlock();
+        }
     }
 }

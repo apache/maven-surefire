@@ -23,12 +23,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.nio.ByteBuffer;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Properties;
 import java.util.StringTokenizer;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.TestProvidingInputStream;
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
@@ -51,19 +50,17 @@ import org.apache.maven.surefire.util.internal.StringUtils;
 public class ForkClient
     implements StreamConsumer
 {
-
     private final DefaultReporterFactory defaultReporterFactory;
 
     private final TestProvidingInputStream testProvidingInputStream;
 
-    private final Map<Integer, RunListener> testSetReporters =
-        Collections.synchronizedMap( new HashMap<Integer, RunListener>() );
+    private final Map<Integer, RunListener> testSetReporters = new ConcurrentHashMap<Integer, RunListener>();
 
     private final Properties testVmSystemProperties;
 
-    private volatile boolean saidGoodBye = false;
+    private volatile boolean saidGoodBye;
 
-    private volatile StackTraceWriter errorInFork = null;
+    private volatile StackTraceWriter errorInFork;
 
     public ForkClient( DefaultReporterFactory defaultReporterFactory, Properties testVmSystemProperties )
     {
@@ -98,7 +95,7 @@ public class ForkClient
                 System.out.println( s );
                 return;
             }
-            final Integer channelNumber = Integer.parseInt( s.substring( 2, commma ), 16 );
+            final int channelNumber = Integer.parseInt( s.substring( 2, commma ), 16 );
             int rest = s.indexOf( ",", commma );
             final String remaining = s.substring( rest + 1 );
 
@@ -181,7 +178,7 @@ public class ForkClient
         }
     }
 
-    private void writeTestOutput( final Integer channelNumber, final String remaining, boolean isStdout )
+    private void writeTestOutput( final int channelNumber, final String remaining, boolean isStdout )
     {
         int csNameEnd = remaining.indexOf( ',' );
         String charsetName = remaining.substring( 0, csNameEnd );
@@ -277,12 +274,12 @@ public class ForkClient
      * @param channelNumber The logical channel number
      * @return A mock provider reporter
      */
-    public RunListener getReporter( Integer channelNumber )
+    public RunListener getReporter( int channelNumber )
     {
         return testSetReporters.get( channelNumber );
     }
 
-    private RunListener getOrCreateReporter( Integer channelNumber )
+    private RunListener getOrCreateReporter( int channelNumber )
     {
         RunListener reporter = testSetReporters.get( channelNumber );
         if ( reporter == null )
@@ -293,12 +290,12 @@ public class ForkClient
         return reporter;
     }
 
-    private ConsoleOutputReceiver getOrCreateConsoleOutputReceiver( Integer channelNumber )
+    private ConsoleOutputReceiver getOrCreateConsoleOutputReceiver( int channelNumber )
     {
         return (ConsoleOutputReceiver) getOrCreateReporter( channelNumber );
     }
 
-    private ConsoleLogger getOrCreateConsoleLogger( Integer channelNumber )
+    private ConsoleLogger getOrCreateConsoleLogger( int channelNumber )
     {
         return (ConsoleLogger) getOrCreateReporter( channelNumber );
     }
