@@ -86,10 +86,13 @@ public class TestProvidingInputStream
     {
         if ( closed.get() )
         {
+            // help GC to free this object because StreamFeeder Thread cannot read it after IOE
+            currentBuffer = null;
             throw new EOFException( "closed unexpectedly" );
         }
         else
         {
+            // isolation of instance variable in Thread stack
             byte[] buffer = currentBuffer;
 
             if ( buffer == null )
@@ -107,6 +110,8 @@ public class TestProvidingInputStream
 
                 if ( closed.get() )
                 {
+                    // help GC to free this object because StreamFeeder Thread cannot read it after IOE
+                    currentBuffer = null;
                     throw new EOFException( "closed unexpectedly" );
                 }
 
@@ -114,6 +119,7 @@ public class TestProvidingInputStream
                 if ( currentElement != null )
                 {
                     buffer = encodeStringForForkCommunication( currentElement );
+                    // may override NULL from close(), therefore setting explicitly to NULL if IOE elsewhere
                     currentBuffer = buffer;
                     currentPos = 0;
                 }
@@ -144,6 +150,8 @@ public class TestProvidingInputStream
         }
         catch ( InterruptedException e )
         {
+            // help GC to free this object because StreamFeeder Thread cannot read it after IOE
+            currentBuffer = null;
             throw new IOException( e.getLocalizedMessage() );
         }
     }
