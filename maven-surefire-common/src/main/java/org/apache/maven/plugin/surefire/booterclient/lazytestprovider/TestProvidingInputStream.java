@@ -113,8 +113,8 @@ public class TestProvidingInputStream
                 String currentElement = testItemQueue.poll();
                 if ( currentElement != null )
                 {
-                    currentBuffer = encodeStringForForkCommunication( currentElement );
-                    buffer = currentBuffer;
+                    buffer = encodeStringForForkCommunication( currentElement );
+                    currentBuffer = buffer;
                     currentPos = 0;
                 }
                 else
