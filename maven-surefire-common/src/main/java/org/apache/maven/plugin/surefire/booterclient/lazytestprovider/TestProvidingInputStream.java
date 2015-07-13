@@ -23,8 +23,8 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Queue;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.maven.surefire.util.internal.StringUtils.encodeStringForForkCommunication;
 
@@ -43,19 +43,17 @@ public class TestProvidingInputStream
     extends InputStream
     implements NotifiableTestStream
 {
-    private final ReentrantLock lock = new ReentrantLock();
-
-    private final Condition lockCondition = lock.newCondition();
+    private final Semaphore semaphore = new Semaphore( 0 );
 
     private final Queue<String> testItemQueue;
+
+    private final AtomicBoolean closed = new AtomicBoolean();
 
     private byte[] currentBuffer;
 
     private int currentPos;
 
     private volatile FlushReceiverProvider flushReceiverProvider;
-
-    private volatile boolean closed;
 
     /**
      * C'tor
@@ -75,60 +73,78 @@ public class TestProvidingInputStream
         this.flushReceiverProvider = flushReceiverProvider;
     }
 
+    /**
+     * Used by single thread in StreamFeeder.
+     *
+     * @return {@inheritDoc}
+     * @throws IOException {@inheritDoc}
+     */
     @SuppressWarnings( "checkstyle:magicnumber" )
     @Override
     public int read()
         throws IOException
     {
-        lock.lock();
-        try
+        if ( closed.get() )
         {
-            if ( closed )
+            throw new EOFException( "closed unexpectedly" );
+        }
+        else
+        {
+            byte[] buffer = currentBuffer;
+
+            if ( buffer == null )
             {
-                throw new EOFException( "closed unexpectedly" );
-            }
-            else
-            {
-                if ( null == currentBuffer )
+                if ( flushReceiverProvider != null )
                 {
-                    if ( null != flushReceiverProvider && null != flushReceiverProvider.getFlushReceiver() )
+                    FlushReceiver flushing = flushReceiverProvider.getFlushReceiver();
+                    if ( flushing != null )
                     {
-                        flushReceiverProvider.getFlushReceiver().flush();
-                    }
-
-                    lockCondition.awaitUninterruptibly();
-
-                    if ( closed )
-                    {
-                        throw new EOFException( "closed unexpectedly" );
-                    }
-
-                    String currentElement = testItemQueue.poll();
-                    if ( currentElement != null )
-                    {
-                        currentBuffer = encodeStringForForkCommunication( currentElement );
-                        currentPos = 0;
-                    }
-                    else
-                    {
-                        return -1;
+                        flushing.flush();
                     }
                 }
 
-                if ( currentPos < currentBuffer.length )
+                awaitNextTest();
+
+                if ( closed.get() )
                 {
-                    return currentBuffer[currentPos++] & 0xff;
+                    throw new EOFException( "closed unexpectedly" );
+                }
+
+                String currentElement = testItemQueue.poll();
+                if ( currentElement != null )
+                {
+                    currentBuffer = encodeStringForForkCommunication( currentElement );
+                    buffer = currentBuffer;
+                    currentPos = 0;
                 }
                 else
                 {
-                    currentBuffer = null;
-                    return '\n' & 0xff;
+                    return -1;
                 }
             }
+
+            if ( currentPos < buffer.length )
+            {
+                return buffer[currentPos++] & 0xff;
+            }
+            else
+            {
+                currentBuffer = null;
+                return '\n' & 0xff;
+            }
         }
-        finally
+    }
+
+    private void awaitNextTest()
+        throws IOException
+    {
+        try
         {
-            lock.unlock();
+            semaphore.acquire();
+        }
+        catch ( InterruptedException e )
+        {
+            throw new IOException( e );
         }
     }
 
@@ -137,30 +153,20 @@ public class TestProvidingInputStream
      */
     public void provideNewTest()
     {
-        lock.lock();
-        try
-        {
-            lockCondition.signalAll();
-        }
-        finally
-        {
-            lock.unlock();
-        }
+        semaphore.release();
     }
 
     @Override
     public void close()
     {
-        closed = true;
-        lock.lock();
-        try
+        if ( closed.compareAndSet( false, true ) )
         {
             currentBuffer = null;
-            lockCondition.signalAll();
-        }
-        finally
-        {
-            lock.unlock();
+            int permits = semaphore.drainPermits();
+            if ( permits == 0 )
+            {
+                semaphore.release();
+            }
         }
     }
 }
