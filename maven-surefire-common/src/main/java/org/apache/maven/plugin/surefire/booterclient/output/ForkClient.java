@@ -29,6 +29,7 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.NotifiableTestStream;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.TestProvidingInputStream;
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
 import org.apache.maven.shared.utils.cli.StreamConsumer;
@@ -52,7 +53,7 @@ public class ForkClient
 {
     private final DefaultReporterFactory defaultReporterFactory;
 
-    private final TestProvidingInputStream testProvidingInputStream;
+    private final NotifiableTestStream notifiableTestStream;
 
     private final Map<Integer, RunListener> testSetReporters = new ConcurrentHashMap<Integer, RunListener>();
 
@@ -68,11 +69,11 @@ public class ForkClient
     }
 
     public ForkClient( DefaultReporterFactory defaultReporterFactory, Properties testVmSystemProperties,
-                       TestProvidingInputStream testProvidingInputStream )
+                       TestProvidingInputStream notifiableTestStream )
     {
         this.defaultReporterFactory = defaultReporterFactory;
         this.testVmSystemProperties = testVmSystemProperties;
-        this.testProvidingInputStream = testProvidingInputStream;
+        this.notifiableTestStream = notifiableTestStream;
     }
 
     public DefaultReporterFactory getDefaultReporterFactory()
@@ -151,9 +152,9 @@ public class ForkClient
                     getOrCreateConsoleLogger( channelNumber ).info( createConsoleMessage( remaining ) );
                     break;
                 case ForkingRunListener.BOOTERCODE_NEXT_TEST:
-                    if ( null != testProvidingInputStream )
+                    if ( notifiableTestStream != null )
                     {
-                        testProvidingInputStream.provideNewTest();
+                        notifiableTestStream.provideNewTest();
                     }
                     break;
                 case ForkingRunListener.BOOTERCODE_ERROR:

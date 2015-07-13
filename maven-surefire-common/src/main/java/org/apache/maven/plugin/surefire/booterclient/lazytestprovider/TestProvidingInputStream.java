@@ -41,6 +41,7 @@ import static org.apache.maven.surefire.util.internal.StringUtils.encodeStringFo
  */
 public class TestProvidingInputStream
     extends InputStream
+    implements NotifiableTestStream
 {
     private final ReentrantLock lock = new ReentrantLock();
 
