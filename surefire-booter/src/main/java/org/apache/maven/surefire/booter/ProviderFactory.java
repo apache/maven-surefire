@@ -22,13 +22,11 @@ package org.apache.maven.surefire.booter;
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Iterator;
 
 import org.apache.maven.surefire.providerapi.SurefireProvider;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.ReflectionUtils;
-
 
 /**
  * Creates the surefire provider.
@@ -124,12 +122,13 @@ public class ProviderFactory
             this.testsClassLoader = testsClassLoader;
         }
 
-        public Iterator getSuites()
+        @SuppressWarnings( "unchecked" )
+        public Iterable<Class<?>> getSuites()
         {
             ClassLoader current = swapClassLoader( testsClassLoader );
             try
             {
-                return (Iterator) ReflectionUtils.invokeGetter( providerInOtherClassLoader, "getSuites" );
+                return (Iterable<Class<?>>) ReflectionUtils.invokeGetter( providerInOtherClassLoader, "getSuites" );
             }
             finally
             {

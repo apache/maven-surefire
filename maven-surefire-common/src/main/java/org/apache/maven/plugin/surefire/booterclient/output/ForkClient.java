@@ -82,12 +82,16 @@ public class ForkClient
 
     public void consumeLine( String s )
     {
+        if ( StringUtils.isNotBlank( s ) )
+        {
+            processLine( s );
+        }
+    }
+
+    private void processLine( String s )
+    {
         try
         {
-            if ( s.length() == 0 )
-            {
-                return;
-            }
             final byte operationId = (byte) s.charAt( 0 );
             int commma = s.indexOf( ",", 3 );
             if ( commma < 0 )
@@ -253,17 +257,12 @@ public class ForkClient
 
     private String nullableCsv( String source )
     {
-        if ( "null".equals( source ) )
-        {
-            return null;
-        }
-        return unescape( source );
+        return "null".equals( source ) ? null : unescape( source );
     }
 
     private String unescape( String source )
     {
         StringBuilder stringBuffer = new StringBuilder( source.length() );
-
         StringUtils.unescapeString( stringBuffer, source );
         return stringBuffer.toString();
     }

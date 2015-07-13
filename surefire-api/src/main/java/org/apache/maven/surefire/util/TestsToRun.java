@@ -20,6 +20,7 @@ package org.apache.maven.surefire.util;
  */
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -33,21 +34,21 @@ import org.apache.maven.surefire.testset.TestSetFailedException;
  *
  * @author Kristian Rosenvold (junit core adaption)
  */
-public class TestsToRun implements Iterable<Class>
+public class TestsToRun implements Iterable<Class<?>>
 {
-    private final List<Class> locatedClasses;
+    private final List<Class<?>> locatedClasses;
 
     /**
      * Constructor
      *
      * @param locatedClasses A list of java.lang.Class objects representing tests to run
      */
-    public TestsToRun( List<Class> locatedClasses )
+    public TestsToRun( List<Class<?>> locatedClasses )
     {
         this.locatedClasses = Collections.unmodifiableList( locatedClasses );
-        Set<Class> testSets = new HashSet<Class>();
+        Set<Class<?>> testSets = new HashSet<Class<?>>();
 
-        for ( Class testClass : locatedClasses )
+        for ( Class<?> testClass : locatedClasses )
         {
             if ( testSets.contains( testClass ) )
             {
@@ -57,10 +58,10 @@ public class TestsToRun implements Iterable<Class>
         }
     }
 
-    public static TestsToRun fromClass( Class clazz )
+    public static TestsToRun fromClass( Class<?> clazz )
         throws TestSetFailedException
     {
-        return new TestsToRun( Collections.singletonList( clazz ) );
+        return new TestsToRun( Collections.<Class<?>>singletonList( clazz ) );
     }
 
     /**
@@ -68,7 +69,7 @@ public class TestsToRun implements Iterable<Class>
      *
      * @return an unmodifiable iterator
      */
-    public Iterator<Class> iterator()
+    public Iterator<Class<?>> iterator()
     {
         return locatedClasses.iterator();
     }
@@ -77,7 +78,7 @@ public class TestsToRun implements Iterable<Class>
     {
         StringBuilder sb = new StringBuilder();
         sb.append( "TestsToRun: [" );
-        for ( Class clazz : this )
+        for ( Class<?> clazz : this )
         {
             sb.append( " " ).append( clazz.getName() );
         }
@@ -121,18 +122,18 @@ public class TestsToRun implements Iterable<Class>
         return true;
     }
 
-    public Class[] getLocatedClasses()
+    public Class<?>[] getLocatedClasses()
     {
         if ( !allowEagerReading() )
         {
             throw new IllegalStateException( "Cannot eagerly read" );
         }
-        List<Class> result = new ArrayList<Class>();
-        for ( Class clazz : this )
+        Collection<Class<?>> result = new ArrayList<Class<?>>();
+        for ( Class<?> clazz : this )
         {
             result.add( clazz );
         }
-        return result.toArray( new Class[result.size()] );
+        return result.toArray( new Class<?>[result.size()] );
     }
 
     /**
@@ -141,9 +142,9 @@ public class TestsToRun implements Iterable<Class>
      * @param className string used to find the test class
      * @return Class object with the matching name, null if could not find a class with the matching name
      */
-    public Class getClassByName( String className )
+    public Class<?> getClassByName( String className )
     {
-        for ( Class clazz : this )
+        for ( Class<?> clazz : this )
         {
             if ( clazz.getName().equals( className ) )
             {

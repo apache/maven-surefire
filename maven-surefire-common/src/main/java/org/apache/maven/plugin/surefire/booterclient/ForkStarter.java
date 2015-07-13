@@ -57,8 +57,6 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -217,20 +215,13 @@ public class ForkStarter
         {
             // Ask to the executorService to run all tasks
             RunResult globalResult = new RunResult( 0, 0, 0, 0 );
-
-            List<Class<?>> suites = new ArrayList<Class<?>>();
-            for ( Iterator<Class<?>> suitesIterator = getSuitesIterator(); suitesIterator.hasNext(); )
-            {
-                suites.add( suitesIterator.next() );
-            }
             final Queue<String> messageQueue = new ConcurrentLinkedQueue<String>();
-            for ( Class<?> clazz : suites )
+            for ( Class<?> clazz : getSuitesIterator() )
             {
                 messageQueue.add( clazz.getName() );
             }
 
-
-            for ( int forkNum = 0; forkNum < forkCount && forkNum < suites.size(); forkNum++ )
+            for ( int forkNum = 0, total = messageQueue.size(); forkNum < forkCount && forkNum < total; forkNum++ )
             {
                 Callable<RunResult> pf = new Callable<RunResult>()
                 {
@@ -303,9 +294,8 @@ public class ForkStarter
             // Ask to the executorService to run all tasks
             RunResult globalResult = new RunResult( 0, 0, 0, 0 );
 
-            for ( final Iterator<Class<?>> suites = getSuitesIterator(); suites.hasNext(); )
+            for ( final Object testSet : getSuitesIterator() )
             {
-                final Object testSet = suites.next();
                 Callable<RunResult> pf = new Callable<RunResult>()
                 {
                     public RunResult call()
@@ -532,8 +522,7 @@ public class ForkStarter
         return runResult;
     }
 
-    @SuppressWarnings( "unchecked" )
-    private Iterator<Class<?>> getSuitesIterator()
+    private Iterable<Class<?>> getSuitesIterator()
         throws SurefireBooterForkException
     {
         try

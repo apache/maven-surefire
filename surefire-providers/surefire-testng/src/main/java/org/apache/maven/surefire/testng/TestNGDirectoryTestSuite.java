@@ -364,7 +364,6 @@ public class TestNGDirectoryTestSuite
                 throw new TestSetFailedException( "Duplicate test set '" + testSet.getName() + "'" );
             }
             testSets.put( testSet.getName(), testSet );
-
         }
 
         return Collections.unmodifiableSortedMap( testSets );

@@ -73,7 +73,7 @@ class JUnitCoreWrapper
                                       JUnitCoreParameters jUnitCoreParameters, JUnitCore junitCore )
         throws TestSetFailedException
     {
-        Class[] tests = testsToRun.getLocatedClasses();
+        Class<?>[] tests = testsToRun.getLocatedClasses();
         Computer computer = createComputer( logger, jUnitCoreParameters );
         createRequestAndRun( filter, computer, junitCore, tests );
     }

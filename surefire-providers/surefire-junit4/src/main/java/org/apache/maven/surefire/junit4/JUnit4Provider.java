@@ -22,7 +22,6 @@ package org.apache.maven.surefire.junit4;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -215,10 +214,10 @@ public class JUnit4Provider
         }
     }
 
-    public Iterator<?> getSuites()
+    public Iterable<Class<?>> getSuites()
     {
         testsToRun = scanClassPath();
-        return testsToRun.iterator();
+        return testsToRun;
     }
 
     private TestsToRun scanClassPath()

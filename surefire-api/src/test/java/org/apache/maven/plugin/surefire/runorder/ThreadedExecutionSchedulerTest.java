@@ -50,7 +50,7 @@ public class ThreadedExecutionSchedulerTest
     {
         ThreadedExecutionScheduler threadedExecutionScheduler = new ThreadedExecutionScheduler( 2 );
         addPrioritizedTests( threadedExecutionScheduler );
-        final List result = threadedExecutionScheduler.getResult();
+        final List<Class<?>> result = threadedExecutionScheduler.getResult();
         assertEquals( 5, result.size() );
         assertEquals( B.class, result.get( 0 ) );
         assertEquals( C.class, result.get( 1 ) );

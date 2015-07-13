@@ -33,6 +33,7 @@ import java.util.List;
 import org.apache.maven.surefire.util.ReflectionUtils;
 import org.apache.maven.surefire.util.TestsToRun;
 
+// CHECKSTYLE_OFF: imports
 import static org.apache.maven.surefire.util.internal.StringUtils.FORK_STREAM_CHARSET_NAME;
 import static org.apache.maven.surefire.util.internal.StringUtils.encodeStringForForkCommunication;
 
@@ -45,16 +46,16 @@ import static org.apache.maven.surefire.util.internal.StringUtils.encodeStringFo
  *
  * @author Andreas Gudian
  */
-class LazyTestsToRun
+final class LazyTestsToRun
     extends TestsToRun
 {
-    private final List<Class> workQueue = new ArrayList<Class>();
+    private final List<Class<?>> workQueue = new ArrayList<Class<?>>();
 
     private final BufferedReader inputReader;
 
     private final PrintStream originalOutStream;
 
-    private boolean streamClosed = false;
+    private boolean streamClosed;
 
     /**
      * C'tor
@@ -64,7 +65,7 @@ class LazyTestsToRun
      */
     public LazyTestsToRun( InputStream testSource, PrintStream originalOutStream )
     {
-        super( Collections.<Class>emptyList() );
+        super( Collections.<Class<?>>emptyList() );
 
         this.originalOutStream = originalOutStream;
 
@@ -78,7 +79,7 @@ class LazyTestsToRun
         }
     }
 
-    protected void addWorkItem( String className )
+    private void addWorkItem( String className )
     {
         synchronized ( workQueue )
         {
@@ -86,15 +87,15 @@ class LazyTestsToRun
         }
     }
 
-    protected void requestNextTest()
+    private void requestNextTest()
     {
         byte[] encoded =
             encodeStringForForkCommunication( ( (char) ForkingRunListener.BOOTERCODE_NEXT_TEST ) + ",0,want more!\n" );
         originalOutStream.write( encoded, 0, encoded.length );
     }
 
-    private class BlockingIterator
-        implements Iterator<Class>
+    private final class BlockingIterator
+        implements Iterator<Class<?>>
     {
         private int lastPos = -1;
 
@@ -112,11 +113,9 @@ class LazyTestsToRun
                     if ( needsToWaitForInput( nextPos ) )
                     {
                         requestNextTest();
-
-                        String nextClassName;
                         try
                         {
-                            nextClassName = inputReader.readLine();
+                            String nextClassName = inputReader.readLine();
                             if ( nextClassName == null )
                             {
                                 streamClosed = true;
@@ -143,7 +142,7 @@ class LazyTestsToRun
             return workQueue.size() == nextPos && !streamClosed;
         }
 
-        public Class next()
+        public Class<?> next()
         {
             synchronized ( workQueue )
             {
@@ -161,7 +160,7 @@ class LazyTestsToRun
     /* (non-Javadoc)
       * @see org.apache.maven.surefire.util.TestsToRun#iterator()
       */
-    public Iterator<Class> iterator()
+    public Iterator<Class<?>> iterator()
     {
         return new BlockingIterator();
     }
@@ -188,5 +187,4 @@ class LazyTestsToRun
     {
         return false;
     }
-
 }

@@ -41,7 +41,6 @@ import org.apache.maven.surefire.util.RunOrder;
 
 // CHECKSTYLE_OFF: imports
 import static org.apache.maven.surefire.booter.BooterConstants.*;
-import static org.apache.maven.surefire.cli.CommandLineOption.*;
 
 /**
  * Knows how to serialize and deserialize the booter configuration.

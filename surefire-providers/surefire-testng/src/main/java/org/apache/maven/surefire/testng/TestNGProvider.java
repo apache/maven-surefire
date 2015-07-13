@@ -21,7 +21,6 @@ package org.apache.maven.surefire.testng;
 
 import java.io.File;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -138,14 +137,14 @@ public class TestNGProvider
                                        reporterConfiguration.getReportsDirectory() );
     }
 
-
-    public Iterator getSuites()
+    @SuppressWarnings( "unchecked" )
+    public Iterable<Class<?>> getSuites()
     {
         if ( isTestNGXmlTestSuite( testRequest ) )
         {
             try
             {
-                return getXmlSuite().locateTestSets( testClassLoader ).keySet().iterator();
+                return getXmlSuite().locateTestSets( testClassLoader ).keySet();
             }
             catch ( TestSetFailedException e )
             {
@@ -155,7 +154,7 @@ public class TestNGProvider
         else
         {
             testsToRun = scanClassPath();
-            return testsToRun.iterator();
+            return testsToRun;
         }
     }
 

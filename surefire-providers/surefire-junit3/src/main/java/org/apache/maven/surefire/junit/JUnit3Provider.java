@@ -19,7 +19,6 @@ package org.apache.maven.surefire.junit;
  * under the License.
  */
 
-import java.util.Iterator;
 import org.apache.maven.surefire.common.junit3.JUnit3Reflector;
 import org.apache.maven.surefire.common.junit3.JUnit3TestChecker;
 import org.apache.maven.surefire.providerapi.AbstractProvider;
@@ -138,9 +137,9 @@ public class JUnit3Provider
         return runOrderCalculator.orderTestClasses( testsToRun );
     }
 
-    public Iterator getSuites()
+    public Iterable<Class<?>> getSuites()
     {
         testsToRun = scanClassPath();
-        return testsToRun.iterator();
+        return testsToRun;
     }
 }

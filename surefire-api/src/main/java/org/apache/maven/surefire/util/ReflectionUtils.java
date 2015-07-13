@@ -26,12 +26,16 @@ import java.lang.reflect.Method;
 /**
  * @author Kristian Rosenvold
  */
-public class ReflectionUtils
+public final class ReflectionUtils
 {
     private static final Class[] NO_ARGS = new Class[0];
 
     private static final Object[] NO_ARGS_VALUES = new Object[0];
 
+    private ReflectionUtils()
+    {
+        throw new IllegalStateException( "no instantiable constructor" );
+    }
 
     public static Method getMethod( Object instance, String methodName, Class[] parameters )
     {
@@ -61,7 +65,6 @@ public class ReflectionUtils
             return null;
         }
     }
-
 
     public static Object invokeGetter( Object instance, String methodName )
     {
@@ -121,7 +124,6 @@ public class ReflectionUtils
     public static Object instantiateOneArg( ClassLoader classLoader, String className, Class param1Class,
                                             Object param1 )
     {
-
         try
         {
             Class aClass = loadClass( classLoader, className );
@@ -145,7 +147,6 @@ public class ReflectionUtils
     public static Object instantiateTwoArgs( ClassLoader classLoader, String className, Class param1Class,
                                              Object param1, Class param2Class, Object param2 )
     {
-
         try
         {
             Class aClass = loadClass( classLoader, className );
@@ -168,20 +169,17 @@ public class ReflectionUtils
 
 
     public static void invokeSetter( Object o, String name, Class value1clazz, Object value )
-
     {
         final Method setter = getMethod( o, name, new Class[]{ value1clazz } );
         invokeSetter( o, setter, value );
     }
 
     public static Object invokeSetter( Object target, Method method, Object value )
-
     {
         return invokeMethodWithArray( target, method, new Object[]{ value } );
     }
 
     public static Object invokeMethodWithArray( Object target, Method method, Object[] args )
-
     {
         try
         {
@@ -195,12 +193,10 @@ public class ReflectionUtils
         {
             throw new SurefireReflectionException( e.getTargetException() );
         }
-
     }
 
     public static Object invokeMethodWithArray2( Object target, Method method, Object[] args )
         throws InvocationTargetException
-
     {
         try
         {
@@ -210,7 +206,6 @@ public class ReflectionUtils
         {
             throw new SurefireReflectionException( e );
         }
-
     }
 
     public static Object instantiateObject( String className, Class[] types, Object[] params, ClassLoader classLoader )

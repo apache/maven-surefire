@@ -42,9 +42,9 @@ public class RunOrderCalculatorTest
 
     }
 
-    private List<Class> getClassesToRun()
+    private List<Class<?>> getClassesToRun()
     {
-        List<Class> classesToRun = new ArrayList<Class>();
+        List<Class<?>> classesToRun = new ArrayList<Class<?>>();
         classesToRun.add( B.class );
         classesToRun.add( A.class );
         return classesToRun;

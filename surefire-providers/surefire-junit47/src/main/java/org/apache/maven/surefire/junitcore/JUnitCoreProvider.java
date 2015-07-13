@@ -19,7 +19,6 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -91,10 +90,10 @@ public class JUnitCoreProvider
         jUnit48Reflector = new JUnit48Reflector( testClassLoader );
     }
 
-    public Iterator getSuites()
+    public Iterable<Class<?>> getSuites()
     {
         testsToRun = scanClassPath();
-        return testsToRun.iterator();
+        return testsToRun;
     }
 
     private boolean isSingleThreaded()

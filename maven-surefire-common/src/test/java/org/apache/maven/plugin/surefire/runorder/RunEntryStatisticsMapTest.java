@@ -39,8 +39,9 @@ public class RunEntryStatisticsMapTest
         throws IOException
     {
         final RunEntryStatisticsMap runEntryStatisticsMap = RunEntryStatisticsMap.fromReader( getStatisticsFile() );
-        final List<?> list = Arrays.asList( new Class[]{ A.class, B.class, C.class } );
-        final List<?> prioritizedTestsClassRunTime = runEntryStatisticsMap.getPrioritizedTestsClassRunTime( list, 2 );
+        final List<Class<?>> list = Arrays.<Class<?>>asList( A.class, B.class, C.class );
+        final List<Class<?>> prioritizedTestsClassRunTime =
+            runEntryStatisticsMap.getPrioritizedTestsClassRunTime( list, 2 );
         assertEquals( C.class, prioritizedTestsClassRunTime.get( 0 ) );
         assertEquals( B.class, prioritizedTestsClassRunTime.get( 1 ) );
         assertEquals( A.class, prioritizedTestsClassRunTime.get( 2 ) );
@@ -50,8 +51,9 @@ public class RunEntryStatisticsMapTest
         throws IOException
     {
         final RunEntryStatisticsMap runEntryStatisticsMap = RunEntryStatisticsMap.fromReader( getStatisticsFile() );
-        final List<?> list = Arrays.asList( A.class, B.class, NewClass.class, C.class );
-        final List<?> prioritizedTestsClassRunTime = runEntryStatisticsMap.getPrioritizedTestsByFailureFirst( list );
+        final List<Class<?>> list = Arrays.<Class<?>>asList( A.class, B.class, NewClass.class, C.class );
+        final List<Class<?>> prioritizedTestsClassRunTime =
+            runEntryStatisticsMap.getPrioritizedTestsByFailureFirst( list );
         assertEquals( A.class, prioritizedTestsClassRunTime.get( 0 ) );
         assertEquals( NewClass.class, prioritizedTestsClassRunTime.get( 1 ) );
         assertEquals( C.class, prioritizedTestsClassRunTime.get( 2 ) );
@@ -73,9 +75,9 @@ public class RunEntryStatisticsMapTest
         RunEntryStatisticsMap existingEntries = RunEntryStatisticsMap.fromFile( data );
         RunEntryStatisticsMap newResults = new RunEntryStatisticsMap();
 
-        ReportEntry reportEntry1 = new SimpleReportEntry( "abc", "method1", new Integer( 42 ) );
-        ReportEntry reportEntry2 = new SimpleReportEntry( "abc", "willFail", new Integer( 17 ) );
-        ReportEntry reportEntry3 = new SimpleReportEntry( "abc", "method3", new Integer( 100 ) );
+        ReportEntry reportEntry1 = new SimpleReportEntry( "abc", "method1", 42 );
+        ReportEntry reportEntry2 = new SimpleReportEntry( "abc", "willFail", 17 );
+        ReportEntry reportEntry3 = new SimpleReportEntry( "abc", "method3", 100 );
 
         newResults.add( existingEntries.createNextGeneration( reportEntry1 ) );
         newResults.add( existingEntries.createNextGeneration( reportEntry2 ) );

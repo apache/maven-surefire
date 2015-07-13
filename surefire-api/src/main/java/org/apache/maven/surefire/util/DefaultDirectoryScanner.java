@@ -52,8 +52,6 @@ public class DefaultDirectoryScanner
 
     private final List specificTests;
 
-    private final List<Class> classesSkippedByValidation = new ArrayList<Class>();
-
     public DefaultDirectoryScanner( File basedir, List includes, List excludes, List specificTests )
     {
         this.basedir = basedir;
@@ -65,7 +63,7 @@ public class DefaultDirectoryScanner
     public TestsToRun locateTestClasses( ClassLoader classLoader, ScannerFilter scannerFilter )
     {
         String[] testClassNames = collectTests();
-        List<Class> result = new ArrayList<Class>();
+        List<Class<?>> result = new ArrayList<Class<?>>();
 
         String[] specific = specificTests == null ? new String[0] : processIncludesExcludes( specificTests );
         SpecificTestClassFilter specificTestFilter = new SpecificTestClassFilter( specific );
@@ -83,10 +81,6 @@ public class DefaultDirectoryScanner
             if ( scannerFilter == null || scannerFilter.accept( testClass ) )
             {
                 result.add( testClass );
-            }
-            else
-            {
-                classesSkippedByValidation.add( testClass );
             }
         }
 

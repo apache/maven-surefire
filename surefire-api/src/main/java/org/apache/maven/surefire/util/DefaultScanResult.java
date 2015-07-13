@@ -84,14 +84,14 @@ public class DefaultScanResult
 
     public TestsToRun applyFilter( ScannerFilter scannerFilter, ClassLoader testClassLoader )
     {
-        List<Class> result = new ArrayList<Class>();
+        List<Class<?>> result = new ArrayList<Class<?>>();
 
         int size = size();
         for ( int i = 0; i < size; i++ )
         {
             String className = getClassName( i );
 
-            Class testClass = loadClass( testClassLoader, className );
+            Class<?> testClass = loadClass( testClassLoader, className );
 
             if ( scannerFilter == null || scannerFilter.accept( testClass ) )
             {

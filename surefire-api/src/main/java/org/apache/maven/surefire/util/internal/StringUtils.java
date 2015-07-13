@@ -128,6 +128,20 @@ public class StringUtils
     }
 
     /**
+     * <p>
+     * Checks if a (trimmed) String is not <code>null</code> and not blank.
+     * </p>
+     *
+     * @param str the String to check
+     * @return <code>true</code> if the String is not <code>null</code> and length of trimmed
+     * <code>str</code> is not zero.
+     */
+    public static boolean isNotBlank( String str )
+    {
+        return !isBlank( str );
+    }
+
+    /**
      * Escape the specified string to a representation that only consists of nicely printable characters, without any
      * newlines and without a comma.
      * <p>

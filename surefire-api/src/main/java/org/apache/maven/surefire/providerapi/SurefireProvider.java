@@ -20,7 +20,6 @@ package org.apache.maven.surefire.providerapi;
  */
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Iterator;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
@@ -52,7 +51,7 @@ public interface SurefireProvider
      *
      * @return An iterator that will trigger one fork per item
      */
-    Iterator getSuites();
+    Iterable<Class<?>> getSuites();
 
     /**
      * Runs a forked test

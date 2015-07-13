@@ -147,9 +147,9 @@ public class RunEntryStatisticsMap
         }
     }
 
-    public List<Class> getPrioritizedTestsClassRunTime( List testsToRun, int threadCount )
+    public List<Class<?>> getPrioritizedTestsClassRunTime( List<Class<?>> testsToRun, int threadCount )
     {
-        final List<PrioritizedTest> prioritizedTests = getPrioritizedTests( testsToRun, new TestRuntimeComparator() );
+        List<PrioritizedTest> prioritizedTests = getPrioritizedTests( testsToRun, new TestRuntimeComparator() );
         ThreadedExecutionScheduler threadedExecutionScheduler = new ThreadedExecutionScheduler( threadCount );
         for ( Object prioritizedTest1 : prioritizedTests )
         {
@@ -157,24 +157,22 @@ public class RunEntryStatisticsMap
         }
 
         return threadedExecutionScheduler.getResult();
-
     }
 
-    public List<Class> getPrioritizedTestsByFailureFirst( List testsToRun )
+    public List<Class<?>> getPrioritizedTestsByFailureFirst( List<Class<?>> testsToRun )
     {
-        final List prioritizedTests = getPrioritizedTests( testsToRun, new LeastFailureComparator() );
+        List<PrioritizedTest> prioritizedTests = getPrioritizedTests( testsToRun, new LeastFailureComparator() );
         return transformToClasses( prioritizedTests );
     }
 
-
-    private List<PrioritizedTest> getPrioritizedTests( List testsToRun, Comparator<Priority> priorityComparator )
+    private List<PrioritizedTest> getPrioritizedTests( List<Class<?>> testsToRun,
+                                                       Comparator<Priority> priorityComparator )
     {
         Map classPriorities = getPriorities( priorityComparator );
 
         List<PrioritizedTest> tests = new ArrayList<PrioritizedTest>();
-        for ( Object aTestsToRun : testsToRun )
+        for ( Class<?> clazz : testsToRun )
         {
-            Class clazz = (Class) aTestsToRun;
             Priority pri = (Priority) classPriorities.get( clazz.getName() );
             if ( pri == null )
             {
@@ -185,15 +183,14 @@ public class RunEntryStatisticsMap
         }
         Collections.sort( tests, new PrioritizedTestComparator() );
         return tests;
-
     }
 
-    private List<Class> transformToClasses( List tests )
+    private List<Class<?>> transformToClasses( List<PrioritizedTest> tests )
     {
-        List<Class> result = new ArrayList<Class>();
-        for ( Object test : tests )
+        List<Class<?>> result = new ArrayList<Class<?>>();
+        for ( PrioritizedTest test : tests )
         {
-            result.add( ( (PrioritizedTest) test ).getClazz() );
+            result.add( test.getClazz() );
         }
         return result;
     }

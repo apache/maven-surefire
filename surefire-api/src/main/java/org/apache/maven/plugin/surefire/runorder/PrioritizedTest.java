@@ -24,11 +24,11 @@ package org.apache.maven.plugin.surefire.runorder;
  */
 public class PrioritizedTest
 {
-    private final Class clazz;
+    private final Class<?> clazz;
 
     private final Priority priority;
 
-    public PrioritizedTest( Class clazz, Priority pri )
+    public PrioritizedTest( Class<?> clazz, Priority pri )
     {
         this.clazz = clazz;
         this.priority = pri;
@@ -45,7 +45,7 @@ public class PrioritizedTest
         return priority.getTotalRuntime();
     }
 
-    public Class getClazz()
+    public Class<?> getClazz()
     {
         return clazz;
     }
