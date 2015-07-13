@@ -161,7 +161,10 @@ public class TestProvidingInputStream
      */
     public void provideNewTest()
     {
-        semaphore.release();
+        if ( !closed.get() )
+        {
+            semaphore.release();
+        }
     }
 
     @Override
