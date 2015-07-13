@@ -30,7 +30,6 @@ import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.NotifiableTestStream;
-import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.TestProvidingInputStream;
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
 import org.apache.maven.shared.utils.cli.StreamConsumer;
 import org.apache.maven.surefire.booter.ForkingRunListener;
@@ -69,7 +68,7 @@ public class ForkClient
     }
 
     public ForkClient( DefaultReporterFactory defaultReporterFactory, Properties testVmSystemProperties,
-                       TestProvidingInputStream notifiableTestStream )
+                       NotifiableTestStream notifiableTestStream )
     {
         this.defaultReporterFactory = defaultReporterFactory;
         this.testVmSystemProperties = testVmSystemProperties;
