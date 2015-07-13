@@ -82,7 +82,7 @@ public class StringUtils
         }
 
         int listSize = tok.countTokens();
-        if ( ( max > 0 ) && ( listSize > max ) )
+        if ( max > 0 && listSize > max )
         {
             listSize = max;
         }
@@ -93,7 +93,7 @@ public class StringUtils
         int lastTokenEnd = 0;
         while ( tok.hasMoreTokens() )
         {
-            if ( ( max > 0 ) && ( i == listSize - 1 ) )
+            if ( max > 0 && i == listSize - 1 )
             {
                 // In the situation where we hit the max yet have
                 // tokens left over in our input, the last list
