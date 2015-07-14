@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.junitcore;
+package org.apache.maven.surefire.booter;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -21,10 +21,6 @@ package org.apache.maven.surefire.junitcore;
 
 import junit.framework.JUnit4TestAdapter;
 import junit.framework.Test;
-import org.apache.maven.surefire.junitcore.pc.OptimizedParallelComputerTest;
-import org.apache.maven.surefire.junitcore.pc.ParallelComputerBuilderTest;
-import org.apache.maven.surefire.junitcore.pc.ParallelComputerUtilTest;
-import org.apache.maven.surefire.junitcore.pc.SchedulingStrategiesTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
@@ -32,24 +28,12 @@ import org.junit.runners.Suite;
  * Adapt the JUnit4 tests which use only annotations to the JUnit3 test suite.
  *
  * @author Tibor Digana (tibor17)
- * @since 2.16
+ * @since 2.19
  */
 @Suite.SuiteClasses( {
-    Surefire746Test.class,
-    Surefire813IncorrectResultTest.class,
-    ParallelComputerUtilTest.class,
-    ParallelComputerBuilderTest.class,
-    SchedulingStrategiesTest.class,
-    JUnitCoreParametersTest.class,
-    OptimizedParallelComputerTest.class,
-    ConcurrentRunListenerTest.class,
-    ConfigurableParallelComputerTest.class,
-    JUnit4Reflector481Test.class,
-    JUnitCoreParametersTest.class,
-    JUnitCoreRunListenerTest.class,
-    MavenSurefireJUnit47RunnerTest.class,
-    MavenSurefireJUnit48RunnerTest.class,
-    TestMethodTest.class
+    ClasspathTest.class,
+    PropertiesWrapperTest.class,
+    SurefireReflectorTest.class
 } )
 @RunWith( Suite.class )
 public class JUnit4SuiteTest

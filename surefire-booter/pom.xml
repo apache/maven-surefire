@@ -49,6 +49,11 @@
             <version>2.12.4</version> <!-- ${shadedVersion}, but resolved due to http://jira.codehaus.org/browse/MRELEASE-799 -->
           </dependency>
         </dependencies>
+        <configuration>
+          <includes>
+            <include>**/JUnit4SuiteTest.java</include>
+          </includes>
+        </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

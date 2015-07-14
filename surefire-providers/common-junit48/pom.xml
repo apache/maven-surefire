@@ -80,9 +80,9 @@
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
-          <excludes>
-            <exclude>**/fixture/**</exclude>
-          </excludes>
+          <includes>
+            <include>**/JUnit4SuiteTest.java</include>
+          </includes>
         </configuration>
       </plugin>
     </plugins>
