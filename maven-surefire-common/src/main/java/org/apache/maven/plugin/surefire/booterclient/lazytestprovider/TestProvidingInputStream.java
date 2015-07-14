@@ -125,6 +125,8 @@ public class TestProvidingInputStream
                 }
                 else
                 {
+                    // help GC to free this object since it's not needed as there's no new test
+                    currentBuffer = null;
                     return -1;
                 }
             }
