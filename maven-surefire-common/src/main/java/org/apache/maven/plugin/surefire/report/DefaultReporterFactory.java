@@ -30,11 +30,11 @@ import org.apache.maven.surefire.suite.RunResult;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Provides reporting modules on the plugin side.
@@ -53,8 +53,7 @@ public class DefaultReporterFactory
 
     private final StatisticsReporter statisticsReporter;
 
-    private final List<TestSetRunListener> listeners =
-        Collections.synchronizedList( new ArrayList<TestSetRunListener>() );
+    private final Collection<TestSetRunListener> listeners = new ConcurrentLinkedQueue<TestSetRunListener>();
 
     // from "<testclass>.<testmethod>" -> statistics about all the runs for flaky tests
     private Map<String, List<TestMethodStats>> flakyTests;
@@ -97,11 +96,11 @@ public class DefaultReporterFactory
                                     reportConfiguration.isTrimStackTrace(),
                                     ConsoleReporter.PLAIN.equals( reportConfiguration.getReportFormat() ),
                                     reportConfiguration.isBriefOrPlainFormat() );
-        listeners.add( testSetRunListener );
+        addListener( testSetRunListener );
         return testSetRunListener;
     }
 
-    public void addListener( TestSetRunListener listener )
+    final void addListener( TestSetRunListener listener )
     {
         listeners.add( listener );
     }
