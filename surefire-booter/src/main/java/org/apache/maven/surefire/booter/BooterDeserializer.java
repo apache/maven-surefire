@@ -73,11 +73,11 @@ public class BooterDeserializer
         final String requestedTest = properties.getProperty( REQUESTEDTEST );
         final File sourceDirectory = properties.getFileProperty( SOURCE_DIRECTORY );
 
-        final List excludesList = properties.getStringList( EXCLUDES_PROPERTY_PREFIX );
-        final List includesList = properties.getStringList( INCLUDES_PROPERTY_PREFIX );
-        final List specificTestsList = properties.getStringList( SPECIFIC_TEST_PROPERTY_PREFIX );
+        final List<String> excludes = properties.getStringList( EXCLUDES_PROPERTY_PREFIX );
+        final List<String> includes = properties.getStringList( INCLUDES_PROPERTY_PREFIX );
+        final List<String> specificTests = properties.getStringList( SPECIFIC_TEST_PROPERTY_PREFIX );
 
-        final List testSuiteXmlFiles = properties.getStringList( TEST_SUITE_XML_FILES );
+        final List<String> testSuiteXmlFiles = properties.getStringList( TEST_SUITE_XML_FILES );
         final File testClassesDirectory = properties.getFileProperty( TEST_CLASSES_DIRECTORY );
         final String runOrder = properties.getProperty( RUN_ORDER );
         final String runStatisticsFile = properties.getProperty( RUN_STATISTICS_FILE );
@@ -85,7 +85,7 @@ public class BooterDeserializer
         final int rerunFailingTestsCount = properties.getIntProperty( RERUN_FAILING_TESTS_COUNT );
 
         DirectoryScannerParameters dirScannerParams =
-            new DirectoryScannerParameters( testClassesDirectory, includesList, excludesList, specificTestsList,
+            new DirectoryScannerParameters( testClassesDirectory, includes, excludes, specificTests,
                                             properties.getBooleanObjectProperty( FAILIFNOTESTS ), runOrder );
 
         RunOrderParameters runOrderParameters = new RunOrderParameters( runOrder, runStatisticsFile );

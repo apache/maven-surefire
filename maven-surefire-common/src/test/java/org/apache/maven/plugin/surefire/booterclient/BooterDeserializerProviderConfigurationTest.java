@@ -198,7 +198,7 @@ public class BooterDeserializerProviderConfigurationTest
         excludes.add( "xx1" );
         excludes.add( "xx2" );
 
-        return new DirectoryScannerParameters( aDir, includes, excludes, Collections.emptyList(), true,
+        return new DirectoryScannerParameters( aDir, includes, excludes, Collections.<String>emptyList(), true,
                                                RunOrder.asString( RunOrder.DEFAULT ) );
     }
 

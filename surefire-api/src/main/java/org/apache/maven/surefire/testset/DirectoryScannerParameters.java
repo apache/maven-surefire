@@ -30,18 +30,18 @@ public class DirectoryScannerParameters
 {
     private final File testClassesDirectory;
 
-    private final List includes;
+    private final List<String> includes;
 
-    private final List excludes;
+    private final List<String> excludes;
 
-    private final List specificTests;
+    private final List<String> specificTests;
 
     private final boolean failIfNoTests;
 
     private final RunOrder[] runOrder;
 
-    private DirectoryScannerParameters( File testClassesDirectory, List includes, List excludes, List specificTests,
-                                        boolean failIfNoTests, RunOrder[] runOrder )
+    private DirectoryScannerParameters( File testClassesDirectory, List<String> includes, List<String> excludes,
+                                        List<String> specificTests, boolean failIfNoTests, RunOrder[] runOrder )
     {
         this.testClassesDirectory = testClassesDirectory;
         this.includes = includes;
@@ -51,14 +51,14 @@ public class DirectoryScannerParameters
         this.runOrder = runOrder;
     }
 
-    public DirectoryScannerParameters( File testClassesDirectory, List includes, List excludes, List specificTests,
-                                       boolean failIfNoTests, String runOrder )
+    public DirectoryScannerParameters( File testClassesDirectory, List<String> includes, List<String> excludes,
+                                       List<String> specificTests, boolean failIfNoTests, String runOrder )
     {
         this( testClassesDirectory, includes, excludes, specificTests, failIfNoTests,
               runOrder == null ? RunOrder.DEFAULT : RunOrder.valueOfMulti( runOrder ) );
     }
 
-    public List getSpecificTests()
+    public List<String> getSpecificTests()
     {
         return specificTests;
     }
@@ -78,7 +78,7 @@ public class DirectoryScannerParameters
      *
      * @return A list of patterns. May contain both source file designators and .class extensions.
      */
-    public List getIncludes()
+    public List<String> getIncludes()
     {
         return includes;
     }
@@ -88,7 +88,7 @@ public class DirectoryScannerParameters
      *
      * @return A list of patterns. May contain both source file designators and .class extensions.
      */
-    public List getExcludes()
+    public List<String> getExcludes()
     {
         return excludes;
     }

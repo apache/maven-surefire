@@ -158,8 +158,8 @@ public class BooterDeserializerStartupConfigurationTest
         return new File( "TestSrc" );
     }
 
-    private Object[] getSuiteXmlFileStrings()
+    private String[] getSuiteXmlFileStrings()
     {
-        return new Object[]{ "A1", "A2" };
+        return new String[]{ "A1", "A2" };
     }
 }

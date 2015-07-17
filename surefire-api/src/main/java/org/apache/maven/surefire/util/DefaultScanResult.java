@@ -21,8 +21,10 @@ package org.apache.maven.surefire.util;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Kristian Rosenvold
@@ -84,7 +86,7 @@ public class DefaultScanResult
 
     public TestsToRun applyFilter( ScannerFilter scannerFilter, ClassLoader testClassLoader )
     {
-        List<Class<?>> result = new ArrayList<Class<?>>();
+        Set<Class<?>> result = new LinkedHashSet<Class<?>>();
 
         int size = size();
         for ( int i = 0; i < size; i++ )
