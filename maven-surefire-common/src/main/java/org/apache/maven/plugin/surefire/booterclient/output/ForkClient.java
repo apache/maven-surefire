@@ -157,7 +157,7 @@ public class ForkClient
                     }
                     break;
                 case ForkingRunListener.BOOTERCODE_ERROR:
-                    errorInFork = deserializeStackStraceWriter( new StringTokenizer( remaining, "," ) );
+                    errorInFork = deserializeStackTraceWriter( new StringTokenizer( remaining, "," ) );
                     break;
                 case ForkingRunListener.BOOTERCODE_BYE:
                     saidGoodBye = true;
@@ -233,7 +233,7 @@ public class ForkClient
             String elapsedStr = tokens.nextToken();
             Integer elapsed = "null".equals( elapsedStr ) ? null : Integer.decode( elapsedStr );
             final StackTraceWriter stackTraceWriter =
-                tokens.hasMoreTokens() ? deserializeStackStraceWriter( tokens ) : null;
+                tokens.hasMoreTokens() ? deserializeStackTraceWriter( tokens ) : null;
 
             return CategorizedReportEntry.reportEntry( source, name, group, stackTraceWriter, elapsed, message );
         }
@@ -243,15 +243,15 @@ public class ForkClient
         }
     }
 
-    private StackTraceWriter deserializeStackStraceWriter( StringTokenizer tokens )
+    private StackTraceWriter deserializeStackTraceWriter( StringTokenizer tokens )
     {
         StackTraceWriter stackTraceWriter;
         String stackTraceMessage = nullableCsv( tokens.nextToken() );
         String smartStackTrace = nullableCsv( tokens.nextToken() );
         String stackTrace = tokens.hasMoreTokens() ? nullableCsv( tokens.nextToken() ) : null;
-        stackTraceWriter =
-            stackTrace != null ? new DeserializedStacktraceWriter( stackTraceMessage, smartStackTrace, stackTrace )
-                            : null;
+        stackTraceWriter = stackTrace != null
+            ? new DeserializedStacktraceWriter( stackTraceMessage, smartStackTrace, stackTrace )
+            : null;
         return stackTraceWriter;
     }
 
