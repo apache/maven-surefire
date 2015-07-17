@@ -40,15 +40,15 @@ public class PojoAndJUnit3Checker
 
     public boolean accept( Class testClass )
     {
-        return jUnit3TestChecker.accept( testClass ) || nonAbstractClassFilter.accept( testClass ) && isPojoTest(
-            testClass );
+        return jUnit3TestChecker.accept( testClass )
+            || nonAbstractClassFilter.accept( testClass ) && isPojoTest( testClass );
     }
 
-    private boolean isPojoTest( Class testClass )
+    private boolean isPojoTest( Class<?> testClass )
     {
         try
         {
-            testClass.getConstructor( new Class[0] );
+            testClass.getConstructor();
             return true;
         }
         catch ( Exception e )
