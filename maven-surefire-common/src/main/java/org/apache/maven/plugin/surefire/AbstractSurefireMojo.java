@@ -908,7 +908,7 @@ public abstract class AbstractSurefireMojo
                 if ( getArgLine() == null || !getArgLine().contains( "-D" + o + "=" ) )
                 {
                     getLog().warn( o + " cannot be set as system property, use <argLine>-D"
-                                       + o + "=...<argLine> instead" );
+                                       + o + "=...</argLine> instead" );
                 }
             }
             for ( Object systemPropertyMatchingArgLine : systemPropertiesMatchingArgLine( result ) )
