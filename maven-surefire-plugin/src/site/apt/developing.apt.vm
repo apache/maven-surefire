@@ -114,9 +114,9 @@ ForkedBooter#main
 
 * JDK Versions
 
-  The surefire booter is capable of booting all the way back to jdk1.3. Specifically
+  The surefire booter is capable of booting all the way back to jdk1.5. Specifically
   this means <<<surefire-api>>>, <<<surefire-booter>>>, <<<common-junit3>>> and <<<surefire-junit3>>> are
-  source/target 1.3. The plugin and several providers are 1.5.
+  source/target 1.5. The plugin and several providers are 1.5.
 
 * Provider Isolation
 

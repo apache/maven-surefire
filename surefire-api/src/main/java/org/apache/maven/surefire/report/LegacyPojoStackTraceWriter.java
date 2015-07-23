@@ -25,7 +25,7 @@ import java.io.StringWriter;
 import org.apache.maven.surefire.util.internal.StringUtils;
 
 /**
- * Write the trace out for a POJO test. Java 1.3 compatible.
+ * Write the trace out for a POJO test. Java 1.5 compatible.
  *
  * @author <a href="mailto:brett@apache.org">Brett Porter</a>
  * @noinspection ThrowableResultOfMethodCallIgnored
