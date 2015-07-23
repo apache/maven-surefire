@@ -19,28 +19,10 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import junit.framework.JUnit4TestAdapter;
-import junit.framework.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-
 /**
- * Adapt the JUnit4 tests which use only annotations to the JUnit3 test suite.
- *
- * @author Tibor Digana (tibor17)
- * @since 2.19
+ * listener interface
  */
-@Suite.SuiteClasses( {
-    ClasspathTest.class,
-    MasterProcessReaderTest.class,
-    PropertiesWrapperTest.class,
-    SurefireReflectorTest.class
-} )
-@RunWith( Suite.class )
-public class JUnit4SuiteTest
+public interface MasterProcessListener
 {
-    public static Test suite()
-    {
-        return new JUnit4TestAdapter( JUnit4SuiteTest.class );
-    }
+    void update( Command command );
 }

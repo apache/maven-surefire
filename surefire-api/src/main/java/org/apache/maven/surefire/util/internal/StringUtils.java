@@ -350,4 +350,24 @@ public class StringUtils
            throw new RuntimeException( "The JVM must support Charset " + FORK_STREAM_CHARSET_NAME, e );
         }
     }
+
+    /*
+    * In JDK7 use java.util.Objects instead.
+    * */
+    public static <T> T requireNonNull( T obj, String message )
+    {
+        if ( obj == null )
+        {
+            throw new NullPointerException( message );
+        }
+        return obj;
+    }
+
+    /*
+    * In JDK7 use java.util.Objects instead.
+    * */
+    public static <T> T requireNonNull( T obj )
+    {
+        return requireNonNull( obj, null );
+    }
 }

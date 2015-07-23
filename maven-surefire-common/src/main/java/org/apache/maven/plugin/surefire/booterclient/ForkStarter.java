@@ -35,6 +35,7 @@ import org.apache.maven.shared.utils.cli.CommandLineUtils;
 import org.apache.maven.shared.utils.cli.ShutdownHookUtils;
 import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.ClasspathConfiguration;
+import org.apache.maven.surefire.booter.Command;
 import org.apache.maven.surefire.booter.KeyValueSource;
 import org.apache.maven.surefire.booter.PropertiesWrapper;
 import org.apache.maven.surefire.booter.ProviderConfiguration;
@@ -72,6 +73,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.apache.maven.surefire.booter.Classpath.join;
+import static org.apache.maven.surefire.booter.MasterProcessCommand.RUN_CLASS;
+import static java.lang.StrictMath.min;
 
 /**
  * Starts the fork or runs in-process.
@@ -210,18 +213,17 @@ public class ForkStarter
         ThreadPoolExecutor executorService = new ThreadPoolExecutor( forkCount, forkCount, 60, TimeUnit.SECONDS,
                                                                   new ArrayBlockingQueue<Runnable>( forkCount ) );
         executorService.setThreadFactory( threadFactory );
-        Collection<TestProvidingInputStream> testStreams = new ArrayList<TestProvidingInputStream>();
         try
         {
-            final Queue<String> messageQueue = new ConcurrentLinkedQueue<String>();
+            final Queue<Command> commands = new ConcurrentLinkedQueue<Command>();
             for ( Class<?> clazz : getSuitesIterator() )
             {
-                messageQueue.add( clazz.getName() );
+                commands.add( new Command( RUN_CLASS, clazz.getName() ) );
             }
-
-            for ( int forkNum = 0, total = messageQueue.size(); forkNum < forkCount && forkNum < total; forkNum++ )
+            Collection<TestProvidingInputStream> testStreams = new ArrayList<TestProvidingInputStream>();
+            for ( int forkNum = 0, total = min( forkCount, commands.size() ); forkNum < total; forkNum++ )
             {
-                final TestProvidingInputStream testProvidingInputStream = new TestProvidingInputStream( messageQueue );
+                final TestProvidingInputStream testProvidingInputStream = new TestProvidingInputStream( commands );
                 testStreams.add( testProvidingInputStream );
                 Callable<RunResult> pf = new Callable<RunResult>()
                 {
@@ -241,11 +243,11 @@ public class ForkStarter
                 };
                 results.add( executorService.submit( pf ) );
             }
+            dispatchTestSetFinished( testStreams );
             return awaitResultsDone( results, executorService );
         }
         finally
         {
-            closeTestStreams( testStreams );
             closeExecutor( executorService );
         }
     }
@@ -318,11 +320,11 @@ public class ForkStarter
         return globalResult;
     }
 
-    private static void closeTestStreams( Iterable<TestProvidingInputStream> testStreams )
+    private static void dispatchTestSetFinished( Iterable<TestProvidingInputStream> testStreams )
     {
-        for ( TestProvidingInputStream testStream: testStreams )
+        for ( TestProvidingInputStream testStream : testStreams )
         {
-            testStream.close();
+            testStream.testSetFinished();
         }
     }
 

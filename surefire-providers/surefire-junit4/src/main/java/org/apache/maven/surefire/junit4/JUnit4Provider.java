@@ -55,6 +55,8 @@ import org.junit.runner.Runner;
 import org.junit.runner.manipulation.Filter;
 import org.junit.runner.notification.RunNotifier;
 
+import static org.apache.maven.surefire.testset.TestListResolver.toClassFileName;
+
 /**
  * @author Kristian Rosenvold
  */
@@ -267,8 +269,6 @@ public class JUnit4Provider
     private static void execute( Class<?> testClass, RunNotifier notifier, Filter filter )
     {
         final int classModifiers = testClass.getModifiers();
-
-        // filter.shouldRunClass( testClass )
         if ( !Modifier.isAbstract( classModifiers ) && !Modifier.isInterface( classModifiers ) )
         {
             Runner runner = Request.aClass( testClass ).filterWith( filter ).getRunner();
@@ -349,8 +349,6 @@ public class JUnit4Provider
     {
         private final TestListResolver methodFilter = JUnit4Provider.this.testResolver.createMethodFilters();
 
-        private final TestsToRun testsToRun = JUnit4Provider.this.testsToRun;
-
         @Override
         public boolean shouldRun( Description description )
         {
@@ -360,7 +358,7 @@ public class JUnit4Provider
             final boolean isValidTest = description.isTest() && cm.isValid();
             final String clazz = cm.getClazz();
             final String method = cm.getMethod();
-            return isSuite || isValidTest && methodFilter.shouldRun( testsToRun.getClassByName( clazz ), method );
+            return isSuite || isValidTest && methodFilter.shouldRun( toClassFileName( clazz ), method );
         }
 
         @Override

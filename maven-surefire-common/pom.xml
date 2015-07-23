@@ -119,6 +119,9 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
+          <includes>
+            <include>**/JUnit4SuiteTest.java</include>
+          </includes>
         </configuration>
         <dependencies>
           <dependency>

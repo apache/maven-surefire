@@ -19,14 +19,17 @@ package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
  * under the License.
  */
 
-import java.io.EOFException;
+import org.apache.maven.surefire.booter.Command;
+import org.apache.maven.surefire.booter.MasterProcessCommand;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Queue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.apache.maven.surefire.util.internal.StringUtils.encodeStringForForkCommunication;
+import static org.apache.maven.surefire.booter.MasterProcessCommand.TEST_SET_FINISHED;
+import static org.apache.maven.surefire.util.internal.StringUtils.requireNonNull;
 
 /**
  * An {@link InputStream} that, when read, provides test class names out of a queue.
@@ -45,7 +48,7 @@ public class TestProvidingInputStream
 {
     private final Semaphore semaphore = new Semaphore( 0 );
 
-    private final Queue<String> testItemQueue;
+    private final Queue<Command> commands;
 
     private final AtomicBoolean closed = new AtomicBoolean();
 
@@ -53,16 +56,18 @@ public class TestProvidingInputStream
 
     private int currentPos;
 
+    private MasterProcessCommand lastCommand;
+
     private volatile FlushReceiverProvider flushReceiverProvider;
 
     /**
      * C'tor
      *
-     * @param testItemQueue source of the tests to be read from this stream
+     * @param commands source of the tests to be read from this stream
      */
-    public TestProvidingInputStream( Queue<String> testItemQueue )
+    public TestProvidingInputStream( Queue<Command> commands )
     {
-        this.testItemQueue = testItemQueue;
+        this.commands = commands;
     }
 
     /**
@@ -70,7 +75,12 @@ public class TestProvidingInputStream
      */
     public void setFlushReceiverProvider( FlushReceiverProvider flushReceiverProvider )
     {
-        this.flushReceiverProvider = flushReceiverProvider;
+        this.flushReceiverProvider = requireNonNull( flushReceiverProvider );
+    }
+
+    public void testSetFinished()
+    {
+        commands.add( new Command( TEST_SET_FINISHED ) );
     }
 
     /**
@@ -84,63 +94,45 @@ public class TestProvidingInputStream
     public int read()
         throws IOException
     {
-        if ( closed.get() )
+        byte[] buffer = currentBuffer;
+        if ( buffer == null )
         {
-            // help GC to free this object because StreamFeeder Thread cannot read it after IOE
-            currentBuffer = null;
-            throw new EOFException( "closed unexpectedly" );
+            if ( flushReceiverProvider != null )
+            {
+                FlushReceiver flushReceiver = flushReceiverProvider.getFlushReceiver();
+                if ( flushReceiver != null )
+                {
+                    flushReceiver.flush();
+                }
+            }
+
+            if ( lastCommand == TEST_SET_FINISHED || closed.get() )
+            {
+                close();
+                return -1;
+            }
+
+            awaitNextTest();
+
+            if ( closed.get() )
+            {
+                return -1;
+            }
+
+            Command command = commands.poll();
+            lastCommand = command.getCommandType();
+            String test = command.getData();
+            buffer = lastCommand == TEST_SET_FINISHED ? lastCommand.encode() : lastCommand.encode( test );
         }
-        else
+
+        int b =  buffer[currentPos++] & 0xff;
+        if ( currentPos == buffer.length )
         {
-            // isolation of instance variable in Thread stack
-            byte[] buffer = currentBuffer;
-
-            if ( buffer == null )
-            {
-                if ( flushReceiverProvider != null )
-                {
-                    FlushReceiver flushing = flushReceiverProvider.getFlushReceiver();
-                    if ( flushing != null )
-                    {
-                        flushing.flush();
-                    }
-                }
-
-                awaitNextTest();
-
-                if ( closed.get() )
-                {
-                    // help GC to free this object because StreamFeeder Thread cannot read it after IOE
-                    currentBuffer = null;
-                    throw new EOFException( "closed unexpectedly" );
-                }
-
-                String currentElement = testItemQueue.poll();
-                if ( currentElement != null )
-                {
-                    buffer = encodeStringForForkCommunication( currentElement );
-                    // may override NULL from close(), therefore setting explicitly to NULL if IOE elsewhere
-                    currentBuffer = buffer;
-                    currentPos = 0;
-                }
-                else
-                {
-                    // help GC to free this object since it's not needed as there's no new test
-                    currentBuffer = null;
-                    return -1;
-                }
-            }
-
-            if ( currentPos < buffer.length )
-            {
-                return buffer[currentPos++] & 0xff;
-            }
-            else
-            {
-                currentBuffer = null;
-                return '\n' & 0xff;
-            }
+            buffer = null;
+            currentPos = 0;
         }
+        currentBuffer = buffer;
+        return b;
     }
 
     private void awaitNextTest()
@@ -175,11 +167,8 @@ public class TestProvidingInputStream
         if ( closed.compareAndSet( false, true ) )
         {
             currentBuffer = null;
-            int permits = semaphore.drainPermits();
-            if ( permits == 0 )
-            {
-                semaphore.release();
-            }
+            semaphore.drainPermits();
+            semaphore.release();
         }
     }
 }

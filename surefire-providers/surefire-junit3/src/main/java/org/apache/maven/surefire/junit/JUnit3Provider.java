@@ -115,7 +115,6 @@ public class JUnit3Provider
         return reflector.isJUnit3Available() && jUnit3TestChecker.accept( clazz )
             ? new JUnitTestSet( clazz, reflector )
             : new PojoTestSet( clazz );
-
     }
 
     private void executeTestSet( SurefireTestSet testSet, RunListener reporter, ClassLoader classLoader )

@@ -180,8 +180,7 @@ public class TestListResolver
 
     public boolean shouldRun( Class<?> testClass, String methodName )
     {
-        String clsFile = testClass == null ? null : testClass.getName().replace( '.', '/' ) + JAVA_CLASS_FILE_EXTENSION;
-        return shouldRun( clsFile, methodName );
+        return shouldRun( toClassFileName( testClass ), methodName );
     }
 
     public boolean shouldRun( String testClassFile, String methodName )
@@ -283,6 +282,18 @@ public class TestListResolver
     public String toString()
     {
         return getPluginParameterTest();
+    }
+
+    public static String toClassFileName( Class<?> test )
+    {
+        return test == null ? null : toClassFileName( test.getName() );
+    }
+
+    public static String toClassFileName( String fullyQualifiedTestClass )
+    {
+        return fullyQualifiedTestClass == null
+            ? null
+            : fullyQualifiedTestClass.replace( '.', '/' ) + JAVA_CLASS_FILE_EXTENSION;
     }
 
     static String removeExclamationMark( String s )

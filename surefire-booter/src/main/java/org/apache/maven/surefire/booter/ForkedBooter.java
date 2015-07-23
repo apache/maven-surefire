@@ -98,7 +98,7 @@ public final class ForkedBooter
             }
             else if ( readTestsFromInputStream )
             {
-                testSet = new LazyTestsToRun( System.in, originalOut );
+                testSet = new LazyTestsToRun( originalOut );
             }
             else
             {

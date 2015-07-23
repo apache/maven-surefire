@@ -19,28 +19,32 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import junit.framework.JUnit4TestAdapter;
-import junit.framework.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-
 /**
- * Adapt the JUnit4 tests which use only annotations to the JUnit3 test suite.
- *
- * @author Tibor Digana (tibor17)
- * @since 2.19
+ * Encapsulates data and command sent from master to forked process.
  */
-@Suite.SuiteClasses( {
-    ClasspathTest.class,
-    MasterProcessReaderTest.class,
-    PropertiesWrapperTest.class,
-    SurefireReflectorTest.class
-} )
-@RunWith( Suite.class )
-public class JUnit4SuiteTest
+public final class Command
 {
-    public static Test suite()
+    private final MasterProcessCommand command;
+    private final String data;
+
+    public Command( MasterProcessCommand command, String data )
     {
-        return new JUnit4TestAdapter( JUnit4SuiteTest.class );
+        this.command = command;
+        this.data = data;
+    }
+
+    public Command( MasterProcessCommand command )
+    {
+        this( command, null );
+    }
+
+    public MasterProcessCommand getCommandType()
+    {
+        return command;
+    }
+
+    public String getData()
+    {
+        return data;
     }
 }
