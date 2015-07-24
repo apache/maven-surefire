@@ -45,7 +45,7 @@ import java.util.Map;
  */
 public class BaseProviderFactory
     implements DirectoryScannerParametersAware, ReporterConfigurationAware, SurefireClassLoadersAware, TestRequestAware,
-    ProviderPropertiesAware, ProviderParameters, TestArtifactInfoAware, RunOrderParametersAware
+    ProviderPropertiesAware, ProviderParameters, TestArtifactInfoAware, RunOrderParametersAware, MainCliOptionsAware
 {
     private static final int ROOT_CHANNEL = 0;
 
