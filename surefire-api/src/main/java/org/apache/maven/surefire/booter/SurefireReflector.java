@@ -26,6 +26,8 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.maven.surefire.cli.CommandLineOption;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterFactory;
@@ -80,6 +82,8 @@ public class SurefireReflector
 
     private final Class<?> testListResolver;
 
+    private final Class<?> mainCliOptions;
+
 
     public SurefireReflector( ClassLoader surefireClassLoader )
     {
@@ -102,6 +106,7 @@ public class SurefireReflector
             runResult = surefireClassLoader.loadClass( RunResult.class.getName() );
             booterParameters = surefireClassLoader.loadClass( ProviderParameters.class.getName() );
             testListResolver = surefireClassLoader.loadClass( TestListResolver.class.getName() );
+            mainCliOptions = surefireClassLoader.loadClass( MainCliOptionsAware.class.getName() );
         }
         catch ( ClassNotFoundException e )
         {
@@ -260,6 +265,14 @@ public class SurefireReflector
         if ( directoryScannerParametersAware.isAssignableFrom( o.getClass() ) )
         {
             setDirectoryScannerParameters( o, dirScannerParams );
+        }
+    }
+
+    public void setMainCliOptions( Object o, List<CommandLineOption> options )
+    {
+        if ( mainCliOptions.isAssignableFrom( o.getClass() ) )
+        {
+            ReflectionUtils.invokeSetter( o, "setMainCliOptions", List.class, options );
         }
     }
 
