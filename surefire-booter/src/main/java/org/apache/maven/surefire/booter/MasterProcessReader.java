@@ -228,10 +228,12 @@ public final class MasterProcessReader
             }
             catch ( IOException e )
             {
+                MasterProcessReader.this.state.set( TERMINATED );
+            }
+            finally
+            {
                 // ensure fail-safe iterator as well as safe to finish in for-each loop using ClassesIterator
                 insert( new Command( TEST_SET_FINISHED ) );
-                // and let us know what has happened with the stream
-                throw new IllegalStateException( e.getLocalizedMessage(), e );
             }
         }
 
