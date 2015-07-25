@@ -24,6 +24,8 @@ import java.io.PrintStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -40,6 +42,8 @@ import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.util.ReflectionUtils;
 import org.apache.maven.surefire.util.RunOrder;
 import org.apache.maven.surefire.util.SurefireReflectionException;
+
+import static java.util.Collections.checkedList;
 
 /**
  * Does reflection based invocation of the surefire methods.
@@ -84,7 +88,10 @@ public class SurefireReflector
 
     private final Class<?> mainCliOptions;
 
+    private final Class<Enum> commandLineOptionsClass;
 
+
+    @SuppressWarnings( "unchecked" )
     public SurefireReflector( ClassLoader surefireClassLoader )
     {
         this.surefireClassLoader = surefireClassLoader;
@@ -107,6 +114,8 @@ public class SurefireReflector
             booterParameters = surefireClassLoader.loadClass( ProviderParameters.class.getName() );
             testListResolver = surefireClassLoader.loadClass( TestListResolver.class.getName() );
             mainCliOptions = surefireClassLoader.loadClass( MainCliOptionsAware.class.getName() );
+            commandLineOptionsClass =
+                (Class<Enum>) surefireClassLoader.loadClass( CommandLineOption.class.getName() );
         }
         catch ( ClassNotFoundException e )
         {
@@ -272,7 +281,16 @@ public class SurefireReflector
     {
         if ( mainCliOptions.isAssignableFrom( o.getClass() ) )
         {
-            ReflectionUtils.invokeSetter( o, "setMainCliOptions", List.class, options );
+            List<Enum> newOptions = checkedList( new ArrayList<Enum>( options.size() ), commandLineOptionsClass );
+            Collection<Integer> ordinals = toOrdinals( options );
+            for ( Enum e : commandLineOptionsClass.getEnumConstants() )
+            {
+                if ( ordinals.contains( e.ordinal() ) )
+                {
+                    newOptions.add( e );
+                }
+            }
+            ReflectionUtils.invokeSetter( o, "setMainCliOptions", List.class, newOptions );
         }
     }
 
@@ -287,7 +305,6 @@ public class SurefireReflector
         final Object param = createRunOrderParameters( runOrderParameters );
         ReflectionUtils.invokeSetter( o, "setRunOrderParameters", this.runOrderParameters, param );
     }
-
 
     public void setTestSuiteDefinitionAware( Object o, TestRequest testSuiteDefinition2 )
     {
@@ -363,6 +380,16 @@ public class SurefireReflector
     private boolean isRunResult( Object o )
     {
         return runResult.isAssignableFrom( o.getClass() );
+    }
+
+    private static Collection<Integer> toOrdinals( Collection<? extends Enum> enums )
+    {
+        Collection<Integer> ordinals = new ArrayList<Integer>( enums.size() );
+        for ( Enum e : enums )
+        {
+            ordinals.add( e.ordinal() );
+        }
+        return ordinals;
     }
 
 }
