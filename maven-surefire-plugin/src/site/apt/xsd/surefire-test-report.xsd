@@ -75,6 +75,7 @@
       <xs:attribute name="errors" type="xs:string" />
       <xs:attribute name="skipped" type="xs:string" />
       <xs:attribute name="failures" type="xs:string" />
+      <xs:attribute name="successrate" type="xs:string" />
     </xs:complexType>
   </xs:element>
 </xs:schema>
