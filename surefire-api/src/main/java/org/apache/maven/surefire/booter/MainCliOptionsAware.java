@@ -29,7 +29,7 @@ import java.util.List;
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.19
  */
-public interface MainCliOptionsAware
+interface MainCliOptionsAware
 {
     void setMainCliOptions( List<CommandLineOption> mainCliOptions );
 }

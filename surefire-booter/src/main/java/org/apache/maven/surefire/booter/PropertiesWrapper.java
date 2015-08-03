@@ -65,11 +65,6 @@ public class PropertiesWrapper
         return Boolean.valueOf( properties.get( propertyName ) );
     }
 
-    public boolean getBooleanObjectProperty( String propertyName )
-    {
-        return Boolean.valueOf( properties.get( propertyName ) );
-    }
-
     public int getIntProperty( String propertyName )
     {
         return Integer.parseInt( properties.get( propertyName ) );

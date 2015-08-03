@@ -23,7 +23,7 @@ package org.apache.maven.surefire.booter;
  * @author Kristian Rosenvold
  * @noinspection UnusedDeclaration
  */
-public interface SurefireClassLoadersAware
+interface SurefireClassLoadersAware
 {
     void setClassLoaders( ClassLoader testClassLoader );
 }
