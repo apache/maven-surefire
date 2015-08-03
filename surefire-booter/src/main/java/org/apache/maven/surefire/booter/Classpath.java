@@ -155,11 +155,10 @@ public class Classpath implements Iterable<String>
     {
         try
         {
-            List urls = getAsUrlList();
+            List<URL> urls = getAsUrlList();
             IsolatedClassLoader classLoader = new IsolatedClassLoader( parent, childDelegation, roleName );
-            for ( Object url1 : urls )
+            for ( URL url : urls )
             {
-                URL url = (URL) url1;
                 classLoader.addURL( url );
             }
             if ( parent != null )

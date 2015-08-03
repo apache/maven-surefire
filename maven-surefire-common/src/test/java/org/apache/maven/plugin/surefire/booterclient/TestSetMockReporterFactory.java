@@ -24,6 +24,8 @@ import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
 import org.apache.maven.surefire.report.RunListener;
 
 /**
+ * Internal tests use only.
+ *
  * @author Kristian Rosenvold
  */
 public class TestSetMockReporterFactory
