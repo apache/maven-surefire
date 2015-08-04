@@ -19,7 +19,6 @@ package org.apache.maven.surefire.common.junit4;
  */
 
 import junit.framework.TestCase;
-import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.Description;
@@ -30,12 +29,11 @@ import org.junit.runner.Description;
 public class JUnit4Reflector40Test
     extends TestCase
 {
-    @Test
     public void testGetAnnotatedIgnore()
     {
         Description desc = Description.createTestDescription( IgnoreWithDescription.class, "testSomething2" );
         Ignore annotatedIgnore = JUnit4Reflector.getAnnotatedIgnore( desc );
-        Assert.assertNull( annotatedIgnore );
+        assertNull( annotatedIgnore );
     }
 
     private static final String reason = "Ignorance is bliss";

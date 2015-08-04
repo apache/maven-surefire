@@ -21,12 +21,10 @@ package org.apache.maven.surefire.common.junit4;
 
 import junit.framework.TestCase;
 import org.apache.maven.surefire.testset.TestSetFailedException;
-import org.apache.maven.surefire.util.TestsToRun;
 import org.junit.runner.Description;
 import org.junit.runner.notification.Failure;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
