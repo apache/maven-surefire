@@ -79,7 +79,7 @@ mvn verify
 
   By default, these files are generated at <<<$\{basedir\}/target/${thisPlugin.toLowerCase()}-reports>>>.
 
-  The schema for the Surefire XML reports is available at {{{./xsd/surefire-test-report.xsd}Surefire XML Report Schema}}
+  The schema for the Surefire XML reports is available at {{{./xsd/surefire-test-report.xsd}Surefire XML Report Schema}}.
 
   For an HTML format of the report, please see the
   {{{http://maven.apache.org/plugins/maven-surefire-report-plugin/}Maven Surefire Report Plugin}}.
