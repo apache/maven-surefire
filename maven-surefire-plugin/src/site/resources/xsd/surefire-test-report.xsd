@@ -26,7 +26,7 @@
                       <xs:attribute name="time">
 			<xs:simpleType>
 			  <xs:restriction base="xs:string">
-			    <xs:pattern value="(([0-9]{0,3},)*[0-9]{3}|[0-9]{0,3})\\.[0-9]{0,3}" />
+			    <xs:pattern value="(([0-9]{0,3},)*[0-9]{3}|[0-9]{0,3})*(\.[0-9]{0,3})?" />
 			  </xs:restriction>
 			</xs:simpleType>
 		      </xs:attribute>
@@ -42,7 +42,7 @@
                       <xs:attribute name="time">
 			<xs:simpleType>
 			  <xs:restriction base="xs:string">
-			    <xs:pattern value="(([0-9]{0,3},)*[0-9]{3}|[0-9]{0,3})*\.[0-9]{0,3}"/>
+			    <xs:pattern value="(([0-9]{0,3},)*[0-9]{3}|[0-9]{0,3})*(\.[0-9]{0,3})?"/>
 			  </xs:restriction>
 			</xs:simpleType>
 		      </xs:attribute>
@@ -56,7 +56,7 @@
 	    <xs:attribute name="time">
 	      <xs:simpleType>
 		<xs:restriction base="xs:string">
-		  <xs:pattern value="(([0-9]{0,3},)*[0-9]{3}|[0-9]{0,3})*\.[0-9]{0,3}"/>
+		  <xs:pattern value="(([0-9]{0,3},)*[0-9]{3}|[0-9]{0,3})*(\.[0-9]{0,3})?"/>
 		</xs:restriction>
 	      </xs:simpleType>
 	    </xs:attribute>
@@ -67,7 +67,7 @@
       <xs:attribute name="time">
 	<xs:simpleType>
 	  <xs:restriction base="xs:string">
-	    <xs:pattern value="(([0-9]{0,3},)*[0-9]{3}|[0-9]{0,3})*\.[0-9]{0,3}"/>
+	    <xs:pattern value="(([0-9]{0,3},)*[0-9]{3}|[0-9]{0,3})*(\.[0-9]{0,3})?"/>
 	  </xs:restriction>
 	</xs:simpleType>
       </xs:attribute>
