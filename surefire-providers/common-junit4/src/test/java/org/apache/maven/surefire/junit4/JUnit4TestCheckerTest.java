@@ -33,91 +33,77 @@ import org.junit.runner.Runner;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.Suite;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 /**
  * @author Kristian Rosenvold
  */
 public class JUnit4TestCheckerTest
+    extends TestCase
 {
     private final JUnit4TestChecker jUnit4TestChecker = new JUnit4TestChecker( this.getClass().getClassLoader() );
 
-    @Test
-    public void validJunit4Annotated()
+    public void testValidJunit4Annotated()
         throws TestSetFailedException
     {
         assertTrue( jUnit4TestChecker.accept( JUnit4TestCheckerTest.class ) );
     }
 
-    @Test
-    public void validJunit4itsAJunit3Test()
+    public void testValidJunit4itsAJunit3Test()
         throws TestSetFailedException
     {
         assertTrue( jUnit4TestChecker.accept( AlsoValid.class ) );
     }
 
-    @Test
-    public void validJunitSubclassWithoutOwnTestmethods()
+    public void testValidJunitSubclassWithoutOwnTestmethods()
         throws TestSetFailedException
     {
         assertTrue( jUnit4TestChecker.accept( SubClassWithoutOwnTestMethods.class ) );
     }
 
-    @Test
-    public void validSuite()
+    public void testValidSuite()
         throws TestSetFailedException
     {
         assertTrue( jUnit4TestChecker.accept( SuiteValid1.class ) );
     }
 
-    @Test
-    public void validCustomSuite()
+    public void testValidCustomSuite()
         throws TestSetFailedException
     {
         assertTrue( jUnit4TestChecker.accept( SuiteValid2.class ) );
     }
 
-    @Test
-    public void validCustomRunner()
+    public void testValidCustomRunner()
         throws TestSetFailedException
     {
         assertTrue( jUnit4TestChecker.accept( SuiteValidCustomRunner.class ) );
     }
 
-    @Test
-    public void invalidTest()
+    public void testInvalidTest()
         throws TestSetFailedException
     {
         assertFalse( jUnit4TestChecker.accept( NotValidTest.class ) );
     }
 
-    @Test
-    public void dontAcceptAbstractClasses()
+    public void testDontAcceptAbstractClasses()
     {
         assertFalse( jUnit4TestChecker.accept( BaseClassWithTest.class ) );
     }
 
-    @Test
-    public void suiteOnlyTest()
+    public void testSuiteOnlyTest()
     {
         assertTrue( jUnit4TestChecker.accept( SuiteOnlyTest.class ) );
     }
 
-    @Test
-    public void customSuiteOnlyTest()
+    public void testCustomSuiteOnlyTest()
     {
         assertTrue( jUnit4TestChecker.accept( CustomSuiteOnlyTest.class ) );
     }
 
-    @Test
-    public void innerClassNotAutomaticallyTc()
+    public void testInnerClassNotAutomaticallyTc()
     {
         assertTrue( jUnit4TestChecker.accept( NestedTC.class ) );
         assertFalse( jUnit4TestChecker.accept( NestedTC.Inner.class ) );
     }
 
-    @Test
     public void testCannotLoadRunWithAnnotation()
         throws Exception
     {
