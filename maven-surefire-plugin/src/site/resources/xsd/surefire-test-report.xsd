@@ -22,6 +22,7 @@
                 <xs:complexType>
                   <xs:simpleContent>
                     <xs:extension base="xs:string">
+                      <xs:attribute name="message" type="xs:string" />
                       <xs:attribute name="type" type="xs:string" />
                       <xs:attribute name="time">
 			<xs:simpleType>
@@ -38,6 +39,7 @@
                 <xs:complexType>
                   <xs:simpleContent>
                     <xs:extension base="xs:string">
+                      <xs:attribute name="message" type="xs:string" />
                       <xs:attribute name="type" type="xs:string" />
                       <xs:attribute name="time">
 			<xs:simpleType>
@@ -50,9 +52,31 @@
                   </xs:simpleContent>
                 </xs:complexType>
               </xs:element>
+	      <xs:element name="skipped" nillable="true" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:simpleContent>
+                    <xs:extension base="xs:string">
+                      <xs:attribute name="message" type="xs:string" />
+                    </xs:extension>
+                  </xs:simpleContent>
+                </xs:complexType>
+              </xs:element>
+	      <xs:element name="error" nillable="true" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:simpleContent>
+                    <xs:extension base="xs:string">
+                      <xs:attribute name="message" type="xs:string" />
+                      <xs:attribute name="type" type="xs:string" />
+                    </xs:extension>
+                  </xs:simpleContent>
+                </xs:complexType>
+              </xs:element>
+	      <xs:element name="system-out" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+	      <xs:element name="system-err" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
             </xs:sequence>
             <xs:attribute name="name" type="xs:string" />
             <xs:attribute name="classname" type="xs:string" />
+            <xs:attribute name="group" type="xs:string" />
 	    <xs:attribute name="time">
 	      <xs:simpleType>
 		<xs:restriction base="xs:string">
@@ -75,7 +99,7 @@
       <xs:attribute name="errors" type="xs:string" />
       <xs:attribute name="skipped" type="xs:string" />
       <xs:attribute name="failures" type="xs:string" />
-      <xs:attribute name="successrate" type="xs:string" />
+      <xs:attribute name="group" type="xs:string"/>
     </xs:complexType>
   </xs:element>
 </xs:schema>
