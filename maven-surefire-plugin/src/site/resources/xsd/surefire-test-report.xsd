@@ -8,8 +8,8 @@
             <xs:sequence>
               <xs:element name="property" minOccurs="0" maxOccurs="unbounded">
                 <xs:complexType>
-                  <xs:attribute name="name" type="xs:string" />
-                  <xs:attribute name="value" type="xs:string" />
+                  <xs:attribute name="name" type="xs:string" use="required"/>
+                  <xs:attribute name="value" type="xs:string" use="required"/>
                 </xs:complexType>
               </xs:element>
             </xs:sequence>
@@ -18,12 +18,12 @@
         <xs:element name="testcase" minOccurs="0" maxOccurs="unbounded">
           <xs:complexType>
             <xs:sequence>
-              <xs:element name="failure" nillable="true" minOccurs="0" maxOccurs="1">
+              <xs:element name="failure" nillable="true" minOccurs="0" maxOccurs="unbounded">
                 <xs:complexType>
                   <xs:simpleContent>
                     <xs:extension base="xs:string">
                       <xs:attribute name="message" type="xs:string" />
-                      <xs:attribute name="type" type="xs:string" />
+                      <xs:attribute name="type" type="xs:string" use="required" />
                       <xs:attribute name="time">
 			<xs:simpleType>
 			  <xs:restriction base="xs:string">
@@ -40,7 +40,7 @@
                   <xs:simpleContent>
                     <xs:extension base="xs:string">
                       <xs:attribute name="message" type="xs:string" />
-                      <xs:attribute name="type" type="xs:string" />
+                      <xs:attribute name="type" type="xs:string" use="required" />
                       <xs:attribute name="time">
 			<xs:simpleType>
 			  <xs:restriction base="xs:string">
@@ -52,7 +52,7 @@
                   </xs:simpleContent>
                 </xs:complexType>
               </xs:element>
-	      <xs:element name="skipped" nillable="true" minOccurs="0" maxOccurs="unbounded">
+	      <xs:element name="skipped" nillable="true" minOccurs="0" maxOccurs="1">
                 <xs:complexType>
                   <xs:simpleContent>
                     <xs:extension base="xs:string">
@@ -61,23 +61,23 @@
                   </xs:simpleContent>
                 </xs:complexType>
               </xs:element>
-	      <xs:element name="error" nillable="true" minOccurs="0" maxOccurs="unbounded">
+	      <xs:element name="error" nillable="true" minOccurs="0" maxOccurs="1">
                 <xs:complexType>
                   <xs:simpleContent>
                     <xs:extension base="xs:string">
                       <xs:attribute name="message" type="xs:string" />
-                      <xs:attribute name="type" type="xs:string" />
+                      <xs:attribute name="type" type="xs:string" use="required" />
                     </xs:extension>
                   </xs:simpleContent>
                 </xs:complexType>
               </xs:element>
-	      <xs:element name="system-out" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
-	      <xs:element name="system-err" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+	      <xs:element name="system-out" nillable="true" minOccurs="0" maxOccurs="1"/>
+	      <xs:element name="system-err" nillable="true" minOccurs="0" maxOccurs="1"/>
             </xs:sequence>
-            <xs:attribute name="name" type="xs:string" />
+            <xs:attribute name="name" type="xs:string" use="required"/>
             <xs:attribute name="classname" type="xs:string" />
             <xs:attribute name="group" type="xs:string" />
-	    <xs:attribute name="time">
+	    <xs:attribute name="time" use="required">
 	      <xs:simpleType>
 		<xs:restriction base="xs:string">
 		  <xs:pattern value="(([0-9]{0,3},)*[0-9]{3}|[0-9]{0,3})*(\.[0-9]{0,3})?"/>
@@ -87,7 +87,7 @@
           </xs:complexType>
         </xs:element>
       </xs:sequence>
-      <xs:attribute name="name" type="xs:string" />
+      <xs:attribute name="name" type="xs:string" use="required"/>
       <xs:attribute name="time">
 	<xs:simpleType>
 	  <xs:restriction base="xs:string">
@@ -95,10 +95,10 @@
 	  </xs:restriction>
 	</xs:simpleType>
       </xs:attribute>
-      <xs:attribute name="tests" type="xs:string" />
-      <xs:attribute name="errors" type="xs:string" />
-      <xs:attribute name="skipped" type="xs:string" />
-      <xs:attribute name="failures" type="xs:string" />
+      <xs:attribute name="tests" type="xs:string" use="required"/>
+      <xs:attribute name="errors" type="xs:string" use="required"/>
+      <xs:attribute name="skipped" type="xs:string" use="required"/>
+      <xs:attribute name="failures" type="xs:string" use="required"/>
       <xs:attribute name="group" type="xs:string"/>
     </xs:complexType>
   </xs:element>
