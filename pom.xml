@@ -34,7 +34,7 @@
 
   <name>Apache Maven Surefire</name>
   <description>Surefire is a test framework project.</description>
-  <url>http://maven.apache.org/surefire</url>
+  <url>http://maven.apache.org/surefire/</url>
   <inceptionYear>2004</inceptionYear>
 
   <contributors>
