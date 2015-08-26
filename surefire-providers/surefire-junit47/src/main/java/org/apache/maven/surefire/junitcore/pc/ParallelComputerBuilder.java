@@ -330,7 +330,7 @@ public final class ParallelComputerBuilder
             }
             catch ( TestSetFailedException e )
             {
-                throw new InitializationError( e );
+                throw new InitializationError( Collections.<Throwable>singletonList( e ) );
             }
         }
 

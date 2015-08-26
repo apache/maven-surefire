@@ -66,6 +66,62 @@
 
     <plugins>
       <plugin>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>main</id>
+            <phase>process-sources</phase>
+            <goals>
+              <goal>copy</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/endorsed</outputDirectory>
+              <overWriteIfNewer>false</overWriteIfNewer>
+              <silent>true</silent>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>junit</groupId>
+                  <artifactId>junit</artifactId>
+                  <version>4.7</version>
+                  <type>jar</type>
+                </artifactItem>
+              </artifactItems>
+            </configuration>
+          </execution>
+          <execution>
+            <id>test</id>
+            <phase>process-sources</phase>
+            <goals>
+              <goal>copy</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/endorsed-test</outputDirectory>
+              <overWriteIfNewer>false</overWriteIfNewer>
+              <silent>true</silent>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>junit</groupId>
+                  <artifactId>junit</artifactId>
+                  <version>4.12</version>
+                  <type>jar</type>
+                </artifactItem>
+              </artifactItems>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <compilerArguments>
+            <endorseddirs>${project.build.directory}/endorsed</endorseddirs>
+          </compilerArguments>
+          <testCompilerArguments>
+            <endorseddirs>${project.build.directory}/endorsed-test</endorseddirs>
+          </testCompilerArguments>
+        </configuration>
+      </plugin>
+      <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
@@ -99,6 +155,13 @@
                 <relocation>
                   <pattern>org.apache.maven.shared</pattern>
                   <shadedPattern>org.apache.maven.surefire.org.apache.maven.shared</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>org.apache.maven.surefire.junitcore.ThreadSafe</pattern>
+                  <shadedPattern>org.junit.runner.notification.RunListener.ThreadSafe</shadedPattern>
+                  <excludes>
+                    <exclude>org.apache.maven.surefire.junitcore.ThreadSafe</exclude>
+                  </excludes>
                 </relocation>
               </relocations>
             </configuration>
