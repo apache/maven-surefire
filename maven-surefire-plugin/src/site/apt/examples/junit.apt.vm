@@ -192,6 +192,9 @@ else
   <<<src/test/java>>>. You can filter test artifacts by the parameter <<<dependenciesToScan>>> to load its classes
   in current ClassLoader of surefire-junit* providers.
 
+  Since JUnit 4.12 thread safe listener class should be annotated by
+  <<<org.junit.runner.notification.RunListener.ThreadSafe>>> which avoids unnecessary locks in JUnit.
+
 
 * Using a Security Manager (JUnit3 only)
 
