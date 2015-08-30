@@ -66,14 +66,16 @@ public class CommonReflector
                                                                      new Class[]{ boolean.class, boolean.class,
                                                                          String.class, boolean.class, boolean.class,
                                                                          File.class, boolean.class, String.class,
-                                                                         String.class, boolean.class, int.class } );
+                                                                         String.class, boolean.class, int.class,
+                                                                         int.class } );
         //noinspection BooleanConstructorCall
         final Object[] params = { reporterConfiguration.isUseFile(), reporterConfiguration.isPrintSummary(),
             reporterConfiguration.getReportFormat(), reporterConfiguration.isRedirectTestOutputToFile(),
             reporterConfiguration.isDisableXmlReport(), reporterConfiguration.getReportsDirectory(),
             reporterConfiguration.isTrimStackTrace(), reporterConfiguration.getReportNameSuffix(),
             reporterConfiguration.getConfigurationHash(), reporterConfiguration.isRequiresRunHistory(),
-            reporterConfiguration.getRerunFailingTestsCount() };
+            reporterConfiguration.getRerunFailingTestsCount(),
+            reporterConfiguration.getRerunFailingTestsAtEndCount() };
         return ReflectionUtils.newInstance( constructor, params );
     }
 

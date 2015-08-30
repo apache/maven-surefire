@@ -159,10 +159,11 @@ public class SurefireReflector
         else
         {
             Object resolver = createTestListResolver( suiteDefinition.getTestListResolver() );
-            Class[] arguments = { List.class, File.class, testListResolver, int.class };
+            Class[] arguments = { List.class, File.class, testListResolver, int.class, int.class };
             Constructor constructor = ReflectionUtils.getConstructor( testRequest, arguments );
             return ReflectionUtils.newInstance( constructor, new Object[]{ suiteDefinition.getSuiteXmlFiles(),
-                suiteDefinition.getTestSourceDirectory(), resolver, suiteDefinition.getRerunFailingTestsCount() } );
+                suiteDefinition.getTestSourceDirectory(), resolver,
+                suiteDefinition.getRerunFailingTestsCount(), suiteDefinition.getRerunFailingTestsAtEndCount() } );
         }
     }
 

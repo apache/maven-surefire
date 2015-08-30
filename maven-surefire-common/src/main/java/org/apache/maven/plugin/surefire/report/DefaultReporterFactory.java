@@ -167,10 +167,12 @@ public class DefaultReporterFactory
      *
      * @param reportEntryList the list of test run report type for a given test
      * @param rerunFailingTestsCount configured rerun count for failing tests
+     * @param rerunFailingTestsAtEndCount configured rerun at end count for failing tests
      * @return the type of test result
      */
     // Use default visibility for testing
-    static TestResultType getTestResultType( List<ReportEntryType> reportEntryList, int rerunFailingTestsCount  )
+    static TestResultType getTestResultType( List<ReportEntryType> reportEntryList, int rerunFailingTestsCount,
+                                             int rerunFailingTestsAtEndCount  )
     {
         if ( reportEntryList == null || reportEntryList.isEmpty() )
         {
@@ -196,7 +198,7 @@ public class DefaultReporterFactory
 
         if ( seenFailure || seenError )
         {
-            if ( seenSuccess && rerunFailingTestsCount > 0 )
+            if ( seenSuccess && ( rerunFailingTestsCount > 0 || rerunFailingTestsAtEndCount > 0 ) )
             {
                 return TestResultType.flake;
             }
@@ -271,7 +273,8 @@ public class DefaultReporterFactory
             }
 
             TestResultType resultType = getTestResultType( resultTypeList,
-                                                           reportConfiguration.getRerunFailingTestsCount() );
+                                                           reportConfiguration.getRerunFailingTestsCount(),
+                                                           reportConfiguration.getRerunFailingTestsAtEndCount() );
 
             switch ( resultType )
             {

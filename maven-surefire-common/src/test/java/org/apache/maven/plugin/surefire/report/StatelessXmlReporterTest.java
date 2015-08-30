@@ -45,7 +45,7 @@ public class StatelessXmlReporterTest
     extends TestCase
 {
 
-    private StatelessXmlReporter reporter = new StatelessXmlReporter( new File( "." ), null, false, 0,
+    private StatelessXmlReporter reporter = new StatelessXmlReporter( new File( "." ), null, false, 0, 0,
                     Collections.synchronizedMap( new HashMap<String, Map<String, List<WrappedReportEntry>>>() ) );
 
     private ReportEntry reportEntry;
@@ -139,7 +139,7 @@ public class StatelessXmlReporterTest
                                     ReportEntryType.ERROR, 13, stdOut, stdErr );
 
         stats.testSucceeded( t2 );
-        StatelessXmlReporter reporter = new StatelessXmlReporter( new File( "." ), null, false, 0,
+        StatelessXmlReporter reporter = new StatelessXmlReporter( new File( "." ), null, false, 0, 0,
                         Collections.synchronizedMap( new HashMap<String, Map<String, List<WrappedReportEntry>>>() ) );
         reporter.testSetCompleted( testSetReportEntry, stats );
 
@@ -224,7 +224,7 @@ public class StatelessXmlReporterTest
                                       new File( "." ),
                                       null,
                                       false,
-                                      1,
+                                      1, 0,
                                       new HashMap<String, Map<String, List<WrappedReportEntry>>>() );
 
         reporter.testSetCompleted( testSetReportEntry, stats );

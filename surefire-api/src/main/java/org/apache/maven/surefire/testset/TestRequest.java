@@ -38,18 +38,21 @@ public class TestRequest
 
     private final int rerunFailingTestsCount;
 
+    private final int rerunFailingTestsAtEndCount;
+
     public TestRequest( List suiteXmlFiles, File testSourceDirectory, TestListResolver requestedTests )
     {
-        this( createFiles( suiteXmlFiles ), testSourceDirectory, requestedTests, 0 );
+        this( createFiles( suiteXmlFiles ), testSourceDirectory, requestedTests, 0, 0 );
     }
 
     public TestRequest( List suiteXmlFiles, File testSourceDirectory, TestListResolver requestedTests,
-                        int rerunFailingTestsCount )
+                        int rerunFailingTestsCount, int rerunFailingTestsAtEndCount )
     {
         this.suiteXmlFiles = createFiles( suiteXmlFiles );
         this.testSourceDirectory = testSourceDirectory;
         this.requestedTests = requestedTests;
         this.rerunFailingTestsCount = rerunFailingTestsCount;
+        this.rerunFailingTestsAtEndCount = rerunFailingTestsAtEndCount;
     }
 
     /**
@@ -88,6 +91,19 @@ public class TestRequest
     public int getRerunFailingTestsCount()
     {
         return this.rerunFailingTestsCount;
+    }
+
+    /**
+     * How many times to rerun failing tests at the end of test suite
+     * execution, issued with -Dsurefire.rerunFailingTestsAtEndCount
+     * from the command line.
+     *
+     * @return The int parameter to indicate how many times to rerun
+     * failing tests at the end of the test suite execution
+     */
+    public int getRerunFailingTestsAtEndCount()
+    {
+        return this.rerunFailingTestsAtEndCount;
     }
 
     private static List<File> createFiles( List suiteXmlFiles )

@@ -62,7 +62,7 @@ public class DefaultReporterFactoryTest
     public void testMergeTestHistoryResult()
     {
         StartupReportConfiguration reportConfig = new StartupReportConfiguration( true, true, "PLAIN", false, false, new File("target"), false, null, "TESTHASH",
-                                                                                                 false, 1 );
+                                                                                                 false, 1, 0 );
 
         DefaultReporterFactory factory = new DefaultReporterFactory( reportConfig );
 
@@ -161,41 +161,49 @@ public class DefaultReporterFactoryTest
     public void testGetTestResultType()
     {
         List<ReportEntryType> emptyList = new ArrayList<ReportEntryType>();
-        assertEquals( unknown, DefaultReporterFactory.getTestResultType( emptyList, 1 ) );
+        assertEquals( unknown, DefaultReporterFactory.getTestResultType( emptyList, 1, 1 ) );
 
         List<ReportEntryType> successList = new ArrayList<ReportEntryType>();
         successList.add( ReportEntryType.SUCCESS );
         successList.add( ReportEntryType.SUCCESS );
-        assertEquals( success, DefaultReporterFactory.getTestResultType( successList, 1 ) );
+        assertEquals( success, DefaultReporterFactory.getTestResultType( successList, 1, 1 ) );
 
         List<ReportEntryType> failureErrorList = new ArrayList<ReportEntryType>();
         failureErrorList.add( ReportEntryType.FAILURE );
         failureErrorList.add( ReportEntryType.ERROR );
-        assertEquals( error, DefaultReporterFactory.getTestResultType( failureErrorList, 1 ) );
+        assertEquals( error, DefaultReporterFactory.getTestResultType( failureErrorList, 1, 1 ) );
 
         List<ReportEntryType> errorFailureList = new ArrayList<ReportEntryType>();
         errorFailureList.add( ReportEntryType.ERROR );
         errorFailureList.add( ReportEntryType.FAILURE );
-        assertEquals( error, DefaultReporterFactory.getTestResultType( errorFailureList, 1 ) );
+        assertEquals( error, DefaultReporterFactory.getTestResultType( errorFailureList, 1, 1 ) );
 
         List<ReportEntryType> flakeList = new ArrayList<ReportEntryType>();
         flakeList.add( ReportEntryType.SUCCESS );
         flakeList.add( ReportEntryType.FAILURE );
-        assertEquals( flake, DefaultReporterFactory.getTestResultType( flakeList, 1 ) );
+        assertEquals( flake, DefaultReporterFactory.getTestResultType( flakeList, 1, 0 ) );
 
-        assertEquals( failure, DefaultReporterFactory.getTestResultType( flakeList, 0 ) );
+        assertEquals( flake, DefaultReporterFactory.getTestResultType( flakeList, 0, 1 ) );
+
+        assertEquals( flake, DefaultReporterFactory.getTestResultType( flakeList, 1, 1 ) );
+
+        assertEquals( failure, DefaultReporterFactory.getTestResultType( flakeList, 0, 0 ) );
 
         flakeList = new ArrayList<ReportEntryType>();
         flakeList.add( ReportEntryType.ERROR );
         flakeList.add( ReportEntryType.SUCCESS );
         flakeList.add( ReportEntryType.FAILURE );
-        assertEquals( flake, DefaultReporterFactory.getTestResultType( flakeList, 1 ) );
+        assertEquals( flake, DefaultReporterFactory.getTestResultType( flakeList, 1, 0 ) );
 
-        assertEquals( error, DefaultReporterFactory.getTestResultType( flakeList, 0 ) );
+        assertEquals( flake, DefaultReporterFactory.getTestResultType( flakeList, 0, 1 ) );
+
+        assertEquals( flake, DefaultReporterFactory.getTestResultType( flakeList, 1, 1 ) );
+
+        assertEquals( error, DefaultReporterFactory.getTestResultType( flakeList, 0, 0 ) );
 
         List<ReportEntryType> skippedList = new ArrayList<ReportEntryType>();
         skippedList.add( ReportEntryType.SKIPPED );
-        assertEquals( skipped, DefaultReporterFactory.getTestResultType( skippedList, 1 ) );
+        assertEquals( skipped, DefaultReporterFactory.getTestResultType( skippedList, 1, 0 ) );
     }
 
     static class DummyStackTraceWriter
