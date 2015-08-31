@@ -93,18 +93,21 @@ public class StatelessXmlReporter
 
     private final int rerunFailingTestsCount;
 
+    private final int rerunFailingTestsAtEndCount;
+
     // Map between test class name and a map between test method name
     // and the list of runs for each test method
     private final Map<String, Map<String, List<WrappedReportEntry>>> testClassMethodRunHistoryMap;
 
     public StatelessXmlReporter( File reportsDirectory, String reportNameSuffix, boolean trimStackTrace,
-                                 int rerunFailingTestsCount,
+                                 int rerunFailingTestsCount, int rerunFailingTestsAtEndCount,
                                  Map<String, Map<String, List<WrappedReportEntry>>> testClassMethodRunHistoryMap )
     {
         this.reportsDirectory = reportsDirectory;
         this.reportNameSuffix = reportNameSuffix;
         this.trimStackTrace = trimStackTrace;
         this.rerunFailingTestsCount = rerunFailingTestsCount;
+        this.rerunFailingTestsAtEndCount = rerunFailingTestsAtEndCount;
         this.testClassMethodRunHistoryMap = testClassMethodRunHistoryMap;
     }
 
@@ -146,7 +149,7 @@ public class StatelessXmlReporter
                     continue;
                 }
 
-                if ( rerunFailingTestsCount > 0 )
+                if ( rerunFailingTestsCount > 0 || rerunFailingTestsAtEndCount > 0 )
                 {
                     TestResultType resultType = getTestResultType( methodEntryList );
                     switch ( resultType )
@@ -266,7 +269,7 @@ public class StatelessXmlReporter
             testResultTypeList.add( singleRunEntry.getReportEntryType() );
         }
 
-        return DefaultReporterFactory.getTestResultType( testResultTypeList, rerunFailingTestsCount );
+        return DefaultReporterFactory.getTestResultType( testResultTypeList, rerunFailingTestsCount, rerunFailingTestsAtEndCount );
     }
 
     /**

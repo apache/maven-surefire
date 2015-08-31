@@ -683,6 +683,8 @@ public abstract class AbstractSurefireMojo
 
     protected abstract int getRerunFailingTestsCount();
 
+    protected abstract int getRerunFailingTestsAtEndCount();
+
     private SurefireDependencyResolver dependencyResolver;
 
     private TestListResolver specificTests;
@@ -1404,7 +1406,8 @@ public abstract class AbstractSurefireMojo
             isTestNg ? new TestArtifactInfo( testNgArtifact.getVersion(), testNgArtifact.getClassifier() ) : null;
         List<File> testXml = getSuiteXmlFiles() != null ? Arrays.asList( getSuiteXmlFiles() ) : null;
         TestRequest testSuiteDefinition = new TestRequest( testXml, getTestSourceDirectory(), getSpecificTests(),
-                                                           getRerunFailingTestsCount() );
+                                                           getRerunFailingTestsCount(),
+                                                           getRerunFailingTestsAtEndCount() );
 
         final boolean actualFailIfNoTests;
 
@@ -1535,7 +1538,8 @@ public abstract class AbstractSurefireMojo
         return new StartupReportConfiguration( isUseFile(), isPrintSummary(), getReportFormat(),
                                                isRedirectTestOutputToFile(), isDisableXmlReport(),
                                                getReportsDirectory(), isTrimStackTrace(), getReportNameSuffix(),
-                                               configChecksum, requiresRunHistory(), getRerunFailingTestsCount() );
+                                               configChecksum, requiresRunHistory(), getRerunFailingTestsCount(),
+                                               getRerunFailingTestsAtEndCount() );
     }
 
     private boolean isSpecificTestSpecified()

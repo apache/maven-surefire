@@ -72,6 +72,8 @@ public class StartupReportConfiguration
 
     private final int rerunFailingTestsCount;
 
+    private final int rerunFailingTestsAtEndCount;
+
     private final Properties testVmSystemProperties = new Properties();
 
     public static final String BRIEF_REPORT_FORMAT = ConsoleReporter.BRIEF;
@@ -85,7 +87,7 @@ public class StartupReportConfiguration
                                        boolean redirectTestOutputToFile, boolean disableXmlReport,
                                        @Nonnull File reportsDirectory, boolean trimStackTrace, String reportNameSuffix,
                                        String configurationHash, boolean requiresRunHistory,
-                                       int rerunFailingTestsCount )
+                                       int rerunFailingTestsCount, int rerunFailingTestsAtEndCount )
     {
         this.useFile = useFile;
         this.printSummary = printSummary;
@@ -100,6 +102,7 @@ public class StartupReportConfiguration
         this.originalSystemOut = System.out;
         this.originalSystemErr = System.err;
         this.rerunFailingTestsCount = rerunFailingTestsCount;
+        this.rerunFailingTestsAtEndCount = rerunFailingTestsAtEndCount;
         this.testClassMethodRunHistoryMap =
                         Collections.synchronizedMap(
                              new HashMap<String, Map<String, List<WrappedReportEntry>>>() );
@@ -109,14 +112,14 @@ public class StartupReportConfiguration
     {
         File target = new File( "./target" );
         return new StartupReportConfiguration( true, true, "PLAIN", false, false, target, false, null, "TESTHASH",
-                                               false, 0 );
+                                               false, 0, 0 );
     }
 
     public static StartupReportConfiguration defaultNoXml()
     {
         File target = new File( "./target" );
         return new StartupReportConfiguration( true, true, "PLAIN", false, true, target, false, null, "TESTHASHxXML",
-                                               false, 0 );
+                                               false, 0, 0 );
     }
 
     public boolean isUseFile()
@@ -159,12 +162,18 @@ public class StartupReportConfiguration
         return rerunFailingTestsCount;
     }
 
+    public int getRerunFailingTestsAtEndCount()
+    {
+        return rerunFailingTestsAtEndCount;
+    }
+
     public StatelessXmlReporter instantiateStatelessXmlReporter()
     {
         if ( !isDisableXmlReport() )
         {
             return new StatelessXmlReporter( reportsDirectory, reportNameSuffix, trimStackTrace,
-                                             rerunFailingTestsCount, testClassMethodRunHistoryMap );
+                                             rerunFailingTestsCount, rerunFailingTestsAtEndCount,
+                                             testClassMethodRunHistoryMap );
         }
         return null;
     }
