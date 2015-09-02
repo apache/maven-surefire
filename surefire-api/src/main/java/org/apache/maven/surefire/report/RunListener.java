@@ -66,7 +66,6 @@ public interface RunListener
      */
     void testAssumptionFailure( ReportEntry report );
 
-
     /**
      * Event fired when a test ended with an error (non anticipated problem)
      *
@@ -87,4 +86,11 @@ public interface RunListener
      * @param report The report entry to log for
      */
     void testSkipped( ReportEntry report );
+
+    /**
+     * Event fired skipping an execution of remaining test-set in other fork(s); or does nothing if no forks.
+     * The method is called by {@link org.apache.maven.surefire.providerapi.SurefireProvider}.<p>
+     * (The event is fired after the Nth test failed to signal skipping the rest of test-set.)
+     */
+    void testExecutionSkippedByUser();
 }

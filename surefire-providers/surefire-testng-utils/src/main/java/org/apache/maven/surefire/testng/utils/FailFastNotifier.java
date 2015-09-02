@@ -1,4 +1,4 @@
-package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
+package org.apache.maven.surefire.testng.utils;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,28 +19,32 @@ package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
  * under the License.
  */
 
+import org.testng.IInvokedMethod;
+import org.testng.IInvokedMethodListener;
+import org.testng.ITestResult;
+import org.testng.SkipException;
+
 /**
- * Forked jvm notifies master process to provide a new test.
+ * Notifies TestNG core skipping remaining tests after first failure has appeared.
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.19
- * @see TestProvidingInputStream
  */
-public interface NotifiableTestStream
+public class FailFastNotifier
+    implements IInvokedMethodListener
 {
-    /**
-     * Notifies {@link TestProvidingInputStream} in order to dispatch a new test back to the forked
-     * jvm (particular fork which hits this call); or do nothing in {@link TestLessInputStream}.
-     */
-    void provideNewTest();
 
-    /**
-     * Sends an event to a fork jvm in order to skip tests.
-     * Returns immediately without blocking.
-     */
-    void skipSinceNextTest();
+    public void beforeInvocation( IInvokedMethod iInvokedMethod, ITestResult iTestResult )
+    {
+        if ( FailFastEventsSingleton.getInstance().isSkipAfterFailure() )
+        {
+            throw new SkipException( "Skipped after failure. See parameter [skipAfterFailureCount] "
+                                         + "in surefire or failsafe plugin." );
+        }
+    }
 
-    void shutdown();
+    public void afterInvocation( IInvokedMethod iInvokedMethod, ITestResult iTestResult )
+    {
 
-    void noop();
+    }
 }

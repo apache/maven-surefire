@@ -301,6 +301,17 @@ public class IntegrationTestMojo
     @Parameter( property = "failsafe.excludesFile" )
     private File excludesFile;
 
+    /**
+     * Set to "true" to skip remaining tests after first test failure appeared.
+     * Due to race conditions in parallel/forked execution this may not be fully guaranteed.<br/>
+     * Enable with system property -Dfailsafe.skipAfterFailureCount=1 or any number greater than zero.
+     * Defaults to "0".
+     *
+     * @since 2.19
+     */
+    @Parameter( property = "failsafe.skipAfterFailureCount", defaultValue = "0" )
+    private int skipAfterFailureCount;
+
     protected int getRerunFailingTestsCount()
     {
         return rerunFailingTestsCount;
@@ -592,6 +603,11 @@ public class IntegrationTestMojo
     public void setFailIfNoSpecifiedTests( boolean failIfNoSpecifiedTests )
     {
         this.failIfNoSpecifiedTests = failIfNoSpecifiedTests;
+    }
+
+    public int getSkipAfterFailureCount()
+    {
+        return skipAfterFailureCount;
     }
 
     @Override

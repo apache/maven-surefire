@@ -19,17 +19,27 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
+import static org.apache.maven.surefire.util.internal.StringUtils.requireNonNull;
+
 /**
  * Encapsulates data and command sent from master to forked process.
+ *
+ * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
+ * @since 2.19
  */
 public final class Command
 {
+    public static final Command TEST_SET_FINISHED = new Command( MasterProcessCommand.TEST_SET_FINISHED );
+    public static final Command SKIP_SINCE_NEXT_TEST = new Command( MasterProcessCommand.SKIP_SINCE_NEXT_TEST );
+    public static final Command SHUTDOWN = new Command( MasterProcessCommand.SHUTDOWN );
+    public static final Command NOOP = new Command( MasterProcessCommand.NOOP );
+
     private final MasterProcessCommand command;
     private final String data;
 
     public Command( MasterProcessCommand command, String data )
     {
-        this.command = command;
+        this.command = requireNonNull( command );
         this.data = data;
     }
 
@@ -46,5 +56,31 @@ public final class Command
     public String getData()
     {
         return data;
+    }
+
+    @Override
+    public boolean equals( Object o )
+    {
+        if ( this == o )
+        {
+            return true;
+        }
+
+        if ( o == null || getClass() != o.getClass() )
+        {
+            return false;
+        }
+
+        Command arg = (Command) o;
+
+        return command == arg.command && ( data == null ? arg.data == null : data.equals( arg.data ) );
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int result = command.hashCode();
+        result = 31 * result + ( data != null ? data.hashCode() : 0 );
+        return result;
     }
 }

@@ -26,6 +26,7 @@ import org.apache.maven.plugin.surefire.booterclient.BooterDeserializerProviderC
 import org.apache.maven.plugin.surefire.booterclient.BooterDeserializerStartupConfigurationTest;
 import org.apache.maven.plugin.surefire.booterclient.ForkConfigurationTest;
 import org.apache.maven.plugin.surefire.booterclient.ForkingRunListenerTest;
+import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.TestLessInputStreamBuilderTest;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.TestProvidingInputStreamTest;
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactoryTest;
 import org.apache.maven.plugin.surefire.report.StatelessXmlReporterTest;
@@ -65,6 +66,7 @@ import org.junit.runners.Suite;
     BooterDeserializerStartupConfigurationTest.class,
     BooterDeserializerProviderConfigurationTest.class,
     TestProvidingInputStreamTest.class,
+    TestLessInputStreamBuilderTest.class
 } )
 @RunWith( Suite.class )
 public class JUnit4SuiteTest

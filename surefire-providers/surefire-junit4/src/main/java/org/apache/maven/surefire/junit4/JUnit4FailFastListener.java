@@ -1,4 +1,4 @@
-package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
+package org.apache.maven.surefire.junit4;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,28 +19,30 @@ package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
  * under the License.
  */
 
+import org.junit.runner.notification.Failure;
+import org.junit.runner.notification.RunListener;
+import org.junit.runner.notification.RunNotifier;
+
 /**
- * Forked jvm notifies master process to provide a new test.
+ * Calling {@link RunNotifier#pleaseStop()} if failure appeared.
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.19
- * @see TestProvidingInputStream
  */
-public interface NotifiableTestStream
+final class JUnit4FailFastListener
+    extends RunListener
 {
-    /**
-     * Notifies {@link TestProvidingInputStream} in order to dispatch a new test back to the forked
-     * jvm (particular fork which hits this call); or do nothing in {@link TestLessInputStream}.
-     */
-    void provideNewTest();
+    private final RunNotifier notifier;
 
-    /**
-     * Sends an event to a fork jvm in order to skip tests.
-     * Returns immediately without blocking.
-     */
-    void skipSinceNextTest();
+    JUnit4FailFastListener( RunNotifier notifier )
+    {
+        this.notifier = notifier;
+    }
 
-    void shutdown();
-
-    void noop();
+    @Override
+    public void testFailure( Failure failure )
+        throws Exception
+    {
+        notifier.pleaseStop();
+    }
 }

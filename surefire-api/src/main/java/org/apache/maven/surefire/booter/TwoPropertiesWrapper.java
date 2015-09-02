@@ -1,4 +1,4 @@
-package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
+package org.apache.maven.surefire.booter;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -20,27 +20,31 @@ package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
  */
 
 /**
- * Forked jvm notifies master process to provide a new test.
+ * Internal generic wrapper.
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.19
- * @see TestProvidingInputStream
+ * @param <P1> first property
+ * @param <P2> second property
  */
-public interface NotifiableTestStream
+final class TwoPropertiesWrapper<P1, P2>
 {
-    /**
-     * Notifies {@link TestProvidingInputStream} in order to dispatch a new test back to the forked
-     * jvm (particular fork which hits this call); or do nothing in {@link TestLessInputStream}.
-     */
-    void provideNewTest();
+    private final P1 p1;
+    private final P2 p2;
 
-    /**
-     * Sends an event to a fork jvm in order to skip tests.
-     * Returns immediately without blocking.
-     */
-    void skipSinceNextTest();
+    TwoPropertiesWrapper( P1 p1, P2 p2 )
+    {
+        this.p1 = p1;
+        this.p2 = p2;
+    }
 
-    void shutdown();
+    P1 getP1()
+    {
+        return p1;
+    }
 
-    void noop();
+    P2 getP2()
+    {
+        return p2;
+    }
 }

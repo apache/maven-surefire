@@ -86,7 +86,7 @@ public class BooterDeserializer
 
         DirectoryScannerParameters dirScannerParams =
             new DirectoryScannerParameters( testClassesDirectory, includes, excludes, specificTests,
-                                            properties.getBooleanObjectProperty( FAILIFNOTESTS ), runOrder );
+                                            properties.getBooleanProperty( FAILIFNOTESTS ), runOrder );
 
         RunOrderParameters runOrderParameters = new RunOrderParameters( runOrder, runStatisticsFile );
 
@@ -96,14 +96,16 @@ public class BooterDeserializer
                              rerunFailingTestsCount );
 
         ReporterConfiguration reporterConfiguration =
-            new ReporterConfiguration( reportsDirectory, properties.getBooleanObjectProperty( ISTRIMSTACKTRACE ) );
+            new ReporterConfiguration( reportsDirectory, properties.getBooleanProperty( ISTRIMSTACKTRACE ) );
 
         Collection<String> cli = properties.getStringList( MAIN_CLI_OPTIONS );
+
+        int failFastCount = properties.getIntProperty( FAIL_FAST_COUNT );
 
         return new ProviderConfiguration( dirScannerParams, runOrderParameters,
                                           properties.getBooleanProperty( FAILIFNOTESTS ), reporterConfiguration, testNg,
                                           testSuiteDefinition, properties.getProperties(), typeEncodedTestForFork,
-                                          preferTestsFromInStream, fromStrings( cli ) );
+                                          preferTestsFromInStream, fromStrings( cli ), failFastCount );
     }
 
     public StartupConfiguration getProviderConfiguration()

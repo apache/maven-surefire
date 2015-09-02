@@ -26,7 +26,7 @@ import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.RunListener;
 
 /**
- * Internal use only
+ * Internal tests use only.
  */
 public class MockReporter
     implements RunListener
@@ -81,6 +81,15 @@ public class MockReporter
     {
         events.add( TEST_SKIPPED );
         testIgnored.incrementAndGet();
+    }
+
+    public void testExecutionSkippedByUser()
+    {
+    }
+
+    public void testSkippedByUser( ReportEntry report )
+    {
+        testSkipped( report );
     }
 
     public int getTestSucceeded()

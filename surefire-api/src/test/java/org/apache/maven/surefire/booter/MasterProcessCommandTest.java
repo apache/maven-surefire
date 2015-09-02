@@ -29,7 +29,6 @@ import java.io.IOException;
 import static org.apache.maven.surefire.booter.MasterProcessCommand.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
 import static org.junit.Assert.assertNotNull;
 
 /**
@@ -98,7 +97,7 @@ public class MasterProcessCommandTest
                     decoded = command.toDataTypeAsString( encoded );
                     assertNull( decoded );
                     break;
-                case STOP_ON_NEXT_TEST:
+                case SKIP_SINCE_NEXT_TEST:
                     assertEquals( Void.class, command.getDataType() );
                     encoded = command.fromDataType( dummyData );
                     assertThat( encoded.length, is( 0 ) );

@@ -1,4 +1,4 @@
-package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
+package org.apache.maven.surefire.junitcore;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -20,27 +20,13 @@ package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
  */
 
 /**
- * Forked jvm notifies master process to provide a new test.
- *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.19
- * @see TestProvidingInputStream
  */
-public interface NotifiableTestStream
+interface Stoppable
 {
     /**
-     * Notifies {@link TestProvidingInputStream} in order to dispatch a new test back to the forked
-     * jvm (particular fork which hits this call); or do nothing in {@link TestLessInputStream}.
+     * Delegates this call to {@link org.junit.runner.notification.RunNotifier#pleaseStop()}.
      */
-    void provideNewTest();
-
-    /**
-     * Sends an event to a fork jvm in order to skip tests.
-     * Returns immediately without blocking.
-     */
-    void skipSinceNextTest();
-
-    void shutdown();
-
-    void noop();
+    void pleaseStop();
 }

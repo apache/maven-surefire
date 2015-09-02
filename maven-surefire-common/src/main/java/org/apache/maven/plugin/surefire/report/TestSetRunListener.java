@@ -217,6 +217,10 @@ public class TestSetRunListener
         clearCapture();
     }
 
+    public void testExecutionSkippedByUser()
+    {
+    }
+
     public void testAssumptionFailure( ReportEntry report )
     {
         testSkipped( report );

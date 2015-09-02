@@ -104,7 +104,6 @@ public class SurefirePlugin
     @Parameter( property = "surefire.useFile", defaultValue = "true" )
     private boolean useFile;
 
-
     /**
      * Set this to "true" to cause a failure if the none of the tests specified in -Dtest=... are run. Defaults to
      * "true".
@@ -279,6 +278,17 @@ public class SurefirePlugin
     @Parameter( property = "surefire.excludesFile" )
     private File excludesFile;
 
+    /**
+     * Set to "true" to skip remaining tests after first test failure appeared.
+     * Due to race conditions in parallel/forked execution this may not be fully guaranteed.<br/>
+     * Enable with system property -Dsurefire.skipAfterFailureCount=1 or any number greater than zero.
+     * Defaults to "0".
+     *
+     * @since 2.19
+     */
+    @Parameter( property = "surefire.skipAfterFailureCount", defaultValue = "0" )
+    private int skipAfterFailureCount;
+
     protected int getRerunFailingTestsCount()
     {
         return rerunFailingTestsCount;
@@ -446,6 +456,11 @@ public class SurefirePlugin
     public void setFailIfNoSpecifiedTests( boolean failIfNoSpecifiedTests )
     {
         this.failIfNoSpecifiedTests = failIfNoSpecifiedTests;
+    }
+
+    public int getSkipAfterFailureCount()
+    {
+        return skipAfterFailureCount;
     }
 
     public boolean isPrintSummary()

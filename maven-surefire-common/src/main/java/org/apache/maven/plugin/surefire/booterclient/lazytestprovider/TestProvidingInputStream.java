@@ -20,134 +20,126 @@ package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
  */
 
 import org.apache.maven.surefire.booter.Command;
-import org.apache.maven.surefire.booter.MasterProcessCommand;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.apache.maven.surefire.booter.MasterProcessCommand.RUN_CLASS;
 import static org.apache.maven.surefire.booter.MasterProcessCommand.TEST_SET_FINISHED;
-import static org.apache.maven.surefire.util.internal.StringUtils.requireNonNull;
+import static org.apache.maven.surefire.booter.Command.SKIP_SINCE_NEXT_TEST;
+import static org.apache.maven.surefire.booter.Command.SHUTDOWN;
+import static org.apache.maven.surefire.booter.Command.NOOP;
 
 /**
- * An {@link InputStream} that, when read, provides test class names out of a queue.
+ * An {@link java.io.InputStream} that, when read, provides test class names out of a queue.
  * <p/>
  * The Stream provides only one test at a time, but only after {@link #provideNewTest()} has been invoked.
  * <p/>
  * After providing each test class name, followed by a newline character, a flush is performed on the
  * {@link FlushReceiver} provided by the {@link FlushReceiverProvider} that can be set using
  * {@link #setFlushReceiverProvider(FlushReceiverProvider)}.
+ * <p/>
+ * The instance is used only in reusable forks in {@link org.apache.maven.plugin.surefire.booterclient.ForkStarter}
+ * by one Thread.
  *
  * @author Andreas Gudian
+ * @author Tibor Digana (tibor17)
  */
-public class TestProvidingInputStream
-    extends InputStream
-    implements NotifiableTestStream
+public final class TestProvidingInputStream
+    extends AbstractCommandStream
 {
-    private final Semaphore semaphore = new Semaphore( 0 );
+    private final Semaphore barrier = new Semaphore( 0 );
 
-    private final Queue<Command> commands;
+    private final Queue<Command> commands = new ConcurrentLinkedQueue<Command>();
 
     private final AtomicBoolean closed = new AtomicBoolean();
 
-    private byte[] currentBuffer;
-
-    private int currentPos;
-
-    private MasterProcessCommand lastCommand;
-
-    private volatile FlushReceiverProvider flushReceiverProvider;
+    private final Queue<String> testClassNames;
 
     /**
      * C'tor
      *
-     * @param commands source of the tests to be read from this stream
+     * @param testClassNames source of the tests to be read from this stream
      */
-    public TestProvidingInputStream( Queue<Command> commands )
+    public TestProvidingInputStream( Queue<String> testClassNames )
     {
-        this.commands = commands;
+        this.testClassNames = testClassNames;
     }
 
     /**
-     * @param flushReceiverProvider the provider for a flush receiver.
+     * For testing purposes.
      */
-    public void setFlushReceiverProvider( FlushReceiverProvider flushReceiverProvider )
+    void testSetFinished()
     {
-        this.flushReceiverProvider = requireNonNull( flushReceiverProvider );
+        if ( canContinue() )
+        {
+            commands.add( Command.TEST_SET_FINISHED );
+            barrier.release();
+        }
     }
 
-    public void testSetFinished()
+    public void skipSinceNextTest()
     {
-        commands.add( new Command( TEST_SET_FINISHED ) );
+        if ( canContinue() )
+        {
+            commands.add( SKIP_SINCE_NEXT_TEST );
+            barrier.release();
+        }
     }
 
-    /**
-     * Used by single thread in StreamFeeder.
-     *
-     * @return {@inheritDoc}
-     * @throws IOException {@inheritDoc}
-     */
-    @SuppressWarnings( "checkstyle:magicnumber" )
+    public void shutdown()
+    {
+        if ( canContinue() )
+        {
+            commands.add( SHUTDOWN );
+            barrier.release();
+        }
+    }
+
+    public void noop()
+    {
+        if ( canContinue() )
+        {
+            commands.add( NOOP );
+            barrier.release();
+        }
+    }
+
     @Override
-    public int read()
-        throws IOException
+    protected Command nextCommand()
     {
-        byte[] buffer = currentBuffer;
-        if ( buffer == null )
+        Command cmd = commands.poll();
+        if ( cmd == null )
         {
-            if ( flushReceiverProvider != null )
-            {
-                FlushReceiver flushReceiver = flushReceiverProvider.getFlushReceiver();
-                if ( flushReceiver != null )
-                {
-                    flushReceiver.flush();
-                }
-            }
-
-            if ( lastCommand == TEST_SET_FINISHED || closed.get() )
-            {
-                close();
-                return -1;
-            }
-
-            awaitNextTest();
-
-            if ( closed.get() )
-            {
-                return -1;
-            }
-
-            Command command = commands.poll();
-            lastCommand = command.getCommandType();
-            String test = command.getData();
-            buffer = lastCommand == TEST_SET_FINISHED ? lastCommand.encode() : lastCommand.encode( test );
+            String cmdData = testClassNames.poll();
+            return cmdData == null ? Command.TEST_SET_FINISHED : new Command( RUN_CLASS, cmdData );
         }
-
-        int b =  buffer[currentPos++] & 0xff;
-        if ( currentPos == buffer.length )
+        else
         {
-            buffer = null;
-            currentPos = 0;
+            return cmd;
         }
-        currentBuffer = buffer;
-        return b;
     }
 
-    private void awaitNextTest()
+    @Override
+    protected void beforeNextCommand()
         throws IOException
     {
-        try
-        {
-            semaphore.acquire();
-        }
-        catch ( InterruptedException e )
-        {
-            // help GC to free this object because StreamFeeder Thread cannot read it after IOE
-            currentBuffer = null;
-            throw new IOException( e.getLocalizedMessage() );
-        }
+        awaitNextTest();
+    }
+
+    @Override
+    protected boolean isClosed()
+    {
+        return closed.get();
+    }
+
+    @Override
+    protected boolean canContinue()
+    {
+        return getLastCommand() != TEST_SET_FINISHED && !isClosed();
     }
 
     /**
@@ -155,9 +147,9 @@ public class TestProvidingInputStream
      */
     public void provideNewTest()
     {
-        if ( !closed.get() )
+        if ( canContinue() )
         {
-            semaphore.release();
+            barrier.release();
         }
     }
 
@@ -166,9 +158,24 @@ public class TestProvidingInputStream
     {
         if ( closed.compareAndSet( false, true ) )
         {
-            currentBuffer = null;
-            semaphore.drainPermits();
-            semaphore.release();
+            invalidateInternalBuffer();
+            barrier.drainPermits();
+            barrier.release();
+        }
+    }
+
+    private void awaitNextTest()
+        throws IOException
+    {
+        try
+        {
+            barrier.acquire();
+        }
+        catch ( InterruptedException e )
+        {
+            // help GC to free this object because StreamFeeder Thread cannot read it anyway after IOE
+            invalidateInternalBuffer();
+            throw new IOException( e.getLocalizedMessage() );
         }
     }
 }

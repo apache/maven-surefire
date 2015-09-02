@@ -23,6 +23,8 @@ import org.apache.maven.surefire.booter.ProviderParameterNames;
 import org.apache.maven.surefire.cli.CommandLineOption;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.testng.conf.Configurator;
+import org.apache.maven.surefire.testng.utils.FailFastListener;
+import org.apache.maven.surefire.testng.utils.Stoppable;
 import org.apache.maven.surefire.testset.TestListResolver;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.ReflectionUtils;
@@ -43,6 +45,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static org.apache.maven.surefire.util.ReflectionUtils.instantiate;
 
 /**
  * Contains utility methods for executing TestNG.
@@ -69,7 +73,7 @@ public class TestNGExecutor
     public static void run( Class<?>[] testClasses, String testSourceDirectory,
                             Map<String, String> options, // string,string because TestNGMapConfigurator#configure()
                             RunListener reportManager, TestNgTestSuite suite, File reportsDirectory,
-                            TestListResolver methodFilter, List<CommandLineOption> mainCliOptions )
+                            TestListResolver methodFilter, List<CommandLineOption> mainCliOptions, boolean isFailFast )
         throws TestSetFailedException
     {
         TestNG testng = new TestNG( true );
@@ -119,7 +123,7 @@ public class TestNGExecutor
 
         testng.setXmlSuites( xmlSuites );
         configurator.configure( testng, options );
-        postConfigure( testng, testSourceDirectory, reportManager, suite, reportsDirectory );
+        postConfigure( testng, testSourceDirectory, reportManager, suite, reportsDirectory, isFailFast );
         testng.run();
     }
 
@@ -260,13 +264,14 @@ public class TestNGExecutor
 
     public static void run( List<String> suiteFiles, String testSourceDirectory,
                             Map<String, String> options, // string,string because TestNGMapConfigurator#configure()
-                            RunListener reportManager, TestNgTestSuite suite, File reportsDirectory )
+                            RunListener reportManager, TestNgTestSuite suite, File reportsDirectory,
+                            boolean isFailFast )
         throws TestSetFailedException
     {
         TestNG testng = new TestNG( true );
         Configurator configurator = getConfigurator( options.get( "testng.configurator" ) );
         configurator.configure( testng, options );
-        postConfigure( testng, testSourceDirectory, reportManager, suite, reportsDirectory );
+        postConfigure( testng, testSourceDirectory, reportManager, suite, reportsDirectory, isFailFast );
         testng.setTestSuites( suiteFiles );
         testng.run();
     }
@@ -291,8 +296,8 @@ public class TestNGExecutor
         }
     }
 
-    private static void postConfigure( TestNG testNG, String sourcePath, RunListener reportManager,
-                                       TestNgTestSuite suite, File reportsDirectory )
+    private static void postConfigure( TestNG testNG, String sourcePath, final RunListener reportManager,
+                                       TestNgTestSuite suite, File reportsDirectory, boolean skipAfterFailure )
         throws TestSetFailedException
     {
         // turn off all TestNG output
@@ -301,7 +306,22 @@ public class TestNGExecutor
         TestNGReporter reporter = createTestNGReporter( reportManager, suite );
         testNG.addListener( (Object) reporter );
 
-        // FIXME: use classifier to decide if we need to pass along the source dir (onyl for JDK14)
+        if ( skipAfterFailure )
+        {
+            ClassLoader cl = Thread.currentThread().getContextClassLoader();
+            testNG.addListener( instantiate( cl, "org.apache.maven.surefire.testng.utils.FailFastNotifier",
+                                             Object.class ) );
+            Stoppable stoppable = new Stoppable()
+            {
+                public void pleaseStop()
+                {
+                    reportManager.testExecutionSkippedByUser();
+                }
+            };
+            testNG.addListener( new FailFastListener( stoppable ) );
+        }
+
+        // FIXME: use classifier to decide if we need to pass along the source dir (only for JDK14)
         if ( sourcePath != null )
         {
             testNG.setSourcePath( sourcePath );

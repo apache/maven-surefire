@@ -24,18 +24,24 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.maven.surefire.booter.Command;
+import org.apache.maven.surefire.booter.MasterProcessListener;
+import org.apache.maven.surefire.booter.MasterProcessReader;
 import org.apache.maven.surefire.cli.CommandLineOption;
 import org.apache.maven.surefire.providerapi.AbstractProvider;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.suite.RunResult;
+import org.apache.maven.surefire.testng.utils.FailFastEventsSingleton;
 import org.apache.maven.surefire.testset.TestListResolver;
 import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.RunOrderCalculator;
 import org.apache.maven.surefire.util.ScanResult;
 import org.apache.maven.surefire.util.TestsToRun;
+
+import static org.apache.maven.surefire.booter.MasterProcessCommand.SKIP_SINCE_NEXT_TEST;
 
 /**
  * @author Kristian Rosenvold
@@ -58,12 +64,16 @@ public class TestNGProvider
 
     private final RunOrderCalculator runOrderCalculator;
 
-    private List<CommandLineOption> mainCliOptions;
+    private final List<CommandLineOption> mainCliOptions;
+
+    private final MasterProcessReader commandsReader;
 
     private TestsToRun testsToRun;
 
     public TestNGProvider( ProviderParameters booterParameters )
     {
+        // don't start a thread in MasterProcessReader while we are in in-plugin process
+        commandsReader = booterParameters.isInsideFork() ? MasterProcessReader.getReader() : null;
         providerParameters = booterParameters;
         testClassLoader = booterParameters.getTestClassLoader();
         runOrderCalculator = booterParameters.getRunOrderCalculator();
@@ -77,44 +87,55 @@ public class TestNGProvider
     public RunResult invoke( Object forkTestSet )
         throws TestSetFailedException
     {
-
-        final ReporterFactory reporterFactory = providerParameters.getReporterFactory();
-
-        if ( isTestNGXmlTestSuite( testRequest ) )
+        try
         {
-            TestNGXmlTestSuite testNGXmlTestSuite = getXmlSuite();
-            testNGXmlTestSuite.locateTestSets( testClassLoader );
-            if ( forkTestSet != null && testRequest == null )
+            if ( isFailFast() && commandsReader != null )
             {
-                testNGXmlTestSuite.execute( (String) forkTestSet, reporterFactory );
+                registerPleaseStopListener();
             }
-            else
+
+            final ReporterFactory reporterFactory = providerParameters.getReporterFactory();
+
+            if ( isTestNGXmlTestSuite( testRequest ) )
             {
-                testNGXmlTestSuite.execute( reporterFactory );
-            }
-        }
-        else
-        {
-            if ( testsToRun == null )
-            {
-                if ( forkTestSet instanceof TestsToRun )
+                TestNGXmlTestSuite testNGXmlTestSuite = newXmlSuite();
+                testNGXmlTestSuite.locateTestSets( testClassLoader );
+                if ( forkTestSet != null && testRequest == null )
                 {
-                    testsToRun = (TestsToRun) forkTestSet;
-                }
-                else if ( forkTestSet instanceof Class )
-                {
-                    testsToRun = TestsToRun.fromClass( (Class) forkTestSet );
+                    testNGXmlTestSuite.execute( (String) forkTestSet, reporterFactory );
                 }
                 else
                 {
-                    testsToRun = scanClassPath();
+                    testNGXmlTestSuite.execute( reporterFactory );
                 }
             }
-            TestNGDirectoryTestSuite suite = getDirectorySuite();
-            suite.execute( testsToRun, reporterFactory );
-        }
+            else
+            {
+                if ( testsToRun == null )
+                {
+                    if ( forkTestSet instanceof TestsToRun )
+                    {
+                        testsToRun = (TestsToRun) forkTestSet;
+                    }
+                    else if ( forkTestSet instanceof Class )
+                    {
+                        testsToRun = TestsToRun.fromClass( (Class) forkTestSet );
+                    }
+                    else
+                    {
+                        testsToRun = scanClassPath();
+                    }
+                }
+                TestNGDirectoryTestSuite suite = newDirectorySuite();
+                suite.execute( testsToRun, reporterFactory );
+            }
 
-        return reporterFactory.close();
+            return reporterFactory.close();
+        }
+        finally
+        {
+            closeCommandsReader();
+        }
     }
 
     boolean isTestNGXmlTestSuite( TestRequest testSuiteDefinition )
@@ -123,18 +144,45 @@ public class TestNGProvider
         return suiteXmlFiles != null && !suiteXmlFiles.isEmpty() && !hasSpecificTests();
     }
 
-    private TestNGDirectoryTestSuite getDirectorySuite()
+    private boolean isFailFast()
+    {
+        return providerParameters.getSkipAfterFailureCount() > 0;
+    }
+
+    private void closeCommandsReader()
+    {
+        if ( commandsReader != null )
+        {
+            commandsReader.stop();
+        }
+    }
+
+    private MasterProcessListener registerPleaseStopListener()
+    {
+        MasterProcessListener listener = new MasterProcessListener()
+        {
+            public void update( Command command )
+            {
+                FailFastEventsSingleton.getInstance().setSkipOnNextTest();
+            }
+        };
+        commandsReader.addListener( SKIP_SINCE_NEXT_TEST, listener );
+        return listener;
+    }
+
+    private TestNGDirectoryTestSuite newDirectorySuite()
     {
         return new TestNGDirectoryTestSuite( testRequest.getTestSourceDirectory().toString(), providerProperties,
                                              reporterConfiguration.getReportsDirectory(), createMethodFilter(),
-                                             runOrderCalculator, scanResult, mainCliOptions );
+                                             runOrderCalculator, scanResult, mainCliOptions, isFailFast() );
     }
 
-    private TestNGXmlTestSuite getXmlSuite()
+    private TestNGXmlTestSuite newXmlSuite()
     {
-        return new TestNGXmlTestSuite( testRequest.getSuiteXmlFiles(), testRequest.getTestSourceDirectory().toString(),
+        return new TestNGXmlTestSuite( testRequest.getSuiteXmlFiles(),
+                                       testRequest.getTestSourceDirectory().toString(),
                                        providerProperties,
-                                       reporterConfiguration.getReportsDirectory() );
+                                       reporterConfiguration.getReportsDirectory(), isFailFast() );
     }
 
     @SuppressWarnings( "unchecked" )
@@ -144,7 +192,7 @@ public class TestNGProvider
         {
             try
             {
-                return getXmlSuite().locateTestSets( testClassLoader ).keySet();
+                return newXmlSuite().locateTestSets( testClassLoader ).keySet();
             }
             catch ( TestSetFailedException e )
             {

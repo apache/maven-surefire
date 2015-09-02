@@ -40,7 +40,7 @@ public enum MasterProcessCommand
 {
     RUN_CLASS( 0, String.class ),
     TEST_SET_FINISHED( 1, Void.class ),
-    STOP_ON_NEXT_TEST( 2, Void.class ),
+    SKIP_SINCE_NEXT_TEST( 2, Void.class ),
     SHUTDOWN( 3, Void.class ),
     /** To tell a forked process that the master process is still alive. Repeated after 30 seconds. */
     NOOP( 4, Void.class );
@@ -63,6 +63,11 @@ public enum MasterProcessCommand
     public Class<?> getDataType()
     {
         return dataType;
+    }
+
+    public boolean hasDataType()
+    {
+        return dataType != Void.class;
     }
 
     @SuppressWarnings( "checkstyle:magicnumber" )
@@ -119,7 +124,8 @@ public enum MasterProcessCommand
                 if ( command.getDataType() == Void.class )
                 {
                     // must read entire sequence to get to the next command; cannot be above the loop
-                    throw new IOException( "Command " + command + " read Void data with length " + dataLength );
+                    throw new IOException( format( "Command %s unexpectedly read Void data with length %d.",
+                                                   command, dataLength ) );
                 }
 
                 if ( total != dataLength )
@@ -129,7 +135,7 @@ public enum MasterProcessCommand
                         throw new EOFException( "stream closed" );
                     }
 
-                    throw new EOFException( format( "%s read %d out of %d bytes",
+                    throw new IOException( format( "%s read %d out of %d bytes",
                                                     MasterProcessCommand.class, total, dataLength ) );
                 }
 

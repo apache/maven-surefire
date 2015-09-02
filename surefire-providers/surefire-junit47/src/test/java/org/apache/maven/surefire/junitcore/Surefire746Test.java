@@ -23,6 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
 import org.apache.maven.surefire.booter.BaseProviderFactory;
 import org.apache.maven.surefire.booter.ProviderParameterNames;
+import org.apache.maven.surefire.common.junit4.Notifier;
 import org.apache.maven.surefire.report.ConsoleLogger;
 import org.apache.maven.surefire.report.DefaultConsoleReporter;
 import org.apache.maven.surefire.report.ReporterConfiguration;
@@ -111,7 +112,8 @@ public class Surefire746Test
             // JUnitCoreWrapper#execute() is calling JUnit4RunListener#rethrowAnyTestMechanismFailures()
             // and rethrows a failure which happened in listener
             exception.expect( TestSetFailedException.class );
-            JUnitCoreWrapper.execute( new Logger(), testsToRun, jUnitCoreParameters, customRunListeners, null );
+            new JUnitCoreWrapper( new Notifier(), jUnitCoreParameters, new Logger(), false )
+                .execute( testsToRun, customRunListeners, null );
         }
         finally
         {

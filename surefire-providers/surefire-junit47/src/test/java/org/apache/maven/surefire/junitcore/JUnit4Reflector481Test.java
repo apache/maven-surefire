@@ -49,6 +49,37 @@ public class JUnit4Reflector481Test
             Description.createTestDescription( IgnoreWithDescription.class, "testSomething2", annotations );
         Ignore annotatedIgnore = JUnit4Reflector.getAnnotatedIgnore( desc );
         assertNotNull( annotatedIgnore );
+        assertEquals(
+            "testSomething2" + "(org.apache.maven.surefire.junitcore.JUnit4Reflector481Test$IgnoreWithDescription)",
+            desc.getDisplayName() );
+        assertEquals( "testSomething2"
+                          + "(org.apache.maven.surefire.junitcore.JUnit4Reflector481Test$IgnoreWithDescription)",
+                      desc.toString() );
+        assertEquals( "org.apache.maven.surefire.junitcore.JUnit4Reflector481Test$IgnoreWithDescription",
+                      desc.getClassName() );
+        assertEquals( "testSomething2", desc.getMethodName() );
+        assertEquals( 0, desc.getChildren().size() );
+        assertEquals( 2, desc.getAnnotations().size() );
+        assertSame( annotatedIgnore, desc.getAnnotation( Ignore.class ) );
+        assertEquals( reason, annotatedIgnore.value() );
+    }
+
+    @Test
+    public void testGetAnnotatedIgnoreWithoutClass()
+    {
+        final Method testSomething2 =
+            ReflectionUtils.getMethod( IgnoreWithDescription.class, "testSomething2", EMPTY_CLASS_ARRAY );
+        final Annotation[] annotations = testSomething2.getAnnotations();
+        Description desc = Description.createSuiteDescription( "testSomething2", annotations );
+        Ignore annotatedIgnore = JUnit4Reflector.getAnnotatedIgnore( desc );
+        assertNotNull( annotatedIgnore );
+        assertEquals( "testSomething2", desc.getDisplayName() );
+        assertEquals( "testSomething2", desc.toString() );
+        assertEquals( "testSomething2", desc.getClassName() );
+        assertNull( desc.getMethodName() );
+        assertEquals( 0, desc.getChildren().size() );
+        assertEquals( 2, desc.getAnnotations().size() );
+        assertSame( annotatedIgnore, desc.getAnnotation( Ignore.class ) );
         assertEquals( reason, annotatedIgnore.value() );
     }
 
@@ -64,5 +95,26 @@ public class JUnit4Reflector481Test
         }
     }
 
+    @Test
+    public void testCreatePureDescription()
+    {
+        Description description = JUnit4Reflector.createDescription( "exception" );
+        assertEquals( "exception", description.getDisplayName() );
+        assertEquals( "exception", description.toString() );
+        assertEquals( 0, description.getChildren().size() );
+    }
 
+    @Test
+    public void testCreateDescription()
+    {
+        Ignore ignore = JUnit4Reflector.createIgnored( "error" );
+        Description description = JUnit4Reflector.createDescription( "exception", ignore );
+        assertEquals( "exception", description.getDisplayName() );
+        assertEquals( "exception", description.toString() );
+        assertEquals( "exception", description.getClassName() );
+        assertEquals( 0, description.getChildren().size() );
+        Ignore annotatedIgnore = JUnit4Reflector.getAnnotatedIgnore( description );
+        assertNotNull( annotatedIgnore );
+        assertEquals( "error", annotatedIgnore.value() );
+    }
 }

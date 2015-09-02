@@ -29,6 +29,7 @@ import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.SafeThrowable;
+import org.apache.maven.surefire.report.SimpleReportEntry;
 import org.apache.maven.surefire.report.StackTraceWriter;
 import org.apache.maven.surefire.util.internal.StringUtils;
 
@@ -79,6 +80,8 @@ public class ForkingRunListener
     public static final byte BOOTERCODE_SYSPROPS = (byte) 'I';
 
     public static final byte BOOTERCODE_NEXT_TEST = (byte) 'N';
+
+    public static final byte BOOTERCODE_STOP_ON_NEXT_TEST = (byte) 'S';
 
     public static final byte BOOTERCODE_ERROR = (byte) 'X';
 
@@ -144,15 +147,18 @@ public class ForkingRunListener
         encodeAndWriteToTarget( toString( BOOTERCODE_TEST_SKIPPED, report, testSetChannelId ) );
     }
 
+    public void testExecutionSkippedByUser()
+    {
+        encodeAndWriteToTarget( toString( BOOTERCODE_STOP_ON_NEXT_TEST, new SimpleReportEntry(), testSetChannelId ) );
+    }
+
     void sendProps()
     {
         Properties systemProperties = System.getProperties();
 
         if ( systemProperties != null )
         {
-            Enumeration<?> propertyKeys = systemProperties.propertyNames();
-
-            while ( propertyKeys.hasMoreElements() )
+            for ( Enumeration<?> propertyKeys = systemProperties.propertyNames(); propertyKeys.hasMoreElements(); )
             {
                 String key = (String) propertyKeys.nextElement();
                 String value = systemProperties.getProperty( key );
@@ -202,7 +208,10 @@ public class ForkingRunListener
     private void encodeAndWriteToTarget( String string )
     {
         byte[] encodeBytes = encodeStringForForkCommunication( string );
-        target.write( encodeBytes, 0, encodeBytes.length );
+        synchronized ( target ) // See notes about synchronization/thread safety in class javadoc
+        {
+            target.write( encodeBytes, 0, encodeBytes.length );
+        }
     }
 
     private String toPropertyString( String key, String value )

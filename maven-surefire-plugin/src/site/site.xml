@@ -42,6 +42,7 @@
       <item name="Using JUnit" href="examples/junit.html"/>
       <item name="Using POJO Tests" href="examples/pojo-test.html"/>
       <item name="Skipping Tests" href="examples/skipping-test.html"/>
+      <item name="Skip After Failure" href="examples/skip-after-failure.html"/>
       <item name="Inclusions and Exclusions of Tests" href="examples/inclusion-exclusion.html"/>
       <item name="Running a Single Test" href="examples/single-test.html"/>
       <item name="Re-run Failing Tests" href="examples/rerun-failing-tests.html"/>
