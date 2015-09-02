@@ -113,6 +113,12 @@ public abstract class ConcurrentRunListener
         testMethod.detachFromCurrentThread();
     }
 
+    public void testExecutionSkippedByUser()
+    {
+        // cannot guarantee proper call to all listeners
+        reporterManagerThreadLocal.get().testExecutionSkippedByUser();
+    }
+
     public void testAssumptionFailure( ReportEntry failure )
     {
         final TestMethod testMethod = getOrCreateThreadAttachedTestMethod( failure );
@@ -180,19 +186,15 @@ public abstract class ConcurrentRunListener
         return reporterManagerThreadLocal.get();
     }
 
-
     public static ConcurrentRunListener createInstance( Map<String, TestSet> classMethodCounts,
-                                                            ReporterFactory reporterManagerFactory,
+                                                            ReporterFactory reporterFactory,
                                                             boolean parallelClasses, boolean parallelBoth,
                                                             ConsoleLogger consoleLogger )
         throws TestSetFailedException
     {
-        if ( parallelClasses )
-        {
-            return new ClassesParallelRunListener( classMethodCounts, reporterManagerFactory, consoleLogger );
-        }
-        return new MethodsParallelRunListener( classMethodCounts, reporterManagerFactory, !parallelBoth,
-                                               consoleLogger );
+        return parallelClasses
+            ? new ClassesParallelRunListener( classMethodCounts, reporterFactory, consoleLogger )
+            : new MethodsParallelRunListener( classMethodCounts, reporterFactory, !parallelBoth, consoleLogger );
     }
 
 
@@ -210,5 +212,4 @@ public abstract class ConcurrentRunListener
             consoleLogger.info( new String( buf, off, len ) );
         }
     }
-
 }

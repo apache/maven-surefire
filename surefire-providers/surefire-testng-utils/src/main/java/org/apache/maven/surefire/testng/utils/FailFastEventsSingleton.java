@@ -1,4 +1,4 @@
-package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
+package org.apache.maven.surefire.testng.utils;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -20,27 +20,34 @@ package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
  */
 
 /**
- * Forked jvm notifies master process to provide a new test.
+ * Stores and retrieves atomic events
+ * used by {@link FailFastNotifier} and TestNG provider.
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.19
- * @see TestProvidingInputStream
  */
-public interface NotifiableTestStream
+public final class FailFastEventsSingleton
 {
-    /**
-     * Notifies {@link TestProvidingInputStream} in order to dispatch a new test back to the forked
-     * jvm (particular fork which hits this call); or do nothing in {@link TestLessInputStream}.
-     */
-    void provideNewTest();
+    private static final FailFastEventsSingleton INSTANCE = new FailFastEventsSingleton();
 
-    /**
-     * Sends an event to a fork jvm in order to skip tests.
-     * Returns immediately without blocking.
-     */
-    void skipSinceNextTest();
+    private volatile boolean skipAfterFailure;
 
-    void shutdown();
+    private FailFastEventsSingleton()
+    {
+    }
 
-    void noop();
+    public static FailFastEventsSingleton getInstance()
+    {
+        return INSTANCE;
+    }
+
+    public boolean isSkipAfterFailure()
+    {
+        return skipAfterFailure;
+    }
+
+    public void setSkipOnNextTest()
+    {
+        this.skipAfterFailure = true;
+    }
 }

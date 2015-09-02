@@ -79,9 +79,11 @@ public class TestNGDirectoryTestSuite
 
     private final List<CommandLineOption> mainCliOptions;
 
+    private final boolean isFailFast;
+
     public TestNGDirectoryTestSuite( String testSourceDirectory, Map<String, String> confOptions, File reportsDirectory,
                                      TestListResolver methodFilter, RunOrderCalculator runOrderCalculator,
-                                     ScanResult scanResult, List<CommandLineOption> mainCliOptions )
+                                     ScanResult scanResult, List<CommandLineOption> mainCliOptions, boolean isFailFast )
     {
         this.runOrderCalculator = runOrderCalculator;
         this.options = confOptions;
@@ -94,6 +96,7 @@ public class TestNGDirectoryTestSuite
         this.junitTestAnnotation = findJUnitTestAnnotation();
         this.junitOptions = createJUnitOptions();
         this.mainCliOptions = mainCliOptions;
+        this.isFailFast = isFailFast;
     }
 
     public void execute( TestsToRun testsToRun, ReporterFactory reporterManagerFactory )
@@ -128,7 +131,7 @@ public class TestNGDirectoryTestSuite
         final Map<String, String> optionsToUse = isJUnitTest( testClass ) ? junitOptions : options;
 
         TestNGExecutor.run( new Class<?>[]{ testClass }, testSourceDirectory, optionsToUse, reporter, this,
-                            reportsDirectory, methodFilter, mainCliOptions );
+                            reportsDirectory, methodFilter, mainCliOptions, isFailFast );
 
         finishTestSuite( reporter, this );
     }
@@ -218,14 +221,14 @@ public class TestNGDirectoryTestSuite
         Class<?>[] testClasses = testNgTestClasses.toArray( new Class<?>[testNgTestClasses.size()] );
 
         TestNGExecutor.run( testClasses, testSourceDirectory, options, reporterManager, this,
-                            testNgReportsDirectory, methodFilter, mainCliOptions );
+                            testNgReportsDirectory, methodFilter, mainCliOptions, isFailFast );
 
         if ( !junitTestClasses.isEmpty() )
         {
             testClasses = junitTestClasses.toArray( new Class[junitTestClasses.size()] );
 
             TestNGExecutor.run( testClasses, testSourceDirectory, junitOptions, reporterManager, this,
-                                junitReportsDirectory, methodFilter, mainCliOptions );
+                                junitReportsDirectory, methodFilter, mainCliOptions, isFailFast );
         }
 
         finishTestSuite( reporterManager, this );
@@ -295,7 +298,7 @@ public class TestNGDirectoryTestSuite
         startTestSuite( reporter, this );
 
         TestNGExecutor.run( new Class<?>[] { testSet.getTestClass() }, testSourceDirectory, options, reporter,
-                            this, reportsDirectory, methodFilter, mainCliOptions );
+                            this, reportsDirectory, methodFilter, mainCliOptions, isFailFast );
 
         finishTestSuite( reporter, this );
     }

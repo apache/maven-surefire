@@ -294,6 +294,11 @@ public class SurefireReflector
         }
     }
 
+    public void setSkipAfterFailureCount( Object o, int skipAfterFailureCount )
+    {
+        ReflectionUtils.invokeSetter( o, "setSkipAfterFailureCount", int.class, skipAfterFailureCount );
+    }
+
     public void setDirectoryScannerParameters( Object o, DirectoryScannerParameters dirScannerParams )
     {
         final Object param = createDirectoryScannerParameters( dirScannerParams );

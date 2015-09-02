@@ -49,6 +49,8 @@ public class TestNGXmlTestSuite
 
     private final File reportsDirectory;
 
+    private final boolean isFailFast;
+
     // Not really used
     private Map<File, String> testSets;
 
@@ -57,15 +59,13 @@ public class TestNGXmlTestSuite
      * xml file(s). The XML files are suite definitions files according to TestNG DTD.
      */
     public TestNGXmlTestSuite( List<File> suiteFiles, String testSourceDirectory, Map<String, String> confOptions,
-                               File reportsDirectory )
+                               File reportsDirectory, boolean isFailFast )
     {
         this.suiteFiles = suiteFiles;
-
         this.options = confOptions;
-
         this.testSourceDirectory = testSourceDirectory;
-
         this.reportsDirectory = reportsDirectory;
+        this.isFailFast = isFailFast;
     }
 
     public void execute( ReporterFactory reporterManagerFactory )
@@ -80,8 +80,8 @@ public class TestNGXmlTestSuite
         ConsoleOutputCapture.startCapture( (ConsoleOutputReceiver) reporter );
 
         TestNGDirectoryTestSuite.startTestSuite( reporter, this );
-        TestNGExecutor.run( this.suiteFilePaths, this.testSourceDirectory, this.options, reporter, this,
-                            reportsDirectory );
+        TestNGExecutor.run( suiteFilePaths, testSourceDirectory, options, reporter, this, reportsDirectory,
+                            isFailFast );
         TestNGDirectoryTestSuite.finishTestSuite( reporter, this );
     }
 

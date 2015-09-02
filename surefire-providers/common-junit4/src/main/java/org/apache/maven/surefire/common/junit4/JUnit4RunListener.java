@@ -31,6 +31,10 @@ import org.junit.runner.notification.Failure;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static org.apache.maven.surefire.common.junit4.JUnit4Reflector.getAnnotatedIgnoreValue;
+import static org.apache.maven.surefire.report.SimpleReportEntry.ignored;
+import static org.apache.maven.surefire.report.SimpleReportEntry.withException;
+
 /**
  * RunListener for JUnit4, delegates to our own RunListener
  *
@@ -72,10 +76,8 @@ public class JUnit4RunListener
     public void testIgnored( Description description )
         throws Exception
     {
-        final String reason = JUnit4Reflector.getAnnotatedIgnoreValue( description );
-        final SimpleReportEntry report =
-            SimpleReportEntry.ignored( getClassName( description ), description.getDisplayName(), reason );
-        reporter.testSkipped( report );
+        String reason = getAnnotatedIgnoreValue( description );
+        reporter.testSkipped( ignored( getClassName( description ), description.getDisplayName(), reason ) );
     }
 
     /**
@@ -104,32 +106,28 @@ public class JUnit4RunListener
         {
             testHeader = "Failure when constructing test";
         }
-        ReportEntry report = SimpleReportEntry.withException( getClassName( failure.getDescription() ), testHeader,
-                                                              createStackTraceWriter( failure ) );
+
+        ReportEntry report =
+            withException( getClassName( failure.getDescription() ), testHeader, createStackTraceWriter( failure ) );
 
         if ( failure.getException() instanceof AssertionError )
         {
-            this.reporter.testFailed( report );
+            reporter.testFailed( report );
         }
         else
         {
-            this.reporter.testError( report );
+            reporter.testError( report );
         }
-        failureFlag.set( true );
-    }
 
-    protected StackTraceWriter createStackTraceWriter( Failure failure )
-    {
-        return new JUnit4StackTraceWriter( failure );
+        failureFlag.set( true );
     }
 
     @SuppressWarnings( { "UnusedDeclaration" } )
     public void testAssumptionFailure( Failure failure )
     {
-        this.reporter.testAssumptionFailure( createReportEntry( failure.getDescription() ) );
+        reporter.testAssumptionFailure( createReportEntry( failure.getDescription() ) );
         failureFlag.set( true );
     }
-
 
     /**
      * Called after a specific test has finished.
@@ -146,12 +144,15 @@ public class JUnit4RunListener
         }
     }
 
-    protected SimpleReportEntry createReportEntry( Description description )
+    /**
+     * Delegates to {@link RunListener#testExecutionSkippedByUser()}.
+     */
+    public void testExecutionSkippedByUser()
     {
-        return new SimpleReportEntry( getClassName( description ), description.getDisplayName() );
+        reporter.testExecutionSkippedByUser();
     }
 
-    public String getClassName( Description description )
+    private static String getClassName( Description description )
     {
         String name = extractClassName( description );
         if ( name == null || isInsaneJunitNullString( name ) )
@@ -170,33 +171,29 @@ public class JUnit4RunListener
         return name;
     }
 
-    private boolean isInsaneJunitNullString( String value )
+    protected StackTraceWriter createStackTraceWriter( Failure failure )
     {
-        return "null".equals( value );
+        return new JUnit4StackTraceWriter( failure );
+    }
+
+    protected SimpleReportEntry createReportEntry( Description description )
+    {
+        return new SimpleReportEntry( getClassName( description ), description.getDisplayName() );
     }
 
     public static String extractClassName( Description description )
     {
         String displayName = description.getDisplayName();
         Matcher m = PARENS.matcher( displayName );
-        if ( !m.find() )
-        {
-            return displayName;
-        }
-        return m.group( 1 );
+        return m.find() ? m.group( 1 ) : displayName;
     }
 
     public static String extractMethodName( Description description )
     {
         String displayName = description.getDisplayName();
         int i = displayName.indexOf( "(" );
-        if ( i >= 0 )
-        {
-            return displayName.substring( 0, i );
-        }
-        return displayName;
+        return i >= 0 ? displayName.substring( 0, i ) : displayName;
     }
-
 
     public static void rethrowAnyTestMechanismFailures( Result run )
         throws TestSetFailedException
@@ -213,5 +210,10 @@ public class JUnit4RunListener
                 }
             }
         }
+    }
+
+    private static boolean isInsaneJunitNullString( String value )
+    {
+        return "null".equals( value );
     }
 }

@@ -46,8 +46,7 @@ public class ProviderFactory
 
     private final Object reporterManagerFactory;
 
-    private static final Class[] INVOKE_PARAMETERS = new Class[]{ Object.class };
-
+    private static final Class[] INVOKE_PARAMETERS = { Object.class };
 
     public ProviderFactory( StartupConfiguration startupConfiguration, ProviderConfiguration providerConfiguration,
                             ClassLoader testsClassLoader, Object reporterManagerFactory )
@@ -61,7 +60,7 @@ public class ProviderFactory
 
     public static RunResult invokeProvider( Object testSet, ClassLoader testsClassLoader, Object factory,
                                             ProviderConfiguration providerConfiguration, boolean insideFork,
-                                            StartupConfiguration startupConfiguration1, boolean restoreStreams )
+                                            StartupConfiguration startupConfig, boolean restoreStreams )
         throws TestSetFailedException, InvocationTargetException
     {
         final PrintStream orgSystemOut = System.out;
@@ -69,12 +68,11 @@ public class ProviderFactory
         // Note that System.out/System.err are also read in the "ReporterConfiguration" instantiation
         // in createProvider below. These are the same values as here.
 
-        ProviderFactory providerFactory =
-            new ProviderFactory( startupConfiguration1, providerConfiguration, testsClassLoader, factory );
-        final SurefireProvider provider = providerFactory.createProvider( insideFork );
         try
         {
-            return provider.invoke( testSet );
+            return new ProviderFactory( startupConfig, providerConfiguration, testsClassLoader, factory )
+                .createProvider( insideFork )
+                .invoke( testSet );
         }
         finally
         {
@@ -101,6 +99,7 @@ public class ProviderFactory
         surefireReflector.setRunOrderParameters( o, providerConfiguration.getRunOrderParameters() );
         surefireReflector.setIfDirScannerAware( o, providerConfiguration.getDirScannerParams() );
         surefireReflector.setMainCliOptions( o, providerConfiguration.getMainCliOptions() );
+        surefireReflector.setSkipAfterFailureCount( o, providerConfiguration.getSkipAfterFailureCount() );
 
         Object provider = surefireReflector.instantiateProvider( startupConfiguration.getActualClassName(), o );
         currentThread.setContextClassLoader( systemClassLoader );

@@ -133,6 +133,7 @@ class BooterSerializer
         properties.setProperty( USEMANIFESTONLYJAR, String.valueOf( classLoaderConfig.isUseManifestOnlyJar() ) );
         properties.setProperty( FAILIFNOTESTS, String.valueOf( booterConfiguration.isFailIfNoTests() ) );
         properties.setProperty( PROVIDER_CONFIGURATION, providerConfiguration.getProviderClassName() );
+        properties.setProperty( FAIL_FAST_COUNT, String.valueOf( booterConfiguration.getSkipAfterFailureCount() ) );
         List<CommandLineOption> mainCliOptions = booterConfiguration.getMainCliOptions();
         if ( mainCliOptions != null )
         {

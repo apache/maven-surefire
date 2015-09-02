@@ -28,7 +28,7 @@ import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.RunListener;
 
 /**
- * Internal use only
+ * Internal tests use only.
  */
 public class MockReporter
     implements RunListener, ConsoleLogger, ConsoleOutputReceiver
@@ -64,10 +64,6 @@ public class MockReporter
     private final AtomicInteger testIgnored = new AtomicInteger();
 
     private final AtomicInteger testFailed = new AtomicInteger();
-
-    public MockReporter()
-    {
-    }
 
     public void testSetStarting( ReportEntry report )
     {
@@ -108,7 +104,6 @@ public class MockReporter
         testFailed.incrementAndGet();
     }
 
-
     public void testSkipped( ReportEntry report )
     {
         events.add( TEST_SKIPPED );
@@ -116,6 +111,14 @@ public class MockReporter
         testIgnored.incrementAndGet();
     }
 
+    public void testExecutionSkippedByUser()
+    {
+    }
+
+    public void testSkippedByUser( ReportEntry report )
+    {
+        testSkipped( report );
+    }
 
     public List<String> getEvents()
     {
@@ -137,13 +140,11 @@ public class MockReporter
         return (ReportEntry) data.get( 0 );
     }
 
-
     public void testAssumptionFailure( ReportEntry report )
     {
         events.add( TEST_ASSUMPTION_FAIL );
         data.add( report );
         testIgnored.incrementAndGet();
-
     }
 
     public void info( String message )

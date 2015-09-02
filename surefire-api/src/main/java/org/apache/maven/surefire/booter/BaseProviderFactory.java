@@ -45,7 +45,8 @@ import java.util.Map;
  */
 public class BaseProviderFactory
     implements DirectoryScannerParametersAware, ReporterConfigurationAware, SurefireClassLoadersAware, TestRequestAware,
-    ProviderPropertiesAware, ProviderParameters, TestArtifactInfoAware, RunOrderParametersAware, MainCliOptionsAware
+    ProviderPropertiesAware, ProviderParameters, TestArtifactInfoAware, RunOrderParametersAware, MainCliOptionsAware,
+    FailFastAware
 {
     private static final int ROOT_CHANNEL = 0;
 
@@ -68,6 +69,8 @@ public class BaseProviderFactory
     private TestRequest testRequest;
 
     private TestArtifactInfo testArtifactInfo;
+
+    private int skipAfterFailureCount;
 
     public BaseProviderFactory( ReporterFactory reporterFactory, boolean insideFork )
     {
@@ -187,5 +190,20 @@ public class BaseProviderFactory
     public void setMainCliOptions( List<CommandLineOption> mainCliOptions )
     {
         this.mainCliOptions = mainCliOptions == null ? Collections.<CommandLineOption>emptyList() : mainCliOptions;
+    }
+
+    public int getSkipAfterFailureCount()
+    {
+        return skipAfterFailureCount;
+    }
+
+    public void setSkipAfterFailureCount( int skipAfterFailureCount )
+    {
+        this.skipAfterFailureCount = skipAfterFailureCount;
+    }
+
+    public boolean isInsideFork()
+    {
+        return insideFork;
     }
 }

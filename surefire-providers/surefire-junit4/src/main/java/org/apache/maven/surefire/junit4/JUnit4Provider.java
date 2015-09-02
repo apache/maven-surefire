@@ -19,22 +19,20 @@ package org.apache.maven.surefire.junit4;
  * under the License.
  */
 
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 
+import org.apache.maven.surefire.booter.Command;
+import org.apache.maven.surefire.booter.MasterProcessListener;
+import org.apache.maven.surefire.booter.MasterProcessReader;
 import org.apache.maven.surefire.common.junit4.ClassMethod;
-import org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil;
-import org.apache.maven.surefire.common.junit4.JUnit4Reflector;
 import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
-import org.apache.maven.surefire.common.junit4.JUnit4RunListenerFactory;
 import org.apache.maven.surefire.common.junit4.JUnit4TestChecker;
 import org.apache.maven.surefire.common.junit4.JUnitTestFailureListener;
+import org.apache.maven.surefire.common.junit4.Notifier;
 import org.apache.maven.surefire.providerapi.AbstractProvider;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
-import org.apache.maven.surefire.report.ConsoleOutputCapture;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.PojoStackTraceWriter;
 import org.apache.maven.surefire.report.ReportEntry;
@@ -49,13 +47,28 @@ import org.apache.maven.surefire.util.RunOrderCalculator;
 import org.apache.maven.surefire.util.ScanResult;
 import org.apache.maven.surefire.util.TestsToRun;
 import org.junit.runner.Description;
-import org.junit.runner.Request;
 import org.junit.runner.Result;
 import org.junit.runner.Runner;
 import org.junit.runner.manipulation.Filter;
-import org.junit.runner.notification.RunNotifier;
+import org.junit.runner.notification.StoppedByUserException;
 
+import static org.apache.maven.surefire.booter.MasterProcessCommand.SKIP_SINCE_NEXT_TEST;
+import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.createSuiteDescription;
+import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.cutTestClassAndMethod;
+import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.generateFailingTests;
+import static org.apache.maven.surefire.common.junit4.JUnit4Reflector.createDescription;
+import static org.apache.maven.surefire.common.junit4.JUnit4Reflector.createIgnored;
+import static org.apache.maven.surefire.common.junit4.JUnit4RunListener.rethrowAnyTestMechanismFailures;
+import static org.apache.maven.surefire.common.junit4.JUnit4RunListenerFactory.createCustomListeners;
+import static org.apache.maven.surefire.report.ConsoleOutputCapture.startCapture;
+import static org.apache.maven.surefire.report.SimpleReportEntry.withException;
 import static org.apache.maven.surefire.testset.TestListResolver.toClassFileName;
+import static org.apache.maven.surefire.util.TestsToRun.fromClass;
+import static org.junit.runner.Request.aClass;
+import static org.junit.runner.Request.method;
+import static java.lang.reflect.Modifier.isAbstract;
+import static java.lang.reflect.Modifier.isInterface;
+import static java.util.Collections.unmodifiableCollection;
 
 /**
  * @author Kristian Rosenvold
@@ -67,7 +80,7 @@ public class JUnit4Provider
 
     private final ClassLoader testClassLoader;
 
-    private final List<org.junit.runner.notification.RunListener> customRunListeners;
+    private final Collection<org.junit.runner.notification.RunListener> customRunListeners;
 
     private final JUnit4TestChecker jUnit4TestChecker;
 
@@ -81,16 +94,20 @@ public class JUnit4Provider
 
     private final int rerunFailingTestsCount;
 
+    private final MasterProcessReader commandsReader;
+
     private TestsToRun testsToRun;
 
     public JUnit4Provider( ProviderParameters booterParameters )
     {
+        // don't start a thread in MasterProcessReader while we are in in-plugin process
+        commandsReader = booterParameters.isInsideFork() ? MasterProcessReader.getReader() : null;
         providerParameters = booterParameters;
         testClassLoader = booterParameters.getTestClassLoader();
         scanResult = booterParameters.getScanResult();
         runOrderCalculator = booterParameters.getRunOrderCalculator();
         String listeners = booterParameters.getProviderProperties().get( "listener" );
-        customRunListeners = JUnit4RunListenerFactory.createCustomListeners( listeners );
+        customRunListeners = unmodifiableCollection( createCustomListeners( listeners ) );
         jUnit4TestChecker = new JUnit4TestChecker( testClassLoader );
         TestRequest testRequest = booterParameters.getTestRequest();
         testResolver = testRequest.getTestListResolver();
@@ -100,6 +117,11 @@ public class JUnit4Provider
     public RunResult invoke( Object forkTestSet )
         throws TestSetFailedException
     {
+        if ( isRerunFailingTests() && isFailFast() )
+        {
+            throw new TestSetFailedException( "don't enable parameters rerunFailingTestsCount, skipAfterFailureCount" );
+        }
+
         if ( testsToRun == null )
         {
             if ( forkTestSet instanceof TestsToRun )
@@ -108,7 +130,7 @@ public class JUnit4Provider
             }
             else if ( forkTestSet instanceof Class )
             {
-                testsToRun = TestsToRun.fromClass( (Class) forkTestSet );
+                testsToRun = fromClass( (Class) forkTestSet );
             }
             else
             {
@@ -118,48 +140,102 @@ public class JUnit4Provider
 
         upgradeCheck();
 
-        final ReporterFactory reporterFactory = providerParameters.getReporterFactory();
+        ReporterFactory reporterFactory = providerParameters.getReporterFactory();
 
         RunListener reporter = reporterFactory.createReporter();
 
-        ConsoleOutputCapture.startCapture( (ConsoleOutputReceiver) reporter );
+        startCapture( (ConsoleOutputReceiver) reporter );
 
-        JUnit4RunListener jUnit4TestSetReporter = new JUnit4RunListener( reporter );
-
-        Result result = new Result();
-        RunNotifier runNotifier = getRunNotifier( jUnit4TestSetReporter, result, customRunListeners );
-
-        runNotifier.fireTestRunStarted( testsToRun.allowEagerReading()
-                                            ? createTestsDescription()
-                                            : JUnit4Reflector.createDescription( UNDETERMINED_TESTS_DESCRIPTION ) );
-
-        for ( Class aTestsToRun : testsToRun )
+        Notifier notifier = new Notifier();
+        notifier.setReporter( new JUnit4RunListener( reporter ) );
+        if ( isFailFast() )
         {
-            executeTestSet( aTestsToRun, reporter, runNotifier );
+            notifier.addListener( new JUnit4FailFastListener( notifier ) );
+        }
+        Result result = new Result();
+        notifier.addListeners( customRunListeners )
+            .addListener( result.createListener() );
+
+        if ( isFailFast() && commandsReader != null )
+        {
+            registerPleaseStopJunitListener( notifier );
         }
 
-        runNotifier.fireTestRunFinished( result );
+        try
+        {
+            notifier.fireTestRunStarted( testsToRun.allowEagerReading()
+                                                ? createTestsDescription()
+                                                : createDescription( UNDETERMINED_TESTS_DESCRIPTION ) );
 
-        JUnit4RunListener.rethrowAnyTestMechanismFailures( result );
+            for ( Class aTestsToRun : testsToRun )
+            {
+                executeTestSet( aTestsToRun, reporter, notifier );
+            }
+        }
+        finally
+        {
+            notifier.fireTestRunFinished( result );
+            notifier.removeListeners();
+            closeCommandsReader();
+        }
 
-        closeRunNotifier( jUnit4TestSetReporter, customRunListeners );
+        rethrowAnyTestMechanismFailures( result );
         return reporterFactory.close();
     }
 
-    private void executeTestSet( Class<?> clazz, RunListener reporter, RunNotifier listeners )
+    private boolean isRerunFailingTests()
+    {
+        return rerunFailingTestsCount > 0;
+    }
+
+    private boolean isFailFast()
+    {
+        return providerParameters.getSkipAfterFailureCount() > 0;
+    }
+
+    private void closeCommandsReader()
+    {
+        if ( commandsReader != null )
+        {
+            commandsReader.stop();
+        }
+    }
+
+    private MasterProcessListener registerPleaseStopJunitListener( final Notifier notifier )
+    {
+        MasterProcessListener listener = new MasterProcessListener()
+        {
+            public void update( Command command )
+            {
+                notifier.pleaseStop();
+            }
+        };
+        commandsReader.addListener( SKIP_SINCE_NEXT_TEST, listener );
+        return listener;
+    }
+
+    private void executeTestSet( Class<?> clazz, RunListener reporter, Notifier notifier )
     {
         final ReportEntry report = new SimpleReportEntry( getClass().getName(), clazz.getName() );
         reporter.testSetStarting( report );
         try
         {
-            executeWithRerun( clazz, listeners );
+            executeWithRerun( clazz, notifier );
         }
         catch ( Throwable e )
         {
-            String reportName = report.getName();
-            String reportSourceName = report.getSourceName();
-            PojoStackTraceWriter stackWriter = new PojoStackTraceWriter( reportSourceName, reportName, e );
-            reporter.testError( SimpleReportEntry.withException( reportSourceName, reportName, stackWriter ) );
+            if ( isFailFast() && e instanceof StoppedByUserException )
+            {
+                String reason = e.getClass().getName();
+                notifier.fireTestIgnored( createDescription( clazz.getName(), createIgnored( reason ) ) );
+            }
+            else
+            {
+                String reportName = report.getName();
+                String reportSourceName = report.getSourceName();
+                PojoStackTraceWriter stackWriter = new PojoStackTraceWriter( reportSourceName, reportName, e );
+                reporter.testError( withException( reportSourceName, reportName, stackWriter ) );
+            }
         }
         finally
         {
@@ -167,52 +243,25 @@ public class JUnit4Provider
         }
     }
 
-    private void executeWithRerun( Class<?> clazz, RunNotifier listeners ) throws TestSetFailedException
+    private void executeWithRerun( Class<?> clazz, Notifier notifier ) throws TestSetFailedException
     {
         JUnitTestFailureListener failureListener = new JUnitTestFailureListener();
-        listeners.addListener( failureListener );
+        notifier.addListener( failureListener );
         boolean hasMethodFilter = testResolver != null && testResolver.hasMethodPatterns();
-        execute( clazz, listeners, hasMethodFilter ? new TestResolverFilter() : new NullFilter() );
+        execute( clazz, notifier, hasMethodFilter ? new TestResolverFilter() : new NullFilter() );
 
         // Rerun failing tests if rerunFailingTestsCount is larger than 0
-        if ( rerunFailingTestsCount > 0 )
+        if ( isRerunFailingTests() )
         {
             for ( int i = 0; i < rerunFailingTestsCount && !failureListener.getAllFailures().isEmpty(); i++ )
             {
-                Set<ClassMethod> failedTests =
-                    JUnit4ProviderUtil.generateFailingTests( failureListener.getAllFailures() );
+                Set<ClassMethod> failedTests = generateFailingTests( failureListener.getAllFailures() );
                 failureListener.reset();
                 if ( !failedTests.isEmpty() )
                 {
-                    executeFailedMethod( listeners, failedTests );
+                    executeFailedMethod( notifier, failedTests );
                 }
             }
-        }
-    }
-
-    private static RunNotifier getRunNotifier( org.junit.runner.notification.RunListener main, Result result,
-                                        List<org.junit.runner.notification.RunListener> others )
-    {
-        RunNotifier notifier = new RunNotifier();
-        notifier.addListener( main );
-        notifier.addListener( result.createListener() );
-        for ( org.junit.runner.notification.RunListener listener : others )
-        {
-            notifier.addListener( listener );
-        }
-        return notifier;
-    }
-
-    // I am not entirely sure as to why we do this explicit freeing, it's one of those
-    // pieces of code that just seem to linger on in here ;)
-    private static void closeRunNotifier( org.junit.runner.notification.RunListener main,
-                                   Iterable<org.junit.runner.notification.RunListener> others )
-    {
-        RunNotifier notifier = new RunNotifier();
-        notifier.removeListener( main );
-        for ( org.junit.runner.notification.RunListener listener : others )
-        {
-            notifier.removeListener( listener );
         }
     }
 
@@ -258,7 +307,7 @@ public class JUnit4Provider
         {
             classes.add( clazz );
         }
-        return JUnit4ProviderUtil.createSuiteDescription( classes );
+        return createSuiteDescription( classes );
     }
 
     private static boolean isJUnit4UpgradeCheck()
@@ -266,12 +315,12 @@ public class JUnit4Provider
         return System.getProperty( "surefire.junit4.upgradecheck" ) != null;
     }
 
-    private static void execute( Class<?> testClass, RunNotifier notifier, Filter filter )
+    private static void execute( Class<?> testClass, Notifier notifier, Filter filter )
     {
         final int classModifiers = testClass.getModifiers();
-        if ( !Modifier.isAbstract( classModifiers ) && !Modifier.isInterface( classModifiers ) )
+        if ( !isAbstract( classModifiers ) && !isInterface( classModifiers ) )
         {
-            Runner runner = Request.aClass( testClass ).filterWith( filter ).getRunner();
+            Runner runner = aClass( testClass ).filterWith( filter ).getRunner();
             if ( countTestsInRunner( runner.getDescription() ) != 0 )
             {
                 runner.run( notifier );
@@ -279,7 +328,7 @@ public class JUnit4Provider
         }
     }
 
-    private void executeFailedMethod( RunNotifier notifier, Set<ClassMethod> failedMethods )
+    private void executeFailedMethod( Notifier notifier, Set<ClassMethod> failedMethods )
         throws TestSetFailedException
     {
         for ( ClassMethod failedMethod : failedMethods )
@@ -288,7 +337,7 @@ public class JUnit4Provider
             {
                 Class<?> methodClass = Class.forName( failedMethod.getClazz(), true, testClassLoader );
                 String methodName = failedMethod.getMethod();
-                Request.method( methodClass, methodName ).getRunner().run( notifier );
+                method( methodClass, methodName ).getRunner().run( notifier );
             }
             catch ( ClassNotFoundException e )
             {
@@ -353,7 +402,7 @@ public class JUnit4Provider
         public boolean shouldRun( Description description )
         {
             // class: Java class name; method: 1. "testMethod" or 2. "testMethod[5+whatever]" in @Parameterized
-            final ClassMethod cm = JUnit4ProviderUtil.cutTestClassAndMethod( description );
+            final ClassMethod cm = cutTestClassAndMethod( description );
             final boolean isSuite = description.isSuite();
             final boolean isValidTest = description.isTest() && cm.isValid();
             final String clazz = cm.getClazz();

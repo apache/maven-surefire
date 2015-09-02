@@ -22,12 +22,14 @@ package org.apache.maven.surefire.common.junit4;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import org.apache.maven.surefire.util.ReflectionUtils;
 
 import org.apache.maven.surefire.util.SurefireReflectionException;
 import org.junit.Ignore;
 import org.junit.runner.Description;
 import org.junit.runner.Request;
+
+import static org.apache.maven.surefire.util.ReflectionUtils.tryGetMethod;
+import static org.apache.maven.surefire.util.ReflectionUtils.invokeMethodWithArray;
 
 /**
  * JUnit4 reflection helper
@@ -35,25 +37,21 @@ import org.junit.runner.Request;
  */
 public final class JUnit4Reflector
 {
-    private static final Class[] PARAMS = new Class[]{ Class.class };
+    private static final Class[] PARAMS = { Class.class };
 
-    private static final Class[] IGNORE_PARAMS = new Class[]{ Ignore.class };
+    private static final Class[] IGNORE_PARAMS = { Ignore.class };
+
+    private static final Class[] PARAMS_WITH_ANNOTATIONS = { String.class, Annotation[].class };
 
     private JUnit4Reflector()
     {
         throw new IllegalStateException( "not instantiable constructor" );
     }
 
-    public static Ignore getAnnotatedIgnore( Description description )
+    public static Ignore getAnnotatedIgnore( Description d )
     {
-        Method getAnnotation = ReflectionUtils.tryGetMethod( description.getClass(), "getAnnotation", PARAMS );
-
-        if ( getAnnotation == null )
-        {
-            return null;
-        }
-
-        return (Ignore) ReflectionUtils.invokeMethodWithArray( description, getAnnotation, IGNORE_PARAMS );
+        Method getAnnotation = tryGetMethod( d.getClass(), "getAnnotation", PARAMS );
+        return getAnnotation == null ? null : (Ignore) invokeMethodWithArray( d, getAnnotation, IGNORE_PARAMS );
     }
 
     public static String getAnnotatedIgnoreValue( Description description )
@@ -92,20 +90,79 @@ public final class JUnit4Reflector
         }
         catch ( NoSuchMethodError e )
         {
-            try
+            Method method = tryGetMethod( Description.class, "createSuiteDescription", PARAMS_WITH_ANNOTATIONS );
+            Object[] parameters = { description, new Annotation[0] };
+            // may throw exception probably with JUnit 5.x
+            return (Description) invokeMethodWithArray( null, method, parameters );
+        }
+    }
+
+    public static Description createDescription( String description, Annotation... annotations )
+    {
+        Method method = tryGetMethod( Description.class, "createSuiteDescription", PARAMS_WITH_ANNOTATIONS );
+        return method == null
+            ? Description.createSuiteDescription( description )
+            : (Description) invokeMethodWithArray( null, method, new Object[] { description, annotations } );
+    }
+
+    public static Ignore createIgnored( String value )
+    {
+        return new IgnoredWithUserError( value );
+    }
+
+    private static class IgnoredWithUserError
+        implements Annotation, Ignore
+    {
+        private final String value;
+
+        public IgnoredWithUserError( String value )
+        {
+            this.value = value;
+        }
+
+        public IgnoredWithUserError()
+        {
+            this( "" );
+        }
+
+        public String value()
+        {
+            return value;
+        }
+
+        public Class<? extends Annotation> annotationType()
+        {
+            return Ignore.class;
+        }
+
+        @Override
+        public int hashCode()
+        {
+            return value == null ? 0 : value.hashCode();
+        }
+
+        @Override
+        public boolean equals( Object obj )
+        {
+            return obj instanceof Annotation && obj instanceof Ignore && equalValue( ( Ignore ) obj );
+        }
+
+        @Override
+        public String toString()
+        {
+            return String.format( "%s(%s)", Ignore.class, value );
+        }
+
+        private boolean equalValue( Ignore ignore )
+        {
+            if ( ignore == null )
             {
-                return (Description) Description.class.getDeclaredMethod( "createSuiteDescription",
-                                                                          String.class, Annotation[].class )
-                    .invoke( null, description, new Annotation[0] );
+                return false;
             }
-            catch ( InvocationTargetException e1 )
+            else
             {
-                throw new SurefireReflectionException( e1.getCause() );
-            }
-            catch ( Exception e1 )
-            {
-                // probably JUnit 5.x
-                throw new SurefireReflectionException( e1 );
+                String val = ignore.value();
+                return val == null ? value == null : val.equals( value );
             }
         }
     }

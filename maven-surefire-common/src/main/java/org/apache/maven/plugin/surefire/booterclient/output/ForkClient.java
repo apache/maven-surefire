@@ -75,6 +75,10 @@ public class ForkClient
         this.notifiableTestStream = notifiableTestStream;
     }
 
+    protected void stopOnNextTest()
+    {
+    }
+
     public DefaultReporterFactory getDefaultReporterFactory()
     {
         return defaultReporterFactory;
@@ -161,6 +165,9 @@ public class ForkClient
                     break;
                 case ForkingRunListener.BOOTERCODE_BYE:
                     saidGoodBye = true;
+                    break;
+                case ForkingRunListener.BOOTERCODE_STOP_ON_NEXT_TEST:
+                    stopOnNextTest();
                     break;
                 default:
                     System.out.println( s );

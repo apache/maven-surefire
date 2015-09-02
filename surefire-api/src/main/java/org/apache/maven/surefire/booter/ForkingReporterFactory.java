@@ -48,7 +48,7 @@ public class ForkingReporterFactory
         this.originalSystemOut = originalSystemOut;
     }
 
-    public synchronized RunListener createReporter()
+    public RunListener createReporter()
     {
         return new ForkingRunListener( originalSystemOut, testSetChannelId++, isTrimstackTrace );
     }

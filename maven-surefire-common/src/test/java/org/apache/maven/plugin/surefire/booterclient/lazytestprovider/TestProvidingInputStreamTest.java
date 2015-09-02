@@ -19,8 +19,6 @@ package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
  * under the License.
  */
 
-import org.apache.maven.surefire.booter.Command;
-import org.apache.maven.surefire.booter.MasterProcessCommand;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -45,7 +43,7 @@ public class TestProvidingInputStreamTest
     public void closedStreamShouldReturnEndOfStream()
         throws IOException
     {
-        Queue<Command> commands = new ArrayDeque<Command>();
+        Queue<String> commands = new ArrayDeque<String>();
         TestProvidingInputStream is = new TestProvidingInputStream( commands );
         is.close();
         assertThat( is.read(), is( -1 ) );
@@ -55,7 +53,7 @@ public class TestProvidingInputStreamTest
     public void emptyStreamShouldWaitUntilClosed()
         throws Exception
     {
-        Queue<Command> commands = new ArrayDeque<Command>();
+        Queue<String> commands = new ArrayDeque<String>();
         final TestProvidingInputStream is = new TestProvidingInputStream( commands );
         final Thread streamThread = Thread.currentThread();
         FutureTask<Thread.State> futureTask = new FutureTask<Thread.State>( new Callable<Thread.State>()
@@ -79,9 +77,9 @@ public class TestProvidingInputStreamTest
     public void finishedTestsetShouldNotBlock()
         throws IOException
     {
-        Queue<Command> commands = new ArrayDeque<Command>();
-        commands.add( new Command( MasterProcessCommand.TEST_SET_FINISHED ) );
+        Queue<String> commands = new ArrayDeque<String>();
         final TestProvidingInputStream is = new TestProvidingInputStream( commands );
+        is.testSetFinished();
         new Thread( new Runnable()
         {
             public void run()
@@ -104,8 +102,8 @@ public class TestProvidingInputStreamTest
     public void shouldReadTest()
         throws IOException
     {
-        Queue<Command> commands = new ArrayDeque<Command>();
-        commands.add( new Command( MasterProcessCommand.RUN_CLASS, "Test" ) );
+        Queue<String> commands = new ArrayDeque<String>();
+        commands.add( "Test" );
         final TestProvidingInputStream is = new TestProvidingInputStream( commands );
         new Thread( new Runnable()
         {
@@ -136,6 +134,7 @@ public class TestProvidingInputStreamTest
         }
         catch ( InterruptedException e )
         {
+            // do nothing
         }
     }
 }

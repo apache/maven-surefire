@@ -114,6 +114,15 @@ public class MockReporter
         testIgnored.incrementAndGet();
     }
 
+    public void testExecutionSkippedByUser()
+    {
+    }
+
+    public void testSkippedByUser( ReportEntry report )
+    {
+        testSkipped( report );
+    }
+
 
     public String getFirstEvent()
     {

@@ -193,7 +193,7 @@ public final class ForkedBooter
     private static RunResult invokeProviderInSameClassLoader( Object testSet, Object factory,
                                                              ProviderConfiguration providerConfiguration,
                                                              boolean insideFork,
-                                                             StartupConfiguration startupConfiguration1,
+                                                             StartupConfiguration startupConfig,
                                                              boolean restoreStreams )
         throws TestSetFailedException, InvocationTargetException
     {
@@ -202,11 +202,10 @@ public final class ForkedBooter
         // Note that System.out/System.err are also read in the "ReporterConfiguration" instatiation
         // in createProvider below. These are the same values as here.
 
-        final SurefireProvider provider =
-            createProviderInCurrentClassloader( startupConfiguration1, insideFork, providerConfiguration, factory );
         try
         {
-            return provider.invoke( testSet );
+            return createProviderInCurrentClassloader( startupConfig, insideFork, providerConfiguration, factory )
+                .invoke( testSet );
         }
         finally
         {
@@ -233,6 +232,7 @@ public final class ForkedBooter
         bpf.setRunOrderParameters( providerConfiguration.getRunOrderParameters() );
         bpf.setDirectoryScannerParameters( providerConfiguration.getDirScannerParams() );
         bpf.setMainCliOptions( providerConfiguration.getMainCliOptions() );
+        bpf.setSkipAfterFailureCount( providerConfiguration.getSkipAfterFailureCount() );
         return (SurefireProvider) ReflectionUtils.instantiateOneArg( classLoader,
                                                                      startupConfiguration1.getActualClassName(),
                                                                      ProviderParameters.class, bpf );

@@ -47,6 +47,34 @@ public class JUnit4Reflector40Test
         {
         }
     }
+
+    public void testCreateIgnored()
+    {
+        Ignore ignore = JUnit4Reflector.createIgnored( "error" );
+        assertNotNull( ignore );
+        assertNotNull( ignore.value() );
+        assertEquals( "error", ignore.value() );
+    }
+
+    public void testCreateDescription()
+    {
+        Ignore ignore = JUnit4Reflector.createIgnored( "error" );
+        Description description = JUnit4Reflector.createDescription( "exception", ignore );
+        assertEquals( "exception", description.getDisplayName() );
+        assertEquals( "exception", description.toString() );
+        assertEquals( 0, description.getChildren().size() );
+        // JUnit 4 description does not get annotations
+        Ignore annotatedIgnore = JUnit4Reflector.getAnnotatedIgnore( description );
+        assertNull( annotatedIgnore );
+    }
+
+    public void testCreatePureDescription()
+    {
+        Description description = JUnit4Reflector.createDescription( "exception" );
+        assertEquals( "exception", description.getDisplayName() );
+        assertEquals( "exception", description.toString() );
+        assertEquals( 0, description.getChildren().size() );
+    }
 }
 
 

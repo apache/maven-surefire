@@ -132,4 +132,15 @@ public interface ProviderParameters
     TestArtifactInfo getTestArtifactInfo();
 
     List<CommandLineOption> getMainCliOptions();
+
+    /**
+     * Defaults to 0. Configured with parameter <em>skipAfterFailureCount</em> in POM.
+     */
+    int getSkipAfterFailureCount();
+
+    /**
+     * @return {@code true} if test provider appears in forked jvm; Otherwise {@code false} means
+     * in-plugin provider.
+     */
+    boolean isInsideFork();
 }

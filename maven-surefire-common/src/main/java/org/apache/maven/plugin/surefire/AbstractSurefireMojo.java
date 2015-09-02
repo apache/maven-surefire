@@ -683,6 +683,29 @@ public abstract class AbstractSurefireMojo
 
     protected abstract int getRerunFailingTestsCount();
 
+    public abstract List<String> getIncludes();
+
+    public abstract File getIncludesFile();
+
+    public abstract void setIncludes( List<String> includes );
+
+    public abstract File getExcludesFile();
+
+    public abstract File[] getSuiteXmlFiles();
+
+    public abstract void setSuiteXmlFiles( File[] suiteXmlFiles );
+
+    public abstract String getRunOrder();
+
+    public abstract void setRunOrder( String runOrder );
+
+    protected abstract void handleSummary( RunResult summary, Exception firstForkException )
+        throws MojoExecutionException, MojoFailureException;
+
+    protected abstract String[] getDefaultIncludes();
+
+    protected abstract boolean isSkipExecution();
+
     private SurefireDependencyResolver dependencyResolver;
 
     private TestListResolver specificTests;
@@ -806,8 +829,6 @@ public abstract class AbstractSurefireMojo
         }
         return true;
     }
-
-    protected abstract boolean isSkipExecution();
 
     private void executeAfterPreconditionsChecked( DefaultScanResult scanResult )
         throws MojoExecutionException, MojoFailureException
@@ -1030,9 +1051,6 @@ public abstract class AbstractSurefireMojo
             }
         }
     }
-
-    protected abstract void handleSummary( RunResult summary, Exception firstForkException )
-        throws MojoExecutionException, MojoFailureException;
 
     protected void logReportsDirectory()
     {
@@ -1448,7 +1466,7 @@ public abstract class AbstractSurefireMojo
                                           reporterConfiguration,
                                           testNg, // Not really used in provider. Limited to de/serializer.
                                           testSuiteDefinition, providerProperties, null,
-                                          false, cli );
+                                          false, cli, getSkipAfterFailureCount() );
     }
 
     private static Map<String, String> toStringProperties( Properties properties )
@@ -2032,8 +2050,6 @@ public abstract class AbstractSurefireMojo
             : new ClassLoaderConfiguration( false, false );
     }
 
-    protected abstract String[] getDefaultIncludes();
-
     /**
      * Generate the test classpath.
      *
@@ -2591,18 +2607,10 @@ public abstract class AbstractSurefireMojo
         }
     }
 
-    public abstract List<String> getIncludes();
-
-    public abstract File getIncludesFile();
-
-    public abstract void setIncludes( List<String> includes );
-
     public List<String> getExcludes()
     {
         return excludes;
     }
-
-    public abstract File getExcludesFile();
 
     public void setExcludes( List<String> excludes )
     {
@@ -2804,10 +2812,6 @@ public abstract class AbstractSurefireMojo
     {
         this.excludedGroups = excludedGroups;
     }
-
-    public abstract File[] getSuiteXmlFiles();
-
-    public abstract void setSuiteXmlFiles( File[] suiteXmlFiles );
 
     public String getJunitArtifactName()
     {
@@ -3045,10 +3049,6 @@ public abstract class AbstractSurefireMojo
     {
         return parallelMavenExecution != null && parallelMavenExecution;
     }
-
-    public abstract String getRunOrder();
-
-    public abstract void setRunOrder( String runOrder );
 
     public String[] getDependenciesToScan()
     {

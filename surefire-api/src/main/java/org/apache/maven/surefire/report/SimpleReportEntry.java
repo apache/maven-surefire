@@ -35,6 +35,11 @@ public class SimpleReportEntry
 
     private final String message;
 
+    public SimpleReportEntry()
+    {
+        this( null, null );
+    }
+
     public SimpleReportEntry( String source, String name )
     {
         this( source, name, null, null );
