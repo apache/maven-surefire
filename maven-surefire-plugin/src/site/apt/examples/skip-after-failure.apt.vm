@@ -31,11 +31,6 @@ Skipping Tests After First Failure
  To skip remaining tests after first failure or error has happened
  set configuration parameter <<<skipAfterFailureCount>>> to <<<1>>>.
  
- If version of TestNG is lover than 5.10 while the parameter 
- <<<skipAfterFailureCount>>> is set, the plugin fails with error:
- <<<[ERROR] org.apache.maven.surefire.util.SurefireReflectionException: 
- java.lang.NoClassDefFoundError: org/testng/IInvokedMethodListener>>>
- 
  
 Skipping Tests After the Nth Failure or Error
 
@@ -48,6 +43,11 @@ Prerequisite
  
  Use ${project.artifactId} 2.19 or higher, JUnit 4.0 or higher, or 
  TestNG 5.10 or higher.
+ 
+ If version of TestNG is lover than 5.10 while the parameter 
+ <<<skipAfterFailureCount>>> is set, the plugin fails with error:
+ <<<[ERROR] org.apache.maven.surefire.util.SurefireReflectionException: 
+ java.lang.NoClassDefFoundError: org/testng/IInvokedMethodListener>>>
  
  
 Notices
