@@ -826,6 +826,7 @@ public abstract class AbstractSurefireMojo
             ensureThreadCountWithPerThread();
             warnIfUselessUseSystemClassLoaderParameter();
             warnIfDefunctGroupsCombinations();
+            warnIfRerunClashes();
         }
         return true;
     }
@@ -2256,7 +2257,7 @@ public abstract class AbstractSurefireMojo
     }
 
 
-    void ensureWorkingDirectoryExists()
+    private void ensureWorkingDirectoryExists()
         throws MojoFailureException
     {
         if ( getWorkingDirectory() == null )
@@ -2286,7 +2287,7 @@ public abstract class AbstractSurefireMojo
         }
     }
 
-    void ensureParallelRunningCompatibility()
+    private void ensureParallelRunningCompatibility()
         throws MojoFailureException
     {
         if ( isMavenParallel() && isNotForking() )
@@ -2295,7 +2296,7 @@ public abstract class AbstractSurefireMojo
         }
     }
 
-    void ensureThreadCountWithPerThread()
+    private void ensureThreadCountWithPerThread()
         throws MojoFailureException
     {
         if ( ForkConfiguration.FORK_PERTHREAD.equals( getEffectiveForkMode() ) && getThreadCount() < 1 )
@@ -2304,7 +2305,7 @@ public abstract class AbstractSurefireMojo
         }
     }
 
-    void warnIfUselessUseSystemClassLoaderParameter()
+    private void warnIfUselessUseSystemClassLoaderParameter()
     {
         if ( isUseSystemClassLoader() && isNotForking() )
         {
@@ -2322,7 +2323,7 @@ public abstract class AbstractSurefireMojo
         return SurefireHelper.commandLineOptions( getSession(), getLog() );
     }
 
-    void warnIfDefunctGroupsCombinations()
+    private void warnIfDefunctGroupsCombinations()
         throws MojoFailureException, MojoExecutionException
     {
         if ( isAnyGroupsSelected() )
@@ -2345,6 +2346,18 @@ public abstract class AbstractSurefireMojo
                 }
             }
 
+        }
+    }
+
+    private void warnIfRerunClashes()
+        throws MojoFailureException
+    {
+        boolean isRerun = getRerunFailingTestsCount() > 0;
+        boolean isFailFast = getSkipAfterFailureCount() > 0;
+        if ( isRerun && isFailFast )
+        {
+            throw new MojoFailureException( "Parameters [rerunFailingTestsCount, skipAfterFailureCount] "
+                                                + "should not be enabled together." );
         }
     }
 
