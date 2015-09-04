@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.junitcore;
+package org.apache.maven.surefire.common.junit4;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -20,13 +20,16 @@ package org.apache.maven.surefire.junitcore;
  */
 
 /**
+ * Covers configuration parameter <em>skipAfterFailureCount</em>.
+ *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.19
+ * @see org.apache.maven.surefire.common.junit4.Notifier
  */
-interface Stoppable
+public interface Stoppable
 {
     /**
-     * Delegates this call to {@link org.junit.runner.notification.RunNotifier#pleaseStop()}.
+     * Fire stop even to plugin process and/or call {@link org.junit.runner.notification.RunNotifier#pleaseStop()}.
      */
-    void pleaseStop();
+    void fireStopEvent();
 }

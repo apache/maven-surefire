@@ -19,6 +19,7 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
+import org.apache.maven.surefire.common.junit4.Stoppable;
 import org.junit.runner.Description;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunListener;
@@ -27,7 +28,7 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
- * Calling {@link Stoppable#pleaseStop()} if failure appeared.
+ * Calling {@link Stoppable#fireStopEvent()} if failure happens.
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.19
@@ -60,6 +61,6 @@ final class JUnit47FailFastListener
     public void testFailure( Failure failure )
         throws Exception
     {
-        stoppable.pleaseStop();
+        stoppable.fireStopEvent();
     }
 }

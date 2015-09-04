@@ -19,12 +19,13 @@ package org.apache.maven.surefire.junit4;
  * under the License.
  */
 
+import org.apache.maven.surefire.common.junit4.Notifier;
+import org.apache.maven.surefire.common.junit4.Stoppable;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunListener;
-import org.junit.runner.notification.RunNotifier;
 
 /**
- * Calling {@link RunNotifier#pleaseStop()} if failure appeared.
+ * Calling {@link Notifier#fireStopEvent()} if failure happens.
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.19
@@ -32,17 +33,17 @@ import org.junit.runner.notification.RunNotifier;
 final class JUnit4FailFastListener
     extends RunListener
 {
-    private final RunNotifier notifier;
+    private final Stoppable stoppable;
 
-    JUnit4FailFastListener( RunNotifier notifier )
+    JUnit4FailFastListener( Notifier stoppable )
     {
-        this.notifier = notifier;
+        this.stoppable = stoppable;
     }
 
     @Override
     public void testFailure( Failure failure )
         throws Exception
     {
-        notifier.pleaseStop();
+        stoppable.fireStopEvent();
     }
 }

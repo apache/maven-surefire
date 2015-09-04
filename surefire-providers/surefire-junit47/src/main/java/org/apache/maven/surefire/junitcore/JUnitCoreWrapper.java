@@ -27,6 +27,7 @@ import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.TestsToRun;
 import org.junit.Ignore;
 import org.junit.runner.Computer;
+import org.junit.runner.Description;
 import org.junit.runner.Request;
 import org.junit.runner.Result;
 import org.junit.runner.manipulation.Filter;
@@ -36,7 +37,6 @@ import org.junit.runner.notification.StoppedByUserException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Queue;
-import java.util.Random;
 
 import static org.apache.maven.surefire.common.junit4.JUnit4Reflector.createDescription;
 import static org.apache.maven.surefire.common.junit4.JUnit4Reflector.createIgnored;
@@ -53,8 +53,6 @@ final class JUnitCoreWrapper
     private final JUnitCoreParameters jUnitCoreParameters;
     private final ConsoleLogger logger;
     private final boolean failFast;
-
-    private Object o = new Random().nextInt();
 
     JUnitCoreWrapper( Notifier notifier, JUnitCoreParameters jUnitCoreParameters, ConsoleLogger logger,
                       boolean failFast )
@@ -86,7 +84,7 @@ final class JUnitCoreWrapper
 
     private JUnitCore createJUnitCore( final Notifier notifier, Collection<RunListener> listeners )
     {
-        JUnitCore junitCore = new JUnitCore( notifier );
+        JUnitCore junitCore = new JUnitCore();
 
         // custom listeners added last
         notifier.addListeners( listeners );
@@ -154,10 +152,10 @@ final class JUnitCoreWrapper
     {
         private final JUnit47FailFastListener failFastListener;
 
-        JUnitCore( Notifier notifier )
+        JUnitCore()
         {
             super( notifier );
-            failFastListener = failFast ? new JUnit47FailFastListener( this ) : null;
+            failFastListener = failFast ? new JUnit47FailFastListener( notifier ) : null;
             if ( failFastListener != null )
             {
                 notifier.addListener( failFastListener );
@@ -188,10 +186,11 @@ final class JUnitCoreWrapper
                 if ( stoppedTests != null )
                 {
                     String reason = e.getClass().getName();
-                    Ignore reasonForIgnoredTest = createIgnored( reason );
+                    Ignore reasonForSkippedTest = createIgnored( reason );
                     for ( String clazz; ( clazz = stoppedTests.poll() ) != null; )
                     {
-                        notifier.fireTestIgnored( createDescription( clazz, reasonForIgnoredTest ) );
+                        Description skippedTest = createDescription( clazz, reasonForSkippedTest );
+                        notifier.fireTestIgnored( skippedTest );
                     }
                 }
             }

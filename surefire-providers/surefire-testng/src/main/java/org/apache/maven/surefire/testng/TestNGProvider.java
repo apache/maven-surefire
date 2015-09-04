@@ -149,6 +149,11 @@ public class TestNGProvider
         return providerParameters.getSkipAfterFailureCount() > 0;
     }
 
+    private int getSkipAfterFailureCount()
+    {
+        return isFailFast() ? providerParameters.getSkipAfterFailureCount() : 0;
+    }
+
     private void closeCommandsReader()
     {
         if ( commandsReader != null )
@@ -174,7 +179,8 @@ public class TestNGProvider
     {
         return new TestNGDirectoryTestSuite( testRequest.getTestSourceDirectory().toString(), providerProperties,
                                              reporterConfiguration.getReportsDirectory(), createMethodFilter(),
-                                             runOrderCalculator, scanResult, mainCliOptions, isFailFast() );
+                                             runOrderCalculator, scanResult, mainCliOptions,
+                                             getSkipAfterFailureCount() );
     }
 
     private TestNGXmlTestSuite newXmlSuite()
@@ -182,7 +188,7 @@ public class TestNGProvider
         return new TestNGXmlTestSuite( testRequest.getSuiteXmlFiles(),
                                        testRequest.getTestSourceDirectory().toString(),
                                        providerProperties,
-                                       reporterConfiguration.getReportsDirectory(), isFailFast() );
+                                       reporterConfiguration.getReportsDirectory(), getSkipAfterFailureCount() );
     }
 
     @SuppressWarnings( "unchecked" )

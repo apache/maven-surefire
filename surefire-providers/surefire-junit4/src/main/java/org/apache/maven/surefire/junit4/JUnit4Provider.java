@@ -146,8 +146,7 @@ public class JUnit4Provider
 
         startCapture( (ConsoleOutputReceiver) reporter );
 
-        Notifier notifier = new Notifier();
-        notifier.setReporter( new JUnit4RunListener( reporter ) );
+        Notifier notifier = new Notifier( new JUnit4RunListener( reporter ), getSkipAfterFailureCount() );
         if ( isFailFast() )
         {
             notifier.addListener( new JUnit4FailFastListener( notifier ) );
@@ -193,6 +192,11 @@ public class JUnit4Provider
         return providerParameters.getSkipAfterFailureCount() > 0;
     }
 
+    private int getSkipAfterFailureCount()
+    {
+        return isFailFast() && !isRerunFailingTests() ? providerParameters.getSkipAfterFailureCount() : 0;
+    }
+
     private void closeCommandsReader()
     {
         if ( commandsReader != null )
@@ -227,7 +231,8 @@ public class JUnit4Provider
             if ( isFailFast() && e instanceof StoppedByUserException )
             {
                 String reason = e.getClass().getName();
-                notifier.fireTestIgnored( createDescription( clazz.getName(), createIgnored( reason ) ) );
+                Description skippedTest = createDescription( clazz.getName(), createIgnored( reason ) );
+                notifier.fireTestIgnored( skippedTest );
             }
             else
             {

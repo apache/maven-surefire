@@ -51,8 +51,7 @@ public class FailFastListener
 
     public void onTestFailure( ITestResult result )
     {
-        FailFastEventsSingleton.getInstance().setSkipOnNextTest();
-        stoppable.pleaseStop();
+        stoppable.fireStopEvent();
     }
 
     public void onTestSkipped( ITestResult result )
