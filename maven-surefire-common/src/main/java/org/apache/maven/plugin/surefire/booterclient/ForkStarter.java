@@ -67,7 +67,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.apache.maven.shared.utils.cli.CommandLineUtils.executeCommandLine;
@@ -79,6 +79,7 @@ import static org.apache.maven.surefire.util.internal.DaemonThreadFactory.newDae
 import static org.apache.maven.plugin.surefire.AbstractSurefireMojo.createCopyAndReplaceForkNumPlaceholder;
 import static org.apache.maven.plugin.surefire.booterclient.lazytestprovider.
     TestLessInputStream.TestLessInputStreamBuilder;
+import static org.apache.maven.surefire.util.internal.ConcurrencyUtils.countDownToZero;
 import static org.apache.maven.surefire.booter.Classpath.join;
 import static org.apache.maven.surefire.booter.SystemPropertyManager.writePropertiesFile;
 import static org.apache.maven.surefire.suite.RunResult.timeout;
@@ -248,7 +249,7 @@ public class ForkStarter
                 testStreams.add( new TestProvidingInputStream( tests ) );
             }
 
-            final AtomicBoolean notifyStreamsToSkipTestsJustNow = new AtomicBoolean();
+            final AtomicInteger notifyStreamsToSkipTestsJustNow = new AtomicInteger();
             Collection<Future<RunResult>> results = new ArrayList<Future<RunResult>>( forkCount );
             for ( final TestProvidingInputStream testProvidingInputStream : testStreams )
             {
@@ -267,7 +268,7 @@ public class ForkStarter
                             @Override
                             protected void stopOnNextTest()
                             {
-                                if ( notifyStreamsToSkipTestsJustNow.compareAndSet( false, true ) )
+                                if ( countDownToZero( notifyStreamsToSkipTestsJustNow ) )
                                 {
                                     notifyStreamsToSkipTests( testStreams );
                                 }
@@ -306,7 +307,8 @@ public class ForkStarter
         executorService.setThreadFactory( threadFactory );
         try
         {
-            final AtomicBoolean notifyStreamsToSkipTestsJustNow = new AtomicBoolean();
+            int failFastCount = providerConfiguration.getSkipAfterFailureCount();
+            final AtomicInteger notifyStreamsToSkipTestsJustNow = new AtomicInteger( failFastCount );
             final TestLessInputStreamBuilder builder = new TestLessInputStreamBuilder();
             for ( final Object testSet : getSuitesIterator() )
             {
@@ -324,7 +326,7 @@ public class ForkStarter
                             @Override
                             protected void stopOnNextTest()
                             {
-                                if ( notifyStreamsToSkipTestsJustNow.compareAndSet( false, true ) )
+                                if ( countDownToZero( notifyStreamsToSkipTestsJustNow ) )
                                 {
                                     builder.getCachableCommands().skipSinceNextTest();
                                 }

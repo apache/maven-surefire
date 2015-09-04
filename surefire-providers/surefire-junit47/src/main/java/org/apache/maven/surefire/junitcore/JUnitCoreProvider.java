@@ -145,8 +145,8 @@ public class JUnitCoreProvider
             }
         }
 
-        Notifier notifier = new Notifier();
-        notifier.setReporter( createRunListener( reporterFactory, consoleLogger ) );
+        Notifier notifier =
+            new Notifier( createRunListener( reporterFactory, consoleLogger ), getSkipAfterFailureCount() );
 
         // Add test failure listener
         JUnitTestFailureListener testFailureListener = new JUnitTestFailureListener();
@@ -193,6 +193,11 @@ public class JUnitCoreProvider
     private boolean isFailFast()
     {
         return providerParameters.getSkipAfterFailureCount() > 0;
+    }
+
+    private int getSkipAfterFailureCount()
+    {
+        return isFailFast() && !isRerunFailingTests() ? providerParameters.getSkipAfterFailureCount() : 0;
     }
 
     private void closeCommandsReader()

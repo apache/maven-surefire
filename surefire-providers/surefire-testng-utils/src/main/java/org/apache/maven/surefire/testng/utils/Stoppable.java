@@ -20,6 +20,8 @@ package org.apache.maven.surefire.testng.utils;
  */
 
 /**
+ * Covers configuration parameter <em>skipAfterFailureCount</em>.
+ *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.19
  */
@@ -28,5 +30,5 @@ public interface Stoppable
     /**
      * Delegates this call to {@link org.apache.maven.surefire.report.RunListener#testExecutionSkippedByUser()}.
      */
-    void pleaseStop();
+    void fireStopEvent();
 }

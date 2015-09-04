@@ -29,15 +29,12 @@ import org.junit.runner.notification.RunListener;
  * JUnitCore solves bugs in original junit class {@link org.junit.runner.JUnitCore}.<p>
  * The notifier method {@link org.junit.runner.notification.RunNotifier#fireTestRunFinished}
  * is called anyway in finally block.
- * This class provides method {@link #pleaseStop()} without any need to retrieve
- * {@link org.junit.runner.notification.RunNotifier} outside.
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.19
  * @see https://github.com/junit-team/junit/issues/1186
  */
 class JUnitCore
-    implements Stoppable
 {
     private final Notifier notifier;
 
@@ -78,13 +75,5 @@ class JUnitCore
 
     protected void afterFinished()
     {
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public void pleaseStop()
-    {
-        notifier.pleaseStop();
     }
 }

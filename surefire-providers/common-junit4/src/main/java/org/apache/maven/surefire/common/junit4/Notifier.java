@@ -25,6 +25,9 @@ import org.junit.runner.notification.RunNotifier;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.apache.maven.surefire.util.internal.ConcurrencyUtils.countDownToZero;
 
 /**
  * Extends {@link RunNotifier JUnit notifier},
@@ -35,31 +38,29 @@ import java.util.Iterator;
  * @since 2.19
  */
 public class Notifier
-    extends RunNotifier
+    extends RunNotifier implements Stoppable
 {
     private final Collection<RunListener> listeners = new ArrayList<RunListener>();
 
-    private JUnit4RunListener reporter;
+    private final AtomicInteger skipAfterFailureCount;
 
-    @Override
-    public void pleaseStop()
+    private final JUnit4RunListener reporter;
+
+    public Notifier( JUnit4RunListener reporter, int skipAfterFailureCount )
     {
-        super.pleaseStop();
-        reporter.testExecutionSkippedByUser();
+        addListener( reporter );
+        this.reporter = reporter;
+        this.skipAfterFailureCount = new AtomicInteger( skipAfterFailureCount );
     }
 
-    /**
-     * Adds reporter listener to the bottom of queue and retrieves old reporter if any exists.
-     *
-     * @param reporter registered listener
-     * @return old listener; or null if did not exist
-     */
-    public JUnit4RunListener setReporter( JUnit4RunListener reporter )
+    public void fireStopEvent()
     {
-        JUnit4RunListener old = this.reporter;
-        this.reporter = reporter;
-        addListener( reporter );
-        return old;
+        if ( countDownToZero( skipAfterFailureCount ) )
+        {
+            pleaseStop();
+        }
+
+        reporter.testExecutionSkippedByUser();
     }
 
     @Override

@@ -23,6 +23,7 @@ import org.apache.maven.surefire.booter.ProviderParameterNames;
 import org.apache.maven.surefire.cli.CommandLineOption;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.testng.conf.Configurator;
+import org.apache.maven.surefire.testng.utils.FailFastEventsSingleton;
 import org.apache.maven.surefire.testng.utils.FailFastListener;
 import org.apache.maven.surefire.testng.utils.Stoppable;
 import org.apache.maven.surefire.testset.TestListResolver;
@@ -45,8 +46,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.maven.surefire.util.ReflectionUtils.instantiate;
+import static org.apache.maven.surefire.util.internal.ConcurrencyUtils.countDownToZero;
 
 /**
  * Contains utility methods for executing TestNG.
@@ -73,7 +76,8 @@ public class TestNGExecutor
     public static void run( Class<?>[] testClasses, String testSourceDirectory,
                             Map<String, String> options, // string,string because TestNGMapConfigurator#configure()
                             RunListener reportManager, TestNgTestSuite suite, File reportsDirectory,
-                            TestListResolver methodFilter, List<CommandLineOption> mainCliOptions, boolean isFailFast )
+                            TestListResolver methodFilter, List<CommandLineOption> mainCliOptions,
+                            int skipAfterFailureCount )
         throws TestSetFailedException
     {
         TestNG testng = new TestNG( true );
@@ -123,7 +127,7 @@ public class TestNGExecutor
 
         testng.setXmlSuites( xmlSuites );
         configurator.configure( testng, options );
-        postConfigure( testng, testSourceDirectory, reportManager, suite, reportsDirectory, isFailFast );
+        postConfigure( testng, testSourceDirectory, reportManager, suite, reportsDirectory, skipAfterFailureCount );
         testng.run();
     }
 
@@ -265,13 +269,13 @@ public class TestNGExecutor
     public static void run( List<String> suiteFiles, String testSourceDirectory,
                             Map<String, String> options, // string,string because TestNGMapConfigurator#configure()
                             RunListener reportManager, TestNgTestSuite suite, File reportsDirectory,
-                            boolean isFailFast )
+                            int skipAfterFailureCount )
         throws TestSetFailedException
     {
         TestNG testng = new TestNG( true );
         Configurator configurator = getConfigurator( options.get( "testng.configurator" ) );
         configurator.configure( testng, options );
-        postConfigure( testng, testSourceDirectory, reportManager, suite, reportsDirectory, isFailFast );
+        postConfigure( testng, testSourceDirectory, reportManager, suite, reportsDirectory, skipAfterFailureCount );
         testng.setTestSuites( suiteFiles );
         testng.run();
     }
@@ -297,7 +301,7 @@ public class TestNGExecutor
     }
 
     private static void postConfigure( TestNG testNG, String sourcePath, final RunListener reportManager,
-                                       TestNgTestSuite suite, File reportsDirectory, boolean skipAfterFailure )
+                                       TestNgTestSuite suite, File reportsDirectory, int skipAfterFailureCount )
         throws TestSetFailedException
     {
         // turn off all TestNG output
@@ -306,19 +310,12 @@ public class TestNGExecutor
         TestNGReporter reporter = createTestNGReporter( reportManager, suite );
         testNG.addListener( (Object) reporter );
 
-        if ( skipAfterFailure )
+        if ( skipAfterFailureCount > 0 )
         {
             ClassLoader cl = Thread.currentThread().getContextClassLoader();
             testNG.addListener( instantiate( cl, "org.apache.maven.surefire.testng.utils.FailFastNotifier",
                                              Object.class ) );
-            Stoppable stoppable = new Stoppable()
-            {
-                public void pleaseStop()
-                {
-                    reportManager.testExecutionSkippedByUser();
-                }
-            };
-            testNG.addListener( new FailFastListener( stoppable ) );
+            testNG.addListener( new FailFastListener( createStoppable( reportManager, skipAfterFailureCount ) ) );
         }
 
         // FIXME: use classifier to decide if we need to pass along the source dir (only for JDK14)
@@ -328,6 +325,24 @@ public class TestNGExecutor
         }
 
         testNG.setOutputDirectory( reportsDirectory.getAbsolutePath() );
+    }
+
+    private static Stoppable createStoppable( final RunListener reportManager, int skipAfterFailureCount )
+    {
+        final AtomicInteger currentFaultCount = new AtomicInteger( skipAfterFailureCount );
+
+        return new Stoppable()
+        {
+            public void fireStopEvent()
+            {
+                if ( countDownToZero( currentFaultCount ) )
+                {
+                    FailFastEventsSingleton.getInstance().setSkipOnNextTest();
+                }
+
+                reportManager.testExecutionSkippedByUser();
+            }
+        };
     }
 
     // If we have access to IResultListener, return a ConfigurationAwareTestNGReporter
