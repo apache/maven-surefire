@@ -2352,6 +2352,10 @@ public abstract class AbstractSurefireMojo
     private void warnIfRerunClashes()
         throws MojoFailureException
     {
+        if ( getSkipAfterFailureCount() < 0 )
+        {
+            throw new MojoFailureException( "Parameter rerunFailingTestsCount should not be negative." );
+        }
         boolean isRerun = getRerunFailingTestsCount() > 0;
         boolean isFailFast = getSkipAfterFailureCount() > 0;
         if ( isRerun && isFailFast )
