@@ -337,6 +337,15 @@ public class MavenLauncher
         return addGoal( "-D" + variable + "=" + value );
     }
 
+    public MavenLauncher sysProp( Map<String, String> properties )
+    {
+        for ( Map.Entry<String, String> property : properties.entrySet() )
+        {
+            sysProp( property.getKey(), property.getValue() );
+        }
+        return this;
+    }
+
     public MavenLauncher sysProp( String variable, boolean value )
     {
         return addGoal( "-D" + variable + "=" + value );
