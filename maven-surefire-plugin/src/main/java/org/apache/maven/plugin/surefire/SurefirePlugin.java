@@ -279,7 +279,7 @@ public class SurefirePlugin
     private File excludesFile;
 
     /**
-     * Set to "true" to skip remaining tests after first test failure appeared.
+     * Set to error/failure count in order to skip remaining tests.
      * Due to race conditions in parallel/forked execution this may not be fully guaranteed.<br/>
      * Enable with system property -Dsurefire.skipAfterFailureCount=1 or any number greater than zero.
      * Defaults to "0".
