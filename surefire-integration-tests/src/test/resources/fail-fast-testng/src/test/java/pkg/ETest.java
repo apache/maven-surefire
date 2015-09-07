@@ -7,7 +7,6 @@ public class ETest
     @Test
     public void test()
     {
-	
     }
 
 }

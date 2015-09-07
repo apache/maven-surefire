@@ -282,7 +282,10 @@ public class SurefirePlugin
      * Set to error/failure count in order to skip remaining tests.
      * Due to race conditions in parallel/forked execution this may not be fully guaranteed.<br/>
      * Enable with system property -Dsurefire.skipAfterFailureCount=1 or any number greater than zero.
-     * Defaults to "0".
+     * Defaults to "0".<br/>
+     * See the prerequisites and limitations in documentation:<br/>
+     * <a href="http://maven.apache.org/plugins/maven-surefire-plugin/examples/skip-after-failure.html">
+     *     http://maven.apache.org/plugins/maven-surefire-plugin/examples/skip-after-failure.html</a>
      *
      * @since 2.19
      */

@@ -61,4 +61,6 @@ Limitations
  Although this feature works in forking modes as well, the functionality
  cannot be fully guaranteed (real first failure) in concurrent mode
  due to race conditions.
+ The parameter <<<reuseForks>>> should be always set to <<<true>>> (which is
+ default value), otherwise this feature won't work properly in most cases.
  

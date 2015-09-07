@@ -36,21 +36,28 @@ public class FailFastTestNgIT
     @Parameters(name = "{0}")
     public static Iterable<Object[]> data()
     {
+        /**
+         * reuseForks=false is not used because of race conditions and unpredictable commands received by
+         * MasterProcessReader, this feature has significant limitation.
+         */
         ArrayList<Object[]> args = new ArrayList<Object[]>();
         //                        description
         //                                             profile
         //                                                       forkCount,
-        //                                                       fail-fast-count
-        //                                                                        total
-        //                                                                             failures
-        //                                                                                     errors
-        //                                                                                           skipped
-        args.add( new Object[] { "testng-oneFork-ff1", null,     props( 1, 1 ),   5,   1,      0,    4 } );
-        args.add( new Object[] { "testng-oneFork-ff2", null,     props( 1, 2 ),   5,   2,      0,    3 } );
-        args.add( new Object[] { "testng-twoForks-ff1", null,    props( 2, 1 ),   5,   1,      0,    4 } );
-        args.add( new Object[] { "testng-twoForks-ff2", null,    props( 2, 2 ),   5,   2,      0,    3 } );
-        args.add( new Object[] { "testng-oneFork-ff3", null,     props( 2, 3 ),   5,   2,      0,    0 } );
-        args.add( new Object[] { "testng-twoForks-ff3", null,    props( 2, 3 ),   5,   2,      0,    0 } );
+        //                                                       fail-fast-count,
+        //                                                       reuseForks
+        //                                                                               total
+        //                                                                                    failures
+        //                                                                                            errors
+        //                                                                                                  skipped
+        args.add( new Object[] { "testng-oneFork-ff1", null,     props( 1, 1, true ),    5,   1,      0,    4 } );
+        args.add( new Object[] { "testng-oneFork-ff2", null,     props( 1, 2, true ),    5,   2,      0,    3 } );
+        args.add( new Object[] { "testng-twoForks-ff1", null,    props( 2, 1, true ),    5,   2,      0,    3 } );
+        args.add( new Object[] { "testng-twoForks-ff2", null,    props( 2, 2, true ),    5,   2,      0,    2 } );
+        args.add( new Object[] { "testng-oneFork-ff3", null,     props( 1, 3, true ),    5,   2,      0,    0 } );
+        args.add( new Object[] { "testng-twoForks-ff3", null,    props( 2, 3, true ),    5,   2,      0,    0 } );
+        /*args.add( new Object[] { "testng-twoForks-ff1x", null,   props( 2, 1, false ),   5,   2,      0,    3 } );
+        args.add( new Object[] { "testng-twoForks-ff2x", null,   props( 2, 2, false ),   5,   2,      0,    2 } );*/
         return args;
     }
 

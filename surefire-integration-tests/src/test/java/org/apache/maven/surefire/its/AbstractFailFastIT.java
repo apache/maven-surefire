@@ -87,11 +87,12 @@ public abstract class AbstractFailFastIT
         return prepare( description, null, properties );
     }
 
-    protected static Map<String, String> props( int forkCount, int skipAfterFailureCount )
+    protected static Map<String, String> props( int forkCount, int skipAfterFailureCount, boolean reuseForks )
     {
-        Map<String, String> props = new HashMap<String, String>( 2 );
+        Map<String, String> props = new HashMap<String, String>( 3 );
         props.put( "surefire.skipAfterFailureCount", "" + skipAfterFailureCount );
         props.put( "forkCount", "" + forkCount );
+        props.put( "reuseForks", "" + reuseForks );
         return props;
     }
 

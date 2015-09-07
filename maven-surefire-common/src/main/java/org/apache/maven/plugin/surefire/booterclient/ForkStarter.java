@@ -249,7 +249,8 @@ public class ForkStarter
                 testStreams.add( new TestProvidingInputStream( tests ) );
             }
 
-            final AtomicInteger notifyStreamsToSkipTestsJustNow = new AtomicInteger();
+            int failFastCount = providerConfiguration.getSkipAfterFailureCount();
+            final AtomicInteger notifyStreamsToSkipTestsJustNow = new AtomicInteger( failFastCount );
             Collection<Future<RunResult>> results = new ArrayList<Future<RunResult>>( forkCount );
             for ( final TestProvidingInputStream testProvidingInputStream : testStreams )
             {
