@@ -10,7 +10,8 @@ public class BTest
     public void test()
         throws InterruptedException
     {
-        TimeUnit.SECONDS.sleep( 1 );
+        // checking processros # due to very slow Windows Jenkins machines
+        TimeUnit.SECONDS.sleep( Runtime.getRuntime().availableProcessors() == 1 ? 3 : 1 );
         throw new RuntimeException();
     }
 

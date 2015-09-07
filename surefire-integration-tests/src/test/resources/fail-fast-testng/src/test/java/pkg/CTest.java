@@ -10,7 +10,8 @@ public class CTest
     public void test()
         throws InterruptedException
     {
-        TimeUnit.MILLISECONDS.sleep(500);
+        // checking processros # due to very slow Windows Jenkins machines
+        TimeUnit.MILLISECONDS.sleep( Runtime.getRuntime().availableProcessors() == 1 ? 1500 : 500 );
     }
 
 }
