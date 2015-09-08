@@ -161,6 +161,11 @@ public class JUnitCoreProvider
         {
             JUnitCoreWrapper core = new JUnitCoreWrapper( notifier, jUnitCoreParameters, consoleLogger, isFailFast() );
 
+            if ( commandsReader != null )
+            {
+                commandsReader.awaitStarted();
+            }
+
             core.execute( testsToRun, customRunListeners, filter );
 
             // Rerun failing tests if rerunFailingTestsCount is larger than 0
@@ -176,13 +181,13 @@ public class JUnitCoreProvider
                     core.execute( testsToRun, failingMethodsFilter );
                 }
             }
+            return reporterFactory.close();
         }
         finally
         {
             notifier.removeListeners();
             closeCommandsReader();
         }
-        return reporterFactory.close();
     }
 
     private boolean isRerunFailingTests()

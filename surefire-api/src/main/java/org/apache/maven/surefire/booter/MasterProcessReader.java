@@ -19,6 +19,8 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
+import org.apache.maven.surefire.testset.TestSetFailedException;
+
 import java.io.DataInputStream;
 import java.io.EOFException;
 import java.io.IOException;
@@ -27,6 +29,7 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static java.lang.Thread.State.NEW;
@@ -64,6 +67,8 @@ public final class MasterProcessReader
 
     private final Node head = new Node();
 
+    private final CountDownLatch startMonitor = new CountDownLatch( 1 );
+
     private volatile Node tail = head;
 
     private static class Node
@@ -80,6 +85,27 @@ public final class MasterProcessReader
             reader.commandThread.start();
         }
         return reader;
+    }
+
+    public boolean awaitStarted()
+        throws TestSetFailedException
+    {
+        if ( state.get() == RUNNABLE )
+        {
+            try
+            {
+                startMonitor.await();
+                return true;
+            }
+            catch ( InterruptedException e )
+            {
+                throw new TestSetFailedException( e.getLocalizedMessage() );
+            }
+        }
+        else
+        {
+            return false;
+        }
     }
 
     /**
@@ -367,6 +393,7 @@ public final class MasterProcessReader
     {
         public void run()
         {
+            MasterProcessReader.this.startMonitor.countDown();
             DataInputStream stdIn = new DataInputStream( System.in );
             boolean isTestSetFinished = false;
             try

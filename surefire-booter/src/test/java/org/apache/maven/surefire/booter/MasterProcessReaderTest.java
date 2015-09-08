@@ -19,6 +19,7 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
+import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -198,6 +199,15 @@ public class MasterProcessReaderTest
                 throw e.getCause();
             }
         }
+    }
+
+    @Test( timeout = 15000 )
+    public void shouldAwaitReaderUp()
+        throws TestSetFailedException
+    {
+        assertTrue( reader.awaitStarted() );
+        reader.stop();
+        assertFalse( reader.awaitStarted() );
     }
 
     private class SystemInputStream

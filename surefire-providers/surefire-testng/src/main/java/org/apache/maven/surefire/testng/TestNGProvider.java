@@ -94,6 +94,11 @@ public class TestNGProvider
                 registerPleaseStopListener();
             }
 
+            if ( commandsReader != null )
+            {
+                commandsReader.awaitStarted();
+            }
+
             final ReporterFactory reporterFactory = providerParameters.getReporterFactory();
 
             if ( isTestNGXmlTestSuite( testRequest ) )

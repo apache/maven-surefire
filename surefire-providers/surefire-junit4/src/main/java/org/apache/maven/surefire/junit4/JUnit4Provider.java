@@ -166,6 +166,11 @@ public class JUnit4Provider
                                                 ? createTestsDescription()
                                                 : createDescription( UNDETERMINED_TESTS_DESCRIPTION ) );
 
+            if ( commandsReader != null )
+            {
+                commandsReader.awaitStarted();
+            }
+
             for ( Class aTestsToRun : testsToRun )
             {
                 executeTestSet( aTestsToRun, reporter, notifier );
