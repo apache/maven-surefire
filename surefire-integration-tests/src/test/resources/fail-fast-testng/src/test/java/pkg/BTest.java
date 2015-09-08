@@ -11,7 +11,7 @@ public class BTest
         throws InterruptedException
     {
         // checking processros # due to very slow Windows Jenkins machines
-        TimeUnit.SECONDS.sleep( Runtime.getRuntime().availableProcessors() == 1 ? 3 : 1 );
+        TimeUnit.MILLISECONDS.sleep( Runtime.getRuntime().availableProcessors() == 1 ? 3000 : 1250 );
         throw new RuntimeException();
     }
 

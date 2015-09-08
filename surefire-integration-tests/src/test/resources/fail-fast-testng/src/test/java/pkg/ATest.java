@@ -10,7 +10,8 @@ public class ATest
     public void someMethod()
         throws InterruptedException
     {
-        TimeUnit.MILLISECONDS.sleep( 500 );
+        // checking processros # due to very slow Windows Jenkins machines
+        TimeUnit.MILLISECONDS.sleep( Runtime.getRuntime().availableProcessors() == 1 ? 1200 : 500 );
         throw new RuntimeException( "assert \"foo\" == \"bar\"\n"
                                         + "             |\n"
                                         + "             false" );
