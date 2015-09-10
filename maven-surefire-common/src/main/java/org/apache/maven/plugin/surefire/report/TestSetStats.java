@@ -40,6 +40,8 @@ public class TestSetStats
 
     private long testSetStartAt;
 
+    private long testSetEndAt;
+
     private long testStartAt;
 
     private int completedCount;
@@ -60,16 +62,9 @@ public class TestSetStats
         this.plainFormat = plainFormat;
     }
 
-    public int getElapsedSinceTestSetStart()
+    public int getElapsedForTestSet()
     {
-        if ( testSetStartAt > 0 )
-        {
-            return (int) ( System.currentTimeMillis() - testSetStartAt );
-        }
-        else
-        {
-            return 0;
-        }
+        return (int) elapsedForTestSet;
     }
 
     public int getElapsedSinceLastStart()
@@ -90,6 +85,15 @@ public class TestSetStats
         lastStartAt = testSetStartAt;
     }
 
+    public void testSetCompleted()
+    {
+        testSetEndAt = System.currentTimeMillis();
+        if ( elapsedForTestSet < testSetEndAt - testSetStartAt )
+        {
+            elapsedForTestSet = testSetEndAt - testSetStartAt;
+        }
+    }
+    
     public void testStart()
     {
         testStartAt = System.currentTimeMillis();
@@ -185,7 +189,7 @@ public class TestSetStats
 
     private static final int MS_PER_SEC = 1000;
 
-    public String getElapsedForTestSet()
+    public String getElapsedForTestSetAsString()
     {
         return elapsedTimeAsString( elapsedForTestSet );
     }

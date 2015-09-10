@@ -126,6 +126,7 @@ public class TestSetRunListener
 
     public void testSetCompleted( ReportEntry report )
     {
+        detailsForThis.testSetCompleted();
         WrappedReportEntry wrap = wrapTestSet( report );
         List<String> testResults = briefOrPlainFormat ? detailsForThis.getTestResults() : null;
         if ( fileReporter != null )
@@ -252,7 +253,7 @@ public class TestSetRunListener
     {
         return new WrappedReportEntry( other, null, other.getElapsed() != null
             ? other.getElapsed()
-            : detailsForThis.getElapsedSinceTestSetStart(), testStdOut, testStdErr );
+            : detailsForThis.getElapsedForTestSet(), testStdOut, testStdErr );
     }
 
     public void close()
