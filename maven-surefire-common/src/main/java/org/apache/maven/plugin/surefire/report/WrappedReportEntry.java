@@ -19,9 +19,6 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
-import java.text.NumberFormat;
-import java.util.Locale;
-
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.StackTraceWriter;
 
@@ -31,6 +28,8 @@ import org.apache.maven.surefire.report.StackTraceWriter;
 public class WrappedReportEntry
     implements ReportEntry
 {
+    private static final String NL = System.getProperty( "line.separator" );
+
     private final ReportEntry original;
 
     private final ReportEntryType reportEntryType;
@@ -40,12 +39,6 @@ public class WrappedReportEntry
     private final Utf8RecodingDeferredFileOutputStream stdout;
 
     private final Utf8RecodingDeferredFileOutputStream stdErr;
-
-    private final NumberFormat numberFormat = NumberFormat.getInstance( Locale.ENGLISH );
-
-    private static final int MS_PER_SEC = 1000;
-
-    static final String NL = System.getProperty( "line.separator" );
 
     public WrappedReportEntry( ReportEntry original, ReportEntryType reportEntryType, Integer estimatedElapsed,
                                Utf8RecodingDeferredFileOutputStream stdout,
@@ -110,12 +103,8 @@ public class WrappedReportEntry
 
     public String getStackTrace( boolean trimStackTrace )
     {
-        StackTraceWriter writer = original.getStackTraceWriter();
-        if ( writer == null )
-        {
-            return null;
-        }
-        return trimStackTrace ? writer.writeTrimmedTraceToString() : writer.writeTraceToString();
+        StackTraceWriter w = original.getStackTraceWriter();
+        return w == null ? null : ( trimStackTrace ? w.writeTrimmedTraceToString() : w.writeTraceToString() );
     }
 
     public String elapsedTimeAsString()
@@ -125,7 +114,7 @@ public class WrappedReportEntry
 
     String elapsedTimeAsString( long runTime )
     {
-        return numberFormat.format( (double) runTime / MS_PER_SEC );
+        return ReporterUtils.formatElapsedTime( runTime );
     }
 
     public String getReportName()
@@ -141,26 +130,18 @@ public class WrappedReportEntry
 
     public String getOutput( boolean trimStackTrace )
     {
-        StringBuilder buf = new StringBuilder();
+        return getElapsedTimeSummary() + "  <<< " + getReportEntryType().toString().toUpperCase() + "!" + NL
+            + getStackTrace( trimStackTrace );
+    }
 
-        buf.append( getElapsedTimeSummary() );
-
-        buf.append( "  <<< " ).append( getReportEntryType().toString().toUpperCase() ).append( "!" ).append( NL );
-
-        buf.append( getStackTrace( trimStackTrace ) );
-
-        return buf.toString();
+    public String getElapsedTimeVerbose()
+    {
+        return "Time elapsed: " + elapsedTimeAsString() + " sec";
     }
 
     public String getElapsedTimeSummary()
     {
-        StringBuilder reportContent = new StringBuilder();
-        reportContent.append( getName() );
-        reportContent.append( "  Time elapsed: " );
-        reportContent.append( elapsedTimeAsString() );
-        reportContent.append( " sec" );
-
-        return reportContent.toString();
+        return getName() + "  " + getElapsedTimeVerbose();
     }
 
     public boolean isErrorOrFailure()
