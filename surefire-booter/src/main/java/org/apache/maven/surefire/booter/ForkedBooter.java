@@ -25,8 +25,10 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
@@ -35,10 +37,16 @@ import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.StackTraceWriter;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
-import org.apache.maven.surefire.util.ReflectionUtils;
-import org.apache.maven.surefire.util.internal.DaemonThreadFactory;
 
+import static org.apache.maven.surefire.booter.MasterProcessCommand.SHUTDOWN;
+import static org.apache.maven.surefire.booter.MasterProcessCommand.NOOP;
+import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_BYE;
+import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_ERROR;
+import static org.apache.maven.surefire.booter.ForkingRunListener.encode;
+import static org.apache.maven.surefire.util.ReflectionUtils.instantiateOneArg;
+import static org.apache.maven.surefire.util.internal.DaemonThreadFactory.newDaemonThreadFactory;
 import static org.apache.maven.surefire.util.internal.StringUtils.encodeStringForForkCommunication;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 /**
  * The part of the booter that is unique to a forked vm.
@@ -53,17 +61,19 @@ import static org.apache.maven.surefire.util.internal.StringUtils.encodeStringFo
 public final class ForkedBooter
 {
     private static final long SYSTEM_EXIT_TIMEOUT_IN_SECONDS = 30;
+    private static final long PING_TIMEOUT_IN_SECONDS = 20;
+
+    private static final ScheduledExecutorService JVM_TERMINATOR = createJvmTerminator();
 
     /**
      * This method is invoked when Surefire is forked - this method parses and organizes the arguments passed to it and
      * then calls the Surefire class' run method. <p/> The system exit code will be 1 if an exception is thrown.
      *
      * @param args Commandline arguments
-     * @throws Throwable Upon throwables
      */
-    public static void main( String[] args )
-        throws Throwable
+    public static void main( String... args )
     {
+        ScheduledFuture<?> pingScheduler = listenToShutdownCommands();
         final PrintStream originalOut = System.out;
         try
         {
@@ -114,23 +124,21 @@ public final class ForkedBooter
                 LegacyPojoStackTraceWriter stackTraceWriter =
                     new LegacyPojoStackTraceWriter( "test subystem", "no method", t.getTargetException() );
                 StringBuilder stringBuilder = new StringBuilder();
-                ForkingRunListener.encode( stringBuilder, stackTraceWriter, false );
-                encodeAndWriteToOutput( ( (char) ForkingRunListener.BOOTERCODE_ERROR )
-                                     + ",0," + stringBuilder.toString() + "\n" , originalOut );
+                encode( stringBuilder, stackTraceWriter, false );
+                encodeAndWriteToOutput( ( (char) BOOTERCODE_ERROR ) + ",0," + stringBuilder + "\n" , originalOut );
             }
             catch ( Throwable t )
             {
                 StackTraceWriter stackTraceWriter = new LegacyPojoStackTraceWriter( "test subystem", "no method", t );
                 StringBuilder stringBuilder = new StringBuilder();
-                ForkingRunListener.encode( stringBuilder, stackTraceWriter, false );
-                encodeAndWriteToOutput( ( (char) ForkingRunListener.BOOTERCODE_ERROR )
-                                     + ",0," + stringBuilder.toString() + "\n", originalOut );
+                encode( stringBuilder, stackTraceWriter, false );
+                encodeAndWriteToOutput( ( (char) BOOTERCODE_ERROR ) + ",0," + stringBuilder + "\n", originalOut );
             }
             // Say bye.
-            encodeAndWriteToOutput( ( (char) ForkingRunListener.BOOTERCODE_BYE ) + ",0,BYE!\n", originalOut );
+            encodeAndWriteToOutput( ( (char) BOOTERCODE_BYE ) + ",0,BYE!\n", originalOut );
             originalOut.flush();
             // noinspection CallToSystemExit
-            exit( 0 );
+            exit( 0, false );
         }
         catch ( Throwable t )
         {
@@ -138,8 +146,58 @@ public final class ForkedBooter
             // noinspection UseOfSystemOutOrSystemErr
             t.printStackTrace( System.err );
             // noinspection ProhibitedExceptionThrown,CallToSystemExit
-            exit( 1 );
+            exit( 1, false );
         }
+        finally
+        {
+            pingScheduler.cancel( true );
+        }
+    }
+
+    private static ScheduledFuture<?> listenToShutdownCommands()
+    {
+        MasterProcessReader reader = MasterProcessReader.getReader();
+        reader.addListener( SHUTDOWN, createExitHandler() );
+        AtomicBoolean pingDone = new AtomicBoolean( true );
+        reader.addListener( NOOP, createPingHandler( pingDone ) );
+        return JVM_TERMINATOR.scheduleAtFixedRate( createPingJob( pingDone ), 0, PING_TIMEOUT_IN_SECONDS, SECONDS );
+    }
+
+    private static MasterProcessListener createPingHandler( final AtomicBoolean pingDone )
+    {
+        return new MasterProcessListener()
+        {
+            public void update( Command command )
+            {
+                pingDone.set( true );
+            }
+        };
+    }
+
+    private static MasterProcessListener createExitHandler()
+    {
+        return new MasterProcessListener()
+        {
+            public void update( Command command )
+            {
+                exit( 1, true );
+            }
+        };
+    }
+
+    private static Runnable createPingJob( final AtomicBoolean pingDone )
+    {
+        return new Runnable()
+        {
+            public void run()
+            {
+                boolean hasPing = pingDone.getAndSet( false );
+                if ( !hasPing )
+                {
+                    exit( 1, true );
+                }
+            }
+        };
     }
 
     private static void encodeAndWriteToOutput( String string, PrintStream out )
@@ -148,10 +206,19 @@ public final class ForkedBooter
         out.write( encodeBytes, 0, encodeBytes.length );
     }
 
-    private static void exit( final int returnCode )
+    private static void exit( int returnCode, boolean immediate )
     {
-        launchLastDitchDaemonShutdownThread( returnCode );
-        System.exit( returnCode );
+        MasterProcessReader.getReader().stop();
+
+        if ( immediate )
+        {
+            Runtime.getRuntime().halt( returnCode );
+        }
+        else
+        {
+            launchLastDitchDaemonShutdownThread( returnCode );
+            System.exit( returnCode );
+        }
     }
 
     private static RunResult runSuitesInProcess( Object testSet, StartupConfiguration startupConfiguration,
@@ -172,22 +239,25 @@ public final class ForkedBooter
         return SurefireReflector.createForkingReporterFactoryInCurrentClassLoader( trimStackTrace, originalSystemOut );
     }
 
-    @SuppressWarnings( "checkstyle:emptyblock" )
-    private static void launchLastDitchDaemonShutdownThread( final int returnCode )
+    private static ScheduledExecutorService createJvmTerminator()
     {
-        ThreadFactory threadFactory =
-            DaemonThreadFactory.newDaemonThreadFactory( "last-ditch-daemon-shutdown-thread-"
+        ThreadFactory threadFactory = newDaemonThreadFactory( "last-ditch-daemon-shutdown-thread-"
                                                             + SYSTEM_EXIT_TIMEOUT_IN_SECONDS
                                                             + "sec" );
 
-        Executors.newScheduledThreadPool( 1, threadFactory )
-            .schedule( new Runnable()
+        return Executors.newScheduledThreadPool( 1, threadFactory );
+    }
+
+    @SuppressWarnings( "checkstyle:emptyblock" )
+    private static void launchLastDitchDaemonShutdownThread( final int returnCode )
+    {
+            JVM_TERMINATOR.schedule( new Runnable()
             {
                 public void run()
                 {
                     Runtime.getRuntime().halt( returnCode );
                 }
-            }, SYSTEM_EXIT_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS );
+            }, SYSTEM_EXIT_TIMEOUT_IN_SECONDS, SECONDS );
     }
 
     private static RunResult invokeProviderInSameClassLoader( Object testSet, Object factory,
@@ -233,8 +303,7 @@ public final class ForkedBooter
         bpf.setDirectoryScannerParameters( providerConfiguration.getDirScannerParams() );
         bpf.setMainCliOptions( providerConfiguration.getMainCliOptions() );
         bpf.setSkipAfterFailureCount( providerConfiguration.getSkipAfterFailureCount() );
-        return (SurefireProvider) ReflectionUtils.instantiateOneArg( classLoader,
-                                                                     startupConfiguration1.getActualClassName(),
-                                                                     ProviderParameters.class, bpf );
+        String providerClass = startupConfiguration1.getActualClassName();
+        return (SurefireProvider) instantiateOneArg( classLoader, providerClass, ProviderParameters.class, bpf );
     }
 }

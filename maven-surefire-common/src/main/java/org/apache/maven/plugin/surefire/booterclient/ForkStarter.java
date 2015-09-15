@@ -62,7 +62,10 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -70,6 +73,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.maven.shared.utils.cli.CommandLineUtils.executeCommandLine;
 import static org.apache.maven.shared.utils.cli.ShutdownHookUtils.addShutDownHook;
 import static org.apache.maven.shared.utils.cli.ShutdownHookUtils.removeShutdownHook;
@@ -103,7 +107,13 @@ import static java.lang.StrictMath.min;
  */
 public class ForkStarter
 {
-    private final ThreadFactory threadFactory = newDaemonThreadFactory();
+    private static final long PING_IN_SECONDS = 10;
+
+    private static final ThreadFactory DAEMON_THREAD_FACTORY = newDaemonThreadFactory();
+
+    private static final ThreadFactory SHUTDOWN_HOOK_THREAD_FACTORY = newDaemonThreadFactory();
+
+    private final ScheduledExecutorService pingThreadScheduler = createPingScheduler();
 
     /**
      * Closes an InputStream
@@ -183,6 +193,7 @@ public class ForkStarter
         {
             defaultReporterFactory.mergeFromOtherFactories( defaultReporterFactories );
             defaultReporterFactory.close();
+            pingThreadScheduler.shutdownNow();
         }
     }
 
@@ -196,12 +207,17 @@ public class ForkStarter
             new ForkClient( forkedReporterFactory, startupReportConfiguration.getTestVmSystemProperties() );
         TestLessInputStreamBuilder builder = new TestLessInputStreamBuilder();
         TestLessInputStream stream = builder.build();
+        Thread shutdown = createImmediateShutdownHookThread( builder );
+        ScheduledFuture<?> ping = triggerPingTimerForShutdown( builder );
         try
         {
+            addShutDownHook( shutdown );
             return fork( null, props, forkClient, effectiveSystemProperties, stream, false );
         }
         finally
         {
+            removeShutdownHook( shutdown );
+            ping.cancel( true );
             builder.removeStream( stream );
         }
     }
@@ -232,23 +248,28 @@ public class ForkStarter
     {
         ThreadPoolExecutor executorService = new ThreadPoolExecutor( forkCount, forkCount, 60, TimeUnit.SECONDS,
                                                                   new ArrayBlockingQueue<Runnable>( forkCount ) );
-        executorService.setThreadFactory( threadFactory );
+        executorService.setThreadFactory( DAEMON_THREAD_FACTORY );
+
+        final Queue<String> tests = new ConcurrentLinkedQueue<String>();
+
+        for ( Class<?> clazz : getSuitesIterator() )
+        {
+            tests.add( clazz.getName() );
+        }
+
+        final Queue<TestProvidingInputStream> testStreams = new ConcurrentLinkedQueue<TestProvidingInputStream>();
+
+        for ( int forkNum = 0, total = min( forkCount, tests.size() ); forkNum < total; forkNum++ )
+        {
+            testStreams.add( new TestProvidingInputStream( tests ) );
+        }
+
+        ScheduledFuture<?> ping = triggerPingTimerForShutdown( testStreams );
+        Thread shutdown = createShutdownHookThread( testStreams );
+
         try
         {
-            final Queue<String> tests = new ConcurrentLinkedQueue<String>();
-
-            for ( Class<?> clazz : getSuitesIterator() )
-            {
-                tests.add( clazz.getName() );
-            }
-
-            final Queue<TestProvidingInputStream> testStreams = new ConcurrentLinkedQueue<TestProvidingInputStream>();
-
-            for ( int forkNum = 0, total = min( forkCount, tests.size() ); forkNum < total; forkNum++ )
-            {
-                testStreams.add( new TestProvidingInputStream( tests ) );
-            }
-
+            addShutDownHook( shutdown );
             int failFastCount = providerConfiguration.getSkipAfterFailureCount();
             final AtomicInteger notifyStreamsToSkipTestsJustNow = new AtomicInteger( failFastCount );
             Collection<Future<RunResult>> results = new ArrayList<Future<RunResult>>( forkCount );
@@ -286,6 +307,8 @@ public class ForkStarter
         }
         finally
         {
+            removeShutdownHook( shutdown );
+            ping.cancel( true );
             closeExecutor( executorService );
         }
     }
@@ -305,12 +328,15 @@ public class ForkStarter
         ArrayList<Future<RunResult>> results = new ArrayList<Future<RunResult>>( 500 );
         ThreadPoolExecutor executorService =
             new ThreadPoolExecutor( forkCount, forkCount, 60, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>() );
-        executorService.setThreadFactory( threadFactory );
+        executorService.setThreadFactory( DAEMON_THREAD_FACTORY );
+        final TestLessInputStreamBuilder builder = new TestLessInputStreamBuilder();
+        ScheduledFuture<?> ping = triggerPingTimerForShutdown( builder );
+        Thread shutdown = createCachableShutdownHookThread( builder );
         try
         {
+            addShutDownHook( shutdown );
             int failFastCount = providerConfiguration.getSkipAfterFailureCount();
             final AtomicInteger notifyStreamsToSkipTestsJustNow = new AtomicInteger( failFastCount );
-            final TestLessInputStreamBuilder builder = new TestLessInputStreamBuilder();
             for ( final Object testSet : getSuitesIterator() )
             {
                 Callable<RunResult> pf = new Callable<RunResult>()
@@ -352,6 +378,8 @@ public class ForkStarter
         }
         finally
         {
+            removeShutdownHook( shutdown );
+            ping.cancel( true );
             closeExecutor( executorService );
         }
     }
@@ -508,7 +536,6 @@ public class ForkStarter
             {
                 throw new SurefireBooterForkException( "Error occurred in starting fork, check output in log" );
             }
-
         }
         catch ( CommandLineTimeOutException e )
         {
@@ -546,7 +573,6 @@ public class ForkStarter
                         "The forked VM terminated without properly saying goodbye. VM crash or System.exit called?"
                             + "\nCommand was " + cli.toString() );
                 }
-
             }
             forkClient.close( runResult.isTimeout() );
         }
@@ -574,5 +600,72 @@ public class ForkStarter
         {
             throw new SurefireBooterForkException( "Unable to create classloader to find test suites", e );
         }
+    }
+
+    private static Thread createImmediateShutdownHookThread( final TestLessInputStreamBuilder builder )
+    {
+        return SHUTDOWN_HOOK_THREAD_FACTORY.newThread( new Runnable()
+        {
+            public void run()
+            {
+                builder.getImmediateCommands().shutdown();
+            }
+        } );
+    }
+
+    private static Thread createCachableShutdownHookThread( final TestLessInputStreamBuilder builder )
+    {
+        return SHUTDOWN_HOOK_THREAD_FACTORY.newThread( new Runnable()
+        {
+            public void run()
+            {
+                builder.getCachableCommands().shutdown();
+            }
+        } );
+    }
+
+    private static Thread createShutdownHookThread( final Iterable<TestProvidingInputStream> streams )
+    {
+        return SHUTDOWN_HOOK_THREAD_FACTORY.newThread( new Runnable()
+        {
+            public void run()
+            {
+                for ( TestProvidingInputStream stream : streams )
+                {
+                    stream.shutdown();
+                }
+            }
+        } );
+    }
+
+    private static ScheduledExecutorService createPingScheduler()
+    {
+        ThreadFactory threadFactory = newDaemonThreadFactory( "ping-thread-" + PING_IN_SECONDS + "sec" );
+        return Executors.newScheduledThreadPool( 1, threadFactory );
+    }
+
+    private ScheduledFuture<?> triggerPingTimerForShutdown( final TestLessInputStreamBuilder builder )
+    {
+        return pingThreadScheduler.scheduleAtFixedRate( new Runnable()
+        {
+            public void run()
+            {
+                builder.getImmediateCommands().noop();
+            }
+        }, 0, PING_IN_SECONDS, SECONDS );
+    }
+
+    private ScheduledFuture<?> triggerPingTimerForShutdown( final Iterable<TestProvidingInputStream> streams )
+    {
+        return pingThreadScheduler.scheduleAtFixedRate( new Runnable()
+        {
+            public void run()
+            {
+                for ( TestProvidingInputStream stream : streams )
+                {
+                    stream.noop();
+                }
+            }
+        }, 0, PING_IN_SECONDS, SECONDS );
     }
 }

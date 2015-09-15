@@ -163,11 +163,13 @@ public final class TestLessInputStream
     }
 
     /**
-     * todo
+     * Builds {@link TestLessInputStream streams}, registers cachable commands
+     * and provides accessible API to dispatch immediate commands to all atomically
+     * alive streams.
      */
     public static final class TestLessInputStreamBuilder
     {
-        ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
+        private final ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
         private final Queue<TestLessInputStream> aliveStreams = new ConcurrentLinkedQueue<TestLessInputStream>();
         private final ImmediateCommands immediateCommands = new ImmediateCommands();
         private final CachableCommands cachableCommands = new CachableCommands();
