@@ -19,19 +19,20 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.util.internal.ByteBuffer;
 
 /**
  * A stream-like object that preserves ordering between stdout/stderr
  */
-public class LogicalStream
+public final class LogicalStream
 {
-    private final List<Entry> output = new ArrayList<Entry>();
+    private final Collection<Entry> output = new ConcurrentLinkedQueue<Entry>();
 
-    class Entry
+    static final class Entry
     {
         final boolean stdout;
 
@@ -48,7 +49,6 @@ public class LogicalStream
             this.off = 0;
             this.len = len;
         }
-
 
         public void writeDetails( ConsoleOutputReceiver outputReceiver )
         {
@@ -83,6 +83,4 @@ public class LogicalStream
             entry.writeDetails( outputReceiver );
         }
     }
-
-
 }

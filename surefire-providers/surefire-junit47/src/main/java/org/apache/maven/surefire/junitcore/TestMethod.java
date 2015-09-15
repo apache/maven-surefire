@@ -25,6 +25,8 @@ import org.apache.maven.surefire.report.ConsoleOutputReceiverForCurrentThread;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.RunListener;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 /**
  * Represents the test-state of a single test method that is run.
  * <p/>
@@ -34,6 +36,10 @@ import org.apache.maven.surefire.report.RunListener;
 class TestMethod
     implements ConsoleOutputReceiver
 {
+    private static final InheritableThreadLocal<TestMethod> TEST_METHOD = new InheritableThreadLocal<TestMethod>();
+
+    private final AtomicReference<LogicalStream> output = new AtomicReference<LogicalStream>();
+
     private final ReportEntry description;
 
     private final TestSet testSet;
@@ -47,10 +53,6 @@ class TestMethod
     private volatile ReportEntry testError;
 
     private volatile ReportEntry ignored;
-
-    private static final InheritableThreadLocal<TestMethod> TEST_METHOD = new InheritableThreadLocal<TestMethod>();
-
-    private volatile LogicalStream output;
 
     TestMethod( ReportEntry description, TestSet testSet )
     {
@@ -104,31 +106,32 @@ class TestMethod
 
     void replay( RunListener reporter )
     {
-
         if ( ignored != null )
         {
             reporter.testSkipped( createReportEntry( ignored ) );
-            return;
-        }
-
-        ReportEntry descriptionReport = createReportEntry( description );
-        reporter.testStarting( descriptionReport );
-        if ( output != null )
-        {
-            output.writeDetails( ( (ConsoleOutputReceiver) reporter ) );
-        }
-
-        if ( testFailure != null )
-        {
-            reporter.testFailed( createReportEntry( testFailure ) );
-        }
-        else if ( testError != null )
-        {
-            reporter.testError( createReportEntry( testError ) );
         }
         else
         {
-            reporter.testSucceeded( descriptionReport );
+            ReportEntry descriptionReport = createReportEntry( description );
+            reporter.testStarting( descriptionReport );
+            LogicalStream ls = output.get();
+            if ( ls != null )
+            {
+                ls.writeDetails( (ConsoleOutputReceiver) reporter );
+            }
+
+            if ( testFailure != null )
+            {
+                reporter.testFailed( createReportEntry( testFailure ) );
+            }
+            else if ( testError != null )
+            {
+                reporter.testError( createReportEntry( testError ) );
+            }
+            else
+            {
+                reporter.testSucceeded( descriptionReport );
+            }
         }
     }
 
@@ -157,11 +160,16 @@ class TestMethod
 
     LogicalStream getLogicalStream()
     {
-        if ( output == null )
+        LogicalStream ls = output.get();
+        if ( ls == null )
         {
-            output = new LogicalStream();
+            ls = new LogicalStream();
+            if ( !output.compareAndSet( null, ls ) )
+            {
+                ls = output.get();
+            }
         }
-        return output;
+        return ls;
     }
 
     public void writeTestOutput( byte[] buf, int off, int len, boolean stdout )

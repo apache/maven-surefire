@@ -19,39 +19,27 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
+import java.text.NumberFormat;
+import java.util.Locale;
+
 /**
- * Utils class for file-based reporters
+ * Utility for reporter classes.
  *
- * @author Andreas Gudian
+ * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
+ * @since 2.19
  */
-public final class FileReporterUtils
+final class ReporterUtils
 {
-    private FileReporterUtils()
+    private static final int MS_PER_SEC = 1000;
+
+    private ReporterUtils()
     {
         throw new IllegalStateException( "non instantiable constructor" );
     }
 
-    public static String stripIllegalFilenameChars( String original )
+    public static String formatElapsedTime( double runTime )
     {
-        String result = original;
-        String illegalChars = getOSSpecificIllegalChars();
-        for ( int i = 0; i < illegalChars.length(); i++ )
-        {
-            result = result.replace( illegalChars.charAt( i ), '_' );
-        }
-
-        return result;
-    }
-
-    private static String getOSSpecificIllegalChars()
-    {
-        if ( System.getProperty( "os.name" ).toLowerCase().startsWith( "win" ) )
-        {
-            return "\\/:*?\"<>|\0";
-        }
-        else
-        {
-            return "/\0";
-        }
+        NumberFormat numberFormat = NumberFormat.getInstance( Locale.ENGLISH );
+        return numberFormat.format( runTime / MS_PER_SEC );
     }
 }
