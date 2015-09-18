@@ -113,6 +113,14 @@ public class TestNGMapConfigurator
             {
                 val = convert ( val, String.class );
             }
+            else if ( "suitethreadpoolsize".equals( key ) )
+            {
+                val = convert( val, Integer.class );
+            }
+            else if ( "dataproviderthreadcount".equals( key ) )
+            {
+                val = convert( val, Integer.class );
+            }
             // TODO objectfactory... not even documented, does it work?
             if ( key.startsWith( "-" ) )
             {
@@ -159,6 +167,11 @@ public class TestNGMapConfigurator
         if ( ( Boolean.class.equals( type ) || boolean.class.equals( type ) ) && String.class.equals( val.getClass() ) )
         {
             return Boolean.valueOf( (String) val );
+        }
+
+        if ( ( Integer.class.equals( type ) || int.class.equals( type ) ) && String.class.equals( val.getClass() ) )
+        {
+            return Integer.valueOf( (String) val );
         }
 
         if ( String.class.equals( type ) )
