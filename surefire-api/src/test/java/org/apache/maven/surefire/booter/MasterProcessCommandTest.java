@@ -105,11 +105,11 @@ public class MasterProcessCommandTest
                     assertNull( decoded );
                     break;
                 case SHUTDOWN:
-                    assertEquals( Void.class, command.getDataType() );
-                    encoded = command.fromDataType( dummyData );
-                    assertThat( encoded.length, is( 0 ) );
+                    assertEquals( Shutdown.class, command.getDataType() );
+                    encoded = command.fromDataType( Shutdown.EXIT.name() );
+                    assertThat( encoded.length, is( 4 ) );
                     decoded = command.toDataTypeAsString( encoded );
-                    assertNull( decoded );
+                    assertThat( decoded, is( Shutdown.EXIT.name() ) );
                     break;
                 case NOOP:
                     assertEquals( Void.class, command.getDataType() );

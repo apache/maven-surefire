@@ -40,6 +40,8 @@ import org.apache.maven.surefire.testset.TestSetFailedException;
 
 import static org.apache.maven.surefire.booter.MasterProcessCommand.SHUTDOWN;
 import static org.apache.maven.surefire.booter.MasterProcessCommand.NOOP;
+import static org.apache.maven.surefire.booter.Shutdown.DEFAULT;
+import static org.apache.maven.surefire.booter.Shutdown.KILL;
 import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_BYE;
 import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_ERROR;
 import static org.apache.maven.surefire.booter.ForkingRunListener.encode;
@@ -138,7 +140,7 @@ public final class ForkedBooter
             encodeAndWriteToOutput( ( (char) BOOTERCODE_BYE ) + ",0,BYE!\n", originalOut );
             originalOut.flush();
             // noinspection CallToSystemExit
-            exit( 0, false );
+            exit( 0, DEFAULT );
         }
         catch ( Throwable t )
         {
@@ -146,7 +148,7 @@ public final class ForkedBooter
             // noinspection UseOfSystemOutOrSystemErr
             t.printStackTrace( System.err );
             // noinspection ProhibitedExceptionThrown,CallToSystemExit
-            exit( 1, false );
+            exit( 1, DEFAULT );
         }
         finally
         {
@@ -180,7 +182,7 @@ public final class ForkedBooter
         {
             public void update( Command command )
             {
-                exit( 1, true );
+                exit( 1, command.toShutdownData() );
             }
         };
     }
@@ -194,7 +196,7 @@ public final class ForkedBooter
                 boolean hasPing = pingDone.getAndSet( false );
                 if ( !hasPing )
                 {
-                    exit( 1, true );
+                    exit( 1, KILL );
                 }
             }
         };
@@ -206,18 +208,19 @@ public final class ForkedBooter
         out.write( encodeBytes, 0, encodeBytes.length );
     }
 
-    private static void exit( int returnCode, boolean immediate )
+    private static void exit( int returnCode, Shutdown shutdownType )
     {
         MasterProcessReader.getReader().stop();
-
-        if ( immediate )
+        switch ( shutdownType )
         {
-            Runtime.getRuntime().halt( returnCode );
-        }
-        else
-        {
-            launchLastDitchDaemonShutdownThread( returnCode );
-            System.exit( returnCode );
+            case KILL:
+                Runtime.getRuntime().halt( returnCode );
+            case EXIT:
+                launchLastDitchDaemonShutdownThread( returnCode );
+                System.exit( returnCode );
+            case DEFAULT:
+            default:
+                break;
         }
     }
 
@@ -303,6 +306,7 @@ public final class ForkedBooter
         bpf.setDirectoryScannerParameters( providerConfiguration.getDirScannerParams() );
         bpf.setMainCliOptions( providerConfiguration.getMainCliOptions() );
         bpf.setSkipAfterFailureCount( providerConfiguration.getSkipAfterFailureCount() );
+        bpf.setShutdown( providerConfiguration.getShutdown() );
         String providerClass = startupConfiguration1.getActualClassName();
         return (SurefireProvider) instantiateOneArg( classLoader, providerClass, ProviderParameters.class, bpf );
     }

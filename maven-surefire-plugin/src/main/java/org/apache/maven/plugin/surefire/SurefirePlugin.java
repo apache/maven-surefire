@@ -292,6 +292,19 @@ public class SurefirePlugin
     @Parameter( property = "surefire.skipAfterFailureCount", defaultValue = "0" )
     private int skipAfterFailureCount;
 
+    /**
+     * After the plugin process is shutdown by sending SIGTERM signal (CTRL+C), SHUTDOWN command is received by every
+     * forked JVM. By default (shutdown=testset) forked JVM would not continue with new test which means that
+     * the current test may still continue to run.<br/>
+     * The parameter can be configured with other two values "exit" and "kill".<br/>
+     * Using "exit" forked JVM executes System.exit(1) after the plugin process has received SIGTERM signal.<br/>
+     * Using "kill" the JVM executes Runtime.halt(1) and kills itself.
+     *
+     * @since 2.19
+     */
+    @Parameter( property = "surefire.shutdown", defaultValue = "testset" )
+    private String shutdown;
+
     protected int getRerunFailingTestsCount()
     {
         return rerunFailingTestsCount;
@@ -464,6 +477,11 @@ public class SurefirePlugin
     public int getSkipAfterFailureCount()
     {
         return skipAfterFailureCount;
+    }
+
+    public String getShutdown()
+    {
+        return shutdown;
     }
 
     public boolean isPrintSummary()

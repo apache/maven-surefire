@@ -102,10 +102,12 @@ public class BooterDeserializer
 
         int failFastCount = properties.getIntProperty( FAIL_FAST_COUNT );
 
+        Shutdown shutdown = Shutdown.valueOf( properties.getProperty( SHUTDOWN ) );
+
         return new ProviderConfiguration( dirScannerParams, runOrderParameters,
                                           properties.getBooleanProperty( FAILIFNOTESTS ), reporterConfiguration, testNg,
                                           testSuiteDefinition, properties.getProperties(), typeEncodedTestForFork,
-                                          preferTestsFromInStream, fromStrings( cli ), failFastCount );
+                                          preferTestsFromInStream, fromStrings( cli ), failFastCount, shutdown );
     }
 
     public StartupConfiguration getProviderConfiguration()

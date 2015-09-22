@@ -90,6 +90,10 @@ public class SurefireReflector
 
     private final Class<Enum> commandLineOptionsClass;
 
+    private final Class<?> shutdownAwareClass;
+
+    private final Class<Enum> shutdownClass;
+
 
     @SuppressWarnings( "unchecked" )
     public SurefireReflector( ClassLoader surefireClassLoader )
@@ -114,8 +118,9 @@ public class SurefireReflector
             booterParameters = surefireClassLoader.loadClass( ProviderParameters.class.getName() );
             testListResolver = surefireClassLoader.loadClass( TestListResolver.class.getName() );
             mainCliOptions = surefireClassLoader.loadClass( MainCliOptionsAware.class.getName() );
-            commandLineOptionsClass =
-                (Class<Enum>) surefireClassLoader.loadClass( CommandLineOption.class.getName() );
+            commandLineOptionsClass = (Class<Enum>) surefireClassLoader.loadClass( CommandLineOption.class.getName() );
+            shutdownAwareClass = surefireClassLoader.loadClass( ShutdownAware.class.getName() );
+            shutdownClass = (Class<Enum>) surefireClassLoader.loadClass( Shutdown.class.getName() );
         }
         catch ( ClassNotFoundException e )
         {
@@ -297,6 +302,21 @@ public class SurefireReflector
     public void setSkipAfterFailureCount( Object o, int skipAfterFailureCount )
     {
         ReflectionUtils.invokeSetter( o, "setSkipAfterFailureCount", int.class, skipAfterFailureCount );
+    }
+
+    public void setShutdown( Object o, Shutdown shutdown )
+    {
+        if ( shutdownAwareClass.isAssignableFrom( o.getClass() ) )
+        {
+            for ( Enum e : shutdownClass.getEnumConstants() )
+            {
+                if ( shutdown.ordinal() == e.ordinal() )
+                {
+                    ReflectionUtils.invokeSetter( o, "setShutdown", shutdownClass, e );
+                    break;
+                }
+            }
+        }
     }
 
     public void setDirectoryScannerParameters( Object o, DirectoryScannerParameters dirScannerParams )

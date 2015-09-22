@@ -54,6 +54,7 @@
       <item name="New Error Summary" href="newerrorsummary.html"/>
       <item name="Fork Options and Parallel Test Execution" href="examples/fork-options-and-parallel-execution.html"/>
       <item name="Using Console Logs" href="examples/logging.html"/>
+      <item name="Shutdown of Forked JVM" href="examples/shutdown.html"/>
     </menu>
   </body>
 </project>

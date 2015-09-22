@@ -37,14 +37,13 @@ import static java.lang.Thread.State.RUNNABLE;
 import static java.lang.Thread.State.TERMINATED;
 import static java.util.concurrent.locks.LockSupport.park;
 import static java.util.concurrent.locks.LockSupport.unpark;
-import static org.apache.maven.surefire.booter.MasterProcessCommand.RUN_CLASS;
-import static org.apache.maven.surefire.booter.MasterProcessCommand.TEST_SET_FINISHED;
 import static org.apache.maven.surefire.booter.MasterProcessCommand.decode;
 import static org.apache.maven.surefire.util.internal.StringUtils.encodeStringForForkCommunication;
 import static org.apache.maven.surefire.util.internal.StringUtils.isNotBlank;
 import static org.apache.maven.surefire.util.internal.StringUtils.isBlank;
 import static org.apache.maven.surefire.util.internal.DaemonThreadFactory.newDaemonThread;
 import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_NEXT_TEST;
+import static org.apache.maven.surefire.booter.Shutdown.DEFAULT;
 
 /**
  * Reader of commands coming from plugin(master) process.
@@ -65,11 +64,13 @@ public final class MasterProcessReader
 
     private final Queue<Thread> waiters = new ConcurrentLinkedQueue<Thread>();
 
-    private final Node head = new Node();
-
     private final CountDownLatch startMonitor = new CountDownLatch( 1 );
 
-    private volatile Node tail = head;
+    private final Node headTestClassQueue = new Node();
+
+    private volatile Node tailTestClassQueue = headTestClassQueue;
+
+    private volatile Shutdown shutdown;
 
     private static class Node
     {
@@ -85,6 +86,12 @@ public final class MasterProcessReader
             reader.commandThread.start();
         }
         return reader;
+    }
+
+    public MasterProcessReader setShutdown( Shutdown shutdown )
+    {
+        this.shutdown = shutdown;
+        return this;
     }
 
     public boolean awaitStarted()
@@ -136,7 +143,7 @@ public final class MasterProcessReader
 
     Iterable<String> getIterableClasses( PrintStream originalOutStream )
     {
-        return new ClassesIterable( head, originalOutStream );
+        return new ClassesIterable( headTestClassQueue, originalOutStream );
     }
 
     public void stop()
@@ -149,6 +156,11 @@ public final class MasterProcessReader
         }
     }
 
+    private boolean isStopped()
+    {
+        return state.get() == TERMINATED;
+    }
+
     private static boolean isLastNode( Node current )
     {
         return current.successor.get() == current;
@@ -156,17 +168,20 @@ public final class MasterProcessReader
 
     private boolean isQueueFull()
     {
-        return isLastNode( tail );
+        return isLastNode( tailTestClassQueue );
     }
 
-    private boolean addToQueue( String item )
+    /**
+     * thread-safety: Must be called from single thread like here the reader thread only.
+     */
+    private boolean addTestClassToQueue( String item )
     {
-        if ( tail.item == null )
+        if ( tailTestClassQueue.item == null )
         {
-            tail.item = item;
+            tailTestClassQueue.item = item;
             Node newNode = new Node();
-            tail.successor.set( newNode );
-            tail = newNode;
+            tailTestClassQueue.successor.set( newNode );
+            tailTestClassQueue = newNode;
             return true;
         }
         else
@@ -183,18 +198,21 @@ public final class MasterProcessReader
     public void makeQueueFull()
     {
         // order between (#compareAndSet, and #get) matters in multithreading
-        for ( Node tail = this.tail;
+        for ( Node tail = this.tailTestClassQueue;
               !tail.successor.compareAndSet( null, tail ) && tail.successor.get() != tail;
               tail = tail.successor.get() );
     }
 
+    /**
+     * thread-safety: Must be called from single thread like here the reader thread only.
+     */
     private void insertForQueue( Command cmd )
     {
         MasterProcessCommand expectedCommandType = cmd.getCommandType();
         switch ( expectedCommandType )
         {
             case RUN_CLASS:
-                addToQueue( cmd.getData() );
+                addTestClassToQueue( cmd.getData() );
                 break;
             case TEST_SET_FINISHED:
                 makeQueueFull();
@@ -220,6 +238,9 @@ public final class MasterProcessReader
         }
     }
 
+    /**
+     * thread-safety: Must be called from single thread like here the reader thread only.
+     */
     private void insert( Command cmd )
     {
         insertForQueue( cmd );
@@ -292,7 +313,7 @@ public final class MasterProcessReader
 
         private void popUnread()
         {
-            if ( state.get() == TERMINATED )
+            if ( isStopped() )
             {
                 clazz = null;
                 return;
@@ -315,7 +336,13 @@ public final class MasterProcessReader
                             /**
                              * {@link java.util.concurrent.locks.LockSupport#park()}
                              * may spuriously (that is, for no reason) return, therefore the loop here.
+                             * Could be waken up by System.exit or closing the stream.
                              */
+                            if ( isStopped() )
+                            {
+                                clazz = null;
+                                return;
+                            }
                         } while ( current.item == null && !isLastNode( current ) );
                         clazz = current.item;
                         current = current.successor.get();
@@ -329,7 +356,7 @@ public final class MasterProcessReader
                 while ( tryNullWhiteClass() );
             }
 
-            if ( state.get() == TERMINATED )
+            if ( isStopped() )
             {
                 clazz = null;
             }
@@ -355,6 +382,9 @@ public final class MasterProcessReader
         }
     }
 
+    /**
+     * thread-safety: Must be called from single thread like here the reader thread only.
+     */
     private Command read( DataInputStream stdIn )
         throws IOException
     {
@@ -408,15 +438,24 @@ public final class MasterProcessReader
                     }
                     else
                     {
-                        if ( command.getCommandType() == TEST_SET_FINISHED )
+                        switch ( command.getCommandType() )
                         {
-                            isTestSetFinished = true;
-                            wakeupWaiters();
+                            case TEST_SET_FINISHED:
+                                isTestSetFinished = true;
+                                wakeupWaiters();
+                                break;
+                            case RUN_CLASS:
+                                wakeupWaiters();
+                                break;
+                            case SHUTDOWN:
+                                insertForQueue( Command.TEST_SET_FINISHED );
+                                wakeupWaiters();
+                                break;
+                            default:
+                                // checkstyle do nothing
+                                break;
                         }
-                        else if ( command.getCommandType() == RUN_CLASS )
-                        {
-                            wakeupWaiters();
-                        }
+
                         insertForListeners( command );
                     }
                 }
@@ -424,10 +463,16 @@ public final class MasterProcessReader
             catch ( EOFException e )
             {
                 MasterProcessReader.this.state.set( TERMINATED );
+                if ( !isTestSetFinished )
+                {
+                    exitByConfiguration();
+                    // does not go to finally
+                }
             }
             catch ( IOException e )
             {
                 MasterProcessReader.this.state.set( TERMINATED );
+                // If #stop() method is called, reader thread is interrupted and cause is InterruptedException.
                 if ( !( e.getCause() instanceof InterruptedException ) )
                 {
                     System.err.println( "[SUREFIRE] std/in stream corrupted" );
@@ -439,9 +484,32 @@ public final class MasterProcessReader
                 // ensure fail-safe iterator as well as safe to finish in for-each loop using ClassesIterator
                 if ( !isTestSetFinished )
                 {
-                    insert( new Command( TEST_SET_FINISHED ) );
+                    insert( Command.TEST_SET_FINISHED );
                 }
                 wakeupWaiters();
+            }
+        }
+
+        /**
+         * thread-safety: Must be called from single thread like here the reader thread only.
+         */
+        private void exitByConfiguration()
+        {
+            Shutdown shutdown = MasterProcessReader.this.shutdown; // won't read inconsistent changes through the stack
+            if ( shutdown != null && shutdown != DEFAULT )
+            {
+                insert( Command.TEST_SET_FINISHED ); // lazily
+                wakeupWaiters();
+                switch ( shutdown )
+                {
+                    case EXIT:
+                        System.exit( 1 );
+                    case KILL:
+                        Runtime.getRuntime().halt( 1 );
+                    default:
+                        // should not happen; otherwise you missed enum case
+                        break;
+                }
             }
         }
     }

@@ -101,7 +101,9 @@ public class JUnit4Provider
     public JUnit4Provider( ProviderParameters booterParameters )
     {
         // don't start a thread in MasterProcessReader while we are in in-plugin process
-        commandsReader = booterParameters.isInsideFork() ? MasterProcessReader.getReader() : null;
+        commandsReader = booterParameters.isInsideFork()
+            ? MasterProcessReader.getReader().setShutdown( booterParameters.getShutdown() )
+            : null;
         providerParameters = booterParameters;
         testClassLoader = booterParameters.getTestClassLoader();
         scanResult = booterParameters.getScanResult();

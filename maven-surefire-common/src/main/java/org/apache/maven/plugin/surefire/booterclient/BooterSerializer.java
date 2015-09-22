@@ -134,6 +134,7 @@ class BooterSerializer
         properties.setProperty( FAILIFNOTESTS, String.valueOf( booterConfiguration.isFailIfNoTests() ) );
         properties.setProperty( PROVIDER_CONFIGURATION, providerConfiguration.getProviderClassName() );
         properties.setProperty( FAIL_FAST_COUNT, String.valueOf( booterConfiguration.getSkipAfterFailureCount() ) );
+        properties.setProperty( SHUTDOWN, booterConfiguration.getShutdown().name() );
         List<CommandLineOption> mainCliOptions = booterConfiguration.getMainCliOptions();
         if ( mainCliOptions != null )
         {

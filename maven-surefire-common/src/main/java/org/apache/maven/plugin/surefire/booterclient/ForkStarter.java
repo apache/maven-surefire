@@ -39,6 +39,7 @@ import org.apache.maven.surefire.booter.KeyValueSource;
 import org.apache.maven.surefire.booter.PropertiesWrapper;
 import org.apache.maven.surefire.booter.ProviderConfiguration;
 import org.apache.maven.surefire.booter.ProviderFactory;
+import org.apache.maven.surefire.booter.Shutdown;
 import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.apache.maven.surefire.booter.SurefireExecutionException;
@@ -109,9 +110,11 @@ public class ForkStarter
 {
     private static final long PING_IN_SECONDS = 10;
 
-    private static final ThreadFactory DAEMON_THREAD_FACTORY = newDaemonThreadFactory();
+    private static final ThreadFactory FORKED_JVM_DAEMON_THREAD_FACTORY
+        = newDaemonThreadFactory( "surefire-fork-starter" );
 
-    private static final ThreadFactory SHUTDOWN_HOOK_THREAD_FACTORY = newDaemonThreadFactory();
+    private static final ThreadFactory SHUTDOWN_HOOK_THREAD_FACTORY
+        = newDaemonThreadFactory( "surefire-jvm-killer-shutdownhook" );
 
     private final ScheduledExecutorService pingThreadScheduler = createPingScheduler();
 
@@ -207,7 +210,7 @@ public class ForkStarter
             new ForkClient( forkedReporterFactory, startupReportConfiguration.getTestVmSystemProperties() );
         TestLessInputStreamBuilder builder = new TestLessInputStreamBuilder();
         TestLessInputStream stream = builder.build();
-        Thread shutdown = createImmediateShutdownHookThread( builder );
+        Thread shutdown = createImmediateShutdownHookThread( builder, providerConfiguration.getShutdown() );
         ScheduledFuture<?> ping = triggerPingTimerForShutdown( builder );
         try
         {
@@ -248,7 +251,7 @@ public class ForkStarter
     {
         ThreadPoolExecutor executorService = new ThreadPoolExecutor( forkCount, forkCount, 60, TimeUnit.SECONDS,
                                                                   new ArrayBlockingQueue<Runnable>( forkCount ) );
-        executorService.setThreadFactory( DAEMON_THREAD_FACTORY );
+        executorService.setThreadFactory( FORKED_JVM_DAEMON_THREAD_FACTORY );
 
         final Queue<String> tests = new ConcurrentLinkedQueue<String>();
 
@@ -265,7 +268,7 @@ public class ForkStarter
         }
 
         ScheduledFuture<?> ping = triggerPingTimerForShutdown( testStreams );
-        Thread shutdown = createShutdownHookThread( testStreams );
+        Thread shutdown = createShutdownHookThread( testStreams, providerConfiguration.getShutdown() );
 
         try
         {
@@ -328,10 +331,10 @@ public class ForkStarter
         ArrayList<Future<RunResult>> results = new ArrayList<Future<RunResult>>( 500 );
         ThreadPoolExecutor executorService =
             new ThreadPoolExecutor( forkCount, forkCount, 60, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>() );
-        executorService.setThreadFactory( DAEMON_THREAD_FACTORY );
+        executorService.setThreadFactory( FORKED_JVM_DAEMON_THREAD_FACTORY );
         final TestLessInputStreamBuilder builder = new TestLessInputStreamBuilder();
         ScheduledFuture<?> ping = triggerPingTimerForShutdown( builder );
-        Thread shutdown = createCachableShutdownHookThread( builder );
+        Thread shutdown = createCachableShutdownHookThread( builder, providerConfiguration.getShutdown() );
         try
         {
             addShutDownHook( shutdown );
@@ -602,29 +605,32 @@ public class ForkStarter
         }
     }
 
-    private static Thread createImmediateShutdownHookThread( final TestLessInputStreamBuilder builder )
+    private static Thread createImmediateShutdownHookThread( final TestLessInputStreamBuilder builder,
+                                                             final Shutdown shutdownType )
     {
         return SHUTDOWN_HOOK_THREAD_FACTORY.newThread( new Runnable()
         {
             public void run()
             {
-                builder.getImmediateCommands().shutdown();
+                builder.getImmediateCommands().shutdown( shutdownType );
             }
         } );
     }
 
-    private static Thread createCachableShutdownHookThread( final TestLessInputStreamBuilder builder )
+    private static Thread createCachableShutdownHookThread( final TestLessInputStreamBuilder builder,
+                                                            final Shutdown shutdownType )
     {
         return SHUTDOWN_HOOK_THREAD_FACTORY.newThread( new Runnable()
         {
             public void run()
             {
-                builder.getCachableCommands().shutdown();
+                builder.getCachableCommands().shutdown( shutdownType );
             }
         } );
     }
 
-    private static Thread createShutdownHookThread( final Iterable<TestProvidingInputStream> streams )
+    private static Thread createShutdownHookThread( final Iterable<TestProvidingInputStream> streams,
+                                                    final Shutdown shutdownType )
     {
         return SHUTDOWN_HOOK_THREAD_FACTORY.newThread( new Runnable()
         {
@@ -632,7 +638,7 @@ public class ForkStarter
             {
                 for ( TestProvidingInputStream stream : streams )
                 {
-                    stream.shutdown();
+                    stream.shutdown( shutdownType );
                 }
             }
         } );
@@ -640,7 +646,7 @@ public class ForkStarter
 
     private static ScheduledExecutorService createPingScheduler()
     {
-        ThreadFactory threadFactory = newDaemonThreadFactory( "ping-thread-" + PING_IN_SECONDS + "sec" );
+        ThreadFactory threadFactory = newDaemonThreadFactory( "ping-timer-" + PING_IN_SECONDS + "sec" );
         return Executors.newScheduledThreadPool( 1, threadFactory );
     }
 

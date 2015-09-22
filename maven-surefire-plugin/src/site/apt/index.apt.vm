@@ -153,4 +153,6 @@ mvn verify
 
   * {{{./examples/fork-options-and-parallel-execution.html}Fork Options and Parallel Test Execution}}
 
+  * {{{./examples/shutdown.html}Shutdown of Forked JVM}}
+
   []

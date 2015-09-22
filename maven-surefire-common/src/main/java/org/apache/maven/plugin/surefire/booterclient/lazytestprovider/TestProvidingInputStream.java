@@ -20,6 +20,7 @@ package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
  */
 
 import org.apache.maven.surefire.booter.Command;
+import org.apache.maven.surefire.booter.Shutdown;
 
 import java.io.IOException;
 import java.util.Queue;
@@ -27,11 +28,11 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.apache.maven.surefire.booter.MasterProcessCommand.RUN_CLASS;
 import static org.apache.maven.surefire.booter.MasterProcessCommand.TEST_SET_FINISHED;
-import static org.apache.maven.surefire.booter.Command.SKIP_SINCE_NEXT_TEST;
-import static org.apache.maven.surefire.booter.Command.SHUTDOWN;
 import static org.apache.maven.surefire.booter.Command.NOOP;
+import static org.apache.maven.surefire.booter.Command.SKIP_SINCE_NEXT_TEST;
+import static org.apache.maven.surefire.booter.Command.toRunClass;
+import static org.apache.maven.surefire.booter.Command.toShutdown;
 
 /**
  * An {@link java.io.InputStream} that, when read, provides test class names out of a queue.
@@ -90,11 +91,11 @@ public final class TestProvidingInputStream
         }
     }
 
-    public void shutdown()
+    public void shutdown( Shutdown shutdownType )
     {
         if ( canContinue() )
         {
-            commands.add( SHUTDOWN );
+            commands.add( toShutdown( shutdownType ) );
             barrier.release();
         }
     }
@@ -115,7 +116,7 @@ public final class TestProvidingInputStream
         if ( cmd == null )
         {
             String cmdData = testClassNames.poll();
-            return cmdData == null ? Command.TEST_SET_FINISHED : new Command( RUN_CLASS, cmdData );
+            return cmdData == null ? Command.TEST_SET_FINISHED : toRunClass( cmdData );
         }
         else
         {

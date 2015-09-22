@@ -76,6 +76,7 @@ import org.apache.maven.surefire.booter.ClasspathConfiguration;
 import org.apache.maven.surefire.booter.KeyValueSource;
 import org.apache.maven.surefire.booter.ProviderConfiguration;
 import org.apache.maven.surefire.booter.ProviderParameterNames;
+import org.apache.maven.surefire.booter.Shutdown;
 import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.apache.maven.surefire.booter.SurefireExecutionException;
@@ -827,6 +828,7 @@ public abstract class AbstractSurefireMojo
             warnIfUselessUseSystemClassLoaderParameter();
             warnIfDefunctGroupsCombinations();
             warnIfRerunClashes();
+            warnIfWrongShutdownValue();
         }
         return true;
     }
@@ -1467,7 +1469,8 @@ public abstract class AbstractSurefireMojo
                                           reporterConfiguration,
                                           testNg, // Not really used in provider. Limited to de/serializer.
                                           testSuiteDefinition, providerProperties, null,
-                                          false, cli, getSkipAfterFailureCount() );
+                                          false, cli, getSkipAfterFailureCount(),
+                                          Shutdown.parameterOf( getShutdown() ) );
     }
 
     private static Map<String, String> toStringProperties( Properties properties )
@@ -1973,6 +1976,7 @@ public abstract class AbstractSurefireMojo
         checksum.add( getTestSourceDirectory() );
         checksum.add( getTest() );
         checksum.add( getIncludes() );
+        checksum.add( getShutdown() );
         checksum.add( getExcludes() );
         checksum.add( getLocalRepository() );
         checksum.add( getSystemProperties() );
@@ -2362,6 +2366,15 @@ public abstract class AbstractSurefireMojo
         {
             throw new MojoFailureException( "Parameters [rerunFailingTestsCount, skipAfterFailureCount] "
                                                 + "should not be enabled together." );
+        }
+    }
+
+    private void warnIfWrongShutdownValue()
+        throws MojoFailureException
+    {
+        if ( !Shutdown.isKnown( getShutdown() ) )
+        {
+            throw new MojoFailureException( "Parameter \"shutdown\" should have values " + Shutdown.listParameters() );
         }
     }
 

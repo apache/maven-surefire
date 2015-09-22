@@ -89,7 +89,9 @@ public class JUnitCoreProvider
 
     public JUnitCoreProvider( ProviderParameters providerParameters )
     {
-        commandsReader = providerParameters.isInsideFork() ? MasterProcessReader.getReader() : null;
+        commandsReader = providerParameters.isInsideFork()
+            ? MasterProcessReader.getReader().setShutdown( providerParameters.getShutdown() )
+            : null;
         this.providerParameters = providerParameters;
         testClassLoader = providerParameters.getTestClassLoader();
         scanResult = providerParameters.getScanResult();

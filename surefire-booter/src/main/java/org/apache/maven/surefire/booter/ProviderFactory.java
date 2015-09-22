@@ -100,6 +100,7 @@ public class ProviderFactory
         surefireReflector.setIfDirScannerAware( o, providerConfiguration.getDirScannerParams() );
         surefireReflector.setMainCliOptions( o, providerConfiguration.getMainCliOptions() );
         surefireReflector.setSkipAfterFailureCount( o, providerConfiguration.getSkipAfterFailureCount() );
+        surefireReflector.setShutdown( o, providerConfiguration.getShutdown() );
 
         Object provider = surefireReflector.instantiateProvider( startupConfiguration.getActualClassName(), o );
         currentThread.setContextClassLoader( systemClassLoader );

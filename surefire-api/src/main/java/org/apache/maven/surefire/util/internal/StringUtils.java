@@ -339,6 +339,32 @@ public class StringUtils
         return ByteBuffer.wrap( out, 0, outPos );
     }
 
+    public static String decode( byte[] toDecode, Charset charset )
+    {
+        try
+        {
+            // @todo use new JDK 1.6 constructor String(byte bytes[], Charset charset)
+            return new String( toDecode, charset.name() );
+        }
+        catch ( UnsupportedEncodingException e )
+        {
+            throw new RuntimeException( "The JVM must support Charset " + charset, e );
+        }
+    }
+
+    public static byte[] encode( String toEncode, Charset charset )
+    {
+        try
+        {
+            // @todo use new JDK 1.6 method getBytes(Charset charset)
+            return toEncode.getBytes( charset.name() );
+        }
+        catch ( UnsupportedEncodingException e )
+        {
+            throw new RuntimeException( "The JVM must support Charset " + charset, e );
+        }
+    }
+
     public static byte[] encodeStringForForkCommunication( String string )
     {
         try

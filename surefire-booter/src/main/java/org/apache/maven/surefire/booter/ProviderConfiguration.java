@@ -68,13 +68,16 @@ public class ProviderConfiguration
 
     private int skipAfterFailureCount;
 
+    private Shutdown shutdown;
+
     @SuppressWarnings( "checkstyle:parameternumber" )
     public ProviderConfiguration( DirectoryScannerParameters directoryScannerParameters,
                                   RunOrderParameters runOrderParameters, boolean failIfNoTests,
                                   ReporterConfiguration reporterConfiguration, TestArtifactInfo testArtifact,
                                   TestRequest testSuiteDefinition, Map<String, String> providerProperties,
                                   TypeEncodedValue typeEncodedTestSet, boolean readTestsFromInStream,
-                                  List<CommandLineOption> mainCliOptions, int skipAfterFailureCount )
+                                  List<CommandLineOption> mainCliOptions, int skipAfterFailureCount,
+                                  Shutdown shutdown )
     {
         this.runOrderParameters = runOrderParameters;
         this.providerProperties = providerProperties;
@@ -87,6 +90,7 @@ public class ProviderConfiguration
         this.readTestsFromInStream = readTestsFromInStream;
         this.mainCliOptions = mainCliOptions;
         this.skipAfterFailureCount = skipAfterFailureCount;
+        this.shutdown = shutdown;
     }
 
     public ReporterConfiguration getReporterConfiguration()
@@ -156,13 +160,13 @@ public class ProviderConfiguration
         return mainCliOptions;
     }
 
-    public void setSkipAfterFailureCount( int skipAfterFailureCount )
-    {
-        this.skipAfterFailureCount = skipAfterFailureCount;
-    }
-
     public int getSkipAfterFailureCount()
     {
         return skipAfterFailureCount;
+    }
+
+    public Shutdown getShutdown()
+    {
+        return shutdown;
     }
 }

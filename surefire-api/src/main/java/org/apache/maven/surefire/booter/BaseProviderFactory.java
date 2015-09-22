@@ -46,7 +46,7 @@ import java.util.Map;
 public class BaseProviderFactory
     implements DirectoryScannerParametersAware, ReporterConfigurationAware, SurefireClassLoadersAware, TestRequestAware,
     ProviderPropertiesAware, ProviderParameters, TestArtifactInfoAware, RunOrderParametersAware, MainCliOptionsAware,
-    FailFastAware
+    FailFastAware, ShutdownAware
 {
     private static final int ROOT_CHANNEL = 0;
 
@@ -71,6 +71,8 @@ public class BaseProviderFactory
     private TestArtifactInfo testArtifactInfo;
 
     private int skipAfterFailureCount;
+
+    private Shutdown shutdown;
 
     public BaseProviderFactory( ReporterFactory reporterFactory, boolean insideFork )
     {
@@ -205,5 +207,15 @@ public class BaseProviderFactory
     public boolean isInsideFork()
     {
         return insideFork;
+    }
+
+    public Shutdown getShutdown()
+    {
+        return shutdown;
+    }
+
+    public void setShutdown( Shutdown shutdown )
+    {
+        this.shutdown = shutdown;
     }
 }

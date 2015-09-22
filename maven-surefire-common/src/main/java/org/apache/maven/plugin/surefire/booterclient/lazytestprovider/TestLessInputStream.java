@@ -20,6 +20,7 @@ package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
  */
 
 import org.apache.maven.surefire.booter.Command;
+import org.apache.maven.surefire.booter.Shutdown;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -33,8 +34,8 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static org.apache.maven.surefire.booter.Command.NOOP;
-import static org.apache.maven.surefire.booter.Command.SHUTDOWN;
 import static org.apache.maven.surefire.booter.Command.SKIP_SINCE_NEXT_TEST;
+import static org.apache.maven.surefire.booter.Command.toShutdown;
 
 /**
  * Dispatches commands without tests.
@@ -73,11 +74,11 @@ public final class TestLessInputStream
         }
     }
 
-    public void shutdown()
+    public void shutdown( Shutdown shutdownType )
     {
         if ( canContinue() )
         {
-            immediateCommands.add( SHUTDOWN );
+            immediateCommands.add( toShutdown( shutdownType ) );
             barrier.release();
         }
     }
@@ -336,7 +337,7 @@ public final class TestLessInputStream
                 }
             }
 
-            public void shutdown()
+            public void shutdown( Shutdown shutdownType )
             {
                 Lock lock = rwLock.readLock();
                 lock.lock();
@@ -344,7 +345,7 @@ public final class TestLessInputStream
                 {
                     for ( TestLessInputStream aliveStream : TestLessInputStreamBuilder.this.aliveStreams )
                     {
-                        aliveStream.shutdown();
+                        aliveStream.shutdown( shutdownType );
                     }
                 }
                 finally
@@ -398,13 +399,13 @@ public final class TestLessInputStream
                 }
             }
 
-            public void shutdown()
+            public void shutdown( Shutdown shutdownType )
             {
                 Lock lock = rwLock.readLock();
                 lock.lock();
                 try
                 {
-                    if ( TestLessInputStreamBuilder.this.addTailNodeIfAbsent( SHUTDOWN ) )
+                    if ( TestLessInputStreamBuilder.this.addTailNodeIfAbsent( toShutdown( shutdownType ) ) )
                     {
                         release();
                     }

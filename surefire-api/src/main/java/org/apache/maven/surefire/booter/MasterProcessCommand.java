@@ -19,10 +19,13 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
+import org.apache.maven.surefire.util.internal.StringUtils;
+
 import java.io.DataInputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 
 import static org.apache.maven.surefire.util.internal.StringUtils.FORK_STREAM_CHARSET_NAME;
 import static org.apache.maven.surefire.util.internal.StringUtils.encodeStringForForkCommunication;
@@ -41,9 +44,12 @@ public enum MasterProcessCommand
     RUN_CLASS( 0, String.class ),
     TEST_SET_FINISHED( 1, Void.class ),
     SKIP_SINCE_NEXT_TEST( 2, Void.class ),
-    SHUTDOWN( 3, Void.class ),
+    SHUTDOWN( 3, Shutdown.class ),
+
     /** To tell a forked process that the master process is still alive. Repeated after 10 seconds. */
     NOOP( 4, Void.class );
+
+    private static final Charset ASCII = Charset.forName( "ASCII" );
 
     private final int id;
 
@@ -157,6 +163,8 @@ public enum MasterProcessCommand
             {
                 case RUN_CLASS:
                     return new String( data, FORK_STREAM_CHARSET_NAME );
+                case SHUTDOWN:
+                    return StringUtils.decode( data, ASCII );
                 default:
                     return null;
             }
@@ -173,6 +181,8 @@ public enum MasterProcessCommand
         {
             case RUN_CLASS:
                 return encodeStringForForkCommunication( data );
+            case SHUTDOWN:
+                return StringUtils.encode( data, ASCII );
             default:
                 return new byte[0];
         }

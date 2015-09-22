@@ -19,6 +19,7 @@ package org.apache.maven.surefire.providerapi;
  * under the License.
  */
 
+import org.apache.maven.surefire.booter.Shutdown;
 import org.apache.maven.surefire.cli.CommandLineOption;
 import org.apache.maven.surefire.report.ConsoleLogger;
 import org.apache.maven.surefire.report.ReporterConfiguration;
@@ -143,4 +144,6 @@ public interface ProviderParameters
      * in-plugin provider.
      */
     boolean isInsideFork();
+
+    Shutdown getShutdown();
 }
