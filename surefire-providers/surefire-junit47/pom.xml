@@ -126,7 +126,7 @@
         <configuration>
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
           <includes>
-            <include>**/JUnit4SuiteTest.java</include>
+            <include>**/JUnit47SuiteTest.java</include>
           </includes>
         </configuration>
       </plugin>

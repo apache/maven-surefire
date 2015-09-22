@@ -38,8 +38,6 @@ import org.apache.maven.surefire.report.StackTraceWriter;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
-import static org.apache.maven.surefire.booter.MasterProcessCommand.SHUTDOWN;
-import static org.apache.maven.surefire.booter.MasterProcessCommand.NOOP;
 import static org.apache.maven.surefire.booter.Shutdown.DEFAULT;
 import static org.apache.maven.surefire.booter.Shutdown.KILL;
 import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_BYE;
@@ -159,9 +157,9 @@ public final class ForkedBooter
     private static ScheduledFuture<?> listenToShutdownCommands()
     {
         MasterProcessReader reader = MasterProcessReader.getReader();
-        reader.addListener( SHUTDOWN, createExitHandler() );
+        reader.addShutdownListener( createExitHandler() );
         AtomicBoolean pingDone = new AtomicBoolean( true );
-        reader.addListener( NOOP, createPingHandler( pingDone ) );
+        reader.addNoopListener( createPingHandler( pingDone ) );
         return JVM_TERMINATOR.scheduleAtFixedRate( createPingJob( pingDone ), 0, PING_TIMEOUT_IN_SECONDS, SECONDS );
     }
 

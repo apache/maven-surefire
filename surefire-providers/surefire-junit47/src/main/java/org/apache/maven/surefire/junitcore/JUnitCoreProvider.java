@@ -50,7 +50,6 @@ import org.junit.runner.manipulation.Filter;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunListener;
 
-import static org.apache.maven.surefire.booter.MasterProcessCommand.SKIP_SINCE_NEXT_TEST;
 import static org.apache.maven.surefire.junitcore.ConcurrentRunListener.createInstance;
 import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.generateFailingTests;
 import static org.apache.maven.surefire.common.junit4.JUnit4RunListenerFactory.createCustomListeners;
@@ -224,7 +223,7 @@ public class JUnitCoreProvider
                 stoppable.pleaseStop();
             }
         };
-        commandsReader.addListener( SKIP_SINCE_NEXT_TEST, listener );
+        commandsReader.addSkipNextListener( listener );
         return listener;
     }
 

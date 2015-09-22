@@ -1976,6 +1976,7 @@ public abstract class AbstractSurefireMojo
         checksum.add( getTestSourceDirectory() );
         checksum.add( getTest() );
         checksum.add( getIncludes() );
+        checksum.add( getSkipAfterFailureCount() );
         checksum.add( getShutdown() );
         checksum.add( getExcludes() );
         checksum.add( getLocalRepository() );

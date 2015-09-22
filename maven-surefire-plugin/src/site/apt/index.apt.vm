@@ -137,9 +137,13 @@ mvn verify
 
   * {{{./examples/skipping-test.html}Skipping Tests}}
 
+  * {{{./examples/skip-after-failure.html}Skip After Failure}}
+
   * {{{./examples/inclusion-exclusion.html}Inclusions and Exclusions of Tests}}
 
   * {{{./examples/single-test.html}Running a Single Test}}
+
+  * {{{./examples/rerun-failing-tests.html}Re-run Failing Tests}}
 
   * {{{./examples/class-loading.html}Class Loading and Forking}}
 
@@ -152,6 +156,8 @@ mvn verify
   * {{{./examples/providers.html}Selecting Providers}}
 
   * {{{./examples/fork-options-and-parallel-execution.html}Fork Options and Parallel Test Execution}}
+
+  * {{{./examples/logging.html}Using Console Logs}}
 
   * {{{./examples/shutdown.html}Shutdown of Forked JVM}}
 

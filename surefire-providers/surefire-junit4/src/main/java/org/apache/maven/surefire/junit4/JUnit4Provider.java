@@ -52,7 +52,6 @@ import org.junit.runner.Runner;
 import org.junit.runner.manipulation.Filter;
 import org.junit.runner.notification.StoppedByUserException;
 
-import static org.apache.maven.surefire.booter.MasterProcessCommand.SKIP_SINCE_NEXT_TEST;
 import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.createSuiteDescription;
 import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.cutTestClassAndMethod;
 import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.generateFailingTests;
@@ -221,7 +220,7 @@ public class JUnit4Provider
                 notifier.pleaseStop();
             }
         };
-        commandsReader.addListener( SKIP_SINCE_NEXT_TEST, listener );
+        commandsReader.addSkipNextListener( listener );
         return listener;
     }
 

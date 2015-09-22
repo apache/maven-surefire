@@ -37,6 +37,11 @@ import static java.lang.Thread.State.RUNNABLE;
 import static java.lang.Thread.State.TERMINATED;
 import static java.util.concurrent.locks.LockSupport.park;
 import static java.util.concurrent.locks.LockSupport.unpark;
+import static org.apache.maven.surefire.booter.MasterProcessCommand.NOOP;
+import static org.apache.maven.surefire.booter.MasterProcessCommand.RUN_CLASS;
+import static org.apache.maven.surefire.booter.MasterProcessCommand.SHUTDOWN;
+import static org.apache.maven.surefire.booter.MasterProcessCommand.SKIP_SINCE_NEXT_TEST;
+import static org.apache.maven.surefire.booter.MasterProcessCommand.TEST_SET_FINISHED;
 import static org.apache.maven.surefire.booter.MasterProcessCommand.decode;
 import static org.apache.maven.surefire.util.internal.StringUtils.encodeStringForForkCommunication;
 import static org.apache.maven.surefire.util.internal.StringUtils.isNotBlank;
@@ -123,7 +128,32 @@ public final class MasterProcessReader
         listeners.add( new TwoPropertiesWrapper<MasterProcessCommand, MasterProcessListener>( null, listener ) );
     }
 
-    public void addListener( MasterProcessCommand cmd, MasterProcessListener listener )
+    public void addTestListener( MasterProcessListener listener )
+    {
+        addListener( RUN_CLASS, listener );
+    }
+
+    public void addTestsFinishedListener( MasterProcessListener listener )
+    {
+        addListener( TEST_SET_FINISHED, listener );
+    }
+
+    public void addSkipNextListener( MasterProcessListener listener )
+    {
+        addListener( SKIP_SINCE_NEXT_TEST, listener );
+    }
+
+    public void addShutdownListener( MasterProcessListener listener )
+    {
+        addListener( SHUTDOWN, listener );
+    }
+
+    public void addNoopListener( MasterProcessListener listener )
+    {
+        addListener( NOOP, listener );
+    }
+
+    private void addListener( MasterProcessCommand cmd, MasterProcessListener listener )
     {
         listeners.add( new TwoPropertiesWrapper<MasterProcessCommand, MasterProcessListener>( cmd, listener ) );
     }

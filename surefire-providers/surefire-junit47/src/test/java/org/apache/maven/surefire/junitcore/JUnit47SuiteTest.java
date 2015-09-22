@@ -29,7 +29,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 /**
- * Adapt the JUnit4 tests which use only annotations to the JUnit3 test suite.
+ * Adapt the JUnit47 tests which use only annotations to the JUnit3 test suite.
  *
  * @author Tibor Digana (tibor17)
  * @since 2.16
@@ -52,10 +52,10 @@ import org.junit.runners.Suite;
     TestMethodTest.class
 } )
 @RunWith( Suite.class )
-public class JUnit4SuiteTest
+public class JUnit47SuiteTest
 {
     public static Test suite()
     {
-        return new JUnit4TestAdapter( JUnit4SuiteTest.class );
+        return new JUnit4TestAdapter( JUnit47SuiteTest.class );
     }
 }

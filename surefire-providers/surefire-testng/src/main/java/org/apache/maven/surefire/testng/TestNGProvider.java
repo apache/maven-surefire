@@ -41,8 +41,6 @@ import org.apache.maven.surefire.util.RunOrderCalculator;
 import org.apache.maven.surefire.util.ScanResult;
 import org.apache.maven.surefire.util.TestsToRun;
 
-import static org.apache.maven.surefire.booter.MasterProcessCommand.SKIP_SINCE_NEXT_TEST;
-
 /**
  * @author Kristian Rosenvold
  * @noinspection UnusedDeclaration
@@ -178,7 +176,7 @@ public class TestNGProvider
                 FailFastEventsSingleton.getInstance().setSkipOnNextTest();
             }
         };
-        commandsReader.addListener( SKIP_SINCE_NEXT_TEST, listener );
+        commandsReader.addSkipNextListener( listener );
         return listener;
     }
 
