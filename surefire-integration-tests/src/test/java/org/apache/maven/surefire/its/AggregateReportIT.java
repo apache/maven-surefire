@@ -21,9 +21,14 @@ package org.apache.maven.surefire.its;
 
 import java.io.File;
 
-import org.apache.maven.surefire.its.fixture.*;
+import org.apache.maven.surefire.its.fixture.IntegrationTestSuiteResults;
+import org.apache.maven.surefire.its.fixture.OutputValidator;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.TestFile;
 import org.junit.Test;
 
+import static org.apache.maven.surefire.its.fixture.HelperAssertions.parseTestResults;
+import static org.apache.maven.surefire.its.fixture.HelperAssertions.assertTestSuiteResults;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -39,17 +44,14 @@ public class AggregateReportIT
     @Test
     public void aggregateReport()
     {
-        final OutputValidator outputValidator =
-            unpack( "/aggregate-report" ).addSurefireReportGoal().executeCurrentGoals();
+        OutputValidator outputValidator = unpack( "/aggregate-report" ).addSurefireReportGoal().executeCurrentGoals();
         TestFile surefireReportHtml = outputValidator.getSiteFile( "surefire-report.html" );
         assertTrue( "surefire report missing: " + surefireReportHtml.getAbsolutePath(), surefireReportHtml.exists() );
 
         // TODO HtmlUnit tests on the surefire report
 
-        File[] testDirs = new File[2];
-        testDirs[0] = new File( outputValidator.getBaseDir(), "child1" );
-        testDirs[1] = new File( outputValidator.getBaseDir(), "child2" );
-        IntegrationTestSuiteResults suite = HelperAssertions.parseTestResults( testDirs );
-        HelperAssertions.assertTestSuiteResults( 2, 0, 1, 0, suite );
+        IntegrationTestSuiteResults suite = parseTestResults( new File( outputValidator.getBaseDir(), "child1" ),
+                                                              new File( outputValidator.getBaseDir(), "child2" ) );
+        assertTestSuiteResults( 2, 0, 1, 0, suite );
     }
 }
