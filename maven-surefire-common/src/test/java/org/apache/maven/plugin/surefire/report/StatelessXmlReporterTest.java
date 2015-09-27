@@ -33,7 +33,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -139,7 +138,7 @@ public class StatelessXmlReporterTest
 
         stats.testSucceeded( t2 );
         StatelessXmlReporter reporter = new StatelessXmlReporter( reportDir, null, false, 0,
-                        Collections.synchronizedMap( new HashMap<String, Map<String, List<WrappedReportEntry>>>() ) );
+                        new ConcurrentHashMap<String, Map<String, List<WrappedReportEntry>>>() );
         reporter.testSetCompleted( testSetReportEntry, stats );
 
         FileInputStream fileInputStream = new FileInputStream( expectedReportFile );
