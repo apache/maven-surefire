@@ -33,7 +33,7 @@ public class Surefire1179IT
     @Test
     public void suiteXmlForkCountTwoReuse()
     {
-        unpack().executeTest().verifyErrorFreeLog().verifyTextInLog( " CONCURRENCY=10." );
+        unpack().executeTest().verifyErrorFreeLog().verifyTextInLog( " CONCURRENCY=30." );
     }
 
     private SurefireLauncher unpack()

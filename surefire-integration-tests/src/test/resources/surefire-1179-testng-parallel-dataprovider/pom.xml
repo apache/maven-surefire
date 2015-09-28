@@ -50,7 +50,7 @@
                         </property>
                         <property>
                             <name>dataproviderthreadcount</name>
-                            <value>10</value>
+                            <value>30</value>
                         </property>
                     </properties>
                 </configuration>
