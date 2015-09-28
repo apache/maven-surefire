@@ -164,17 +164,17 @@ public class TestNGMapConfigurator
             return val;
         }
 
-        if ( ( Boolean.class.equals( type ) || boolean.class.equals( type ) ) && String.class.equals( val.getClass() ) )
+        if ( ( type == Boolean.class || type == boolean.class ) && val.getClass() == String.class )
         {
             return Boolean.valueOf( (String) val );
         }
 
-        if ( ( Integer.class.equals( type ) || int.class.equals( type ) ) && String.class.equals( val.getClass() ) )
+        if ( ( type == Integer.class || type == int.class ) && val.getClass() == String.class )
         {
             return Integer.valueOf( (String) val );
         }
 
-        if ( String.class.equals( type ) )
+        if ( type == String.class )
         {
             return val.toString();
         }
