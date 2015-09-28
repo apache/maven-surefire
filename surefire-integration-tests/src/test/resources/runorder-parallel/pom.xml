@@ -15,10 +15,6 @@
     </dependency>
   </dependencies>
 
-  <properties>
-    <runOrder>balanced</runOrder>
-  </properties>
-
   <build>
     <plugins>
       <plugin>
@@ -34,8 +30,10 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <version>${surefire.version}</version>
         <configuration>
-          <runOrder>${runOrder}</runOrder>
-          <threadCount>2</threadCount>
+          <runOrder>balanced</runOrder>
+          <parallel>classesAndMethods</parallel>
+          <threadCountClasses>2</threadCountClasses>
+          <threadCountMethods>6</threadCountMethods>
           <perCoreThreadCount>false</perCoreThreadCount>
           <includes>
             <include>**/Test*.java</include>

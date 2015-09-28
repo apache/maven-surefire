@@ -129,7 +129,7 @@ public class StatelessXmlReporter
             ppw.setEncoding( ENCODING );
 
             createTestSuiteElement( ppw, testSetReportEntry, testSetStats, reportNameSuffix,
-                                    testSetStats.elapsedTimeAsString( getRunTimeForAllTests( methodRunHistoryMap ) ) );
+                                    testSetReportEntry.elapsedTimeAsString() );
 
             showProperties( ppw );
 
@@ -266,61 +266,6 @@ public class StatelessXmlReporter
         }
 
         return DefaultReporterFactory.getTestResultType( testResultTypeList, rerunFailingTestsCount );
-    }
-
-    /**
-     * Get run time for the entire test suite (test class)
-     * For a successful/failed/error test, the run time is the first run
-     * For a flaky test, the run time is the first successful run's time
-     * The run time for the entire test class is the sum of all its test methods
-     *
-     *
-     * @param methodRunHistoryMap the input map between test method name and the list of all its runs
-     *                            in a given test class
-     * @return the run time for the entire test class
-     */
-    private int getRunTimeForAllTests( Map<String, List<WrappedReportEntry>> methodRunHistoryMap )
-    {
-        int totalTimeForSuite = 0;
-        for ( Map.Entry<String, List<WrappedReportEntry>> entry : methodRunHistoryMap.entrySet() )
-        {
-            List<WrappedReportEntry> methodEntryList = entry.getValue();
-            if ( methodEntryList == null )
-            {
-                throw new IllegalStateException( "Get null test method run history" );
-            }
-
-            if ( !methodEntryList.isEmpty() )
-            {
-                TestResultType resultType = getTestResultType( methodEntryList );
-
-                switch ( resultType )
-                {
-                    case success:
-                    case error:
-                    case failure:
-                        // Get the first run's time for failure/error/success runs
-                        totalTimeForSuite = totalTimeForSuite + methodEntryList.get( 0 ).getElapsed();
-                        break;
-                    case flake:
-                        // Get the first successful run's time for flaky runs
-                        for ( WrappedReportEntry singleRunEntry : methodEntryList )
-                        {
-                            if ( singleRunEntry.getReportEntryType() == ReportEntryType.SUCCESS )
-                            {
-                                totalTimeForSuite = totalTimeForSuite + singleRunEntry.getElapsed();
-                                break;
-                            }
-                        }
-                        break;
-                    case skipped:
-                        break;
-                    default:
-                        throw new IllegalStateException( "Get unknown test result type" );
-                }
-            }
-        }
-        return totalTimeForSuite;
     }
 
     private Map<String, List<WrappedReportEntry>> getAddMethodRunHistoryMap( String testClassName )

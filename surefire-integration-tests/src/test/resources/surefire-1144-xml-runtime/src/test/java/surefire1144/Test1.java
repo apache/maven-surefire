@@ -1,4 +1,4 @@
-package runorder.parallel;
+package surefire1144;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -25,12 +25,6 @@ import org.junit.Test;
 
 public class Test1
 {
-
-    public Test1()
-    {
-        System.out.println( Thread.currentThread().getName() + " Constructor" );
-    }
-
     static void sleep( int ms )
     {
         long target = System.currentTimeMillis() + ms;
@@ -48,45 +42,41 @@ public class Test1
         }
     }
 
+    static void printTimeAndSleep( String msg, int ms )
+    {
+        System.out.println( msg + " started @ " + System.currentTimeMillis() );
+        sleep( ms );
+    }
+
+    @Test
+    public void testSleep100()
+    {
+        printTimeAndSleep( "Test1.sleep100", 100 );
+    }
+
     @Test
     public void testSleep200()
     {
-        System.out.println(
-            Thread.currentThread().getName() + " Test1.sleep200 started @ " + System.currentTimeMillis() );
-        sleep( 200 );
+        printTimeAndSleep( "Test1.sleep200", 200 );
     }
 
     @Test
-    public void testSleep400()
+    public void testSleep300()
     {
-        System.out.println(
-            Thread.currentThread().getName() + " Test1.sleep400 started @ " + System.currentTimeMillis() );
-        sleep( 400 );
-    }
-
-    @Test
-    public void testSleep600()
-    {
-        System.out.println(
-            Thread.currentThread().getName() + " Test1.sleep600 started @ " + System.currentTimeMillis() );
-        sleep( 600 );
+        printTimeAndSleep( "Test1.sleep300", 300 );
     }
 
     @BeforeClass
     public static void setUpBeforeClass()
         throws Exception
     {
-        System.out.println( Thread.currentThread().getName() + " beforeClass sleep 175 " + System.currentTimeMillis() );
-        Thread.sleep( 175 );
+        printTimeAndSleep( "beforeClass sleep 500", 500 );
     }
 
     @AfterClass
     public static void tearDownAfterClass()
         throws Exception
     {
-        System.out.println( Thread.currentThread().getName() + " afterClass sleep 175 " + System.currentTimeMillis() );
-        Thread.sleep( 175 );
+        printTimeAndSleep( "afterClass sleep 500", 500 );
     }
-
-
 }
