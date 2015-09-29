@@ -113,6 +113,10 @@ public class TestNGMapConfigurator
             {
                 val = convert ( val, String.class );
             }
+            // TODO Add some integration tests
+            // Related issues:
+            // https://issues.apache.org/jira/browse/SUREFIRE-1177
+            // https://issues.apache.org/jira/browse/SUREFIRE-1179
             else if ( "suitethreadpoolsize".equals( key ) )
             {
                 val = convert( val, Integer.class );
