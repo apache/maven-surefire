@@ -170,6 +170,32 @@ Using TestNG
 
   This is particularly useful for slow tests that can have high concurrency, or to quickly and roughly assess the independence
   and thread safety of your tests and code.
+  
+  TestNG 5.10 or higher allows you to run methods in parallel test using data provider.
+  
++---+
+</plugins>
+    [...]
+      <plugin>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>${project.artifactId}</artifactId>
+        <version>${project.version}</version>
+        <configuration>
+          <properties>
+            <property>
+              <name>parallel</name>
+              <value>methods</value>
+            </property>
+            <property>
+              <name>dataproviderthreadcount</name>
+              <value>30</value>
+            </property>
+          </properties>
+        </configuration>
+      </plugin>
+    [...]
+</plugins>
++---+
 
   See also {{{./fork-options-and-parallel-execution.html}Fork Options and Parallel Test Execution}}.
 

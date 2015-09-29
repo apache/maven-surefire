@@ -117,10 +117,14 @@ public class TestNGMapConfigurator
             // Related issues:
             // https://issues.apache.org/jira/browse/SUREFIRE-1177
             // https://issues.apache.org/jira/browse/SUREFIRE-1179
+            // should work in TestNG 6.9.7
+            // only useful in specific cases - prevents from passing string instead of integer
             else if ( "suitethreadpoolsize".equals( key ) )
             {
                 val = convert( val, Integer.class );
             }
+            // should work in TestNG 6.9.7
+            // only useful in specific cases - prevents from passing string instead of integer
             else if ( "dataproviderthreadcount".equals( key ) )
             {
                 val = convert( val, Integer.class );

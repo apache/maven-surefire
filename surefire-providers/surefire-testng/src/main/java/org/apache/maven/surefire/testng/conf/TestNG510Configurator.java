@@ -25,7 +25,7 @@ import org.testng.xml.XmlSuite;
 import java.util.Map;
 
 /**
- * TestNG 5.10 configurator. Add support of dataproviderthreadcount
+ * TestNG 5.10 configurator. Added support of dataproviderthreadcount.
  *
  * @since 2.19
  */
@@ -33,15 +33,16 @@ public class TestNG510Configurator
     extends TestNGMapConfigurator
 {
 
-  @Override
-  public void configure( XmlSuite suite, Map<String, String> options ) throws TestSetFailedException
-  {
-    super.configure( suite, options );
-
-    String dataProviderThreadCount = options.get( "dataproviderthreadcount" );
-    if ( dataProviderThreadCount != null )
+    @Override
+    public void configure( XmlSuite suite, Map<String, String> options )
+        throws TestSetFailedException
     {
-      suite.setDataProviderThreadCount( Integer.parseInt( dataProviderThreadCount ) );
+        super.configure( suite, options );
+
+        String dataProviderThreadCount = options.get( "dataproviderthreadcount" );
+        if ( dataProviderThreadCount != null )
+        {
+            suite.setDataProviderThreadCount( Integer.parseInt( dataProviderThreadCount ) );
+        }
     }
-  }
 }
