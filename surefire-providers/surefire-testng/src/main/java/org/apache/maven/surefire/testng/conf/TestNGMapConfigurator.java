@@ -113,6 +113,18 @@ public class TestNGMapConfigurator
             {
                 val = convert ( val, String.class );
             }
+            // TODO Add some integration tests
+            // Related issues:
+            // https://issues.apache.org/jira/browse/SUREFIRE-1177
+            // https://issues.apache.org/jira/browse/SUREFIRE-1179
+            else if ( "suitethreadpoolsize".equals( key ) )
+            {
+                val = convert( val, Integer.class );
+            }
+            else if ( "dataproviderthreadcount".equals( key ) )
+            {
+                val = convert( val, Integer.class );
+            }
             // TODO objectfactory... not even documented, does it work?
             if ( key.startsWith( "-" ) )
             {
@@ -156,12 +168,17 @@ public class TestNGMapConfigurator
             return val;
         }
 
-        if ( ( Boolean.class.equals( type ) || boolean.class.equals( type ) ) && String.class.equals( val.getClass() ) )
+        if ( ( type == Boolean.class || type == boolean.class ) && val.getClass() == String.class )
         {
             return Boolean.valueOf( (String) val );
         }
 
-        if ( String.class.equals( type ) )
+        if ( ( type == Integer.class || type == int.class ) && val.getClass() == String.class )
+        {
+            return Integer.valueOf( (String) val );
+        }
+
+        if ( type == String.class )
         {
             return val.toString();
         }

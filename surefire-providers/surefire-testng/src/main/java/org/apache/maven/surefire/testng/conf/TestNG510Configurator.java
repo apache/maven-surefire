@@ -19,34 +19,29 @@ package org.apache.maven.surefire.testng.conf;
  * under the License.
  */
 
-import java.util.Map;
-import java.util.Map.Entry;
 import org.apache.maven.surefire.testset.TestSetFailedException;
+import org.testng.xml.XmlSuite;
+
+import java.util.Map;
 
 /**
- * TestNG 6.5.2 configurator. Changed objectFactory type to String
+ * TestNG 5.10 configurator. Add support of dataproviderthreadcount
  *
- * @author <a href='mailto:marvin[at]marvinformatics[dot]com'>Marvin Froeder</a>
- * @since 2.13
+ * @since 2.19
  */
-public class TestNG652Configurator
-    extends TestNG510Configurator
+public class TestNG510Configurator
+    extends TestNGMapConfigurator
 {
 
-    Map<String, Object> getConvertedOptions( Map<String, String> options )
-        throws TestSetFailedException
+  @Override
+  public void configure( XmlSuite suite, Map<String, String> options ) throws TestSetFailedException
+  {
+    super.configure( suite, options );
+
+    String dataProviderThreadCount = options.get( "dataproviderthreadcount" );
+    if ( dataProviderThreadCount != null )
     {
-        Map<String, Object> convertedOptions = super.getConvertedOptions( options );
-        for ( Entry<String, Object> entry : convertedOptions.entrySet() )
-        {
-            String key = entry.getKey();
-            if ( "-objectfactory".equals( key ) )
-            {
-                Class value = (Class) entry.getValue();
-                convertedOptions.put( key, value.getName() );
-                break;
-            }
-        }
-        return convertedOptions;
+      suite.setDataProviderThreadCount( Integer.parseInt( dataProviderThreadCount ) );
     }
+  }
 }
