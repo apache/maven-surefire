@@ -174,7 +174,6 @@ public class TestSetStats
         summary += skipped;
         summary += ", ";
         summary += reportEntry.getElapsedTimeVerbose();
-        summary += " sec";
 
         if ( failures > 0 || errors > 0 )
         {
