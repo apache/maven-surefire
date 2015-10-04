@@ -175,8 +175,8 @@ Inclusions and Exclusions of Tests
   [...]
 +---+
 
-  This syntax can be used in parameters: test, includes, excludes, includesFile, excludesFile.
-  Exclamation mark (!) excludes tests. The syntax in excludes and excludesFile should not use (!). The character (?)
-  within non-regex pattern replaces one character in file name or path. The file extensions are not mandatory in
-  non-regex patterns, and packages with slash can be used. The regex validates fully qualified class file.
+  This syntax can be used in parameters: <<<test>>>, <<<includes>>>, <<<excludes>>>, <<<includesFile>>>, <<<excludesFile>>>.
+  Exclamation mark (!) excludes tests. The syntax in parameter <<<excludes>>> and <<<excludesFile>>> should not use (!).
+  The character (?) within non-regex pattern replaces one character in file name or path. The file extensions are not
+  mandatory in non-regex patterns, and packages with slash can be used. The regex validates fully qualified class file.
   The regex supports '.class' file extension only. Note the regex comments, marked by (#) character, are unsupported.
