@@ -29,7 +29,6 @@ import java.io.IOException;
 import static org.apache.maven.surefire.booter.MasterProcessCommand.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertNotNull;
 
 /**
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
@@ -105,7 +104,7 @@ public class MasterProcessCommandTest
                     assertNull( decoded );
                     break;
                 case SHUTDOWN:
-                    assertEquals( Shutdown.class, command.getDataType() );
+                    assertEquals( String.class, command.getDataType() );
                     encoded = command.fromDataType( Shutdown.EXIT.name() );
                     assertThat( encoded.length, is( 4 ) );
                     decoded = command.toDataTypeAsString( encoded );

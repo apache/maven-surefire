@@ -28,6 +28,7 @@ import java.util.NoSuchElementException;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.NotifiableTestStream;
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
@@ -42,6 +43,8 @@ import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.StackTraceWriter;
 import org.apache.maven.surefire.util.internal.StringUtils;
 
+import static org.apache.maven.surefire.booter.Shutdown.KILL;
+
 /**
  * Knows how to reconstruct *all* the state transmitted over stdout by the forked process.
  *
@@ -50,6 +53,9 @@ import org.apache.maven.surefire.util.internal.StringUtils;
 public class ForkClient
     implements StreamConsumer
 {
+    private static final long START_TIME_ZERO = 0L;
+    private static final long START_TIME_NEGATIVE_TIMEOUT = -1L;
+
     private final DefaultReporterFactory defaultReporterFactory;
 
     private final NotifiableTestStream notifiableTestStream;
@@ -58,14 +64,15 @@ public class ForkClient
 
     private final Properties testVmSystemProperties;
 
+    /**
+     * <t>testSetStartedAt</t> is set to non-zero after received
+     * {@link ForkingRunListener#BOOTERCODE_TESTSET_STARTING test-set}.
+     */
+    private final AtomicLong testSetStartedAt = new AtomicLong( START_TIME_ZERO );
+
     private volatile boolean saidGoodBye;
 
     private volatile StackTraceWriter errorInFork;
-
-    public ForkClient( DefaultReporterFactory defaultReporterFactory, Properties testVmSystemProperties )
-    {
-        this( defaultReporterFactory, testVmSystemProperties, null );
-    }
 
     public ForkClient( DefaultReporterFactory defaultReporterFactory, Properties testVmSystemProperties,
                        NotifiableTestStream notifiableTestStream )
@@ -79,17 +86,49 @@ public class ForkClient
     {
     }
 
-    public DefaultReporterFactory getDefaultReporterFactory()
+    /**
+     * Called in concurrent Thread.
+     */
+    public final void tryToTimeout( long currentTimeMillis, int forkedProcessTimeoutInSeconds )
+    {
+        if ( forkedProcessTimeoutInSeconds > 0 )
+        {
+            final long forkedProcessTimeoutInMillis = 1000 * forkedProcessTimeoutInSeconds;
+            final long startedAt = testSetStartedAt.get();
+            if ( startedAt > START_TIME_ZERO && currentTimeMillis - startedAt >= forkedProcessTimeoutInMillis )
+            {
+                testSetStartedAt.set( START_TIME_NEGATIVE_TIMEOUT );
+                notifiableTestStream.shutdown( KILL );
+            }
+        }
+    }
+
+    public final DefaultReporterFactory getDefaultReporterFactory()
     {
         return defaultReporterFactory;
     }
 
-    public void consumeLine( String s )
+    public final void consumeLine( String s )
     {
         if ( StringUtils.isNotBlank( s ) )
         {
             processLine( s );
         }
+    }
+
+    private void setCurrentStartTime()
+    {
+        if ( testSetStartedAt.get() == START_TIME_ZERO ) // JIT can optimize <= no JNI call
+        {
+            // Not necessary to call JNI library library #currentTimeMillis
+            // which may waste 10 - 30 machine cycles in callback. Callbacks should be fast.
+            testSetStartedAt.compareAndSet( START_TIME_ZERO, System.currentTimeMillis() );
+        }
+    }
+
+    public final boolean hadTimeout()
+    {
+        return testSetStartedAt.get() == START_TIME_NEGATIVE_TIMEOUT;
     }
 
     private void processLine( String s )
@@ -111,6 +150,7 @@ public class ForkClient
             {
                 case ForkingRunListener.BOOTERCODE_TESTSET_STARTING:
                     getOrCreateReporter( channelNumber ).testSetStarting( createReportEntry( remaining ) );
+                    setCurrentStartTime();
                     break;
                 case ForkingRunListener.BOOTERCODE_TESTSET_COMPLETED:
                     getOrCreateReporter( channelNumber ).testSetCompleted( createReportEntry( remaining ) );
@@ -155,10 +195,7 @@ public class ForkClient
                     getOrCreateConsoleLogger( channelNumber ).info( createConsoleMessage( remaining ) );
                     break;
                 case ForkingRunListener.BOOTERCODE_NEXT_TEST:
-                    if ( notifiableTestStream != null )
-                    {
-                        notifiableTestStream.provideNewTest();
-                    }
+                    notifiableTestStream.provideNewTest();
                     break;
                 case ForkingRunListener.BOOTERCODE_ERROR:
                     errorInFork = deserializeStackTraceWriter( new StringTokenizer( remaining, "," ) );
@@ -213,7 +250,7 @@ public class ForkClient
         }
     }
 
-    public void consumeMultiLineContent( String s )
+    public final void consumeMultiLineContent( String s )
         throws IOException
     {
         BufferedReader stringReader = new BufferedReader( new StringReader( s ) );
@@ -280,7 +317,7 @@ public class ForkClient
      * @param channelNumber The logical channel number
      * @return A mock provider reporter
      */
-    public RunListener getReporter( int channelNumber )
+    public final RunListener getReporter( int channelNumber )
     {
         return testSetReporters.get( channelNumber );
     }
@@ -310,17 +347,17 @@ public class ForkClient
     {
     }
 
-    public boolean isSaidGoodBye()
+    public final boolean isSaidGoodBye()
     {
         return saidGoodBye;
     }
 
-    public StackTraceWriter getErrorInFork()
+    public final StackTraceWriter getErrorInFork()
     {
         return errorInFork;
     }
 
-    public boolean isErrorInFork()
+    public final boolean isErrorInFork()
     {
         return errorInFork != null;
     }

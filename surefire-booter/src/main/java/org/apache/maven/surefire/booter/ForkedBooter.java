@@ -73,7 +73,8 @@ public final class ForkedBooter
      */
     public static void main( String... args )
     {
-        ScheduledFuture<?> pingScheduler = listenToShutdownCommands();
+        final MasterProcessReader reader = startupMasterProcessReader();
+        final ScheduledFuture<?> pingScheduler = listenToShutdownCommands( reader );
         final PrintStream originalOut = System.out;
         try
         {
@@ -138,7 +139,7 @@ public final class ForkedBooter
             encodeAndWriteToOutput( ( (char) BOOTERCODE_BYE ) + ",0,BYE!\n", originalOut );
             originalOut.flush();
             // noinspection CallToSystemExit
-            exit( 0, DEFAULT );
+            exit( 0, DEFAULT, reader );
         }
         catch ( Throwable t )
         {
@@ -146,7 +147,7 @@ public final class ForkedBooter
             // noinspection UseOfSystemOutOrSystemErr
             t.printStackTrace( System.err );
             // noinspection ProhibitedExceptionThrown,CallToSystemExit
-            exit( 1, DEFAULT );
+            exit( 1, DEFAULT, reader );
         }
         finally
         {
@@ -154,13 +155,18 @@ public final class ForkedBooter
         }
     }
 
-    private static ScheduledFuture<?> listenToShutdownCommands()
+    private static MasterProcessReader startupMasterProcessReader()
     {
-        MasterProcessReader reader = MasterProcessReader.getReader();
-        reader.addShutdownListener( createExitHandler() );
+        return MasterProcessReader.getReader();
+    }
+
+    private static ScheduledFuture<?> listenToShutdownCommands( MasterProcessReader reader )
+    {
+        reader.addShutdownListener( createExitHandler( reader ) );
         AtomicBoolean pingDone = new AtomicBoolean( true );
         reader.addNoopListener( createPingHandler( pingDone ) );
-        return JVM_TERMINATOR.scheduleAtFixedRate( createPingJob( pingDone ), 0, PING_TIMEOUT_IN_SECONDS, SECONDS );
+        return JVM_TERMINATOR.scheduleAtFixedRate( createPingJob( pingDone, reader ),
+                                                   0, PING_TIMEOUT_IN_SECONDS, SECONDS );
     }
 
     private static MasterProcessListener createPingHandler( final AtomicBoolean pingDone )
@@ -174,18 +180,18 @@ public final class ForkedBooter
         };
     }
 
-    private static MasterProcessListener createExitHandler()
+    private static MasterProcessListener createExitHandler( final MasterProcessReader reader )
     {
         return new MasterProcessListener()
         {
             public void update( Command command )
             {
-                exit( 1, command.toShutdownData() );
+                exit( 1, command.toShutdownData(), reader );
             }
         };
     }
 
-    private static Runnable createPingJob( final AtomicBoolean pingDone )
+    private static Runnable createPingJob( final AtomicBoolean pingDone, final MasterProcessReader reader  )
     {
         return new Runnable()
         {
@@ -194,7 +200,7 @@ public final class ForkedBooter
                 boolean hasPing = pingDone.getAndSet( false );
                 if ( !hasPing )
                 {
-                    exit( 1, KILL );
+                    exit( 1, KILL, reader );
                 }
             }
         };
@@ -206,9 +212,9 @@ public final class ForkedBooter
         out.write( encodeBytes, 0, encodeBytes.length );
     }
 
-    private static void exit( int returnCode, Shutdown shutdownType )
+    private static void exit( int returnCode, Shutdown shutdownType, MasterProcessReader reader )
     {
-        MasterProcessReader.getReader().stop();
+        reader.stop();
         switch ( shutdownType )
         {
             case KILL:

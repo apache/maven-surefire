@@ -44,7 +44,7 @@ public enum MasterProcessCommand
     RUN_CLASS( 0, String.class ),
     TEST_SET_FINISHED( 1, Void.class ),
     SKIP_SINCE_NEXT_TEST( 2, Void.class ),
-    SHUTDOWN( 3, Shutdown.class ),
+    SHUTDOWN( 3, String.class ),
 
     /** To tell a forked process that the master process is still alive. Repeated after 10 seconds. */
     NOOP( 4, Void.class );
@@ -79,10 +79,16 @@ public enum MasterProcessCommand
     @SuppressWarnings( "checkstyle:magicnumber" )
     public byte[] encode( String data )
     {
+        if ( !hasDataType() )
+        {
+            throw new IllegalArgumentException( "cannot use data without data type" );
+        }
+
         if ( getDataType() != String.class )
         {
-            throw new IllegalArgumentException( "Data type can be only " + getDataType() );
+            throw new IllegalArgumentException( "Data type can be only " + String.class );
         }
+
         byte[] dataBytes = fromDataType( data );
         byte[] encoded = new byte[8 + dataBytes.length];
         int command = getId();

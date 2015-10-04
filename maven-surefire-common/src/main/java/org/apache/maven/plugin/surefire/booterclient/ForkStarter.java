@@ -31,8 +31,8 @@ import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.TestProvid
 import org.apache.maven.plugin.surefire.booterclient.output.ForkClient;
 import org.apache.maven.plugin.surefire.booterclient.output.ThreadedStreamConsumer;
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
+import org.apache.maven.shared.utils.cli.CommandLineCallable;
 import org.apache.maven.shared.utils.cli.CommandLineException;
-import org.apache.maven.shared.utils.cli.CommandLineTimeOutException;
 import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.ClasspathConfiguration;
 import org.apache.maven.surefire.booter.KeyValueSource;
@@ -74,8 +74,9 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.apache.maven.shared.utils.cli.CommandLineUtils.executeCommandLine;
+import static org.apache.maven.shared.utils.cli.CommandLineUtils.executeCommandLineAsCallable;
 import static org.apache.maven.shared.utils.cli.ShutdownHookUtils.addShutDownHook;
 import static org.apache.maven.shared.utils.cli.ShutdownHookUtils.removeShutdownHook;
 import static org.apache.maven.surefire.util.internal.StringUtils.FORK_STREAM_CHARSET_NAME;
@@ -110,6 +111,8 @@ public class ForkStarter
 {
     private static final long PING_IN_SECONDS = 10;
 
+    private static final int TIMEOUT_CHECK_PERIOD_MILLIS = 100;
+
     private static final ThreadFactory FORKED_JVM_DAEMON_THREAD_FACTORY
         = newDaemonThreadFactory( "surefire-fork-starter" );
 
@@ -117,6 +120,10 @@ public class ForkStarter
         = newDaemonThreadFactory( "surefire-jvm-killer-shutdownhook" );
 
     private final ScheduledExecutorService pingThreadScheduler = createPingScheduler();
+
+    private final ScheduledExecutorService timeoutCheckScheduler;
+
+    private final Queue<ForkClient> currentForkClients;
 
     /**
      * Closes an InputStream
@@ -179,6 +186,9 @@ public class ForkStarter
         defaultReporterFactory = new DefaultReporterFactory( startupReportConfiguration );
         defaultReporterFactory.runStarting();
         defaultReporterFactories = new ConcurrentLinkedQueue<DefaultReporterFactory>();
+        currentForkClients = new ConcurrentLinkedQueue<ForkClient>();
+        timeoutCheckScheduler = createTimeoutCheckScheduler();
+        triggerTimeoutCheck();
     }
 
     public RunResult run( SurefireProperties effectiveSystemProperties, DefaultScanResult scanResult )
@@ -197,6 +207,7 @@ public class ForkStarter
             defaultReporterFactory.mergeFromOtherFactories( defaultReporterFactories );
             defaultReporterFactory.close();
             pingThreadScheduler.shutdownNow();
+            timeoutCheckScheduler.shutdownNow();
         }
     }
 
@@ -205,11 +216,11 @@ public class ForkStarter
     {
         DefaultReporterFactory forkedReporterFactory = new DefaultReporterFactory( startupReportConfiguration );
         defaultReporterFactories.add( forkedReporterFactory );
-        PropertiesWrapper props = new PropertiesWrapper( providerProperties );
-        ForkClient forkClient =
-            new ForkClient( forkedReporterFactory, startupReportConfiguration.getTestVmSystemProperties() );
         TestLessInputStreamBuilder builder = new TestLessInputStreamBuilder();
+        PropertiesWrapper props = new PropertiesWrapper( providerProperties );
         TestLessInputStream stream = builder.build();
+        ForkClient forkClient =
+            new ForkClient( forkedReporterFactory, startupReportConfiguration.getTestVmSystemProperties(), stream );
         Thread shutdown = createImmediateShutdownHookThread( builder, providerConfiguration.getShutdown() );
         ScheduledFuture<?> ping = triggerPingTimerForShutdown( builder );
         try
@@ -351,7 +362,8 @@ public class ForkStarter
                             new DefaultReporterFactory( startupReportConfiguration );
                         defaultReporterFactories.add( forkedReporterFactory );
                         Properties vmProps = startupReportConfiguration.getTestVmSystemProperties();
-                        ForkClient forkClient = new ForkClient( forkedReporterFactory, vmProps )
+                        ForkClient forkClient = new ForkClient( forkedReporterFactory, vmProps,
+                                                                builder.getImmediateCommands() )
                         {
                             @Override
                             protected void stopOnNextTest()
@@ -529,20 +541,23 @@ public class ForkStarter
 
         try
         {
-            final int timeout = forkedProcessTimeoutInSeconds > 0 ? forkedProcessTimeoutInSeconds : 0;
+            CommandLineCallable future =
+                executeCommandLineAsCallable( cli, testProvidingInputStream, threadedStreamConsumer,
+                                              threadedStreamConsumer, 0, inputStreamCloser,
+                                              Charset.forName( FORK_STREAM_CHARSET_NAME ) );
 
-            final int result = executeCommandLine( cli, testProvidingInputStream, threadedStreamConsumer,
-                                                   threadedStreamConsumer, timeout, inputStreamCloser,
-                                                   Charset.forName( FORK_STREAM_CHARSET_NAME ) );
+            currentForkClients.add( forkClient );
 
-            if ( result != SUCCESS )
+            int result = future.call();
+
+            if ( forkClient.hadTimeout() )
+            {
+                runResult = timeout( forkClient.getDefaultReporterFactory().getGlobalRunStatistics().getRunResult() );
+            }
+            else if ( result != SUCCESS )
             {
                 throw new SurefireBooterForkException( "Error occurred in starting fork, check output in log" );
             }
-        }
-        catch ( CommandLineTimeOutException e )
-        {
-            runResult = timeout( forkClient.getDefaultReporterFactory().getGlobalRunStatistics().getRunResult() );
         }
         catch ( CommandLineException e )
         {
@@ -551,6 +566,7 @@ public class ForkStarter
         }
         finally
         {
+            currentForkClients.remove( forkClient );
             threadedStreamConsumer.close();
             inputStreamCloser.run();
             removeShutdownHook( inputStreamCloserHook );
@@ -650,6 +666,12 @@ public class ForkStarter
         return Executors.newScheduledThreadPool( 1, threadFactory );
     }
 
+    private static ScheduledExecutorService createTimeoutCheckScheduler()
+    {
+        ThreadFactory threadFactory = newDaemonThreadFactory( "timeout-check-timer" );
+        return Executors.newScheduledThreadPool( 1, threadFactory );
+    }
+
     private ScheduledFuture<?> triggerPingTimerForShutdown( final TestLessInputStreamBuilder builder )
     {
         return pingThreadScheduler.scheduleAtFixedRate( new Runnable()
@@ -673,5 +695,20 @@ public class ForkStarter
                 }
             }
         }, 0, PING_IN_SECONDS, SECONDS );
+    }
+
+    private ScheduledFuture<?> triggerTimeoutCheck()
+    {
+        return pingThreadScheduler.scheduleAtFixedRate( new Runnable()
+        {
+            public void run()
+            {
+                long systemTime = System.currentTimeMillis();
+                for ( ForkClient forkClient : currentForkClients )
+                {
+                    forkClient.tryToTimeout( systemTime, forkedProcessTimeoutInSeconds );
+                }
+            }
+        }, 0, TIMEOUT_CHECK_PERIOD_MILLIS, MILLISECONDS );
     }
 }
