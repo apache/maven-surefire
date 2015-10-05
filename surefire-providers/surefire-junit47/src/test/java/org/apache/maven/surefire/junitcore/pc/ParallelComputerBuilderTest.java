@@ -528,7 +528,7 @@ public class ParallelComputerBuilderTest
         ParallelComputer computer = parallelComputerBuilder.buildComputer();
         Result result = new JUnitCore().run( computer, TestWithBeforeAfter.class );
         assertTrue( result.wasSuccessful() );
-        TimeUnit.MILLISECONDS.sleep( 250 );
+        TimeUnit.MILLISECONDS.sleep( 1250 );
         assertThat( jvmThreads(), is( expectedThreads ) );
     }
 
