@@ -829,6 +829,7 @@ public abstract class AbstractSurefireMojo
             warnIfDefunctGroupsCombinations();
             warnIfRerunClashes();
             warnIfWrongShutdownValue();
+            warnIfNotApplicableSkipAfterFailureCount();
         }
         return true;
     }
@@ -2362,15 +2363,21 @@ public abstract class AbstractSurefireMojo
     private void warnIfRerunClashes()
         throws MojoFailureException
     {
+        if ( getRerunFailingTestsCount() < 0 )
+        {
+            throw new MojoFailureException( "Parameter \"rerunFailingTestsCount\" should not be negative." );
+        }
+
         if ( getSkipAfterFailureCount() < 0 )
         {
-            throw new MojoFailureException( "Parameter rerunFailingTestsCount should not be negative." );
+            throw new MojoFailureException( "Parameter \"skipAfterFailureCount\" should not be negative." );
         }
+
         boolean isRerun = getRerunFailingTestsCount() > 0;
         boolean isFailFast = getSkipAfterFailureCount() > 0;
         if ( isRerun && isFailFast )
         {
-            throw new MojoFailureException( "Parameters [rerunFailingTestsCount, skipAfterFailureCount] "
+            throw new MojoFailureException( "Parameters [\"rerunFailingTestsCount\", \"skipAfterFailureCount\"] "
                                                 + "should not be enabled together." );
         }
     }
@@ -2381,6 +2388,58 @@ public abstract class AbstractSurefireMojo
         if ( !Shutdown.isKnown( getShutdown() ) )
         {
             throw new MojoFailureException( "Parameter \"shutdown\" should have values " + Shutdown.listParameters() );
+        }
+    }
+
+    private void warnIfNotApplicableSkipAfterFailureCount()
+        throws MojoFailureException
+    {
+        int skipAfterFailureCount = getSkipAfterFailureCount();
+
+        if ( skipAfterFailureCount < 0 )
+        {
+            throw new MojoFailureException( "Parameter \"skipAfterFailureCount\" should not be negative." );
+        }
+        else if ( skipAfterFailureCount > 0 )
+        {
+            try
+            {
+                Artifact testng = getTestNgArtifact();
+                if ( testng != null )
+                {
+                    VersionRange range = VersionRange.createFromVersionSpec( "[5.10,)" );
+                    if ( !range.containsVersion( new DefaultArtifactVersion( testng.getVersion() ) ) )
+                    {
+                        throw new MojoFailureException(
+                            "Parameter \"skipAfterFailureCount\" expects TestNG Version 5.10 or higher. "
+                                + "java.lang.NoClassDefFoundError: org/testng/IInvokedMethodListener" );
+                    }
+                }
+                else
+                {
+                    // TestNG is dependent on JUnit
+                    Artifact junit = getJunitArtifact();
+                    if ( junit != null )
+                    {
+                        VersionRange range = VersionRange.createFromVersionSpec( "[4.0,)" );
+                        if ( !range.containsVersion( new DefaultArtifactVersion( junit.getVersion() ) ) )
+                        {
+                            throw new MojoFailureException(
+                                "Parameter \"skipAfterFailureCount\" expects JUnit Version 4.0 or higher. "
+                                    + "java.lang.NoSuchMethodError: "
+                                    + "org.junit.runner.notification.RunNotifier.pleaseStop()V" );
+                        }
+                    }
+                }
+            }
+            catch ( MojoExecutionException e )
+            {
+                throw new MojoFailureException( e.getLocalizedMessage() );
+            }
+            catch ( InvalidVersionSpecificationException e )
+            {
+                throw new RuntimeException( e );
+            }
         }
     }
 

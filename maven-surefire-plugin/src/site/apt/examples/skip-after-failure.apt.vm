@@ -46,8 +46,19 @@ Prerequisite
  
  If version of TestNG is lover than 5.10 while the parameter 
  <<<skipAfterFailureCount>>> is set, the plugin fails with error:
- <<<[ERROR] org.apache.maven.surefire.util.SurefireReflectionException: 
- java.lang.NoClassDefFoundError: org/testng/IInvokedMethodListener>>>
+ 
+ <<<[ERROR] Failed to execute goal ...: Parameter "skipAfterFailureCount"
+ expects TestNG Version 5.10 or higher. java.lang.NoClassDefFoundError:
+ org/testng/IInvokedMethodListener>>>
+
+ 
+ 
+ If version of JUnit is lover than 4.0 while the parameter 
+ <<<skipAfterFailureCount>>> is set, the plugin fails with error:
+ 
+ <<<[ERROR] Failed to execute goal ...: Parameter "skipAfterFailureCount"
+ expects JUnit Version 4.0 or higher. java.lang.NoSuchMethodError:
+ org.junit.runner.notification.RunNotifier.pleaseStop()V>>>
  
  
 Notices
