@@ -27,12 +27,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.util.Properties;
+import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.fest.assertions.api.Assertions.contentOf;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public final class FooIT
@@ -41,17 +41,41 @@ public final class FooIT
 
     private static final String TEST_RESOURCE = "/jiras/surefire855/war/properties/surefire855.properties";
 
+    private static File surefireDir()
+        throws IOException
+    {
+        return new File( "target/surefire" ).getCanonicalFile();
+    }
+
     private static File[] surefireProviderProperties()
         throws IOException
     {
-        final File surefireDir = new File( "target/surefire" ).getCanonicalFile();
-        return surefireDir.listFiles( new FileFilter()
+        return surefireDir().listFiles( new FileFilter()
         {
             public boolean accept( File pathname )
             {
                 try
                 {
                     return isSurefireProviderProperties( pathname );
+                }
+                catch ( IOException e )
+                {
+                    return false;
+                }
+            }
+        } );
+    }
+
+    private static File[] surefireBooterJar()
+        throws IOException
+    {
+        return surefireDir().listFiles( new FileFilter()
+        {
+            public boolean accept( File pathname )
+            {
+                try
+                {
+                    return isSurefireBooter( pathname );
                 }
                 catch ( IOException e )
                 {
@@ -73,11 +97,30 @@ public final class FooIT
             && fileName.endsWith( "tmp" );
     }
 
+    private static boolean isSurefireBooter( File pathname )
+        throws IOException
+    {
+        pathname = pathname.getCanonicalFile();
+        String fileName = pathname.getName();
+        return pathname.isFile() && fileName.startsWith( "surefirebooter" ) && fileName.endsWith( ".jar" );
+    }
+
     private static String manifestClassPath( Class clazz )
         throws IOException
     {
-        Manifest manifest = new Manifest( clazz.getResourceAsStream( "/META-INF/MANIFEST.MF" ) );
-        return manifest.getMainAttributes().getValue( "Class-Path" );
+        File[] booters = surefireBooterJar();
+        assertThat( booters, is( arrayWithSize( 1 ) ) );
+        File booter = booters[0];
+        JarFile jarFile = new JarFile( booter );
+        try
+        {
+            Manifest manifest = jarFile.getManifest();
+            return manifest.getMainAttributes().getValue( "Class-Path" );
+        }
+        finally
+        {
+            jarFile.close();
+        }
     }
 
     private static Properties loadProperties( Class clazz, String resourcePath )

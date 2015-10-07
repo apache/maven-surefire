@@ -20,6 +20,7 @@ package org.apache.maven.surefire.its.fixture;
  */
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
@@ -68,8 +69,35 @@ public class SurefireLauncher
         {
             mavenLauncher.addGoal( s );
         }
+        setInProcessJavaHome();
     }
 
+    public SurefireLauncher setInProcessJavaHome()
+    {
+        String javaHome = System.getenv( "JAVA_HOME" );
+        if ( javaHome != null && javaHome.length() > 0 )
+        {
+            try
+            {
+                File javaHomeAsDir = new File( javaHome ).getCanonicalFile();
+                if ( javaHomeAsDir.isDirectory() )
+                {
+                    setLauncherJavaHome( javaHomeAsDir.getPath() );
+                }
+            }
+            catch ( IOException e )
+            {
+                throw new RuntimeException( e );
+            }
+        }
+        return this;
+    }
+
+    public SurefireLauncher setLauncherJavaHome( String javaHome )
+    {
+        mavenLauncher.addEnvVar( "JAVA_HOME", javaHome );
+        return this;
+    }
 
     public SurefireLauncher getSubProjectLauncher( String subProject )
         throws VerificationException
