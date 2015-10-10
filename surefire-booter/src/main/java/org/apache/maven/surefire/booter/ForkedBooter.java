@@ -38,7 +38,7 @@ import org.apache.maven.surefire.report.StackTraceWriter;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
-import static org.apache.maven.surefire.booter.Shutdown.DEFAULT;
+import static org.apache.maven.surefire.booter.Shutdown.EXIT;
 import static org.apache.maven.surefire.booter.Shutdown.KILL;
 import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_BYE;
 import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_ERROR;
@@ -139,7 +139,7 @@ public final class ForkedBooter
             encodeAndWriteToOutput( ( (char) BOOTERCODE_BYE ) + ",0,BYE!\n", originalOut );
             originalOut.flush();
             // noinspection CallToSystemExit
-            exit( 0, DEFAULT, reader );
+            exit( 0, EXIT, reader );
         }
         catch ( Throwable t )
         {
@@ -147,7 +147,7 @@ public final class ForkedBooter
             // noinspection UseOfSystemOutOrSystemErr
             t.printStackTrace( System.err );
             // noinspection ProhibitedExceptionThrown,CallToSystemExit
-            exit( 1, DEFAULT, reader );
+            exit( 1, EXIT, reader );
         }
         finally
         {
