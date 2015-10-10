@@ -25,12 +25,12 @@
     <groupId>org.apache.maven.surefire</groupId>
     <artifactId>surefire</artifactId>
     <version>2.20-SNAPSHOT</version>
-    <relativePath>../pom.xml</relativePath>
   </parent>
 
   <artifactId>maven-surefire-common</artifactId>
 
   <name>Maven Surefire Common</name>
+  <description>API used in Surefire and Failsafe MOJO.</description>
 
   <prerequisites>
     <maven>2.2.1</maven>

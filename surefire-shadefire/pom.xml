@@ -24,7 +24,6 @@
     <groupId>org.apache.maven.surefire</groupId>
     <artifactId>surefire</artifactId>
     <version>2.20-SNAPSHOT</version>
-    <relativePath>../pom.xml</relativePath>
   </parent>
 
   <artifactId>surefire-shadefire</artifactId>
@@ -34,6 +33,7 @@
     that basically has ALL classes relocated to facilitate no API-conflict whatsoever with ourself.
     The only remaining point of conflict is around the booter properties file format.
   </description>
+
   <licenses>
     <license>
       <name>The Apache Software License, Version 2.0</name>

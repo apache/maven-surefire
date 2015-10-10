@@ -25,12 +25,12 @@
     <groupId>org.apache.maven.surefire</groupId>
     <artifactId>surefire</artifactId>
     <version>2.20-SNAPSHOT</version>
-    <relativePath>../pom.xml</relativePath>
   </parent>
 
   <artifactId>surefire-setup-integration-tests</artifactId>
 
   <name>Maven Surefire Integration Test Setup</name>
+  <description>Creates internal M2 local repository in target/it-repo/. The project is not deployed.</description>
 
   <properties>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>

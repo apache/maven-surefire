@@ -33,7 +33,8 @@
   <packaging>pom</packaging>
 
   <name>Apache Maven Surefire</name>
-  <description>Surefire is a test framework project.</description>
+  <description>Surefire is a test framework project.
+    This is the aggregator POM in Apache Maven Surefire project.</description>
   <url>http://maven.apache.org/surefire/</url>
   <inceptionYear>2004</inceptionYear>
 
