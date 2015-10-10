@@ -37,6 +37,8 @@ import static java.lang.Thread.State.RUNNABLE;
 import static java.lang.Thread.State.TERMINATED;
 import static java.util.concurrent.locks.LockSupport.park;
 import static java.util.concurrent.locks.LockSupport.unpark;
+import static org.apache.maven.surefire.booter.Command.toShutdown;
+import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_NEXT_TEST;
 import static org.apache.maven.surefire.booter.MasterProcessCommand.NOOP;
 import static org.apache.maven.surefire.booter.MasterProcessCommand.RUN_CLASS;
 import static org.apache.maven.surefire.booter.MasterProcessCommand.SHUTDOWN;
@@ -47,8 +49,6 @@ import static org.apache.maven.surefire.util.internal.StringUtils.encodeStringFo
 import static org.apache.maven.surefire.util.internal.StringUtils.isNotBlank;
 import static org.apache.maven.surefire.util.internal.StringUtils.isBlank;
 import static org.apache.maven.surefire.util.internal.DaemonThreadFactory.newDaemonThread;
-import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_NEXT_TEST;
-import static org.apache.maven.surefire.booter.Shutdown.DEFAULT;
 
 /**
  * Reader of commands coming from plugin(master) process.
@@ -526,16 +526,18 @@ public final class MasterProcessReader
         private void exitByConfiguration()
         {
             Shutdown shutdown = MasterProcessReader.this.shutdown; // won't read inconsistent changes through the stack
-            if ( shutdown != null && shutdown != DEFAULT )
+            if ( shutdown != null )
             {
                 insert( Command.TEST_SET_FINISHED ); // lazily
                 wakeupWaiters();
+                insertToListeners( toShutdown( shutdown ) );
                 switch ( shutdown )
                 {
                     case EXIT:
                         System.exit( 1 );
                     case KILL:
                         Runtime.getRuntime().halt( 1 );
+                    case DEFAULT:
                     default:
                         // should not happen; otherwise you missed enum case
                         break;

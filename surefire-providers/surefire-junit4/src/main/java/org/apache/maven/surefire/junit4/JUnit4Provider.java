@@ -131,7 +131,7 @@ public class JUnit4Provider
             }
             else if ( forkTestSet instanceof Class )
             {
-                testsToRun = fromClass( (Class) forkTestSet );
+                testsToRun = fromClass( (Class<?>) forkTestSet );
             }
             else
             {
@@ -169,6 +169,13 @@ public class JUnit4Provider
 
             if ( commandsReader != null )
             {
+                commandsReader.addShutdownListener( new MasterProcessListener()
+                {
+                    public void update( Command command )
+                    {
+                        testsToRun.markTestSetFinished();
+                    }
+                } );
                 commandsReader.awaitStarted();
             }
 

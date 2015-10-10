@@ -137,7 +137,7 @@ public class JUnitCoreProvider
             }
             else if ( forkTestSet instanceof Class )
             {
-                Class theClass = (Class) forkTestSet;
+                Class<?> theClass = (Class<?>) forkTestSet;
                 testsToRun = TestsToRun.fromClass( theClass );
             }
             else
@@ -164,6 +164,13 @@ public class JUnitCoreProvider
 
             if ( commandsReader != null )
             {
+                commandsReader.addShutdownListener( new MasterProcessListener()
+                {
+                    public void update( Command command )
+                    {
+                        testsToRun.markTestSetFinished();
+                    }
+                } );
                 commandsReader.awaitStarted();
             }
 

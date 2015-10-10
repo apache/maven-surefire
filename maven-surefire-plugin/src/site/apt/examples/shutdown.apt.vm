@@ -41,14 +41,14 @@ Shutdown of Forked JVM
   The master process sends NOOP command to a forked JVM every 10 seconds.
   Forked JVM is waiting for the command every 20 seconds.
   If the master process is killed (received SIGKILL signal) or shutdown 
-  (pressed CTRL+C, received SIGTERM signal), forked JVM terminates after
+  (pressed CTRL+C, received SIGTERM signal), forked JVM is killed after
   timing out waiting period.
 
 * Shutdown of forked JVM by stopping the build
 
   After the master process of the build is shutdown by sending SIGTERM signal
-  or pressing CTRL+C, the master process sends SHUTDOWN command to every
-  forked JVM. By default (configuration parameter <<<shutdown=testset>>>)
+  or pressing CTRL+C, the master process immediately sends SHUTDOWN command to
+  every forked JVM. By default (configuration parameter <<<shutdown=testset>>>)
   forked JVM would not continue with new test which means that the current
   test may still continue to run.
   The parameter <<<shutdown>>> can be configured with other two values
@@ -74,5 +74,12 @@ Shutdown of Forked JVM
   [...]
 </project>
 +---+
-  
+
+* Shutdown of forked JVM after certain timeout
+
+  Using parammeter <<<forkedProcessTimeoutInSeconds>>> forked JVMs
+  are killed separately after every individual process elapsed certain
+  amount of time and the whole plugin fails with the error message:
+
+  <<<There was a timeout or other error in the fork>>>
   

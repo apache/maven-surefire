@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
@@ -35,6 +36,8 @@ import org.apache.maven.surefire.testset.TestSetFailedException;
 public class TestsToRun implements Iterable<Class<?>>
 {
     private final Set<Class<?>> locatedClasses;
+
+    private volatile boolean finished;
 
     /**
      * Constructor
@@ -59,7 +62,60 @@ public class TestsToRun implements Iterable<Class<?>>
      */
     public Iterator<Class<?>> iterator()
     {
-        return locatedClasses.iterator();
+        return new ClassesIterator();
+    }
+
+    private final class ClassesIterator
+        implements Iterator<Class<?>>
+    {
+        private final Iterator<Class<?>> it = TestsToRun.this.locatedClasses.iterator();
+
+        private Boolean finishCurrentIteration;
+
+        public boolean hasNext()
+        {
+            popMarker();
+            return !finishCurrentIteration && it.hasNext();
+        }
+
+        public Class<?> next()
+        {
+            try
+            {
+                if ( popMarker() && finishCurrentIteration )
+                {
+                    throw new NoSuchElementException();
+                }
+                return it.next();
+            }
+            finally
+            {
+                finishCurrentIteration = null;
+            }
+        }
+
+        public void remove()
+        {
+            throw new UnsupportedOperationException();
+        }
+
+        /**
+         * @return {@code true} if marker changed from NULL to anything
+         */
+        private boolean popMarker()
+        {
+            if ( finishCurrentIteration == null )
+            {
+                finishCurrentIteration = TestsToRun.this.finished;
+                return true;
+            }
+            return false;
+        }
+    }
+
+    public final void markTestSetFinished()
+    {
+        finished = true;
     }
 
     public String toString()

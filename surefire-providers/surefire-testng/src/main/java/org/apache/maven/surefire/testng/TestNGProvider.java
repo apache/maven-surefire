@@ -124,12 +124,23 @@ public class TestNGProvider
                     }
                     else if ( forkTestSet instanceof Class )
                     {
-                        testsToRun = TestsToRun.fromClass( (Class) forkTestSet );
+                        testsToRun = TestsToRun.fromClass( (Class<?>) forkTestSet );
                     }
                     else
                     {
                         testsToRun = scanClassPath();
                     }
+                }
+
+                if ( commandsReader != null )
+                {
+                    commandsReader.addShutdownListener( new MasterProcessListener()
+                    {
+                        public void update( Command command )
+                        {
+                            testsToRun.markTestSetFinished();
+                        }
+                    } );
                 }
                 TestNGDirectoryTestSuite suite = newDirectorySuite();
                 suite.execute( testsToRun, reporterFactory );
