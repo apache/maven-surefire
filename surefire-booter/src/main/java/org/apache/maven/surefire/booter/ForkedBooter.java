@@ -214,15 +214,17 @@ public final class ForkedBooter
 
     private static void exit( int returnCode, Shutdown shutdownType, MasterProcessReader reader )
     {
-        reader.stop();
         switch ( shutdownType )
         {
             case KILL:
+                reader.stop();
                 Runtime.getRuntime().halt( returnCode );
             case EXIT:
+                reader.stop();
                 launchLastDitchDaemonShutdownThread( returnCode );
                 System.exit( returnCode );
             case DEFAULT:
+                // refers to shutdown=testset, but not used now, keeping reader open
             default:
                 break;
         }
