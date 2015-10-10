@@ -54,19 +54,19 @@ public class JUnit3Provider
 
     private final RunOrderCalculator runOrderCalculator;
 
-    private TestsToRun testsToRun;
-
     private final ScanResult scanResult;
+
+    private TestsToRun testsToRun;
 
     public JUnit3Provider( ProviderParameters booterParameters )
     {
         this.providerParameters = booterParameters;
-        this.testClassLoader = booterParameters.getTestClassLoader();
-        this.scanResult = booterParameters.getScanResult();
-        this.runOrderCalculator = booterParameters.getRunOrderCalculator();
-        this.reflector = new JUnit3Reflector( testClassLoader );
+        testClassLoader = booterParameters.getTestClassLoader();
+        scanResult = booterParameters.getScanResult();
+        runOrderCalculator = booterParameters.getRunOrderCalculator();
+        reflector = new JUnit3Reflector( testClassLoader );
         jUnit3TestChecker = new JUnit3TestChecker( testClassLoader );
-        this.testChecker = new PojoAndJUnit3Checker( jUnit3TestChecker ); // Todo; use reflector
+        testChecker = new PojoAndJUnit3Checker( jUnit3TestChecker ); // Todo; use reflector
     }
 
     public RunResult invoke( Object forkTestSet )
@@ -100,7 +100,7 @@ public class JUnit3Provider
             System.setSecurityManager( securityManager );
         }
 
-        for ( Class clazz : testsToRun )
+        for ( Class<?> clazz : testsToRun )
         {
             SurefireTestSet surefireTestSet = createTestSet( clazz );
             executeTestSet( surefireTestSet, reporter, testClassLoader );

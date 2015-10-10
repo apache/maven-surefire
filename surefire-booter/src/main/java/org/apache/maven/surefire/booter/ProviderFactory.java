@@ -26,7 +26,11 @@ import java.lang.reflect.Method;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
-import org.apache.maven.surefire.util.ReflectionUtils;
+
+import static org.apache.maven.surefire.util.ReflectionUtils.getMethod;
+import static org.apache.maven.surefire.util.ReflectionUtils.invokeGetter;
+import static org.apache.maven.surefire.util.ReflectionUtils.invokeMethodWithArray;
+import static org.apache.maven.surefire.util.ReflectionUtils.invokeMethodWithArray2;
 
 /**
  * Creates the surefire provider.
@@ -47,6 +51,10 @@ public class ProviderFactory
     private final Object reporterManagerFactory;
 
     private static final Class[] INVOKE_PARAMETERS = { Object.class };
+
+    private static final Class[] INVOKE_EMPTY_PARAMETER_TYPES = { };
+
+    private static final Class[] INVOKE_EMPTY_PARAMETERS = { };
 
     public ProviderFactory( StartupConfiguration startupConfiguration, ProviderConfiguration providerConfiguration,
                             ClassLoader testsClassLoader, Object reporterManagerFactory )
@@ -129,7 +137,7 @@ public class ProviderFactory
             ClassLoader current = swapClassLoader( testsClassLoader );
             try
             {
-                return (Iterable<Class<?>>) ReflectionUtils.invokeGetter( providerInOtherClassLoader, "getSuites" );
+                return (Iterable<Class<?>>) invokeGetter( providerInOtherClassLoader, "getSuites" );
             }
             finally
             {
@@ -143,11 +151,8 @@ public class ProviderFactory
             ClassLoader current = swapClassLoader( testsClassLoader );
             try
             {
-                final Method invoke =
-                    ReflectionUtils.getMethod( providerInOtherClassLoader.getClass(), "invoke", INVOKE_PARAMETERS );
-
-                final Object result = ReflectionUtils.invokeMethodWithArray2( providerInOtherClassLoader, invoke,
-                                                                              new Object[]{ forkTestSet } );
+                Method invoke = getMethod( providerInOtherClassLoader.getClass(), "invoke", INVOKE_PARAMETERS );
+                Object result = invokeMethodWithArray2( providerInOtherClassLoader, invoke, forkTestSet );
                 return (RunResult) surefireReflector.convertIfRunResult( result );
             }
             finally
@@ -169,9 +174,9 @@ public class ProviderFactory
 
         public void cancel()
         {
-            final Method invoke =
-                ReflectionUtils.getMethod( providerInOtherClassLoader.getClass(), "cancel", new Class[]{ } );
-            ReflectionUtils.invokeMethodWithArray( providerInOtherClassLoader, invoke, null );
+            Class<?> providerType = providerInOtherClassLoader.getClass();
+            Method invoke = getMethod( providerType, "cancel", INVOKE_EMPTY_PARAMETER_TYPES );
+            invokeMethodWithArray( providerInOtherClassLoader, invoke, INVOKE_EMPTY_PARAMETERS );
         }
     }
 }

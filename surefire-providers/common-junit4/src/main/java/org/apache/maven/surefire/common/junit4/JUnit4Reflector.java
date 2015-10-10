@@ -91,9 +91,8 @@ public final class JUnit4Reflector
         catch ( NoSuchMethodError e )
         {
             Method method = tryGetMethod( Description.class, "createSuiteDescription", PARAMS_WITH_ANNOTATIONS );
-            Object[] parameters = { description, new Annotation[0] };
             // may throw exception probably with JUnit 5.x
-            return (Description) invokeMethodWithArray( null, method, parameters );
+            return (Description) invokeMethodWithArray( null, method, description, new Annotation[0] );
         }
     }
 
@@ -102,7 +101,7 @@ public final class JUnit4Reflector
         Method method = tryGetMethod( Description.class, "createSuiteDescription", PARAMS_WITH_ANNOTATIONS );
         return method == null
             ? Description.createSuiteDescription( description )
-            : (Description) invokeMethodWithArray( null, method, new Object[] { description, annotations } );
+            : (Description) invokeMethodWithArray( null, method, description, annotations );
     }
 
     public static Ignore createIgnored( String value )

@@ -39,11 +39,19 @@ import org.apache.maven.surefire.testset.RunOrderParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestListResolver;
 import org.apache.maven.surefire.testset.TestRequest;
-import org.apache.maven.surefire.util.ReflectionUtils;
 import org.apache.maven.surefire.util.RunOrder;
 import org.apache.maven.surefire.util.SurefireReflectionException;
 
 import static java.util.Collections.checkedList;
+
+import static org.apache.maven.surefire.util.ReflectionUtils.getConstructor;
+import static org.apache.maven.surefire.util.ReflectionUtils.getMethod;
+import static org.apache.maven.surefire.util.ReflectionUtils.invokeGetter;
+import static org.apache.maven.surefire.util.ReflectionUtils.invokeMethodWithArray;
+import static org.apache.maven.surefire.util.ReflectionUtils.instantiateOneArg;
+import static org.apache.maven.surefire.util.ReflectionUtils.invokeSetter;
+import static org.apache.maven.surefire.util.ReflectionUtils.instantiateTwoArgs;
+import static org.apache.maven.surefire.util.ReflectionUtils.newInstance;
 
 /**
  * Does reflection based invocation of the surefire methods.
@@ -134,14 +142,13 @@ public class SurefireReflector
         {
             return result;
         }
-        final Integer getCompletedCount1 = (Integer) ReflectionUtils.invokeGetter( result, "getCompletedCount" );
-        final Integer getErrors = (Integer) ReflectionUtils.invokeGetter( result, "getErrors" );
-        final Integer getSkipped = (Integer) ReflectionUtils.invokeGetter( result, "getSkipped" );
-        final Integer getFailures = (Integer) ReflectionUtils.invokeGetter( result, "getFailures" );
+        int getCompletedCount1 = (Integer) invokeGetter( result, "getCompletedCount" );
+        int getErrors = (Integer) invokeGetter( result, "getErrors" );
+        int getSkipped = (Integer) invokeGetter( result, "getSkipped" );
+        int getFailures = (Integer) invokeGetter( result, "getFailures" );
         return new RunResult( getCompletedCount1, getErrors, getFailures, getSkipped );
 
     }
-
 
     /**
      * @noinspection UnusedDeclaration
@@ -168,7 +175,6 @@ public class SurefireReflector
         }
     }
 
-
     Object createTestRequest( TestRequest suiteDefinition )
     {
         if ( suiteDefinition == null )
@@ -178,10 +184,13 @@ public class SurefireReflector
         else
         {
             Object resolver = createTestListResolver( suiteDefinition.getTestListResolver() );
-            Class[] arguments = { List.class, File.class, testListResolver, int.class };
-            Constructor constructor = ReflectionUtils.getConstructor( testRequest, arguments );
-            return ReflectionUtils.newInstance( constructor, new Object[]{ suiteDefinition.getSuiteXmlFiles(),
-                suiteDefinition.getTestSourceDirectory(), resolver, suiteDefinition.getRerunFailingTestsCount() } );
+            Class<?>[] arguments = { List.class, File.class, testListResolver, int.class };
+            Constructor constructor = getConstructor( testRequest, arguments );
+            return newInstance( constructor,
+                                suiteDefinition.getSuiteXmlFiles(),
+                                suiteDefinition.getTestSourceDirectory(),
+                                resolver,
+                                suiteDefinition.getRerunFailingTestsCount() );
         }
     }
 
@@ -193,8 +202,8 @@ public class SurefireReflector
         }
         else
         {
-            Constructor constructor = ReflectionUtils.getConstructor( testListResolver, new Class[] { String.class } );
-            return ReflectionUtils.newInstance( constructor, new Object[] { resolver.getPluginParameterTest() } );
+            Constructor constructor = getConstructor( testListResolver, String.class );
+            return newInstance( constructor, resolver.getPluginParameterTest() );
         }
     }
 
@@ -205,15 +214,15 @@ public class SurefireReflector
             return null;
         }
         //Can't use the constructor with the RunOrder parameter. Using it causes some integration tests to fail.
-        Class[] arguments = { File.class, List.class, List.class, List.class, boolean.class, String.class };
-        Constructor constructor = ReflectionUtils.getConstructor( this.directoryScannerParameters, arguments );
-        return ReflectionUtils.newInstance( constructor,
-                                            new Object[]{ directoryScannerParameters.getTestClassesDirectory(),
-                                                directoryScannerParameters.getIncludes(),
-                                                directoryScannerParameters.getExcludes(),
-                                                directoryScannerParameters.getSpecificTests(),
-                                                directoryScannerParameters.isFailIfNoTests(),
-                                                RunOrder.asString( directoryScannerParameters.getRunOrder() ) } );
+        Class<?>[] arguments = { File.class, List.class, List.class, List.class, boolean.class, String.class };
+        Constructor constructor = getConstructor( this.directoryScannerParameters, arguments );
+        return newInstance( constructor,
+                            directoryScannerParameters.getTestClassesDirectory(),
+                            directoryScannerParameters.getIncludes(),
+                            directoryScannerParameters.getExcludes(),
+                            directoryScannerParameters.getSpecificTests(),
+                            directoryScannerParameters.isFailIfNoTests(),
+                            RunOrder.asString( directoryScannerParameters.getRunOrder() ) );
     }
 
 
@@ -224,14 +233,11 @@ public class SurefireReflector
             return null;
         }
         //Can't use the constructor with the RunOrder parameter. Using it causes some integration tests to fail.
-        Class[] arguments = { String.class, String.class };
-        Constructor constructor = ReflectionUtils.getConstructor( this.runOrderParameters, arguments );
-        final File runStatisticsFile = runOrderParameters.getRunStatisticsFile();
-        return ReflectionUtils.newInstance( constructor,
-                                            new Object[]{ RunOrder.asString( runOrderParameters.getRunOrder() ),
-                                                runStatisticsFile != null
-                                                    ? runStatisticsFile.getAbsolutePath()
-                                                    : null } );
+        Class<?>[] arguments = { String.class, String.class };
+        Constructor constructor = getConstructor( this.runOrderParameters, arguments );
+        File runStatisticsFile = runOrderParameters.getRunStatisticsFile();
+        return newInstance( constructor, RunOrder.asString( runOrderParameters.getRunOrder() ),
+                            runStatisticsFile == null ? null : runStatisticsFile.getAbsolutePath() );
     }
 
     Object createTestArtifactInfo( TestArtifactInfo testArtifactInfo )
@@ -240,19 +246,16 @@ public class SurefireReflector
         {
             return null;
         }
-        Class[] arguments = { String.class, String.class };
-        Constructor constructor = ReflectionUtils.getConstructor( this.testArtifactInfo, arguments );
-        return ReflectionUtils.newInstance( constructor, new Object[]{ testArtifactInfo.getVersion(),
-            testArtifactInfo.getClassifier() } );
+        Class<?>[] arguments = { String.class, String.class };
+        Constructor constructor = getConstructor( this.testArtifactInfo, arguments );
+        return newInstance( constructor, testArtifactInfo.getVersion(), testArtifactInfo.getClassifier() );
     }
 
 
-    Object createReporterConfiguration( ReporterConfiguration reporterConfiguration )
+    Object createReporterConfiguration( ReporterConfiguration reporterConfig )
     {
-        Constructor constructor =
-            ReflectionUtils.getConstructor( this.reporterConfiguration, new Class[]{ File.class, boolean.class } );
-        return ReflectionUtils.newInstance( constructor, new Object[]{ reporterConfiguration.getReportsDirectory(),
-            reporterConfiguration.isTrimStackTrace() } );
+        Constructor constructor = getConstructor( reporterConfiguration, File.class, boolean.class );
+        return newInstance( constructor, reporterConfig.getReportsDirectory(), reporterConfig.isTrimStackTrace() );
     }
 
     public static ReporterFactory createForkingReporterFactoryInCurrentClassLoader( boolean trimStackTrace,
@@ -264,14 +267,13 @@ public class SurefireReflector
     public Object createBooterConfiguration( ClassLoader surefireClassLoader, Object factoryInstance,
                                              boolean insideFork )
     {
-        return ReflectionUtils.instantiateTwoArgs( surefireClassLoader, BaseProviderFactory.class.getName(),
-                                                   reporterFactory, factoryInstance, boolean.class, insideFork );
+        return instantiateTwoArgs( surefireClassLoader, BaseProviderFactory.class.getName(),
+                                   reporterFactory, factoryInstance, boolean.class, insideFork );
     }
 
     public Object instantiateProvider( String providerClassName, Object booterParameters )
     {
-        return ReflectionUtils.instantiateOneArg( surefireClassLoader, providerClassName, this.booterParameters,
-                                                  booterParameters );
+        return instantiateOneArg( surefireClassLoader, providerClassName, this.booterParameters, booterParameters );
     }
 
     public void setIfDirScannerAware( Object o, DirectoryScannerParameters dirScannerParams )
@@ -295,13 +297,13 @@ public class SurefireReflector
                     newOptions.add( e );
                 }
             }
-            ReflectionUtils.invokeSetter( o, "setMainCliOptions", List.class, newOptions );
+            invokeSetter( o, "setMainCliOptions", List.class, newOptions );
         }
     }
 
     public void setSkipAfterFailureCount( Object o, int skipAfterFailureCount )
     {
-        ReflectionUtils.invokeSetter( o, "setSkipAfterFailureCount", int.class, skipAfterFailureCount );
+        invokeSetter( o, "setSkipAfterFailureCount", int.class, skipAfterFailureCount );
     }
 
     public void setShutdown( Object o, Shutdown shutdown )
@@ -312,7 +314,7 @@ public class SurefireReflector
             {
                 if ( shutdown.ordinal() == e.ordinal() )
                 {
-                    ReflectionUtils.invokeSetter( o, "setShutdown", shutdownClass, e );
+                    invokeSetter( o, "setShutdown", shutdownClass, e );
                     break;
                 }
             }
@@ -321,14 +323,14 @@ public class SurefireReflector
 
     public void setDirectoryScannerParameters( Object o, DirectoryScannerParameters dirScannerParams )
     {
-        final Object param = createDirectoryScannerParameters( dirScannerParams );
-        ReflectionUtils.invokeSetter( o, "setDirectoryScannerParameters", this.directoryScannerParameters, param );
+        Object param = createDirectoryScannerParameters( dirScannerParams );
+        invokeSetter( o, "setDirectoryScannerParameters", directoryScannerParameters, param );
     }
 
     public void setRunOrderParameters( Object o, RunOrderParameters runOrderParameters )
     {
-        final Object param = createRunOrderParameters( runOrderParameters );
-        ReflectionUtils.invokeSetter( o, "setRunOrderParameters", this.runOrderParameters, param );
+        Object param = createRunOrderParameters( runOrderParameters );
+        invokeSetter( o, "setRunOrderParameters", this.runOrderParameters, param );
     }
 
     public void setTestSuiteDefinitionAware( Object o, TestRequest testSuiteDefinition2 )
@@ -341,8 +343,8 @@ public class SurefireReflector
 
     void setTestSuiteDefinition( Object o, TestRequest testSuiteDefinition1 )
     {
-        final Object param = createTestRequest( testSuiteDefinition1 );
-        ReflectionUtils.invokeSetter( o, "setTestRequest", testRequest, param );
+        Object param = createTestRequest( testSuiteDefinition1 );
+        invokeSetter( o, "setTestRequest", testRequest, param );
     }
 
     public void setProviderPropertiesAware( Object o, Map<String, String> properties )
@@ -355,7 +357,7 @@ public class SurefireReflector
 
     void setProviderProperties( Object o, Map<String, String> providerProperties )
     {
-        ReflectionUtils.invokeSetter( o, "setProviderProperties", Map.class, providerProperties );
+        invokeSetter( o, "setProviderProperties", Map.class, providerProperties );
     }
 
     public void setReporterConfigurationAware( Object o, ReporterConfiguration reporterConfiguration1 )
@@ -369,8 +371,8 @@ public class SurefireReflector
 
     void setReporterConfiguration( Object o, ReporterConfiguration reporterConfiguration )
     {
-        final Object param = createReporterConfiguration( reporterConfiguration );
-        ReflectionUtils.invokeSetter( o, "setReporterConfiguration", this.reporterConfiguration, param );
+        Object param = createReporterConfiguration( reporterConfiguration );
+        invokeSetter( o, "setReporterConfiguration", this.reporterConfiguration, param );
     }
 
     public void setTestClassLoaderAware( Object o, ClassLoader testClassLoader )
@@ -383,9 +385,8 @@ public class SurefireReflector
 
     void setTestClassLoader( Object o, ClassLoader testClassLoader )
     {
-        final Method setter =
-            ReflectionUtils.getMethod( o, "setClassLoaders", new Class[]{ ClassLoader.class } );
-        ReflectionUtils.invokeMethodWithArray( o, setter, new Object[]{ testClassLoader } );
+        Method setter = getMethod( o, "setClassLoaders", ClassLoader.class );
+        invokeMethodWithArray( o, setter, testClassLoader );
     }
 
     public void setTestArtifactInfoAware( Object o, TestArtifactInfo testArtifactInfo1 )
@@ -398,8 +399,8 @@ public class SurefireReflector
 
     void setTestArtifactInfo( Object o, TestArtifactInfo testArtifactInfo )
     {
-        final Object param = createTestArtifactInfo( testArtifactInfo );
-        ReflectionUtils.invokeSetter( o, "setTestArtifactInfo", this.testArtifactInfo, param );
+        Object param = createTestArtifactInfo( testArtifactInfo );
+        invokeSetter( o, "setTestArtifactInfo", this.testArtifactInfo, param );
     }
 
     private boolean isRunResult( Object o )

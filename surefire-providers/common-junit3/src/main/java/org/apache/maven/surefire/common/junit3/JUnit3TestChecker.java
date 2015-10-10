@@ -36,7 +36,7 @@ import org.apache.maven.surefire.util.ScannerFilter;
 public class JUnit3TestChecker
     implements ScannerFilter
 {
-    private final Class junitClass;
+    private final Class<?> junitClass;
 
     private static final Class[] EMPTY_CLASS_ARRAY = new Class[0];
 
@@ -54,7 +54,7 @@ public class JUnit3TestChecker
         return nonAbstractClassFilter.accept( testClass ) && isValidJUnit3Test( testClass );
     }
 
-    private boolean isValidJUnit3Test( Class testClass )
+    private boolean isValidJUnit3Test( Class<?> testClass )
     {
         return junitClass != null && ( junitClass.isAssignableFrom( testClass ) || isSuiteOnly( testClass ) );
     }

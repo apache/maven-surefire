@@ -30,9 +30,9 @@ public final class JUnit48Reflector
 
     private static final String CATEGORY = "org.junit.experimental.categories.Category";
 
-    private final Class categories;
+    private final Class<?> categories;
 
-    private final Class category;
+    private final Class<?> category;
 
     public JUnit48Reflector( ClassLoader testClassLoader )
     {

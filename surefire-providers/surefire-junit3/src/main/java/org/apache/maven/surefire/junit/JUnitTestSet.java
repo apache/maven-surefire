@@ -74,13 +74,13 @@ public final class JUnitTestSet
             Object testObject = reflector.constructTestObject( testClass );
             final Method runMethod;
 
-            if ( this.reflector.getTestInterface().isAssignableFrom( testObject.getClass() ) )
+            if ( reflector.getTestInterface().isAssignableFrom( testObject.getClass() ) )
             {
-                runMethod = this.reflector.getTestInterfaceRunMethod();
+                runMethod = reflector.getTestInterfaceRunMethod();
             }
             else
             {
-                runMethod = reflector.getRunMethod( this.testClass );
+                runMethod = reflector.getRunMethod( testClass );
             }
 
             Object instanceOfTestResult = reflector.getTestResultClass().newInstance();

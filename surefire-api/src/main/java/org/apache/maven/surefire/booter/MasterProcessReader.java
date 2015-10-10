@@ -236,7 +236,7 @@ public final class MasterProcessReader
     /**
      * thread-safety: Must be called from single thread like here the reader thread only.
      */
-    private void insertForQueue( Command cmd )
+    private void insertToQueue( Command cmd )
     {
         MasterProcessCommand expectedCommandType = cmd.getCommandType();
         switch ( expectedCommandType )
@@ -253,7 +253,7 @@ public final class MasterProcessReader
         }
     }
 
-    private void insertForListeners( Command cmd )
+    private void insertToListeners( Command cmd )
     {
         MasterProcessCommand expectedCommandType = cmd.getCommandType();
         for ( TwoPropertiesWrapper<MasterProcessCommand, MasterProcessListener> listenerWrapper
@@ -273,8 +273,8 @@ public final class MasterProcessReader
      */
     private void insert( Command cmd )
     {
-        insertForQueue( cmd );
-        insertForListeners( cmd );
+        insertToQueue( cmd );
+        insertToListeners( cmd );
     }
 
     private final class ClassesIterable
@@ -421,7 +421,7 @@ public final class MasterProcessReader
         Command command = decode( stdIn );
         if ( command != null )
         {
-            insertForQueue( command );
+            insertToQueue( command );
         }
         return command;
     }
@@ -478,7 +478,7 @@ public final class MasterProcessReader
                                 wakeupWaiters();
                                 break;
                             case SHUTDOWN:
-                                insertForQueue( Command.TEST_SET_FINISHED );
+                                insertToQueue( Command.TEST_SET_FINISHED );
                                 wakeupWaiters();
                                 break;
                             default:
@@ -486,7 +486,7 @@ public final class MasterProcessReader
                                 break;
                         }
 
-                        insertForListeners( command );
+                        insertToListeners( command );
                     }
                 }
             }

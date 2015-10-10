@@ -172,7 +172,7 @@ public class JUnit4Provider
                 commandsReader.awaitStarted();
             }
 
-            for ( Class aTestsToRun : testsToRun )
+            for ( Class<?> aTestsToRun : testsToRun )
             {
                 executeTestSet( aTestsToRun, reporter, notifier );
             }
