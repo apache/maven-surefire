@@ -119,11 +119,29 @@ public class ForkStarter
     private static final ThreadFactory SHUTDOWN_HOOK_THREAD_FACTORY
         = newDaemonThreadFactory( "surefire-jvm-killer-shutdownhook" );
 
+    private static final AtomicInteger systemPropertiesFileCounter = new AtomicInteger();
+
     private final ScheduledExecutorService pingThreadScheduler = createPingScheduler();
 
     private final ScheduledExecutorService timeoutCheckScheduler;
 
     private final Queue<ForkClient> currentForkClients;
+
+    private final int forkedProcessTimeoutInSeconds;
+
+    private final ProviderConfiguration providerConfiguration;
+
+    private final StartupConfiguration startupConfiguration;
+
+    private final ForkConfiguration forkConfiguration;
+
+    private final StartupReportConfiguration startupReportConfiguration;
+
+    private final Log log;
+
+    private final DefaultReporterFactory defaultReporterFactory;
+
+    private final Collection<DefaultReporterFactory> defaultReporterFactories;
 
     /**
      * Closes an InputStream
@@ -154,24 +172,6 @@ public class ForkStarter
             }
         }
     }
-
-    private final int forkedProcessTimeoutInSeconds;
-
-    private final ProviderConfiguration providerConfiguration;
-
-    private final StartupConfiguration startupConfiguration;
-
-    private final ForkConfiguration forkConfiguration;
-
-    private final StartupReportConfiguration startupReportConfiguration;
-
-    private final Log log;
-
-    private final DefaultReporterFactory defaultReporterFactory;
-
-    private final Collection<DefaultReporterFactory> defaultReporterFactories;
-
-    private static volatile int systemPropertiesFileCounter = 0;
 
     public ForkStarter( ProviderConfiguration providerConfiguration, StartupConfiguration startupConfiguration,
                         ForkConfiguration forkConfiguration, int forkedProcessTimeoutInSeconds,
@@ -487,7 +487,7 @@ public class ForkStarter
                     createCopyAndReplaceForkNumPlaceholder( effectiveSystemProperties, forkNumber );
 
                 systPropsFile = writePropertiesFile( filteredProperties, forkConfiguration.getTempDirectory(),
-                                                     "surefire_" + systemPropertiesFileCounter++,
+                                                     "surefire_" + systemPropertiesFileCounter.getAndIncrement(),
                                                      forkConfiguration.isDebug() );
             }
             else
