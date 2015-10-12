@@ -23,6 +23,9 @@ import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.junit.Test;
 
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.is;
+
 /**
  * Test surefire-report on TestNG test
  *
@@ -38,5 +41,30 @@ public class CheckTestNgReportTestIT
         final OutputValidator outputValidator =
             unpack( "/testng-simple" ).addSurefireReportGoal().executeCurrentGoals().verifyErrorFree( 3 );
         outputValidator.getSiteFile( "surefire-report.html" ).assertFileExists();
+    }
+
+    @Test
+    public void shouldNotBeVerbose()
+        throws Exception
+    {
+        unpack( "/testng-simple" )
+            .sysProp( "testNgVersion", "5.10" )
+            .sysProp( "testNgClassifier", "jdk15" )
+            .executeTest()
+            .verifyErrorFreeLog()
+            .assertThatLogLine( containsString( "[Parser] Running:" ), is( 0 ) );
+    }
+
+    @Test
+    public void shouldBeVerbose()
+        throws Exception
+    {
+        unpack( "/testng-simple" )
+            .sysProp( "testNgVersion", "5.10" )
+            .sysProp( "testNgClassifier", "jdk15" )
+            .sysProp( "surefire.testng.verbose", "10" )
+            .executeTest()
+            .verifyErrorFreeLog()
+            .assertThatLogLine( containsString( "[Parser] Running:" ), is( 1 ) );
     }
 }

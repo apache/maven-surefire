@@ -38,7 +38,7 @@ Using TestNG
     <dependency>
       <groupId>org.testng</groupId>
       <artifactId>testng</artifactId>
-      <version>6.8.8</version>
+      <version>6.9.8</version>
       <scope>test</scope>
     </dependency>
   [...]
@@ -171,7 +171,7 @@ Using TestNG
   This is particularly useful for slow tests that can have high concurrency, or to quickly and roughly assess the independence
   and thread safety of your tests and code.
   
-  TestNG 5.10 or higher allows you to run methods in parallel test using data provider.
+  TestNG 5.10 and plugin version 2.19 or higher allows you to run methods in parallel test using data provider.
   
 +---+
 </plugins>
@@ -197,7 +197,7 @@ Using TestNG
 </plugins>
 +---+
   
-  TestNG 6.9.8 (JRE 1.7) or higher allows you to run suites in parallel.
+  TestNG 6.9.8 (JRE 1.7) and plugin version 2.19 or higher allows you to run suites in parallel.
   
 +---+
 </plugins>
@@ -277,6 +277,35 @@ Using TestNG
   a separate test artifact <<<your-testng-listener-artifact>>> with scope=test, or in project test source code
   <<<src/test/java>>>. You can filter test artifacts by the parameter <<<dependenciesToScan>>> to load its classes
   in current ClassLoader of surefire-testng provider.
+
+* The level of verbosity
+
+  Since the plugin version 2.19 or higher the verbosity level can be configured in provider property
+  <<<surefire.testng.verbose>>>. The verbosity level is between 0 and 10 where 10 is the most detailed.
+  You can specify -1 and this will put TestNG in debug mode (no longer slicing off stack traces and all).
+  The default level is 0.
+  
++---+
+</plugins>
+    [...]
+      <plugin>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>${project.artifactId}</artifactId>
+        <version>${project.version}</version>
+        <configuration>
+          [...]
+          <properties>
+            <property>
+              <name>surefire.testng.verbose</name>
+              <value>10</value>
+            </property>
+          </properties>
+          [...]
+        </configuration>
+      </plugin>
+    [...]
+</plugins>
++---+
 
 * Running TestNG and JUnit Tests
 

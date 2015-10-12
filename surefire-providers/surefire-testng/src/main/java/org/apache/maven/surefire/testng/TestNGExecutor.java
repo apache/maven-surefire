@@ -127,7 +127,8 @@ public class TestNGExecutor
 
         testng.setXmlSuites( xmlSuites );
         configurator.configure( testng, options );
-        postConfigure( testng, testSourceDirectory, reportManager, suite, reportsDirectory, skipAfterFailureCount );
+        postConfigure( testng, testSourceDirectory, reportManager, suite, reportsDirectory, skipAfterFailureCount,
+                       extractVerboseLevel( options ) );
         testng.run();
     }
 
@@ -275,7 +276,8 @@ public class TestNGExecutor
         TestNG testng = new TestNG( true );
         Configurator configurator = getConfigurator( options.get( "testng.configurator" ) );
         configurator.configure( testng, options );
-        postConfigure( testng, testSourceDirectory, reportManager, suite, reportsDirectory, skipAfterFailureCount );
+        postConfigure( testng, testSourceDirectory, reportManager, suite, reportsDirectory, skipAfterFailureCount,
+                       extractVerboseLevel( options ) );
         testng.setTestSuites( suiteFiles );
         testng.run();
     }
@@ -301,11 +303,11 @@ public class TestNGExecutor
     }
 
     private static void postConfigure( TestNG testNG, String sourcePath, final RunListener reportManager,
-                                       TestNgTestSuite suite, File reportsDirectory, int skipAfterFailureCount )
-        throws TestSetFailedException
+                                       TestNgTestSuite suite, File reportsDirectory, int skipAfterFailureCount,
+                                       int verboseLevel )
     {
-        // turn off all TestNG output
-        testNG.setVerbose( 0 );
+        // 0 (default): turn off all TestNG output
+        testNG.setVerbose( verboseLevel );
 
         TestNGReporter reporter = createTestNGReporter( reportManager, suite );
         testNG.addListener( (Object) reporter );
@@ -368,6 +370,21 @@ public class TestNGExecutor
         catch ( Exception e )
         {
             throw new RuntimeException( "Bug in ConfigurationAwareTestNGReporter", e );
+        }
+    }
+
+    private static int extractVerboseLevel( Map<String, String> options )
+        throws TestSetFailedException
+    {
+        try
+        {
+            String verbose = options.get( "surefire.testng.verbose" );
+            return verbose == null ? 0 : Integer.parseInt( verbose );
+        }
+        catch ( NumberFormatException e )
+        {
+            throw new TestSetFailedException( "Provider property 'surefire.testng.verbose' should refer to "
+                                                  + "number -1 (debug mode), 0, 1 .. 10 (most detailed).", e );
         }
     }
 
