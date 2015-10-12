@@ -119,7 +119,7 @@ public class ForkStarter
     private static final ThreadFactory SHUTDOWN_HOOK_THREAD_FACTORY
         = newDaemonThreadFactory( "surefire-jvm-killer-shutdownhook" );
 
-    private static final AtomicInteger systemPropertiesFileCounter = new AtomicInteger();
+    private static final AtomicInteger SYSTEM_PROPERTIES_FILE_COUNTER = new AtomicInteger();
 
     private final ScheduledExecutorService pingThreadScheduler = createPingScheduler();
 
@@ -487,7 +487,7 @@ public class ForkStarter
                     createCopyAndReplaceForkNumPlaceholder( effectiveSystemProperties, forkNumber );
 
                 systPropsFile = writePropertiesFile( filteredProperties, forkConfiguration.getTempDirectory(),
-                                                     "surefire_" + systemPropertiesFileCounter.getAndIncrement(),
+                                                     "surefire_" + SYSTEM_PROPERTIES_FILE_COUNTER.getAndIncrement(),
                                                      forkConfiguration.isDebug() );
             }
             else
