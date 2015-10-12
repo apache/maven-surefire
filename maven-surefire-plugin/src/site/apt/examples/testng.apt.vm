@@ -197,7 +197,7 @@ Using TestNG
 </plugins>
 +---+
   
-  TestNG 6.9.7 or higher allows you to run suites in parallel.
+  TestNG 6.9.8 (JRE 1.7) or higher allows you to run suites in parallel.
   
 +---+
 </plugins>
