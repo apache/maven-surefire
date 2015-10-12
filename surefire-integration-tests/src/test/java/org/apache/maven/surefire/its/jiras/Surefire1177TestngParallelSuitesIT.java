@@ -26,6 +26,8 @@ import org.junit.Test;
 
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.startsWith;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.containsString;
 
 /**
  * IT for https://issues.apache.org/jira/browse/SUREFIRE-1177
@@ -33,7 +35,7 @@ import static org.hamcrest.Matchers.startsWith;
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.19
  */
-public class Surefire1177TestNGParallelSuitesIT
+public class Surefire1177TestngParallelSuitesIT
     extends SurefireJUnit4IntegrationTestCase
 {
     @Test
@@ -42,6 +44,7 @@ public class Surefire1177TestNGParallelSuitesIT
     {
         unpack().executeTest()
             .verifyErrorFree( 2 )
+            .assertThatLogLine( containsString( "ShouldNotRunTest#shouldNotRun()" ), is( 0 ) )
             .assertThatLogLine( startsWith( "TestNGSuiteTest#shouldRunAndPrintItself()" ), is( 2 ) )
             .assertThatLogLine( is( "TestNGSuiteTest#shouldRunAndPrintItself() 1." ), is( 1 ) )
             .assertThatLogLine( is( "TestNGSuiteTest#shouldRunAndPrintItself() 2." ), is( 1 ) );
