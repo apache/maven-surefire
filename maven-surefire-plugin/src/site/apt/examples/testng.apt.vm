@@ -196,6 +196,32 @@ Using TestNG
     [...]
 </plugins>
 +---+
+  
+  TestNG 6.9.7 or higher allows you to run suites in parallel.
+  
++---+
+</plugins>
+    [...]
+      <plugin>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>${project.artifactId}</artifactId>
+        <version>${project.version}</version>
+        <configuration>
+          <suiteXmlFiles>
+            <file>src/test/resources/testng1.xml</file>
+            <file>src/test/resources/testng2.xml</file>
+          </suiteXmlFiles>
+          <properties>
+            <property>
+              <name>suitethreadpoolsize</name>
+              <value>2</value>
+            </property>
+          </properties>
+        </configuration>
+      </plugin>
+    [...]
+</plugins>
++---+
 
   See also {{{./fork-options-and-parallel-execution.html}Fork Options and Parallel Test Execution}}.
 

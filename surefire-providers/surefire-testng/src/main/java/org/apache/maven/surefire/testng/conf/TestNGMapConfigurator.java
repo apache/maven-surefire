@@ -113,20 +113,14 @@ public class TestNGMapConfigurator
             {
                 val = convert ( val, String.class );
             }
-            // TODO Add some integration tests
-            // Related issues:
-            // https://issues.apache.org/jira/browse/SUREFIRE-1177
-            // https://issues.apache.org/jira/browse/SUREFIRE-1179
-            // should work in TestNG 6.9.7
-            // only useful in specific cases - prevents from passing string instead of integer
             else if ( "suitethreadpoolsize".equals( key ) )
             {
+                // for TestNG 6.9.7 or higher
                 val = convert( val, Integer.class );
             }
-            // should work in TestNG 6.9.7
-            // only useful in specific cases - prevents from passing string instead of integer
             else if ( "dataproviderthreadcount".equals( key ) )
             {
+                // for TestNG 5.10 or higher
                 val = convert( val, Integer.class );
             }
             // TODO objectfactory... not even documented, does it work?

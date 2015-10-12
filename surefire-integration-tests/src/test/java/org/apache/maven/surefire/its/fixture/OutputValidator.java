@@ -28,6 +28,9 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.it.VerificationException;
 import org.apache.maven.it.Verifier;
+import org.hamcrest.Matcher;
+
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * A specialized verifier that enforces a standard use case for surefire IT's
@@ -85,6 +88,21 @@ public class OutputValidator
         {
             throw new SurefireVerifierException( e );
         }
+    }
+
+    public OutputValidator assertThatLogLine( Matcher<String> line, Matcher<Integer> nTimes )
+        throws VerificationException
+    {
+        int counter = 0;
+        for ( String log : loadLogLines() )
+        {
+            if ( line.matches( log ) )
+            {
+                counter++;
+            }
+        }
+        assertThat( "log pattern does not match nTimes", counter, nTimes );
+        return this;
     }
 
     public Collection<String> loadLogLines()
